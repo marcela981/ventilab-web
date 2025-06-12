@@ -1,0 +1,498 @@
+/* ===================================
+   COMPONENTES REUTILIZABLES
+   ===================================
+   Estilos para componentes específicos del ventilador mecánico
+   Basado en el diseño Figma
+*/
+
+/* ===== RESET Y BASE ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ===== LAYOUT PRINCIPAL ===== */
+.app-container {
+  position: relative;
+  width: var(--layout-width);
+  height: var(--layout-height);
+  background: var(--color-bg-main);
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.content-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* ===== FORM FIELD COMPONENT ===== */
+.form-field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: var(--parameter-card-width);
+}
+
+.form-field--large {
+  width: var(--parameter-card-width-lg);
+}
+
+.form-field__label {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-align: center;
+  line-height: var(--line-height-md);
+  margin-bottom: var(--spacing-sm);
+}
+
+.form-field__input-wrapper {
+  position: relative;
+  background: var(--color-bg-control);
+  border: 1px solid var(--color-border-main);
+  box-shadow: var(--shadow-control);
+  border-radius: var(--border-radius-md);
+  height: var(--control-height);
+  display: flex;
+  align-items: center;
+}
+
+.form-field__input {
+  width: 100%;
+  height: 100%;
+  padding: 0 var(--spacing-md);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-regular);
+  font-family: var(--font-family-primary);
+  text-align: center;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text-primary);
+}
+
+.form-field__input:focus {
+  box-shadow: var(--shadow-focus);
+}
+
+.form-field__controls {
+  position: absolute;
+  right: var(--spacing-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  z-index: var(--z-index-controls);
+}
+
+.form-field__increment {
+  width: var(--increment-button-size);
+  height: var(--increment-button-size);
+  background: var(--color-text-secondary);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--color-primary-dark);
+  transition: var(--transition-fast);
+}
+
+.form-field__increment:hover {
+  background: var(--color-primary);
+  color: var(--color-text-primary);
+}
+
+.form-field__increment--large {
+  width: var(--increment-button-size-lg);
+  height: var(--increment-button-size-lg);
+}
+
+/* ===== PARAMETER CARD COMPONENT ===== */
+.parameter-card {
+  display: flex;
+  flex-direction: column;
+  width: var(--parameter-card-width);
+  height: auto;
+}
+
+.parameter-card--large {
+  width: var(--parameter-card-width-lg);
+}
+
+.parameter-card__header {
+  margin-bottom: var(--spacing-sm);
+}
+
+.parameter-card__body {
+  flex: 1;
+}
+
+/* Variante para relación I:E */
+.parameter-card--split {
+  flex-direction: row;
+  align-items: flex-end;
+  gap: var(--spacing-md);
+}
+
+.parameter-card--split .form-field {
+  width: 130px;
+}
+
+/* ===== VALUE DISPLAY COMPONENT ===== */
+.value-display {
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border-panel);
+  width: var(--monitor-panel-width);
+  height: var(--monitor-panel-height);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.value-display--dark {
+  background: var(--color-bg-panel-dark);
+}
+
+.value-display__content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--spacing-md);
+}
+
+.value-display__value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  text-align: right;
+  line-height: var(--line-height-lg);
+  flex: 1;
+  border: 1px solid var(--color-border-panel);
+}
+
+.value-display__unit {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-light);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-md);
+  margin-left: var(--spacing-sm);
+  border: 1px solid var(--color-border-panel);
+}
+
+.value-display__label {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-align: center;
+  line-height: var(--line-height-md);
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border-panel);
+}
+
+/* ===== SLIDER COMPONENT ===== */
+.slider-container {
+  width: 100%;
+  padding: var(--spacing-md) 0;
+}
+
+.slider-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm);
+}
+
+.slider-track {
+  position: relative;
+  width: 100%;
+  height: var(--slider-track-height);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.slider-track__active {
+  height: var(--slider-track-height);
+  background: var(--color-primary-dark);
+  border-radius: var(--border-radius-lg) var(--border-radius-sm) var(--border-radius-sm) var(--border-radius-lg);
+  flex: 1;
+  position: relative;
+  z-index: var(--z-index-base);
+}
+
+.slider-track__handle {
+  width: var(--slider-handle-width);
+  height: var(--slider-handle-height);
+  background: var(--color-primary-dark);
+  border-radius: var(--border-radius-sm);
+  position: relative;
+  z-index: var(--z-index-slider-handle);
+  cursor: pointer;
+}
+
+.slider-track__inactive {
+  height: var(--slider-track-height);
+  background: #F9DEDC;
+  border-radius: var(--border-radius-sm) var(--border-radius-lg) var(--border-radius-lg) var(--border-radius-sm);
+  flex: 1;
+  position: relative;
+  z-index: var(--z-index-base);
+}
+
+/* ===== BUTTON COMPONENT ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  user-select: none;
+}
+
+.btn--primary {
+  background: var(--color-primary);
+  color: var(--color-text-primary);
+}
+
+.btn--primary:hover {
+  background: var(--color-primary-dark);
+}
+
+.btn--secondary {
+  background: var(--color-bg-control);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-main);
+}
+
+.btn--secondary:hover {
+  background: var(--color-primary);
+  color: var(--color-text-primary);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-text-muted);
+}
+
+.btn--ghost:hover {
+  color: var(--color-text-primary);
+  background: var(--color-bg-control);
+}
+
+.btn--small {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-xs);
+}
+
+.btn--large {
+  padding: var(--spacing-lg) var(--spacing-xl);
+  font-size: var(--font-size-md);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ===== TAB COMPONENT ===== */
+.tab-container {
+  width: 100%;
+  height: var(--tab-height);
+  display: flex;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.tab {
+  flex: 1;
+  height: 100%;
+  background: var(--color-bg-tab);
+  border: 1px solid var(--color-border-tab);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.tab--active {
+  box-shadow: var(--shadow-tab);
+}
+
+.tab--inactive {
+  filter: blur(2px);
+}
+
+.tab__label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-muted);
+  text-align: center;
+  line-height: var(--line-height-xs);
+}
+
+/* ===== GRID LAYOUTS ===== */
+.parameters-grid {
+  display: flex;
+  gap: var(--spacing-lg);
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.monitoring-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: var(--monitor-panel-width);
+}
+
+.charts-area {
+  width: 740px;
+  height: 737px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.chart-panel {
+  width: 100%;
+  height: 215px;
+  background: var(--color-bg-panel);
+}
+
+/* ===== UTILIDADES DE LAYOUT ===== */
+.flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-end {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.flex-start {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.relative {
+  position: relative;
+}
+
+.hidden {
+  display: none;
+}
+
+.visible {
+  visibility: visible;
+}
+
+.invisible {
+  visibility: hidden;
+}
+
+/* ===== ESPACIADO ===== */
+.m-0 { margin: 0; }
+.m-1 { margin: var(--spacing-xs); }
+.m-2 { margin: var(--spacing-sm); }
+.m-3 { margin: var(--spacing-md); }
+.m-4 { margin: var(--spacing-lg); }
+.m-5 { margin: var(--spacing-xl); }
+
+.p-0 { padding: 0; }
+.p-1 { padding: var(--spacing-xs); }
+.p-2 { padding: var(--spacing-sm); }
+.p-3 { padding: var(--spacing-md); }
+.p-4 { padding: var(--spacing-lg); }
+.p-5 { padding: var(--spacing-xl); }
+
+.gap-1 { gap: var(--spacing-xs); }
+.gap-2 { gap: var(--spacing-sm); }
+.gap-3 { gap: var(--spacing-md); }
+.gap-4 { gap: var(--spacing-lg); }
+.gap-5 { gap: var(--spacing-xl); }
+
+/* ===== BORDES ===== */
+.border {
+  border: 1px solid var(--color-border-main);
+}
+
+.border-0 {
+  border: none;
+}
+
+.border-t {
+  border-top: 1px solid var(--color-border-main);
+}
+
+.border-b {
+  border-bottom: 1px solid var(--color-border-main);
+}
+
+.border-l {
+  border-left: 1px solid var(--color-border-main);
+}
+
+.border-r {
+  border-right: 1px solid var(--color-border-main);
+}
+
+.rounded {
+  border-radius: var(--border-radius-md);
+}
+
+.rounded-sm {
+  border-radius: var(--border-radius-sm);
+}
+
+.rounded-lg {
+  border-radius: var(--border-radius-lg);
+}
+
+.rounded-none {
+  border-radius: 0;
+} 

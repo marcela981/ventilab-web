@@ -1,0 +1,188 @@
+/* NumericInput Component - VentyLab */
+/* Basado en el diseño de Figma Rectangle 9 */
+
+.numeric-input-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 160px;
+}
+
+.numeric-input-label {
+  font-family: var(--font-body, 'Inter', sans-serif);
+  font-size: var(--text-sm, 14px);
+  font-weight: 500;
+  color: var(--text-primary, #FFFFFF);
+  margin-bottom: var(--spacing-xs, 8px);
+  display: block;
+}
+
+.numeric-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.numeric-input {
+  /* Dimensiones ajustadas para pantalla mediana */
+  box-sizing: border-box;
+  width: 160px;
+  height: 42px;
+  
+  /* Estilos visuales con tono #171515 */
+  background: rgba(23, 21, 21, 0.3);
+  border: 1px solid #171515;
+  box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+  
+  /* Tipografía */
+  font-family: var(--font-body, 'Inter', sans-serif);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-primary, #FFFFFF);
+  
+  /* Espaciado interno */
+  padding: 8px 12px;
+  
+  /* Interacción */
+  outline: none;
+  transition: all 0.2s ease;
+  
+  /* Eliminar spinners del navegador */
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+}
+
+/* Eliminar spinners en WebKit */
+.numeric-input::-webkit-outer-spin-button,
+.numeric-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Estados del input */
+.numeric-input:focus {
+  border-color: var(--primary-red, #da0037);
+  box-shadow: 
+    inset 0px 4px 4px rgba(0, 0, 0, 0.25),
+    0 0 0 2px rgba(218, 0, 55, 0.2);
+}
+
+.numeric-input:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(23, 21, 21, 0.5);
+}
+
+.numeric-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+}
+
+/* Estado de error */
+.numeric-input--error {
+  border-color: var(--error-color, #ff4444);
+  background: rgba(255, 68, 68, 0.1);
+}
+
+.numeric-input--error:focus {
+  box-shadow: 
+    inset 0px 4px 4px rgba(0, 0, 0, 0.25),
+    0 0 0 2px rgba(255, 68, 68, 0.3);
+}
+
+/* Estado deshabilitado */
+.numeric-input--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: rgba(23, 21, 21, 0.1);
+  border-color: #171515;
+}
+
+/* Unidad de medida */
+.numeric-input-unit {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-body, 'Inter', sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+  background: #171515;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Cuando hay unidad, ajustar el padding del input */
+.numeric-input-wrapper:has(.numeric-input-unit) .numeric-input {
+  padding-right: 45px;
+}
+
+/* Texto de ayuda */
+.numeric-input-helper {
+  font-family: var(--font-body, 'Inter', sans-serif);
+  font-size: var(--text-xs, 12px);
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: var(--spacing-xs, 4px);
+  line-height: 1.3;
+}
+
+.numeric-input-helper--error {
+  color: var(--error-color, #ff4444);
+}
+
+/* Variantes de tamaño */
+.numeric-input--small {
+  width: 120px;
+  height: 36px;
+  font-size: 12px;
+  padding: 6px 8px;
+}
+
+.numeric-input--large {
+  width: 200px;
+  height: 48px;
+  font-size: 16px;
+  padding: 10px 14px;
+}
+
+/* Adaptable al contenedor padre */
+.numeric-input--fluid {
+  width: 100%;
+  max-width: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .numeric-input {
+    width: 100%;
+    min-width: 140px;
+    height: 38px;
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+  
+  .numeric-input-label {
+    font-size: 12px;
+  }
+  
+  .numeric-input-unit {
+    font-size: 11px;
+    right: 10px;
+  }
+}
+
+/* Mejoras de accesibilidad */
+.numeric-input:focus {
+  outline: none;
+}
+
+/* Soporte para modo oscuro personalizado */
+@media (prefers-color-scheme: dark) {
+  .numeric-input {
+    background: rgba(20, 20, 20, 0.4);
+    border-color: rgba(40, 40, 40, 0.8);
+  }
+} 

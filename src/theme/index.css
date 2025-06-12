@@ -1,0 +1,336 @@
+/* ===================================
+   THEME SYSTEM - ARCHIVO PRINCIPAL
+   ===================================
+   Sistema de tema modular para aplicación de ventilador mecánico
+   Importa todos los módulos CSS en el orden correcto
+   
+   Orden de importación:
+   1. Variables (deben estar primero)
+   2. Colores
+   3. Tipografía 
+   4. Gradientes
+   5. Componentes
+   6. Responsive (debe estar al final)
+*/
+
+/* ===== FUENTES EXTERNAS (PRIMERO) ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ===== 1. VARIABLES CSS ===== */
+@import './variables.css';
+
+/* ===== 2. PALETA DE COLORES ===== */
+@import './colors.css';
+
+/* ===== 3. TIPOGRAFÍA ===== */
+@import './typography.css';
+
+/* ===== 4. GRADIENTES Y FONDOS ===== */
+@import './gradients.css';
+
+/* ===== 5. COMPONENTES ===== */
+@import './components.css';
+
+/* ===== 6. RESPONSIVE (AL FINAL) ===== */
+@import './responsive.css';
+
+/* ===================================
+   CONFIGURACIÓN GLOBAL BASE
+   ===================================
+*/
+
+/* Reset básico */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Configuración del documento */
+html {
+  font-size: 16px; /* Base para rem */
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+  background: var(--color-bg-main);
+  min-height: 100vh;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+/* Configuración de la aplicación principal */
+#root {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ===================================
+   CLASES UTILITARIAS GLOBALES
+   ===================================
+*/
+
+/* Accesibilidad */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--color-primary);
+  color: var(--color-text-primary);
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 1000;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Estados de carga */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid var(--color-primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Estados de error */
+.error {
+  border-color: var(--color-text-error) !important;
+  background: rgba(249, 222, 220, 0.1) !important;
+}
+
+.error-message {
+  color: var(--color-text-error);
+  font-size: var(--font-size-xs);
+  margin-top: var(--spacing-xs);
+}
+
+/* Estados de éxito */
+.success {
+  border-color: var(--color-chart-volume) !important;
+  background: rgba(110, 218, 0, 0.1) !important;
+}
+
+/* Transiciones globales */
+.transition-all {
+  transition: all var(--transition-normal);
+}
+
+.transition-colors {
+  transition: color var(--transition-fast), 
+              background-color var(--transition-fast), 
+              border-color var(--transition-fast);
+}
+
+.transition-transform {
+  transition: transform var(--transition-fast);
+}
+
+/* ===================================
+   CONFIGURACIONES ESPECÍFICAS
+   ===================================
+*/
+
+/* Scrollbars personalizados (Webkit) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-control);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary-dark);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* Selección de texto */
+::selection {
+  background: var(--color-primary);
+  color: var(--color-text-primary);
+}
+
+::-moz-selection {
+  background: var(--color-primary);
+  color: var(--color-text-primary);
+}
+
+/* Focus visible para accesibilidad */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Botones sin estilo por defecto */
+button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Inputs sin estilo por defecto */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* ===================================
+   MODO DEBUG (para desarrollo)
+   ===================================
+*/
+
+.debug * {
+  outline: 1px solid rgba(255, 0, 0, 0.3);
+}
+
+.debug .app-container {
+  outline: 2px solid var(--color-primary);
+}
+
+.debug .form-field {
+  outline: 1px solid var(--color-chart-flow);
+}
+
+.debug .value-display {
+  outline: 1px solid var(--color-chart-volume);
+}
+
+/* ===================================
+   PRINT STYLES
+   ===================================
+*/
+
+@media print {
+  /* Resetear colores para impresión */
+  * {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  /* Ocultar elementos interactivos */
+  .btn,
+  .form-field__controls,
+  .tab-container {
+    display: none !important;
+  }
+  
+  /* Ajustar tamaños para impresión */
+  .app-container {
+    width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+    overflow: visible !important;
+  }
+  
+  /* Evitar saltos de página en elementos importantes */
+  .value-display,
+  .parameter-card,
+  .chart-panel {
+    page-break-inside: avoid;
+  }
+}
+
+/* ===================================
+   COMENTARIOS PARA DESARROLLADORES
+   ===================================
+
+   USO DEL TEMA:
+   
+   1. Importar este archivo en tu componente principal:
+      @import './theme/index.css';
+   
+   2. Usar las clases CSS en tus componentes:
+      <div className="form-field">
+        <label className="form-field__label">FIO2</label>
+        <div className="form-field__input-wrapper">
+          <input className="form-field__input" type="number" />
+        </div>
+      </div>
+   
+   3. Usar las variables CSS:
+      .mi-componente {
+        color: var(--color-text-primary);
+        background: var(--color-bg-panel);
+        padding: var(--spacing-md);
+      }
+   
+   ESTRUCTURA DE CLASES:
+   - .form-field: Componente de campo de formulario
+   - .parameter-card: Tarjeta de parámetro
+   - .value-display: Display de valores de monitoreo
+   - .btn: Botones con variantes (--primary, --secondary, etc.)
+   - .tab: Pestañas de navegación
+   
+   UTILIDADES:
+   - .bg-gradient, .bg-panel: Fondos
+   - .text-primary, .text-secondary: Colores de texto
+   - .flex-center, .flex-between: Layouts
+   - .m-*, .p-*: Espaciado
+   - .rounded, .border: Bordes
+   
+   RESPONSIVE:
+   - mobile: 320px-479px
+   - tablet: 768px-1023px  
+   - desktop: 1024px-1439px
+   - large: 1440px+
+   
+*/ 

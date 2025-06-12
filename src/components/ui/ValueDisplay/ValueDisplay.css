@@ -1,0 +1,260 @@
+/* ValueDisplay Component - Ventilador Mecánico */
+.value-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 150px;
+}
+
+/* Contenedor principal */
+.value-display__main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+/* Valor */
+.value-display__value {
+  font-family: var(--font-family, 'Fustat', 'Inter', sans-serif);
+  font-style: normal;
+  font-weight: 800;
+  font-size: 40px;
+  line-height: 57px;
+  color: #FFFAFA;
+  text-align: right;
+}
+
+/* Unidad */
+.value-display__unit {
+  font-family: var(--font-family, 'Fustat', 'Inter', sans-serif);
+  font-style: normal;
+  font-weight: 300;
+  font-size: 32px;
+  line-height: 45px;
+  color: #FFFAFA;
+  margin-left: 4px;
+}
+
+/* Label */
+.value-display__label {
+  font-family: var(--font-family, 'Fustat', 'Inter', sans-serif);
+  font-style: normal;
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 45px;
+  color: #FFFAFA;
+  text-align: center;
+}
+
+/* Flechas de control */
+.value-display__arrows {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  margin-left: 12px;
+}
+
+.value-display__arrow {
+  width: 32px;
+  height: 28px;
+  background: #FEF7FF;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--dark-red, #852221);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.value-display__arrow:hover:not(:disabled) {
+  background: var(--primary-red, #da0037);
+  color: #FFFFFF;
+  transform: scale(1.1);
+}
+
+.value-display__arrow:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.value-display__arrow:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: rgba(254, 247, 255, 0.5);
+}
+
+/* Variantes de color */
+.value-display--primary {
+  /* Colores por defecto ya aplicados */
+}
+
+.value-display--secondary .value-display__value,
+.value-display--secondary .value-display__unit,
+.value-display--secondary .value-display__label {
+  color: rgba(255, 250, 250, 0.8);
+}
+
+.value-display--success .value-display__value {
+  color: #4CAF50;
+}
+
+.value-display--success .value-display__unit {
+  color: #4CAF50;
+}
+
+.value-display--warning .value-display__value {
+  color: #FFC107;
+}
+
+.value-display--warning .value-display__unit {
+  color: #FFC107;
+}
+
+.value-display--warning .value-display__arrow {
+  background: rgba(255, 193, 7, 0.2);
+  color: #FFC107;
+}
+
+.value-display--warning .value-display__arrow:hover:not(:disabled) {
+  background: #FFC107;
+  color: #000;
+}
+
+/* Estado deshabilitado */
+.value-display--disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.value-display--disabled .value-display__value,
+.value-display--disabled .value-display__unit,
+.value-display--disabled .value-display__label {
+  color: rgba(255, 250, 250, 0.4);
+}
+
+/* Layout horizontal alternativo */
+.value-display--horizontal {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+
+.value-display--horizontal .value-display__main {
+  order: 1;
+}
+
+.value-display--horizontal .value-display__label {
+  order: 0;
+  font-size: 24px;
+  line-height: 32px;
+  min-width: 120px;
+  text-align: left;
+}
+
+/* Tamaños */
+.value-display--small .value-display__value {
+  font-size: 32px;
+  line-height: 40px;
+}
+
+.value-display--small .value-display__unit {
+  font-size: 24px;
+  line-height: 32px;
+}
+
+.value-display--small .value-display__label {
+  font-size: 24px;
+  line-height: 32px;
+}
+
+.value-display--large .value-display__value {
+  font-size: 48px;
+  line-height: 68px;
+}
+
+.value-display--large .value-display__unit {
+  font-size: 36px;
+  line-height: 50px;
+}
+
+.value-display--large .value-display__label {
+  font-size: 36px;
+  line-height: 50px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .value-display__value {
+    font-size: 32px;
+    line-height: 40px;
+  }
+  
+  .value-display__unit {
+    font-size: 24px;
+    line-height: 32px;
+  }
+  
+  .value-display__label {
+    font-size: 24px;
+    line-height: 32px;
+  }
+  
+  .value-display__arrow {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .value-display__value {
+    font-size: 28px;
+    line-height: 36px;
+  }
+  
+  .value-display__unit {
+    font-size: 20px;
+    line-height: 28px;
+  }
+  
+  .value-display__label {
+    font-size: 20px;
+    line-height: 28px;
+  }
+  
+  .value-display__main {
+    gap: 4px;
+  }
+  
+  .value-display__arrows {
+    margin-left: 8px;
+  }
+}
+
+/* Animaciones */
+@keyframes valueChange {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.value-display__value {
+  animation: valueChange 0.3s ease when value changes;
+}
+
+/* Efectos de hover para todo el componente */
+.value-display:hover .value-display__value {
+  color: #FFFFFF;
+  transition: color 0.2s ease;
+} 

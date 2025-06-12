@@ -1,0 +1,198 @@
+
+/* ===================================
+   IMPORTAR SISTEMA DE TEMA MODULAR
+   ===================================
+*/
+@import '../theme/index.css';
+
+/* Reset adicional específico de la aplicación */
+  
+  :root {
+    /* Colores del diseño */
+    --bg-gradient: linear-gradient(180deg, #5B0002 0%, rgba(48, 21, 21, 0.8) 50%, rgba(47, 46, 46, 0.5) 100%);
+    --primary-red: #da0037;
+    --dark-red: #852221;
+    --text-primary: #FFFFFF;
+    --text-secondary: #FFFAFA;
+    --text-muted: #A0A0A0;
+    --control-bg: rgba(30, 30, 30, 0.2);
+    --control-border: rgba(23, 21, 21, 0.5);
+    --control-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.25);
+    --panel-bg: rgba(0, 0, 0, 0.2);
+    
+    /* Tipografía */
+    --font-family: 'Inter', 'Fustat', sans-serif; /* Fallback a Inter hasta obtener Fustat */
+    --font-size-xs: 20px;
+    --font-size-sm: 24px;
+    --font-size-md: 32px;
+    --font-size-lg: 40px;
+    
+    /* Espaciado del diseño Figma */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+  }
+  
+  /* Configuración del body */
+  body {
+    font-family: var(--font-family);
+    color: var(--text-primary);
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Aplicación principal */
+  #root {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden; /* Para replicar el diseño de 1440x1024 */
+  }
+  
+  /* Layout principal (1440x1024 como en Figma) */
+  .app-container {
+    position: relative;
+    width: 1440px;
+    height: 1024px;
+    background: var(--bg-gradient);
+    margin: 0 auto;
+  }
+  
+  /* Estilos base para paneles */
+  .panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--control-border);
+    border-radius: 5px;
+  }
+  
+  /* Estilos base para controles */
+  .control-base {
+    background: var(--control-bg);
+    border: 1px solid var(--control-border);
+    box-shadow: var(--control-shadow);
+    border-radius: 5px;
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-weight: 500;
+  }
+  
+  /* Input numérico estilo Figma */
+  .numeric-input {
+    width: 100%;
+    height: 60px;
+    padding: 0 var(--spacing-md);
+    font-size: var(--font-size-md);
+    text-align: center;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+  }
+  
+  .numeric-input:focus {
+    box-shadow: 0 0 0 2px var(--primary-red);
+  }
+  
+  /* Labels estilo Figma */
+  .parameter-label {
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: center;
+    line-height: 45px;
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  /* Botones de incremento/decremento */
+  .increment-button {
+    width: 24px;
+    height: 24px;
+    background: var(--text-secondary);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--dark-red);
+  }
+  
+  .increment-button:hover {
+    background: var(--primary-red);
+    color: var(--text-primary);
+  }
+  
+  /* Slider personalizado (basado en el Figma) */
+  .custom-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 16px;
+    border-radius: 16px;
+    background: var(--text-secondary);
+    outline: none;
+    position: relative;
+  }
+  
+  .custom-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 4px;
+    height: 44px;
+    border-radius: 2px;
+    background: var(--dark-red);
+    cursor: pointer;
+  }
+  
+  .custom-slider::-moz-range-thumb {
+    width: 4px;
+    height: 44px;
+    border-radius: 2px;
+    background: var(--dark-red);
+    cursor: pointer;
+    border: none;
+  }
+  
+  /* Display de valores de monitoreo */
+  .monitor-value {
+    font-size: var(--font-size-lg);
+    font-weight: 800;
+    color: var(--text-primary);
+    text-align: right;
+    line-height: 57px;
+  }
+  
+  .monitor-unit {
+    font-size: var(--font-size-md);
+    font-weight: 300;
+    color: var(--text-secondary);
+    line-height: 45px;
+  }
+  
+  .monitor-label {
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: center;
+    line-height: 45px;
+  }
+  
+  /* Responsive (opcional, para desarrollo) */
+  @media (max-width: 1440px) {
+    .app-container {
+      width: 100vw;
+      height: 100vh;
+      transform: scale(0.8);
+      transform-origin: top left;
+    }
+  }
+  
+  /* Utilidades */
+  .text-center { text-align: center; }
+  .text-right { text-align: right; }
+  .flex { display: flex; }
+  .flex-center { display: flex; align-items: center; justify-content: center; }
+  .space-between { justify-content: space-between; }
+  .hidden { display: none; }

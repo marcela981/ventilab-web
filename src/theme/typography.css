@@ -1,0 +1,262 @@
+/* ===================================
+   TIPOGRAFÍA - FUENTES Y ESTILOS DE TEXTO
+   ===================================
+   Sistema tipográfico basado en la fuente Fustat del diseño Figma
+*/
+
+/* ===== IMPORTACIÓN DE FUENTES ===== */
+/* Fustat - Fuente principal del diseño */
+/* Fuente importada en index.css para evitar problemas de orden */
+
+/* TODO: Reemplazar con Fustat real cuando esté disponible */
+/* @font-face {
+  font-family: 'Fustat';
+  src: url('../assets/fonts/Fustat-Regular.woff2') format('woff2'),
+       url('../assets/fonts/Fustat-Regular.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Fustat';
+  src: url('../assets/fonts/Fustat-Light.woff2') format('woff2'),
+       url('../assets/fonts/Fustat-Light.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Fustat';
+  src: url('../assets/fonts/Fustat-SemiBold.woff2') format('woff2'),
+       url('../assets/fonts/Fustat-SemiBold.woff') format('woff');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Fustat';
+  src: url('../assets/fonts/Fustat-ExtraBold.woff2') format('woff2'),
+       url('../assets/fonts/Fustat-ExtraBold.woff') format('woff');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+} */
+
+/* ===== CONFIGURACIÓN BASE ===== */
+body {
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ===== CLASES DE TAMAÑO DE FUENTE ===== */
+.text-xs {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-xs);
+}
+
+.text-sm {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-sm);
+}
+
+.text-md {
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-md);
+}
+
+.text-lg {
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-lg);
+}
+
+/* ===== CLASES DE PESO DE FUENTE ===== */
+.font-light {
+  font-weight: var(--font-weight-light);
+}
+
+.font-regular {
+  font-weight: var(--font-weight-regular);
+}
+
+.font-semibold {
+  font-weight: var(--font-weight-semibold);
+}
+
+.font-bold {
+  font-weight: var(--font-weight-bold);
+}
+
+/* ===== CLASES DE ALINEACIÓN ===== */
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-justify {
+  text-align: justify;
+}
+
+/* ===== ESTILOS ESPECÍFICOS DEL DISEÑO FIGMA ===== */
+
+/* Labels de parámetros */
+.parameter-label {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-align: center;
+  line-height: var(--line-height-md);
+}
+
+/* Valores numéricos en inputs */
+.numeric-value {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+  text-align: center;
+  line-height: var(--line-height-md);
+}
+
+/* Valores de monitoreo (grandes) */
+.monitor-value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  text-align: right;
+  line-height: var(--line-height-lg);
+}
+
+/* Unidades de medida */
+.unit-label {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-light);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-md);
+}
+
+/* Labels de monitoreo */
+.monitor-label {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-align: center;
+  line-height: var(--line-height-md);
+}
+
+/* Tabs/navegación */
+.tab-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-muted);
+  text-align: center;
+  line-height: var(--line-height-xs);
+}
+
+/* Valores de frecuencia (más pequeños) */
+.frequency-value {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-sm);
+}
+
+/* ===== UTILIDADES DE TEXTO ===== */
+.uppercase {
+  text-transform: uppercase;
+}
+
+.lowercase {
+  text-transform: lowercase;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+.no-wrap {
+  white-space: nowrap;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.break-words {
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+/* ===== ESPACIADO DE LETRAS ===== */
+.tracking-tight {
+  letter-spacing: -0.025em;
+}
+
+.tracking-normal {
+  letter-spacing: 0;
+}
+
+.tracking-wide {
+  letter-spacing: 0.025em;
+}
+
+/* ===== DECORACIONES ===== */
+.underline {
+  text-decoration: underline;
+}
+
+.no-underline {
+  text-decoration: none;
+}
+
+.line-through {
+  text-decoration: line-through;
+}
+
+/* ===== SELECCIÓN DE TEXTO ===== */
+::selection {
+  background: var(--color-primary);
+  color: var(--color-text-primary);
+}
+
+::-moz-selection {
+  background: var(--color-primary);
+  color: var(--color-text-primary);
+}
+
+/* ===== RESPONSIVE TYPOGRAPHY ===== */
+@media (max-width: 768px) {
+  .text-lg {
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-md);
+  }
+  
+  .text-md {
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-sm);
+  }
+  
+  .monitor-value {
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-md);
+  }
+  
+  .parameter-label {
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-sm);
+  }
+} 

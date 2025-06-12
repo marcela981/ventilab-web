@@ -1,0 +1,417 @@
+/* ===================================
+   RESPONSIVE DESIGN
+   ===================================
+   Media queries y diseño adaptativo
+   Mobile-first approach
+*/
+
+/* ===== BASE MOBILE (320px+) ===== */
+/* Estilos base ya aplicados en otros archivos */
+
+/* ===== SMALL MOBILE (480px+) ===== */
+@media (min-width: 480px) {
+  .app-container {
+    width: 100vw;
+    height: 100vh;
+    transform: scale(0.4);
+    transform-origin: top left;
+  }
+  
+  .parameters-grid {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+  
+  .form-field,
+  .parameter-card {
+    width: 100%;
+    max-width: 280px;
+  }
+  
+  .monitoring-grid {
+    width: 100%;
+  }
+  
+  .value-display {
+    width: 100%;
+    max-width: var(--monitor-panel-width);
+  }
+  
+  .charts-area {
+    width: 100%;
+    height: auto;
+  }
+  
+  .chart-panel {
+    height: 150px;
+  }
+}
+
+/* ===== TABLET (768px+) ===== */
+@media (min-width: 768px) {
+  .app-container {
+    transform: scale(0.6);
+    transform-origin: top center;
+  }
+  
+  /* Ajustes de tipografía */
+  .parameter-label {
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-sm);
+  }
+  
+  .monitor-value {
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-md);
+  }
+  
+  .numeric-value {
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-sm);
+  }
+  
+  /* Layout en dos columnas */
+  .main-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr auto;
+    gap: var(--spacing-lg);
+    height: 100vh;
+    padding: var(--spacing-md);
+  }
+  
+  .header-area {
+    grid-column: 1 / -1;
+  }
+  
+  .content-area {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: var(--spacing-lg);
+  }
+  
+  .parameters-section {
+    flex: 1;
+  }
+  
+  .monitoring-section {
+    width: 300px;
+  }
+  
+  .charts-section {
+    flex: 2;
+  }
+  
+  .tabs-area {
+    grid-column: 1 / -1;
+  }
+  
+  /* Componentes específicos */
+  .parameters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--spacing-md);
+  }
+  
+  .form-field {
+    width: 100%;
+  }
+  
+  .parameter-card--split {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+  
+  .parameter-card--split .form-field {
+    width: 100%;
+  }
+  
+  .charts-area {
+    height: 500px;
+  }
+  
+  .chart-panel {
+    height: 140px;
+  }
+}
+
+/* ===== DESKTOP (1024px+) ===== */
+@media (min-width: 1024px) {
+  .app-container {
+    transform: scale(0.8);
+    transform-origin: top center;
+  }
+  
+  /* Layout en tres columnas */
+  .main-layout {
+    grid-template-columns: 330px 1fr 300px;
+    grid-template-rows: auto 1fr auto;
+    gap: var(--spacing-xl);
+    padding: var(--spacing-lg);
+  }
+  
+  .monitoring-section {
+    grid-column: 1;
+    grid-row: 2;
+    width: 100%;
+  }
+  
+  .content-area {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    flex-direction: column;
+  }
+  
+  .parameters-section {
+    order: 1;
+  }
+  
+  .charts-section {
+    order: 2;
+    flex: 1;
+  }
+  
+  .controls-section {
+    grid-column: 3;
+    grid-row: 2;
+    width: 100%;
+  }
+  
+  /* Parámetros en línea horizontal */
+  .parameters-grid {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: var(--spacing-lg);
+    flex-wrap: wrap;
+  }
+  
+  .form-field {
+    width: var(--parameter-card-width);
+  }
+  
+  .form-field--large {
+    width: var(--parameter-card-width-lg);
+  }
+  
+  .parameter-card--split {
+    flex-direction: row;
+    gap: var(--spacing-md);
+  }
+  
+  .parameter-card--split .form-field {
+    width: 130px;
+  }
+  
+  .charts-area {
+    width: 100%;
+    height: 600px;
+  }
+  
+  .chart-panel {
+    height: 180px;
+  }
+  
+  /* Controles del lado derecho */
+  .controls-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+  }
+}
+
+/* ===== LARGE DESKTOP (1440px+) ===== */
+@media (min-width: 1440px) {
+  .app-container {
+    width: var(--layout-width);
+    height: var(--layout-height);
+    transform: scale(1);
+    transform-origin: center;
+  }
+  
+  /* Diseño original del Figma */
+  .main-layout {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+  }
+  
+  /* Posicionamiento absoluto como en Figma */
+  .header-logos {
+    position: absolute;
+    width: 320px;
+    height: 188px;
+    left: 10px;
+    top: 5px;
+  }
+  
+  .parameters-section {
+    position: absolute;
+    width: 887px;
+    height: 99px;
+    left: 375px;
+    top: 18px;
+  }
+  
+  .monitoring-section {
+    position: absolute;
+    width: 330px;
+    height: 768px;
+    left: 0px;
+    top: 194px;
+  }
+  
+  .charts-section {
+    position: absolute;
+    width: 740px;
+    height: 737px;
+    left: 350px;
+    top: 193px;
+  }
+  
+  .controls-section {
+    position: absolute;
+    width: 282px;
+    height: 635px;
+    left: 1122px;
+    top: 205px;
+  }
+  
+  .tabs-section {
+    position: absolute;
+    width: 1440px;
+    height: 60px;
+    left: 0px;
+    top: 962px;
+  }
+  
+  /* Restaurar tamaños originales */
+  .parameters-grid {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-lg);
+  }
+  
+  .form-field {
+    width: var(--parameter-card-width);
+  }
+  
+  .charts-area {
+    width: 740px;
+    height: 737px;
+  }
+  
+  .chart-panel {
+    height: 215px;
+  }
+}
+
+/* ===== ULTRA WIDE (1920px+) ===== */
+@media (min-width: 1920px) {
+  .app-container {
+    transform: scale(1.2);
+  }
+}
+
+/* ===== UTILITIES RESPONSIVAS ===== */
+
+/* Ocultar elementos en móvil */
+@media (max-width: 767px) {
+  .hidden-mobile {
+    display: none !important;
+  }
+  
+  .mobile-only {
+    display: block !important;
+  }
+}
+
+/* Ocultar elementos en tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .hidden-tablet {
+    display: none !important;
+  }
+  
+  .tablet-only {
+    display: block !important;
+  }
+}
+
+/* Ocultar elementos en desktop */
+@media (min-width: 1024px) {
+  .hidden-desktop {
+    display: none !important;
+  }
+  
+  .desktop-only {
+    display: block !important;
+  }
+  
+  .mobile-only,
+  .tablet-only {
+    display: none !important;
+  }
+}
+
+/* ===== ORIENTACIÓN ===== */
+@media (orientation: portrait) {
+  .landscape-only {
+    display: none !important;
+  }
+}
+
+@media (orientation: landscape) {
+  .portrait-only {
+    display: none !important;
+  }
+}
+
+/* ===== REDUCCIÓN DE MOVIMIENTO ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===== ALTO CONTRASTE ===== */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border-main: rgba(255, 255, 255, 0.8);
+    --color-border-panel: rgba(255, 255, 255, 0.6);
+    --color-text-muted: #CCCCCC;
+  }
+}
+
+/* ===== TEMA OSCURO (ya es oscuro por defecto) ===== */
+@media (prefers-color-scheme: dark) {
+  /* Mantener colores actuales */
+}
+
+/* ===== IMPRESIÓN ===== */
+@media print {
+  .app-container {
+    width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+    background: white !important;
+    color: black !important;
+  }
+  
+  .tab-container,
+  .btn,
+  .form-field__controls {
+    display: none !important;
+  }
+  
+  .charts-area,
+  .monitoring-grid {
+    page-break-inside: avoid;
+  }
+} 

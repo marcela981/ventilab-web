@@ -1,0 +1,1046 @@
+/* VentilatorConfigurator Page - VentyLab */
+.configurator-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+  width: 100%;
+  max-width: none;
+  position: relative;
+}
+
+/* Top Section - Contiene header y parámetros - Más compacto */
+.top-section {
+  position: relative;
+  width: 100%;
+  height: 900px; /* Increased height to accommodate metric cards */
+  margin-bottom: var(--spacing-xl);
+}
+
+/* Header con Logos - Group 59 - Más compacto */
+.header-logos {
+  position: absolute;
+  width: 240px;
+  height: 140px;
+  left: 10px;
+  top: 10px;
+}
+
+.logo-univalle {
+  /* logovalle 1 - Más compacto */
+  position: absolute;
+  width: 240px;
+  height: 38px;
+  left: -3px;
+  top: -5px;
+}
+
+.logo-univalle img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.logo-venty {
+  /* image 2 - Más compacto */
+  position: absolute;
+  width: 200px;
+  height: 100px;
+  left: 0px;
+  top: 25px;
+}
+
+.logo-venty img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Top Parameters - Group 60 - Diseño de Figma Más Compacto */
+.top-parameters-figma {
+  position: absolute;
+  width: 720px;
+  height: 70px;
+  left: 350px;
+  top: 30px;
+  display: flex;
+  gap: 70px;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+/* Parameter Input Individual - Tamaño Compacto */
+.parameter-input-figma {
+  /* Group 24, 25, 26, 27 - Más compacto */
+  width: 140px;
+  height: 80px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.parameter-input-figma__label {
+  /* % FIO2, Volumen, Q Max, PEEP - Más compacto */
+  position: absolute;
+  width: 140px;
+  height: 18px;
+  top: 0px;
+  font-family: 'Fustat', 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 30px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  color: #FFFAFA;
+}
+
+.parameter-input-figma__container {
+  /* Rectangle 9 - Más compacto */
+  position: absolute;
+  width: 140px;
+  height: 52px;
+  top: 28px;
+  box-sizing: border-box;
+  background: rgba(30, 30, 30, 0.2);
+  border: 1px solid rgba(23, 21, 21, 0.5);
+  box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.parameter-input-figma__value {
+  /* 100, 500, 36,0, 1,0 - Más compacto */
+  font-family: 'Fustat', 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 100;
+  font-size: 20px;
+  line-height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  flex: 1;
+  text-align: center;
+}
+
+.parameter-input-figma__arrows {
+  /* Group 40 - Más compacto */
+  position: absolute;
+  width: 28px;
+  height: 36px;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
+
+.parameter-input-figma__arrow {
+  /* keyboard_arrow_down - Más compacto */
+  width: 28px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FEF7FF;
+  transition: all 0.2s ease;
+}
+
+.parameter-input-figma__arrow:hover:not(:disabled) {
+  color: #da0037;
+  transform: scale(1.1);
+}
+
+.parameter-input-figma__arrow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.parameter-input-figma__arrow--up {
+  /* keyboard_arrow_up - Pointing UP */
+}
+
+.parameter-input-figma__arrow--down {
+  /* keyboard_arrow_down - Pointing DOWN */
+}
+
+.parameter-input-figma__arrow svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Metrics Cards Container - Group 63 */
+.metrics-cards-container {
+  position: absolute;
+  width: 330px;
+  height: 768px;
+  left: 0px;
+  top: 154px;
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
+
+/* Responsive adaptado */
+@media (max-width: 1400px) {
+  .top-section {
+    height: 800px;
+  }
+  
+  .metrics-cards-container {
+    top: 150px;
+    height: 600px;
+  }
+  
+  .header-logos {
+    width: 220px;
+    height: 130px;
+  }
+  
+  .logo-univalle {
+    width: 220px;
+    height: 36px;
+  }
+  
+  .logo-venty {
+    width: 180px;
+    height: 90px;
+    top: 40px;
+  }
+  
+  .top-parameters-figma {
+    width: 100%;
+    left: 320px;
+    gap: 24px;
+    justify-content: flex-start;
+  }
+  
+  .parameter-input-figma {
+    width: calc(20% - 12px);
+    min-width: 140px;
+  }
+  
+  .parameter-input-figma__container {
+    width: 100%;
+  }
+  
+  .parameter-input-figma__label {
+    width: 100%;
+    font-size: 22px;
+  }
+  
+  .parameter-input-figma__value {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .top-section {
+    height: 700px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .metrics-cards-container {
+    top: 100px;
+    height: 500px;
+    width: 280px;
+  }
+  
+  .header-logos {
+    position: relative;
+    left: 0;
+    top: 0;
+    width: 250px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .logo-univalle,
+  .logo-venty {
+    position: relative;
+    left: 0;
+    top: 0;
+  }
+  
+  .logo-univalle {
+    width: 160px;
+    height: 30px;
+  }
+  
+  .logo-venty {
+    width: 120px;
+    height: 60px;
+  }
+  
+  .top-parameters-figma {
+    position: relative;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: auto;
+    gap: 20px;
+    justify-content: space-between;
+  }
+  
+  .parameter-input-figma {
+    width: calc(25% - 9px);
+    min-width: 140px;
+  }
+  
+  .parameter-input-figma__label {
+    font-size: 20px;
+  }
+  
+  .parameter-input-figma__value {
+    font-size: 18px;
+  }
+  
+  .parameter-input-figma__container {
+    height: 40px;
+  }
+  
+  .charts-container {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+}
+
+@media (max-width: 900px) {
+  .top-section {
+    height: 600px;
+    gap: 20px;
+  }
+  
+  .metrics-cards-container {
+    top: 120px;
+    height: 400px;
+    width: 260px;
+  }
+  
+  .header-logos {
+    width: 100%;
+    height: 70px;
+    justify-content: center;
+  }
+  
+  .logo-univalle {
+    width: 140px;
+    height: 28px;
+  }
+  
+  .logo-venty {
+    width: 100px;
+    height: 50px;
+  }
+  
+  .top-parameters-figma {
+    gap: 18px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .parameter-input-figma {
+    width: calc(50% - 6px);
+    min-width: 140px;
+  }
+  
+  .parameter-input-figma__label {
+    font-size: 18px;
+  }
+  
+  .parameter-input-figma__value {
+    font-size: 16px;
+  }
+  
+  .chart-simple {
+    min-height: 150px;
+  }
+}
+
+@media (max-width: 600px) {
+  .top-section {
+    height: 500px;
+    align-items: center;
+  }
+  
+  .metrics-cards-container {
+    top: 100px;
+    height: 350px;
+    width: 100%;
+    max-width: 330px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .header-logos {
+    flex-direction: column;
+    height: 100px;
+    gap: 8px;
+  }
+  
+  .logo-univalle {
+    width: 180px;
+    height: 35px;
+  }
+  
+  .logo-venty {
+    width: 140px;
+    height: 70px;
+  }
+  
+  .top-parameters-figma {
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+    gap: 24px;
+  }
+  
+  .parameter-input-figma {
+    width: 100%;
+    max-width: 250px;
+  }
+  
+  .parameter-input-figma__label {
+    font-size: 16px;
+  }
+  
+  .parameter-input-figma__value {
+    font-size: 14px;
+  }
+  
+  .charts-container {
+    gap: var(--spacing-sm);
+  }
+  
+  .chart-simple {
+    min-height: 120px;
+  }
+  
+  .chart-simple h3 {
+    font-size: var(--text-md);
+  }
+}
+
+/* Charts Container - Sin estilos de carta */
+.charts-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-lg);
+  width: 100%;
+}
+
+.chart-simple {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-height: 200px;
+}
+
+.chart-simple h3 {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  text-align: center;
+}
+
+.chart-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: var(--spacing-sm);
+}
+
+.chart-placeholder p {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  text-align: center;
+  margin: 0;
+}
+
+/* Slider Container - Posicionado según especificaciones */
+.slider-container {
+  position: absolute;
+  left: 1085px;
+  top: 130px;
+  z-index: 10;
+}
+
+/* Responsive para el slider */
+@media (max-width: 1400px) {
+  .slider-container {
+    left: 940px;
+    top: 150px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .slider-container {
+    position: relative;
+    left: auto;
+    top: auto;
+    margin: 8px auto 5px;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 900px) {
+  .slider-container {
+    margin: 6px auto 3px;
+  }
+}
+
+@media (max-width: 600px) {
+  .slider-container {
+    margin: 4px auto 2px;
+  }
+}
+
+/* Contenedor de inputs debajo del slider */
+.bottom-inputs-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 2px 0;
+  margin-top: -740px;
+  margin-left: 490px;
+}
+
+.inputs-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+}
+
+/* Relación I:E Section - Layout Responsive */
+.ie-ratio-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.ie-ratio-title {
+  font-family: 'Fustat', 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 24px;
+  color: #FFFAFA;
+  text-align: center;
+  margin: 0;
+}
+
+.ie-ratio-inputs {
+  display: flex;
+  gap: 8px;
+}
+
+.ie-ratio-input {
+  position: relative;
+  width: 120px;
+  height: 40px;
+}
+
+.ie-ratio-input__container {
+  box-sizing: border-box;
+  position: absolute;
+  width: 120px;
+  height: 40px;
+  background: rgba(30, 30, 30, 0.2);
+  border: 1px solid rgba(23, 21, 21, 0.5);
+  box-shadow: inset 0px 2px 2px rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ie-ratio-input__value {
+  font-family: 'Fustat', 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 20px;
+  color: #FFFFFF;
+  flex: 1;
+  text-align: center;
+}
+
+.ie-ratio-input__arrows {
+  position: absolute;
+  width: 16px;
+  height: 28px;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
+
+.ie-ratio-input__arrow {
+  width: 16px;
+  height: 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FEF7FF;
+  transition: all 0.2s ease;
+}
+
+.ie-ratio-input__arrow:hover:not(:disabled) {
+  color: #da0037;
+  transform: scale(1.1);
+}
+
+.ie-ratio-input__arrow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ie-ratio-input__arrow svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Pause Inputs - Layout Responsive */
+.pause-input-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+/* Pausa Inspiratoria - Sin posición específica */
+.pause-inspiratoria {
+  /* Todos los estilos se heredan de .pause-input-section */
+}
+
+/* Pausa Espiratoria - Sin posición específica */
+.pause-espiratoria {
+  /* Todos los estilos se heredan de .pause-input-section */
+}
+
+.pause-input-title {
+  font-family: 'Fustat', 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 24px;
+  color: #FFFAFA;
+  text-align: center;
+  margin: 0;
+}
+
+.pause-input__container {
+  box-sizing: border-box;
+  position: relative;
+  width: 250px;
+  height: 40px;
+  background: rgba(30, 30, 30, 0.2);
+  border: 1px solid rgba(23, 21, 21, 0.5);
+  box-shadow: inset 0px 2px 2px rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pause-input__value {
+  font-family: 'Fustat', 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 20px;
+  color: #FFFFFF;
+  flex: 1;
+  text-align: center;
+}
+
+.pause-input__arrows {
+  position: absolute;
+  width: 20px;
+  height: 28px;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
+
+.pause-input__arrow {
+  width: 20px;
+  height: 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FEF7FF;
+  transition: all 0.2s ease;
+}
+
+.pause-input__arrow:hover:not(:disabled) {
+  color: #da0037;
+  transform: scale(1.1);
+}
+
+.pause-input__arrow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pause-input__arrow svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Responsive para los inputs inferiores */
+@media (max-width: 1400px) {
+  .inputs-section {
+    gap: 16px;
+  }
+  
+  .ie-ratio-title,
+  .pause-input-title {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .inputs-section {
+    gap: 14px;
+  }
+  
+  .ie-ratio-input {
+    width: 100px;
+    height: 36px;
+  }
+  
+  .ie-ratio-input__container {
+    width: 100px;
+    height: 36px;
+  }
+  
+  .pause-input__container {
+    width: 140px;
+    height: 36px;
+  }
+}
+
+@media (max-width: 900px) {
+  .inputs-section {
+    gap: 12px;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .ie-ratio-input {
+    width: 90px;
+    height: 32px;
+  }
+  
+  .ie-ratio-input__container {
+    width: 90px;
+    height: 32px;
+  }
+  
+  .pause-input__container {
+    width: 120px;
+    height: 32px;
+  }
+  
+  .ie-ratio-input__value,
+  .pause-input__value {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .inputs-section {
+    gap: 10px;
+  }
+  
+  .ie-ratio-title,
+  .pause-input-title {
+    font-size: 14px;
+  }
+  
+  .ie-ratio-input {
+    width: 80px;
+    height: 30px;
+  }
+  
+  .ie-ratio-input__container {
+    width: 80px;
+    height: 30px;
+  }
+  
+  .pause-input__container {
+    width: 100px;
+    height: 30px;
+  }
+  
+  .ie-ratio-input__value,
+  .pause-input__value {
+    font-size: 12px;
+  }
+}
+
+/* Frequency Section - Group 61 */
+.frequency-section {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 10px;
+  margin-top: -30px;
+  margin-left: 1020px;
+}
+
+/* Frequency Title and Input Row */
+.frequency-title-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 250px;
+}
+
+/* Frequency Title */
+.frequency-title {
+  font-family: 'Fustat', 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 45px;
+  color: #FFFAFA;
+  text-align: left;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* Frequency Input Container */
+.frequency-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0px;
+}
+
+/* Frequency Input - Group 41 */
+.frequency-input {
+  position: relative;
+}
+
+.frequency-input__container {
+  box-sizing: border-box;
+  width: 80px;
+  height: 40px;
+  background: rgba(30, 30, 30, 0.2);
+  border: 1px solid rgba(23, 21, 21, 0.5);
+  box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.frequency-input__value {
+  font-family: 'Fustat', 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 20px;
+  color: #FFFFFF;
+  text-align: center;
+  flex: 1;
+}
+
+/* Frequency Input Arrows - Group 40 */
+.frequency-input__arrows {
+  position: absolute;
+  width: 20px;
+  height: 28px;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
+
+.frequency-input__arrow {
+  width: 20px;
+  height: 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FEF7FF;
+  transition: all 0.2s ease;
+}
+
+.frequency-input__arrow:hover:not(:disabled) {
+  color: #da0037;
+  transform: scale(1.1);
+}
+
+.frequency-input__arrow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.frequency-input__arrow svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Frequency Slider */
+.frequency-slider {
+  width: 100%;
+  max-width: 300px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+  .frequency-section {
+    max-width: 350px;
+  }
+  
+  .frequency-title-input-row {
+    max-width: 220px;
+  }
+  
+  .frequency-title {
+    font-size: 18px;
+    line-height: 35px;
+  }
+  
+  .frequency-slider {
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .frequency-section {
+    max-width: 300px;
+    margin-top: 25px;
+  }
+  
+  .frequency-title-input-row {
+    max-width: 200px;
+  }
+  
+  .frequency-title {
+    font-size: 16px;
+    line-height: 30px;
+  }
+  
+  .frequency-input__container {
+    width: 70px;
+    height: 35px;
+  }
+  
+  .frequency-input__value {
+    font-size: 14px;
+  }
+  
+  .frequency-slider {
+    max-width: 250px;
+  }
+}
+
+@media (max-width: 900px) {
+  .frequency-section {
+    max-width: 280px;
+    margin-top: 20px;
+    gap: 12px;
+  }
+  
+  .frequency-title-input-row {
+    max-width: 180px;
+  }
+  
+  .frequency-title {
+    font-size: 14px;
+    line-height: 25px;
+  }
+  
+  .frequency-input__container {
+    width: 60px;
+    height: 30px;
+  }
+  
+  .frequency-input__value {
+    font-size: 12px;
+  }
+  
+  .frequency-slider {
+    max-width: 220px;
+  }
+}
+
+@media (max-width: 600px) {
+  .frequency-section {
+    max-width: 250px;
+    margin-top: 15px;
+    gap: 10px;
+  }
+  
+  .frequency-title-input-row {
+    max-width: 160px;
+  }
+  
+  .frequency-title {
+    font-size: 12px;
+    line-height: 20px;
+  }
+  
+  .frequency-input__container {
+    width: 50px;
+    height: 28px;
+  }
+  
+  .frequency-input__value {
+    font-size: 11px;
+  }
+  
+  .frequency-slider {
+    max-width: 200px;
+  }
+} 
