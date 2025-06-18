@@ -1,5 +1,15 @@
 /* App Global Styles - VentyLab */
 
+/* Variables CSS para el degradado personalizado */
+:root {
+  --gradient-main: linear-gradient(
+    180deg,
+    rgba(91, 0, 2, 1) 0%,
+    rgba(48, 21, 21, 0.8) 50%,
+    rgba(47, 46, 46, 0.5) 100%
+  );
+}
+
 /* Reset y estilos globales */
 * {
   margin: 0;
@@ -10,7 +20,7 @@
 html, body {
   height: 100%;
   font-family: var(--font-body, 'Fustat', 'Roboto', sans-serif);
-  background: var(--gradient-main);
+  background: var(--gradient-main) !important;
   color: var(--text-primary, #FFFAFA);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
