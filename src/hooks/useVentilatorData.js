@@ -11,16 +11,18 @@ export const useVentilatorData = (serialConnection) => {
     qMax: 60,
     peep: 5,
     frecuencia: 12,
-    // Parámetros específicos del modo presión control
     presionMax: 20,
     volumenObjetivo: 500,
-    // Parámetros de relación I:E y pausas
     relacionIE1: 1,
     relacionIE2: 2,
     pausaInspiratoria: 0.1,
     pausaEspiratoria: 0.1,
     inspiracionEspiracion: 0.5,
-    // ... otros parámetros
+    // Nuevos campos para cálculos automáticos
+    tiempoInspiratorio: 2.5,
+    tiempoEspiratorio: 2.5,
+    presionTanque: 0,
+    relacionTexto: "Relación 1:2 [s]"
   });
 
   const [realTimeData, setRealTimeData] = useState({
@@ -36,7 +38,7 @@ export const useVentilatorData = (serialConnection) => {
     if (frame.startsWith('S')) {
       const { pressure, flow, volume } = calculations.decodeSensorFrame(frame);
       
-      // Filtro de media móvil exponencial (como en Python)
+      // Filtro de media móvil exponencial
       const alphaP = 0.1;
       const alphaQ = 0.5;
       const alphaV = 0.3;
@@ -76,4 +78,51 @@ export const useVentilatorData = (serialConnection) => {
     setVentilatorData,
     calculations
   };
+};
+
+const useComplianceCalculation = (realTimeData) => {
+  const [compliance, setCompliance] = useState(0.02051); // Valor inicial
+  const [cycleCount, setCycleCount] = useState(0);
+  const [pipArray, setPipArray] = useState([]);
+  const [peepArray, setPeepArray] = useState([]);
+  const [volumeArray, setVolumeArray] = useState([]);
+
+  useEffect(() => {
+    // Cada 100 muestras = 1 ciclo
+    if (realTimeData.pressure.length >= 100) {
+      const maxPressure = Math.max(...realTimeData.pressure);
+      const minPressure = Math.min(...realTimeData.pressure);
+      const maxVolume = Math.max(...realTimeData.volume);
+
+      setPipArray(prev => [...prev, maxPressure]);
+      setPeepArray(prev => [...prev, minPressure]);
+      setVolumeArray(prev => [...prev, maxVolume]);
+      setCycleCount(prev => prev + 1);
+
+      // Después de 5 ciclos
+      if (cycleCount === 5) {
+        // Eliminar los primeros dos términos
+        const filteredPip = pipArray.slice(2);
+        const filteredPeep = peepArray.slice(2);
+        const filteredVolume = volumeArray.slice(2);
+
+        // Calcular promedios
+        const avgPip = filteredPip.reduce((a, b) => a + b) / filteredPip.length;
+        const avgPeep = filteredPeep.reduce((a, b) => a + b) / filteredPeep.length;
+        const avgVolume = (filteredVolume.reduce((a, b) => a + b) / filteredVolume.length) / 1000; // convertir a L
+
+        // Calcular nueva compliance
+        const newCompliance = avgVolume / (avgPip - avgPeep);
+        setCompliance(newCompliance);
+
+        // Reiniciar contadores
+        setCycleCount(0);
+        setPipArray([]);
+        setPeepArray([]);
+        setVolumeArray([]);
+      }
+    }
+  }, [realTimeData]);
+
+  return compliance;
 };

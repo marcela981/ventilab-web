@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Container,
@@ -19,6 +19,7 @@ import {
   Alert,
   Tooltip,
   IconButton,
+  Collapse,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import SendIcon from '@mui/icons-material/Send';
@@ -34,16 +35,17 @@ import ControlPanel from './ControlPanel';
 import RealTimeCharts from './RealTimeCharts';
 import ConnectionPanel from './ConnectionPanel';
 import ParameterDisplay from './ParameterDisplay';
+import ComplianceStatus from './ComplianceStatus';
 
 // Tema personalizado para el ventilador
 const ventilatorTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#de0b24', // Rojo principal
+      main: '#de0b24', // Rojo Cereza
     },
     secondary: {
-      main: '#5B0002', // Marrón oscuro
+      main: '#5B0002', // Rojo Sangre toro
     },
     tertiary: {
       main: '#2F2E2E', // Gris oscuro
@@ -76,7 +78,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   borderRadius: theme.spacing(1),
 }));
 
-// Toggle Switch personalizado - Sin caja de fondo
+// Toggle Switch
 const ModeToggle = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -154,7 +156,7 @@ const ModeIndicator = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1),
 }));
 
-// Botón de envío personalizado
+// Botón de envío
 const SendButton = styled(Button)(({ theme }) => ({
   position: 'fixed',
   bottom: 20,
@@ -188,13 +190,15 @@ const AdjustButton = styled(Button)(({ theme, active }) => ({
 }));
 
 // Tarjeta personalizada con modo de edición
-const EditableCard = styled(Paper)(({ theme, isEditing, isVisible, isDragging }) => ({
+const EditableCard = styled(Paper)(({ theme, isEditing, isVisible, isDragging, isExpanded }) => ({
   width: '300px',
-  height: '85px',
+  height: isExpanded ? 'auto' : '85px',
+  minHeight: isExpanded ? '250px' : '85px',
+  maxHeight: isExpanded ? '400px' : '85px',
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
+  alignItems: isExpanded ? 'flex-start' : 'center',
+  justifyContent: isExpanded ? 'flex-start' : 'center',
   padding: theme.spacing(1),
   backgroundColor: isVisible ? 'rgba(31, 31, 31, 0.2)' : 'rgba(31, 31, 31, 0.05)',
   position: 'relative',
@@ -202,6 +206,7 @@ const EditableCard = styled(Paper)(({ theme, isEditing, isVisible, isDragging })
   cursor: isEditing ? 'grab' : 'default',
   transform: isDragging ? 'scale(1.05) rotate(2deg)' : 'scale(1)',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  overflow: isExpanded ? 'auto' : 'hidden',
   borderRadius: 0,
   border: isEditing 
     ? (isVisible ? '2px dashed rgba(218, 0, 22, 0.5)' : '2px dashed rgba(255, 255, 255, 0.2)')
@@ -244,10 +249,20 @@ const EditControls = styled(Box)(({ theme }) => ({
 import { useSerialConnection } from '../hooks/useSerialConnection';
 import { useVentilatorData } from '../hooks/useVentilatorData';
 import { SerialProtocol } from '../utils/serialCommunication';
+import { useComplianceCalculation } from '../hooks/useComplianceCalculation';
+import { useSignalProcessing } from '../hooks/useSignalProcessing';
+import { useErrorDetection } from '../hooks/useErrorDetection';
+import useMockData from '../hooks/useMockData';
 
 const VentilatorDashboard = () => {
   const serialConnection = useSerialConnection();
   const { ventilatorData, realTimeData, setVentilatorData, calculations } = useVentilatorData(serialConnection);
+  
+  // Datos de prueba para cuando no hay conexión
+  const mockData = useMockData(!serialConnection.isConnected);
+  
+  // Combinar datos reales con datos de prueba
+  const displayData = serialConnection.isConnected ? realTimeData : mockData;
   
   // Estado para el modo de ventilación
   const [ventilationMode, setVentilationMode] = useState('volume'); // 'volume' o 'pressure'
@@ -264,10 +279,273 @@ const VentilatorDashboard = () => {
     { id: 'flujoMin', label: 'Flujo Min', visible: true, order: 5 },
     { id: 'volMax', label: 'Vol Max', visible: true, order: 6 },
     { id: 'volumen', label: 'Volumen', visible: true, order: 7 },
-    { id: 'presionMeseta', label: 'Presión Meseta', visible: false, order: 8 },
-    { id: 'presionPlaton', label: 'Presión Platón', visible: false, order: 9 },
+    { id: 'compliance', label: 'Compliance', visible: false, order: 8 }, // Solo visible en presión control
+    { id: 'presionMeseta', label: 'Presión Meseta', visible: false, order: 9 },
+    { id: 'presionPlaton', label: 'Presión Platón', visible: false, order: 10 },
   ]);
   const [draggedCard, setDraggedCard] = useState(null);
+
+  // Hooks para cálculos y monitoreo
+  const complianceData = useComplianceCalculation(displayData, ventilationMode);
+  const filteredData = useSignalProcessing(displayData);
+  const errorDetection = useErrorDetection(
+    ventilatorData, // valores objetivo
+    filteredData,   // valores actuales
+    complianceData.compliance      // compliance calculada
+  );
+
+  // Estado para controlar el reenvío automático
+  const [autoAdjustmentEnabled, setAutoAdjustmentEnabled] = useState(true);
+  const [lastAutoAdjustment, setLastAutoAdjustment] = useState(null);
+  
+  // Estado para controlar la expansión de la tarjeta de compliance
+  const [complianceCardExpanded, setComplianceCardExpanded] = useState(false);
+
+  // Función para calcular automáticamente parámetros en modo volumen control (como calcular() en Python)
+  const calculateVolumeControlParameters = useCallback(() => {
+    const SL = ventilatorData.inspiracionEspiracion || 0.5;
+    const frecuencia = ventilatorData.frecuencia || 12;
+    const pausaEsp1 = ventilatorData.pausaInspiratoria || 0.1;
+    const pausaEsp2 = ventilatorData.pausaEspiratoria || 0.1;
+    const vMax = ventilatorData.volumen || 500;
+
+    // Calcular tiempo de ciclo
+    const tciclo = (60 / frecuencia) - pausaEsp1 - pausaEsp2;
+    
+    let ti = 0;
+    let mensaje = "";
+    
+    // Calcular tiempo inspiratorio basado en el slider Insp-Esp
+    if (SL === 0.5) {
+      mensaje = "Relación 1:1 [s]";
+      ti = tciclo * 0.5;
+    } else if (SL > 0.5) {
+      const ratio = 1 + ((SL - 0.5) * 10);
+      mensaje = `Relación 1:${(1 + ((SL - 0.5) * 10)).toFixed(1)} [s]`;
+      ti = tciclo * (1 / (1 + ratio));
+    } else {
+      const ratio = 1 + ((0.5 - SL) * 10);
+      mensaje = `Relación ${(1 + ((0.5 - SL) * 10)).toFixed(1)}:1 [s]`;
+      ti = tciclo * (ratio / (1 + ratio));
+    }
+
+    const te = tciclo - ti;
+    
+    // Calcular Q Max (multiplicar por 60 para pasar segundo a minutos y dividir por 1000 para pasar ml a L)
+    const qMax = (60 * vMax) / (1000 * ti) * 0.98;
+    
+    // Calcular presión del tanque
+    const presT = (0.0025 * Math.pow(qMax, 2)) + (0.2203 * qMax) - 0.5912;
+
+    // Actualizar relación I:E mostrada
+    const ieRatio = SL <= 0.5 ? 
+      [1, Math.round((1 + ((0.5 - SL) * 10)) * 10) / 10] : 
+      [1, Math.round((1 + ((SL - 0.5) * 10)) * 10) / 10];
+
+    setVentilatorData(prev => ({
+      ...prev,
+      qMax: Math.round(qMax * 10) / 10,
+      presionTanque: Math.round(presT * 10) / 10,
+      relacionIE1: ieRatio[0],
+      relacionIE2: ieRatio[1],
+      tiempoInspiratorio: Math.round(ti * 100) / 100,
+      tiempoEspiratorio: Math.round(te * 100) / 100,
+      relacionTexto: mensaje
+    }));
+
+    return { ti, te, qMax, presT, mensaje };
+  }, [ventilatorData.inspiracionEspiracion, ventilatorData.frecuencia, ventilatorData.pausaInspiratoria, ventilatorData.pausaEspiratoria, ventilatorData.volumen]);
+
+  // Función para calcular automáticamente parámetros en modo presión control (como calcularP() en Python)
+  const calculatePressureControlParameters = useCallback(() => {
+    const SL = ventilatorData.inspiracionEspiracion || 0.5;
+    const frecuencia = ventilatorData.frecuencia || 12;
+    const pausaEsp1 = ventilatorData.pausaInspiratoria || 0.1;
+    const pausaEsp2 = ventilatorData.pausaEspiratoria || 0.1;
+    const peep = ventilatorData.peep || 5;
+    const pip = ventilatorData.presionMax || 20;
+    const C = complianceData.compliance || 0.02051; // Compliance pulmonar L/cmH2O
+
+    // Calcular tiempo de ciclo
+    const tciclo = (60 / frecuencia) - pausaEsp1 - pausaEsp2;
+    
+    let ti = 0;
+    let mensaje = "";
+    
+    // Calcular tiempo inspiratorio basado en el slider Insp-Esp
+    if (SL === 0.5) {
+      mensaje = "Rel 1:1 [s]";
+      ti = tciclo * 0.5;
+    } else if (SL > 0.5) {
+      const ratio = 1 + ((SL - 0.5) * 10);
+      mensaje = `Rel 1:${(1 + ((SL - 0.5) * 10)).toFixed(1)} [s]`;
+      ti = tciclo * (1 / (1 + ratio));
+    } else {
+      const ratio = 1 + ((0.5 - SL) * 10);
+      mensaje = `Rel ${(1 + ((0.5 - SL) * 10)).toFixed(1)}:1 [s]`;
+      ti = tciclo * (ratio / (1 + ratio));
+    }
+
+    const te = tciclo - ti;
+    
+    // Calcular volumen tidal
+    const vtil = 1000 * (C * (pip - peep));
+    
+    // Calcular flujo máximo
+    const qMax = (C * (pip - peep)) / (ti / 60); // L/min
+    
+    // Calcular presión del tanque
+    const presT = (0.0025 * Math.pow(qMax, 2)) + (0.2203 * qMax) - 0.5912;
+
+    // Actualizar relación I:E mostrada
+    const ieRatio = SL <= 0.5 ? 
+      [1, Math.round((1 + ((0.5 - SL) * 10)) * 10) / 10] : 
+      [1, Math.round((1 + ((SL - 0.5) * 10)) * 10) / 10];
+
+    setVentilatorData(prev => ({
+      ...prev,
+      volumen: Math.round(vtil),
+      qMax: Math.round(qMax * 10) / 10,
+      presionTanque: Math.round(presT * 10) / 10,
+      relacionIE1: ieRatio[0],
+      relacionIE2: ieRatio[1],
+      tiempoInspiratorio: Math.round(ti * 100) / 100,
+      tiempoEspiratorio: Math.round(te * 100) / 100,
+      relacionTexto: mensaje
+    }));
+
+    console.log(`PIP = ${pip} PEEP = ${peep} C = ${C} Ti = ${ti} Vt= ${vtil}`);
+    console.log(`Flujo = ${qMax} Presión tanque = ${presT}`);
+
+    return { ti, te, vtil, qMax, presT, mensaje };
+  }, [ventilatorData.inspiracionEspiracion, ventilatorData.frecuencia, ventilatorData.pausaInspiratoria, ventilatorData.pausaEspiratoria, ventilatorData.peep, ventilatorData.presionMax, complianceData.compliance]);
+
+  // Función para recalcular parámetros cuando cambia la compliance (como configP en Python)
+  const recalculateParametersWithCompliance = useCallback((newCompliance, adjustmentData) => {
+    console.log('Recalculando parámetros con nueva compliance:', newCompliance);
+    
+    // Calcular tiempo inspiratorio actual
+    const tciclo = (60 / ventilatorData.frecuencia) - (ventilatorData.pausaEspiratoria || 0);
+    const ieValue = ventilatorData.inspiracionEspiracion || 0.5;
+    let ti = tciclo * 0.5; // por defecto 1:1
+    
+    if (ieValue !== 0.5) {
+      if (ieValue > 0.5) {
+        const ratio = 1 + ((ieValue - 0.5) * 10);
+        ti = tciclo * (1 / (1 + ratio));
+      } else {
+        const ratio = 1 + ((0.5 - ieValue) * 10);
+        ti = tciclo * (ratio / (1 + ratio));
+      }
+    }
+
+    // Calcular nuevos parámetros usando la compliance actualizada
+    const C = newCompliance;
+    const PEEP = ventilatorData.peep;
+    const PIP = ventilatorData.presionMax;
+    
+    const Vtil = 1000 * (C * (PIP - PEEP)); // ml
+    const Qmax = (C * (PIP - PEEP)) / (ti / 60); // L/min
+    const PresT = (0.0025 * Math.pow(Qmax, 2)) + (0.2203 * Qmax) - 0.5912;
+
+    const newParameters = {
+          ...ventilatorData,
+      volumen: Math.round(Vtil),
+      qMax: Math.round(Qmax * 10) / 10,
+      presionTanque: Math.round(PresT * 10) / 10
+    };
+
+    setVentilatorData(newParameters);
+    setLastAutoAdjustment({
+      timestamp: new Date(),
+      compliance: newCompliance,
+      parameters: newParameters,
+      reason: 'Compliance recalculada automáticamente',
+      error: adjustmentData.error
+    });
+
+    console.log(`Parámetros recalculados:`, {
+      'Volumen Tidal': `${Vtil.toFixed(0)} ml`,
+      'Flujo Máximo': `${Qmax.toFixed(1)} L/min`,
+      'Presión Tanque': `${PresT.toFixed(1)} cmH2O`,
+      'Nueva Compliance': `${newCompliance.toFixed(5)} L/cmH2O`,
+      'Error': `${adjustmentData.error.toFixed(1)}%`
+    });
+
+    // Marcar como procesado
+    complianceData.markRecalculationProcessed();
+
+    // Reenviar configuración automáticamente después de 1 segundo
+    if (autoAdjustmentEnabled && serialConnection.isConnected) {
+      setTimeout(() => {
+        handleSendConfiguration();
+        console.log('Configuración reenviada automáticamente tras recálculo de compliance');
+      }, 1000);
+    }
+
+  }, [ventilatorData, complianceData, serialConnection.isConnected, autoAdjustmentEnabled]);
+
+  // Registrar el callback de actualización de compliance
+  useEffect(() => {
+    complianceData.registerUpdateCallback(recalculateParametersWithCompliance);
+  }, [complianceData, recalculateParametersWithCompliance]);
+
+  // Efecto para aplicar ajustes automáticos cuando hay errores críticos
+  useEffect(() => {
+    if (errorDetection.hasErrors && ventilationMode === 'pressure' && errorDetection.hasHighSeverityErrors && autoAdjustmentEnabled) {
+      // Aplicar ajustes automáticos solo para errores de alta severidad
+      const highSeverityErrors = errorDetection.getHighSeverityErrors();
+      
+      highSeverityErrors.forEach(error => {
+        errorDetection.applyAdjustment(error, handleParameterChange);
+      });
+
+      if (highSeverityErrors.length > 0) {
+        console.log(`Se aplicaron ${highSeverityErrors.length} ajustes automáticos por errores de alta severidad`);
+        
+        // Reenviar configuración después de ajustes
+        setTimeout(() => {
+          if (serialConnection.isConnected) {
+            handleSendConfiguration();
+            console.log('Configuración reenviada automáticamente tras ajustes por errores');
+          }
+        }, 1500);
+      }
+    }
+  }, [errorDetection.hasHighSeverityErrors, ventilationMode, errorDetection, autoAdjustmentEnabled, serialConnection.isConnected]);
+
+  // Efecto para ejecutar cálculos automáticos cuando cambien parámetros relevantes
+  useEffect(() => {
+    if (ventilationMode === 'volume') {
+      calculateVolumeControlParameters();
+    } else if (ventilationMode === 'pressure') {
+      calculatePressureControlParameters();
+    }
+  }, [
+    ventilationMode,
+    ventilatorData.inspiracionEspiracion,
+    ventilatorData.frecuencia,
+    ventilatorData.pausaInspiratoria,
+    ventilatorData.pausaEspiratoria,
+    ventilatorData.volumen,
+    ventilatorData.peep,
+    ventilatorData.presionMax,
+    complianceData.compliance,
+    calculateVolumeControlParameters,
+    calculatePressureControlParameters
+  ]);
+
+  // Efecto para procesar recálculos pendientes de compliance
+  useEffect(() => {
+    if (complianceData.calculationStatus.requiresRecalculation && ventilationMode === 'pressure') {
+      console.log('Procesando recálculo de compliance pendiente...');
+      
+      // El callback ya fue ejecutado automáticamente, solo necesitamos pasar el PIP objetivo
+      if (complianceData.calculateNewCompliance) {
+        complianceData.calculateNewCompliance(ventilatorData.presionMax);
+      }
+    }
+  }, [complianceData.calculationStatus.requiresRecalculation, ventilationMode, ventilatorData.presionMax]);
 
   const handleConnection = async (port, baudRate) => {
     const success = await serialConnection.connect(port, baudRate);
@@ -287,6 +565,13 @@ const VentilatorDashboard = () => {
     const configFrame = SerialProtocol.createConfigFrame(mode, ventilatorData);
     await serialConnection.sendData(configFrame);
     setConfigSent(true);
+    
+    // Reiniciar el cálculo de compliance cuando se envían nuevos parámetros (como en Python)
+    if (ventilationMode === 'pressure') {
+      complianceData.resetComplianceCalculation();
+      console.log('Reiniciando cálculo automático de compliance tras envío de configuración');
+    }
+    
     setTimeout(() => setConfigSent(false), 3000); // Ocultar después de 3 segundos
   };
 
@@ -299,6 +584,15 @@ const VentilatorDashboard = () => {
 
   const handleModeChange = (newMode) => {
     setVentilationMode(newMode);
+    
+    // Actualizar visibilidad de tarjetas según el modo
+    setCardConfig(prev => prev.map(card => {
+      if (card.id === 'compliance') {
+        return { ...card, visible: newMode === 'pressure' };
+      }
+      return card;
+    }));
+    
     // Aquí podrías enviar la configuración del nuevo modo al ventilador
     console.log(`Cambiando a modo: ${newMode === 'volume' ? 'Volumen Control' : 'Presión Control'}`);
   };
@@ -365,40 +659,155 @@ const VentilatorDashboard = () => {
       { id: 'flujoMin', label: 'Flujo Min', visible: true, order: 5 },
       { id: 'volMax', label: 'Vol Max', visible: true, order: 6 },
       { id: 'volumen', label: 'Volumen', visible: true, order: 7 },
-      { id: 'presionMeseta', label: 'Presión Meseta', visible: false, order: 8 },
-      { id: 'presionPlaton', label: 'Presión Platón', visible: false, order: 9 },
+      { id: 'compliance', label: 'Compliance', visible: ventilationMode === 'pressure', order: 8 }, // Solo visible en presión control
+      { id: 'presionMeseta', label: 'Presión Meseta', visible: false, order: 9 },
+      { id: 'presionPlaton', label: 'Presión Platón', visible: false, order: 10 },
     ]);
   };
 
-  // Funciones para calcular valores en tiempo real
+  // Funciones para calcular valores en tiempo real usando datos filtrados
   const getMax = arr => arr.length ? Math.max(...arr).toFixed(1) : '--';
   const getMin = arr => arr.length ? Math.min(...arr).toFixed(1) : '--';
   const getAvg = arr => arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : '--';
   const getLast = arr => arr.length ? arr[arr.length - 1].toFixed(1) : '--';
 
-  // Mapeo de datos de tarjetas
+  // Mapeo de datos de tarjetas usando datos filtrados cuando estén disponibles
   const cardDataMap = {
-    presionPico: { label: 'Presión Pico', value: getMax(realTimeData.pressure), unit: 'cmH₂O' },
-    presionMedia: { label: 'Presión Media', value: getAvg(realTimeData.pressure), unit: 'cmH₂O' },
-    peep: { label: 'PEEP', value: getMin(realTimeData.pressure), unit: 'cmH₂O' },
-    flujoMax: { label: 'Flujo Max', value: getMax(realTimeData.flow), unit: 'L/min' },
-    flujo: { label: 'Flujo', value: getLast(realTimeData.flow), unit: 'L/min' },
-    flujoMin: { label: 'Flujo Min', value: getMin(realTimeData.flow), unit: 'L/min' },
-    volMax: { label: 'Vol Max', value: getMax(realTimeData.volume), unit: 'mL' },
-    volumen: { label: 'Volumen', value: getLast(realTimeData.volume), unit: 'mL' },
-    presionMeseta: { label: 'Presión Meseta', value: '--', unit: 'cmH₂O' },
-    presionPlaton: { label: 'Presión Platón', value: '--', unit: 'cmH₂O' },
+    presionPico: { 
+      label: 'Presión Pico', 
+      value: filteredData.pressure.max > 0 ? filteredData.pressure.max.toFixed(1) : getMax(displayData.pressure), 
+      unit: 'cmH₂O',
+      rawValue: filteredData.pressure.max || 0
+    },
+    presionMedia: { 
+      label: 'Presión Media', 
+      value: filteredData.pressure.avg > 0 ? filteredData.pressure.avg.toFixed(1) : getAvg(displayData.pressure), 
+      unit: 'cmH₂O',
+      rawValue: filteredData.pressure.avg || 0
+    },
+    peep: { 
+      label: 'PEEP', 
+      value: filteredData.pressure.min > 0 ? filteredData.pressure.min.toFixed(1) : getMin(displayData.pressure), 
+      unit: 'cmH₂O',
+      rawValue: filteredData.pressure.min || 0
+    },
+    flujoMax: { 
+      label: 'Flujo Max', 
+      value: filteredData.flow.max > 0 ? filteredData.flow.max.toFixed(1) : getMax(displayData.flow), 
+      unit: 'L/min',
+      rawValue: filteredData.flow.max || 0
+    },
+    flujo: { 
+      label: 'Flujo', 
+      value: filteredData.flow.filtered > 0 ? filteredData.flow.filtered.toFixed(1) : getLast(displayData.flow), 
+      unit: 'L/min',
+      rawValue: filteredData.flow.filtered || 0
+    },
+    flujoMin: { 
+      label: 'Flujo Min', 
+      value: filteredData.flow.min > 0 ? filteredData.flow.min.toFixed(1) : getMin(displayData.flow), 
+      unit: 'L/min',
+      rawValue: filteredData.flow.min || 0
+    },
+    volMax: { 
+      label: 'Vol Max', 
+      value: filteredData.volume.max > 0 ? filteredData.volume.max.toFixed(1) : getMax(displayData.volume), 
+      unit: 'mL',
+      rawValue: filteredData.volume.max || 0
+    },
+    volumen: { 
+      label: 'Volumen', 
+      value: filteredData.volume.filtered > 0 ? filteredData.volume.filtered.toFixed(1) : getLast(displayData.volume), 
+      unit: 'mL',
+      rawValue: filteredData.volume.filtered || 0
+    },
+    compliance: {
+      label: 'Compliance',
+      value: complianceData.compliance.toFixed(5),
+      unit: 'L/cmH₂O',
+      rawValue: complianceData.compliance,
+      status: complianceData.calculationStatus,
+      errors: errorDetection.errors
+    },
+    presionMeseta: { 
+      label: 'Presión Meseta', 
+      value: '--', 
+      unit: 'cmH₂O',
+      rawValue: 0
+    },
+    presionPlaton: { 
+      label: 'Presión Platón', 
+      value: '--', 
+      unit: 'cmH₂O',
+      rawValue: 0
+    },
   };
 
   // Generar datos de tarjetas basados en la configuración
   const cardData = cardConfig
-    .filter(card => isAdjustMode || card.visible) // Solo mostrar ocultas en modo ajuste
+    .filter(card => {
+      // En modo ajuste, mostrar todas las tarjetas
+      if (isAdjustMode) return true;
+      
+      // En modo normal, mostrar solo las visibles
+      if (!card.visible) return false;
+      
+      // Para compliance, solo mostrar en modo presión control
+      if (card.id === 'compliance' && ventilationMode !== 'pressure') return false;
+      
+      return true;
+    })
     .sort((a, b) => a.order - b.order)
     .map(card => ({
       ...cardDataMap[card.id],
       id: card.id,
       config: card,
     }));
+
+  // Función para obtener el color dinámico basado en el valor y tipo de parámetro
+  const getValueColor = (id, value) => {
+    // Definir rangos normales para cada parámetro
+    const ranges = {
+      presionPico: { normal: [10, 35], warning: [35, 50], danger: [50, Infinity] },
+      presionMedia: { normal: [5, 20], warning: [20, 30], danger: [30, Infinity] },
+      peep: { normal: [3, 12], warning: [12, 20], danger: [20, Infinity] },
+      flujoMax: { normal: [20, 80], warning: [80, 120], danger: [120, Infinity] },
+      flujo: { normal: [10, 60], warning: [60, 100], danger: [100, Infinity] },
+      flujoMin: { normal: [-10, 10], warning: [-20, -10], danger: [-Infinity, -20] },
+      volMax: { normal: [300, 800], warning: [800, 1200], danger: [1200, Infinity] },
+      volumen: { normal: [200, 600], warning: [600, 1000], danger: [1000, Infinity] }
+    };
+
+    const range = ranges[id];
+    if (!range) return 'text.secondary';
+
+    if (value >= range.danger[0] && value <= range.danger[1]) return 'error.main';
+    if (value >= range.warning[0] && value <= range.warning[1]) return 'warning.main';
+    if (value >= range.normal[0] && value <= range.normal[1]) return 'success.main';
+    
+    return 'text.secondary';
+  };
+
+  // Función para obtener la tendencia de un valor
+  const getTrend = (id, value) => {
+    const ranges = {
+      presionPico: { normal: [10, 35], warning: [35, 50], danger: [50, Infinity] },
+      presionMedia: { normal: [5, 20], warning: [20, 30], danger: [30, Infinity] },
+      peep: { normal: [3, 12], warning: [12, 20], danger: [20, Infinity] },
+      flujoMax: { normal: [20, 80], warning: [80, 120], danger: [120, Infinity] },
+      flujo: { normal: [10, 60], warning: [60, 100], danger: [100, Infinity] },
+      flujoMin: { normal: [-10, 10], warning: [-20, -10], danger: [-Infinity, -20] },
+      volMax: { normal: [300, 800], warning: [800, 1200], danger: [1200, Infinity] },
+      volumen: { normal: [200, 600], warning: [600, 1000], danger: [1000, Infinity] }
+    };
+
+    const range = ranges[id];
+    if (!range) return 'stable';
+
+    if (value > range.normal[1]) return 'increasing';
+    if (value < range.normal[0]) return 'decreasing';
+    return 'stable';
+  };
 
   return (
     <ThemeProvider theme={ventilatorTheme}>
@@ -411,7 +820,8 @@ const VentilatorDashboard = () => {
           <img src="/images/logo.png" alt="VentyLab" width={220} height={110} />
           
           {/* Botón de modo de ajuste */}
-          <Box mt={1} mb={1} display="flex" gap={1}>
+          <Box mt={1} mb={1} display="flex" gap={1} flexDirection="column">
+            <Box display="flex" gap={1}>
             <Tooltip 
               title={isAdjustMode ? "Salir del modo de ajuste" : "Entrar al modo de ajuste para reorganizar tarjetas"} 
               placement="bottom"
@@ -446,6 +856,65 @@ const VentilatorDashboard = () => {
                   Restablecer
                 </Button>
               </Tooltip>
+              )}
+            </Box>
+            
+            {/* Control de compliance automática - solo visible en modo presión */}
+            {ventilationMode === 'pressure' && (
+              <Box display="flex" flexDirection="column" gap={1}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={autoAdjustmentEnabled}
+                      onChange={(e) => setAutoAdjustmentEnabled(e.target.checked)}
+                      size="small"
+                      color="primary"
+                    />
+                  }
+                  label={
+                    <Typography variant="caption" sx={{ fontSize: '11px' }}>
+                      Ajustes Automáticos
+                    </Typography>
+                  }
+                />
+                
+                {/* Indicador de estado de compliance */}
+                <Box display="flex" alignItems="center" gap={1} sx={{ bgcolor: 'rgba(0,0,0,0.3)', p: 0.5, borderRadius: 1 }}>
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      backgroundColor: complianceData.calculationStatus.isCalculating 
+                        ? 'orange' 
+                        : complianceData.calculationStatus.lastAdjustment 
+                        ? 'success.main' 
+                        : 'text.secondary',
+                      animation: complianceData.calculationStatus.isCalculating ? 'pulse 1s infinite' : 'none'
+                    }}
+                  />
+                  <Typography variant="caption" sx={{ fontSize: '10px', color: 'text.secondary' }}>
+                    {complianceData.calculationStatus.isCalculating 
+                      ? `Calculando C (${complianceData.calculationStatus.currentCycle}/5)`
+                      : complianceData.calculationStatus.lastAdjustment
+                      ? `C actualizada: ${complianceData.compliance.toFixed(5)}`
+                      : 'Compliance automática lista'
+                    }
+                  </Typography>
+                </Box>
+                
+                {/* Indicador de último ajuste */}
+                {lastAutoAdjustment && (
+                  <Box sx={{ bgcolor: 'rgba(0,0,0,0.3)', p: 0.5, borderRadius: 1 }}>
+                    <Typography variant="caption" sx={{ fontSize: '9px', color: 'success.main' }}>
+                      Último ajuste: {lastAutoAdjustment.timestamp.toLocaleTimeString()}
+                    </Typography>
+                    <Typography variant="caption" sx={{ fontSize: '9px', color: 'text.secondary', display: 'block' }}>
+                      Error: {lastAutoAdjustment.error?.toFixed(1)}%
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
             )}
           </Box>
           
@@ -458,6 +927,7 @@ const VentilatorDashboard = () => {
                 isEditing={isAdjustMode}
                 isVisible={card.config.visible}
                 isDragging={draggedCard === card.id}
+                isExpanded={card.id === 'compliance' && complianceCardExpanded}
                 draggable={isAdjustMode}
                 onDragStart={(e) => handleDragStart(e, card.id)}
                 onDragOver={handleDragOver}
@@ -503,7 +973,11 @@ const VentilatorDashboard = () => {
                     sx={{ 
                       fontWeight: 800, 
                       lineHeight: 1,
-                      color: card.config.visible ? 'inherit' : 'text.secondary'
+                      color: card.config.visible ? 'inherit' : 'text.secondary',
+                      // Color dinámico basado en el valor
+                      ...(card.rawValue > 0 && {
+                        color: getValueColor(card.id, card.rawValue)
+                      })
                     }}
                   >
                     {card.value}
@@ -529,27 +1003,175 @@ const VentilatorDashboard = () => {
                 >
                   {card.label}
                 </Typography>
+
+                {/* Información adicional para la tarjeta de compliance */}
+                {card.id === 'compliance' && card.config.visible && ventilationMode === 'pressure' && (
+                  <Box mt={1} sx={{ width: '100%' }}>
+                    {/* Información básica siempre visible */}
+                    <Box display="flex" alignItems="center" justifyContent="center" mb={0.5}>
+                      <Box
+                        sx={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: '50%',
+                          backgroundColor: card.status?.isCalculating 
+                            ? 'orange' 
+                            : card.status?.lastAdjustment 
+                            ? 'success.main' 
+                            : 'text.secondary',
+                          animation: card.status?.isCalculating ? 'pulse 1s infinite' : 'none',
+                          mr: 0.5
+                        }}
+                      />
+                      <Typography variant="caption" sx={{ fontSize: '9px', color: 'text.secondary' }}>
+                        {card.status?.isCalculating 
+                          ? `Calculando (${card.status.currentCycle}/5)`
+                          : card.status?.lastAdjustment
+                          ? 'Actualizada'
+                          : 'Lista'
+                        }
+                      </Typography>
+                    </Box>
+
+                    {/* Información expandida */}
+                    <Collapse in={complianceCardExpanded}>
+                      <Box sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 1 }}>
+                        {/* Estado de cálculo */}
+                        {card.status && card.status.isCalculating && (
+                          <Box sx={{ bgcolor: 'rgba(255, 152, 0, 0.1)', p: 0.5, borderRadius: 0.5, mb: 0.5 }}>
+                            <Typography variant="caption" color="warning.main" display="block" sx={{ fontSize: '9px' }}>
+                              <strong>Estado:</strong> Calculando compliance automática
+                            </Typography>
+                            <Typography variant="caption" color="warning.main" display="block" sx={{ fontSize: '9px' }}>
+                              <strong>Progreso:</strong> Ciclo {card.status.currentCycle} de {card.status.totalCycles}
+                            </Typography>
+                          </Box>
+                        )}
+
+                        {/* Último ajuste */}
+                        {card.status && card.status.lastAdjustment && (
+                          <Box sx={{ bgcolor: 'rgba(76, 175, 80, 0.1)', p: 0.5, borderRadius: 0.5, mb: 0.5 }}>
+                            <Typography variant="caption" color="success.main" display="block" sx={{ fontSize: '9px' }}>
+                              <strong>Último ajuste:</strong> {card.status.lastAdjustment.timestamp.toLocaleTimeString()}
+                            </Typography>
+                            {card.status.lastAdjustment.error && (
+                              <Typography variant="caption" color="success.main" display="block" sx={{ fontSize: '9px' }}>
+                                <strong>Error detectado:</strong> {card.status.lastAdjustment.error.toFixed(1)}%
+                              </Typography>
+                            )}
+                            <Typography variant="caption" color="success.main" display="block" sx={{ fontSize: '9px' }}>
+                              <strong>Nueva C:</strong> {card.status.lastAdjustment.newCompliance?.toFixed(5)} L/cmH₂O
+                            </Typography>
+                          </Box>
+                        )}
+
+                        {/* Errores actuales */}
+                        {card.errors && card.errors.length > 0 && (
+                          <Box sx={{ bgcolor: 'rgba(244, 67, 54, 0.1)', p: 0.5, borderRadius: 0.5, mb: 0.5 }}>
+                            <Typography variant="caption" color="error.main" display="block" sx={{ fontSize: '9px', fontWeight: 'bold' }}>
+                              Errores detectados ({card.errors.length}):
+                            </Typography>
+                            {card.errors.slice(0, 3).map((error, index) => (
+                              <Typography 
+                                key={index} 
+                                variant="caption" 
+                                color={error.severity === 'high' ? 'error.main' : 'warning.main'}
+                                display="block"
+                                sx={{ fontSize: '8px', ml: 1 }}
+                              >
+                                • {error.type.replace('_', ' ')}: {error.errorPercentage?.toFixed(1)}%
+                              </Typography>
+                            ))}
+                            {card.errors.length > 3 && (
+                              <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '8px', ml: 1 }}>
+                                ... y {card.errors.length - 3} más
+                              </Typography>
+                            )}
+                          </Box>
+                        )}
+
+                        {/* Información técnica */}
+                        <Box sx={{ bgcolor: 'rgba(255, 255, 255, 0.05)', p: 0.5, borderRadius: 0.5 }}>
+                          <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '9px' }}>
+                            <strong>Rango normal:</strong> 0.015 - 0.15 L/cmH₂O
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '9px' }}>
+                            <strong>Precisión:</strong> ±5% (umbral de recálculo)
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '9px' }}>
+                            <strong>Método:</strong> Promedio de 3 ciclos (filtrado)
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Collapse>
+
+                    {/* Flecha para expandir/colapsar */}
+                    <Box display="flex" justifyContent="center" mt={0.5}>
+                      <IconButton
+                        size="small"
+                        onClick={() => setComplianceCardExpanded(!complianceCardExpanded)}
+                        sx={{ 
+                          color: 'text.secondary', 
+                          p: 0.5,
+                          '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                        }}
+                      >
+                        {complianceCardExpanded ? (
+                          <KeyboardArrowDownIcon sx={{ fontSize: 16, transform: 'rotate(180deg)' }} />
+                        ) : (
+                          <KeyboardArrowDownIcon sx={{ fontSize: 16 }} />
+                        )}
+                      </IconButton>
+                    </Box>
+                  </Box>
+                )}
                 
-                {/* Indicador de tarjeta oculta */}
-                {!card.config.visible && (
+                {/* Indicador de estado en tiempo real */}
+                {card.config.visible && card.rawValue > 0 && (
                   <Box
                     sx={{
                       position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                      color: 'text.secondary',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      pointerEvents: 'none',
-                      zIndex: 5,
+                      top: 8,
+                      left: 8,
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      backgroundColor: getValueColor(card.id, card.rawValue),
+                      animation: 'pulse 2s infinite',
+                      '@keyframes pulse': {
+                        '0%': { opacity: 1 },
+                        '50%': { opacity: 0.5 },
+                        '100%': { opacity: 1 }
+                      }
                     }}
-                  >
-                    OCULTA
-                  </Box>
+                  />
+                )}
+
+                {/* Indicador de tendencia */}
+                {card.config.visible && card.rawValue > 0 && card.id !== 'compliance' && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      width: 0,
+                      height: 0,
+                      borderLeft: '4px solid transparent',
+                      borderRight: '4px solid transparent',
+                      ...(getTrend(card.id, card.rawValue) === 'increasing' && {
+                        borderBottom: '8px solid #4caf50'
+                      }),
+                      ...(getTrend(card.id, card.rawValue) === 'decreasing' && {
+                        borderTop: '8px solid #f44336'
+                      }),
+                      ...(getTrend(card.id, card.rawValue) === 'stable' && {
+                        width: 8,
+                        height: 2,
+                        backgroundColor: '#ff9800',
+                        borderRadius: 1
+                      })
+                    }}
+                  />
                 )}
               </EditableCard>
             ))}
@@ -614,7 +1236,7 @@ const VentilatorDashboard = () => {
           {ventilationMode === 'pressure' && (
             <>
               <Box display="flex" flexDirection="column" alignItems="center" ml={12.7}>
-                {/* Cambiar el label a PIP [cmH2O] */}
+                {/* PIP (Presión Inspiratoria Pico) */}
                 <Typography variant="subtitle2" sx={{ fontSize: '24px', fontWeight: 300 }}>PIP [cmH2O]</Typography>
                 <TextField
                   type="number"
@@ -691,20 +1313,20 @@ const VentilatorDashboard = () => {
           <DashboardContainer>
             <Container maxWidth="xl" sx={{ mt: 1, marginLeft: -95, marginTop: 15 }}>
               <Grid container spacing={3} justifyContent="center" alignItems="center">
-                {/* Graficas */}
-                <Grid item xs={12} md={4} display="flex" flexDirection="column" alignItems="center" justifyContent="center">
+                {/* Gráficas individuales */}
+                <Grid item xs={12} display="flex" flexDirection="column" alignItems="center" justifyContent="center">
                   <Box display="flex" flexDirection="column" alignItems="center" gap={2} alignSelf="flex-start" sx={{ marginLeft: -28 }}>
                     <Paper elevation={0} sx={{ width: 700, height: 230, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', p: 1, backgroundColor: 'rgba(141, 138, 138, 0.2)' }}>
-                      <Typography variant="h6" sx={{ mb: 1 }}>Gráfica de Presión</Typography>
-                      <RealTimeCharts type="pressure" data={realTimeData} />
+                      <Typography variant="h6" sx={{ mb: 1, color: '#fff' }}>Gráfica de Presión</Typography>
+                      <RealTimeCharts type="pressure" data={displayData} isConnected={serialConnection.isConnected} />
                     </Paper>
                     <Paper elevation={0} sx={{ width: 700, height: 230, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', p: 1, backgroundColor: 'rgba(141, 138, 138, 0.2)' }}>
-                      <Typography variant="h6" sx={{ mb: 1 }}>Gráfica de Flujo</Typography>
-                      <RealTimeCharts type="flow" data={realTimeData} />
+                      <Typography variant="h6" sx={{ mb: 1, color: '#fff' }}>Gráfica de Flujo</Typography>
+                      <RealTimeCharts type="flow" data={displayData} isConnected={serialConnection.isConnected} />
                     </Paper>
                     <Paper elevation={0} sx={{ width: 700, height: 230, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', p: 1, backgroundColor: 'rgba(141, 138, 138, 0.2)' }}>
-                      <Typography variant="h6" sx={{ mb: 1 }}>Gráfica de Volumen</Typography>
-                      <RealTimeCharts type="volume" data={realTimeData} />
+                      <Typography variant="h6" sx={{ mb: 1, color: '#fff' }}>Gráfica de Volumen</Typography>
+                      <RealTimeCharts type="volume" data={displayData} isConnected={serialConnection.isConnected} />
                     </Paper>
                   </Box>
                 </Grid>
@@ -789,6 +1411,17 @@ const VentilatorDashboard = () => {
               sx={{ width: 300, marginLeft: -18 }}
               onChange={(_, value) => handleParameterChange('frecuencia', value)}
             />
+            
+            {/* Sistema de Compliance Automático */}
+            <Box sx={{ width: 300, marginLeft: -18, mt: 2 }}>
+              <ComplianceStatus
+                complianceData={complianceData}
+                errorDetection={errorDetection}
+                autoAdjustmentEnabled={autoAdjustmentEnabled}
+                lastAutoAdjustment={lastAutoAdjustment}
+                ventilationMode={ventilationMode}
+              />
+            </Box>
           </Box>
         </Box>
       </Box>
