@@ -40,10 +40,13 @@ const ventilatorTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#00c5da',
+      main: '#de0b24', // Rojo principal
     },
     secondary: {
-      main: '#da0037',
+      main: '#5B0002', // Marrón oscuro
+    },
+    tertiary: {
+      main: '#2F2E2E', // Gris oscuro
     },
     text: {
       primary: '#ffffff',
@@ -92,7 +95,7 @@ const CircularModeButton = styled(Box)(({ theme, active }) => ({
   color: active ? '#000' : theme.palette.text.primary,
   fontWeight: active ? 700 : 400,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  border: active ? '2px solid #00c5da' : '2px solid rgba(255, 255, 255, 0.2)',
+  border: active ? '2px solid #de0b24' : '2px solid rgba(255, 255, 255, 0.2)',
   fontSize: '6px',
   textAlign: 'center',
   lineHeight: 1.1,
@@ -102,7 +105,7 @@ const CircularModeButton = styled(Box)(({ theme, active }) => ({
     backgroundColor: active ? theme.palette.primary.dark : 'rgba(255, 255, 255, 0.2)',
     transform: 'scale(1.1)',
     boxShadow: active 
-      ? '0 4px 12px rgba(0, 197, 218, 0.5)' 
+      ? '0 4px 12px rgba(218, 0, 22, 0.5)' 
       : '0 4px 12px rgba(255, 255, 255, 0.3)',
   },
   '&:active': {
@@ -115,7 +118,7 @@ const CircularModeButton = styled(Box)(({ theme, active }) => ({
     left: '50%',
     width: '120%',
     height: '120%',
-    background: 'radial-gradient(circle, rgba(0, 197, 218, 0.3) 0%, transparent 70%)',
+    background: 'radial-gradient(circle, rgba(218, 0, 22, 0.3) 0%, transparent 70%)',
     transform: 'translate(-50%, -50%)',
     borderRadius: '50%',
     animation: 'pulse 2s infinite',
@@ -162,10 +165,10 @@ const SendButton = styled(Button)(({ theme }) => ({
   fontWeight: 600,
   padding: theme.spacing(1.5, 3),
   borderRadius: theme.spacing(2),
-  boxShadow: '0 4px 12px rgba(0, 197, 218, 0.3)',
+  boxShadow: '0 4px 12px rgba(218, 0, 22, 0.3)',
   '&:hover': {
     backgroundColor: theme.palette.primary.dark,
-    boxShadow: '0 6px 16px rgba(0, 197, 218, 0.4)',
+    boxShadow: '0 6px 16px rgba(218, 0, 22, 0.4)',
   },
 }));
 
@@ -176,7 +179,7 @@ const AdjustButton = styled(Button)(({ theme, active }) => ({
   fontWeight: 600,
   padding: theme.spacing(1, 2),
   borderRadius: theme.spacing(1),
-  border: active ? '2px solid #da0037' : '2px solid rgba(255, 255, 255, 0.2)',
+  border: active ? '2px solid #de0b24' : '2px solid rgba(255, 255, 255, 0.2)',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
     backgroundColor: active ? theme.palette.secondary.dark : 'rgba(255, 255, 255, 0.2)',
@@ -199,8 +202,9 @@ const EditableCard = styled(Paper)(({ theme, isEditing, isVisible, isDragging })
   cursor: isEditing ? 'grab' : 'default',
   transform: isDragging ? 'scale(1.05) rotate(2deg)' : 'scale(1)',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  borderRadius: 0,
   border: isEditing 
-    ? (isVisible ? '2px dashed rgba(0, 197, 218, 0.5)' : '2px dashed rgba(255, 255, 255, 0.2)')
+    ? (isVisible ? '2px dashed rgba(218, 0, 22, 0.5)' : '2px dashed rgba(255, 255, 255, 0.2)')
     : (isVisible ? '1px solid transparent' : '1px solid rgba(255, 255, 255, 0.1)'),
   '&:hover': {
     backgroundColor: isEditing 
@@ -260,6 +264,8 @@ const VentilatorDashboard = () => {
     { id: 'flujoMin', label: 'Flujo Min', visible: true, order: 5 },
     { id: 'volMax', label: 'Vol Max', visible: true, order: 6 },
     { id: 'volumen', label: 'Volumen', visible: true, order: 7 },
+    { id: 'presionMeseta', label: 'Presión Meseta', visible: false, order: 8 },
+    { id: 'presionPlaton', label: 'Presión Platón', visible: false, order: 9 },
   ]);
   const [draggedCard, setDraggedCard] = useState(null);
 
@@ -359,6 +365,8 @@ const VentilatorDashboard = () => {
       { id: 'flujoMin', label: 'Flujo Min', visible: true, order: 5 },
       { id: 'volMax', label: 'Vol Max', visible: true, order: 6 },
       { id: 'volumen', label: 'Volumen', visible: true, order: 7 },
+      { id: 'presionMeseta', label: 'Presión Meseta', visible: false, order: 8 },
+      { id: 'presionPlaton', label: 'Presión Platón', visible: false, order: 9 },
     ]);
   };
 
@@ -378,6 +386,8 @@ const VentilatorDashboard = () => {
     flujoMin: { label: 'Flujo Min', value: getMin(realTimeData.flow), unit: 'L/min' },
     volMax: { label: 'Vol Max', value: getMax(realTimeData.volume), unit: 'mL' },
     volumen: { label: 'Volumen', value: getLast(realTimeData.volume), unit: 'mL' },
+    presionMeseta: { label: 'Presión Meseta', value: '--', unit: 'cmH₂O' },
+    presionPlaton: { label: 'Presión Platón', value: '--', unit: 'cmH₂O' },
   };
 
   // Generar datos de tarjetas basados en la configuración
@@ -546,10 +556,17 @@ const VentilatorDashboard = () => {
           </Box>
         </Box>
         
-        {/* Inputs según el modo seleccionado */}
-        <Box display="flex" flexDirection="row" alignItems="flex-start" ml={4} mt={2} gap={3}>
-          {/* Inputs comunes */}
-          <Box display="flex" flexDirection="column" alignItems="center">
+        {/* Inputs Presión control y Volumen control */}
+        <Box 
+          display="flex" 
+          flexDirection="row" 
+          alignItems="flex-start" 
+          ml={4} 
+          mt={2} 
+          gap={3}
+        >
+          {/* Input FIO2 */}
+          <Box display="flex" flexDirection="column" alignItems="center" ml={ventilationMode === 'pressure' ? 0 : 0}>
             <Typography variant="subtitle2" sx={{ fontSize: '24px', fontWeight: 200 }}>% FIO2</Typography>
             <TextField
               type="number"
@@ -577,6 +594,7 @@ const VentilatorDashboard = () => {
                   onChange={e => handleParameterChange('volumen', Number(e.target.value))}
                 />
               </Box>
+              {/* Q Max solo en modo volumen */}
               <Box display="flex" flexDirection="column" alignItems="center">
                 <Typography variant="subtitle2" sx={{ fontSize: '24px', fontWeight: 300 }}>Q Max</Typography>
                 <TextField
@@ -595,8 +613,9 @@ const VentilatorDashboard = () => {
           {/* Inputs específicos del modo Presión Control */}
           {ventilationMode === 'pressure' && (
             <>
-              <Box display="flex" flexDirection="column" alignItems="center">
-                <Typography variant="subtitle2" sx={{ fontSize: '24px', fontWeight: 300 }}>Presión Max</Typography>
+              <Box display="flex" flexDirection="column" alignItems="center" ml={12.7}>
+                {/* Cambiar el label a PIP [cmH2O] */}
+                <Typography variant="subtitle2" sx={{ fontSize: '24px', fontWeight: 300 }}>PIP [cmH2O]</Typography>
                 <TextField
                   type="number"
                   variant="outlined"
@@ -607,23 +626,11 @@ const VentilatorDashboard = () => {
                   onChange={e => handleParameterChange('presionMax', Number(e.target.value))}
                 />
               </Box>
-              <Box display="flex" flexDirection="column" alignItems="center">
-                <Typography variant="subtitle2" sx={{ fontSize: '24px', fontWeight: 300 }}>Volumen Obj</Typography>
-                <TextField
-                  type="number"
-                  variant="outlined"
-                  size="small"
-                  inputProps={{ min: 0 }}
-                  sx={{ width: '180px', height: '80px' }}
-                  value={ventilatorData.volumenObjetivo || 500}
-                  onChange={e => handleParameterChange('volumenObjetivo', Number(e.target.value))}
-                />
-              </Box>
             </>
           )}
 
           {/* PEEP común para ambos modos */}
-          <Box display="flex" flexDirection="column" alignItems="center">
+          <Box display="flex" flexDirection="column" alignItems="center" ml={ventilationMode === 'pressure' ? 12.8 : 0}>
             <Typography variant="subtitle2" sx={{ fontSize: '24px', fontWeight: 300 }}>PEEP</Typography>
             <TextField
               type="number"
