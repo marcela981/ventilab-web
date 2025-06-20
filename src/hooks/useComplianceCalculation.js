@@ -59,7 +59,7 @@ export const useComplianceCalculation = (realTimeData, ventilationMode = 'pressu
       
       console.log(`Ciclo ${cycleCount + 1}: PIP=${maxPressure.toFixed(1)}, PEEP=${minPressure.toFixed(1)}, Vol=${maxVolume.toFixed(1)}`);
     }
-  }, [realTimeData.pressure, realTimeData.volume, cycleCount]);
+  }, [realTimeData.pressure.length, realTimeData.volume.length, cycleCount]);
 
   // Función para calcular la nueva compliance después de 5 ciclos
   const calculateNewCompliance = useCallback((targetPIP) => {
@@ -154,20 +154,24 @@ export const useComplianceCalculation = (realTimeData, ventilationMode = 'pressu
     }
     
     return null;
-  }, [pipArray, peepArray, volumeArray, onComplianceUpdateCallback]);
+  }, [pipArray.length, peepArray.length, volumeArray.length, onComplianceUpdateCallback]);
 
   // Efecto principal para monitorear los datos y procesar ciclos
   useEffect(() => {
     if (ventilationMode === 'pressure' && realTimeData.pressure.length > 0) {
-      setSampleCount(prev => prev + 1);
+      const newSampleCount = sampleCount + 1;
+      setSampleCount(newSampleCount);
       
       // Procesar un ciclo cada 100 muestras (como en Python)
-      if (sampleCount >= 100) {
-        processCycle();
-        setSampleCount(0);
+      if (newSampleCount >= 100) {
+        // Usar setTimeout para evitar actualizaciones síncronas que causen bucles
+        setTimeout(() => {
+          processCycle();
+          setSampleCount(0);
+        }, 0);
       }
     }
-  }, [realTimeData.pressure, ventilationMode, sampleCount, processCycle]);
+  }, [realTimeData.pressure.length, ventilationMode, sampleCount, processCycle]);
 
   // Efecto para calcular compliance cuando se completan 5 ciclos
   useEffect(() => {

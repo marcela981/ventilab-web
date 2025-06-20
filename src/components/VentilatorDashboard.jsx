@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Container,
@@ -301,13 +301,37 @@ const VentilatorDashboard = () => {
   // Estado para controlar la expansión de la tarjeta de compliance
   const [complianceCardExpanded, setComplianceCardExpanded] = useState(false);
 
+  // Refs para mantener referencias estables y evitar bucles infinitos
+  const ventilatorDataRef = useRef(ventilatorData);
+  const complianceDataRef = useRef(complianceData);
+  const serialConnectionRef = useRef(serialConnection);
+  const autoAdjustmentEnabledRef = useRef(autoAdjustmentEnabled);
+
+  // Actualizar refs cuando cambien los valores
+  useEffect(() => {
+    ventilatorDataRef.current = ventilatorData;
+  }, [ventilatorData]);
+
+  useEffect(() => {
+    complianceDataRef.current = complianceData;
+  }, [complianceData]);
+
+  useEffect(() => {
+    serialConnectionRef.current = serialConnection;
+  }, [serialConnection]);
+
+  useEffect(() => {
+    autoAdjustmentEnabledRef.current = autoAdjustmentEnabled;
+  }, [autoAdjustmentEnabled]);
+
   // Función para calcular automáticamente parámetros en modo volumen control (como calcular() en Python)
   const calculateVolumeControlParameters = useCallback(() => {
-    const SL = ventilatorData.inspiracionEspiracion || 0.5;
-    const frecuencia = ventilatorData.frecuencia || 12;
-    const pausaEsp1 = ventilatorData.pausaInspiratoria || 0.1;
-    const pausaEsp2 = ventilatorData.pausaEspiratoria || 0.1;
-    const vMax = ventilatorData.volumen || 500;
+    const currentData = ventilatorDataRef.current;
+    const SL = currentData.inspiracionEspiracion || 0.5;
+    const frecuencia = currentData.frecuencia || 12;
+    const pausaEsp1 = currentData.pausaInspiratoria || 0.1;
+    const pausaEsp2 = currentData.pausaEspiratoria || 0.1;
+    const vMax = currentData.volumen || 500;
 
     // Calcular tiempo de ciclo
     const tciclo = (60 / frecuencia) - pausaEsp1 - pausaEsp2;
@@ -354,17 +378,19 @@ const VentilatorDashboard = () => {
     }));
 
     return { ti, te, qMax, presT, mensaje };
-  }, [ventilatorData.inspiracionEspiracion, ventilatorData.frecuencia, ventilatorData.pausaInspiratoria, ventilatorData.pausaEspiratoria, ventilatorData.volumen]);
+  }, []); // Sin dependencias para evitar bucles
 
   // Función para calcular automáticamente parámetros en modo presión control (como calcularP() en Python)
   const calculatePressureControlParameters = useCallback(() => {
-    const SL = ventilatorData.inspiracionEspiracion || 0.5;
-    const frecuencia = ventilatorData.frecuencia || 12;
-    const pausaEsp1 = ventilatorData.pausaInspiratoria || 0.1;
-    const pausaEsp2 = ventilatorData.pausaEspiratoria || 0.1;
-    const peep = ventilatorData.peep || 5;
-    const pip = ventilatorData.presionMax || 20;
-    const C = complianceData.compliance || 0.02051; // Compliance pulmonar L/cmH2O
+    const currentData = ventilatorDataRef.current;
+    const currentCompliance = complianceDataRef.current;
+    const SL = currentData.inspiracionEspiracion || 0.5;
+    const frecuencia = currentData.frecuencia || 12;
+    const pausaEsp1 = currentData.pausaInspiratoria || 0.1;
+    const pausaEsp2 = currentData.pausaEspiratoria || 0.1;
+    const peep = currentData.peep || 5;
+    const pip = currentData.presionMax || 20;
+    const C = currentCompliance.compliance || 0.02051; // Compliance pulmonar L/cmH2O
 
     // Calcular tiempo de ciclo
     const tciclo = (60 / frecuencia) - pausaEsp1 - pausaEsp2;
@@ -418,15 +444,20 @@ const VentilatorDashboard = () => {
     console.log(`Flujo = ${qMax} Presión tanque = ${presT}`);
 
     return { ti, te, vtil, qMax, presT, mensaje };
-  }, [ventilatorData.inspiracionEspiracion, ventilatorData.frecuencia, ventilatorData.pausaInspiratoria, ventilatorData.pausaEspiratoria, ventilatorData.peep, ventilatorData.presionMax, complianceData.compliance]);
+  }, []); // Sin dependencias para evitar bucles
 
   // Función para recalcular parámetros cuando cambia la compliance (como configP en Python)
   const recalculateParametersWithCompliance = useCallback((newCompliance, adjustmentData) => {
     console.log('Recalculando parámetros con nueva compliance:', newCompliance);
     
+    const currentData = ventilatorDataRef.current;
+    const currentCompliance = complianceDataRef.current;
+    const currentSerialConnection = serialConnectionRef.current;
+    const currentAutoAdjustmentEnabled = autoAdjustmentEnabledRef.current;
+    
     // Calcular tiempo inspiratorio actual
-    const tciclo = (60 / ventilatorData.frecuencia) - (ventilatorData.pausaEspiratoria || 0);
-    const ieValue = ventilatorData.inspiracionEspiracion || 0.5;
+    const tciclo = (60 / currentData.frecuencia) - (currentData.pausaEspiratoria || 0);
+    const ieValue = currentData.inspiracionEspiracion || 0.5;
     let ti = tciclo * 0.5; // por defecto 1:1
     
     if (ieValue !== 0.5) {
@@ -441,15 +472,15 @@ const VentilatorDashboard = () => {
 
     // Calcular nuevos parámetros usando la compliance actualizada
     const C = newCompliance;
-    const PEEP = ventilatorData.peep;
-    const PIP = ventilatorData.presionMax;
+    const PEEP = currentData.peep;
+    const PIP = currentData.presionMax;
     
     const Vtil = 1000 * (C * (PIP - PEEP)); // ml
     const Qmax = (C * (PIP - PEEP)) / (ti / 60); // L/min
     const PresT = (0.0025 * Math.pow(Qmax, 2)) + (0.2203 * Qmax) - 0.5912;
 
     const newParameters = {
-          ...ventilatorData,
+          ...currentData,
       volumen: Math.round(Vtil),
       qMax: Math.round(Qmax * 10) / 10,
       presionTanque: Math.round(PresT * 10) / 10
@@ -473,22 +504,22 @@ const VentilatorDashboard = () => {
     });
 
     // Marcar como procesado
-    complianceData.markRecalculationProcessed();
+    currentCompliance.markRecalculationProcessed();
 
     // Reenviar configuración automáticamente después de 1 segundo
-    if (autoAdjustmentEnabled && serialConnection.isConnected) {
+    if (currentAutoAdjustmentEnabled && currentSerialConnection.isConnected) {
       setTimeout(() => {
         handleSendConfiguration();
         console.log('Configuración reenviada automáticamente tras recálculo de compliance');
       }, 1000);
     }
 
-  }, [ventilatorData, complianceData, serialConnection.isConnected, autoAdjustmentEnabled]);
+  }, []); // Sin dependencias para evitar bucles
 
-  // Registrar el callback de actualización de compliance
+  // Registrar el callback de actualización de compliance - SOLO UNA VEZ
   useEffect(() => {
     complianceData.registerUpdateCallback(recalculateParametersWithCompliance);
-  }, [complianceData, recalculateParametersWithCompliance]);
+  }, []); // Sin dependencias para que solo se ejecute una vez
 
   // Efecto para aplicar ajustes automáticos cuando hay errores críticos
   useEffect(() => {
@@ -512,15 +543,20 @@ const VentilatorDashboard = () => {
         }, 1500);
       }
     }
-  }, [errorDetection.hasHighSeverityErrors, ventilationMode, errorDetection, autoAdjustmentEnabled, serialConnection.isConnected]);
+  }, [errorDetection.hasHighSeverityErrors, ventilationMode, autoAdjustmentEnabled, serialConnection.isConnected]);
 
   // Efecto para ejecutar cálculos automáticos cuando cambien parámetros relevantes
   useEffect(() => {
-    if (ventilationMode === 'volume') {
-      calculateVolumeControlParameters();
-    } else if (ventilationMode === 'pressure') {
-      calculatePressureControlParameters();
-    }
+    // Usar setTimeout para evitar actualizaciones síncronas que causen bucles
+    const timeoutId = setTimeout(() => {
+      if (ventilationMode === 'volume') {
+        calculateVolumeControlParameters();
+      } else if (ventilationMode === 'pressure') {
+        calculatePressureControlParameters();
+      }
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, [
     ventilationMode,
     ventilatorData.inspiracionEspiracion,
@@ -530,9 +566,7 @@ const VentilatorDashboard = () => {
     ventilatorData.volumen,
     ventilatorData.peep,
     ventilatorData.presionMax,
-    complianceData.compliance,
-    calculateVolumeControlParameters,
-    calculatePressureControlParameters
+    complianceData.compliance
   ]);
 
   // Efecto para procesar recálculos pendientes de compliance
