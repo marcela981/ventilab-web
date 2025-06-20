@@ -156,43 +156,195 @@ export class VentilatorCalculations {
   }
 
   /**
-   * Valida que los parámetros sean físicamente posibles
+   * Valida que los parámetros sean físicamente posibles y seguros
    */
-  validateParameters(frequency, inspiratoryTime, expiratoryTime, tidalVolume, peakPressure) {
+  validateParameters(frequency, inspiratoryTime, expiratoryTime, tidalVolume, peakPressure, peep, fio2, ieRatioSlider) {
     const errors = [];
     const warnings = [];
+    const criticalErrors = [];
 
-    // Validaciones básicas
+    // === VALIDACIONES CRÍTICAS (impiden el envío) ===
+    
+    // Frecuencia respiratoria
     if (frequency < 5 || frequency > 60) {
-      errors.push('Frecuencia debe estar entre 5 y 60 resp/min');
+      criticalErrors.push('Frecuencia debe estar entre 5 y 60 resp/min');
     }
 
-    if (inspiratoryTime < 0.3) {
-      errors.push('Tiempo inspiratorio muy corto (mínimo 0.3s)');
+    // FIO2
+    if (fio2 < 21 || fio2 > 100) {
+      criticalErrors.push('FIO2 debe estar entre 21% y 100%');
     }
 
-    if (expiratoryTime < 0.3) {
-      errors.push('Tiempo espiratorio muy corto (mínimo 0.3s)');
+    // PEEP
+    if (peep < 0 || peep > 20) {
+      criticalErrors.push('PEEP debe estar entre 0 y 20 cmH2O');
     }
 
-    if (tidalVolume < 100 || tidalVolume > 2000) {
-      errors.push('Volumen tidal debe estar entre 100 y 2000 ml');
+    // Presión pico
+    if (peakPressure < 5 || peakPressure > 60) {
+      criticalErrors.push('Presión pico debe estar entre 5 y 60 cmH2O');
     }
 
+    // Volumen tidal
+    if (tidalVolume < 50 || tidalVolume > 2000) {
+      criticalErrors.push('Volumen tidal debe estar entre 50 y 2000 ml');
+    }
+
+    // Tiempos inspiratorio y espiratorio
+    if (inspiratoryTime < 0.2 || inspiratoryTime > 3.0) {
+      criticalErrors.push('Tiempo inspiratorio debe estar entre 0.2 y 3.0 segundos');
+    }
+
+    if (expiratoryTime < 0.2 || expiratoryTime > 10.0) {
+      criticalErrors.push('Tiempo espiratorio debe estar entre 0.2 y 10.0 segundos');
+    }
+
+    // === VALIDACIONES DE ADVERTENCIA (permiten envío pero muestran alerta) ===
+
+    // Presión pico alta
+    if (peakPressure > 35) {
+      warnings.push('Presión pico alta (>35 cmH2O) - riesgo de barotrauma');
+    }
+
+    // Presión pico muy alta
     if (peakPressure > 50) {
-      warnings.push('Presión pico muy alta, riesgo de barotrauma');
+      warnings.push('Presión pico muy alta (>50 cmH2O) - riesgo crítico de barotrauma');
     }
 
+    // PEEP alto
+    if (peep > 15) {
+      warnings.push('PEEP alto (>15 cmH2O) - puede afectar retorno venoso');
+    }
+
+    // Volumen tidal alto
+    if (tidalVolume > 1000) {
+      warnings.push('Volumen tidal alto (>1000 ml) - riesgo de volutrauma');
+    }
+
+    // Volumen tidal bajo
+    if (tidalVolume < 200) {
+      warnings.push('Volumen tidal bajo (<200 ml) - puede causar atelectasia');
+    }
+
+    // Frecuencia alta
+    if (frequency > 35) {
+      warnings.push('Frecuencia alta (>35 resp/min) - puede causar auto-PEEP');
+    }
+
+    // Frecuencia baja
+    if (frequency < 8) {
+      warnings.push('Frecuencia baja (<8 resp/min) - puede causar hipoventilación');
+    }
+
+    // Relación I:E
     const ieRatio = inspiratoryTime / expiratoryTime;
-    if (ieRatio > 2) {
-      warnings.push('Relación I:E muy alta, riesgo hemodinámico');
+    if (ieRatio > 1.5) {
+      warnings.push('Relación I:E alta (>1.5:1) - riesgo hemodinámico');
+    }
+
+    if (ieRatio > 2.0) {
+      warnings.push('Relación I:E muy alta (>2:1) - riesgo crítico hemodinámico');
+    }
+
+    // FIO2 alto
+    if (fio2 > 80) {
+      warnings.push('FIO2 alto (>80%) - riesgo de toxicidad por oxígeno');
+    }
+
+    // FIO2 muy alto
+    if (fio2 > 95) {
+      warnings.push('FIO2 muy alto (>95%) - riesgo crítico de toxicidad');
+    }
+
+    // === VALIDACIONES DE CONSISTENCIA ===
+
+    // Presión pico debe ser mayor que PEEP
+    if (peakPressure <= peep) {
+      criticalErrors.push('Presión pico debe ser mayor que PEEP');
+    }
+
+    // Tiempo total del ciclo debe ser razonable
+    const totalCycleTime = inspiratoryTime + expiratoryTime;
+    const expectedCycleTime = 60 / frequency;
+    const timeError = Math.abs(totalCycleTime - expectedCycleTime);
+    
+    if (timeError > 0.5) {
+      warnings.push(`Tiempo de ciclo inconsistente (esperado: ${expectedCycleTime.toFixed(1)}s, actual: ${totalCycleTime.toFixed(1)}s)`);
+    }
+
+    // === RANGOS DE SEGURIDAD POR TIPO DE PACIENTE ===
+    const patientType = this.getPatientType(tidalVolume, frequency);
+    
+    if (patientType === 'pediatric') {
+      if (tidalVolume > 500) {
+        warnings.push('Volumen tidal alto para paciente pediátrico');
+      }
+      if (peakPressure > 30) {
+        warnings.push('Presión pico alta para paciente pediátrico');
+      }
+    } else if (patientType === 'adult') {
+      if (tidalVolume < 300) {
+        warnings.push('Volumen tidal bajo para paciente adulto');
+      }
     }
 
     return {
-      valid: errors.length === 0,
-      errors,
-      warnings
+      valid: criticalErrors.length === 0,
+      criticalErrors,
+      warnings,
+      errors: [...criticalErrors, ...warnings],
+      patientType,
+      severity: criticalErrors.length > 0 ? 'critical' : warnings.length > 0 ? 'warning' : 'safe'
     };
+  }
+
+  /**
+   * Determina el tipo de paciente basado en los parámetros
+   */
+  getPatientType(tidalVolume, frequency) {
+    if (tidalVolume < 200 && frequency > 20) {
+      return 'pediatric';
+    } else if (tidalVolume > 400 && frequency < 20) {
+      return 'adult';
+    } else {
+      return 'general';
+    }
+  }
+
+  /**
+   * Valida parámetros específicos para modo volumen control
+   */
+  validateVolumeControlParameters(frequency, tidalVolume, inspiratoryTime, peep, fio2) {
+    const validation = this.validateParameters(frequency, inspiratoryTime, 0, tidalVolume, 0, peep, fio2);
+    
+    // Validaciones específicas para volumen control
+    if (tidalVolume < 100) {
+      validation.criticalErrors.push('Volumen tidal muy bajo para modo volumen control');
+    }
+    
+    if (inspiratoryTime < 0.3) {
+      validation.criticalErrors.push('Tiempo inspiratorio muy corto para modo volumen control');
+    }
+
+    return validation;
+  }
+
+  /**
+   * Valida parámetros específicos para modo presión control
+   */
+  validatePressureControlParameters(frequency, peakPressure, peep, inspiratoryTime, fio2) {
+    const validation = this.validateParameters(frequency, inspiratoryTime, 0, 0, peakPressure, peep, fio2);
+    
+    // Validaciones específicas para presión control
+    if (peakPressure - peep < 5) {
+      validation.warnings.push('Diferencia PIP-PEEP baja (<5 cmH2O) - puede resultar en bajo volumen tidal');
+    }
+    
+    if (peakPressure - peep > 40) {
+      validation.warnings.push('Diferencia PIP-PEEP alta (>40 cmH2O) - riesgo de volutrauma');
+    }
+
+    return validation;
   }
 
   /**

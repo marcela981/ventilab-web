@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   Box,
   Container,
@@ -20,6 +20,10 @@ import {
   Tooltip,
   IconButton,
   Collapse,
+  Menu,
+  MenuItem,
+  ErrorIcon,
+  WarningIcon,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import SendIcon from '@mui/icons-material/Send';
@@ -29,6 +33,11 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import DownloadIcon from '@mui/icons-material/Download';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import StopIcon from '@mui/icons-material/Stop';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import PsychologyIcon from '@mui/icons-material/Psychology';
 
 // Componentes que vamos a crear
 import ControlPanel from './ControlPanel';
@@ -36,6 +45,19 @@ import RealTimeCharts from './RealTimeCharts';
 import ConnectionPanel from './ConnectionPanel';
 import ParameterDisplay from './ParameterDisplay';
 import ComplianceStatus from './ComplianceStatus';
+import ValidationAlerts from './ValidationAlerts';
+import ValidatedInput from './common/ValidatedInput';
+
+// Hooks
+import { useSerialConnection } from '../hooks/useSerialConnection';
+import { useVentilatorData } from '../hooks/useVentilatorData';
+import { SerialProtocol } from '../utils/serialCommunication';
+import { useComplianceCalculation } from '../hooks/useComplianceCalculation';
+import { useSignalProcessing } from '../hooks/useSignalProcessing';
+import { useErrorDetection } from '../hooks/useErrorDetection';
+import useMockData from '../hooks/useMockData';
+import { useDataRecording } from '../hooks/useDataRecording';
+import { useParameterValidation } from '../hooks/useParameterValidation';
 
 // Tema personalizado para el ventilador
 const ventilatorTheme = createTheme({
@@ -83,6 +105,7 @@ const ModeToggle = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(0.5),
+  position: 'relative',
 }));
 
 const CircularModeButton = styled(Box)(({ theme, active }) => ({
@@ -154,24 +177,6 @@ const ModeIndicator = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1),
-}));
-
-// Botón de envío
-const SendButton = styled(Button)(({ theme }) => ({
-  position: 'fixed',
-  bottom: 20,
-  right: 20,
-  zIndex: 1000,
-  backgroundColor: theme.palette.primary.main,
-  color: '#000',
-  fontWeight: 600,
-  padding: theme.spacing(1.5, 3),
-  borderRadius: theme.spacing(2),
-  boxShadow: '0 4px 12px rgba(218, 0, 22, 0.3)',
-  '&:hover': {
-    backgroundColor: theme.palette.primary.dark,
-    boxShadow: '0 6px 16px rgba(218, 0, 22, 0.4)',
-  },
 }));
 
 // Botón de ajuste personalizado
@@ -246,13 +251,66 @@ const EditControls = styled(Box)(({ theme }) => ({
   zIndex: 10,
 }));
 
-import { useSerialConnection } from '../hooks/useSerialConnection';
-import { useVentilatorData } from '../hooks/useVentilatorData';
-import { SerialProtocol } from '../utils/serialCommunication';
-import { useComplianceCalculation } from '../hooks/useComplianceCalculation';
-import { useSignalProcessing } from '../hooks/useSignalProcessing';
-import { useErrorDetection } from '../hooks/useErrorDetection';
-import useMockData from '../hooks/useMockData';
+// Botón de IA personalizado
+const AIAnalysisButton = styled(Box)(({ theme, isAnalyzing }) => ({
+  width: 100,
+  height: 50,
+  borderRadius: '8px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
+  backgroundColor: isAnalyzing ? theme.palette.secondary.main : 'rgba(255, 255, 255, 0.1)',
+  color: isAnalyzing ? '#fff' : theme.palette.text.primary,
+  fontWeight: isAnalyzing ? 700 : 400,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  border: isAnalyzing ? '2px solid #5B0002' : '2px solid rgba(255, 255, 255, 0.2)',
+  fontSize: '6px',
+  textAlign: 'center',
+  lineHeight: 1.1,
+  position: 'absolute',
+  top: '50%',
+  left: 'calc(100% + 16px)',
+  transform: 'translateY(-50%)',
+  overflow: 'hidden',
+  zIndex: 10,
+  '&:hover': {
+    backgroundColor: isAnalyzing ? theme.palette.secondary.dark : 'rgba(255, 255, 255, 0.2)',
+    transform: 'translateY(-50%) translateY(-8px) scale(1.1)',
+    boxShadow: isAnalyzing 
+      ? '0 8px 20px rgba(91, 0, 2, 0.6)' 
+      : '0 8px 20px rgba(255, 255, 255, 0.4)',
+  },
+  '&:active': {
+    transform: 'translateY(-50%) translateY(-4px) scale(0.95)',
+  },
+  '&::before': isAnalyzing ? {
+    content: '""',
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: '140%',
+    height: '140%',
+    background: 'radial-gradient(circle, rgba(91, 0, 2, 0.4) 0%, transparent 70%)',
+    transform: 'translate(-50%, -50%)',
+    borderRadius: '50%',
+    animation: 'aiPulse 2s infinite',
+  } : {},
+  '@keyframes aiPulse': {
+    '0%': {
+      transform: 'translate(-50%, -50%) scale(1)',
+      opacity: 0.8,
+    },
+    '50%': {
+      transform: 'translate(-50%, -50%) scale(1.3)',
+      opacity: 0.4,
+    },
+    '100%': {
+      transform: 'translate(-50%, -50%) scale(1)',
+      opacity: 0.8,
+    },
+  },
+}));
 
 const VentilatorDashboard = () => {
   const serialConnection = useSerialConnection();
@@ -294,12 +352,30 @@ const VentilatorDashboard = () => {
     complianceData.compliance      // compliance calculada
   );
 
+  // Hook para grabación de datos
+  const dataRecording = useDataRecording();
+
+  // Hook para validación de parámetros
+  const parameterValidation = useParameterValidation();
+
   // Estado para controlar el reenvío automático
   const [autoAdjustmentEnabled, setAutoAdjustmentEnabled] = useState(true);
   const [lastAutoAdjustment, setLastAutoAdjustment] = useState(null);
   
   // Estado para controlar la expansión de la tarjeta de compliance
   const [complianceCardExpanded, setComplianceCardExpanded] = useState(false);
+
+  // Estado para el menú de descarga
+  const [downloadMenuAnchor, setDownloadMenuAnchor] = useState(null);
+
+  // Estado para notificaciones
+  const [notification, setNotification] = useState(null);
+
+  // Estado para el botón de IA
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // Estado para alertas de validación
+  const [showValidationAlerts, setShowValidationAlerts] = useState(true);
 
   // Refs para mantener referencias estables y evitar bucles infinitos
   const ventilatorDataRef = useRef(ventilatorData);
@@ -323,6 +399,42 @@ const VentilatorDashboard = () => {
   useEffect(() => {
     autoAdjustmentEnabledRef.current = autoAdjustmentEnabled;
   }, [autoAdjustmentEnabled]);
+
+  // Memoizar las validaciones de parámetros individuales para evitar recálculos
+  // TEMPORALMENTE COMENTADO PARA DEBUGGING DEL BUCLE INFINITO
+  /*
+  const fio2Validation = useMemo(() => 
+    parameterValidation.validateSingleParameter('fio2', ventilatorData.fio2, ventilatorData, ventilationMode),
+    [ventilatorData.fio2, ventilatorData, ventilationMode]
+  );
+
+  const volumenValidation = useMemo(() => 
+    parameterValidation.validateSingleParameter('volumen', ventilatorData.volumen, ventilatorData, ventilationMode),
+    [ventilatorData.volumen, ventilatorData, ventilationMode]
+  );
+
+  const presionMaxValidation = useMemo(() => 
+    parameterValidation.validateSingleParameter('presionMax', ventilatorData.presionMax || 20, ventilatorData, ventilationMode),
+    [ventilatorData.presionMax, ventilatorData, ventilationMode]
+  );
+
+  const peepValidation = useMemo(() => 
+    parameterValidation.validateSingleParameter('peep', ventilatorData.peep, ventilatorData, ventilationMode),
+    [ventilatorData.peep, ventilatorData, ventilationMode]
+  );
+
+  const frecuenciaValidation = useMemo(() => 
+    parameterValidation.validateSingleParameter('frecuencia', ventilatorData.frecuencia, ventilatorData, ventilationMode),
+    [ventilatorData.frecuencia, ventilatorData, ventilationMode]
+  );
+
+  // Memoizar los rangos de parámetros
+  const fio2Ranges = useMemo(() => parameterValidation.getParameterRanges('fio2'), []);
+  const volumenRanges = useMemo(() => parameterValidation.getParameterRanges('volumen'), []);
+  const presionMaxRanges = useMemo(() => parameterValidation.getParameterRanges('presionMax'), []);
+  const peepRanges = useMemo(() => parameterValidation.getParameterRanges('peep'), []);
+  const frecuenciaRanges = useMemo(() => parameterValidation.getParameterRanges('frecuencia'), []);
+  */
 
   // Función para calcular automáticamente parámetros en modo volumen control (como calcular() en Python)
   const calculateVolumeControlParameters = useCallback(() => {
@@ -581,6 +693,34 @@ const VentilatorDashboard = () => {
     }
   }, [complianceData.calculationStatus.requiresRecalculation, ventilationMode, ventilatorData.presionMax]);
 
+  // Efecto para limpiar notificaciones automáticamente
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
+  // Efecto para validar parámetros cuando cambien
+  useEffect(() => {
+    // Solo validar si hay datos de ventilador
+    if (ventilatorData && Object.keys(ventilatorData).length > 0) {
+      const timeoutId = setTimeout(() => {
+        const validation = parameterValidation.updateValidationState(ventilatorData, ventilationMode);
+        
+        // Mostrar alerta compacta si hay errores críticos
+        if (validation.criticalErrors.length > 0) {
+          setShowValidationAlerts(true);
+        }
+      }, 100); // Pequeño delay para evitar validaciones muy frecuentes
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [ventilatorData.frecuencia, ventilatorData.volumen, ventilatorData.presionMax, ventilatorData.peep, ventilatorData.fio2, ventilationMode]);
+
   const handleConnection = async (port, baudRate) => {
     const success = await serialConnection.connect(port, baudRate);
     if (success) {
@@ -595,10 +735,41 @@ const VentilatorDashboard = () => {
   };
 
   const handleSendConfiguration = async () => {
+    // Validar parámetros antes de enviar
+    const validation = parameterValidation.updateValidationState(ventilatorData, ventilationMode);
+    
+    if (!validation.valid) {
+      setNotification({
+        type: 'error',
+        message: `No se puede enviar configuración: ${validation.criticalErrors.length} error(es) crítico(s)`,
+        timestamp: Date.now()
+      });
+      setShowValidationAlerts(true);
+      return;
+    }
+
+    // Mostrar advertencias si las hay
+    if (validation.warnings.length > 0) {
+      setNotification({
+        type: 'warning',
+        message: `Configuración enviada con ${validation.warnings.length} advertencia(s)`,
+        timestamp: Date.now()
+      });
+    } else {
+      setNotification({
+        type: 'success',
+        message: 'Configuración enviada exitosamente',
+        timestamp: Date.now()
+      });
+    }
+
     const mode = ventilationMode === 'volume' ? 'Volumen control' : 'Presion control';
     const configFrame = SerialProtocol.createConfigFrame(mode, ventilatorData);
     await serialConnection.sendData(configFrame);
     setConfigSent(true);
+    
+    // Registrar los datos enviados si la grabación está activa
+    dataRecording.addSentData(ventilationMode, ventilatorData, configFrame);
     
     // Reiniciar el cálculo de compliance cuando se envían nuevos parámetros (como en Python)
     if (ventilationMode === 'pressure') {
@@ -697,6 +868,50 @@ const VentilatorDashboard = () => {
       { id: 'presionMeseta', label: 'Presión Meseta', visible: false, order: 9 },
       { id: 'presionPlaton', label: 'Presión Platón', visible: false, order: 10 },
     ]);
+  };
+
+  // Funciones para el menú de descarga
+  const handleDownloadMenuOpen = (event) => {
+    setDownloadMenuAnchor(event.currentTarget);
+  };
+
+  const handleDownloadMenuClose = () => {
+    setDownloadMenuAnchor(null);
+  };
+
+  const handleDownloadTxt = () => {
+    dataRecording.downloadAsTxt();
+    setNotification({
+      type: 'success',
+      message: 'Configuraciones enviadas descargadas como TXT',
+      timestamp: Date.now()
+    });
+    handleDownloadMenuClose();
+  };
+
+  const handleDownloadPdf = () => {
+    dataRecording.downloadAsPdf();
+    setNotification({
+      type: 'success',
+      message: 'Configuraciones enviadas descargadas como PDF',
+      timestamp: Date.now()
+    });
+    handleDownloadMenuClose();
+  };
+
+  const handleToggleRecording = () => {
+    if (dataRecording.isRecording) {
+      dataRecording.stopRecording();
+    } else {
+      dataRecording.startRecording();
+    }
+  };
+
+  // Función para manejar el análisis con IA
+  const handleAIAnalysis = () => {
+    setIsAnalyzing(!isAnalyzing);
+    // Por ahora no hace nada más, como se solicitó
+    console.log('Botón de análisis con IA clickeado');
   };
 
   // Funciones para calcular valores en tiempo real usando datos filtrados
@@ -847,6 +1062,135 @@ const VentilatorDashboard = () => {
     <ThemeProvider theme={ventilatorTheme}>
       <CssBaseline />
       
+      {/* Alertas de validación compactas */}
+      <ValidationAlerts
+        validationState={parameterValidation.validationState}
+        onClose={() => setShowValidationAlerts(false)}
+        show={showValidationAlerts}
+        compact={true}
+      />
+      
+      {/* Botones de grabación y descarga en la parte superior derecha */}
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 20,
+          right: 20,
+          zIndex: 1000,
+          display: 'flex',
+          gap: 1,
+          alignItems: 'center',
+        }}
+      >
+        {/* Botón de grabación */}
+        {/* Eliminado - reemplazado por botón Enviar */}
+
+        {/* Botón de descarga */}
+        <Tooltip 
+          title="Descargar configuraciones enviadas" 
+          placement="bottom"
+          arrow
+        >
+          <IconButton
+            onClick={handleDownloadMenuOpen}
+            disabled={!dataRecording.hasData}
+            sx={{
+              backgroundColor: dataRecording.hasData ? 'primary.main' : 'rgba(255, 255, 255, 0.1)',
+              color: dataRecording.hasData ? '#000' : 'text.secondary',
+              '&:hover': {
+                backgroundColor: dataRecording.hasData ? 'primary.dark' : 'rgba(255, 255, 255, 0.2)',
+              }
+            }}
+          >
+            <DownloadIcon />
+          </IconButton>
+        </Tooltip>
+
+        {/* Menú de descarga */}
+        <Menu
+          anchorEl={downloadMenuAnchor}
+          open={Boolean(downloadMenuAnchor)}
+          onClose={handleDownloadMenuClose}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+        >
+          <MenuItem onClick={handleDownloadTxt}>
+            <DownloadIcon sx={{ mr: 1 }} />
+            Descargar como TXT
+          </MenuItem>
+          <MenuItem onClick={handleDownloadPdf}>
+            <DownloadIcon sx={{ mr: 1 }} />
+            Descargar como PDF
+          </MenuItem>
+        </Menu>
+
+        {/* Indicador de estado de grabación */}
+        {dataRecording.isRecording && (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              padding: '4px 8px',
+              borderRadius: 1,
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            <Box
+              sx={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                backgroundColor: 'error.main',
+                animation: 'pulse 1s infinite',
+                '@keyframes pulse': {
+                  '0%': { opacity: 1 },
+                  '50%': { opacity: 0.5 },
+                  '100%': { opacity: 1 }
+                }
+              }}
+            />
+            <Typography variant="caption" sx={{ fontSize: '10px', color: 'text.secondary' }}>
+              Grabando configuraciones ({dataRecording.recordedData.length} enviadas)
+            </Typography>
+          </Box>
+        )}
+      </Box>
+      
+      {/* Notificación de descarga */}
+      {notification && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 80,
+            right: 20,
+            zIndex: 1001,
+            backgroundColor: notification.type === 'success' ? 'success.main' : 'error.main',
+            color: '#fff',
+            padding: '8px 16px',
+            borderRadius: 1,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            animation: 'slideIn 0.3s ease-out',
+            '@keyframes slideIn': {
+              from: { transform: 'translateX(100%)', opacity: 0 },
+              to: { transform: 'translateX(0)', opacity: 1 }
+            }
+          }}
+        >
+          <Typography variant="body2">
+            {notification.message}
+          </Typography>
+        </Box>
+      )}
+      
       <Box display="flex" flexDirection="row" alignItems="flex-start" mb={2} ml={2}>
         {/* Imágenes*/}
         <Box display="flex" flexDirection="column" alignItems="left">
@@ -855,99 +1199,86 @@ const VentilatorDashboard = () => {
           
           {/* Botón de modo de ajuste */}
           <Box mt={1} mb={1} display="flex" gap={1} flexDirection="column">
+            {/* Botones Enviar y Detener */}
             <Box display="flex" gap={1}>
-            <Tooltip 
-              title={isAdjustMode ? "Salir del modo de ajuste" : "Entrar al modo de ajuste para reorganizar tarjetas"} 
-              placement="bottom"
-              arrow
-            >
-              <AdjustButton
-                active={isAdjustMode}
-                onClick={toggleAdjustMode}
-                startIcon={<SettingsIcon />}
+              <Button
+                variant="contained"
                 size="small"
+                sx={{
+                  backgroundColor: 'success.main',
+                  color: '#fff',
+                  minWidth: '80px',
+                  height: '32px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  '&:hover': {
+                    backgroundColor: 'success.dark',
+                  }
+                }}
               >
-                {isAdjustMode ? 'Salir Ajuste' : 'Ajustar Tarjetas'}
-              </AdjustButton>
-            </Tooltip>
+                Enviar
+              </Button>
+              <Button
+                variant="contained"
+                size="small"
+                sx={{
+                  backgroundColor: 'error.main',
+                  color: '#fff',
+                  minWidth: '80px',
+                  height: '32px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  '&:hover': {
+                    backgroundColor: 'error.dark',
+                  }
+                }}
+              >
+                Detener
+              </Button>
+            </Box>
             
-            {/* Botón de restablecer - solo visible en modo de ajuste */}
-            {isAdjustMode && (
-              <Tooltip title="Restablecer configuración original de tarjetas" placement="bottom" arrow>
-                <Button
-                  variant="outlined"
-                  onClick={resetCardConfiguration}
+            <Box display="flex" gap={1}>
+              <Tooltip 
+                title={isAdjustMode ? "Salir del modo de ajuste" : "Entrar al modo de ajuste para reorganizar tarjetas"} 
+                placement="bottom"
+                arrow
+              >
+                <AdjustButton
+                  active={isAdjustMode}
+                  onClick={toggleAdjustMode}
+                  startIcon={<SettingsIcon />}
                   size="small"
-                  sx={{
-                    color: 'warning.main',
-                    borderColor: 'warning.main',
-                    '&:hover': {
-                      backgroundColor: 'warning.main',
-                      color: '#fff',
-                    }
-                  }}
                 >
-                  Restablecer
-                </Button>
+                  {isAdjustMode ? 'Salir Ajuste' : 'Ajustar Tarjetas'}
+                </AdjustButton>
               </Tooltip>
-              )}
+              
+              {/* Botón de restablecer - solo visible en modo de ajuste */}
+              {isAdjustMode && (
+                <Tooltip title="Restablecer configuración original de tarjetas" placement="bottom" arrow>
+                  <Button
+                    variant="outlined"
+                    onClick={resetCardConfiguration}
+                    size="small"
+                    sx={{
+                      color: 'warning.main',
+                      borderColor: 'warning.main',
+                      '&:hover': {
+                        backgroundColor: 'warning.main',
+                        color: '#fff',
+                      }
+                    }}
+                  >
+                    Restablecer
+                  </Button>
+                </Tooltip>
+                )}
             </Box>
             
             {/* Control de compliance automática - solo visible en modo presión */}
             {ventilationMode === 'pressure' && (
               <Box display="flex" flexDirection="column" gap={1}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={autoAdjustmentEnabled}
-                      onChange={(e) => setAutoAdjustmentEnabled(e.target.checked)}
-                      size="small"
-                      color="primary"
-                    />
-                  }
-                  label={
-                    <Typography variant="caption" sx={{ fontSize: '11px' }}>
-                      Ajustes Automáticos
-                    </Typography>
-                  }
-                />
-                
-                {/* Indicador de estado de compliance */}
-                <Box display="flex" alignItems="center" gap={1} sx={{ bgcolor: 'rgba(0,0,0,0.3)', p: 0.5, borderRadius: 1 }}>
-                  <Box
-                    sx={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: '50%',
-                      backgroundColor: complianceData.calculationStatus.isCalculating 
-                        ? 'orange' 
-                        : complianceData.calculationStatus.lastAdjustment 
-                        ? 'success.main' 
-                        : 'text.secondary',
-                      animation: complianceData.calculationStatus.isCalculating ? 'pulse 1s infinite' : 'none'
-                    }}
-                  />
-                  <Typography variant="caption" sx={{ fontSize: '10px', color: 'text.secondary' }}>
-                    {complianceData.calculationStatus.isCalculating 
-                      ? `Calculando C (${complianceData.calculationStatus.currentCycle}/5)`
-                      : complianceData.calculationStatus.lastAdjustment
-                      ? `C actualizada: ${complianceData.compliance.toFixed(5)}`
-                      : 'Compliance automática lista'
-                    }
-                  </Typography>
-                </Box>
-                
-                {/* Indicador de último ajuste */}
-                {lastAutoAdjustment && (
-                  <Box sx={{ bgcolor: 'rgba(0,0,0,0.3)', p: 0.5, borderRadius: 1 }}>
-                    <Typography variant="caption" sx={{ fontSize: '9px', color: 'success.main' }}>
-                      Último ajuste: {lastAutoAdjustment.timestamp.toLocaleTimeString()}
-                    </Typography>
-                    <Typography variant="caption" sx={{ fontSize: '9px', color: 'text.secondary', display: 'block' }}>
-                      Error: {lastAutoAdjustment.error?.toFixed(1)}%
-                    </Typography>
-                  </Box>
-                )}
+                {/* Integrado en Sistema de Compliance Automático */}
               </Box>
             )}
           </Box>
@@ -997,6 +1328,9 @@ const VentilatorDashboard = () => {
                         <DragIndicatorIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
+                    <AIAnalysisButton isAnalyzing={isAnalyzing}>
+                      <PsychologyIcon fontSize="small" />
+                    </AIAnalysisButton>
                   </EditControls>
                 )}
                 
@@ -1224,14 +1558,16 @@ const VentilatorDashboard = () => {
           {/* Input FIO2 */}
           <Box display="flex" flexDirection="column" alignItems="center" ml={ventilationMode === 'pressure' ? 0 : 0}>
             <Typography variant="subtitle2" sx={{ fontSize: '24px', fontWeight: 200 }}>% FIO2</Typography>
-            <TextField
-              type="number"
-              variant="outlined"
-              size="small"
-              inputProps={{ min: 0, max: 100 }}
-              sx={{ width: '180px', height: '100px' }}
+            <ValidatedInput
+              parameter="fio2"
               value={ventilatorData.fio2}
-              onChange={e => handleParameterChange('fio2', Number(e.target.value))}
+              onChange={handleParameterChange}
+              label="FIO2"
+              unit="%"
+              validation={parameterValidation.validateSingleParameter('fio2', ventilatorData.fio2, ventilatorData, ventilationMode)}
+              ranges={parameterValidation.getParameterRanges('fio2')}
+              sx={{ width: '180px', height: '100px' }}
+              inputProps={{ min: 21, max: 100 }}
             />
           </Box>
 
@@ -1240,14 +1576,16 @@ const VentilatorDashboard = () => {
             <>
               <Box display="flex" flexDirection="column" alignItems="center">
                 <Typography variant="subtitle2" sx={{ fontSize: '24px', fontWeight: 300 }}>Volumen</Typography>
-                <TextField
-                  type="number"
-                  variant="outlined"
-                  size="small"
-                  inputProps={{ min: 0 }}
-                  sx={{ width: '180px', height: '80px' }}
+                <ValidatedInput
+                  parameter="volumen"
                   value={ventilatorData.volumen}
-                  onChange={e => handleParameterChange('volumen', Number(e.target.value))}
+                  onChange={handleParameterChange}
+                  label="Volumen"
+                  unit="ml"
+                  validation={parameterValidation.validateSingleParameter('volumen', ventilatorData.volumen, ventilatorData, ventilationMode)}
+                  ranges={parameterValidation.getParameterRanges('volumen')}
+                  sx={{ width: '180px', height: '80px' }}
+                  inputProps={{ min: 50, max: 2000 }}
                 />
               </Box>
               {/* Q Max solo en modo volumen */}
@@ -1272,14 +1610,16 @@ const VentilatorDashboard = () => {
               <Box display="flex" flexDirection="column" alignItems="center" ml={12.7}>
                 {/* PIP (Presión Inspiratoria Pico) */}
                 <Typography variant="subtitle2" sx={{ fontSize: '24px', fontWeight: 300 }}>PIP [cmH2O]</Typography>
-                <TextField
-                  type="number"
-                  variant="outlined"
-                  size="small"
-                  inputProps={{ min: 0 }}
-                  sx={{ width: '180px', height: '80px' }}
+                <ValidatedInput
+                  parameter="presionMax"
                   value={ventilatorData.presionMax || 20}
-                  onChange={e => handleParameterChange('presionMax', Number(e.target.value))}
+                  onChange={handleParameterChange}
+                  label="PIP"
+                  unit="cmH2O"
+                  validation={parameterValidation.validateSingleParameter('presionMax', ventilatorData.presionMax || 20, ventilatorData, ventilationMode)}
+                  ranges={parameterValidation.getParameterRanges('presionMax')}
+                  sx={{ width: '180px', height: '80px' }}
+                  inputProps={{ min: 5, max: 60 }}
                 />
               </Box>
             </>
@@ -1288,14 +1628,16 @@ const VentilatorDashboard = () => {
           {/* PEEP común para ambos modos */}
           <Box display="flex" flexDirection="column" alignItems="center" ml={ventilationMode === 'pressure' ? 12.8 : 0}>
             <Typography variant="subtitle2" sx={{ fontSize: '24px', fontWeight: 300 }}>PEEP</Typography>
-            <TextField
-              type="number"
-              variant="outlined"
-              size="small"
-              inputProps={{ min: 0 }}
-              sx={{ width: '180px', height: '80px' }}
+            <ValidatedInput
+              parameter="peep"
               value={ventilatorData.peep}
-              onChange={e => handleParameterChange('peep', Number(e.target.value))}
+              onChange={handleParameterChange}
+              label="PEEP"
+              unit="cmH2O"
+              validation={parameterValidation.validateSingleParameter('peep', ventilatorData.peep, ventilatorData, ventilationMode)}
+              ranges={parameterValidation.getParameterRanges('peep')}
+              sx={{ width: '180px', height: '80px' }}
+              inputProps={{ min: 0, max: 20 }}
             />
           </Box>
 
@@ -1339,6 +1681,26 @@ const VentilatorDashboard = () => {
                     </Typography>
                   </Box>
                 </CircularModeButton>
+              </Tooltip>
+              <Tooltip 
+                title="Analizar datos con Inteligencia Artificial" 
+                placement="bottom"
+                arrow
+              >
+                <AIAnalysisButton
+                  isAnalyzing={isAnalyzing}
+                  onClick={handleAIAnalysis}
+                >
+                  <Box display="flex" flexDirection="column" alignItems="center" >
+                    <PsychologyIcon sx={{ fontSize: '20px', mb: 0.5 }} />
+                    <Typography variant="caption" sx={{ fontSize: '8px', lineHeight: 1 }}>
+                      ANALIZAR
+                    </Typography>
+                    <Typography variant="caption" sx={{ fontSize: '8px', lineHeight: 1 }}>
+                      CON IA
+                    </Typography>
+                  </Box>
+                </AIAnalysisButton>
               </Tooltip>
             </ModeToggle>
           </Box>
@@ -1427,14 +1789,16 @@ const VentilatorDashboard = () => {
             {/* Frecuencia: título a la izquierda, input a la derecha, slider debajo */}
             <Box display="flex" flexDirection="row" alignItems="center" width={300} mb={1} sx={{ marginLeft: -18 }}>
               <Typography variant="subtitle1" sx={{ fontSize: '24px', fontWeight: 200, flex: 1, textAlign: 'left' }}>Frecuencia</Typography>
-              <TextField
-                type="number"
-                variant="outlined"
-                size="small"
-                inputProps={{ min: 0, max: 24 }}
-                sx={{ width: 80, ml: 2 }}
+              <ValidatedInput
+                parameter="frecuencia"
                 value={ventilatorData.frecuencia}
-                onChange={e => handleParameterChange('frecuencia', Number(e.target.value))}
+                onChange={handleParameterChange}
+                label="Frecuencia"
+                unit="resp/min"
+                validation={parameterValidation.validateSingleParameter('frecuencia', ventilatorData.frecuencia, ventilatorData, ventilationMode)}
+                ranges={parameterValidation.getParameterRanges('frecuencia')}
+                sx={{ width: 80, ml: 2 }}
+                inputProps={{ min: 5, max: 60 }}
               />
             </Box>
             <Slider
@@ -1455,6 +1819,44 @@ const VentilatorDashboard = () => {
                 lastAutoAdjustment={lastAutoAdjustment}
                 ventilationMode={ventilationMode}
               />
+            </Box>
+
+            {/* Alertas de validación completas */}
+            <Box sx={{ width: 300, marginLeft: -18, mt: 2 }}>
+              <ValidationAlerts
+                validationState={parameterValidation.validationState}
+                onClose={() => setShowValidationAlerts(false)}
+                show={showValidationAlerts}
+                compact={false}
+              />
+            </Box>
+
+            {/* Botón de Enviar Configuración */}
+            <Box sx={{ width: 300, marginLeft: -18, mt: 3 }}>
+              <Tooltip 
+                title="Enviar configuración actual al ventilador" 
+                placement="top"
+                arrow
+              >
+                <Button
+                  variant="contained"
+                  onClick={handleSendConfiguration}
+                  disabled={!serialConnection.isConnected}
+                  startIcon={configSent ? <CheckCircleIcon /> : <SendIcon />}
+                  sx={{
+                    width: '100%',
+                    height: '50px',
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    backgroundColor: configSent ? 'success.main' : 'primary.main',
+                    '&:hover': {
+                      backgroundColor: configSent ? 'success.dark' : 'primary.dark',
+                    }
+                  }}
+                >
+                  {configSent ? 'Configuración Enviada' : 'Enviar Configuración'}
+                </Button>
+              </Tooltip>
             </Box>
           </Box>
         </Box>
