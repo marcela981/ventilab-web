@@ -1,5 +1,5 @@
 // Next.js Home Page - VentyLab
-import VentilatorDashboard from '../components/VentilatorDashboard';
+import VentilatorDashboard from '../src/components/VentilatorDashboard';
 
 export default function Home() {
   return <VentilatorDashboard />;

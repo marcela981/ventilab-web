@@ -2,14 +2,14 @@
 
 /* Variables CSS para el degradado personalizado */
 :root {
-  --color-primary: #de0b24; 
-  --color-secondary: #5B0002;
-  --color-tertiary: #2F2E2E;
+  --color-primary: #5B0002; 
+  --color-secondary: #2b0a0bea;
+  --color-tertiary: #121212b3;
   --gradient-main: linear-gradient(
     180deg,
-    #de0b24 0%,
-    #5B0002 50%,
-    #2F2E2E 100%
+    #5B0002 0%,
+    #2b0a0bea 50%,
+    #121212b3 100%
   );
   --text-primary: #FFFAFA;
   --text-secondary: #b0b0b0;
