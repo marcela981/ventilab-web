@@ -65,7 +65,6 @@ import { SerialProtocol } from '../utils/serialCommunication';
 import { useComplianceCalculation } from '../hooks/useComplianceCalculation';
 import { useSignalProcessing } from '../hooks/useSignalProcessing';
 import { useErrorDetection } from '../hooks/useErrorDetection';
-import useMockData from '../hooks/useMockData';
 import { useDataRecording } from '../hooks/useDataRecording';
 import { useParameterValidation } from '../hooks/useParameterValidation';
 
@@ -335,15 +334,28 @@ const VentilatorDashboard = () => {
     resetIntegratedVolume
   } = useVentilatorData(serialConnection);
   
-  // Datos de prueba para cuando no hay conexión
-  const mockData = useMockData(!serialConnection.isConnected);
-  
-  // Combinar datos reales con datos de prueba
-  const displayData = serialConnection.isConnected ? realTimeData : mockData;
-  
   // Estado para el modo de ventilación
   const [ventilationMode, setVentilationMode] = useState('volume'); // 'volume' o 'pressure'
   const [configSent, setConfigSent] = useState(false);
+
+  // Datos para mostrar: según el archivo Python, cuando NO hay conexión, 
+  // las tarjetas deben mostrar valores estáticos (configurados) o "--" para medidos,
+  // NO datos simulados cambiantes
+  const displayData = useMemo(() => {
+    if (serialConnection.isConnected) {
+      // Con conexión: usar datos reales
+      return realTimeData;
+    } else {
+      // Sin conexión: usar estructura vacía (no datos simulados cambiantes)
+      // Esto hará que las tarjetas muestren valores configurados o "--"
+      return {
+        pressure: [],
+        flow: [],
+        volume: [],
+        time: []
+      };
+    }
+  }, [serialConnection.isConnected, realTimeData]);
 
   // Estado para la navegación por pestañas
   const [activeTab, setActiveTab] = useState(1); // 0: Simular paciente, 1: Monitoreo, 2: Gráficas, 3: Conexión
@@ -947,82 +959,114 @@ const VentilatorDashboard = () => {
   const getAvg = arr => arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : '--';
   const getLast = arr => arr.length ? arr[arr.length - 1].toFixed(1) : '--';
 
-  // Mapeo de datos de tarjetas usando datos filtrados cuando estén disponibles
+  // Mapeo de datos de tarjetas mostrando valores reales de configuración y mediciones
   const cardDataMap = {
     presionPico: { 
       label: 'Presión Pico', 
-      value: filteredData.pressure.max > 0 ? filteredData.pressure.max.toFixed(1) : getMax(displayData.pressure), 
+      // En modo presión: mostrar valor configurado (PIP), en modo volumen: mostrar valor medido
+      value: ventilationMode === 'pressure' 
+        ? (ventilatorData.presionMax || 20).toFixed(1)
+        : (filteredData.pressure.max > 0 ? filteredData.pressure.max.toFixed(1) : getMax(displayData.pressure)), 
       unit: 'cmH₂O',
-      rawValue: filteredData.pressure.max || 0
+      rawValue: ventilationMode === 'pressure' 
+        ? (ventilatorData.presionMax || 20)
+        : (filteredData.pressure.max || parseFloat(getMax(displayData.pressure)) || 0),
+      isConfigured: ventilationMode === 'pressure'
     },
     presionMedia: { 
       label: 'Presión Media', 
+      // Siempre mostrar valor medido
       value: filteredData.pressure.avg > 0 ? filteredData.pressure.avg.toFixed(1) : getAvg(displayData.pressure), 
       unit: 'cmH₂O',
-      rawValue: filteredData.pressure.avg || 0
+      rawValue: filteredData.pressure.avg || parseFloat(getAvg(displayData.pressure)) || 0,
+      isConfigured: false
     },
     peep: { 
       label: 'PEEP', 
-      value: filteredData.pressure.min > 0 ? filteredData.pressure.min.toFixed(1) : getMin(displayData.pressure), 
+      // Siempre mostrar valor configurado
+      value: (ventilatorData.peep || 5).toFixed(1), 
       unit: 'cmH₂O',
-      rawValue: filteredData.pressure.min || 0
+      rawValue: ventilatorData.peep || 5,
+      isConfigured: true
     },
     flujoMax: { 
       label: 'Flujo Max', 
-      value: filteredData.flow.max > 0 ? filteredData.flow.max.toFixed(1) : getMax(displayData.flow), 
+      // Mostrar Q Max calculado si está disponible, sino valor medido
+      value: ventilatorData.qMax ? ventilatorData.qMax.toFixed(1) : (filteredData.flow.max > 0 ? filteredData.flow.max.toFixed(1) : getMax(displayData.flow)), 
       unit: 'L/min',
-      rawValue: filteredData.flow.max || 0
+      rawValue: ventilatorData.qMax || filteredData.flow.max || parseFloat(getMax(displayData.flow)) || 0,
+      isConfigured: !!ventilatorData.qMax
     },
     flujo: { 
       label: 'Flujo', 
+      // Siempre mostrar valor medido en tiempo real
       value: filteredData.flow.filtered > 0 ? filteredData.flow.filtered.toFixed(1) : getLast(displayData.flow), 
       unit: 'L/min',
-      rawValue: filteredData.flow.filtered || 0
+      rawValue: filteredData.flow.filtered || parseFloat(getLast(displayData.flow)) || 0,
+      isConfigured: false
     },
     flujoMin: { 
       label: 'Flujo Min', 
+      // Siempre mostrar valor medido
       value: filteredData.flow.min > 0 ? filteredData.flow.min.toFixed(1) : getMin(displayData.flow), 
       unit: 'L/min',
-      rawValue: filteredData.flow.min || 0
+      rawValue: filteredData.flow.min || parseFloat(getMin(displayData.flow)) || 0,
+      isConfigured: false
     },
     volMax: { 
       label: 'Vol Max', 
+      // Siempre mostrar valor medido
       value: filteredData.volume.max > 0 ? filteredData.volume.max.toFixed(1) : getMax(displayData.volume), 
       unit: 'mL',
-      rawValue: filteredData.volume.max || 0
+      rawValue: filteredData.volume.max || parseFloat(getMax(displayData.volume)) || 0,
+      isConfigured: false
     },
     volumen: { 
       label: 'Volumen', 
-      value: filteredData.volume.filtered > 0 ? filteredData.volume.filtered.toFixed(1) : getLast(displayData.volume), 
+      // En modo volumen: mostrar valor configurado, en modo presión: mostrar valor medido/calculado
+      value: ventilationMode === 'volume' 
+        ? (ventilatorData.volumen || 500).toFixed(0)
+        : (filteredData.volume.filtered > 0 ? filteredData.volume.filtered.toFixed(1) : getLast(displayData.volume)), 
       unit: 'mL',
-      rawValue: filteredData.volume.filtered || 0
+      rawValue: ventilationMode === 'volume' 
+        ? (ventilatorData.volumen || 500)
+        : (filteredData.volume.filtered || parseFloat(getLast(displayData.volume)) || 0),
+      isConfigured: ventilationMode === 'volume'
     },
     volumenIntegrado: { 
       label: 'Vol Integrado', 
+      // Mostrar volumen integrado calculado
       value: integratedVolume.toFixed(1), 
       unit: 'mL',
       rawValue: integratedVolume,
-      onReset: resetIntegratedVolume
+      onReset: resetIntegratedVolume,
+      isConfigured: false
     },
     compliance: {
       label: 'Compliance',
+      // Mostrar compliance calculada
       value: complianceData.compliance.toFixed(5),
       unit: 'L/cmH₂O',
       rawValue: complianceData.compliance,
       status: complianceData.calculationStatus,
-      errors: errorDetection.errors
+      errors: errorDetection.errors,
+      isConfigured: false
     },
     presionMeseta: { 
       label: 'Presión Meseta', 
-      value: '--', 
+      // Mostrar presión de plateau calculada o medida
+      value: ventilatorData.presionTanque ? ventilatorData.presionTanque.toFixed(1) : '--', 
       unit: 'cmH₂O',
-      rawValue: 0
+      rawValue: ventilatorData.presionTanque || 0,
+      isConfigured: !!ventilatorData.presionTanque
     },
     presionPlaton: { 
       label: 'Presión Platón', 
+      // Placeholder para presión plateau cuando esté implementado
       value: '--', 
       unit: 'cmH₂O',
-      rawValue: 0
+      rawValue: 0,
+      isConfigured: false
     },
   };
 
@@ -1049,27 +1093,38 @@ const VentilatorDashboard = () => {
 
   // Función para obtener el color dinámico basado en el valor y tipo de parámetro
   const getValueColor = (id, value) => {
-    // Definir rangos normales para cada parámetro
+    // Definir rangos normales para cada parámetro (valores más específicos para ventilación)
     const ranges = {
-      presionPico: { normal: [10, 35], warning: [35, 50], danger: [50, Infinity] },
-      presionMedia: { normal: [5, 20], warning: [20, 30], danger: [30, Infinity] },
-      peep: { normal: [3, 12], warning: [12, 20], danger: [20, Infinity] },
-      flujoMax: { normal: [20, 80], warning: [80, 120], danger: [120, Infinity] },
-      flujo: { normal: [10, 60], warning: [60, 100], danger: [100, Infinity] },
-      flujoMin: { normal: [-10, 10], warning: [-20, -10], danger: [-Infinity, -20] },
-      volMax: { normal: [300, 800], warning: [800, 1200], danger: [1200, Infinity] },
-      volumen: { normal: [200, 600], warning: [600, 1000], danger: [1000, Infinity] },
-      volumenIntegrado: { normal: [0, 800], warning: [800, 1200], danger: [1200, Infinity] }
+      presionPico: { normal: [8, 30], warning: [30, 40], danger: [40, Infinity] },
+      presionMedia: { normal: [4, 15], warning: [15, 25], danger: [25, Infinity] },
+      peep: { normal: [3, 15], warning: [15, 20], danger: [20, Infinity] },
+      flujoMax: { normal: [30, 100], warning: [100, 150], danger: [150, Infinity] },
+      flujo: { normal: [-20, 80], warning: [80, 120], danger: [120, Infinity] },
+      flujoMin: { normal: [-60, 0], warning: [-80, -60], danger: [-Infinity, -80] },
+      volMax: { normal: [400, 900], warning: [900, 1200], danger: [1200, Infinity] },
+      volumen: { normal: [300, 800], warning: [800, 1000], danger: [1000, Infinity] },
+      volumenIntegrado: { normal: [0, 1000], warning: [1000, 1500], danger: [1500, Infinity] },
+      compliance: { normal: [0.02, 0.1], warning: [0.01, 0.02], danger: [0, 0.01] },
+      presionMeseta: { normal: [10, 25], warning: [25, 35], danger: [35, Infinity] }
     };
 
     const range = ranges[id];
-    if (!range) return 'text.secondary';
+    if (!range) return '#76c7c0'; // Color neutral para parámetros sin rango definido
 
-    if (value >= range.danger[0] && value <= range.danger[1]) return 'error.main';
-    if (value >= range.warning[0] && value <= range.warning[1]) return 'warning.main';
-    if (value >= range.normal[0] && value <= range.normal[1]) return 'success.main';
+    // Para compliance, la lógica es inversa (valores muy bajos son peligrosos)
+    if (id === 'compliance') {
+      if (value <= range.danger[1]) return '#f44336'; // Rojo para compliance muy baja
+      if (value <= range.warning[1]) return '#ff9800'; // Amarillo para compliance baja
+      if (value <= range.normal[1]) return '#4caf50'; // Verde para compliance normal
+      return '#76c7c0'; // Azul para compliance alta
+    }
+
+    // Para otros parámetros
+    if (value >= range.danger[0] && (range.danger[1] === Infinity || value <= range.danger[1])) return '#f44336'; // Rojo
+    if (value >= range.warning[0] && value <= range.warning[1]) return '#ff9800'; // Amarillo
+    if (value >= range.normal[0] && value <= range.normal[1]) return '#4caf50'; // Verde
     
-    return 'text.secondary';
+    return '#76c7c0'; // Azul para valores fuera de rangos esperados
   };
 
   // Función para obtener la tendencia de un valor
@@ -1267,9 +1322,11 @@ const VentilatorDashboard = () => {
                       fontWeight: 800, 
                       lineHeight: 1,
                       color: card.config.visible ? 'inherit' : 'text.secondary',
-                      // Color dinámico basado en el valor
+                      // Color dinámico basado en el valor y si es configurado o medido
                       ...(card.rawValue > 0 && {
-                        color: getValueColor(card.id, card.rawValue)
+                        color: card.isConfigured 
+                          ? '#4caf50' // Verde para valores configurados
+                          : getValueColor(card.id, card.rawValue) // Colores dinámicos para valores medidos
                       })
                     }}
                   >
@@ -1286,16 +1343,36 @@ const VentilatorDashboard = () => {
                     {card.unit}
                   </Typography>
                 </Box>
-                <Typography 
-                  variant="subtitle1" 
-                  sx={{ 
-                    fontWeight: 600, 
-                    mt: 0.5,
-                    color: card.config.visible ? 'inherit' : 'text.secondary'
-                  }}
-                >
-                  {card.label}
-                </Typography>
+                <Box display="flex" flexDirection="column" alignItems="center" width="100%">
+                  <Typography 
+                    variant="subtitle1" 
+                    sx={{ 
+                      fontWeight: 600, 
+                      mt: 0.5,
+                      color: card.config.visible ? 'inherit' : 'text.secondary'
+                    }}
+                  >
+                    {card.label}
+                  </Typography>
+                  {/* Indicador de tipo de valor */}
+                  {card.config.visible && (
+                    <Typography 
+                      variant="caption" 
+                      sx={{ 
+                        fontSize: '8px',
+                        color: card.isConfigured ? '#4caf50' : '#ff9800',
+                        backgroundColor: card.isConfigured ? 'rgba(76, 175, 80, 0.1)' : 'rgba(255, 152, 0, 0.1)',
+                        px: 0.5,
+                        py: 0.2,
+                        borderRadius: 0.5,
+                        mt: 0.3,
+                        fontWeight: 500
+                      }}
+                    >
+                      {card.isConfigured ? 'CONFIGURADO' : 'MEDIDO'}
+                    </Typography>
+                  )}
+                </Box>
 
                 {/* Botón de reset para volumen integrado */}
                 {card.id === 'volumenIntegrado' && card.config.visible && (
@@ -1546,10 +1623,20 @@ const VentilatorDashboard = () => {
                   type="number"
                   variant="outlined"
                   size="small"
-                  inputProps={{ min: 0 }}
-                  sx={{ width: '180px', height: '80px' }}
-                  value={ventilatorData.qMax}
+                  inputProps={{ min: 0, step: 0.1 }}
+                  sx={{ 
+                    width: '180px', 
+                    height: '80px',
+                    '& .MuiInputBase-input': {
+                      backgroundColor: ventilatorData.qMax ? 'rgba(76, 175, 80, 0.08)' : 'inherit'
+                    }
+                  }}
+                  value={ventilatorData.qMax || ''}
                   onChange={e => handleParameterChange('qMax', Number(e.target.value))}
+                  helperText={ventilatorData.qMax ? `Calculado: ${ventilatorData.qMax.toFixed(1)} L/min` : 'Auto-calculado'}
+                  InputProps={{
+                    readOnly: true // Solo lectura porque es calculado automáticamente
+                  }}
                 />
               </Box>
             </>
@@ -1571,6 +1658,37 @@ const VentilatorDashboard = () => {
                   ranges={parameterValidation.getParameterRanges('presionMax')}
                   sx={{ width: '180px', height: '80px' }}
                   inputProps={{ min: 5, max: 60 }}
+                />
+              </Box>
+              
+              {/* Mostrar volumen tidal calculado en modo presión */}
+              <Box display="flex" flexDirection="column" alignItems="center" ml={2}>
+                <Typography variant="subtitle2" sx={{ fontSize: '20px', fontWeight: 300, color: '#4caf50' }}>
+                  Vol. Calculado
+                </Typography>
+                <TextField
+                  type="number"
+                  variant="outlined"
+                  size="small"
+                  sx={{ 
+                    width: '140px', 
+                    height: '60px',
+                    '& .MuiInputBase-input': {
+                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                      color: '#4caf50',
+                      fontWeight: 'bold'
+                    }
+                  }}
+                  value={ventilatorData.volumen || 0}
+                  InputProps={{
+                    readOnly: true,
+                    endAdornment: (
+                      <Typography variant="caption" sx={{ fontSize: '10px', color: '#4caf50' }}>
+                        mL
+                      </Typography>
+                    )
+                  }}
+                  helperText="Auto-calculado desde C y PIP"
                 />
               </Box>
             </>
@@ -1705,18 +1823,53 @@ const VentilatorDashboard = () => {
                   type="number"
                   variant="outlined"
                   size="small"
-                  sx={{ width: 140 }}
-                  value={ventilatorData.relacionIE1}
-                  onChange={e => handleParameterChange('relacionIE1', Number(e.target.value))}
+                  sx={{ 
+                    width: 140,
+                    '& .MuiInputBase-input': {
+                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                      color: '#4caf50',
+                      fontWeight: 'bold'
+                    }
+                  }}
+                  value={ventilatorData.relacionIE1 || 1}
+                  InputProps={{
+                    readOnly: true
+                  }}
+                  helperText="Inspiración"
                 />
                 <TextField
                   type="number"
                   variant="outlined"
                   size="small"
-                  sx={{ width: 140 }}
-                  value={ventilatorData.relacionIE2}
-                  onChange={e => handleParameterChange('relacionIE2', Number(e.target.value))}
+                  sx={{ 
+                    width: 140,
+                    '& .MuiInputBase-input': {
+                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                      color: '#4caf50',
+                      fontWeight: 'bold'
+                    }
+                  }}
+                  value={ventilatorData.relacionIE2 || 1}
+                  InputProps={{
+                    readOnly: true
+                  }}
+                  helperText="Espiración"
                 />
+              </Box>
+              {/* Mostrar tiempos calculados */}
+              <Box display="flex" justifyContent="center" mt={1}>
+                <Typography variant="caption" sx={{ 
+                  fontSize: '11px', 
+                  color: '#4caf50',
+                  backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                  px: 1,
+                  py: 0.5,
+                  borderRadius: 1,
+                  textAlign: 'center'
+                }}>
+                  Ti: {ventilatorData.tiempoInspiratorio?.toFixed(2) || '0.00'}s | 
+                  Te: {ventilatorData.tiempoEspiratorio?.toFixed(2) || '0.00'}s
+                </Typography>
               </Box>
               {/* Pausa Inspiratoria */}
               <Typography variant="subtitle1" sx={{ fontSize: '24px', fontWeight: 200, textAlign: 'center' }}>Pausa Inspiratoria</Typography>
