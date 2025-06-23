@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo, Suspense } from 'react';
 import {
   Box,
   Container,
@@ -22,8 +22,8 @@ import {
   Collapse,
   Menu,
   MenuItem,
-  ErrorIcon,
-  WarningIcon,
+  BottomNavigation,
+  BottomNavigationAction,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import SendIcon from '@mui/icons-material/Send';
@@ -38,6 +38,13 @@ import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import StopIcon from '@mui/icons-material/Stop';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PsychologyIcon from '@mui/icons-material/Psychology';
+import ErrorIcon from '@mui/icons-material/Error';
+import WarningIcon from '@mui/icons-material/Warning';
+// Iconos para las pestañas de navegación
+import PersonIcon from '@mui/icons-material/Person';
+import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
+import WifiIcon from '@mui/icons-material/Wifi';
 
 // Componentes que vamos a crear
 import ControlPanel from './ControlPanel';
@@ -47,6 +54,9 @@ import ParameterDisplay from './ParameterDisplay';
 import ComplianceStatus from './ComplianceStatus';
 import ValidationAlerts from './ValidationAlerts';
 import ValidatedInput from './common/ValidatedInput';
+
+// Importación adicional para el simulador de paciente
+const PatientSimulator = React.lazy(() => import('./PatientSimulator'));
 
 // Hooks
 import { useSerialConnection } from '../hooks/useSerialConnection';
@@ -91,6 +101,7 @@ const ventilatorTheme = createTheme({
 const DashboardContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
   padding: theme.spacing(2),
+  paddingBottom: '80px', // Espacio para la barra de navegación fija
 }));
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -314,7 +325,15 @@ const AIAnalysisButton = styled(Box)(({ theme, isAnalyzing }) => ({
 
 const VentilatorDashboard = () => {
   const serialConnection = useSerialConnection();
-  const { ventilatorData, realTimeData, setVentilatorData, calculations } = useVentilatorData(serialConnection);
+  const { 
+    ventilatorData, 
+    realTimeData, 
+    setVentilatorData, 
+    calculations,
+    integratedVolume,
+    getCurrentIntegratedVolume,
+    resetIntegratedVolume
+  } = useVentilatorData(serialConnection);
   
   // Datos de prueba para cuando no hay conexión
   const mockData = useMockData(!serialConnection.isConnected);
@@ -325,6 +344,9 @@ const VentilatorDashboard = () => {
   // Estado para el modo de ventilación
   const [ventilationMode, setVentilationMode] = useState('volume'); // 'volume' o 'pressure'
   const [configSent, setConfigSent] = useState(false);
+
+  // Estado para la navegación por pestañas
+  const [activeTab, setActiveTab] = useState(1); // 0: Simular paciente, 1: Monitoreo, 2: Gráficas, 3: Conexión
 
   // Estado para el modo de ajuste de tarjetas
   const [isAdjustMode, setIsAdjustMode] = useState(false);
@@ -337,9 +359,10 @@ const VentilatorDashboard = () => {
     { id: 'flujoMin', label: 'Flujo Min', visible: true, order: 5 },
     { id: 'volMax', label: 'Vol Max', visible: true, order: 6 },
     { id: 'volumen', label: 'Volumen', visible: true, order: 7 },
-    { id: 'compliance', label: 'Compliance', visible: false, order: 8 }, // Solo visible en presión control
-    { id: 'presionMeseta', label: 'Presión Meseta', visible: false, order: 9 },
-    { id: 'presionPlaton', label: 'Presión Platón', visible: false, order: 10 },
+    { id: 'volumenIntegrado', label: 'Vol Integrado', visible: true, order: 8 },
+    { id: 'compliance', label: 'Compliance', visible: false, order: 9 }, // Solo visible en presión control
+    { id: 'presionMeseta', label: 'Presión Meseta', visible: false, order: 10 },
+    { id: 'presionPlaton', label: 'Presión Platón', visible: false, order: 11 },
   ]);
   const [draggedCard, setDraggedCard] = useState(null);
 
@@ -375,7 +398,8 @@ const VentilatorDashboard = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Estado para alertas de validación
-  const [showValidationAlerts, setShowValidationAlerts] = useState(true);
+  const [showValidationAlerts, setShowValidationAlerts] = useState(false);
+  const [showCompactValidationAlerts, setShowCompactValidationAlerts] = useState(false);
 
   // Refs para mantener referencias estables y evitar bucles infinitos
   const ventilatorDataRef = useRef(ventilatorData);
@@ -711,9 +735,11 @@ const VentilatorDashboard = () => {
       const timeoutId = setTimeout(() => {
         const validation = parameterValidation.updateValidationState(ventilatorData, ventilationMode);
         
-        // Mostrar alerta compacta si hay errores críticos
+        // Mostrar alerta compacta automáticamente solo si hay errores críticos
         if (validation.criticalErrors.length > 0) {
-          setShowValidationAlerts(true);
+          setShowCompactValidationAlerts(true);
+        } else {
+          setShowCompactValidationAlerts(false);
         }
       }, 100); // Pequeño delay para evitar validaciones muy frecuentes
 
@@ -739,13 +765,13 @@ const VentilatorDashboard = () => {
     const validation = parameterValidation.updateValidationState(ventilatorData, ventilationMode);
     
     if (!validation.valid) {
-      setNotification({
-        type: 'error',
-        message: `No se puede enviar configuración: ${validation.criticalErrors.length} error(es) crítico(s)`,
-        timestamp: Date.now()
-      });
-      setShowValidationAlerts(true);
-      return;
+              setNotification({
+          type: 'error',
+          message: `No se puede enviar configuración: ${validation.criticalErrors.length} error(es) crítico(s)`,
+          timestamp: Date.now()
+        });
+        setShowCompactValidationAlerts(true);
+        return;
     }
 
     // Mostrar advertencias si las hay
@@ -864,9 +890,10 @@ const VentilatorDashboard = () => {
       { id: 'flujoMin', label: 'Flujo Min', visible: true, order: 5 },
       { id: 'volMax', label: 'Vol Max', visible: true, order: 6 },
       { id: 'volumen', label: 'Volumen', visible: true, order: 7 },
-      { id: 'compliance', label: 'Compliance', visible: ventilationMode === 'pressure', order: 8 }, // Solo visible en presión control
-      { id: 'presionMeseta', label: 'Presión Meseta', visible: false, order: 9 },
-      { id: 'presionPlaton', label: 'Presión Platón', visible: false, order: 10 },
+      { id: 'volumenIntegrado', label: 'Vol Integrado', visible: true, order: 8 },
+      { id: 'compliance', label: 'Compliance', visible: ventilationMode === 'pressure', order: 9 }, // Solo visible en presión control
+      { id: 'presionMeseta', label: 'Presión Meseta', visible: false, order: 10 },
+      { id: 'presionPlaton', label: 'Presión Platón', visible: false, order: 11 },
     ]);
   };
 
@@ -970,6 +997,13 @@ const VentilatorDashboard = () => {
       unit: 'mL',
       rawValue: filteredData.volume.filtered || 0
     },
+    volumenIntegrado: { 
+      label: 'Vol Integrado', 
+      value: integratedVolume.toFixed(1), 
+      unit: 'mL',
+      rawValue: integratedVolume,
+      onReset: resetIntegratedVolume
+    },
     compliance: {
       label: 'Compliance',
       value: complianceData.compliance.toFixed(5),
@@ -1024,7 +1058,8 @@ const VentilatorDashboard = () => {
       flujo: { normal: [10, 60], warning: [60, 100], danger: [100, Infinity] },
       flujoMin: { normal: [-10, 10], warning: [-20, -10], danger: [-Infinity, -20] },
       volMax: { normal: [300, 800], warning: [800, 1200], danger: [1200, Infinity] },
-      volumen: { normal: [200, 600], warning: [600, 1000], danger: [1000, Infinity] }
+      volumen: { normal: [200, 600], warning: [600, 1000], danger: [1000, Infinity] },
+      volumenIntegrado: { normal: [0, 800], warning: [800, 1200], danger: [1200, Infinity] }
     };
 
     const range = ranges[id];
@@ -1047,7 +1082,8 @@ const VentilatorDashboard = () => {
       flujo: { normal: [10, 60], warning: [60, 100], danger: [100, Infinity] },
       flujoMin: { normal: [-10, 10], warning: [-20, -10], danger: [-Infinity, -20] },
       volMax: { normal: [300, 800], warning: [800, 1200], danger: [1200, Infinity] },
-      volumen: { normal: [200, 600], warning: [600, 1000], danger: [1000, Infinity] }
+      volumen: { normal: [200, 600], warning: [600, 1000], danger: [1000, Infinity] },
+      volumenIntegrado: { normal: [0, 800], warning: [800, 1200], danger: [1200, Infinity] }
     };
 
     const range = ranges[id];
@@ -1058,139 +1094,19 @@ const VentilatorDashboard = () => {
     return 'stable';
   };
 
+  // Función para renderizar el contenido según la pestaña activa
+  const renderContent = () => {
+    switch (activeTab) {
+      case 0: // Simular Paciente
   return (
-    <ThemeProvider theme={ventilatorTheme}>
-      <CssBaseline />
-      
-      {/* Alertas de validación compactas */}
-      <ValidationAlerts
-        validationState={parameterValidation.validationState}
-        onClose={() => setShowValidationAlerts(false)}
-        show={showValidationAlerts}
-        compact={true}
-      />
-      
-      {/* Botones de grabación y descarga en la parte superior derecha */}
-      <Box
-        sx={{
-          position: 'fixed',
-          top: 20,
-          right: 20,
-          zIndex: 1000,
-          display: 'flex',
-          gap: 1,
-          alignItems: 'center',
-        }}
-      >
-        {/* Botón de grabación */}
-        {/* Eliminado - reemplazado por botón Enviar */}
-
-        {/* Botón de descarga */}
-        <Tooltip 
-          title="Descargar configuraciones enviadas" 
-          placement="bottom"
-          arrow
-        >
-          <IconButton
-            onClick={handleDownloadMenuOpen}
-            disabled={!dataRecording.hasData}
-            sx={{
-              backgroundColor: dataRecording.hasData ? 'primary.main' : 'rgba(255, 255, 255, 0.1)',
-              color: dataRecording.hasData ? '#000' : 'text.secondary',
-              '&:hover': {
-                backgroundColor: dataRecording.hasData ? 'primary.dark' : 'rgba(255, 255, 255, 0.2)',
-              }
-            }}
-          >
-            <DownloadIcon />
-          </IconButton>
-        </Tooltip>
-
-        {/* Menú de descarga */}
-        <Menu
-          anchorEl={downloadMenuAnchor}
-          open={Boolean(downloadMenuAnchor)}
-          onClose={handleDownloadMenuClose}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-        >
-          <MenuItem onClick={handleDownloadTxt}>
-            <DownloadIcon sx={{ mr: 1 }} />
-            Descargar como TXT
-          </MenuItem>
-          <MenuItem onClick={handleDownloadPdf}>
-            <DownloadIcon sx={{ mr: 1 }} />
-            Descargar como PDF
-          </MenuItem>
-        </Menu>
-
-        {/* Indicador de estado de grabación */}
-        {dataRecording.isRecording && (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.5,
-              backgroundColor: 'rgba(0, 0, 0, 0.7)',
-              padding: '4px 8px',
-              borderRadius: 1,
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-            }}
-          >
-            <Box
-              sx={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                backgroundColor: 'error.main',
-                animation: 'pulse 1s infinite',
-                '@keyframes pulse': {
-                  '0%': { opacity: 1 },
-                  '50%': { opacity: 0.5 },
-                  '100%': { opacity: 1 }
-                }
-              }}
-            />
-            <Typography variant="caption" sx={{ fontSize: '10px', color: 'text.secondary' }}>
-              Grabando configuraciones ({dataRecording.recordedData.length} enviadas)
-            </Typography>
-          </Box>
-        )}
-      </Box>
-      
-      {/* Notificación de descarga */}
-      {notification && (
-        <Box
-          sx={{
-            position: 'fixed',
-            top: 80,
-            right: 20,
-            zIndex: 1001,
-            backgroundColor: notification.type === 'success' ? 'success.main' : 'error.main',
-            color: '#fff',
-            padding: '8px 16px',
-            borderRadius: 1,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-            animation: 'slideIn 0.3s ease-out',
-            '@keyframes slideIn': {
-              from: { transform: 'translateX(100%)', opacity: 0 },
-              to: { transform: 'translateX(0)', opacity: 1 }
-            }
-          }}
-        >
-          <Typography variant="body2">
-            {notification.message}
-          </Typography>
-        </Box>
-      )}
-      
+          <Suspense fallback={<Box display="flex" justifyContent="center" alignItems="center" height="50vh">
+            <Typography variant="h6">Cargando Simulador de Paciente...</Typography>
+          </Box>}>
+            <PatientSimulator />
+          </Suspense>
+        );
+      case 1: // Monitoreo (contenido actual)
+        return (
       <Box display="flex" flexDirection="row" alignItems="flex-start" mb={2} ml={2}>
         {/* Imágenes*/}
         <Box display="flex" flexDirection="column" alignItems="left">
@@ -1201,23 +1117,32 @@ const VentilatorDashboard = () => {
           <Box mt={1} mb={1} display="flex" gap={1} flexDirection="column">
             {/* Botones Enviar y Detener */}
             <Box display="flex" gap={1}>
-              <Button
-                variant="contained"
-                size="small"
-                sx={{
-                  backgroundColor: 'success.main',
-                  color: '#fff',
-                  minWidth: '80px',
-                  height: '32px',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  '&:hover': {
-                    backgroundColor: 'success.dark',
-                  }
-                }}
+              <Tooltip 
+                title="Enviar configuración actual al ventilador" 
+                placement="bottom"
+                arrow
               >
-                Enviar
-              </Button>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={handleSendConfiguration}
+                  disabled={!serialConnection.isConnected}
+                  startIcon={configSent ? <CheckCircleIcon /> : <SendIcon />}
+                  sx={{
+                    backgroundColor: configSent ? 'success.main' : 'success.main',
+                    color: '#fff',
+                    minWidth: '80px',
+                    height: '32px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    '&:hover': {
+                      backgroundColor: configSent ? 'success.dark' : 'success.dark',
+                    }
+                  }}
+                >
+                  {configSent ? 'Enviado' : 'Enviar'}
+                </Button>
+              </Tooltip>
               <Button
                 variant="contained"
                 size="small"
@@ -1371,6 +1296,32 @@ const VentilatorDashboard = () => {
                 >
                   {card.label}
                 </Typography>
+
+                {/* Botón de reset para volumen integrado */}
+                {card.id === 'volumenIntegrado' && card.config.visible && (
+                  <Box display="flex" justifyContent="center" mt={0.5}>
+                    <Tooltip title="Resetear volumen integrado a 0" arrow>
+                      <IconButton
+                        size="small"
+                        onClick={card.onReset}
+                        sx={{ 
+                          color: 'warning.main',
+                          backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                          '&:hover': { 
+                            backgroundColor: 'rgba(255, 152, 0, 0.2)',
+                            transform: 'scale(1.1)'
+                          },
+                          width: 24,
+                          height: 24
+                        }}
+                      >
+                        <Typography variant="caption" sx={{ fontSize: '10px', fontWeight: 'bold' }}>
+                          ↺
+                        </Typography>
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                )}
 
                 {/* Información adicional para la tarjeta de compliance */}
                 {card.id === 'compliance' && card.config.visible && ventilationMode === 'pressure' && (
@@ -1829,38 +1780,279 @@ const VentilatorDashboard = () => {
                 show={showValidationAlerts}
                 compact={false}
               />
-            </Box>
-
-            {/* Botón de Enviar Configuración */}
-            <Box sx={{ width: 300, marginLeft: -18, mt: 3 }}>
-              <Tooltip 
-                title="Enviar configuración actual al ventilador" 
-                placement="top"
-                arrow
-              >
+              
+              {/* Botón para mostrar/ocultar alertas detalladas */}
+              <Box display="flex" justifyContent="center" mt={1}>
                 <Button
-                  variant="contained"
-                  onClick={handleSendConfiguration}
-                  disabled={!serialConnection.isConnected}
-                  startIcon={configSent ? <CheckCircleIcon /> : <SendIcon />}
+                  variant="outlined"
+                  size="small"
+                  onClick={() => setShowValidationAlerts(!showValidationAlerts)}
                   sx={{
-                    width: '100%',
-                    height: '50px',
-                    fontSize: '16px',
-                    fontWeight: 600,
-                    backgroundColor: configSent ? 'success.main' : 'primary.main',
+                    color: 'text.secondary',
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
                     '&:hover': {
-                      backgroundColor: configSent ? 'success.dark' : 'primary.dark',
+                      borderColor: 'primary.main',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
                     }
                   }}
+                  startIcon={showValidationAlerts ? <VisibilityOffIcon /> : <VisibilityIcon />}
                 >
-                  {configSent ? 'Configuración Enviada' : 'Enviar Configuración'}
+                  {showValidationAlerts ? 'Ocultar Alertas' : 'Ver Alertas Detalladas'}
                 </Button>
-              </Tooltip>
+              </Box>
             </Box>
+
+
           </Box>
         </Box>
       </Box>
+        );
+      case 2: // Gráficas
+        return (
+          <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
+            <Typography variant="h4" sx={{ color: '#de0b24' }}>
+              Módulo de Gráficas Avanzadas - Próximamente
+            </Typography>
+          </Box>
+        );
+      case 3: // Conexión
+        return (
+          <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
+            <Typography variant="h4" sx={{ color: '#de0b24' }}>
+              Módulo de Conexión - Próximamente
+            </Typography>
+          </Box>
+        );
+      default:
+        return (
+          <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
+            <Typography variant="h6">Pestaña no encontrada</Typography>
+          </Box>
+        );
+    }
+  };
+
+  return (
+    <ThemeProvider theme={ventilatorTheme}>
+      <CssBaseline />
+      
+      {/* Alertas de validación compactas */}
+      <ValidationAlerts
+        validationState={parameterValidation.validationState}
+        onClose={() => setShowCompactValidationAlerts(false)}
+        show={showCompactValidationAlerts}
+        compact={true}
+      />
+      
+      {/* Indicador compacto de alertas sin mostrar */}
+      {!showCompactValidationAlerts && (parameterValidation.validationState.criticalErrors.length > 0 || parameterValidation.validationState.warnings.length > 0) && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 20,
+            left: 20,
+            zIndex: 999,
+            backgroundColor: parameterValidation.validationState.criticalErrors.length > 0 ? 'error.main' : 'warning.main',
+            color: '#fff',
+            padding: '6px 12px',
+            borderRadius: '20px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'scale(1.05)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+            }
+          }}
+          onClick={() => setShowCompactValidationAlerts(true)}
+        >
+          <Box display="flex" alignItems="center" gap={0.5}>
+            {parameterValidation.validationState.criticalErrors.length > 0 ? (
+              <ErrorIcon fontSize="small" />
+            ) : (
+              <WarningIcon fontSize="small" />
+            )}
+            <Typography variant="caption" sx={{ fontSize: '11px', fontWeight: 'bold' }}>
+              {parameterValidation.validationState.criticalErrors.length > 0 
+                ? `${parameterValidation.validationState.criticalErrors.length} error${parameterValidation.validationState.criticalErrors.length > 1 ? 'es' : ''}`
+                : `${parameterValidation.validationState.warnings.length} aviso${parameterValidation.validationState.warnings.length > 1 ? 's' : ''}`
+              }
+            </Typography>
+          </Box>
+        </Box>
+      )}
+      
+      {/* Botones de grabación y descarga en la parte superior derecha */}
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 20,
+          right: 20,
+          zIndex: 1000,
+          display: 'flex',
+          gap: 1,
+          alignItems: 'center',
+        }}
+      >
+        {/* Botón de grabación */}
+        {/* Eliminado - reemplazado por botón Enviar */}
+
+        {/* Botón de descarga */}
+        <Tooltip 
+          title="Descargar configuraciones enviadas" 
+          placement="bottom"
+          arrow
+        >
+          <IconButton
+            onClick={handleDownloadMenuOpen}
+            disabled={!dataRecording.hasData}
+            sx={{
+              backgroundColor: dataRecording.hasData ? 'primary.main' : 'rgba(255, 255, 255, 0.1)',
+              color: dataRecording.hasData ? '#000' : 'text.secondary',
+              '&:hover': {
+                backgroundColor: dataRecording.hasData ? 'primary.dark' : 'rgba(255, 255, 255, 0.2)',
+              }
+            }}
+          >
+            <DownloadIcon />
+          </IconButton>
+        </Tooltip>
+
+        {/* Menú de descarga */}
+        <Menu
+          anchorEl={downloadMenuAnchor}
+          open={Boolean(downloadMenuAnchor)}
+          onClose={handleDownloadMenuClose}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+        >
+          <MenuItem onClick={handleDownloadTxt}>
+            <DownloadIcon sx={{ mr: 1 }} />
+            Descargar como TXT
+          </MenuItem>
+          <MenuItem onClick={handleDownloadPdf}>
+            <DownloadIcon sx={{ mr: 1 }} />
+            Descargar como PDF
+          </MenuItem>
+        </Menu>
+
+        {/* Indicador de estado de grabación */}
+        {dataRecording.isRecording && (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              padding: '4px 8px',
+              borderRadius: 1,
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            <Box
+              sx={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                backgroundColor: 'error.main',
+                animation: 'pulse 1s infinite',
+                '@keyframes pulse': {
+                  '0%': { opacity: 1 },
+                  '50%': { opacity: 0.5 },
+                  '100%': { opacity: 1 }
+                }
+              }}
+            />
+            <Typography variant="caption" sx={{ fontSize: '10px', color: 'text.secondary' }}>
+              Grabando configuraciones ({dataRecording.recordedData.length} enviadas)
+            </Typography>
+          </Box>
+        )}
+      </Box>
+      
+      {/* Notificación de descarga */}
+      {notification && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 80,
+            right: 20,
+            zIndex: 1001,
+            backgroundColor: notification.type === 'success' ? 'success.main' : 'error.main',
+            color: '#fff',
+            padding: '8px 16px',
+            borderRadius: 1,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            animation: 'slideIn 0.3s ease-out',
+            '@keyframes slideIn': {
+              from: { transform: 'translateX(100%)', opacity: 0 },
+              to: { transform: 'translateX(0)', opacity: 1 }
+            }
+          }}
+        >
+          <Typography variant="body2">
+            {notification.message}
+          </Typography>
+        </Box>
+      )}
+      
+      {renderContent()}
+      
+      {/* Barra de navegación fija en la parte inferior */}
+      <BottomNavigation
+        value={activeTab}
+        onChange={(event, newValue) => setActiveTab(newValue)}
+        sx={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          width: '100%',
+          backgroundColor: 'rgba(31, 31, 31, 0.95)',
+          backdropFilter: 'blur(10px)',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          zIndex: 1100,
+          '& .MuiBottomNavigationAction-root': {
+            color: 'rgba(255, 255, 255, 0.6)',
+            '&.Mui-selected': {
+              color: '#de0b24',
+            },
+            '&:hover': {
+              color: 'rgba(255, 255, 255, 0.8)',
+            },
+            minWidth: 80,
+            fontSize: '12px'
+          }
+        }}
+      >
+        <BottomNavigationAction
+          label="Simular Paciente"
+          value={0}
+          icon={<PersonIcon />}
+        />
+        <BottomNavigationAction
+          label="Monitoreo"
+          value={1}
+          icon={<MonitorHeartIcon />}
+        />
+        <BottomNavigationAction
+          label="Gráficas"
+          value={2}
+          icon={<ShowChartIcon />}
+        />
+        <BottomNavigationAction
+          label="Conexión"
+          value={3}
+          icon={<WifiIcon />}
+        />
+      </BottomNavigation>
     </ThemeProvider>
   );
 };

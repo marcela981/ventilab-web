@@ -29,54 +29,274 @@ export const useVentilatorData = (serialConnection) => {
     pressure: [],
     flow: [],
     volume: [],
+    integratedVolume: [], // Nuevo array para el volumen integrado
     time: [],
+  });
+
+  // Estado para el volumen integrado (equivalente a self.v2 en Python)
+  const [integratedVolume, setIntegratedVolume] = useState(0);
+
+  const [systemStatus, setSystemStatus] = useState({
+    lastMessage: '',
+    connectionState: 'disconnected',
+    lastError: null,
+    lastAck: null,
+    configConfirmed: false
   });
 
   const [calculations] = useState(new VentilatorCalculations());
 
-  const processSensorData = useCallback((frame) => {
-    if (frame.startsWith('S')) {
-      const { pressure, flow, volume } = calculations.decodeSensorFrame(frame);
-      
-      // Filtro de media móvil exponencial
-      const alphaP = 0.1;
-      const alphaQ = 0.5;
-      const alphaV = 0.3;
-      
-      setRealTimeData(prev => {
-        const now = Date.now();
-        const filteredPressure = (alphaP * pressure) + (1 - alphaP) * (prev.pressure[prev.pressure.length - 1] || 0);
-        const filteredFlow = (alphaQ * flow) + (1 - alphaQ) * (prev.flow[prev.flow.length - 1] || 0);
-        const filteredVolume = (alphaV * volume) + (1 - alphaV) * (prev.volume[prev.volume.length - 1] || 0);
+  // Callback para procesar datos de sensores
+  const processSensorData = useCallback((decodedFrame) => {
+    if (decodedFrame.error) {
+      console.error('Error en trama de sensores:', decodedFrame.error);
+      return;
+    }
 
-        return {
-          pressure: [...prev.pressure.slice(-100), filteredPressure],
-          flow: [...prev.flow.slice(-100), filteredFlow],
-          volume: [...prev.volume.slice(-100), filteredVolume],
-          time: [...prev.time.slice(-100), now],
-        };
-      });
+    const { pressure, flow, volume } = decodedFrame.data;
+    
+    // Filtro de media móvil exponencial (migrado desde Python)
+    const alphaP = 0.1;
+    const alphaQ = 0.5;
+    const alphaV = 0.3;
+    
+    setRealTimeData(prev => {
+      const now = Date.now();
+      const lastPressure = prev.pressure[prev.pressure.length - 1] || 0;
+      const lastFlow = prev.flow[prev.flow.length - 1] || 0;
+      const lastVolume = prev.volume[prev.volume.length - 1] || 0;
+      
+      const filteredPressure = (alphaP * pressure) + (1 - alphaP) * lastPressure;
+      const filteredFlow = (alphaQ * flow) + (1 - alphaQ) * lastFlow;
+      const filteredVolume = (alphaV * volume) + (1 - alphaV) * lastVolume;
 
-      setVentilatorData(prev => ({
+      return {
+        pressure: [...prev.pressure.slice(-100), filteredPressure],
+        flow: [...prev.flow.slice(-100), filteredFlow],
+        volume: [...prev.volume.slice(-100), filteredVolume],
+        integratedVolume: [...prev.integratedVolume.slice(-100)], // Se actualizará después
+        time: [...prev.time.slice(-100), now],
+      };
+    });
+
+    // Cálculo del volumen integrado (equivalente a Python: self.v2=self.v2+f)
+    setIntegratedVolume(prevIntegratedVol => {
+      let newIntegratedVol = prevIntegratedVol + flow;
+      
+      // Reset del volumen integrado si es negativo o si el volumen del sensor es 0
+      // (equivalente a Python: if(self.v2<0 or v==0): self.v2=0)
+      if (newIntegratedVol < 0 || volume === 0) {
+        newIntegratedVol = 0;
+      }
+
+      // Actualizar el array de volumen integrado en realTimeData
+      setRealTimeData(prev => ({
         ...prev,
-        pressure,
-        flow,
-        volume,
+        integratedVolume: [...prev.integratedVolume.slice(-100), newIntegratedVol]
+      }));
+
+      return newIntegratedVol;
+    });
+
+    setVentilatorData(prev => ({
+      ...prev,
+      pressure: pressure,
+      flow: flow,
+      volume: volume,
+    }));
+  }, []);
+
+  // Callback para procesar mensajes de estado
+  const processStatusMessage = useCallback((decodedFrame) => {
+    if (decodedFrame.error) {
+      console.error('Error en trama de estado:', decodedFrame.error);
+      return;
+    }
+
+    setSystemStatus(prev => ({
+      ...prev,
+      lastMessage: decodedFrame.data.message,
+      connectionState: 'connected'
+    }));
+
+    console.log('Estado del sistema:', decodedFrame.data.message);
+  }, []);
+
+  // Callback para procesar errores
+  const processErrorMessage = useCallback((decodedFrame) => {
+    if (decodedFrame.error) {
+      console.error('Error procesando trama de error:', decodedFrame.error);
+      return;
+    }
+
+    setSystemStatus(prev => ({
+      ...prev,
+      lastError: {
+        code: decodedFrame.data.code,
+        description: decodedFrame.data.description,
+        severity: decodedFrame.data.severity,
+        timestamp: decodedFrame.data.timestamp
+      }
+    }));
+
+    console.error(`Error del sistema [${decodedFrame.data.code}]:`, decodedFrame.data.description);
+  }, []);
+
+  // Callback para procesar confirmaciones (ACK)
+  const processAckMessage = useCallback((decodedFrame) => {
+    if (decodedFrame.error) {
+      console.error('Error en trama ACK:', decodedFrame.error);
+      return;
+    }
+
+    setSystemStatus(prev => ({
+      ...prev,
+      lastAck: {
+        code: decodedFrame.data.code,
+        message: decodedFrame.data.message,
+        timestamp: decodedFrame.data.timestamp
+      }
+    }));
+
+    console.log('Confirmación recibida:', decodedFrame.data.message);
+  }, []);
+
+  // Callback para procesar confirmaciones de configuración
+  const processConfigConfirm = useCallback((decodedFrame) => {
+    if (decodedFrame.error) {
+      console.error('Error en confirmación de configuración:', decodedFrame.error);
+      return;
+    }
+
+    setSystemStatus(prev => ({
+      ...prev,
+      configConfirmed: decodedFrame.data.success,
+      lastMessage: decodedFrame.data.success 
+        ? 'Configuración aplicada exitosamente'
+        : `Error en configuración: ${decodedFrame.data.details}`
+    }));
+
+    if (decodedFrame.data.success) {
+      console.log('Configuración confirmada:', decodedFrame.data.details);
+    } else {
+      console.error('Error en configuración:', decodedFrame.data.details);
+    }
+  }, []);
+
+  // Callback para procesar mensajes de debug
+  const processDebugMessage = useCallback((decodedFrame) => {
+    if (decodedFrame.error) {
+      console.error('Error en trama de debug:', decodedFrame.error);
+      return;
+    }
+
+    console.debug('Debug info:', decodedFrame.data.info);
+  }, []);
+
+  // Callback para procesar tramas desconocidas
+  const processUnknownMessage = useCallback((decodedFrame) => {
+    console.warn('Trama desconocida recibida:', decodedFrame.data);
+  }, []);
+
+  // Registrar callbacks cuando la conexión esté disponible
+  useEffect(() => {
+    if (serialConnection && serialConnection.isConnected) {
+      // Registrar todos los callbacks para diferentes tipos de tramas
+      serialConnection.onSensorData(processSensorData);
+      serialConnection.onStatusMessage(processStatusMessage);
+      serialConnection.onErrorMessage(processErrorMessage);
+      serialConnection.onAckMessage(processAckMessage);
+      serialConnection.onConfigConfirm(processConfigConfirm);
+      serialConnection.onDebugMessage(processDebugMessage);
+      serialConnection.onUnknownMessage(processUnknownMessage);
+
+      // Actualizar estado de conexión
+      setSystemStatus(prev => ({
+        ...prev,
+        connectionState: 'connected'
+      }));
+    } else {
+      // Actualizar estado de desconexión
+      setSystemStatus(prev => ({
+        ...prev,
+        connectionState: 'disconnected',
+        lastMessage: 'Desconectado'
       }));
     }
-  }, [calculations]);
+  }, [
+    serialConnection, 
+    serialConnection?.isConnected,
+    processSensorData,
+    processStatusMessage,
+    processErrorMessage,
+    processAckMessage,
+    processConfigConfirm,
+    processDebugMessage,
+    processUnknownMessage
+  ]);
 
-  useEffect(() => {
-    if (serialConnection.isConnected) {
-      serialConnection.readData(processSensorData);
+  // Funciones de conveniencia para enviar comandos
+  const sendConfiguration = useCallback(async (mode, waveType, parameters) => {
+    if (!serialConnection || !serialConnection.isConnected) {
+      console.warn('No se puede enviar configuración: sin conexión');
+      return false;
     }
-  }, [serialConnection.isConnected, processSensorData]);
+
+    return await serialConnection.sendConfiguration(mode, waveType, parameters);
+  }, [serialConnection]);
+
+  const startVentilation = useCallback(async () => {
+    if (!serialConnection || !serialConnection.isConnected) {
+      console.warn('No se puede iniciar ventilación: sin conexión');
+      return false;
+    }
+
+    return await serialConnection.startSystem();
+  }, [serialConnection]);
+
+  const stopVentilation = useCallback(async () => {
+    if (!serialConnection || !serialConnection.isConnected) {
+      console.warn('No se puede detener ventilación: sin conexión');
+      return false;
+    }
+
+    return await serialConnection.stopSystem();
+  }, [serialConnection]);
+
+  const resetSystem = useCallback(async () => {
+    if (!serialConnection || !serialConnection.isConnected) {
+      console.warn('No se puede reiniciar sistema: sin conexión');
+      return false;
+    }
+
+    return await serialConnection.resetSystem();
+  }, [serialConnection]);
+
+  // Función para resetear el volumen integrado manualmente
+  const resetIntegratedVolume = useCallback(() => {
+    setIntegratedVolume(0);
+  }, []);
+
+  // Función para obtener el volumen integrado actual
+  const getCurrentIntegratedVolume = useCallback(() => {
+    return integratedVolume;
+  }, [integratedVolume]);
 
   return {
     ventilatorData,
     realTimeData,
+    systemStatus,
     setVentilatorData,
-    calculations
+    calculations,
+    // Datos del volumen integrado
+    integratedVolume,
+    getCurrentIntegratedVolume,
+    resetIntegratedVolume,
+    // Funciones de comando
+    sendConfiguration,
+    startVentilation,
+    stopVentilation,
+    resetSystem
   };
 };
 
