@@ -49,7 +49,18 @@ const ValidationAlerts = ({
   show = true,
   compact = false 
 }) => {
-  const { criticalErrors, warnings, severity, patientType } = validationState;
+  // Validaciones defensivas
+  if (!validationState) {
+    return null;
+  }
+
+  const { 
+    criticalErrors = [], 
+    warnings = [], 
+    severity = 'safe', 
+    patientType = 'general' 
+  } = validationState;
+  
   const [activeTab, setActiveTab] = useState(0);
 
   if (!show || (criticalErrors.length === 0 && warnings.length === 0)) {

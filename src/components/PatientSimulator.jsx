@@ -38,6 +38,7 @@ import ScienceIcon from '@mui/icons-material/Science';
 import HistoryIcon from '@mui/icons-material/History';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { getSimulatedPatientData, predefinedClinicalCases } from '../utils/patientSimulatedData';
+import { usePatientData } from '../hooks/usePatientData';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   backgroundColor: 'rgba(31, 31, 31, 0.8)',
@@ -46,6 +47,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
 }));
 
 const PatientSimulator = () => {
+  const { receivePatientData } = usePatientData();
   const [activeStep, setActiveStep] = useState(0);
   const [validationErrors, setValidationErrors] = useState({});
   
@@ -375,7 +377,6 @@ const PatientSimulator = () => {
     if (!validateAllRequiredFields()) {
       alert('Por favor, complete todos los campos obligatorios antes de enviar al monitoreo. Revise los campos marcados en rojo.');
       
-      // Ir al primer paso que tiene errores
       const hasErrors0 = requiredFieldsByStep[0].some(field => validationErrors[field]);
       if (hasErrors0) {
         setActiveStep(0);
@@ -383,16 +384,34 @@ const PatientSimulator = () => {
       return;
     }
 
-    console.log('Enviando configuración al monitoreo:', {
+    // Preparar el objeto de datos exactos que se va a transferir
+    const patientDataToTransfer = {
       patientBasicData,
       clinicalData,
       respiratoryConditions,
       diagnosticStudies,
       calculatedParams,
-    });
-    alert('Configuración del paciente enviada al módulo de monitoreo');
+      timestamp: new Date(),
+      source: 'patient_simulator'
+    };
+
+    // Usar la función del context para enviar los datos
+    receivePatientData(patientDataToTransfer);
+
+    console.log('Enviando configuración al monitoreo:', patientDataToTransfer);
+    alert('✅ Configuración del paciente enviada exitosamente al módulo de monitoreo.');
     setValidationErrors({}); // Limpiar errores tras envío exitoso
-  }, [patientBasicData, clinicalData, respiratoryConditions, diagnosticStudies, calculatedParams, validateAllRequiredFields, requiredFieldsByStep, validationErrors]);
+  }, [
+      patientBasicData, 
+      clinicalData, 
+      respiratoryConditions, 
+      diagnosticStudies, 
+      calculatedParams, 
+      validateAllRequiredFields, 
+      requiredFieldsByStep, 
+      validationErrors,
+      receivePatientData
+    ]);
 
   // Función para cargar datos simulados aleatorios
   const loadSimulatedData = useCallback(() => {

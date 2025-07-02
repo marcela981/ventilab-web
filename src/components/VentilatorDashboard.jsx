@@ -67,6 +67,7 @@ import { useSignalProcessing } from '../hooks/useSignalProcessing';
 import { useErrorDetection } from '../hooks/useErrorDetection';
 import { useDataRecording } from '../hooks/useDataRecording';
 import { useParameterValidation } from '../hooks/useParameterValidation';
+import { usePatientData } from '../hooks/usePatientData'; // Importar hook de paciente
 
 // Tema personalizado para el ventilador
 const ventilatorTheme = createTheme({
@@ -100,7 +101,7 @@ const ventilatorTheme = createTheme({
 const DashboardContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
   padding: theme.spacing(2),
-  paddingBottom: '80px', // Espacio para la barra de navegación fija
+  paddingBottom: '140px', // Espacio aumentado para la barra de navegación fija
 }));
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -206,10 +207,10 @@ const AdjustButton = styled(Button)(({ theme, active }) => ({
 
 // Tarjeta personalizada con modo de edición
 const EditableCard = styled(Paper)(({ theme, isEditing, isVisible, isDragging, isExpanded }) => ({
-  width: '300px',
-  height: isExpanded ? 'auto' : '85px',
-  minHeight: isExpanded ? '250px' : '85px',
-  maxHeight: isExpanded ? '400px' : '85px',
+  width: '340px',
+  height: isExpanded ? 'auto' : '110px',
+  minHeight: isExpanded ? '250px' : '110px',
+  maxHeight: isExpanded ? '400px' : '110px',
   display: 'flex',
   flexDirection: 'column',
   alignItems: isExpanded ? 'flex-start' : 'center',
@@ -327,35 +328,62 @@ const VentilatorDashboard = () => {
   const { 
     ventilatorData, 
     realTimeData, 
-    setVentilatorData, 
+    setVentilatorData, // Necesitamos el setter
     calculations,
     integratedVolume,
     getCurrentIntegratedVolume,
     resetIntegratedVolume
   } = useVentilatorData(serialConnection);
   
+  // Hook para datos del paciente simulado
+  const { 
+    patientData, 
+  } = usePatientData();
+  
   // Estado para el modo de ventilación
   const [ventilationMode, setVentilationMode] = useState('volume'); // 'volume' o 'pressure'
   const [configSent, setConfigSent] = useState(false);
 
-  // Datos para mostrar: según el archivo Python, cuando NO hay conexión, 
-  // las tarjetas deben mostrar valores estáticos (configurados) o "--" para medidos,
-  // NO datos simulados cambiantes
+  // Estado para la fuente de datos: 'real' o 'simulated'
+  const [dataSource, setDataSource] = useState('real');
+  const [realDataBackup, setRealDataBackup] = useState(null); // Backup para datos reales
+
+  // Efecto para cambiar los parámetros del ventilador al usar datos simulados
+  useEffect(() => {
+    // Entrar a modo simulado
+    if (dataSource === 'simulated' && patientData) {
+      if (!realDataBackup) {
+        setRealDataBackup(ventilatorData);
+      }
+      const simulatedParams = {
+        ...ventilatorData,
+        fio2: patientData.calculatedParams.fio2Inicial || 21,
+        volumen: patientData.calculatedParams.volumenTidal || 500,
+        peep: patientData.calculatedParams.peepRecomendado || 5,
+        frecuencia: patientData.calculatedParams.frecuenciaResp || 12,
+      };
+      setVentilatorData(simulatedParams);
+    } 
+    // Salir de modo simulado
+    else if (dataSource === 'real' && realDataBackup) {
+      setVentilatorData(realDataBackup);
+      setRealDataBackup(null);
+    }
+  }, [dataSource, patientData, realDataBackup, setVentilatorData, ventilatorData]);
+
+  // Datos para mostrar en las gráficas
   const displayData = useMemo(() => {
+    // Si estamos en modo simulado, no hay gráficas de tiempo real
+    if (dataSource === 'simulated') {
+      return { isSimulated: true, pressure: [], flow: [], volume: [], time: [] };
+    }
+
     if (serialConnection.isConnected) {
-      // Con conexión: usar datos reales
       return realTimeData;
     } else {
-      // Sin conexión: usar estructura vacía (no datos simulados cambiantes)
-      // Esto hará que las tarjetas muestren valores configurados o "--"
-      return {
-        pressure: [],
-        flow: [],
-        volume: [],
-        time: []
-      };
+      return { pressure: [], flow: [], volume: [], time: [] };
     }
-  }, [serialConnection.isConnected, realTimeData]);
+  }, [serialConnection.isConnected, realTimeData, dataSource]);
 
   // Estado para la navegación por pestañas
   const [activeTab, setActiveTab] = useState(1); // 0: Simular paciente, 1: Monitoreo, 2: Gráficas, 3: Conexión
@@ -392,6 +420,18 @@ const VentilatorDashboard = () => {
 
   // Hook para validación de parámetros
   const parameterValidation = useParameterValidation();
+
+  // Validación defensiva para asegurar que los hooks estén inicializados
+  if (!parameterValidation || !parameterValidation.validationState) {
+    return (
+      <ThemeProvider theme={ventilatorTheme}>
+        <CssBaseline />
+        <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+          <Typography variant="h6">Cargando sistema de ventilación...</Typography>
+        </Box>
+      </ThemeProvider>
+    );
+  }
 
   // Estado para controlar el reenvío automático
   const [autoAdjustmentEnabled, setAutoAdjustmentEnabled] = useState(true);
@@ -1153,16 +1193,18 @@ const VentilatorDashboard = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 0: // Simular Paciente
-  return (
-          <Suspense fallback={<Box display="flex" justifyContent="center" alignItems="center" height="50vh">
-            <Typography variant="h6">Cargando Simulador de Paciente...</Typography>
-          </Box>}>
-            <PatientSimulator />
-          </Suspense>
+        return (
+          <Box pb={6}>
+            <Suspense fallback={<Box display="flex" justifyContent="center" alignItems="center" height="50vh">
+              <Typography variant="h6">Cargando Simulador de Paciente...</Typography>
+            </Box>}>
+              <PatientSimulator />
+            </Suspense>
+          </Box>
         );
       case 1: // Monitoreo (contenido actual)
         return (
-      <Box display="flex" flexDirection="row" alignItems="flex-start" mb={2} ml={2}>
+      <Box display="flex" flexDirection="row" alignItems="flex-start" mb={2} ml={2} pb={6}>
         {/* Imágenes*/}
         <Box display="flex" flexDirection="column" alignItems="left">
           <img src="/images/logo-univalle.svg" alt="Univalle" width={250} height={42} style={{ marginBottom: 0 }} />
@@ -1170,6 +1212,39 @@ const VentilatorDashboard = () => {
           
           {/* Botón de modo de ajuste */}
           <Box mt={1} mb={1} display="flex" gap={1} flexDirection="column">
+            {/* Control para cambiar entre datos reales y simulados */}
+            <Tooltip 
+              title={patientData ? "Alternar entre datos reales y los del paciente simulado" : "No hay datos de paciente simulado disponibles"}
+              placement="bottom"
+              arrow
+            >
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={dataSource === 'simulated'}
+                    onChange={(e) => setDataSource(e.target.checked ? 'simulated' : 'real')}
+                    disabled={!patientData}
+                    size="small"
+                  />
+                }
+                label={
+                  <Box display="flex" alignItems="center" gap={0.5}>
+                    <PersonIcon fontSize="inherit" />
+                    <Typography variant="caption" sx={{ fontSize: '10px', fontWeight: 600 }}>
+                      {dataSource === 'simulated' ? 'Paciente Simulado' : 'Datos Reales'}
+                    </Typography>
+                  </Box>
+                }
+                sx={{
+                  backgroundColor: dataSource === 'simulated' ? 'rgba(76, 175, 80, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: 1,
+                  padding: '2px 8px',
+                  border: dataSource === 'simulated' ? '1px solid #4caf50' : '1px solid transparent',
+                  transition: 'all 0.3s'
+                }}
+              />
+            </Tooltip>
+
             {/* Botones Enviar y Detener */}
             <Box display="flex" gap={1}>
               <Tooltip 
@@ -1264,7 +1339,7 @@ const VentilatorDashboard = () => {
           </Box>
           
           {/* Valores de los parámetros - tiempo real*/}
-          <Box mt={1} display="flex" flexDirection="column" gap={0}>
+          <Box mt={1} display="flex" flexDirection="column" gap={1}>
             {cardData.map((card, idx) => (
               <EditableCard
                 key={card.id}
@@ -1315,57 +1390,66 @@ const VentilatorDashboard = () => {
                 )}
                 
                 {/* Contenido de la tarjeta */}
-                <Box display="flex" flexDirection="row" alignItems="flex-end" justifyContent="center" width="100%" mt={1}>
-                  <Typography 
-                    variant="h4" 
-                    sx={{ 
-                      fontWeight: 800, 
-                      lineHeight: 1,
-                      color: card.config.visible ? 'inherit' : 'text.secondary',
-                      // Color dinámico basado en el valor y si es configurado o medido
-                      ...(card.rawValue > 0 && {
-                        color: card.isConfigured 
-                          ? '#4caf50' // Verde para valores configurados
-                          : getValueColor(card.id, card.rawValue) // Colores dinámicos para valores medidos
-                      })
-                    }}
-                  >
-                    {card.value}
-                  </Typography>
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      fontWeight: 300, 
-                      mr: 1,
-                      color: card.config.visible ? 'inherit' : 'text.secondary'
-                    }}
-                  >
-                    {card.unit}
-                  </Typography>
-                </Box>
-                <Box display="flex" flexDirection="column" alignItems="center" width="100%">
-                  <Typography 
-                    variant="subtitle1" 
-                    sx={{ 
-                      fontWeight: 600, 
-                      mt: 0.5,
-                      color: card.config.visible ? 'inherit' : 'text.secondary'
-                    }}
-                  >
-                    {card.label}
-                  </Typography>
-                  {/* Indicador de tipo de valor */}
+                <Box display="flex" flexDirection="column" alignItems="center" width="100%" mt={1}>
+                  {/* Línea principal: Valor + Unidad + Label */}
+                  <Box display="flex" flexDirection="row" alignItems="baseline" justifyContent="space-between" width="100%" px={1}>
+                    {/* Valor y unidad a la izquierda */}
+                    <Box display="flex" alignItems="baseline" gap={0.5}>
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          lineHeight: 1,
+                          fontSize: '1.4rem',
+                          color: card.config.visible ? 'inherit' : 'text.secondary',
+                          // Color dinámico basado en el valor y si es configurado o medido
+                          ...(card.rawValue > 0 && {
+                            color: card.isConfigured 
+                              ? '#4caf50' // Verde para valores configurados
+                              : getValueColor(card.id, card.rawValue) // Colores dinámicos para valores medidos
+                          })
+                        }}
+                      >
+                        {card.value}
+                      </Typography>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontWeight: 400, 
+                          fontSize: '0.85rem',
+                          color: card.config.visible ? 'inherit' : 'text.secondary'
+                        }}
+                      >
+                        {card.unit}
+                      </Typography>
+                    </Box>
+                    
+                    {/* Label a la derecha */}
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        fontWeight: 600, 
+                        fontSize: '0.8rem',
+                        color: card.config.visible ? 'inherit' : 'text.secondary',
+                        textAlign: 'right'
+                      }}
+                    >
+                      {card.label}
+                    </Typography>
+                  </Box>
+                  
+                  {/* Indicador de tipo de valor debajo */}
                   {card.config.visible && (
                     <Typography 
                       variant="caption" 
                       sx={{ 
-                        fontSize: '8px',
+                        fontSize: '10px',
                         color: card.isConfigured ? '#4caf50' : '#ff9800',
                         backgroundColor: card.isConfigured ? 'rgba(76, 175, 80, 0.1)' : 'rgba(255, 152, 0, 0.1)',
                         px: 0.5,
                         py: 0.2,
                         borderRadius: 0.5,
-                        mt: 0.3,
+                        mt: 0.5,
                         fontWeight: 500
                       }}
                     >
@@ -1750,17 +1834,42 @@ const VentilatorDashboard = () => {
                 {/* Gráficas individuales */}
                 <Grid item xs={12} display="flex" flexDirection="column" alignItems="center" justifyContent="center">
                   <Box display="flex" flexDirection="column" alignItems="center" gap={2} alignSelf="flex-start" sx={{ marginLeft: -40 }}>
-                    <Paper elevation={0} sx={{ width: 700, height: 230, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', p: 1, backgroundColor: 'rgba(141, 138, 138, 0.2)' }}>
+                    <Paper elevation={0} sx={{ width: 700, height: 230, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', p: 1, backgroundColor: 'rgba(141, 138, 138, 0.2)' }}>
                       <Typography variant="h6" sx={{ mb: 1, color: '#fff' }}>Gráfica de Presión</Typography>
-                      <RealTimeCharts type="pressure" data={displayData} isConnected={serialConnection.isConnected} />
+                      {dataSource === 'simulated' ? (
+                          <Box display="flex" justifyContent="center" alignItems="center" height="100%" flexDirection="column" gap={1}>
+                            <PersonIcon sx={{ fontSize: 40, color: 'text.secondary' }}/>
+                            <Typography sx={{color: 'text.secondary' }}>Las gráficas no están disponibles en modo Paciente Simulado.</Typography>
+                            <Typography variant="caption" sx={{color: 'text.secondary' }}>Use los controles para ajustar los parámetros de simulación.</Typography>
+                          </Box>
+                        ) : (
+                          <RealTimeCharts type="pressure" data={displayData} isConnected={serialConnection.isConnected} />
+                        )
+                      }
                     </Paper>
-                    <Paper elevation={0} sx={{ width: 700, height: 230, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', p: 1, backgroundColor: 'rgba(141, 138, 138, 0.2)' }}>
+                    <Paper elevation={0} sx={{ width: 700, height: 230, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', p: 1, backgroundColor: 'rgba(141, 138, 138, 0.2)' }}>
                       <Typography variant="h6" sx={{ mb: 1, color: '#fff' }}>Gráfica de Flujo</Typography>
-                      <RealTimeCharts type="flow" data={displayData} isConnected={serialConnection.isConnected} />
+                       {dataSource === 'simulated' ? (
+                          <Box display="flex" justifyContent="center" alignItems="center" height="100%" flexDirection="column" gap={1}>
+                             <PersonIcon sx={{ fontSize: 40, color: 'text.secondary' }}/>
+                             <Typography sx={{color: 'text.secondary' }}>Las gráficas no están disponibles en modo Paciente Simulado.</Typography>
+                          </Box>
+                        ) : (
+                          <RealTimeCharts type="flow" data={displayData} isConnected={serialConnection.isConnected} />
+                        )
+                      }
                     </Paper>
-                    <Paper elevation={0} sx={{ width: 700, height: 230, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', p: 1, backgroundColor: 'rgba(141, 138, 138, 0.2)' }}>
+                    <Paper elevation={0} sx={{ width: 700, height: 230, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', p: 1, backgroundColor: 'rgba(141, 138, 138, 0.2)' }}>
                       <Typography variant="h6" sx={{ mb: 1, color: '#fff' }}>Gráfica de Volumen</Typography>
-                      <RealTimeCharts type="volume" data={displayData} isConnected={serialConnection.isConnected} />
+                       {dataSource === 'simulated' ? (
+                          <Box display="flex" justifyContent="center" alignItems="center" height="100%" flexDirection="column" gap={1}>
+                             <PersonIcon sx={{ fontSize: 40, color: 'text.secondary' }}/>
+                             <Typography sx={{color: 'text.secondary' }}>Las gráficas no están disponibles en modo Paciente Simulado.</Typography>
+                          </Box>
+                        ) : (
+                          <RealTimeCharts type="volume" data={displayData} isConnected={serialConnection.isConnected} />
+                        )
+                      }
                     </Paper>
                   </Box>
                 </Grid>
@@ -1885,23 +1994,27 @@ const VentilatorDashboard = () => {
             
             {/* Sistema de Compliance Automático */}
             <Box sx={{ width: 300, marginLeft: ventilationMode === 'pressure' ? -9 : -18, mt: 2 }}>
-              <ComplianceStatus
-                complianceData={complianceData}
-                errorDetection={errorDetection}
-                autoAdjustmentEnabled={autoAdjustmentEnabled}
-                lastAutoAdjustment={lastAutoAdjustment}
-                ventilationMode={ventilationMode}
-              />
+              {complianceData && errorDetection && (
+                <ComplianceStatus
+                  complianceData={complianceData}
+                  errorDetection={errorDetection}
+                  autoAdjustmentEnabled={autoAdjustmentEnabled}
+                  lastAutoAdjustment={lastAutoAdjustment}
+                  ventilationMode={ventilationMode}
+                />
+              )}
             </Box>
 
             {/* Alertas de validación completas */}
             <Box sx={{ width: 300, marginLeft: ventilationMode === 'pressure' ? -9 : -18, mt: 2 }}>
-              <ValidationAlerts
-                validationState={parameterValidation.validationState}
-                onClose={() => setShowValidationAlerts(false)}
-                show={showValidationAlerts}
-                compact={false}
-              />
+              {parameterValidation && parameterValidation.validationState && (
+                <ValidationAlerts
+                  validationState={parameterValidation.validationState}
+                  onClose={() => setShowValidationAlerts(false)}
+                  show={showValidationAlerts}
+                  compact={false}
+                />
+              )}
               
               {/* Botón para mostrar/ocultar alertas detalladas */}
               <Box display="flex" justifyContent="center" mt={1}>
@@ -1931,7 +2044,7 @@ const VentilatorDashboard = () => {
         );
       case 2: // Gráficas
         return (
-          <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
+          <Box display="flex" justifyContent="center" alignItems="center" height="50vh" pb={6}>
             <Typography variant="h4" sx={{ color: '#de0b24' }}>
               Módulo de Gráficas Avanzadas - Próximamente
             </Typography>
@@ -1939,7 +2052,7 @@ const VentilatorDashboard = () => {
         );
       case 3: // Conexión
         return (
-          <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
+          <Box display="flex" justifyContent="center" alignItems="center" height="50vh" pb={6}>
             <Typography variant="h4" sx={{ color: '#de0b24' }}>
               Módulo de Conexión - Próximamente
             </Typography>
@@ -1947,7 +2060,7 @@ const VentilatorDashboard = () => {
         );
       default:
         return (
-          <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
+          <Box display="flex" justifyContent="center" alignItems="center" height="50vh" pb={6}>
             <Typography variant="h6">Pestaña no encontrada</Typography>
           </Box>
         );
@@ -1959,15 +2072,17 @@ const VentilatorDashboard = () => {
       <CssBaseline />
       
       {/* Alertas de validación compactas */}
-      <ValidationAlerts
-        validationState={parameterValidation.validationState}
-        onClose={() => setShowCompactValidationAlerts(false)}
-        show={showCompactValidationAlerts}
-        compact={true}
-      />
+      {parameterValidation && parameterValidation.validationState && (
+        <ValidationAlerts
+          validationState={parameterValidation.validationState}
+          onClose={() => setShowCompactValidationAlerts(false)}
+          show={showCompactValidationAlerts}
+          compact={true}
+        />
+      )}
       
       {/* Indicador compacto de alertas sin mostrar */}
-      {!showCompactValidationAlerts && (parameterValidation.validationState.criticalErrors.length > 0 || parameterValidation.validationState.warnings.length > 0) && (
+      {!showCompactValidationAlerts && parameterValidation && parameterValidation.validationState && (parameterValidation.validationState.criticalErrors.length > 0 || parameterValidation.validationState.warnings.length > 0) && (
         <Box
           sx={{
             position: 'fixed',
@@ -1989,15 +2104,15 @@ const VentilatorDashboard = () => {
           onClick={() => setShowCompactValidationAlerts(true)}
         >
           <Box display="flex" alignItems="center" gap={0.5}>
-            {parameterValidation.validationState.criticalErrors.length > 0 ? (
+            {parameterValidation.validationState.criticalErrors?.length > 0 ? (
               <ErrorIcon fontSize="small" />
             ) : (
               <WarningIcon fontSize="small" />
             )}
             <Typography variant="caption" sx={{ fontSize: '11px', fontWeight: 'bold' }}>
-              {parameterValidation.validationState.criticalErrors.length > 0 
+              {parameterValidation.validationState.criticalErrors?.length > 0 
                 ? `${parameterValidation.validationState.criticalErrors.length} error${parameterValidation.validationState.criticalErrors.length > 1 ? 'es' : ''}`
-                : `${parameterValidation.validationState.warnings.length} aviso${parameterValidation.validationState.warnings.length > 1 ? 's' : ''}`
+                : `${parameterValidation.validationState.warnings?.length || 0} aviso${(parameterValidation.validationState.warnings?.length || 0) > 1 ? 's' : ''}`
               }
             </Typography>
           </Box>

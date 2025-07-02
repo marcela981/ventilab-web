@@ -36,24 +36,38 @@ const ComplianceStatus = ({
     return null;
   }
 
-  const { calculationStatus, compliance, debug } = complianceData;
-  const { errors, adjustmentHistory, errorSummary } = errorDetection;
+  // Validaciones defensivas
+  if (!complianceData || !errorDetection) {
+    return null;
+  }
+
+  const { 
+    calculationStatus = {}, 
+    compliance = 0, 
+    debug = null 
+  } = complianceData;
+  
+  const { 
+    errors = [], 
+    adjustmentHistory = [], 
+    errorSummary = { high: 0, medium: 0, low: 0 } 
+  } = errorDetection;
 
   const getStatusColor = () => {
-    if (calculationStatus.isCalculating) return 'warning';
+    if (calculationStatus?.isCalculating) return 'warning';
     if (errors.length > 0) return 'error';
-    if (calculationStatus.lastAdjustment) return 'success';
+    if (calculationStatus?.lastAdjustment) return 'success';
     return 'info';
   };
 
   const getStatusMessage = () => {
-    if (calculationStatus.isCalculating) {
-      return `Calculando compliance automática - Ciclo ${calculationStatus.currentCycle}/${calculationStatus.totalCycles}`;
+    if (calculationStatus?.isCalculating) {
+      return `Calculando compliance automática - Ciclo ${calculationStatus.currentCycle || 0}/${calculationStatus.totalCycles || 5}`;
     }
     if (errors.length > 0) {
-      return `${errors.length} error(es) detectado(s) - ${errorSummary.high} crítico(s)`;
+      return `${errors.length} error(es) detectado(s) - ${errorSummary?.high || 0} crítico(s)`;
     }
-    if (calculationStatus.lastAdjustment) {
+    if (calculationStatus?.lastAdjustment) {
       return `Compliance actualizada: ${compliance.toFixed(5)} L/cmH2O`;
     }
     return 'Sistema de compliance listo';
@@ -94,14 +108,14 @@ const ComplianceStatus = ({
       </Alert>
 
       {/* Progreso de cálculo */}
-      {calculationStatus.isCalculating && (
+      {calculationStatus?.isCalculating && (
         <Box mb={1}>
           <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
             Progreso del cálculo
           </Typography>
           <LinearProgress 
             variant="determinate" 
-            value={(calculationStatus.currentCycle / calculationStatus.totalCycles) * 100}
+            value={((calculationStatus.currentCycle || 0) / (calculationStatus.totalCycles || 5)) * 100}
             sx={{ height: 4, borderRadius: 2 }}
           />
         </Box>
