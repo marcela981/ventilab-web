@@ -35,7 +35,9 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ImageIcon from '@mui/icons-material/Image';
 import ScienceIcon from '@mui/icons-material/Science';
-import { getSimulatedPatientData } from '../utils/patientSimulatedData';
+import HistoryIcon from '@mui/icons-material/History';
+import ShuffleIcon from '@mui/icons-material/Shuffle';
+import { getSimulatedPatientData, predefinedClinicalCases } from '../utils/patientSimulatedData';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   backgroundColor: 'rgba(31, 31, 31, 0.8)',
@@ -132,6 +134,9 @@ const PatientSimulator = () => {
     fio2Inicial: 21,
     frecuenciaResp: 12,
   });
+
+  // Estado para el caso clínico seleccionado
+  const [selectedClinicalCase, setSelectedClinicalCase] = useState('');
 
   const steps = [
     'Datos Básicos del Paciente',
@@ -389,7 +394,7 @@ const PatientSimulator = () => {
     setValidationErrors({}); // Limpiar errores tras envío exitoso
   }, [patientBasicData, clinicalData, respiratoryConditions, diagnosticStudies, calculatedParams, validateAllRequiredFields, requiredFieldsByStep, validationErrors]);
 
-  // Función para cargar datos simulados
+  // Función para cargar datos simulados aleatorios
   const loadSimulatedData = useCallback(() => {
     const simulatedData = getSimulatedPatientData();
     
@@ -402,20 +407,109 @@ const PatientSimulator = () => {
     // Limpiar errores de validación
     setValidationErrors({});
     
-    alert('¡Datos simulados cargados exitosamente! Todos los campos han sido completados con información de ejemplo.');
+    alert('¡Datos simulados aleatorios cargados exitosamente! Todos los campos han sido completados con información de ejemplo.');
     console.log('Datos simulados cargados:', simulatedData);
   }, []);
+
+  // Función para cargar casos clínicos predefinidos
+  const loadPredefinedCase = useCallback(() => {
+    if (!selectedClinicalCase) {
+      alert('Por favor selecciona un caso clínico para cargar.');
+      return;
+    }
+
+    const caseData = predefinedClinicalCases[selectedClinicalCase];
+    if (!caseData) {
+      alert('Caso clínico no encontrado.');
+      return;
+    }
+
+    setPatientBasicData(caseData.patientBasicData);
+    setClinicalData(caseData.clinicalData);
+    setRespiratoryConditions(caseData.respiratoryConditions);
+    setDiagnosticStudies(caseData.diagnosticStudies);
+    setCalculatedParams(caseData.calculatedParams);
+    
+    // Limpiar errores de validación
+    setValidationErrors({});
+    
+    alert(`¡Historia clínica "${caseData.title}" cargada exitosamente! Todos los campos han sido completados con los datos del caso clínico.`);
+    console.log('Caso clínico cargado:', caseData);
+  }, [selectedClinicalCase]);
 
   const renderStepContent = (step) => {
     switch (step) {
       case 0:
         return (
           <Box>
-            {/* Botón para cargar datos simulados */}
-            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-start' }}>
+            {/* Módulo de pacientes predefinidos y datos simulados */}
+            <StyledCard sx={{ mb: 3 }}>
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h6" sx={{ mb: 3, color: '#de0b24', fontWeight: 'bold' }}>
+                  Módulo de Pacientes Simulados
+                </Typography>
+                
+                <Grid container spacing={3} alignItems="center">
+                  {/* Selector de casos clínicos predefinidos */}
+                  <Grid item xs={12} md={8}>
+                    <FormControl fullWidth>
+                      <InputLabel>Inserta Historia Clínica Simulada</InputLabel>
+                      <Select
+                        value={selectedClinicalCase}
+                        label="Inserta Historia Clínica Simulada"
+                        onChange={(e) => setSelectedClinicalCase(e.target.value)}
+                      >
+                        <MenuItem value="">
+                          <em>Selecciona un caso clínico</em>
+                        </MenuItem>
+                        {Object.entries(predefinedClinicalCases).map(([key, caseData]) => (
+                          <MenuItem key={key} value={key}>
+                            {caseData.title}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  {/* Botón para cargar caso clínico predefinido */}
+                  <Grid item xs={12} md={2}>
               <Button
+                      fullWidth
                 variant="contained"
-                startIcon={<ScienceIcon />}
+                      startIcon={<HistoryIcon />}
+                      onClick={loadPredefinedCase}
+                      disabled={!selectedClinicalCase}
+                      sx={{
+                        backgroundColor: '#d32f2f',
+                        color: '#fff',
+                        '&:hover': {
+                          backgroundColor: '#b71c1c',
+                        },
+                        '&:disabled': {
+                          backgroundColor: 'rgba(211, 47, 47, 0.3)',
+                          color: 'rgba(255, 255, 255, 0.5)',
+                        },
+                        fontWeight: 600,
+                        py: 1.5,
+                        borderRadius: 2,
+                        boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+                        '&:hover': {
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 6px 16px rgba(211, 47, 47, 0.4)',
+                        },
+                        transition: 'all 0.3s ease',
+                      }}
+                    >
+                      Cargar Caso
+                    </Button>
+                  </Grid>
+
+                  {/* Botón para datos simulados aleatorios */}
+                  <Grid item xs={12} md={2}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      startIcon={<ShuffleIcon />}
                 onClick={loadSimulatedData}
                 sx={{
                   backgroundColor: '#2e7d32',
@@ -424,7 +518,6 @@ const PatientSimulator = () => {
                     backgroundColor: '#1b5e20',
                   },
                   fontWeight: 600,
-                  px: 3,
                   py: 1.5,
                   borderRadius: 2,
                   boxShadow: '0 4px 12px rgba(46, 125, 50, 0.3)',
@@ -435,9 +528,43 @@ const PatientSimulator = () => {
                   transition: 'all 0.3s ease',
                 }}
               >
-                Ingresar Datos Simulados
+                      Datos Aleatorios
               </Button>
+                  </Grid>
+                </Grid>
+
+                {/* Mostrar descripción del caso seleccionado */}
+                {selectedClinicalCase && predefinedClinicalCases[selectedClinicalCase] && (
+                  <Box sx={{ mt: 3, p: 2, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 2 }}>
+                    <Typography variant="subtitle2" sx={{ color: '#de0b24', fontWeight: 'bold', mb: 1 }}>
+                      Descripción del Caso:
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>
+                      {predefinedClinicalCases[selectedClinicalCase].description}
+                    </Typography>
+                    
+                    {/* Mostrar configuración óptima del ventilador */}
+                    <Typography variant="subtitle2" sx={{ color: '#de0b24', fontWeight: 'bold', mt: 2, mb: 1 }}>
+                      Configuración Óptima del Ventilador:
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                      {Object.entries(predefinedClinicalCases[selectedClinicalCase].ventilatorSettings).map(([key, value]) => (
+                        <Chip
+                          key={key}
+                          label={`${key}: ${value}`}
+                          size="small"
+                          sx={{
+                            backgroundColor: 'rgba(46, 125, 50, 0.2)',
+                            color: '#fff',
+                            fontWeight: 500,
+                          }}
+                        />
+                      ))}
             </Box>
+                  </Box>
+                )}
+              </CardContent>
+            </StyledCard>
             
             {/* Caja para Datos Básicos */}
             <StyledCard sx={{ mb: 3 }}>
@@ -1173,15 +1300,25 @@ const PatientSimulator = () => {
   };
 
   return (
-    <Box display="flex" flexDirection="row" alignItems="flex-start" mb={2} ml={2} sx={{ minHeight: '100vh' }}>
-      {/* Imágenes del header */}
-      <Box display="flex" flexDirection="column" alignItems="left">
-        <img src="/images/logo-univalle.svg" alt="Univalle" width={250} height={42} style={{ marginBottom: 0 }} />
-        <img src="/images/logo.png" alt="VentyLab" width={220} height={110} />
+    <Box sx={{ minHeight: '100vh', position: 'relative' }}>
+      {/* Imágenes del header - en esquina superior izquierda */}
+      <Box 
+        sx={{ 
+          position: 'absolute',
+          top: 16,
+          left: 16,
+          zIndex: 10,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start'
+        }}
+      >
+        <img src="/images/logo-univalle.svg" alt="Univalle" width={150} height={25} style={{ marginBottom: 4 }} />
+        <img src="/images/logo.png" alt="VentyLab" width={120} height={60} />
       </Box>
       
-      {/* Contenido principal del simulador */}
-      <Container maxWidth="xl" sx={{ py: 3, paddingBottom: '100px', ml: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
+      {/* Contenido principal del simulador - ocupa toda la pantalla */}
+      <Container maxWidth="xl" sx={{ py: 3, paddingBottom: '100px', paddingTop: '120px', display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <Typography variant="h4" sx={{ mb: 3, color: '#de0b24', fontWeight: 'bold' }}>
           <PersonIcon sx={{ mr: 2, fontSize: 40 }} />
           Simulador de Paciente

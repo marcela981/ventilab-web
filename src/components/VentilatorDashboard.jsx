@@ -1645,7 +1645,7 @@ const VentilatorDashboard = () => {
           {/* Inputs específicos del modo Presión Control */}
           {ventilationMode === 'pressure' && (
             <>
-              <Box display="flex" flexDirection="column" alignItems="center" ml={12.7}>
+              <Box display="flex" flexDirection="column" alignItems="center" ml={2}>
                 {/* PIP (Presión Inspiratoria Pico) */}
                 <Typography variant="subtitle2" sx={{ fontSize: '24px', fontWeight: 300 }}>PIP [cmH2O]</Typography>
                 <ValidatedInput
@@ -1660,42 +1660,11 @@ const VentilatorDashboard = () => {
                   inputProps={{ min: 5, max: 60 }}
                 />
               </Box>
-              
-              {/* Mostrar volumen tidal calculado en modo presión */}
-              <Box display="flex" flexDirection="column" alignItems="center" ml={2}>
-                <Typography variant="subtitle2" sx={{ fontSize: '20px', fontWeight: 300, color: '#4caf50' }}>
-                  Vol. Calculado
-                </Typography>
-                <TextField
-                  type="number"
-                  variant="outlined"
-                  size="small"
-                  sx={{ 
-                    width: '140px', 
-                    height: '60px',
-                    '& .MuiInputBase-input': {
-                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
-                      color: '#4caf50',
-                      fontWeight: 'bold'
-                    }
-                  }}
-                  value={ventilatorData.volumen || 0}
-                  InputProps={{
-                    readOnly: true,
-                    endAdornment: (
-                      <Typography variant="caption" sx={{ fontSize: '10px', color: '#4caf50' }}>
-                        mL
-                      </Typography>
-                    )
-                  }}
-                  helperText="Auto-calculado desde C y PIP"
-                />
-              </Box>
             </>
           )}
 
           {/* PEEP común para ambos modos */}
-          <Box display="flex" flexDirection="column" alignItems="center" ml={ventilationMode === 'pressure' ? 12.8 : 0}>
+          <Box display="flex" flexDirection="column" alignItems="center" ml={ventilationMode === 'pressure' ? 2 : 0}>
             <Typography variant="subtitle2" sx={{ fontSize: '24px', fontWeight: 300 }}>PEEP</Typography>
             <ValidatedInput
               parameter="peep"
@@ -1776,11 +1745,11 @@ const VentilatorDashboard = () => {
 
           {/* Graficos */}
           <DashboardContainer>
-            <Container maxWidth="xl" sx={{ mt: 1, marginLeft: -95, marginTop: 15 }}>
+            <Container maxWidth="xl" sx={{ mt: 1, marginLeft: ventilationMode === 'pressure' ? -62 : -83, marginTop: 15 }}>
               <Grid container spacing={3} justifyContent="center" alignItems="center">
                 {/* Gráficas individuales */}
                 <Grid item xs={12} display="flex" flexDirection="column" alignItems="center" justifyContent="center">
-                  <Box display="flex" flexDirection="column" alignItems="center" gap={2} alignSelf="flex-start" sx={{ marginLeft: -28 }}>
+                  <Box display="flex" flexDirection="column" alignItems="center" gap={2} alignSelf="flex-start" sx={{ marginLeft: -40 }}>
                     <Paper elevation={0} sx={{ width: 700, height: 230, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', p: 1, backgroundColor: 'rgba(141, 138, 138, 0.2)' }}>
                       <Typography variant="h6" sx={{ mb: 1, color: '#fff' }}>Gráfica de Presión</Typography>
                       <RealTimeCharts type="pressure" data={displayData} isConnected={serialConnection.isConnected} />
@@ -1800,9 +1769,9 @@ const VentilatorDashboard = () => {
           </DashboardContainer>
           
           {/* Panel derecho: sliders e inputs */}
-          <Box display="flex" flexDirection="column" alignItems="center" ml={-14} mt={18}>
+          <Box display="flex" flexDirection="column" alignItems="center" ml={ventilationMode === 'pressure' ? -3 : -14} mt={18}>
             {/* Slider Insp-Esp */}
-            <Box display="flex" flexDirection="row" justifyContent="space-between" alignItems="center" width={300} mb={-1} sx={{ marginLeft: -18 }}>
+            <Box display="flex" flexDirection="row" justifyContent="space-between" alignItems="center" width={300} mb={-1} sx={{ marginLeft: ventilationMode === 'pressure' ? -7 : -18 }}>
               <Typography variant="subtitle1" sx={{ fontSize: '24px', fontWeight: 200, textAlign: 'center' }}>Insp</Typography>
               <Typography variant="subtitle1" sx={{ fontSize: '24px', fontWeight: 200, textAlign: 'center' }}>Esp</Typography>
             </Box>
@@ -1811,11 +1780,11 @@ const VentilatorDashboard = () => {
               min={0}
               max={1}
               step={0.01}
-              sx={{ width: 300, mb: 3, marginLeft: -18 }}
+              sx={{ width: 300, mb: 3, marginLeft: ventilationMode === 'pressure' ? -9 : -18 }}
               onChange={(_, value) => handleParameterChange('inspiracionEspiracion', value)}
             />
             {/* 3 inputs verticales */}
-            <Box display="flex" flexDirection="column" gap={2} mb={3} sx={{ width: 300, marginLeft: -18 }}>
+            <Box display="flex" flexDirection="column" gap={2} mb={3} sx={{ width: 300, marginLeft: ventilationMode === 'pressure' ? -9 : -18 }}>
               {/* Relación I:E */}
               <Typography variant="subtitle1" sx={{ fontSize: '24px', fontWeight: 200, textAlign: 'center' }}>Relación I:E</Typography>
               <Box display="flex" flexDirection="row" justifyContent="center" gap={2}>
@@ -1891,7 +1860,7 @@ const VentilatorDashboard = () => {
               />
             </Box>
             {/* Frecuencia: título a la izquierda, input a la derecha, slider debajo */}
-            <Box display="flex" flexDirection="row" alignItems="center" width={300} mb={1} sx={{ marginLeft: -18 }}>
+            <Box display="flex" flexDirection="row" alignItems="center" width={300} mb={1} sx={{ marginLeft: ventilationMode === 'pressure' ? -9 : -18 }}>
               <Typography variant="subtitle1" sx={{ fontSize: '24px', fontWeight: 200, flex: 1, textAlign: 'left' }}>Frecuencia</Typography>
               <ValidatedInput
                 parameter="frecuencia"
@@ -1910,12 +1879,12 @@ const VentilatorDashboard = () => {
               min={0}
               max={24}
               step={1}
-              sx={{ width: 300, marginLeft: -18 }}
+              sx={{ width: 300, marginLeft: ventilationMode === 'pressure' ? -9 : -18 }}
               onChange={(_, value) => handleParameterChange('frecuencia', value)}
             />
             
             {/* Sistema de Compliance Automático */}
-            <Box sx={{ width: 300, marginLeft: -18, mt: 2 }}>
+            <Box sx={{ width: 300, marginLeft: ventilationMode === 'pressure' ? -9 : -18, mt: 2 }}>
               <ComplianceStatus
                 complianceData={complianceData}
                 errorDetection={errorDetection}
@@ -1926,7 +1895,7 @@ const VentilatorDashboard = () => {
             </Box>
 
             {/* Alertas de validación completas */}
-            <Box sx={{ width: 300, marginLeft: -18, mt: 2 }}>
+            <Box sx={{ width: 300, marginLeft: ventilationMode === 'pressure' ? -9 : -18, mt: 2 }}>
               <ValidationAlerts
                 validationState={parameterValidation.validationState}
                 onClose={() => setShowValidationAlerts(false)}
