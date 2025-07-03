@@ -372,6 +372,11 @@ const PatientSimulator = () => {
     setValidationErrors({}); // Limpiar errores al retroceder
   }, []);
 
+  const handleStepClick = useCallback((stepIndex) => {
+    setActiveStep(stepIndex);
+    setValidationErrors({}); // Limpiar errores al navegar directamente
+  }, []);
+
   const sendToMonitoring = useCallback(() => {
     // Validar todos los campos obligatorios antes de enviar
     if (!validateAllRequiredFields()) {
@@ -1349,13 +1354,28 @@ const PatientSimulator = () => {
             {steps.map((label, index) => (
               <Step key={label}>
                 <StepLabel
+                  onClick={() => handleStepClick(index)}
                   sx={{
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'scale(1.05)',
+                    },
+                    '&:hover .MuiStepLabel-label': {
+                      color: '#de0b24',
+                    },
+                    '&:hover .MuiStepIcon-root': {
+                      color: '#de0b24',
+                      transform: 'scale(1.1)',
+                    },
                     '& .MuiStepLabel-label': {
                       color: index === activeStep ? '#de0b24' : 'text.secondary',
                       fontWeight: index === activeStep ? 'bold' : 'normal',
+                      transition: 'color 0.3s ease',
                     },
                     '& .MuiStepIcon-root': {
                       color: index === activeStep ? '#de0b24' : 'text.secondary',
+                      transition: 'all 0.3s ease',
                     },
                     '& .MuiStepIcon-root.Mui-completed': {
                       color: '#4caf50',
