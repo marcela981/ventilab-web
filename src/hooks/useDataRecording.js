@@ -3,6 +3,7 @@ import { useState, useRef, useCallback } from 'react';
 export const useDataRecording = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordedData, setRecordedData] = useState([]);
+  const [sensorDataBuffer, setSensorDataBuffer] = useState([]); // Buffer para datos de sensores
   const recordingStartTime = useRef(null);
 
   // Iniciar grabación
@@ -48,6 +49,29 @@ export const useDataRecording = () => {
       
       setRecordedData(prev => [...prev, dataPoint]);
       console.log('Datos enviados registrados:', dataPoint);
+    }
+  }, [isRecording]);
+
+  // Agregar datos de sensores en tiempo real (como en Python)
+  const addSensorData = useCallback((pressure, flow, volume) => {
+    const timestamp = Date.now();
+    const sensorPoint = {
+      pressure: pressure,
+      flow: flow,
+      volume: volume,
+      timestamp: timestamp,
+      timeString: (timestamp / 1000).toString() // Formato similar al Python
+    };
+    
+    // Agregar al buffer (mantener últimos 10000 puntos para evitar overflow)
+    setSensorDataBuffer(prev => {
+      const newBuffer = [...prev, sensorPoint];
+      return newBuffer.length > 10000 ? newBuffer.slice(-10000) : newBuffer;
+    });
+    
+    // Si está grabando, también agregar a datos grabados
+    if (isRecording) {
+      setRecordedData(prev => [...prev, sensorPoint]);
     }
   }, [isRecording]);
 
@@ -232,6 +256,30 @@ export const useDataRecording = () => {
     return { content: htmlContent, filename };
   }, [recordedData]);
 
+  // Generar archivo de datos de sensores (formato Python)
+  const generateSensorDataFile = useCallback(() => {
+    if (sensorDataBuffer.length === 0) {
+      console.warn('No hay datos de sensores para exportar');
+      return null;
+    }
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `datos_sensores_${timestamp}.txt`;
+    
+    // Formato exacto del Python: "presion=flujo=volumen=tiempo\n"
+    let content = '';
+    sensorDataBuffer.forEach(point => {
+      content += `${point.pressure}=${point.flow}=${point.volume}=${point.timeString}\n`;
+    });
+
+    return { content, filename };
+  }, [sensorDataBuffer]);
+
+  // Limpiar buffer de datos de sensores
+  const clearSensorBuffer = useCallback(() => {
+    setSensorDataBuffer([]);
+  }, []);
+
   // Descargar archivo
   const downloadFile = useCallback((content, filename, mimeType = 'text/plain') => {
     const blob = new Blob([content], { type: mimeType });
@@ -284,11 +332,31 @@ export const useDataRecording = () => {
   return {
     isRecording,
     recordedData,
+    sensorDataBuffer,
+    hasSensorData: sensorDataBuffer.length > 0,
     startRecording,
     stopRecording,
     addSentData,
+    addSensorData,
+    generateSensorDataFile,
+    clearSensorBuffer,
     downloadAsTxt,
     downloadAsPdf,
-    hasData: recordedData.length > 0
+    hasData: recordedData.length > 0,
+    downloadSensorData: useCallback(() => {
+      const fileData = generateSensorDataFile();
+      if (fileData) {
+        const blob = new Blob([fileData.content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileData.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        console.log('Datos de sensores descargados:', fileData.filename);
+      }
+    }, [generateSensorDataFile])
   };
 }; 

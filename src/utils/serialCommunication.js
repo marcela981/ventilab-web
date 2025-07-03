@@ -8,6 +8,11 @@ export class SerialProtocol {
    * @param {Object} parameters - Parámetros del ventilador
    */
   static createConfigFrame(mode, waveType = 'Escalon', parameters) {
+    // Permitir llamada con firma (mode, parameters)
+    if (parameters === undefined && typeof waveType === 'object') {
+      parameters = waveType; // el segundo argumento era en realidad el objeto de parámetros
+      waveType = 'Escalon'; // valor por defecto
+    }
     let trama = '';
     
     // Modo de operación
@@ -48,21 +53,21 @@ export class SerialProtocol {
    * Crea trama de inicio del sistema
    */
   static createStartFrame() {
-    return 'a?E?0?0?0?0?0?0?0?0?0?0';
+    return 'a?E?0?0?0?0?0?0?0?0?0?0?0?0?0';
   }
 
   /**
    * Crea trama de parada del sistema
    */
   static createStopFrame() {
-    return 'f?E?0?0?0?0?0?0?0?0?0?0';
+    return 'f?E?0?0?0?0?0?0?0?0?0?0?0?0?0';
   }
 
   /**
    * Crea trama de reset del sistema
    */
   static createResetFrame() {
-    return 'r?E?0?0?0?0?0?0?0?0?0?0';
+    return 'r?E?0?0?0?0?0?0?0?0?0?0?0?0?0';
   }
 
   /**

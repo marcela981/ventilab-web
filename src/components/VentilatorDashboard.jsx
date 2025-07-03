@@ -46,6 +46,9 @@ import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import WifiIcon from '@mui/icons-material/Wifi';
 
+// Importación para gráficas de bucles cerrados
+import { Line } from 'react-chartjs-2';
+
 // Componentes que vamos a crear
 import ControlPanel from './ControlPanel';
 import RealTimeCharts from './RealTimeCharts';
@@ -68,6 +71,93 @@ import { useErrorDetection } from '../hooks/useErrorDetection';
 import { useDataRecording } from '../hooks/useDataRecording';
 import { useParameterValidation } from '../hooks/useParameterValidation';
 import { usePatientData } from '../hooks/usePatientData'; // Importar hook de paciente
+
+// Componente para bucles cerrados (migrado desde Python graficador4 y graficador5)
+const LoopChart = ({ data, type, isConnected }) => {
+  const [isPaused, setIsPaused] = useState(false);
+  
+  const chartConfigs = {
+    'volume-pressure': {
+      title: 'Bucle Volumen vs Presión',
+      xKey: 'volume',
+      yKey: 'pressure',
+      color: '#ffff00',
+      xAxis: { min: 0, max: 1000 },
+      yAxis: { min: 0, max: 50 },
+    },
+    'flow-volume': {
+      title: 'Bucle Flujo vs Volumen',
+      xKey: 'volume',
+      yKey: 'flow',
+      color: '#00ff00',
+      xAxis: { min: 0, max: 1000 },
+      yAxis: { min: -20, max: 100 },
+    },
+  };
+
+  const config = chartConfigs[type] || chartConfigs['volume-pressure'];
+
+  const processedData = useMemo(() => {
+    if (!data || !data[config.xKey] || !data[config.yKey]) {
+      return { datasets: [] };
+    }
+
+    // Migrado desde Python: usar los últimos 150 puntos como en graficador4/5
+    const totalPoints = data[config.xKey].length;
+    const startIndex = Math.max(0, totalPoints - 150);
+    
+    const xData = data[config.xKey].slice(startIndex);
+    const yData = data[config.yKey].slice(startIndex, startIndex + xData.length);
+
+    const minLength = Math.min(xData.length, yData.length);
+    const loopData = xData.slice(0, minLength).map((x, index) => ({
+      x: x,
+      y: yData[index]
+    }));
+
+    return {
+      datasets: [{
+        label: config.title,
+        data: loopData,
+        borderColor: config.color,
+        backgroundColor: 'transparent',
+        fill: false,
+        tension: 0.1,
+        pointRadius: 0,
+        pointHoverRadius: 3,
+        borderWidth: 2,
+        showLine: true,
+      }],
+    };
+  }, [data, config, isPaused]);
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 0 },
+    plugins: { legend: { display: false } },
+    scales: {
+      x: {
+        type: 'linear',
+        ...config.xAxis,
+        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+        ticks: { color: '#b0b0b0' },
+      },
+      y: {
+        type: 'linear',
+        ...config.yAxis,
+        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+        ticks: { color: '#b0b0b0' },
+      },
+    },
+  };
+
+  return (
+    <Box sx={{ height: '100%', width: '100%', position: 'relative' }}>
+      <Line data={processedData} options={chartOptions} />
+    </Box>
+  );
+};
 
 // Tema personalizado para el ventilador
 const ventilatorTheme = createTheme({
@@ -332,7 +422,10 @@ const VentilatorDashboard = () => {
     calculations,
     integratedVolume,
     getCurrentIntegratedVolume,
-    resetIntegratedVolume
+    resetIntegratedVolume,
+    maxMinData, // Nuevos datos de máx/mín cada 100 muestras
+    registerDataRecording, // Función para registrar el hook de grabación
+    systemStatus // Estado del sistema
   } = useVentilatorData(serialConnection);
   
   // Hook para datos del paciente simulado
@@ -420,6 +513,47 @@ const VentilatorDashboard = () => {
 
   // Hook para validación de parámetros
   const parameterValidation = useParameterValidation();
+
+  // Registrar el hook de grabación con el hook del ventilador
+  useEffect(() => {
+    registerDataRecording(dataRecording);
+  }, [registerDataRecording, dataRecording]);
+
+  // Conectar callbacks de comunicación serial (como en Python)
+  useEffect(() => {
+    if (serialConnection) {
+      // Callback para datos de sensores (equivalente a read_data() en Python)
+      serialConnection.onSensorData((sensorData) => {
+        // Los datos ya se procesan en useVentilatorData
+        console.log('Datos de sensores recibidos:', sensorData);
+      });
+
+      // Callback para mensajes de estado (equivalente a cuando x[0]=="L" en Python)
+      serialConnection.onStatusMessage((statusData) => {
+        console.log('Mensaje de estado:', statusData.message);
+      });
+
+      // Callback para errores
+      serialConnection.onErrorMessage((errorData) => {
+        console.error('Error del ventilador:', errorData);
+        setNotification({
+          type: 'error',
+          message: `Error del sistema: ${errorData.description}`,
+          timestamp: Date.now()
+        });
+      });
+
+      // Callback para confirmaciones
+      serialConnection.onAckMessage((ackData) => {
+        console.log('Confirmación recibida:', ackData.message);
+        setNotification({
+          type: 'success',
+          message: ackData.message,
+          timestamp: Date.now()
+        });
+      });
+    }
+  }, [serialConnection]);
 
   // Validación defensiva para asegurar que los hooks estén inicializados
   if (!parameterValidation || !parameterValidation.validationState) {
@@ -799,6 +933,42 @@ const VentilatorDashboard = () => {
     }
   }, [ventilatorData.frecuencia, ventilatorData.volumen, ventilatorData.presionMax, ventilatorData.peep, ventilatorData.fio2, ventilationMode]);
 
+  // Conectar callbacks de comunicación serial (como en Python)
+  useEffect(() => {
+    if (serialConnection) {
+      // Callback para datos de sensores (equivalente a read_data() en Python)
+      serialConnection.onSensorData((sensorData) => {
+        // Los datos ya se procesan en useVentilatorData
+        console.log('Datos de sensores recibidos:', sensorData);
+      });
+
+      // Callback para mensajes de estado (equivalente a cuando x[0]=="L" en Python)
+      serialConnection.onStatusMessage((statusData) => {
+        console.log('Mensaje de estado:', statusData.message);
+      });
+
+      // Callback para errores
+      serialConnection.onErrorMessage((errorData) => {
+        console.error('Error del ventilador:', errorData);
+        setNotification({
+          type: 'error',
+          message: `Error del sistema: ${errorData.description}`,
+          timestamp: Date.now()
+        });
+      });
+
+      // Callback para confirmaciones
+      serialConnection.onAckMessage((ackData) => {
+        console.log('Confirmación recibida:', ackData.message);
+        setNotification({
+          type: 'success',
+          message: ackData.message,
+          timestamp: Date.now()
+        });
+      });
+    }
+  }, [serialConnection]);
+
   const handleConnection = async (port, baudRate) => {
     const success = await serialConnection.connect(port, baudRate);
     if (success) {
@@ -810,6 +980,17 @@ const VentilatorDashboard = () => {
   const handleDisconnection = async () => {
     await serialConnection.sendData(SerialProtocol.createStopFrame());
     await serialConnection.disconnect();
+  };
+
+  const handleStopVentilator = async () => {
+    if (serialConnection.isConnected) {
+      await serialConnection.stopSystem();
+      setNotification({
+        type: 'warning',
+        message: 'Comando de detención enviado',
+        timestamp: Date.now()
+      });
+    }
   };
 
   const handleSendConfiguration = async () => {
@@ -1273,23 +1454,31 @@ const VentilatorDashboard = () => {
                   {configSent ? 'Enviado' : 'Enviar'}
                 </Button>
               </Tooltip>
-              <Button
-                variant="contained"
-                size="small"
-                sx={{
-                  backgroundColor: 'error.main',
-                  color: '#fff',
-                  minWidth: '80px',
-                  height: '32px',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  '&:hover': {
-                    backgroundColor: 'error.dark',
-                  }
-                }}
+              <Tooltip 
+                title="Detener el ventilador" 
+                placement="bottom"
+                arrow
               >
-                Detener
-              </Button>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={handleStopVentilator}
+                  disabled={!serialConnection.isConnected}
+                  sx={{
+                    backgroundColor: 'error.main',
+                    color: '#fff',
+                    minWidth: '80px',
+                    height: '32px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    '&:hover': {
+                      backgroundColor: 'error.dark',
+                    }
+                  }}
+                >
+                  Detener
+                </Button>
+              </Tooltip>
             </Box>
             
             <Box display="flex" gap={1}>
@@ -1871,6 +2060,33 @@ const VentilatorDashboard = () => {
                         )
                       }
                     </Paper>
+                    
+                    {/* Gráficas de bucles cerrados - FALTANTES EN EL ORIGINAL */}
+                    <Paper elevation={0} sx={{ width: 700, height: 230, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', p: 1, backgroundColor: 'rgba(141, 138, 138, 0.2)' }}>
+                      <Typography variant="h6" sx={{ mb: 1, color: '#fff' }}>Bucle Volumen vs Presión</Typography>
+                       {dataSource === 'simulated' ? (
+                          <Box display="flex" justifyContent="center" alignItems="center" height="100%" flexDirection="column" gap={1}>
+                             <PersonIcon sx={{ fontSize: 40, color: 'text.secondary' }}/>
+                             <Typography sx={{color: 'text.secondary' }}>Los bucles cerrados requieren datos en tiempo real.</Typography>
+                          </Box>
+                        ) : (
+                          <LoopChart type="volume-pressure" data={displayData} isConnected={serialConnection.isConnected} />
+                        )
+                      }
+                    </Paper>
+                    
+                    <Paper elevation={0} sx={{ width: 700, height: 230, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', p: 1, backgroundColor: 'rgba(141, 138, 138, 0.2)' }}>
+                      <Typography variant="h6" sx={{ mb: 1, color: '#fff' }}>Bucle Flujo vs Volumen</Typography>
+                       {dataSource === 'simulated' ? (
+                          <Box display="flex" justifyContent="center" alignItems="center" height="100%" flexDirection="column" gap={1}>
+                             <PersonIcon sx={{ fontSize: 40, color: 'text.secondary' }}/>
+                             <Typography sx={{color: 'text.secondary' }}>Los bucles cerrados requieren datos en tiempo real.</Typography>
+                          </Box>
+                        ) : (
+                          <LoopChart type="flow-volume" data={displayData} isConnected={serialConnection.isConnected} />
+                        )
+                      }
+                    </Paper>
                   </Box>
                 </Grid>
               </Grid>
@@ -2052,10 +2268,263 @@ const VentilatorDashboard = () => {
         );
       case 3: // Conexión
         return (
-          <Box display="flex" justifyContent="center" alignItems="center" height="50vh" pb={6}>
-            <Typography variant="h4" sx={{ color: '#de0b24' }}>
-              Módulo de Conexión - Próximamente
-            </Typography>
+          <Box p={3} pb={6}>
+            <Container maxWidth="md">
+              <Typography variant="h4" gutterBottom align="center" sx={{ color: '#de0b24', mb: 4 }}>
+                Control de Conexión Serial
+              </Typography>
+              
+              <Grid container spacing={3}>
+                {/* Estado de conexión */}
+                <Grid item xs={12}>
+                  <StyledPaper>
+                    <Box display="flex" alignItems="center" gap={2} mb={2}>
+                      <Box
+                        sx={{
+                          width: 12,
+                          height: 12,
+                          borderRadius: '50%',
+                          backgroundColor: serialConnection.isConnected ? 'success.main' : 'error.main',
+                          animation: serialConnection.isConnected ? 'pulse 2s infinite' : 'none',
+                        }}
+                      />
+                      <Typography variant="h6">
+                        Estado: {serialConnection.isConnected ? 'Conectado' : 'Desconectado'}
+                      </Typography>
+                    </Box>
+                    
+                    {systemStatus.lastMessage && (
+                      <Typography variant="body2" color="text.secondary">
+                        Último mensaje: {systemStatus.lastMessage}
+                      </Typography>
+                    )}
+                  </StyledPaper>
+                </Grid>
+
+                {/* Configuración de puerto */}
+                <Grid item xs={12} md={6}>
+                  <StyledPaper>
+                    <Typography variant="h6" gutterBottom>
+                      Configuración de Puerto
+                    </Typography>
+                    
+                    <Box display="flex" flexDirection="column" gap={2}>
+                      <Button
+                        variant="contained"
+                        onClick={async () => {
+                          try {
+                            const port = await serialConnection.requestPort();
+                            if (port) {
+                              setNotification({
+                                type: 'success',
+                                message: 'Puerto seleccionado exitosamente',
+                                timestamp: Date.now()
+                              });
+                            }
+                          } catch (error) {
+                            setNotification({
+                              type: 'error',
+                              message: 'Error seleccionando puerto: ' + error.message,
+                              timestamp: Date.now()
+                            });
+                          }
+                        }}
+                        disabled={serialConnection.isConnected}
+                        sx={{ mb: 2 }}
+                      >
+                        Seleccionar Puerto Serie
+                      </Button>
+
+                      <TextField
+                        label="Velocidad de Baudios"
+                        type="number"
+                        defaultValue={9600}
+                        disabled={serialConnection.isConnected}
+                        helperText="Velocidad estándar: 9600 bps"
+                        sx={{ mb: 2 }}
+                      />
+
+                      {!serialConnection.isConnected ? (
+                        <Button
+                          variant="contained"
+                          color="success"
+                          onClick={() => handleConnection(null, 9600)}
+                          size="large"
+                        >
+                          Conectar
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="contained"
+                          color="error"
+                          onClick={handleDisconnection}
+                          size="large"
+                        >
+                          Desconectar
+                        </Button>
+                      )}
+                    </Box>
+                  </StyledPaper>
+                </Grid>
+
+                {/* Pruebas de comunicación */}
+                <Grid item xs={12} md={6}>
+                  <StyledPaper>
+                    <Typography variant="h6" gutterBottom>
+                      Pruebas de Comunicación
+                    </Typography>
+                    
+                    <Box display="flex" flexDirection="column" gap={1}>
+                      <Button
+                        variant="outlined"
+                        onClick={() => serialConnection.startSystem()}
+                        disabled={!serialConnection.isConnected}
+                        size="small"
+                      >
+                        Enviar Start (a?)
+                      </Button>
+                      
+                      <Button
+                        variant="outlined"
+                        onClick={() => serialConnection.stopSystem()}
+                        disabled={!serialConnection.isConnected}
+                        size="small"
+                      >
+                        Enviar Stop (f?)
+                      </Button>
+                      
+                      <Button
+                        variant="outlined"
+                        onClick={() => serialConnection.resetSystem()}
+                        disabled={!serialConnection.isConnected}
+                        size="small"
+                      >
+                        Enviar Reset (r?)
+                      </Button>
+                      
+                      <Button
+                        variant="outlined"
+                        onClick={handleSendConfiguration}
+                        disabled={!serialConnection.isConnected}
+                        size="small"
+                      >
+                        Enviar Configuración Actual
+                      </Button>
+                    </Box>
+                  </StyledPaper>
+                </Grid>
+
+                {/* Monitor de datos en tiempo real */}
+                <Grid item xs={12}>
+                  <StyledPaper>
+                    <Typography variant="h6" gutterBottom>
+                      Monitor de Datos en Tiempo Real
+                    </Typography>
+                    
+                    <Grid container spacing={2}>
+                      <Grid item xs={4}>
+                        <Box textAlign="center">
+                          <Typography variant="body2" color="text.secondary">Presión</Typography>
+                          <Typography variant="h4" sx={{ color: getValueColor('presionPico', ventilatorData.pressure) }}>
+                            {ventilatorData.pressure.toFixed(1)}
+                          </Typography>
+                          <Typography variant="caption">cmH₂O</Typography>
+                        </Box>
+                      </Grid>
+                      
+                      <Grid item xs={4}>
+                        <Box textAlign="center">
+                          <Typography variant="body2" color="text.secondary">Flujo</Typography>
+                          <Typography variant="h4" sx={{ color: getValueColor('flujo', ventilatorData.flow) }}>
+                            {ventilatorData.flow.toFixed(1)}
+                          </Typography>
+                          <Typography variant="caption">L/min</Typography>
+                        </Box>
+                      </Grid>
+                      
+                      <Grid item xs={4}>
+                        <Box textAlign="center">
+                          <Typography variant="body2" color="text.secondary">Volumen</Typography>
+                          <Typography variant="h4" sx={{ color: getValueColor('volumen', ventilatorData.volume) }}>
+                            {ventilatorData.volume.toFixed(1)}
+                          </Typography>
+                          <Typography variant="caption">mL</Typography>
+                        </Box>
+                      </Grid>
+                    </Grid>
+
+                    {/* Datos de máx/mín cada 100 muestras */}
+                    {maxMinData && (
+                      <Box mt={3}>
+                        <Typography variant="subtitle1" gutterBottom>
+                          Máximos y Mínimos (últimas 100 muestras)
+                        </Typography>
+                        <Grid container spacing={2} sx={{ fontSize: '0.875rem' }}>
+                          <Grid item xs={6} md={2}>
+                            <Typography variant="caption" display="block" color="text.secondary">Presión Máx</Typography>
+                            <Typography variant="body2" fontWeight="bold">{maxMinData.pressureMax} cmH₂O</Typography>
+                          </Grid>
+                          <Grid item xs={6} md={2}>
+                            <Typography variant="caption" display="block" color="text.secondary">Presión Mín</Typography>
+                            <Typography variant="body2" fontWeight="bold">{maxMinData.pressureMin} cmH₂O</Typography>
+                          </Grid>
+                          <Grid item xs={6} md={2}>
+                            <Typography variant="caption" display="block" color="text.secondary">Flujo Máx</Typography>
+                            <Typography variant="body2" fontWeight="bold">{maxMinData.flowMax} L/min</Typography>
+                          </Grid>
+                          <Grid item xs={6} md={2}>
+                            <Typography variant="caption" display="block" color="text.secondary">Flujo Mín</Typography>
+                            <Typography variant="body2" fontWeight="bold">{maxMinData.flowMin} L/min</Typography>
+                          </Grid>
+                          <Grid item xs={6} md={2}>
+                            <Typography variant="caption" display="block" color="text.secondary">Vol Máx</Typography>
+                            <Typography variant="body2" fontWeight="bold">{maxMinData.volumeMax} mL</Typography>
+                          </Grid>
+                          <Grid item xs={6} md={2}>
+                            <Typography variant="caption" display="block" color="text.secondary">Presión Media</Typography>
+                            <Typography variant="body2" fontWeight="bold">{maxMinData.pressureAvg} cmH₂O</Typography>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    )}
+                  </StyledPaper>
+                </Grid>
+
+                {/* Descarga de datos de sensores */}
+                <Grid item xs={12}>
+                  <StyledPaper>
+                    <Typography variant="h6" gutterBottom>
+                      Datos de Sensores
+                    </Typography>
+                    
+                    <Box display="flex" gap={2} alignItems="center">
+                      <Typography variant="body2" color="text.secondary">
+                        Datos en buffer: {dataRecording.sensorDataBuffer?.length || 0} puntos
+                      </Typography>
+                      
+                      <Button
+                        variant="outlined"
+                        onClick={() => dataRecording.downloadSensorData?.()}
+                        disabled={!dataRecording.hasSensorData}
+                        size="small"
+                      >
+                        Descargar Datos Sensores (formato Python)
+                      </Button>
+                      
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => dataRecording.clearSensorBuffer?.()}
+                        disabled={!dataRecording.hasSensorData}
+                        size="small"
+                      >
+                        Limpiar Buffer
+                      </Button>
+                    </Box>
+                  </StyledPaper>
+                </Grid>
+              </Grid>
+            </Container>
           </Box>
         );
       default:
