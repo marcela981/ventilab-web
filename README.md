@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ventilab Web - Interfaz Web para Respirador
 
-## Getting Started
+## Descripción
 
-First, run the development server:
+Ventilab Web es una aplicación web desarrollada como parte de la materia práctica de investigación II que tiene como objetivo crear la interfaz web de un respirador mecánico. Esta aplicación representa un prototipo educativo y de aprendizaje que simula el funcionamiento y control de un ventilador médico a través de una interfaz web moderna.
+
+## Objetivo del Proyecto
+
+Este aplicativo web es parte de una investigación académica que busca desarrollar una interfaz de usuario intuitiva y funcional para el control y monitoreo de un respirador mecánico especifico. El proyecto tiene como finalidad:
+
+- Demostrar la viabilidad de interfaces web para dispositivos médicos
+- Proporcionar una plataforma de aprendizaje para estudiantes y profesionales de Salud
+- Sentar las bases para futuras integraciones con inteligencia artificial
+
+## Funcionalidades Principales
+
+### Dashboard de Control
+La aplicación cuenta con un dashboard completo que permite:
+- **Control de Parámetros**: Ajuste en tiempo real de variables como volumen tidal, frecuencia respiratoria, presión positiva al final de la espiración (PEEP), entre otros
+- **Monitoreo en Tiempo Real**: Visualización de curvas de presión, flujo y volumen
+- **Simulador de Paciente**: Interfaz para configurar parámetros fisiológicos del paciente
+- **Indicadores de Cumplimiento**: Validación automática de parámetros según estándares médicos
+
+### Cálculos Matemáticos
+El sistema implementa algoritmos complejos para:
+- **Cálculo de Cumplimiento Pulmonar**: Determinación automática de la distensibilidad del sistema respiratorio
+- **Procesamiento de Señales**: Análisis de curvas de presión y flujo en tiempo real
+- **Validación de Parámetros**: Verificación matemática de rangos seguros para cada variable
+- **Simulación de Respuesta**: Modelado de la respuesta del paciente a diferentes configuraciones
+
+### Componentes Técnicos
+- **Comunicación Serial**: Interfaz para conexión con hardware real
+- **Procesamiento de Datos**: Algoritmos de filtrado y análisis de señales
+- **Gráficos Avanzados**: Visualización de curvas respiratorias y loops
+- **Sistema de Alertas**: Notificaciones automáticas para parámetros fuera de rango
+
+## Arquitectura
+
+La aplicación está construida con:
+- **Next.js**: Framework React para el frontend
+- **Hooks Personalizados**: Lógica de negocio modularizada
+- **Context API**: Gestión de estado global
+- **Componentes Reutilizables**: Arquitectura modular para fácil mantenimiento
+
+## Estado del Proyecto
+
+Este es un aplicativo web sencillo y de aprendizaje que actualmente incluye:
+- Simulación completa del funcionamiento de un respirador
+- Interfaz de usuario intuitiva y responsive
+- Cálculos matemáticos precisos para parámetros médicos
+- Sistema de validación y alertas
+
+### Futuras Integraciones
+El proyecto está diseñado para evolucionar hacia:
+- **Integración con IA**: Implementación de algoritmos de machine learning para optimización automática de parámetros
+- **Conectividad IoT**: Comunicación con dispositivos médicos reales
+- **Telemedicina**: Funcionalidades para monitoreo remoto
+
+## Instalación Rápida
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Accede a [http://localhost:3000](http://localhost:3000) para usar la aplicación.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Nota**: Este proyecto es de naturaleza educativa y de investigación. No está destinado para uso clínico real sin las certificaciones médicas correspondientes. Proyecto realizado en la Universidad del Valle - 2025

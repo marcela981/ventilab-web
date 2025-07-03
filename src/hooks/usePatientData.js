@@ -7,4 +7,4 @@ export const usePatientData = () => {
     throw new Error('usePatientData debe ser usado dentro de un PatientDataProvider');
   }
   return context;
-}; 
+};

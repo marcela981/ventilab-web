@@ -1,12 +1,34 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 export const useQRBridge = () => {
+  const [isSharing, setIsSharing] = useState(false);
 
-  // Función para compartir TODOS los datos por WhatsApp
-  const shareCompleteDataToWhatsApp = useCallback(async (ventilatorData, patientData, ventilationMode) => {
+  // Función para validar datos antes de compartir
+  const validateData = (ventilatorData, patientData, ventilationMode) => {
+    const errors = [];
+    
+    if (!ventilatorData) {
+      errors.push('Datos del ventilador no disponibles');
+    }
+    
+    if (!patientData) {
+      errors.push('Datos del paciente no disponibles');
+    }
+    
+    if (!ventilationMode) {
+      errors.push('Modo de ventilación no especificado');
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  };
+
+  // Función para generar datos de sesión de forma más robusta
+  const generateSessionData = () => {
     try {
-      // Generar datos de sesión simulados si no existen
-      const sessionData = {
+      return {
         duration: '00:05:30',
         totalBreaths: Math.floor(Math.random() * 100) + 50,
         avgPressure: (Math.random() * 10 + 10).toFixed(1),
@@ -22,8 +44,35 @@ export const useQRBridge = () => {
         highPriorityAlerts: Math.floor(Math.random() * 2),
         resolvedAlerts: Math.floor(Math.random() * 4) + 1
       };
+    } catch (error) {
+      console.warn('Error generando datos de sesión, usando valores por defecto:', error);
+      return {
+        duration: '00:05:30',
+        totalBreaths: 75,
+        avgPressure: '15.0',
+        avgFlow: '50.0',
+        avgVolume: 500,
+        maxPressure: '22.0',
+        minPEEP: '5.0',
+        complianceAvg: '0.025',
+        peakFlowAvg: '80.0',
+        tidalVolumeAvg: 500,
+        respiratoryRate: 12,
+        totalAlerts: 2,
+        highPriorityAlerts: 0,
+        resolvedAlerts: 2
+      };
+    }
+  };
 
+  // Función para crear el mensaje de WhatsApp de forma más robusta
+  const createWhatsAppMessage = (ventilatorData, patientData, ventilationMode, sessionData) => {
+    try {
       const title = '🏥 REPORTE COMPLETO VENTYLAB - Monitoreo Ventilación Mecánica';
+      
+      // Extraer datos del paciente de forma segura
+      const patientBasicData = patientData?.patientBasicData || {};
+      const calculatedParams = patientData?.calculatedParams || {};
       
       const message = `*${title}*\n\n` +
         `📅 *Fecha y Hora:* ${new Date().toLocaleString()}\n` +
@@ -45,22 +94,22 @@ export const useQRBridge = () => {
         `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
         `👤 *DATOS DEL PACIENTE*\n` +
         `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-        `👨‍⚕️ *Nombre:* ${patientData?.name || 'Paciente Simulado'}\n` +
-        `🆔 *ID:* ${patientData?.patientId || 'PAT_SIM_001'}\n` +
-        `📅 *Edad:* ${patientData?.age || 65} años (${patientData?.gender || 'M'})\n` +
-        `⚖️ *Peso:* ${patientData?.weight || 70} kg\n` +
-        `📏 *Altura:* ${patientData?.height || 170} cm\n` +
-        `🏥 *Diagnóstico:* ${patientData?.diagnosis || 'Simulación Respiratoria'}\n\n` +
+        `👨‍⚕️ *Nombre:* ${patientBasicData.nombre || patientBasicData.name || 'Paciente Simulado'}\n` +
+        `🆔 *ID:* ${patientBasicData.documento || patientBasicData.patientId || 'PAT_SIM_001'}\n` +
+        `📅 *Edad:* ${patientBasicData.edad || patientBasicData.age || 65} años (${patientBasicData.sexo || patientBasicData.gender || 'M'})\n` +
+        `⚖️ *Peso:* ${patientBasicData.pesoActual || patientBasicData.weight || 70} kg\n` +
+        `📏 *Altura:* ${patientBasicData.estatura || patientBasicData.height || 170} cm\n` +
+        `🏥 *Diagnóstico:* ${patientData?.clinicalData?.diagnostico || patientData?.diagnosis || 'Simulación Respiratoria'}\n\n` +
         
         `📐 *Parámetros Calculados:*\n` +
-        `• BMI: ${patientData?.calculatedParams?.bmi || 24.2}\n` +
-        `• Peso Ideal: ${patientData?.calculatedParams?.pesoIdeal || 65} kg\n` +
-        `• Superficie Corporal: ${patientData?.calculatedParams?.superficieCorporal || 1.8} m²\n\n` +
+        `• BMI: ${calculatedParams.imc || calculatedParams.bmi || 24.2}\n` +
+        `• Peso Ideal: ${calculatedParams.pesoCorporalIdeal || calculatedParams.pesoIdeal || 65} kg\n` +
+        `• Superficie Corporal: ${calculatedParams.superficieCorporal || 1.8} m²\n\n` +
         
         `⚙️ *Configuración Recomendada para este Paciente:*\n` +
-        `• Vol. Tidal Recomendado: ${patientData?.calculatedParams?.volumenTidal || 450} mL\n` +
-        `• PEEP Recomendado: ${patientData?.calculatedParams?.peepRecomendado || 5} cmH₂O\n` +
-        `• FiO2 Inicial: ${patientData?.calculatedParams?.fio2Inicial || 21}%\n\n` +
+        `• Vol. Tidal Recomendado: ${calculatedParams.volumenTidal || 450} mL\n` +
+        `• PEEP Recomendado: ${calculatedParams.peepRecomendado || 5} cmH₂O\n` +
+        `• FiO2 Inicial: ${calculatedParams.fio2Inicial || 21}%\n\n` +
         
         `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
         `📊 *ESTADÍSTICAS DE LA SESIÓN*\n` +
@@ -98,24 +147,100 @@ export const useQRBridge = () => {
         
         `*Este reporte contiene todos los datos de configuración, información del paciente y estadísticas de monitoreo en tiempo real del sistema VentyLab.*`;
 
+      return message;
+    } catch (error) {
+      console.error('Error creando mensaje de WhatsApp:', error);
+      return 'Error generando reporte. Por favor, intente nuevamente.';
+    }
+  };
+
+  // Función para abrir WhatsApp de forma más robusta
+  const openWhatsApp = (message) => {
+    try {
+      // Verificar que el mensaje no sea demasiado largo (límite de WhatsApp)
+      const maxLength = 4000; // Límite conservador para WhatsApp
+      if (message.length > maxLength) {
+        console.warn('Mensaje demasiado largo, truncando...');
+        message = message.substring(0, maxLength) + '\n\n... (mensaje truncado)';
+      }
+
       const encodedMessage = encodeURIComponent(message);
       const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
       
-      window.open(whatsappUrl, '_blank');
+      // Intentar abrir WhatsApp con manejo de errores
+      const newWindow = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
       
-      return { 
-        success: true, 
-        whatsappUrl, 
-        message: message.substring(0, 300) + '...' // Preview corto
-      };
+      if (!newWindow) {
+        throw new Error('No se pudo abrir WhatsApp. Verifique que no esté bloqueado por el navegador.');
+      }
+      
+      // Verificar si la ventana se abrió correctamente
+      setTimeout(() => {
+        if (newWindow.closed) {
+          console.warn('La ventana de WhatsApp se cerró inmediatamente');
+        }
+      }, 1000);
+      
+      return { success: true, whatsappUrl };
     } catch (error) {
-      console.error('Error compartiendo datos completos en WhatsApp:', error);
+      console.error('Error abriendo WhatsApp:', error);
       return { success: false, error: error.message };
     }
-      }, []);
+  };
+
+  // Función principal mejorada para compartir TODOS los datos por WhatsApp
+  const shareCompleteDataToWhatsApp = useCallback(async (ventilatorData, patientData, ventilationMode) => {
+    if (isSharing) {
+      console.warn('Ya se está compartiendo un reporte, espere...');
+      return { success: false, error: 'Ya se está compartiendo un reporte' };
+    }
+
+    setIsSharing(true);
+    
+    try {
+      // Validar datos de entrada
+      const validation = validateData(ventilatorData, patientData, ventilationMode);
+      if (!validation.isValid) {
+        console.error('Datos inválidos para compartir:', validation.errors);
+        return { 
+          success: false, 
+          error: `Datos incompletos: ${validation.errors.join(', ')}` 
+        };
+      }
+
+      // Generar datos de sesión
+      const sessionData = generateSessionData();
+      
+      // Crear mensaje
+      const message = createWhatsAppMessage(ventilatorData, patientData, ventilationMode, sessionData);
+      
+      // Abrir WhatsApp
+      const result = openWhatsApp(message);
+      
+      if (result.success) {
+        console.log('WhatsApp abierto exitosamente');
+        return { 
+          success: true, 
+          whatsappUrl: result.whatsappUrl, 
+          message: message.substring(0, 300) + '...' // Preview corto
+        };
+      } else {
+        throw new Error(result.error);
+      }
+      
+    } catch (error) {
+      console.error('Error compartiendo datos completos en WhatsApp:', error);
+      return { 
+        success: false, 
+        error: error.message || 'Error desconocido al compartir en WhatsApp' 
+      };
+    } finally {
+      setIsSharing(false);
+    }
+  }, [isSharing]);
 
   return {
-    // Función principal simplificada
     shareCompleteDataToWhatsApp,
+    isSharing,
   };
 }; 
