@@ -33,10 +33,8 @@ export const useVentilatorData = (serialConnection) => {
     time: [],
   });
 
-  // Estado para el volumen integrado (equivalente a self.v2 en Python)
   const [integratedVolume, setIntegratedVolume] = useState(0);
 
-  // Estados para cálculo de máx/mín cada 100 muestras (como en Python)
   const [maxMinData, setMaxMinData] = useState({
     pressureMax: 0,
     pressureMin: 0,
@@ -46,11 +44,10 @@ export const useVentilatorData = (serialConnection) => {
     pressureAvg: 0 // Para la media móvil de presión
   });
 
-  // Buffers para acumular 100 muestras (como listp, listf, listv en Python)
   const pressureBuffer = useRef([]);
   const flowBuffer = useRef([]);
   const volumeBuffer = useRef([]);
-  const sampleCounter = useRef(0); // Equivalente a self.cont en Python
+  const sampleCounter = useRef(0); 
 
   // Referencias para filtros (equivalente a self.filtradoP, etc.)
   const filteredPressure = useRef(0);
@@ -95,8 +92,7 @@ export const useVentilatorData = (serialConnection) => {
     }
 
     const { pressure, flow, volume } = decodedFrame.data;
-    
-    // Aplicar filtro de media móvil exponencial (valores exactos del Python)
+
     const alphaP = 0.1;
     const alphaQ = 0.5;
     const alphaV = 0.3;
@@ -117,7 +113,6 @@ export const useVentilatorData = (serialConnection) => {
     // Incrementar contador de muestras
     sampleCounter.current += 1;
 
-    // Cálculo de máx/mín cada 100 muestras (como en Python: if(self.cont==100))
     if (sampleCounter.current >= 100) {
       const pressureMax = Math.max(...pressureBuffer.current);
       const pressureMin = Math.min(...pressureBuffer.current);
@@ -148,7 +143,7 @@ export const useVentilatorData = (serialConnection) => {
     setRealTimeData(prev => {
       const now = Date.now();
       return {
-        pressure: [...prev.pressure.slice(-699), p], // Mantener 700 puntos como en Python
+        pressure: [...prev.pressure.slice(-699), p], 
         flow: [...prev.flow.slice(-699), f],
         volume: [...prev.volume.slice(-699), v],
         integratedVolume: [...prev.integratedVolume.slice(-699)], // Se actualizará después
@@ -156,12 +151,10 @@ export const useVentilatorData = (serialConnection) => {
       };
     });
 
-    // Cálculo del volumen integrado (equivalente a Python: self.v2=self.v2+f)
     setIntegratedVolume(prevIntegratedVol => {
       let newIntegratedVol = prevIntegratedVol + f;
       
       // Reset del volumen integrado si es negativo o si el volumen del sensor es 0
-      // (equivalente a Python: if(self.v2<0 or v==0): self.v2=0)
       if (newIntegratedVol < 0 || v === 0) {
         newIntegratedVol = 0;
       }

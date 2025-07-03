@@ -68,7 +68,6 @@ const LoopCharts = ({ data, type, isConnected = true }) => {
 
   const config = chartConfigs[type] || chartConfigs['volume-pressure'];
 
-  // Procesar datos para bucles cerrados (migrado desde Python)
   const processedData = useMemo(() => {
     if (!data || !data[config.xKey] || !data[config.yKey] || 
         !Array.isArray(data[config.xKey]) || !Array.isArray(data[config.yKey])) {
@@ -78,8 +77,6 @@ const LoopCharts = ({ data, type, isConnected = true }) => {
       };
     }
 
-    // Tomar los últimos 150 puntos como en Python (self.x4=self.y3[550:])
-    // En Python usa los últimos 150 de un array de 700, equivalente a ~20% final
     const totalPoints = data[config.xKey].length;
     const startIndex = Math.max(0, totalPoints - 150);
     

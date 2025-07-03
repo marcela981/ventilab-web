@@ -2,10 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 
 /**
  * Hook para calcular automáticamente la compliance pulmonar
- * Basado en la lógica del archivo Python main ventilador.py
  */
 export const useComplianceCalculation = (realTimeData, ventilationMode = 'pressure') => {
-  // Estado inicial con el mismo valor del archivo Python
   const [compliance, setCompliance] = useState(0.02051); // L/cmH2O - Compliance pulmonar por defecto
   
   // Contadores y arrays para el cálculo de compliance
@@ -64,7 +62,6 @@ export const useComplianceCalculation = (realTimeData, ventilationMode = 'pressu
   // Función para calcular la nueva compliance después de 5 ciclos
   const calculateNewCompliance = useCallback((targetPIP) => {
     if (pipArray.length >= 5 && peepArray.length >= 5 && volumeArray.length >= 5) {
-      // Calcular error como en Python (error porcentual respecto al PIP objetivo)
       const lastMeasuredPIP = pipArray[pipArray.length - 1];
       const error = targetPIP ? ((Math.abs(targetPIP - lastMeasuredPIP)) / targetPIP) * 100 : 0;
       
@@ -161,8 +158,7 @@ export const useComplianceCalculation = (realTimeData, ventilationMode = 'pressu
     if (ventilationMode === 'pressure' && realTimeData.pressure.length > 0) {
       const newSampleCount = sampleCount + 1;
       setSampleCount(newSampleCount);
-      
-      // Procesar un ciclo cada 100 muestras (como en Python)
+
       if (newSampleCount >= 100) {
         // Usar setTimeout para evitar actualizaciones síncronas que causen bucles
         setTimeout(() => {
@@ -212,7 +208,6 @@ export const useComplianceCalculation = (realTimeData, ventilationMode = 'pressu
     }));
   }, []);
 
-  // Función para calcular nuevos parámetros basados en la compliance (como calcularP en Python)
   const calculateParametersWithCompliance = useCallback((currentParams, newCompliance = compliance) => {
     const C = newCompliance; // Compliance pulmonar L/cmH2O
     const PEEP = currentParams.peep || 5;

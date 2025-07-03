@@ -1,7 +1,3 @@
-/**
- * Cálculos del ventilador mecánico migrados desde Python
- */
-
 export class VentilatorCalculations {
   constructor() {
     this.compliance = 0.02051; // L/cmH2O - Compliance pulmonar por defecto
@@ -48,9 +44,6 @@ export class VentilatorCalculations {
     }
   }
 
-  /**
-   * Calcula tiempos basados en relación I:E (migrado desde Python)
-   */
   calculateTimingFromIERatio(frequency, ieRatioSlider, expiratoryPause1 = 0, expiratoryPause2 = 0) {
     const cycleTime = this.calculateCycleTime(frequency) - expiratoryPause1 - expiratoryPause2;
     let inspiratoryTime = 0;
@@ -78,25 +71,16 @@ export class VentilatorCalculations {
     };
   }
 
-  /**
-   * Calcula flujo máximo para volumen control (migrado desde Python)
-   */
   calculateMaxFlow(tidalVolume, inspiratoryTime) {
     // Multiplicamos por 60 para pasar segundos a minutos y dividimos en 1000 para pasar ml a L
     // El factor 0.98 es un factor de corrección
     return (60 * tidalVolume) / (1000 * inspiratoryTime) * 0.98;
   }
 
-  /**
-   * Calcula presión del tanque (migrado desde Python)
-   */
   calculateTankPressure(maxFlow) {
     return (0.0025 * Math.pow(maxFlow, 2)) + (0.2203 * maxFlow) - 0.5912;
   }
 
-  /**
-   * Calcula volumen tidal para presión control (migrado desde Python)
-   */
   calculateTidalVolumePressureControl(peakPressure, peep, inspiratoryTime) {
     const C = this.compliance; // Compliance pulmonar L/cmH2O
     const Vtil = 1000 * (C * (peakPressure - peep)); // ml
@@ -109,16 +93,10 @@ export class VentilatorCalculations {
     };
   }
 
-  /**
-   * Filtro de media móvil exponencial (migrado desde Python)
-   */
   applyExponentialFilter(newValue, previousValue, alpha) {
     return (alpha * newValue) + ((1 - alpha) * previousValue);
   }
 
-  /**
-   * Actualiza compliance automática (migrado desde Python)
-   */
   updateCompliance(peakPressure, measuredPressure, measuredVolume) {
     this.autoC += 1;
     this.arrayPmax.push(measuredPressure);
@@ -347,9 +325,6 @@ export class VentilatorCalculations {
     return validation;
   }
 
-  /**
-   * Decodifica trama de sensores (migrado desde Python)
-   */
   decodeSensorFrame(frame) {
     let pressure = '';
     let flow = '';

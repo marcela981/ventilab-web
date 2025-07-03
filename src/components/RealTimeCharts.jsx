@@ -52,13 +52,13 @@ const RealTimeCharts = ({ data, type, isConnected = true }) => {
     pressure: {
       label: 'Presión',
       unit: 'cmH₂O',
-      color: '#00c5da',
-      backgroundColor: 'rgba(0, 197, 218, 0.1)',
-      borderColor: '#00c5da',
+      color: '#da0037',
+      backgroundColor: 'rgba(218, 0, 55, 0.1)',
+      borderColor: '#da0037',
       fillColor: 'rgba(0, 197, 218, 0.05)',
       yAxis: {
         min: 0,
-        max: 50,
+        max: 50, 
         ticks: {
           stepSize: 10,
         },
@@ -71,9 +71,9 @@ const RealTimeCharts = ({ data, type, isConnected = true }) => {
     flow: {
       label: 'Flujo',
       unit: 'L/min',
-      color: '#da0037',
-      backgroundColor: 'rgba(218, 0, 55, 0.1)',
-      borderColor: '#da0037',
+      color: '#00c5da',
+      backgroundColor: 'rgba(0, 197, 218, 0.1)',
+      borderColor: '#00c5da',
       fillColor: 'rgba(218, 0, 55, 0.05)',
       yAxis: {
         min: -20,
@@ -90,9 +90,9 @@ const RealTimeCharts = ({ data, type, isConnected = true }) => {
     volume: {
       label: 'Volumen',
       unit: 'mL',
-      color: '#4caf50',
-      backgroundColor: 'rgba(76, 175, 80, 0.1)',
-      borderColor: '#4caf50',
+      color: '#6eda00', 
+      backgroundColor: 'rgba(110, 218, 0, 0.1)',
+      borderColor: '#6eda00',
       fillColor: 'rgba(76, 175, 80, 0.05)',
       yAxis: {
         min: 0,
@@ -136,29 +136,50 @@ const RealTimeCharts = ({ data, type, isConnected = true }) => {
       return config.color;
     };
 
+    // Crear datasets base
+    const datasets = [
+      {
+        label: `${config.label} (${config.unit})`,
+        data: recentData,
+        borderColor: config.borderColor,
+        backgroundColor: config.fillColor,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointHoverBackgroundColor: config.color,
+        pointHoverBorderColor: '#fff',
+        pointHoverBorderWidth: 2,
+        borderWidth: 2,
+        pointBackgroundColor: recentData.map(value => getPointColor(value)),
+        pointBorderColor: recentData.map(value => getPointColor(value)),
+        pointRadius: recentData.map(value => 
+          value >= config.thresholds.warning ? 3 : 0
+        ),
+      }
+    ];
+
+    if (type === 'pressure' && recentData.length > 0) {
+      const average = recentData.reduce((a, b) => a + b, 0) / recentData.length;
+      const averageData = new Array(recentData.length).fill(average);
+      
+      datasets.push({
+        label: `Media: ${average.toFixed(1)} ${config.unit}`,
+        data: averageData,
+        borderColor: '#00bfff',
+        backgroundColor: 'transparent',
+        fill: false,
+        tension: 0,
+        pointRadius: 0,
+        pointHoverRadius: 0,
+        borderWidth: 2,
+        borderDash: [5, 5], // Línea punteada para diferenciar
+      });
+    }
+
     return {
       labels,
-      datasets: [
-        {
-          label: `${config.label} (${config.unit})`,
-          data: recentData,
-          borderColor: config.borderColor,
-          backgroundColor: config.fillColor,
-          fill: true,
-          tension: 0.4,
-          pointRadius: 0,
-          pointHoverRadius: 6,
-          pointHoverBackgroundColor: config.color,
-          pointHoverBorderColor: '#fff',
-          pointHoverBorderWidth: 2,
-          borderWidth: 2,
-          pointBackgroundColor: recentData.map(value => getPointColor(value)),
-          pointBorderColor: recentData.map(value => getPointColor(value)),
-          pointRadius: recentData.map(value => 
-            value >= config.thresholds.warning ? 3 : 0
-          ),
-        },
-      ],
+      datasets,
     };
   }, [data, type, config]);
 

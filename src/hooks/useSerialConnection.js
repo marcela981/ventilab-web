@@ -32,9 +32,13 @@ export const useSerialConnection = () => {
     }
   }, []);
 
-  // Función para solicitar puerto (equivalente a read_ports en Python)
   const requestPort = useCallback(async (filters = []) => {
     try {
+      // Verificar soporte de Web Serial API
+      if (!('serial' in navigator)) {
+        throw new Error('UNSUPPORTED_BROWSER');
+      }
+
       // Filtros comunes para dispositivos de ventilador
       const defaultFilters = [
         { usbVendorId: 0x2341, usbProductId: 0x0043 }, // Arduino Uno
@@ -53,7 +57,19 @@ export const useSerialConnection = () => {
       return selectedPort;
     } catch (error) {
       console.error('Error solicitando puerto:', error);
-      throw error;
+      
+      // Manejar errores específicos con mensajes informativos
+      if (error.name === 'NotFoundError') {
+        throw new Error('USER_CANCELLED');
+      } else if (error.name === 'SecurityError') {
+        throw new Error('PERMISSION_DENIED');
+      } else if (error.message === 'UNSUPPORTED_BROWSER') {
+        throw new Error('UNSUPPORTED_BROWSER');
+      } else if (error.name === 'NetworkError') {
+        throw new Error('NO_DEVICE_CONNECTED');
+      } else {
+        throw new Error('UNKNOWN_ERROR');
+      }
     }
   }, [getAvailablePorts]);
 
@@ -66,9 +82,35 @@ export const useSerialConnection = () => {
         // Se recibió un objeto SerialPort ya autorizado
         selectedPort = portOrFilters;
       } else {
+        // Verificar soporte de Web Serial API
+        if (!('serial' in navigator)) {
+          throw new Error('UNSUPPORTED_BROWSER');
+        }
+
         // Si se pasó un array de filtros, úsalo; de lo contrario pedir puerto
         const filters = Array.isArray(portOrFilters) ? portOrFilters : [];
-        selectedPort = await navigator.serial.requestPort({ filters });
+        
+        try {
+          selectedPort = await navigator.serial.requestPort({ 
+            filters: filters.length > 0 ? filters : [
+              { usbVendorId: 0x2341, usbProductId: 0x0043 }, // Arduino Uno
+              { usbVendorId: 0x2341, usbProductId: 0x0001 }, // Arduino Uno (older)
+              { usbVendorId: 0x2341 }, // Cualquier Arduino
+              { usbVendorId: 0x1a86 }, // CH340 (clones Arduino)
+              { usbVendorId: 0x0403 }, // FTDI
+            ]
+          });
+        } catch (portError) {
+          if (portError.name === 'NotFoundError') {
+            throw new Error('USER_CANCELLED');
+          } else if (portError.name === 'SecurityError') {
+            throw new Error('PERMISSION_DENIED');
+          } else if (portError.name === 'NetworkError') {
+            throw new Error('NO_DEVICE_CONNECTED');
+          } else {
+            throw portError;
+          }
+        }
       }
 
       await selectedPort.open({ baudRate });
@@ -90,11 +132,17 @@ export const useSerialConnection = () => {
       // Iniciar lectura de datos
       startReading(reader);
 
-      return true;
+      return { success: true };
     } catch (error) {
       console.error('Error conectando:', error);
       setConnectionStatus('error');
-      return false;
+      
+      // Retornar información del error para mejor manejo en la UI
+      return { 
+        success: false, 
+        error: error.message,
+        errorType: error.message
+      };
     }
   }, []);
 

@@ -31,7 +31,6 @@ export class SerialProtocol {
       trama += 'R?';
     }
 
-    // Parámetros en el mismo orden que Python
     trama += `${parameters.fio2 || 21}?`;
     trama += `${parameters.volumen || 500}?`;
     trama += `${parameters.presionMax || 20}?`;
@@ -120,7 +119,6 @@ export class SerialProtocol {
   }
 
   /**
-   * Decodifica trama de sensores (migrado desde Python)
    * Formato: S + P<valor>F<valor>V<valor>?
    */
   static decodeSensorFrame(frame) {

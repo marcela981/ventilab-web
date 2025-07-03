@@ -5,6 +5,7 @@ export const useDataRecording = () => {
   const [recordedData, setRecordedData] = useState([]);
   const [sensorDataBuffer, setSensorDataBuffer] = useState([]); // Buffer para datos de sensores
   const recordingStartTime = useRef(null);
+  const [autoSaveBuffer, setAutoSaveBuffer] = useState([]);
 
   // Iniciar grabación
   const startRecording = useCallback(() => {
@@ -52,7 +53,6 @@ export const useDataRecording = () => {
     }
   }, [isRecording]);
 
-  // Agregar datos de sensores en tiempo real (como en Python)
   const addSensorData = useCallback((pressure, flow, volume) => {
     const timestamp = Date.now();
     const sensorPoint = {
@@ -60,7 +60,7 @@ export const useDataRecording = () => {
       flow: flow,
       volume: volume,
       timestamp: timestamp,
-      timeString: (timestamp / 1000).toString() // Formato similar al Python
+      timeString: (timestamp / 1000).toString()
     };
     
     // Agregar al buffer (mantener últimos 10000 puntos para evitar overflow)
@@ -68,12 +68,52 @@ export const useDataRecording = () => {
       const newBuffer = [...prev, sensorPoint];
       return newBuffer.length > 10000 ? newBuffer.slice(-10000) : newBuffer;
     });
+
+    const lineaArchivo = `${pressure}=${flow}=${volume}=${timestamp / 1000}\n`;
+    
+    // Simular el guardado automático agregando a un buffer de archivo
+    setAutoSaveBuffer(prev => {
+      const newAutoBuffer = [...prev, lineaArchivo];
+      // Cada 1000 líneas, generar descarga automática (opcional)
+      if (newAutoBuffer.length >= 1000) {
+        downloadAutoSavedData(newAutoBuffer.join(''));
+        return []; // Limpiar buffer después de descargar
+      }
+      return newAutoBuffer;
+    });
     
     // Si está grabando, también agregar a datos grabados
     if (isRecording) {
       setRecordedData(prev => [...prev, sensorPoint]);
     }
   }, [isRecording]);
+
+  // **NUEVO**: Función para descargar datos guardados automáticamente
+  const downloadAutoSavedData = useCallback((content) => {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `datos_sensores_${timestamp}.txt`;
+    
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    console.log(`Datos de sensores guardados automáticamente: ${filename}`);
+  }, []);
+
+  // **NUEVO**: Función para descargar buffer actual manualmente
+  const downloadCurrentSensorData = useCallback(() => {
+    if (autoSaveBuffer.length === 0) {
+      console.warn('No hay datos de sensores para descargar');
+      return;
+    }
+    
+    downloadAutoSavedData(autoSaveBuffer.join(''));
+    setAutoSaveBuffer([]); // Limpiar buffer después de descargar
+  }, [autoSaveBuffer, downloadAutoSavedData]);
 
   // Generar archivo TXT
   const generateTxtFile = useCallback(() => {
@@ -256,7 +296,6 @@ export const useDataRecording = () => {
     return { content: htmlContent, filename };
   }, [recordedData]);
 
-  // Generar archivo de datos de sensores (formato Python)
   const generateSensorDataFile = useCallback(() => {
     if (sensorDataBuffer.length === 0) {
       console.warn('No hay datos de sensores para exportar');
@@ -265,8 +304,7 @@ export const useDataRecording = () => {
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `datos_sensores_${timestamp}.txt`;
-    
-    // Formato exacto del Python: "presion=flujo=volumen=tiempo\n"
+
     let content = '';
     sensorDataBuffer.forEach(point => {
       content += `${point.pressure}=${point.flow}=${point.volume}=${point.timeString}\n`;
@@ -357,6 +395,7 @@ export const useDataRecording = () => {
         URL.revokeObjectURL(url);
         console.log('Datos de sensores descargados:', fileData.filename);
       }
-    }, [generateSensorDataFile])
+    }, [generateSensorDataFile]),
+    downloadCurrentSensorData
   };
 }; 

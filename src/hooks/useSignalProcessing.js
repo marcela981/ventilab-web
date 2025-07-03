@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 
 const useSignalProcessing = (realTimeData) => {
-    // Filtros de media móvil exponencial (valores del archivo Python)
     const filterSignal = (newValue, prevFiltered, alpha) => {
       return (alpha * newValue) + (1 - alpha) * prevFiltered;
     };
@@ -14,7 +13,6 @@ const useSignalProcessing = (realTimeData) => {
   
     useEffect(() => {
       if (realTimeData.pressure.length > 0) {
-        // Aplicar filtros con los mismos valores alpha del archivo Python
         const newPressure = filterSignal(
           realTimeData.pressure[realTimeData.pressure.length - 1],
           filteredData.pressure.filtered,
