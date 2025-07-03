@@ -431,6 +431,10 @@ const VentilatorDashboard = () => {
   // Hook para datos del paciente simulado
   const { 
     patientData, 
+    isDataPersisted,
+    sendPatientDataToConnection,
+    activatePatientMode,
+    deactivatePatientMode
   } = usePatientData();
   
   // Estado para el modo de ventilación
@@ -456,13 +460,40 @@ const VentilatorDashboard = () => {
         frecuencia: patientData.calculatedParams.frecuenciaResp || 12,
       };
       setVentilatorData(simulatedParams);
+      
+      // Activar el modo paciente automáticamente
+      activatePatientMode();
     } 
     // Salir de modo simulado
     else if (dataSource === 'real' && realDataBackup) {
       setVentilatorData(realDataBackup);
       setRealDataBackup(null);
+      
+      // Desactivar el modo paciente
+      deactivatePatientMode();
     }
-  }, [dataSource, patientData, realDataBackup, setVentilatorData, ventilatorData]);
+  }, [dataSource, patientData, realDataBackup, setVentilatorData, ventilatorData, activatePatientMode, deactivatePatientMode]);
+
+  // Efecto para enviar automáticamente los datos del paciente a la conexión
+  useEffect(() => {
+    if (isDataPersisted && patientData && serialConnection.isConnected && dataSource === 'simulated') {
+      console.log('VentilatorDashboard: Enviando datos del paciente a la conexión automáticamente');
+      const success = sendPatientDataToConnection(serialConnection);
+      if (success) {
+        setNotification({
+          type: 'success',
+          message: `Datos del paciente ${patientData.patientBasicData.nombre} ${patientData.patientBasicData.apellido} enviados al ventilador`,
+          timestamp: Date.now()
+        });
+      } else {
+        setNotification({
+          type: 'warning',
+          message: 'No se pudieron enviar los datos del paciente al ventilador',
+          timestamp: Date.now()
+        });
+      }
+    }
+  }, [isDataPersisted, patientData, serialConnection.isConnected, dataSource, sendPatientDataToConnection]);
 
   // Datos para mostrar en las gráficas
   const displayData = useMemo(() => {
@@ -1523,6 +1554,28 @@ const VentilatorDashboard = () => {
                 }}
               />
             </Tooltip>
+
+            {/* Indicador de datos de paciente persistidos */}
+            {isDataPersisted && patientData && (
+              <Box sx={{ 
+                backgroundColor: 'rgba(76, 175, 80, 0.1)', 
+                border: '1px solid #4caf50',
+                borderRadius: 1,
+                padding: '4px 8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5
+              }}>
+                <CheckCircleIcon sx={{ fontSize: 16, color: '#4caf50' }} />
+                <Typography variant="caption" sx={{ 
+                  fontSize: '10px', 
+                  fontWeight: 600,
+                  color: '#4caf50'
+                }}>
+                  {patientData.patientBasicData.nombre} {patientData.patientBasicData.apellido}
+                </Typography>
+              </Box>
+            )}
 
             {/* Botones Enviar y Detener */}
             <Box display="flex" gap={1}>

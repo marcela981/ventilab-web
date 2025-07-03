@@ -31,6 +31,7 @@ import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 import SaveIcon from '@mui/icons-material/Save';
 import SendIcon from '@mui/icons-material/Send';
 import CalculateIcon from '@mui/icons-material/Calculate';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ImageIcon from '@mui/icons-material/Image';
@@ -47,7 +48,13 @@ const StyledCard = styled(Card)(({ theme }) => ({
 }));
 
 const PatientSimulator = () => {
-  const { receivePatientData } = usePatientData();
+  const { 
+    receivePatientData, 
+    patientData, 
+    isDataPersisted, 
+    lastUpdate,
+    clearPatientData 
+  } = usePatientData();
   const [activeStep, setActiveStep] = useState(0);
   const [validationErrors, setValidationErrors] = useState({});
   
@@ -1343,10 +1350,46 @@ const PatientSimulator = () => {
       
       {/* Contenido principal del simulador - ocupa toda la pantalla */}
       <Container maxWidth="xl" sx={{ py: 3, paddingBottom: '100px', paddingTop: '120px', display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <Typography variant="h4" sx={{ mb: 3, color: '#de0b24', fontWeight: 'bold' }}>
-          <PersonIcon sx={{ mr: 2, fontSize: 40 }} />
-          Simulador de Paciente
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h4" sx={{ color: '#de0b24', fontWeight: 'bold' }}>
+            <PersonIcon sx={{ mr: 2, fontSize: 40 }} />
+            Simulador de Paciente
+          </Typography>
+          
+          {/* Indicador de estado de persistencia */}
+          {isDataPersisted && patientData && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Chip
+                icon={<CheckCircleIcon />}
+                label={`Paciente: ${patientData.patientBasicData.nombre} ${patientData.patientBasicData.apellido}`}
+                color="success"
+                variant="outlined"
+                sx={{ 
+                  backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                  borderColor: '#4caf50',
+                  color: '#4caf50',
+                  fontWeight: 600
+                }}
+              />
+              <Button
+                size="small"
+                variant="outlined"
+                color="error"
+                onClick={clearPatientData}
+                sx={{ 
+                  borderColor: '#f44336',
+                  color: '#f44336',
+                  '&:hover': { 
+                    backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                    borderColor: '#d32f2f'
+                  }
+                }}
+              >
+                Limpiar Datos
+              </Button>
+            </Box>
+          )}
+        </Box>
 
         {/* Barra de pasos */}
         <Box sx={{ mb: 4 }}>
