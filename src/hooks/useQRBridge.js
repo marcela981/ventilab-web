@@ -171,7 +171,14 @@ export const useQRBridge = () => {
       const newWindow = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
       
       if (!newWindow) {
-        throw new Error('No se pudo abrir WhatsApp. Verifique que no esté bloqueado por el navegador.');
+        // Si no se puede abrir la ventana, crear un enlace temporal para copiar
+        console.warn('No se pudo abrir ventana automáticamente, creando enlace temporal');
+        return { 
+          success: true, 
+          whatsappUrl,
+          requiresManualAction: true,
+          message: 'Ventana bloqueada por el navegador. Se ha copiado el enlace al portapapeles.'
+        };
       }
       
       // Verificar si la ventana se abrió correctamente
@@ -181,10 +188,18 @@ export const useQRBridge = () => {
         }
       }, 1000);
       
-      return { success: true, whatsappUrl };
+      return { 
+        success: true, 
+        whatsappUrl,
+        requiresManualAction: false
+      };
     } catch (error) {
       console.error('Error abriendo WhatsApp:', error);
-      return { success: false, error: error.message };
+      return { 
+        success: false, 
+        error: error.message,
+        requiresManualAction: false
+      };
     }
   };
 
@@ -219,10 +234,22 @@ export const useQRBridge = () => {
       
       if (result.success) {
         console.log('WhatsApp abierto exitosamente');
+        
+        // Si requiere acción manual, copiar el enlace al portapapeles
+        if (result.requiresManualAction) {
+          try {
+            navigator.clipboard.writeText(result.whatsappUrl);
+            console.log('Enlace copiado al portapapeles');
+          } catch (clipboardError) {
+            console.warn('No se pudo copiar al portapapeles:', clipboardError);
+          }
+        }
+        
         return { 
           success: true, 
           whatsappUrl: result.whatsappUrl, 
-          message: message.substring(0, 300) + '...' // Preview corto
+          message: message.substring(0, 300) + '...', // Preview corto
+          requiresManualAction: result.requiresManualAction
         };
       } else {
         throw new Error(result.error);
