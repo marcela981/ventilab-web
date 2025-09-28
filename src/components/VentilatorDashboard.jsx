@@ -80,6 +80,8 @@ import { useDataRecording } from '../hooks/useDataRecording';
 import { useParameterValidation } from '../hooks/useParameterValidation';
 import { usePatientData } from '../hooks/usePatientData'; // Importar hook de paciente
 import { useQRBridge } from '../hooks/useQRBridge';
+import { useAIAnalysis } from '../hooks/useAIAnalysis';
+import AIAnalysisPanel from './AIAnalysisPanel';
 
 // LoopChart moved to ./common/LoopChart
 
@@ -343,6 +345,69 @@ const VentilatorDashboard = () => {
   // Hook para códigos QR y compartir
   const qrBridge = useQRBridge();
 
+  // Hook para análisis de IA
+  const {
+    isAnalyzing,
+    analysisResult,
+    analysisError,
+    analyzeConfiguration,
+    clearAnalysis
+  } = useAIAnalysis();
+  
+  // Estado para mostrar el panel de IA
+  const [showAIPanel, setShowAIPanel] = useState(false);
+
+  // Función para ejecutar el análisis
+  const executeAIAnalysis = (userConfig, optimalConfig, ventilationMode, patientData) => {
+    // Validaciones adicionales antes de ejecutar el análisis
+    if (!userConfig || Object.keys(userConfig).length === 0) {
+      console.warn('Configuración del ventilador vacía o no válida');
+      return;
+    }
+    
+    if (!ventilationMode || !['volume', 'pressure'].includes(ventilationMode)) {
+      console.warn('Modo de ventilación no válido:', ventilationMode);
+      return;
+    }
+    
+    console.log('Ejecutando análisis de IA con:', {
+      userConfig: Object.keys(userConfig),
+      optimalConfig: optimalConfig ? Object.keys(optimalConfig) : 'No disponible',
+      ventilationMode,
+      hasPatientData: !!patientData
+    });
+    
+    analyzeConfiguration(userConfig, optimalConfig, ventilationMode, patientData);
+  };
+
+  // Generar configuración óptima basada en datos del paciente
+  const generateOptimalConfig = useCallback(() => {
+    if (!patientData || !patientData.calculatedParams) {
+      console.log('No hay datos del paciente para generar configuración óptima');
+      return null;
+    }
+    
+    try {
+      const { calculatedParams } = patientData;
+      const optimalConfig = {
+        fio2: calculatedParams.fio2Inicial || 21,
+        volumen: calculatedParams.volumenTidal || 500,
+        peep: calculatedParams.peepRecomendado || 5,
+        frecuencia: calculatedParams.frecuenciaResp || 12,
+        presionMax: calculatedParams.presionMaxRecomendada || 20,
+        inspiracionEspiracion: 0.5,
+        pausaInspiratoria: 0.1,
+        pausaEspiratoria: 0.1
+      };
+      
+      console.log('Configuración óptima generada:', optimalConfig);
+      return optimalConfig;
+    } catch (error) {
+      console.error('Error al generar configuración óptima:', error);
+      return null;
+    }
+  }, [patientData]);
+
   // Registrar el hook de grabación con el hook del ventilador
   useEffect(() => {
     registerDataRecording(dataRecording);
@@ -406,8 +471,7 @@ const VentilatorDashboard = () => {
   // Estado para notificaciones
   const [notification, setNotification] = useState(null);
 
-  // Estado para el botón de IA
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
 
   // Estado para alertas de validación
   const [showValidationAlerts, setShowValidationAlerts] = useState(false);
@@ -1050,9 +1114,8 @@ const VentilatorDashboard = () => {
 
   // Función para manejar el análisis con IA
   const handleAIAnalysis = () => {
-    setIsAnalyzing(!isAnalyzing);
-    // Por ahora no hace nada más, como se solicitó
-    console.log('Botón de análisis con IA clickeado');
+    setShowAIPanel(true);
+    clearAnalysis();
   };
 
   // Función para descargar datos de configuración enviada (simplificación de REC/stop_REC)
@@ -1512,7 +1575,7 @@ const VentilatorDashboard = () => {
                         <DragIndicatorIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
-                    <AIAnalysisButton isAnalyzing={isAnalyzing}>
+                    <AIAnalysisButton isAnalyzing={isAnalyzing} onClick={handleAIAnalysis}>
                       <PsychologyIcon fontSize="small" />
                     </AIAnalysisButton>
                   </EditControls>
@@ -2400,6 +2463,20 @@ const VentilatorDashboard = () => {
           icon={<WifiIcon />}
         />
       </BottomNavigation>
+      
+      {/* Panel de análisis de IA */}
+      <AIAnalysisPanel
+        open={showAIPanel}
+        onClose={() => setShowAIPanel(false)}
+        isAnalyzing={isAnalyzing}
+        analysisResult={analysisResult}
+        analysisError={analysisError}
+        onAnalyze={executeAIAnalysis}
+        userConfig={ventilatorData}
+        optimalConfig={generateOptimalConfig()}
+        ventilationMode={ventilationMode}
+        patientData={patientData}
+      />
     </ThemeProvider>
   );
 };
