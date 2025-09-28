@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import geminiService from '../service/geminiService';
+import AIServiceManager from '../service/ai/AIServiceManager.js';
 
 export const useAIAnalysis = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -24,7 +24,7 @@ export const useAIAnalysis = () => {
     }
     
     try {
-      const result = await geminiService.analyzeVentilatorConfiguration(
+      const result = await AIServiceManager.analyzeVentilatorConfiguration(
         userConfig, 
         optimalConfig, 
         ventilationMode, 
