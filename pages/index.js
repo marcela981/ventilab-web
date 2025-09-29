@@ -1,6 +1,14 @@
 // Next.js Home Page - VentyLab
-import VentilatorDashboard from '../src/components/VentilatorDashboard';
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
 
 export default function Home() {
-  return <VentilatorDashboard />;
+  const router = useRouter();
+
+  useEffect(() => {
+    // Redirect to dashboard on home page load
+    router.replace('/dashboard');
+  }, [router]);
+
+  return null; // This will not render anything as we redirect immediately
 } 

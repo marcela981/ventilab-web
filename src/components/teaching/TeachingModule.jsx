@@ -47,7 +47,7 @@ const TeachingModule = () => {
   });
 
   // Datos estructurados de las secciones
-  const learningsections = [
+  const learningSections = [
     {
       id: 'fundamentals',
       title: 'Fundamentos Fisiológicos y Respiratorios',
