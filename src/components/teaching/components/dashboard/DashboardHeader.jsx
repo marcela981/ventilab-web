@@ -2,12 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
-  Container,
   Typography,
   Breadcrumbs,
-  Link,
-  useTheme,
-  useMediaQuery
+  Link
 } from '@mui/material';
 import {
   Home,
@@ -29,8 +26,6 @@ const DashboardHeader = ({
   title = "Módulo de Enseñanza - Mecánica Ventilatoria",
   description = "Aprende los fundamentos de la ventilación mecánica a través de un programa estructurado que combina teoría, práctica y simulaciones interactivas."
 }) => {
-  const theme = useTheme();
-
   return (
     <Box sx={{ mb: 4 }}>
       <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>

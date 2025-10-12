@@ -2,53 +2,38 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
-  Container,
   Typography,
-  Grid,
   Card,
   CardContent,
-  CardActions,
-  Button,
+  Grid,
   LinearProgress,
-  Chip,
   Avatar,
-  Divider,
-  Stack,
-  useTheme
+  Stack
 } from '@mui/material';
 import {
   LocalFireDepartment,
   EmojiEvents,
   TrendingUp,
-  Assessment,
-  Timer
+  Assessment
 } from '@mui/icons-material';
 import ClientOnly from '../../../common/ClientOnly';
 
 /**
  * ProgressOverview - Panel de estadísticas globales del usuario
  * 
- * Muestra un dashboard de cuatro cuadrantes con:
- * - Sistema de Repetición Espaciada (FlashcardDashboard)
- * - Sistema de Racha (días consecutivos)
- * - Gráfica de Progreso Temporal
- * - Recomendaciones Inteligentes
+ * Muestra métricas clave del progreso del usuario incluyendo:
+ * - Tiempo total gastado
+ * - Lecciones completadas
+ * - Sistema de racha
+ * - Badges ganados
  * 
- * @param {Object} dashboardData - Datos del dashboard (streak, badges, etc.)
  * @param {Object} globalStats - Estadísticas globales calculadas
- * @param {Function} onOpenFlashcards - Callback para abrir flashcards
- * @param {JSX.Element} flashcardDashboard - Componente del dashboard de flashcards
- * @param {JSX.Element} recommendationsPanel - Panel de recomendaciones
+ * @param {Object} dashboardData - Datos del dashboard (streak, badges, etc.)
  */
 const ProgressOverview = ({ 
-  dashboardData, 
   globalStats, 
-  onOpenFlashcards,
-  flashcardDashboard,
-  recommendationsPanel 
+  dashboardData 
 }) => {
-  const theme = useTheme();
-
   return (
     <ClientOnly fallback={
       <Box sx={{ 
@@ -132,11 +117,6 @@ const ProgressOverview = ({
         </Typography>
 
         <Grid container spacing={3}>
-          {/* Cuadrante Superior Izquierdo - Sistema de Repetición Espaciada */}
-          <Grid item xs={12} md={6}>
-            {flashcardDashboard}
-          </Grid>
-
           {/* Cuadrante Superior Derecho - Sistema de Racha */}
           <Grid item xs={12} md={6}>
             <Card sx={{ 
@@ -268,11 +248,6 @@ const ProgressOverview = ({
               </CardContent>
             </Card>
           </Grid>
-
-          {/* Cuadrante Inferior Derecho - Recomendaciones Inteligentes */}
-          <Grid item xs={12} md={6}>
-            {recommendationsPanel}
-          </Grid>
         </Grid>
       </Card>
     </ClientOnly>
@@ -280,11 +255,14 @@ const ProgressOverview = ({
 };
 
 ProgressOverview.propTypes = {
-  dashboardData: PropTypes.object.isRequired,
-  globalStats: PropTypes.object.isRequired,
-  onOpenFlashcards: PropTypes.func.isRequired,
-  flashcardDashboard: PropTypes.element.isRequired,
-  recommendationsPanel: PropTypes.element.isRequired
+  globalStats: PropTypes.shape({
+    totalTimeSpent: PropTypes.number.isRequired,
+    completedLessons: PropTypes.number.isRequired
+  }).isRequired,
+  dashboardData: PropTypes.shape({
+    streak: PropTypes.number.isRequired,
+    badges: PropTypes.array.isRequired
+  }).isRequired
 };
 
 export default ProgressOverview;
