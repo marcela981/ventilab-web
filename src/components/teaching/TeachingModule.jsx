@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Box,
   Container,
@@ -63,11 +63,14 @@ import {
   CalendarToday,
   Schedule,
   TrendingDown,
-  AutoAwesome
+  AutoAwesome,
+  Style as FlashcardIcon
 } from '@mui/icons-material';
 import { useLearningProgress } from '../../contexts/LearningProgressContext';
 import ClientOnly from '../common/ClientOnly';
 import { curriculumData, getModulesByLevel, getLevelProgress } from '../../data/curriculumData';
+import FlashcardDashboard from './components/FlashcardDashboard';
+import FlashcardSystem from './FlashcardSystem';
 
 const TeachingModule = () => {
   const theme = useTheme();
@@ -96,14 +99,15 @@ const TeachingModule = () => {
     window.addEventListener('resize', checkIsMobile);
     
     return () => window.removeEventListener('resize', checkIsMobile);
-  }, [setCurrentModule]);
+  }, []); // Removed setCurrentModule dependency to prevent infinite loop
   
   // Estado para el módulo actual del usuario
   const [currentUserModule, setCurrentUserModule] = useState(null);
   const [favoriteModules, setFavoriteModules] = useState(new Set());
+  const [flashcardSystemOpen, setFlashcardSystemOpen] = useState(false);
 
-  // Calcular progreso basado en lecciones completadas y curriculum data
-  const calculateModuleProgress = (moduleId) => {
+  // Calcular progreso basado en lecciones completadas y curriculum data - memoizado
+  const calculateModuleProgress = useCallback((moduleId) => {
     const module = curriculumData.modules[moduleId];
     if (!module) return 0;
     
@@ -114,10 +118,10 @@ const TeachingModule = () => {
     );
     
     return moduleLessons.length > 0 ? (completedModuleLessons.length / moduleLessons.length) * 100 : 0;
-  };
+  }, [completedLessons]);
 
-  // Verificar si un módulo está disponible basándose en prerequisites
-  const isModuleAvailable = (moduleId) => {
+  // Verificar si un módulo está disponible basándose en prerequisites - memoizado
+  const isModuleAvailable = useCallback((moduleId) => {
     const module = curriculumData.modules[moduleId];
     if (!module) return false;
     
@@ -131,10 +135,10 @@ const TeachingModule = () => {
       const prereqProgress = calculateModuleProgress(prereqId);
       return prereqProgress >= 75;
     });
-  };
+  }, [calculateModuleProgress]);
 
-  // Obtener el próximo módulo disponible
-  const getNextAvailableModule = () => {
+  // Obtener el próximo módulo disponible - memoizado
+  const getNextAvailableModule = useMemo(() => {
     const allModules = Object.values(curriculumData.modules).sort((a, b) => {
       const levelOrder = { beginner: 0, intermediate: 1, advanced: 2 };
       if (levelOrder[a.level] !== levelOrder[b.level]) {
@@ -147,7 +151,7 @@ const TeachingModule = () => {
       const progress = calculateModuleProgress(module.id);
       return progress > 0 && progress < 100 && isModuleAvailable(module.id);
     });
-  };
+  }, [calculateModuleProgress, isModuleAvailable]);
 
   // Obtener progreso por nivel
   const levelProgress = getLevelProgress(Array.from(completedLessons));
@@ -166,8 +170,8 @@ const TeachingModule = () => {
     ]
   });
 
-  // Calcular estadísticas globales
-  const calculateGlobalStats = () => {
+  // Calcular estadísticas globales - memoizado
+  const calculateGlobalStats = useMemo(() => {
     const totalModules = Object.keys(curriculumData.modules).length;
     const completedModules = Object.keys(curriculumData.modules).filter(moduleId => 
       calculateModuleProgress(moduleId) === 100
@@ -184,13 +188,36 @@ const TeachingModule = () => {
       completedLessons: completedLessonsCount,
       lessonsCompletion: totalLessons > 0 ? (completedLessonsCount / totalLessons) * 100 : 0
     };
-  };
+  }, [calculateModuleProgress, completedLessons, timeSpent]);
 
   // Obtener módulo actual del usuario
-  const nextModule = getNextAvailableModule();
+  const nextModule = getNextAvailableModule;
 
-  // Generar recomendaciones inteligentes
-  const generateRecommendations = () => {
+  // Handlers memoizados
+  const handleSectionClick = useCallback((sectionId) => {
+    // Marcar la primera lección como completada cuando se accede
+    const module = curriculumData.modules[sectionId];
+    if (module && module.lessons && module.lessons.length > 0) {
+      markLessonComplete(`${sectionId}-${module.lessons[0].id}`);
+    }
+    // Actualizar tiempo gastado
+    updateTimeSpent(1);
+    // Aquí iría la navegación a la lección específica
+    console.log(`Navegando a la sección: ${sectionId}`);
+  }, [markLessonComplete, updateTimeSpent]);
+
+  const handleContinueLearning = useCallback(() => {
+    if (nextModule) {
+      handleSectionClick(nextModule.id);
+    }
+  }, [nextModule, handleSectionClick]);
+
+  const handleOpenFlashcards = useCallback(() => {
+    setFlashcardSystemOpen(true);
+  }, []);
+
+  // Generar recomendaciones inteligentes - memoizado
+  const generateRecommendations = useMemo(() => {
     const recommendations = [];
     
     // Próxima lección óptima
@@ -200,7 +227,7 @@ const TeachingModule = () => {
         title: 'Próxima Lección Óptima',
         description: `Continúa con ${nextModule.title}`,
         icon: <NavigateNext />,
-        action: () => handleContinueLearning(),
+        action: handleContinueLearning,
         priority: 'high'
       });
     }
@@ -241,84 +268,66 @@ const TeachingModule = () => {
     });
 
     return recommendations.slice(0, 3); // Máximo 3 recomendaciones
-  };
+  }, [nextModule, calculateModuleProgress, handleContinueLearning, handleSectionClick]);
 
-  const globalStats = calculateGlobalStats();
-  const recommendations = generateRecommendations();
+  const globalStats = calculateGlobalStats;
+  const recommendations = generateRecommendations;
 
-  // Generar secciones dinámicamente desde curriculum data
-  const learningSections = Object.values(curriculumData.modules)
-    .sort((a, b) => {
-      const levelOrder = { beginner: 0, intermediate: 1, advanced: 2 };
-      if (levelOrder[a.level] !== levelOrder[b.level]) {
-        return levelOrder[a.level] - levelOrder[b.level];
+  // Generar secciones dinámicamente desde curriculum data - memoizado
+  const learningSections = useMemo(() => {
+    // Iconos por nivel
+    const getLevelIcon = (level) => {
+      switch (level) {
+        case 'beginner': return <Biotech sx={{ fontSize: 40, color: theme.palette.primary.main }} />;
+        case 'intermediate': return <Settings sx={{ fontSize: 40, color: theme.palette.secondary.main }} />;
+        case 'advanced': return <MonitorHeart sx={{ fontSize: 40, color: theme.palette.success.main }} />;
+        default: return <School sx={{ fontSize: 40, color: theme.palette.info.main }} />;
       }
-      return a.order - b.order;
-    })
-    .map(module => {
-      const progress = calculateModuleProgress(module.id);
-      const available = isModuleAvailable(module.id);
-      
-      // Iconos por nivel
-      const getLevelIcon = (level) => {
-        switch (level) {
-          case 'beginner': return <Biotech sx={{ fontSize: 40, color: theme.palette.primary.main }} />;
-          case 'intermediate': return <Settings sx={{ fontSize: 40, color: theme.palette.secondary.main }} />;
-          case 'advanced': return <MonitorHeart sx={{ fontSize: 40, color: theme.palette.success.main }} />;
-          default: return <School sx={{ fontSize: 40, color: theme.palette.info.main }} />;
-        }
-      };
+    };
 
-      // Colores por nivel
-      const getLevelColor = (level) => {
-        switch (level) {
-          case 'beginner': return theme.palette.primary.main;
-          case 'intermediate': return theme.palette.secondary.main;
-          case 'advanced': return theme.palette.success.main;
-          default: return theme.palette.info.main;
-        }
-      };
-
-      return {
-        id: module.id,
-        title: module.title,
-        description: module.description || `${module.learningObjectives?.[0] || 'Módulo de aprendizaje'}`,
-        icon: getLevelIcon(module.level),
-        progress: progress,
-        level: module.level,
-        duration: module.duration,
-        estimatedTime: module.estimatedTime,
-        difficulty: module.difficulty,
-        topics: module.learningObjectives || [],
-        available: available,
-        color: getLevelColor(module.level),
-        prerequisites: module.prerequisites || [],
-        bloomLevel: module.bloomLevel
-      };
-    });
-
-  const handleSectionClick = (sectionId) => {
-    const section = learningSections.find(s => s.id === sectionId);
-    if (section && section.available) {
-      // Marcar la primera lección como completada cuando se accede
-      const module = curriculumData.modules[sectionId];
-      if (module && module.lessons && module.lessons.length > 0) {
-        markLessonComplete(`${sectionId}-${module.lessons[0].id}`);
+    // Colores por nivel
+    const getLevelColor = (level) => {
+      switch (level) {
+        case 'beginner': return theme.palette.primary.main;
+        case 'intermediate': return theme.palette.secondary.main;
+        case 'advanced': return theme.palette.success.main;
+        default: return theme.palette.info.main;
       }
-      // Actualizar tiempo gastado
-      updateTimeSpent(1);
-      // Aquí iría la navegación a la lección específica
-      console.log(`Navegando a la sección: ${sectionId}`);
-    }
-  };
+    };
 
-  const handleContinueLearning = () => {
-    if (nextModule) {
-      handleSectionClick(nextModule.id);
-    }
-  };
+    return Object.values(curriculumData.modules)
+      .sort((a, b) => {
+        const levelOrder = { beginner: 0, intermediate: 1, advanced: 2 };
+        if (levelOrder[a.level] !== levelOrder[b.level]) {
+          return levelOrder[a.level] - levelOrder[b.level];
+        }
+        return a.order - b.order;
+      })
+      .map(module => {
+        const progress = calculateModuleProgress(module.id);
+        const available = isModuleAvailable(module.id);
+        
+        return {
+          id: module.id,
+          title: module.title,
+          description: module.description || `${module.learningObjectives?.[0] || 'Módulo de aprendizaje'}`,
+          icon: getLevelIcon(module.level),
+          progress: progress,
+          level: module.level,
+          duration: module.duration,
+          estimatedTime: module.estimatedTime,
+          difficulty: module.difficulty,
+          topics: module.learningObjectives || [],
+          available: available,
+          color: getLevelColor(module.level),
+          prerequisites: module.prerequisites || [],
+          bloomLevel: module.bloomLevel
+        };
+      });
+  }, [calculateModuleProgress, isModuleAvailable, theme.palette]);
 
-  const toggleFavorite = (moduleId) => {
+
+  const toggleFavorite = useCallback((moduleId) => {
     setFavoriteModules(prev => {
       const newFavorites = new Set(prev);
       if (newFavorites.has(moduleId)) {
@@ -328,18 +337,17 @@ const TeachingModule = () => {
       }
       return newFavorites;
     });
-  };
+  }, []);
 
-  // Función para obtener el estado del módulo
-  const getModuleStatus = (section) => {
+  // Funciones auxiliares memoizadas
+  const getModuleStatus = useCallback((section) => {
     if (section.progress === 100) return 'completed';
     if (section.progress > 0) return 'in-progress';
     if (section.available) return 'available';
     return 'locked';
-  };
+  }, []);
 
-  // Función para obtener el icono del estado
-  const getStatusIcon = (status) => {
+  const getStatusIcon = useCallback((status) => {
     switch (status) {
       case 'completed': return <CheckCircle sx={{ color: '#4CAF50' }} />;
       case 'in-progress': return <TrendingUp sx={{ color: '#FF9800' }} />;
@@ -347,10 +355,9 @@ const TeachingModule = () => {
       case 'locked': return <Lock sx={{ color: '#9E9E9E' }} />;
       default: return <RadioButtonUnchecked />;
     }
-  };
+  }, []);
 
-  // Función para obtener el mensaje del tooltip
-  const getTooltipMessage = (section) => {
+  const getTooltipMessage = useCallback((section) => {
     if (section.available) {
       return `Disponible - ${section.progress.toFixed(0)}% completado`;
     }
@@ -368,17 +375,17 @@ const TeachingModule = () => {
     }
     
     return 'Módulo bloqueado';
-  };
+  }, [calculateModuleProgress]);
 
-  const getButtonText = (section) => {
+  const getButtonText = useCallback((section) => {
     if (!section.available) return 'Próximamente';
     return section.progress > 0 ? 'Continuar' : 'Comenzar';
-  };
+  }, []);
 
-  const getButtonIcon = (section) => {
+  const getButtonIcon = useCallback((section) => {
     if (!section.available) return null;
     return section.progress > 0 ? <Refresh /> : <PlayArrow />;
-  };
+  }, []);
 
   return (
     <Container maxWidth="xl" sx={{ py: 4, backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
@@ -603,110 +610,104 @@ const TeachingModule = () => {
             </Typography>
 
             <Grid container spacing={3}>
-              {/* Cuadrante Superior Izquierdo - Estadísticas Globales */}
+              {/* Cuadrante Superior Izquierdo - Sistema de Repetición Espaciada */}
+              <Grid item xs={12} md={6}>
+                <FlashcardDashboard onOpenFlashcards={handleOpenFlashcards} />
+              </Grid>
+
+              {/* Cuadrante Superior Derecho - Sistema de Racha */}
               <Grid item xs={12} md={6}>
                 <Card sx={{ 
                   height: '100%', 
-                  backgroundColor: '#e3f2fd',
-                  border: '2px solid #bbdefb',
+                  backgroundColor: '#fff3e0',
+                  border: '2px solid #ffcc02',
                   borderRadius: 2
                 }}>
                   <CardContent sx={{ p: 3 }}>
                     <Typography variant="h6" sx={{ 
-                      color: '#1976d2', 
+                      color: '#f57c00', 
                       fontWeight: 600, 
                       mb: 2,
                       display: 'flex',
                       alignItems: 'center',
                       gap: 1
                     }}>
-                      <Timeline sx={{ fontSize: 20 }} />
-                      Estadísticas Globales
+                      <LocalFireDepartment sx={{ fontSize: 20 }} />
+                      Sistema de Racha
                     </Typography>
                     
                     <Stack spacing={2}>
-                      {/* Progreso Total */}
-                      <Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                          <Typography variant="body2" sx={{ color: '#1976d2', fontWeight: 600 }}>
-                            Progreso Total
-                          </Typography>
-                          <Typography variant="body2" sx={{ color: '#1976d2', fontWeight: 700 }}>
-                            {globalStats.totalCompletion.toFixed(0)}%
-                          </Typography>
-                        </Box>
+                      {/* Racha Actual */}
+                      <Box sx={{ textAlign: 'center', mb: 2 }}>
+                        <Typography variant="h2" sx={{ 
+                          color: '#f57c00', 
+                          fontWeight: 700,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 1
+                        }}>
+                          <LocalFireDepartment sx={{ fontSize: 48 }} />
+                          {dashboardData.streak}
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: '#f57c00', fontWeight: 600 }}>
+                          Días Consecutivos
+                        </Typography>
+                      </Box>
+
+                      {/* Próximo Milestone */}
+                      <Box sx={{ 
+                        p: 2,
+                        backgroundColor: 'rgba(255,255,255,0.7)',
+                        borderRadius: 2,
+                        textAlign: 'center'
+                      }}>
+                        <Typography variant="body2" sx={{ color: '#f57c00', fontWeight: 600, mb: 1 }}>
+                          Próximo Milestone
+                        </Typography>
+                        <Typography variant="h6" sx={{ color: '#f57c00', fontWeight: 700 }}>
+                          30 días
+                        </Typography>
                         <LinearProgress 
                           variant="determinate" 
-                          value={globalStats.totalCompletion}
+                          value={(dashboardData.streak / 30) * 100}
                           sx={{ 
-                            height: 8, 
-                            borderRadius: 4,
-                            backgroundColor: '#bbdefb',
+                            height: 6, 
+                            borderRadius: 3,
+                            backgroundColor: '#ffcc02',
                             '& .MuiLinearProgress-bar': {
-                              backgroundColor: '#1976d2',
-                              borderRadius: 4,
+                              backgroundColor: '#f57c00',
+                              borderRadius: 3,
                             }
                           }}
                         />
+                        <Typography variant="caption" sx={{ color: '#f57c00', mt: 1, display: 'block' }}>
+                          {30 - dashboardData.streak} días restantes
+                        </Typography>
                       </Box>
 
-                      {/* Tiempo Total */}
-                      <Box sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: 2,
-                        p: 2,
-                        backgroundColor: 'rgba(255,255,255,0.7)',
-                        borderRadius: 2
-                      }}>
-                        <AccessTime sx={{ color: '#1976d2', fontSize: 24 }} />
-                        <Box>
-                          <Typography variant="body2" sx={{ color: '#1976d2', fontWeight: 600 }}>
-                            Tiempo Total Invertido
-                          </Typography>
-                          <Typography variant="h6" sx={{ color: '#1976d2', fontWeight: 700 }}>
-                            {Math.round(globalStats.totalTimeSpent / 60)}h {globalStats.totalTimeSpent % 60}m
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      {/* Última Actividad */}
-                      <Box sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: 2,
-                        p: 2,
-                        backgroundColor: 'rgba(255,255,255,0.7)',
-                        borderRadius: 2
-                      }}>
-                        <Schedule sx={{ color: '#1976d2', fontSize: 24 }} />
-                        <Box>
-                          <Typography variant="body2" sx={{ color: '#1976d2', fontWeight: 600 }}>
-                            Última Actividad
-                          </Typography>
-                          <Typography variant="body2" sx={{ color: '#1976d2', fontWeight: 700 }}>
-                            {dashboardData.lastActivity.toLocaleString()}
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      {/* Fecha de Inicio */}
-                      <Box sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: 2,
-                        p: 2,
-                        backgroundColor: 'rgba(255,255,255,0.7)',
-                        borderRadius: 2
-                      }}>
-                        <CalendarToday sx={{ color: '#1976d2', fontSize: 24 }} />
-                        <Box>
-                          <Typography variant="body2" sx={{ color: '#1976d2', fontWeight: 600 }}>
-                            Inicio del Curso
-                          </Typography>
-                          <Typography variant="body2" sx={{ color: '#1976d2', fontWeight: 700 }}>
-                            {dashboardData.startDate.toLocaleDateString()}
-                          </Typography>
+                      {/* Badges Ganados */}
+                      <Box>
+                        <Typography variant="body2" sx={{ color: '#f57c00', fontWeight: 600, mb: 1 }}>
+                          Badges Ganados
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                          {dashboardData.badges.map((badge, index) => (
+                            <Tooltip key={index} title={
+                              badge === 'first-lesson' ? 'Primera Lección Completada' :
+                              badge === 'week-streak' ? 'Racha de 7 Días' :
+                              'Módulo Completado'
+                            } arrow>
+                              <Avatar sx={{ 
+                                width: 32, 
+                                height: 32, 
+                                backgroundColor: '#f57c00',
+                                border: '2px solid #ffcc02'
+                              }}>
+                                <EmojiEvents sx={{ fontSize: 18, color: 'white' }} />
+                              </Avatar>
+                            </Tooltip>
+                          ))}
                         </Box>
                       </Box>
                     </Stack>
@@ -1330,6 +1331,13 @@ const TeachingModule = () => {
           contenido teórico, casos clínicos y simulaciones interactivas para reforzar el aprendizaje.
         </Typography>
       </Paper>
+
+      {/* Sistema de Flashcards */}
+      <FlashcardSystem
+        isOpen={flashcardSystemOpen}
+        onClose={() => setFlashcardSystemOpen(false)}
+        autoGenerateFromLesson={false}
+      />
     </Container>
   );
 };

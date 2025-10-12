@@ -2,6 +2,7 @@ import React, { useState, createContext, useContext } from 'react';
 import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { PatientDataProvider } from '../src/contexts/PatientDataContext';
 import Sidebar from '../src/components/navigation/Sidebar';
+import ErrorBoundary from '../src/components/common/ErrorBoundary';
 import '../src/App.css';
 
 // Context para el estado del sidebar
@@ -34,33 +35,56 @@ function MyApp({ Component, pageProps }) {
     setSidebarOpen(!sidebarOpen);
   };
 
+  // Manejo de errores para HMR
+  React.useEffect(() => {
+    const handleError = (error) => {
+      if (error.message?.includes('HMR') || error.message?.includes('Invalid message')) {
+        console.warn('HMR Error (ignorando):', error.message);
+        return;
+      }
+      console.error('Error en la aplicación:', error);
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleError);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleError);
+    };
+  }, []);
+
   return (
-    <ThemeProvider theme={theme}>
-      <PatientDataProvider>
-        <SidebarContext.Provider value={{ sidebarOpen, handleSidebarToggle }}>
-          <Box sx={{ display: 'flex' }}>
-            <CssBaseline />
-            <Sidebar open={sidebarOpen} onToggle={handleSidebarToggle} />
-            <Box
-              component="main"
-              sx={{
-                flexGrow: 1,
-                p: 3,
-                width: { sm: `calc(100% - ${sidebarOpen ? 240 : 64}px)` },
-                ml: { sm: `${sidebarOpen ? 240 : 64}px` },
-                transition: (theme) =>
-                  theme.transitions.create(['margin', 'width'], {
-                    easing: theme.transitions.easing.sharp,
-                    duration: theme.transitions.duration.leavingScreen,
-                  }),
-              }}
-            >
-              <Component {...pageProps} />
+    <ErrorBoundary>
+      <ThemeProvider theme={theme}>
+        <PatientDataProvider>
+          <SidebarContext.Provider value={{ sidebarOpen, handleSidebarToggle }}>
+            <Box sx={{ display: 'flex' }}>
+              <CssBaseline />
+              <Sidebar open={sidebarOpen} onToggle={handleSidebarToggle} />
+              <Box
+                component="main"
+                sx={{
+                  flexGrow: 1,
+                  p: 3,
+                  width: { sm: `calc(100% - ${sidebarOpen ? 240 : 64}px)` },
+                  ml: { sm: `${sidebarOpen ? 240 : 64}px` },
+                  transition: (theme) =>
+                    theme.transitions.create(['margin', 'width'], {
+                      easing: theme.transitions.easing.sharp,
+                      duration: theme.transitions.duration.leavingScreen,
+                    }),
+                }}
+              >
+                <ErrorBoundary>
+                  <Component {...pageProps} />
+                </ErrorBoundary>
+              </Box>
             </Box>
-          </Box>
-        </SidebarContext.Provider>
-      </PatientDataProvider>
-    </ThemeProvider>
+          </SidebarContext.Provider>
+        </PatientDataProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 
