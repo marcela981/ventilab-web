@@ -563,14 +563,14 @@ const ProgressTracker = ({ userId, onNavigateToLesson, onNavigateToModule }) => 
                       <Avatar sx={{ bgcolor: `${module.color}20`, color: module.color, mr: 2 }}>
                         {module.icon}
                       </Avatar>
-                      <Box>
+                      <div>
                         <Typography variant="h6" fontWeight="bold">
                           {module.title}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                           {module.lessonsCompleted}/{module.totalLessons} lecciones
                         </Typography>
-                      </Box>
+                      </div>
                     </Box>
 
                     <Box sx={{ mb: 2 }}>
@@ -665,13 +665,13 @@ const ProgressTracker = ({ userId, onNavigateToLesson, onNavigateToModule }) => 
                     <Avatar sx={{ bgcolor: `${module.color}20`, color: module.color, mr: 2, width: 32, height: 32 }}>
                       {module.icon}
                     </Avatar>
-                    <Box sx={{ flex: 1 }}>
+                    <div style={{ flex: 1 }}>
                       <Typography variant="h6">{module.title}</Typography>
                       <Typography variant="body2" color="text.secondary">
                         {module.lessonsCompleted}/{module.totalLessons} lecciones completadas
                       </Typography>
-                    </Box>
-                    <Box sx={{ minWidth: 100, mr: 2 }}>
+                    </div>
+                    <div style={{ minWidth: 100, marginRight: 16 }}>
                       <LinearProgress
                         variant="determinate"
                         value={module.progress}
@@ -684,7 +684,7 @@ const ProgressTracker = ({ userId, onNavigateToLesson, onNavigateToModule }) => 
                       <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', display: 'block' }}>
                         {module.progress}%
                       </Typography>
-                    </Box>
+                    </div>
                   </Box>
                 </AccordionSummary>
                 
@@ -705,7 +705,7 @@ const ProgressTracker = ({ userId, onNavigateToLesson, onNavigateToModule }) => 
                         </ListItemIcon>
                         <ListItemText
                           primary={
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <Typography variant="subtitle1">{lesson.title}</Typography>
                               {lesson.score && (
                                 <Chip
@@ -714,29 +714,29 @@ const ProgressTracker = ({ userId, onNavigateToLesson, onNavigateToModule }) => 
                                   color={lesson.score >= 90 ? 'success' : lesson.score >= 70 ? 'warning' : 'error'}
                                 />
                               )}
-                            </Box>
+                            </div>
                           }
                           secondary={
-                            <Box>
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1, mb: 1 }}>
+                            <div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, marginBottom: 8 }}>
                                 <Typography variant="caption">
                                   Tiempo: {formatTime(lesson.timeSpentMinutes)} / {formatTime(lesson.estimatedMinutes)}
                                 </Typography>
                                 <Typography variant="caption">
                                   {lesson.progress}% completado
                                 </Typography>
-                              </Box>
+                              </div>
                               <LinearProgress
                                 variant="determinate"
                                 value={lesson.progress}
                                 sx={{ height: 4, borderRadius: 2 }}
                               />
                               {lesson.sections && (
-                                <Box sx={{ mt: 1 }}>
+                                <div style={{ marginTop: 8 }}>
                                   <Typography variant="caption" color="text.secondary">
                                     Secciones:
                                   </Typography>
-                                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
                                     {lesson.sections.map((section) => (
                                       <Chip
                                         key={section.id}
@@ -747,10 +747,10 @@ const ProgressTracker = ({ userId, onNavigateToLesson, onNavigateToModule }) => 
                                         sx={{ fontSize: '0.7rem', height: 20 }}
                                       />
                                     ))}
-                                  </Box>
-                                </Box>
+                                  </div>
+                                </div>
                               )}
-                            </Box>
+                            </div>
                           }
                         />
                         {lesson.status !== 'not_started' && (

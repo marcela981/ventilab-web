@@ -127,7 +127,9 @@ const ModeIndicator = styled(Box)(({ theme }) => ({
 }));
 
 // Botón de ajuste personalizado
-const AdjustButton = styled(Button)(({ theme, active }) => ({
+const AdjustButton = styled(Button, {
+  shouldForwardProp: (prop) => prop !== 'active',
+})(({ theme, active }) => ({
   backgroundColor: active ? '#10aede' : 'rgba(255, 255, 255, 0.05)',
   color: active ? '#ffffff' : '#e8f4fd',
   fontWeight: 600,
@@ -143,7 +145,9 @@ const AdjustButton = styled(Button)(({ theme, active }) => ({
 }));
 
 // Tarjeta personalizada con modo de edición
-const EditableCard = styled(Paper)(({ theme, isEditing, isVisible, isDragging, isExpanded }) => ({
+const EditableCard = styled(Paper, {
+  shouldForwardProp: (prop) => !['isEditing', 'isVisible', 'isDragging', 'isExpanded'].includes(prop),
+})(({ theme, isEditing, isVisible, isDragging, isExpanded }) => ({
   width: '340px',
   height: isExpanded ? 'auto' : '110px',
   minHeight: isExpanded ? '250px' : '110px',

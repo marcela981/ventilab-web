@@ -32,8 +32,11 @@ const ValidatedInput = ({
   const [localValue, setLocalValue] = useState(value);
 
   useEffect(() => {
-    setLocalValue(value);
-  }, [value]);
+    // Solo actualizar si el valor realmente cambió para evitar bucles infinitos
+    if (localValue !== value) {
+      setLocalValue(value);
+    }
+  }, [value, localValue]);
 
   const handleChange = (event) => {
     const newValue = Number(event.target.value);

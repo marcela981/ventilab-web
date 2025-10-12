@@ -206,7 +206,7 @@ const LessonViewer = ({ lessonData, onClose, onNavigateLesson, onMarkComplete })
 
   // Renderizadores de contenido
   const renderTextContent = (content) => (
-    <Box>
+    <>
       <Typography variant="body1" paragraph sx={{ lineHeight: 1.8, mb: 3 }}>
         {content.text}
       </Typography>
@@ -232,11 +232,11 @@ const LessonViewer = ({ lessonData, onClose, onNavigateLesson, onMarkComplete })
           </List>
         </Alert>
       )}
-    </Box>
+    </>
   );
 
   const renderMixedContent = (content) => (
-    <Box>
+    <>
       <Typography variant="body1" paragraph sx={{ lineHeight: 1.8, mb: 3 }}>
         {content.text}
       </Typography>
@@ -283,11 +283,11 @@ const LessonViewer = ({ lessonData, onClose, onNavigateLesson, onMarkComplete })
           </CardContent>
         </Card>
       )}
-    </Box>
+    </>
   );
 
   const renderInteractiveContent = (content) => (
-    <Box>
+    <>
       <Typography variant="body1" paragraph sx={{ lineHeight: 1.8, mb: 3 }}>
         {content.description}
       </Typography>
@@ -350,7 +350,7 @@ const LessonViewer = ({ lessonData, onClose, onNavigateLesson, onMarkComplete })
           )}
         </Card>
       )}
-    </Box>
+    </>
   );
 
   const renderContent = () => {
@@ -444,7 +444,7 @@ const LessonViewer = ({ lessonData, onClose, onNavigateLesson, onMarkComplete })
 
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
             {/* Título y tiempo */}
-            <Box>
+            <div>
               <Typography variant={isMobile ? "h5" : "h4"} component="h1" gutterBottom>
                 {lesson.title}
               </Typography>
@@ -459,7 +459,7 @@ const LessonViewer = ({ lessonData, onClose, onNavigateLesson, onMarkComplete })
                   Sección {currentSectionIndex + 1} de {lesson.sections.length}
                 </Typography>
               </Box>
-            </Box>
+            </div>
 
             {/* Botón sidebar mobile */}
             {isMobile && (
@@ -569,7 +569,7 @@ const LessonViewer = ({ lessonData, onClose, onNavigateLesson, onMarkComplete })
                         Fórmulas
                       </Typography>
                       {lesson.formulas.map((formula, index) => (
-                        <Box key={index} sx={{ mb: 2 }}>
+                        <div key={index} style={{ marginBottom: 16 }}>
                           <Typography variant="subtitle2" color="primary">
                             {formula.name}
                           </Typography>
@@ -579,7 +579,7 @@ const LessonViewer = ({ lessonData, onClose, onNavigateLesson, onMarkComplete })
                           <Typography variant="caption" color="text.secondary">
                             Unidad: {formula.unit}
                           </Typography>
-                        </Box>
+                        </div>
                       ))}
                     </CardContent>
                   </Card>
@@ -592,7 +592,7 @@ const LessonViewer = ({ lessonData, onClose, onNavigateLesson, onMarkComplete })
                         Referencias
                       </Typography>
                       {lesson.references.map((ref, index) => (
-                        <Box key={index} sx={{ mb: 1 }}>
+                        <div key={index} style={{ marginBottom: 8 }}>
                           <Link 
                             href={ref.url} 
                             target="_blank" 
@@ -607,7 +607,7 @@ const LessonViewer = ({ lessonData, onClose, onNavigateLesson, onMarkComplete })
                             variant="outlined" 
                             sx={{ mt: 0.5, fontSize: '0.75rem', height: 20 }}
                           />
-                        </Box>
+                        </div>
                       ))}
                     </CardContent>
                   </Card>
