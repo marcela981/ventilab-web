@@ -17,10 +17,16 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
-  backgroundColor: 'rgba(31, 31, 31, 0.8)',
-  border: `1px solid ${theme.palette.divider}`,
-  borderRadius: theme.spacing(1),
-  marginBottom: theme.spacing(1)
+  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  border: '1px solid rgba(255, 255, 255, 0.12)',
+  borderRadius: '12px',
+  marginBottom: theme.spacing(1),
+  boxShadow: '0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23)',
+  transition: 'all 0.25s ease',
+  '&:hover': {
+    boxShadow: '0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23)',
+    transform: 'translateY(-1px)',
+  },
 }));
 
 const ComplianceStatus = ({ 

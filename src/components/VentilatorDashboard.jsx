@@ -9,7 +9,6 @@ import {
   Toolbar,
   CssBaseline,
   ThemeProvider,
-  createTheme,
   TextField,
   Slider,
   Switch,
@@ -26,6 +25,7 @@ import {
   BottomNavigationAction,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { muiTheme } from '../styles/mui-overrides';
 import ModeToggle from './common/ModeToggle';
 import AIAnalysisButton from './common/AIAnalysisButton';
 import SendIcon from '@mui/icons-material/Send';
@@ -82,37 +82,12 @@ import { usePatientData } from '../hooks/usePatientData'; // Importar hook de pa
 import { useQRBridge } from '../hooks/useQRBridge';
 import { useAIAnalysis } from '../hooks/useAIAnalysis';
 import AIAnalysisPanel from './AIAnalysisPanel';
+import { useSidebar } from '../../pages/_app';
 
 // LoopChart moved to ./common/LoopChart
 
-// Tema personalizado para el ventilador
-const ventilatorTheme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#de0b24', // Rojo Cereza
-    },
-    secondary: {
-      main: '#5B0002', // Rojo Sangre toro
-    },
-    tertiary: {
-      main: '#2F2E2E', // Gris oscuro
-    },
-    text: {
-      primary: '#ffffff',
-      secondary: '#b0b0b0',
-    },
-  },
-  typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    h4: {
-      fontWeight: 600,
-    },
-    h6: {
-      fontWeight: 500,
-    },
-  },
-});
+// Usar el tema centralizado desde mui-overrides.js
+const ventilatorTheme = muiTheme;
 
 const DashboardContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
@@ -122,9 +97,15 @@ const DashboardContainer = styled(Box)(({ theme }) => ({
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
-  backgroundColor: 'rgba(121, 10, 10, 0.57)',
-  border: `1px solid ${theme.palette.divider}`,
-  borderRadius: theme.spacing(1),
+  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  border: '1px solid rgba(255, 255, 255, 0.12)',
+  borderRadius: '12px',
+  boxShadow: '0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23)',
+  transition: 'all 0.25s ease',
+  '&:hover': {
+    boxShadow: '0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23)',
+    transform: 'translateY(-2px)',
+  },
 }));
 
 // ModeToggle moved to common component
@@ -135,27 +116,29 @@ const ModeIndicator = styled(Box)(({ theme }) => ({
   left: 20,
   zIndex: 1000,
   padding: theme.spacing(1, 2),
-  backgroundColor: 'rgba(0, 0, 0, 0.7)',
-  borderRadius: theme.spacing(1),
+  backgroundColor: 'rgba(10, 17, 43, 0.95)',
+  borderRadius: '8px',
   backdropFilter: 'blur(10px)',
-  border: '1px solid rgba(255, 255, 255, 0.1)',
+  border: '1px solid rgba(255, 255, 255, 0.12)',
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1),
+  boxShadow: '0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23)',
 }));
 
 // Botón de ajuste personalizado
 const AdjustButton = styled(Button)(({ theme, active }) => ({
-  backgroundColor: active ? theme.palette.secondary.main : 'rgba(255, 255, 255, 0.1)',
-  color: active ? '#fff' : theme.palette.text.primary,
+  backgroundColor: active ? '#10aede' : 'rgba(255, 255, 255, 0.05)',
+  color: active ? '#ffffff' : '#e8f4fd',
   fontWeight: 600,
   padding: theme.spacing(1, 2),
-  borderRadius: theme.spacing(1),
-  border: active ? '2px solid #de0b24' : '2px solid rgba(255, 255, 255, 0.2)',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  borderRadius: '8px',
+  border: active ? '2px solid #10aede' : '2px solid rgba(255, 255, 255, 0.12)',
+  transition: 'all 0.25s ease',
   '&:hover': {
-    backgroundColor: active ? theme.palette.secondary.dark : 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: active ? '#3d98cc' : 'rgba(255, 255, 255, 0.08)',
     transform: 'scale(1.05)',
+    boxShadow: '0 4px 14px rgba(16, 174, 222, 0.3)',
   },
 }));
 
@@ -211,6 +194,19 @@ const EditableCard = styled(Paper)(({ theme, isEditing, isVisible, isDragging, i
 // AIAnalysisButton moved to common component
 
 const VentilatorDashboard = () => {
+  const { sidebarOpen } = useSidebar();
+  
+  // Calcular valores para la barra de navegación
+  const sidebarWidth = sidebarOpen ? '240px' : '64px';
+  const navigationLeft = sidebarWidth;
+  const navigationWidth = `calc(100% - ${sidebarWidth})`;
+
+  // Debug: Log del estado del sidebar (temporal para verificar funcionamiento)
+  useEffect(() => {
+    console.log('Sidebar state changed:', sidebarOpen);
+    console.log('BottomNavigation left:', navigationLeft);
+    console.log('BottomNavigation width:', navigationWidth);
+  }, [sidebarOpen, navigationLeft, navigationWidth]);
   const serialConnection = useSerialConnection();
   const { 
     ventilatorData, 
@@ -1369,8 +1365,8 @@ const VentilatorDashboard = () => {
       <Box display="flex" flexDirection="row" alignItems="flex-start" mb={2} ml={2} pb={6}>
         {/* Imágenes*/}
         <Box display="flex" flexDirection="column" alignItems="left">
-          <img src="/images/logo-univalle.svg" alt="Univalle" width={250} height={42} style={{ marginBottom: 0 }} />
-          <img src="/images/logo.png" alt="VentyLab" width={220} height={110} />
+          <img src="/images/logo-univalle.svg" alt="Univalle" width={300} height={50} style={{ marginBottom: 4 }} />
+          <img src="/images/logo.png" alt="VentyLab" width={260} height={130} />
           
           {/* Botón de modo de ajuste */}
           <Box mt={1} mb={1} display="flex" gap={1} flexDirection="column">
@@ -2260,7 +2256,7 @@ const VentilatorDashboard = () => {
           sx={{
             position: 'fixed',
             top: 20,
-            left: 20,
+            right: 20,
             zIndex: 999,
             backgroundColor: parameterValidation.validationState.criticalErrors.length > 0 ? 'error.main' : 'warning.main',
             color: '#fff',
@@ -2307,8 +2303,8 @@ const VentilatorDashboard = () => {
         {/* Botón de grabación */}
         {/* Eliminado - reemplazado por botón Enviar */}
 
-        {/* Botón de descarga */}
-        <Tooltip 
+        {/* Botón de descarga - OCULTO TEMPORALMENTE */}
+        {/* <Tooltip 
           title="Descargar configuraciones enviadas" 
           placement="bottom"
           arrow
@@ -2326,7 +2322,7 @@ const VentilatorDashboard = () => {
           >
             <DownloadIcon />
           </IconButton>
-        </Tooltip>
+        </Tooltip> */}
 
         {/* Menú de descarga */}
         <Menu
@@ -2422,13 +2418,14 @@ const VentilatorDashboard = () => {
         sx={{
           position: 'fixed',
           bottom: 0,
-          left: 0,
+          left: navigationLeft,
           right: 0,
-          width: '100%',
+          width: navigationWidth,
           backgroundColor: 'rgba(31, 31, 31, 0.95)',
           backdropFilter: 'blur(10px)',
           borderTop: '1px solid rgba(255, 255, 255, 0.1)',
           zIndex: 1100,
+          transition: 'all 0.25s ease-in-out',
           '& .MuiBottomNavigationAction-root': {
             color: 'rgba(255, 255, 255, 0.6)',
             '&.Mui-selected': {

@@ -5,9 +5,11 @@ import WhatsAppTransfer from './WhatsAppTransfer';
 
 const StyledPaper = styled('div')(({ theme }) => ({
   padding: theme.spacing(3),
-  backgroundColor: 'rgba(121, 10, 10, 0.57)',
-  border: `1px solid ${theme.palette?.divider || 'rgba(255,255,255,0.2)'}`,
+  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  border: '1px solid rgba(255, 255, 255, 0.12)',
   borderRadius: theme.spacing(1),
+  color: '#e8f4fd',
+  boxShadow: '0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23)',
 }));
 
 const ConnectionTabContent = ({
@@ -27,6 +29,12 @@ const ConnectionTabContent = ({
   return (
     <Box p={3} pb={12}>
       <Container maxWidth="xl">
+        {/* Imágenes de logos */}
+        <Box display="flex" flexDirection="column" alignItems="left" mb={4}>
+          <img src="/images/logo-univalle.svg" alt="Univalle" width={300} height={50} style={{ marginBottom: 4 }} />
+          <img src="/images/logo.png" alt="VentyLab" width={260} height={130} />
+        </Box>
+        
         <Typography variant="h4" gutterBottom align="center" sx={{ color: '#de0b24', mb: 4 }}>
           Control de Conexión Serial
         </Typography>

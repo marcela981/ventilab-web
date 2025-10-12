@@ -8,6 +8,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
+import { chartTheme, getChartColor } from '../styles/chart-theme';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -52,9 +53,9 @@ const RealTimeCharts = ({ data, type, isConnected = true }) => {
     pressure: {
       label: 'Presión',
       unit: 'cmH₂O',
-      color: '#da0037',
-      backgroundColor: 'rgba(218, 0, 55, 0.1)',
-      borderColor: '#da0037',
+      color: chartTheme.colors.primary,
+      backgroundColor: 'rgba(16, 174, 222, 0.1)',
+      borderColor: chartTheme.colors.primary,
       fillColor: 'rgba(0, 197, 218, 0.05)',
       yAxis: {
         min: 0,
@@ -71,9 +72,9 @@ const RealTimeCharts = ({ data, type, isConnected = true }) => {
     flow: {
       label: 'Flujo',
       unit: 'L/min',
-      color: '#00c5da',
-      backgroundColor: 'rgba(0, 197, 218, 0.1)',
-      borderColor: '#00c5da',
+      color: chartTheme.colors.secondary,
+      backgroundColor: 'rgba(61, 152, 204, 0.1)',
+      borderColor: chartTheme.colors.secondary,
       fillColor: 'rgba(218, 0, 55, 0.05)',
       yAxis: {
         min: -20,

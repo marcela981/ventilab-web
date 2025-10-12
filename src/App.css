@@ -1,19 +1,6 @@
 /* App Global Styles - VentyLab */
-
-/* Variables CSS para el degradado personalizado */
-:root {
-  --color-primary: #3c0001; 
-  --color-secondary: #2b0a0bea;
-  --color-tertiary: #121212b3;
-  --gradient-main: linear-gradient(
-    180deg,
-    #5B0002 0%,
-    #2b0a0bea 50%,
-    #121212b3 100%
-  );
-  --text-primary: #FFFAFA;
-  --text-secondary: #b0b0b0;
-}
+/* Importa el tema principal desde index.css */
+@import './index.css';
 
 /* Reset y estilos globales */
 * {
@@ -24,15 +11,15 @@
 
 html, body {
   height: 100%;
-  font-family: var(--font-body, 'Fustat', 'Roboto', sans-serif);
-  background: var(--color-secondary) !important;
-  color: var(--text-primary, #FFFAFA);
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  background: var(--color-bg-primary) !important;
+  color: var(--text-primary);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#root {
+#__next {
   height: 100%;
   width: 100%;
 }
@@ -42,31 +29,7 @@ html, body {
   display: flex;
   flex-direction: column;
   position: relative;
-}
-
-/* Typography base */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading, 'Fustat', 'Roboto', sans-serif);
-  font-weight: 600;
-  line-height: 1.2;
-  color: var(--text-primary, #FFFAFA);
-}
-
-p {
-  line-height: 1.5;
-  color: var(--text-secondary, rgba(255, 250, 250, 0.8));
-}
-
-/* Links */
-a {
-  color: var(--color-primary, #FFFFFF);
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-
-a:hover {
-  color: var(--color-secondary, #A0A0A0);
-  text-decoration: underline;
+  background: var(--gradient-bg);
 }
 
 /* Buttons base */

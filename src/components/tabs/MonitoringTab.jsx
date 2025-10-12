@@ -82,8 +82,8 @@ const MonitoringTab = ({
     <Box display="flex" flexDirection="row" alignItems="flex-start" mb={2} ml={2} pb={6}>
       {/* Imágenes*/}
       <Box display="flex" flexDirection="column" alignItems="left">
-        <img src="/images/logo-univalle.svg" alt="Univalle" width={250} height={42} style={{ marginBottom: 0 }} />
-        <img src="/images/logo.png" alt="VentyLab" width={220} height={110} />
+        <img src="/images/logo-univalle.svg" alt="Univalle" width={300} height={50} style={{ marginBottom: 4 }} />
+        <img src="/images/logo.png" alt="VentyLab" width={260} height={130} />
 
         {/* Botón de modo de ajuste */}
         <Box mt={1} mb={1} display="flex" gap={1} flexDirection="column">

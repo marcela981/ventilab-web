@@ -111,7 +111,7 @@ const ValidationAlerts = ({
   // Versión compacta - solo muestra resumen
   if (compact) {
     return (
-      <Box sx={{ position: 'fixed', top: 20, left: 20, zIndex: 1000 }}>
+      <Box sx={{ position: 'fixed', top: 20, right: 20, zIndex: 1000 }}>
         <Collapse in={show}>
           <Alert
             severity={getSeverityColor(severity)}

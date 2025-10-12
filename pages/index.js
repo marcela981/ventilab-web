@@ -11,4 +11,4 @@ export default function Home() {
   }, [router]);
 
   return null; // This will not render anything as we redirect immediately
-} 
+}

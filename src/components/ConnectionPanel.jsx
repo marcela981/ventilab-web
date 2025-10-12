@@ -37,8 +37,15 @@ const ConnectionPanel = ({ isConnected, onConnect, onDisconnect }) => {
   };
 
   return (
-    <Paper sx={{ p: 2, minWidth: 300 }}>
-      <Typography variant="h6" gutterBottom>
+    <Paper sx={{ 
+      p: 2, 
+      minWidth: 300,
+      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      border: '1px solid rgba(255, 255, 255, 0.12)',
+      color: '#e8f4fd',
+      boxShadow: '0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23)',
+    }}>
+      <Typography variant="h6" gutterBottom sx={{ color: '#e8f4fd' }}>
         Conexión Serial
       </Typography>
       

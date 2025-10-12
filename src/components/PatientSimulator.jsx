@@ -42,9 +42,11 @@ import { getSimulatedPatientData, predefinedClinicalCases } from '../utils/patie
 import { usePatientData } from '../hooks/usePatientData';
 
 const StyledCard = styled(Card)(({ theme }) => ({
-  backgroundColor: 'rgba(31, 31, 31, 0.8)',
-  border: `1px solid ${theme.palette.divider}`,
+  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  border: `1px solid rgba(255, 255, 255, 0.12)`,
   marginBottom: theme.spacing(2),
+  color: '#e8f4fd',
+  boxShadow: '0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23)',
 }));
 
 const PatientSimulator = () => {
@@ -1344,12 +1346,12 @@ const PatientSimulator = () => {
           alignItems: 'flex-start'
         }}
       >
-        <img src="/images/logo-univalle.svg" alt="Univalle" width={150} height={25} style={{ marginBottom: 4 }} />
-        <img src="/images/logo.png" alt="VentyLab" width={120} height={60} />
+        <img src="/images/logo-univalle.svg" alt="Univalle" width={250} height={42} style={{ marginBottom: 6 }} />
+        <img src="/images/logo.png" alt="VentyLab" width={220} height={110} />
       </Box>
       
       {/* Contenido principal del simulador - ocupa toda la pantalla */}
-      <Container maxWidth="xl" sx={{ py: 3, paddingBottom: '100px', paddingTop: '120px', display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <Container maxWidth="xl" sx={{ py: 3, paddingBottom: '100px', paddingTop: '180px', display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h4" sx={{ color: '#de0b24', fontWeight: 'bold' }}>
             <PersonIcon sx={{ mr: 2, fontSize: 40 }} />

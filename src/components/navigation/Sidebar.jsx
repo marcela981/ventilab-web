@@ -60,14 +60,12 @@ const Sidebar = ({ open, onToggle }) => {
         '& .MuiDrawer-paper': {
           width: open ? drawerWidth : 64,
           boxSizing: 'border-box',
-          transition: (theme) =>
-            theme.transitions.create('width', {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.enteringScreen,
-            }),
+          transition: 'width 0.25s ease',
           overflowX: 'hidden',
-          backgroundColor: '#1976d2',
-          color: 'white',
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          borderRight: '1px solid rgba(255, 255, 255, 0.12)',
+          color: '#e8f4fd',
+          boxShadow: '0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23)',
         },
       }}
     >
@@ -81,16 +79,16 @@ const Sidebar = ({ open, onToggle }) => {
         }}
       >
         {open && (
-          <Typography variant="h6" noWrap component="div" sx={{ color: 'white' }}>
+          <Typography variant="h6" noWrap component="div" sx={{ color: '#e8f4fd' }}>
             VentyLab
           </Typography>
         )}
         <IconButton
           onClick={onToggle}
           sx={{
-            color: 'white',
+            color: '#e8f4fd',
             '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              backgroundColor: 'rgba(255, 255, 255, 0.08)',
             },
           }}
         >
