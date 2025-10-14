@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/router';
 import {
   Container,
   Paper,
@@ -17,6 +18,7 @@ import { useLearningProgress } from '../../contexts/LearningProgressContext';
 import useModuleProgress from './hooks/useModuleProgress';
 import useModuleAvailability from './hooks/useModuleAvailability';
 import useRecommendations from './hooks/useRecommendations';
+import { curriculumData } from '../../data/curriculumData';
 
 // Componentes hijos
 import ClientOnly from '../common/ClientOnly';
@@ -41,6 +43,9 @@ import FlashcardSystem from './FlashcardSystem';
  * Responsabilidad única: coordina, no implementa
  */
 const TeachingModule = () => {
+  // Router de Next.js
+  const router = useRouter();
+
   // Estado para responsive
   const [isMobile, setIsMobile] = useState(false);
 
@@ -87,14 +92,16 @@ const TeachingModule = () => {
   });
 
   // Handlers mínimos
-  const handleSectionClick = useCallback((sectionId) => {
-    const module = require('../../data/curriculumData').curriculumData.modules[sectionId];
+  const handleSectionClick = useCallback((moduleId) => {
+    const module = curriculumData.modules[moduleId];
     if (module?.lessons?.length > 0) {
-      markLessonComplete(`${sectionId}-${module.lessons[0].id}`);
+      // Navegar a la primera lección del módulo usando Next.js router
+      const firstLessonId = module.lessons[0].id;
+      router.push(`/teaching/${moduleId}/${firstLessonId}`);
+    } else {
+      console.warn(`Módulo ${moduleId} no tiene lecciones disponibles`);
     }
-    updateTimeSpent(1);
-    console.log(`Navegando a la sección: ${sectionId}`);
-  }, [markLessonComplete, updateTimeSpent]);
+  }, [router]);
 
   const handleContinueLearning = useCallback(() => {
     if (nextModule) {
@@ -166,6 +173,29 @@ const TeachingModule = () => {
         />
       </ClientOnly>
 
+      {/* PRIORIDAD: Mapa de Progreso - Camino de aprendizaje por niveles */}
+      {/* Movido arriba para acceso directo e inmediato a lecciones */}
+      <LevelStepper
+        levelProgress={levelProgress}
+        calculateProgress={calculateModuleProgress}
+        isModuleAvailable={isModuleAvailable}
+        getModuleStatus={getModuleStatus}
+        getTooltipMessage={getTooltipMessage}
+        onSectionClick={handleSectionClick}
+        favoriteModules={favoriteModules}
+        onToggleFavorite={toggleFavorite}
+      />
+
+      {/* Estadísticas: Tiempo y lecciones completadas */}
+      <ClientOnly fallback={
+        <SessionStats timeSpent={0} completedLessonsCount={0} />
+      }>
+        <SessionStats
+          timeSpent={timeSpent}
+          completedLessonsCount={completedLessons.size}
+        />
+      </ClientOnly>
+
       {/* Dashboard: Estadísticas de aprendizaje */}
       <ClientOnly fallback={
         <Paper elevation={2} sx={{ p: 3, mb: 4, backgroundColor: '#f8f9fa' }}>
@@ -219,28 +249,6 @@ const TeachingModule = () => {
           </Box>
         </Paper>
       </ClientOnly>
-
-      {/* Estadísticas: Tiempo y lecciones completadas */}
-      <ClientOnly fallback={
-        <SessionStats timeSpent={0} completedLessonsCount={0} />
-      }>
-        <SessionStats
-          timeSpent={timeSpent}
-          completedLessonsCount={completedLessons.size}
-        />
-      </ClientOnly>
-
-      {/* Mapa de Progreso: Camino de aprendizaje por niveles */}
-      <LevelStepper
-        levelProgress={levelProgress}
-        calculateProgress={calculateModuleProgress}
-        isModuleAvailable={isModuleAvailable}
-        getModuleStatus={getModuleStatus}
-        getTooltipMessage={getTooltipMessage}
-        onSectionClick={handleSectionClick}
-        favoriteModules={favoriteModules}
-        onToggleFavorite={toggleFavorite}
-      />
 
       {/* Panel Informativo: Sobre el módulo */}
       <ModuleInfoPanel />

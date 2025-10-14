@@ -18,6 +18,13 @@ const useModuleAvailability = (calculateModuleProgress) => {
    * @returns {boolean} True si el módulo está disponible
    */
   const isModuleAvailable = useCallback((moduleId) => {
+    // ⚠️ TEMPORAL PARA TESTING: Prerequisites deshabilitados
+    // TODO: Revertir esto en producción para habilitar el sistema de prerequisites
+    // Esto permite que todos los módulos (beginner, intermediate, advanced)
+    // sean accesibles inmediatamente sin completar módulos previos
+    return true;
+
+    /* CÓDIGO ORIGINAL - Descomentar para producción:
     const module = curriculumData.modules[moduleId];
     if (!module) return false;
     
@@ -25,12 +32,13 @@ const useModuleAvailability = (calculateModuleProgress) => {
     if (!module.prerequisites || module.prerequisites.length === 0) {
       return true;
     }
-    
+
     // Verificar que todos los prerequisites estén completados al 75%
     return module.prerequisites.every(prereqId => {
       const prereqProgress = calculateModuleProgress(prereqId);
       return prereqProgress >= 75;
     });
+    */
   }, [calculateModuleProgress]);
 
   /**
