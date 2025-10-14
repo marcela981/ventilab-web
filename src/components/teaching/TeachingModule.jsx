@@ -7,7 +7,9 @@ import {
   Paper,
   Typography,
   Grid,
-  Box
+  Box,
+  Alert,
+  Snackbar
 } from '@mui/material';
 import {
   Assessment
@@ -76,6 +78,8 @@ const TeachingModule = () => {
   // Estados locales mínimos
   const [favoriteModules, setFavoriteModules] = useState(new Set());
   const [flashcardSystemOpen, setFlashcardSystemOpen] = useState(false);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   // Estado del dashboard
   const [dashboardData] = useState({
@@ -99,6 +103,10 @@ const TeachingModule = () => {
       const firstLessonId = module.lessons[0].id;
       router.push(`/teaching/${moduleId}/${firstLessonId}`);
     } else {
+      // Mostrar alerta al usuario cuando el módulo no tiene lecciones
+      const moduleName = module?.title || moduleId;
+      setAlertMessage(`El módulo "${moduleName}" no tiene lecciones configuradas todavía.`);
+      setAlertOpen(true);
       console.warn(`Módulo ${moduleId} no tiene lecciones disponibles`);
     }
   }, [router]);
@@ -111,6 +119,13 @@ const TeachingModule = () => {
 
   const handleOpenFlashcards = useCallback(() => {
     setFlashcardSystemOpen(true);
+  }, []);
+
+  const handleCloseAlert = useCallback((event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setAlertOpen(false);
   }, []);
 
   const toggleFavorite = useCallback((moduleId) => {
@@ -259,6 +274,18 @@ const TeachingModule = () => {
         onClose={() => setFlashcardSystemOpen(false)}
         autoGenerateFromLesson={false}
       />
+
+      {/* Snackbar para alertas de usuario */}
+      <Snackbar
+        open={alertOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseAlert}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseAlert} severity="warning" sx={{ width: '100%' }}>
+          {alertMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
