@@ -33,6 +33,7 @@ import RecommendationsPanel from './components/RecommendationsPanel';
 import LevelStepper from './components/LevelStepper';
 import ModuleInfoPanel from './components/ModuleInfoPanel';
 import FlashcardSystem from './FlashcardSystem';
+import QuickAccessLessons from './components/dashboard/QuickAccessLessons';
 
 /**
  * TeachingModule - Componente orquestador del módulo de enseñanza
@@ -151,6 +152,9 @@ const TeachingModule = () => {
   // Calcular estadísticas globales
   const globalStats = calculateGlobalStats;
 
+  // Preparar array de todos los módulos para QuickAccessLessons
+  const allModules = Object.values(curriculumData.modules);
+
   // Effect: inicialización y responsive
   useEffect(() => {
     setCurrentModule('teaching');
@@ -185,6 +189,25 @@ const TeachingModule = () => {
           nextModule={nextModule}
           onContinue={handleContinueLearning}
           calculateProgress={calculateModuleProgress}
+        />
+      </ClientOnly>
+
+      {/* PRIORIDAD MÁXIMA: Acceso Rápido a Lecciones */}
+      {/* Sección de acceso directo a todas las lecciones organizadas por nivel */}
+      <ClientOnly fallback={
+        <Paper elevation={3} sx={{ p: 3, mb: 4, backgroundColor: '#ffffff', border: '1px solid #e3f2fd', borderRadius: 3 }}>
+          <Typography variant="h5" sx={{ mb: 3, color: '#1976d2', fontWeight: 700 }}>
+            Acceso Rápido a Lecciones
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#6c757d' }}>
+            Cargando módulos disponibles...
+          </Typography>
+        </Paper>
+      }>
+        <QuickAccessLessons
+          allModules={allModules}
+          handleSectionClick={handleSectionClick}
+          isMobile={isMobile}
         />
       </ClientOnly>
 

@@ -586,7 +586,11 @@ const LessonViewer = ({
       case 'interactive':
         return renderInteractiveContent(currentSection.content);
       default:
-        return <Typography>Tipo de contenido no soportado</Typography>;
+        // Intentar renderizar como texto si el tipo no es reconocido
+        if (currentSection.content) {
+          return renderTextContent(currentSection.content);
+        }
+        return null;
     }
   };
 
@@ -981,78 +985,86 @@ const LessonViewer = ({
               <Grid item xs={12} lg={4}>
                 <Box sx={{ position: 'sticky', top: 16 }}>
                   {/* Puntos Clave */}
-                  <Card sx={{ mb: 2 }}>
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Lightbulb sx={{ mr: 1, color: theme.palette.warning.main }} />
-                        Puntos Clave
-                      </Typography>
-                      <List dense>
-                        {lesson.keyPoints.map((point, index) => (
-                          <ListItem key={index} sx={{ py: 0.5 }}>
-                            <ListItemIcon sx={{ minWidth: 20 }}>
-                              <Typography variant="body2" color="primary">•</Typography>
-                            </ListItemIcon>
-                            <ListItemText 
-                              primary={point}
-                              primaryTypographyProps={{ variant: 'body2' }}
-                            />
-                          </ListItem>
-                        ))}
-                      </List>
-                    </CardContent>
-                  </Card>
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Lightbulb sx={{ mr: 1, color: theme.palette.warning.main }} />
+                      Puntos Clave
+                    </Typography>
+                    <List dense>
+                      {lesson.keyPoints.map((point, index) => (
+                        <ListItem key={index} sx={{ py: 0.5, px: 0 }}>
+                          <ListItemIcon sx={{ minWidth: 20 }}>
+                            <Typography variant="body2" color="primary">•</Typography>
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={point}
+                            primaryTypographyProps={{ variant: 'body2' }}
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Box>
+
+                  <Divider sx={{ my: 3 }} />
 
                   {/* Fórmulas */}
-                  <Card sx={{ mb: 2 }}>
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Functions sx={{ mr: 1, color: theme.palette.info.main }} />
-                        Fórmulas
-                      </Typography>
-                      {lesson.formulas.map((formula, index) => (
-                        <div key={index} style={{ marginBottom: 16 }}>
-                          <Typography variant="subtitle2" color="primary">
-                            {formula.name}
-                          </Typography>
-                          <Typography variant="body2" sx={{ fontFamily: 'monospace', backgroundColor: theme.palette.grey[100], p: 1, borderRadius: 1 }}>
-                            {formula.formula}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Unidad: {formula.unit}
-                          </Typography>
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Functions sx={{ mr: 1, color: theme.palette.info.main }} />
+                      Fórmulas
+                    </Typography>
+                    {lesson.formulas.map((formula, index) => (
+                      <Box key={index} sx={{ mb: 2 }}>
+                        <Typography variant="subtitle2" color="primary" gutterBottom>
+                          {formula.name}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontFamily: 'monospace',
+                            backgroundColor: theme.palette.grey[100],
+                            color: theme.palette.text.primary,
+                            p: 1,
+                            borderRadius: 1,
+                            display: 'inline-block'
+                          }}
+                        >
+                          {formula.formula}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                          Unidad: {formula.unit}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+
+                  <Divider sx={{ my: 3 }} />
 
                   {/* Referencias */}
-                  <Card>
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                        <LinkIcon sx={{ mr: 1, color: theme.palette.success.main }} />
-                        Referencias
-                      </Typography>
-                      {lesson.references.map((ref, index) => (
-                        <div key={index} style={{ marginBottom: 8 }}>
-                          <Link 
-                            href={ref.url} 
-                            target="_blank" 
-                            underline="hover"
-                            sx={{ display: 'block', fontSize: '0.875rem' }}
-                          >
-                            {ref.title}
-                          </Link>
-                          <Chip 
-                            label={ref.type} 
-                            size="small" 
-                            variant="outlined" 
-                            sx={{ mt: 0.5, fontSize: '0.75rem', height: 20 }}
-                          />
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
+                  <Box>
+                    <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <LinkIcon sx={{ mr: 1, color: theme.palette.success.main }} />
+                      Referencias
+                    </Typography>
+                    {lesson.references.map((ref, index) => (
+                      <Box key={index} sx={{ mb: 1.5 }}>
+                        <Link
+                          href={ref.url}
+                          target="_blank"
+                          underline="hover"
+                          sx={{ display: 'block', fontSize: '0.875rem', mb: 0.5 }}
+                        >
+                          {ref.title}
+                        </Link>
+                        <Chip
+                          label={ref.type}
+                          size="small"
+                          variant="outlined"
+                          sx={{ fontSize: '0.75rem', height: 20 }}
+                        />
+                      </Box>
+                    ))}
+                  </Box>
                 </Box>
               </Grid>
             </Grid>
