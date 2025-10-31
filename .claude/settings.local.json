@@ -12,7 +12,18 @@
       "Bash(python -m json.tool:*)",
       "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtaGN2ajA0NTAwMDNvNW1qM21tYWhoczIiLCJlbWFpbCI6ImVzdHVkaWFudGUxQHZlbnRpbGFiLmNvbSIsInJvbGUiOiJTVFVERU5UIiwiaWF0IjoxNzYxODM1NjE5LCJleHAiOjE3NjI0NDA0MTl9.svPSdkM3oCVdfc8FjpjocgFN8G_Qzg1Egasxz3X35ZY\")",
       "Bash(mv:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(test:*)",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(npx prisma migrate:*)",
+      "Bash(psql -h localhost -U postgres -d ventilab_dev -c \"DROP SCHEMA public CASCADE; CREATE SCHEMA public;\")",
+      "Bash(npx prisma db push --force-reset)",
+      "Bash(node -e:*)",
+      "Bash(npx ts-node:*)",
+      "Bash(node test-auth-service.js:*)",
+      "Bash(node test-useauth.js:*)",
+      "Bash(node scripts/test-redirect.js:*)"
     ],
     "deny": [],
     "ask": []

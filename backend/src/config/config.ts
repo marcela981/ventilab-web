@@ -3,7 +3,7 @@
  * Centralized configuration management for environment variables
  */
 
-interface Config {
+export interface Config {
   // Server Configuration
   port: number;
   nodeEnv: string;

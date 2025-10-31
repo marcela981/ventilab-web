@@ -82,7 +82,7 @@ export const ERROR_MESSAGES = {
  */
 export const USER_ROLES = {
   STUDENT: 'STUDENT',
-  INSTRUCTOR: 'INSTRUCTOR',
+  TEACHER: 'TEACHER',
   ADMIN: 'ADMIN',
 } as const;
 
@@ -105,3 +105,67 @@ export const PAGINATION = {
   DEFAULT_LIMIT: 10,
   MAX_LIMIT: 100,
 } as const;
+
+/**
+ * User Permissions by Role
+ * Defines granular permissions for each user role
+ */
+export const PERMISSIONS = {
+  STUDENT: [
+    'view_modules',
+    'view_lessons',
+    'complete_lessons',
+    'view_own_progress',
+    'update_own_profile',
+  ],
+  TEACHER: [
+    'view_modules',
+    'view_lessons',
+    'complete_lessons',
+    'view_own_progress',
+    'update_own_profile',
+    'create_modules',
+    'edit_modules',
+    'delete_own_modules',
+    'create_lessons',
+    'edit_lessons',
+    'delete_own_lessons',
+    'view_all_progress',
+    'generate_ai_content',
+  ],
+  ADMIN: [
+    'view_modules',
+    'view_lessons',
+    'complete_lessons',
+    'view_own_progress',
+    'update_own_profile',
+    'create_modules',
+    'edit_modules',
+    'delete_own_modules',
+    'create_lessons',
+    'edit_lessons',
+    'delete_own_lessons',
+    'view_all_progress',
+    'generate_ai_content',
+    'manage_users',
+    'change_user_roles',
+    'delete_any_module',
+    'delete_any_lesson',
+    'view_system_stats',
+    'manage_system_config',
+  ],
+} as const;
+
+/**
+ * Check if a role has a specific permission
+ * @param role - The user role (STUDENT, TEACHER, or ADMIN)
+ * @param permission - The permission to check
+ * @returns True if the role has the permission, false otherwise
+ */
+export const hasPermission = (role: string, permission: string): boolean => {
+  const rolePermissions = PERMISSIONS[role as keyof typeof PERMISSIONS];
+  if (!rolePermissions) {
+    return false;
+  }
+  return rolePermissions.includes(permission as any);
+};

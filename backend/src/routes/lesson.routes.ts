@@ -6,20 +6,24 @@
 import { Router } from 'express';
 import { body, param } from 'express-validator';
 import { validateRequest } from '../middleware/validate';
-import { authenticate, authorize } from '../middleware/auth';
-import { USER_ROLES } from '../config/constants';
+import { authenticate, isAdmin, isTeacher, isStudent } from '../middleware/auth';
 import * as lessonController from '../controllers/lesson.controller';
 
 const router = Router();
 
+// =============================================================================
+// AUTHENTICATED USER ROUTES - View lessons and track progress
+// =============================================================================
+
 /**
  * @route   GET /api/lessons/:id
  * @desc    Get lesson by ID with user progress
- * @access  Private (requires authentication)
+ * @access  Private (All authenticated users)
  */
 router.get(
   '/:id',
   authenticate,
+  isStudent, // All authenticated users (STUDENT, TEACHER, ADMIN)
   validateRequest([
     param('id')
       .isString()
@@ -33,11 +37,12 @@ router.get(
 /**
  * @route   GET /api/lessons/:id/next
  * @desc    Get next lesson in the same module
- * @access  Private
+ * @access  Private (All authenticated users)
  */
 router.get(
   '/:id/next',
   authenticate,
+  isStudent, // All authenticated users
   validateRequest([
     param('id')
       .isString()
@@ -51,11 +56,12 @@ router.get(
 /**
  * @route   GET /api/lessons/:id/previous
  * @desc    Get previous lesson in the same module
- * @access  Private
+ * @access  Private (All authenticated users)
  */
 router.get(
   '/:id/previous',
   authenticate,
+  isStudent, // All authenticated users
   validateRequest([
     param('id')
       .isString()
@@ -67,14 +73,40 @@ router.get(
 );
 
 /**
+ * @route   POST /api/lessons/:id/complete
+ * @desc    Mark lesson as completed
+ * @access  Private (All authenticated users)
+ */
+router.post(
+  '/:id/complete',
+  authenticate,
+  isStudent, // All authenticated users can complete lessons
+  validateRequest([
+    param('id')
+      .isString()
+      .trim()
+      .notEmpty()
+      .withMessage('ID de lección inválido'),
+    body('timeSpent')
+      .isInt({ min: 0 })
+      .withMessage('timeSpent debe ser un número entero no negativo (en minutos)'),
+  ]),
+  lessonController.markLessonCompleted
+);
+
+// =============================================================================
+// TEACHER/ADMIN ROUTES - Create and edit lessons
+// =============================================================================
+
+/**
  * @route   POST /api/lessons
  * @desc    Create a new lesson
- * @access  Private (ADMIN or TEACHER only)
+ * @access  Private (TEACHER, ADMIN)
  */
 router.post(
   '/',
   authenticate,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.INSTRUCTOR),
+  isTeacher, // Allows TEACHER and ADMIN
   validateRequest([
     body('moduleId')
       .isString()
@@ -126,12 +158,12 @@ router.post(
 /**
  * @route   PUT /api/lessons/:id
  * @desc    Update an existing lesson
- * @access  Private (ADMIN or TEACHER only)
+ * @access  Private (TEACHER, ADMIN)
  */
 router.put(
   '/:id',
   authenticate,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.INSTRUCTOR),
+  isTeacher, // Allows TEACHER and ADMIN
   validateRequest([
     param('id')
       .isString()
@@ -182,6 +214,10 @@ router.put(
   lessonController.updateLesson
 );
 
+// =============================================================================
+// ADMIN ONLY ROUTES - Delete operations
+// =============================================================================
+
 /**
  * @route   DELETE /api/lessons/:id
  * @desc    Delete a lesson
@@ -190,7 +226,7 @@ router.put(
 router.delete(
   '/:id',
   authenticate,
-  authorize(USER_ROLES.ADMIN),
+  isAdmin, // Only ADMIN can delete lessons
   validateRequest([
     param('id')
       .isString()
@@ -199,27 +235,6 @@ router.delete(
       .withMessage('ID de lección inválido'),
   ]),
   lessonController.deleteLesson
-);
-
-/**
- * @route   POST /api/lessons/:id/complete
- * @desc    Mark lesson as completed
- * @access  Private
- */
-router.post(
-  '/:id/complete',
-  authenticate,
-  validateRequest([
-    param('id')
-      .isString()
-      .trim()
-      .notEmpty()
-      .withMessage('ID de lección inválido'),
-    body('timeSpent')
-      .isInt({ min: 0 })
-      .withMessage('timeSpent debe ser un número entero no negativo (en minutos)'),
-  ]),
-  lessonController.markLessonCompleted
 );
 
 export default router;

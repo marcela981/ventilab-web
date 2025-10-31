@@ -533,4 +533,3 @@ Responde en español.`;
   }
 }
 
-export default new GeminiProvider();

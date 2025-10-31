@@ -6,7 +6,7 @@
 import { Router } from 'express';
 import { body, param, query } from 'express-validator';
 import { validateRequest } from '../middleware/validate';
-import { authenticate, optionalAuth, authorize } from '../middleware/auth';
+import { authenticate, optionalAuth, isAdmin, isTeacher, isStudent } from '../middleware/auth';
 import { USER_ROLES } from '../config/constants';
 import * as moduleController from '../controllers/module.controller';
 
@@ -68,15 +68,19 @@ router.get(
   moduleController.getModuleById
 );
 
+// =============================================================================
+// TEACHER/ADMIN ROUTES - Create and edit content
+// =============================================================================
+
 /**
  * @route   POST /api/modules
  * @desc    Create a new module
- * @access  Private (ADMIN or TEACHER)
+ * @access  Private (TEACHER, ADMIN)
  */
 router.post(
   '/',
   authenticate,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.INSTRUCTOR),
+  isTeacher, // Allows TEACHER and ADMIN
   validateRequest([
     body('title')
       .trim()
@@ -131,12 +135,12 @@ router.post(
 /**
  * @route   PUT /api/modules/:id
  * @desc    Update an existing module
- * @access  Private (ADMIN or TEACHER)
+ * @access  Private (TEACHER, ADMIN)
  */
 router.put(
   '/:id',
   authenticate,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.INSTRUCTOR),
+  isTeacher, // Allows TEACHER and ADMIN
   validateRequest([
     param('id')
       .isString()
@@ -182,6 +186,10 @@ router.put(
   moduleController.updateModule
 );
 
+// =============================================================================
+// ADMIN ONLY ROUTES - Delete operations
+// =============================================================================
+
 /**
  * @route   DELETE /api/modules/:id
  * @desc    Delete a module (soft delete)
@@ -190,7 +198,7 @@ router.put(
 router.delete(
   '/:id',
   authenticate,
-  authorize(USER_ROLES.ADMIN),
+  isAdmin, // Only ADMIN can delete modules
   validateRequest([
     param('id')
       .isString()
@@ -219,14 +227,19 @@ router.get(
   moduleController.getModuleLessons
 );
 
+// =============================================================================
+// AUTHENTICATED USER ROUTES - Progress and personal data
+// =============================================================================
+
 /**
  * @route   GET /api/modules/:id/progress
  * @desc    Get user's progress in a module
- * @access  Private (authenticated users)
+ * @access  Private (All authenticated users)
  */
 router.get(
   '/:id/progress',
   authenticate,
+  isStudent, // All authenticated users (STUDENT, TEACHER, ADMIN)
   validateRequest([
     param('id')
       .isString()
@@ -240,12 +253,12 @@ router.get(
 /**
  * @route   POST /api/modules/:id/prerequisites
  * @desc    Add a prerequisite to a module
- * @access  Private (ADMIN or TEACHER)
+ * @access  Private (TEACHER, ADMIN)
  */
 router.post(
   '/:id/prerequisites',
   authenticate,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.INSTRUCTOR),
+  isTeacher, // Allows TEACHER and ADMIN
   validateRequest([
     param('id')
       .isString()
@@ -265,12 +278,12 @@ router.post(
 /**
  * @route   DELETE /api/modules/:id/prerequisites/:prerequisiteId
  * @desc    Remove a prerequisite from a module
- * @access  Private (ADMIN or TEACHER)
+ * @access  Private (TEACHER, ADMIN)
  */
 router.delete(
   '/:id/prerequisites/:prerequisiteId',
   authenticate,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.INSTRUCTOR),
+  isTeacher, // Allows TEACHER and ADMIN
   validateRequest([
     param('id')
       .isString()

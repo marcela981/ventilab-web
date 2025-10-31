@@ -27,6 +27,12 @@ export class AIServiceManager {
    * Inicializar todos los proveedores disponibles
    */
   async initializeProviders() {
+    // Solo inicializar en el cliente
+    if (typeof window === 'undefined') {
+      console.log('⏭️ Saltando inicialización de AI Service Manager (server-side)');
+      return;
+    }
+    
     console.log('🚀 Inicializando AI Service Manager...');
     
     // Inicializar Gemini Provider
@@ -496,14 +502,48 @@ Responde en español.`;
   }
 }
 
-// Instancia singleton
-const aiServiceManager = new AIServiceManager();
+// Instancia singleton - se crea de forma lazy solo en el cliente
+let aiServiceManagerInstance = null;
 
-// Hacer disponible para debugging en el navegador
-if (typeof window !== 'undefined') {
-  window.AIServiceManager = aiServiceManager;
-  console.log('🛠️ AIServiceManager disponible globalmente');
-  console.log('Prueba: AIServiceManager.getProviderStats()');
-}
+const getAIServiceManager = () => {
+  if (typeof window === 'undefined') {
+    // En el servidor, devolvemos un objeto mock que no hace nada
+    return {
+      isProviderAvailable: () => false,
+      getAvailableProviders: () => [],
+      analyzeVentilatorConfiguration: async () => ({
+        success: false,
+        error: 'AI Service no disponible en el servidor'
+      }),
+      generateResponse: async () => ({
+        success: false,
+        error: 'AI Service no disponible en el servidor'
+      }),
+      switchModel: () => ({
+        success: false,
+        error: 'AI Service no disponible en el servidor'
+      }),
+      getProviderStats: () => ({
+        currentProvider: null,
+        availableProviders: [],
+        globalStats: {},
+        providerStats: {}
+      }),
+      resetProvider: () => {},
+      resetRateLimit: () => {},
+      getRequestHistory: () => []
+    };
+  }
 
-export default aiServiceManager;
+  // En el cliente, crear la instancia si no existe
+  if (!aiServiceManagerInstance) {
+    aiServiceManagerInstance = new AIServiceManager();
+    window.AIServiceManager = aiServiceManagerInstance;
+    console.log('🛠️ AIServiceManager disponible globalmente');
+    console.log('Prueba: AIServiceManager.getProviderStats()');
+  }
+
+  return aiServiceManagerInstance;
+};
+
+export default getAIServiceManager();

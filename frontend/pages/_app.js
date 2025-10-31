@@ -1,8 +1,10 @@
 import React, { useState, createContext, useContext } from 'react';
 import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { SessionProvider } from 'next-auth/react';
 import { PatientDataProvider } from '../src/contexts/PatientDataContext';
 import Sidebar from '../src/components/navigation/Sidebar';
 import ErrorBoundary from '../src/components/common/ErrorBoundary';
+import { useRouter } from 'next/router';
 import '../src/App.css';
 
 // Context para el estado del sidebar
@@ -28,8 +30,12 @@ const theme = createTheme({
   },
 });
 
-function MyApp({ Component, pageProps }) {
+function MyApp({ Component, pageProps: { session, ...pageProps } }) {
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // Check if current page is an auth page (no sidebar)
+  const isAuthPage = router.pathname.startsWith('/auth');
 
   const handleSidebarToggle = () => {
     setSidebarOpen(!sidebarOpen);
@@ -56,34 +62,54 @@ function MyApp({ Component, pageProps }) {
 
   return (
     <ErrorBoundary>
-      <ThemeProvider theme={theme}>
-        <PatientDataProvider>
-          <SidebarContext.Provider value={{ sidebarOpen, handleSidebarToggle }}>
-            <Box sx={{ display: 'flex' }}>
-              <CssBaseline />
-              <Sidebar open={sidebarOpen} onToggle={handleSidebarToggle} />
-              <Box
-                component="main"
-                sx={{
-                  flexGrow: 1,
-                  p: 3,
-                  width: { sm: `calc(100% - ${sidebarOpen ? 240 : 64}px)` },
-                  ml: { sm: `${sidebarOpen ? 240 : 64}px` },
-                  transition: (theme) =>
-                    theme.transitions.create(['margin', 'width'], {
-                      easing: theme.transitions.easing.sharp,
-                      duration: theme.transitions.duration.leavingScreen,
-                    }),
-                }}
-              >
-                <ErrorBoundary>
-                  <Component {...pageProps} />
-                </ErrorBoundary>
-              </Box>
-            </Box>
-          </SidebarContext.Provider>
-        </PatientDataProvider>
-      </ThemeProvider>
+      {/*
+        SessionProvider: Provides NextAuth.js session to all components
+        - session: Initial session from getServerSideProps (SSR optimization)
+        - refetchInterval: Refetch session every 5 minutes to keep it updated
+        - refetchOnWindowFocus: Revalidate session when user returns to window
+      */}
+      <SessionProvider
+        session={session}
+        refetchInterval={5 * 60} // 5 minutes in seconds
+        refetchOnWindowFocus={true}
+      >
+        <ThemeProvider theme={theme}>
+          <PatientDataProvider>
+            <CssBaseline />
+            {/* Auth pages: render without sidebar */}
+            {isAuthPage ? (
+              <ErrorBoundary>
+                <Component {...pageProps} />
+              </ErrorBoundary>
+            ) : (
+              /* Regular pages: render with sidebar */
+              <SidebarContext.Provider value={{ sidebarOpen, handleSidebarToggle }}>
+                <Box sx={{ display: 'flex' }}>
+                  <Sidebar open={sidebarOpen} onToggle={handleSidebarToggle} />
+                  <Box
+                    component="main"
+                    sx={{
+                      flexGrow: 1,
+                      p: 3,
+                      width: { sm: `calc(100% - ${sidebarOpen ? 240 : 64}px)` },
+                      ml: { sm: `${sidebarOpen ? 240 : 64}px` },
+                      transition: (theme) =>
+                        theme.transitions.create(['margin', 'width'], {
+                          easing: theme.transitions.easing.sharp,
+                          duration: theme.transitions.duration.leavingScreen,
+                        }),
+                    }}
+                  >
+                    <ErrorBoundary>
+                      <Component {...pageProps} />
+                    </ErrorBoundary>
+                  </Box>
+                </Box>
+              </SidebarContext.Provider>
+            )}
+          </PatientDataProvider>
+        </ThemeProvider>
+      </SessionProvider>
     </ErrorBoundary>
   );
 }

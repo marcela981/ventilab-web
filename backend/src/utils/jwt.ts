@@ -21,9 +21,9 @@ export interface TokenPayload {
  * @returns The signed JWT token
  */
 export const generateToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, config.jwtSecret, {
-    expiresIn: config.jwtExpiresIn,
-  });
+  return jwt.sign(payload, config.jwtSecret as jwt.Secret, {
+    expiresIn: config.jwtExpiresIn as string,
+  } as jwt.SignOptions);
 };
 
 /**
@@ -33,7 +33,7 @@ export const generateToken = (payload: TokenPayload): string => {
  * @throws Will throw an error if the token is invalid or expired
  */
 export const verifyToken = (token: string): TokenPayload => {
-  return jwt.verify(token, config.jwtSecret) as TokenPayload;
+  return jwt.verify(token, config.jwtSecret as jwt.Secret) as TokenPayload;
 };
 
 /**

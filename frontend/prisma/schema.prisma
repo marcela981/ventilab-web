@@ -31,10 +31,10 @@ datasource db {
 
 /// User roles in the VentyLab platform
 enum UserRole {
-  STUDENT    // Regular students learning ventilation
-  TEACHER    // Teachers who create and manage content
-  EXPERT     // Medical experts with advanced privileges
-  ADMIN      // System administrators with full access
+  STUDENT     // Regular students learning ventilation
+  INSTRUCTOR  // Teachers who create and manage content
+  EXPERT      // Medical experts with advanced privileges
+  ADMIN       // System administrators with full access
 }
 
 enum ModuleCategory {

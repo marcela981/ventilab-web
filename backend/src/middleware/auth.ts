@@ -8,7 +8,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '../config/config';
 import { AppError } from './errorHandler';
-import { HTTP_STATUS, ERROR_CODES, ERROR_MESSAGES, USER_ROLES } from '../config/constants';
+import { HTTP_STATUS, ERROR_CODES, ERROR_MESSAGES, USER_ROLES, PERMISSIONS, hasPermission } from '../config/constants';
 import prisma from '../config/database';
 
 /**
@@ -150,7 +150,7 @@ export const authenticate = async (
  *
  * Usage:
  * router.get('/admin', authenticate, authorize(USER_ROLES.ADMIN), controller);
- * router.get('/content', authenticate, authorize(USER_ROLES.ADMIN, USER_ROLES.INSTRUCTOR), controller);
+ * router.get('/content', authenticate, authorize(USER_ROLES.ADMIN, USER_ROLES.TEACHER), controller);
  *
  * @param allowedRoles - One or more roles that are allowed to access the resource
  * @returns Middleware function that checks user role
@@ -193,6 +193,72 @@ export const authorize = (...allowedRoles: string[]) => {
 };
 
 /**
+ * Permission-Based Authorization Middleware Factory
+ * Creates middleware that checks if user has at least one of the required permissions
+ *
+ * This middleware provides fine-grained access control based on specific permissions
+ * rather than broad roles. It consults the PERMISSIONS matrix to check if the user's
+ * role grants them any of the specified permissions.
+ *
+ * Usage:
+ * router.post('/modules', authenticate, authorizePermission('create_modules'), createModule);
+ * router.put('/lessons/:id', authenticate, authorizePermission('edit_lessons', 'edit_own_lessons'), updateLesson);
+ * router.delete('/users/:id', authenticate, authorizePermission('manage_users'), deleteUser);
+ *
+ * @param requiredPermissions - One or more permissions that grant access to the resource
+ * @returns Middleware function that checks if user has any of the required permissions
+ * @throws {AppError} 401 - If user is not authenticated
+ * @throws {AppError} 403 - If user doesn't have any of the required permissions
+ *
+ * @example
+ * // Only users with 'create_modules' permission (TEACHER, ADMIN) can access
+ * router.post('/modules', authenticate, authorizePermission('create_modules'), controller);
+ *
+ * @example
+ * // Users with either 'delete_any_module' or 'delete_own_modules' can access
+ * router.delete('/modules/:id', authenticate, authorizePermission('delete_any_module', 'delete_own_modules'), controller);
+ */
+export const authorizePermission = (...requiredPermissions: string[]) => {
+  return (req: AuthRequest, res: Response, next: NextFunction): void => {
+    try {
+      // Check if user is authenticated
+      if (!req.user) {
+        throw new AppError(
+          ERROR_MESSAGES.UNAUTHORIZED,
+          HTTP_STATUS.UNAUTHORIZED,
+          ERROR_CODES.UNAUTHORIZED,
+          true,
+          ['You must be logged in to access this resource']
+        );
+      }
+
+      // Check if user has at least one of the required permissions
+      const userRole = req.user.role;
+      const hasRequiredPermission = requiredPermissions.some(permission =>
+        hasPermission(userRole, permission)
+      );
+
+      if (!hasRequiredPermission) {
+        throw new AppError(
+          ERROR_MESSAGES.FORBIDDEN,
+          HTTP_STATUS.FORBIDDEN,
+          ERROR_CODES.FORBIDDEN,
+          true,
+          [
+            `Access denied. This resource requires one of the following permissions: ${requiredPermissions.join(', ')}`,
+            `Your current role (${userRole}) does not have any of these permissions`
+          ]
+        );
+      }
+
+      next();
+    } catch (error) {
+      next(error);
+    }
+  };
+};
+
+/**
  * Admin Only Middleware
  * Convenience middleware that only allows ADMIN role
  *
@@ -201,22 +267,22 @@ export const authorize = (...allowedRoles: string[]) => {
 export const isAdmin = authorize(USER_ROLES.ADMIN);
 
 /**
- * Instructor or Admin Middleware
- * Allows both INSTRUCTOR and ADMIN roles
+ * Teacher or Admin Middleware
+ * Allows both TEACHER and ADMIN roles
  *
- * Usage: router.post('/modules', authenticate, isInstructor, createModule);
+ * Usage: router.post('/modules', authenticate, isTeacher, createModule);
  */
-export const isInstructor = authorize(USER_ROLES.INSTRUCTOR, USER_ROLES.ADMIN);
+export const isTeacher = authorize(USER_ROLES.TEACHER, USER_ROLES.ADMIN);
 
 /**
- * Student, Instructor, or Admin Middleware
+ * Student, Teacher, or Admin Middleware
  * Allows any authenticated user (all roles)
  *
  * Usage: router.get('/modules', authenticate, isStudent, getModules);
  */
 export const isStudent = authorize(
   USER_ROLES.STUDENT,
-  USER_ROLES.INSTRUCTOR,
+  USER_ROLES.TEACHER,
   USER_ROLES.ADMIN
 );
 
