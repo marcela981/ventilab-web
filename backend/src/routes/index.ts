@@ -8,6 +8,7 @@ import authRoutes from './auth.routes';
 import userRoutes from './user.routes';
 import moduleRoutes from './module.routes';
 import lessonRoutes from './lesson.routes';
+import adminUsersRoutes from './admin/users.routes';
 
 const router = Router();
 
@@ -19,5 +20,8 @@ router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/modules', moduleRoutes);
 router.use('/lessons', lessonRoutes);
+
+// Admin routes
+router.use('/admin/users', adminUsersRoutes);
 
 export default router;
