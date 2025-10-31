@@ -17,10 +17,10 @@ generator client {
 
 datasource db {
   // For development with SQLite (no setup required):
-  provider = "sqlite"
+  // provider = "sqlite"
 
   // For production with PostgreSQL (recommended):
-  // provider = "postgresql"
+  provider = "postgresql"
 
   url = env("DATABASE_URL")
 }
@@ -28,59 +28,65 @@ datasource db {
 // =============================================================================
 // ENUMS (For PostgreSQL)
 // =============================================================================
-// Note: SQLite doesn't support native enums. When using PostgreSQL,
-// uncomment these enums and change the corresponding String fields to enum types.
 
-// enum UserRole {
-//   STUDENT
-//   TEACHER
-//   ADMIN
-// }
+/// User roles in the VentyLab platform
+enum UserRole {
+  STUDENT     // Regular students learning ventilation
+  INSTRUCTOR  // Teachers who create and manage content
+  EXPERT      // Medical experts with advanced privileges
+  ADMIN       // System administrators with full access
+}
 
-// enum ModuleCategory {
-//   FUNDAMENTALS
-//   VENTILATION_PRINCIPLES
-//   CLINICAL_APPLICATIONS
-//   ADVANCED_TECHNIQUES
-//   TROUBLESHOOTING
-//   PATIENT_SAFETY
-// }
+enum ModuleCategory {
+  FUNDAMENTALS
+  VENTILATION_PRINCIPLES
+  CLINICAL_APPLICATIONS
+  ADVANCED_TECHNIQUES
+  TROUBLESHOOTING
+  PATIENT_SAFETY
+}
 
-// enum ModuleDifficulty {
-//   BEGINNER
-//   INTERMEDIATE
-//   ADVANCED
-// }
+enum ModuleDifficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
 
-// enum AchievementType {
-//   FIRST_LESSON
-//   MODULE_COMPLETE
-//   STREAK_7_DAYS
-//   STREAK_30_DAYS
-//   MASTER_LEVEL
-//   PERFECT_QUIZ
-//   SPEED_LEARNER
-//   DEDICATED_STUDENT
-// }
+enum AchievementType {
+  FIRST_LESSON
+  MODULE_COMPLETE
+  STREAK_7_DAYS
+  STREAK_30_DAYS
+  MASTER_LEVEL
+  PERFECT_QUIZ
+  SPEED_LEARNER
+  DEDICATED_STUDENT
+}
 
 // =============================================================================
 // USER MODELS
 // =============================================================================
 
-/// User model - Represents all users in the system (students, teachers, admins)
-/// Handles authentication, authorization, and user profile information
+/// User model - Represents all users in the system (students, instructors, experts, admins)
+/// Handles authentication via NextAuth.js with support for OAuth providers and credentials
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String   // Hashed password using bcryptjs (never store plain text!)
-  name      String
-  role      String   @default("STUDENT") // Values: STUDENT, TEACHER, ADMIN (use UserRole enum with PostgreSQL)
-  avatar    String?  // Optional URL to user's avatar image
-  bio       String?  // Optional user biography
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime? // Timestamp when email was verified (used by NextAuth)
+  password      String?   // Hashed password using bcryptjs (nullable for OAuth-only users)
+  name          String
+  role          UserRole  @default(STUDENT) // User role with proper enum type
+  image         String?   // Avatar image URL (populated by OAuth providers or custom upload)
+  bio           String?   // Optional user biography
+  isActive      Boolean   @default(true) // Soft delete flag - inactive users cannot login
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  // Relations
+  // NextAuth.js Relations
+  accounts Account[] // Linked OAuth accounts (Google, GitHub, etc.)
+  sessions Session[] // Active user sessions
+
+  // VentyLab Relations
   learningProgress LearningProgress[] // User's progress across all modules
   quizAttempts     QuizAttempt[]      // User's quiz attempts
   learningSessions LearningSession[]  // User's learning sessions
@@ -88,7 +94,64 @@ model User {
 
   @@index([email])
   @@index([role])
+  @@index([isActive])
   @@map("users")
+}
+
+// =============================================================================
+// NEXTAUTH.JS ADAPTER MODELS
+// =============================================================================
+// These models are required by NextAuth.js Prisma Adapter
+// Documentation: https://authjs.dev/reference/adapter/prisma
+
+/// Account model - Stores OAuth provider account information
+/// Links user accounts with external OAuth providers (Google, GitHub, etc.)
+/// Each user can have multiple accounts (one per provider)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String  // "oauth" | "oidc" | "email" | "credentials"
+  provider          String  // OAuth provider name (e.g., "google", "github")
+  providerAccountId String  // User's ID in the OAuth provider's system
+  refresh_token     String? @db.Text // OAuth refresh token (for token renewal)
+  access_token      String? @db.Text // OAuth access token (for API calls)
+  expires_at        Int?    // Unix timestamp when access_token expires
+  token_type        String? // Token type (usually "Bearer")
+  scope             String? // OAuth scopes granted
+  id_token          String? @db.Text // OpenID Connect ID token
+  session_state     String? // OAuth session state
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId]) // Prevent duplicate provider accounts
+  @@index([userId])
+  @@map("accounts")
+}
+
+/// Session model - Stores active user sessions
+/// Used by NextAuth.js database session strategy (alternative to JWT)
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique // Unique session token stored in cookies
+  userId       String
+  expires      DateTime // Session expiration timestamp
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@map("sessions")
+}
+
+/// VerificationToken model - Stores tokens for email verification and password reset
+/// Used for magic link sign-in and other verification flows
+model VerificationToken {
+  identifier String   // User's email or phone number
+  token      String   @unique // Unique verification token
+  expires    DateTime // Token expiration timestamp
+
+  @@unique([identifier, token]) // Composite key ensures one token per identifier
+  @@map("verification_tokens")
 }
 
 // =============================================================================
@@ -100,10 +163,10 @@ model User {
 model Module {
   id            String   @id @default(cuid())
   title         String
-  description   String?  // Detailed description of module content
-  order         Int      // Display order in the curriculum
-  category      String   // Values: FUNDAMENTALS, VENTILATION_PRINCIPLES, etc. (use ModuleCategory enum with PostgreSQL)
-  difficulty    String   // Values: BEGINNER, INTERMEDIATE, ADVANCED (use ModuleDifficulty enum with PostgreSQL)
+  description   String?           // Detailed description of module content
+  order         Int               // Display order in the curriculum
+  category      ModuleCategory    // Module category with proper enum type
+  difficulty    ModuleDifficulty  // Difficulty level with proper enum type
   estimatedTime Int      // Estimated completion time in minutes
   isActive      Boolean  @default(true) // Soft delete flag - inactive modules are hidden
   thumbnail     String?  // Optional URL to module thumbnail image
@@ -297,10 +360,10 @@ model LearningSession {
 /// Achievement - Badges and achievements for gamification
 /// Motivates users by recognizing milestones and accomplishments
 model Achievement {
-  id          String   @id @default(cuid())
+  id          String          @id @default(cuid())
   userId      String
-  type        String   // Values: FIRST_LESSON, MODULE_COMPLETE, STREAK_7_DAYS, etc. (use AchievementType enum with PostgreSQL)
-  title       String   // Display title of the achievement
+  type        AchievementType // Achievement type with proper enum type
+  title       String          // Display title of the achievement
   description String   // Description of what was accomplished
   icon        String?  // Optional icon identifier or URL
   points      Int      @default(0) // Points awarded for this achievement
@@ -316,20 +379,34 @@ model Achievement {
 }
 
 // =============================================================================
-// MIGRATION NOTES
+// MIGRATION AND SETUP INSTRUCTIONS
 // =============================================================================
-// When migrating from SQLite to PostgreSQL:
-// 1. Change datasource provider to "postgresql"
-// 2. Uncomment the enum definitions at the top
-// 3. Replace String fields with their corresponding enum types:
-//    - User.role: String → UserRole
-//    - Module.category: String → ModuleCategory
-//    - Module.difficulty: String → ModuleDifficulty
-//    - Achievement.type: String → AchievementType
-// 4. Change Json-like String fields to actual Json type:
-//    - Lesson.content: String → Json
-//    - Quiz.options: String → Json
-// 5. Change String arrays to actual arrays:
-//    - LearningSession.modulesAccessed: String? → String[]
-// 6. Run: prisma migrate dev --name switch_to_postgresql
+//
+// INITIAL SETUP (PostgreSQL):
+// 1. Ensure PostgreSQL is installed and running
+// 2. Create a database: CREATE DATABASE ventilab_dev;
+// 3. Configure DATABASE_URL in .env.local with your PostgreSQL credentials
+// 4. Generate Prisma Client: npm run prisma:generate (or npx prisma generate)
+// 5. Create tables: npm run prisma:migrate (or npx prisma migrate dev --name init)
+// 6. (Optional) Seed database: npm run prisma:seed
+//
+// VIEWING DATABASE:
+// - Open Prisma Studio: npx prisma studio
+// - Or use any PostgreSQL client (pgAdmin, DBeaver, etc.)
+//
+// UPDATING SCHEMA:
+// After making changes to this schema file:
+// 1. Generate new migration: npx prisma migrate dev --name describe_your_changes
+// 2. The migration will be applied automatically to your development database
+// 3. Prisma Client will be regenerated automatically
+//
+// NEXTAUTH.JS INTEGRATION:
+// The Account, Session, and VerificationToken models are required by NextAuth.js
+// Prisma Adapter. Do not modify these models unless you know what you're doing.
+// Reference: https://authjs.dev/reference/adapter/prisma
+//
+// PRODUCTION DEPLOYMENT:
+// 1. Set DATABASE_URL to production database
+// 2. Run: npx prisma migrate deploy (applies pending migrations)
+// 3. Generate client: npx prisma generate
 // =============================================================================

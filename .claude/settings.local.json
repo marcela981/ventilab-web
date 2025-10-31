@@ -10,7 +10,9 @@
       "Bash(npm run prisma:seed:*)",
       "Bash(curl:*)",
       "Bash(python -m json.tool:*)",
-      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtaGN2ajA0NTAwMDNvNW1qM21tYWhoczIiLCJlbWFpbCI6ImVzdHVkaWFudGUxQHZlbnRpbGFiLmNvbSIsInJvbGUiOiJTVFVERU5UIiwiaWF0IjoxNzYxODM1NjE5LCJleHAiOjE3NjI0NDA0MTl9.svPSdkM3oCVdfc8FjpjocgFN8G_Qzg1Egasxz3X35ZY\")"
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtaGN2ajA0NTAwMDNvNW1qM21tYWhoczIiLCJlbWFpbCI6ImVzdHVkaWFudGUxQHZlbnRpbGFiLmNvbSIsInJvbGUiOiJTVFVERU5UIiwiaWF0IjoxNzYxODM1NjE5LCJleHAiOjE3NjI0NDA0MTl9.svPSdkM3oCVdfc8FjpjocgFN8G_Qzg1Egasxz3X35ZY\")",
+      "Bash(mv:*)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []
