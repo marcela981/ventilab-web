@@ -3,10 +3,12 @@
  * Navbar Demo Page
  * =============================================================================
  * Interactive demonstration of the Navbar component with different user roles
+ * 
+ * NOTE: This page is client-side only to avoid SSR issues with useAuth
  * =============================================================================
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components/layout';
 import {
   Box,
@@ -21,6 +23,7 @@ import {
   ListItemIcon,
   ListItemText,
   Paper,
+  CircularProgress,
 } from '@mui/material';
 import {
   School as SchoolIcon,
@@ -63,6 +66,22 @@ const FEATURES = [
  */
 export default function NavbarDemoPage() {
   const { user, isAuthenticated } = useAuth();
+  const [mounted, setMounted] = useState(false);
+
+  // Only render on client to avoid SSR issues with useAuth
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <Layout>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+          <CircularProgress />
+        </Box>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>

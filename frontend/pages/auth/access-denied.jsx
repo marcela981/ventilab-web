@@ -4,10 +4,12 @@
  * =============================================================================
  * Page displayed when user attempts to access a resource they don't have
  * permission to view based on their role.
+ * 
+ * NOTE: Client-side only to avoid SSR issues with useAuth
  * =============================================================================
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import {
   Box,
@@ -17,6 +19,7 @@ import {
   Typography,
   Container,
   Alert,
+  CircularProgress,
 } from '@mui/material';
 import {
   Block as BlockIcon,
@@ -35,6 +38,28 @@ export default function AccessDeniedPage() {
   const router = useRouter();
   const { reason } = router.query;
   const { user, role, isAuthenticated } = useAuth();
+  const [mounted, setMounted] = useState(false);
+
+  // Only render on client to avoid SSR issues
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <Box
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        }}
+      >
+        <CircularProgress sx={{ color: 'white' }} />
+      </Box>
+    );
+  }
 
   /**
    * Navigate back
