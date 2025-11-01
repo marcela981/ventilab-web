@@ -28,7 +28,7 @@ import {
   ContactSupport as ContactSupportIcon,
 } from '@mui/icons-material';
 import Link from 'next/link';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { ROLE_DISPLAY_NAMES } from '@/lib/auth-config';
 
 /**

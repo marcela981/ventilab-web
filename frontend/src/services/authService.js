@@ -248,13 +248,40 @@ export const register = async (name, email, password) => {
  *   console.log('Logged out successfully');
  * }
  */
-export const logout = async () => {
+/**
+ * Logout the current user
+ * Clears authentication token and user data from localStorage
+ * Optionally invalidates token on server (if backend endpoint exists)
+ * 
+ * @param {boolean} notifyServer - Whether to notify server of logout (default: false)
+ * @returns {Promise<Object>} Response object indicating logout success
+ * 
+ * @example
+ * // Simple logout (instant, no server notification)
+ * await logout();
+ * 
+ * @example
+ * // Logout with server notification
+ * await logout(true);
+ */
+export const logout = async (notifyServer = false) => {
   try {
-    // Optional: Make API call to invalidate token on server
-    // await makeRequest('/auth/logout', { method: 'POST' });
-
-    // Clear local storage
+    // Clear local storage FIRST (instant logout on frontend)
+    // This ensures immediate logout even if server request fails
     removeAuthToken();
+
+    // Optional: Notify server to invalidate token on their side
+    // This is fire-and-forget - we don't wait for response
+    if (notifyServer) {
+      try {
+        // Note: Uncomment when backend endpoint is ready
+        // makeRequest('/auth/logout', { method: 'POST' }).catch(() => {
+        //   // Silently fail - user is already logged out locally
+        // });
+      } catch {
+        // Silently ignore server errors - local logout already succeeded
+      }
+    }
 
     return {
       success: true,
@@ -262,6 +289,9 @@ export const logout = async () => {
       error: null,
     };
   } catch (error) {
+    // Even on error, ensure cleanup happened
+    removeAuthToken();
+
     return {
       success: false,
       data: null,
@@ -416,8 +446,31 @@ export const resetPassword = async (token, newPassword) => {
 };
 
 /**
+ * Get current user's profile
+ * @returns {Promise<Object>} Response object containing user profile data
+ *
+ * @example
+ * const result = await getProfile();
+ * if (result.success) {
+ *   console.log('Profile:', result.data.user);
+ * }
+ */
+export const getProfile = async () => {
+  const response = await makeRequest('/users/profile', {
+    method: 'GET',
+  });
+
+  // Update stored user data if request successful
+  if (response.success && response.data?.user) {
+    setUserData(response.data.user);
+  }
+
+  return response;
+};
+
+/**
  * Update current user's profile
- * @param {Object} updates - Object containing fields to update (name, email, etc.)
+ * @param {Object} updates - Object containing fields to update (name, bio)
  * @returns {Promise<Object>} Response object containing updated user data
  *
  * @example
@@ -427,9 +480,34 @@ export const resetPassword = async (token, newPassword) => {
  * }
  */
 export const updateProfile = async (updates) => {
-  const response = await makeRequest('/auth/profile', {
+  const response = await makeRequest('/users/profile', {
     method: 'PUT',
     body: JSON.stringify(updates),
+  });
+
+  // Update stored user data if request successful
+  if (response.success && response.data?.user) {
+    setUserData(response.data.user);
+  }
+
+  return response;
+};
+
+/**
+ * Upload user avatar
+ * @param {string} avatarData - Base64 encoded image data or URL
+ * @returns {Promise<Object>} Response object containing updated user data
+ *
+ * @example
+ * const result = await uploadAvatar('data:image/png;base64,...');
+ * if (result.success) {
+ *   console.log('Avatar updated:', result.data.user);
+ * }
+ */
+export const uploadAvatar = async (avatarData) => {
+  const response = await makeRequest('/users/profile/avatar', {
+    method: 'POST',
+    body: JSON.stringify({ avatarUrl: avatarData }),
   });
 
   // Update stored user data if request successful
@@ -444,18 +522,46 @@ export const updateProfile = async (updates) => {
  * Change user's password
  * @param {string} currentPassword - Current password for verification
  * @param {string} newPassword - New password to set
+ * @param {string} confirmPassword - Confirmation of new password
  * @returns {Promise<Object>} Response object indicating if password was changed
  *
  * @example
- * const result = await changePassword('oldPass123', 'newPass456');
+ * const result = await changePassword('oldPass123', 'newPass456', 'newPass456');
  * if (result.success) {
  *   console.log('Password changed successfully');
  * }
  */
-export const changePassword = async (currentPassword, newPassword) => {
-  return await makeRequest('/auth/change-password', {
-    method: 'POST',
-    body: JSON.stringify({ currentPassword, newPassword }),
+export const changePassword = async (currentPassword, newPassword, confirmPassword) => {
+  return await makeRequest('/users/profile/password', {
+    method: 'PUT',
+    body: JSON.stringify({ currentPassword, newPassword, confirmPassword }),
+  });
+};
+
+/**
+ * Get user's profile statistics and learning progress
+ * @returns {Promise<Object>} Response object with user statistics
+ *
+ * @example
+ * const result = await getProfileStats();
+ * if (result.success) {
+ *   console.log('Stats:', result.data);
+ *   // {
+ *   //   lessonsCompleted: 12,
+ *   //   totalLessons: 30,
+ *   //   modulesCompleted: 3,
+ *   //   totalModules: 8,
+ *   //   totalTime: "3 horas 45 minutos",
+ *   //   streakDays: 5,
+ *   //   lastActivity: "Hace 2 días",
+ *   //   progressPercent: 40,
+ *   //   recentLessons: [...]
+ *   // }
+ * }
+ */
+export const getProfileStats = async () => {
+  return await makeRequest('/users/profile/stats', {
+    method: 'GET',
   });
 };
 
@@ -484,5 +590,8 @@ export default {
   changePassword,
 
   // Profile management
+  getProfile,
   updateProfile,
+  uploadAvatar,
+  getProfileStats,
 };

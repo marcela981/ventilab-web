@@ -1,7 +1,9 @@
 import React, { useState, createContext, useContext } from 'react';
 import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { SessionProvider } from 'next-auth/react';
+import { AuthProvider } from '../src/contexts/AuthContext';
 import { PatientDataProvider } from '../src/contexts/PatientDataContext';
+import { NotificationProvider } from '../src/contexts/NotificationContext';
 import Sidebar from '../src/components/navigation/Sidebar';
 import ErrorBoundary from '../src/components/common/ErrorBoundary';
 import { useRouter } from 'next/router';
@@ -73,42 +75,46 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
         refetchInterval={5 * 60} // 5 minutes in seconds
         refetchOnWindowFocus={true}
       >
-        <ThemeProvider theme={theme}>
-          <PatientDataProvider>
-            <CssBaseline />
-            {/* Auth pages: render without sidebar */}
-            {isAuthPage ? (
-              <ErrorBoundary>
-                <Component {...pageProps} />
-              </ErrorBoundary>
-            ) : (
-              /* Regular pages: render with sidebar */
-              <SidebarContext.Provider value={{ sidebarOpen, handleSidebarToggle }}>
-                <Box sx={{ display: 'flex' }}>
-                  <Sidebar open={sidebarOpen} onToggle={handleSidebarToggle} />
-                  <Box
-                    component="main"
-                    sx={{
-                      flexGrow: 1,
-                      p: 3,
-                      width: { sm: `calc(100% - ${sidebarOpen ? 240 : 64}px)` },
-                      ml: { sm: `${sidebarOpen ? 240 : 64}px` },
-                      transition: (theme) =>
-                        theme.transitions.create(['margin', 'width'], {
-                          easing: theme.transitions.easing.sharp,
-                          duration: theme.transitions.duration.leavingScreen,
-                        }),
-                    }}
-                  >
-                    <ErrorBoundary>
-                      <Component {...pageProps} />
-                    </ErrorBoundary>
-                  </Box>
-                </Box>
-              </SidebarContext.Provider>
-            )}
-          </PatientDataProvider>
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider theme={theme}>
+            <NotificationProvider>
+              <PatientDataProvider>
+                <CssBaseline />
+                {/* Auth pages: render without sidebar */}
+                {isAuthPage ? (
+                  <ErrorBoundary>
+                    <Component {...pageProps} />
+                  </ErrorBoundary>
+                ) : (
+                  /* Regular pages: render with sidebar */
+                  <SidebarContext.Provider value={{ sidebarOpen, handleSidebarToggle }}>
+                    <Box sx={{ display: 'flex' }}>
+                      <Sidebar open={sidebarOpen} onToggle={handleSidebarToggle} />
+                      <Box
+                        component="main"
+                        sx={{
+                          flexGrow: 1,
+                          p: 3,
+                          width: { sm: `calc(100% - ${sidebarOpen ? 240 : 64}px)` },
+                          ml: { sm: `${sidebarOpen ? 240 : 64}px` },
+                          transition: (theme) =>
+                            theme.transitions.create(['margin', 'width'], {
+                              easing: theme.transitions.easing.sharp,
+                              duration: theme.transitions.duration.leavingScreen,
+                            }),
+                        }}
+                      >
+                        <ErrorBoundary>
+                          <Component {...pageProps} />
+                        </ErrorBoundary>
+                      </Box>
+                    </Box>
+                  </SidebarContext.Provider>
+                )}
+              </PatientDataProvider>
+            </NotificationProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </SessionProvider>
     </ErrorBoundary>
   );
