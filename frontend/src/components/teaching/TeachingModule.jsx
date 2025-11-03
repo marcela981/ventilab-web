@@ -12,13 +12,16 @@ import {
   Snackbar,
   Tabs,
   Tab,
-  Skeleton
+  Skeleton,
+  IconButton,
+  Fade
 } from '@mui/material';
 import {
   Assessment,
   Dashboard as DashboardIcon,
   School as SchoolIcon,
-  TrendingUp
+  TrendingUp,
+  ArrowBack
 } from '@mui/icons-material';
 
 // Hooks personalizados
@@ -40,6 +43,7 @@ import LevelStepper from './components/LevelStepper';
 import ModuleInfoPanel from './components/ModuleInfoPanel';
 import FlashcardSystem from './FlashcardSystem';
 import QuickAccessLessons from './components/dashboard/QuickAccessLessons';
+import LessonViewer from './components/LessonViewer';
 
 // Lazy load ProgressDashboard for better performance
 const ProgressDashboard = lazy(() => import('./components/progress/ProgressDashboard'));
@@ -63,6 +67,9 @@ const TeachingModule = () => {
 
   // Estado para tabs (0: Dashboard, 1: Curriculum, 2: Mi Progreso)
   const [activeTab, setActiveTab] = useState(0);
+
+  // Estado para lección seleccionada (cuando se visualiza una lección completa)
+  const [selectedLesson, setSelectedLesson] = useState(null);
 
   // Context: progreso de aprendizaje
   const {
@@ -110,12 +117,20 @@ const TeachingModule = () => {
   });
 
   // Handlers mínimos
-  const handleSectionClick = useCallback((moduleId) => {
+  const handleSectionClick = useCallback((moduleId, lessonId = null) => {
     const module = curriculumData.modules[moduleId];
     if (module?.lessons?.length > 0) {
-      // Navegar a la primera lección del módulo usando Next.js router
-      const firstLessonId = module.lessons[0].id;
-      router.push(`/teaching/${moduleId}/${firstLessonId}`);
+      // Si se proporciona lessonId específico, usarlo; sino usar el primero
+      const targetLessonId = lessonId || module.lessons[0].id;
+      
+      // Actualizar estado para mostrar LessonViewer en lugar de navegar
+      setSelectedLesson({
+        moduleId,
+        lessonId: targetLessonId
+      });
+
+      // Scroll suave al inicio
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       // Mostrar alerta al usuario cuando el módulo no tiene lecciones
       const moduleName = module?.title || moduleId;
@@ -123,13 +138,42 @@ const TeachingModule = () => {
       setAlertOpen(true);
       console.warn(`Módulo ${moduleId} no tiene lecciones disponibles`);
     }
-  }, [router]);
+  }, []);
 
   const handleContinueLearning = useCallback(() => {
     if (nextModule) {
       handleSectionClick(nextModule.id);
     }
   }, [nextModule, handleSectionClick]);
+
+  /**
+   * Handler para volver al dashboard desde LessonViewer
+   */
+  const handleBackToDashboard = useCallback(() => {
+    setSelectedLesson(null);
+    // Scroll suave al inicio
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  /**
+   * Handler cuando se completa una lección
+   */
+  const handleLessonComplete = useCallback(() => {
+    // Marcar lección como completada en el contexto
+    if (selectedLesson) {
+      const lessonFullId = `${selectedLesson.moduleId}.${selectedLesson.lessonId}`;
+      markLessonComplete(lessonFullId);
+      
+      // Mostrar mensaje de éxito
+      setAlertMessage('¡Felicitaciones! Has completado la lección.');
+      setAlertOpen(true);
+      
+      // Opcional: volver al dashboard después de un delay
+      setTimeout(() => {
+        handleBackToDashboard();
+      }, 2000);
+    }
+  }, [selectedLesson, markLessonComplete, handleBackToDashboard]);
 
   const handleOpenFlashcards = useCallback(() => {
     setFlashcardSystemOpen(true);
@@ -216,8 +260,52 @@ const TeachingModule = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4, backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-      {/* Header: Breadcrumb, título y descripción */}
-      <DashboardHeader isMobile={isMobile} />
+      {/* Renderizado condicional: LessonViewer o Dashboard normal */}
+      {selectedLesson ? (
+        /* Vista de Lección Completa */
+        <Fade in timeout={500}>
+          <Box>
+            {/* Botón para volver al dashboard */}
+            <Box sx={{ mb: 2 }}>
+              <IconButton
+                onClick={handleBackToDashboard}
+                sx={{
+                  backgroundColor: 'background.paper',
+                  boxShadow: 2,
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                  },
+                }}
+                aria-label="Volver al dashboard"
+              >
+                <ArrowBack />
+              </IconButton>
+              <Typography
+                component="span"
+                sx={{ ml: 2, color: 'text.secondary', fontWeight: 500 }}
+              >
+                Volver al Dashboard
+              </Typography>
+            </Box>
+
+            {/* Componente LessonViewer */}
+            <LessonViewer
+              lessonId={selectedLesson.lessonId}
+              moduleId={selectedLesson.moduleId}
+              onComplete={handleLessonComplete}
+              onSectionChange={(sectionIndex) => {
+                // Tracking opcional de cambio de sección
+                console.log('Section changed:', sectionIndex);
+              }}
+            />
+          </Box>
+        </Fade>
+      ) : (
+        /* Vista de Dashboard Normal */
+        <Fade in timeout={500}>
+          <Box>
+            {/* Header: Breadcrumb, título y descripción */}
+            <DashboardHeader isMobile={isMobile} />
 
       {/* Tabs Navigation */}
       <Paper elevation={2} sx={{ mb: 4, borderRadius: 2 }}>
@@ -456,10 +544,17 @@ const TeachingModule = () => {
         onClose={handleCloseAlert}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert onClose={handleCloseAlert} severity="warning" sx={{ width: '100%' }}>
+        <Alert 
+          onClose={handleCloseAlert} 
+          severity={alertMessage.includes('Felicitaciones') ? 'success' : 'warning'} 
+          sx={{ width: '100%' }}
+        >
           {alertMessage}
         </Alert>
       </Snackbar>
+          </Box>
+        </Fade>
+      )}
     </Container>
   );
 };
