@@ -1,0 +1,70 @@
+{
+  "title": "Principios de la Ventilación Mecánica",
+  "summary": "Fundamentos de la ventilación mecánica: indicaciones, ecuación del movimiento, presiones ventilatorias, y comparación de modalidades VCV, PCV y PSV con sus aplicaciones clínicas.",
+  "estimatedTime": 55,
+  "sections": [
+    {
+      "type": "text",
+      "order": 1,
+      "content": "# Introducción a la Ventilación Mecánica\n\n## Definición y Objetivos\n\nLa ventilación mecánica es un soporte vital que sustituye o asiste la función ventilatoria del paciente, asegurando:\n\n1. **Oxigenación adecuada**: Mantener PaO₂ > 60 mmHg o SaO₂ > 90%\n2. **Eliminación de CO₂**: Mantener PaCO₂ y pH en rangos aceptables\n3. **Reducción del trabajo respiratorio**: Aliviar fatiga muscular respiratoria\n4. **Protección de la vía aérea**: En pacientes con alteración del sensorio\n\n## Indicaciones de Ventilación Mecánica\n\nSegún el contexto proporcionado, la ventilación mecánica se indica cuando:\n\n### Indicaciones Principales\n\n- **Fallo respiratorio agudo**: Hipoxemia refractaria o hipercapnia severa\n- **Coma**: Glasgow < 8, pérdida de reflejos protectores de vía aérea\n- **Shock**: Shock circulatorio que compromete perfusión tisular\n- **Otras situaciones**: Trauma severo, post-operatorio de alto riesgo, paro cardiorrespiratorio\n\n### Criterios de Intubación\n\n**Criterios clínicos**:\n- Frecuencia respiratoria > 35 rpm o < 8 rpm\n- Uso de músculos accesorios marcado\n- Alteración del sensorio progresiva\n- Incapacidad para proteger vía aérea\n\n**Criterios gasométricos**:\n- PaO₂ < 60 mmHg con FiO₂ > 60%\n- PaCO₂ > 50 mmHg con pH < 7.30\n- Gradiente alvéolo-arterial elevado\n\n## Contraindicaciones\n\n**Contraindicaciones relativas**:\n- Paciente con directivas anticipadas de no intubar\n- Enfermedad terminal en fase final\n- Neumotórax no drenado (contraindicación absoluta transitoria)"
+    },
+    {
+      "type": "text",
+      "order": 2,
+      "content": "# Desarrollo: Ecuación del Movimiento y Presiones\n\n## Ecuación del Movimiento del Sistema Respiratorio\n\nLa ecuación del movimiento describe las fuerzas involucradas en la ventilación:\n\n**Ptotal = Pelástica + Presistiva + Pinercial**\n\nSimplificada (despreciando inercia):\n\n**Ptotal = (Volumen / Compliance) + (Flujo × Resistencia)**\n\nO en forma diferencial:\n\n**P(t) = E × V(t) + R × Flujo(t) + PEEP**\n\nDonde:\n- **P(t)**: Presión en vía aérea en tiempo t\n- **E**: Elastancia (inverso de compliance, E = 1/C)\n- **V(t)**: Volumen inspirado\n- **R**: Resistencia de vías aéreas\n- **Flujo(t)**: Flujo instantáneo\n- **PEEP**: Presión positiva al final de espiración\n\n### Interpretación Clínica\n\nLa ecuación del movimiento explica:\n\n1. **Presión pico (Ppico)**: Refleja componente elástico + resistivo\n   - Ppico = Pplat + (Flujo × Resistencia)\n\n2. **Presión meseta (Pplat)**: Solo componente elástico (medida sin flujo)\n   - Pplat = (Vt / Compliance) + PEEP\n\n3. **Diferencia Ppico - Pplat**: Refleja resistencia de vías aéreas\n   - Si Ppico - Pplat > 10 cmH₂O → Resistencia elevada (broncoespasmo, secreciones)\n\n## Presiones Relevantes en Ventilación Mecánica\n\n### Presión Pico (Ppico o PIP)\n\n- **Definición**: Presión máxima alcanzada durante inspiración\n- **Componentes**: Incluye presión para vencer elasticidad + resistencia\n- **Límite de alarma**: Típicamente < 40 cmH₂O\n- **Elevada en**: Baja compliance, alta resistencia, Vt alto\n\n### Presión Meseta (Pplat)\n\n- **Definición**: Presión medida en pausa inspiratoria (flujo = 0)\n- **Refleja**: Solo componente elástico (compliance)\n- **Objetivo**: < 30 cmH₂O (protocolo de ventilación protectora)\n- **Elevada en**: ARDS, fibrosis, edema pulmonar\n\n### Presión Media (Pmedia o MAP)\n\n- **Definición**: Promedio de presión durante el ciclo respiratorio\n- **Influye en**: Oxigenación (mayor Pmedia → mejor oxigenación)\n- **Determinantes**: PEEP, Pplat, relación I:E, frecuencia\n\n### PEEP (Presión Positiva al Final de Espiración)\n\n- **Fisiológico**: 3-5 cmH₂O (imita cierre glótico)\n- **Terapéutico**: 5-15 cmH₂O (reclutamiento alveolar)\n- **ARDS**: 8-20 cmH₂O según tabla ARDSnet\n\n## Driving Pressure (Presión Motriz)\n\n**Definición**: ΔP = Pplat - PEEP\n\n**Importancia**: [[MISSING]]\n\n**Objetivo**: < 15 cmH₂O"
+    },
+    {
+      "type": "image",
+      "order": 3,
+      "description": "Diagrama de la ecuación del movimiento respiratorio mostrando los componentes de presión: elástica, resistiva y PEEP",
+      "suggestedPrompt": "Medical diagram illustrating the equation of motion for respiratory system. Show three components visually: 1) Elastic pressure (spring symbol, labeled 'P elástica = V/C'), 2) Resistive pressure (resistor symbol, labeled 'P resistiva = R × Flujo'), 3) PEEP baseline. Include pressure-time waveform showing Ppeak, Pplat, and PEEP levels. Add formula: P(t) = V/C + R×Flow + PEEP. Use arrows to indicate relationships. Professional medical illustration, clean design, educational style."
+    },
+    {
+      "type": "text",
+      "order": 4,
+      "content": "# Modalidades Ventilatorias: Comparación\n\n## Ventilación Controlada por Volumen (VCV)\n\n### Principio de Funcionamiento\n\nEn VCV, el ventilador entrega un **volumen tidal (Vt) fijo** predeterminado, independiente de la presión generada.\n\n**Características**:\n- **Volumen constante**: Garantizado en cada respiración\n- **Presión variable**: Depende de compliance y resistencia del paciente\n- **Flujo**: Típicamente cuadrado (constante durante inspiración)\n\n### Ventajas de VCV\n\n- Volumen minuto garantizado\n- Útil en pacientes con compliance variable\n- Facilita el cálculo de compliance estática\n\n### Desventajas de VCV\n\n- Riesgo de presiones altas si compliance empeora\n- Menos confortable para paciente despierto\n- Requiere monitoreo estrecho de presiones\n\n### Parámetros a Configurar en VCV\n\n1. **Vt**: 6-8 mL/kg peso ideal (6 mL/kg en ARDS)\n2. **Frecuencia (f)**: 12-20 rpm\n3. **FiO₂**: 21-100% (titular según SpO₂/PaO₂)\n4. **PEEP**: 5-15 cmH₂O\n5. **Flujo inspiratorio**: 40-60 L/min\n6. **Patrón de flujo**: Cuadrado o decelerado\n\n**Ejemplo de configuración inicial** (paciente 70 kg):\n- Vt: 420-490 mL (6-7 mL/kg)\n- Frecuencia: 12-16 rpm\n- FiO₂: 40-60%\n- PEEP: 5-8 cmH₂O\n\n## Ventilación Controlada por Presión (PCV)\n\n### Principio de Funcionamiento\n\nEn PCV, el ventilador mantiene una **presión inspiratoria constante** (Pinsp o PIP), resultando en volumen variable.\n\n**Características**:\n- **Presión constante**: Límite de presión garantizado\n- **Volumen variable**: Depende de compliance y resistencia\n- **Flujo decelerado**: Mejor distribución de gas\n\n### Ventajas de PCV\n\n- Presiones pico limitadas (menor riesgo de barotrauma)\n- Flujo decelerado mejora distribución de gas\n- Mayor confort en paciente despierto\n- Mejor adaptación a cambios de mecánica\n\n### Desventajas de PCV\n\n- Volumen no garantizado\n- Si compliance empeora, Vt disminuye\n- Requiere monitoreo estrecho de volumen minuto\n\n### Parámetros a Configurar en PCV\n\n1. **Presión control**: 10-20 cmH₂O sobre PEEP\n2. **Frecuencia**: 12-20 rpm\n3. **FiO₂**: Titular según oxigenación\n4. **PEEP**: 5-15 cmH₂O\n5. **Tiempo inspiratorio (Ti)**: 0.8-1.2 seg (o relación I:E)\n\n## Ventilación con Soporte de Presión (PSV)\n\n### Principio de Funcionamiento\n\nPSV es un modo **espontáneo** donde el paciente inicia cada respiración y el ventilador proporciona un nivel de presión de soporte.\n\n**Características**:\n- **Iniciado por paciente**: Requiere esfuerzo respiratorio\n- **Presión de soporte (PS)**: Asiste la inspiración\n- **Ciclado por flujo**: Termina cuando flujo cae (típicamente 25% del pico)\n\n### Aplicaciones de PSV\n\n- **Destete**: Reducción progresiva del soporte\n- **Soporte parcial**: Pacientes con drive respiratorio preservado\n- **Combinado con SIMV**: Respiraciones espontáneas entre mandatorias\n\n### Parámetros en PSV\n\n1. **Presión soporte (PS)**: 5-20 cmH₂O\n   - Alto (15-20): Soporte casi total\n   - Moderado (10-15): Soporte parcial\n   - Bajo (5-8): Destete avanzado\n2. **PEEP**: 5-10 cmH₂O\n3. **Sensibilidad de trigger**: -0.5 a -2 cmH₂O o 1-3 L/min\n4. **Criterio de ciclado (cycle-off)**: 25-40% del flujo pico\n\n**Objetivo**: Vt 4-8 mL/kg, FR < 30 rpm, trabajo respiratorio tolerable"
+    },
+    {
+      "type": "image",
+      "order": 5,
+      "description": "Gráficas comparativas de presión, flujo y volumen en VCV vs PCV",
+      "suggestedPrompt": "Medical comparison chart showing pressure, flow, and volume waveforms for VCV and PCV ventilation modes. Two columns: Left column labeled 'VCV' shows square flow pattern, constant volume, variable pressure. Right column labeled 'PCV' shows decelerating flow pattern, constant pressure, variable volume. Three rows of graphs: top row = pressure vs time, middle row = flow vs time, bottom row = volume vs time. Label key differences: 'Flujo cuadrado' for VCV, 'Flujo decelerado' for PCV. Professional medical graph style, clear axes labels."
+    },
+    {
+      "type": "text",
+      "order": 6,
+      "content": "# Aplicación Clínica: Selección de Modo Ventilatorio\n\n## Tabla Comparativa de Modalidades\n\n| Característica | VCV | PCV | PSV |\n|---|---|---|---|\n| **Variable controlada** | Volumen | Presión | Presión (asistida) |\n| **Variable garantizada** | Vt fijo | Presión fija | Ninguna |\n| **Iniciación** | Ventilador | Ventilador | Paciente |\n| **Flujo** | Cuadrado | Decelerado | Variable (paciente) |\n| **Indicación principal** | ARDS, VMI inicial | Lesión pulmonar, asincronía | Destete, soporte parcial |\n| **Riesgo principal** | Barotrauma | Hipoventilación | Fatiga si PS insuficiente |\n\n## Algoritmo de Selección\n\n### Escenario 1: Intubación inicial en Urgencias\n\n**Paciente**: 45 años, ARDS moderado, sin esfuerzo respiratorio\n\n**Configuración sugerida**: VCV\n- **Vt**: 6 mL/kg peso ideal\n- **PEEP**: 8-10 cmH₂O (según tabla ARDSnet)\n- **FiO₂**: Titular a SpO₂ 88-95%\n- **Frecuencia**: 16-20 rpm\n\n**Justificación**: VCV garantiza volumen minuto en paciente sedado/relajado, facilita ventilación protectora.\n\n### Escenario 2: ARDS severo con presiones altas\n\n**Paciente**: ARDS, Pplat 32 cmH₂O en VCV, compliance muy baja\n\n**Configuración sugerida**: Cambiar a PCV\n- **Presión control**: 15-18 cmH₂O (para Pplat < 30)\n- **PEEP**: 12-15 cmH₂O\n- **Ti**: 1.0 seg (I:E 1:2)\n- **Monitorear**: Vt logrado (debe ser ≥ 4 mL/kg)\n\n**Justificación**: PCV limita presiones pico, flujo decelerado mejora distribución.\n\n### Escenario 3: Destete en paciente estable\n\n**Paciente**: 70 años, post-quirúrgico, alerta, respiraciones espontáneas\n\n**Configuración sugerida**: PSV\n- **PS inicial**: 12-15 cmH₂O\n- **PEEP**: 5 cmH₂O\n- **Reducción progresiva** de PS en 2 cmH₂O cada 4-6h\n- **Objetivo**: PS 5-8 cmH₂O → prueba de respiración espontánea (SBT)\n\n**Justificación**: PSV permite participación activa del paciente, favorece destete gradual.\n\n## Casos Clínicos Complejos\n\n### Caso: Paciente con ARDS + Compliance Variable\n\n**Presentación**:\n- Mujer, 65 años, 60 kg peso ideal\n- ARDS moderado por neumonía bilateral\n- En VCV: Vt 480 mL, Pplat 28 cmH₂O, PEEP 10 cmH₂O\n- Compliance: 480/(28-10) = 26.7 mL/cmH₂O (muy baja)\n\n**Pregunta**: ¿Qué estrategia aplicarías?\n\n**Opciones**:\nA) Reducir Vt a 360 mL (6 mL/kg)\nB) Aumentar PEEP a 14 cmH₂O\nC) Cambiar a PCV con Pinsp 18 cmH₂O\nD) Todas las anteriores son opciones válidas según contexto clínico\n\n**Respuesta correcta**: D\n\n**Explicación**: En ARDS con compliance baja:\n- Opción A: Vt 6 mL/kg es el estándar (ventilación protectora)\n- Opción B: Aumentar PEEP puede reclutar alvéolos y mejorar compliance\n- Opción C: PCV limita presiones y puede mejorar distribución de gas\n- La elección depende de la respuesta del paciente y tendencias gasométricas"
+    },
+    {
+      "type": "quiz",
+      "order": 7,
+      "question": "Paciente de 70 kg con ARDS en VCV. Vt 490 mL, Ppico 35 cmH₂O, Pplat 28 cmH₂O, PEEP 10 cmH₂O. ¿Cuál es el driving pressure?",
+      "options": [
+        "18 cmH₂O (Pplat - PEEP = 28 - 10)",
+        "25 cmH₂O (Ppico - PEEP = 35 - 10)",
+        "7 cmH₂O (Ppico - Pplat = 35 - 28)",
+        "35 cmH₂O (Ppico total)"
+      ],
+      "correctAnswer": "18 cmH₂O (Pplat - PEEP = 28 - 10)",
+      "explanation": "El driving pressure (ΔP) se calcula como: ΔP = Pplat - PEEP = 28 - 10 = 18 cmH₂O. Este valor está por encima del objetivo < 15 cmH₂O, lo que sugiere alto riesgo de lesión pulmonar. La diferencia Ppico - Pplat (7 cmH₂O) refleja la resistencia de vías aéreas, y la diferencia Ppico - PEEP (25 cmH₂O) no es el driving pressure. En este caso, deberíamos considerar reducir Vt a 6 mL/kg (420 mL) para disminuir el driving pressure."
+    }
+  ],
+  "keyPoints": [
+    "La ventilación mecánica se indica en fallo respiratorio agudo, coma, shock y situaciones críticas que comprometen la ventilación",
+    "La ecuación del movimiento (P = V/C + R×Flujo + PEEP) explica las presiones ventilatorias y sus componentes elástico y resistivo",
+    "Presión pico refleja resistencia + elasticidad; presión meseta refleja solo elasticidad (medida sin flujo)",
+    "Driving pressure (Pplat - PEEP) es predictor de mortalidad; objetivo < 15 cmH₂O",
+    "VCV garantiza volumen constante con presión variable; útil en VMI inicial y ARDS",
+    "PCV limita presión constante con volumen variable; flujo decelerado mejora distribución de gas",
+    "PSV es modo espontáneo para destete; requiere drive respiratorio del paciente",
+    "La selección del modo depende de la patología, mecánica pulmonar y fase de ventilación (aguda vs destete)"
+  ],
+  "references": [
+    "ARDSnet guidelines - Ventilación protectora en ARDS",
+    "curriculumData - módulo ventilation-principles: Indicaciones y parámetros básicos",
+    "curriculumData - módulo volume-control: VCV mecánica y configuración",
+    "curriculumData - módulo pressure-control: PCV principios y aplicaciones",
+    "curriculumData - módulo psv-mode: PSV para destete y soporte parcial"
+  ]
+}
+

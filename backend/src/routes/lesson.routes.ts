@@ -8,6 +8,7 @@ import { body, param } from 'express-validator';
 import { validateRequest } from '../middleware/validate';
 import { authenticate, isAdmin, isTeacher, isStudent } from '../middleware/auth';
 import * as lessonController from '../controllers/lesson.controller';
+import * as lessonImprovementController from '../controllers/lesson-improvement.controller';
 
 const router = Router();
 
@@ -212,6 +213,66 @@ router.put(
       .withMessage('sourcePrompt debe ser un string'),
   ]),
   lessonController.updateLesson
+);
+
+// =============================================================================
+// LESSON IMPROVEMENT ROUTES - AI-powered content improvement
+// =============================================================================
+
+/**
+ * @route   POST /api/lessons/:id/improve
+ * @desc    Mejora una lección sin guardar (preview)
+ * @access  Private (TEACHER, ADMIN)
+ */
+router.post(
+  '/:id/improve',
+  authenticate,
+  isTeacher, // Allows TEACHER and ADMIN
+  validateRequest([
+    param('id')
+      .isString()
+      .trim()
+      .notEmpty()
+      .withMessage('ID de lección inválido'),
+    body('improvementType')
+      .isString()
+      .trim()
+      .isIn(['simplify', 'expand', 'add_examples', 'update_references'])
+      .withMessage('Tipo de mejora debe ser: simplify, expand, add_examples o update_references'),
+    body('contextSnippet')
+      .optional()
+      .isObject()
+      .withMessage('contextSnippet debe ser un objeto'),
+  ]),
+  lessonImprovementController.improveLessonById
+);
+
+/**
+ * @route   POST /api/lessons/:id/improve-and-save
+ * @desc    Mejora una lección y la guarda
+ * @access  Private (TEACHER, ADMIN)
+ */
+router.post(
+  '/:id/improve-and-save',
+  authenticate,
+  isTeacher, // Allows TEACHER and ADMIN
+  validateRequest([
+    param('id')
+      .isString()
+      .trim()
+      .notEmpty()
+      .withMessage('ID de lección inválido'),
+    body('improvementType')
+      .isString()
+      .trim()
+      .isIn(['simplify', 'expand', 'add_examples', 'update_references'])
+      .withMessage('Tipo de mejora debe ser: simplify, expand, add_examples o update_references'),
+    body('contextSnippet')
+      .optional()
+      .isObject()
+      .withMessage('contextSnippet debe ser un objeto'),
+  ]),
+  lessonImprovementController.improveLessonAndSave
 );
 
 // =============================================================================

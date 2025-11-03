@@ -1,0 +1,104 @@
+{
+  "title": "Fundamentos Fisiológicos y Respiratorios",
+  "summary": "El sistema respiratorio permite el intercambio de gases mediante estructuras anatómicas especializadas y procesos fisiológicos coordinados. Comprender la anatomía, mecánica ventilatoria y relación V/Q es esencial para el manejo de ventilación mecánica.",
+  "estimatedTime": 60,
+  "sections": [
+    {
+      "type": "text",
+      "order": 1,
+      "content": "## Introducción a la Fisiología Respiratoria\n\nEl sistema respiratorio es el conjunto de órganos encargados de llevar oxígeno (O₂) desde el ambiente hasta la sangre y eliminar dióxido de carbono (CO₂) desde la sangre hacia el exterior. Este proceso vital ocurre en dos fases:\n\n1. **Ventilación**: Movimiento mecánico del aire hacia dentro y fuera de los pulmones\n2. **Intercambio gaseoso**: Difusión de O₂ y CO₂ a través de la membrana alveolo-capilar\n\nLa comprensión profunda de estos fundamentos es la base para el manejo apropiado de pacientes que requieren soporte ventilatorio."
+    },
+    {
+      "type": "text",
+      "order": 2,
+      "content": "## Anatomía del Sistema Respiratorio\n\n### Vías Aéreas Superiores\n\n**Nariz y cavidad nasal**: Primera barrera de defensa. Calienta el aire inspirado a 37°C, lo humidifica al 100% y filtra partículas mayores de 10 micrómetros mediante los cilios y el moco.\n\n**Faringe**: Conducto compartido entre sistema respiratorio y digestivo. Se divide en nasofaringe, orofaringe y laringofaringe.\n\n**Laringe**: Contiene las cuerdas vocales y protege la vía aérea inferior durante la deglución mediante el reflejo de cierre glótico. Es el sitio de fonación.\n\n### Vías Aéreas Inferiores\n\n**Tráquea**: Tubo cartilaginoso de aproximadamente 12 cm de longitud y 2 cm de diámetro en adultos. Se bifurca en el ángulo de la carina (nivel de T4-T5) formando los bronquios principales.\n\n**Bronquios**: El bronquio principal derecho es más vertical (25° respecto a la tráquea) y corto que el izquierdo (45°), explicando por qué los cuerpos extraños aspirados tienden a alojarse en el pulmón derecho.\n\n**Bronquiolos**: Conductos sin cartílago de diámetro < 1 mm. Los bronquiolos terminales marcan el final de la zona de conducción. Los bronquiolos respiratorios inician la zona de intercambio gaseoso.\n\n### Unidad Funcional: Alvéolos\n\n**Estructura alveolar**: Los pulmones contienen aproximadamente **300 millones de alvéolos** que proporcionan una superficie de intercambio gaseoso de **50-100 m²** (equivalente a una cancha de tenis).\n\n**Membrana alveolo-capilar**: Extraordinariamente delgada (**0.5 micrómetros**), compuesta por:\n- Epitelio alveolar (neumocitos tipo I y II)\n- Membrana basal fusionada\n- Endotelio capilar\n\n**Surfactante pulmonar**: Producido por neumocitos tipo II, reduce la tensión superficial alveolar de 70 a 25 dinas/cm, previniendo el colapso alveolar durante la espiración (Ley de Laplace: P = 2T/r)."
+    },
+    {
+      "type": "image",
+      "order": 3,
+      "description": "Diagrama anatómico completo del sistema respiratorio desde vías aéreas superiores hasta alvéolos",
+      "suggestedPrompt": "detailed medical illustration of complete respiratory system anatomy, cross-section view showing nasal cavity, pharynx, larynx with vocal cords, trachea with cartilage rings, bronchial tree bifurcation at carina, both lungs with lobes clearly marked, detailed alveolar sac with capillary network, labels in Spanish, professional medical textbook style, anatomical accuracy, educational purpose"
+    },
+    {
+      "type": "text",
+      "order": 4,
+      "content": "## Mecánica Ventilatoria\n\nLa ventilación es un proceso mecánico que depende de cambios de presión generados por los músculos respiratorios.\n\n### Presiones Respiratorias\n\n**Presión atmosférica (Patm)**: 760 mmHg al nivel del mar (0 cmH₂O por convención)\n\n**Presión alveolar (Palv)**: Presión dentro de los alvéolos. Varía durante el ciclo respiratorio:\n- Inspiración: -1 cmH₂O (negativa respecto a Patm)\n- Espiración: +1 cmH₂O (positiva respecto a Patm)\n\n**Presión pleural (Ppl)**: Presión en el espacio virtual entre pleura visceral y parietal. Siempre negativa en respiración espontánea:\n- Reposo: -5 cmH₂O\n- Inspiración: -8 cmH₂O\n- Espiración: -5 cmH₂O\n\n**Presión transpulmonar (Ptp)**: Diferencia entre presión alveolar y pleural (Ptp = Palv - Ppl). Representa la presión de distensión del pulmón.\n\n### Compliance Pulmonar (C)\n\n**Definición**: Medida de la distensibilidad pulmonar. Representa el cambio en volumen por unidad de cambio en presión.\n\n**Fórmula**: C = ΔV / ΔP (ml/cmH₂O)\n\n**Valores normales**:\n- Pulmón solo: **150-200 ml/cmH₂O**\n- Tórax solo: **200 ml/cmH₂O**\n- Sistema respiratorio total: **50-100 ml/cmH₂O** (suma de compliance pulmonar + torácica)\n\n**Analogía clínica**: La compliance es como un globo. Un globo nuevo (alta compliance) es fácil de inflar con poca presión. Un globo viejo y rígido (baja compliance) requiere mucha presión para inflarse poco.\n\n**Causas de baja compliance**:\n- Fibrosis pulmonar: pulmones \"rígidos\"\n- Edema pulmonar: líquido intersticial\n- Atelectasia: colapso alveolar\n- Neumotórax: aire en espacio pleural\n\n**Causas de alta compliance**:\n- Enfisema: destrucción de paredes alveolares, pérdida de elasticidad"
+    },
+    {
+      "type": "image",
+      "order": 5,
+      "description": "Curva presión-volumen del sistema respiratorio mostrando histéresis y compliance normal vs patológica",
+      "suggestedPrompt": "medical graph showing pressure-volume curve of respiratory system, hysteresis loop clearly visible, X-axis labeled as Pressure (cmH2O) from 0 to 40, Y-axis labeled as Volume (mL) from 0 to 800, three curves shown: normal compliance (green), low compliance/restrictive (blue), high compliance/emphysema (red), slope lines indicating compliance values, markers for FRC and TLC, professional medical textbook style, clear labels in Spanish"
+    },
+    {
+      "type": "text",
+      "order": 6,
+      "content": "## Resistencia de las Vías Aéreas (Raw)\n\n**Definición**: Oposición al flujo de aire a través de las vías respiratorias. Análogo a la resistencia eléctrica en un circuito.\n\n**Fórmula**: Raw = ΔP / Flujo (cmH₂O/L/s)\n\nDonde ΔP es la diferencia de presión entre boca y alvéolos.\n\n**Valores normales**: **0.5-2.5 cmH₂O/L/s**\n\n**Factores que afectan la resistencia**:\n\n1. **Radio de la vía aérea** (factor más importante): Según la Ley de Poiseuille, la resistencia es inversamente proporcional a la cuarta potencia del radio (R ∝ 1/r⁴). Reducir el radio a la mitad aumenta la resistencia 16 veces.\n\n2. **Longitud de la vía aérea**: A mayor longitud, mayor resistencia (menos relevante clínicamente).\n\n3. **Viscosidad del gas**: Aumenta con gases densos (heliox reduce resistencia en obstrucción).\n\n4. **Tipo de flujo**:\n   - Flujo laminar: En vías pequeñas, menor resistencia\n   - Flujo turbulento: En vías grandes y bifurcaciones, mayor resistencia\n\n**Distribución de la resistencia**:\n- Vías grandes (tráquea, bronquios principales): **40-50%**\n- Vías medianas (bronquios segmentarios): **30-40%**\n- Vías pequeñas (< 2 mm diámetro): **10-20%** (paradójicamente baja por su disposición en paralelo)\n\n**Analogía clínica**: La resistencia es como una manguera de jardín. Si la doblas (reduces el radio), el agua fluye con dificultad (alta resistencia). Una manguera recta y ancha permite flujo libre (baja resistencia).\n\n**Causas de alta resistencia**:\n- Asma: broncoespasmo, inflamación, moco\n- EPOC: colapso espiratorio de vías pequeñas\n- Estenosis traqueal: reducción del calibre\n- Secreciones abundantes: obstrucción parcial"
+    },
+    {
+      "type": "text",
+      "order": 7,
+      "content": "## Trabajo Respiratorio (W)\n\n**Definición**: Energía requerida para vencer las fuerzas elásticas (compliance) y resistivas (flujo) durante la ventilación.\n\n**Componentes del trabajo**:\n\n1. **Trabajo elástico**: Energía para vencer la retracción elástica del pulmón y tórax (distender los alvéolos)\n2. **Trabajo resistivo**: Energía para vencer la resistencia al flujo de aire\n3. **Trabajo inercial**: Energía para acelerar el gas (mínimo, < 5%)\n\n**Trabajo total**: W = Trabajo elástico + Trabajo resistivo\n\n**Valores normales**: **0.3-0.5 kg·m/min** en reposo (representa solo el 5% del consumo total de O₂)\n\n**En patología respiratoria**: Puede aumentar hasta **25% del consumo de O₂**, causando fatiga muscular y fallo respiratorio.\n\n### Constante de Tiempo (τ)\n\n**Definición**: Tiempo requerido para que el pulmón alcance el 63% del cambio de volumen durante llenado o vaciado.\n\n**Fórmula**: τ = R × C (segundos)\n\nDonde R es resistencia y C es compliance.\n\n**Valor normal**: **0.1-0.2 segundos**\n\n**Implicaciones clínicas**:\n- EPOC: τ aumentada (alta R, alta C) → necesita más tiempo espiratorio\n- Fibrosis: τ disminuida (normal R, baja C) → vaciado rápido\n- Asma agudo: τ muy aumentada (muy alta R) → riesgo de atrapamiento aéreo (auto-PEEP)\n\n**Regla práctica**: Se necesitan **3-5 constantes de tiempo** para completar el 95-99% del vaciado pulmonar."
+    },
+    {
+      "type": "image",
+      "order": 8,
+      "description": "Diagrama de bucles flujo-volumen comparando patrón normal, obstructivo y restrictivo",
+      "suggestedPrompt": "medical diagram showing three flow-volume loops overlaid on same graph, X-axis Volume (L) from 0 to 6, Y-axis Flow (L/s) from -8 to +8, three distinct patterns: normal (green, symmetrical), obstructive/COPD (blue, scooped expiratory curve, reduced flow), restrictive/fibrosis (red, narrow loop, reduced volume), clear labels indicating FEV1, FVC, inspiratory and expiratory phases, professional spirometry style, educational medical illustration"
+    },
+    {
+      "type": "text",
+      "order": 9,
+      "content": "## Intercambio Gaseoso\n\n### Difusión Alveolo-Capilar\n\n**Ley de Fick**: La velocidad de difusión de un gas a través de una membrana es directamente proporcional al área de superficie y al gradiente de presión, e inversamente proporcional al grosor de la membrana.\n\n**Fórmula**: V̇gas = (A × D × ΔP) / T\n\nDonde:\n- V̇gas = Velocidad de difusión del gas\n- A = Área de superficie (50-100 m²)\n- D = Coeficiente de difusión (CO₂ es 20× más difusible que O₂)\n- ΔP = Gradiente de presión parcial\n- T = Grosor de la membrana (0.5 μm)\n\n**Gradientes de presión normales**:\n\n**Oxígeno (O₂)**:\n- PAO₂ (alveolar): 100-105 mmHg\n- PvO₂ (sangre venosa mixta): 40 mmHg\n- Gradiente: **60-65 mmHg**\n- PaO₂ (sangre arterial): 95-100 mmHg (equilibrio casi completo)\n\n**Dióxido de carbono (CO₂)**:\n- PvCO₂ (sangre venosa mixta): 46 mmHg\n- PACO₂ (alveolar): 40 mmHg\n- Gradiente: **6 mmHg** (menor que O₂, pero CO₂ difunde 20× más rápido)\n- PaCO₂ (sangre arterial): 40 mmHg\n\n**Tiempo de tránsito capilar**: El eritrocito pasa **0.75 segundos** en el capilar pulmonar en reposo. La oxigenación completa ocurre en **0.25 segundos** (primer tercio), dejando amplio margen de reserva.\n\n**En ejercicio**: El tiempo de tránsito se reduce a 0.25-0.34 segundos, pero la oxigenación aún se completa en sujetos sanos."
+    },
+    {
+      "type": "text",
+      "order": 10,
+      "content": "## Relación Ventilación-Perfusión (V̇/Q̇)\n\n**Definición**: Proporción entre la ventilación alveolar (V̇A) y el flujo sanguíneo capilar pulmonar (Q̇c) en una región del pulmón.\n\n**V̇/Q̇ = V̇A / Q̇c**\n\n**Valores normales**:\n- Ventilación alveolar total: **4-5 L/min**\n- Gasto cardíaco pulmonar: **5 L/min**\n- **V̇/Q̇ promedio = 0.8-1.0** (idealmente cercano a 1)\n\n### Distribución Regional del V̇/Q̇\n\nDebido a la gravedad, existe heterogeneidad vertical:\n\n**Ápices pulmonares** (zonas superiores):\n- Alta ventilación relativa\n- Baja perfusión (presión hidrostática menor)\n- **V̇/Q̇ = 3.0-3.3** (exceso de ventilación)\n- PAO₂ alta (~130 mmHg), PACO₂ baja (~28 mmHg)\n\n**Bases pulmonares** (zonas inferiores):\n- Ventilación adecuada\n- Alta perfusión (presión hidrostática mayor)\n- **V̇/Q̇ = 0.6-0.7** (perfusión predominante)\n- PAO₂ moderada (~90 mmHg), PACO₂ alta (~42 mmHg)\n\n**Zona media**:\n- V̇/Q̇ cercano a 1.0 (óptimo)\n\n### Extremos Patológicos del V̇/Q̇\n\n**Espacio muerto (V̇/Q̇ = ∞)**:\n- Ventilación sin perfusión\n- Causas: embolia pulmonar, bajo gasto cardíaco, presión positiva excesiva\n- Efecto: No hay intercambio gaseoso, ventilación \"desperdiciada\"\n\n**Shunt (V̇/Q̇ = 0)**:\n- Perfusión sin ventilación\n- Causas: atelectasia, neumonía, edema pulmonar\n- Efecto: Hipoxemia refractaria a O₂ suplementario\n\n**Espacio muerto fisiológico total**: **25-30%** del volumen tidal (150-200 mL en adulto)\n- Anatómico: 150 mL (vías de conducción)\n- Alveolar: 0-50 mL (alvéolos no perfundidos)\n\n**Shunt fisiológico**: **2-5%** del gasto cardíaco\n- Bronquial: sangre venosa de arterias bronquiales\n- Tebesianas: drenaje venoso directo del miocardio al ventrículo izquierdo"
+    },
+    {
+      "type": "image",
+      "order": 11,
+      "description": "Esquema de la relación V/Q en diferentes zonas pulmonares (ápice, medio, bases)",
+      "suggestedPrompt": "medical illustration of lung showing three vertical zones with V/Q ratios, sagittal view of upright lung divided into apex (top), middle, and base (bottom), each zone labeled with specific V/Q values (apex 3.0, middle 1.0, base 0.6), arrows indicating ventilation (blue) and perfusion (red) with different thickness showing distribution, small graphs showing PAO2 and PACO2 values for each zone, gravity arrow pointing downward, professional medical textbook style, clear Spanish labels"
+    },
+    {
+      "type": "text",
+      "order": 12,
+      "content": "## Ecuación del Gas Alveolar\n\nPermite calcular la presión parcial de oxígeno alveolar (PAO₂):\n\n**PAO₂ = FiO₂(Patm - PH₂O) - (PaCO₂ / R)**\n\nDonde:\n- FiO₂ = Fracción inspirada de oxígeno (0.21 en aire ambiente)\n- Patm = Presión atmosférica (760 mmHg al nivel del mar)\n- PH₂O = Presión de vapor de agua (47 mmHg a 37°C)\n- PaCO₂ = Presión parcial arterial de CO₂ (40 mmHg normal)\n- R = Cociente respiratorio (0.8 en dieta mixta)\n\n**Ejemplo con aire ambiente**:\nPAO₂ = 0.21(760 - 47) - (40 / 0.8)\nPAO₂ = 0.21(713) - 50\nPAO₂ = 150 - 50 = **100 mmHg**\n\n### Gradiente Alvéolo-Arterial de O₂ (A-aDO₂)\n\n**Definición**: Diferencia entre PAO₂ calculado y PaO₂ medido.\n\n**A-aDO₂ = PAO₂ - PaO₂**\n\n**Valores normales**:\n- Joven (20 años): < 10 mmHg\n- Adulto: < 15 mmHg\n- Anciano: hasta 20-25 mmHg (aumenta con edad)\n\n**Fórmula práctica**: A-aDO₂ normal = (Edad / 4) + 4\n\n**Causas de A-aDO₂ aumentado**:\n- Alteración de la difusión (fibrosis, edema)\n- Desequilibrio V̇/Q̇ (EPOC, asma)\n- Shunt (neumonía, atelectasia)\n\n**Utilidad clínica**: Un A-aDO₂ normal con hipoxemia sugiere hipoventilación alveolar (por ejemplo, depresión respiratoria central). Un A-aDO₂ elevado indica patología pulmonar intrínseca."
+    },
+    {
+      "type": "text",
+      "order": 13,
+      "content": "## Volúmenes y Capacidades Pulmonares\n\n### Volúmenes Pulmonares (no se superponen)\n\n**Volumen corriente o tidal (VT)**: **400-600 mL** (6-8 mL/kg)\nVolumen de aire que entra y sale en cada respiración normal.\n\n**Volumen de reserva inspiratorio (VRI)**: **2500-3000 mL**\nVolumen adicional que se puede inspirar tras una inspiración normal.\n\n**Volumen de reserva espiratorio (VRE)**: **1000-1200 mL**\nVolumen adicional que se puede espirar tras una espiración normal.\n\n**Volumen residual (VR)**: **1000-1200 mL**\nVolumen que permanece en pulmones tras espiración máxima. No se puede medir por espirometría.\n\n### Capacidades Pulmonares (suma de 2 o más volúmenes)\n\n**Capacidad inspiratoria (CI)**: **3000-3500 mL**\nCI = VT + VRI\n\n**Capacidad residual funcional (CRF)**: **2200-2400 mL**\nCRF = VRE + VR\nVolumen en pulmones al final de espiración normal. Es el \"punto de equilibrio\" donde la retracción pulmonar iguala la expansión de la caja torácica.\n\n**Capacidad vital (CV)**: **4000-5000 mL**\nCV = VRI + VT + VRE\nVolumen máximo que se puede espirar tras inspiración máxima.\n\n**Capacidad pulmonar total (CPT)**: **5000-6000 mL**\nCPT = CV + VR\nVolumen total de aire en pulmones tras inspiración máxima.\n\n### Parámetros Espirométricos\n\n**FEV₁ (Volumen espiratorio forzado en 1 segundo)**: **80-85%** de CVF\nVolumen de aire espirado en el primer segundo de una espiración forzada.\n\n**CVF (Capacidad vital forzada)**: **80-120%** del valor predicho\nVolumen total de aire que se puede espirar forzadamente.\n\n**Relación FEV₁/CVF (Índice de Tiffeneau)**: **> 0.70-0.75**\nPorcentaje de CVF espirado en el primer segundo.\n\n**Interpretación**:\n- **Patrón obstructivo**: FEV₁/CVF < 0.70 (EPOC, asma)\n- **Patrón restrictivo**: FEV₁/CVF normal o ↑, CVF disminuida (fibrosis)"
+    },
+    {
+      "type": "quiz",
+      "order": 14,
+      "question": "Un paciente con fibrosis pulmonar idiopática presenta disnea progresiva. En la espirometría, el FEV₁ es 65% del predicho y la CVF es 60% del predicho, con una relación FEV₁/CVF de 0.82. Los gases arteriales muestran PaO₂ de 70 mmHg respirando aire ambiente. ¿Cuál es el principal mecanismo fisiopatológico que explica su hipoxemia?",
+      "options": [
+        "Alteración de la difusión por engrosamiento de la membrana alveolo-capilar",
+        "Hipoventilación alveolar por fatiga de músculos respiratorios",
+        "Shunt intrapulmonar masivo por consolidación",
+        "Desequilibrio V/Q por broncoespasmo severo"
+      ],
+      "correctAnswer": "Alteración de la difusión por engrosamiento de la membrana alveolo-capilar",
+      "explanation": "La fibrosis pulmonar causa engrosamiento de la membrana alveolo-capilar (aumenta T en la Ley de Fick), dificultando la difusión de O₂. El patrón restrictivo (CVF baja, FEV₁/CVF normal-alta) y la hipoxemia progresiva con ejercicio son característicos. El A-aDO₂ estará aumentado, descartando hipoventilación simple. No hay evidencia de shunt o broncoespasmo en este caso."
+    }
+  ],
+  "keyPoints": [
+    "Anatomía: 300 millones de alvéolos, 50-100 m² de superficie de intercambio, membrana de 0.5 μm",
+    "Compliance: 50-100 ml/cmH₂O (sistema total), mide distensibilidad pulmonar",
+    "Resistencia: 0.5-2.5 cmH₂O/L/s, inversamente proporcional a r⁴",
+    "Difusión: Ley de Fick, CO₂ difunde 20× más rápido que O₂",
+    "V/Q normal: 0.8-1.0, varía de 3.0 en ápices a 0.6 en bases",
+    "Gradiente A-aDO₂: < 15 mmHg en adultos, aumenta con edad"
+  ],
+  "references": [
+    "West, J.B. (2012). Respiratory Physiology: The Essentials. 9th Edition. Lippincott Williams & Wilkins",
+    "Levitzky, M.G. (2018). Pulmonary Physiology. 9th Edition. McGraw-Hill Education",
+    "Nunn, J.F. (2012). Nunn's Applied Respiratory Physiology. 7th Edition. Butterworth-Heinemann",
+    "Lumb, A.B. (2017). Nunn's Applied Respiratory Physiology. 8th Edition. Elsevier"
+  ]
+}
+

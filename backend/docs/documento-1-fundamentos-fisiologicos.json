@@ -1,0 +1,67 @@
+{
+  "title": "Fundamentos Fisiológicos y Respiratorios",
+  "summary": "Bases anatómicas y fisiológicas del sistema respiratorio: mecánica ventilatoria, intercambio gaseoso, y relación ventilación-perfusión aplicadas a la ventilación mecánica.",
+  "estimatedTime": 50,
+  "sections": [
+    {
+      "type": "text",
+      "order": 1,
+      "content": "# Introducción a la Fisiología Respiratoria\n\nEl sistema respiratorio es el encargado de mantener el intercambio gaseoso, permitiendo la oxigenación de los tejidos y la eliminación del CO₂. Comprender su anatomía y fisiología es fundamental para el manejo de la ventilación mecánica.\n\n## Anatomía del Sistema Respiratorio\n\n### Vías Aéreas Superiores e Inferiores\n\nEl sistema respiratorio se compone de:\n\n- **Vías aéreas superiores**: Nariz, faringe, laringe\n- **Vías aéreas inferiores**: Tráquea, bronquios, bronquiolos\n- **Unidad alveolocapilar**: Alvéolos donde ocurre el intercambio gaseoso\n\n### Estructuras Clave\n\n1. **Tráquea**: Conducto principal que se bifurca en bronquios principales\n2. **Bronquios**: Se ramifican en bronquiolos cada vez más pequeños\n3. **Alvéolos**: Estructuras microscópicas (300 millones) donde ocurre el intercambio gaseoso entre el aire y la sangre\n\n### Músculos Respiratorios\n\n- **Diafragma**: Principal músculo inspiratorio\n- **Intercostales externos**: Asisten en la inspiración\n- **Músculos accesorios**: Se activan en situaciones de estrés respiratorio\n\n**Función principal de los alvéolos**: Intercambiar gases con la sangre a través de la membrana alveolocapilar."
+    },
+    {
+      "type": "text",
+      "order": 2,
+      "content": "# Desarrollo: Mecánica Ventilatoria\n\n## Compliance y Elasticidad Pulmonar\n\nLa **compliance** es la medida de la distensibilidad pulmonar, definida como el cambio de volumen por unidad de cambio de presión.\n\n**Fórmula**:\n```\nCompliance = ΔVolumen / ΔPresión\n```\n\n**Valores normales**: [[MISSING]]\n\n### Factores que Afectan la Compliance\n\n- **Contenido de elastina y colágeno** en el tejido pulmonar\n- **Surfactante pulmonar**: Reduce la tensión superficial alveolar\n- **Volumen pulmonar**: La compliance varía según el volumen\n- **Patologías**: ARDS (compliance disminuida), Enfisema (compliance aumentada)\n\n## Resistencia de Vías Aéreas\n\nLa resistencia es la oposición al flujo de aire en las vías respiratorias.\n\n**Determinantes de la resistencia**:\n- Calibre de las vías aéreas\n- Longitud del conducto\n- Viscosidad del gas\n- Tipo de flujo (laminar vs turbulento)\n\n## Trabajo Respiratorio\n\nEl trabajo respiratorio es la energía requerida para vencer:\n1. **Fuerzas elásticas** (compliance)\n2. **Fuerzas resistivas** (resistencia de vías aéreas)\n3. **Fuerzas inerciales** (masa de los tejidos)\n\nEn ventilación mecánica, el ventilador asume parte o todo este trabajo."
+    },
+    {
+      "type": "image",
+      "order": 3,
+      "description": "Diagrama de la curva presión-volumen pulmonar mostrando compliance normal, ARDS (baja compliance) y enfisema (alta compliance)",
+      "suggestedPrompt": "Medical illustration of lung pressure-volume curve showing three different curves: normal compliance (middle curve), ARDS with decreased compliance (rightward shift, steeper curve), and emphysema with increased compliance (leftward shift, flatter curve). Include axis labels: Pressure (cmH2O) on x-axis and Volume (mL) on y-axis. Add hysteresis loop. Label key points: inflection points, normal range 70-100 mL/cmH2O. Professional medical style, clean background, educational diagram."
+    },
+    {
+      "type": "text",
+      "order": 4,
+      "content": "# Intercambio Gaseoso y Difusión\n\n## Ley de Fick de la Difusión\n\nEl intercambio gaseoso ocurre por **difusión** a través de la membrana alveolocapilar.\n\n**Factores que afectan la difusión** (según contexto proporcionado):\n\n1. **Grosor de la membrana alveolar**: Aumentado en edema, fibrosis\n2. **Superficie de intercambio**: Reducida en enfisema, resecciones\n3. **Gradiente de presión parcial**: Motor principal de la difusión (O₂ y CO₂)\n\n**Nota**: La velocidad del flujo sanguíneo afecta la perfusión, NO la difusión directamente.\n\n## Relación Ventilación-Perfusión (V/Q)\n\nLa relación V/Q es fundamental para el intercambio gaseoso eficiente.\n\n**V/Q normal**: [[MISSING]]\n\n### Alteraciones V/Q\n\n- **V/Q alto** (zonas apicales): Ventilación > Perfusión → Espacio muerto\n- **V/Q bajo** (zonas basales en patología): Perfusión > Ventilación → Shunt\n- **Shunt**: Sangre pasa por alvéolos no ventilados (V/Q = 0)\n\n### Implicaciones Clínicas\n\n- **Hipoxemia refractaria**: Sugiere shunt significativo\n- **PEEP**: Recluta alvéolos colapsados, mejora V/Q\n- **Posición prono**: Redistribuye perfusión, optimiza V/Q en ARDS"
+    },
+    {
+      "type": "image",
+      "order": 5,
+      "description": "Diagrama comparativo de la relación ventilación-perfusión (V/Q) en diferentes zonas pulmonares: ápice vs bases",
+      "suggestedPrompt": "Medical diagram showing ventilation-perfusion ratio (V/Q) in different lung zones. Split illustration: left side shows apex of lung with high V/Q ratio (more ventilation, less perfusion, labeled 'V/Q alto - Espacio muerto'), right side shows lung bases with low V/Q ratio (less ventilation, more perfusion, labeled 'V/Q bajo - Shunt'). Include alveoli with capillaries, arrows showing air flow (blue) and blood flow (red). Add labels: normal V/Q in middle zones. Professional medical illustration style, anatomically accurate."
+    },
+    {
+      "type": "text",
+      "order": 6,
+      "content": "# Aplicación Clínica: Evaluación de la Función Respiratoria\n\n## Parámetros Fisiológicos Clave\n\nEn ventilación mecánica, monitorizamos parámetros derivados de la fisiología:\n\n### Compliance Dinámica y Estática\n\n**Compliance dinámica**: Medida durante flujo activo\n- Incluye componente resistivo\n- Refleja compliance + resistencia\n\n**Compliance estática**: Medida en pausa inspiratoria (sin flujo)\n- Refleja propiedades elásticas puras\n- Más útil para evaluar patología parenquimatosa\n\n**Cálculo**: [[MISSING]]\n\n### Presiones Ventilatorias\n\n- **Presión pico (Ppico)**: Presión máxima durante inspiración (incluye resistencia)\n- **Presión meseta (Pplat)**: Presión al final de pausa inspiratoria (solo componente elástico)\n- **PEEP**: Presión positiva al final de espiración\n\n## Interpretación de Gasometrías\n\n### Oxigenación\n\n- **PaO₂**: Presión parcial de oxígeno arterial\n- **SaO₂**: Saturación de oxígeno\n- **Relación PaO₂/FiO₂**: Índice de oxigenación (normal > 300, ARDS < 300)\n\n### Ventilación\n\n- **PaCO₂**: Presión parcial de CO₂ arterial (normal 35-45 mmHg)\n- **pH**: Indicador de estado ácido-base (normal 7.35-7.45)\n\n## Casos Clínicos Breves\n\n**Caso 1: Compliance Disminuida**\n- Paciente con ARDS\n- Compliance estimada: 25 mL/cmH₂O (muy baja)\n- Estrategia: Vt bajo, PEEP alto, ventilación protectora\n\n**Caso 2: Alteración V/Q**\n- Paciente con neumonía unilateral\n- Shunt intrapulmonar significativo\n- Estrategia: PEEP para reclutar alvéolos, optimizar FiO₂"
+    },
+    {
+      "type": "quiz",
+      "order": 7,
+      "question": "¿Qué factor NO afecta la difusión de gases según la Ley de Fick?",
+      "options": [
+        "Grosor de la membrana alveolar",
+        "Superficie de intercambio disponible",
+        "Velocidad del flujo sanguíneo",
+        "Gradiente de presión parcial de gases"
+      ],
+      "correctAnswer": "Velocidad del flujo sanguíneo",
+      "explanation": "La velocidad del flujo sanguíneo afecta la perfusión, pero NO es un determinante directo de la difusión según la Ley de Fick. Los factores que SÍ afectan la difusión son: grosor de la membrana alveolar, superficie de intercambio, y gradiente de presión parcial. Un flujo sanguíneo adecuado es necesario para mantener el gradiente de presión, pero no es parte de la ecuación de difusión en sí."
+    }
+  ],
+  "keyPoints": [
+    "El sistema respiratorio se compone de vías aéreas superiores e inferiores, pulmones y pleura, y músculos respiratorios",
+    "Los alvéolos son estructuras microscópicas donde ocurre el intercambio gaseoso entre el aire y la sangre",
+    "La compliance mide la distensibilidad pulmonar (ΔV/ΔP) y varía según patología: disminuida en ARDS, aumentada en enfisema",
+    "La difusión de gases depende del grosor de membrana, superficie de intercambio y gradiente de presión (Ley de Fick)",
+    "La relación V/Q es fundamental: V/Q alto produce espacio muerto, V/Q bajo produce shunt",
+    "El PEEP recluta alvéolos colapsados y mejora la relación ventilación-perfusión",
+    "Compliance estática (medida sin flujo) refleja propiedades elásticas puras del pulmón"
+  ],
+  "references": [
+    "West, J.B. (2012). Respiratory Physiology: The Essentials. 9th Edition",
+    "curriculumData - módulo respiratory-anatomy: Anatomía del Sistema Respiratorio",
+    "curriculumData - módulo respiratory-physiology: Intercambio gaseoso y mecánica ventilatoria"
+  ]
+}
+
