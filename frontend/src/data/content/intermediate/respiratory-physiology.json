@@ -1,0 +1,85 @@
+{
+  "moduleId": "respiratory-physiology",
+  "level": "INTERMEDIATE",
+  "lessons": [
+    {
+      "lessonId": "respiratory-basics",
+      "title": "Mecánica Respiratoria y Fisiología Pulmonar",
+      "content": {
+        "intro": "La mecánica respiratoria es el estudio de los procesos físicos que permiten la ventilación pulmonar. Comprenderás los principios de presión, volumen y flujo que gobiernan el intercambio gaseoso, así como los mecanismos de control neural y químico de la respiración.",
+        "mainContent": [
+          {
+            "type": "text",
+            "content": "La respiración es un proceso cíclico que involucra cambios de presión intratorácica, movimiento del diafragma y otros músculos respiratorios, y flujo de aire bidireccional. La ecuación del movimiento respiratorio relaciona la presión muscular, la presión elástica y la presión resistiva: Pmusc = Pelast + Presist."
+          },
+          {
+            "type": "list",
+            "title": "Fases de la respiración y cambios de presión",
+            "content": [
+              "Inspiración activa: contracción diafragmática aumenta volumen torácico, generando presión intrapleural negativa (-8 a -10 cmH2O)",
+              "Presión alveolar cae ligeramente bajo la presión atmosférica (-1 a -2 cmH2O), generando gradiente de presión",
+              "Flujo inspiratorio depende de la resistencia de las vías aéreas y la compliance pulmonar",
+              "Espiración pasiva en reposo: relajación del diafragma y retracción elástica de pulmones y pared torácica",
+              "Presión alveolar aumenta por encima de atmosférica (+1 a +2 cmH2O), expulsando aire",
+              "Espiración activa durante ejercicio: músculos abdominales e intercostales internos comprimen tórax",
+              "La relación V/Q (ventilación/perfusión) determina la eficiencia del intercambio gaseoso"
+            ]
+          },
+          {
+            "type": "clinical-case",
+            "title": "Caso clínico: EPOC con obstrucción al flujo aéreo",
+            "content": "Paciente masculino de 65 años con EPOC severo presenta disnea en reposo. La espirometría muestra FEV1/FVC <0.70, con atrapamiento aéreo. El aumento de resistencia en vías aéreas pequeñas produce flujo espiratorio limitado, requiriendo espiración activa prolongada. La hiperinsuflación dinámica desplaza al diafragma a posición mecánicamente desventajosa, aumentando el trabajo respiratorio."
+          }
+        ],
+        "keyPoints": [
+          "La presión intrapleural negativa es fundamental para mantener los pulmones expandidos",
+          "La compliance pulmonar (ΔV/ΔP) determina la facilidad de expansión pulmonar",
+          "La resistencia de vías aéreas aumenta con la disminución del volumen pulmonar",
+          "El control de la respiración integra información de quimiorreceptores centrales (PCO2) y periféricos (PO2, pH)",
+          "La relación V/Q ideal es 1.0; valores <1 indican shunt, >1 indican espacio muerto",
+          "Los músculos accesorios (escalenos, esternocleidomastoideo) se reclutan en esfuerzo respiratorio aumentado"
+        ],
+        "examples": [
+          {
+            "scenario": "Gasometría arterial en paciente con insuficiencia respiratoria tipo II",
+            "parameters": {
+              "pH": "7.32",
+              "PaCO2": "58 mmHg",
+              "PaO2": "52 mmHg",
+              "HCO3": "29 mEq/L",
+              "SaO2": "87%"
+            },
+            "explanation": "Esta gasometría muestra acidosis respiratoria con compensación metabólica parcial. La elevación de PaCO2 indica hipoventilación alveolar, mientras que la PaO2 baja confirma hipoxemia. El HCO3 elevado sugiere retención renal de bicarbonato como mecanismo compensatorio. Este patrón es característico de EPOC avanzado o fallo de bomba ventilatoria."
+          }
+        ],
+        "summary": "La mecánica respiratoria depende de cambios cíclicos de presión intratorácica generados por los músculos respiratorios. La compliance pulmonar y la resistencia de vías aéreas son determinantes clave del trabajo respiratorio. El control neural integra información de quimiorreceptores para mantener homeostasis del pH y oxigenación. La relación ventilación-perfusión determina la eficiencia del intercambio gaseoso."
+      },
+      "quiz": {
+        "questions": [
+          {
+            "question": "¿Qué genera la presión negativa intrapleural durante la inspiración?",
+            "options": [
+              "Contracción de los músculos abdominales",
+              "Contracción del diafragma y expansión de la caja torácica",
+              "Relajación del diafragma",
+              "Cierre de la glotis"
+            ],
+            "correctAnswer": 1,
+            "explanation": "La contracción del diafragma (principal músculo inspiratorio) y los músculos intercostales externos expande el volumen de la cavidad torácica. Según la ley de Boyle (P1V1 = P2V2), este aumento de volumen disminuye la presión intrapleural, tornándola más negativa (de -5 cmH2O a -8/-10 cmH2O), lo que a su vez expande los pulmones."
+          },
+          {
+            "question": "En un paciente con EPOC, ¿qué cambio fisiopatológico explica la limitación al flujo espiratorio?",
+            "options": [
+              "Aumento de la compliance pulmonar",
+              "Pérdida de retracción elástica y colapso de vías aéreas pequeñas",
+              "Aumento de la tensión superficial alveolar",
+              "Debilidad de músculos inspiratorios"
+            ],
+            "correctAnswer": 1,
+            "explanation": "En EPOC, la destrucción del parénquima pulmonar (enfisema) causa pérdida de retracción elástica. Esto reduce la tracción radial sobre las vías aéreas pequeñas, permitiendo su colapso prematuro durante la espiración. Además, la inflamación crónica engrosa las paredes bronquiales. Ambos factores aumentan la resistencia espiratoria, causando atrapamiento aéreo e hiperinsuflación."
+          }
+        ]
+      }
+    }
+  ]
+}

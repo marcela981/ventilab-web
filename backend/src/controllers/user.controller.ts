@@ -43,6 +43,7 @@ export const getProfile = asyncHandler(
         email: true,
         name: true,
         role: true,
+        userLevel: true,
         image: true,
         bio: true,
         isActive: true,
@@ -158,6 +159,7 @@ export const updateProfile = asyncHandler(
         email: true,
         name: true,
         role: true,
+        userLevel: true,
         image: true,
         bio: true,
         isActive: true,
@@ -226,6 +228,7 @@ export const uploadAvatar = asyncHandler(
         email: true,
         name: true,
         role: true,
+        userLevel: true,
         image: true,
         bio: true,
         isActive: true,
@@ -593,10 +596,194 @@ export const getAllUsers = asyncHandler(
         email: true,
         name: true,
         role: true,
+        userLevel: true,
         createdAt: true,
       },
     });
 
     sendSuccess(res, HTTP_STATUS.OK, undefined, users);
+  }
+);
+
+/**
+ * Update user learning level
+ * @route   PUT /api/users/:id/level
+ * @access  Private (User can update their own level, or ADMIN/TEACHER can update any user's level)
+ */
+export const updateUserLevel = asyncHandler(
+  async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    if (!req.user) {
+      throw new AppError(
+        ERROR_MESSAGES.UNAUTHORIZED,
+        HTTP_STATUS.UNAUTHORIZED,
+        ERROR_CODES.UNAUTHORIZED
+      );
+    }
+
+    const { id: targetUserId } = req.params;
+    const { level } = req.body;
+
+    // Validate that the user can update this level
+    // Users can update their own level, ADMIN and TEACHER can update any user's level
+    const isOwnProfile = req.user.id === targetUserId;
+    const isAuthorized = req.user.role === 'ADMIN' || req.user.role === 'TEACHER' || isOwnProfile;
+
+    if (!isAuthorized) {
+      throw new AppError(
+        'No tienes permisos para actualizar el nivel de este usuario',
+        HTTP_STATUS.FORBIDDEN,
+        ERROR_CODES.FORBIDDEN,
+        true,
+        ['Solo puedes actualizar tu propio nivel, a menos que seas administrador o profesor']
+      );
+    }
+
+    // Validate level value
+    if (!level || typeof level !== 'string') {
+      throw new AppError(
+        'El nivel es requerido',
+        HTTP_STATUS.BAD_REQUEST,
+        ERROR_CODES.VALIDATION_ERROR,
+        true,
+        ['Debes proporcionar un nivel válido']
+      );
+    }
+
+    const validLevels = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
+    if (!validLevels.includes(level)) {
+      throw new AppError(
+        'Nivel inválido',
+        HTTP_STATUS.BAD_REQUEST,
+        ERROR_CODES.VALIDATION_ERROR,
+        true,
+        [`El nivel debe ser uno de: ${validLevels.join(', ')}`]
+      );
+    }
+
+    // Check if target user exists
+    const targetUser = await prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        userLevel: true,
+      },
+    });
+
+    if (!targetUser) {
+      throw new AppError(
+        ERROR_MESSAGES.USER_NOT_FOUND,
+        HTTP_STATUS.NOT_FOUND,
+        ERROR_CODES.USER_NOT_FOUND
+      );
+    }
+
+    // Update user level
+    const updatedUser = await prisma.user.update({
+      where: { id: targetUserId },
+      data: { userLevel: level as any },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        userLevel: true,
+        updatedAt: true,
+      },
+    });
+
+    console.log(`✅ [UserLevel] Nivel actualizado para ${updatedUser.email}: ${targetUser.userLevel} → ${level} (por ${req.user.email})`);
+
+    sendSuccess(
+      res,
+      HTTP_STATUS.OK,
+      'Nivel actualizado correctamente',
+      { user: updatedUser }
+    );
+  }
+);
+
+/**
+ * Evaluate user level and optionally apply the suggested change
+ * @route   POST /api/users/:id/evaluate-level
+ * @access  Private (User can evaluate their own level, or ADMIN/TEACHER can evaluate any user's level)
+ */
+export const evaluateAndUpdateUserLevel = asyncHandler(
+  async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    if (!req.user) {
+      throw new AppError(
+        ERROR_MESSAGES.UNAUTHORIZED,
+        HTTP_STATUS.UNAUTHORIZED,
+        ERROR_CODES.UNAUTHORIZED
+      );
+    }
+
+    const { id: targetUserId } = req.params;
+    const { autoApply = false } = req.query;
+
+    // Validate that the user can evaluate this level
+    // Users can evaluate their own level, ADMIN and TEACHER can evaluate any user's level
+    const isOwnProfile = req.user.id === targetUserId;
+    const isAuthorized = req.user.role === 'ADMIN' || req.user.role === 'TEACHER' || isOwnProfile;
+
+    if (!isAuthorized) {
+      throw new AppError(
+        'No tienes permisos para evaluar el nivel de este usuario',
+        HTTP_STATUS.FORBIDDEN,
+        ERROR_CODES.FORBIDDEN,
+        true,
+        ['Solo puedes evaluar tu propio nivel, a menos que seas administrador o profesor']
+      );
+    }
+
+    // Import the evaluation service
+    const { evaluateUserLevel, updateUserLevel: updateLevel } = require('../services/level-evaluation.service');
+
+    // Perform the evaluation
+    console.log(`📊 [UserLevel] Evaluando nivel para usuario: ${targetUserId} (solicitado por ${req.user.email})`);
+    const evaluation = await evaluateUserLevel(targetUserId);
+
+    let applied = false;
+    let updatedUser = null;
+
+    // Apply the level change if autoApply is true and shouldLevelUp is true
+    if (autoApply === 'true' && evaluation.shouldLevelUp && evaluation.suggestedLevel) {
+      console.log(`🔄 [UserLevel] Aplicando cambio automático de nivel: ${evaluation.currentLevel} → ${evaluation.suggestedLevel}`);
+      updatedUser = await updateLevel(targetUserId, evaluation.suggestedLevel);
+      applied = true;
+    }
+
+    const response = {
+      evaluation: {
+        currentLevel: evaluation.currentLevel,
+        suggestedLevel: evaluation.suggestedLevel,
+        shouldLevelUp: evaluation.shouldLevelUp,
+        reason: evaluation.reason,
+        metrics: evaluation.metrics,
+      },
+      applied,
+      updatedUser,
+    };
+
+    console.log(`✅ [UserLevel] Evaluación completada para usuario ${targetUserId}:`, {
+      shouldLevelUp: evaluation.shouldLevelUp,
+      applied,
+    });
+
+    sendSuccess(
+      res,
+      HTTP_STATUS.OK,
+      applied ? 'Evaluación completada y nivel actualizado' : 'Evaluación completada',
+      response
+    );
   }
 );

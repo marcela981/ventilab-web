@@ -1,0 +1,711 @@
+/**
+ * LessonViewer Styles Module
+ * 
+ * Estilos personalizados para el componente LessonViewer
+ * incluyendo soporte para contenido Markdown, fórmulas KaTeX,
+ * y diseño responsive profesional.
+ */
+
+/* Import de estilos base de KaTeX para renderizado de fórmulas matemáticas */
+@import 'katex/dist/katex.min.css';
+
+/* ============================================
+   CONTENEDOR PRINCIPAL
+   ============================================ */
+
+.lessonViewer {
+  padding: 24px 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+/* ============================================
+   ÁREA DE CONTENIDO
+   ============================================ */
+
+.contentArea {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+  transition: box-shadow 0.3s ease;
+}
+
+.contentArea:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* ============================================
+   CONTENIDO MARKDOWN
+   ============================================ */
+
+.markdownContent {
+  line-height: 1.6;
+  color: #2c3e50;
+  font-size: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+/* Headings */
+.markdownContent h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-top: 32px;
+  margin-bottom: 16px;
+  color: #1976d2;
+  border-bottom: 3px solid #1976d2;
+  padding-bottom: 8px;
+  line-height: 1.3;
+}
+
+.markdownContent h2 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-top: 28px;
+  margin-bottom: 14px;
+  color: #1565c0;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 6px;
+  line-height: 1.3;
+}
+
+.markdownContent h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 24px;
+  margin-bottom: 12px;
+  color: #34495e;
+  line-height: 1.4;
+}
+
+.markdownContent h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: #34495e;
+  line-height: 1.4;
+}
+
+.markdownContent h5 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 18px;
+  margin-bottom: 8px;
+  color: #34495e;
+  line-height: 1.5;
+}
+
+.markdownContent h6 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 16px;
+  margin-bottom: 8px;
+  color: #6c757d;
+  line-height: 1.5;
+}
+
+/* Párrafos */
+.markdownContent p {
+  margin-bottom: 16px;
+  line-height: 1.7;
+}
+
+/* Listas */
+.markdownContent ul,
+.markdownContent ol {
+  padding-left: 32px;
+  margin-bottom: 16px;
+}
+
+.markdownContent li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+.markdownContent ul ul,
+.markdownContent ol ol,
+.markdownContent ul ol,
+.markdownContent ol ul {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+/* Blockquotes */
+.markdownContent blockquote {
+  border-left: 4px solid #1976d2;
+  padding-left: 20px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  background-color: rgba(25, 118, 210, 0.05);
+  border-radius: 0 4px 4px 0;
+  font-style: italic;
+  color: #5a6c7d;
+}
+
+.markdownContent blockquote p {
+  margin-bottom: 8px;
+}
+
+.markdownContent blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* Code inline */
+.markdownContent code {
+  background-color: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+  font-size: 0.9em;
+  color: #c7254e;
+  border: 1px solid #e1e4e8;
+}
+
+/* Code blocks */
+.markdownContent pre {
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  padding: 16px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.markdownContent pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+  border: none;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* Enlaces */
+.markdownContent a {
+  color: #1976d2;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.markdownContent a:hover {
+  color: #1565c0;
+  text-decoration: underline;
+}
+
+/* Líneas horizontales */
+.markdownContent hr {
+  border: none;
+  border-top: 2px solid #e0e0e0;
+  margin-top: 32px;
+  margin-bottom: 32px;
+}
+
+/* Imágenes */
+.markdownContent img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   FÓRMULAS KATEX
+   ============================================ */
+
+.markdownContent .katex {
+  font-size: 1.1em;
+}
+
+.markdownContent .katex-display {
+  margin: 24px 0;
+  overflow: auto;
+  padding: 16px;
+  background-color: rgba(25, 118, 210, 0.03);
+  border-radius: 6px;
+  border-left: 4px solid #1976d2;
+}
+
+.markdownContent .katex-display .katex {
+  font-size: 1.2em;
+}
+
+/* ============================================
+   TABLAS
+   ============================================ */
+
+.styledTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.styledTable th {
+  background-color: #1976d2;
+  color: white;
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 16px;
+  border: 1px solid #1565c0;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.styledTable td {
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  text-align: left;
+  background-color: white;
+}
+
+.styledTable tbody tr:nth-child(odd) td {
+  background-color: #f9f9f9;
+}
+
+.styledTable tbody tr:hover td {
+  background-color: rgba(25, 118, 210, 0.05);
+  transition: background-color 0.2s ease;
+}
+
+/* ============================================
+   BOTONES DE NAVEGACIÓN
+   ============================================ */
+
+.navigationButtons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 2px solid #e0e0e0;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.navigationButtons button {
+  min-width: 140px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  text-transform: none;
+}
+
+.navigationButtons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   SIDEBAR
+   ============================================ */
+
+.lessonSidebar {
+  position: sticky;
+  top: 100px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  padding: 16px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.lessonSidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.lessonSidebar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.lessonSidebar::-webkit-scrollbar-thumb {
+  background: #bdbdbd;
+  border-radius: 3px;
+}
+
+.lessonSidebar::-webkit-scrollbar-thumb:hover {
+  background: #9e9e9e;
+}
+
+/* ============================================
+   BARRA DE PROGRESO
+   ============================================ */
+
+.progressBar {
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.progressBar .progressLabel {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.progressBar .progressValue {
+  font-weight: 700;
+  color: #1976d2;
+}
+
+/* ============================================
+   BOTÓN DE VOLVER
+   ============================================ */
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  margin-bottom: 24px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.backButton:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.backButton span {
+  color: #6c757d;
+  font-weight: 500;
+}
+
+/* ============================================
+   ESTADOS DE CARGA Y ERROR
+   ============================================ */
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  padding: 40px;
+}
+
+.errorContainer {
+  padding: 40px;
+  text-align: center;
+}
+
+.errorContainer .errorIcon {
+  font-size: 64px;
+  color: #d32f2f;
+  margin-bottom: 16px;
+}
+
+.errorContainer .errorMessage {
+  color: #6c757d;
+  font-size: 1.1rem;
+  margin-bottom: 24px;
+}
+
+/* ============================================
+   TRANSICIONES Y ANIMACIONES
+   ============================================ */
+
+.fadeIn {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slideIn {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 1024px) {
+  .lessonViewer {
+    padding: 16px;
+  }
+
+  .contentArea {
+    padding: 20px;
+  }
+
+  .markdownContent h1 {
+    font-size: 2rem;
+  }
+
+  .markdownContent h2 {
+    font-size: 1.75rem;
+  }
+
+  .markdownContent h3 {
+    font-size: 1.4rem;
+  }
+}
+
+/* Mobile y pantallas pequeñas */
+@media (max-width: 960px) {
+  .lessonSidebar {
+    display: none;
+  }
+
+  .lessonViewer {
+    padding: 12px;
+  }
+
+  .contentArea {
+    padding: 16px;
+    border-radius: 6px;
+  }
+
+  .markdownContent {
+    font-size: 15px;
+  }
+
+  .markdownContent h1 {
+    font-size: 1.75rem;
+    margin-top: 24px;
+  }
+
+  .markdownContent h2 {
+    font-size: 1.5rem;
+    margin-top: 20px;
+  }
+
+  .markdownContent h3 {
+    font-size: 1.25rem;
+    margin-top: 18px;
+  }
+
+  .markdownContent ul,
+  .markdownContent ol {
+    padding-left: 24px;
+  }
+
+  .markdownContent blockquote {
+    padding-left: 16px;
+    margin-left: -4px;
+  }
+
+  .markdownContent pre {
+    padding: 12px;
+    font-size: 0.8rem;
+  }
+
+  .navigationButtons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .navigationButtons button {
+    width: 100%;
+  }
+
+  .styledTable {
+    font-size: 0.85rem;
+  }
+
+  .styledTable th,
+  .styledTable td {
+    padding: 8px 12px;
+  }
+}
+
+/* Pantallas muy pequeñas */
+@media (max-width: 600px) {
+  .lessonViewer {
+    padding: 8px;
+  }
+
+  .contentArea {
+    padding: 12px;
+  }
+
+  .markdownContent {
+    font-size: 14px;
+  }
+
+  .markdownContent h1 {
+    font-size: 1.5rem;
+  }
+
+  .markdownContent h2 {
+    font-size: 1.3rem;
+  }
+
+  .markdownContent h3 {
+    font-size: 1.15rem;
+  }
+
+  /* Hacer tablas scrollables en móvil */
+  .styledTable {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+/* ============================================
+   MODO OSCURO (Opcional)
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .contentArea {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+  }
+
+  .markdownContent {
+    color: #e0e0e0;
+  }
+
+  .markdownContent h1,
+  .markdownContent h2,
+  .markdownContent h3,
+  .markdownContent h4,
+  .markdownContent h5 {
+    color: #90caf9;
+  }
+
+  .markdownContent code {
+    background-color: #2d2d2d;
+    color: #f48fb1;
+    border-color: #424242;
+  }
+
+  .markdownContent blockquote {
+    background-color: rgba(144, 202, 249, 0.08);
+    color: #b0bec5;
+  }
+
+  .styledTable th {
+    background-color: #1565c0;
+  }
+
+  .styledTable td {
+    background-color: #2d2d2d;
+    border-color: #424242;
+  }
+
+  .styledTable tbody tr:nth-child(odd) td {
+    background-color: #1e1e1e;
+  }
+
+  .lessonSidebar {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+  }
+
+  .backButton {
+    background-color: #2d2d2d;
+  }
+}
+
+/* ============================================
+   UTILIDADES Y HELPERS
+   ============================================ */
+
+.textCenter {
+  text-align: center;
+}
+
+.textLeft {
+  text-align: left;
+}
+
+.textRight {
+  text-align: right;
+}
+
+.mt8 { margin-top: 8px; }
+.mt16 { margin-top: 16px; }
+.mt24 { margin-top: 24px; }
+.mt32 { margin-top: 32px; }
+
+.mb8 { margin-bottom: 8px; }
+.mb16 { margin-bottom: 16px; }
+.mb24 { margin-bottom: 24px; }
+.mb32 { margin-bottom: 32px; }
+
+.p8 { padding: 8px; }
+.p16 { padding: 16px; }
+.p24 { padding: 24px; }
+.p32 { padding: 32px; }
+
+/* ============================================
+   IMPRESIÓN
+   ============================================ */
+
+@media print {
+  .lessonSidebar,
+  .navigationButtons,
+  .backButton {
+    display: none;
+  }
+
+  .lessonViewer {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .contentArea {
+    box-shadow: none;
+    border: 1px solid #e0e0e0;
+  }
+
+  .markdownContent a {
+    color: #000;
+    text-decoration: underline;
+  }
+
+  .markdownContent pre {
+    page-break-inside: avoid;
+  }
+}
+

@@ -5,7 +5,16 @@
 
 import { Router } from 'express';
 import { authenticate, isAdmin, isStudent } from '../middleware/auth';
-import { getProfile, updateProfile, uploadAvatar, changeUserPassword, getUserStats, getAllUsers } from '../controllers/user.controller';
+import {
+  getProfile,
+  updateProfile,
+  uploadAvatar,
+  changeUserPassword,
+  getUserStats,
+  getAllUsers,
+  updateUserLevel,
+  evaluateAndUpdateUserLevel
+} from '../controllers/user.controller';
 
 const router = Router();
 
@@ -71,6 +80,36 @@ router.get(
   authenticate,
   isStudent, // All authenticated users can view their stats
   getUserStats
+);
+
+// =============================================================================
+// USER LEVEL MANAGEMENT ROUTES
+// =============================================================================
+
+/**
+ * @route   PUT /api/users/:id/level
+ * @desc    Update user learning level (manual update)
+ * @access  Private (User can update their own level, or ADMIN/TEACHER can update any user's level)
+ */
+router.put(
+  '/:id/level',
+  authenticate,
+  isStudent, // All authenticated users, but authorization checked in controller
+  updateUserLevel
+);
+
+/**
+ * @route   POST /api/users/:id/evaluate-level
+ * @desc    Evaluate user level and optionally apply the suggested change
+ * @query   autoApply - Boolean (default: false) - If true, automatically apply level change if suggested
+ * @access  Private (User can evaluate their own level, or ADMIN/TEACHER can evaluate any user's level)
+ * @example POST /api/users/123/evaluate-level?autoApply=true
+ */
+router.post(
+  '/:id/evaluate-level',
+  authenticate,
+  isStudent, // All authenticated users, but authorization checked in controller
+  evaluateAndUpdateUserLevel
 );
 
 // =============================================================================

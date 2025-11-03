@@ -9,6 +9,9 @@
 export { default as RoleGuard } from './RoleGuard';
 export { RoleGuard as RoleGuardComponent } from './RoleGuard';
 
+export { default as LevelBadge } from './LevelBadge';
+export { LevelBadge as LevelBadgeComponent } from './LevelBadge';
+
 // Export examples for development/documentation
 export { default as RoleGuardExamples } from './RoleGuardExamples';
 export {

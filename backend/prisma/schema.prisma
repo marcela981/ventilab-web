@@ -37,6 +37,13 @@ enum UserRole {
   ADMIN      // System administrators with full access
 }
 
+/// User learning level - tracks student's current skill level
+enum UserLevel {
+  BEGINNER      // New students starting with fundamentals
+  INTERMEDIATE  // Students with basic knowledge advancing their skills
+  ADVANCED      // Experienced students working on advanced topics
+}
+
 enum ModuleCategory {
   FUNDAMENTALS
   VENTILATION_PRINCIPLES
@@ -76,6 +83,7 @@ model User {
   password      String?   // Hashed password using bcryptjs (nullable for OAuth-only users)
   name          String
   role          UserRole  @default(STUDENT) // User role with proper enum type
+  userLevel     UserLevel @default(BEGINNER) // Current learning level - tracks student's progression
   image         String?   // Avatar image URL (populated by OAuth providers or custom upload)
   bio           String?   // Optional user biography
   isActive      Boolean   @default(true) // Soft delete flag - inactive users cannot login
@@ -94,6 +102,7 @@ model User {
 
   @@index([email])
   @@index([role])
+  @@index([userLevel])
   @@index([isActive])
   @@map("users")
 }
