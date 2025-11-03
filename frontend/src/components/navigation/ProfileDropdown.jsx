@@ -84,8 +84,8 @@ const getRoleInfo = (role) => {
  * @param {boolean} props.isLoggingOut - Logout in progress
  * @param {string} props.position - Position in sidebar: 'top' or 'bottom' (default: 'bottom')
  */
-export function ProfileDropdown({ 
-  user, 
+export function ProfileDropdown({
+  user,
   isExpanded = true,
   onLogout,
   onProfileClick,

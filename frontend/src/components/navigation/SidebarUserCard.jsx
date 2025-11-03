@@ -99,9 +99,9 @@ const getRoleInfo = (role) => {
  *   isLoggingOut={false}
  * />
  */
-export function SidebarUserCard({ 
-  user, 
-  isExpanded = true, 
+export function SidebarUserCard({
+  user,
+  isExpanded = true,
   onLogout,
   onProfileClick,
   isLoggingOut = false,

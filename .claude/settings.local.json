@@ -23,7 +23,14 @@
       "Bash(npx ts-node:*)",
       "Bash(node test-auth-service.js:*)",
       "Bash(node test-useauth.js:*)",
-      "Bash(node scripts/test-redirect.js:*)"
+      "Bash(node scripts/test-redirect.js:*)",
+      "Bash(npm run build:*)",
+      "Bash(node -c:*)",
+      "Bash(npx eslint:*)",
+      "Bash(git restore:*)",
+      "Bash(dir:*)",
+      "Bash(nul)",
+      "Bash(npx prisma db seed:*)"
     ],
     "deny": [],
     "ask": []

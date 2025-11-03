@@ -58,6 +58,15 @@ const Sidebar = ({ open, onToggle, useCompactProfile = false }) => {
   const { showSuccess, showError } = useNotification();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+  // Debug: Log user state
+  console.log('🔍 [Sidebar Debug]', {
+    user,
+    isLoading,
+    hasUser: !!user,
+    userName: user?.name,
+    userRole: user?.role,
+  });
+
   /**
    * Handle logout with proper error handling and loading state
    * - Instant logout on frontend (doesn't wait for server)
@@ -81,7 +90,7 @@ const Sidebar = ({ open, onToggle, useCompactProfile = false }) => {
       if (result !== false) {
         // Logout succeeded or completed
         showSuccess('Sesión cerrada correctamente');
-        
+
         // Small delay to show toast before redirect
         setTimeout(() => {
           router.push('/auth/login');
@@ -95,7 +104,7 @@ const Sidebar = ({ open, onToggle, useCompactProfile = false }) => {
       console.error('Error logging out:', error);
       showError('Error al cerrar sesión');
       setIsLoggingOut(false);
-      
+
       // Force cleanup and redirect anyway (fail-safe)
       setTimeout(() => {
         router.push('/auth/login');
@@ -153,9 +162,8 @@ const Sidebar = ({ open, onToggle, useCompactProfile = false }) => {
       <List sx={{ mt: 1 }}>
         {menuItems.map((item) => (
           <ListItem key={item.text} disablePadding sx={{ display: 'block' }}>
-            <Link href={item.path} passHref legacyBehavior>
+            <Link href={item.path} style={{ textDecoration: 'none', color: 'inherit' }}>
               <ListItemButton
-                component="a"
                 sx={{
                   minHeight: 48,
                   justifyContent: open ? 'initial' : 'center',
@@ -180,15 +188,15 @@ const Sidebar = ({ open, onToggle, useCompactProfile = false }) => {
                   {item.icon}
                 </ListItemIcon>
                 {open && (
-                  <ListItemText 
-                    primary={item.text} 
-                    sx={{ 
+                  <ListItemText
+                    primary={item.text}
+                    sx={{
                       opacity: 1,
                       '& .MuiListItemText-primary': {
                         color: 'white',
                         fontWeight: router.pathname === item.path ? 600 : 400,
                       }
-                    }} 
+                    }}
                   />
                 )}
               </ListItemButton>
@@ -198,12 +206,12 @@ const Sidebar = ({ open, onToggle, useCompactProfile = false }) => {
       </List>
       
       <Box sx={{ flexGrow: 1 }} />
-      
+
       {/* User Profile Section */}
-      {user && (
+      {user ? (
         <>
           <Divider sx={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', my: 1 }} />
-          
+
           {useCompactProfile ? (
             <Box sx={{ p: open ? 2 : 1, mb: 1 }}>
               <ProfileDropdown
@@ -215,7 +223,7 @@ const Sidebar = ({ open, onToggle, useCompactProfile = false }) => {
               />
             </Box>
           ) : (
-            <SidebarUserCard 
+            <SidebarUserCard
               user={user}
               isExpanded={open}
               onLogout={handleLogout}
@@ -223,6 +231,20 @@ const Sidebar = ({ open, onToggle, useCompactProfile = false }) => {
             />
           )}
         </>
+      ) : (
+        !isLoading && (
+          <>
+            <Divider sx={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', my: 1 }} />
+            <Box sx={{ p: 2, textAlign: 'center' }}>
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', display: 'block', mb: 0.5 }}>
+                👤 No autenticado
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block', fontSize: '0.65rem' }}>
+                Inicia sesión en /auth/login
+              </Typography>
+            </Box>
+          </>
+        )
       )}
 
       {/* Version Info */}

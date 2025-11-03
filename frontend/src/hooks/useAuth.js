@@ -63,6 +63,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSession, signOut } from 'next-auth/react';
 import {
   login as authLogin,
   register as authRegister,
@@ -168,74 +169,63 @@ export function useAuth() {
   // State Management
   // ============================================================================
 
+  // Use NextAuth session
+  const { data: session, status } = useSession();
+
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Derived authentication state
-  const isAuthenticated = !!user && checkAuthenticated();
+  // Derive loading state from NextAuth status
+  const isLoading = status === 'loading';
+
+  // Derived authentication state - check both session and user state
+  const isAuthenticated = !!session?.user || !!user;
 
   // ============================================================================
   // Role-based Computed Properties
   // ============================================================================
 
-  const isStudent = user?.role === USER_ROLES.STUDENT;
-  const isTeacher = user?.role === USER_ROLES.TEACHER;
-  const isAdmin = user?.role === USER_ROLES.ADMIN;
+  // Use session user if available, fallback to local user state
+  const currentUser = session?.user || user;
+
+  const isStudent = currentUser?.role === USER_ROLES.STUDENT;
+  const isTeacher = currentUser?.role === USER_ROLES.TEACHER;
+  const isAdmin = currentUser?.role === USER_ROLES.ADMIN;
 
   // ============================================================================
-  // Authentication Verification (on mount and token change)
+  // Sync NextAuth session with local user state
   // ============================================================================
 
   /**
-   * Verify authentication on component mount
-   * If a token exists, try to fetch current user data
+   * Sync user state with NextAuth session
+   * When session changes, update local user state
    */
   useEffect(() => {
-    const verifyAuth = async () => {
-      setIsLoading(true);
+    if (status === 'loading') {
+      // Session is still loading
+      return;
+    }
+
+    if (status === 'authenticated' && session?.user) {
+      // Session is authenticated, update local user state
+      console.log('🔐 [useAuth] Session authenticated:', session.user);
+      setUser(session.user);
       setError(null);
-
-      try {
-        // Check if token exists in localStorage
-        if (!checkAuthenticated()) {
-          // No token found, user is not authenticated
-          setUser(null);
-          setIsLoading(false);
-          return;
-        }
-
-        // Token exists, try to get cached user data first
+    } else if (status === 'unauthenticated') {
+      // Session is not authenticated
+      console.log('🔓 [useAuth] Session unauthenticated');
+      
+      // Check if we have a custom auth token (for non-OAuth login)
+      if (checkAuthenticated()) {
         const cachedUser = getUserData();
         if (cachedUser) {
           setUser(cachedUser);
         }
-
-        // Then verify with server and get fresh data
-        const result = await getCurrentUser();
-
-        if (result.success && result.data?.user) {
-          setUser(result.data.user);
-          setError(null);
-        } else {
-          // Token is invalid or expired
-          setUser(null);
-          setError(result.error);
-        }
-      } catch (err) {
-        console.error('[useAuth] Verification error:', err);
+      } else {
         setUser(null);
-        setError({
-          message: 'Failed to verify authentication',
-          details: [err.message],
-        });
-      } finally {
-        setIsLoading(false);
       }
-    };
-
-    verifyAuth();
-  }, []); // Only run on mount
+    }
+  }, [session, status]);
 
   // ============================================================================
   // Authentication Functions
@@ -331,6 +321,7 @@ export function useAuth() {
   /**
    * Logout the current user
    * Clears user state and removes token from storage
+   * Works with both NextAuth sessions and custom auth tokens
    *
    * @returns {Promise<boolean>} True if logout successful
    *
@@ -339,12 +330,19 @@ export function useAuth() {
    * router.push('/login');
    */
   const logout = useCallback(async () => {
-    setIsLoading(true);
-
     try {
-      await authLogout();
+      // Clear local state immediately
       setUser(null);
       setError(null);
+
+      // If using NextAuth session, sign out
+      if (session) {
+        await signOut({ redirect: false });
+      }
+      
+      // Also clear any custom auth tokens (for non-OAuth login)
+      await authLogout();
+      
       return true;
     } catch (err) {
       console.error('[useAuth] Logout error:', err);
@@ -352,10 +350,8 @@ export function useAuth() {
       setUser(null);
       setError(null);
       return false;
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
+  }, [session]);
 
   /**
    * Manually refresh user data from the server
@@ -411,10 +407,10 @@ export function useAuth() {
    */
   const isRole = useCallback(
     (role) => {
-      if (!isAuthenticated || !user) return false;
-      return user.role === role;
+      if (!isAuthenticated || !currentUser) return false;
+      return currentUser.role === role;
     },
-    [isAuthenticated, user]
+    [isAuthenticated, currentUser]
   );
 
   /**
@@ -436,10 +432,10 @@ export function useAuth() {
    */
   const hasPermission = useCallback(
     (permission) => {
-      if (!isAuthenticated || !user?.role) return false;
-      return roleHasPermission(user.role, permission);
+      if (!isAuthenticated || !currentUser?.role) return false;
+      return roleHasPermission(currentUser.role, permission);
     },
-    [isAuthenticated, user]
+    [isAuthenticated, currentUser]
   );
 
   /**
@@ -455,14 +451,14 @@ export function useAuth() {
    */
   const hasAnyRole = useCallback(
     (roles) => {
-      if (!isAuthenticated || !user?.role) return false;
+      if (!isAuthenticated || !currentUser?.role) return false;
       if (!Array.isArray(roles)) {
         console.warn('[useAuth] hasAnyRole expects an array of roles');
         return false;
       }
-      return roles.includes(user.role);
+      return roles.includes(currentUser.role);
     },
-    [isAuthenticated, user]
+    [isAuthenticated, currentUser]
   );
 
   /**
@@ -478,16 +474,16 @@ export function useAuth() {
    */
   const hasAnyPermission = useCallback(
     (permissions) => {
-      if (!isAuthenticated || !user?.role) return false;
+      if (!isAuthenticated || !currentUser?.role) return false;
       if (!Array.isArray(permissions)) {
         console.warn('[useAuth] hasAnyPermission expects an array of permissions');
         return false;
       }
       return permissions.some((permission) =>
-        roleHasPermission(user.role, permission)
+        roleHasPermission(currentUser.role, permission)
       );
     },
-    [isAuthenticated, user]
+    [isAuthenticated, currentUser]
   );
 
   /**
@@ -504,8 +500,8 @@ export function useAuth() {
   // ============================================================================
 
   return {
-    // User data
-    user,
+    // User data (use currentUser which combines session and local state)
+    user: currentUser,
 
     // Authentication state
     isAuthenticated,
