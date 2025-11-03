@@ -1,304 +1,608 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-  Paper,
+  Box,
   Typography,
-  Grid,
   Card,
   CardContent,
-  List,
-  ListItemButton,
-  ListItemText,
+  CardActions,
+  Button,
+  Grid,
+  Avatar,
   Chip,
-  Box,
-  Divider
+  IconButton,
+  LinearProgress,
+  Skeleton,
+  Fade,
+  Grow,
 } from '@mui/material';
 import {
-  PlayCircleOutline,
-  MenuBook,
-  AccessTime
+  TrendingUp,
+  PlayArrow,
+  AccessTime,
+  Bookmark,
+  BookmarkRemove,
+  NavigateNext,
+  School,
+  AutoAwesome,
 } from '@mui/icons-material';
 
 /**
- * QuickAccessLessons - Sección de acceso rápido a lecciones organizadas por nivel
+ * QuickAccessLessons Component
  *
- * Muestra todos los módulos disponibles organizados en tres columnas por nivel de dificultad
- * (principiante, intermedio, avanzado). Permite navegación directa a la primera lección
- * de cada módulo.
+ * Componente que proporciona acceso rápido a lecciones relevantes para el usuario
+ * desde el dashboard principal. Muestra la próxima lección recomendada,
+ * lecciones en progreso y lecciones favoritas.
  *
- * @param {Array} allModules - Array de todos los módulos disponibles
- * @param {Function} handleSectionClick - Función para navegar a un módulo
- * @param {Boolean} isMobile - Indica si está en vista móvil
+ * @component
+ * @param {Object} props - Props del componente
+ * @param {Object} props.nextRecommendedLesson - Próxima lección recomendada
+ * @param {Array} props.inProgressLessons - Lecciones en progreso
+ * @param {Array} props.favoriteLessons - Lecciones favoritas
+ * @param {Function} props.onLessonClick - Handler para click en lección
+ * @param {Function} props.onRemoveFavorite - Handler para remover favorito
+ * @param {Function} props.onViewAll - Handler para ver todas las lecciones
+ * @param {boolean} props.isLoading - Estado de carga
+ * @returns {JSX.Element} Componente de acceso rápido a lecciones
  */
-const QuickAccessLessons = ({ allModules, handleSectionClick, isMobile }) => {
-  // Niveles de dificultad con sus configuraciones
-  const levels = [
-    {
-      id: 'beginner',
-      title: 'Principiante',
-      color: '#4CAF50',
-      bgColor: '#e8f5e9',
-      description: 'Fundamentos básicos'
-    },
-    {
-      id: 'intermediate',
-      title: 'Intermedio',
-      color: '#FF9800',
-      bgColor: '#fff3e0',
-      description: 'Modalidades y parámetros'
-    },
-    {
-      id: 'advanced',
-      title: 'Avanzado',
-      color: '#F44336',
-      bgColor: '#ffebee',
-      description: 'Estrategias especializadas'
-    }
-  ];
+const QuickAccessLessons = ({
+  nextRecommendedLesson,
+  inProgressLessons = [],
+  favoriteLessons = [],
+  onLessonClick,
+  onRemoveFavorite,
+  onViewAll,
+  isLoading = false,
+}) => {
+  // =========================================================================
+  // RENDER HELPERS
+  // =========================================================================
 
-  // Agrupar módulos por nivel
-  const modulesByLevel = levels.map(level => ({
-    ...level,
-    modules: allModules
-      .filter(module => module.level === level.id)
-      .sort((a, b) => a.order - b.order)
-      .slice(0, 5) // Limitar a 5 módulos por columna
-  }));
-
-  return (
-    <Paper
-      elevation={3}
-      sx={{
-        p: 3,
-        mb: 4,
-        backgroundColor: '#ffffff',
-        border: '1px solid #e3f2fd',
-        borderRadius: 3
-      }}
-    >
-      {/* Título de la sección */}
-      <Typography
-        variant="h5"
-        sx={{
-          mb: 3,
-          color: '#1976d2',
-          fontWeight: 700,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1
-        }}
-      >
-        <PlayCircleOutline sx={{ fontSize: 28 }} />
-        Acceso Rápido a Lecciones
-      </Typography>
-
-      <Typography
-        variant="body2"
-        sx={{
-          mb: 3,
-          color: '#6c757d'
-        }}
-      >
-        Explora y accede directamente a las lecciones organizadas por nivel de dificultad
-      </Typography>
-
-      {/* Grid de columnas por nivel */}
-      <Grid container spacing={3}>
-        {modulesByLevel.map((levelData) => (
-          <Grid item xs={12} md={4} key={levelData.id}>
-            <Card
-              elevation={2}
-              sx={{
-                height: '100%',
-                backgroundColor: levelData.bgColor,
-                border: `2px solid ${levelData.color}`,
-                borderRadius: 2
-              }}
-            >
-              <CardContent>
-                {/* Encabezado del nivel */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    mb: 2
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      color: levelData.color,
-                      fontWeight: 700
-                    }}
-                  >
-                    {levelData.title}
-                  </Typography>
-                  <Chip
-                    label={`${levelData.modules.length} módulos`}
-                    size="small"
-                    sx={{
-                      backgroundColor: levelData.color,
-                      color: 'white',
-                      fontWeight: 600
-                    }}
-                  />
-                </Box>
-
-                <Typography
-                  variant="caption"
-                  sx={{
-                    display: 'block',
-                    mb: 2,
-                    color: '#666',
-                    fontStyle: 'italic'
-                  }}
-                >
-                  {levelData.description}
-                </Typography>
-
-                <Divider sx={{ mb: 2 }} />
-
-                {/* Lista de módulos */}
-                <List sx={{ p: 0 }}>
-                  {levelData.modules.length > 0 ? (
-                    levelData.modules.map((module, index) => (
-                      <ListItemButton
-                        key={module.id}
-                        onClick={() => handleSectionClick(module.id)}
-                        sx={{
-                          borderRadius: 1,
-                          mb: 1,
-                          backgroundColor: 'rgba(255,255,255,0.7)',
-                          border: '1px solid rgba(0,0,0,0.08)',
-                          transition: 'all 0.2s',
-                          '&:hover': {
-                            backgroundColor: 'rgba(255,255,255,0.95)',
-                            transform: 'translateX(4px)',
-                            boxShadow: 2
-                          }
-                        }}
-                      >
-                        <ListItemText
-                          primary={
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                fontWeight: 600,
-                                color: '#2c3e50',
-                                mb: 0.5
-                              }}
-                            >
-                              {index + 1}. {module.title}
-                            </Typography>
-                          }
-                          secondary={
-                            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
-                              {/* Número de lecciones */}
-                              <Chip
-                                icon={<MenuBook sx={{ fontSize: 14 }} />}
-                                label={`${module.lessons?.length || 0} lecciones`}
-                                size="small"
-                                variant="outlined"
-                                sx={{
-                                  height: 20,
-                                  fontSize: '0.7rem',
-                                  borderColor: levelData.color,
-                                  color: levelData.color
-                                }}
-                              />
-
-                              {/* Duración estimada */}
-                              <Chip
-                                icon={<AccessTime sx={{ fontSize: 14 }} />}
-                                label={module.estimatedTime || `${Math.round(module.duration / 60)}h`}
-                                size="small"
-                                variant="outlined"
-                                sx={{
-                                  height: 20,
-                                  fontSize: '0.7rem',
-                                  borderColor: levelData.color,
-                                  color: levelData.color
-                                }}
-                              />
-
-                              {/* Dificultad */}
-                              {module.difficulty && (
-                                <Chip
-                                  label={module.difficulty}
-                                  size="small"
-                                  sx={{
-                                    height: 20,
-                                    fontSize: '0.7rem',
-                                    backgroundColor: levelData.color,
-                                    color: 'white'
-                                  }}
-                                />
-                              )}
-                            </Box>
-                          }
-                        />
-                      </ListItemButton>
-                    ))
-                  ) : (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: '#999',
-                        textAlign: 'center',
-                        py: 2,
-                        fontStyle: 'italic'
-                      }}
-                    >
-                      No hay módulos disponibles en este nivel
-                    </Typography>
-                  )}
-                </List>
-
-                {/* Indicador de más módulos */}
-                {allModules.filter(m => m.level === levelData.id).length > 5 && (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      display: 'block',
-                      mt: 2,
-                      textAlign: 'center',
-                      color: levelData.color,
-                      fontWeight: 600,
-                      fontStyle: 'italic'
-                    }}
-                  >
-                    +{allModules.filter(m => m.level === levelData.id).length - 5} módulos más disponibles
-                  </Typography>
-                )}
-              </CardContent>
-            </Card>
+  /**
+   * Renderiza el skeleton de carga
+   */
+  const renderLoadingSkeleton = () => (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Skeleton variant="text" width={200} height={40} />
+      <Skeleton variant="rectangular" height={150} />
+      <Grid container spacing={2}>
+        {[1, 2, 3].map((i) => (
+          <Grid item xs={12} sm={6} md={4} key={i}>
+            <Skeleton variant="rectangular" height={120} />
           </Grid>
         ))}
       </Grid>
-    </Paper>
+    </Box>
+  );
+
+  /**
+   * Renderiza el estado vacío cuando no hay lecciones
+   */
+  const renderEmptyState = () => (
+    <Fade in timeout={600}>
+      <Box
+        sx={{
+          textAlign: 'center',
+          py: 6,
+          px: 3,
+          backgroundColor: 'action.hover',
+          borderRadius: 2,
+        }}
+      >
+        <AutoAwesome sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
+        <Typography variant="h6" gutterBottom>
+          Aún no has comenzado ninguna lección
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          ¡Explora el curriculum y comienza tu aprendizaje!
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<School />}
+          onClick={onViewAll}
+          size="large"
+        >
+          Ver Todo el Curriculum
+        </Button>
+      </Box>
+    </Fade>
+  );
+
+  /**
+   * Renderiza la próxima lección recomendada
+   */
+  const renderRecommendedLesson = () => {
+    if (!nextRecommendedLesson) return null;
+
+    return (
+      <Grow in timeout={400}>
+        <Card
+          sx={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            boxShadow: 4,
+            transition: 'all 0.3s ease-in-out',
+            '&:hover': {
+              boxShadow: 8,
+              transform: 'translateY(-4px)',
+            },
+          }}
+        >
+          <CardContent>
+            <Grid container spacing={2} alignItems="center">
+              {/* Sección Izquierda - Avatar */}
+              <Grid item xs={12} sm="auto">
+                <Avatar
+                  sx={{
+                    width: { xs: 60, sm: 80 },
+                    height: { xs: 60, sm: 80 },
+                    bgcolor: 'rgba(255, 255, 255, 0.2)',
+                    mx: { xs: 'auto', sm: 0 },
+                  }}
+                >
+                  <TrendingUp sx={{ fontSize: { xs: 32, sm: 40 }, color: 'white' }} />
+                </Avatar>
+              </Grid>
+
+              {/* Sección Central - Información */}
+              <Grid item xs={12} sm>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    mb: 1,
+                    textAlign: { xs: 'center', sm: 'left' },
+                  }}
+                >
+                  Próxima Lección Recomendada
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontWeight: 500,
+                    mb: 0.5,
+                    textAlign: { xs: 'center', sm: 'left' },
+                  }}
+                >
+                  {nextRecommendedLesson.lessonTitle}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    opacity: 0.9,
+                    mb: 1,
+                    textAlign: { xs: 'center', sm: 'left' },
+                  }}
+                >
+                  Módulo: {nextRecommendedLesson.moduleTitle}
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, justifyContent: { xs: 'center', sm: 'flex-start' }, flexWrap: 'wrap' }}>
+                  <Chip
+                    icon={<AccessTime sx={{ color: 'white !important' }} />}
+                    label={`${nextRecommendedLesson.estimatedTime || 0} min`}
+                    size="small"
+                    sx={{
+                      bgcolor: 'rgba(255, 255, 255, 0.2)',
+                      color: 'white',
+                    }}
+                  />
+                  {nextRecommendedLesson.currentProgress !== undefined && (
+                    <Chip
+                      label={`Módulo al ${nextRecommendedLesson.currentProgress}%`}
+                      size="small"
+                      sx={{
+                        bgcolor: 'rgba(255, 255, 255, 0.2)',
+                        color: 'white',
+                      }}
+                    />
+                  )}
+                </Box>
+              </Grid>
+
+              {/* Sección Derecha - Botón de Acción */}
+              <Grid item xs={12} sm="auto">
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  size="large"
+                  startIcon={<PlayArrow />}
+                  onClick={() =>
+                    onLessonClick(
+                      nextRecommendedLesson.moduleId,
+                      nextRecommendedLesson.lessonId
+                    )
+                  }
+                  sx={{
+                    bgcolor: 'white',
+                    color: 'primary.main',
+                    fontWeight: 600,
+                    width: { xs: '100%', sm: 'auto' },
+                    '&:hover': {
+                      bgcolor: 'rgba(255, 255, 255, 0.9)',
+                    },
+                  }}
+                >
+                  Comenzar
+                </Button>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+      </Grow>
+    );
+  };
+
+  /**
+   * Renderiza una tarjeta de lección en progreso
+   */
+  const renderInProgressCard = (lesson, index) => (
+    <Grid item xs={12} sm={6} md={4} key={lesson.id || index}>
+      <Grow in timeout={600 + index * 100}>
+        <Card
+          sx={{
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            transition: 'all 0.3s ease-in-out',
+            position: 'relative',
+            overflow: 'visible',
+            '&:hover': {
+              boxShadow: 4,
+              transform: 'translateY(-4px)',
+            },
+          }}
+        >
+          {/* Barra de progreso en la parte superior */}
+          {lesson.progress !== undefined && (
+            <LinearProgress
+              variant="determinate"
+              value={lesson.progress}
+              sx={{
+                height: 6,
+                backgroundColor: 'grey.200',
+                '& .MuiLinearProgress-bar': {
+                  backgroundColor: 'warning.main',
+                },
+              }}
+            />
+          )}
+
+          <CardContent sx={{ flexGrow: 1, pb: 1 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: '1rem',
+                fontWeight: 600,
+                mb: 1,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+              }}
+            >
+              {lesson.title}
+            </Typography>
+
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                display: 'block',
+                mb: 1,
+              }}
+            >
+              {lesson.moduleTitle || 'Módulo'}
+            </Typography>
+
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              <Chip label="En Progreso" color="warning" size="small" />
+              {lesson.estimatedTime && (
+                <Chip
+                  icon={<AccessTime />}
+                  label={`${lesson.estimatedTime} min`}
+                  size="small"
+                  variant="outlined"
+                />
+              )}
+            </Box>
+
+            {lesson.progress !== undefined && (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: 'block', mt: 1 }}
+              >
+                {lesson.progress}% completado
+              </Typography>
+            )}
+          </CardContent>
+
+          <CardActions sx={{ pt: 0, px: 2, pb: 2 }}>
+            <Button
+              size="small"
+              variant="outlined"
+              color="primary"
+              endIcon={<NavigateNext />}
+              onClick={() => onLessonClick(lesson.moduleId, lesson.id)}
+              fullWidth
+            >
+              Continuar
+            </Button>
+          </CardActions>
+        </Card>
+      </Grow>
+    </Grid>
+  );
+
+  /**
+   * Renderiza una tarjeta de lección favorita
+   */
+  const renderFavoriteCard = (lesson, index) => (
+    <Grid item xs={12} sm={6} md={4} key={lesson.id || index}>
+      <Grow in timeout={600 + index * 100}>
+        <Card
+          sx={{
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            transition: 'all 0.3s ease-in-out',
+            position: 'relative',
+            borderTop: '3px solid',
+            borderColor: 'primary.main',
+            '&:hover': {
+              boxShadow: 4,
+              transform: 'translateY(-4px)',
+            },
+          }}
+        >
+          {/* Botón para remover de favoritos */}
+          <IconButton
+            onClick={() => onRemoveFavorite(lesson.id)}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              bgcolor: 'background.paper',
+              boxShadow: 1,
+              '&:hover': {
+                bgcolor: 'error.lighter',
+                color: 'error.main',
+              },
+            }}
+            size="small"
+          >
+            <BookmarkRemove fontSize="small" />
+          </IconButton>
+
+          <CardContent sx={{ flexGrow: 1, pb: 1, pr: 6 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: '1rem',
+                fontWeight: 600,
+                mb: 1,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+              }}
+            >
+              {lesson.title}
+            </Typography>
+
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                display: 'block',
+                mb: 1,
+              }}
+            >
+              {lesson.moduleTitle || 'Módulo'}
+            </Typography>
+
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              <Chip
+                icon={<Bookmark />}
+                label="Favorito"
+                color="primary"
+                size="small"
+              />
+              {lesson.estimatedTime && (
+                <Chip
+                  icon={<AccessTime />}
+                  label={`${lesson.estimatedTime} min`}
+                  size="small"
+                  variant="outlined"
+                />
+              )}
+            </Box>
+          </CardContent>
+
+          <CardActions sx={{ pt: 0, px: 2, pb: 2 }}>
+            <Button
+              size="small"
+              variant="contained"
+              color="primary"
+              endIcon={<PlayArrow />}
+              onClick={() => onLessonClick(lesson.moduleId, lesson.id)}
+              fullWidth
+            >
+              Ver Lección
+            </Button>
+          </CardActions>
+        </Card>
+      </Grow>
+    </Grid>
+  );
+
+  // =========================================================================
+  // RENDER PRINCIPAL
+  // =========================================================================
+
+  // Mostrar skeleton mientras carga
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {renderLoadingSkeleton()}
+      </Box>
+    );
+  }
+
+  // Verificar si hay contenido para mostrar
+  const hasContent =
+    nextRecommendedLesson ||
+    inProgressLessons.length > 0 ||
+    favoriteLessons.length > 0;
+
+  // Mostrar estado vacío si no hay contenido
+  if (!hasContent) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Typography variant="h5" sx={{ fontWeight: 600 }}>
+          Acceso Rápido
+        </Typography>
+        {renderEmptyState()}
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      {/* ===== TÍTULO PRINCIPAL ===== */}
+      <Fade in timeout={300}>
+        <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
+          Acceso Rápido
+        </Typography>
+      </Fade>
+
+      {/* ===== PRÓXIMA LECCIÓN RECOMENDADA ===== */}
+      {nextRecommendedLesson && (
+        <Box sx={{ mb: 1 }}>
+          {renderRecommendedLesson()}
+        </Box>
+      )}
+
+      {/* ===== LECCIONES EN PROGRESO ===== */}
+      {inProgressLessons.length > 0 && (
+        <Box>
+          <Fade in timeout={500}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 600,
+                mb: 2,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
+              <NavigateNext color="primary" />
+              Continúa Donde Lo Dejaste
+            </Typography>
+          </Fade>
+
+          <Grid container spacing={2}>
+            {inProgressLessons.map((lesson, index) =>
+              renderInProgressCard(lesson, index)
+            )}
+          </Grid>
+        </Box>
+      )}
+
+      {/* ===== LECCIONES FAVORITAS ===== */}
+      {favoriteLessons.length > 0 && (
+        <Box>
+          <Fade in timeout={700}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 600,
+                mb: 2,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
+              <Bookmark color="primary" />
+              Tus Favoritos
+            </Typography>
+          </Fade>
+
+          <Grid container spacing={2}>
+            {favoriteLessons.map((lesson, index) =>
+              renderFavoriteCard(lesson, index)
+            )}
+          </Grid>
+        </Box>
+      )}
+
+      {/* ===== BOTÓN VER TODO ===== */}
+      {hasContent && onViewAll && (
+        <Fade in timeout={900}>
+          <Box sx={{ textAlign: 'center', mt: 2 }}>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={onViewAll}
+              endIcon={<NavigateNext />}
+            >
+              Ver Todo el Curriculum
+            </Button>
+          </Box>
+        </Fade>
+      )}
+    </Box>
   );
 };
 
+// =========================================================================
+// PROP TYPES
+// =========================================================================
+
 QuickAccessLessons.propTypes = {
-  allModules: PropTypes.arrayOf(
+  nextRecommendedLesson: PropTypes.shape({
+    moduleId: PropTypes.string,
+    lessonId: PropTypes.string,
+    moduleTitle: PropTypes.string,
+    lessonTitle: PropTypes.string,
+    estimatedTime: PropTypes.number,
+    currentProgress: PropTypes.number,
+  }),
+  inProgressLessons: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
       title: PropTypes.string.isRequired,
-      level: PropTypes.string.isRequired,
-      order: PropTypes.number.isRequired,
-      duration: PropTypes.number,
-      estimatedTime: PropTypes.string,
-      difficulty: PropTypes.string,
-      lessons: PropTypes.array
+      moduleId: PropTypes.string.isRequired,
+      moduleTitle: PropTypes.string,
+      estimatedTime: PropTypes.number,
+      progress: PropTypes.number,
     })
-  ).isRequired,
-  handleSectionClick: PropTypes.func.isRequired,
-  isMobile: PropTypes.bool
+  ),
+  favoriteLessons: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      title: PropTypes.string.isRequired,
+      moduleId: PropTypes.string.isRequired,
+      moduleTitle: PropTypes.string,
+      estimatedTime: PropTypes.number,
+    })
+  ),
+  onLessonClick: PropTypes.func.isRequired,
+  onRemoveFavorite: PropTypes.func.isRequired,
+  onViewAll: PropTypes.func,
+  isLoading: PropTypes.bool,
 };
 
 QuickAccessLessons.defaultProps = {
-  isMobile: false
+  nextRecommendedLesson: null,
+  inProgressLessons: [],
+  favoriteLessons: [],
+  onViewAll: null,
+  isLoading: false,
 };
 
 export default QuickAccessLessons;

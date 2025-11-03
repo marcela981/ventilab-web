@@ -8,6 +8,7 @@ import authRoutes from './auth.routes';
 import userRoutes from './user.routes';
 import moduleRoutes from './module.routes';
 import lessonRoutes from './lesson.routes';
+import progressRoutes from './progress.routes';
 import adminUsersRoutes from './admin/users.routes';
 import contentGeneratorRoutes from './content-generator.routes';
 
@@ -21,6 +22,7 @@ router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/modules', moduleRoutes);
 router.use('/lessons', lessonRoutes);
+router.use('/progress', progressRoutes);
 router.use('/content-generator', contentGeneratorRoutes);
 
 // Admin routes
