@@ -14,7 +14,6 @@ export { default as ContinueLearningSection } from './ContinueLearningSection';
 export { default as SessionStats } from './SessionStats';
 export { default as FlashcardDashboard } from './FlashcardDashboard';
 export { default as ProgressOverview } from './ProgressOverview';
-export { default as RecommendationsPanel } from './RecommendationsPanel';
 export { default as LevelStepper } from './LevelStepper';
 export { default as ModuleInfoPanel } from './ModuleInfoPanel';
 export { default as DashboardStats } from './DashboardStats';

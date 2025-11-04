@@ -1,5 +1,5 @@
 import React, { useState, createContext, useContext } from 'react';
-import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { Box, CssBaseline, ThemeProvider } from '@mui/material';
 import { SessionProvider } from 'next-auth/react';
 import { AuthProvider } from '../src/contexts/AuthContext';
 import { PatientDataProvider } from '../src/contexts/PatientDataContext';
@@ -7,6 +7,7 @@ import { NotificationProvider } from '../src/contexts/NotificationContext';
 import Sidebar from '../src/components/navigation/Sidebar';
 import ErrorBoundary from '../src/components/common/ErrorBoundary';
 import { useRouter } from 'next/router';
+import theme from '../src/theme/theme';
 import '../src/App.css';
 
 // Context para el estado del sidebar
@@ -19,18 +20,6 @@ export const useSidebar = () => {
   }
   return context;
 };
-
-// Create a theme for consistent styling
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
 
 function MyApp({ Component, pageProps: { session, ...pageProps } }) {
   const router = useRouter();

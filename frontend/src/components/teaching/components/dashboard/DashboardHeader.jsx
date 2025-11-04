@@ -12,73 +12,76 @@ import {
 } from '@mui/icons-material';
 
 /**
- * DashboardHeader - Componente de cabecera para el módulo de enseñanza
- * 
- * Muestra breadcrumbs de navegación, título principal y descripción del módulo.
- * Incluye responsive behavior para dispositivos móviles.
- * 
- * @param {boolean} isMobile - Indica si el dispositivo es móvil
+ * DashboardHeader - Componente de cabecera minimalista para el módulo de enseñanza
+ *
+ * Muestra breadcrumbs de navegación, título principal y descripción del módulo
+ * con un diseño limpio y profesional que se mantiene consistente en todos los dispositivos.
+ *
  * @param {string} title - Título principal del módulo
  * @param {string} description - Descripción del módulo
+ * @returns {JSX.Element} Componente de cabecera del dashboard
  */
-const DashboardHeader = ({ 
-  isMobile, 
-  title = "Módulo de Enseñanza - Mecánica Ventilatoria",
-  description = "Aprende los fundamentos de la ventilación mecánica a través de un programa estructurado que combina teoría, práctica y simulaciones interactivas."
+const DashboardHeader = ({
+  title = "Módulo de Enseñanza",
+  description = "Aprende los fundamentos de la mecánica ventilatoria de manera interactiva."
 }) => {
   return (
     <Box sx={{ mb: 4 }}>
-      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
-        <Link 
-          underline="hover" 
-          color="text.secondary"
+      {/* Breadcrumbs de navegación */}
+      <Breadcrumbs
+        aria-label="breadcrumb"
+        sx={{ mb: 2 }}
+      >
+        <Link
+          underline="hover"
           href="/"
-          sx={{ 
-            display: 'flex', 
+          sx={{
+            display: 'flex',
             alignItems: 'center',
-            color: '#6c757d',
-            '&:hover': { color: '#495057' }
+            color: 'text.secondary',
+            transition: 'color 0.2s ease',
+            '&:hover': {
+              color: 'primary.light'
+            }
           }}
         >
-          <Home sx={{ mr: 0.5 }} fontSize="inherit" />
+          <Home sx={{ mr: 0.5, fontSize: 18 }} />
           Inicio
         </Link>
-        <Typography 
-          color="text.primary"
-          sx={{ 
-            display: 'flex', 
+        <Typography
+          sx={{
+            display: 'flex',
             alignItems: 'center',
-            color: '#343a40',
+            color: 'primary.main',
             fontWeight: 500
           }}
         >
-          <School sx={{ mr: 0.5 }} fontSize="inherit" />
+          <School sx={{ mr: 0.5, fontSize: 18 }} />
           Módulo de Enseñanza
         </Typography>
       </Breadcrumbs>
 
-      <Typography 
-        variant={isMobile ? "h4" : "h3"} 
-        component="h1" 
-        gutterBottom
-        sx={{ 
+      {/* Título principal */}
+      <Typography
+        variant="h4"
+        component="h1"
+        sx={{
           fontWeight: 700,
-          color: '#2c3e50',
-          mb: 2,
-          fontSize: isMobile ? '1.8rem' : '2.2rem'
+          color: 'text.primary',
+          mb: 2
         }}
       >
         {title}
       </Typography>
 
-      <Typography 
-        variant="body1" 
-        sx={{ 
-          mb: 4, 
-          maxWidth: '800px',
-          color: '#495057',
-          fontSize: '1.1rem',
-          lineHeight: 1.6
+      {/* Descripción */}
+      <Typography
+        variant="body1"
+        sx={{
+          color: 'text.secondary',
+          maxWidth: '700px',
+          mx: 'auto',
+          textAlign: 'center'
         }}
       >
         {description}
@@ -88,7 +91,6 @@ const DashboardHeader = ({
 };
 
 DashboardHeader.propTypes = {
-  isMobile: PropTypes.bool.isRequired,
   title: PropTypes.string,
   description: PropTypes.string
 };

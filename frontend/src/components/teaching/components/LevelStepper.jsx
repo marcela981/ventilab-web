@@ -64,12 +64,11 @@ const LevelStepper = ({
       sx={{
         p: 4,
         mb: 4,
-        backgroundColor: '#ffffff',
-        border: '1px solid #e9ecef',
+        backgroundColor: 'background.paper',
         borderRadius: 3
       }}
     >
-      <Typography variant="h5" sx={{ color: '#2c3e50', fontWeight: 700, mb: 3, textAlign: 'center' }}>
+      <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 700, mb: 3, textAlign: 'center' }}>
         🗺️ Tu Camino de Aprendizaje
       </Typography>
 
@@ -98,10 +97,10 @@ const LevelStepper = ({
                 )}
               >
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 600, color: '#2c3e50' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
                     {level.title}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: '#6c757d', mb: 1 }}>
+                  <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
                     {level.description}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -201,13 +200,13 @@ const LevelStepper = ({
                               <Typography variant="h6" sx={{
                                 fontWeight: 600,
                                 mb: 1,
-                                color: available ? '#2c3e50' : '#9e9e9e'
+                                color: available ? 'text.primary' : 'text.disabled'
                               }}>
                                 {module.title}
                               </Typography>
 
                               <Typography variant="body2" sx={{
-                                color: '#6c757d',
+                                color: 'text.secondary',
                                 mb: 2,
                                 fontSize: '0.85rem',
                                 lineHeight: 1.4
@@ -218,7 +217,7 @@ const LevelStepper = ({
                               {/* Progreso del módulo */}
                               <Box sx={{ mb: 2 }}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                                  <Typography variant="caption" sx={{ color: '#6c757d', fontSize: '0.75rem' }}>
+                                  <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
                                     Progreso
                                   </Typography>
                                   <Typography variant="caption" sx={{

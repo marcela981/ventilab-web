@@ -6,7 +6,6 @@ import {
   Container,
   Paper,
   Typography,
-  Grid,
   Box,
   Alert,
   Snackbar,
@@ -14,10 +13,10 @@ import {
   Tab,
   Skeleton,
   IconButton,
-  Fade
+  Fade,
+  Grid
 } from '@mui/material';
 import {
-  Assessment,
   Dashboard as DashboardIcon,
   School as SchoolIcon,
   TrendingUp,
@@ -28,17 +27,13 @@ import {
 import { useLearningProgress } from '../../contexts/LearningProgressContext';
 import useModuleProgress from './hooks/useModuleProgress';
 import useModuleAvailability from './hooks/useModuleAvailability';
-import useRecommendations from './hooks/useRecommendations';
 import { curriculumData } from '../../data/curriculumData';
 
 // Componentes hijos
-import ClientOnly from '../common/ClientOnly';
 import DashboardHeader from './components/DashboardHeader';
 import ContinueLearningSection from './components/ContinueLearningSection';
 import SessionStats from './components/SessionStats';
-import FlashcardDashboard from './components/FlashcardDashboard';
 import ProgressOverview from './components/ProgressOverview';
-import RecommendationsPanel from './components/RecommendationsPanel';
 import LevelStepper from './components/LevelStepper';
 import ModuleInfoPanel from './components/ModuleInfoPanel';
 import FlashcardSystem from './FlashcardSystem';
@@ -98,7 +93,12 @@ const TeachingModule = () => {
 
   // Estados locales mínimos
   const [favoriteModules, setFavoriteModules] = useState(new Set());
+
+  // FlashcardSystem modal - Mantenido para uso futuro
+  // Nota: Actualmente sin trigger en dashboard principal (removido en HU-001)
+  // Puede ser activado desde otras secciones o reintegrado en el futuro
   const [flashcardSystemOpen, setFlashcardSystemOpen] = useState(false);
+
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
 
@@ -175,10 +175,6 @@ const TeachingModule = () => {
     }
   }, [selectedLesson, markLessonComplete, handleBackToDashboard]);
 
-  const handleOpenFlashcards = useCallback(() => {
-    setFlashcardSystemOpen(true);
-  }, []);
-
   const handleCloseAlert = useCallback((event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -217,14 +213,6 @@ const TeachingModule = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [router]);
 
-  // Hook: recomendaciones inteligentes
-  const recommendations = useRecommendations(
-    nextModule,
-    calculateModuleProgress,
-    handleContinueLearning,
-    handleSectionClick
-  );
-
   // Calcular estadísticas globales
   const globalStats = calculateGlobalStats;
 
@@ -259,7 +247,7 @@ const TeachingModule = () => {
   }, [router.query.tab]);
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4, backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+    <Container maxWidth="xl" sx={{ py: 4, minHeight: '100vh' }}>
       {/* Renderizado condicional: LessonViewer o Dashboard normal */}
       {selectedLesson ? (
         /* Vista de Lección Completa */
@@ -305,7 +293,7 @@ const TeachingModule = () => {
         <Fade in timeout={500}>
           <Box>
             {/* Header: Breadcrumb, título y descripción */}
-            <DashboardHeader isMobile={isMobile} />
+            <DashboardHeader />
 
       {/* Tabs Navigation */}
       <Paper elevation={2} sx={{ mb: 4, borderRadius: 2 }}>
@@ -357,104 +345,35 @@ const TeachingModule = () => {
       {activeTab === 0 && (
         <Box>
           {/* Sección: Continuar Aprendiendo */}
-          <ClientOnly fallback={
-            <Paper elevation={2} sx={{ p: 3, mb: 4, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                Continuar Aprendiendo
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 2, opacity: 0.9 }}>
-                Comienza tu viaje de aprendizaje
-              </Typography>
-            </Paper>
-          }>
+          <Box sx={{ mb: 4 }}>
             <ContinueLearningSection
               nextModule={nextModule}
               onContinue={handleContinueLearning}
               calculateProgress={calculateModuleProgress}
             />
-          </ClientOnly>
+          </Box>
 
-          {/* PRIORIDAD MÁXIMA: Acceso Rápido a Lecciones */}
-          <ClientOnly fallback={
-            <Paper elevation={3} sx={{ p: 3, mb: 4, backgroundColor: '#ffffff', border: '1px solid #e3f2fd', borderRadius: 3 }}>
-              <Typography variant="h5" sx={{ mb: 3, color: '#1976d2', fontWeight: 700 }}>
-                Acceso Rápido a Lecciones
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#6c757d' }}>
-                Cargando módulos disponibles...
-              </Typography>
-            </Paper>
-          }>
+          {/* Acceso Rápido a Lecciones */}
+          <Box sx={{ mb: 4 }}>
             <QuickAccessLessons
               allModules={allModules}
               handleSectionClick={handleSectionClick}
               isMobile={isMobile}
             />
-          </ClientOnly>
+          </Box>
 
           {/* Estadísticas: Tiempo y lecciones completadas */}
-          <ClientOnly fallback={
-            <SessionStats timeSpent={0} completedLessonsCount={0} />
-          }>
+          <Box sx={{ mb: 4 }}>
             <SessionStats
               timeSpent={timeSpent}
               completedLessonsCount={completedLessons.size}
             />
-          </ClientOnly>
+          </Box>
 
-          {/* Dashboard: Estadísticas de aprendizaje */}
-          <ClientOnly fallback={
-            <Paper elevation={2} sx={{ p: 3, mb: 4, backgroundColor: '#f8f9fa' }}>
-              <Typography variant="h5" sx={{ mb: 3, color: '#2c3e50', fontWeight: 600 }}>
-                📊 Estadísticas de Aprendizaje
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#6c757d' }}>
-                Cargando estadísticas...
-              </Typography>
-            </Paper>
-          }>
-            <Paper
-              elevation={3}
-              sx={{
-                p: 3,
-                mb: 4,
-                backgroundColor: '#ffffff',
-                border: '1px solid #e3f2fd',
-                borderRadius: 3
-              }}
-            >
-              <Typography variant="h5" sx={{
-                mb: 3,
-                color: '#1976d2',
-                fontWeight: 700,
-                textAlign: 'center',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 1
-              }}>
-                <Assessment sx={{ fontSize: 28 }} />
-                Dashboard de Aprendizaje
-              </Typography>
-
-              <Grid container spacing={3}>
-                {/* Sistema de Repetición Espaciada */}
-                <Grid item xs={12} md={6} lg={6}>
-                  <FlashcardDashboard onOpenFlashcards={handleOpenFlashcards} />
-                </Grid>
-
-                {/* Recomendaciones Inteligentes */}
-                <Grid item xs={12} md={6} lg={6}>
-                  <RecommendationsPanel recommendations={recommendations} />
-                </Grid>
-              </Grid>
-
-              {/* Sistema de Racha y Progreso Temporal */}
-              <Box sx={{ mt: 3 }}>
-                <ProgressOverview dashboardData={dashboardData} />
-              </Box>
-            </Paper>
-          </ClientOnly>
+          {/* Sistema de Racha y Progreso Temporal */}
+          <Box sx={{ mb: 4 }}>
+            <ProgressOverview dashboardData={dashboardData} />
+          </Box>
         </Box>
       )}
 
@@ -531,6 +450,12 @@ const TeachingModule = () => {
       )}
 
       {/* Sistema de Flashcards: Modal */}
+      {/*
+        Nota HU-001: FlashcardSystem se mantiene disponible para uso futuro.
+        Actualmente no tiene trigger desde el dashboard principal.
+        Puede ser reintegrado cuando se diseñe una sección dedicada para
+        el sistema de repetición espaciada.
+      */}
       <FlashcardSystem
         isOpen={flashcardSystemOpen}
         onClose={() => setFlashcardSystemOpen(false)}

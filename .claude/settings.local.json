@@ -32,7 +32,8 @@
       "Bash(nul)",
       "Bash(npx prisma db seed:*)",
       "Bash(npx prisma:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(del:*)"
     ],
     "deny": [],
     "ask": []

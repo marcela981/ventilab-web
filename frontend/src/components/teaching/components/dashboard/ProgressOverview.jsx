@@ -3,265 +3,185 @@ import PropTypes from 'prop-types';
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
   Grid,
   LinearProgress,
-  Avatar,
-  Stack
+  Paper,
+  useTheme
 } from '@mui/material';
 import {
-  LocalFireDepartment,
-  EmojiEvents,
   TrendingUp,
-  Assessment
+  CheckCircle,
+  AccessTime,
+  PlayArrow
 } from '@mui/icons-material';
-import ClientOnly from '../../../common/ClientOnly';
 
 /**
- * ProgressOverview - Panel de estadísticas globales del usuario
- * 
- * Muestra métricas clave del progreso del usuario incluyendo:
- * - Tiempo total gastado
+ * ProgressOverview - Panel de métricas esenciales del progreso del usuario
+ *
+ * Muestra las 4 métricas más importantes:
+ * - Progreso general
  * - Lecciones completadas
- * - Sistema de racha
- * - Badges ganados
- * 
+ * - Tiempo total invertido
+ * - Próxima lección recomendada
+ *
  * @param {Object} globalStats - Estadísticas globales calculadas
- * @param {Object} dashboardData - Datos del dashboard (streak, badges, etc.)
+ * @param {Object} dashboardData - Datos del dashboard
  */
-const ProgressOverview = ({ 
-  globalStats, 
-  dashboardData 
+const ProgressOverview = ({
+  globalStats,
+  dashboardData
 }) => {
+  const theme = useTheme();
+
+  // Calcular progreso general
+  const overallProgress = globalStats.totalLessons > 0
+    ? Math.round((globalStats.completedLessons / globalStats.totalLessons) * 100)
+    : 0;
+
+  // Formatear tiempo invertido
+  const formatTime = (minutes) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours === 0) return `${mins} min`;
+    return `${hours}h ${mins}min`;
+  };
+
+  // Obtener título de la próxima lección
+  const nextLessonTitle = dashboardData.nextLesson?.title || 'No disponible';
+
   return (
-    <ClientOnly fallback={
-      <Box sx={{ 
-        display: 'flex', 
-        gap: 3, 
-        mb: 3,
-        flexWrap: 'wrap'
-      }}>
-        <Box sx={{ 
-          backgroundColor: '#e3f2fd', 
-          padding: 2, 
-          borderRadius: 2,
-          border: '1px solid #bbdefb'
-        }}>
-          <Typography variant="body2" sx={{ color: '#1976d2', fontWeight: 600 }}>
-            Tiempo en sesión: 0 min
-          </Typography>
-        </Box>
-        <Box sx={{ 
-          backgroundColor: '#e8f5e8', 
-          padding: 2, 
-          borderRadius: 2,
-          border: '1px solid #c8e6c9'
-        }}>
-          <Typography variant="body2" sx={{ color: '#388e3c', fontWeight: 600 }}>
-            Lecciones completadas: 0
-          </Typography>
-        </Box>
-      </Box>
-    }>
-      <Box sx={{ 
-        display: 'flex', 
-        gap: 3, 
-        mb: 3,
-        flexWrap: 'wrap'
-      }}>
-        <Box sx={{ 
-          backgroundColor: '#e3f2fd', 
-          padding: 2, 
-          borderRadius: 2,
-          border: '1px solid #bbdefb'
-        }}>
-          <Typography variant="body2" sx={{ color: '#1976d2', fontWeight: 600 }}>
-            Tiempo en sesión: {globalStats.totalTimeSpent} min
-          </Typography>
-        </Box>
-        <Box sx={{ 
-          backgroundColor: '#e8f5e8', 
-          padding: 2, 
-          borderRadius: 2,
-          border: '1px solid #c8e6c9'
-        }}>
-          <Typography variant="body2" sx={{ color: '#388e3c', fontWeight: 600 }}>
-            Lecciones completadas: {globalStats.completedLessons}
-          </Typography>
-        </Box>
-      </Box>
+    <Grid container spacing={3} sx={{ mb: 4 }}>
+      {/* Progreso General */}
+      <Grid item xs={12} sm={6}>
+        <Paper
+          elevation={2}
+          sx={{
+            p: theme.spacing(2),
+            backgroundColor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
+            borderRadius: theme.shape.borderRadius
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <TrendingUp sx={{ color: theme.palette.primary.main, fontSize: 32 }} />
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Progreso General
+              </Typography>
+              <Typography variant="h4" sx={{ color: theme.palette.primary.main, fontWeight: 700 }}>
+                {overallProgress}%
+              </Typography>
+            </Box>
+          </Box>
+          <LinearProgress
+            variant="determinate"
+            value={overallProgress}
+            color="primary"
+            sx={{
+              height: 8,
+              borderRadius: theme.shape.borderRadius
+            }}
+          />
+        </Paper>
+      </Grid>
 
-      <Card 
-        elevation={3} 
-        sx={{ 
-          p: 3, 
-          mb: 4, 
-          backgroundColor: '#ffffff',
-          border: '1px solid #e3f2fd',
-          borderRadius: 3
-        }}
-      >
-        <Typography variant="h5" sx={{ 
-          mb: 3, 
-          color: '#1976d2', 
-          fontWeight: 700,
-          textAlign: 'center',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 1
-        }}>
-          <Assessment sx={{ fontSize: 28 }} />
-          Dashboard de Aprendizaje
-        </Typography>
+      {/* Lecciones Completadas */}
+      <Grid item xs={12} sm={6}>
+        <Paper
+          elevation={2}
+          sx={{
+            p: theme.spacing(2),
+            backgroundColor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
+            borderRadius: theme.shape.borderRadius
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <CheckCircle sx={{ color: theme.palette.primary.main, fontSize: 32 }} />
+            <Box>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Lecciones Completadas
+              </Typography>
+              <Typography variant="h4" sx={{ color: theme.palette.primary.main, fontWeight: 700 }}>
+                {globalStats.completedLessons}/{globalStats.totalLessons || 0}
+              </Typography>
+            </Box>
+          </Box>
+        </Paper>
+      </Grid>
 
-        <Grid container spacing={3}>
-          {/* Cuadrante Superior Derecho - Sistema de Racha */}
-          <Grid item xs={12} md={6}>
-            <Card sx={{ 
-              height: '100%', 
-              backgroundColor: '#fff3e0',
-              border: '2px solid #ffcc02',
-              borderRadius: 2
-            }}>
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="h6" sx={{ 
-                  color: '#f57c00', 
-                  fontWeight: 600, 
-                  mb: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1
-                }}>
-                  <LocalFireDepartment sx={{ fontSize: 20 }} />
-                  Sistema de Racha
-                </Typography>
-                
-                <Stack spacing={2}>
-                  {/* Racha Actual */}
-                  <Box sx={{ textAlign: 'center', mb: 2 }}>
-                    <Typography variant="h2" sx={{ 
-                      color: '#f57c00', 
-                      fontWeight: 700,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 1
-                    }}>
-                      <LocalFireDepartment sx={{ fontSize: 48 }} />
-                      {dashboardData.streak}
-                    </Typography>
-                    <Typography variant="body1" sx={{ color: '#f57c00', fontWeight: 600 }}>
-                      Días Consecutivos
-                    </Typography>
-                  </Box>
+      {/* Tiempo Total Invertido */}
+      <Grid item xs={12} sm={6}>
+        <Paper
+          elevation={2}
+          sx={{
+            p: theme.spacing(2),
+            backgroundColor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
+            borderRadius: theme.shape.borderRadius
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <AccessTime sx={{ color: theme.palette.primary.main, fontSize: 32 }} />
+            <Box>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Tiempo Total Invertido
+              </Typography>
+              <Typography variant="h4" sx={{ color: theme.palette.primary.main, fontWeight: 700 }}>
+                {formatTime(globalStats.totalTimeSpent || 0)}
+              </Typography>
+            </Box>
+          </Box>
+        </Paper>
+      </Grid>
 
-                  {/* Próximo Milestone */}
-                  <Box sx={{ 
-                    p: 2,
-                    backgroundColor: 'rgba(255,255,255,0.7)',
-                    borderRadius: 2,
-                    textAlign: 'center'
-                  }}>
-                    <Typography variant="body2" sx={{ color: '#f57c00', fontWeight: 600, mb: 1 }}>
-                      Próximo Milestone
-                    </Typography>
-                    <Typography variant="h6" sx={{ color: '#f57c00', fontWeight: 700 }}>
-                      30 días
-                    </Typography>
-                    <LinearProgress 
-                      variant="determinate" 
-                      value={(dashboardData.streak / 30) * 100}
-                      sx={{ 
-                        height: 6, 
-                        borderRadius: 3,
-                        backgroundColor: '#ffcc02',
-                        '& .MuiLinearProgress-bar': {
-                          backgroundColor: '#f57c00',
-                          borderRadius: 3,
-                        }
-                      }}
-                    />
-                    <Typography variant="caption" sx={{ color: '#f57c00', mt: 1, display: 'block' }}>
-                      {30 - dashboardData.streak} días restantes
-                    </Typography>
-                  </Box>
-
-                  {/* Badges Ganados */}
-                  <Box>
-                    <Typography variant="body2" sx={{ color: '#f57c00', fontWeight: 600, mb: 1 }}>
-                      Badges Ganados
-                    </Typography>
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                      {dashboardData.badges.map((badge, index) => (
-                        <Avatar key={index} sx={{ 
-                          width: 32, 
-                          height: 32, 
-                          backgroundColor: '#f57c00',
-                          border: '2px solid #ffcc02'
-                        }}>
-                          <EmojiEvents sx={{ fontSize: 18, color: 'white' }} />
-                        </Avatar>
-                      ))}
-                    </Box>
-                  </Box>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          {/* Cuadrante Inferior Izquierdo - Gráfica de Progreso Temporal */}
-          <Grid item xs={12} md={6}>
-            <Card sx={{ 
-              height: '100%', 
-              backgroundColor: '#e8f5e8',
-              border: '2px solid #c8e6c9',
-              borderRadius: 2
-            }}>
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="h6" sx={{ 
-                  color: '#388e3c', 
-                  fontWeight: 600, 
-                  mb: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1
-                }}>
-                  <TrendingUp sx={{ fontSize: 20 }} />
-                  Progreso Temporal
-                </Typography>
-                
-                {/* Placeholder para gráfica - se implementará en la fase 2 */}
-                <Box sx={{ 
-                  height: 200, 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  backgroundColor: 'rgba(255,255,255,0.7)',
-                  borderRadius: 2
-                }}>
-                  <Typography variant="body2" sx={{ color: '#388e3c' }}>
-                    Gráfica de progreso semanal
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-      </Card>
-    </ClientOnly>
+      {/* Próxima Lección Recomendada */}
+      <Grid item xs={12} sm={6}>
+        <Paper
+          elevation={2}
+          sx={{
+            p: theme.spacing(2),
+            backgroundColor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
+            borderRadius: theme.shape.borderRadius
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <PlayArrow sx={{ color: theme.palette.primary.main, fontSize: 32 }} />
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Próxima Lección
+              </Typography>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: theme.palette.primary.main,
+                  fontWeight: 600,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {nextLessonTitle}
+              </Typography>
+            </Box>
+          </Box>
+        </Paper>
+      </Grid>
+    </Grid>
   );
 };
 
 ProgressOverview.propTypes = {
   globalStats: PropTypes.shape({
     totalTimeSpent: PropTypes.number.isRequired,
-    completedLessons: PropTypes.number.isRequired
+    completedLessons: PropTypes.number.isRequired,
+    totalLessons: PropTypes.number
   }).isRequired,
   dashboardData: PropTypes.shape({
-    streak: PropTypes.number.isRequired,
-    badges: PropTypes.array.isRequired
+    nextLesson: PropTypes.shape({
+      title: PropTypes.string
+    })
   }).isRequired
 };
 
