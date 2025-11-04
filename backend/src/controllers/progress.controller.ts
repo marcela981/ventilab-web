@@ -9,6 +9,7 @@ import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/database';
 import { AppError } from '../middleware/errorHandler';
 import { HTTP_STATUS } from '../config/constants';
+import * as achievementService from '../services/achievement.service';
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -603,34 +604,6 @@ export const completeLesson = async (
       }
     });
 
-    // Check if this is the first lesson completed
-    const totalCompletedLessons = await prisma.lessonProgress.count({
-      where: {
-        learningProgress: {
-          userId
-        },
-        completed: true
-      }
-    });
-
-    if (totalCompletedLessons === 1) {
-      // Award FIRST_LESSON achievement
-      await prisma.achievement.upsert({
-        where: {
-          id: `${userId}-FIRST_LESSON`
-        },
-        update: {},
-        create: {
-          id: `${userId}-FIRST_LESSON`,
-          userId,
-          type: 'FIRST_LESSON',
-          title: 'Primera Lección',
-          description: 'Completaste tu primera lección',
-          points: 10
-        }
-      });
-    }
-
     // Check if all lessons in module are completed
     const allLessonsCompleted = lesson.module.lessons.every(l => {
       return learningProgress!.lessonProgress.some(
@@ -638,39 +611,81 @@ export const completeLesson = async (
       );
     });
 
-    const achievements: string[] = [];
-
+    // If all lessons completed, mark module as completed
     if (allLessonsCompleted) {
-      // Mark module as completed
       await prisma.learningProgress.update({
         where: { id: learningProgress.id },
         data: { completedAt: new Date() }
       });
+    }
 
-      // Award MODULE_COMPLETE achievement
-      await prisma.achievement.upsert({
+    // =========================================================================
+    // ACHIEVEMENT SYSTEM INTEGRATION
+    // Automatically check and unlock achievements when lesson is completed
+    // This is non-blocking - errors won't affect the main lesson completion flow
+    // =========================================================================
+    let newAchievements: any[] = [];
+    
+    try {
+      console.log(`[Progress] Checking achievements for lesson completion: ${lessonId}`);
+
+      // Prepare event data for achievement verification
+      const eventData: achievementService.AchievementEventData = {
+        lessonId,
+        moduleId: lesson.moduleId,
+        timeSpent
+      };
+
+      // Check and unlock lesson-related achievements
+      const lessonAchievements = await achievementService.checkAndUnlockAchievements(
+        userId,
+        'LESSON_COMPLETED',
+        eventData
+      );
+
+      newAchievements.push(...lessonAchievements);
+
+      // If module was completed, also check module-related achievements
+      if (allLessonsCompleted) {
+        console.log(`[Progress] Module completed! Checking module achievements: ${lesson.moduleId}`);
+
+        // Get total modules completed for this user
+        const totalModulesCompleted = await prisma.learningProgress.count({
         where: {
-          id: `${userId}-MODULE_COMPLETE-${lesson.moduleId}`
-        },
-        update: {},
-        create: {
-          id: `${userId}-MODULE_COMPLETE-${lesson.moduleId}`,
           userId,
-          type: 'MODULE_COMPLETE',
-          title: 'Módulo Completado',
-          description: `Completaste el módulo: ${lesson.module.title}`,
-          points: 50
-        }
-      });
+            completedAt: { not: null }
+          }
+        });
 
-      achievements.push('MODULE_COMPLETE');
+        const moduleEventData: achievementService.AchievementEventData = {
+          moduleId: lesson.moduleId,
+          moduleCategory: lesson.module.category,
+          moduleDifficulty: lesson.module.difficulty,
+          totalModulesCompleted
+        };
+
+        const moduleAchievements = await achievementService.checkAndUnlockAchievements(
+          userId,
+          'MODULE_COMPLETED',
+          moduleEventData
+        );
+
+        newAchievements.push(...moduleAchievements);
     }
 
-    if (totalCompletedLessons === 1) {
-      achievements.push('FIRST_LESSON');
+      if (newAchievements.length > 0) {
+        console.log(
+          `[Progress] 🎉 ${newAchievements.length} achievement(s) unlocked: ` +
+          newAchievements.map(a => a.type).join(', ')
+        );
+      }
+    } catch (achievementError) {
+      // Log error but don't fail the main operation
+      console.error('[Progress] Error checking achievements (non-critical):', achievementError);
+      // Continue execution - achievement errors shouldn't block lesson completion
     }
 
-    console.log(`[Progress] Lesson completed. Achievements: ${achievements.join(', ')}`);
+    console.log(`[Progress] Lesson completed successfully with ${newAchievements.length} new achievements`);
 
     res.status(HTTP_STATUS.OK).json({
       success: true,
@@ -679,7 +694,7 @@ export const completeLesson = async (
         completed: lessonProgress.completed,
         timeSpent: lessonProgress.timeSpent,
         moduleCompleted: allLessonsCompleted,
-        achievements
+        newAchievements // Include newly unlocked achievements in response
       },
       message: 'Lesson completed successfully'
     });

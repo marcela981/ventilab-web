@@ -17,6 +17,7 @@ import {
   SUCCESS_MESSAGES,
 } from '../config/constants';
 import { AuthRequest } from '../types';
+import * as achievementService from '../services/achievement.service';
 
 /**
  * Register a new user
@@ -112,6 +113,76 @@ export const login = asyncHandler(
       id: user.id,
       email: user.email,
       role: user.role,
+    });
+
+    // =========================================================================
+    // SESSION TRACKING & ACHIEVEMENT VERIFICATION
+    // Track daily login session for streak and time-based achievements
+    // This runs asynchronously and won't block the login response
+    // =========================================================================
+    setImmediate(async () => {
+      try {
+        const now = new Date();
+        const today = new Date(now);
+        today.setHours(0, 0, 0, 0);
+
+        console.log(`[Auth] Tracking session for user: ${user.id} at ${now.toISOString()}`);
+
+        // Create a learning session for today
+        // This helps track daily streaks and learning patterns
+        const sessionId = `${user.id}-${today.toISOString()}`;
+        
+        await prisma.learningSession.upsert({
+          where: {
+            id: sessionId
+          },
+          update: {
+            // If session exists for today, just update the timestamp
+            // This prevents multiple login attempts from breaking streak calculations
+          },
+          create: {
+            id: sessionId,
+            userId: user.id,
+            startTime: now,
+            lessonsViewed: 0,
+            quizzesTaken: 0
+          }
+        });
+
+        // Check for first-time login (for potential future first login achievement)
+        const sessionCount = await prisma.learningSession.count({
+          where: { userId: user.id }
+        });
+
+        // Prepare event data with login time information
+        const eventData: achievementService.AchievementEventData = {
+          loginTime: now.toISOString(),
+          isFirstLogin: sessionCount === 1,
+          hour: now.getHours() // For time-based achievements (MORNING_LEARNER, NIGHT_OWL)
+        };
+
+        // Check and unlock streak and time-based achievements
+        // This includes: STREAK_3_DAYS, STREAK_7_DAYS, STREAK_30_DAYS, 
+        // MORNING_LEARNER (before 7am), NIGHT_OWL (after 10pm)
+        const newAchievements = await achievementService.checkAndUnlockAchievements(
+          user.id,
+          'DAILY_LOGIN',
+          eventData
+        );
+
+        if (newAchievements.length > 0) {
+          console.log(
+            `[Auth] 🎉 ${newAchievements.length} achievement(s) unlocked on login: ` +
+            newAchievements.map(a => a.type).join(', ')
+          );
+          // Note: We don't include these in the login response to keep it lightweight
+          // The frontend can fetch pending achievements separately via GET /api/achievements
+        }
+      } catch (sessionError) {
+        // Silently log errors - session tracking shouldn't break login
+        console.error('[Auth] Error tracking session/achievements (non-critical):', sessionError);
+        // Login continues successfully even if session tracking fails
+      }
     });
 
     // Send response

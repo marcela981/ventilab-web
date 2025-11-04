@@ -230,6 +230,7 @@ export const config = {
     '/analytics/:path*',
     '/profile/:path*',
     '/settings/:path*',
+    '/achievements/:path*',
   ],
 };
 

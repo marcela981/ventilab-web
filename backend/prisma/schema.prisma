@@ -67,15 +67,54 @@ enum ModuleDifficulty {
   ADVANCED
 }
 
+/// Achievement types for the gamification system
+/// Each type represents a specific milestone or accomplishment in the learning journey
 enum AchievementType {
-  FIRST_LESSON
-  MODULE_COMPLETE
-  STREAK_7_DAYS
-  STREAK_30_DAYS
-  MASTER_LEVEL
-  PERFECT_QUIZ
-  SPEED_LEARNER
-  DEDICATED_STUDENT
+  // === First Steps & Exploration ===
+  FIRST_LESSON          // Unlocked: Complete your first lesson
+  FIRST_MODULE          // Unlocked: Complete your first module
+  EXPLORING             // Unlocked: Access 5 different lessons (not necessarily complete them)
+  
+  // === Lesson Completion Milestones ===
+  LESSONS_10            // Unlocked: Complete 10 lessons total
+  LESSONS_25            // Unlocked: Complete 25 lessons total
+  LESSONS_50            // Unlocked: Complete 50 lessons total
+  
+  // === Specific Module Completion ===
+  MODULE_COMPLETE       // Unlocked: Complete any module (generic achievement)
+  MODULE_FUNDAMENTALS   // Unlocked: Complete the Fundamentals module
+  MODULE_VENTILATION    // Unlocked: Complete the Ventilation Principles module
+  MODULE_CLINICAL       // Unlocked: Complete the Clinical Applications module
+  MODULE_ADVANCED       // Unlocked: Complete the Advanced Techniques module
+  
+  // === Level Mastery ===
+  ALL_BEGINNER          // Unlocked: Complete all modules of Beginner difficulty level
+  ALL_INTERMEDIATE      // Unlocked: Complete all modules of Intermediate difficulty level
+  ALL_ADVANCED          // Unlocked: Complete all modules of Advanced difficulty level
+  COMPLETE_KNOWLEDGE    // Unlocked: Complete all available modules in the platform
+  MASTER_LEVEL          // Unlocked: Reach master level in your learning journey
+  
+  // === Learning Streaks ===
+  STREAK_3_DAYS         // Unlocked: Study for 3 consecutive days
+  STREAK_7_DAYS         // Unlocked: Study for 7 consecutive days (1 week)
+  STREAK_30_DAYS        // Unlocked: Study for 30 consecutive days (1 month)
+  
+  // === Time-Based Learning Habits ===
+  MORNING_LEARNER       // Unlocked: Study before 7:00 AM
+  NIGHT_OWL             // Unlocked: Study after 10:00 PM
+  DEDICATED_STUDENT     // Unlocked: Show consistent dedication to learning
+  SPEED_LEARNER         // Unlocked: Complete lessons faster than estimated time
+  
+  // === Quiz Excellence ===
+  PERFECT_QUIZ          // Unlocked: Score 100% on a quiz
+  FIVE_PERFECT_QUIZZES  // Unlocked: Score 100% on 5 consecutive quizzes
+  
+  // === Review & Practice ===
+  REVIEWING_PRO         // Unlocked: Review 10 lessons that were already completed
+  
+  // === Platform Engagement ===
+  CURIOUS_SEARCHER      // Unlocked: Use the search feature 20 times
+  FEEDBACK_CONTRIBUTOR  // Unlocked: Contribute feedback (if feedback system is implemented)
 }
 
 // =============================================================================

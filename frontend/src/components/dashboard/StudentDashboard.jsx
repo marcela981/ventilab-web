@@ -65,6 +65,7 @@ import { useLearningProgress } from '../../contexts/LearningProgressContext';
 import { useStudentDashboard } from '../../hooks/useDashboardData';
 import { useAuth } from '../../hooks/useAuth';
 import { LevelBadge } from '../common/LevelBadge';
+import AchievementsDashboard from '../gamification/AchievementsDashboard';
 
 /**
  * Get level color based on difficulty
@@ -348,10 +349,17 @@ const StudentDashboard = () => {
 
       <Grid container spacing={3}>
         {/* =================================================================== */}
-        {/* CARD NUEVA: Tu Nivel */}
+        {/* CARD: Logros Recientes */}
         {/* =================================================================== */}
         <Grid item xs={12} md={4}>
-          <Card elevation={3} sx={{ height: '100%' }}>
+          <AchievementsDashboard />
+        </Grid>
+
+        {/* =================================================================== */}
+        {/* CARD: Tu Nivel */}
+        {/* =================================================================== */}
+        <Grid item xs={12} md={4}>
+          <Card elevation={3} sx={{ height: '100%', minHeight: 400 }}>
             <CardHeader
               avatar={
                 <Avatar sx={{ bgcolor: getLevelColor(currentLevel) + '.main' }}>
@@ -418,8 +426,8 @@ const StudentDashboard = () => {
         {/* =================================================================== */}
         {/* CARD: Progreso de Aprendizaje */}
         {/* =================================================================== */}
-        <Grid item xs={12} md={8}>
-          <Card elevation={3} sx={{ height: '100%' }}>
+        <Grid item xs={12} md={4}>
+          <Card elevation={3} sx={{ height: '100%', minHeight: 400 }}>
             <CardHeader
               avatar={
                 <Avatar sx={{ bgcolor: 'primary.main' }}>

@@ -9,6 +9,8 @@ import userRoutes from './user.routes';
 import moduleRoutes from './module.routes';
 import lessonRoutes from './lesson.routes';
 import progressRoutes from './progress.routes';
+import quizRoutes from './quiz.routes';
+import achievementRoutes from './achievement.routes';
 import adminUsersRoutes from './admin/users.routes';
 import contentGeneratorRoutes from './content-generator.routes';
 import recommendationRoutes from './recommendation.routes';
@@ -26,6 +28,13 @@ router.use('/users', userRoutes);
 router.use('/modules', moduleRoutes);
 router.use('/lessons', lessonRoutes);
 router.use('/progress', progressRoutes);
+
+// Quiz routes
+router.use('/quizzes', quizRoutes);
+
+// Achievement and gamification routes
+router.use('/achievements', achievementRoutes);
+
 router.use('/content-generator', contentGeneratorRoutes);
 router.use('/recommendations', recommendationRoutes);
 router.use('/search', searchRoutes);

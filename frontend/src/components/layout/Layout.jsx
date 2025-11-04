@@ -3,6 +3,7 @@
  * Layout Component for VentyLab
  * =============================================================================
  * Main layout wrapper that includes Navbar and provides consistent page structure
+ * Includes global achievement notification system
  * =============================================================================
  */
 
@@ -10,6 +11,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, Container } from '@mui/material';
 import Navbar from './Navbar';
+import { AchievementProvider } from '../../contexts/AchievementContext';
 
 /**
  * Layout Component
@@ -48,34 +50,37 @@ export default function Layout({
   backgroundColor = 'background.default',
 }) {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
-        backgroundColor,
-      }}
-    >
-      {/* Navigation */}
-      <Navbar />
-
-      {/* Main content */}
+    <AchievementProvider>
       <Box
-        component="main"
         sx={{
-          flexGrow: 1,
-          py: disablePadding ? 0 : 3,
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh',
+          backgroundColor,
         }}
       >
-        {maxWidth ? (
-          <Container maxWidth={maxWidth}>{children}</Container>
-        ) : (
-          <>{children}</>
-        )}
-      </Box>
+        {/* Navigation */}
+        <Navbar />
 
-      {/* Optional footer can be added here */}
-    </Box>
+        {/* Main content */}
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            py: disablePadding ? 0 : 3,
+          }}
+        >
+          {maxWidth ? (
+            <Container maxWidth={maxWidth}>{children}</Container>
+          ) : (
+            <>{children}</>
+          )}
+        </Box>
+
+        {/* Optional footer can be added here */}
+      </Box>
+      {/* AchievementNotification is rendered by AchievementProvider */}
+    </AchievementProvider>
   );
 }
 
