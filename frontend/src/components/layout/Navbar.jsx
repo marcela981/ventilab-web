@@ -4,6 +4,7 @@
  * =============================================================================
  * Main navigation with role-based menu items
  * Responsive design with mobile drawer
+ * Integrated global search bar
  * =============================================================================
  */
 
@@ -33,6 +34,7 @@ import {
   useTheme,
   Badge,
   Chip,
+  alpha,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -46,8 +48,10 @@ import {
   PersonAdd as RegisterIcon,
   Home as HomeIcon,
   Close as CloseIcon,
+  Search as SearchIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/contexts/AuthContext';
+import SearchBar from '@/components/common/SearchBar';
 
 /**
  * Navigation Configuration
@@ -134,6 +138,9 @@ export default function Navbar() {
   // State for mobile drawer
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // State for mobile search drawer
+  const [searchDrawerOpen, setSearchDrawerOpen] = useState(false);
+
   // State for user menu
   const [anchorElUser, setAnchorElUser] = useState(null);
 
@@ -197,6 +204,26 @@ export default function Navbar() {
     } catch (error) {
       console.error('[Navbar] Logout error:', error);
     }
+  };
+
+  /**
+   * Handle search drawer toggle (mobile)
+   */
+  const handleSearchDrawerToggle = () => {
+    setSearchDrawerOpen(!searchDrawerOpen);
+  };
+
+  /**
+   * Handle search navigation (callback from SearchBar)
+   */
+  const handleSearchNavigate = (item, path) => {
+    // Close search drawer if open
+    if (searchDrawerOpen) {
+      setSearchDrawerOpen(false);
+    }
+    
+    // Optional: Track analytics
+    // analytics.track('search_select', { type: item.type, title: item.title });
   };
 
   /**
@@ -375,6 +402,49 @@ export default function Navbar() {
   );
 
   /**
+   * Render mobile search drawer
+   */
+  const renderMobileSearchDrawer = () => (
+    <Drawer
+      variant="temporary"
+      anchor="top"
+      open={searchDrawerOpen}
+      onClose={handleSearchDrawerToggle}
+      sx={{
+        display: { xs: 'block', md: 'none' },
+        '& .MuiDrawer-paper': {
+          boxSizing: 'border-box',
+          width: '100%',
+          p: 2,
+          backgroundColor: alpha(theme.palette.background.paper, 0.98),
+          backdropFilter: 'blur(10px)',
+        },
+      }}
+    >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h6" fontWeight={600}>
+          Buscar en VentyLab
+        </Typography>
+        <IconButton onClick={handleSearchDrawerToggle} size="small">
+          <CloseIcon />
+        </IconButton>
+      </Box>
+      
+      <SearchBar
+        placeholder="Buscar lecciones, módulos, temas..."
+        maxSuggestions={5}
+        enableShortcut={false}
+        onNavigate={handleSearchNavigate}
+        sx={{ width: '100%' }}
+      />
+
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2, textAlign: 'center' }}>
+        Escribe al menos 2 caracteres para ver sugerencias
+      </Typography>
+    </Drawer>
+  );
+
+  /**
    * Render user menu
    */
   const renderUserMenu = () => (
@@ -526,8 +596,53 @@ export default function Navbar() {
             {/* Desktop navigation */}
             {!isMobile && renderDesktopNav()}
 
-            {/* Spacer */}
-            <Box sx={{ flexGrow: 1 }} />
+            {/* Search Bar - Desktop */}
+            {!isMobile && isAuthenticated && (
+              <Box
+                sx={{
+                  flexGrow: 1,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  mx: 3,
+                  maxWidth: 600,
+                }}
+              >
+                <SearchBar
+                  placeholder="Buscar lecciones, módulos..."
+                  maxSuggestions={5}
+                  enableShortcut={true}
+                  onNavigate={handleSearchNavigate}
+                  sx={{
+                    width: '100%',
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: alpha(theme.palette.background.default, 0.4),
+                      '&:hover': {
+                        backgroundColor: alpha(theme.palette.background.default, 0.6),
+                      },
+                      '&.Mui-focused': {
+                        backgroundColor: alpha(theme.palette.background.default, 0.7),
+                      },
+                    },
+                  }}
+                />
+              </Box>
+            )}
+
+            {/* Spacer (only if SearchBar not shown) */}
+            {(isMobile || !isAuthenticated) && <Box sx={{ flexGrow: 1 }} />}
+
+            {/* Search button - Mobile (only when authenticated) */}
+            {isMobile && isAuthenticated && (
+              <Tooltip title="Buscar">
+                <IconButton
+                  color="inherit"
+                  onClick={handleSearchDrawerToggle}
+                  sx={{ mr: 1 }}
+                >
+                  <SearchIcon />
+                </IconButton>
+              </Tooltip>
+            )}
 
             {/* User section */}
             {renderAuthSection()}
@@ -537,6 +652,9 @@ export default function Navbar() {
 
       {/* Mobile drawer */}
       {renderMobileDrawer()}
+
+      {/* Mobile search drawer */}
+      {renderMobileSearchDrawer()}
     </>
   );
 }

@@ -12,6 +12,8 @@ import progressRoutes from './progress.routes';
 import adminUsersRoutes from './admin/users.routes';
 import contentGeneratorRoutes from './content-generator.routes';
 import recommendationRoutes from './recommendation.routes';
+import searchRoutes from './search.routes';
+import adminRoutes from './admin.routes';
 
 const router = Router();
 
@@ -26,8 +28,10 @@ router.use('/lessons', lessonRoutes);
 router.use('/progress', progressRoutes);
 router.use('/content-generator', contentGeneratorRoutes);
 router.use('/recommendations', recommendationRoutes);
+router.use('/search', searchRoutes);
 
 // Admin routes
 router.use('/admin/users', adminUsersRoutes);
+router.use('/admin', adminRoutes);
 
 export default router;

@@ -26,6 +26,14 @@ datasource db {
 }
 
 // =============================================================================
+// PostgreSQL Extensions Required
+// =============================================================================
+// For full-text search optimization with trigram similarity, run this SQL:
+// CREATE EXTENSION IF NOT EXISTS pg_trgm;
+// This enables the gin_trgm_ops operator class used in search indexes
+// =============================================================================
+
+// =============================================================================
 // ENUMS (For PostgreSQL)
 // =============================================================================
 
@@ -99,6 +107,7 @@ model User {
   quizAttempts     QuizAttempt[]      // User's quiz attempts
   learningSessions LearningSession[]  // User's learning sessions
   achievements     Achievement[]      // User's unlocked achievements
+  searchLogs       SearchLog[]        // User's search activity logs
 
   @@index([email])
   @@index([role])
@@ -194,6 +203,8 @@ model Module {
   @@index([difficulty])
   @@index([isActive])
   @@index([order])
+  @@index([title], map: "modules_title_simple_idx") // Index for search performance
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, map: "modules_title_gin_idx") // Full-text search index for PostgreSQL with trigram similarity
   @@map("modules")
 }
 
@@ -235,6 +246,8 @@ model Lesson {
 
   @@index([moduleId])
   @@index([order])
+  @@index([title], map: "lessons_title_simple_idx") // Index for search performance
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, map: "lessons_title_gin_idx") // Full-text search index for PostgreSQL with trigram similarity
   @@map("lessons")
 }
 
@@ -385,6 +398,37 @@ model Achievement {
   @@index([type])
   @@index([unlockedAt])
   @@map("achievements")
+}
+
+// =============================================================================
+// SEARCH ANALYTICS MODELS
+// =============================================================================
+
+/// SearchLog model - Tracks user search activity for analytics and improvements
+/// Stores search queries, filters, results count, and user interactions
+/// Used to identify popular searches, low-quality results, and content gaps
+model SearchLog {
+  id             String    @id @default(cuid())
+  userId         String?   // Optional: nullable for anonymous searches or privacy
+  query          String    // The search term entered by the user
+  filters        Json?     // JSON object with applied filters (categories, difficulties, etc.)
+  resultsCount   Int       // Number of results returned for this search
+  selectedResult String?   // ID of the result the user clicked on (if any)
+  selectedType   String?   // Type of selected result: 'module' or 'lesson'
+  timestamp      DateTime  @default(now()) // When the search was performed
+  sessionId      String?   // Session identifier to group related searches
+  responseTime   Int?      // Search response time in milliseconds (for performance monitoring)
+  
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Indexes for efficient analytics queries
+  @@index([userId])
+  @@index([query])
+  @@index([timestamp])
+  @@index([sessionId])
+  @@index([resultsCount]) // For finding searches with no results
+  @@map("search_logs")
 }
 
 // =============================================================================
