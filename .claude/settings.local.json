@@ -33,7 +33,8 @@
       "Bash(npx prisma db seed:*)",
       "Bash(npx prisma:*)",
       "Bash(npm install:*)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "Bash(if exist .next rd /s /q .next)"
     ],
     "deny": [],
     "ask": []

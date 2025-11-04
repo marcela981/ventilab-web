@@ -27,11 +27,13 @@ import {
  */
 const QuizContainer = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
-  backgroundColor: theme.palette.background.paper,
+  backgroundColor: 'transparent',
+  border: '1px solid rgba(255, 255, 255, 0.1)',
   borderRadius: theme.shape.borderRadius,
-  transition: 'box-shadow 0.3s ease',
+  boxShadow: 'none',
+  transition: 'all 0.3s ease',
   '&:hover': {
-    boxShadow: theme.shadows[4],
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
   },
 }));
 
@@ -287,22 +289,27 @@ const InteractiveQuiz = ({ quiz, onComplete }) => {
     <QuizContainer elevation={2} role="region" aria-label="Quiz interactivo">
       {/* Encabezado con icono y contador de intentos */}
       <QuestionHeader>
-        <QuizIcon color="primary" sx={{ fontSize: 32, mt: 0.5 }} />
+        <QuizIcon sx={{ fontSize: 32, mt: 0.5, color: '#e8f4fd' }} />
         <Box sx={{ flex: 1 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-            <Typography variant="h6" component="h3" sx={{ flex: 1 }}>
+            <Typography variant="h6" component="h3" sx={{ flex: 1, color: '#ffffff', fontWeight: 600 }}>
               {quiz.question}
             </Typography>
             {attempts > 0 && (
               <Chip
                 label={`${attempts} ${attempts === 1 ? 'intento' : 'intentos'}`}
                 size="small"
-                color={isCompleted ? 'success' : 'default'}
-                sx={{ ml: 2 }}
+                variant="outlined"
+                sx={{ 
+                  ml: 2,
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  borderColor: 'rgba(255, 255, 255, 0.2)',
+                  color: '#e8f4fd'
+                }}
               />
             )}
           </Box>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" sx={{ color: '#e8f4fd' }}>
             {isMultipleChoice 
               ? 'Selecciona todas las opciones correctas' 
               : 'Selecciona la opción correcta'}
@@ -310,7 +317,7 @@ const InteractiveQuiz = ({ quiz, onComplete }) => {
         </Box>
       </QuestionHeader>
 
-      <Divider sx={{ mb: 3 }} />
+      <Divider sx={{ mb: 3, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
 
       {/* Opciones de respuesta */}
       <Box role="group" aria-label="Opciones de respuesta">
@@ -327,7 +334,7 @@ const InteractiveQuiz = ({ quiz, onComplete }) => {
                 control={<Radio disabled={showFeedback} />}
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-                    <Typography variant="body1" sx={{ flex: 1 }}>
+                    <Typography variant="body1" sx={{ flex: 1, color: '#ffffff' }}>
                       {option}
                     </Typography>
                     {showFeedback && isCorrectOption(option) && (
@@ -360,7 +367,7 @@ const InteractiveQuiz = ({ quiz, onComplete }) => {
                 }
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-                    <Typography variant="body1" sx={{ flex: 1 }}>
+                    <Typography variant="body1" sx={{ flex: 1, color: '#ffffff' }}>
                       {option}
                     </Typography>
                     {showFeedback && isCorrectOption(option) && (

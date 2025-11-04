@@ -35,13 +35,13 @@ const ProgressOverview = ({ dashboardData }) => {
       <Grid item xs={12} md={6}>
         <Card sx={{
           height: '100%',
-          backgroundColor: (theme) => theme.palette.warning.light + '20',
-          border: (theme) => `2px solid ${theme.palette.warning.main}`,
+          backgroundColor: 'transparent',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: 2
         }}>
           <CardContent sx={{ p: 3 }}>
             <Typography variant="h6" sx={{
-              color: 'warning.dark',
+              color: '#ffffff',
               fontWeight: 600,
               mb: 2,
               display: 'flex',
@@ -56,17 +56,17 @@ const ProgressOverview = ({ dashboardData }) => {
               {/* Racha Actual */}
               <Box sx={{ textAlign: 'center', mb: 2 }}>
                 <Typography variant="h2" sx={{
-                  color: 'warning.dark',
+                  color: '#ffffff',
                   fontWeight: 700,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: 1
                 }}>
-                  <LocalFireDepartment sx={{ fontSize: 48 }} />
+                  <LocalFireDepartment sx={{ fontSize: 48, color: '#ff9800' }} />
                   {streak}
                 </Typography>
-                <Typography variant="body1" sx={{ color: 'warning.dark', fontWeight: 600 }}>
+                <Typography variant="body1" sx={{ color: '#e8f4fd', fontWeight: 600 }}>
                   Días Consecutivos
                 </Typography>
               </Box>
@@ -74,14 +74,15 @@ const ProgressOverview = ({ dashboardData }) => {
               {/* Próximo Milestone */}
               <Box sx={{
                 p: 2,
-                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
                 borderRadius: 2,
-                textAlign: 'center'
+                textAlign: 'center',
+                border: '1px solid rgba(255, 255, 255, 0.1)'
               }}>
-                <Typography variant="body2" sx={{ color: 'warning.dark', fontWeight: 600, mb: 1 }}>
+                <Typography variant="body2" sx={{ color: '#ffffff', fontWeight: 600, mb: 1 }}>
                   Próximo Milestone
                 </Typography>
-                <Typography variant="h6" sx={{ color: 'warning.dark', fontWeight: 700 }}>
+                <Typography variant="h6" sx={{ color: '#ffffff', fontWeight: 700 }}>
                   30 días
                 </Typography>
                 <LinearProgress
@@ -90,21 +91,21 @@ const ProgressOverview = ({ dashboardData }) => {
                   sx={{
                     height: 6,
                     borderRadius: 3,
-                    backgroundColor: 'warning.light',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
                     '& .MuiLinearProgress-bar': {
-                      backgroundColor: 'warning.dark',
+                      backgroundColor: '#ff9800',
                       borderRadius: 3,
                     }
                   }}
                 />
-                <Typography variant="caption" sx={{ color: 'warning.dark', mt: 1, display: 'block' }}>
+                <Typography variant="caption" sx={{ color: '#e8f4fd', mt: 1, display: 'block' }}>
                   {30 - streak} días restantes
                 </Typography>
               </Box>
 
               {/* Badges Ganados */}
               <Box>
-                <Typography variant="body2" sx={{ color: 'warning.dark', fontWeight: 600, mb: 1 }}>
+                <Typography variant="body2" sx={{ color: '#ffffff', fontWeight: 600, mb: 1 }}>
                   Badges Ganados
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
@@ -117,8 +118,8 @@ const ProgressOverview = ({ dashboardData }) => {
                       <Avatar sx={{
                         width: 32,
                         height: 32,
-                        backgroundColor: 'warning.dark',
-                        border: (theme) => `2px solid ${theme.palette.warning.main}`
+                        backgroundColor: 'rgba(255, 152, 0, 0.3)',
+                        border: '2px solid rgba(255, 152, 0, 0.5)'
                       }}>
                         <EmojiEvents sx={{ fontSize: 18, color: '#ffffff' }} />
                       </Avatar>
@@ -135,13 +136,13 @@ const ProgressOverview = ({ dashboardData }) => {
       <Grid item xs={12} md={6}>
         <Card sx={{
           height: '100%',
-          backgroundColor: (theme) => theme.palette.success.light + '20',
-          border: (theme) => `2px solid ${theme.palette.success.light}`,
+          backgroundColor: 'transparent',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: 2
         }}>
           <CardContent sx={{ p: 3 }}>
             <Typography variant="h6" sx={{
-              color: 'success.dark',
+              color: '#ffffff',
               fontWeight: 600,
               mb: 2,
               display: 'flex',
@@ -165,7 +166,7 @@ const ProgressOverview = ({ dashboardData }) => {
                   <Box key={index} sx={{ textAlign: 'center', flex: 1 }}>
                     <Box sx={{
                       height: `${(week.lessons / 12) * 150}px`,
-                      backgroundColor: 'success.main',
+                      backgroundColor: '#4caf50',
                       borderRadius: '4px 4px 0 0',
                       margin: '0 4px',
                       position: 'relative',
@@ -182,7 +183,7 @@ const ProgressOverview = ({ dashboardData }) => {
                       </Typography>
                     </Box>
                     <Typography variant="caption" sx={{
-                      color: 'success.dark',
+                      color: '#e8f4fd',
                       fontWeight: 600,
                       mt: 1,
                       display: 'block'
@@ -195,7 +196,7 @@ const ProgressOverview = ({ dashboardData }) => {
             </Box>
 
             <Typography variant="body2" sx={{
-              color: 'success.dark',
+              color: '#e8f4fd',
               textAlign: 'center',
               fontStyle: 'italic'
             }}>

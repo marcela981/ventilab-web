@@ -5,7 +5,6 @@ import {
   Typography,
   Grid,
   LinearProgress,
-  Paper,
   useTheme
 } from '@mui/material';
 import {
@@ -53,22 +52,21 @@ const ProgressOverview = ({
     <Grid container spacing={3} sx={{ mb: 4 }}>
       {/* Progreso General */}
       <Grid item xs={12} sm={6}>
-        <Paper
-          elevation={2}
+        <Box
           sx={{
             p: theme.spacing(2),
-            backgroundColor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
+            backgroundColor: 'transparent',
+            border: `1px solid rgba(255, 255, 255, 0.1)`,
             borderRadius: theme.shape.borderRadius
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
             <TrendingUp sx={{ color: theme.palette.primary.main, fontSize: 32 }} />
             <Box sx={{ flex: 1 }}>
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              <Typography variant="subtitle2" sx={{ color: '#e8f4fd' }} gutterBottom>
                 Progreso General
               </Typography>
-              <Typography variant="h4" sx={{ color: theme.palette.primary.main, fontWeight: 700 }}>
+              <Typography variant="h4" sx={{ color: '#ffffff', fontWeight: 700 }}>
                 {overallProgress}%
               </Typography>
             </Box>
@@ -82,80 +80,77 @@ const ProgressOverview = ({
               borderRadius: theme.shape.borderRadius
             }}
           />
-        </Paper>
+        </Box>
       </Grid>
 
       {/* Lecciones Completadas */}
       <Grid item xs={12} sm={6}>
-        <Paper
-          elevation={2}
+        <Box
           sx={{
             p: theme.spacing(2),
-            backgroundColor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
+            backgroundColor: 'transparent',
+            border: `1px solid rgba(255, 255, 255, 0.1)`,
             borderRadius: theme.shape.borderRadius
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <CheckCircle sx={{ color: theme.palette.primary.main, fontSize: 32 }} />
             <Box>
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              <Typography variant="subtitle2" sx={{ color: '#e8f4fd' }} gutterBottom>
                 Lecciones Completadas
               </Typography>
-              <Typography variant="h4" sx={{ color: theme.palette.primary.main, fontWeight: 700 }}>
+              <Typography variant="h4" sx={{ color: '#ffffff', fontWeight: 700 }}>
                 {globalStats.completedLessons}/{globalStats.totalLessons || 0}
               </Typography>
             </Box>
           </Box>
-        </Paper>
+        </Box>
       </Grid>
 
       {/* Tiempo Total Invertido */}
       <Grid item xs={12} sm={6}>
-        <Paper
-          elevation={2}
+        <Box
           sx={{
             p: theme.spacing(2),
-            backgroundColor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
+            backgroundColor: 'transparent',
+            border: `1px solid rgba(255, 255, 255, 0.1)`,
             borderRadius: theme.shape.borderRadius
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <AccessTime sx={{ color: theme.palette.primary.main, fontSize: 32 }} />
             <Box>
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              <Typography variant="subtitle2" sx={{ color: '#e8f4fd' }} gutterBottom>
                 Tiempo Total Invertido
               </Typography>
-              <Typography variant="h4" sx={{ color: theme.palette.primary.main, fontWeight: 700 }}>
+              <Typography variant="h4" sx={{ color: '#ffffff', fontWeight: 700 }}>
                 {formatTime(globalStats.totalTimeSpent || 0)}
               </Typography>
             </Box>
           </Box>
-        </Paper>
+        </Box>
       </Grid>
 
       {/* Próxima Lección Recomendada */}
       <Grid item xs={12} sm={6}>
-        <Paper
-          elevation={2}
+        <Box
           sx={{
             p: theme.spacing(2),
-            backgroundColor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
+            backgroundColor: 'transparent',
+            border: `1px solid rgba(255, 255, 255, 0.1)`,
             borderRadius: theme.shape.borderRadius
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <PlayArrow sx={{ color: theme.palette.primary.main, fontSize: 32 }} />
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              <Typography variant="subtitle2" sx={{ color: '#e8f4fd' }} gutterBottom>
                 Próxima Lección
               </Typography>
               <Typography
                 variant="h6"
                 sx={{
-                  color: theme.palette.primary.main,
+                  color: '#ffffff',
                   fontWeight: 600,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -166,7 +161,7 @@ const ProgressOverview = ({
               </Typography>
             </Box>
           </Box>
-        </Paper>
+        </Box>
       </Grid>
     </Grid>
   );

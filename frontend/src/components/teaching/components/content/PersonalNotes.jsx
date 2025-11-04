@@ -39,8 +39,10 @@ import {
  * StyledAccordion - Acordeón personalizado con estilos
  */
 const StyledAccordion = styled(Accordion)(({ theme }) => ({
-  border: `1px solid ${theme.palette.divider}`,
+  border: '1px solid rgba(255, 255, 255, 0.1)',
   borderRadius: theme.shape.borderRadius,
+  backgroundColor: 'transparent',
+  boxShadow: 'none',
   '&:before': {
     display: 'none',
   },
@@ -56,14 +58,15 @@ const NoteItem = styled(Paper)(({ theme, isediting }) => ({
   padding: theme.spacing(2),
   marginBottom: theme.spacing(1.5),
   backgroundColor: isediting === 'true' 
-    ? alpha(theme.palette.primary.main, 0.05)
-    : theme.palette.background.paper,
+    ? 'rgba(255, 255, 255, 0.1)'
+    : 'rgba(255, 255, 255, 0.05)',
   border: isediting === 'true'
-    ? `2px solid ${theme.palette.primary.main}`
-    : `1px solid ${theme.palette.divider}`,
+    ? '2px solid #e8f4fd'
+    : '1px solid rgba(255, 255, 255, 0.1)',
   transition: 'all 0.3s ease',
+  boxShadow: 'none',
   '&:hover': {
-    boxShadow: theme.shadows[2],
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
 }));
 
@@ -75,7 +78,7 @@ const SaveIndicator = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   gap: theme.spacing(1),
   fontSize: '0.75rem',
-  color: theme.palette.text.secondary,
+  color: '#e8f4fd',
   marginTop: theme.spacing(1),
 }));
 
@@ -364,8 +367,8 @@ const PersonalNotes = ({
           id="personal-notes-header"
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
-            <NotesIcon color="primary" />
-            <Typography variant="h6" component="h3" sx={{ flex: 1 }}>
+            <NotesIcon sx={{ color: '#e8f4fd' }} />
+            <Typography variant="h6" component="h3" sx={{ flex: 1, color: '#ffffff' }}>
               Mis Notas
             </Typography>
             {notes.length > 0 && (
@@ -397,7 +400,24 @@ const PersonalNotes = ({
                 aria-label="Campo de texto para nueva nota"
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    backgroundColor: 'background.paper',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    color: '#ffffff',
+                    '& fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.2)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#e8f4fd',
+                    },
+                  },
+                  '& .MuiInputBase-input': {
+                    color: '#ffffff',
+                  },
+                  '& .MuiInputBase-input::placeholder': {
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    opacity: 1,
                   },
                 }}
               />
@@ -435,7 +455,7 @@ const PersonalNotes = ({
               </Box>
             </Box>
 
-            <Divider sx={{ my: 2 }} />
+            <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
 
             {/* Lista de notas */}
             {isLoading ? (
@@ -444,11 +464,11 @@ const PersonalNotes = ({
               </Box>
             ) : notes.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 4 }}>
-                <NotesIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
-                <Typography variant="body1" color="text.secondary">
+                <NotesIcon sx={{ fontSize: 64, color: 'rgba(255, 255, 255, 0.3)', mb: 2 }} />
+                <Typography variant="body1" sx={{ color: '#e8f4fd' }}>
                   No hay notas todavía
                 </Typography>
-                <Typography variant="body2" color="text.disabled">
+                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 1 }}>
                   Comienza escribiendo tus apuntes sobre esta lección
                 </Typography>
               </Box>
@@ -474,6 +494,24 @@ const PersonalNotes = ({
                             variant="outlined"
                             autoFocus
                             aria-label="Campo de texto para editar nota"
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                color: '#ffffff',
+                                '& fieldset': {
+                                  borderColor: 'rgba(255, 255, 255, 0.2)',
+                                },
+                                '&:hover fieldset': {
+                                  borderColor: 'rgba(255, 255, 255, 0.3)',
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: '#e8f4fd',
+                                },
+                              },
+                              '& .MuiInputBase-input': {
+                                color: '#ffffff',
+                              },
+                            }}
                           />
                           <Box sx={{ display: 'flex', gap: 1, mt: 2, justifyContent: 'flex-end' }}>
                             <Button
@@ -498,7 +536,7 @@ const PersonalNotes = ({
                         // Modo visualización
                         <Box>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography variant="caption" sx={{ color: '#e8f4fd', opacity: 0.8 }}>
                               {formatDate(note.createdAt)}
                               {note.updatedAt !== note.createdAt && ' (editada)'}
                             </Typography>
@@ -526,6 +564,7 @@ const PersonalNotes = ({
                             sx={{
                               whiteSpace: 'pre-wrap',
                               wordBreak: 'break-word',
+                              color: '#ffffff',
                             }}
                           >
                             {note.text}

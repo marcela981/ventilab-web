@@ -3,54 +3,35 @@
 import React, { useState, useEffect, lazy, Suspense, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import {
-  Box,
-  Container,
-  Typography,
-  Grid,
-  Paper,
-  Card,
-  CardContent,
-  Avatar,
-  Breadcrumbs,
-  Link,
-  LinearProgress,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  ListItemSecondaryAction,
-  Button,
   Skeleton,
   Alert,
-  Chip,
-  Divider,
   Fade,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
-import {
-  School,
-  MenuBook,
-  AccessTime,
-  LocalFireDepartment,
-  EmojiEvents,
-  Home,
-  NavigateNext as NavigateNextIcon,
-  TrendingUp,
-  Star,
-  LightbulbOutlined,
-  AutoAwesome,
-  Refresh,
-  PlayArrow,
-} from '@mui/icons-material';
-
 // Contexto y hooks
 import { useLearningProgress } from '../../../../contexts/LearningProgressContext';
 import useProgressTree from '../../hooks/useProgressTree';
+import useModuleProgress from '../../hooks/useModuleProgress';
 
 // Datos del curriculum
-import curriculumData from '../../../../data/curriculumData';
+import { curriculumData } from '../../../../data/curriculumData';
 
-// Lazy loading del ProgressTree para mejor performance
-const ProgressTree = lazy(() => import('./ProgressTree'));
+// Importar componentes gamificados
+import {
+  ProgressOverviewCard,
+  SkillTree,
+  ModuleMilestones,
+  AchievementsGrid,
+  StreakWidget,
+  Challenges,
+  BossFightCard,
+  ComprehensionPanel,
+  FeedbackStrip,
+  LeaderboardCompact,
+  StudyCalendar,
+  NarrativeProgress
+} from '../../../../features/progress/components';
 
 /**
  * Formatea el tiempo invertido en un formato legible
@@ -92,75 +73,25 @@ const calculateStreak = (completedLessons) => {
 };
 
 /**
- * Genera badges basados en el progreso del usuario
- * Nota: Esta es una implementación simulada. En producción debería
- * venir del backend o de un sistema de gamificación.
- *
- * @param {Object} stats - Estadísticas del usuario
- * @returns {Array} Array de badges ganados
- */
-const generateBadges = (stats) => {
-  const badges = [];
-
-  if (stats.completedModules >= 1) {
-    badges.push({
-      id: 'first-module',
-      name: 'Primer Módulo',
-      icon: 'EmojiEvents',
-      earnedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      description: 'Completaste tu primer módulo',
-    });
-  }
-
-  if (stats.completedLessonsCount >= 5) {
-    badges.push({
-      id: 'five-lessons',
-      name: '5 Lecciones',
-      icon: 'Star',
-      earnedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      description: 'Completaste 5 lecciones',
-    });
-  }
-
-  if (stats.streak >= 7) {
-    badges.push({
-      id: 'week-streak',
-      name: 'Racha de 7 Días',
-      icon: 'LocalFireDepartment',
-      earnedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      description: 'Mantuviste una racha de 7 días',
-    });
-  }
-
-  if (stats.completedModules >= 3) {
-    badges.push({
-      id: 'three-modules',
-      name: 'Estudiante Dedicado',
-      icon: 'School',
-      earnedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-      description: 'Completaste 3 módulos',
-    });
-  }
-
-  return badges;
-};
-
-/**
  * ProgressDashboard Component
  *
  * Componente principal para visualizar el progreso estructurado del usuario.
- * Muestra estadísticas globales, racha de días, badges, árbol de progreso
- * y recomendaciones personalizadas.
+ * Rediseñado para que se parezca más al curriculum con niveles organizados
+ * y tarjetas de módulos similares.
  *
  * @component
  * @returns {JSX.Element} Dashboard de progreso del usuario
  */
 const ProgressDashboard = () => {
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
   const {
     completedLessons,
     timeSpent,
     setCurrentModule,
+    isLoadingProgress
   } = useLearningProgress();
 
   // Estados locales
@@ -172,6 +103,11 @@ const ProgressDashboard = () => {
   const navigateToLesson = (moduleId, lessonId) => {
     router.push(`/teaching/module/${moduleId}/lesson/${lessonId}`);
   };
+
+  // Hook: progreso de módulos
+  const {
+    calculateModuleProgress
+  } = useModuleProgress(completedLessons, timeSpent);
 
   // Usar el hook useProgressTree
   const {
@@ -188,12 +124,8 @@ const ProgressDashboard = () => {
     navigateToLesson
   );
 
-  // Calcular racha y badges
+  // Calcular racha
   const streak = useMemo(() => calculateStreak(completedLessons), [completedLessons]);
-  const badges = useMemo(
-    () => generateBadges({ ...globalStats, streak }),
-    [globalStats, streak]
-  );
 
   // Efecto para simular carga inicial
   useEffect(() => {
@@ -205,559 +137,300 @@ const ProgressDashboard = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Obtener mensaje motivacional según racha
-  const getStreakMessage = (streakDays) => {
-    if (streakDays === 0) {
-      return '¡Comienza tu racha hoy mismo!';
-    }
-    if (streakDays < 7) {
-      return '¡Vas muy bien! Sigue así';
-    }
-    if (streakDays < 15) {
-      return '¡Excelente progreso!';
-    }
-    if (streakDays < 30) {
-      return '¡Casi alcanzas una racha de 30 días!';
-    }
-    return '¡Increíble! Has alcanzado 30 días consecutivos';
-  };
 
-  // Obtener módulos débiles (progreso 1-49%)
-  const getWeakModules = () => {
-    if (!curriculumData || !curriculumData.modules) {
-      return [];
-    }
-
-    const weakModules = [];
-    Object.values(curriculumData.modules).forEach((module) => {
-      const moduleInfo = getModuleInfo(module.id);
-      if (moduleInfo && moduleInfo.progress > 0 && moduleInfo.progress < 50) {
-        weakModules.push({
-          moduleId: module.id,
-          moduleTitle: module.title,
-          progress: moduleInfo.progress,
-        });
+  // Preparar datos para los componentes (ANTES de returns condicionales)
+  const currentLevel = useMemo(() => 
+    Math.floor(globalStats.completedLessonsCount / 5) + 1,
+    [globalStats.completedLessonsCount]
+  );
+  const xpTotal = useMemo(() => 
+    globalStats.completedLessonsCount * 100,
+    [globalStats.completedLessonsCount]
+  );
+  
+  // Datos para ModuleMilestones (useMemo debe estar antes de returns)
+  const moduleMilestones = useMemo(() => {
+    // Simular hitos basados en progreso
+    const totalModules = Object.keys(curriculumData.modules || {}).length;
+    const completedModules = Object.values(curriculumData.modules || {}).filter(
+      module => {
+        const progress = calculateModuleProgress(module, completedLessons);
+        return progress >= 100;
       }
-    });
+    ).length;
+    
+    return [
+      {
+        id: 'milestone-1',
+        moduleId: 'module-1',
+        title: 'Primer Módulo Completado',
+        icon: '🎓',
+        progress: completedModules >= 1 ? 100 : 0,
+        completed: completedModules >= 1,
+        unlockedAt: completedModules >= 1 ? new Date() : undefined
+      },
+      {
+        id: 'milestone-2',
+        moduleId: 'module-2',
+        title: 'Tres Módulos Completados',
+        icon: '⭐',
+        progress: completedModules >= 3 ? 100 : Math.min((completedModules / 3) * 100, 100),
+        completed: completedModules >= 3,
+        unlockedAt: completedModules >= 3 ? new Date() : undefined
+      },
+      {
+        id: 'milestone-3',
+        moduleId: 'module-3',
+        title: 'Cinco Módulos Completados',
+        icon: '🏆',
+        progress: completedModules >= 5 ? 100 : Math.min((completedModules / 5) * 100, 100),
+        completed: completedModules >= 5,
+        unlockedAt: completedModules >= 5 ? new Date() : undefined
+      }
+    ];
+  }, [completedLessons, calculateModuleProgress]);
 
-    return weakModules.slice(0, 2); // Máximo 2
-  };
+  // Datos para ProgressOverviewCard
+  const todayOverview = useMemo(() => ({
+    xpToday: globalStats.completedLessonsCount > 0 ? 100 : 0,
+    level: currentLevel,
+    roleSubtitle: `Nivel ${currentLevel} - Aprendiz`,
+    nextStep: nextRecommendedLesson ? {
+      moduleId: nextRecommendedLesson.moduleId,
+      moduleTitle: nextRecommendedLesson.moduleTitle,
+      lessonId: nextRecommendedLesson.lessonId,
+      lessonTitle: nextRecommendedLesson.lessonTitle,
+      type: 'lesson',
+      duration: 15,
+      xpReward: 10
+    } : undefined
+  }), [globalStats.completedLessonsCount, currentLevel, nextRecommendedLesson]);
+
+  const streakInfo = useMemo(() => ({
+    streak: streak,
+    lastSessionDate: new Date(),
+    isActive: streak > 0,
+    longestStreak: streak,
+    hasFreezeToken: Math.floor(streak / 7) > 0
+  }), [streak]);
+
+  // Datos para AchievementsGrid
+  const achievements = useMemo(() => [
+    {
+      id: 'first-lesson',
+      title: 'Primera Lección',
+      description: 'Completa tu primera lección',
+      icon: '🎓',
+      category: 'lesson',
+      unlocked: globalStats.completedLessonsCount > 0,
+      rarity: 'common',
+      unlockedAt: globalStats.completedLessonsCount > 0 ? new Date() : undefined
+    },
+    {
+      id: 'streak-7',
+      title: 'Racha de Fuego',
+      description: 'Mantén una racha de 7 días',
+      icon: '🔥',
+      category: 'streak',
+      unlocked: streak >= 7,
+      rarity: 'rare',
+      unlockedAt: streak >= 7 ? new Date() : undefined,
+      progress: streak >= 7 ? undefined : {
+        current: streak,
+        target: 7,
+        percentage: Math.min((streak / 7) * 100, 100)
+      }
+    }
+  ], [globalStats.completedLessonsCount, streak]);
+
+  // Datos para ComprehensionPanel
+  const comprehensionTrends = useMemo(() => [], []);
+
+  // Datos para BossFightCard
+  const bossFight = useMemo(() => ({
+    id: 'boss-1',
+    title: 'Caso Clínico Final',
+    description: 'Aplica todos tus conocimientos en un caso complejo',
+    difficulty: 'hard',
+    stars: 0,
+    moduleId: 'module-final',
+    locked: currentLevel < 5,
+    lockHint: 'Completa el nivel 5 para desbloquear',
+    attempts: 0,
+    bestScore: 0
+  }), [currentLevel]);
 
   // Renderizar skeleton de carga
-  if (isLoading) {
+  if (isLoading || isLoadingProgress) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Skeleton variant="text" width={300} height={60} />
-        <Skeleton variant="text" width={500} height={30} sx={{ mb: 3 }} />
-        <Grid container spacing={3}>
-          {[1, 2, 3, 4].map((i) => (
-            <Grid item xs={12} sm={6} md={3} key={i}>
-              <Skeleton variant="rectangular" height={120} />
-            </Grid>
+      <div className="container mx-auto max-w-screen-xl px-4 py-6 space-y-6">
+        <Skeleton variant="text" width={300} height={60} className="mx-auto" />
+        <Skeleton variant="text" width={500} height={30} className="mx-auto" sx={{ mb: 2 }} />
+        <div className="grid grid-cols-12 gap-6 mt-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="col-span-12 xl:col-span-4">
+              <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
+            </div>
           ))}
-        </Grid>
-        <Skeleton variant="rectangular" height={200} sx={{ mt: 3 }} />
-        <Skeleton variant="rectangular" height={400} sx={{ mt: 3 }} />
-      </Container>
+        </div>
+        <Skeleton variant="rectangular" height={400} sx={{ mt: 6, borderRadius: 2, maxWidth: '768px' }} className="mx-auto" />
+      </div>
     );
   }
 
   // Renderizar error si existe
   if (error) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <div className="container mx-auto max-w-screen-xl px-4 py-6">
         <Alert severity="error" onClose={() => setError(null)}>
           Error al cargar el progreso: {error}
         </Alert>
-      </Container>
+      </div>
     );
   }
 
   return (
     <Fade in={mounted} timeout={600}>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        {/* ========== ENCABEZADO Y BREADCRUMBS ========== */}
-        <Box sx={{ mb: 4 }}>
-          <Breadcrumbs
-            separator={<NavigateNextIcon fontSize="small" />}
-            sx={{ mb: 2 }}
-            aria-label="breadcrumb"
-          >
-            <Link
-              color="inherit"
-              href="/teaching"
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                textDecoration: 'none',
-                '&:hover': { textDecoration: 'underline' },
-              }}
-            >
-              <Home sx={{ mr: 0.5, fontSize: 20 }} />
-              Inicio
-            </Link>
-            <Link
-              color="inherit"
-              href="/teaching"
-              sx={{ textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
-            >
-              Módulo de Enseñanza
-            </Link>
-            <Typography color="text.primary">Mi Progreso</Typography>
-          </Breadcrumbs>
-
-          <Typography
-            variant="h3"
-            sx={{
-              fontWeight: 700,
-              mb: 1,
-              background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+      <div className="container mx-auto max-w-screen-xl px-4 py-6 space-y-6">
+        {/* ========== SKILL TREE - ARRIBA CENTRADO CON ANCHO LIMITADO ========== */}
+        <div className="mx-auto w-full max-w-6xl">
+          <SkillTree
+            skills={[]}
+            onOpenSkill={(id) => {
+              console.log('Skill clicked:', id);
             }}
-          >
-            Mi Progreso de Aprendizaje
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Visualiza tu avance, logros y próximos pasos en tu viaje de aprendizaje
-          </Typography>
-        </Box>
+          />
+        </div>
 
-        {/* ========== ESTADÍSTICAS GLOBALES ========== */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          {/* Progreso Global */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper
-              elevation={2}
-              sx={{
-                p: 2,
-                height: '100%',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  elevation: 4,
-                  transform: 'translateY(-4px)',
-                },
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar
-                  sx={{
-                    bgcolor: 'primary.main',
-                    width: 56,
-                    height: 56,
-                    mr: 2,
-                  }}
-                >
-                  <School />
-                </Avatar>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                    {globalStats.globalProgressPercentage}%
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Progreso Global
-                  </Typography>
-                </Box>
-              </Box>
-              <LinearProgress
-                variant="determinate"
-                value={globalStats.globalProgressPercentage}
-                sx={{ height: 8, borderRadius: 4 }}
-              />
-            </Paper>
-          </Grid>
-
-          {/* Lecciones Completadas */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper
-              elevation={2}
-              sx={{
-                p: 2,
-                height: '100%',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  elevation: 4,
-                  transform: 'translateY(-4px)',
-                },
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Avatar
-                  sx={{
-                    bgcolor: 'success.main',
-                    width: 56,
-                    height: 56,
-                    mr: 2,
-                  }}
-                >
-                  <MenuBook />
-                </Avatar>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                    {globalStats.completedLessonsCount}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Lecciones Completadas
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    de {globalStats.totalLessons} totales
-                  </Typography>
-                </Box>
-              </Box>
-            </Paper>
-          </Grid>
-
-          {/* Tiempo Invertido */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper
-              elevation={2}
-              sx={{
-                p: 2,
-                height: '100%',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  elevation: 4,
-                  transform: 'translateY(-4px)',
-                },
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Avatar
-                  sx={{
-                    bgcolor: 'info.main',
-                    width: 56,
-                    height: 56,
-                    mr: 2,
-                  }}
-                >
-                  <AccessTime />
-                </Avatar>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                    {formatTimeSpent(timeSpent)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Tiempo Invertido
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Total de estudio
-                  </Typography>
-                </Box>
-              </Box>
-            </Paper>
-          </Grid>
-
-          {/* Racha de Días */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper
-              elevation={2}
-              sx={{
-                p: 2,
-                height: '100%',
-                background: 'linear-gradient(135deg, #ff9800 0%, #ff5722 100%)',
-                color: 'white',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  elevation: 4,
-                  transform: 'translateY(-4px)',
-                },
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Avatar
-                  sx={{
-                    bgcolor: 'rgba(255, 255, 255, 0.3)',
-                    width: 56,
-                    height: 56,
-                    mr: 2,
-                  }}
-                >
-                  <LocalFireDepartment sx={{ color: 'white' }} />
-                </Avatar>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                    {streak}
-                  </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                    Días Consecutivos
-                  </Typography>
-                  <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                    ¡Sigue así!
-                  </Typography>
-                </Box>
-              </Box>
-            </Paper>
-          </Grid>
-        </Grid>
-
-        {/* ========== RACHA DE DÍAS - SECCIÓN DETALLADA ========== */}
-        <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <LocalFireDepartment sx={{ color: 'warning.main', fontSize: 32, mr: 1 }} />
-            <Typography variant="h5" sx={{ fontWeight: 600 }}>
-              Racha de Estudio
-            </Typography>
-          </Box>
-
-          <Grid container spacing={3} alignItems="center">
-            <Grid item xs={12} md={8}>
-              <Box sx={{ mb: 1 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Progreso hacia 30 días
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {streak} / 30 días
-                  </Typography>
-                </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={Math.min((streak / 30) * 100, 100)}
-                  sx={{
-                    height: 12,
-                    borderRadius: 6,
-                    backgroundColor: 'grey.200',
-                    '& .MuiLinearProgress-bar': {
-                      borderRadius: 6,
-                      background: 'linear-gradient(90deg, #ff9800 0%, #ff5722 100%)',
-                    },
-                  }}
-                />
-              </Box>
-              <Typography
-                variant="body1"
-                color="text.secondary"
-                sx={{ fontStyle: 'italic', mt: 2 }}
-              >
-                {getStreakMessage(streak)}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Box
-                sx={{
-                  textAlign: 'center',
-                  p: 2,
-                  backgroundColor: 'warning.lighter',
-                  borderRadius: 2,
-                }}
-              >
-                <Typography variant="h2" sx={{ fontWeight: 700, color: 'warning.dark' }}>
-                  {streak}
-                </Typography>
-                <Typography variant="body2" color="warning.dark">
-                  Días consecutivos
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        </Paper>
-
-        {/* ========== BADGES GANADOS ========== */}
-        <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-            <EmojiEvents sx={{ color: 'warning.main', fontSize: 32, mr: 1 }} />
-            <Typography variant="h5" sx={{ fontWeight: 600 }}>
-              Logros Desbloqueados
-            </Typography>
-          </Box>
-
-          {badges.length > 0 ? (
-            <Grid container spacing={2}>
-              {badges.map((badge) => (
-                <Grid item xs={12} sm={6} md={3} key={badge.id}>
-                  <Card
-                    sx={{
-                      textAlign: 'center',
-                      p: 2,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        elevation: 4,
-                        transform: 'translateY(-4px)',
-                      },
-                    }}
-                  >
-                    <Avatar
-                      sx={{
-                        width: 80,
-                        height: 80,
-                        mx: 'auto',
-                        mb: 2,
-                        bgcolor: 'warning.main',
-                      }}
-                    >
-                      {badge.icon === 'EmojiEvents' && <EmojiEvents sx={{ fontSize: 48 }} />}
-                      {badge.icon === 'Star' && <Star sx={{ fontSize: 48 }} />}
-                      {badge.icon === 'LocalFireDepartment' && (
-                        <LocalFireDepartment sx={{ fontSize: 48 }} />
-                      )}
-                      {badge.icon === 'School' && <School sx={{ fontSize: 48 }} />}
-                    </Avatar>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
-                      {badge.name}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" display="block">
-                      {new Date(badge.earnedAt).toLocaleDateString()}
-                    </Typography>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          ) : (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-              <AutoAwesome sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                Aún no has desbloqueado logros
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Completa módulos y mantén una racha para ganar badges
-              </Typography>
-            </Box>
-          )}
-        </Paper>
-
-        {/* ========== RECOMENDACIONES INTELIGENTES ========== */}
-        <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-            <LightbulbOutlined sx={{ color: 'primary.main', fontSize: 32, mr: 1 }} />
-            <Typography variant="h5" sx={{ fontWeight: 600 }}>
-              Próximos Pasos Recomendados
-            </Typography>
-          </Box>
-
-          <List>
-            {/* Próxima lección óptima - Prioridad Alta */}
-            {nextRecommendedLesson && (
-              <ListItem
-                sx={{
-                  mb: 2,
-                  backgroundColor: 'primary.lighter',
-                  borderRadius: 2,
-                  border: '2px solid',
-                  borderColor: 'primary.main',
-                }}
-              >
-                <ListItemAvatar>
-                  <Avatar sx={{ bgcolor: 'primary.main' }}>
-                    <PlayArrow />
-                  </Avatar>
-                </ListItemAvatar>
-                <ListItemText
-                  primary={
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                        {nextRecommendedLesson.lessonTitle}
-                      </Typography>
-                      <Chip
-                        label="Prioridad Alta"
-                        color="primary"
-                        size="small"
-                        sx={{ ml: 1 }}
-                      />
-                    </Box>
-                  }
-                  secondary={`Módulo: ${nextRecommendedLesson.moduleTitle} - Continúa tu aprendizaje`}
-                />
-                <ListItemSecondaryAction>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() =>
-                      handleLessonClick(
-                        nextRecommendedLesson.moduleId,
-                        nextRecommendedLesson.lessonId
-                      )
-                    }
-                    startIcon={<PlayArrow />}
-                  >
-                    Comenzar
-                  </Button>
-                </ListItemSecondaryAction>
-              </ListItem>
-            )}
-
-            {/* Módulos débiles - Prioridad Media */}
-            {getWeakModules().map((weakModule) => (
-              <ListItem
-                key={weakModule.moduleId}
-                sx={{
-                  mb: 2,
-                  backgroundColor: 'warning.lighter',
-                  borderRadius: 2,
-                }}
-              >
-                <ListItemAvatar>
-                  <Avatar sx={{ bgcolor: 'warning.main' }}>
-                    <TrendingUp />
-                  </Avatar>
-                </ListItemAvatar>
-                <ListItemText
-                  primary={
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                        {weakModule.moduleTitle}
-                      </Typography>
-                      <Chip
-                        label="Prioridad Media"
-                        color="warning"
-                        size="small"
-                        sx={{ ml: 1 }}
-                      />
-                    </Box>
-                  }
-                  secondary={`Progreso actual: ${weakModule.progress}% - Refuerza este módulo`}
-                />
-                <ListItemSecondaryAction>
-                  <Button
-                    variant="outlined"
-                    color="warning"
-                    onClick={() => handleModuleClick(weakModule.moduleId)}
-                    startIcon={<Refresh />}
-                  >
-                    Reforzar
-                  </Button>
-                </ListItemSecondaryAction>
-              </ListItem>
-            ))}
-
-            {/* Mensaje si no hay recomendaciones */}
-            {!nextRecommendedLesson && getWeakModules().length === 0 && (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <EmojiEvents sx={{ fontSize: 60, color: 'success.main', mb: 2 }} />
-                <Typography variant="h6" color="text.secondary">
-                  ¡Felicitaciones! Estás al día con tu aprendizaje
-                </Typography>
-              </Box>
-            )}
-          </List>
-        </Paper>
-
-        {/* ========== ÁRBOL DE PROGRESO (LAZY LOADED) ========== */}
-        <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
-          <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
-            Árbol de Módulos y Lecciones
-          </Typography>
-
-          <Suspense
-            fallback={
-              <Box sx={{ py: 4 }}>
-                <Skeleton variant="rectangular" height={200} sx={{ mb: 2 }} />
-                <Skeleton variant="rectangular" height={200} sx={{ mb: 2 }} />
-                <Skeleton variant="rectangular" height={200} />
-              </Box>
-            }
-          >
-            <ProgressTree
-              modules={curriculumData.modules || {}}
-              userProgress={{ lessons: Object.fromEntries(
-                Array.from(completedLessons).map(key => [key, { completed: true }])
-              )}}
-              onModuleClick={(module) => handleModuleClick(module.id)}
-              onLessonClick={(module, lesson) => handleLessonClick(module.id, lesson.id)}
+        {/* ========== GRID DE 12 COLUMNAS - 3 RAILS ========== */}
+        <div className="grid grid-cols-12 gap-6">
+          {/* ========== RAIL IZQUIERDA (xl: col-span-4) - COMPONENTES GRANDES ========== */}
+          <div className="col-span-12 xl:col-span-4 flex flex-col gap-6">
+            <ModuleMilestones
+              percent={moduleMilestones.reduce((acc, m) => acc + m.progress, 0) / moduleMilestones.length}
+              milestones={moduleMilestones}
             />
-          </Suspense>
-        </Paper>
-      </Container>
+            <div className="max-h-[80vh] overflow-auto">
+              <AchievementsGrid
+                achievements={achievements}
+                onAchievementClick={(id) => {
+                  console.log('Achievement clicked:', id);
+                }}
+              />
+            </div>
+          </div>
+
+          {/* ========== RAIL CENTRO (xl: col-span-4) - COMPONENTES COMPACTOS ========== */}
+          <div className="col-span-12 xl:col-span-4 flex flex-col gap-6">
+            <div className="mx-auto max-w-md w-full">
+              <ProgressOverviewCard
+                today={todayOverview}
+                streak={streakInfo}
+                onStartNext={() => nextRecommendedLesson && handleLessonClick(
+                  nextRecommendedLesson.moduleId,
+                  nextRecommendedLesson.lessonId
+                )}
+                loading={isLoading || isLoadingProgress}
+              />
+            </div>
+            <div className="mx-auto max-w-md w-full">
+              <StreakWidget
+                streak={streakInfo}
+                onUseFreeze={() => {
+                  console.log('Freeze streak clicked');
+                }}
+              />
+            </div>
+            <div className="mx-auto max-w-md w-full">
+              <FeedbackStrip
+                feedback={undefined}
+                onDismiss={() => {
+                  console.log('Feedback dismissed');
+                }}
+                loading={false}
+              />
+            </div>
+            <div className="mx-auto max-w-md w-full">
+              <LeaderboardCompact
+                personalBest={{
+                  userId: 'current-user',
+                  username: 'Tú',
+                  xp: xpTotal,
+                  level: currentLevel,
+                  rank: 1
+                }}
+                percentile={85}
+                cohortSize={100}
+              />
+            </div>
+            <div className="mx-auto max-w-md w-full">
+              <StudyCalendar
+                sessions={[]}
+                estimatedCompletion={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
+              />
+            </div>
+            <div className="mx-auto max-w-md w-full">
+              <NarrativeProgress
+                currentNarrative={{
+                  level: currentLevel,
+                  title: 'Nuevo Aprendiz',
+                  description: 'Estás comenzando tu viaje en la mecánica ventilatoria',
+                  role: 'Aprendiz'
+                }}
+                recentEvents={[]}
+                onEventClick={(level) => {
+                  console.log('Narrative event clicked:', level);
+                }}
+              />
+            </div>
+          </div>
+
+          {/* ========== RAIL DERECHA (xl: col-span-4) - COMPONENTES GRANDES ========== */}
+          <div className="col-span-12 xl:col-span-4 flex flex-col gap-6">
+            <div className="max-h-[80vh] overflow-auto">
+              <ComprehensionPanel
+                trends={comprehensionTrends}
+                onReinforce={(conceptId) => {
+                  console.log('Reinforce concept:', conceptId);
+                }}
+              />
+            </div>
+            <Challenges
+              dailyChallenge={{
+                id: 'daily-1',
+                type: 'daily',
+                title: 'Completa una lección',
+                description: 'Estudia al menos 10 minutos hoy',
+                duration: 10,
+                xpReward: 50,
+                completed: false,
+                progress: 30
+              }}
+              weeklyChallenges={[
+                {
+                  id: 'weekly-1',
+                  type: 'weekly',
+                  title: 'Completa 5 lecciones',
+                  description: 'Termina 5 lecciones esta semana',
+                  duration: 60,
+                  xpReward: 200,
+                  completed: false,
+                  progress: 60
+                }
+              ]}
+              onChallengeClick={(id) => {
+                console.log('Challenge clicked:', id);
+              }}
+            />
+            <BossFightCard
+              boss={bossFight}
+              onStart={(id) => {
+                console.log('Boss fight started:', id);
+              }}
+            />
+          </div>
+        </div>
+      </div>
     </Fade>
   );
 };

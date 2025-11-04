@@ -510,52 +510,102 @@ const ProgressTree = ({ modules, userProgress, onModuleClick, onLessonClick }) =
                 <AccordionDetails sx={{ pt: 0 }}>
                   <Divider sx={{ mb: 2 }} />
                   <List sx={{ pt: 0 }}>
-                    {module.lessons?.map((lesson, index) => {
-                      const lessonProgress = userProgress?.lessons?.[lesson.id];
-                      const isCompleted = lessonProgress?.completed || false;
-                      const isClickable = status !== 'locked';
+                    {(() => {
+                      // Ordenar lecciones por 'order' si existe
+                      const sortedLessons = [...(module.lessons || [])].sort((a, b) => {
+                        if (a.order !== undefined && b.order !== undefined) {
+                          return a.order - b.order;
+                        }
+                        return 0;
+                      });
 
-                      return (
-                        <ListItem key={lesson.id} disablePadding sx={{ mb: 0.5 }}>
-                          <ListItemButton
-                            onClick={() => handleLessonClick(module, lesson)}
-                            disabled={!isClickable}
-                            sx={{
-                              borderRadius: 1,
-                              '&:hover': {
-                                backgroundColor: isClickable ? 'action.hover' : 'transparent',
-                              },
-                            }}
-                          >
-                            <ListItemIcon sx={{ minWidth: 36 }}>
-                              {isCompleted ? (
-                                <CheckCircleOutline sx={{ color: 'success.main' }} />
-                              ) : (
-                                <RadioButtonUnchecked sx={{ color: 'action.disabled' }} />
-                              )}
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={
-                                <Typography
-                                  variant="body2"
-                                  sx={{
-                                    fontWeight: isCompleted ? 500 : 400,
-                                    textDecoration: isCompleted ? 'line-through' : 'none',
-                                  }}
-                                >
-                                  {lesson.title}
-                                </Typography>
-                              }
-                              secondary={
-                                <Typography variant="caption" color="text.secondary">
-                                  {lesson.estimatedTime} min
-                                </Typography>
-                              }
-                            />
-                          </ListItemButton>
-                        </ListItem>
-                      );
-                    })}
+                      // Función para verificar si una lección está desbloqueada (desbloqueo lineal)
+                      const isLessonUnlocked = (lessonIndex) => {
+                        // La primera lección siempre está desbloqueada
+                        if (lessonIndex === 0) {
+                          return true;
+                        }
+                        
+                        // Verificar que todas las lecciones anteriores estén completadas
+                        for (let i = 0; i < lessonIndex; i++) {
+                          const previousLesson = sortedLessons[i];
+                          const previousProgress = userProgress?.lessons?.[previousLesson.id];
+                          if (!previousProgress?.completed) {
+                            return false;
+                          }
+                        }
+                        
+                        return true;
+                      };
+
+                      return sortedLessons.map((lesson, index) => {
+                        const lessonProgress = userProgress?.lessons?.[lesson.id];
+                        const isCompleted = lessonProgress?.completed || false;
+                        const isUnlocked = isLessonUnlocked(index);
+                        // La lección está bloqueada si el módulo está bloqueado O si la lección no está desbloqueada linealmente
+                        const isLessonBlocked = status === 'locked' || !isUnlocked;
+                        const isClickable = !isLessonBlocked;
+
+                        return (
+                          <ListItem key={lesson.id} disablePadding sx={{ mb: 0.5 }}>
+                            <ListItemButton
+                              onClick={() => {
+                                if (isClickable) {
+                                  handleLessonClick(module, lesson);
+                                }
+                              }}
+                              disabled={!isClickable}
+                              sx={{
+                                borderRadius: 1,
+                                // Opacidad reducida cuando está bloqueada
+                                opacity: !isUnlocked ? 0.5 : 1,
+                                cursor: isClickable ? 'pointer' : 'not-allowed',
+                                '&:hover': {
+                                  backgroundColor: isClickable ? 'action.hover' : 'transparent',
+                                },
+                                '&.Mui-disabled': {
+                                  opacity: !isUnlocked ? 0.5 : 0.38,
+                                },
+                              }}
+                            >
+                              <ListItemIcon sx={{ minWidth: 36 }}>
+                                {!isUnlocked ? (
+                                  <Lock sx={{ color: 'action.disabled', fontSize: 18 }} />
+                                ) : isCompleted ? (
+                                  <CheckCircleOutline sx={{ color: 'success.main' }} />
+                                ) : (
+                                  <RadioButtonUnchecked sx={{ color: 'action.disabled' }} />
+                                )}
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={
+                                  <Typography
+                                    variant="body2"
+                                    sx={{
+                                      fontWeight: isCompleted ? 500 : 400,
+                                      textDecoration: isCompleted ? 'line-through' : 'none',
+                                      color: !isUnlocked ? 'text.disabled' : 'inherit',
+                                      opacity: !isUnlocked ? 0.6 : 1,
+                                    }}
+                                  >
+                                    {lesson.title}
+                                  </Typography>
+                                }
+                                secondary={
+                                  <Typography 
+                                    variant="caption" 
+                                    color={!isUnlocked ? 'text.disabled' : 'text.secondary'}
+                                    sx={{ opacity: !isUnlocked ? 0.6 : 1 }}
+                                  >
+                                    {lesson.estimatedTime} min
+                                  </Typography>
+                                }
+                              />
+                            </ListItemButton>
+                          </ListItem>
+                        );
+                      });
+                    })()}
                   </List>
                 </AccordionDetails>
               </Accordion>

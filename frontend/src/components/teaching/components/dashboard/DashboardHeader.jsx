@@ -19,12 +19,32 @@ import {
  *
  * @param {string} title - Título principal del módulo
  * @param {string} description - Descripción del módulo
+ * @param {number} activeTab - Pestaña activa (0: Dashboard, 1: Curriculum, 2: Mi Progreso)
  * @returns {JSX.Element} Componente de cabecera del dashboard
  */
 const DashboardHeader = ({
   title = "Módulo de Enseñanza",
-  description = "Aprende los fundamentos de la mecánica ventilatoria de manera interactiva."
+  description = null,
+  activeTab = 0
 }) => {
+  // Descripciones según la pestaña activa
+  const getDescription = () => {
+    if (description) return description;
+    
+    switch (activeTab) {
+      case 0:
+        return "Aprende los fundamentos de la mecánica ventilatoria de manera interactiva.";
+      case 1:
+        return "Explora el currículo completo y planifica tu camino de aprendizaje.";
+      case 2:
+        return "Analiza tu desempeño, revisa tus logros y métricas detalladas de tu progreso.";
+      default:
+        return "Aprende los fundamentos de la mecánica ventilatoria de manera interactiva.";
+    }
+  };
+
+  const displayTitle = activeTab === 2 ? "Mi Progreso" : title;
+  const displayDescription = getDescription();
   return (
     <Box sx={{ mb: 4 }}>
       {/* Breadcrumbs de navegación */}
@@ -38,10 +58,10 @@ const DashboardHeader = ({
           sx={{
             display: 'flex',
             alignItems: 'center',
-            color: 'text.secondary',
+            color: '#e8f4fd',
             transition: 'color 0.2s ease',
             '&:hover': {
-              color: 'primary.light'
+              color: '#ffffff'
             }
           }}
         >
@@ -52,7 +72,7 @@ const DashboardHeader = ({
           sx={{
             display: 'flex',
             alignItems: 'center',
-            color: 'primary.main',
+            color: '#ffffff',
             fontWeight: 500
           }}
         >
@@ -67,24 +87,24 @@ const DashboardHeader = ({
         component="h1"
         sx={{
           fontWeight: 700,
-          color: 'text.primary',
+          color: '#ffffff',
           mb: 2
         }}
       >
-        {title}
+        {displayTitle}
       </Typography>
 
       {/* Descripción */}
       <Typography
         variant="body1"
         sx={{
-          color: 'text.secondary',
+          color: '#e8f4fd',
           maxWidth: '700px',
           mx: 'auto',
           textAlign: 'center'
         }}
       >
-        {description}
+        {displayDescription}
       </Typography>
     </Box>
   );
@@ -92,7 +112,8 @@ const DashboardHeader = ({
 
 DashboardHeader.propTypes = {
   title: PropTypes.string,
-  description: PropTypes.string
+  description: PropTypes.string,
+  activeTab: PropTypes.number
 };
 
 export default DashboardHeader;

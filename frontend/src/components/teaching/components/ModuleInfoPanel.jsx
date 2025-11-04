@@ -20,8 +20,9 @@ const ModuleInfoPanel = () => {
       sx={{
         mt: 4,
         p: 4,
-        backgroundColor: 'background.paper',
+        backgroundColor: 'transparent',
         borderRadius: 3,
+        border: '1px solid rgba(255, 255, 255, 0.1)',
         borderLeft: (theme) => `4px solid ${theme.palette.info.main}`
       }}
     >
@@ -29,7 +30,7 @@ const ModuleInfoPanel = () => {
         variant="h5"
         gutterBottom
         sx={{
-          color: 'info.main',
+          color: '#ffffff',
           fontWeight: 700,
           mb: 2
         }}
@@ -39,7 +40,7 @@ const ModuleInfoPanel = () => {
       <Typography
         variant="body1"
         sx={{
-          color: 'text.secondary',
+          color: '#e8f4fd',
           fontSize: '1rem',
           lineHeight: 1.6
         }}

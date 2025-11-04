@@ -293,53 +293,136 @@ const TeachingModule = () => {
         <Fade in timeout={500}>
           <Box>
             {/* Header: Breadcrumb, título y descripción */}
-            <DashboardHeader />
+            <DashboardHeader 
+              activeTab={activeTab}
+            />
 
-      {/* Tabs Navigation */}
-      <Paper elevation={2} sx={{ mb: 4, borderRadius: 2 }}>
+      {/* Tabs Navigation - Diseño Moderno */}
+      <Box
+        sx={{
+          mb: 4,
+          position: 'relative',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '1px',
+            background: 'linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.3), transparent)',
+          },
+        }}
+      >
         <Tabs
           value={activeTab}
           onChange={handleTabChange}
           variant={isMobile ? 'fullWidth' : 'standard'}
           sx={{
-            borderBottom: 1,
-            borderColor: 'divider',
+            position: 'relative',
             '& .MuiTab-root': {
-              minHeight: 64,
+              minHeight: 72,
               fontSize: isMobile ? '0.875rem' : '1rem',
               fontWeight: 600,
               textTransform: 'none',
-              color: '#6c757d',
+              color: 'rgba(255, 255, 255, 0.6)',
+              padding: '12px 24px',
+              marginRight: { xs: 0, sm: 2 },
+              borderRadius: '12px 12px 0 0',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              position: 'relative',
+              '&:hover': {
+                color: 'rgba(255, 255, 255, 0.9)',
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                transform: 'translateY(-2px)',
+              },
               '&.Mui-selected': {
-                color: '#1976d2',
+                color: '#ffffff',
+                backgroundColor: 'rgba(33, 150, 243, 0.15)',
+              },
+              '& .MuiTab-iconWrapper': {
+                marginRight: { xs: 0.5, sm: 1.5 },
+                transition: 'transform 0.3s ease',
+                fontSize: { xs: '1.1rem', sm: '1.25rem' },
+              },
+              '&:hover .MuiTab-iconWrapper': {
+                transform: 'scale(1.1)',
+              },
+              '&.Mui-selected .MuiTab-iconWrapper': {
+                transform: 'scale(1.15)',
+                color: '#2196F3',
               },
             },
             '& .MuiTabs-indicator': {
-              height: 3,
-              backgroundColor: '#1976d2',
+              height: 4,
+              borderRadius: '4px 4px 0 0',
+              background: 'linear-gradient(90deg, #2196F3, #42A5F5, #2196F3)',
+              boxShadow: '0 2px 8px rgba(33, 150, 243, 0.4)',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            },
+            '& .MuiTabs-flexContainer': {
+              gap: { xs: 0, sm: 1 },
             },
           }}
         >
           <Tab
-            label="Dashboard"
+            label={isMobile ? '' : 'Dashboard'}
             icon={<DashboardIcon />}
             iconPosition="start"
             value={0}
+            sx={{
+              '&.Mui-selected': {
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '2px',
+                  background: 'linear-gradient(90deg, transparent, #2196F3, transparent)',
+                },
+              },
+            }}
           />
           <Tab
-            label="Curriculum"
+            label={isMobile ? '' : 'Curriculum'}
             icon={<SchoolIcon />}
             iconPosition="start"
             value={1}
+            sx={{
+              '&.Mui-selected': {
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '2px',
+                  background: 'linear-gradient(90deg, transparent, #2196F3, transparent)',
+                },
+              },
+            }}
           />
           <Tab
-            label="Mi Progreso"
+            label={isMobile ? '' : 'Mi Progreso'}
             icon={<TrendingUp />}
             iconPosition="start"
             value={2}
+            sx={{
+              '&.Mui-selected': {
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '2px',
+                  background: 'linear-gradient(90deg, transparent, #2196F3, transparent)',
+                },
+              },
+            }}
           />
         </Tabs>
-      </Paper>
+      </Box>
 
       {/* TAB PANEL 0: Dashboard */}
       {activeTab === 0 && (

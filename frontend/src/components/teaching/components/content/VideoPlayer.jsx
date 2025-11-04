@@ -25,8 +25,10 @@ import {
  */
 const VideoContainer = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
-  backgroundColor: theme.palette.background.paper,
+  backgroundColor: 'transparent',
+  border: '1px solid rgba(255, 255, 255, 0.1)',
   borderRadius: theme.shape.borderRadius,
+  boxShadow: 'none',
   overflow: 'hidden',
 }));
 
@@ -62,8 +64,9 @@ const ControlsContainer = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1),
   marginTop: theme.spacing(2),
   padding: theme.spacing(1),
-  backgroundColor: theme.palette.action.hover,
+  backgroundColor: 'rgba(255, 255, 255, 0.05)',
   borderRadius: theme.shape.borderRadius,
+  border: '1px solid rgba(255, 255, 255, 0.1)',
 }));
 
 /**
@@ -81,7 +84,7 @@ const ProgressContainer = styled(Box)(({ theme }) => ({
  */
 const TimeDisplay = styled(Typography)(({ theme }) => ({
   fontSize: '0.875rem',
-  color: theme.palette.text.secondary,
+  color: '#e8f4fd',
   fontFamily: 'monospace',
   minWidth: '100px',
   textAlign: 'center',
@@ -295,7 +298,11 @@ const VideoPlayer = ({ url, title, onProgress }) => {
           variant="h6" 
           component="h3" 
           gutterBottom
-          sx={{ mb: 2 }}
+          sx={{ 
+            mb: 2,
+            color: '#ffffff',
+            fontWeight: 600
+          }}
         >
           {title}
         </Typography>
@@ -437,8 +444,12 @@ const VideoPlayer = ({ url, title, onProgress }) => {
           {/* Instrucciones de teclado */}
           <Typography
             variant="caption"
-            color="text.secondary"
-            sx={{ mt: 1, display: 'block', textAlign: 'center' }}
+            sx={{ 
+              mt: 1, 
+              display: 'block', 
+              textAlign: 'center',
+              color: '#e8f4fd'
+            }}
           >
             Atajos: Espacio/K = Play/Pausa, F = Pantalla completa, M = Silenciar
           </Typography>

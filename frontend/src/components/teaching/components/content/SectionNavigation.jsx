@@ -37,6 +37,10 @@ const NavigationContainer = styled(Paper)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   overflow: 'hidden',
+  backgroundColor: 'rgba(33, 150, 243, 0.15)', // Mismo color que Mis notas
+  border: '1px solid rgba(33, 150, 243, 0.3)',
+  borderRadius: 2,
+  boxShadow: 'none',
   [theme.breakpoints.down('md')]: {
     display: 'none',
   },
@@ -47,8 +51,8 @@ const NavigationContainer = styled(Paper)(({ theme }) => ({
  */
 const NavigationHeader = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
-  backgroundColor: theme.palette.primary.main,
-  color: theme.palette.primary.contrastText,
+  backgroundColor: 'transparent',
+  borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
 }));
 
 /**
@@ -85,19 +89,19 @@ const StyledListItemButton = styled(ListItemButton)(({ theme, iscurrent, iscompl
     borderRadius: theme.shape.borderRadius,
     marginBottom: theme.spacing(0.5),
     transition: 'all 0.3s ease',
-    backgroundColor: isCurrentBool ? alpha(theme.palette.primary.main, 0.15) : 'transparent',
-    borderLeft: isCurrentBool ? `4px solid ${theme.palette.primary.main}` : '4px solid transparent',
+    backgroundColor: isCurrentBool ? 'rgba(144, 202, 249, 0.3)' : 'transparent',
+    borderLeft: isCurrentBool ? `4px solid #90CAF9` : '4px solid transparent',
     paddingLeft: theme.spacing(1.5),
     
     '&:hover': {
       backgroundColor: isCurrentBool 
-        ? alpha(theme.palette.primary.main, 0.25)
-        : alpha(theme.palette.action.hover, 0.8),
+        ? 'rgba(144, 202, 249, 0.4)'
+        : 'rgba(144, 202, 249, 0.2)',
       transform: 'translateX(4px)',
     },
 
     '& .MuiListItemIcon-root': {
-      color: isCurrentBool ? theme.palette.primary.main : theme.palette.text.secondary,
+      color: isCurrentBool ? '#ffffff' : 'rgba(255, 255, 255, 0.6)',
       minWidth: 40,
     },
 
@@ -273,26 +277,26 @@ const SectionNavigation = ({ sections, currentSection, onSectionClick }) => {
     <>
       <NavigationHeader>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6" component="h2">
+          <Typography variant="h6" component="h2" sx={{ color: '#ffffff', fontWeight: 600 }}>
             Contenido de la Lección
           </Typography>
           {isMobile && (
             <IconButton
               size="small"
               onClick={handleCloseDrawer}
-              sx={{ color: 'inherit' }}
+              sx={{ color: '#ffffff' }}
               aria-label="Cerrar menú"
             >
               <CloseIcon />
             </IconButton>
           )}
         </Box>
-        <Typography variant="caption" sx={{ opacity: 0.9, display: 'block', mt: 0.5 }}>
+        <Typography variant="caption" sx={{ color: '#ffffff', display: 'block', mt: 0.5, opacity: 0.8 }}>
           {sections.length} {sections.length === 1 ? 'sección' : 'secciones'}
         </Typography>
       </NavigationHeader>
 
-      <Divider />
+      <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
 
       <ScrollableList
         ref={listRef}
@@ -326,10 +330,16 @@ const SectionNavigation = ({ sections, currentSection, onSectionClick }) => {
 
               <ListItemText
                 primary={section.title}
+                primaryTypographyProps={{
+                  sx: {
+                    color: '#ffffff',
+                    fontWeight: isCurrent ? 600 : 400,
+                  }
+                }}
                 secondary={isCompleted && !isCurrent ? 'Completada' : null}
                 secondaryTypographyProps={{
                   variant: 'caption',
-                  color: 'success.main',
+                  sx: { color: '#ffffff', opacity: 0.7 },
                 }}
               />
             </StyledListItemButton>
@@ -337,13 +347,13 @@ const SectionNavigation = ({ sections, currentSection, onSectionClick }) => {
         })}
       </ScrollableList>
 
-      <Divider />
+      <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
 
-      <Box sx={{ p: 2, backgroundColor: 'background.default' }}>
-        <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
+      <Box sx={{ p: 2, backgroundColor: 'rgba(255, 255, 255, 0.02)' }}>
+        <Typography variant="caption" sx={{ color: '#ffffff', opacity: 0.8 }} display="block" gutterBottom>
           Usa ↑↓ para navegar, Enter para seleccionar
         </Typography>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" sx={{ color: '#ffffff', opacity: 0.8 }}>
           Sección {currentSection + 1} de {sections.length}
         </Typography>
       </Box>

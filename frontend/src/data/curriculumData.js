@@ -11,22 +11,25 @@ export const curriculumData = {
       title: 'Nivel Principiante',
       description: 'Fundamentos fisiológicos y conceptos básicos de ventilación mecánica',
       color: '#4CAF50',
+      emoji: '🌱',
       totalModules: 10,
       estimatedDuration: '20-25 horas'
     },
     {
-      id: 'intermediate', 
+      id: 'intermediate',
       title: 'Nivel Intermedio',
       description: 'Modalidades ventilatorias y manejo de parámetros críticos',
       color: '#FF9800',
+      emoji: '🎯',
       totalModules: 12,
       estimatedDuration: '30-35 horas'
     },
     {
       id: 'advanced',
-      title: 'Nivel Avanzado', 
+      title: 'Nivel Avanzado',
       description: 'Estrategias especializadas y casos clínicos complejos',
       color: '#F44336',
+      emoji: '🚀',
       totalModules: 10,
       estimatedDuration: '25-30 horas'
     }

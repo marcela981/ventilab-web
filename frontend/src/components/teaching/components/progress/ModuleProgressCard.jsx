@@ -44,6 +44,7 @@ import {
  * @param {string} props.moduleId - ID del módulo padre
  * @param {boolean} props.isCompleted - Si la lección está completada
  * @param {boolean} props.isDisabled - Si el item está deshabilitado
+ * @param {boolean} props.isLocked - Si la lección está bloqueada (no desbloqueada linealmente)
  * @param {Function} props.onLessonClick - Callback para manejar click en la lección
  * @returns {JSX.Element} Item de lección
  */
@@ -52,38 +53,54 @@ const LessonProgressItem = ({
   moduleId,
   isCompleted,
   isDisabled,
+  isLocked = false,
   onLessonClick,
 }) => {
   return (
     <ListItem disablePadding sx={{ mb: 0.5 }}>
       <ListItemButton
-        onClick={() => onLessonClick && onLessonClick(moduleId, lesson.id)}
+        onClick={() => {
+          if (!isDisabled && onLessonClick) {
+            onLessonClick(moduleId, lesson.id);
+          }
+        }}
         disabled={isDisabled}
         sx={{
           borderRadius: 2,
           py: 1.5,
           px: 2,
+          // Opacidad reducida cuando está bloqueada
+          opacity: isLocked ? 0.5 : 1,
           transition: 'all 0.2s ease-in-out',
+          cursor: isDisabled ? 'not-allowed' : 'pointer',
           '&:hover': {
             backgroundColor: isDisabled ? 'transparent' : 'action.hover',
             transform: isDisabled ? 'none' : 'translateX(4px)',
           },
+          // Prevenir interacción cuando está bloqueada
+          '&.Mui-disabled': {
+            opacity: isLocked ? 0.5 : 0.38,
+          },
         }}
-        aria-label={`${lesson.title} - ${isCompleted ? 'Completada' : 'Pendiente'}`}
+        aria-label={`${lesson.title} - ${isCompleted ? 'Completada' : isLocked ? 'Bloqueada' : 'Pendiente'}`}
       >
         <ListItemIcon sx={{ minWidth: 40 }}>
-          <Checkbox
-            checked={isCompleted}
-            disabled={isDisabled}
-            icon={<RadioButtonUnchecked />}
-            checkedIcon={<CheckCircleOutline />}
-            sx={{
-              color: isCompleted ? 'success.main' : 'action.disabled',
-              '&.Mui-checked': {
-                color: 'success.main',
-              },
-            }}
-          />
+          {isLocked ? (
+            <Lock sx={{ color: 'action.disabled', fontSize: 20 }} />
+          ) : (
+            <Checkbox
+              checked={isCompleted}
+              disabled={isDisabled}
+              icon={<RadioButtonUnchecked />}
+              checkedIcon={<CheckCircleOutline />}
+              sx={{
+                color: isCompleted ? 'success.main' : 'action.disabled',
+                '&.Mui-checked': {
+                  color: 'success.main',
+                },
+              }}
+            />
+          )}
         </ListItemIcon>
         <ListItemText
           primary={
@@ -92,7 +109,12 @@ const LessonProgressItem = ({
               sx={{
                 fontWeight: isCompleted ? 500 : 400,
                 textDecoration: isCompleted ? 'line-through' : 'none',
-                color: isCompleted ? 'text.secondary' : 'text.primary',
+                color: isLocked 
+                  ? 'text.disabled' 
+                  : isCompleted 
+                    ? 'text.secondary' 
+                    : 'text.primary',
+                opacity: isLocked ? 0.6 : 1,
               }}
             >
               {lesson.title}
@@ -100,24 +122,43 @@ const LessonProgressItem = ({
           }
           secondary={
             <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-              <AccessTime sx={{ fontSize: 14, mr: 0.5, color: 'text.secondary' }} />
-              <Typography variant="caption" color="text.secondary">
+              <AccessTime sx={{ 
+                fontSize: 14, 
+                mr: 0.5, 
+                color: isLocked ? 'text.disabled' : 'text.secondary',
+                opacity: isLocked ? 0.6 : 1,
+              }} />
+              <Typography 
+                variant="caption" 
+                color={isLocked ? 'text.disabled' : 'text.secondary'}
+                sx={{ opacity: isLocked ? 0.6 : 1 }}
+              >
                 {lesson.estimatedTime || 0} minutos
               </Typography>
             </Box>
           }
         />
-        <Chip
-          label={lesson.estimatedTime || 0}
-          icon={<AccessTime />}
-          size="small"
-          variant="outlined"
-          sx={{
-            ml: 1,
-            fontSize: '0.75rem',
-            display: { xs: 'none', sm: 'flex' },
-          }}
-        />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {isLocked && (
+            <Tooltip title="Completa la lección anterior para desbloquear esta" arrow>
+              <Lock sx={{ color: 'action.disabled', fontSize: 18, opacity: 0.6 }} />
+            </Tooltip>
+          )}
+          <Chip
+            label={lesson.estimatedTime || 0}
+            icon={<AccessTime />}
+            size="small"
+            variant="outlined"
+            sx={{
+              ml: 1,
+              fontSize: '0.75rem',
+              display: { xs: 'none', sm: 'flex' },
+              opacity: isLocked ? 0.5 : 1,
+              borderColor: isLocked ? 'action.disabled' : 'divider',
+              color: isLocked ? 'text.disabled' : 'inherit',
+            }}
+          />
+        </Box>
       </ListItemButton>
     </ListItem>
   );
@@ -128,16 +169,19 @@ LessonProgressItem.propTypes = {
     id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     estimatedTime: PropTypes.number,
+    order: PropTypes.number,
   }).isRequired,
   moduleId: PropTypes.string.isRequired,
   isCompleted: PropTypes.bool,
   isDisabled: PropTypes.bool,
+  isLocked: PropTypes.bool,
   onLessonClick: PropTypes.func,
 };
 
 LessonProgressItem.defaultProps = {
   isCompleted: false,
   isDisabled: false,
+  isLocked: false,
   onLessonClick: null,
 };
 
@@ -307,9 +351,46 @@ const ModuleProgressCard = ({
     return completedLessons.has(lessonKey);
   };
 
+  /**
+   * Verifica si una lección está desbloqueada (desbloqueo lineal)
+   * La primera lección siempre está desbloqueada.
+   * Las siguientes solo se desbloquean si la anterior está completada.
+   */
+  const isLessonUnlocked = (lessonIndex, sortedLessons) => {
+    // La primera lección siempre está desbloqueada
+    if (lessonIndex === 0) {
+      return true;
+    }
+    
+    // Verificar que todas las lecciones anteriores estén completadas
+    for (let i = 0; i < lessonIndex; i++) {
+      const previousLesson = sortedLessons[i];
+      if (!isLessonCompleted(previousLesson.id)) {
+        return false;
+      }
+    }
+    
+    return true;
+  };
+
+  /**
+   * Ordena las lecciones por su campo 'order' si existe, sino mantiene el orden original
+   */
+  const getSortedLessons = () => {
+    return [...lessons].sort((a, b) => {
+      // Si tienen campo 'order', ordenar por ese campo
+      if (a.order !== undefined && b.order !== undefined) {
+        return a.order - b.order;
+      }
+      // Mantener el orden original si no tienen campo 'order'
+      return 0;
+    });
+  };
+
   const buttonConfig = getActionButtonConfig();
   const totalLessons = lessons.length;
   const hasLessons = totalLessons > 0;
+  const sortedLessons = getSortedLessons();
 
   return (
     <Accordion
@@ -468,16 +549,24 @@ const ModuleProgressCard = ({
               Lecciones del Módulo
             </Typography>
             <List sx={{ pt: 0, pb: 2 }}>
-              {lessons.map((lesson) => (
-                <LessonProgressItem
-                  key={lesson.id}
-                  lesson={lesson}
-                  moduleId={module.id}
-                  isCompleted={isLessonCompleted(lesson.id)}
-                  isDisabled={status === 'locked'}
-                  onLessonClick={onLessonClick}
-                />
-              ))}
+              {sortedLessons.map((lesson, index) => {
+                const isCompleted = isLessonCompleted(lesson.id);
+                const isUnlocked = isLessonUnlocked(index, sortedLessons);
+                // La lección está bloqueada si el módulo está bloqueado O si la lección no está desbloqueada
+                const isLessonBlocked = status === 'locked' || !isUnlocked;
+                
+                return (
+                  <LessonProgressItem
+                    key={lesson.id}
+                    lesson={lesson}
+                    moduleId={module.id}
+                    isCompleted={isCompleted}
+                    isDisabled={isLessonBlocked}
+                    isLocked={!isUnlocked}
+                    onLessonClick={onLessonClick}
+                  />
+                );
+              })}
             </List>
           </>
         ) : (

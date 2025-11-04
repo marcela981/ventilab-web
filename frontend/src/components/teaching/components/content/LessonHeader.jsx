@@ -30,19 +30,6 @@ import {
 } from '@mui/icons-material';
 
 /**
- * HeaderContainer - Contenedor principal del header
- */
-const HeaderContainer = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
-  marginBottom: theme.spacing(3),
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: theme.palette.background.paper,
-  [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(2),
-  },
-}));
-
-/**
  * StyledBreadcrumbs - Breadcrumbs personalizado
  */
 const StyledBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
@@ -59,13 +46,13 @@ const BreadcrumbLink = styled(Link)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(0.5),
-  color: theme.palette.text.secondary,
+  color: '#e8f4fd',
   textDecoration: 'none',
   fontSize: '0.875rem',
   cursor: 'pointer',
   transition: 'color 0.2s ease',
   '&:hover': {
-    color: theme.palette.primary.main,
+    color: '#ffffff',
     textDecoration: 'underline',
   },
 }));
@@ -109,19 +96,13 @@ const formatEstimatedTime = (minutes) => {
 const getDifficultyConfig = (difficulty) => {
   const configs = {
     beginner: {
-      color: 'success',
       label: 'Principiante',
-      icon: '🟢',
     },
     intermediate: {
-      color: 'warning',
       label: 'Intermedio',
-      icon: '🟡',
     },
     advanced: {
-      color: 'error',
       label: 'Avanzado',
-      icon: '🔴',
     },
   };
 
@@ -178,11 +159,11 @@ const LessonHeader = ({ lesson, onHomeClick, onModuleClick }) => {
   // Validación básica
   if (!lesson) {
     return (
-      <HeaderContainer elevation={2}>
-        <Typography color="error">
+      <Box sx={{ mb: 3 }}>
+        <Typography sx={{ color: '#ff5252' }}>
           No se proporcionó información de la lección
         </Typography>
-      </HeaderContainer>
+      </Box>
     );
   }
 
@@ -219,7 +200,7 @@ const LessonHeader = ({ lesson, onHomeClick, onModuleClick }) => {
   };
 
   return (
-    <HeaderContainer elevation={2} role="banner" aria-label="Encabezado de la lección">
+    <Box role="banner" aria-label="Encabezado de la lección" sx={{ mb: 3 }}>
       {/* Breadcrumbs de navegación */}
       <StyledBreadcrumbs
         aria-label="breadcrumb"
@@ -245,50 +226,66 @@ const LessonHeader = ({ lesson, onHomeClick, onModuleClick }) => {
 
         <Typography
           variant="body2"
-          color="text.primary"
           sx={{
             display: 'flex',
             alignItems: 'center',
             gap: 0.5,
             fontWeight: 500,
+            color: '#ffffff',
           }}
         >
           {title}
         </Typography>
       </StyledBreadcrumbs>
 
-      <Divider sx={{ mb: 2 }} />
+      <Divider sx={{ mb: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
 
-      {/* Título de la lección */}
+      {/* Título de la lección - con nivel y tema */}
+      {level && (
+        <Typography
+          variant="overline"
+          sx={{
+            color: '#e8f4fd',
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            letterSpacing: 1.2,
+            textTransform: 'uppercase',
+            display: 'block',
+            mb: 1,
+          }}
+        >
+          {level}
+        </Typography>
+      )}
       <Typography
         variant={isMobile ? 'h5' : 'h4'}
         component="h1"
         fontWeight="bold"
         gutterBottom
         sx={{
-          color: 'text.primary',
-          mb: 2,
+          color: '#ffffff',
           lineHeight: 1.3,
+          mb: description ? 1 : 0,
         }}
       >
         {title}
       </Typography>
-
-      {/* Descripción */}
       {description && (
         <Typography
-          variant="body1"
-          color="text.secondary"
+          variant="subtitle1"
           sx={{
-            mb: 3,
-            lineHeight: 1.7,
+            color: '#e8f4fd',
+            lineHeight: 1.5,
+            fontWeight: 400,
+            fontStyle: 'italic',
+            mb: 2,
           }}
         >
           {description}
         </Typography>
       )}
 
-      {/* Chips informativos */}
+      {/* Chips informativos - estilo unificado */}
       <Stack
         direction={isMobile ? 'column' : 'row'}
         spacing={1}
@@ -301,34 +298,56 @@ const LessonHeader = ({ lesson, onHomeClick, onModuleClick }) => {
         {/* Tiempo estimado */}
         {estimatedTime && (
           <Chip
-            icon={<ScheduleIcon />}
+            icon={<ScheduleIcon sx={{ color: '#e8f4fd' }} />}
             label={formatEstimatedTime(estimatedTime)}
             variant="outlined"
-            color="primary"
             size={isMobile ? 'small' : 'medium'}
-            sx={{ fontWeight: 500 }}
+            sx={{ 
+              fontWeight: 500,
+              borderColor: 'rgba(255, 255, 255, 0.2)',
+              color: '#e8f4fd',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              }
+            }}
           />
         )}
 
         {/* Nivel de dificultad */}
         {difficulty && (
           <Chip
-            label={`${difficultyConfig.icon} ${difficultyConfig.label}`}
-            color={difficultyConfig.color}
+            label={difficultyConfig.label}
+            variant="outlined"
             size={isMobile ? 'small' : 'medium'}
-            sx={{ fontWeight: 500 }}
+            sx={{ 
+              fontWeight: 500,
+              borderColor: 'rgba(255, 255, 255, 0.2)',
+              color: '#e8f4fd',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              }
+            }}
           />
         )}
 
         {/* Nivel del curriculum */}
         {level && (
           <Chip
-            icon={<TrendingUpIcon />}
+            icon={<TrendingUpIcon sx={{ color: '#e8f4fd' }} />}
             label={level}
             variant="outlined"
-            color="default"
             size={isMobile ? 'small' : 'medium'}
-            sx={{ fontWeight: 500 }}
+            sx={{ 
+              fontWeight: 500,
+              borderColor: 'rgba(255, 255, 255, 0.2)',
+              color: '#e8f4fd',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              }
+            }}
           />
         )}
       </Stack>
@@ -340,8 +359,9 @@ const LessonHeader = ({ lesson, onHomeClick, onModuleClick }) => {
           onChange={(e, isExpanded) => setObjectivesExpanded(isExpanded)}
           elevation={0}
           sx={{
-            border: `1px solid ${theme.palette.divider}`,
+            border: '1px solid rgba(255, 255, 255, 0.1)',
             borderRadius: 1,
+            backgroundColor: 'transparent',
             '&:before': {
               display: 'none',
             },
@@ -351,27 +371,33 @@ const LessonHeader = ({ lesson, onHomeClick, onModuleClick }) => {
           }}
         >
           <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
+            expandIcon={<ExpandMoreIcon sx={{ color: '#e8f4fd' }} />}
             aria-controls="learning-objectives-content"
             id="learning-objectives-header"
             sx={{
-              backgroundColor: theme.palette.action.hover,
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
               borderRadius: objectivesExpanded ? '4px 4px 0 0' : 1,
               '&:hover': {
-                backgroundColor: theme.palette.action.selected,
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
               },
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <CheckCircleIcon color="primary" />
-              <Typography variant="subtitle1" fontWeight={600}>
+              <CheckCircleIcon sx={{ color: '#e8f4fd', fontSize: 20 }} />
+              <Typography variant="subtitle1" fontWeight={600} sx={{ color: '#ffffff' }}>
                 Objetivos de Aprendizaje
               </Typography>
               <Chip
                 label={learningObjectives.length}
                 size="small"
-                color="primary"
-                sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
+                sx={{ 
+                  ml: 1, 
+                  height: 20, 
+                  fontSize: '0.75rem',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  color: '#e8f4fd',
+                  border: '1px solid rgba(255, 255, 255, 0.2)'
+                }}
               />
             </Box>
           </AccordionSummary>
@@ -379,8 +405,7 @@ const LessonHeader = ({ lesson, onHomeClick, onModuleClick }) => {
           <AccordionDetails sx={{ pt: 2 }}>
             <Typography
               variant="body2"
-              color="text.secondary"
-              sx={{ mb: 2 }}
+              sx={{ mb: 2, color: '#e8f4fd' }}
             >
               Al finalizar esta lección serás capaz de:
             </Typography>
@@ -396,16 +421,17 @@ const LessonHeader = ({ lesson, onHomeClick, onModuleClick }) => {
                 >
                   <ListItemIcon sx={{ minWidth: 36, mt: 0.5 }}>
                     <CheckCircleIcon
-                      color="success"
-                      sx={{ fontSize: 20 }}
+                      sx={{ fontSize: 20, color: '#e8f4fd' }}
                     />
                   </ListItemIcon>
                   <ListItemText
                     primary={objective}
                     primaryTypographyProps={{
                       variant: 'body2',
-                      color: 'text.primary',
-                      sx: { lineHeight: 1.6 },
+                      sx: { 
+                        lineHeight: 1.6,
+                        color: '#ffffff'
+                      },
                     }}
                   />
                 </ListItem>
@@ -414,7 +440,7 @@ const LessonHeader = ({ lesson, onHomeClick, onModuleClick }) => {
           </AccordionDetails>
         </Accordion>
       )}
-    </HeaderContainer>
+    </Box>
   );
 };
 

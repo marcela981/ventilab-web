@@ -32,8 +32,9 @@ const DashboardHeader = ({ isMobile = false }) => {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            color: '#6c757d',
-            '&:hover': { color: '#495057' }
+            color: '#e8f4fd',
+            transition: 'color 0.2s ease',
+            '&:hover': { color: '#ffffff' }
           }}
         >
           <Home sx={{ mr: 0.5 }} fontSize="inherit" />
@@ -44,7 +45,7 @@ const DashboardHeader = ({ isMobile = false }) => {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            color: '#343a40',
+            color: '#ffffff',
             fontWeight: 500
           }}
         >
@@ -60,7 +61,7 @@ const DashboardHeader = ({ isMobile = false }) => {
         gutterBottom
         sx={{
           fontWeight: 700,
-          color: '#2c3e50',
+          color: '#ffffff',
           mb: 2,
           fontSize: isMobile ? '1.8rem' : '2.2rem'
         }}
@@ -74,7 +75,7 @@ const DashboardHeader = ({ isMobile = false }) => {
         sx={{
           mb: 4,
           maxWidth: '800px',
-          color: '#495057',
+          color: '#e8f4fd',
           fontSize: '1.1rem',
           lineHeight: 1.6
         }}

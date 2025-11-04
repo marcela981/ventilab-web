@@ -85,23 +85,32 @@ const QuickAccessLessons = ({
           textAlign: 'center',
           py: 6,
           px: 3,
-          backgroundColor: 'action.hover',
+          backgroundColor: 'transparent',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: 2,
         }}
       >
-        <AutoAwesome sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
-        <Typography variant="h6" gutterBottom>
+        <AutoAwesome sx={{ fontSize: 64, color: '#e8f4fd', mb: 2 }} />
+        <Typography variant="h6" gutterBottom sx={{ color: '#ffffff' }}>
           Aún no has comenzado ninguna lección
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        <Typography variant="body2" sx={{ mb: 3, color: '#e8f4fd' }}>
           ¡Explora el curriculum y comienza tu aprendizaje!
         </Typography>
         <Button
           variant="contained"
-          color="primary"
           startIcon={<School />}
           onClick={onViewAll}
           size="large"
+          sx={{
+            bgcolor: 'rgba(33, 150, 243, 0.3)',
+            color: '#ffffff',
+            border: '1px solid rgba(33, 150, 243, 0.5)',
+            '&:hover': {
+              bgcolor: 'rgba(33, 150, 243, 0.5)',
+              borderColor: 'rgba(33, 150, 243, 0.7)'
+            }
+          }}
         >
           Ver Todo el Curriculum
         </Button>
@@ -247,6 +256,8 @@ const QuickAccessLessons = ({
             transition: 'all 0.3s ease-in-out',
             position: 'relative',
             overflow: 'visible',
+            backgroundColor: 'transparent',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
             '&:hover': {
               boxShadow: 4,
               transform: 'translateY(-4px)',
@@ -260,9 +271,9 @@ const QuickAccessLessons = ({
               value={lesson.progress}
               sx={{
                 height: 6,
-                backgroundColor: 'grey.200',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
                 '& .MuiLinearProgress-bar': {
-                  backgroundColor: 'warning.main',
+                  backgroundColor: '#ff9800',
                 },
               }}
             />
@@ -280,6 +291,7 @@ const QuickAccessLessons = ({
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: 'vertical',
+                color: '#ffffff'
               }}
             >
               {lesson.title}
@@ -287,23 +299,37 @@ const QuickAccessLessons = ({
 
             <Typography
               variant="caption"
-              color="text.secondary"
               sx={{
                 display: 'block',
                 mb: 1,
+                color: '#e8f4fd'
               }}
             >
               {lesson.moduleTitle || 'Módulo'}
             </Typography>
 
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              <Chip label="En Progreso" color="warning" size="small" />
+              <Chip 
+                label="En Progreso" 
+                size="small"
+                sx={{
+                  bgcolor: 'rgba(255, 152, 0, 0.2)',
+                  color: '#ffffff',
+                  border: '1px solid rgba(255, 152, 0, 0.5)'
+                }}
+              />
               {lesson.estimatedTime && (
                 <Chip
-                  icon={<AccessTime />}
+                  icon={<AccessTime sx={{ color: '#e8f4fd !important' }} />}
                   label={`${lesson.estimatedTime} min`}
                   size="small"
-                  variant="outlined"
+                  sx={{
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    color: '#e8f4fd',
+                    '& .MuiChip-icon': {
+                      color: '#e8f4fd'
+                    }
+                  }}
                 />
               )}
             </Box>
@@ -311,8 +337,7 @@ const QuickAccessLessons = ({
             {lesson.progress !== undefined && (
               <Typography
                 variant="caption"
-                color="text.secondary"
-                sx={{ display: 'block', mt: 1 }}
+                sx={{ display: 'block', mt: 1, color: '#e8f4fd' }}
               >
                 {lesson.progress}% completado
               </Typography>
@@ -323,10 +348,17 @@ const QuickAccessLessons = ({
             <Button
               size="small"
               variant="outlined"
-              color="primary"
               endIcon={<NavigateNext />}
               onClick={() => onLessonClick(lesson.moduleId, lesson.id)}
               fullWidth
+              sx={{
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                color: '#ffffff',
+                '&:hover': {
+                  borderColor: 'rgba(255, 255, 255, 0.5)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
             >
               Continuar
             </Button>
@@ -349,6 +381,8 @@ const QuickAccessLessons = ({
             flexDirection: 'column',
             transition: 'all 0.3s ease-in-out',
             position: 'relative',
+            backgroundColor: 'transparent',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
             borderTop: '3px solid',
             borderColor: 'primary.main',
             '&:hover': {
@@ -364,11 +398,13 @@ const QuickAccessLessons = ({
               position: 'absolute',
               top: 8,
               right: 8,
-              bgcolor: 'background.paper',
-              boxShadow: 1,
+              bgcolor: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: '#ffffff',
               '&:hover': {
-                bgcolor: 'error.lighter',
-                color: 'error.main',
+                bgcolor: 'rgba(244, 67, 54, 0.3)',
+                borderColor: 'rgba(244, 67, 54, 0.5)',
+                color: '#ffcdd2',
               },
             }}
             size="small"
@@ -388,6 +424,7 @@ const QuickAccessLessons = ({
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: 'vertical',
+                color: '#ffffff'
               }}
             >
               {lesson.title}
@@ -395,10 +432,10 @@ const QuickAccessLessons = ({
 
             <Typography
               variant="caption"
-              color="text.secondary"
               sx={{
                 display: 'block',
                 mb: 1,
+                color: '#e8f4fd'
               }}
             >
               {lesson.moduleTitle || 'Módulo'}
@@ -406,17 +443,30 @@ const QuickAccessLessons = ({
 
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               <Chip
-                icon={<Bookmark />}
+                icon={<Bookmark sx={{ color: '#ffffff !important' }} />}
                 label="Favorito"
-                color="primary"
                 size="small"
+                sx={{
+                  bgcolor: 'rgba(33, 150, 243, 0.2)',
+                  color: '#ffffff',
+                  border: '1px solid rgba(33, 150, 243, 0.5)',
+                  '& .MuiChip-icon': {
+                    color: '#ffffff'
+                  }
+                }}
               />
               {lesson.estimatedTime && (
                 <Chip
-                  icon={<AccessTime />}
+                  icon={<AccessTime sx={{ color: '#e8f4fd !important' }} />}
                   label={`${lesson.estimatedTime} min`}
                   size="small"
-                  variant="outlined"
+                  sx={{
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    color: '#e8f4fd',
+                    '& .MuiChip-icon': {
+                      color: '#e8f4fd'
+                    }
+                  }}
                 />
               )}
             </Box>
@@ -426,10 +476,18 @@ const QuickAccessLessons = ({
             <Button
               size="small"
               variant="contained"
-              color="primary"
               endIcon={<PlayArrow />}
               onClick={() => onLessonClick(lesson.moduleId, lesson.id)}
               fullWidth
+              sx={{
+                bgcolor: 'rgba(33, 150, 243, 0.3)',
+                color: '#ffffff',
+                border: '1px solid rgba(33, 150, 243, 0.5)',
+                '&:hover': {
+                  bgcolor: 'rgba(33, 150, 243, 0.5)',
+                  borderColor: 'rgba(33, 150, 243, 0.7)'
+                }
+              }}
             >
               Ver Lección
             </Button>
@@ -462,7 +520,7 @@ const QuickAccessLessons = ({
   if (!hasContent) {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Typography variant="h5" sx={{ fontWeight: 600 }}>
+        <Typography variant="h5" sx={{ fontWeight: 600, color: '#ffffff' }}>
           Acceso Rápido
         </Typography>
         {renderEmptyState()}
@@ -474,7 +532,7 @@ const QuickAccessLessons = ({
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* ===== TÍTULO PRINCIPAL ===== */}
       <Fade in timeout={300}>
-        <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
+        <Typography variant="h5" sx={{ fontWeight: 600, color: '#ffffff' }}>
           Acceso Rápido
         </Typography>
       </Fade>
@@ -498,9 +556,10 @@ const QuickAccessLessons = ({
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1,
+                color: '#ffffff'
               }}
             >
-              <NavigateNext color="primary" />
+              <NavigateNext sx={{ color: '#ffffff' }} />
               Continúa Donde Lo Dejaste
             </Typography>
           </Fade>
@@ -525,9 +584,10 @@ const QuickAccessLessons = ({
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1,
+                color: '#ffffff'
               }}
             >
-              <Bookmark color="primary" />
+              <Bookmark sx={{ color: '#ffffff' }} />
               Tus Favoritos
             </Typography>
           </Fade>
@@ -546,9 +606,16 @@ const QuickAccessLessons = ({
           <Box sx={{ textAlign: 'center', mt: 2 }}>
             <Button
               variant="outlined"
-              color="primary"
               onClick={onViewAll}
               endIcon={<NavigateNext />}
+              sx={{
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                color: '#ffffff',
+                '&:hover': {
+                  borderColor: 'rgba(255, 255, 255, 0.5)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
             >
               Ver Todo el Curriculum
             </Button>

@@ -24,22 +24,22 @@ const SessionStats = ({ timeSpent = 0, completedLessonsCount = 0 }) => {
       flexWrap: 'wrap'
     }}>
       <Box sx={{
-        backgroundColor: '#e3f2fd',
+        backgroundColor: 'transparent',
         padding: 2,
         borderRadius: 2,
-        border: '1px solid #bbdefb'
+        border: '1px solid rgba(255, 255, 255, 0.1)'
       }}>
-        <Typography variant="body2" sx={{ color: '#1976d2', fontWeight: 600 }}>
+        <Typography variant="body2" sx={{ color: '#ffffff', fontWeight: 600 }}>
           Tiempo en sesión: {timeSpent} min
         </Typography>
       </Box>
       <Box sx={{
-        backgroundColor: '#e8f5e8',
+        backgroundColor: 'transparent',
         padding: 2,
         borderRadius: 2,
-        border: '1px solid #c8e6c9'
+        border: '1px solid rgba(255, 255, 255, 0.1)'
       }}>
-        <Typography variant="body2" sx={{ color: '#388e3c', fontWeight: 600 }}>
+        <Typography variant="body2" sx={{ color: '#ffffff', fontWeight: 600 }}>
           Lecciones completadas: {completedLessonsCount}
         </Typography>
       </Box>

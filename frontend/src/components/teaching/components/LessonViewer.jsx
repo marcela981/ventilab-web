@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
 import PropTypes from 'prop-types';
 import {
-  Container,
   Grid,
   Box,
   Button,
@@ -395,7 +394,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onSectionChange }) 
   // Estado de carga
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ py: 4, px: { xs: 2, sm: 2, md: 3, lg: 2 } }}>
         <Skeleton variant="rectangular" height={200} sx={{ mb: 3, borderRadius: 1 }} />
         <Grid container spacing={3}>
           <Grid item xs={12} md={9}>
@@ -405,18 +404,18 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onSectionChange }) 
             <Skeleton variant="rectangular" height={300} sx={{ borderRadius: 1 }} />
           </Grid>
         </Grid>
-      </Container>
+      </Box>
     );
   }
 
   // Estado de error
   if (error || !lesson) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ py: 4, px: { xs: 2, sm: 2, md: 3, lg: 2 } }}>
         <Alert severity="error">
           {error || 'No se pudo cargar la lección. Por favor, intenta de nuevo.'}
         </Alert>
-      </Container>
+      </Box>
     );
   }
 
@@ -431,7 +430,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onSectionChange }) 
   }));
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box sx={{ py: 4, px: { xs: 2, sm: 2, md: 3, lg: 2 } }}>
       {/* Header de la lección */}
       <LessonHeader
         lesson={lesson}
@@ -442,10 +441,10 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onSectionChange }) 
       {/* Barra de progreso */}
       <Box sx={{ mb: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" sx={{ color: '#e8f4fd' }}>
             Progreso de la lección
           </Typography>
-          <Typography variant="body2" color="text.secondary" fontWeight={600}>
+          <Typography variant="body2" sx={{ color: '#e8f4fd' }} fontWeight={600}>
             {Math.round(progress)}%
           </Typography>
         </Box>
@@ -455,30 +454,106 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onSectionChange }) 
           sx={{
             height: 8,
             borderRadius: 1,
-            backgroundColor: 'action.hover',
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            '& .MuiLinearProgress-bar': {
+              backgroundColor: '#e8f4fd',
+            }
           }}
         />
       </Box>
 
-      {/* Layout principal */}
-      <Grid container spacing={3}>
-        {/* Columna de contenido principal */}
-        <Grid item xs={12} md={9}>
-          <Box ref={contentRef}>
-            {/* Sección actual con transición */}
-            <Fade in key={currentSection} timeout={300}>
-              <Box sx={{ mb: 4 }}>
-                {renderSection(lesson.sections[currentSection], currentSection)}
-              </Box>
-            </Fade>
+      {/* Layout principal reorganizado */}
+      <Grid container spacing={{ xs: 2, lg: 3 }}>
+        {/* Columna izquierda: Navegación de contenido (desktop) */}
+        <Grid item xs={12} lg={2.5} sx={{ display: { xs: 'none', lg: 'block' } }}>
+          <SectionNavigation
+            sections={sectionsWithStatus}
+            currentSection={currentSection}
+            onSectionClick={goToSection}
+          />
+        </Grid>
 
-            {/* Botones de navegación */}
-            <Paper elevation={1} sx={{ p: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+        {/* Columna centro-derecha: Contenido principal de la lección - ocupa el resto */}
+        <Grid item xs={12} lg={9.5}>
+          <Box ref={contentRef}>
+            {/* Contenedor del contenido con mejor organización */}
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 2, md: 4 },
+                backgroundColor: '#A0DBE9', // Azul claro para legibilidad
+                border: '1px solid rgba(160, 219, 233, 0.5)',
+                borderRadius: 2,
+                mb: 3,
+              }}
+            >
+              {/* Indicador de sección actual */}
+              <Box sx={{ mb: 3, pb: 2, borderBottom: '1px solid rgba(0, 0, 0, 0.1)' }}>
+                <Typography
+                  variant="overline"
+                  sx={{
+                    color: '#1a1a1a',
+                    fontSize: '0.7rem',
+                    fontWeight: 600,
+                    letterSpacing: 1.5,
+                    textTransform: 'uppercase',
+                    opacity: 0.7,
+                  }}
+                >
+                  Sección {currentSection + 1} de {lesson.sections.length}
+                </Typography>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    color: '#1a1a1a',
+                    fontWeight: 600,
+                    mt: 0.5,
+                  }}
+                >
+                  {lesson.sections[currentSection]?.title || 'Contenido'}
+                </Typography>
+              </Box>
+
+              {/* Sección actual con transición */}
+              <Fade in key={currentSection} timeout={300}>
+                <Box>
+                  {renderSection(lesson.sections[currentSection], currentSection)}
+                </Box>
+              </Fade>
+            </Paper>
+
+            {/* Botones de navegación mejorados */}
+            <Paper 
+              elevation={0} 
+              sx={{ 
+                p: 2, 
+                display: 'flex', 
+                gap: 2, 
+                flexWrap: 'wrap',
+                backgroundColor: 'transparent',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: 'none',
+                borderRadius: 2,
+                mb: 3,
+              }}
+            >
               <Button
                 startIcon={<ArrowBackIcon />}
                 onClick={handlePrevious}
                 disabled={isFirstSection}
                 variant="outlined"
+                sx={{
+                  borderColor: 'rgba(255, 255, 255, 0.2)',
+                  color: '#e8f4fd',
+                  '&:hover': {
+                    borderColor: 'rgba(255, 255, 255, 0.4)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  },
+                  '&.Mui-disabled': {
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    color: 'rgba(255, 255, 255, 0.3)',
+                  }
+                }}
               >
                 Anterior
               </Button>
@@ -490,6 +565,14 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onSectionChange }) 
                   endIcon={<ArrowForwardIcon />}
                   onClick={handleNext}
                   variant="contained"
+                  sx={{
+                    backgroundColor: '#e8f4fd',
+                    color: '#1a1a1a',
+                    fontWeight: 600,
+                    '&:hover': {
+                      backgroundColor: '#ffffff',
+                    }
+                  }}
                 >
                   Siguiente
                 </Button>
@@ -498,42 +581,37 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onSectionChange }) 
                   startIcon={<CheckCircleIcon />}
                   onClick={handleComplete}
                   variant="contained"
-                  color="success"
                   disabled={isCompleted}
+                  sx={{
+                    backgroundColor: isCompleted ? 'rgba(255, 255, 255, 0.1)' : '#e8f4fd',
+                    color: isCompleted ? '#9e9e9e' : '#1a1a1a',
+                    fontWeight: 600,
+                    '&:hover': {
+                      backgroundColor: isCompleted ? 'rgba(255, 255, 255, 0.1)' : '#ffffff',
+                    }
+                  }}
                 >
                   {isCompleted ? 'Lección Completada' : 'Marcar como Completado'}
                 </Button>
               )}
             </Paper>
 
-            {/* Indicador de sección */}
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ display: 'block', textAlign: 'center', mt: 2 }}
+            {/* Notas personales - abajo del contenido con fondo azul oscuro */}
+            <Box 
+              sx={{ 
+                mt: 3,
+                p: 3,
+                backgroundColor: 'rgba(33, 150, 243, 0.15)', // Azul más oscuro
+                border: '1px solid rgba(33, 150, 243, 0.3)',
+                borderRadius: 2,
+              }}
             >
-              Sección {currentSection + 1} de {lesson.sections.length} · 
-              Usa ← → para navegar
-            </Typography>
-          </Box>
-        </Grid>
-
-        {/* Columna lateral (desktop) */}
-        <Grid item xs={12} md={3} sx={{ display: { xs: 'none', md: 'block' } }}>
-          {/* Navegación de secciones */}
-          <SectionNavigation
-            sections={sectionsWithStatus}
-            currentSection={currentSection}
-            onSectionClick={goToSection}
-          />
-
-          {/* Notas personales */}
-          <Box sx={{ mt: 3 }}>
-            <PersonalNotes
-              lessonId={lessonId}
-              moduleId={moduleId}
-              onNoteAdded={(note) => showSnackbar('Nota agregada')}
-            />
+              <PersonalNotes
+                lessonId={lessonId}
+                moduleId={moduleId}
+                onNoteAdded={(note) => showSnackbar('Nota agregada')}
+              />
+            </Box>
           </Box>
         </Grid>
       </Grid>
@@ -582,13 +660,6 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onSectionChange }) 
             toggleSidebar();
           }}
         />
-
-        <Box sx={{ mt: 3 }}>
-          <PersonalNotes
-            lessonId={lessonId}
-            moduleId={moduleId}
-          />
-        </Box>
       </Drawer>
 
       {/* Snackbar de notificaciones */}
@@ -607,7 +678,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onSectionChange }) 
           {snackbarMessage}
         </Alert>
       </Snackbar>
-    </Container>
+    </Box>
   );
 });
 

@@ -7,7 +7,6 @@ import {
   Button,
   LinearProgress,
   Chip,
-  Paper,
   useTheme
 } from '@mui/material';
 import {
@@ -39,57 +38,55 @@ const ContinueLearningSection = ({
 
   return (
     <ClientOnly fallback={
-      <Paper
-        elevation={2}
+      <Box
         sx={{
           p: 3,
           mb: 4,
-          backgroundColor: theme.palette.background.paper,
-          border: `1px solid ${theme.palette.divider}`,
+          backgroundColor: 'transparent',
+          border: `1px solid rgba(255, 255, 255, 0.1)`,
           borderRadius: theme.shape.borderRadius
         }}
       >
-        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#ffffff' }}>
           Continuar Aprendiendo
         </Typography>
-        <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+        <Typography variant="body2" sx={{ mb: 2, color: '#e8f4fd' }}>
           Comienza tu viaje de aprendizaje
         </Typography>
         <Button variant="contained" color="primary" size="large" disabled>
           Comenzar
         </Button>
-      </Paper>
+      </Box>
     }>
       {nextModule ? (
-        <Paper
-          elevation={2}
+        <Box
           sx={{
             p: 3,
             mb: 4,
-            backgroundColor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
+            backgroundColor: 'transparent',
+            border: `1px solid rgba(255, 255, 255, 0.1)`,
             borderRadius: theme.shape.borderRadius
           }}
         >
           <Grid container spacing={3} alignItems="center">
             <Grid item xs={12} md={8}>
-              <Typography variant="h5" sx={{ mb: 1, fontWeight: 700 }}>
+              <Typography variant="h5" sx={{ mb: 1, fontWeight: 700, color: '#ffffff' }}>
                 Continuar Aprendiendo
               </Typography>
-              <Typography variant="h6" sx={{ mb: 2 }}>
+              <Typography variant="h6" sx={{ mb: 2, color: '#ffffff' }}>
                 {nextModule.title}
               </Typography>
-              <Typography variant="body2" sx={{ mb: 3, color: theme.palette.text.secondary }}>
+              <Typography variant="body2" sx={{ mb: 3, color: '#e8f4fd' }}>
                 {nextModule.description || nextModule.learningObjectives?.[0]}
               </Typography>
 
               {/* Progreso específico del módulo */}
               <Box sx={{ mb: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" sx={{ color: '#e8f4fd' }}>
                     Progreso del módulo
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#ffffff' }}>
                     {calculateModuleProgress(nextModule.id).toFixed(0)}%
                   </Typography>
                 </Box>
@@ -143,22 +140,21 @@ const ContinueLearningSection = ({
               </Button>
             </Grid>
           </Grid>
-        </Paper>
+        </Box>
       ) : (
-        <Paper
-          elevation={2}
+        <Box
           sx={{
             p: 3,
             mb: 4,
-            backgroundColor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
+            backgroundColor: 'transparent',
+            border: `1px solid rgba(255, 255, 255, 0.1)`,
             borderRadius: theme.shape.borderRadius
           }}
         >
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#ffffff' }}>
             ¡Comienza tu Aprendizaje!
           </Typography>
-          <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+          <Typography variant="body2" sx={{ mb: 2, color: '#e8f4fd' }}>
             Explora los módulos disponibles para comenzar tu viaje en la ventilación mecánica
           </Typography>
           <Button
@@ -171,7 +167,7 @@ const ContinueLearningSection = ({
           >
             Explorar Módulos
           </Button>
-        </Paper>
+        </Box>
       )}
     </ClientOnly>
   );
