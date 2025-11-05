@@ -153,15 +153,15 @@ const ModuleCard = ({
           position: 'relative',
           // Sin sombra por defecto (flat design)
           boxShadow: 'none',
-          backgroundColor: 'transparent',
+          backgroundColor: '#A0DBE9',
           // Transición suave y rápida
           transition: 'all 0.25s ease-in-out',
           // Hover effect elegante y sutil
           '&:hover': isAvailable ? {
             // Elevación mínima de 2px
             transform: 'translateY(-2px)',
-            // Fondo transparente con hover
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            // Fondo más claro en hover
+            backgroundColor: '#B5E3F0',
             // Border cambia al color del estado
             borderColor: getHoverBorderColor(),
           } : {},
@@ -252,11 +252,12 @@ const ModuleCard = ({
           <Typography
             variant="h6"
             sx={{
-              fontWeight: 600,
+              fontWeight: 700,
               mb: 1,
               fontSize: '1rem',
               lineHeight: 1.3,
               color: isAvailable ? '#ffffff' : '#9e9e9e',
+              textShadow: isAvailable ? '0 1px 2px rgba(0, 0, 0, 0.2)' : 'none',
               // Truncado con ellipsis después de 2 líneas
               display: '-webkit-box',
               WebkitLineClamp: 2,
@@ -272,7 +273,8 @@ const ModuleCard = ({
           <Typography
             variant="body2"
             sx={{
-              color: '#e8f4fd',
+              color: isAvailable ? '#ffffff' : '#9e9e9e',
+              opacity: isAvailable ? 0.95 : 0.7,
               mb: 2,
               fontSize: '0.875rem',
               lineHeight: 1.5,
@@ -301,7 +303,8 @@ const ModuleCard = ({
               <Typography
                 variant="caption"
                 sx={{
-                  color: '#e8f4fd',
+                  color: isAvailable ? '#ffffff' : '#9e9e9e',
+                  opacity: isAvailable ? 0.9 : 0.7,
                   fontSize: '0.7rem',
                   fontWeight: 500
                 }}
@@ -311,9 +314,10 @@ const ModuleCard = ({
               <Typography
                 variant="caption"
                 sx={{
-                  color: getProgressBarColor(),
+                  color: isAvailable ? '#ffffff' : '#9e9e9e',
                   fontWeight: 700,
-                  fontSize: '0.75rem'
+                  fontSize: '0.75rem',
+                  textShadow: isAvailable ? '0 1px 1px rgba(0, 0, 0, 0.1)' : 'none'
                 }}
               >
                 {moduleProgress.toFixed(0)}%
@@ -349,12 +353,12 @@ const ModuleCard = ({
                 fontSize: '0.7rem',
                 height: 24,
                 fontWeight: 500,
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                borderColor: 'rgba(255, 255, 255, 0.2)',
-                color: isAvailable ? '#e8f4fd' : '#9e9e9e',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                color: isAvailable ? '#ffffff' : '#9e9e9e',
                 transition: 'all 0.25s ease-in-out',
                 '&:hover': {
-                  backgroundColor: isAvailable ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.05)'
+                  backgroundColor: isAvailable ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)'
                 }
               }}
             />
@@ -368,12 +372,12 @@ const ModuleCard = ({
                 fontSize: '0.7rem',
                 height: 24,
                 fontWeight: 500,
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                borderColor: 'rgba(255, 255, 255, 0.2)',
-                color: isAvailable ? '#e8f4fd' : '#9e9e9e',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                color: isAvailable ? '#ffffff' : '#9e9e9e',
                 transition: 'all 0.25s ease-in-out',
                 '&:hover': {
-                  backgroundColor: isAvailable ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.05)'
+                  backgroundColor: isAvailable ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)'
                 }
               }}
             />

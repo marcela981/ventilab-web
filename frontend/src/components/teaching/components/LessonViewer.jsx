@@ -1,684 +1,1164 @@
-import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
-import PropTypes from 'prop-types';
-import {
-  Grid,
-  Box,
-  Button,
-  LinearProgress,
-  Fab,
-  Drawer,
-  Skeleton,
-  Alert,
-  Snackbar,
-  Fade,
-  Typography,
-  Paper,
-  useTheme,
-  useMediaQuery,
-} from '@mui/material';
-import {
-  ArrowBack as ArrowBackIcon,
-  ArrowForward as ArrowForwardIcon,
-  CheckCircle as CheckCircleIcon,
-  Menu as MenuIcon,
-  Close as CloseIcon,
-} from '@mui/icons-material';
-import {
-  LessonHeader,
-  SectionNavigation,
-  MarkdownRenderer,
-  ZoomableImage,
-  VideoPlayer,
-  InteractiveQuiz,
-  PersonalNotes,
-} from './content';
-
 /**
- * Hook personalizado mock para cargar datos de lección
- * En producción, este hook debería hacer fetch a la API
+ * =============================================================================
+ * LessonViewer Component for VentyLab
+ * =============================================================================
  * 
- * @param {string} lessonId - ID de la lección
- * @param {string} moduleId - ID del módulo
- * @returns {Object} - Datos de la lección y estados
- */
-const useLesson = (lessonId, moduleId) => {
-  const [lesson, setLesson] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const loadLesson = async () => {
-      try {
-        setLoading(true);
-        // Simulación de carga desde API
-        // En producción: const response = await api.get(`/lessons/${lessonId}`);
-        
-        // Datos mock
-        const mockLesson = {
-          id: lessonId,
-          moduleId,
-          title: 'Fundamentos de Ventilación Mecánica',
-          description: 'Aprende los conceptos básicos de la ventilación mecánica',
-          estimatedTime: 45,
-          difficulty: 'beginner',
-          level: 'Nivel 1',
-          moduleTitle: 'Introducción a Ventilación',
-          learningObjectives: [
-            'Comprender los principios básicos',
-            'Identificar componentes clave',
-            'Aplicar conocimientos en práctica',
-          ],
-          sections: [
-            {
-              id: 's1',
-              title: 'Introducción',
-              type: 'text',
-              content: '# Introducción\n\nLa ventilación mecánica es...',
-            },
-            {
-              id: 's2',
-              title: 'Video Explicativo',
-              type: 'video',
-              videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-            },
-            {
-              id: 's3',
-              title: 'Conceptos Clave',
-              type: 'text',
-              content: '# Conceptos Clave\n\n## PEEP\n\nLa PEEP es...',
-            },
-            {
-              id: 's4',
-              title: 'Evaluación',
-              type: 'quiz',
-              quiz: {
-                question: '¿Cuál es el rango normal de PEEP?',
-                options: ['0-2 cmH₂O', '5-10 cmH₂O', '15-20 cmH₂O'],
-                correctAnswer: '5-10 cmH₂O',
-                explanation: 'El rango normal es 5-10 cmH₂O...',
-                type: 'single-choice',
-              },
-            },
-          ],
-        };
-
-        setTimeout(() => {
-          setLesson(mockLesson);
-          setLoading(false);
-        }, 1000);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
-      }
-    };
-
-    loadLesson();
-  }, [lessonId, moduleId]);
-
-  return { lesson, loading, error };
-};
-
-/**
- * Hook personalizado mock para gestionar progreso
+ * Comprehensive lesson viewer component that renders structured educational content
+ * from JSON files. This component integrates with useLesson hook to load detailed
+ * lesson content and displays it in a pedagogically effective manner.
  * 
- * @param {string} lessonId - ID de la lección
- * @returns {Object} - Funciones y estados de progreso
- */
-const useLessonProgress = (lessonId) => {
-  const [completedSections, setCompletedSections] = useState(new Set());
-  const [isCompleted, setIsCompleted] = useState(false);
-
-  const markSectionComplete = useCallback((sectionIndex) => {
-    setCompletedSections((prev) => new Set([...prev, sectionIndex]));
-  }, []);
-
-  const markComplete = useCallback(async () => {
-    try {
-      // En producción: await api.post(`/lessons/${lessonId}/complete`);
-      setIsCompleted(true);
-      return true;
-    } catch (error) {
-      console.error('Error marking lesson complete:', error);
-      return false;
-    }
-  }, [lessonId]);
-
-  return {
-    completedSections,
-    isCompleted,
-    markSectionComplete,
-    markComplete,
-  };
-};
-
-/**
- * LessonViewer - Componente principal para visualización de lecciones completas.
- * 
- * Orquesta todos los componentes de contenido educativo (MarkdownRenderer, VideoPlayer,
- * InteractiveQuiz, etc.) en un layout profesional con navegación lateral, progreso,
- * y funcionalidades completas de aprendizaje.
+ * Features:
+ * - Introduction with learning objectives
+ * - Theory sections with subsections, examples, and analogies
+ * - Visual element placeholders
+ * - Interactive practical cases
+ * - Key points summary
+ * - Assessment with multiple question types
+ * - Bibliographic references
+ * - Lesson navigation
+ * - Progress tracking
+ * - Reading progress indicator
  * 
  * @component
  * @example
  * ```jsx
  * <LessonViewer
- *   lessonId="lesson-123"
- *   moduleId="module-456"
+ *   lessonId="respiratory-anatomy"
+ *   moduleId="module-01-fundamentals"
  * />
  * ```
  * 
- * @example
- * ```jsx
- * // Con callbacks
- * <LessonViewer
- *   lessonId="lesson-123"
- *   moduleId="module-456"
- *   onComplete={() => router.push('/dashboard')}
- *   onSectionChange={(index) => trackProgress(index)}
- * />
- * ```
- * 
- * @param {Object} props - Propiedades del componente
- * @param {string} props.lessonId - ID de la lección a mostrar
- * @param {string} props.moduleId - ID del módulo al que pertenece
- * @param {Function} [props.onComplete] - Callback al completar la lección
- * @param {Function} [props.onSectionChange] - Callback al cambiar de sección
+ * @param {Object} props - Component props
+ * @param {string} props.lessonId - Unique identifier of the lesson
+ * @param {string} props.moduleId - Identifier of the parent module
+ * @param {Function} [props.onComplete] - Callback when lesson is completed
+ * @param {Function} [props.onNavigate] - Callback when navigating to different lesson
  */
-const LessonViewer = memo(({ lessonId, moduleId, onComplete, onSectionChange }) => {
+
+import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
+import PropTypes from 'prop-types';
+import {
+  Container,
+  Grid,
+  Box,
+  Button,
+  LinearProgress,
+  Fab,
+  Skeleton,
+  Alert,
+  Snackbar,
+  Typography,
+  Paper,
+  Chip,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  TextField,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  FormControl,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Link,
+  Divider,
+  useTheme,
+  useMediaQuery,
+  IconButton,
+} from '@mui/material';
+import {
+  ArrowBack as ArrowBackIcon,
+  ArrowForward as ArrowForwardIcon,
+  CheckCircle as CheckCircleIcon,
+  Lightbulb as LightbulbIcon,
+  Star as StarIcon,
+  EmojiEvents as TrophyIcon,
+  ExpandMore as ExpandMoreIcon,
+  Image as ImageIcon,
+  Timeline as TimelineIcon,
+  PlayCircle as PlayCircleIcon,
+  Description as DescriptionIcon,
+  School as SchoolIcon,
+  Book as BookIcon,
+  OpenInNew as OpenInNewIcon,
+} from '@mui/icons-material';
+
+import { MarkdownRenderer } from './content';
+import useLesson from '../hooks/useLesson';
+import { useLearningProgress } from '../../../contexts/LearningProgressContext';
+
+/**
+ * LessonViewer - Main component for displaying lesson content
+ */
+const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
-  // Hooks personalizados
-  const { lesson, loading, error } = useLesson(lessonId, moduleId);
-  const { completedSections, isCompleted, markSectionComplete, markComplete } = 
-    useLessonProgress(lessonId);
-
-  // Estados
-  const [currentSection, setCurrentSection] = useState(0);
-  const [showSidebar, setShowSidebar] = useState(false);
+  
+  // ============================================================================
+  // Hooks
+  // ============================================================================
+  
+  // Load lesson content using the useLesson hook
+  const { data, isLoading, error, refetch } = useLesson(lessonId, moduleId);
+  
+  // Notify parent component of errors
+  useEffect(() => {
+    if (error && onNavigate) {
+      // Pass error to parent if callback exists
+      // This allows TeachingModule to handle errors globally
+      console.error('[LessonViewer] Error loading lesson:', error);
+    }
+  }, [error, onNavigate]);
+  
+  // Get progress context for marking lessons as complete
+  const { markLessonComplete, completedLessons } = useLearningProgress();
+  
+  // ============================================================================
+  // State Management
+  // ============================================================================
+  
+  // Reading progress state
+  const [readingProgress, setReadingProgress] = useState(0);
+  
+  // Practical cases - user answers
+  const [caseAnswers, setCaseAnswers] = useState({});
+  const [expandedCases, setExpandedCases] = useState({});
+  const [showCaseAnswers, setShowCaseAnswers] = useState({});
+  
+  // Assessment - user answers
+  const [assessmentAnswers, setAssessmentAnswers] = useState({});
+  const [showAssessmentResults, setShowAssessmentResults] = useState(false);
+  const [assessmentScore, setAssessmentScore] = useState(null);
+  
+  // Snackbar
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-
-  // Referencias
-  const sectionRefs = useRef([]);
+  
+  // Completion dialog
+  const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
+  
+  // ============================================================================
+  // Refs
+  // ============================================================================
+  
   const contentRef = useRef(null);
-
-  /**
-   * Renderiza una sección según su tipo
-   * @param {Object} section - Objeto de sección
-   * @param {number} index - Índice de la sección
-   * @returns {JSX.Element} - Componente renderizado
-   */
-  const renderSection = useCallback((section, index) => {
-    const commonProps = {
-      key: section.id,
-      'data-section-index': index,
-    };
-
-    switch (section.type) {
-      case 'text':
-      case 'article':
-        return (
-          <MarkdownRenderer
-            {...commonProps}
-            content={section.content || ''}
-          />
-        );
-
-      case 'video':
-        return (
-          <VideoPlayer
-            {...commonProps}
-            url={section.videoUrl}
-            title={section.title}
-            onProgress={(state) => {
-              if (state.played > 0.9) {
-                markSectionComplete(index);
-              }
-            }}
-          />
-        );
-
-      case 'image':
-        return (
-          <ZoomableImage
-            {...commonProps}
-            src={section.imageUrl}
-            alt={section.title}
-            caption={section.caption}
-          />
-        );
-
-      case 'quiz':
-        return (
-          <InteractiveQuiz
-            {...commonProps}
-            quiz={section.quiz}
-            onComplete={() => {
-              markSectionComplete(index);
-              showSnackbar('¡Quiz completado con éxito!');
-            }}
-          />
-        );
-
-      case 'diagram':
-        // Placeholder para diagrama interactivo
-        return (
-          <Paper {...commonProps} elevation={2} sx={{ p: 3, textAlign: 'center' }}>
-            <Typography variant="h6" gutterBottom>
-              Diagrama Interactivo
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {section.title}
-            </Typography>
-          </Paper>
-        );
-
-      default:
-        return (
-          <Alert severity="warning" {...commonProps}>
-            Tipo de sección no soportado: {section.type}
-          </Alert>
-        );
-    }
-  }, [markSectionComplete]);
-
-  /**
-   * Navega a una sección específica
-   * @param {number} index - Índice de la sección
-   */
-  const goToSection = useCallback((index) => {
-    if (!lesson || index < 0 || index >= lesson.sections.length) return;
-
-    setCurrentSection(index);
-    
-    // Scroll suave al inicio del contenido
-    if (contentRef.current) {
-      contentRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    // Callback externo
-    if (onSectionChange && typeof onSectionChange === 'function') {
-      onSectionChange(index);
-    }
-  }, [lesson, onSectionChange]);
-
-  /**
-   * Navega a la sección anterior
-   */
-  const handlePrevious = useCallback(() => {
-    if (currentSection > 0) {
-      goToSection(currentSection - 1);
-    }
-  }, [currentSection, goToSection]);
-
-  /**
-   * Navega a la siguiente sección
-   */
-  const handleNext = useCallback(() => {
-    if (lesson && currentSection < lesson.sections.length - 1) {
-      goToSection(currentSection + 1);
-    }
-  }, [currentSection, lesson, goToSection]);
-
-  /**
-   * Marca la lección como completada
-   */
-  const handleComplete = useCallback(async () => {
-    const success = await markComplete();
-    
-    if (success) {
-      showSnackbar('¡Felicitaciones! Has completado la lección.');
+  const startTimeRef = useRef(Date.now());
+  
+  // ============================================================================
+  // Scroll to top on mount or lesson change
+  // ============================================================================
+  
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    startTimeRef.current = Date.now();
+  }, [lessonId, moduleId]);
+  
+  // ============================================================================
+  // Reading Progress Calculation
+  // ============================================================================
+  
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!contentRef.current) return;
       
-      if (onComplete && typeof onComplete === 'function') {
-        setTimeout(() => {
-          onComplete();
-        }, 2000);
-      }
-    } else {
-      showSnackbar('Error al marcar como completada. Intenta de nuevo.');
-    }
-  }, [markComplete, onComplete]);
-
-  /**
-   * Muestra el snackbar con un mensaje
-   * @param {string} message - Mensaje a mostrar
-   */
-  const showSnackbar = useCallback((message) => {
-    setSnackbarMessage(message);
-    setSnackbarOpen(true);
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.scrollY;
+      
+      const progress = Math.min(
+        ((scrollTop + windowHeight) / documentHeight) * 100,
+        100
+      );
+      
+      setReadingProgress(progress);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  /**
-   * Cierra el snackbar
-   */
+  
+  // ============================================================================
+  // Check if lesson is already completed
+  // ============================================================================
+  
+  const isLessonCompleted = useCallback(() => {
+    if (!data || !completedLessons) return false;
+    return completedLessons.has(data.lessonId) || completedLessons.has(lessonId);
+  }, [data, lessonId, completedLessons]);
+  
+  // ============================================================================
+  // Handle Lesson Completion
+  // ============================================================================
+  
+  const handleMarkAsComplete = useCallback(async () => {
+    if (!data) return;
+    
+    try {
+      const timeSpent = Math.round((Date.now() - startTimeRef.current) / 60000); // minutes
+      
+      const result = await markLessonComplete(data.lessonId, data.moduleId, timeSpent);
+      
+      if (result) {
+        setSnackbarMessage('¡Lección completada exitosamente!');
+        setSnackbarOpen(true);
+        setCompletionDialogOpen(true);
+        
+        // Call onComplete callback with full lesson data
+        if (onComplete) {
+          onComplete(data);
+        }
+      } else {
+        setSnackbarMessage('Error al marcar la lección como completada');
+        setSnackbarOpen(true);
+      }
+    } catch (err) {
+      console.error('Error completing lesson:', err);
+      setSnackbarMessage('Error al marcar la lección como completada');
+      setSnackbarOpen(true);
+    }
+  }, [data, markLessonComplete, onComplete]);
+  
+  // ============================================================================
+  // Navigation Handlers
+  // ============================================================================
+  
+  const handleNavigateToLesson = useCallback((targetLessonId, targetModuleId) => {
+    if (onNavigate) {
+      onNavigate(targetLessonId, targetModuleId);
+    } else {
+      // Default navigation - update URL or use window.location
+      // This will be handled by the parent component or routing system
+      if (typeof window !== 'undefined') {
+        window.location.href = `/teaching/lesson/${targetModuleId}/${targetLessonId}`;
+      }
+    }
+  }, [onNavigate]);
+  
+  // ============================================================================
+  // Practical Cases Handlers
+  // ============================================================================
+  
+  const handleCaseAnswerChange = useCallback((caseId, questionIndex, answer) => {
+    setCaseAnswers(prev => ({
+      ...prev,
+      [`${caseId}-${questionIndex}`]: answer,
+    }));
+  }, []);
+  
+  const handleToggleCaseExpansion = useCallback((caseId) => {
+    setExpandedCases(prev => ({
+      ...prev,
+      [caseId]: !prev[caseId],
+    }));
+  }, []);
+  
+  const handleShowCaseAnswers = useCallback((caseId) => {
+    setShowCaseAnswers(prev => ({
+      ...prev,
+      [caseId]: !prev[caseId],
+    }));
+  }, []);
+  
+  // ============================================================================
+  // Assessment Handlers
+  // ============================================================================
+  
+  const handleAssessmentAnswerChange = useCallback((questionId, answer) => {
+    setAssessmentAnswers(prev => ({
+      ...prev,
+      [questionId]: answer,
+    }));
+  }, []);
+  
+  const handleSubmitAssessment = useCallback(() => {
+    if (!data?.content?.assessment?.questions) return;
+    
+    const questions = data.content.assessment.questions;
+    let correct = 0;
+    let total = questions.length;
+    
+    questions.forEach((question) => {
+      const userAnswer = assessmentAnswers[question.questionId];
+      const correctAnswer = question.correctAnswer;
+      
+      if (userAnswer !== undefined && String(userAnswer) === String(correctAnswer)) {
+        correct++;
+      }
+    });
+    
+    setAssessmentScore({ correct, total, percentage: Math.round((correct / total) * 100) });
+    setShowAssessmentResults(true);
+  }, [data, assessmentAnswers]);
+  
+  // ============================================================================
+  // Snackbar Handlers
+  // ============================================================================
+  
   const handleCloseSnackbar = useCallback(() => {
     setSnackbarOpen(false);
   }, []);
-
+  
+  // ============================================================================
+  // Render Functions
+  // ============================================================================
+  
   /**
-   * Toggle del drawer de navegación en móvil
+   * Render lesson header with metadata
    */
-  const toggleSidebar = useCallback(() => {
-    setShowSidebar((prev) => !prev);
-  }, []);
-
-  /**
-   * Navegación con teclado
-   */
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      // Evitar navegación si hay un input/textarea enfocado
-      if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
-        return;
-      }
-
-      switch (event.key) {
-        case 'ArrowLeft':
-          event.preventDefault();
-          handlePrevious();
-          break;
-        case 'ArrowRight':
-          event.preventDefault();
-          handleNext();
-          break;
-        default:
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handlePrevious, handleNext]);
-
-  // Estado de carga
-  if (loading) {
+  const renderHeader = () => {
+    if (!data) return null;
+    
     return (
-      <Box sx={{ py: 4, px: { xs: 2, sm: 2, md: 3, lg: 2 } }}>
-        <Skeleton variant="rectangular" height={200} sx={{ mb: 3, borderRadius: 1 }} />
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={9}>
-            <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 1 }} />
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <Skeleton variant="rectangular" height={300} sx={{ borderRadius: 1 }} />
-          </Grid>
-        </Grid>
-      </Box>
-    );
-  }
-
-  // Estado de error
-  if (error || !lesson) {
-    return (
-      <Box sx={{ py: 4, px: { xs: 2, sm: 2, md: 3, lg: 2 } }}>
-        <Alert severity="error">
-          {error || 'No se pudo cargar la lección. Por favor, intenta de nuevo.'}
-        </Alert>
-      </Box>
-    );
-  }
-
-  const progress = ((currentSection + 1) / lesson.sections.length) * 100;
-  const isFirstSection = currentSection === 0;
-  const isLastSection = currentSection === lesson.sections.length - 1;
-
-  // Preparar secciones con estado de completado
-  const sectionsWithStatus = lesson.sections.map((section, index) => ({
-    ...section,
-    completed: completedSections.has(index),
-  }));
-
-  return (
-    <Box sx={{ py: 4, px: { xs: 2, sm: 2, md: 3, lg: 2 } }}>
-      {/* Header de la lección */}
-      <LessonHeader
-        lesson={lesson}
-        onHomeClick={() => window.history.back()}
-        onModuleClick={() => window.history.back()}
-      />
-
-      {/* Barra de progreso */}
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography variant="body2" sx={{ color: '#e8f4fd' }}>
-            Progreso de la lección
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
+          {data.title}
+        </Typography>
+        
+        {data.moduleInfo && (
+          <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+            {data.moduleInfo.title}
           </Typography>
-          <Typography variant="body2" sx={{ color: '#e8f4fd' }} fontWeight={600}>
-            {Math.round(progress)}%
-          </Typography>
+        )}
+        
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
+          {data.moduleInfo?.level && (
+            <Chip
+              label={data.moduleInfo.level}
+              size="small"
+              color="primary"
+              variant="outlined"
+            />
+          )}
+          {data.moduleInfo?.difficulty && (
+            <Chip
+              label={data.moduleInfo.difficulty}
+              size="small"
+              color="secondary"
+              variant="outlined"
+            />
+          )}
+          {data.moduleInfo?.bloomLevel && (
+            <Chip
+              label={`Bloom: ${data.moduleInfo.bloomLevel}`}
+              size="small"
+              color="default"
+              variant="outlined"
+            />
+          )}
+          {data.moduleInfo?.estimatedTime && (
+            <Chip
+              icon={<SchoolIcon />}
+              label={data.moduleInfo.estimatedTime}
+              size="small"
+              variant="outlined"
+            />
+          )}
         </Box>
-        <LinearProgress
-          variant="determinate"
-          value={progress}
-          sx={{
-            height: 8,
-            borderRadius: 1,
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            '& .MuiLinearProgress-bar': {
-              backgroundColor: '#e8f4fd',
-            }
-          }}
-        />
       </Box>
-
-      {/* Layout principal reorganizado */}
-      <Grid container spacing={{ xs: 2, lg: 3 }}>
-        {/* Columna izquierda: Navegación de contenido (desktop) */}
-        <Grid item xs={12} lg={2.5} sx={{ display: { xs: 'none', lg: 'block' } }}>
-          <SectionNavigation
-            sections={sectionsWithStatus}
-            currentSection={currentSection}
-            onSectionClick={goToSection}
-          />
-        </Grid>
-
-        {/* Columna centro-derecha: Contenido principal de la lección - ocupa el resto */}
-        <Grid item xs={12} lg={9.5}>
-          <Box ref={contentRef}>
-            {/* Contenedor del contenido con mejor organización */}
-            <Paper
-              elevation={0}
-              sx={{
-                p: { xs: 2, md: 4 },
-                backgroundColor: '#A0DBE9', // Azul claro para legibilidad
-                border: '1px solid rgba(160, 219, 233, 0.5)',
-                borderRadius: 2,
-                mb: 3,
-              }}
-            >
-              {/* Indicador de sección actual */}
-              <Box sx={{ mb: 3, pb: 2, borderBottom: '1px solid rgba(0, 0, 0, 0.1)' }}>
-                <Typography
-                  variant="overline"
-                  sx={{
-                    color: '#1a1a1a',
-                    fontSize: '0.7rem',
-                    fontWeight: 600,
-                    letterSpacing: 1.5,
-                    textTransform: 'uppercase',
-                    opacity: 0.7,
-                  }}
-                >
-                  Sección {currentSection + 1} de {lesson.sections.length}
-                </Typography>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    color: '#1a1a1a',
-                    fontWeight: 600,
-                    mt: 0.5,
-                  }}
-                >
-                  {lesson.sections[currentSection]?.title || 'Contenido'}
-                </Typography>
+    );
+  };
+  
+  /**
+   * Render introduction section with objectives
+   */
+  const renderIntroduction = () => {
+    if (!data?.content?.introduction) return null;
+    
+    const { introduction } = data.content;
+    
+    return (
+      <Paper elevation={2} sx={{ p: { xs: 2, md: 3 }, mb: 4 }}>
+        <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+          Introducción
+        </Typography>
+        
+        {introduction.text && (
+          <Typography variant="body1" paragraph sx={{ lineHeight: 1.8 }}>
+            {introduction.text}
+          </Typography>
+        )}
+        
+        {introduction.objectives && introduction.objectives.length > 0 && (
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+              Objetivos de Aprendizaje
+            </Typography>
+            <List>
+              {introduction.objectives.map((objective, index) => (
+                <ListItem key={index} sx={{ pl: 0 }}>
+                  <ListItemIcon>
+                    <CheckCircleIcon color="primary" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={`${index + 1}. ${objective}`}
+                    primaryTypographyProps={{
+                      variant: 'body1',
+                      sx: { lineHeight: 1.7 },
+                    }}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        )}
+      </Paper>
+    );
+  };
+  
+  /**
+   * Render theory section with subsections, examples, and analogies
+   */
+  const renderTheory = () => {
+    if (!data?.content?.theory) return null;
+    
+    const { theory } = data.content;
+    
+    return (
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+          Contenido Teórico
+        </Typography>
+        
+        {theory.sections && theory.sections.map((section, index) => (
+          <Box key={index} sx={{ mb: 4 }}>
+            {section.title && (
+              <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 600, mt: 3 }}>
+                {section.title}
+              </Typography>
+            )}
+            
+            {section.content && (
+              <Box sx={{ maxWidth: '800px', lineHeight: 1.8 }}>
+                <MarkdownRenderer content={section.content} />
               </Box>
-
-              {/* Sección actual con transición */}
-              <Fade in key={currentSection} timeout={300}>
-                <Box>
-                  {renderSection(lesson.sections[currentSection], currentSection)}
-                </Box>
-              </Fade>
-            </Paper>
-
-            {/* Botones de navegación mejorados */}
-            <Paper 
-              elevation={0} 
-              sx={{ 
-                p: 2, 
-                display: 'flex', 
-                gap: 2, 
-                flexWrap: 'wrap',
-                backgroundColor: 'transparent',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                boxShadow: 'none',
-                borderRadius: 2,
-                mb: 3,
-              }}
-            >
-              <Button
-                startIcon={<ArrowBackIcon />}
-                onClick={handlePrevious}
-                disabled={isFirstSection}
-                variant="outlined"
+            )}
+            
+            {/* Examples associated with this section */}
+            {theory.examples && theory.examples.length > 0 && index < theory.examples.length && (
+              <Paper
+                elevation={1}
                 sx={{
-                  borderColor: 'rgba(255, 255, 255, 0.2)',
-                  color: '#e8f4fd',
-                  '&:hover': {
-                    borderColor: 'rgba(255, 255, 255, 0.4)',
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  },
-                  '&.Mui-disabled': {
-                    borderColor: 'rgba(255, 255, 255, 0.1)',
-                    color: 'rgba(255, 255, 255, 0.3)',
-                  }
+                  p: { xs: 2, md: 3 },
+                  mt: 3,
+                  backgroundColor: 'primary.light',
+                  backgroundColor: 'rgba(33, 150, 243, 0.08)',
                 }}
               >
-                Anterior
-              </Button>
-
-              <Box sx={{ flex: 1 }} />
-
-              {!isLastSection ? (
-                <Button
-                  endIcon={<ArrowForwardIcon />}
-                  onClick={handleNext}
-                  variant="contained"
-                  sx={{
-                    backgroundColor: '#e8f4fd',
-                    color: '#1a1a1a',
-                    fontWeight: 600,
-                    '&:hover': {
-                      backgroundColor: '#ffffff',
-                    }
-                  }}
-                >
-                  Siguiente
-                </Button>
-              ) : (
-                <Button
-                  startIcon={<CheckCircleIcon />}
-                  onClick={handleComplete}
-                  variant="contained"
-                  disabled={isCompleted}
-                  sx={{
-                    backgroundColor: isCompleted ? 'rgba(255, 255, 255, 0.1)' : '#e8f4fd',
-                    color: isCompleted ? '#9e9e9e' : '#1a1a1a',
-                    fontWeight: 600,
-                    '&:hover': {
-                      backgroundColor: isCompleted ? 'rgba(255, 255, 255, 0.1)' : '#ffffff',
-                    }
-                  }}
-                >
-                  {isCompleted ? 'Lección Completada' : 'Marcar como Completado'}
-                </Button>
-              )}
-            </Paper>
-
-            {/* Notas personales - abajo del contenido con fondo azul oscuro */}
-            <Box 
-              sx={{ 
-                mt: 3,
-                p: 3,
-                backgroundColor: 'rgba(33, 150, 243, 0.15)', // Azul más oscuro
-                border: '1px solid rgba(33, 150, 243, 0.3)',
-                borderRadius: 2,
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  Ejemplo Clínico
+                </Typography>
+                <Typography variant="body1" paragraph>
+                  {theory.examples[index].description}
+                </Typography>
+                {theory.examples[index].clinicalRelevance && (
+                  <Box sx={{ mt: 2, p: 2, backgroundColor: 'rgba(255, 255, 255, 0.7)', borderRadius: 1 }}>
+                    <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
+                      Relevancia Clínica:
+                    </Typography>
+                    <Typography variant="body2">
+                      {theory.examples[index].clinicalRelevance}
+                    </Typography>
+                  </Box>
+                )}
+              </Paper>
+            )}
+          </Box>
+        ))}
+        
+        {/* Analogies */}
+        {theory.analogies && theory.analogies.length > 0 && (
+          <Box sx={{ mt: 4 }}>
+            <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+              Analogías para Facilitar la Comprensión
+            </Typography>
+            {theory.analogies.map((analogy, index) => (
+              <Paper
+                key={index}
+                elevation={1}
+                sx={{
+                  p: { xs: 2, md: 3 },
+                  mb: 2,
+                  backgroundColor: 'rgba(255, 193, 7, 0.08)',
+                  borderLeft: '4px solid',
+                  borderColor: 'warning.main',
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'start', mb: 2 }}>
+                  <LightbulbIcon sx={{ color: 'warning.main', mr: 2, mt: 0.5 }} />
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
+                      {analogy.concept}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', mb: 1 }}>
+                      "{analogy.analogy}"
+                    </Typography>
+                    <Typography variant="body1">
+                      {analogy.explanation}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Paper>
+            ))}
+          </Box>
+        )}
+      </Box>
+    );
+  };
+  
+  /**
+   * Render visual elements as placeholders
+   */
+  const renderVisualElements = () => {
+    if (!data?.content?.visualElements || data.content.visualElements.length === 0) return null;
+    
+    return (
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+          Elementos Visuales
+        </Typography>
+        
+        {data.content.visualElements.map((element, index) => {
+          const getIcon = () => {
+            switch (element.type?.toLowerCase()) {
+              case 'imagen':
+              case 'image':
+                return <ImageIcon />;
+              case 'animación':
+              case 'animation':
+              case 'video':
+                return <PlayCircleIcon />;
+              case 'gráfico':
+              case 'graph':
+              case 'diagram':
+                return <TimelineIcon />;
+              default:
+                return <DescriptionIcon />;
+            }
+          };
+          
+          return (
+            <Paper
+              key={index}
+              elevation={1}
+              sx={{
+                p: { xs: 2, md: 3 },
+                mb: 2,
+                border: '2px dashed',
+                borderColor: 'divider',
+                backgroundColor: 'rgba(0, 0, 0, 0.02)',
               }}
             >
-              <PersonalNotes
-                lessonId={lessonId}
-                moduleId={moduleId}
-                onNoteAdded={(note) => showSnackbar('Nota agregada')}
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                {getIcon()}
+                <Typography variant="h6" sx={{ ml: 2, fontWeight: 600 }}>
+                  {element.title || `Elemento Visual ${index + 1}`}
+                </Typography>
+                <Chip
+                  label={element.type || 'Visual'}
+                  size="small"
+                  sx={{ ml: 'auto' }}
+                />
+              </Box>
+              
+              {element.description && (
+                <Typography variant="body2" color="text.secondary" paragraph>
+                  {element.description}
+                </Typography>
+              )}
+              
+              {element.objective && (
+                <Box sx={{ mt: 2, p: 2, backgroundColor: 'action.hover', borderRadius: 1 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    <strong>Objetivo:</strong> {element.objective}
+                  </Typography>
+                </Box>
+              )}
+            </Paper>
+          );
+        })}
+      </Box>
+    );
+  };
+  
+  /**
+   * Render practical cases with interactive questions
+   */
+  const renderPracticalCases = () => {
+    if (!data?.content?.practicalCases || data.content.practicalCases.length === 0) return null;
+    
+    return (
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+          Casos Prácticos
+        </Typography>
+        
+        {data.content.practicalCases.map((practicalCase, caseIndex) => {
+          const caseId = practicalCase.caseId || `case-${caseIndex}`;
+          const isExpanded = expandedCases[caseId];
+          const showAnswers = showCaseAnswers[caseId];
+          
+          return (
+            <Accordion
+              key={caseIndex}
+              expanded={isExpanded}
+              onChange={() => handleToggleCaseExpansion(caseId)}
+              sx={{ mb: 2 }}
+            >
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  {practicalCase.title || `Caso Clínico ${caseIndex + 1}`}
+                </Typography>
+              </AccordionSummary>
+              
+              <AccordionDetails>
+                {practicalCase.patientData && (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
+                      Datos del Paciente:
+                    </Typography>
+                    <Box component="dl" sx={{ pl: 2 }}>
+                      {Object.entries(practicalCase.patientData).map(([key, value]) => (
+                        <Box key={key} sx={{ display: 'flex', mb: 1 }}>
+                          <Typography component="dt" variant="body2" sx={{ fontWeight: 600, mr: 2, minWidth: 120 }}>
+                            {key}:
+                          </Typography>
+                          <Typography component="dd" variant="body2">
+                            {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+                
+                {(practicalCase.clinicalScenario || practicalCase.caso) && (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
+                      Escenario Clínico:
+                    </Typography>
+                    <Typography variant="body1" paragraph sx={{ lineHeight: 1.8 }}>
+                      {practicalCase.clinicalScenario || practicalCase.caso || practicalCase.escenario}
+                    </Typography>
+                  </Box>
+                )}
+                
+                {practicalCase.questions && practicalCase.questions.length > 0 && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+                      Preguntas:
+                    </Typography>
+                    {practicalCase.questions.map((question, qIndex) => {
+                      const answerKey = `${caseId}-${qIndex}`;
+                      const userAnswer = caseAnswers[answerKey] || '';
+                      
+                      // Handle both string questions and object questions
+                      const questionText = typeof question === 'string' 
+                        ? question 
+                        : (question.questionText || question.texto || '');
+                      
+                      const expectedAnswer = typeof question === 'object' 
+                        ? (question.expectedAnswer || question.respuestaEsperada || '')
+                        : '';
+                      
+                      const explanation = typeof question === 'object' 
+                        ? (question.explanation || question.explicacion || '')
+                        : '';
+                      
+                      return (
+                        <Box key={qIndex} sx={{ mb: 3 }}>
+                          <Typography variant="body1" gutterBottom sx={{ fontWeight: 500 }}>
+                            {qIndex + 1}. {questionText}
+                          </Typography>
+                          <TextField
+                            fullWidth
+                            multiline
+                            rows={3}
+                            value={userAnswer}
+                            onChange={(e) => handleCaseAnswerChange(caseId, qIndex, e.target.value)}
+                            placeholder="Escribe tu respuesta aquí..."
+                            sx={{ mt: 1 }}
+                          />
+                          
+                          {showAnswers && (expectedAnswer || explanation) && (
+                            <Box sx={{ mt: 2, p: 2, backgroundColor: 'success.light', borderRadius: 1 }}>
+                              {expectedAnswer && (
+                                <>
+                                  <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
+                                    Respuesta Esperada:
+                                  </Typography>
+                                  <Typography variant="body2" paragraph>
+                                    {expectedAnswer}
+                                  </Typography>
+                                </>
+                              )}
+                              {explanation && (
+                                <>
+                                  <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, mt: expectedAnswer ? 1 : 0 }}>
+                                    Explicación:
+                                  </Typography>
+                                  <Typography variant="body2">
+                                    {explanation}
+                                  </Typography>
+                                </>
+                              )}
+                            </Box>
+                          )}
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                )}
+                
+                <Button
+                  variant="outlined"
+                  onClick={() => handleShowCaseAnswers(caseId)}
+                  sx={{ mt: 2 }}
+                >
+                  {showAnswers ? 'Ocultar Respuestas' : 'Mostrar Respuestas Esperadas'}
+                </Button>
+              </AccordionDetails>
+            </Accordion>
+          );
+        })}
+      </Box>
+    );
+  };
+  
+  /**
+   * Render key points section
+   */
+  const renderKeyPoints = () => {
+    if (!data?.content?.keyPoints || data.content.keyPoints.length === 0) return null;
+    
+    return (
+      <Paper
+        elevation={2}
+        sx={{
+          p: { xs: 2, md: 3 },
+          mb: 4,
+          backgroundColor: 'warning.light',
+          backgroundColor: 'rgba(255, 193, 7, 0.15)',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <StarIcon sx={{ color: 'warning.main', mr: 1 }} />
+          <Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
+            Puntos Clave
+          </Typography>
+        </Box>
+        
+        <List>
+          {data.content.keyPoints.map((point, index) => (
+            <ListItem key={index} sx={{ pl: 0, alignItems: 'flex-start' }}>
+              <ListItemIcon sx={{ minWidth: 36, mt: 0.5 }}>
+                <TrophyIcon sx={{ color: 'warning.main', fontSize: 20 }} />
+              </ListItemIcon>
+              <ListItemText
+                primary={point}
+                primaryTypographyProps={{
+                  variant: 'body1',
+                  sx: { fontWeight: 500, lineHeight: 1.7 },
+                }}
               />
-            </Box>
+            </ListItem>
+          ))}
+        </List>
+      </Paper>
+    );
+  };
+  
+  /**
+   * Render assessment section with different question types
+   */
+  const renderAssessment = () => {
+    if (!data?.content?.assessment?.questions || data.content.assessment.questions.length === 0) {
+      return null;
+    }
+    
+    const questions = data.content.assessment.questions;
+    
+    return (
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+          Autoevaluación
+        </Typography>
+        
+        <Paper elevation={2} sx={{ p: { xs: 2, md: 3 } }}>
+          {questions.map((question, index) => {
+            const questionId = question.questionId || `q-${index}`;
+            const userAnswer = assessmentAnswers[questionId];
+            
+            return (
+              <Box key={index} sx={{ mb: 4, pb: 3, borderBottom: index < questions.length - 1 ? '1px solid' : 'none', borderColor: 'divider' }}>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+                  {index + 1}. {question.questionText}
+                </Typography>
+                
+                {question.type === 'multipleChoice' && question.options && (
+                  <FormControl component="fieldset" sx={{ width: '100%' }}>
+                    <RadioGroup
+                      value={userAnswer || ''}
+                      onChange={(e) => handleAssessmentAnswerChange(questionId, e.target.value)}
+                    >
+                      {question.options.map((option, optIndex) => (
+                        <FormControlLabel
+                          key={optIndex}
+                          value={String(optIndex)}
+                          control={<Radio />}
+                          label={option}
+                          sx={{ mb: 1 }}
+                        />
+                      ))}
+                    </RadioGroup>
+                  </FormControl>
+                )}
+                
+                {question.type === 'trueFalse' && (
+                  <FormControl component="fieldset" sx={{ width: '100%' }}>
+                    <RadioGroup
+                      value={userAnswer || ''}
+                      onChange={(e) => handleAssessmentAnswerChange(questionId, e.target.value)}
+                    >
+                      <FormControlLabel value="true" control={<Radio />} label="Verdadero" />
+                      <FormControlLabel value="false" control={<Radio />} label="Falso" />
+                    </RadioGroup>
+                  </FormControl>
+                )}
+                
+                {question.type === 'shortAnswer' && (
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={3}
+                    value={userAnswer || ''}
+                    onChange={(e) => handleAssessmentAnswerChange(questionId, e.target.value)}
+                    placeholder="Escribe tu respuesta aquí..."
+                  />
+                )}
+                
+                {showAssessmentResults && (
+                  <Box sx={{ mt: 2 }}>
+                    {String(userAnswer) === String(question.correctAnswer) ? (
+                      <Alert severity="success" sx={{ mb: 1 }}>
+                        ¡Correcto!
+                      </Alert>
+                    ) : (
+                      <Alert severity="error" sx={{ mb: 1 }}>
+                        Incorrecto. La respuesta correcta es: {question.options ? question.options[question.correctAnswer] : question.correctAnswer}
+                      </Alert>
+                    )}
+                    {question.explanation && (
+                      <Paper sx={{ p: 2, backgroundColor: 'info.light', mt: 1 }}>
+                        <Typography variant="body2">
+                          <strong>Explicación:</strong> {question.explanation}
+                        </Typography>
+                      </Paper>
+                    )}
+                  </Box>
+                )}
+              </Box>
+            );
+          })}
+          
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+            <Button
+              variant="outlined"
+              onClick={() => {
+                setShowAssessmentResults(false);
+                setAssessmentAnswers({});
+              }}
+            >
+              Reiniciar
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleSubmitAssessment}
+              disabled={Object.keys(assessmentAnswers).length === 0}
+            >
+              Enviar Respuestas
+            </Button>
           </Box>
+          
+          {assessmentScore && (
+            <Dialog open={showAssessmentResults} onClose={() => setShowAssessmentResults(false)}>
+              <DialogTitle>Resultados de la Autoevaluación</DialogTitle>
+              <DialogContent>
+                <Typography variant="h4" align="center" gutterBottom>
+                  {assessmentScore.correct} / {assessmentScore.total}
+                </Typography>
+                <Typography variant="h6" align="center" color="text.secondary" gutterBottom>
+                  {assessmentScore.percentage}% Correcto
+                </Typography>
+                <Typography variant="body1" sx={{ mt: 2 }}>
+                  {assessmentScore.percentage >= 80
+                    ? '¡Excelente trabajo! Has demostrado un buen entendimiento del contenido.'
+                    : assessmentScore.percentage >= 60
+                    ? 'Buen intento. Te recomendamos revisar los puntos en los que tuviste dificultades.'
+                    : 'Te recomendamos revisar el contenido de la lección antes de continuar.'}
+                </Typography>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setShowAssessmentResults(false)}>Cerrar</Button>
+              </DialogActions>
+            </Dialog>
+          )}
+        </Paper>
+      </Box>
+    );
+  };
+  
+  /**
+   * Render bibliographic references
+   */
+  const renderReferences = () => {
+    if (!data?.content?.references || data.content.references.length === 0) return null;
+    
+    return (
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+          Referencias Bibliográficas
+        </Typography>
+        
+        <Paper elevation={1} sx={{ p: { xs: 2, md: 3 } }}>
+          <List>
+            {data.content.references.map((ref, index) => (
+              <ListItem key={index} sx={{ pl: 0, alignItems: 'flex-start' }}>
+                <ListItemText
+                  primary={
+                    <Box>
+                      <Typography variant="body2" component="span" sx={{ fontWeight: 600, mr: 1 }}>
+                        {index + 1}.
+                      </Typography>
+                      <Typography variant="body2" component="span">
+                        {ref.authors && `${ref.authors} `}
+                        {ref.year && `(${ref.year}). `}
+                        {ref.title && (
+                          <Typography component="span" variant="body2" sx={{ fontStyle: 'italic' }}>
+                            {ref.title}
+                          </Typography>
+                        )}
+                        {ref.journal && `. ${ref.journal}`}
+                        {ref.volume && `, ${ref.volume}`}
+                        {ref.pages && `, ${ref.pages}`}
+                        {ref.doi && (
+                          <Link
+                            href={`https://doi.org/${ref.doi}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            sx={{ ml: 1 }}
+                          >
+                            DOI: {ref.doi}
+                            <OpenInNewIcon sx={{ fontSize: 14, ml: 0.5, verticalAlign: 'middle' }} />
+                          </Link>
+                        )}
+                        {ref.url && !ref.doi && (
+                          <Link
+                            href={ref.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            sx={{ ml: 1 }}
+                          >
+                            Ver enlace
+                            <OpenInNewIcon sx={{ fontSize: 14, ml: 0.5, verticalAlign: 'middle' }} />
+                          </Link>
+                        )}
+                      </Typography>
+                    </Box>
+                  }
+                />
+              </ListItem>
+            ))}
+          </List>
+        </Paper>
+      </Box>
+    );
+  };
+  
+  /**
+   * Render lesson navigation buttons
+   */
+  const renderNavigation = () => {
+    if (!data?.navigation) return null;
+    
+    const { previousLesson, nextLesson } = data.navigation;
+    
+    return (
+      <Paper elevation={2} sx={{ p: 2, mb: 4 }}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<ArrowBackIcon />}
+              onClick={() => previousLesson && handleNavigateToLesson(previousLesson.id, data.moduleId)}
+              disabled={!previousLesson}
+            >
+              {previousLesson ? `Anterior: ${previousLesson.title}` : 'No hay lección anterior'}
+            </Button>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Button
+              fullWidth
+              variant="contained"
+              endIcon={<ArrowForwardIcon />}
+              onClick={() => nextLesson && handleNavigateToLesson(nextLesson.id, data.moduleId)}
+              disabled={!nextLesson}
+            >
+              {nextLesson ? `Siguiente: ${nextLesson.title}` : 'No hay lección siguiente'}
+            </Button>
+          </Grid>
         </Grid>
-      </Grid>
-
-      {/* FAB para abrir navegación en móvil */}
-      {isMobile && (
+      </Paper>
+    );
+  };
+  
+  // ============================================================================
+  // Loading State
+  // ============================================================================
+  
+  if (isLoading) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Skeleton variant="rectangular" height={200} sx={{ mb: 3, borderRadius: 1 }} />
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 1 }} />
+          </Grid>
+        </Grid>
+      </Container>
+    );
+  }
+  
+  // ============================================================================
+  // Error State
+  // ============================================================================
+  
+  if (error || !data) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={refetch}>
+              Reintentar
+            </Button>
+          }
+        >
+          {error || 'No se pudo cargar la lección. Por favor, intenta de nuevo.'}
+        </Alert>
+      </Container>
+    );
+  }
+  
+  // ============================================================================
+  // Main Render
+  // ============================================================================
+  
+  return (
+    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+      {/* Reading Progress Bar */}
+      <LinearProgress
+        variant="determinate"
+        value={readingProgress}
+        sx={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 4,
+          zIndex: theme.zIndex.appBar + 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        }}
+      />
+      
+      <Box ref={contentRef}>
+        {/* Header */}
+        {renderHeader()}
+        
+        {/* Introduction */}
+        {renderIntroduction()}
+        
+        {/* Theory */}
+        {renderTheory()}
+        
+        {/* Visual Elements */}
+        {renderVisualElements()}
+        
+        {/* Practical Cases */}
+        {renderPracticalCases()}
+        
+        {/* Key Points */}
+        {renderKeyPoints()}
+        
+        {/* Assessment */}
+        {renderAssessment()}
+        
+        {/* References */}
+        {renderReferences()}
+        
+        {/* Navigation */}
+        {renderNavigation()}
+      </Box>
+      
+      {/* Floating Action Button for Completion */}
+      {!isLessonCompleted() && (
         <Fab
           color="primary"
-          aria-label="abrir navegación"
-          onClick={toggleSidebar}
+          aria-label="marcar como completada"
+          onClick={handleMarkAsComplete}
           sx={{
             position: 'fixed',
-            bottom: 16,
-            right: 16,
+            bottom: { xs: 16, md: 24 },
+            right: { xs: 16, md: 24 },
             zIndex: theme.zIndex.speedDial,
           }}
         >
-          <MenuIcon />
+          <CheckCircleIcon />
         </Fab>
       )}
-
-      {/* Drawer para móvil */}
-      <Drawer
-        anchor="right"
-        open={showSidebar}
-        onClose={toggleSidebar}
-        sx={{
-          '& .MuiDrawer-paper': {
-            width: '85%',
-            maxWidth: 360,
-            p: 2,
-          },
-        }}
-      >
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-          <Button startIcon={<CloseIcon />} onClick={toggleSidebar}>
-            Cerrar
-          </Button>
-        </Box>
-
-        <SectionNavigation
-          sections={sectionsWithStatus}
-          currentSection={currentSection}
-          onSectionClick={(index) => {
-            goToSection(index);
-            toggleSidebar();
-          }}
-        />
-      </Drawer>
-
-      {/* Snackbar de notificaciones */}
+      
+      {/* Snackbar */}
       <Snackbar
         open={snackbarOpen}
-        autoHideDuration={3000}
+        autoHideDuration={4000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity="success"
-          variant="filled"
-          sx={{ width: '100%' }}
-        >
+        <Alert onClose={handleCloseSnackbar} severity="success" variant="filled">
           {snackbarMessage}
         </Alert>
       </Snackbar>
-    </Box>
+      
+      {/* Completion Dialog */}
+      <Dialog open={completionDialogOpen} onClose={() => setCompletionDialogOpen(false)}>
+        <DialogTitle>¡Lección Completada!</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">
+            Has completado exitosamente esta lección. ¡Felicidades!
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCompletionDialogOpen(false)}>Cerrar</Button>
+          {data?.navigation?.nextLesson && (
+            <Button
+              variant="contained"
+              onClick={() => {
+                setCompletionDialogOpen(false);
+                handleNavigateToLesson(data.navigation.nextLesson.id, data.moduleId);
+              }}
+            >
+              Continuar a la Siguiente Lección
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 });
 
@@ -686,31 +1166,31 @@ LessonViewer.displayName = 'LessonViewer';
 
 LessonViewer.propTypes = {
   /**
-   * ID de la lección a visualizar
+   * Unique identifier of the lesson to display
    */
   lessonId: PropTypes.string.isRequired,
-
+  
   /**
-   * ID del módulo al que pertenece la lección
+   * Identifier of the parent module
    */
   moduleId: PropTypes.string.isRequired,
-
+  
   /**
-   * Callback opcional ejecutado cuando se completa la lección
+   * Callback function executed when lesson is completed
+   * Receives the lesson data object as parameter
    */
   onComplete: PropTypes.func,
-
+  
   /**
-   * Callback opcional ejecutado cuando cambia de sección.
-   * Recibe el índice de la nueva sección.
+   * Callback function executed when navigating to a different lesson
+   * Receives (lessonId, moduleId) as parameters
    */
-  onSectionChange: PropTypes.func,
+  onNavigate: PropTypes.func,
 };
 
 LessonViewer.defaultProps = {
   onComplete: null,
-  onSectionChange: null,
+  onNavigate: null,
 };
 
 export default LessonViewer;
-

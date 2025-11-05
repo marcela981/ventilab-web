@@ -256,8 +256,8 @@ const QuickAccessLessons = ({
             transition: 'all 0.3s ease-in-out',
             position: 'relative',
             overflow: 'visible',
-            backgroundColor: 'transparent',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backgroundColor: '#A0DBE9',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
             '&:hover': {
               boxShadow: 4,
               transform: 'translateY(-4px)',
@@ -284,14 +284,15 @@ const QuickAccessLessons = ({
               variant="h6"
               sx={{
                 fontSize: '1rem',
-                fontWeight: 600,
+                fontWeight: 700,
                 mb: 1,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: 'vertical',
-                color: '#ffffff'
+                color: '#ffffff',
+                textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'
               }}
             >
               {lesson.title}
@@ -302,7 +303,8 @@ const QuickAccessLessons = ({
               sx={{
                 display: 'block',
                 mb: 1,
-                color: '#e8f4fd'
+                color: '#ffffff',
+                opacity: 0.9
               }}
             >
               {lesson.moduleTitle || 'Módulo'}
@@ -337,7 +339,7 @@ const QuickAccessLessons = ({
             {lesson.progress !== undefined && (
               <Typography
                 variant="caption"
-                sx={{ display: 'block', mt: 1, color: '#e8f4fd' }}
+                sx={{ display: 'block', mt: 1, color: '#ffffff', opacity: 0.9 }}
               >
                 {lesson.progress}% completado
               </Typography>
@@ -381,8 +383,8 @@ const QuickAccessLessons = ({
             flexDirection: 'column',
             transition: 'all 0.3s ease-in-out',
             position: 'relative',
-            backgroundColor: 'transparent',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backgroundColor: '#A0DBE9',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
             borderTop: '3px solid',
             borderColor: 'primary.main',
             '&:hover': {
@@ -417,14 +419,15 @@ const QuickAccessLessons = ({
               variant="h6"
               sx={{
                 fontSize: '1rem',
-                fontWeight: 600,
+                fontWeight: 700,
                 mb: 1,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: 'vertical',
-                color: '#ffffff'
+                color: '#ffffff',
+                textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'
               }}
             >
               {lesson.title}
@@ -435,7 +438,8 @@ const QuickAccessLessons = ({
               sx={{
                 display: 'block',
                 mb: 1,
-                color: '#e8f4fd'
+                color: '#ffffff',
+                opacity: 0.9
               }}
             >
               {lesson.moduleTitle || 'Módulo'}

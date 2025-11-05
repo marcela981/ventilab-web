@@ -1,0 +1,51 @@
+[
+  {
+    "name": "difusion_alveolo_capilar",
+    "description": "Diagrama esquemático de un alvéolo y un capilar adyacente, mostrando la membrana alveolo-capilar. Incluye flechas que representan la difusión de O2 hacia el capilar (eritrocito) y de CO2 hacia el alvéolo. Se etiquetan los determinantes de la Ley de Fick: área de superficie alveolar (A), grosor de la membrana (T), gradiente de presión (P1-P2) y constante de difusión (solubilidad del gas). Puede añadir la comparación de tamaños de molécula o símbolos para indicar que el CO2 difunde más rápido que el O2.",
+    "purpose": "Ilustrar los factores que afectan la difusión de gases a través de la membrana alveolo-capilar y visualizar por qué el oxígeno puede verse limitado en condiciones patológicas (menor área, mayor grosor) mientras que el CO2 difunde más fácilmente debido a su mayor solubilidad.",
+    "type": "estático",
+    "tags": ["difusión", "membrana alveolo-capilar", "Fick", "gradiente O2", "CO2 solubilidad"]
+  },
+  {
+    "name": "zonas_West_VQ",
+    "description": "Esquema del pulmón humano en posición erecta, dividido en las 3 zonas de West. En cada zona se indican de forma visual las relaciones relativas de ventilación (aire entrando) y perfusión (flujo sanguíneo) - por ejemplo, en el vértice alveolos más grandes pero menos perfusión (V/Q alto), en la base alveolos más pequeños pero mucha perfusión (V/Q bajo). También mostrar valores típicos: V/Q ~3 en ápice, ~0,6 en base. Se pueden incluir pequeñas gráficas de gradientes de presiones (Pa, Pv, PA) en cada zona para ilustrar las condiciones de flujo sanguíneo.",
+    "purpose": "Mostrar la distribución normal de la ventilación y perfusión en el pulmón y cómo la gravedad/anatomía causan variación de V/Q. Esto sirve de base para entender por qué ciertas regiones tienen tendencia a espacio muerto (ápice) o shunt fisiológico (bases) incluso en condiciones normales.",
+    "type": "estático",
+    "tags": ["zonas de West", "V/Q", "ventilación", "perfusión", "gravedad"]
+  },
+  {
+    "name": "unidades_VQ_mismatch",
+    "description": "Conjunto de ilustraciones de unidades alveolares representando: (a) Unidad con V/Q bajo: alveolo con una vía aérea obstruida (poca ventilación) pero capilar normal (buena perfusión), resultando en sangre desoxigenada saliendo. (b) Unidad con V/Q alto: alveolo bien ventilado con capilar con flujo reducido (por ejemplo un trombo o vasoconstricción), resultando en aire no aprovechado (espacio muerto) y sangre muy oxigenada (pero poco flujo). Opcionalmente incluir (c) Shunt (V/Q = 0: alveolo colapsado sin ventilación, perfundido) y (d) Espacio muerto total (V/Q infinito: alveolo ventilado sin perfusión). Cada sub-dibujo con flechas y colores que indiquen niveles de O2/CO2 en aire y sangre.",
+    "purpose": "Permitir comparar visualmente los diferentes tipos de desigualdad V/Q en unidades pulmonares. Facilita entender cómo V/Q bajo causa hipoxemia (sangre venosa mezclada) y V/Q alto implica ventilación desperdiciada (espacio muerto). Esta comparación ayuda a los estudiantes a asociar los conceptos abstractos de V/Q con imágenes concretas de alveolos y capilares.",
+    "type": "estático",
+    "tags": ["V/Q bajo", "V/Q alto", "shunt", "espacio muerto", "unidades alveolares"]
+  },
+  {
+    "name": "curva_shunt_vs_O2",
+    "description": "Gráfico de líneas que relaciona la FiO2 en el eje X (0.21 a 1.0) con la PaO2 resultante en el eje Y. Se dibujan dos curvas: una curva ascendente que se aproxima asintóticamente a un valor alto de PaO2 (representando hipoxemia por V/Q mismatch, que mejora mucho con O2) y otra curva que se aplana pronto, quedando en PaO2 baja incluso con FiO2 100% (representando hipoxemia por shunt). Marcar puntos: por ejemplo, PaO2 ~ 50->300 mmHg al ir de FiO2 0.21 a 1.0 en mismatch, vs PaO2 50->100 mmHg en shunt. Añadir texto como 'Mejora con O2' en la primera y 'Refractaria a O2' en la segunda.",
+    "purpose": "Demostrar la diferencia en respuesta a la oxigenoterapia entre dos mecanismos de hipoxemia: en desajuste V/Q la PaO2 aumenta sustancialmente con O2 suplementario, mientras que en shunt intrapulmonar la PaO2 apenas sube. Este gráfico consolida el concepto de refractariedad del shunt al O2 y puede ayudar en la identificación práctica del tipo de hipoxemia según la respuesta al O2.",
+    "type": "estático",
+    "tags": ["PaO2/FiO2", "curva respuesta O2", "shunt", "VQ mismatch", "oxigenoterapia"]
+  },
+  {
+    "name": "espacio_muerto_diagrama",
+    "description": "Diagrama del sistema respiratorio diferenciando espacio muerto anatómico y alveolar. Porción superior: vías aéreas (nariz, tráquea, bronquios) sombreadas para indicar 'espacio muerto anatómico' (~150 ml que no realizan intercambio). Porción distal: alveolos – mostrar un alveolo con capilar perfundido (intercambio normal) y otro alveolo ventilado cuyo capilar tiene un trombo (sin perfusión), etiquetando este alveolo como 'espacio muerto alveolar'. Incluir flechas que muestren flujo de aire entrando y saliendo sin captar CO2 en ese alveolo no perfundido. Posiblemente incluir la fórmula de Bohr mod: VD/VT = (PaCO2 - PeCO2)/PaCO2 cerca de la figura.",
+    "purpose": "Diferenciar visualmente los dos componentes del espacio muerto fisiológico. Ayuda a entender que parte del volumen corriente siempre queda en conductos aéreos (anatómico) y que ciertas patologías agregan volumen muerto alveolar (alvéolos ventilados sin perfusión). Refuerza por qué un espacio muerto aumentado implica ventilación ineficaz (aire que entra y sale sin participar en intercambio).",
+    "type": "estático",
+    "tags": ["espacio muerto anatómico", "espacio muerto alveolar", "VD/VT", "ventilación inefectiva"]
+  },
+  {
+    "name": "gasometrias_comparativa",
+    "description": "Tabla comparativa de 4 escenarios: Normal, Hipoventilación pura, Desajuste V/Q, Shunt. Columnas con valores típicos: PaO2, PaCO2, gradiente A-a O2, respuesta a O2 100%. Por ejemplo: Normal (PaO2 ~100, PaCO2 ~40, A-a ~10, O2 100% -> PaO2 ~600); Hipoventilación (PaO2 bajo, PaCO2 alto, A-a normal, O2 100% -> corrige totalmente la PaO2 a normal); V/Q mismatch (PaO2 moderadamente bajo, PaCO2 normal/bajo, A-a elevado, O2 100% -> mejora mucho PaO2); Shunt (PaO2 muy bajo, PaCO2 normal o ligeramente alto, A-a muy elevado, O2 100% -> mejora mínimo PaO2). Usar iconos/flechas para indicar alto/bajo. Destacar diferencias en negrita o color (p. ej., resaltar 'A-a normal' vs 'A-a↑').",
+    "purpose": "Resumir de forma clara las características gasométricas y la respuesta al oxígeno de distintos mecanismos de insuficiencia respiratoria. Esto permite al estudiante ver de un vistazo cómo distinguir hipoxemia por hipoventilación (retención CO2, A-a normal) de hipoxemia por V/Q (A-a alto, corrige con O2) y shunt (A-a alto, no corrige). Es una herramienta para afianzar la interpretación de gasometrías en términos fisiológicos.",
+    "type": "estático",
+    "tags": ["gasometría", "A-a", "hipoxemia", "hipercapnia", "comparación"]
+  },
+  {
+    "name": "ajuste_ventilatorio_flujograma",
+    "description": "Un flujograma interactivo donde el usuario ingresa hallazgos (por ejemplo, 'PaO2 baja con A-a elevado que no mejora con O2' o 'PaCO2 elevado con A-a normal') y el sistema brinda recomendaciones de ajustes del ventilador. Pasos claves: 1) Identificar tipo de problema: Hipoxemia vs Hipercapnia. 2) Dentro de hipoxemia: distinguir Shunt vs V/Q mismatch según respuesta a O2. 3) Dentro de hipercapnia: distinguir hipoventilación global vs espacio muerto según A-a. Luego para cada rama, listar intervenciones: Shunt -> aumentar PEEP, considerar prone, etc.; V/Q mismatch -> optimizar FiO2, tratar causa subyacente (aspirar secreciones, broncodilatar), PEEP moderada; Hipoventilación -> aumentar volumen minuto (subir Vt o FR), revisar sedación, asistir ventilación; Espacio muerto -> optimizar perfusión (hemodinamia), retirar volúmenes excesivos, permitir hipercapnia moderada, etc. Con botones o casillas el usuario puede probar diferentes decisiones y ver retroalimentación.",
+    "purpose": "Ofrecer una herramienta pedagógica interactiva que guíe al estudiante a tomar decisiones ventilatorias basadas en la fisiología identificada. Refuerza la aplicación práctica: tras analizar una gasometría y situación clínica, el estudiante sigue el algoritmo para ajustar el ventilador de forma racional (no por receta, sino según shunt, V/Q, espacio muerto, etc.). Al ser interactivo, favorece el aprendizaje activo y el razonamiento clínico inductivo, alineado con la metodología de casos de VentyLab.",
+    "type": "interactivo",
+    "tags": ["algoritmo ventilatorio", "hipoxemia", "hipercapnia", "PEEP", "FiO2", "ventilación mecánica"]
+  }
+]

@@ -1,32 +1,41 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense, useMemo } from 'react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 import {
   Container,
   Paper,
   Typography,
   Box,
   Alert,
+  AlertTitle,
   Snackbar,
   Tabs,
   Tab,
   Skeleton,
   IconButton,
   Fade,
-  Grid
+  Grid,
+  Breadcrumbs,
+  Link,
+  Button,
+  CircularProgress
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
   School as SchoolIcon,
   TrendingUp,
-  ArrowBack
+  ArrowBack,
+  Home as HomeIcon,
+  NavigateNext
 } from '@mui/icons-material';
 
 // Hooks personalizados
 import { useLearningProgress } from '../../contexts/LearningProgressContext';
 import useModuleProgress from './hooks/useModuleProgress';
 import useModuleAvailability from './hooks/useModuleAvailability';
+import useLesson from './hooks/useLesson';
 import { curriculumData } from '../../data/curriculumData';
 
 // Componentes hijos
@@ -38,13 +47,81 @@ import LevelStepper from './components/LevelStepper';
 import ModuleInfoPanel from './components/ModuleInfoPanel';
 import FlashcardSystem from './FlashcardSystem';
 import QuickAccessLessons from './components/dashboard/QuickAccessLessons';
-import LessonViewer from './components/LessonViewer';
 
-// Lazy load ProgressDashboard for better performance
+// Lazy load LessonViewer and ProgressDashboard for better performance
+const LessonViewer = lazy(() => import('./components/LessonViewer'));
 const ProgressDashboard = lazy(() => import('./components/progress/ProgressDashboard'));
 
 // Importar DashboardTab
 import DashboardTab from '../../features/dashboard/DashboardTab';
+
+/**
+ * Wrapper component para LessonViewer que maneja errores
+ * Este componente envuelve LessonViewer para capturar errores de carga
+ * y mostrarlos de manera amigable al usuario
+ */
+const LessonViewerWrapper = ({ lessonId, moduleId, onComplete, onNavigate, onError }) => {
+  const router = useRouter();
+  const { data, isLoading, error, refetch } = useLesson(lessonId, moduleId);
+  
+  // Notify parent of errors
+  useEffect(() => {
+    if (error && onError) {
+      onError(error);
+    }
+  }, [error, onError]);
+  
+  // Show error state if there's an error
+  if (error && !isLoading) {
+    return (
+      <Alert 
+        severity="error"
+        action={
+          <Button color="inherit" size="small" onClick={refetch}>
+            Reintentar
+          </Button>
+        }
+        sx={{ mb: 3 }}
+      >
+        <AlertTitle>Error al cargar la lección</AlertTitle>
+        {error}
+        <Box sx={{ mt: 2 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => {
+              const { lessonId: _, moduleId: __, ...restQuery } = router.query;
+              router.push({
+                pathname: router.pathname,
+                query: restQuery
+              }, undefined, { shallow: true });
+            }}
+          >
+            Volver al Curriculum
+          </Button>
+        </Box>
+      </Alert>
+    );
+  }
+  
+  return (
+    <LessonViewer
+      lessonId={lessonId}
+      moduleId={moduleId}
+      onComplete={onComplete}
+      onNavigate={onNavigate}
+    />
+  );
+};
+
+// PropTypes removed - using JSDoc for type documentation instead
+// LessonViewerWrapper.propTypes = {
+//   lessonId: PropTypes.string.isRequired,
+//   moduleId: PropTypes.string.isRequired,
+//   onComplete: PropTypes.func,
+//   onNavigate: PropTypes.func,
+//   onError: PropTypes.func,
+// };
 
 /**
  * TeachingModule - Componente orquestador del módulo de enseñanza
@@ -66,8 +143,16 @@ const TeachingModule = () => {
   // Estado para tabs (0: Dashboard, 1: Curriculum, 2: Mi Progreso)
   const [activeTab, setActiveTab] = useState(0);
 
-  // Estado para lección seleccionada (cuando se visualiza una lección completa)
-  const [selectedLesson, setSelectedLesson] = useState(null);
+  // Estado para lección seleccionada (derivado de router.query para sincronización con URL)
+  // Ya no usamos estado local, sino que leemos directamente de router.query
+  const lessonIdFromQuery = router.query.lessonId;
+  const moduleIdFromQuery = router.query.moduleId;
+  
+  // Determinar si estamos viendo una lección específica
+  const isViewingLesson = Boolean(lessonIdFromQuery && moduleIdFromQuery);
+  
+  // Estado para errores de lección
+  const [lessonError, setLessonError] = useState(null);
 
   // Context: progreso de aprendizaje
   const {
@@ -120,6 +205,46 @@ const TeachingModule = () => {
     ]
   });
 
+  /**
+   * Verifica si una lección cumple con los prerequisitos
+   * @param {string} moduleId - ID del módulo
+   * @param {string} lessonId - ID de la lección
+   * @returns {Object} { canAccess: boolean, missingPrerequisites: Array }
+   */
+  const checkLessonPrerequisites = useCallback((moduleId, lessonId) => {
+    const module = curriculumData.modules[moduleId];
+    if (!module) {
+      return { canAccess: false, missingPrerequisites: [], error: 'Módulo no encontrado' };
+    }
+
+    // Verificar prerequisitos del módulo
+    const modulePrerequisites = module.prerequisites || [];
+    const missingModulePrereqs = modulePrerequisites.filter(prereqId => {
+      const prereqModule = curriculumData.modules[prereqId];
+      if (!prereqModule) return true;
+      
+      // Verificar si todas las lecciones del módulo prerequisito están completadas
+      const prereqLessons = prereqModule.lessons || [];
+      return prereqLessons.some(lesson => {
+        const lessonKey = `${prereqId}.${lesson.id}`;
+        return !completedLessons.has(lessonKey);
+      });
+    });
+
+    if (missingModulePrereqs.length > 0) {
+      return {
+        canAccess: false,
+        missingPrerequisites: missingModulePrereqs.map(id => {
+          const prereqModule = curriculumData.modules[id];
+          return prereqModule?.title || id;
+        }),
+        error: 'Prerequisitos del módulo no completados'
+      };
+    }
+
+    return { canAccess: true, missingPrerequisites: [] };
+  }, [completedLessons]);
+
   // Handlers mínimos
   const handleSectionClick = useCallback((moduleId, lessonId = null) => {
     const module = curriculumData.modules[moduleId];
@@ -127,14 +252,45 @@ const TeachingModule = () => {
       // Si se proporciona lessonId específico, usarlo; sino usar el primero
       const targetLessonId = lessonId || module.lessons[0].id;
       
-      // Actualizar estado para mostrar LessonViewer en lugar de navegar
-      setSelectedLesson({
-        moduleId,
-        lessonId: targetLessonId
-      });
+      // Verificar prerequisitos antes de navegar
+      const prerequisiteCheck = checkLessonPrerequisites(moduleId, targetLessonId);
+      
+      if (!prerequisiteCheck.canAccess) {
+        const missingPrereqs = prerequisiteCheck.missingPrerequisites.join(', ');
+        setAlertMessage(
+          `No puedes acceder a esta lección aún. Debes completar primero: ${missingPrereqs}`
+        );
+        setAlertOpen(true);
+        return;
+      }
+
+      // Actualizar URL con query params usando router.push
+      router.push(
+        {
+          pathname: router.pathname,
+          query: {
+            ...router.query,
+            moduleId,
+            lessonId: targetLessonId,
+            // Mantener el tab si estaba activo
+            tab: router.query.tab || 'curriculum'
+          }
+        },
+        undefined,
+        { shallow: true }
+      );
 
       // Scroll suave al inicio
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      // Track analytics event
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'lesson_access', {
+          module_id: moduleId,
+          lesson_id: targetLessonId,
+          module_title: module.title
+        });
+      }
     } else {
       // Mostrar alerta al usuario cuando el módulo no tiene lecciones
       const moduleName = module?.title || moduleId;
@@ -142,7 +298,7 @@ const TeachingModule = () => {
       setAlertOpen(true);
       console.warn(`Módulo ${moduleId} no tiene lecciones disponibles`);
     }
-  }, []);
+  }, [router, checkLessonPrerequisites]);
 
   const handleContinueLearning = useCallback(() => {
     if (nextModule) {
@@ -154,30 +310,82 @@ const TeachingModule = () => {
    * Handler para volver al dashboard desde LessonViewer
    */
   const handleBackToDashboard = useCallback(() => {
-    setSelectedLesson(null);
+    // Limpiar lessonId y moduleId de la URL
+    const { lessonId, moduleId, ...restQuery } = router.query;
+    router.push(
+      {
+        pathname: router.pathname,
+        query: restQuery
+      },
+      undefined,
+      { shallow: true }
+    );
+    
+    // Limpiar error de lección
+    setLessonError(null);
+    
     // Scroll suave al inicio
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  }, [router]);
 
   /**
    * Handler cuando se completa una lección
    */
-  const handleLessonComplete = useCallback(() => {
+  const handleLessonComplete = useCallback((lessonData) => {
     // Marcar lección como completada en el contexto
-    if (selectedLesson) {
-      const lessonFullId = `${selectedLesson.moduleId}.${selectedLesson.lessonId}`;
-      markLessonComplete(lessonFullId);
+    if (lessonIdFromQuery && moduleIdFromQuery) {
+      const lessonFullId = `${moduleIdFromQuery}.${lessonIdFromQuery}`;
+      
+      // Calcular tiempo de estudio (estimado basado en duration del módulo)
+      const module = curriculumData.modules[moduleIdFromQuery];
+      const estimatedTime = module?.duration || 30;
+      
+      markLessonComplete(lessonFullId, moduleIdFromQuery, estimatedTime);
+      
+      // Track analytics event
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'lesson_completed', {
+          module_id: moduleIdFromQuery,
+          lesson_id: lessonIdFromQuery,
+          lesson_title: lessonData?.title || lessonIdFromQuery,
+          time_spent: estimatedTime
+        });
+      }
       
       // Mostrar mensaje de éxito
       setAlertMessage('¡Felicitaciones! Has completado la lección.');
       setAlertOpen(true);
       
-      // Opcional: volver al dashboard después de un delay
-      setTimeout(() => {
-        handleBackToDashboard();
-      }, 2000);
+      // Opcional: navegar a la siguiente lección si existe
+      if (lessonData?.navigation?.nextLesson) {
+        setTimeout(() => {
+          handleSectionClick(moduleIdFromQuery, lessonData.navigation.nextLesson.id);
+        }, 2000);
+      } else {
+        // Si no hay siguiente lección, volver al dashboard después de un delay
+        setTimeout(() => {
+          handleBackToDashboard();
+        }, 3000);
+      }
     }
-  }, [selectedLesson, markLessonComplete, handleBackToDashboard]);
+  }, [lessonIdFromQuery, moduleIdFromQuery, markLessonComplete, handleBackToDashboard, handleSectionClick]);
+  
+  /**
+   * Handler para navegar entre lecciones
+   */
+  const handleNavigateLesson = useCallback((targetLessonId, targetModuleId) => {
+    if (targetLessonId && targetModuleId) {
+      handleSectionClick(targetModuleId, targetLessonId);
+    }
+  }, [handleSectionClick]);
+  
+  /**
+   * Handler para errores de carga de lección
+   */
+  const handleLessonError = useCallback((error) => {
+    setLessonError(error);
+    console.error('Error loading lesson:', error);
+  }, []);
 
   const handleCloseAlert = useCallback((event, reason) => {
     if (reason === 'clickaway') {
@@ -221,7 +429,8 @@ const TeachingModule = () => {
   const globalStats = calculateGlobalStats;
 
   // Preparar array de todos los módulos para QuickAccessLessons
-  const allModules = Object.values(curriculumData.modules);
+  // Memoizar allModules para evitar recreaciones innecesarias
+  const allModules = useMemo(() => Object.values(curriculumData.modules), []);
 
   // Calcular XP y nivel para el dashboard
   const xpTotal = completedLessons.size * 100; // 100 XP por lección
@@ -429,11 +638,33 @@ const TeachingModule = () => {
   ]);
 
   // Actualizar datos del dashboard solo en el cliente para evitar problemas de hidratación
-  useEffect(() => {
+  // Usar useMemo en lugar de useEffect para evitar loops infinitos
+  const dashboardDataForTabMemo = useMemo(() => {
     if (typeof window !== 'undefined') {
-      setDashboardDataForTab(prepareDashboardData());
+      return prepareDashboardData();
     }
-  }, [prepareDashboardData]);
+    return null;
+  }, [
+    xpToday,
+    currentLevel,
+    levelProgressPercentage,
+    xpTotal,
+    completedLessons,
+    allModules,
+    streak,
+    dashboardData.streak,
+    timeSpent,
+    calculateModuleProgress,
+    nextModule,
+    handleContinueLearning,
+    handleSectionClick,
+    router
+  ]);
+
+  // Sincronizar el estado con el valor memoizado
+  useEffect(() => {
+    setDashboardDataForTab(dashboardDataForTabMemo);
+  }, [dashboardDataForTabMemo]);
 
   // Effect: inicialización y responsive
   useEffect(() => {
@@ -449,7 +680,7 @@ const TeachingModule = () => {
     return () => window.removeEventListener('resize', checkIsMobile);
   }, [setCurrentModule]);
 
-  // Effect: leer query parameter para tab inicial
+  // Effect: leer query parameter para tab inicial y verificar prerequisitos
   useEffect(() => {
     const tabParam = router.query.tab;
 
@@ -460,17 +691,181 @@ const TeachingModule = () => {
     } else if (tabParam === 'progress') {
       setActiveTab(2);
     }
-  }, [router.query.tab]);
+    
+    // Verificar prerequisitos si estamos viendo una lección
+    if (isViewingLesson && moduleIdFromQuery && lessonIdFromQuery) {
+      const prerequisiteCheck = checkLessonPrerequisites(moduleIdFromQuery, lessonIdFromQuery);
+      if (!prerequisiteCheck.canAccess) {
+        setLessonError({
+          message: 'Lección no disponible',
+          details: `Debes completar primero: ${prerequisiteCheck.missingPrerequisites.join(', ')}`,
+          missingPrerequisites: prerequisiteCheck.missingPrerequisites
+        });
+      } else {
+        setLessonError(null);
+      }
+      
+      // Track analytics event
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'lesson_view', {
+          module_id: moduleIdFromQuery,
+          lesson_id: lessonIdFromQuery
+        });
+      }
+    }
+  }, [router.query.tab, isViewingLesson, moduleIdFromQuery, lessonIdFromQuery, checkLessonPrerequisites]);
+  
+  /**
+   * Prefetch siguiente lección para carga más rápida
+   */
+  useEffect(() => {
+    if (!isViewingLesson || !moduleIdFromQuery || !lessonIdFromQuery) return;
+    
+    // Obtener información del módulo para encontrar la siguiente lección
+    const module = curriculumData.modules[moduleIdFromQuery];
+    if (!module?.lessons) return;
+    
+    const currentLessonIndex = module.lessons.findIndex(l => l.id === lessonIdFromQuery);
+    if (currentLessonIndex >= 0 && currentLessonIndex < module.lessons.length - 1) {
+      const nextLesson = module.lessons[currentLessonIndex + 1];
+      
+      // Prefetch el siguiente archivo JSON (solo en producción se beneficiaría realmente)
+      // En desarrollo, esto ayuda a que el navegador cachee el recurso
+      if (typeof window !== 'undefined' && nextLesson) {
+        // Prefetch puede hacerse usando link rel="prefetch" o simplemente
+        // precargando el módulo en memoria
+        const nextModuleId = moduleIdFromQuery;
+        const nextLessonId = nextLesson.id;
+        
+        // Prefetch usando router.prefetch (Next.js)
+        router.prefetch({
+          pathname: router.pathname,
+          query: {
+            ...router.query,
+            moduleId: nextModuleId,
+            lessonId: nextLessonId
+          }
+        }).catch(err => {
+          // Silently fail - prefetch is optional
+          console.debug('Prefetch failed for next lesson:', err);
+        });
+      }
+    }
+  }, [isViewingLesson, moduleIdFromQuery, lessonIdFromQuery, router]);
+  
+  /**
+   * Obtener información del módulo y lección para breadcrumbs y SEO
+   */
+  const lessonInfo = useMemo(() => {
+    if (!isViewingLesson) return null;
+    
+    const module = curriculumData.modules[moduleIdFromQuery];
+    if (!module) return null;
+    
+    const lesson = module.lessons?.find(l => l.id === lessonIdFromQuery);
+    
+    return {
+      moduleTitle: module.title,
+      lessonTitle: lesson?.title || lessonIdFromQuery,
+      moduleLevel: module.level
+    };
+  }, [isViewingLesson, moduleIdFromQuery, lessonIdFromQuery]);
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4, minHeight: '100vh' }}>
-      {/* Renderizado condicional: LessonViewer o Dashboard normal */}
-      {selectedLesson ? (
+    <>
+      {/* SEO Head */}
+      {isViewingLesson && lessonInfo && (
+        <Head>
+          <title>{`${lessonInfo.lessonTitle} - VentyLab`}</title>
+          <meta
+            name="description"
+            content={`Aprende sobre ${lessonInfo.lessonTitle} en el módulo ${lessonInfo.moduleTitle}. Curso de ventilación mecánica para profesionales de la salud.`}
+          />
+          <meta
+            name="keywords"
+            content={`ventilación mecánica, ${lessonInfo.lessonTitle}, ${lessonInfo.moduleTitle}, medicina intensiva, respiración artificial`}
+          />
+          <meta property="og:title" content={`${lessonInfo.lessonTitle} - VentyLab`} />
+          <meta property="og:description" content={`Aprende sobre ${lessonInfo.lessonTitle} en VentyLab`} />
+          <meta property="og:type" content="article" />
+        </Head>
+      )}
+      
+      <Container maxWidth="xl" sx={{ py: 4, minHeight: '100vh' }}>
+        {/* Renderizado condicional: LessonViewer o Dashboard normal */}
+        {isViewingLesson ? (
         /* Vista de Lección Completa */
         <Fade in timeout={500}>
           <Box>
-            {/* Botón para volver al dashboard */}
-            <Box sx={{ mb: 2 }}>
+            {/* Breadcrumbs de navegación */}
+            {lessonInfo && (
+              <Breadcrumbs
+                separator={<NavigateNext fontSize="small" />}
+                aria-label="breadcrumb"
+                sx={{ mb: 3 }}
+              >
+                <Link
+                  component="button"
+                  variant="body1"
+                  onClick={() => router.push('/teaching')}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    color: 'text.secondary',
+                    textDecoration: 'none',
+                    '&:hover': { color: 'primary.main' },
+                    cursor: 'pointer'
+                  }}
+                >
+                  <HomeIcon sx={{ mr: 0.5, fontSize: 20 }} />
+                  Inicio
+                </Link>
+                <Link
+                  component="button"
+                  variant="body1"
+                  onClick={() => {
+                    const { lessonId, moduleId, ...restQuery } = router.query;
+                    router.push({
+                      pathname: router.pathname,
+                      query: restQuery
+                    }, undefined, { shallow: true });
+                  }}
+                  sx={{
+                    color: 'text.secondary',
+                    textDecoration: 'none',
+                    '&:hover': { color: 'primary.main' },
+                    cursor: 'pointer'
+                  }}
+                >
+                  Módulo de Enseñanza
+                </Link>
+                <Link
+                  component="button"
+                  variant="body1"
+                  onClick={() => {
+                    const { lessonId, ...restQuery } = router.query;
+                    router.push({
+                      pathname: router.pathname,
+                      query: { ...restQuery, tab: 'curriculum' }
+                    }, undefined, { shallow: true });
+                  }}
+                  sx={{
+                    color: 'text.secondary',
+                    textDecoration: 'none',
+                    '&:hover': { color: 'primary.main' },
+                    cursor: 'pointer'
+                  }}
+                >
+                  {lessonInfo.moduleTitle}
+                </Link>
+                <Typography color="text.primary" sx={{ fontWeight: 600 }}>
+                  {lessonInfo.lessonTitle}
+                </Typography>
+              </Breadcrumbs>
+            )}
+
+            {/* Botón para volver */}
+            <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
               <IconButton
                 onClick={handleBackToDashboard}
                 sx={{
@@ -480,28 +875,64 @@ const TeachingModule = () => {
                     backgroundColor: 'action.hover',
                   },
                 }}
-                aria-label="Volver al dashboard"
+                aria-label="Volver"
               >
                 <ArrowBack />
               </IconButton>
               <Typography
                 component="span"
-                sx={{ ml: 2, color: 'text.secondary', fontWeight: 500 }}
+                sx={{ color: 'text.secondary', fontWeight: 500 }}
               >
-                Volver al Dashboard
+                Volver
               </Typography>
             </Box>
 
-            {/* Componente LessonViewer */}
-            <LessonViewer
-              lessonId={selectedLesson.lessonId}
-              moduleId={selectedLesson.moduleId}
-              onComplete={handleLessonComplete}
-              onSectionChange={(sectionIndex) => {
-                // Tracking opcional de cambio de sección
-                console.log('Section changed:', sectionIndex);
-              }}
-            />
+            {/* Manejo de errores de prerequisitos */}
+            {lessonError && lessonError.missingPrerequisites && (
+              <Alert severity="warning" sx={{ mb: 3 }}>
+                <AlertTitle>Lección no disponible</AlertTitle>
+                {lessonError.details}
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 600 }}>
+                    Prerequisitos pendientes:
+                  </Typography>
+                  <ul style={{ margin: 0, paddingLeft: 20 }}>
+                    {lessonError.missingPrerequisites.map((prereq, index) => (
+                      <li key={index}>
+                        <Typography variant="body2">{prereq}</Typography>
+                      </li>
+                    ))}
+                  </ul>
+                </Box>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={handleBackToDashboard}
+                  sx={{ mt: 2 }}
+                >
+                  Volver al Curriculum
+                </Button>
+              </Alert>
+            )}
+
+            {/* Componente LessonViewer con Suspense y manejo de errores */}
+            {!lessonError && (
+              <Suspense
+                fallback={
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+                    <CircularProgress />
+                  </Box>
+                }
+              >
+                <LessonViewerWrapper
+                  lessonId={lessonIdFromQuery}
+                  moduleId={moduleIdFromQuery}
+                  onComplete={handleLessonComplete}
+                  onNavigate={handleNavigateLesson}
+                  onError={handleLessonError}
+                />
+              </Suspense>
+            )}
           </Box>
         </Fade>
       ) : (
@@ -764,7 +1195,8 @@ const TeachingModule = () => {
           </Box>
         </Fade>
       )}
-    </Container>
+      </Container>
+    </>
   );
 };
 

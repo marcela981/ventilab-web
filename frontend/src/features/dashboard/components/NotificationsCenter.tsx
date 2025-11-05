@@ -203,38 +203,44 @@ const NotificationsCenter: React.FC<NotificationsCenterProps> = ({
                 primary={
                   <Typography
                     variant="subtitle2"
+                    component="span"
                     sx={{
                       color: '#ffffff',
                       fontWeight: item.read ? 500 : 700,
                       fontSize: '0.9rem',
-                      mb: 0.5
+                      mb: 0.5,
+                      display: 'block'
                     }}
                   >
                     {item.title}
                   </Typography>
                 }
                 secondary={
-                  <Box>
+                  <>
                     <Typography
                       variant="body2"
+                      component="span"
                       sx={{
                         color: '#e8f4fd',
                         fontSize: '0.875rem',
-                        mb: 0.5
+                        mb: 0.5,
+                        display: 'block'
                       }}
                     >
                       {item.message}
                     </Typography>
                     <Typography
                       variant="caption"
+                      component="span"
                       sx={{
                         color: '#9e9e9e',
-                        fontSize: '0.7rem'
+                        fontSize: '0.7rem',
+                        display: 'block'
                       }}
                     >
                       {formatTime(item.timestamp)}
                     </Typography>
-                  </Box>
+                  </>
                 }
               />
               <IconButton
