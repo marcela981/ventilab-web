@@ -43,6 +43,9 @@ import LessonViewer from './components/LessonViewer';
 // Lazy load ProgressDashboard for better performance
 const ProgressDashboard = lazy(() => import('./components/progress/ProgressDashboard'));
 
+// Importar DashboardTab
+import DashboardTab from '../../features/dashboard/DashboardTab';
+
 /**
  * TeachingModule - Componente orquestador del módulo de enseñanza
  *
@@ -73,7 +76,8 @@ const TeachingModule = () => {
     markLessonComplete,
     updateTimeSpent,
     setCurrentModule,
-    isLoadingProgress
+    isLoadingProgress,
+    streak
   } = useLearningProgress();
 
   // Hook: progreso de módulos
@@ -218,6 +222,218 @@ const TeachingModule = () => {
 
   // Preparar array de todos los módulos para QuickAccessLessons
   const allModules = Object.values(curriculumData.modules);
+
+  // Calcular XP y nivel para el dashboard
+  const xpTotal = completedLessons.size * 100; // 100 XP por lección
+  const currentLevel = Math.floor(completedLessons.size / 5) + 1; // Nivel cada 5 lecciones
+  const xpForCurrentLevel = (completedLessons.size % 5) * 100;
+  const xpForNextLevel = 500; // 5 lecciones * 100 XP
+  const levelProgressPercentage = (xpForCurrentLevel / xpForNextLevel) * 100;
+  const xpToday = 0; // Esto debería calcularse desde el backend o tracking diario
+
+  // Estado para datos del dashboard (evita problemas de hidratación con fechas)
+  const [dashboardDataForTab, setDashboardDataForTab] = useState(null);
+
+  // Preparar datos para DashboardTab
+  const prepareDashboardData = useCallback(() => {
+    const dashboardStreak = dashboardData.streak || 0;
+    const contextStreak = streak || 0;
+    const finalStreak = contextStreak > 0 ? contextStreak : dashboardStreak;
+
+    // Calcular dominio del módulo (% de lecciones completadas)
+    const totalLessons = allModules.reduce((acc, module) => 
+      acc + (module.lessons?.length || 0), 0
+    , 0);
+    const moduleMastery = totalLessons > 0 
+      ? (completedLessons.size / totalLessons) * 100 
+      : 0;
+
+    // Usar una fecha base consistente para SSR
+    const now = typeof window !== 'undefined' ? new Date() : new Date('2024-01-01');
+
+    return {
+      overview: {
+        xpToday: xpToday,
+        level: currentLevel,
+        levelProgress: levelProgressPercentage,
+        role: 'Estudiante',
+        streak: finalStreak
+      },
+      kpis: [
+        {
+          label: 'XP Total',
+          value: xpTotal,
+          icon: 'trending',
+          trend: 'up'
+        },
+        {
+          label: 'Nivel',
+          value: currentLevel,
+          icon: 'trophy'
+        },
+        {
+          label: 'Racha',
+          value: `${finalStreak} días`,
+          icon: 'fire'
+        },
+        {
+          label: 'Dominio',
+          value: `${moduleMastery.toFixed(0)}%`,
+          icon: 'check',
+          trend: 'up'
+        }
+      ],
+      quickActions: [
+        {
+          id: 'resume',
+          label: 'Continuar',
+          icon: 'play',
+          onClick: handleContinueLearning
+        },
+        {
+          id: 'simulator',
+          label: 'Simulador',
+          icon: 'science',
+          onClick: () => {
+            router.push('/simulator');
+          }
+        },
+        {
+          id: 'review',
+          label: 'Reforzar',
+          icon: 'refresh',
+          onClick: () => {
+            setActiveTab(1); // Ir a Curriculum
+          }
+        },
+        {
+          id: 'challenge',
+          label: 'Reto del Día',
+          icon: 'trophy',
+          onClick: () => {
+            // Aquí se puede implementar lógica para el reto del día
+            setAlertMessage('¡Próximamente: Reto del Día!');
+            setAlertOpen(true);
+          },
+          badge: 'Nuevo'
+        }
+      ],
+      weeklyObjectives: [
+        {
+          id: 'lessons',
+          title: 'Completar Lecciones',
+          progress: Math.min((completedLessons.size / 10) * 100, 100),
+          target: 10,
+          current: completedLessons.size,
+          unit: ' lecciones'
+        },
+        {
+          id: 'time',
+          title: 'Tiempo de Estudio',
+          progress: Math.min((timeSpent / 300) * 100, 100), // 300 minutos objetivo
+          target: 300,
+          current: timeSpent,
+          unit: ' min'
+        },
+        {
+          id: 'modules',
+          title: 'Completar Módulos',
+          progress: Math.min((Object.keys(curriculumData.modules).filter(moduleId => 
+            calculateModuleProgress(moduleId) === 100
+          ).length / Object.keys(curriculumData.modules).length) * 100, 100),
+          target: Object.keys(curriculumData.modules).length,
+          current: Object.keys(curriculumData.modules).filter(moduleId => 
+            calculateModuleProgress(moduleId) === 100
+          ).length,
+          unit: ' módulos'
+        }
+      ],
+      caseSpotlight: nextModule ? {
+        id: nextModule.id,
+        title: nextModule.title,
+        description: nextModule.learningObjectives?.[0] || nextModule.description || 'Continúa tu aprendizaje',
+        difficulty: nextModule.difficulty?.toLowerCase() || 'básico',
+        reward: {
+          xp: 100,
+          badge: 'Explorador'
+        },
+        estimatedTime: nextModule.duration || 30,
+        onClick: () => handleSectionClick(nextModule.id)
+      } : undefined,
+      recommendations: allModules
+        .filter(module => {
+          const progress = calculateModuleProgress(module.id);
+          return progress > 0 && progress < 100;
+        })
+        .slice(0, 5)
+        .map(module => ({
+          id: module.id,
+          type: 'module',
+          title: module.title,
+          description: module.learningObjectives?.[0] || module.description || '',
+          progress: calculateModuleProgress(module.id),
+          estimatedTime: module.duration,
+          onClick: () => handleSectionClick(module.id)
+        })),
+      notifications: [
+        {
+          id: 'streak',
+          type: 'success',
+          title: '¡Racha activa!',
+          message: `Has mantenido tu racha por ${finalStreak} día${finalStreak > 1 ? 's' : ''}`,
+          timestamp: now,
+          read: false
+        },
+        ...(completedLessons.size > 0 ? [{
+          id: 'progress',
+          type: 'info',
+          title: 'Progreso actualizado',
+          message: `Has completado ${completedLessons.size} lección${completedLessons.size > 1 ? 'es' : ''}`,
+          timestamp: new Date(now.getTime() - 2 * 60 * 60 * 1000),
+          read: false
+        }] : [])
+      ],
+      schedule: [],
+      activities: Array.from(completedLessons)
+        .slice(-5)
+        .map((lessonId, index) => {
+          const [moduleId, lesson] = lessonId.split('.');
+          const module = curriculumData.modules[moduleId];
+          return {
+            id: `activity-${index}`,
+            type: 'lesson_completed',
+            title: `Completaste una lección`,
+            description: module ? `Módulo: ${module.title}` : 'Lección completada',
+            timestamp: new Date(now.getTime() - (index + 1) * 24 * 60 * 60 * 1000)
+          };
+        })
+        .reverse(),
+      todos: [],
+      cohortStats: undefined
+    };
+  }, [
+    xpToday,
+    currentLevel,
+    levelProgressPercentage,
+    xpTotal,
+    completedLessons,
+    allModules,
+    streak,
+    dashboardData.streak,
+    timeSpent,
+    calculateModuleProgress,
+    nextModule,
+    handleContinueLearning,
+    handleSectionClick,
+    router
+  ]);
+
+  // Actualizar datos del dashboard solo en el cliente para evitar problemas de hidratación
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setDashboardDataForTab(prepareDashboardData());
+    }
+  }, [prepareDashboardData]);
 
   // Effect: inicialización y responsive
   useEffect(() => {
@@ -426,38 +642,23 @@ const TeachingModule = () => {
 
       {/* TAB PANEL 0: Dashboard */}
       {activeTab === 0 && (
-        <Box>
-          {/* Sección: Continuar Aprendiendo */}
-          <Box sx={{ mb: 4 }}>
-            <ContinueLearningSection
-              nextModule={nextModule}
-              onContinue={handleContinueLearning}
-              calculateProgress={calculateModuleProgress}
-            />
+        dashboardDataForTab ? (
+          <DashboardTab
+            data={dashboardDataForTab}
+            loading={isLoadingProgress}
+            error={null}
+            onRefresh={() => {
+              // Aquí se puede agregar lógica de refresh si es necesario
+              if (typeof window !== 'undefined') {
+                setDashboardDataForTab(prepareDashboardData());
+              }
+            }}
+          />
+        ) : (
+          <Box sx={{ py: 4, textAlign: 'center' }}>
+            <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 2 }} />
           </Box>
-
-          {/* Acceso Rápido a Lecciones */}
-          <Box sx={{ mb: 4 }}>
-            <QuickAccessLessons
-              allModules={allModules}
-              handleSectionClick={handleSectionClick}
-              isMobile={isMobile}
-            />
-          </Box>
-
-          {/* Estadísticas: Tiempo y lecciones completadas */}
-          <Box sx={{ mb: 4 }}>
-            <SessionStats
-              timeSpent={timeSpent}
-              completedLessonsCount={completedLessons.size}
-            />
-          </Box>
-
-          {/* Sistema de Racha y Progreso Temporal */}
-          <Box sx={{ mb: 4 }}>
-            <ProgressOverview dashboardData={dashboardData} />
-          </Box>
-        </Box>
+        )
       )}
 
       {/* TAB PANEL 1: Curriculum */}
