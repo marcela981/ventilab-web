@@ -24,6 +24,9 @@ export { default as PersonalNotes } from './PersonalNotes';
 export { default as MedicalCodeBlock } from './MedicalCodeBlock';
 export { default as StyledTable } from './StyledTable';
 export { default as ZoomableImage } from './ZoomableImage';
+export { default as ModalityComparisonTable } from './ModalityComparisonTable';
+export { default as WaveformVisualization } from './WaveformVisualization';
+export { default as ClinicalCase } from './ClinicalCase';
 
 // Exportación por defecto del componente principal
 export { default } from './MarkdownRenderer';

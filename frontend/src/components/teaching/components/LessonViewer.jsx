@@ -89,7 +89,7 @@ import {
   OpenInNew as OpenInNewIcon,
 } from '@mui/icons-material';
 
-import { MarkdownRenderer } from './content';
+import { MarkdownRenderer, WaveformVisualization } from './content';
 import useLesson from '../hooks/useLesson';
 import { useLearningProgress } from '../../../contexts/LearningProgressContext';
 
@@ -582,6 +582,37 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate }) => {
             </Paper>
           );
         })}
+      </Box>
+    );
+  };
+
+  /**
+   * Render waveform visualization sections (interactive ventilator curves)
+   * Busca datos en data.content.waveforms o en data.content.sections con type === 'waveforms'.
+   */
+  const renderWaveforms = () => {
+    const wfDirect = data?.content?.waveforms;
+    // Compatibilidad: algunas lecciones pueden venir con sections: [{ type: 'waveforms', waveformData: {...} }]
+    const wfFromSections = Array.isArray(data?.content?.sections)
+      ? data.content.sections.filter(s => String(s.type).toLowerCase() === 'waveforms')
+      : [];
+
+    if (!wfDirect && wfFromSections.length === 0) return null;
+
+    const items = [];
+    if (wfDirect) items.push({ waveformData: wfDirect.waveformData || wfDirect });
+    wfFromSections.forEach(s => items.push({ waveformData: s.waveformData || s.data || {} }));
+
+    return (
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+          Curvas Ventilatorias Interactivas
+        </Typography>
+        {items.map((item, idx) => (
+          <Paper key={idx} elevation={2} sx={{ p: { xs: 2, md: 3 }, mb: 3 }}>
+            <WaveformVisualization waveformData={item.waveformData} />
+          </Paper>
+        ))}
       </Box>
     );
   };
@@ -1089,6 +1120,9 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate }) => {
         
         {/* Visual Elements */}
         {renderVisualElements()}
+
+        {/* Waveforms (new section type) */}
+        {renderWaveforms()}
         
         {/* Practical Cases */}
         {renderPracticalCases()}

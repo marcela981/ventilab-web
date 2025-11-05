@@ -219,11 +219,121 @@ export const curriculumData = {
     },
 
     // NIVEL INTERMEDIO - Modalidades Ventilatorias
+    'principles-mechanical-ventilation': {
+      id: 'principles-mechanical-ventilation',
+      title: 'Principios de Ventilación Mecánica',
+      level: 'intermediate',
+      order: 1,
+      duration: 180, // minutos
+      prerequisites: ['ventilation-principles'],
+      learningObjectives: [
+        'Comprender las diferencias entre modalidades controladas por volumen y por presión',
+        'Identificar las indicaciones clínicas para cada modalidad ventilatoria',
+        'Interpretar curvas de presión, flujo y volumen en tiempo real',
+        'Reconocer y resolver alarmas del ventilador',
+        'Seleccionar parámetros ventilatorios apropiados según la patología'
+      ],
+      bloomLevel: 'aplicar',
+      difficulty: 'intermedio',
+      estimatedTime: '3 horas',
+      lessons: [
+        {
+          id: 'ventilation-modes-vcv-pcv',
+          type: 'reading',
+          title: 'Modalidades VCV y PCV',
+          duration: 30,
+          content: {
+            text: '',
+            keyPoints: [],
+            documentId: 'documento-2-principios-ventilacion'
+          }
+        },
+        {
+          id: 'ventilation-modes-assisted',
+          type: 'reading',
+          title: 'Modalidades Asistidas SIMV y PSV',
+          duration: 35,
+          content: {
+            text: '',
+            keyPoints: [],
+            documentId: 'documento-2-principios-ventilacion'
+          }
+        },
+        {
+          id: 'ventilation-parameters',
+          type: 'interactive',
+          title: 'Parámetros Ventilatorios Fundamentales',
+          duration: 25,
+          content: {
+            interactiveType: 'parameter-explorer',
+            checkpoints: [
+              'Volumen tidal (VT)',
+              'Frecuencia respiratoria (FR)',
+              'PEEP',
+              'FiO2',
+              'Relación I:E'
+            ],
+            documentId: 'documento-2-principios-ventilacion'
+          }
+        },
+        {
+          id: 'waveform-interpretation',
+          type: 'video',
+          title: 'Interpretación de Curvas Ventilatorias',
+          duration: 40,
+          content: {
+            videoUrl: '/videos/waveform-interpretation.mp4',
+            transcript: '',
+            keyPoints: [
+              'Curva Presión-Tiempo',
+              'Curva Flujo-Tiempo',
+              'Curva Volumen-Tiempo',
+              'Lazo Presión-Volumen'
+            ],
+            documentId: 'documento-2-principios-ventilacion'
+          }
+        },
+        {
+          id: 'alarm-management',
+          type: 'interactive',
+          title: 'Sistema de Alarmas y Resolución',
+          duration: 30,
+          content: {
+            interactiveType: 'alarm-troubleshooting',
+            checkpoints: [
+              'Alarmas de presión',
+              'Alarmas de volumen',
+              'Alarmas de apnea',
+              'Alarmas técnicas',
+              'Protocolo de resolución'
+            ],
+            documentId: 'documento-2-principios-ventilacion'
+          }
+        },
+        {
+          id: 'mode-comparison-practice',
+          type: 'practice',
+          title: 'Práctica Comparación de Modalidades',
+          duration: 20,
+          content: {
+            practiceType: 'mode-comparison',
+            scenarios: [
+              'SDRA severo',
+              'EPOC exacerbado',
+              'Destete ventilatorio',
+              'Postoperatorio sin complicaciones'
+            ],
+            documentId: 'documento-2-principios-ventilacion'
+          }
+        }
+      ]
+    },
+
     'volume-control': {
       id: 'volume-control',
       title: 'Ventilación Controlada por Volumen (VCV)',
       level: 'intermediate',
-      order: 1,
+      order: 2,
       duration: 200,
       prerequisites: ['ventilation-principles'],
       learningObjectives: [
@@ -279,7 +389,7 @@ export const curriculumData = {
       id: 'pressure-control',
       title: 'Ventilación Controlada por Presión (PCV)',
       level: 'intermediate',
-      order: 2,
+      order: 3,
       duration: 180,
       prerequisites: ['volume-control'],
       learningObjectives: [
@@ -320,7 +430,7 @@ export const curriculumData = {
       id: 'psv-mode',
       title: 'Ventilación con Soporte de Presión (PSV)',
       level: 'intermediate',
-      order: 3,
+      order: 4,
       duration: 160,
       prerequisites: ['pressure-control'],
       learningObjectives: [
@@ -350,7 +460,7 @@ export const curriculumData = {
       id: 'simv-mode',
       title: 'Ventilación Mandatoria Intermitente Sincronizada (SIMV)',
       level: 'intermediate',
-      order: 4,
+      order: 5,
       duration: 170,
       prerequisites: ['psv-mode'],
       learningObjectives: [
