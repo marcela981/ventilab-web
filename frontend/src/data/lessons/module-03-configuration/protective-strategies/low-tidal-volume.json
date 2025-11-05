@@ -1,0 +1,90 @@
+{
+  "title": "Ventilación con Bajo Volumen Tidal: Estrategia de Protección Pulmonar",
+  "summary": "Estrategia fundamental de ventilación protectora que reduce mortalidad en SDRA mediante uso de volúmenes tidal bajos (6 mL/kg). Explica fisiopatología del volutrauma, protocolo ARDSnet, cálculo de parámetros, ajustes y monitorización de presión plateau.",
+  "estimatedTime": 30,
+  "sections": [
+    {
+      "type": "text",
+      "order": 1,
+      "content": "# Fundamentos de la Ventilación con Bajo Volumen Tidal\n\nLa ventilación con bajo volumen tidal (LTVV - Low Tidal Volume Ventilation) es una estrategia de protección pulmonar que ha demostrado reducir significativamente la mortalidad en pacientes con SDRA. El estudio ARDSnet (2000) demostró una reducción de mortalidad del 40% al 31% al usar volúmenes de 6 mL/kg comparado con 12 mL/kg.\n\n## Concepto de Volutrauma\n\nEl **volutrauma** es la lesión pulmonar causada por volúmenes excesivos que sobrestiran (overstretch) los alveolos. Cuando se administran volúmenes grandes:\n\n- Los alveolos se sobredistenden más allá de su capacidad fisiológica\n- Se produce daño mecánico a las estructuras alveolares\n- Se activan cascadas inflamatorias\n- Se aumenta la permeabilidad capilar\n- Se agrava el edema pulmonar\n- Se perpetúa el ciclo de lesión pulmonar\n\n## Fisiopatología del Daño\n\nEn pulmones sanos, el volumen tidal normal es ~6-8 mL/kg. En pulmones enfermos (SDRA), muchas unidades alveolares están colapsadas o consolidadas. Si se administra un volumen grande, ese volumen se distribuye solo a las unidades alveolares abiertas, causando:\n\n1. **Sobredistensión** de unidades abiertas\n2. **Aumento de presión transpulmonar** (diferencia entre presión alveolar y pleural)\n3. **Activación de mecanotransducción** que causa inflamación\n4. **Ruptura de estructuras** (barotrauma)\n5. **Propagación de la lesión** a áreas previamente sanas\n\n## Ventilación Protectora vs Tradicional\n\n**Ventilación tradicional** (12-15 mL/kg):\n- Mayor riesgo de volutrauma\n- Mayor mortalidad\n- Mayor tiempo de VM\n- Mayor incidencia de barotrauma\n\n**Ventilación protectora** (6 mL/kg):\n- Reduce mortalidad\n- Reduce tiempo de VM\n- Reduce barotrauma\n- Acepta hipercapnia permisiva"
+    },
+    {
+      "type": "text",
+      "order": 2,
+      "content": "# Protocolo ARDSnet: Estudio Fundacional\n\nEl **estudio ARDSnet** (Acute Respiratory Distress Syndrome Network) fue un ensayo clínico aleatorizado multicéntrico que comparó:\n\n- **Grupo control**: Volumen tidal de 12 mL/kg (ventilación tradicional)\n- **Grupo intervención**: Volumen tidal de 6 mL/kg (ventilación protectora)\n\n## Resultados Clave\n\n- **Mortalidad**: 31% vs 40% (reducción absoluta 9%, relativa 22%)\n- **Días sin ventilación mecánica**: Más días libres de VM en grupo de 6 mL/kg\n- **Barotrauma**: Menor incidencia en grupo de 6 mL/kg\n- **Hipercapnia**: Aceptable en grupo de 6 mL/kg (pH ≥ 7.15)\n\n## Criterios de Inclusión del Estudio\n\n- Edad ≥ 18 años\n- Intubación y VM\n- PaO₂/FiO₂ ≤ 300 mmHg\n- Infiltrados bilaterales en radiografía\n- Sin evidencia de fallo cardiaco izquierdo\n\nEste estudio estableció el estándar de cuidado para ventilación en SDRA."
+    },
+    {
+      "type": "text",
+      "order": 3,
+      "content": "# Cálculo de Volumen Tidal Protector\n\n## Importancia del Peso Corporal Ideal (PCI)\n\n**CRÍTICO**: Se debe usar **peso corporal ideal (PCI)**, NO peso real, para calcular volumen tidal.\n\n### Razones:\n\n1. **Pacientes obesos**: Si se usa peso real, se administrarían volúmenes excesivos\n2. **Pacientes con edema**: El peso real incluye líquido extravascular\n3. **Consistencia**: El PCI es más reproducible y refleja mejor la masa magra\n\n## Fórmulas para Calcular PCI\n\n### Fórmula de Devine (1974) - Métrica\n\n**Hombres**:\n```\nPCI (kg) = 50 + 0.91 × (altura en cm - 152.4)\n```\n\n**Mujeres**:\n```\nPCI (kg) = 45.5 + 0.91 × (altura en cm - 152.4)\n```\n\n### Fórmula de Devine - Imperial\n\n**Hombres**:\n```\nPCI (kg) = 50 + 2.3 × (altura en pulgadas - 60)\n```\n\n**Mujeres**:\n```\nPCI (kg) = 45.5 + 2.3 × (altura en pulgadas - 60)\n```\n\n## Cálculo del Volumen Tidal\n\n**Fórmula**:\n```\nVT (mL) = 6 mL/kg × PCI (kg)\n```\n\n### Ejemplo\n\n**Paciente**: Hombre, 175 cm, 90 kg (obeso)\n\n1. **Calcular PCI**:\n   - PCI = 50 + 0.91 × (175 - 152.4) = 50 + 0.91 × 22.6 = **70.6 kg** (redondear a 71 kg)\n\n2. **Calcular VT**:\n   - VT = 6 × 71 = **426 mL** (redondear a 420-430 mL)\n\n**⚠️ IMPORTANTE**: Si se usara peso real (90 kg), el VT sería 540 mL, causando volutrauma.\n\n## Ajuste según Presión Plateau\n\nSi después de configurar VT inicial, la presión plateau es > 30 cmH₂O:\n\n- **Reducir VT en 1 mL/kg** (mínimo 4 mL/kg)\n- **Aumentar frecuencia respiratoria** para mantener ventilación minuto\n- **Aceptar hipercapnia permisiva** (pH ≥ 7.15)"
+    },
+    {
+      "type": "text",
+      "order": 4,
+      "content": "# Configuración del Ventilador\n\n## Parámetros Iniciales\n\n| Parámetro | Valor | Justificación |\n|-----------|-------|---------------|\n| **VT** | 6 mL/kg PCI | Reduce volutrauma |\n| **FR** | 16-20/min | Compensa VT bajo, mantiene ventilación minuto |\n| **PEEP** | Según tabla PEEP/FiO₂ | Recluta alveolos, mejora oxigenación |\n| **FiO₂** | 1.0 inicial, reducir según tabla | Inicio seguro, reducir cuando sea posible |\n| **Flujo** | 60-80 L/min | Permite tiempo espiratorio adecuado |\n| **I:E** | 1:1 a 1:2 | Normal, no requiere prolongación |\n\n## Pasos de Configuración\n\n### Paso 1: Calcular PCI\n\nUsar fórmula de Devine según altura y sexo.\n\n### Paso 2: Calcular VT Inicial\n\nVT = 6 mL/kg × PCI\n\n### Paso 3: Configurar Ventilador\n\n- Modo: VCV Asistido-Control\n- VT: Valor calculado\n- FR: 16-20/min\n- PEEP: Según tabla PEEP/FiO₂\n- FiO₂: 1.0 inicial\n\n### Paso 4: Medir Presión Plateau\n\n**Técnica**:\n1. Esperar 2-3 respiraciones después de configurar\n2. Activar pausa inspiratoria de 0.5 segundos\n3. Leer presión plateau en pantalla del ventilador\n\n**Objetivo**: Pplateau ≤ 30 cmH₂O\n\n### Paso 5: Ajustar según Presión Plateau\n\n- **Si Pplateau > 30 cmH₂O**: Reducir VT en 1 mL/kg (mínimo 4 mL/kg)\n- **Si Pplateau < 25 cmH₂O y VT < 6 mL/kg**: Puede aumentarse VT gradualmente hasta 6 mL/kg\n- **Si Pplateau 25-30 cmH₂O**: Mantener configuración actual"
+    },
+    {
+      "type": "text",
+      "order": 5,
+      "content": "# Manejo de Hipercapnia Permisiva\n\n## Concepto\n\nLa **hipercapnia permisiva** es la aceptación de PaCO₂ elevada y pH bajo para evitar volutrauma y barotrauma.\n\n## Límites Aceptables\n\n| pH | PaCO₂ | Acción |\n|-----|-------|--------|\n| > 7.30 | Moderadamente alto | Aceptable, monitorear |\n| 7.25-7.30 | Alto | Aceptable en SDRA |\n| 7.15-7.25 | Muy alto | Aceptable, aumentar FR si necesario (máx 35/min) |\n| < 7.15 | Extremadamente alto | Considerar aumento de FR, evaluar bicarbonato IV |\n\n## Ventajas\n\n1. **Permite VT bajo**: Sin necesidad de aumentar VT para \"normalizar\" PaCO₂\n2. **Reduce volutrauma**: Evita volúmenes altos que causan daño\n3. **Vasodilatación**: La hipercapnia moderada puede mejorar perfusión\n4. **Mejor oxigenación**: Algunos estudios sugieren mejoría de oxigenación\n\n## Contraindicaciones\n\n- Hipertensión intracraneal\n- Acidosis metabólica severa concomitante\n- Arritmias ventriculares\n- Hipertensión pulmonar severa\n\n## Manejo de Hipercapnia\n\nSi pH < 7.15:\n\n1. **Aumentar frecuencia respiratoria**: Hasta 35/min si es necesario\n2. **Verificar que VT no se haya reducido demasiado**: Asegurar mínimo 4 mL/kg\n3. **Considerar bicarbonato IV**: Si pH < 7.15 y hemodinamia comprometida\n4. **Evaluar causas reversibles**: Secreciones, atelectasia, auto-PEEP\n5. **NO aumentar VT**: Esto violaría el principio de protección pulmonar"
+    },
+    {
+      "type": "text",
+      "order": 6,
+      "content": "# Monitorización\n\n## Parámetros Críticos\n\n### 1. Presión Plateau (Pplateau)\n\n**Método**:\n- Pausa inspiratoria de 0.5 segundos\n- Leer presión en pantalla del ventilador\n\n**Frecuencia**:\n- Cada 4 horas rutinariamente\n- Después de cada cambio de VT\n- Después de cambios de PEEP\n\n**Objetivo**:\n- ≤ 30 cmH₂O (crítico)\n- Idealmente < 25 cmH₂O\n\n**Si > 30 cmH₂O**:\n- Reducir VT inmediatamente en 1 mL/kg\n- Verificar posición del tubo\n- Evaluar causas: secreciones, broncoespasmo, atelectasia\n\n### 2. Volumen Tidal Exhalado\n\n**Monitorear**:\n- Volumen que realmente sale del paciente\n- Comparar con volumen programado\n- Diferencia indica fugas\n\n**Si hay fuga**:\n- Evaluar manguito del tubo\n- Verificar conexiones del circuito\n- Considerar cambio de tubo si es necesario\n\n### 3. Gases Arteriales\n\n**Frecuencia**:\n- Cada 4-6 horas inicialmente\n- Después de cambios significativos\n\n**Parámetros clave**:\n- **pH**: Aceptar ≥ 7.15 (hipercapnia permisiva)\n- **PaCO₂**: Monitorear, aceptar valores altos si pH ≥ 7.15\n- **PaO₂**: Objetivo 55-80 mmHg\n- **HCO₃⁻**: Compensación metabólica de hipercapnia\n\n### 4. Compliance Dinámica\n\n**Cálculo**:\n```\nCompliance (mL/cmH₂O) = VT / (Pplateau - PEEP)\n```\n\n**Valores normales**:\n- Normal: > 50 mL/cmH₂O\n- SDRA leve: 30-50 mL/cmH₂O\n- SDRA moderado: 20-30 mL/cmH₂O\n- SDRA severo: < 20 mL/cmH₂O\n\n**Monitorizar**:\n- Mejora de compliance indica mejoría de SDRA\n- Compliance < 20 mL/cmH₂O indica SDRA severo\n\n### 5. Curvas Ventilatorias\n\n**Presión-tiempo**:\n- Evaluar forma de la curva\n- Detectar auto-PEEP\n- Evaluar esfuerzo del paciente\n\n**Volumen-tiempo**:\n- Detectar fugas\n- Evaluar espiración completa\n\n**Lazo presión-volumen**:\n- Evaluar punto de inflexión inferior\n- Evaluar punto de inflexión superior\n- Optimizar PEEP"
+    },
+    {
+      "type": "text",
+      "order": 7,
+      "content": "# Ajustes y Optimización\n\n## Ajuste de VT según Presión Plateau\n\n| Pplateau | Acción |\n|----------|--------|\n| < 25 cmH₂O | Si VT < 6 mL/kg, puede aumentarse gradualmente hasta 6 mL/kg |\n| 25-30 cmH₂O | Mantener VT actual |\n| > 30 cmH₂O | Reducir VT en 1 mL/kg (mínimo 4 mL/kg) |\n\n## Ajuste de Frecuencia según pH\n\n| pH | FR Actual | Acción |\n|-----|-----------|--------|\n| > 7.30 | 16-20/min | Mantener |\n| 7.25-7.30 | 16-20/min | Mantener o aumentar ligeramente a 20-24/min |\n| 7.15-7.25 | < 30/min | Aumentar a 24-30/min |\n| < 7.15 | < 35/min | Aumentar a 30-35/min, considerar bicarbonato |\n\n## Ajuste de PEEP\n\nLa PEEP se ajusta según tabla PEEP/FiO₂ (ver protocolo SDRA), no directamente por VT.\n\nSin embargo, cambios de PEEP pueden afectar Pplateau:\n\n- **Aumentar PEEP**: Puede aumentar Pplateau ligeramente\n- **Reducir PEEP**: Puede reducir Pplateau\n\n**Si Pplateau aumenta > 30 cmH₂O después de aumentar PEEP**:\n- Considerar reducir VT adicionalmente\n- O aceptar Pplateau ligeramente > 30 si beneficio de PEEP es mayor\n\n## Transición a Modalidades Asistidas\n\nCuando el paciente mejora y comienza a tener esfuerzo respiratorio:\n\n1. **Cambiar a SIMV + PSV** o **PSV**\n2. **Mantener VT bajo** en respiraciones mandatorias\n3. **Limitar PSV** para evitar volúmenes espontáneos excesivos\n4. **Monitorear VT espontáneo**: Idealmente < 8 mL/kg\n\n## Errores Comunes\n\n1. **Usar peso real en lugar de PCI**: Causa volúmenes excesivos\n2. **No medir Pplateau regularmente**: No detecta presiones altas\n3. **Aumentar VT cuando Pplateau es alta**: Violación del protocolo\n4. **No aceptar hipercapnia permisiva**: Intenta \"normalizar\" PaCO₂ aumentando VT\n5. **Reducir PEEP para reducir Pplateau**: PEEP y Pplateau tienen funciones diferentes"
+    },
+    {
+      "type": "text",
+      "order": 8,
+      "content": "# Evidencia y Resultados\n\n## Estudios Clave\n\n### Estudio ARDSnet (2000)\n\n- **Diseño**: Ensayo aleatorizado multicéntrico\n- **Pacientes**: 861 pacientes con SDRA\n- **Intervención**: VT 6 mL/kg vs 12 mL/kg\n- **Resultado**: Reducción de mortalidad del 40% al 31%\n- **Impacto**: Estableció estándar de cuidado\n\n### Meta-análisis Posteriores\n\nMúltiples meta-análisis han confirmado:\n\n- **Reducción de mortalidad** con LTVV\n- **Reducción de días de VM**\n- **Reducción de barotrauma**\n- **Beneficio en SDRA moderado-severo**\n\n## Beneficios Demostrados\n\n1. **Mortalidad**: Reducción absoluta 9%, relativa 22%\n2. **Días sin VM**: Más días libres de ventilación mecánica\n3. **Barotrauma**: Menor incidencia de neumotórax\n4. **Inflamación**: Menor liberación de mediadores inflamatorios\n5. **Tiempo de UCI**: Posible reducción (aunque no estadísticamente significativo)\n\n## Aplicación en Diferentes Patologías\n\n### SDRA\n\n- **Evidencia fuerte**: Múltiples estudios confirman beneficio\n- **Recomendación**: Fuerte (guidelines de múltiples sociedades)\n\n### Neumonía Severa\n\n- **Evidencia moderada**: Beneficio en neumonía que evoluciona a SDRA\n- **Recomendación**: Aplicar si cumple criterios de SDRA\n\n### Postoperatorio\n\n- **Evidencia limitada**: Puede ser beneficioso en cirugía mayor\n- **Recomendación**: Considerar en pacientes de alto riesgo\n\n### EPOC/Asma\n\n- **No aplicable directamente**: Requiere estrategias diferentes (frecuencias bajas, tiempos espiratorios largos)\n- **VT puede ser 6-8 mL/kg**: Pero por razones diferentes (prevenir auto-PEEP)"
+    },
+    {
+      "type": "quiz",
+      "order": 9,
+      "question": "Un paciente hombre de 180 cm y 95 kg (obeso) requiere ventilación para SDRA. ¿Cuál es el volumen tidal apropiado?",
+      "options": [
+        "570 mL (6 mL/kg × peso real)",
+        "452 mL (6 mL/kg × PCI)",
+        "720 mL (8 mL/kg × peso real)",
+        "380 mL (4 mL/kg × peso real)"
+      ],
+      "correctAnswer": "452 mL (6 mL/kg × PCI)",
+      "explanation": "Se debe usar peso corporal ideal (PCI), no peso real. PCI = 50 + 0.91 × (180 - 152.4) = 50 + 0.91 × 27.6 = 75.1 kg. VT = 6 × 75.1 = 451 mL (redondear a 450-455 mL). Usar peso real causaría volúmenes excesivos y volutrauma."
+    },
+    {
+      "type": "quiz",
+      "order": 10,
+      "question": "Un paciente con SDRA tiene VT 6 mL/kg configurado, pero presión plateau es 32 cmH₂O. ¿Cuál es la acción más apropiada?",
+      "options": [
+        "Aumentar VT a 8 mL/kg para mejorar ventilación",
+        "Reducir VT a 5 mL/kg y aumentar frecuencia respiratoria",
+        "Aumentar PEEP para mejorar oxigenación",
+        "Mantener VT actual y aumentar PEEP"
+      ],
+      "correctAnswer": "Reducir VT a 5 mL/kg y aumentar frecuencia respiratoria",
+      "explanation": "Cuando Pplateau > 30 cmH₂O, se debe reducir VT en 1 mL/kg (mínimo 4 mL/kg) para prevenir VILI. La frecuencia respiratoria puede aumentarse hasta 35/min para mantener ventilación minuto y aceptar hipercapnia permisiva (pH ≥ 7.15)."
+    }
+  ],
+  "keyPoints": [
+    "El estudio ARDSnet demostró reducción de mortalidad del 40% al 31% usando VT de 6 mL/kg comparado con 12 mL/kg en SDRA.",
+    "Se DEBE usar peso corporal ideal (PCI), no peso real, para calcular VT, especialmente en pacientes obesos.",
+    "La presión plateau debe medirse regularmente (cada 4 horas) y mantenerse ≤ 30 cmH₂O mediante ajuste de VT.",
+    "Si Pplateau > 30 cmH₂O, se debe reducir VT en 1 mL/kg (mínimo 4 mL/kg), no aumentar VT.",
+    "La hipercapnia permisiva (pH ≥ 7.15) es aceptable y preferible a volúmenes altos que causen volutrauma.",
+    "La frecuencia respiratoria puede aumentarse hasta 35/min para compensar VT bajo y mantener ventilación minuto.",
+    "La ventilación con bajo volumen tidal es estándar de cuidado en SDRA y ha sido adoptada por múltiples guidelines internacionales."
+  ],
+  "references": [
+    "The ARDS Network. Ventilation with lower tidal volumes as compared with traditional tidal volumes for acute lung injury and the acute respiratory distress syndrome. N Engl J Med. 2000;342(18):1301-8.",
+    "Fan E, Del Sorbo L, Goligher EC, et al. An Official American Thoracic Society/European Society of Intensive Care Medicine/Society of Critical Care Medicine Clinical Practice Guideline: Mechanical Ventilation in Adult Patients with Acute Respiratory Distress Syndrome. Am J Respir Crit Care Med. 2017;195(9):1253-63.",
+    "Slutsky AS, Ranieri VM. Ventilator-induced lung injury. N Engl J Med. 2013;369(22):2126-36.",
+    "Amato MB, Barbas CS, Medeiros DM, et al. Effect of a protective-ventilation strategy on mortality in the acute respiratory distress syndrome. N Engl J Med. 1998;338(6):347-54.",
+    "Putensen C, Theuerkauf N, Zinserling J, et al. Meta-analysis: ventilation strategies and outcomes of the acute respiratory distress syndrome and acute lung injury. Ann Intern Med. 2009;151(8):566-76."
+  ]
+}
+

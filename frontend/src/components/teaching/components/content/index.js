@@ -18,6 +18,7 @@ export { default as SectionNavigation } from './SectionNavigation';
 // Componentes interactivos
 export { default as VideoPlayer } from './VideoPlayer';
 export { default as InteractiveQuiz } from './InteractiveQuiz';
+export { default as InteractiveChecklist } from './InteractiveChecklist';
 export { default as PersonalNotes } from './PersonalNotes';
 
 // Componentes de visualización
@@ -27,6 +28,7 @@ export { default as ZoomableImage } from './ZoomableImage';
 export { default as ModalityComparisonTable } from './ModalityComparisonTable';
 export { default as WaveformVisualization } from './WaveformVisualization';
 export { default as ClinicalCase } from './ClinicalCase';
+export { default as ParameterTable } from './ParameterTable';
 
 // Exportación por defecto del componente principal
 export { default } from './MarkdownRenderer';

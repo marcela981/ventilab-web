@@ -1,0 +1,85 @@
+{
+  "title": "Criterios de Preparación para Destete Ventilatorio",
+  "summary": "Guía completa sobre cómo evaluar si un paciente está listo para destete de ventilación mecánica. Incluye criterios objetivos y subjetivos, parámetros ventilatorios, función neuromuscular, factores de riesgo y herramientas de evaluación.",
+  "estimatedTime": 30,
+  "sections": [
+    {
+      "type": "text",
+      "order": 1,
+      "content": "# Introducción a los Criterios de Preparación\n\nLa evaluación de preparación para destete es el primer paso crítico en el proceso de destete de ventilación mecánica. Iniciar destete antes de que el paciente esté listo puede resultar en fracaso, reintubación y complicaciones. Por otro lado, retrasar el destete innecesariamente aumenta días de VM, riesgo de complicaciones y costos.\n\n## Importancia de la Evaluación\n\n- **Reducir días de VM**: Destete temprano reduce tiempo de ventilación\n- **Prevenir complicaciones**: Evitar reintubación y sus riesgos\n- **Optimizar recursos**: Uso eficiente de recursos de UCI\n- **Mejorar resultados**: Destete exitoso mejora pronóstico\n\n## Componentes de la Evaluación\n\nLa evaluación de preparación debe incluir:\n\n1. **Resolución de la causa original**: La patología que requirió VM debe estar resuelta o en resolución\n2. **Función respiratoria adecuada**: Capacidad de mantener oxigenación y ventilación\n3. **Función neuromuscular**: Capacidad de generar esfuerzo respiratorio\n4. **Estabilidad hemodinámica**: Sin necesidad de vasopresores altos\n5. **Estado mental**: Despierto, alerta, capaz de colaborar\n6. **Ausencia de factores de riesgo**: Sin contraindicaciones para destete"
+    },
+    {
+      "type": "text",
+      "order": 2,
+      "content": "# Criterios Objetivos de Preparación\n\n## Parámetros Ventilatorios\n\n### 1. Oxigenación Adecuada\n\n| Parámetro | Criterio | Justificación |\n|-----------|----------|---------------|\n| **PaO₂/FiO₂** | ≥ 200 mmHg | Indica capacidad de oxigenación |\n| **SpO₂** | ≥ 88-92% con FiO₂ ≤ 0.4-0.5 | Oxigenación adecuada con bajo soporte |\n| **PaO₂** | ≥ 60 mmHg con FiO₂ ≤ 0.4 | Oxigenación adecuada |\n| **PEEP** | ≤ 5-8 cmH₂O | Bajo soporte de PEEP |\n\n### 2. Ventilación Adecuada\n\n| Parámetro | Criterio | Justificación |\n|-----------|----------|---------------|\n| **pH** | ≥ 7.25 | Sin acidosis significativa |\n| **PaCO₂** | ≤ 50 mmHg o similar a valores basales | Ventilación adecuada |\n| **Frecuencia respiratoria** | < 35/min | Sin taquipnea excesiva |\n\n### 3. Parámetros de Esfuerzo Respiratorio\n\n| Parámetro | Criterio | Justificación |\n|-----------|----------|---------------|\n| **Frecuencia respiratoria** | 12-30/min | Rango normal |\n| **Volumen tidal espontáneo** | ≥ 4-5 mL/kg | Esfuerzo inspiratorio adecuado |\n| **Capacidad vital** | ≥ 10-15 mL/kg | Capacidad respiratoria adecuada |\n| **Presión inspiratoria máxima (PImax)** | ≤ -20 a -30 cmH₂O | Fuerza muscular inspiratoria adecuada |\n\n### 4. Parámetros Hemodinámicos\n\n| Parámetro | Criterio | Justificación |\n|-----------|----------|---------------|\n| **Presión arterial** | Estable sin vasopresores o con dosis bajas | Sin inestabilidad hemodinámica |\n| **Frecuencia cardíaca** | < 120/min (sin arritmias) | Sin taquicardia significativa |\n| **Gasto cardíaco** | Adecuado si disponible | Función cardiaca adecuada |\n\n## Criterios Clínicos\n\n### 1. Resolución de Causa Original\n\n- ✅ Patología que requirió VM resuelta o en resolución\n- ✅ Sin infección activa o fiebre significativa\n- ✅ Sin proceso patológico activo que requiera VM\n\n### 2. Función Neuromuscular\n\n- ✅ Paciente despierto, alerta\n- ✅ Esfuerzo respiratorio presente\n- ✅ Sin debilidad muscular severa\n- ✅ Capacidad de toser efectivamente\n\n### 3. Estado Mental\n\n- ✅ Despierto y orientado (o al menos capaz de seguir comandos)\n- ✅ Sin sedación profunda\n- ✅ Sin delirium severo que interfiera con colaboración\n\n### 4. Ausencia de Factores de Riesgo\n\n- ✅ Sin obstrucción de vía aérea superior\n- ✅ Sin secreciones excesivas\n- ✅ Sin inestabilidad hemodinámica severa\n- ✅ Sin contraindicaciones para extubación"
+    },
+    {
+      "type": "text",
+      "order": 3,
+      "content": "# Herramientas de Evaluación\n\n## 1. Índice de Destete Rápido (Rapid Shallow Breathing Index - RSBI)\n\n**Definición**:\n```\nRSBI = Frecuencia respiratoria (resp/min) / Volumen tidal (L)\n```\n\n**Interpretación**:\n- **RSBI < 105**: Alta probabilidad de éxito en destete\n- **RSBI 105-130**: Zona intermedia, evaluar caso por caso\n- **RSBI > 130**: Alta probabilidad de fracaso\n\n**Limitaciones**:\n- No es perfecto, falsos positivos y negativos posibles\n- Debe usarse en conjunto con otros criterios\n\n## 2. Presión Inspiratoria Máxima (PImax)\n\n**Técnica**:\n1. Ocluir vía aérea al final de espiración\n2. Pedir al paciente que inspire con máximo esfuerzo\n3. Medir presión negativa generada\n\n**Interpretación**:\n- **PImax ≤ -20 a -30 cmH₂O**: Fuerza muscular adecuada\n- **PImax > -20 cmH₂O**: Fuerza muscular insuficiente\n\n**Limitaciones**:\n- Requiere colaboración del paciente\n- Puede ser difícil de medir en pacientes sedados\n\n## 3. Capacidad Vital (VC)\n\n**Técnica**:\n1. Permitir respiración espontánea\n2. Medir volumen máximo exhalado después de inspiración máxima\n\n**Interpretación**:\n- **VC ≥ 10-15 mL/kg**: Capacidad respiratoria adecuada\n- **VC < 10 mL/kg**: Capacidad respiratoria insuficiente\n\n## 4. Prueba de Oclusión (Occlusion Test)\n\n**Técnica**:\n1. Ocluir vía aérea durante 20 segundos al final de espiración\n2. Medir presión generada (P0.1)\n\n**Interpretación**:\n- **P0.1 < 4-6 cmH₂O**: Esfuerzo respiratorio adecuado\n- **P0.1 > 6 cmH₂O**: Esfuerzo excesivo\n\n## 5. Evaluación Integrada\n\n**No hay una herramienta única perfecta**. La evaluación debe combinar:\n\n- Múltiples parámetros objetivos\n- Evaluación clínica\n- Experiencia del clínico\n- Consideración de factores individuales del paciente"
+    },
+    {
+      "type": "text",
+      "order": 4,
+      "content": "# Factores de Riesgo de Fracaso\n\n## Factores de Alto Riesgo\n\n### 1. Edad Avanzada\n\n- **Riesgo**: Pacientes > 70 años tienen mayor riesgo de fracaso\n- **Manejo**: Evaluación más cuidadosa, destete más gradual\n\n### 2. Tiempo Prolongado de VM\n\n- **Riesgo**: > 7-14 días de VM aumenta riesgo\n- **Manejo**: Destete más gradual, considerar traqueostomía\n\n### 3. EPOC Severo\n\n- **Riesgo**: Enfermedad pulmonar obstructiva severa\n- **Manejo**: Destete más gradual, evaluación cuidadosa\n\n### 4. Insuficiencia Cardiaca\n\n- **Riesgo**: Fallo cardiaco aumenta riesgo de fracaso\n- **Manejo**: Optimizar función cardiaca antes de destete\n\n### 5. Comorbilidades Múltiples\n\n- **Riesgo**: Múltiples enfermedades aumentan riesgo\n- **Manejo**: Evaluación integral, destete cuidadoso\n\n### 6. Desnutrición\n\n- **Riesgo**: Desnutrición afecta función muscular\n- **Manejo**: Optimizar nutrición antes de destete\n\n### 7. Debilidad Muscular Adquirida en UCI (ICUAW)\n\n- **Riesgo**: Debilidad por inmovilización, sedación\n- **Manejo**: Rehabilitación, destete gradual\n\n## Factores que Requieren Atención Especial\n\n### 1. Secreciones Excesivas\n\n- **Riesgo**: Dificulta extubación, riesgo de atelectasia\n- **Manejo**: Optimizar manejo de secreciones antes de destete\n\n### 2. Obstrucción de Vía Aérea Superior\n\n- **Riesgo**: Edema de cuerdas vocales, estenosis\n- **Manejo**: Evaluar antes de extubar, considerar traqueostomía\n\n### 3. Inestabilidad Hemodinámica\n\n- **Riesgo**: Hipotensión, arritmias durante destete\n- **Manejo**: Optimizar hemodinamia antes de destete\n\n### 4. Estado Mental Alterado\n\n- **Riesgo**: Incapacidad de colaborar, protección de vía aérea\n- **Manejo**: Mejorar estado mental, considerar extubación con precaución"
+    },
+    {
+      "type": "text",
+      "order": 5,
+      "content": "# Algoritmo de Evaluación\n\n## Algoritmo de Preparación\n\n```\nINICIO\n  ↓\n¿Causa original de VM resuelta o en resolución?\n  ├─ NO → Continuar VM, re-evaluar en 24-48 horas\n  └─ SÍ → Continuar\n  ↓\n¿Oxigenación adecuada?\n  (PaO₂/FiO₂ ≥ 200, SpO₂ ≥ 88% con FiO₂ ≤ 0.4-0.5)\n  ├─ NO → Optimizar oxigenación, re-evaluar\n  └─ SÍ → Continuar\n  ↓\n¿Ventilación adecuada?\n  (pH ≥ 7.25, PaCO₂ ≤ 50 o similar a basal)\n  ├─ NO → Optimizar ventilación, re-evaluar\n  └─ SÍ → Continuar\n  ↓\n¿Estabilidad hemodinámica?\n  (Sin vasopresores altos, PA estable)\n  ├─ NO → Optimizar hemodinamia, re-evaluar\n  └─ SÍ → Continuar\n  ↓\n¿Función neuromuscular adecuada?\n  (Esfuerzo respiratorio presente, PImax ≤ -20)\n  ├─ NO → Rehabilitación, re-evaluar\n  └─ SÍ → Continuar\n  ↓\n¿Estado mental adecuado?\n  (Despierto, alerta, capaz de colaborar)\n  ├─ NO → Optimizar estado mental, re-evaluar\n  └─ SÍ → Continuar\n  ↓\nCalcular RSBI\n  ↓\n¿RSBI < 105?\n  ├─ NO → Evaluar otros factores, considerar destete gradual\n  └─ SÍ → Continuar\n  ↓\nEvaluar factores de riesgo\n  ↓\n¿Factores de riesgo significativos?\n  ├─ SÍ → Destete más gradual, evaluación cuidadosa\n  └─ NO → Paciente listo para trial de respiración espontánea\n  ↓\nFIN\n```\n\n## Checklist de Evaluación\n\n### Checklist Básico\n\n- [ ] Causa original resuelta o en resolución\n- [ ] PaO₂/FiO₂ ≥ 200 mmHg\n- [ ] SpO₂ ≥ 88% con FiO₂ ≤ 0.4-0.5\n- [ ] PEEP ≤ 5-8 cmH₂O\n- [ ] pH ≥ 7.25\n- [ ] PaCO₂ ≤ 50 mmHg o similar a basal\n- [ ] Frecuencia respiratoria < 35/min\n- [ ] Estabilidad hemodinámica\n- [ ] Esfuerzo respiratorio presente\n- [ ] Paciente despierto, alerta\n- [ ] RSBI < 105 (si medido)\n- [ ] Sin factores de riesgo significativos\n\n### Checklist Completo\n\n**Parámetros Ventilatorios**:\n- [ ] PaO₂/FiO₂ ≥ 200\n- [ ] SpO₂ ≥ 88% con FiO₂ ≤ 0.4-0.5\n- [ ] PEEP ≤ 5-8 cmH₂O\n- [ ] pH ≥ 7.25\n- [ ] PaCO₂ ≤ 50 o similar a basal\n- [ ] FR < 35/min\n\n**Función Respiratoria**:\n- [ ] Volumen tidal espontáneo ≥ 4-5 mL/kg\n- [ ] Capacidad vital ≥ 10-15 mL/kg (si medido)\n- [ ] PImax ≤ -20 a -30 cmH₂O (si medido)\n- [ ] RSBI < 105 (si medido)\n\n**Hemodinamia**:\n- [ ] Presión arterial estable\n- [ ] Sin vasopresores o con dosis bajas\n- [ ] Frecuencia cardíaca < 120/min\n- [ ] Sin arritmias significativas\n\n**Estado Clínico**:\n- [ ] Causa original resuelta\n- [ ] Sin fiebre significativa\n- [ ] Sin infección activa\n- [ ] Paciente despierto, alerta\n- [ ] Esfuerzo respiratorio presente\n- [ ] Capacidad de toser\n\n**Factores de Riesgo**:\n- [ ] Evaluar edad, tiempo de VM, comorbilidades\n- [ ] Evaluar secreciones, obstrucción de vía aérea\n- [ ] Considerar factores individuales"
+    },
+    {
+      "type": "text",
+      "order": 6,
+      "content": "# Casos Especiales\n\n## Pacientes con EPOC\n\n**Criterios específicos**:\n- PaCO₂ puede ser similar a valores basales (50-60 mmHg)\n- No intentar normalizar PaCO₂\n- Evaluar capacidad de mantener PaCO₂ estable\n- Considerar destete más gradual\n\n## Pacientes con Insuficiencia Cardiaca\n\n**Criterios específicos**:\n- Optimizar función cardiaca antes de destete\n- Evaluar capacidad cardiaca durante destete\n- Monitorear efectos hemodinámicos\n- Considerar destete más gradual\n\n## Pacientes con Tiempo Prolongado de VM\n\n**Criterios específicos**:\n- Evaluación más cuidadosa\n- Destete más gradual\n- Considerar traqueostomía\n- Rehabilitación pulmonar\n\n## Pacientes con Debilidad Muscular\n\n**Criterios específicos**:\n- Rehabilitación antes de destete\n- Evaluación de fuerza muscular\n- Destete muy gradual\n- Considerar soporte prolongado\n\n## Pacientes con Estado Mental Alterado\n\n**Criterios específicos**:\n- Mejorar estado mental si es posible\n- Evaluar capacidad de protección de vía aérea\n- Considerar extubación con precaución\n- Monitoreo cercano post-extubación"
+    },
+    {
+      "type": "text",
+      "order": 7,
+      "content": "# Errores Comunes\n\n## Error 1: Evaluación Incompleta\n\n**Problema**:\n- Evaluar solo algunos parámetros\n- Ignorar factores de riesgo\n\n**Solución**:\n- Evaluación integral y sistemática\n- Usar checklist\n- Considerar todos los factores\n\n## Error 2: Destete Prematuro\n\n**Problema**:\n- Iniciar destete antes de que paciente esté listo\n- Ignorar criterios de preparación\n\n**Solución**:\n- Asegurar que todos los criterios se cumplan\n- No apresurar el proceso\n- Evaluar cuidadosamente\n\n## Error 3: Retrasar Destete Innecesariamente\n\n**Problema**:\n- Esperar demasiado tiempo\n- No re-evaluar regularmente\n\n**Solución**:\n- Re-evaluar diariamente\n- Iniciar destete cuando criterios se cumplan\n- No esperar perfección absoluta\n\n## Error 4: Ignorar Factores de Riesgo\n\n**Problema**:\n- No considerar factores individuales\n- Aplicar criterios de forma rígida\n\n**Solución**:\n- Evaluar factores de riesgo\n- Adaptar estrategia según paciente\n- Considerar caso por caso\n\n## Error 5: Depender de una Sola Herramienta\n\n**Problema**:\n- Usar solo RSBI o solo PImax\n- Ignorar evaluación clínica\n\n**Solución**:\n- Usar múltiples herramientas\n- Combinar parámetros objetivos con evaluación clínica\n- Evaluación integral"
+    },
+    {
+      "type": "quiz",
+      "order": 8,
+      "question": "Un paciente tiene frecuencia respiratoria de 28/min y volumen tidal espontáneo de 0.35 L. ¿Cuál es el RSBI y qué indica?",
+      "options": [
+        "RSBI = 80, indica alta probabilidad de éxito",
+        "RSBI = 105, indica probabilidad intermedia",
+        "RSBI = 125, indica alta probabilidad de fracaso",
+        "RSBI = 140, indica alta probabilidad de fracaso"
+      ],
+      "correctAnswer": "RSBI = 80, indica alta probabilidad de éxito",
+      "explanation": "RSBI = Frecuencia respiratoria / Volumen tidal = 28 / 0.35 = 80. RSBI < 105 indica alta probabilidad de éxito en destete. El paciente tiene buena capacidad de generar volumen tidal adecuado con frecuencia respiratoria normal."
+    },
+    {
+      "type": "quiz",
+      "order": 9,
+      "question": "¿Cuál es el criterio MÁS importante para evaluar preparación para destete?",
+      "options": [
+        "RSBI < 105",
+        "Resolución de la causa original que requirió VM",
+        "PImax ≤ -20 cmH₂O",
+        "PaO₂/FiO₂ ≥ 200 mmHg"
+      ],
+      "correctAnswer": "Resolución de la causa original que requirió VM",
+      "explanation": "La resolución de la causa original es el criterio más importante. Si la patología que requirió VM no está resuelta, el paciente no está listo para destete independientemente de otros parámetros. Todos los criterios son importantes, pero este es fundamental."
+    }
+  ],
+  "keyPoints": [
+    "La evaluación de preparación para destete debe ser integral, incluyendo resolución de causa original, oxigenación, ventilación, función neuromuscular y estabilidad hemodinámica.",
+    "El RSBI (Índice de Destete Rápido) es una herramienta útil pero no perfecta: RSBI < 105 indica alta probabilidad de éxito, pero debe usarse en conjunto con otros criterios.",
+    "La resolución de la causa original que requirió VM es el criterio más importante; si la patología no está resuelta, el paciente no está listo para destete.",
+    "Los criterios objetivos incluyen: PaO₂/FiO₂ ≥ 200, SpO₂ ≥ 88% con FiO₂ ≤ 0.4-0.5, PEEP ≤ 5-8 cmH₂O, pH ≥ 7.25, y esfuerzo respiratorio adecuado.",
+    "Los factores de riesgo (edad avanzada, tiempo prolongado de VM, EPOC, insuficiencia cardiaca, comorbilidades) requieren evaluación más cuidadosa y destete más gradual.",
+    "No hay una herramienta única perfecta; la evaluación debe combinar múltiples parámetros objetivos, evaluación clínica y experiencia del clínico.",
+    "La re-evaluación diaria es esencial; los criterios de preparación deben evaluarse regularmente y el destete debe iniciarse cuando se cumplan los criterios."
+  ],
+  "references": [
+    "MacIntyre NR. Evidence-based ventilator weaning and discontinuation. Respir Care. 2004;49(7):830-6.",
+    "Boles JM, Bion J, Connors A, et al. Weaning from mechanical ventilation. Eur Respir J. 2007;29(5):1033-56.",
+    "Yang KL, Tobin MJ. A prospective study of indexes predicting the outcome of trials of weaning from mechanical ventilation. N Engl J Med. 1991;324(21):1445-50.",
+    "Ely EW, Baker AM, Dunagan DP, et al. Effect on the duration of mechanical ventilation of identifying patients capable of breathing spontaneously. N Engl J Med. 1996;335(25):1864-9.",
+    "Schmidt GA, Girard TD, Kress JP, et al. Liberation from mechanical ventilation in critically ill adults: executive summary of an official American College of Chest Physicians/American Thoracic Society clinical practice guideline. Chest. 2017;151(1):160-5."
+  ]
+}
+

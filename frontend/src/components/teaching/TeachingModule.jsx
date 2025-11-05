@@ -25,10 +25,14 @@ import {
 import {
   Dashboard as DashboardIcon,
   School as SchoolIcon,
-  TrendingUp,
+  TrendingUp as TrendingUpIcon,
   ArrowBack,
   Home as HomeIcon,
-  NavigateNext
+  NavigateNext,
+  MedicalServices as MedicalServicesIcon,
+  Shield as ShieldIcon,
+  Build as BuildIcon,
+  ChecklistRtl as ChecklistIcon,
 } from '@mui/icons-material';
 
 // Hooks personalizados
@@ -36,7 +40,12 @@ import { useLearningProgress } from '../../contexts/LearningProgressContext';
 import useModuleProgress from './hooks/useModuleProgress';
 import useModuleAvailability from './hooks/useModuleAvailability';
 import useLesson from './hooks/useLesson';
+import useTeachingModule from '../../hooks/useTeachingModule';
+import useUserProgress from '../../hooks/useUserProgress';
 import { curriculumData } from '../../data/curriculumData';
+
+// Module 03 content and navigation
+import CurriculumPanel from './components/navigation/CurriculumPanel';
 
 // Componentes hijos
 import DashboardHeader from './components/DashboardHeader';
@@ -51,6 +60,8 @@ import QuickAccessLessons from './components/dashboard/QuickAccessLessons';
 // Lazy load LessonViewer and ProgressDashboard for better performance
 const LessonViewer = lazy(() => import('./components/LessonViewer'));
 const ProgressDashboard = lazy(() => import('./components/progress/ProgressDashboard'));
+const Module3ProgressDashboard = lazy(() => import('./components/dashboard/Module3ProgressDashboard'));
+const ReadinessIndicator = lazy(() => import('./components/evaluation/ReadinessIndicator'));
 
 // Importar DashboardTab
 import DashboardTab from '../../features/dashboard/DashboardTab';
@@ -165,6 +176,33 @@ const TeachingModule = () => {
     streak
   } = useLearningProgress();
 
+  // Teaching module context (for category navigation) - Only use if available
+  let teachingModuleContext = null;
+  try {
+    teachingModuleContext = useTeachingModule();
+  } catch (e) {
+    // Context not available yet, will be provided by TeachingModuleProvider
+  }
+
+  const {
+    activeModuleId,
+    activeCategoryId,
+    activeLessonId,
+    setModule,
+    setCategory,
+    setLesson,
+  } = teachingModuleContext || {
+    activeModuleId: null,
+    activeCategoryId: null,
+    activeLessonId: null,
+    setModule: () => {},
+    setCategory: () => {},
+    setLesson: () => {},
+  };
+
+  // User progress tracking (especialmente para módulo 3)
+  const { initializeModuleThree, markCategoryLessonComplete } = useUserProgress();
+
   // Hook: progreso de módulos
   const {
     calculateModuleProgress,
@@ -182,6 +220,9 @@ const TeachingModule = () => {
 
   // Estados locales mínimos
   const [favoriteModules, setFavoriteModules] = useState(new Set());
+
+  // Estado para mostrar/ocultar el panel del módulo 3
+  const [showModule3Dashboard, setShowModule3Dashboard] = useState(false);
 
   // FlashcardSystem modal - Mantenido para uso futuro
   // Nota: Actualmente sin trigger en dashboard principal (removido en HU-001)
@@ -666,6 +707,16 @@ const TeachingModule = () => {
     setDashboardDataForTab(dashboardDataForTabMemo);
   }, [dashboardDataForTabMemo]);
 
+  // Detectar si estamos en el módulo 3 e inicializarlo
+  useEffect(() => {
+    if (moduleIdFromQuery === 'module-03-configuration' || activeModuleId === 'module-03-configuration') {
+      setShowModule3Dashboard(true);
+      initializeModuleThree();
+    } else {
+      setShowModule3Dashboard(false);
+    }
+  }, [moduleIdFromQuery, activeModuleId, initializeModuleThree]);
+
   // Effect: inicialización y responsive
   useEffect(() => {
     setCurrentModule('teaching');
@@ -1051,7 +1102,7 @@ const TeachingModule = () => {
           />
           <Tab
             label={isMobile ? '' : 'Mi Progreso'}
-            icon={<TrendingUp />}
+            icon={<TrendingUpIcon />}
             iconPosition="start"
             value={2}
             sx={{
@@ -1095,20 +1146,57 @@ const TeachingModule = () => {
       {/* TAB PANEL 1: Curriculum */}
       {activeTab === 1 && (
         <Box>
-          {/* Mapa de Progreso - Camino de aprendizaje por niveles */}
-          <LevelStepper
+          <CurriculumPanel
+            moduleIdFromQuery={moduleIdFromQuery}
+            lessonIdFromQuery={lessonIdFromQuery}
+            router={router}
+            activeCategoryId={activeCategoryId}
+            activeLessonId={activeLessonId}
+            setModule={setModule}
+            setCategory={setCategory}
+            setLesson={setLesson}
+            handleSectionClick={handleSectionClick}
             levelProgress={levelProgress}
-            calculateProgress={calculateModuleProgress}
+            calculateModuleProgress={calculateModuleProgress}
             isModuleAvailable={isModuleAvailable}
             getModuleStatus={getModuleStatus}
             getTooltipMessage={getTooltipMessage}
-            onSectionClick={handleSectionClick}
             favoriteModules={favoriteModules}
-            onToggleFavorite={toggleFavorite}
+            toggleFavorite={toggleFavorite}
           />
 
-          {/* Panel Informativo: Sobre el módulo */}
-          <ModuleInfoPanel />
+          {/* Module 3 Progress Dashboard - Mostrado cuando se está en el módulo 3 */}
+          {showModule3Dashboard && (
+            <Box sx={{ mt: 4 }}>
+              <Paper elevation={3} sx={{ p: 3, borderRadius: 3, backgroundColor: '#f8f9fa' }}>
+                <Typography variant="h5" fontWeight="700" gutterBottom sx={{ mb: 3 }}>
+                  Tu Progreso en Configuración y Manejo
+                </Typography>
+
+                <Suspense
+                  fallback={
+                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                      <CircularProgress />
+                    </Box>
+                  }
+                >
+                  <Module3ProgressDashboard />
+                </Suspense>
+
+                <Divider sx={{ my: 4 }} />
+
+                <Suspense
+                  fallback={
+                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                      <CircularProgress />
+                    </Box>
+                  }
+                >
+                  <ReadinessIndicator />
+                </Suspense>
+              </Paper>
+            </Box>
+          )}
         </Box>
       )}
 

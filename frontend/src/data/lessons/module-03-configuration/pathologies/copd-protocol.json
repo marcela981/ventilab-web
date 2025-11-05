@@ -1,0 +1,100 @@
+{
+  "title": "Protocolo de Ventilación Mecánica para EPOC Agudizado",
+  "summary": "Protocolo específico para el manejo ventilatorio del EPOC agudizado, enfocándose en prevenir auto-PEEP, optimizar tiempos espiratorios, manejar hipercapnia permisiva y evitar hiperinsuflación dinámica. Incluye estrategias de ajuste de parámetros y manejo de complicaciones.",
+  "estimatedTime": 40,
+  "sections": [
+    {
+      "type": "text",
+      "order": 1,
+      "content": "# Contexto Clínico del EPOC Agudizado\n\nLa Enfermedad Pulmonar Obstructiva Crónica (EPOC) agudizada es una causa común de insuficiencia respiratoria aguda que requiere ventilación mecánica. Las características fisiopatológicas clave del EPOC incluyen:\n\n- **Obstrucción crónica de vías aéreas**: Aumento de resistencia al flujo aéreo\n- **Hiperinsuflación dinámica**: Atrapamiento de aire debido a espiración incompleta\n- **Auto-PEEP (PEEP intrínseca)**: Presión positiva residual al final de la espiración\n- **Disminución del estímulo respiratorio hipoxémico**: Pacientes dependen parcialmente de hipoxemia para mantener ventilación\n- **Retención de CO₂**: Pacientes crónicos adaptados a hipercapnia\n\nEl EPOC agudizado típicamente resulta de:\n- Exacerbación infecciosa (bacteriana o viral)\n- Broncoespasmo severo\n- Insuficiencia cardiaca aguda\n- Neumotórax\n- Medicamentos depresores respiratorios\n\nLa ventilación mecánica en EPOC presenta desafíos únicos debido a la necesidad de permitir tiempo espiratorio suficiente para evitar auto-PEEP, mientras se mantiene ventilación adecuada y se evita hiperventilación que puede suprimir el estímulo respiratorio."
+    },
+    {
+      "type": "text",
+      "order": 2,
+      "content": "# Objetivos Terapéuticos\n\nLos objetivos del protocolo de ventilación para EPOC agudizado son:\n\n1. **Prevenir o minimizar auto-PEEP**: Permitir espiración completa mediante tiempos espiratorios prolongados\n2. **Mantener oxigenación adecuada**: SpO₂ 88-92% (evitar hiperoxemia que suprime estímulo respiratorio)\n3. **Permitir hipercapnia permisiva**: Aceptar PaCO₂ elevada similar a valores basales del paciente\n4. **Evitar hiperinsuflación dinámica**: Limitar volúmenes y presiones que causen atrapamiento aéreo\n5. **Minimizar trabajo respiratorio**: Reducir resistencia del circuito y facilitar disparo de respiraciones\n6. **Facilitar destete temprano**: Usar modalidades que preserven función muscular respiratoria\n\n**Importante**: Los pacientes con EPOC crónico pueden tener PaCO₂ basales de 50-60 mmHg o mayores. No intentar \"normalizar\" la PaCO₂ puede ser apropiado y evitar hiperventilación iatrogénica."
+    },
+    {
+      "type": "text",
+      "order": 3,
+      "content": "# Modalidades Ventilatorias Recomendadas\n\n## Modalidad Principal: Presión de Soporte (PSV) o SIMV + PSV\n\n**PSV es preferida cuando el paciente tiene esfuerzo respiratorio presente** porque:\n- Permite control del paciente sobre frecuencia y patrón respiratorio\n- Reduce trabajo respiratorio al vencer resistencia del tubo\n- Facilita destete progresivo\n- Minimiza asincronías\n\n## Modalidad Alternativa: SIMV + PSV\n\nÚtil cuando:\n- Se requiere garantizar frecuencia mínima\n- El paciente tiene esfuerzo respiratorio intermitente\n- Transición desde ventilación controlada\n\n## Modalidad Inicial: Ventilación Controlada por Presión (PCV)\n\nPuede usarse inicialmente si:\n- El paciente está sedado profundamente\n- Se requiere ventilación totalmente controlada\n- Necesidad de limitar presión pico\n\n**Evitar VCV** inicialmente si es posible, ya que puede generar presiones altas si hay resistencia aumentada.\n\n## Ventilación No Invasiva (VMNI)\n\n**BiPAP/CPAP** debe considerarse primero en EPOC agudizado si:\n- El paciente está consciente y colaborador\n- No hay contraindicaciones para VMNI\n- Puede prevenir intubación en muchos casos"
+    },
+    {
+      "type": "text",
+      "order": 4,
+      "content": "# Configuración Paso a Paso\n\n## Paso 1: Evaluar Auto-PEEP\n\n**Medir auto-PEEP con pausa espiratoria** antes de configurar ventilador:\n- Si auto-PEEP > 5 cmH₂O: Requiere ajustes específicos\n- Si auto-PEEP < 5 cmH₂O: Configuración estándar\n\n## Paso 2: Configurar PEEP Extrínseca\n\n**Principio**: PEEP extrínseca = 75-85% de auto-PEEP medida (o 3-5 cmH₂O si auto-PEEP no medida)\n\n- Reducir trabajo inspiratorio necesario para vencer auto-PEEP\n- **NO** aplicar PEEP > auto-PEEP (empeora hiperinsuflación)\n- Típicamente: **3-5 cmH₂O** inicialmente\n\n## Paso 3: Configurar Volumen Tidal\n\n**Objetivo**: 6-8 mL/kg de peso ideal (tendiendo a 6 mL/kg)\n\n- Evitar volúmenes altos que empeoren hiperinsuflación\n- Ejemplo: PCI 70 kg → VT 420-490 mL (preferir 420 mL)\n\n## Paso 4: Configurar Frecuencia Respiratoria\n\n**Objetivo**: 10-14 respiraciones/minuto (BAJA)\n\n- Permitir tiempo espiratorio suficiente\n- Evitar frecuencias altas que causen auto-PEEP\n- Aceptar hipercapnia permisiva\n\n## Paso 5: Configurar Flujo Inspiratorio\n\n**Objetivo**: **80-100 L/min** (ALTO)\n\n- Acortar tiempo inspiratorio\n- Maximizar tiempo espiratorio disponible\n- Reducir riesgo de auto-PEEP\n\n## Paso 6: Configurar Relación I:E\n\n**Objetivo**: **1:3 a 1:4** (prolongada)\n\n- Garantizar tiempo espiratorio largo\n- Prevenir atrapamiento aéreo\n- Permitir espiración completa\n\n## Paso 7: Configurar FiO₂\n\n**Objetivo**: **SpO₂ 88-92%** (NO mayor)\n\n- Evitar hiperoxemia que suprime estímulo respiratorio\n- Mantener PaO₂ 60-70 mmHg (hipoxemia permisiva)\n- Titular cuidadosamente\n\n## Paso 8: Configurar Presión de Soporte (si PSV)\n\n**Inicial**: 10-15 cmH₂O sobre PEEP\n\n- Reducir trabajo respiratorio\n- Ajustar según volumen tidal resultante (objetivo 6-8 mL/kg)\n- Reducir gradualmente durante destete"
+    },
+    {
+      "type": "text",
+      "order": 5,
+      "content": "# Tabla de Parámetros Recomendados\n\n## Parámetros Iniciales para EPOC Agudizado\n\n| Parámetro | Valor | Justificación |\n|-----------|-------|---------------|\n| **Modalidad** | PSV o SIMV + PSV | Facilita destete, reduce trabajo |\n| **VT** | 6-8 mL/kg PCI | Evita hiperinsuflación |\n| **FR** | 10-14/min | Permite tiempo espiratorio largo |\n| **PEEP** | 3-5 cmH₂O (75% auto-PEEP) | Reduce trabajo inspiratorio |\n| **Flujo** | 80-100 L/min | Acorta tiempo inspiratorio |\n| **I:E** | 1:3 a 1:4 | Maximiza tiempo espiratorio |\n| **FiO₂** | Titular para SpO₂ 88-92% | Evita supresión de estímulo |\n| **PSV** | 10-15 cmH₂O | Reduce trabajo del tubo |\n\n## Tabla de Ajuste según Auto-PEEP\n\n| Auto-PEEP | PEEP Extrínseca | Ajuste Adicional |\n|-----------|----------------|------------------|\n| < 5 cmH₂O | 3-5 cmH₂O | Configuración estándar |\n| 5-10 cmH₂O | 5-8 cmH₂O | Reducir FR, aumentar flujo |\n| > 10 cmH₂O | 8-10 cmH₂O (máx) | Reducir VT, FR mínima, considerar broncodilatadores |\n\n## Tabla de Ajuste según PaCO₂\n\n| PaCO₂ | pH | Acción |\n|-------|-----|--------|\n| Similar a basal | > 7.30 | Mantener configuración |\n| 10-20 mmHg > basal | 7.25-7.30 | Aceptable, monitorear |\n| > 20 mmHg > basal | < 7.25 | Aumentar FR ligeramente (máx 16/min), considerar causas |\n\n## Tabla de Ajuste de FiO₂\n\n| SpO₂ | Acción |\n|------|--------|\n| > 92% | Reducir FiO₂ (riesgo de supresión respiratoria) |\n| 88-92% | Mantener (objetivo) |\n| < 88% | Aumentar FiO₂ gradualmente |\n| < 85% | Aumentar FiO₂ y evaluar causas adicionales |"
+    },
+    {
+      "type": "text",
+      "order": 6,
+      "content": "# Estrategias de Ajuste\n\n## Estrategia para Reducir Auto-PEEP\n\n1. **Reducir frecuencia respiratoria**: Máximo 12-14/min\n2. **Aumentar flujo inspiratorio**: 80-100 L/min\n3. **Reducir volumen tidal**: 6 mL/kg (mínimo si necesario)\n4. **Prolongar relación I:E**: 1:3 a 1:4\n5. **Aplicar PEEP extrínseca**: 75% de auto-PEEP medida\n6. **Broncodilatadores**: Nebulización frecuente (cada 4-6 horas)\n7. **Evaluar causas reversibles**: Secreciones, broncoespasmo\n\n## Estrategia de Hipercapnia Permisiva\n\n**Aceptar PaCO₂ elevada si**:\n- pH ≥ 7.20 (idealmente ≥ 7.25)\n- PaCO₂ similar a valores basales del paciente\n- Hemodinamia estable\n- Sin signos de acidosis severa\n\n**NO intentar normalizar PaCO₂** si el paciente tiene hipercapnia crónica.\n\n## Estrategia de Destete Progresivo\n\n1. **Reducir PSV gradualmente**: 2-3 cmH₂O cada 12-24 horas\n2. **Reducir frecuencia SIMV**: Si usa SIMV, reducir de 12 → 8 → 4/min\n3. **Mantener PEEP baja**: 3-5 cmH₂O\n4. **Evaluar tolerancia**: Gases arteriales, esfuerzo respiratorio, signos de fatiga\n5. **Trial de respiración espontánea**: Cuando PSV < 8 cmH₂O o SIMV < 4/min\n\n## Estrategia de Manejo de Secreciones\n\n1. **Fisioterapia respiratoria**: Cada 4-6 horas\n2. **Succión frecuente**: Según necesidad, evitar sobre-succión\n3. **Humidificación adecuada**: Prevenir tapones de moco\n4. **Posicionamiento**: Cambios de posición para drenaje\n5. **Broncoscopia**: Si hay atelectasia o secreciones retenidas"
+    },
+    {
+      "type": "text",
+      "order": 7,
+      "content": "# Monitorización\n\n## Parámetros Críticos a Monitorizar\n\n1. **Auto-PEEP**:\n   - **Método**: Pausa espiratoria de 2-3 segundos\n   - **Frecuencia**: Cada 4-6 horas o después de cambios\n   - **Objetivo**: < 5 cmH₂O o reducción desde valor inicial\n\n2. **Curva de Flujo-Tiempo**:\n   - **Evaluar**: Si flujo espiratorio retorna a cero antes de siguiente inspiración\n   - **Signo de auto-PEEP**: Flujo no llega a cero\n   - **Monitorizar**: Continuamente en pantalla del ventilador\n\n3. **Gases Arteriales**:\n   - **Frecuencia**: Cada 4-6 horas inicialmente\n   - **Objetivos**:\n     - PaO₂: 60-70 mmHg (hipoxemia permisiva)\n     - PaCO₂: Similar a valores basales o aceptable si pH ≥ 7.20\n     - pH: ≥ 7.20 (idealmente ≥ 7.25)\n\n4. **Saturación de Oxígeno**:\n   - **Objetivo**: 88-92% (NO mayor)\n   - **Monitorización**: Continua\n\n5. **Presión Pico y Plateau**:\n   - **Pico**: Monitorear para detectar obstrucción\n   - **Plateau**: Medir con pausa inspiratoria\n   - **Diferencia Pico-Plateau**: Indica resistencia (puede estar aumentada en EPOC)\n\n6. **Volumen Minuto**:\n   - **Monitorear**: Para detectar hipo o hiperventilación\n   - **Normal**: 5-8 L/min\n\n7. **Signos de Trabajo Respiratorio Excesivo**:\n   - Uso de músculos accesorios\n   - Taquipnea\n   - Paradoja abdominal\n   - Sudoración\n   - Ansiedad\n\n8. **Hemodinamia**:\n   - Efectos de auto-PEEP en retorno venoso\n   - Presión arterial, frecuencia cardíaca\n   - Signos de cor pulmonale agudo"
+    },
+    {
+      "type": "text",
+      "order": 8,
+      "content": "# Criterios de Éxito\n\n## Criterios de Estabilidad Ventilatoria\n\n- ✅ Auto-PEEP < 5 cmH₂O o reducción significativa desde inicio\n- ✅ Flujo espiratorio retorna a cero antes de siguiente inspiración\n- ✅ Presión pico < 35 cmH₂O\n- ✅ pH ≥ 7.25\n\n## Criterios de Oxigenación\n\n- ✅ SpO₂ 88-92% con FiO₂ ≤ 0.5\n- ✅ PaO₂ 60-70 mmHg\n- ✅ Sin necesidad de FiO₂ alta\n\n## Criterios de Ventilación\n\n- ✅ PaCO₂ estable o similar a valores basales\n- ✅ pH ≥ 7.20 (idealmente ≥ 7.25)\n- ✅ Volumen minuto adecuado (5-8 L/min)\n\n## Criterios para Considerar Destete\n\n- ✅ Paciente despierto, alerta, con esfuerzo respiratorio\n- ✅ Auto-PEEP < 5 cmH₂O\n- ✅ SpO₂ ≥ 88% con FiO₂ ≤ 0.4\n- ✅ pH ≥ 7.25\n- ✅ Sin fiebre o infección activa\n- ✅ Sin inestabilidad hemodinámica\n- ✅ Evaluación de criterios de preparación (ver módulo de destete)"
+    },
+    {
+      "type": "text",
+      "order": 9,
+      "content": "# Complicaciones y Manejo\n\n## Complicaciones Comunes\n\n### 1. Auto-PEEP Persistente\n\n**Manifestaciones**:\n- Flujo espiratorio no retorna a cero\n- Dificultad para disparar respiraciones\n- Hipotensión (disminución de retorno venoso)\n- Barotrauma\n\n**Manejo**:\n- Reducir frecuencia respiratoria (mínimo 10/min)\n- Aumentar flujo inspiratorio (100 L/min)\n- Reducir VT a 6 mL/kg\n- Prolongar I:E (1:4)\n- Aplicar PEEP extrínseca (75% de auto-PEEP)\n- Broncodilatadores nebulizados\n- Evaluar causas reversibles (secreciones, broncoespasmo)\n\n### 2. Hipercapnia Severa\n\n**Manifestaciones**: pH < 7.20, somnolencia, confusión\n\n**Manejo**:\n- Verificar si es similar a valores basales del paciente\n- Si pH < 7.20 y no es basal: Aumentar FR ligeramente (máx 16/min)\n- NO intentar normalizar si paciente tiene hipercapnia crónica\n- Considerar causas: auto-PEEP, secreciones, broncoespasmo\n- Evaluar necesidad de broncoscopia\n\n### 3. Hipoxemia\n\n**Manifestaciones**: SpO₂ < 88%, PaO₂ < 60 mmHg\n\n**Manejo**:\n- Aumentar FiO₂ gradualmente\n- Evaluar causas: neumonía, edema, derrame, atelectasia\n- Considerar aumento ligero de PEEP (máx 8 cmH₂O)\n- Optimizar posición (semi-Fowler)\n- Fisioterapia respiratoria\n\n### 4. Barotrauma\n\n**Manifestaciones**: Neumotórax, neumomediastino, enfisema subcutáneo\n\n**Prevención**:\n- Mantener auto-PEEP baja\n- Limitar presiones\n- Usar VT protector\n\n**Manejo**:\n- Drenaje de neumotórax si necesario\n- Reducir presiones ventilatorias\n\n### 5. Dificultad para Destete\n\n**Manifestaciones**: Falla repetida de trials de respiración espontánea\n\n**Manejo**:\n- Evaluar causas: auto-PEEP residual, fatiga muscular, secreciones\n- Optimizar manejo de secreciones\n- Considerar traqueostomía temprana\n- Rehabilitación pulmonar\n- Evaluar comorbilidades (cardiacas, nutricionales)"
+    },
+    {
+      "type": "text",
+      "order": 10,
+      "content": "# Caso Clínico\n\n## Presentación del Caso\n\n**Paciente**: Hombre de 68 años, 172 cm, 75 kg, con EPOC GOLD III (FEV1 35% del predicho)\n\n**Historia**: Exacerbación por neumonía comunitaria. Admitido con disnea severa, cianosis, confusión. Requiere intubación de urgencia.\n\n**Gases arteriales pre-intubación**:\n- pH: 7.18\n- PaCO₂: 85 mmHg\n- PaO₂: 45 mmHg (FiO₂ 0.5 con mascarilla)\n- HCO₃⁻: 31 mEq/L (compensación metabólica)\n\n**Valores basales conocidos del paciente**:\n- PaCO₂ basal: 55-60 mmHg\n- pH basal: ~7.35\n\n## Configuración Inicial del Ventilador\n\n1. **Medir auto-PEEP**: Pausa espiratoria → **12 cmH₂O** (alta)\n\n2. **PEEP extrínseca**: 75% de 12 = **9 cmH₂O** (iniciar con 8 cmH₂O por seguridad)\n\n3. **VT**: 6 × 70 (PCI) = **420 mL**\n\n4. **FR**: **12/min** (baja para permitir espiración)\n\n5. **Flujo**: **90 L/min** (alto para acortar Ti)\n\n6. **I:E**: **1:4** (prolongada)\n\n7. **FiO₂**: Titular para SpO₂ 88-90% (iniciar con 0.4)\n\n8. **Modalidad**: SIMV + PSV (FR 12/min, PSV 12 cmH₂O)\n\n**Configuración resultante**:\n- Modo: SIMV + PSV\n- VT: 420 mL\n- FR SIMV: 12/min\n- PSV: 12 cmH₂O\n- PEEP: 8 cmH₂O\n- FiO₂: 0.4\n- Flujo: 90 L/min\n- I:E: 1:4\n\n## Evolución y Ajustes\n\n**A las 2 horas**:\n- Auto-PEEP: 8 cmH₂O (reducción desde 12)\n- Gases: pH 7.22, PaCO₂ 72, PaO₂ 58 (FiO₂ 0.4)\n- SpO₂: 89%\n- **Ajuste**: Mantener configuración, reducir PEEP a 6 cmH₂O (ya que auto-PEEP bajó)\n\n**A las 6 horas**:\n- Auto-PEEP: 5 cmH₂O\n- Gases: pH 7.26, PaCO₂ 68, PaO₂ 62 (FiO₂ 0.35)\n- PaCO₂ similar a valores basales (mejora desde 85)\n- **Ajuste**: Reducir FiO₂ a 0.3, reducir PSV a 10 cmH₂O\n\n**A las 12 horas**:\n- Auto-PEEP: 4 cmH₂O\n- Gases: pH 7.28, PaCO₂ 65, PaO₂ 65 (FiO₂ 0.3)\n- **Ajuste**: Reducir FR SIMV a 10/min, mantener PSV 10 cmH₂O\n\n**A las 24 horas**:\n- Auto-PEEP: 3 cmH₂O\n- Gases: pH 7.30, PaCO₂ 62, PaO₂ 68 (FiO₂ 0.3)\n- PaCO₂ cerca de valores basales\n- Paciente despierto, colaborador\n- **Ajuste**: Reducir FR SIMV a 8/min, reducir PSV a 8 cmH₂O\n\n## Resultado Final\n\nAl día 3:\n- Auto-PEEP: 2 cmH₂O\n- PaCO₂: 58 mmHg (similar a basal)\n- pH: 7.32\n- SpO₂: 90% con FiO₂ 0.3\n- FR SIMV: 4/min, PSV: 6 cmH₂O\n- Paciente listo para trial de respiración espontánea\n\n**Próximos pasos**: Evaluar criterios de preparación y comenzar protocolo de trial de respiración espontánea (T-piece o CPAP)."
+    },
+    {
+      "type": "quiz",
+      "order": 11,
+      "question": "Un paciente con EPOC tiene auto-PEEP de 10 cmH₂O medida con pausa espiratoria. ¿Qué nivel de PEEP extrínseca es más apropiado?",
+      "options": [
+        "12 cmH₂O (mayor que auto-PEEP)",
+        "10 cmH₂O (igual a auto-PEEP)",
+        "7-8 cmH₂O (75% de auto-PEEP)",
+        "5 cmH₂O (valor fijo)"
+      ],
+      "correctAnswer": "7-8 cmH₂O (75% de auto-PEEP)",
+      "explanation": "La PEEP extrínseca debe configurarse al 75-85% de la auto-PEEP medida para reducir el trabajo inspiratorio necesario para vencer la auto-PEEP, sin empeorar la hiperinsuflación. Para auto-PEEP de 10 cmH₂O: 75% = 7.5 cmH₂O (redondear a 7-8 cmH₂O)."
+    },
+    {
+      "type": "quiz",
+      "order": 12,
+      "question": "En un paciente con EPOC agudizado, ¿cuál es el objetivo de SpO₂ más apropiado?",
+      "options": [
+        "95-100% (normoxemia completa)",
+        "88-92% (hipoxemia permisiva)",
+        "85-88% (hipoxemia leve)",
+        "> 92% (mejor oxigenación posible)"
+      ],
+      "correctAnswer": "88-92% (hipoxemia permisiva)",
+      "explanation": "En EPOC, se debe mantener SpO₂ 88-92% (PaO₂ 60-70 mmHg) para evitar hiperoxemia que puede suprimir el estímulo respiratorio hipoxémico del que dependen parcialmente estos pacientes. SpO₂ > 92% puede causar depresión respiratoria."
+    }
+  ],
+  "keyPoints": [
+    "La auto-PEEP es la complicación más importante en EPOC y debe medirse regularmente con pausa espiratoria.",
+    "La PEEP extrínseca debe ser 75-85% de la auto-PEEP medida para reducir trabajo inspiratorio sin empeorar hiperinsuflación.",
+    "Frecuencias respiratorias bajas (10-14/min) y tiempos espiratorios largos (I:E 1:3 a 1:4) son esenciales para prevenir auto-PEEP.",
+    "Flujos inspiratorios altos (80-100 L/min) acortan tiempo inspiratorio y maximizan tiempo espiratorio disponible.",
+    "SpO₂ debe mantenerse 88-92% en EPOC para evitar supresión del estímulo respiratorio hipoxémico.",
+    "La hipercapnia permisiva es aceptable en EPOC, especialmente si los valores son similares a los basales del paciente.",
+    "PSV o SIMV + PSV son modalidades preferidas en EPOC porque facilitan destete y reducen trabajo respiratorio."
+  ],
+  "references": [
+    "MacIntyre NR. Evidence-based ventilator weaning and discontinuation. Respir Care. 2004;49(7):830-6.",
+    "MacIntyre N, Huang YC. Acute exacerbations and respiratory failure in chronic obstructive pulmonary disease. Proc Am Thorac Soc. 2008;5(4):530-5.",
+    "Brochard L, Mancebo J, Wysocki M, et al. Noninvasive ventilation for acute exacerbations of chronic obstructive pulmonary disease. N Engl J Med. 1995;333(13):817-22.",
+    "Plant PK, Owen JL, Elliott MW. Early use of non-invasive ventilation for acute exacerbations of chronic obstructive pulmonary disease on general respiratory wards: a multicentre randomised controlled trial. Lancet. 2000;355(9219):1931-5.",
+    "Tobin MJ, Laghi F, Jubran A. Ventilatory failure, ventilator support, and ventilator weaning. Compr Physiol. 2012;2(4):2871-921."
+  ]
+}
+
