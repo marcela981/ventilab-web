@@ -1,0 +1,214 @@
+{
+  "id": "lesson-ards-management",
+  "moduleId": "ards-management",
+  "title": "Manejo de ARDS y Estrategias de Protección Pulmonar",
+  "description": "Domina el protocolo ARDSnet y estrategias avanzadas para protección pulmonar",
+  "estimatedTime": 240,
+  "level": "advanced",
+  "order": 1,
+  "learningObjectives": [
+    "Aplicar protocolo ARDSnet",
+    "Implementar estrategias de protección pulmonar",
+    "Manejar complicaciones del ARDS"
+  ],
+  "sections": [
+    {
+      "id": "ards-definition",
+      "type": "reading",
+      "title": "Definición y Clasificación del ARDS",
+      "duration": 25,
+      "content": {
+        "text": "Según los criterios de Berlín (2012), ARDS se define por: inicio agudo (<1 semana), infiltrados bilaterales en imagen, no explicado por falla cardíaca o sobrecarga de volumen, y alteración de oxigenación. Se clasifica en: LEVE (PaO2/FiO2 200-300 mmHg con PEEP ≥5), MODERADO (PaO2/FiO2 100-200 mmHg con PEEP ≥5), y SEVERO (PaO2/FiO2 <100 mmHg con PEEP ≥5).",
+        "keyPoints": [
+          "Criterios de Berlín (2012)",
+          "LEVE: PaO2/FiO2 200-300",
+          "MODERADO: PaO2/FiO2 100-200",
+          "SEVERO: PaO2/FiO2 <100",
+          "Infiltrados bilaterales"
+        ],
+        "diagrams": ["/images/ards-classification.png"]
+      }
+    },
+    {
+      "id": "ardsnet-protocol",
+      "type": "reading",
+      "title": "Protocolo ARDSnet",
+      "duration": 30,
+      "content": {
+        "text": "El protocolo ARDSnet (2000) demostró reducción de mortalidad con ventilación protectora: Vt 6 ml/kg peso ideal, Presión plateau <30 cmH2O, pH objetivo ≥7.30 (permitir hipercapnia permisiva si necesario), PEEP según tabla ARDSnet, FiO2 según tabla de combinaciones PEEP/FiO2. El estudio ARMA demostró reducción de mortalidad de 40% a 31% con esta estrategia.",
+        "tables": [
+          {
+            "name": "tabla-ventilacion-protectora",
+            "description": "Combinaciones de PEEP/FiO2 según ARDSnet",
+            "image": "/images/ardsnet-table.png"
+          }
+        ],
+        "references": ["ARDSnet Study Group (2000). NEJM"],
+        "keyPoints": [
+          "Vt 6 ml/kg peso IDEAL",
+          "Pplateau <30 cmH2O",
+          "Hipercapnia permisiva (pH ≥7.30)",
+          "Tabla PEEP/FiO2",
+          "Reducción mortalidad demostrada"
+        ]
+      }
+    },
+    {
+      "id": "lung-protection",
+      "type": "simulation",
+      "title": "Simulación de Protección Pulmonar",
+      "duration": 60,
+      "content": {
+        "simulationType": "lung-protection",
+        "description": "Aplica estrategias de ventilación protectora en diferentes severidades de ARDS. Balancea oxigenación, ventilación y prevención de VILI (Ventilator-Induced Lung Injury).",
+        "objectives": [
+          "Calcular peso ideal y Vt apropiado",
+          "Aplicar Vt 6ml/kg peso ideal",
+          "Optimizar PEEP según ARDSnet",
+          "Limitar presión plateau <30 cmH2O",
+          "Manejar hipercapnia permisiva"
+        ],
+        "clinicalScenarios": [
+          {
+            "name": "ARDS leve",
+            "patient": "65 kg (peso ideal), PaO2/FiO2 = 250",
+            "goals": "Vt 390 ml, Pplateau <30, SpO2 >88%"
+          },
+          {
+            "name": "ARDS moderado",
+            "patient": "70 kg (peso ideal), PaO2/FiO2 = 150",
+            "goals": "Vt 420 ml, PEEP óptimo, tolerar pH 7.25"
+          },
+          {
+            "name": "ARDS severo",
+            "patient": "80 kg (peso ideal), PaO2/FiO2 = 80",
+            "goals": "Protección máxima, considerar prono, ECMO"
+          }
+        ]
+      }
+    },
+    {
+      "id": "peep-optimization",
+      "type": "reading",
+      "title": "Optimización de PEEP",
+      "duration": 30,
+      "content": {
+        "text": "La PEEP óptima es controversial. Opciones: 1) Tabla ARDSnet (PEEP bajo), 2) Titulación según compliance (mejor compliance = PEEP óptima), 3) Curva presión-volumen (punto de inflexión inferior), 4) Driving pressure <15 cmH2O (Pplateau-PEEP), 5) Estudios ART, ALVEOLI (PEEP alto vs bajo sin clara superioridad). La individualización según respuesta es clave.",
+        "keyPoints": [
+          "No hay 'PEEP óptima' universal",
+          "Tabla ARDSnet: enfoque conservador",
+          "Titulación por compliance",
+          "Driving pressure <15 cmH2O",
+          "Individualizar según respuesta"
+        ],
+        "diagrams": ["/images/peep-optimization.png"]
+      }
+    },
+    {
+      "id": "prone-positioning",
+      "type": "video",
+      "title": "Posición Prono en ARDS Severo",
+      "duration": 30,
+      "content": {
+        "videoUrl": "/videos/prone-positioning.mp4",
+        "transcript": "El estudio PROSEVA (2013) demostró reducción de mortalidad con posición prono (≥16 horas/día) en ARDS severo (PaO2/FiO2 <150). Mecanismos: redistribución de la ventilación, reclutamiento de regiones dorsales, mejor relación V/Q, drenaje de secreciones. Contraindicaciones: inestabilidad hemodinámica severa, embarazo, trauma facial/espinal. Requiere equipo entrenado.",
+        "keyPoints": [
+          "PROSEVA: mortalidad 16% vs 33%",
+          "Indicado en ARDS severo (PaO2/FiO2 <150)",
+          "Duración ≥16 horas/día",
+          "Mejora oxigenación y mecánica",
+          "Requiere equipo entrenado"
+        ]
+      }
+    },
+    {
+      "id": "rescue-therapies",
+      "type": "reading",
+      "title": "Terapias de Rescate",
+      "duration": 25,
+      "content": {
+        "text": "Cuando ARDS severo no responde a ventilación protectora y prono: 1) Bloqueo neuromuscular (ACURASYS, mejora oxigenación), 2) Óxido nítrico inhalado (vasodilatador selectivo, mejora V/Q transitoriamente), 3) Recruitment maneuvers (maniobras de reclutamiento), 4) ECMO (oxigenación por membrana extracorpórea) si PaO2/FiO2 <50-80 mmHg a pesar de todo, 5) APRV (Airway Pressure Release Ventilation).",
+        "keyPoints": [
+          "Bloqueo neuromuscular si refractario",
+          "NO inhalado: efecto transitorio",
+          "Maniobras de reclutamiento: controversia",
+          "ECMO: último recurso (EOLIA study)",
+          "APRV: modalidad alternativa"
+        ]
+      }
+    }
+  ],
+  "quiz": {
+    "id": "ards-quiz",
+    "type": "case-based",
+    "questions": [
+      {
+        "id": "q1",
+        "type": "case-based",
+        "question": "Paciente de 45 años, talla 170 cm, 80kg, con ARDS moderado. PaO2/FiO2 = 150, presión plateau = 28 cmH2O. ¿Cuál es el Vt apropiado según ARDSnet?",
+        "caseContext": "Sexo masculino, altura 170 cm. Peso ideal = 50 + 0.91(170-152) = 66 kg",
+        "options": [
+          "480 ml (6 ml/kg peso real)",
+          "550 ml",
+          "396 ml (6 ml/kg peso ideal)",
+          "320 ml"
+        ],
+        "correct": 2,
+        "explanation": "Peso ideal hombre = 50 + 0.91 × (altura en cm - 152) = 66 kg. Vt = 6 ml/kg × 66 = 396 ml (aproximadamente 400 ml)."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "question": "¿Cuál es el límite de presión plateau en ventilación protectora?",
+        "options": [
+          "<25 cmH2O",
+          "<30 cmH2O",
+          "<35 cmH2O",
+          "<40 cmH2O"
+        ],
+        "correct": 1,
+        "explanation": "El protocolo ARDSnet establece Pplateau <30 cmH2O para minimizar volutrauma y barotrauma."
+      },
+      {
+        "id": "q3",
+        "type": "case-based",
+        "question": "Paciente con ARDS severo (PaO2/FiO2 = 80) en ventilación protectora. SpO2 85% con FiO2 100%, PEEP 18. ¿Cuál es la siguiente estrategia?",
+        "caseContext": "Hemodinámicamente estable, en UCI con equipo entrenado",
+        "options": [
+          "Aumentar Vt a 10 ml/kg",
+          "Disminuir PEEP",
+          "Posición prono",
+          "No hacer nada"
+        ],
+        "correct": 2,
+        "explanation": "En ARDS severo (PaO2/FiO2 <150) refractario, la posición prono está indicada según estudio PROSEVA y ha demostrado reducción de mortalidad."
+      }
+    ]
+  },
+  "resources": [
+    {
+      "type": "pdf",
+      "title": "Protocolo ARDSnet completo",
+      "url": "/resources/ardsnet-protocol.pdf"
+    },
+    {
+      "type": "video",
+      "title": "ARDS: de la fisiopatología al tratamiento",
+      "url": "/videos/ards-complete.mp4"
+    },
+    {
+      "type": "external",
+      "title": "ARDSnet Calculator",
+      "url": "https://www.ardsnet.org/tools"
+    }
+  ],
+  "keywords": [
+    "ARDS",
+    "ARDSnet",
+    "ventilación protectora",
+    "posición prono",
+    "PEEP",
+    "driving pressure",
+    "PROSEVA"
+  ]
+}

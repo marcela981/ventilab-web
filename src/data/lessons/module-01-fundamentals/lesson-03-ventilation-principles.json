@@ -1,0 +1,191 @@
+{
+  "id": "lesson-ventilation-principles",
+  "moduleId": "ventilation-principles",
+  "title": "Principios de Ventilación Mecánica",
+  "description": "Fundamentos de la ventilación mecánica: indicaciones, parámetros y conceptos básicos",
+  "estimatedTime": 180,
+  "level": "beginner",
+  "order": 3,
+  "learningObjectives": [
+    "Definir los objetivos de la ventilación mecánica",
+    "Identificar las indicaciones y contraindicaciones",
+    "Comprender los parámetros ventilatorios básicos"
+  ],
+  "sections": [
+    {
+      "id": "vm-indications",
+      "type": "reading",
+      "title": "Indicaciones de Ventilación Mecánica",
+      "duration": 25,
+      "content": {
+        "text": "La ventilación mecánica se indica cuando el paciente no puede mantener una ventilación o oxigenación adecuada por sí mismo. Las principales indicaciones incluyen: insuficiencia respiratoria aguda (hipoxemia refractaria o hipercapnia), necesidad de protección de vía aérea (Glasgow <8, riesgo de aspiración), disminución del trabajo respiratorio, y soporte durante procedimientos o cirugías.",
+        "caseStudies": [
+          "Fallo respiratorio agudo: PaO2 <60 mmHg con FiO2 alta",
+          "Coma: Glasgow ≤8, incapacidad de proteger vía aérea",
+          "Shock: necesidad de disminuir trabajo respiratorio"
+        ],
+        "references": ["ARDSnet guidelines", "European Society of Intensive Care Medicine"],
+        "keyPoints": [
+          "Insuficiencia respiratoria aguda",
+          "Protección de vía aérea",
+          "Reducción trabajo respiratorio",
+          "Soporte perioperatorio"
+        ]
+      }
+    },
+    {
+      "id": "basic-parameters",
+      "type": "interactive",
+      "title": "Parámetros Ventilatorios Básicos",
+      "duration": 40,
+      "content": {
+        "interactiveType": "parameter-explorer",
+        "description": "Explora los parámetros ventilatorios fundamentales y sus rangos normales. Ajusta cada parámetro y observa su efecto en la ventilación.",
+        "parameters": [
+          {
+            "name": "Vt",
+            "description": "Volumen Tidal - Volumen de aire por respiración",
+            "range": [6, 8],
+            "unit": "ml/kg",
+            "normal": "6-8 ml/kg peso ideal"
+          },
+          {
+            "name": "f",
+            "description": "Frecuencia Respiratoria",
+            "range": [12, 20],
+            "unit": "rpm",
+            "normal": "12-20 respiraciones por minuto"
+          },
+          {
+            "name": "FiO2",
+            "description": "Fracción Inspirada de Oxígeno",
+            "range": [21, 100],
+            "unit": "%",
+            "normal": "21% (aire ambiente) - 100% según necesidad"
+          },
+          {
+            "name": "PEEP",
+            "description": "Presión Positiva al Final de la Espiración",
+            "range": [5, 15],
+            "unit": "cmH2O",
+            "normal": "5-10 cmH2O (fisiológico)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ventilation-modes-intro",
+      "type": "video",
+      "title": "Introducción a las Modalidades Ventilatorias",
+      "duration": 30,
+      "content": {
+        "videoUrl": "/videos/ventilation-modes-intro.mp4",
+        "transcript": "Las modalidades ventilatorias se clasifican según el parámetro controlado (volumen o presión) y el grado de soporte (controlada, asistida o espontánea). Las principales modalidades son: VCV (ventilación controlada por volumen), PCV (ventilación controlada por presión), PSV (ventilación con soporte de presión), y SIMV (ventilación mandatoria intermitente sincronizada).",
+        "keyPoints": [
+          "Clasificación según control: volumen vs presión",
+          "Clasificación según soporte: controlada vs asistida",
+          "Modalidades principales: VCV, PCV, PSV, SIMV",
+          "Selección según patología y fase"
+        ]
+      }
+    },
+    {
+      "id": "monitoring-basics",
+      "type": "reading",
+      "title": "Monitorización Básica",
+      "duration": 25,
+      "content": {
+        "text": "La monitorización en ventilación mecánica incluye: curvas de presión-tiempo, flujo-tiempo y volumen-tiempo; parámetros numéricos (Vt, f, PEEP, PIP, Pplateau); gases arteriales (PaO2, PaCO2, pH); mecánica respiratoria (compliance, resistencia); y parámetros de oxigenación (SpO2, PaO2/FiO2).",
+        "diagrams": ["/images/ventilator-curves.png"],
+        "keyPoints": [
+          "Curvas ventilatorias",
+          "Presiones: PIP, Pplateau, PEEP",
+          "Gasometría arterial",
+          "Índices de oxigenación"
+        ]
+      }
+    },
+    {
+      "id": "complications-intro",
+      "type": "reading",
+      "title": "Complicaciones de la Ventilación Mecánica",
+      "duration": 20,
+      "content": {
+        "text": "Las complicaciones incluyen: barotrauma (neumotórax, neumomediastino), volutrauma (daño por sobredistensión alveolar), atelectrauma (colapso-reapertura cíclica), biotrauma (inflamación sistémica), toxicidad por oxígeno, neumonía asociada a ventilador (NAV), y disfunción diafragmática.",
+        "keyPoints": [
+          "Barotrauma y volutrauma",
+          "Atelectrauma",
+          "NAV (neumonía)",
+          "Disfunción diafragmática",
+          "Prevención mediante ventilación protectora"
+        ]
+      }
+    }
+  ],
+  "quiz": {
+    "id": "ventilation-principles-quiz",
+    "type": "formative",
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "question": "¿Cuál es el rango recomendado de volumen tidal en ventilación protectora?",
+        "options": [
+          "10-12 ml/kg peso real",
+          "6-8 ml/kg peso ideal",
+          "4-5 ml/kg peso ideal",
+          "8-10 ml/kg peso real"
+        ],
+        "correct": 1,
+        "explanation": "La ventilación protectora recomienda 6-8 ml/kg de peso ideal para minimizar el riesgo de volutrauma y biotrauma."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "question": "¿Cuál NO es una indicación de ventilación mecánica?",
+        "options": [
+          "Insuficiencia respiratoria aguda",
+          "Glasgow <8",
+          "Hipertensión arterial controlada",
+          "Shock con trabajo respiratorio aumentado"
+        ],
+        "correct": 2,
+        "explanation": "La hipertensión arterial controlada por sí sola no es indicación de ventilación mecánica. Las otras opciones son indicaciones válidas."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "question": "¿Qué parámetro ayuda a prevenir el colapso alveolar al final de la espiración?",
+        "options": [
+          "FiO2",
+          "Volumen tidal",
+          "PEEP",
+          "Frecuencia respiratoria"
+        ],
+        "correct": 2,
+        "explanation": "El PEEP (Presión Positiva al Final de la Espiración) mantiene los alvéolos abiertos al final de la espiración, previniendo atelectasias."
+      }
+    ]
+  },
+  "resources": [
+    {
+      "type": "pdf",
+      "title": "Guía de Ventilación Mecánica",
+      "url": "/resources/mechanical-ventilation-guide.pdf"
+    },
+    {
+      "type": "video",
+      "title": "Configuración Inicial del Ventilador",
+      "url": "/videos/initial-ventilator-setup.mp4"
+    }
+  ],
+  "keywords": [
+    "ventilación mecánica",
+    "parámetros ventilatorios",
+    "Vt",
+    "PEEP",
+    "FiO2",
+    "indicaciones",
+    "monitorización"
+  ]
+}

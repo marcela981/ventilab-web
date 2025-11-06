@@ -1,0 +1,164 @@
+{
+  "id": "lesson-simv-mode",
+  "moduleId": "simv-mode",
+  "title": "Ventilación Mandatoria Intermitente Sincronizada (SIMV)",
+  "description": "Aprende SIMV: combinación de respiraciones mandatorias y espontáneas",
+  "estimatedTime": 170,
+  "level": "intermediate",
+  "order": 4,
+  "learningObjectives": [
+    "Comprender SIMV y sus aplicaciones",
+    "Configurar parámetros en SIMV",
+    "Manejar destete con SIMV"
+  ],
+  "sections": [
+    {
+      "id": "simv-mechanics",
+      "type": "video",
+      "title": "Mecánica de SIMV",
+      "duration": 40,
+      "content": {
+        "videoUrl": "/videos/simv-mechanics.mp4",
+        "transcript": "SIMV combina respiraciones mandatorias (controladas por volumen o presión) con respiraciones espontáneas del paciente. El ventilador divide el tiempo en ventanas: si el paciente inicia una respiración en la ventana, recibe una respiración mandatoria sincronizada; si respira fuera de la ventana, recibe solo soporte de presión (si está configurado). Esto permite reducir gradualmente el soporte mandatorio.",
+        "keyPoints": [
+          "Combina respiraciones mandatorias y espontáneas",
+          "Sincronización en ventanas de tiempo",
+          "Respiraciones espontáneas con/sin PS",
+          "Permite destete gradual del soporte",
+          "Puede ser SIMV-VC o SIMV-PC"
+        ]
+      }
+    },
+    {
+      "id": "simv-configuration",
+      "type": "reading",
+      "title": "Configuración de SIMV",
+      "duration": 30,
+      "content": {
+        "text": "Parámetros de SIMV: 1) Frecuencia mandatoria (8-12 rpm inicialmente), 2) Vt o PIP según modo (igual que VCV o PCV), 3) Presión de soporte para respiraciones espontáneas (5-15 cmH2O), 4) PEEP, 5) FiO2, 6) Trigger y cycle-off. A medida que el paciente mejora, se reduce la frecuencia mandatoria mientras se mantiene PS, permitiendo que el paciente asuma mayor trabajo respiratorio.",
+        "keyPoints": [
+          "FR mandatoria: 8-12 rpm inicial",
+          "PS para respiraciones espontáneas",
+          "Reducir FR gradualmente",
+          "Vt/PIP según modo base",
+          "Trigger sensible"
+        ],
+        "diagrams": ["/images/simv-configuration.png"]
+      }
+    },
+    {
+      "id": "simv-weaning",
+      "type": "reading",
+      "title": "Destete con SIMV",
+      "duration": 25,
+      "content": {
+        "text": "El destete con SIMV implica reducción progresiva de la frecuencia mandatoria (por ejemplo, de 12 a 8 a 4 rpm) mientras se monitoriza la respuesta. El paciente compensa con más respiraciones espontáneas. Cuando la FR mandatoria es muy baja (4 rpm) y el paciente tolera bien, se puede cambiar a PSV puro o realizar SBT. Sin embargo, algunos estudios sugieren que el destete con PSV es más rápido que con SIMV.",
+        "keyPoints": [
+          "Reducir FR mandatoria gradualmente",
+          "Paciente aumenta respiraciones espontáneas",
+          "Monitorizar Vt total y FR total",
+          "Cuando FR mandatoria baja → PSV o SBT",
+          "PSV puede ser más eficiente para destete"
+        ]
+      }
+    },
+    {
+      "id": "simv-advantages-disadvantages",
+      "type": "reading",
+      "title": "Ventajas y Desventajas de SIMV",
+      "duration": 20,
+      "content": {
+        "text": "VENTAJAS: Permite transición gradual de soporte controlado a espontáneo, proporciona respaldo de frecuencia mínima, el paciente mantiene algo de control respiratorio. DESVENTAJAS: Mayor trabajo respiratorio en respiraciones espontáneas si PS es bajo, puede prolongar el destete comparado con PSV, más complejo de configurar y monitorizar, posibles asincronías si sincronización es inadecuada.",
+        "keyPoints": [
+          "✓ Transición gradual controlado→espontáneo",
+          "✓ Respaldo de FR mínima",
+          "✗ Puede prolongar destete",
+          "✗ Mayor trabajo si PS bajo",
+          "✗ Más complejo de manejar"
+        ]
+      }
+    },
+    {
+      "id": "simv-monitoring",
+      "type": "reading",
+      "title": "Monitorización en SIMV",
+      "duration": 25,
+      "content": {
+        "text": "Monitorizar: Frecuencia mandatoria (programada), Frecuencia espontánea, Frecuencia total, Vt mandatorio y espontáneo, Volumen minuto total, Trabajo respiratorio del paciente, Presiones (PIP, Pplateau si pausa), Curvas (distinguir respiraciones mandatorias de espontáneas). Una FR espontánea muy alta puede indicar PS insuficiente o distress.",
+        "keyPoints": [
+          "FR total = FR mandatoria + FR espontánea",
+          "Vt en ambos tipos de respiraciones",
+          "FR espontánea alta → revisar PS",
+          "Distinguir curvas mandatorias vs espontáneas",
+          "Calcular trabajo respiratorio"
+        ]
+      }
+    }
+  ],
+  "quiz": {
+    "id": "simv-quiz",
+    "type": "formative",
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "question": "¿Qué combina SIMV?",
+        "options": [
+          "Solo respiraciones mandatorias",
+          "Solo respiraciones espontáneas",
+          "Respiraciones mandatorias y espontáneas",
+          "Ventilación no invasiva y invasiva"
+        ],
+        "correct": 2,
+        "explanation": "SIMV combina respiraciones mandatorias (controladas) con respiraciones espontáneas del paciente, permitiendo una transición gradual."
+      },
+      {
+        "id": "q2",
+        "type": "case-based",
+        "question": "Paciente en SIMV: FR mandatoria 8 rpm, FR total 24 rpm. ¿Cuántas respiraciones espontáneas está haciendo?",
+        "caseContext": "Paciente despierto, con drive respiratorio",
+        "options": [
+          "8 respiraciones espontáneas",
+          "16 respiraciones espontáneas",
+          "24 respiraciones espontáneas",
+          "32 respiraciones espontáneas"
+        ],
+        "correct": 1,
+        "explanation": "FR espontánea = FR total - FR mandatoria = 24 - 8 = 16 respiraciones espontáneas por minuto."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "question": "Según estudios recientes, ¿qué modo puede ser más eficiente para el destete?",
+        "options": [
+          "SIMV siempre es mejor",
+          "PSV puede ser más rápido que SIMV",
+          "VCV es el mejor para destete",
+          "No hay diferencia entre modos"
+        ],
+        "correct": 1,
+        "explanation": "Estudios sugieren que el destete con PSV puede ser más rápido que con SIMV, aunque SIMV ofrece mayor seguridad de respaldo."
+      }
+    ]
+  },
+  "resources": [
+    {
+      "type": "video",
+      "title": "SIMV en práctica clínica",
+      "url": "/videos/simv-clinical.mp4"
+    },
+    {
+      "type": "pdf",
+      "title": "Comparación de modos de destete",
+      "url": "/resources/weaning-modes-comparison.pdf"
+    }
+  ],
+  "keywords": [
+    "SIMV",
+    "ventilación intermitente",
+    "respiraciones mandatorias",
+    "respiraciones espontáneas",
+    "destete",
+    "sincronización"
+  ]
+}

@@ -1,0 +1,185 @@
+{
+  "id": "lesson-psv-mode",
+  "moduleId": "psv-mode",
+  "title": "Ventilación con Soporte de Presión (PSV)",
+  "description": "Domina PSV: modo espontáneo asistido para destete y soporte parcial",
+  "estimatedTime": 160,
+  "level": "intermediate",
+  "order": 3,
+  "learningObjectives": [
+    "Comprender el funcionamiento de PSV",
+    "Configurar niveles de soporte apropiados",
+    "Monitorear eficacia de PSV"
+  ],
+  "sections": [
+    {
+      "id": "psv-mechanics",
+      "type": "interactive",
+      "title": "Mecánica de PSV",
+      "duration": 30,
+      "content": {
+        "interactiveType": "psv-explorer",
+        "description": "PSV es un modo espontáneo donde el paciente inicia cada respiración (trigger) y el ventilador proporciona un nivel de presión de soporte constante. La respiración termina cuando el flujo inspiratorio disminuye a un porcentaje predeterminado del flujo pico (cycle-off, típicamente 25%).",
+        "parameters": [
+          {
+            "name": "PS",
+            "description": "Presión de Soporte",
+            "range": "5-20 cmH2O",
+            "explanation": "Nivel de presión que asiste cada respiración espontánea"
+          },
+          {
+            "name": "Trigger",
+            "description": "Sensibilidad del trigger",
+            "range": "1-5 L/min o 0.5-2 cmH2O",
+            "explanation": "Esfuerzo necesario para iniciar respiración"
+          },
+          {
+            "name": "Cycle-off",
+            "description": "Criterio de ciclado",
+            "range": "10-40% del flujo pico",
+            "explanation": "Porcentaje de flujo que termina la inspiración"
+          }
+        ],
+        "scenarios": ["destete progresivo", "soporte parcial", "trabajo respiratorio reducido"]
+      }
+    },
+    {
+      "id": "psv-configuration",
+      "type": "reading",
+      "title": "Configuración de PSV",
+      "duration": 25,
+      "content": {
+        "text": "Para configurar PSV: 1) Asegurar que el paciente tiene drive respiratorio adecuado. 2) Configurar PS inicial (10-15 cmH2O típicamente). 3) Ajustar trigger (sensible pero sin auto-trigger). 4) Configurar PEEP (5-10 cmH2O). 5) Ajustar FiO2 según SpO2. 6) Monitorizar Vt resultante (debe ser 6-8 ml/kg) y frecuencia respiratoria (<25 rpm ideal).",
+        "keyPoints": [
+          "Requiere drive respiratorio activo",
+          "PS inicial: 10-15 cmH2O",
+          "Trigger: sensible sin auto-trigger",
+          "Vt objetivo: 6-8 ml/kg",
+          "FR <25 rpm indica soporte adecuado"
+        ],
+        "diagrams": ["/images/psv-configuration.png"]
+      }
+    },
+    {
+      "id": "psv-weaning",
+      "type": "video",
+      "title": "PSV en el Destete Ventilatorio",
+      "duration": 30,
+      "content": {
+        "videoUrl": "/videos/psv-weaning.mp4",
+        "transcript": "PSV es ideal para destete porque permite al paciente controlar su patrón respiratorio mientras recibe soporte variable. El destete progresivo implica disminuir gradualmente la PS (2-4 cmH2O cada 6-12 horas) mientras se monitoriza signos de fatiga: FR >30, Vt <5 ml/kg, uso de musculatura accesoria, desaturación. Un trial de respiración espontánea (SBT) se puede hacer con PS 5-8 cmH2O.",
+        "keyPoints": [
+          "Disminución gradual de PS",
+          "Monitorizar signos de fatiga",
+          "FR, Vt, uso de accesorios",
+          "SBT con PS 5-8 cmH2O",
+          "RSBI <105 predice éxito"
+        ]
+      }
+    },
+    {
+      "id": "psv-asynchrony",
+      "type": "reading",
+      "title": "Asincronías en PSV",
+      "duration": 25,
+      "content": {
+        "text": "Las asincronías comunes en PSV incluyen: Auto-trigger (el ventilador cicla sin esfuerzo del paciente, por condensación o arritmias), Double-trigger (dos respiraciones con un solo esfuerzo, PS muy bajo), Ciclado prematuro (cycle-off muy alto, paciente sigue inspirando), Ciclado tardío (cycle-off muy bajo, espiración forzada). Ajustar trigger y cycle-off según la curva de flujo.",
+        "keyPoints": [
+          "Auto-trigger: ajustar sensibilidad",
+          "Double-trigger: aumentar PS",
+          "Ciclado prematuro: reducir cycle-off%",
+          "Ciclado tardío: aumentar cycle-off%",
+          "Monitorizar curvas flujo-tiempo"
+        ],
+        "diagrams": ["/images/psv-asynchrony.png"]
+      }
+    },
+    {
+      "id": "psv-monitoring",
+      "type": "reading",
+      "title": "Monitorización en PSV",
+      "duration": 20,
+      "content": {
+        "text": "Monitorizar en PSV: Frecuencia respiratoria (<25 rpm), Volumen tidal (6-8 ml/kg), Patrón respiratorio (regular vs irregular), RSBI (Rapid Shallow Breathing Index = FR/Vt en litros, <105 predice éxito de extubación), Uso de musculatura accesoria, SpO2, signos de fatiga. Realizar mediciones periódicas para ajustar PS.",
+        "keyPoints": [
+          "FR <25 rpm",
+          "Vt 6-8 ml/kg",
+          "RSBI <105",
+          "Sin uso de accesorios",
+          "Patrón regular y confortable"
+        ],
+        "formulas": [
+          "RSBI = FR / Vt(litros)",
+          "Ejemplo: 20 rpm / 0.5 L = 40 (bueno)"
+        ]
+      }
+    }
+  ],
+  "quiz": {
+    "id": "psv-quiz",
+    "type": "formative",
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "question": "¿Quién inicia cada respiración en PSV?",
+        "options": [
+          "El ventilador según tiempo programado",
+          "El paciente con su esfuerzo inspiratorio",
+          "Ambos por igual",
+          "Depende de la configuración"
+        ],
+        "correct": 1,
+        "explanation": "PSV es un modo totalmente espontáneo donde cada respiración es iniciada por el esfuerzo del paciente (trigger)."
+      },
+      {
+        "id": "q2",
+        "type": "case-based",
+        "question": "Paciente en PSV 12 cmH2O. FR = 32 rpm, Vt = 300 ml. ¿Qué deberías hacer?",
+        "caseContext": "Paciente despierto, sin dolor, SpO2 94%",
+        "options": [
+          "Disminuir PS (está listo para extubar)",
+          "Aumentar PS (soporte insuficiente)",
+          "Mantener sin cambios",
+          "Cambiar a VCV"
+        ],
+        "correct": 1,
+        "explanation": "FR elevada (>30) y Vt bajo (<5 ml/kg en adulto ~70kg) indican soporte insuficiente o fatiga. Debe aumentarse la PS o reevaluar causas de taquipnea."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "question": "¿Qué valor de RSBI predice un destete exitoso?",
+        "options": [
+          "RSBI >150",
+          "RSBI 105-150",
+          "RSBI <105",
+          "RSBI <50"
+        ],
+        "correct": 2,
+        "explanation": "Un RSBI (Rapid Shallow Breathing Index) <105 respiraciones/min/L predice un destete exitoso. Valores >105 sugieren respiración rápida y superficial."
+      }
+    ]
+  },
+  "resources": [
+    {
+      "type": "video",
+      "title": "Destete con PSV paso a paso",
+      "url": "/videos/psv-weaning-guide.mp4"
+    },
+    {
+      "type": "pdf",
+      "title": "Protocolo de Destete",
+      "url": "/resources/weaning-protocol.pdf"
+    }
+  ],
+  "keywords": [
+    "PSV",
+    "soporte de presión",
+    "destete",
+    "RSBI",
+    "asincronías",
+    "trigger",
+    "cycle-off"
+  ]
+}

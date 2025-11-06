@@ -1,0 +1,197 @@
+{
+  "id": "lesson-copd-management",
+  "moduleId": "copd-management",
+  "title": "Manejo Ventilatorio en EPOC",
+  "description": "Estrategias específicas para ventilación mecánica en pacientes con EPOC",
+  "estimatedTime": 200,
+  "level": "advanced",
+  "order": 2,
+  "learningObjectives": [
+    "Comprender las particularidades fisiopatológicas del EPOC",
+    "Aplicar estrategias ventilatorias específicas para EPOC",
+    "Detectar y manejar auto-PEEP y hiperinsuflación"
+  ],
+  "sections": [
+    {
+      "id": "copd-physiology",
+      "type": "video",
+      "title": "Fisiopatología del EPOC",
+      "duration": 35,
+      "content": {
+        "videoUrl": "/videos/copd-physiology.mp4",
+        "transcript": "El EPOC se caracteriza por limitación crónica al flujo aéreo, obstrucción no reversible, enfisema (destrucción alveolar), bronquitis crónica (hipersecreción mucosa). Esto produce: aumento de resistencia de vía aérea, atrapamiento aéreo, auto-PEEP (PEEP intrínseca), hiperinsuflación dinámica, aplanamiento diafragmático (desventaja mecánica), y alteración del intercambio gaseoso (hipercapnia crónica en casos avanzados).",
+        "keyPoints": [
+          "Obstrucción crónica al flujo",
+          "Atrapamiento aéreo → auto-PEEP",
+          "Hiperinsuflación dinámica",
+          "Diafragma aplanado",
+          "Hipercapnia crónica compensada"
+        ],
+        "diagrams": ["/images/copd-pathophysiology.png"]
+      }
+    },
+    {
+      "id": "auto-peep",
+      "type": "reading",
+      "title": "Auto-PEEP: Detección y Manejo",
+      "duration": 30,
+      "content": {
+        "text": "Auto-PEEP (PEEP intrínseca) ocurre cuando no hay tiempo suficiente para espiración completa antes de la siguiente inspiración. Causas: alta frecuencia respiratoria, Vt alto, tiempo espiratorio corto, obstrucción severa. Consecuencias: hiperinsuflación, compromiso hemodinámico (↓retorno venoso), barotrauma, aumento del trabajo inspiratorio. Detección: pausa espiratoria (si hay flujo al final de espiración), medición de presión al ocluir espiración. Manejo: ↓FR, ↓Vt, ↑tiempo espiratorio (↑I:E a 1:3-1:4), considerar PEEP externa.",
+        "keyPoints": [
+          "Auto-PEEP = PEEP intrínseca",
+          "Detectar con pausa espiratoria",
+          "↓FR, ↓Vt, ↑tiempo espiratorio",
+          "Considerar PEEP externa 80-85% auto-PEEP",
+          "Broncodilatadores + fisioterapia"
+        ],
+        "diagrams": ["/images/auto-peep-detection.png"]
+      }
+    },
+    {
+      "id": "copd-simulation",
+      "type": "simulation",
+      "title": "Simulación: Ventilación en EPOC",
+      "duration": 50,
+      "content": {
+        "simulationType": "copd-ventilation",
+        "description": "Configura ventilación en pacientes con EPOC agudizado. Detecta auto-PEEP, optimiza tiempos respiratorios y evita hiperinsuflación.",
+        "objectives": [
+          "Detectar presencia de auto-PEEP",
+          "Optimizar relación I:E (1:3 o 1:4)",
+          "Manejar hiperinsuflación dinámica",
+          "Balancear ventilación y oxigenación",
+          "Permitir hipercapnia controlada"
+        ],
+        "clinicalScenarios": [
+          {
+            "name": "EPOC agudizado",
+            "patient": "75 kg, resistencia muy alta, compliance normal",
+            "challenge": "Auto-PEEP 12 cmH2O detectado",
+            "goals": "Reducir auto-PEEP <8 cmH2O, pH >7.25"
+          },
+          {
+            "name": "Asma severo",
+            "patient": "60 kg, broncoespasmo, hipoxemia",
+            "challenge": "Atrapamiento aéreo severo",
+            "goals": "Evitar barotrauma, mejorar SpO2"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ventilation-strategy",
+      "type": "reading",
+      "title": "Estrategia Ventilatoria en EPOC",
+      "duration": 25,
+      "content": {
+        "text": "Configuración recomendada: Modalidad: VCV o PCV (PCV puede ser mejor tolerada). Vt: 6-8 ml/kg (no alto). FR: baja (10-14 rpm) para permitir espiración completa. I:E: 1:3 o 1:4 (maximizar tiempo espiratorio). Flujo inspiratorio: alto en VCV (60-80 L/min) para acortar Ti. PEEP externa: 0-5 cmH2O inicialmente, o 80-85% del auto-PEEP si este es alto. FiO2: la mínima necesaria (precaución con retención crónica de CO2). Objetivo: pH >7.25, SpO2 88-92%.",
+        "keyPoints": [
+          "FR baja (10-14 rpm)",
+          "I:E 1:3 o 1:4 (tiempo espiratorio largo)",
+          "Flujo alto para acortar Ti",
+          "PEEP externa 80-85% auto-PEEP si alto",
+          "SpO2 88-92% (no sobrecorregir en EPOC crónico)"
+        ]
+      }
+    },
+    {
+      "id": "weaning-copd",
+      "type": "reading",
+      "title": "Destete en Pacientes con EPOC",
+      "duration": 25,
+      "content": {
+        "text": "El destete en EPOC es desafiante por: fatiga muscular, auto-PEEP aumenta trabajo inspiratorio, hipercapnia basal. Estrategias: corregir broncoespasmo (broncodilatadores), manejo de secreciones (fisioterapia), nutrición adecuada (evitar desnutrición), PSV es preferible a SIMV, considerar PEEP externa durante destete (contrarrestar auto-PEEP), trials de respiración espontánea con T-piece o PSV bajo (5-7 cmH2O). VNI post-extubación puede prevenir reintubación.",
+        "keyPoints": [
+          "Optimizar broncodilatación",
+          "PSV preferible para destete",
+          "PEEP externa ayuda a disminuir trabajo",
+          "VNI post-extubación beneficiosa",
+          "Paciencia: destete puede ser prolongado"
+        ]
+      }
+    },
+    {
+      "id": "niv-copd",
+      "type": "reading",
+      "title": "Ventilación No Invasiva en EPOC",
+      "duration": 20,
+      "content": {
+        "text": "La VNI (BiPAP) es tratamiento de primera línea en exacerbación de EPOC con acidosis respiratoria (pH 7.25-7.35). Beneficios: reduce necesidad de intubación, disminuye mortalidad, acorta estancia hospitalaria. Configuración: IPAP 10-20 cmH2O, EPAP 4-8 cmH2O, titular según confort y gasometría. Criterios de fallo: deterioro del nivel de conciencia, incapacidad de manejo de secreciones, inestabilidad hemodinámica → intubar.",
+        "keyPoints": [
+          "VNI primera línea en EPOC agudizado con acidosis",
+          "pH 7.25-7.35: candidato ideal",
+          "IPAP/EPAP titulable",
+          "Reduce intubación y mortalidad",
+          "Intubar si falla o contraindicación"
+        ]
+      }
+    }
+  ],
+  "quiz": {
+    "id": "copd-quiz",
+    "type": "formative",
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "question": "¿Cómo se detecta auto-PEEP en un paciente ventilado?",
+        "options": [
+          "Observando el monitor de SpO2",
+          "Realizando pausa espiratoria y detectando flujo",
+          "Midiendo el CO2 espirado",
+          "Auscultando el tórax"
+        ],
+        "correct": 1,
+        "explanation": "El auto-PEEP se detecta realizando una pausa espiratoria: si hay flujo al final de la espiración o si la presión no llega a cero, indica auto-PEEP."
+      },
+      {
+        "id": "q2",
+        "type": "case-based",
+        "question": "Paciente EPOC en VM. Auto-PEEP detectado de 10 cmH2O. ¿Cuál NO es una estrategia apropiada?",
+        "caseContext": "FR 18 rpm, I:E 1:2, Vt 600 ml",
+        "options": [
+          "Disminuir FR a 12 rpm",
+          "Aumentar I:E a 1:3",
+          "Aumentar Vt a 800 ml",
+          "Agregar PEEP externa 8 cmH2O"
+        ],
+        "correct": 2,
+        "explanation": "Aumentar Vt empeoraría la hiperinsuflación y el auto-PEEP. Las otras opciones son apropiadas: disminuir FR, aumentar tiempo espiratorio, y PEEP externa."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "question": "En pacientes con EPOC crónico, ¿cuál es el objetivo de SpO2 recomendado?",
+        "options": [
+          "100%",
+          "95-100%",
+          "88-92%",
+          "80-85%"
+        ],
+        "correct": 2,
+        "explanation": "En EPOC con retención crónica de CO2, el objetivo es SpO2 88-92% para evitar suprimir el drive respiratorio hipóxico."
+      }
+    ]
+  },
+  "resources": [
+    {
+      "type": "pdf",
+      "title": "Guía GOLD para EPOC",
+      "url": "/resources/gold-copd-guidelines.pdf"
+    },
+    {
+      "type": "video",
+      "title": "Manejo práctico de auto-PEEP",
+      "url": "/videos/auto-peep-management.mp4"
+    }
+  ],
+  "keywords": [
+    "EPOC",
+    "auto-PEEP",
+    "hiperinsuflación",
+    "atrapamiento aéreo",
+    "VNI",
+    "BiPAP",
+    "destete"
+  ]
+}

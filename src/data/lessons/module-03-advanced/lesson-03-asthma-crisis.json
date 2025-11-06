@@ -1,0 +1,206 @@
+{
+  "id": "lesson-asthma-crisis",
+  "moduleId": "asthma-crisis",
+  "title": "Manejo de Crisis Asmática Severa",
+  "description": "Estrategias ventilatorias para crisis asmática y estado asmático",
+  "estimatedTime": 180,
+  "level": "advanced",
+  "order": 3,
+  "learningObjectives": [
+    "Identificar criterios de crisis asmática severa",
+    "Aplicar ventilación permisiva en asma",
+    "Manejar complicaciones ventilatorias en estado asmático"
+  ],
+  "sections": [
+    {
+      "id": "asthma-pathophysiology",
+      "type": "reading",
+      "title": "Fisiopatología de la Crisis Asmática",
+      "duration": 25,
+      "content": {
+        "text": "La crisis asmática severa se caracteriza por: broncoespasmo agudo (contracción del músculo liso bronquial), inflamación de vía aérea, hipersecreción mucosa, edema de mucosa. Esto produce obstrucción severa al flujo, atrapamiento aéreo masivo, auto-PEEP muy elevado (15-25 cmH2O), hiperinsuflación dinámica extrema, y riesgo alto de barotrauma. La hipercapnia es común y puede ser severa (PaCO2 >60 mmHg).",
+        "keyPoints": [
+          "Broncoespasmo + inflamación + moco",
+          "Obstrucción severa al flujo",
+          "Auto-PEEP puede ser >15-20 cmH2O",
+          "Alto riesgo de neumotórax",
+          "Hipercapnia severa frecuente"
+        ]
+      }
+    },
+    {
+      "id": "intubation-criteria",
+      "type": "reading",
+      "title": "Criterios de Intubación",
+      "duration": 20,
+      "content": {
+        "text": "La intubación en crisis asmática se considera cuando: deterioro del nivel de conciencia (agotamiento, confusión), paro cardiorrespiratorio inminente, acidosis respiratoria severa (pH <7.15-7.20) a pesar de tratamiento máximo, hipoxemia refractaria, fatiga respiratoria extrema. PRECAUCIÓN: la intubación es de alto riesgo (puede precipitar paro por hiperinsuflación masiva, hipotensión). Pre-oxigenar bien, tener drogas de reanimación listas, intubar con paciente sentado si es posible.",
+        "keyPoints": [
+          "Evitar intubación si posible (VNI primero)",
+          "Indicaciones: deterioro conciencia, pH <7.15, fatiga extrema",
+          "Alto riesgo: preparar para paro",
+          "Pre-oxigenación máxima",
+          "Sedación profunda + relajante"
+        ]
+      }
+    },
+    {
+      "id": "ventilation-strategy",
+      "type": "reading",
+      "title": "Estrategia de Ventilación Permisiva",
+      "duration": 30,
+      "content": {
+        "text": "En asma severa se aplica HIPERCAPNIA PERMISIVA para evitar barotrauma: Vt BAJO (5-7 ml/kg, incluso 4 ml/kg si necesario), FR BAJA (8-12 rpm), permitir PaCO2 elevado (60-90 mmHg) si pH >7.15-7.20, Flujo inspiratorio ALTO (80-100 L/min en VCV) para acortar Ti, I:E 1:3 a 1:5 (maximizar tiempo espiratorio), PEEP externa BAJA (0-5 cmH2O), PIP objetivo <35 cmH2O, Pplateau <30 cmH2O. El objetivo es SOBREVIVIR evitando barotrauma, no normalizar gases.",
+        "keyPoints": [
+          "Vt BAJO: 5-7 ml/kg (o menos)",
+          "FR BAJA: 8-12 rpm",
+          "Permitir hipercapnia (PaCO2 60-90, pH >7.15)",
+          "I:E 1:4 o 1:5 (Te muy largo)",
+          "Presiones bajas a toda costa"
+        ],
+        "diagrams": ["/images/permissive-hypercapnia.png"]
+      }
+    },
+    {
+      "id": "asthma-case-study",
+      "type": "case-study",
+      "title": "Caso Clínico: Crisis Asmática Severa",
+      "duration": 45,
+      "content": {
+        "caseType": "interactive-case",
+        "patientData": {
+          "age": 35,
+          "weight": 70,
+          "diagnosis": "Estado asmático",
+          "history": "Asmático conocido, mala adherencia",
+          "presentation": "Disnea severa, no responde a broncodilatadores, agotamiento",
+          "vitals": "FR 35, FC 130, PA 100/60, SpO2 85% con O2 alto flujo",
+          "gasometry": "pH 7.18, PaCO2 68, PaO2 55, HCO3 24"
+        },
+        "objectives": [
+          "Decidir intubar (sí, por pH <7.20 y agotamiento)",
+          "Configurar ventilador para minimizar riesgo",
+          "Manejar hipercapnia permisiva",
+          "Detectar y manejar auto-PEEP",
+          "Monitorear riesgo de neumotórax",
+          "Tratamiento médico adyuvante"
+        ],
+        "questions": [
+          {
+            "step": 1,
+            "question": "¿Qué Vt inicial usarías? (peso ideal 70 kg)",
+            "options": ["560 ml (8 ml/kg)", "420 ml (6 ml/kg)", "350 ml (5 ml/kg)", "280 ml (4 ml/kg)"],
+            "correct": 2,
+            "explanation": "En asma severo comenzar con Vt bajo (5 ml/kg) para minimizar presiones y auto-PEEP."
+          },
+          {
+            "step": 2,
+            "question": "Después de intubar, PIP es 45 cmH2O, Pplateau 38 cmH2O. ¿Qué hacer?",
+            "options": ["Aumentar Vt", "Disminuir Vt y FR", "Cambiar a PCV", "Aumentar PEEP"],
+            "correct": 1,
+            "explanation": "Pplateau >30 cmH2O indica alto riesgo de barotrauma. Disminuir Vt (incluso a 4 ml/kg) y FR."
+          }
+        ]
+      }
+    },
+    {
+      "id": "medical-management",
+      "type": "reading",
+      "title": "Manejo Médico Adyuvante",
+      "duration": 25,
+      "content": {
+        "text": "Además de la ventilación: Beta-agonistas nebulizados continuos (salbutamol), anticolinérgicos (ipratropio), corticosteroides IV (metilprednisolona 40-80 mg c/6-8h), magnesio IV (2g en 20 min), considerar ketamina (broncodilatador, útil para sedación), evitar morfina (libera histamina), anestésicos inhalados (sevoflurano, isoflurano) si refractario. NO usar bicarbonato para 'corregir' pH. Hidratación adecuada. Fisioterapia respiratoria.",
+        "keyPoints": [
+          "Beta-agonistas continuos",
+          "Corticosteroides IV",
+          "Magnesio 2g IV",
+          "Ketamina (sedación + broncodilatación)",
+          "Anestésicos inhalados si refractario",
+          "NO bicarbonato rutinario"
+        ]
+      }
+    },
+    {
+      "id": "complications",
+      "type": "reading",
+      "title": "Complicaciones y Monitorización",
+      "duration": 20,
+      "content": {
+        "text": "Complicaciones principales: Neumotórax (sospecha si deterioro súbito, asimetría, ↑PIP), hipotensión (por hiperinsuflación → ↓retorno venoso), paro cardíaco durante/después intubación, miopатía por corticosteroides+relajantes. Monitorización: Presiones (PIP, Pplateau), curvas (detectar auto-PEEP), gases arteriales seriados, signos de barotrauma, hemodinámica. Si neumotórax: toracocentesis de urgencia antes de Rx.",
+        "keyPoints": [
+          "Neumotórax: complicación frecuente y grave",
+          "Hipotensión por hiperinsuflación",
+          "Detectar auto-PEEP continuamente",
+          "Gases arteriales c/30-60 min inicialmente",
+          "Rx tórax de control"
+        ]
+      }
+    }
+  ],
+  "quiz": {
+    "id": "asthma-quiz",
+    "type": "case-based",
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "question": "En ventilación permisiva en asma, ¿cuál es el pH mínimo aceptable?",
+        "options": [
+          "7.35",
+          "7.25",
+          "7.15-7.20",
+          "7.00"
+        ],
+        "correct": 2,
+        "explanation": "Se permite pH hasta 7.15-7.20 para evitar presiones altas y barotrauma. Por debajo de 7.15, la acidosis puede comprometer función cardíaca."
+      },
+      {
+        "id": "q2",
+        "type": "case-based",
+        "question": "Paciente asmático ventilado, súbitamente ↑PIP de 35 a 55 cmH2O, hipotensión, tórax asimétrico. ¿Diagnóstico?",
+        "caseContext": "Deterioro agudo durante ventilación mecánica",
+        "options": [
+          "Empeoramiento del broncoespasmo",
+          "Taponamiento mucoso",
+          "Neumotórax a tensión",
+          "Tubo desplazado"
+        ],
+        "correct": 2,
+        "explanation": "Deterioro súbito + ↑presión + asimetría + hipotensión = neumotórax a tensión. Requiere toracocentesis urgente."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "question": "¿Qué relación I:E es apropiada en asma severo?",
+        "options": [
+          "1:1",
+          "1:2",
+          "1:4 o 1:5",
+          "2:1"
+        ],
+        "correct": 2,
+        "explanation": "Se requiere tiempo espiratorio muy prolongado (I:E 1:4 o 1:5) para permitir espiración completa y reducir auto-PEEP."
+      }
+    ]
+  },
+  "resources": [
+    {
+      "type": "pdf",
+      "title": "Guía de manejo de estado asmático",
+      "url": "/resources/status-asthmaticus-guide.pdf"
+    },
+    {
+      "type": "video",
+      "title": "Intubación en crisis asmática: consejos prácticos",
+      "url": "/videos/asthma-intubation-tips.mp4"
+    }
+  ],
+  "keywords": [
+    "asma",
+    "estado asmático",
+    "hipercapnia permisiva",
+    "barotrauma",
+    "auto-PEEP",
+    "neumotórax"
+  ]
+}

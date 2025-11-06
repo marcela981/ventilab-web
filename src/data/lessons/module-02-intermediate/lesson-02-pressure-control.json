@@ -1,0 +1,174 @@
+{
+  "id": "lesson-pressure-control",
+  "moduleId": "pressure-control",
+  "title": "Ventilación Controlada por Presión (PCV)",
+  "description": "Aprende PCV: funcionamiento, configuración y aplicaciones clínicas",
+  "estimatedTime": 180,
+  "level": "intermediate",
+  "order": 2,
+  "learningObjectives": [
+    "Dominar la configuración de PCV",
+    "Comprender la relación presión-volumen en PCV",
+    "Manejar complicaciones de PCV"
+  ],
+  "sections": [
+    {
+      "id": "pcv-mechanics",
+      "type": "video",
+      "title": "Mecánica de PCV",
+      "duration": 35,
+      "content": {
+        "videoUrl": "/videos/pcv-mechanics.mp4",
+        "transcript": "En PCV, el ventilador mantiene una presión inspiratoria constante predeterminada. El volumen tidal resultante varía según la compliance y resistencia del paciente. El flujo es desacelerante (decreciente), lo que puede mejorar la distribución del gas y el confort del paciente. Es preferible en patologías con compliance muy disminuida o riesgo de barotrauma.",
+        "keyPoints": [
+          "Presión constante predeterminada",
+          "Volumen variable según mecánica",
+          "Flujo desacelerante",
+          "Mejor distribución de gas"
+        ]
+      }
+    },
+    {
+      "id": "pcv-parameters",
+      "type": "reading",
+      "title": "Configuración de Parámetros en PCV",
+      "duration": 25,
+      "content": {
+        "text": "Los parámetros en PCV incluyen: Presión Inspiratoria (PIP, 15-25 cmH2O sobre PEEP), Frecuencia Respiratoria (12-20 rpm), Tiempo Inspiratorio (0.8-1.2 seg) o I:E (1:2 a 1:3), PEEP (según necesidad), y FiO2. El volumen tidal resultante debe monitorizarse constantemente para asegurar ventilación adecuada.",
+        "keyPoints": [
+          "PIP: 15-25 cmH2O (sobre PEEP)",
+          "Tiempo inspiratorio: 0.8-1.2 seg",
+          "I:E: 1:2 a 1:3",
+          "Monitorizar Vt resultante",
+          "Ajustar según compliance"
+        ],
+        "diagrams": ["/images/pcv-parameters.png"]
+      }
+    },
+    {
+      "id": "pcv-simulation",
+      "type": "simulation",
+      "title": "Simulación PCV",
+      "duration": 45,
+      "content": {
+        "simulationType": "pcv-ventilator",
+        "description": "Configura PCV en diferentes escenarios. Observa cómo el volumen tidal varía con los cambios en la mecánica pulmonar.",
+        "objectives": [
+          "Configurar PCV apropiadamente",
+          "Ajustar presión según compliance",
+          "Monitorear volumen tidal",
+          "Identificar cambios en mecánica"
+        ],
+        "clinicalScenarios": [
+          {
+            "name": "Paciente con compliance variable",
+            "patient": "Compliance oscila entre 20-40 ml/cmH2O",
+            "challenge": "Mantener Vt adecuado a pesar de cambios"
+          },
+          {
+            "name": "ARDS severo",
+            "patient": "Compliance 15 ml/cmH2O, riesgo alto de barotrauma",
+            "challenge": "Limitar presiones manteniendo oxigenación"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pcv-vs-vcv",
+      "type": "reading",
+      "title": "PCV vs VCV: Comparación",
+      "duration": 20,
+      "content": {
+        "text": "PCV ofrece ventajas en: mejor distribución de gas (flujo desacelerante), menor riesgo de barotrauma (presión limitada), mejor sincronía en pacientes despiertos. VCV ofrece: volumen minuto garantizado, más fácil de predecir ventilación. La elección depende de la patología: PCV preferible en ARDS severo, VCV en pacientes con drive respiratorio variable.",
+        "keyPoints": [
+          "PCV: presión limitada, flujo desacelerante",
+          "VCV: volumen garantizado, predecible",
+          "PCV mejor en ARDS severo",
+          "VCV mejor en compliance variable",
+          "No hay evidencia de superioridad clara"
+        ]
+      }
+    },
+    {
+      "id": "pcv-monitoring",
+      "type": "reading",
+      "title": "Monitorización en PCV",
+      "duration": 25,
+      "content": {
+        "text": "En PCV es crucial monitorizar: Volumen Tidal (debe mantenerse 6-8 ml/kg), Volumen Minuto, curvas de flujo-tiempo (identificar cambios en compliance/resistencia), PIP (está fijo), y auto-PEEP. Una disminución del Vt indica empeoramiento de la compliance o aumento de la resistencia.",
+        "keyPoints": [
+          "Monitorizar Vt continuamente",
+          "Vt bajo = compliance↓ o resistencia↑",
+          "Curvas de flujo revelan mecánica",
+          "Detectar auto-PEEP",
+          "Ajustar PIP según necesidad"
+        ]
+      }
+    }
+  ],
+  "quiz": {
+    "id": "pcv-quiz",
+    "type": "formative",
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "question": "En PCV, ¿qué parámetro se mantiene constante?",
+        "options": [
+          "Volumen tidal",
+          "Presión inspiratoria",
+          "Flujo inspiratorio",
+          "Tiempo espiratorio"
+        ],
+        "correct": 1,
+        "explanation": "En PCV la presión inspiratoria se mantiene constante, mientras que el volumen y flujo varían según la mecánica pulmonar."
+      },
+      {
+        "id": "q2",
+        "type": "case-based",
+        "question": "Paciente en PCV con PIP 25 cmH2O. El Vt ha disminuido de 500 ml a 350 ml. ¿Qué ha ocurrido?",
+        "caseContext": "Paciente con ARDS, sin cambios en configuración del ventilador",
+        "options": [
+          "Ha mejorado la compliance",
+          "Ha empeorado la compliance o aumentado la resistencia",
+          "El paciente respira espontáneamente",
+          "Es un funcionamiento normal"
+        ],
+        "correct": 1,
+        "explanation": "En PCV, una disminución del Vt con presión constante indica empeoramiento de la mecánica pulmonar (compliance disminuida o resistencia aumentada)."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "question": "¿Cuál es una ventaja principal de PCV sobre VCV?",
+        "options": [
+          "Volumen minuto garantizado",
+          "Más fácil de configurar",
+          "Menor riesgo de barotrauma",
+          "No requiere monitorización"
+        ],
+        "correct": 2,
+        "explanation": "PCV limita la presión inspiratoria, reduciendo el riesgo de barotrauma. Sin embargo, requiere monitorización constante del volumen tidal."
+      }
+    ]
+  },
+  "resources": [
+    {
+      "type": "video",
+      "title": "PCV en práctica clínica",
+      "url": "/videos/pcv-clinical-practice.mp4"
+    },
+    {
+      "type": "pdf",
+      "title": "Guía PCV vs VCV",
+      "url": "/resources/pcv-vcv-comparison.pdf"
+    }
+  ],
+  "keywords": [
+    "PCV",
+    "presión controlada",
+    "flujo desacelerante",
+    "volumen variable",
+    "compliance"
+  ]
+}

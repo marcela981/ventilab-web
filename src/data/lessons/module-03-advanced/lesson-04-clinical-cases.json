@@ -1,0 +1,331 @@
+{
+  "id": "lesson-clinical-cases",
+  "moduleId": "clinical-cases",
+  "title": "Casos Clínicos Complejos Integrativos",
+  "description": "Integra todos los conocimientos mediante casos clínicos reales complejos",
+  "estimatedTime": 300,
+  "level": "advanced",
+  "order": 4,
+  "learningObjectives": [
+    "Integrar conocimientos de ventilación mecánica en casos complejos",
+    "Tomar decisiones clínicas fundamentadas bajo presión",
+    "Manejar múltiples patologías simultáneas"
+  ],
+  "sections": [
+    {
+      "id": "complex-case-1",
+      "type": "case-study",
+      "title": "Caso 1: ARDS + Sepsis + Fallo Multiorgánico",
+      "duration": 60,
+      "content": {
+        "caseType": "complex-scenario",
+        "patientData": {
+          "age": 58,
+          "weight": 82,
+          "height": 175,
+          "idealWeight": 73,
+          "diagnosis": "ARDS severo secundario a neumonía + sepsis + fallo multiorgánico",
+          "history": "Diabético, hipertensión, ingresó por neumonía, progresó a shock séptico",
+          "dayOfAdmission": "Día 3 en UCI",
+          "vitals": "FC 125, PA 85/50 (noradrenalina 0.3 mcg/kg/min), T 38.5°C",
+          "gasometry": "pH 7.28, PaCO2 48, PaO2 55, HCO3 22, Lactato 4.2",
+          "ventilator": "VCV: Vt 650 ml, FR 18, FiO2 90%, PEEP 10, PIP 42, Pplateau 35",
+          "labs": "Creatinina 2.8 (basal 0.9), plaquetas 58000, INR 2.1",
+          "complications": ["Shock séptico", "Fallo renal agudo", "Coagulopatía"]
+        },
+        "objectives": [
+          "Reconocer ARDS severo (PaO2/FiO2 = 61)",
+          "Aplicar ventilación protectora (Vt actual es EXCESIVO)",
+          "Optimizar PEEP para oxigenación",
+          "Considerar posición prono",
+          "Manejar hemodinámica (sepsis + PEEP alto)",
+          "Coordinación multidisciplinaria"
+        ],
+        "questions": [
+          {
+            "step": 1,
+            "question": "¿Cuál es el principal problema con la configuración actual del ventilador?",
+            "options": [
+              "FiO2 es muy baja",
+              "Vt es muy alto (650 ml = 8.9 ml/kg peso ideal)",
+              "PEEP es muy alta",
+              "FR es muy baja"
+            ],
+            "correct": 1,
+            "explanation": "Vt actual es 650 ml / 73 kg peso ideal = 8.9 ml/kg, muy alto para ARDS severo. Debe ser 6 ml/kg = 438 ml. Pplateau 35 confirma riesgo de volutrauma."
+          },
+          {
+            "step": 2,
+            "question": "Después de ajustar Vt a 440 ml, FR 20, PEEP 14, el paciente tiene: SpO2 85%, PA 70/40, FC 140. ¿Qué hacer?",
+            "options": [
+              "Aumentar PEEP a 18",
+              "Disminuir PEEP a 10 y dar más volumen/vasopresor",
+              "Posición prono inmediatamente",
+              "Aumentar Vt a 500 ml"
+            ],
+            "correct": 2,
+            "explanation": "El paciente tiene hipoxemia refractaria (ARDS severo) a pesar de PEEP óptima. Posición prono está indicada (PROSEVA). Primero estabilizar hemodinámica si es necesario."
+          },
+          {
+            "step": 3,
+            "question": "Después de 18h en prono, SpO2 92%, gasometría mejoró. ¿Cuándo suspender prono?",
+            "options": [
+              "Inmediatamente (ya mejoró)",
+              "Mantener hasta completar ≥16 horas, evaluar respuesta al volver a supino",
+              "Mantener 24 horas continuas",
+              "Mantener hasta extubar"
+            ],
+            "correct": 1,
+            "explanation": "PROSEVA recomienda sesiones de ≥16 horas. Después de una sesión, evaluar si se sostiene mejoría en supino. Repetir prono si es necesario."
+          }
+        ],
+        "learningPoints": [
+          "Cálculo de peso ideal es fundamental",
+          "Volutrauma es común en ARDS si no se vigila Vt",
+          "PEEP alta puede comprometer hemodinámica en shock",
+          "Prono está indicado en ARDS severo",
+          "Enfoque multidisciplinario: VM + hemodinámica + infección + órganos"
+        ]
+      }
+    },
+    {
+      "id": "complex-case-2",
+      "type": "case-study",
+      "title": "Caso 2: Post-Quirúrgico con Complicaciones Respiratorias",
+      "duration": 60,
+      "content": {
+        "caseType": "post-surgical",
+        "patientData": {
+          "age": 72,
+          "weight": 88,
+          "height": 168,
+          "idealWeight": 64,
+          "diagnosis": "Post-CABG (bypass coronario) con complicaciones",
+          "surgery": "CABG x4 hace 12 horas",
+          "history": "Cardiopatía isquémica, FEVI 35%, diabetes, obesidad",
+          "vitals": "FC 110 (FA), PA 100/60, SvO2 55%",
+          "ventilator": "VCV: Vt 550 ml, FR 14, FiO2 60%, PEEP 5",
+          "gasometry": "pH 7.32, PaCO2 48, PaO2 70, HCO3 24",
+          "imaging": "Rx: atelectasia basal bilateral, derrame pleural pequeño bilateral",
+          "complications": ["Atelectasia", "Derrame pleural", "Fibrilación auricular", "Bajo gasto cardíaco"]
+        },
+        "objectives": [
+          "Manejo post-quirúrgico: balance entre oxigenación y gasto cardíaco",
+          "Prevenir atelectasias (reclutamiento, PEEP)",
+          "Manejar bajo gasto con PEEP (cuidado con retorno venoso)",
+          "Optimizar ventilación para destete temprano",
+          "Coordinar con cardiología"
+        ],
+        "questions": [
+          {
+            "step": 1,
+            "question": "¿Qué estrategia para mejorar oxigenación sin comprometer gasto cardíaco?",
+            "options": [
+              "Aumentar PEEP a 15 cmH2O",
+              "Aumentar FiO2 a 100%",
+              "Maniobras de reclutamiento + PEEP moderada (8-10) + FiO2 según necesidad",
+              "Cambiar a PCV con PIP 35"
+            ],
+            "correct": 2,
+            "explanation": "Post-CABG con bajo gasto requiere balance. Reclutamiento suave + PEEP moderada mejora atelectasias. PEEP muy alta (15) puede disminuir más el gasto. FiO2 100% es aceptable temporalmente."
+          },
+          {
+            "step": 2,
+            "question": "El paciente despierta y comienza a respirar espontáneamente. ¿Siguiente paso?",
+            "options": [
+              "Mantener VCV para control total",
+              "Cambiar a PSV para facilitar destete",
+              "Extubar inmediatamente",
+              "Sedar más profundamente"
+            ],
+            "correct": 1,
+            "explanation": "En post-operatorio cardíaco estable, si el paciente despierta y tiene drive, cambiar a PSV facilita destete temprano y extubación (objetivo <6-12h post-CABG si es posible)."
+          },
+          {
+            "step": 3,
+            "question": "En PSV 10 cmH2O, FR 28, Vt 280 ml, uso de accesorios. RSBI = 100. ¿Qué hacer?",
+            "options": [
+              "Extubar (RSBI <105)",
+              "Aumentar PS a 15 cmH2O (soporte insuficiente)",
+              "Cambiar a VCV",
+              "Realizar traqueostomía"
+            ],
+            "correct": 1,
+            "explanation": "Aunque RSBI es <105, la FR alta, Vt bajo y uso de accesorios indican fatiga. Aumentar PS. No extubar en estas condiciones."
+          }
+        ],
+        "learningPoints": [
+          "Post-CABG: objetivo es extubación temprana (<6-12h)",
+          "Balance oxigenación vs gasto cardíaco",
+          "Atelectasias son comunes: reclutamiento + PEEP",
+          "RSBI solo es UNA herramienta, evaluar clínicamente",
+          "Destete rápido pero seguro"
+        ]
+      }
+    },
+    {
+      "id": "complex-case-3",
+      "type": "case-study",
+      "title": "Caso 3: Trauma Múltiple + TEC + Tórax Inestable",
+      "duration": 60,
+      "content": {
+        "caseType": "trauma",
+        "patientData": {
+          "age": 28,
+          "weight": 75,
+          "height": 178,
+          "idealWeight": 74,
+          "diagnosis": "Politraumatismo: TEC moderado + tórax inestable + contusión pulmonar",
+          "mechanism": "Accidente de tráfico (colisión alta velocidad)",
+          "injuries": "TEC (Glasgow 9), tórax inestable (costillas 4-7 derechas), contusión pulmonar bilateral, fractura de pelvis",
+          "vitals": "FC 115, PA 110/70 (cristaloides + 1 CH sangre), Glasgow 9 (intubado)",
+          "ventilator": "VCV: Vt 550 ml, FR 16, FiO2 70%, PEEP 8",
+          "gasometry": "pH 7.35, PaCO2 38, PaO2 75",
+          "imaging": "TAC cerebro: contusión frontal sin desviación línea media. Rx tórax: tórax inestable derecho, contusión pulmonar bilateral",
+          "neuro": "Sedado (propofol + fentanyl), PIC no monitoreada aún, pupilas reactivas"
+        },
+        "objectives": [
+          "Manejo ventilatorio en TEC (evitar hipercapnia e hipocapnia)",
+          "Tórax inestable: ventilación mecánica como 'férula interna'",
+          "Contusión pulmonar: riesgo de ARDS",
+          "Balance: protección cerebral vs protección pulmonar",
+          "Manejo del dolor (tórax inestable)"
+        ],
+        "questions": [
+          {
+            "step": 1,
+            "question": "¿Cuál es el objetivo de PaCO2 en este paciente con TEC?",
+            "options": [
+              "PaCO2 20-25 (hiperventilación agresiva)",
+              "PaCO2 35-40 (normocapnia)",
+              "PaCO2 45-50 (hipercapnia leve)",
+              "No importa el PaCO2"
+            ],
+            "correct": 1,
+            "explanation": "En TEC sin hipertensión intracraneal documentada, mantener normocapnia (35-40 mmHg). Hipocapnia <30 mmHg causa vasoconstricción cerebral e isquemia. Hipercapnia >45 causa vasodilatación y aumenta PIC."
+          },
+          {
+            "step": 2,
+            "question": "A las 24h, empeora oxigenación: PaO2 60 con FiO2 80%. ¿Cuál es el dilema?",
+            "options": [
+              "No hay dilema, aumentar PEEP",
+              "PEEP alta mejora pulmón pero puede aumentar PIC (↓retorno venoso cerebral)",
+              "Dar más sedación",
+              "Intubar más profundo"
+            ],
+            "correct": 1,
+            "explanation": "DILEMA: PEEP alta mejora oxigenación/reclutamiento pero ↑presión intratorácica → ↓retorno venoso → ↑PIC. Requiere monitorización PIC si es posible, y titular PEEP cuidadosamente."
+          },
+          {
+            "step": 3,
+            "question": "¿Qué estrategia para tórax inestable + dolor severo al despertar?",
+            "options": [
+              "Mantener sedación profunda 2 semanas",
+              "Analgesia epidural torácica + destete temprano",
+              "Solo opioides IV",
+              "Bloqueo neuromuscular continuo"
+            ],
+            "correct": 1,
+            "explanation": "La analgesia epidural torácica es MUY efectiva para dolor de tórax inestable, permite mejor mecánica respiratoria, facilita destete. Si no es posible, analgesia multimodal (opioides + otros)."
+          }
+        ],
+        "learningPoints": [
+          "TEC: normocapnia es clave (35-40 mmHg)",
+          "Tórax inestable: VM sirve como férula",
+          "Contusión pulmonar puede evolucionar a ARDS",
+          "Conflicto: protección pulmonar (PEEP alta) vs protección cerebral (PIC baja)",
+          "Analgesia es fundamental en tórax inestable"
+        ]
+      }
+    },
+    {
+      "id": "integration-discussion",
+      "type": "reading",
+      "title": "Integración y Reflexión",
+      "duration": 30,
+      "content": {
+        "text": "Los casos complejos requieren: 1) CONOCIMIENTO INTEGRADO de fisiopatología, modalidades ventilatorias, y manejo de complicaciones. 2) PRIORIZACIÓN según gravedad (ABC: vía aérea, respiración, circulación). 3) BALANCE entre objetivos en conflicto (ej: PEEP para pulmón vs gasto cardíaco). 4) TRABAJO EN EQUIPO multidisciplinario. 5) MONITORIZACIÓN CONTINUA y ajuste dinámico. 6) COMUNICACIÓN clara con equipo y familia. 7) Reconocer LIMITACIONES y pedir ayuda cuando sea necesario.",
+        "keyPoints": [
+          "Integración de conocimientos",
+          "Priorización y ABC",
+          "Balance de objetivos en conflicto",
+          "Trabajo en equipo",
+          "Monitorización continua",
+          "Comunicación efectiva",
+          "Humildad y aprendizaje continuo"
+        ]
+      }
+    },
+    {
+      "id": "additional-scenarios",
+      "type": "reading",
+      "title": "Escenarios Adicionales para Práctica",
+      "duration": 30,
+      "content": {
+        "text": "Practica con estos escenarios: 1) EPOC + Neumonía + ICC descompensada (triple patología respiratoria/cardíaca). 2) Obesidad mórbida + hipoventilación + apnea del sueño severa (considerar VNI, traqueostomía temprana). 3) Fibrosis pulmonar avanzada en agudización (compliance muy baja, difícil oxigenación). 4) Hemorragia alveolar difusa (balance entre oxigenación y PEEP que no aumente sangrado). 5) Post-trasplante pulmonar con disfunción primaria del injerto.",
+        "keyPoints": [
+          "Cada caso es único",
+          "Aplicar principios generales adaptados",
+          "Consultar literatura y guías",
+          "Discutir casos complejos con colegas",
+          "Aprender de cada caso"
+        ]
+      }
+    }
+  ],
+  "quiz": {
+    "id": "clinical-cases-quiz",
+    "type": "case-based",
+    "questions": [
+      {
+        "id": "q1",
+        "type": "case-based",
+        "question": "Paciente con ARDS severo + shock séptico. Después de aumentar PEEP de 8 a 14, SpO2 mejora de 88% a 94%, pero PA disminuye de 90/60 a 70/45. ¿Qué hacer?",
+        "caseContext": "Noradrenalina 0.2 mcg/kg/min, cristaloides 4L acumulados",
+        "options": [
+          "Disminuir PEEP a 8 inmediatamente",
+          "Mantener PEEP 14, aumentar vasopresor",
+          "Disminuir PEEP a 10-12 (compromiso) y reevaluar",
+          "Aumentar PEEP a 16"
+        ],
+        "correct": 2,
+        "explanation": "Balance entre oxigenación y hemodinámica. PEEP 14 mejora oxigenación pero compromete gasto. Reducir a 10-12 (compromiso), optimizar volemia/vasopresores, reevaluar. Si hipotensión persiste, priorizar hemodinámica."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "question": "En TEC moderado sin hipertensión intracraneal, ¿qué PaCO2 es objetivo?",
+        "options": [
+          "25-30 mmHg (hipocapnia)",
+          "35-40 mmHg (normocapnia)",
+          "45-50 mmHg",
+          "60 mmHg"
+        ],
+        "correct": 1,
+        "explanation": "Normocapnia (35-40 mmHg) es el objetivo en TEC sin HIC. Hipocapnia causa isquemia cerebral, hipercapnia aumenta PIC."
+      }
+    ]
+  },
+  "resources": [
+    {
+      "type": "pdf",
+      "title": "Colección de casos clínicos reales",
+      "url": "/resources/clinical-cases-collection.pdf"
+    },
+    {
+      "type": "video",
+      "title": "Discusión multidisciplinaria de casos",
+      "url": "/videos/case-discussions.mp4"
+    }
+  ],
+  "keywords": [
+    "casos clínicos",
+    "ARDS",
+    "sepsis",
+    "TEC",
+    "trauma",
+    "post-quirúrgico",
+    "toma de decisiones",
+    "multidisciplinario"
+  ]
+}

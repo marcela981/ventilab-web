@@ -1,0 +1,142 @@
+{
+  "id": "lesson-respiratory-anatomy",
+  "moduleId": "respiratory-anatomy",
+  "title": "Anatomía del Sistema Respiratorio",
+  "description": "Conoce las estructuras anatómicas del sistema respiratorio y su función",
+  "estimatedTime": 120,
+  "level": "beginner",
+  "order": 1,
+  "learningObjectives": [
+    "Identificar las estructuras anatómicas del sistema respiratorio",
+    "Comprender la función de cada componente anatómico",
+    "Relacionar anatomía con fisiología respiratoria"
+  ],
+  "sections": [
+    {
+      "id": "anatomy-overview",
+      "type": "video",
+      "title": "Visión General del Sistema Respiratorio",
+      "duration": 25,
+      "content": {
+        "videoUrl": "/videos/anatomy-overview.mp4",
+        "transcript": "El sistema respiratorio se compone de las vías aéreas superiores (nariz, faringe, laringe) y las vías aéreas inferiores (tráquea, bronquios, bronquiolos y alvéolos). Los pulmones están protegidos por la pleura, una membrana doble que facilita el movimiento durante la respiración. Los músculos respiratorios, principalmente el diafragma y los intercostales, son esenciales para la ventilación.",
+        "keyPoints": [
+          "Vías aéreas superiores e inferiores",
+          "Pulmones y pleura",
+          "Músculos respiratorios"
+        ]
+      }
+    },
+    {
+      "id": "airway-structures",
+      "type": "interactive",
+      "title": "Estructuras de las Vías Aéreas",
+      "duration": 30,
+      "content": {
+        "interactiveType": "3d-explorer",
+        "description": "Explora las estructuras anatómicas en 3D. Identifica la tráquea, los bronquios principales, los bronquiolos y los alvéolos. Observa cómo se ramifican las vías aéreas desde la tráquea hasta los alvéolos.",
+        "checkpoints": ["tráquea", "bronquios", "alvéolos"],
+        "images": [
+          "/images/airway-structures.png",
+          "/images/bronchial-tree.png"
+        ]
+      }
+    },
+    {
+      "id": "lung-mechanics",
+      "type": "reading",
+      "title": "Mecánica Pulmonar Básica",
+      "duration": 20,
+      "content": {
+        "text": "La mecánica pulmonar se basa en los cambios de presión intratorácica generados por la contracción y relajación de los músculos respiratorios. Durante la inspiración, el diafragma se contrae y desciende, aumentando el volumen torácico y creando una presión negativa que permite la entrada de aire. La espiración en reposo es pasiva, resultado de la relajación del diafragma y la elasticidad pulmonar.",
+        "diagrams": ["/images/lung-mechanics.png"],
+        "references": ["West, J.B. (2012). Respiratory Physiology: The Essentials"]
+      }
+    },
+    {
+      "id": "clinical-correlation",
+      "type": "reading",
+      "title": "Correlación Clínica",
+      "duration": 15,
+      "content": {
+        "text": "El conocimiento anatómico es fundamental para la ventilación mecánica. La intubación endotraqueal requiere conocer la anatomía de la laringe y tráquea. Las diferencias anatómicas entre niños y adultos influyen en la selección del tubo endotraqueal y los parámetros ventilatorios.",
+        "keyPoints": [
+          "Importancia en intubación endotraqueal",
+          "Diferencias anatómicas por edad",
+          "Aplicación en ventilación mecánica"
+        ]
+      }
+    }
+  ],
+  "quiz": {
+    "id": "anatomy-quiz",
+    "type": "formative",
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "question": "¿Cuál es la función principal de los alvéolos?",
+        "options": [
+          "Transportar oxígeno a los tejidos",
+          "Intercambiar gases con la sangre",
+          "Filtrar partículas del aire",
+          "Producir surfactante pulmonar"
+        ],
+        "correct": 1,
+        "explanation": "Los alvéolos son estructuras microscópicas donde ocurre el intercambio gaseoso entre el aire y la sangre mediante difusión."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "question": "¿Qué músculo es el principal responsable de la inspiración?",
+        "options": [
+          "Músculos intercostales externos",
+          "Diafragma",
+          "Músculos abdominales",
+          "Músculos escalenos"
+        ],
+        "correct": 1,
+        "explanation": "El diafragma es el principal músculo inspiratorio, responsable del 70-80% del trabajo respiratorio en reposo."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "question": "¿Cuántas generaciones de ramificaciones tiene el árbol bronquial aproximadamente?",
+        "options": [
+          "5-10 generaciones",
+          "23-25 generaciones",
+          "50-60 generaciones",
+          "100 generaciones"
+        ],
+        "correct": 1,
+        "explanation": "El árbol bronquial tiene aproximadamente 23-25 generaciones de ramificaciones desde la tráquea hasta los sacos alveolares."
+      }
+    ]
+  },
+  "resources": [
+    {
+      "type": "video",
+      "title": "Anatomía Respiratoria 3D",
+      "url": "/resources/respiratory-anatomy-3d.mp4",
+      "duration": 15
+    },
+    {
+      "type": "pdf",
+      "title": "Atlas de Anatomía Respiratoria",
+      "url": "/resources/respiratory-anatomy-atlas.pdf"
+    },
+    {
+      "type": "external",
+      "title": "Interactive Lung Anatomy",
+      "url": "https://www.lung.org/lung-health-diseases/how-lungs-work"
+    }
+  ],
+  "keywords": [
+    "anatomía respiratoria",
+    "vías aéreas",
+    "alvéolos",
+    "diafragma",
+    "pleura",
+    "mecánica pulmonar"
+  ]
+}

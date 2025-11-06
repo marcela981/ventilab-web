@@ -1,0 +1,147 @@
+{
+  "id": "lesson-respiratory-physiology",
+  "moduleId": "respiratory-physiology",
+  "title": "Fisiología Respiratoria",
+  "description": "Comprende los principios del intercambio gaseoso y la mecánica ventilatoria",
+  "estimatedTime": 150,
+  "level": "beginner",
+  "order": 2,
+  "learningObjectives": [
+    "Comprender los principios del intercambio gaseoso",
+    "Analizar la mecánica de la ventilación",
+    "Evaluar los factores que afectan la difusión"
+  ],
+  "sections": [
+    {
+      "id": "gas-exchange",
+      "type": "video",
+      "title": "Intercambio Gaseoso",
+      "duration": 35,
+      "content": {
+        "videoUrl": "/videos/gas-exchange.mp4",
+        "transcript": "El intercambio gaseoso ocurre por difusión a través de la membrana alveolocapilar. La Ley de Fick describe que la velocidad de difusión es proporcional al área de superficie, la diferencia de presión parcial y la solubilidad del gas, e inversamente proporcional al grosor de la membrana.",
+        "keyPoints": [
+          "Difusión de gases según Ley de Fick",
+          "Factores que afectan la difusión",
+          "Gradiente de presión parcial",
+          "Membrana alveolocapilar"
+        ]
+      }
+    },
+    {
+      "id": "ventilation-perfusion",
+      "type": "reading",
+      "title": "Relación Ventilación/Perfusión",
+      "duration": 25,
+      "content": {
+        "text": "La relación ventilación/perfusión (V/Q) es crucial para un intercambio gaseoso eficiente. Idealmente, la ventilación y la perfusión deben estar equilibradas (V/Q ≈ 0.8-1.0). Las alteraciones en esta relación pueden causar hipoxemia. Un V/Q bajo indica shunt (perfusión sin ventilación), mientras que un V/Q alto indica espacio muerto (ventilación sin perfusión).",
+        "diagrams": ["/images/vq-ratio.png"],
+        "keyPoints": [
+          "V/Q normal ≈ 0.8-1.0",
+          "Shunt: V/Q bajo",
+          "Espacio muerto: V/Q alto",
+          "Impacto en oxigenación"
+        ]
+      }
+    },
+    {
+      "id": "ventilation-mechanics",
+      "type": "simulation",
+      "title": "Simulación de Mecánica Ventilatoria",
+      "duration": 45,
+      "content": {
+        "simulationType": "lung-compliance",
+        "description": "Explora cómo varían la presión y el volumen pulmonar durante la ventilación. Modifica la compliance y resistencia para observar sus efectos.",
+        "objectives": [
+          "Demostrar relación presión-volumen",
+          "Mostrar elasticidad pulmonar",
+          "Efecto de la compliance en ventilación"
+        ],
+        "parameters": ["compliance", "resistance", "volume"]
+      }
+    },
+    {
+      "id": "compliance-resistance",
+      "type": "reading",
+      "title": "Compliance y Resistencia",
+      "duration": 20,
+      "content": {
+        "text": "La compliance pulmonar (distensibilidad) es la capacidad del pulmón para expandirse ante cambios de presión (ΔV/ΔP). Una compliance normal es ~200 ml/cmH2O. La resistencia de las vías aéreas se opone al flujo de aire y aumenta con broncoconstricción o secreciones. Estos parámetros son fundamentales en ventilación mecánica.",
+        "formulas": [
+          "Compliance = ΔVolumen / ΔPresión",
+          "Resistencia = ΔPresión / Flujo"
+        ],
+        "keyPoints": [
+          "Compliance normal: 200 ml/cmH2O",
+          "Resistencia aumenta en obstrucción",
+          "Importancia en VM"
+        ]
+      }
+    }
+  ],
+  "quiz": {
+    "id": "physiology-quiz",
+    "type": "formative",
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "question": "¿Qué factor NO afecta directamente la difusión de gases según la Ley de Fick?",
+        "options": [
+          "Grosor de la membrana alveolar",
+          "Superficie de intercambio",
+          "Velocidad del flujo sanguíneo",
+          "Gradiente de presión parcial"
+        ],
+        "correct": 2,
+        "explanation": "La velocidad del flujo sanguíneo afecta la perfusión y puede influir indirectamente, pero no es un factor directo en la Ley de Fick de difusión."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "question": "¿Qué indica una relación V/Q baja?",
+        "options": [
+          "Ventilación sin perfusión (espacio muerto)",
+          "Perfusión sin ventilación (shunt)",
+          "Intercambio gaseoso normal",
+          "Hiperventilación"
+        ],
+        "correct": 1,
+        "explanation": "Una relación V/Q baja indica que hay más perfusión que ventilación, lo que se conoce como shunt y puede causar hipoxemia."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "question": "¿Cuál es el valor normal de compliance pulmonar en un adulto?",
+        "options": [
+          "50 ml/cmH2O",
+          "200 ml/cmH2O",
+          "500 ml/cmH2O",
+          "1000 ml/cmH2O"
+        ],
+        "correct": 1,
+        "explanation": "La compliance pulmonar normal en un adulto es aproximadamente 200 ml/cmH2O, indicando cuánto se expande el pulmón por unidad de presión."
+      }
+    ]
+  },
+  "resources": [
+    {
+      "type": "pdf",
+      "title": "Fisiología Respiratoria de West",
+      "url": "/resources/west-respiratory-physiology.pdf"
+    },
+    {
+      "type": "interactive",
+      "title": "Simulador de V/Q",
+      "url": "/simulations/vq-simulator"
+    }
+  ],
+  "keywords": [
+    "intercambio gaseoso",
+    "Ley de Fick",
+    "V/Q ratio",
+    "compliance",
+    "resistencia",
+    "difusión"
+  ]
+}

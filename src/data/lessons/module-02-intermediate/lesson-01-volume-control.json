@@ -1,0 +1,179 @@
+{
+  "id": "lesson-volume-control",
+  "moduleId": "volume-control",
+  "title": "Ventilación Controlada por Volumen (VCV)",
+  "description": "Domina la modalidad VCV: configuración, ventajas, desventajas y aplicaciones clínicas",
+  "estimatedTime": 200,
+  "level": "intermediate",
+  "order": 1,
+  "learningObjectives": [
+    "Comprender el funcionamiento de VCV",
+    "Configurar parámetros en VCV",
+    "Identificar ventajas y desventajas de VCV"
+  ],
+  "sections": [
+    {
+      "id": "vcv-mechanics",
+      "type": "video",
+      "title": "Mecánica de VCV",
+      "duration": 30,
+      "content": {
+        "videoUrl": "/videos/vcv-mechanics.mp4",
+        "transcript": "En VCV, el ventilador entrega un volumen fijo predeterminado en cada respiración. La presión generada varía según la compliance y resistencia del sistema respiratorio. El flujo típicamente es constante (patrón cuadrado), aunque puede ajustarse a otros patrones. Este modo garantiza un volumen minuto constante.",
+        "keyPoints": [
+          "Volumen constante garantizado",
+          "Presión variable según mecánica pulmonar",
+          "Flujo típicamente cuadrado",
+          "Ventilación minuto predecible"
+        ]
+      }
+    },
+    {
+      "id": "vcv-parameters",
+      "type": "reading",
+      "title": "Configuración de Parámetros en VCV",
+      "duration": 25,
+      "content": {
+        "text": "Los parámetros principales en VCV son: Volumen Tidal (6-8 ml/kg peso ideal), Frecuencia Respiratoria (12-20 rpm), FiO2 (según necesidad), PEEP (5-10 cmH2O inicial), Flujo inspiratorio (40-60 L/min), y Relación I:E (1:2 a 1:3). La presión resultante debe monitorizarse para evitar barotrauma.",
+        "diagrams": ["/images/vcv-parameters.png"],
+        "keyPoints": [
+          "Vt: 6-8 ml/kg peso ideal",
+          "FR: 12-20 rpm",
+          "Flujo: 40-60 L/min",
+          "I:E: 1:2 a 1:3",
+          "Monitorizar PIP y Pplateau"
+        ],
+        "formulas": [
+          "Volumen Minuto = Vt × FR",
+          "Presión = Volumen / Compliance"
+        ]
+      }
+    },
+    {
+      "id": "vcv-simulation",
+      "type": "simulation",
+      "title": "Simulación VCV",
+      "duration": 50,
+      "content": {
+        "simulationType": "vcv-ventilator",
+        "description": "Configura el ventilador en modo VCV para diferentes escenarios clínicos. Observa cómo cambian las curvas de presión según la mecánica pulmonar.",
+        "objectives": [
+          "Configurar VCV apropiadamente",
+          "Observar curvas de presión",
+          "Ajustar según compliance",
+          "Identificar alarmas"
+        ],
+        "clinicalScenarios": [
+          {
+            "name": "ARDS moderado",
+            "patient": "70 kg, compliance baja (25 ml/cmH2O)",
+            "goals": "Ventilación protectora, PaO2 >60 mmHg"
+          },
+          {
+            "name": "EPOC agudizado",
+            "patient": "80 kg, resistencia aumentada",
+            "goals": "Prevenir auto-PEEP, normalizar pH"
+          }
+        ]
+      }
+    },
+    {
+      "id": "vcv-advantages-disadvantages",
+      "type": "reading",
+      "title": "Ventajas y Desventajas de VCV",
+      "duration": 20,
+      "content": {
+        "text": "VENTAJAS: Garantiza volumen minuto constante, útil en pacientes con compliance variable, fácil de calcular y predecir ventilación, bueno para transporte. DESVENTAJAS: Riesgo de barotrauma si hay obstrucción o compliance baja, menos confortable para paciente despierto, puede causar asincronías, no se adapta automáticamente a cambios en mecánica pulmonar.",
+        "keyPoints": [
+          "✓ Volumen minuto garantizado",
+          "✓ Útil en compliance variable",
+          "✗ Riesgo de presiones altas",
+          "✗ Menos confortable",
+          "✗ Requiere ajustes manuales"
+        ]
+      }
+    },
+    {
+      "id": "vcv-monitoring",
+      "type": "reading",
+      "title": "Monitorización en VCV",
+      "duration": 25,
+      "content": {
+        "text": "En VCV es crucial monitorizar: PIP (Presión Inspiratoria Pico, <35 cmH2O), Pplateau (Presión Meseta, <30 cmH2O), Driving Pressure (Pplateau-PEEP, <15 cmH2O), Compliance dinámica y estática, y curvas de presión-tiempo. La PIP refleja resistencia + compliance, mientras Pplateau refleja solo compliance.",
+        "diagrams": ["/images/vcv-monitoring.png"],
+        "keyPoints": [
+          "PIP <35 cmH2O",
+          "Pplateau <30 cmH2O",
+          "Driving Pressure <15 cmH2O",
+          "Curvas de presión-tiempo",
+          "Compliance estática = Vt/(Pplateau-PEEP)"
+        ]
+      }
+    }
+  ],
+  "quiz": {
+    "id": "vcv-quiz",
+    "type": "formative",
+    "questions": [
+      {
+        "id": "q1",
+        "type": "case-based",
+        "question": "Paciente de 70 años con ARDS moderado. Peso ideal 70kg. ¿Qué volumen tidal inicial recomendarías en VCV?",
+        "caseContext": "Paciente intubado, compliance disminuida (30 ml/cmH2O), PaO2/FiO2 = 180, requiere ventilación protectora",
+        "options": [
+          "700 ml (10 ml/kg)",
+          "560 ml (8 ml/kg)",
+          "420 ml (6 ml/kg)",
+          "280 ml (4 ml/kg)"
+        ],
+        "correct": 2,
+        "explanation": "En ARDS se recomienda Vt de 6 ml/kg peso ideal para ventilación protectora según protocolo ARDSnet. 6 ml/kg × 70 kg = 420 ml."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "question": "En VCV, ¿qué parámetro se mantiene constante?",
+        "options": [
+          "Presión inspiratoria",
+          "Volumen tidal",
+          "Compliance pulmonar",
+          "Tiempo inspiratorio"
+        ],
+        "correct": 1,
+        "explanation": "En VCV el volumen tidal es constante y predeterminado, mientras que la presión varía según la mecánica pulmonar."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "question": "¿Cuál es el límite de seguridad para la presión plateau en ventilación protectora?",
+        "options": [
+          "<20 cmH2O",
+          "<25 cmH2O",
+          "<30 cmH2O",
+          "<35 cmH2O"
+        ],
+        "correct": 2,
+        "explanation": "La presión plateau debe mantenerse <30 cmH2O para prevenir volutrauma según las recomendaciones de ventilación protectora."
+      }
+    ]
+  },
+  "resources": [
+    {
+      "type": "video",
+      "title": "Configuración práctica de VCV",
+      "url": "/videos/vcv-setup-practical.mp4"
+    },
+    {
+      "type": "pdf",
+      "title": "Guía de VCV",
+      "url": "/resources/vcv-guide.pdf"
+    }
+  ],
+  "keywords": [
+    "VCV",
+    "volumen controlado",
+    "presión plateau",
+    "ventilación protectora",
+    "driving pressure"
+  ]
+}
