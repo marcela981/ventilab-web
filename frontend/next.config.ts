@@ -14,6 +14,17 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  // Configuración de webpack para manejar archivos .md
+  webpack: (config, { isServer }) => {
+    // Manejar archivos .md como assets de texto para evitar errores de módulo desconocido
+    // Esto evita que Next.js intente procesar archivos .md como módulos JavaScript
+    config.module.rules.push({
+      test: /\.md$/,
+      type: 'asset/source',
+    });
+    
+    return config;
+  },
 };
 
 export default nextConfig;

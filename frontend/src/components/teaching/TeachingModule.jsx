@@ -52,7 +52,6 @@ import DashboardHeader from './components/DashboardHeader';
 import ContinueLearningSection from './components/ContinueLearningSection';
 import SessionStats from './components/SessionStats';
 import ProgressOverview from './components/ProgressOverview';
-import LevelStepper from './components/LevelStepper';
 import ModuleInfoPanel from './components/ModuleInfoPanel';
 import FlashcardSystem from './FlashcardSystem';
 import QuickAccessLessons from './components/dashboard/QuickAccessLessons';
@@ -1163,6 +1162,7 @@ const TeachingModule = () => {
             getTooltipMessage={getTooltipMessage}
             favoriteModules={favoriteModules}
             toggleFavorite={toggleFavorite}
+            levels={curriculumData.levels}
           />
 
           {/* Module 3 Progress Dashboard - Mostrado cuando se está en el módulo 3 */}

@@ -1,0 +1,525 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ventylab.com/schemas/lessonSchema.json",
+  "title": "Lesson Schema - VentyLab",
+  "description": "Schema JSON formal para lecciones de VentyLab según especificación HU-004",
+  "type": "object",
+  "required": [
+    "id",
+    "moduleId",
+    "title",
+    "description",
+    "order",
+    "estimatedTime",
+    "difficulty",
+    "bloomLevel",
+    "learningObjectives",
+    "sections",
+    "quiz",
+    "resources",
+    "metadata"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Identificador único de la lección",
+      "pattern": "^[a-z0-9-]+$",
+      "examples": ["lesson-01-respiratory-anatomy"]
+    },
+    "moduleId": {
+      "type": "string",
+      "description": "Identificador del módulo padre al que pertenece la lección",
+      "pattern": "^module-[0-9]+-[a-z0-9-]+$",
+      "examples": ["module-01-fundamentals"]
+    },
+    "title": {
+      "type": "string",
+      "description": "Título completo de la lección",
+      "minLength": 5,
+      "maxLength": 200
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripción breve de la lección que resume su contenido y objetivos",
+      "minLength": 20,
+      "maxLength": 500
+    },
+    "order": {
+      "type": "number",
+      "description": "Orden de la lección dentro del módulo (1, 2, 3, ...)",
+      "minimum": 1
+    },
+    "estimatedTime": {
+      "type": "number",
+      "description": "Tiempo estimado de completación en minutos",
+      "minimum": 5,
+      "maximum": 480
+    },
+    "difficulty": {
+      "type": "string",
+      "description": "Nivel de dificultad de la lección",
+      "enum": ["beginner", "intermediate", "advanced"],
+      "enumDescriptions": {
+        "beginner": "Nivel básico, adecuado para principiantes",
+        "intermediate": "Nivel intermedio, requiere conocimientos previos",
+        "advanced": "Nivel avanzado, requiere sólida base de conocimientos"
+      }
+    },
+    "bloomLevel": {
+      "type": "string",
+      "description": "Nivel de la taxonomía de Bloom que principalmente aborda la lección",
+      "enum": ["remember", "understand", "apply", "analyze", "evaluate", "create"],
+      "enumDescriptions": {
+        "remember": "Recordar información y conceptos",
+        "understand": "Comprender significados e interpretar",
+        "apply": "Aplicar conocimiento en situaciones nuevas",
+        "analyze": "Analizar y descomponer información",
+        "evaluate": "Evaluar y juzgar información",
+        "create": "Crear nuevos productos o perspectivas"
+      }
+    },
+    "learningObjectives": {
+      "type": "array",
+      "description": "Lista de objetivos de aprendizaje específicos que el estudiante debe alcanzar",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 10,
+        "maxLength": 300
+      }
+    },
+    "prerequisites": {
+      "type": "array",
+      "description": "Array de IDs de lecciones previas requeridas para acceder a esta lección",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$"
+      },
+      "default": []
+    },
+    "sections": {
+      "type": "array",
+      "description": "Array de secciones de contenido educativo que componen la lección",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "order", "type", "title", "content"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador único de la sección dentro de la lección",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "order": {
+            "type": "number",
+            "description": "Orden de la sección dentro de la lección",
+            "minimum": 1
+          },
+          "type": {
+            "type": "string",
+            "description": "Tipo de sección que determina cómo se presenta el contenido",
+            "enum": ["introduction", "theory", "visual", "interactive", "case", "summary"],
+            "enumDescriptions": {
+              "introduction": "Sección introductoria con contexto y objetivos",
+              "theory": "Contenido teórico y conceptual",
+              "visual": "Sección con contenido visual predominante",
+              "interactive": "Sección con elementos interactivos",
+              "case": "Caso práctico o clínico",
+              "summary": "Resumen y puntos clave"
+            }
+          },
+          "title": {
+            "type": "string",
+            "description": "Título de la sección",
+            "minLength": 5,
+            "maxLength": 150
+          },
+          "content": {
+            "type": "object",
+            "description": "Contenido de la sección con diferentes tipos de medios",
+            "required": ["markdown"],
+            "properties": {
+              "markdown": {
+                "type": "string",
+                "description": "Contenido textual de la sección en formato Markdown",
+                "minLength": 10
+              },
+              "media": {
+                "type": "object",
+                "description": "Contenedor de elementos multimedia",
+                "properties": {
+                  "images": {
+                    "type": "array",
+                    "description": "Array de referencias a imágenes",
+                    "items": {
+                      "type": "object",
+                      "required": ["id", "url", "alt"],
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "alt": {
+                          "type": "string",
+                          "description": "Texto alternativo para accesibilidad"
+                        },
+                        "caption": {
+                          "type": "string",
+                          "description": "Pie de foto opcional"
+                        }
+                      }
+                    }
+                  },
+                  "videos": {
+                    "type": "array",
+                    "description": "Array de referencias a videos",
+                    "items": {
+                      "type": "object",
+                      "required": ["id", "url"],
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "duration": {
+                          "type": "number",
+                          "description": "Duración en segundos"
+                        },
+                        "thumbnail": {
+                          "type": "string",
+                          "format": "uri",
+                          "description": "URL de miniatura del video"
+                        }
+                      }
+                    }
+                  },
+                  "diagrams": {
+                    "type": "array",
+                    "description": "Array de referencias a diagramas",
+                    "items": {
+                      "type": "object",
+                      "required": ["id", "url"],
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": ["static", "interactive", "animated"],
+                          "description": "Tipo de diagrama"
+                        }
+                      }
+                    }
+                  }
+                },
+                "default": {}
+              },
+              "interactiveElements": {
+                "type": "array",
+                "description": "Array de elementos interactivos para la sección",
+                "items": {
+                  "type": "object",
+                  "required": ["id", "type"],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": ["simulation", "calculator", "drag-drop", "quiz", "case-scenario"],
+                      "description": "Tipo de elemento interactivo"
+                    },
+                    "config": {
+                      "type": "object",
+                      "description": "Configuración específica del elemento interactivo"
+                    }
+                  }
+                },
+                "default": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "quiz": {
+      "type": "object",
+      "description": "Objeto que contiene las preguntas de evaluación de la lección",
+      "required": ["questions"],
+      "properties": {
+        "questions": {
+          "type": "array",
+          "description": "Array de preguntas del quiz",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "type", "question", "correctAnswer", "explanation"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Identificador único de la pregunta",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "type": {
+                "type": "string",
+                "description": "Tipo de pregunta",
+                "enum": ["multiple-choice", "true-false", "short-answer", "matching", "ordering", "fill-blank"],
+                "enumDescriptions": {
+                  "multiple-choice": "Pregunta de opción múltiple",
+                  "true-false": "Pregunta verdadero/falso",
+                  "short-answer": "Pregunta de respuesta corta",
+                  "matching": "Pregunta de emparejamiento",
+                  "ordering": "Pregunta de ordenamiento",
+                  "fill-blank": "Pregunta de completar espacios"
+                }
+              },
+              "question": {
+                "type": "string",
+                "description": "Texto de la pregunta",
+                "minLength": 10,
+                "maxLength": 1000
+              },
+              "options": {
+                "type": "array",
+                "description": "Array de opciones de respuesta (requerido para multiple-choice, true-false, matching)",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                }
+              },
+              "correctAnswer": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "description": "Respuesta correcta como string (para multiple-choice, true-false, short-answer, fill-blank)"
+                  },
+                  {
+                    "type": "number",
+                    "description": "Índice de la respuesta correcta (para multiple-choice con índice)"
+                  },
+                  {
+                    "type": "array",
+                    "description": "Array de respuestas correctas (para matching, ordering)"
+                  }
+                ]
+              },
+              "explanation": {
+                "type": "string",
+                "description": "Explicación de por qué la respuesta es correcta",
+                "minLength": 20,
+                "maxLength": 1000
+              },
+              "difficulty": {
+                "type": "string",
+                "description": "Nivel de dificultad de la pregunta",
+                "enum": ["beginner", "intermediate", "advanced"],
+                "default": "intermediate"
+              },
+              "bloomLevel": {
+                "type": "string",
+                "description": "Nivel de la taxonomía de Bloom que evalúa la pregunta",
+                "enum": ["remember", "understand", "apply", "analyze", "evaluate", "create"],
+                "default": "understand"
+              },
+              "points": {
+                "type": "number",
+                "description": "Puntos asignados a esta pregunta",
+                "minimum": 1,
+                "default": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "description": "Recursos adicionales relacionados con la lección",
+      "required": ["externalLinks", "downloadables", "references"],
+      "properties": {
+        "externalLinks": {
+          "type": "array",
+          "description": "Array de enlaces externos a recursos web",
+          "items": {
+            "type": "object",
+            "required": ["title", "url"],
+            "properties": {
+              "title": {
+                "type": "string",
+                "description": "Título del recurso"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL del recurso"
+              },
+              "description": {
+                "type": "string",
+                "description": "Descripción del recurso"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["article", "video", "tool", "guideline", "other"],
+                "description": "Tipo de recurso"
+              }
+            }
+          },
+          "default": []
+        },
+        "downloadables": {
+          "type": "array",
+          "description": "Array de archivos descargables",
+          "items": {
+            "type": "object",
+            "required": ["title", "url", "type"],
+            "properties": {
+              "title": {
+                "type": "string",
+                "description": "Nombre del archivo"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL para descargar el archivo"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["pdf", "doc", "xls", "ppt", "image", "other"],
+                "description": "Tipo de archivo"
+              },
+              "size": {
+                "type": "string",
+                "description": "Tamaño del archivo (ej: '2.5 MB')"
+              },
+              "description": {
+                "type": "string",
+                "description": "Descripción del contenido del archivo"
+              }
+            }
+          },
+          "default": []
+        },
+        "references": {
+          "type": "array",
+          "description": "Array de referencias bibliográficas en formato APA",
+          "items": {
+            "type": "object",
+            "required": ["authors", "year", "title"],
+            "properties": {
+              "authors": {
+                "type": "string",
+                "description": "Autores en formato APA (ej: 'Smith, J. A., & Jones, B. C.')"
+              },
+              "year": {
+                "type": "number",
+                "description": "Año de publicación",
+                "minimum": 1900,
+                "maximum": 2100
+              },
+              "title": {
+                "type": "string",
+                "description": "Título del artículo o libro"
+              },
+              "journal": {
+                "type": "string",
+                "description": "Nombre de la revista (si aplica)"
+              },
+              "volume": {
+                "type": "string",
+                "description": "Volumen de la revista"
+              },
+              "issue": {
+                "type": "string",
+                "description": "Número de la revista"
+              },
+              "pages": {
+                "type": "string",
+                "description": "Páginas (ej: '123-145')"
+              },
+              "publisher": {
+                "type": "string",
+                "description": "Editorial (para libros)"
+              },
+              "doi": {
+                "type": "string",
+                "description": "DOI del artículo",
+                "pattern": "^10\\.[0-9]{4,}/.+"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL del recurso"
+              }
+            }
+          },
+          "default": []
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Metadatos administrativos y de control de versión de la lección",
+      "required": ["version", "lastUpdated", "author", "language"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Versión del contenido de la lección",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "examples": ["1.0.0", "1.2.3"]
+        },
+        "lastUpdated": {
+          "type": "string",
+          "description": "Fecha de última actualización en formato ISO 8601",
+          "format": "date-time",
+          "examples": ["2024-01-15T10:30:00.000Z"]
+        },
+        "author": {
+          "type": "string",
+          "description": "Autor principal del contenido",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "reviewedBy": {
+          "type": "array",
+          "description": "Array de revisores que validaron el contenido",
+          "items": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200
+          },
+          "default": []
+        },
+        "language": {
+          "type": "string",
+          "description": "Idioma del contenido usando código ISO 639-1",
+          "enum": ["es", "en", "pt"],
+          "default": "es",
+          "enumDescriptions": {
+            "es": "Español",
+            "en": "Inglés",
+            "pt": "Portugués"
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}
+

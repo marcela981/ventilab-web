@@ -2,32 +2,58 @@
  * =============================================================================
  * CurriculumPanel Component for VentyLab
  * =============================================================================
- * 
- * Component that renders the curriculum view, with special handling for
- * Module 03 (Configuration and Management) which has category-based navigation.
- * 
+ *
+ * Main curriculum view component that delegates navigation rendering to
+ * ModuleNavigationRouter. This component is now generic and doesn't contain
+ * module-specific logic.
+ *
  * @component
  */
 
-import React, { useMemo, useEffect, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Typography } from '@mui/material';
-import {
-  MedicalServices as MedicalServicesIcon,
-  Shield as ShieldIcon,
-  TrendingUp as TrendingUpIcon,
-  Build as BuildIcon,
-  ChecklistRtl as ChecklistIcon,
-} from '@mui/icons-material';
-import module03Content, { metadata as module03Metadata } from '../../../../data/lessons/module-03-configuration';
-import ModuleCategoryNav from './ModuleCategoryNav';
-import { TeachingModuleProvider } from '../../contexts/TeachingModuleContext';
-import useTeachingModule from '../../../../hooks/useTeachingModule';
-import LevelStepper from '../curriculum/LevelStepper';
-import ModuleInfoPanel from '../curriculum/ModuleInfoPanel';
+import ModuleNavigationRouter from './ModuleNavigationRouter';
+
+/**
+ * Dynamically loads module content and metadata
+ * @param {string} moduleId - The module identifier
+ * @returns {Object} Object containing moduleContent and moduleMetadata
+ */
+const loadModuleData = (moduleId) => {
+  if (!moduleId) return { moduleContent: null, moduleMetadata: null };
+
+  try {
+    // Dynamic module loading based on moduleId
+    switch (moduleId) {
+      case 'module-03-configuration': {
+        const module03 = require('../../../../data/lessons/module-03-configuration');
+        return {
+          moduleContent: module03.default,
+          moduleMetadata: module03.metadata,
+        };
+      }
+      // Add more modules here as they implement category-based navigation
+      // case 'module-04-advanced': {
+      //   const module04 = require('../../../../data/lessons/module-04-advanced');
+      //   return {
+      //     moduleContent: module04.default,
+      //     moduleMetadata: module04.metadata,
+      //   };
+      // }
+      default:
+        return { moduleContent: null, moduleMetadata: null };
+    }
+  } catch (error) {
+    console.error(`Failed to load module ${moduleId}:`, error);
+    return { moduleContent: null, moduleMetadata: null };
+  }
+};
 
 /**
  * CurriculumPanel Component
+ *
+ * Displays the curriculum and delegates to ModuleNavigationRouter for rendering
+ * the appropriate navigation type (category-based or standard level-based).
  */
 const CurriculumPanel = ({
   moduleIdFromQuery,
@@ -46,159 +72,36 @@ const CurriculumPanel = ({
   getTooltipMessage,
   favoriteModules,
   toggleFavorite,
+  levels,
 }) => {
-  // Check if we're viewing module-03-configuration
-  const isModule03 = useMemo(() => {
-    return moduleIdFromQuery === 'module-03-configuration' || 
-           (!moduleIdFromQuery && router.query.module === 'module-03-configuration');
-  }, [moduleIdFromQuery, router.query.module]);
+  // Load module data if a specific module is selected
+  const { moduleContent, moduleMetadata } = useMemo(
+    () => loadModuleData(moduleIdFromQuery || router.query.module),
+    [moduleIdFromQuery, router.query.module]
+  );
 
-  // Prepare categories for Module 03
-  const module03Categories = useMemo(() => {
-    if (!isModule03 || !module03Metadata?.categories) return null;
-    
-    const categoryConfig = {
-      pathologyProtocols: {
-        id: 'pathologyProtocols',
-        title: 'Protocolos por Patología',
-        description: 'Protocolos específicos de ventilación mecánica para diferentes patologías',
-        icon: MedicalServicesIcon,
-        color: '#e53935',
-        lessons: Object.entries(module03Content.pathologyProtocols || {}).map(([key, lesson]) => ({
-          id: key,
-          title: lesson.title || key,
-          estimatedTime: lesson.estimatedTime || 0,
-          type: 'protocol',
-        })),
-      },
-      protectiveStrategies: {
-        id: 'protectiveStrategies',
-        title: 'Estrategias de Protección Pulmonar',
-        description: 'Estrategias de protección pulmonar para prevenir VILI',
-        icon: ShieldIcon,
-        color: '#1976d2',
-        lessons: Object.entries(module03Content.protectiveStrategies || {}).map(([key, lesson]) => ({
-          id: key,
-          title: lesson.title || key,
-          estimatedTime: lesson.estimatedTime || 0,
-          type: 'theory',
-        })),
-      },
-      weaningContent: {
-        id: 'weaningContent',
-        title: 'Destete Ventilatorio',
-        description: 'Protocolos y guías para destete ventilatorio',
-        icon: TrendingUpIcon,
-        color: '#2e7d32',
-        lessons: Object.entries(module03Content.weaningContent || {}).map(([key, lesson]) => ({
-          id: key,
-          title: lesson.title || key,
-          estimatedTime: lesson.estimatedTime || 0,
-          type: 'protocol',
-        })),
-      },
-      troubleshootingGuides: {
-        id: 'troubleshootingGuides',
-        title: 'Troubleshooting',
-        description: 'Guías prácticas para resolver problemas comunes',
-        icon: BuildIcon,
-        color: '#f57c00',
-        lessons: Object.entries(module03Content.troubleshootingGuides || {}).map(([key, lesson]) => ({
-          id: key,
-          title: lesson.title || key,
-          estimatedTime: lesson.estimatedTime || 0,
-          type: 'case',
-        })),
-      },
-      checklistProtocols: {
-        id: 'checklistProtocols',
-        title: 'Checklists Clínicos',
-        description: 'Checklists y protocolos rápidos de referencia',
-        icon: ChecklistIcon,
-        color: '#7b1fa2',
-        lessons: Object.entries(module03Content.checklistProtocols || {}).map(([key, lesson]) => ({
-          id: key,
-          title: lesson.title || key,
-          estimatedTime: lesson.estimatedTime || 0,
-          type: 'checklist',
-        })),
-      },
-    };
-    
-    return Object.values(categoryConfig).filter(cat => cat.lessons.length > 0);
-  }, [isModule03]);
-
-  // Handle category change for Module 03
-  const handleModule03CategoryChange = useCallback((categoryId) => {
-    setCategory(categoryId);
-    // Update URL if needed
-    router.push({
-      pathname: router.pathname,
-      query: {
-        ...router.query,
-        category: categoryId,
-      },
-    }, undefined, { shallow: true });
-  }, [router, setCategory]);
-
-  // Handle lesson click for Module 03
-  const handleModule03LessonClick = useCallback((lessonId, categoryId) => {
-    handleSectionClick('module-03-configuration', lessonId);
-    setLesson(lessonId, categoryId);
-  }, [handleSectionClick, setLesson]);
-
-  // Initialize module 03 context when module is selected
-  useEffect(() => {
-    if (isModule03 && module03Categories && module03Categories.length > 0) {
-      setModule('module-03-configuration', module03Content, null, null, module03Categories);
-    }
-  }, [isModule03, module03Categories, setModule]);
-
-  if (isModule03 && module03Categories && module03Categories.length > 0) {
-    return (
-      <TeachingModuleProvider>
-        <Box>
-          <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
-            {module03Metadata?.title || 'Configuración y Manejo del Ventilador Mecánico'}
-          </Typography>
-          
-          {module03Metadata?.description && (
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-              {module03Metadata.description}
-            </Typography>
-          )}
-
-          <ModuleCategoryNav
-            moduleId="module-03-configuration"
-            categories={module03Categories}
-            currentCategory={activeCategoryId || router.query.category}
-            currentLesson={lessonIdFromQuery || activeLessonId}
-            onCategoryChange={handleModule03CategoryChange}
-            onLessonClick={handleModule03LessonClick}
-          />
-        </Box>
-      </TeachingModuleProvider>
-    );
-  }
-
-  // Default navigation for other modules
   return (
-    <Box>
-      {/* Mapa de Progreso - Camino de aprendizaje por niveles */}
-      <LevelStepper
-        levelProgress={levelProgress}
-        calculateProgress={calculateModuleProgress}
-        isModuleAvailable={isModuleAvailable}
-        getModuleStatus={getModuleStatus}
-        getTooltipMessage={getTooltipMessage}
-        onSectionClick={handleSectionClick}
-        favoriteModules={favoriteModules}
-        onToggleFavorite={toggleFavorite}
-      />
-
-      {/* Panel Informativo: Sobre el módulo */}
-      <ModuleInfoPanel />
-    </Box>
+    <ModuleNavigationRouter
+      moduleIdFromQuery={moduleIdFromQuery || router.query.module}
+      lessonIdFromQuery={lessonIdFromQuery}
+      router={router}
+      activeCategoryId={activeCategoryId}
+      activeLessonId={activeLessonId}
+      setModule={setModule}
+      setCategory={setCategory}
+      setLesson={setLesson}
+      handleSectionClick={handleSectionClick}
+      levelProgress={levelProgress}
+      calculateModuleProgress={calculateModuleProgress}
+      isModuleAvailable={isModuleAvailable}
+      getModuleStatus={getModuleStatus}
+      getTooltipMessage={getTooltipMessage}
+      favoriteModules={favoriteModules}
+      toggleFavorite={toggleFavorite}
+      levels={levels}
+      moduleContent={moduleContent}
+      moduleMetadata={moduleMetadata}
+    />
   );
 };
 
@@ -219,7 +122,13 @@ CurriculumPanel.propTypes = {
   getTooltipMessage: PropTypes.func.isRequired,
   favoriteModules: PropTypes.instanceOf(Set).isRequired,
   toggleFavorite: PropTypes.func.isRequired,
+  levels: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    description: PropTypes.string.isRequired,
+    color: PropTypes.string.isRequired,
+    emoji: PropTypes.string,
+  })).isRequired,
 };
 
 export default CurriculumPanel;
-

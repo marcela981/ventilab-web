@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "validate-auth": "node scripts/validate-auth.js",
+    "validate-lessons": "node scripts/validateLesson.js",
+    "generate-lesson": "node scripts/generateLessonTemplate.js",
     "prisma:generate": "cd ../backend && npx prisma generate",
     "prisma:migrate": "cd ../backend && npx prisma migrate dev",
     "prisma:studio": "cd ../backend && npx prisma studio",
@@ -60,6 +62,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
     "prisma": "^6.18.0",
+    "prompts": "^2.4.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

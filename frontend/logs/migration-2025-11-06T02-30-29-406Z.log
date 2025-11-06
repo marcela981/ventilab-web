@@ -1,0 +1,53 @@
+================================================================================
+LESSON MIGRATION REPORT
+================================================================================
+
+Date: 2025-11-06T02:30:29.396Z
+Mode: DRY RUN
+Module Filter: All
+
+STATISTICS:
+  Total files processed: 14
+  ✓ Migrated successfully: 0
+  ✗ Failed: 3
+  ○ Skipped (already in target format): 0
+  ℹ Info (different format, not migrated): 11
+
+FORMATS DETECTED:
+  structured-sections: 1 files
+  unknown: 3 files
+  structured-basic: 10 files
+
+FAILED FILES:
+  module-01-fundamentals\lesson-02-respiratory-mechanics.json
+    - Unknown format. File structure doesn't match any recognized pattern. Please verify the JSON structure.
+  module-01-fundamentals\lesson-03-gas-exchange.json
+    - Unknown format. File structure doesn't match any recognized pattern. Please verify the JSON structure.
+  module-01-fundamentals\lesson-04-arterial-blood-gas.json
+    - Unknown format. File structure doesn't match any recognized pattern. Please verify the JSON structure.
+
+WARNINGS:
+  module-01-fundamentals\lesson-01-respiratory-anatomy.json
+    - File uses structured-sections format. Migration for this format is not yet implemented. This is a valid structured format but different from the target schema.
+  module-03-configuration\pathologies\asthma-protocol.json
+    - File uses structured-basic format. Migration for this format is not yet implemented. This is a valid structured format but different from the target schema.
+  module-03-configuration\pathologies\copd-protocol.json
+    - File uses structured-basic format. Migration for this format is not yet implemented. This is a valid structured format but different from the target schema.
+  module-03-configuration\pathologies\pneumonia-protocol.json
+    - File uses structured-basic format. Migration for this format is not yet implemented. This is a valid structured format but different from the target schema.
+  module-03-configuration\pathologies\sdra-protocol.json
+    - File uses structured-basic format. Migration for this format is not yet implemented. This is a valid structured format but different from the target schema.
+  module-03-configuration\protective-strategies\low-tidal-volume.json
+    - File uses structured-basic format. Migration for this format is not yet implemented. This is a valid structured format but different from the target schema.
+  module-03-configuration\protective-strategies\lung-protective-ventilation.json
+    - File uses structured-basic format. Migration for this format is not yet implemented. This is a valid structured format but different from the target schema.
+  module-03-configuration\protective-strategies\peep-strategies.json
+    - File uses structured-basic format. Migration for this format is not yet implemented. This is a valid structured format but different from the target schema.
+  module-03-configuration\protective-strategies\permissive-hypercapnia.json
+    - File uses structured-basic format. Migration for this format is not yet implemented. This is a valid structured format but different from the target schema.
+  module-03-configuration\weaning\readiness-criteria.json
+    - File uses structured-basic format. Migration for this format is not yet implemented. This is a valid structured format but different from the target schema.
+  module-03-configuration\weaning\sbt-protocol.json
+    - File uses structured-basic format. Migration for this format is not yet implemented. This is a valid structured format but different from the target schema.
+
+================================================================================

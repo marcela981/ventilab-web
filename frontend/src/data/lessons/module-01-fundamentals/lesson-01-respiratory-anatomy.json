@@ -1,158 +1,344 @@
 {
-  "Introducción": {
-    "texto": "La anatomía del sistema respiratorio tiene un papel fundamental en el manejo de la ventilación mecánica. Comprender la estructura de las vías respiratorias permite al profesional de la salud intubar de forma segura y eficaz, ventilar al paciente sin causar lesiones y anticipar posibles complicaciones. El ventilador mecánico interactúa directamente con la vía aérea del paciente: desde la introducción de un tubo endotraqueal hasta la insuflación de aire en los pulmones. Conocer las dimensiones y características anatómicas de la nariz, faringe, laringe, tráquea y bronquios es esencial para evitar trauma (por ejemplo, lesiones en cuerdas vocales o intubación de un solo pulmón) y para optimizar la oxigenación y ventilación. Un sólido entendimiento anatómico ayuda a prevenir complicaciones como intubaciones difíciles, colocación incorrecta del tubo o barotrauma alveolar. A continuación se presentan los objetivos de aprendizaje de esta lección:",
-    "objetivos": [
-      "Describir la anatomía de las vías aéreas superiores (nariz, cavidad oral, faringe, laringe) y su relevancia durante la intubación endotraqueal.",
-      "Identificar las estructuras clave de la laringe (epiglotis, cuerdas vocales, glotis) y explicar por qué constituyen la región más estrecha en la vía aérea adulta.",
-      "Reconocer las diferencias anatómicas entre el bronquio principal derecho e izquierdo y comprender cómo estas afectan la colocación del tubo endotraqueal y la ventilación de ambos pulmones.",
-      "Explicar la organización del árbol bronquial hasta los alvéolos y cómo la ventilación mecánica puede influir en cada nivel (por ejemplo, necesidad de PEEP para mantener alvéolos abiertos).",
-      "Aplicar el conocimiento anatómico para evitar y manejar complicaciones comunes de la ventilación mecánica (intubación selectiva de un pulmón, trauma en vías aéreas, barotrauma alveolar)."
+  "id": "lesson-01-respiratory-anatomy",
+  "moduleId": "module-01-fundamentals",
+  "title": "Anatomía del Sistema Respiratorio",
+  "description": "Esta lección aborda la anatomía detallada del sistema respiratorio desde las vías aéreas superiores hasta los alvéolos, con énfasis en su relevancia para la ventilación mecánica. Se cubren estructuras críticas para la intubación endotraqueal, diferencias anatómicas entre bronquios principales, y la organización del árbol bronquial hasta el nivel alveolar. El contenido es fundamental para comprender las complicaciones de la ventilación mecánica y aplicar estrategias protectoras.",
+  "order": 1,
+  "estimatedTime": 45,
+  "difficulty": "beginner",
+  "bloomLevel": "understand",
+  "learningObjectives": [
+    "Describir la anatomía de las vías aéreas superiores (nariz, cavidad oral, faringe, laringe) y su relevancia durante la intubación endotraqueal",
+    "Identificar las estructuras clave de la laringe (epiglotis, cuerdas vocales, glotis) y explicar por qué constituyen la región más estrecha en la vía aérea adulta",
+    "Reconocer las diferencias anatómicas entre el bronquio principal derecho e izquierdo y comprender cómo estas afectan la colocación del tubo endotraqueal y la ventilación de ambos pulmones",
+    "Explicar la organización del árbol bronquial hasta los alvéolos y cómo la ventilación mecánica puede influir en cada nivel, especialmente la necesidad de PEEP para mantener alvéolos abiertos",
+    "Aplicar el conocimiento anatómico para evitar y manejar complicaciones comunes de la ventilación mecánica como intubación selectiva de un pulmón, trauma en vías aéreas y barotrauma alveolar"
+  ],
+  "prerequisites": [],
+  "sections": [
+    {
+      "id": "introduction",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción a la Anatomía Respiratoria en Ventilación Mecánica",
+      "content": {
+        "markdown": "## Importancia de la Anatomía en Ventilación Mecánica\n\nLa anatomía del sistema respiratorio tiene un papel fundamental en el manejo de la ventilación mecánica. Comprender la estructura de las vías respiratorias permite al profesional de la salud:\n\n- **Intubar de forma segura y eficaz**: Conocer las dimensiones y características anatómicas facilita la colocación correcta del tubo endotraqueal\n- **Ventilar sin causar lesiones**: El ventilador mecánico interactúa directamente con la vía aérea del paciente, desde la introducción de un tubo endotraqueal hasta la insuflación de aire en los pulmones\n- **Anticipar complicaciones**: Un sólido entendimiento anatómico ayuda a prevenir problemas como intubaciones difíciles, colocación incorrecta del tubo o barotrauma alveolar\n\nConocer las dimensiones y características anatómicas de la nariz, faringe, laringe, tráquea y bronquios es esencial para evitar trauma (por ejemplo, lesiones en cuerdas vocales o intubación de un solo pulmón) y para optimizar la oxigenación y ventilación.\n\n### Objetivos de Aprendizaje\n\nAl completar esta lección, serás capaz de:\n\n1. Describir la anatomía de las vías aéreas superiores y su relevancia durante la intubación\n2. Identificar las estructuras clave de la laringe y su importancia clínica\n3. Reconocer las diferencias anatómicas entre bronquios principales y sus implicaciones clínicas\n4. Explicar la organización del árbol bronquial hasta los alvéolos\n5. Aplicar el conocimiento anatómico para prevenir complicaciones de la ventilación mecánica"
+      }
+    },
+    {
+      "id": "upper-airways",
+      "order": 2,
+      "type": "theory",
+      "title": "Vías Aéreas Superiores: Nariz, Cavidad Oral, Faringe y Laringe",
+      "content": {
+        "markdown": "## Anatomía de las Vías Aéreas Superiores\n\nLas vías respiratorias superiores actúan como la entrada y preparación del aire antes de que llegue a los pulmones. Esta región comprende estructuras críticas para la intubación endotraqueal.\n\n### Cavidad Nasal\n\nLa nariz filtra partículas, calienta y humedece el aire inspirado. Durante la ventilación mecánica con intubación, se bypassa esta función, por lo que el aire suministrado por el ventilador debe ser humidificado y calentado externamente para proteger la mucosa traqueobronquial.\n\n**Consideraciones anatómicas clave:**\n- Cornetes nasales: aumentan el área de superficie para calentamiento y humidificación\n- Mucosa nasal altamente vascularizada: proporciona calor al aire inspirado\n- Sistema de filtración mediante pelos nasales y moco\n\n### Faringe\n\nLa faringe, compartida con el tracto digestivo, conecta la cavidad nasal y oral con la laringe. Se divide en tres regiones:\n\n- **Nasofaringe**: Porción superior, detrás de la nariz\n- **Orofaringe**: Porción media, detrás de la boca\n- **Laringofaringe**: Porción inferior, que se continúa con la laringe\n\nDurante la intubación orotraqueal, el tubo pasa por la orofaringe hacia la laringe.\n\n### Laringe: Estructura Crítica para la Intubación\n\nLa laringe, sostenida por cartílagos (tiroides, cricoides, aritenoides), aloja las cuerdas vocales. La abertura entre las cuerdas vocales (**glotis**) es el segmento más estrecho de la vía aérea en el adulto, siendo el punto de paso obligado del tubo endotraqueal durante la intubación.\n\n#### Estructuras Clave de la Laringe:\n\n1. **Epiglotis**: Cartílago que actúa como una tapa protegiendo la vía aérea durante la deglución. Durante la laringoscopia, el clínico debe levantar la epiglotis para visualizar las cuerdas vocales.\n\n2. **Cuerdas Vocales**: Pliegues mucosos que forman la glotis. La visualización de las cuerdas vocales es esencial para una intubación exitosa.\n\n3. **Glotis**: El espacio entre las cuerdas vocales, punto más estrecho en adultos (~1 cm de diámetro en reposo).\n\n4. **Cartílago Cricoides**: Único cartílago laríngeo con forma de anillo completo, sirve como punto de referencia anatómico.\n\n#### Implicaciones Clínicas\n\n**Variaciones Anatómicas y Vía Aérea Difícil**:\n\nAspectos anatómicos como una lengua voluminosa, cuello corto o movilidad cervical limitada pueden hacer difícil la visualización de la glotis (vía aérea difícil). Por ello:\n\n- Conocer la anatomía permite posicionar adecuadamente al paciente (por ejemplo, en \"posición de olfateo\" que alinea los ejes oral, faríngeo y laríngeo)\n- Facilitar el uso de dispositivos adecuados (laringoscopios o videolaringoscopios) para una intubación exitosa\n- Reconocer factores predictores de intubación difícil (clasificación de Mallampati, distancia tiromentoniana, etc.)\n\n**Nota Pediátrica**: En niños pequeños, a diferencia de adultos, el punto más estrecho es la región subglótica a nivel del cartílago cricoides, lo que debe tenerse en cuenta al seleccionar el tamaño del tubo y en la técnica de intubación pediátrica.\n\n### Ejemplo Clínico\n\nUn paciente obeso con cuello corto llega a emergencias en insuficiencia respiratoria. Durante la intubación, el anestesiólogo encuentra dificultades para ver las cuerdas vocales (visión de Cormack-Lehane grado 3). Se aplican maniobras como la elevación del mentón y se utiliza un videolaringoscopio, logrando finalmente la intubación. Este caso ilustra cómo las variaciones anatómicas (obesidad, cuello corto) pueden complicar la intubación y cómo el conocimiento de la anatomía y las ayudas disponibles permiten asegurar la vía aérea de forma segura.",
+        "media": {
+          "images": [
+            {
+              "id": "upper-airway-diagram",
+              "url": "https://placeholder.ventylab.com/images/upper-airway-diagram-sagittal.png",
+              "alt": "Diagrama anatómico de las vías aéreas superiores mostrando cavidad nasal, boca, faringe, epiglotis, cuerdas vocales y tráquea",
+              "caption": "Vista sagital de las vías aéreas superiores. Notar la posición de la epiglotis, cuerdas vocales y la continuidad hacia la tráquea. [[PENDING: Generar diagrama sagital de vías aéreas superiores mostrando cavidad nasal, boca, faringe, epiglotis, cuerdas vocales y tráquea con etiquetas anatómicas detalladas]]"
+            },
+            {
+              "id": "laryngoscopic-view",
+              "url": "https://placeholder.ventylab.com/images/laryngoscopic-view-interactive.png",
+              "alt": "Vista desde la perspectiva de la laringoscopia mostrando epiglotis, cuerdas vocales y glotis",
+              "caption": "Vista laringoscópica: imagen desde la perspectiva de la intubación. Identificar la epiglotis, las cuerdas vocales (glotis) y el espacio por donde debe pasar el tubo. [[PENDING: Generar vista laringoscópica interactiva mostrando epiglotis, cuerdas vocales y glotis desde la perspectiva de la intubación con clasificación de Cormack-Lehane]]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "trachea-bronchi",
+      "order": 3,
+      "type": "theory",
+      "title": "Tráquea y Bronquios Principales",
+      "content": {
+        "markdown": "## Anatomía de la Tráquea\n\nLa tráquea es un tubo fibrocartilaginoso de aproximadamente **11 cm de longitud** en adultos, formado por:\n\n- **Anillos cartilaginosos en forma de C**: Mantienen la vía aérea abierta (aproximadamente 16-20 anillos)\n- **Pared posterior muscular** (músculo traqueal): Permite flexibilidad y contacto con el esófago\n\n### Dimensiones Traqueales\n\n- **Diámetro interno**: Ronda 1.5–2 cm en adultos (ligeramente mayor en hombres)\n- Este diámetro es suficiente para alojar un tubo endotraqueal típico (los tubos para adultos tienen diámetros entre ~7.0 y 8.5 mm)\n- **Longitud desde cuerdas vocales a carina**: aproximadamente 10-13 cm\n\n### Bifurcación Traqueal\n\nLa tráquea se bifurca a la altura del **ángulo esternal** (aproximadamente nivel T4–T5) en dos bronquios principales. Este punto de bifurcación se denomina **carina**.\n\n**Importancia clínica de la carina:**\n- Punto de referencia radiológico para posicionamiento del tubo endotraqueal\n- Zona extremadamente sensible al contacto (provoca tos intensa)\n- La punta del tubo debe quedar 2-3 cm por encima de la carina\n\n## Diferencias Anatómicas entre Bronquios Principales\n\n### Bronquio Principal Derecho\n\n- **Longitud**: Unos 2.5 cm hasta su primera ramificación\n- **Ángulo**: Casi recto, forma un ángulo de ~25° con la vertical\n- **Calibre**: Ligeramente mayor que el izquierdo (diámetro ~1.4 cm)\n- **Orientación**: Más alineado con la tráquea\n\n### Bronquio Principal Izquierdo\n\n- **Longitud**: ~5 cm (más largo que el derecho)\n- **Ángulo**: Se orienta en ~45° con respecto a la vertical (más horizontal)\n- **Calibre**: Ligeramente menor que el derecho (diámetro ~1.1 cm)\n- **Consideración especial**: Debe pasar por debajo del arco aórtico\n\n### Implicación Clínica Crítica\n\n**Estas diferencias explican por qué un tubo endotraqueal avanzado demasiado tiende a entrar en el bronquio derecho**: es el camino más \"alineado\" y amplio. Por ello:\n\n1. Tras intubar, se debe auscultar ambos hemitórax para verificar ventilación bilateral\n2. Si solo se escuchan murmurios vesiculares en el lado derecho, es probable que la punta del tubo esté en el bronquio derecho (intubación selectiva)\n3. La posición ideal del tubo es en la tráquea, con su extremo ~2–3 cm por encima de la carina, asegurando la ventilación de ambos pulmones\n4. En adultos, la marca de profundidad adecuada suele ser 21-23 cm a nivel de incisivos (varía según altura del paciente)\n\n### Ramificación del Árbol Bronquial\n\nDesde los bronquios principales, la vía aérea se divide en:\n\n1. **Bronquios lobares**: 3 en el pulmón derecho (superior, medio, inferior), 2 en el izquierdo (superior, inferior)\n2. **Bronquios segmentarios**: Aproximadamente 10 segmentarios por pulmón, dependiendo de la anatomía\n3. **Bronquiolos**: Ramificaciones más pequeñas sin cartílago (diámetro <1 mm)\n\n### Ejemplo Clínico\n\nUn paciente intubado en la UCI presenta saturación baja y movimientos respiratorios asimétricos: el hemitórax derecho se eleva con cada ventilación, pero el izquierdo apenas se mueve. Al examinar, solo se auscultan ruidos respiratorios en el lado derecho. Se sospecha intubación selectiva del bronquio derecho. Al retirar ligeramente el tubo endotraqueal (de 24 cm a 21 cm a nivel de incisivos) y reajustar, los sonidos pulmonares vuelven a escucharse bilateralmente y la saturación mejora.\n\nEste caso evidencia la importancia de conocer la anatomía bronquial: un tubo colocado demasiado profundo puede ventilar solo un pulmón (generalmente el derecho), causando atelectasia del lado no ventilado. La verificación bilateral de la ventilación y la colocación correcta del tubo previenen esta complicación.",
+        "media": {
+          "images": [
+            {
+              "id": "tracheobronchial-tree",
+              "url": "https://placeholder.ventylab.com/images/tracheobronchial-tree-diagram.png",
+              "alt": "Diagrama de la tráquea, bifurcación bronquial y diferencias entre bronquios principales derecho e izquierdo",
+              "caption": "Vía aérea inferior mostrando la tráquea, la bifurcación bronquial (carina) y las diferencias anatómicas entre ambos bronquios principales. Notar el ángulo más vertical del bronquio derecho. [[PENDING: Generar diagrama del árbol traqueobronquial mostrando tráquea, bifurcación bronquial con ángulos marcados (25° derecho, 45° izquierdo) y diferencias anatómicas entre bronquios principales]]"
+            },
+            {
+              "id": "bronchial-anatomy-table",
+              "url": "https://placeholder.ventylab.com/images/bronchial-anatomy-measurements-table.png",
+              "alt": "Tabla de referencia con medidas anatómicas de tráquea y bronquios",
+              "caption": "Tabla de referencia con medidas anatómicas: longitudes, diámetros, ángulos y número de generaciones bronquiales. [[PENDING: Generar tabla comparativa con medidas anatómicas de tráquea y bronquios (longitudes en cm, diámetros en cm, ángulos en grados) con valores para adulto promedio]]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "alveoli-mechanics",
+      "order": 4,
+      "type": "theory",
+      "title": "Bronquiolos, Alvéolos y Mecánica Alveolar",
+      "content": {
+        "markdown": "## Organización del Árbol Bronquial Terminal\n\nLos bronquios segmentarios se ramifican en **bronquiolos**, tubos de diámetro pequeño (<1 mm) que ya no poseen cartílago en sus paredes.\n\n### Generaciones Bronquiales\n\n1. **Bronquiolos terminales**: La generación final de la zona de conducción (generación 16 aproximadamente)\n2. **Bronquiolos respiratorios**: Más allá de los terminales, dan paso a conductos alveolares (generaciones 17-19)\n3. **Conductos alveolares**: Se conectan con los sacos alveolares (generación 20-22)\n4. **Sacos alveolares**: Contienen los alvéolos (generación 23)\n\n**Zona de conducción vs. Zona respiratoria:**\n- Zona de conducción: desde la nariz hasta bronquiolos terminales (no hay intercambio gaseoso)\n- Zona respiratoria: desde bronquiolos respiratorios hasta alvéolos (intercambio gaseoso)\n\n## Anatomía y Función de los Alvéolos\n\nEn los extremos del árbol respiratorio se hallan los **alvéolos**, diminutas bolsas de aire de aproximadamente **0.2-0.3 mm de diámetro** cada una, agrupadas en racimos (sacos alveolares) como racimos de uvas.\n\n### Características Cuantitativas\n\n- **Número total de alvéolos**: Se estima del orden de **300 a 500 millones** en los pulmones humanos\n- **Superficie total de intercambio**: **70–100 m²**, equivalente a una cancha de tenis\n- Esta enorme superficie permite el intercambio gaseoso eficiente\n- **Grosor de la membrana alveolocapilar**: aproximadamente 0.5 micrómetros\n\n### Función de Intercambio Gaseoso\n\nLa función de los alvéolos es permitir que:\n\n- El **oxígeno** pase al torrente sanguíneo a través de la membrana alveolocapilar\n- El **dióxido de carbono** se elimine en la espiración\n\n### Estructura Microscópica del Alvéolo\n\n**Células alveolares:**\n- **Neumocitos tipo I**: Células planas que cubren ~95% de la superficie alveolar, responsables del intercambio gaseoso\n- **Neumocitos tipo II**: Células más pequeñas que producen surfactante pulmonar\n- **Macrófagos alveolares**: Células de defensa que eliminan partículas y patógenos\n\n### Mecánica Alveolar Normal\n\nEn condiciones normales, al final de una espiración tranquila, muchos alvéolos permanecen abiertos gracias a:\n\n1. **Surfactante pulmonar**: Reduce la tensión superficial, impidiendo el colapso alveolar\n2. **Presión residual positiva**: Mantiene cierta presión para evitar el colapso\n3. **Tracción radial**: Las fuerzas de los alvéolos vecinos ayudan a mantener abiertos los alvéolos\n\n## Ventilación Mecánica y Alvéolos\n\n### Atelectasia en Pacientes con Ventilación Mecánica\n\nEn un paciente con ventilación mecánica, especialmente si tiene los pulmones enfermos (p. ej., en síndrome de distrés respiratorio agudo, SDRA), es frecuente que algunos alvéolos estén colapsados (atelectasia).\n\n**Causas de atelectasia en VM:**\n- Falta de suspiros fisiológicos\n- Compresión por edema o consolidación\n- Reabsorción de gas por bajo volumen corriente\n- Sedación profunda y pérdida de tono muscular\n\n### PEEP: Manteniendo Alvéolos Abiertos\n\nEl ventilador puede ayudar a reabrir alvéolos colapsados mediante la aplicación de **PEEP** (presión positiva al final de la espiración), que:\n\n- Mantiene cierta presión en las vías al final de cada espiración\n- Evita el colapso alveolar\n- Recluta unidades alveolares colapsadas\n- Mejora la oxigenación mediante la estrategia de \"ventilación a pulmón abierto\"\n- Aumenta la capacidad residual funcional (CRF)\n\n### Riesgos de la Ventilación Mecánica: Barotrauma y Volutrauma\n\nLa ventilación mecánica también conlleva riesgos:\n\n- **Volúmenes muy altos**: Pueden sobredistender los alvéolos\n- **Presiones excesivas**: Pueden lesionar la estructura alveolar\n- **Resultado**: Ruptura alveolar por barotrauma puede provocar:\n  - Fugas de aire (neumotórax)\n  - Enfisema subcutáneo\n  - Neumomediastino\n  - Inflamación pulmonar (biotrauma)\n\n### Estrategias de Ventilación Protectora\n\nConocer la capacidad y límites del tejido pulmonar es crucial al programar el ventilador:\n\n- **Volúmenes corrientes seguros**: 6–8 mL/kg de peso corporal ideal en pacientes con SDRA (ventilación protectora)\n- **Presión plateau limitada**: ≤30 cmH₂O para evitar barotrauma\n- **PEEP óptima**: Aplicada para proteger los alvéolos sin causar sobredistensión\n- **Driving pressure**: (Presión plateau - PEEP) idealmente <15 cmH₂O\n\n### Ejemplo Clínico\n\nUn paciente con neumonía grave (SDRA) está conectado a ventilación mecánica. En la radiografía de tórax se observan opacidades difusas (pulmón \"blanco\"), indicativas de muchos alvéolos colapsados o llenos de líquido. Los médicos ajustan la ventilación con un volumen corriente bajo (6 mL/kg) y PEEP alta (por ejemplo, 14 cmH₂O) para mantener abiertos los alvéolos. Tras estos cambios, mejora la oxigenación del paciente. Sin embargo, se vigilan de cerca las presiones en la vía aérea para evitar el barotrauma.\n\nEste caso demuestra cómo la comprensión de la anatomía microscópica pulmonar (alvéolos colapsados en SDRA) guía la configuración del ventilador: se busca reclutar alvéolos sin causar daño por sobrepresurización.",
+        "media": {
+          "images": [
+            {
+              "id": "alveolar-structure",
+              "url": "https://placeholder.ventylab.com/images/alveolar-structure-diagram.png",
+              "alt": "Diagrama microscópico de alvéolos, sacos alveolares y membrana alveolocapilar",
+              "caption": "Estructura microscópica de los alvéolos mostrando su organización en sacos alveolares y la membrana de intercambio gaseoso. [[PENDING: Generar diagrama microscópico de estructura alveolar mostrando alvéolos, sacos alveolares, membrana alveolocapilar, neumocitos tipo I y II, y capilares pulmonares]]"
+            },
+            {
+              "id": "alveolar-mechanics-animation",
+              "url": "https://placeholder.ventylab.com/images/alveolar-mechanics-animation.gif",
+              "alt": "Animación mostrando alvéolos colapsándose y expandiéndose con y sin PEEP",
+              "caption": "Animación sobre mecánica alveolar: secuencia que muestre alvéolos colapsándose y expandiéndose con y sin PEEP, y los efectos de un volumen excesivo (sobredistensión). [[PENDING: Generar animación de mecánica alveolar mostrando tres escenarios: 1) Respiración normal, 2) Colapso alveolar sin PEEP, 3) Reclutamiento con PEEP, 4) Sobredistensión por volumen excesivo]]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "clinical-case",
+      "order": 5,
+      "type": "case",
+      "title": "Caso Clínico: Intubación Difícil y Manejo de Vía Aérea",
+      "content": {
+        "markdown": "## Caso Clínico Completo\n\n### Presentación\n\n**Paciente**: Masculino de 58 años\n**Peso**: 120 kg, Talla: 170 cm, IMC: 41.5 (obesidad mórbida)\n**Antecedentes**: Obesidad mórbida, apnea obstructiva del sueño (SAOS), hipertensión arterial\n**Motivo de ingreso**: Neumonía bilateral severa con insuficiencia respiratoria aguda que requiere intubación y ventilación mecánica\n\n### Hallazgos en la Evaluación Pre-intubación\n\nDurante la evaluación inicial antes de la intubación, el médico de urgencias identifica:\n\n- **Clasificación de Mallampati**: Grado IV (no se visualiza paladar blando)\n- **Distancia tiromentoniana**: 5 cm (reducida, normal >6.5 cm)\n- **Circunferencia de cuello**: 48 cm (aumentada)\n- **Apertura oral**: Limitada a 3 cm (normal >4 cm)\n- **Movilidad cervical**: Limitada por obesidad\n- **Cuello corto y grueso** con acúmulo de tejido adiposo\n\n### Evolución durante la Intubación\n\nDurante la laringoscopia inicial con hoja Macintosh, se observan dificultades significativas para visualizar la glotis a pesar de la posición adecuada del paciente. El anestesiólogo identifica:\n\n- **Visión de Cormack-Lehane**: Grado 3 (solo se visualiza la epiglotis, no se ven cuerdas vocales)\n- **Lengua voluminosa** que dificulta la visualización\n- **Edema de tejidos** por acúmulo de líquidos\n- **Saturación de oxígeno** descendiendo de 92% a 85% durante los intentos\n\n### Intervención\n\nSe aplican las siguientes maniobras y técnicas:\n\n1. **Preoxigenación optimizada**: \n   - Ventilación con mascarilla y bolsa con FiO2 100%\n   - Posición de rampa (elevación de cabeza y hombros)\n\n2. **Maniobras de posicionamiento**:\n   - Elevación del mentón (jaw thrust)\n   - Posición de olfateo optimizada\n   - Uso de rampa con almohadas para mejorar la alineación de ejes oral-faríngeo-laríngeo\n   - Maniobra BURP (Backward, Upward, Rightward Pressure sobre cartílago tiroides)\n\n3. **Dispositivos avanzados**:\n   - Cambio a videolaringoscopio con hoja curva\n   - Estilete de guía (bougie) para facilitar el paso del tubo\n   - Tubo endotraqueal 7.5 mm\n\n4. **Resultado**: Intubación exitosa tras aplicación de estas técnicas\n   - Tubo posicionado a 21 cm a nivel de incisivos\n   - Confirmación por auscultación bilateral\n   - Capnografía con onda cuadrada característica\n   - Radiografía de tórax confirma punta del tubo 3 cm sobre carina\n\n### Análisis Anatómico\n\n**Preguntas para reflexión**:\n\n1. **¿Qué características anatómicas específicas contribuyeron a la dificultad de intubación en este paciente?**\n\n2. **Mencione al menos tres maniobras o dispositivos que pueden mejorar la visualización de la glotis en una vía aérea difícil.**\n\n3. **¿Por qué la obesidad y el cuello corto pueden dificultar la ventilación con máscara y la intubación endotraqueal? Explique desde el punto de vista anatómico.**\n\n4. **¿Qué ejes anatómicos deben alinearse para una laringoscopia exitosa y cómo se logra esta alineación?**\n\n5. **Si durante la intubación solo se logra visualizar Cormack-Lehane grado 3-4, ¿cuáles son las alternativas disponibles antes de declarar una vía aérea imposible?**\n\n### Puntos Clave del Caso\n\n- Las variaciones anatómicas (obesidad mórbida, cuello corto, Mallampati IV) pueden complicar significativamente la intubación\n- La evaluación pre-intubación permite anticipar dificultades y preparar plan B y C\n- El conocimiento de la anatomía permite anticipar dificultades y preparar estrategias alternativas\n- Los dispositivos de visualización avanzados (videolaringoscopios) son esenciales en vías aéreas difíciles\n- La posición adecuada del paciente (rampa) es fundamental para alinear los ejes anatómicos necesarios para la visualización\n- La confirmación de la intubación debe ser multimodal: clínica + capnografía + radiografía\n- En pacientes obesos, la desaturación puede ocurrir rápidamente por menor reserva de oxígeno (menor CRF)"
+      }
+    },
+    {
+      "id": "summary",
+      "order": 6,
+      "type": "summary",
+      "title": "Resumen y Puntos Clave",
+      "content": {
+        "markdown": "## Puntos Clave de la Lección\n\n### Vías Aéreas Superiores\n\n- La anatomía de la vía aérea superior (especialmente la laringe) es crítica para una intubación segura: la **glotis en el adulto es la sección más estrecha** y punto de paso obligado del tubo endotraqueal.\n- La nariz y vías aéreas superiores acondicionan el aire (filtran, calientan, humidifican); al ventilar mecánicamente a un paciente intubado, es esencial proveer humidificación y temperatura adecuadas para proteger la mucosa traqueobronquial.\n- En niños pequeños (<5 años), el punto más estrecho es el cartílago cricoides (región subglótica), no la glotis.\n\n### Tráquea y Bronquios\n\n- Una **correcta posición del tubo endotraqueal es 2–3 cm por encima de la carina**; si se introduce demasiado, suele alojarse en el bronquio principal derecho debido a que es más corto, más ancho y más alineado con la tráquea que el izquierdo.\n- El árbol bronquial se ramifica en vías cada vez más pequeñas (bronquios lobares, segmentarios y bronquiolos) llevando el aire a todas las regiones pulmonares; una obstrucción o intubación selectiva de un bronquio afectará la ventilación solo del lado comprometido.\n- La verificación post-intubación debe incluir: auscultación bilateral, capnografía, pulsioximetría y radiografía de tórax.\n\n### Alvéolos y Ventilación Mecánica\n\n- Los alvéolos son el sitio de intercambio gaseoso y deben permanecer abiertos para una oxigenación eficaz. La **PEEP del ventilador ayuda a prevenir el colapso alveolar** (atelectasias), mejorando la oxigenación en pacientes con áreas del pulmón colapsadas.\n- Volúmenes corrientes excesivos o presiones muy altas en la ventilación mecánica pueden dañar la estructura alveolar, provocando barotrauma o volutrauma. Por ello, la estrategia de ventilación protectora utiliza volúmenes moderados (6-8 mL/kg PCI) y limita la presión alveolar (P plateau ≤30 cmH₂O).\n- El surfactante pulmonar, producido por neumocitos tipo II, es esencial para mantener la estabilidad alveolar al reducir la tensión superficial.\n\n### Aplicación Clínica\n\n- El conocimiento detallado de la anatomía respiratoria permite ajustar los parámetros del ventilador (volumen, presión, PEEP) según las necesidades del paciente, minimizando complicaciones como trauma de vía aérea, ventilación unilateral o lesión pulmonar inducida por el ventilador.\n- La evaluación pre-intubación utilizando escalas validadas (Mallampati, Cormack-Lehane, distancia tiromentoniana) permite identificar pacientes con riesgo de vía aérea difícil.\n- El manejo de la vía aérea difícil requiere preparación de equipos alternativos y conocimiento de algoritmos de rescate.\n\n## Conexión con Próximas Lecciones\n\nEsta lección sienta las bases anatómicas para comprender:\n\n- La fisiología respiratoria (intercambio gaseoso, mecánica pulmonar) - Lección 2\n- Los principios de la ventilación mecánica (presiones, volúmenes, modos ventilatorios) - Módulo 2\n- Las complicaciones de la ventilación mecánica (barotrauma, volutrauma, atelectasia) - Módulo 3\n- Las estrategias de ventilación protectora en SDRA - Módulo 4\n\n## Reflexión Final\n\nLa anatomía del sistema respiratorio no es solo un tema de memorización: es la base fundamental para entender cómo ventilar pacientes de forma segura y efectiva. Cada estructura anatómica tiene implicaciones directas en la práctica clínica diaria de cuidados intensivos y anestesiología."
+      }
+    }
+  ],
+  "quiz": {
+    "questions": [
+      {
+        "id": "q1-glottis-narrowest",
+        "type": "multiple-choice",
+        "question": "¿Cuál de las siguientes estructuras corresponde al punto más estrecho de la vía aérea en un adulto durante la intubación endotraqueal?",
+        "options": [
+          "La glotis (espacio entre las cuerdas vocales)",
+          "El cartílago cricoides",
+          "La tráquea cervical a nivel de la tiroides",
+          "La cavidad nasal, a nivel de los cornetes"
+        ],
+        "correctAnswer": "La glotis (espacio entre las cuerdas vocales)",
+        "explanation": "En el adulto, la abertura glótica (entre las cuerdas vocales) es la porción más estrecha de la vía aérea, por donde debe pasar el tubo endotraqueal. El cartílago cricoides es el punto más estrecho en niños pequeños, no en adultos. La tráquea cervical tiene mayor calibre (≈1.5–2 cm de diámetro) que la glotis. La cavidad nasal, aunque puede ser estrecha en algunas personas, no es el segmento limitante para la intubación orotraqueal.",
+        "difficulty": "beginner",
+        "bloomLevel": "remember",
+        "points": 1
+      },
+      {
+        "id": "q2-right-bronchus-intubation",
+        "type": "multiple-choice",
+        "question": "¿Por qué un tubo endotraqueal insertado demasiado profundo tiende a ventilar solo el pulmón derecho?",
+        "options": [
+          "Porque el bronquio principal derecho es más corto y vertical que el izquierdo, alineado con la tráquea",
+          "Porque el bronquio principal izquierdo es más vertical que el derecho",
+          "Porque la tráquea está desviada naturalmente hacia la derecha",
+          "Porque el pulmón derecho tiene mayor volumen que el izquierdo"
+        ],
+        "correctAnswer": "Porque el bronquio principal derecho es más corto y vertical que el izquierdo, alineado con la tráquea",
+        "explanation": "El bronquio derecho se origina de la tráquea con un ángulo menor (≈25°) y es más ancho, lo que facilita que el tubo avance directamente en él. El bronquio izquierdo es más horizontal (≈45°) y más largo, por lo que el tubo suele 'saltar' hacia el derecho en lugar de entrar al izquierdo. La tráquea normalmente está centrada (no desviada significativamente a la derecha a menos que haya patología). El mayor volumen del pulmón derecho no influye en la dirección del tubo; es la anatomía de los bronquios la responsable.",
+        "difficulty": "intermediate",
+        "bloomLevel": "understand",
+        "points": 1
+      },
+      {
+        "id": "q3-unilateral-ventilation",
+        "type": "multiple-choice",
+        "question": "Tras intubar a un paciente, solo se auscultan ruidos respiratorios en el hemitórax derecho. ¿Cuál es la causa más probable?",
+        "options": [
+          "El tubo endotraqueal está insertado en el bronquio principal derecho",
+          "El pulmón izquierdo presentó un neumotórax inmediatamente tras la intubación",
+          "Broncoespasmo selectivo del pulmón izquierdo",
+          "Obstrucción del tubo endotraqueal por secreciones"
+        ],
+        "correctAnswer": "El tubo endotraqueal está insertado en el bronquio principal derecho",
+        "explanation": "La situación descrita es típica de una intubación selectiva del bronquio derecho, que resulta en ventilación únicamente del pulmón derecho y ausencia de entrada de aire al izquierdo. Un neumotórax izquierdo post-intubación es posible pero menos común y suele presentar también dificultad ventilatoria grave y signos radiológicos; además, el escenario inmediato post-intubación sugiere más un problema con la colocación del tubo. El broncoespasmo severo usualmente afecta ambos pulmones de forma difusa, no solo uno. Una obstrucción del tubo (p.ej. por moco) reduciría los sonidos en ambos lados o causaría sibilancias audibles, no aisladamente en un pulmón.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "q4-peep-purpose",
+        "type": "multiple-choice",
+        "question": "¿Cuál es el principal propósito de aplicar PEEP (Presión Positiva al final de la Espiración) en un paciente con ventilación mecánica?",
+        "options": [
+          "Evitar que los alvéolos se colapsen al final de la espiración, mejorando el intercambio gaseoso",
+          "Aumentar el volumen corriente administrado en cada ventilación",
+          "Promover la eliminación de CO₂ aumentando la ventilación minuto",
+          "Prevenir el broncoespasmo manteniendo las vías aéreas abiertas por presión"
+        ],
+        "correctAnswer": "Evitar que los alvéolos se colapsen al final de la espiración, mejorando el intercambio gaseoso",
+        "explanation": "La PEEP mantiene una presión residual en las vías respiratorias al final de la espiración, impidiendo el colapso de los alvéolos y aumentando la capacidad residual funcional. Esto mejora la oxigenación al mantener alveolos abiertos para el intercambio gaseoso. La PEEP no está diseñada para aumentar el volumen corriente (eso se ajusta con el parámetro de volumen o presión de ventilación), ni su objetivo principal es eliminar CO₂ (se afecta más por volumen corriente y frecuencia respiratoria). Tampoco previene directamente el broncoespasmo; sin embargo, al mantener la vía aérea distal abierta puede ayudar secundariamente en caso de obstrucción, pero no es su propósito primario.",
+        "difficulty": "beginner",
+        "bloomLevel": "understand",
+        "points": 1
+      },
+      {
+        "id": "q5-humidification",
+        "type": "true-false",
+        "question": "Durante la ventilación mecánica invasiva, es innecesario humidificar el gas inspirado porque la vía aérea del paciente ya se encarga de ello.",
+        "options": ["Verdadero", "Falso"],
+        "correctAnswer": "Falso",
+        "explanation": "Falso. En ventilación mecánica con intubación, el aire suministrado por el ventilador bypassa las vías aéreas superiores (nariz/boca), que normalmente filtran y humidifican el aire. Si no se humidifica el gas inspirado de forma artificial, la mucosa traqueobronquial del paciente puede secarse e irritarse, provocando tapones de moco y lesiones. Por lo tanto, siempre se debe humidificar activamente el aire/oxígeno administrado a un paciente intubado.",
+        "difficulty": "beginner",
+        "bloomLevel": "understand",
+        "points": 1
+      },
+      {
+        "id": "q6-peep-tradeoff",
+        "type": "true-false",
+        "question": "El uso de PEEP en un paciente con áreas pulmonares colapsadas ayuda a reclutar alvéolos y a mejorar la oxigenación, aunque un nivel de PEEP demasiado alto puede incrementar el riesgo de barotrauma.",
+        "options": ["Verdadero", "Falso"],
+        "correctAnswer": "Verdadero",
+        "explanation": "Verdadero. La PEEP aplica presión positiva al final de la espiración, impidiendo el colapso alveolar y reclutando alvéolos previamente atelectásicos, lo que generalmente mejora la oxigenación del paciente. Sin embargo, niveles excesivos de PEEP pueden sobre-distender regiones pulmonares ya abiertas y contribuir a barotrauma (lesión por presión), por lo que se busca un equilibrio (PEEP óptima) que maximice la apertura alveolar sin causar daño.",
+        "difficulty": "intermediate",
+        "bloomLevel": "analyze",
+        "points": 1
+      },
+      {
+        "id": "q7-tube-position",
+        "type": "multiple-choice",
+        "question": "¿Dónde debe ubicarse idealmente la punta del tubo endotraqueal una vez colocado en un paciente adulto?",
+        "options": [
+          "En la tráquea, aproximadamente 2-3 cm por encima de la carina",
+          "Justo por debajo de las cuerdas vocales (apenas entrando en la tráquea)",
+          "En el bronquio principal derecho, para asegurar la ventilación de ese pulmón",
+          "A nivel de la carina, en contacto con la bifurcación bronquial"
+        ],
+        "correctAnswer": "En la tráquea, aproximadamente 2-3 cm por encima de la carina",
+        "explanation": "La punta del tubo debe quedar en la tráquea distal, unos 2-3 centímetros por encima de la carina, para que ambos pulmones reciban ventilación por igual. Esto usualmente corresponde a la marca de profundidad adecuada (por ejemplo, ~21-23 cm a nivel de los incisivos en adultos, variando según la altura del paciente). Si se deja demasiado alta (como en B, justo bajo las cuerdas vocales), existe riesgo de que se desplace y accidentalmente se extube con el movimiento. Si se avanza hasta la carina o más allá (D), o intencionalmente dentro de un bronquio (C), se ventilaría solo un pulmón y se irritaría la carina, provocando tos y lesión. Por ello, la posición correcta es unos 2-3 cm por encima de la carina, centrada en la tráquea.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "q8-surfactant-function",
+        "type": "multiple-choice",
+        "question": "¿Cuál es la función principal del surfactante pulmonar producido por los neumocitos tipo II?",
+        "options": [
+          "Reducir la tensión superficial alveolar para prevenir el colapso al final de la espiración",
+          "Aumentar la producción de moco para proteger la vía aérea",
+          "Facilitar la difusión de oxígeno a través de la membrana alveolocapilar",
+          "Activar macrófagos alveolares para la defensa inmunológica"
+        ],
+        "correctAnswer": "Reducir la tensión superficial alveolar para prevenir el colapso al final de la espiración",
+        "explanation": "El surfactante pulmonar es una mezcla de lípidos y proteínas que reduce la tensión superficial en la interfaz aire-líquido de los alvéolos. Esta reducción es crucial porque previene el colapso alveolar al final de la espiración (atelectasia) y reduce el trabajo respiratorio necesario para inflar los pulmones. La deficiencia de surfactante (como en el síndrome de distrés respiratorio del recién nacido) causa colapso alveolar difuso. El surfactante no produce moco, no facilita directamente la difusión de oxígeno (aunque mantiene los alvéolos abiertos para que ocurra), ni activa macrófagos.",
+        "difficulty": "intermediate",
+        "bloomLevel": "understand",
+        "points": 1
+      }
     ]
   },
-  "Conceptos Teóricos": "**Vías aéreas superiores (nariz, cavidad oral, faringe, laringe)**. Las vías respiratorias superiores actúan como la entrada y preparación del aire antes de que llegue a los pulmones. La nariz filtra partículas, calienta y humedece el aire inspirado; al intubar un paciente, se bypassa esta función, por lo que el aire suministrado por el ventilador debe ser humidificado y calentado externamente. La faringe, compartida con el tracto digestivo, conecta la cavidad nasal y oral con la laringe. Se divide en nasofaringe, orofaringe y laringofaringe. Durante la intubación orotraqueal, el tubo pasa por la orofaringe hacia la laringe. La laringe, sostenida por cartílagos (tiroides, cricoides, aritenoides, etc.), aloja las cuerdas vocales. La abertura entre las cuerdas vocales (glotis) es el segmento más estrecho de la vía aérea en el adulto. Por este espacio debe pasar el tubo endotraqueal (TET) durante la intubación. En niños pequeños, a diferencia de adultos, el punto más estrecho es la región subglótica a nivel del cartílago cricoides, lo que se ha de tener en cuenta al seleccionar el tamaño del tubo y en la técnica de intubación pediátrica. El cartílago epiglótico (epiglotis) actúa como una tapa que protege la vía aérea durante la deglución; durante la laringoscopia, el clínico debe levantar la epiglotis para visualizar las cuerdas vocales. Aspectos anatómicos como una lengua voluminosa, cuello corto o movilidad cervical limitada pueden hacer difícil la visualización de la glotis (vía aérea difícil). Por ello, conocer la anatomía permite posicionar adecuadamente al paciente (por ejemplo, en \"posición de olfateo\" que alinea los ejes oral, faríngeo y laríngeo) y usar dispositivos adecuados (laringoscopios o videolaringoscopios) para una intubación exitosa.\n\n_Ejemplo clínico_: Un paciente obeso con cuello corto llega a emergencias en insuficiencia respiratoria. Durante la intubación, el anestesiólogo encuentra dificultades para ver las cuerdas vocales (visión de Cormack-Lehane grado 3). Se aplican maniobras como la elevación del mentón y se utiliza un videolaringoscopio, logrando finalmente la intubación. Este caso ilustra cómo las variaciones anatómicas (obesidad, cuello corto) pueden complicar la intubación y cómo el conocimiento de la anatomía y las ayudas disponibles permiten asegurar la vía aérea de forma segura.\n\n**Tráquea y bronquios principales**. La tráquea es un tubo fibrocartilaginoso de ~11 cm de longitud en adultos, formado por anillos cartilaginosos en forma de C que la mantienen abierta y una pared posterior muscular (músculo traqueal) que permite flexibilidad y contacto con el esófago. Su diámetro interno ronda 1.5–2 cm en adultos (ligeramente mayor en hombres), suficiente para alojar un TET típico (los tubos para adultos tienen diámetros entre ~7.0 y 8.5 mm). La tráquea se bifurca a la altura del ángulo esternal (aprox. nivel T4–T5) en dos bronquios principales. El bronquio principal derecho es más corto (unos 2.5 cm hasta su primera ramificación) y casi recto (forma un ángulo de ~25° con la vertical). En contraste, el bronquio principal izquierdo es más largo (~5 cm) y se orienta en ~45° con respecto a la vertical. Además, el bronquio derecho tiene un calibre ligeramente mayor que el izquierdo. Estas diferencias explican por qué un TET avanzado demasiado tiende a entrar en el bronquio derecho: es el camino más \"alineado\" y amplio. Por ello, tras intubar se debe auscultar ambos hemitórax; si solo se escuchan murmurios vesiculares en el lado derecho, es probable que la punta del tubo esté en el bronquio derecho (intubación selectiva). La posición ideal del tubo es en la tráquea, con su extremo ~2–3 cm por encima de la carina, asegurando la ventilación de ambos pulmones. Desde los bronquios principales, la vía aérea se divide en bronquios lobares (3 en el pulmón derecho, 2 en el izquierdo) y luego en bronquios segmentarios (aproximadamente 10 segmentarios por pulmón, dependiendo de la anatomía).\n\n_Ejemplo clínico_: Un paciente intubado en la UCI presenta saturación baja y movimientos respiratorios asimétricos: el hemitórax derecho se eleva con cada ventilación, pero el izquierdo apenas se mueve. Al examinar, solo se auscultan ruidos respiratorios en el lado derecho. Se sospecha intubación selectiva del bronquio derecho. Al retirar ligeramente el TET (de 24 cm a 21 cm a nivel de incisivos) y reajustar, los sonidos pulmonares vuelven a escucharse bilateralmente y la saturación mejora. Este caso evidencia la importancia de conocer la anatomía bronquial: un tubo colocado demasiado profundo puede ventilar solo un pulmón (generalmente el derecho), causando atelectasia del lado no ventilado. La verificación bilateral de la ventilación y la colocación correcta del tubo previenen esta complicación.\n\n**Bronquiolos y alvéolos**. Los bronquios segmentarios se ramifican en bronquiolos, tubos de diámetro pequeño (<1 mm) que ya no poseen cartílago en sus paredes. La generación final de la zona de conducción son los bronquiolos terminales; más allá de estos se encuentran los bronquiolos respiratorios que dan paso a conductos alveolares y sacos alveolares. En los extremos de este árbol se hallan los alvéolos, diminutas bolsas de aire de ~0.2 mm de diámetro cada una, agrupadas en racimos (sacos alveolares) como racimos de uvas. Se estima que los pulmones humanos contienen del orden de 300 a 500 millones de alvéolos en total, brindando una enorme superficie para el intercambio gaseoso (70–80 m², equivalente a una cancha de tenis). La función de los alvéolos es permitir que el oxígeno pase al torrente sanguíneo y que el dióxido de carbono se elimine en la espiración. En condiciones normales, al final de una espiración tranquila, muchos alvéolos permanecen abiertos gracias a la tensión superficial reducida por el surfactante y a la presión residual positiva. En un paciente con ventilación mecánica, especialmente si tiene los pulmones enfermos (p. ej., en síndrome de distrés respiratorio agudo, SDRA), es frecuente que algunos alvéolos estén colapsados (atelectasia). El ventilador puede ayudar a reabrirlos mediante la aplicación de **PEEP** (presión positiva al final de la espiración), que mantiene cierta presión en las vías al final de cada espiración para evitar el colapso alveolar. Esta estrategia de \"ventilación a pulmón abierto\" mejora la oxigenación al reclutar unidades alveolares colapsadas. Sin embargo, la ventilación mecánica también conlleva riesgos: si se usan volúmenes muy altos o presiones excesivas, los alvéolos pueden sobredistenderse y lesionarse (volutrauma/barotrauma). La ruptura alveolar por barotrauma puede provocar fugas de aire (neumotórax, enfisema subcutáneo) e inflamación pulmonar. Por ello, conocer la capacidad y límites del tejido pulmonar es crucial al programar el ventilador: se deben usar volúmenes corrientes seguros (6–8 mL/kg en pacientes con SDRA) y limitar la presión plateau (≤30 cmH₂O), además de aplicar PEEP óptima para proteger los alvéolos.\n\n_Ejemplo clínico_: Un paciente con neumonía grave (SDRA) está conectado a ventilación mecánica. En la radiografía de tórax se observan opacidades difusas (pulmón \"blanco\"), indicativas de muchos alvéolos colapsados o llenos de líquido. Los médicos ajustan la ventilación con un volumen corriente bajo y PEEP alta (por ejemplo, 14 cmH₂O) para mantener abiertos los alvéolos. Tras estos cambios, mejora la oxigenación del paciente. Sin embargo, se vigilan de cerca las presiones en la vía aérea para evitar el barotrauma. Este caso demuestra cómo la comprensión de la anatomía microscópica pulmonar (alvéolos colapsados en SDRA) guía la configuración del ventilador: se busca reclutar alvéolos sin causar daño por sobrepresurización.",
-  "Elementos Visuales": [
-    {
-      "descripcion": "Ilustración anatómica de las vías aéreas superiores (perfil sagital de cabeza y cuello) mostrando cavidad nasal, boca, faringe, epiglotis, cuerdas vocales y tráquea.",
-      "objetivo": "Ubicar visualmente las estructuras clave de la vía aérea superior por donde pasa un tubo endotraqueal, entendiendo su posición y relaciones para realizar una intubación segura.",
-      "tipo": "imagen estática"
-    },
-    {
-      "descripcion": "Diagrama interactivo de la vista laringoscópica: imagen desde la perspectiva de la intubación, donde el estudiante puede identificar la epiglotis, las cuerdas vocales (glotis) y el espacio por donde debe pasar el tubo.",
-      "objetivo": "Familiarizar al estudiante con la anatomía visual que se aprecia durante la laringoscopia, facilitando el reconocimiento de las estructuras al intubar.",
-      "tipo": "diagrama interactivo"
-    },
-    {
-      "descripcion": "Imagen o esquema de la vía aérea inferior que muestre la tráquea, la bifurcación bronquial (carina) y la diferencia entre el bronquio principal derecho e izquierdo, incluyendo un ejemplo de un tubo mal posicionado entrando en el bronquio derecho.",
-      "objetivo": "Demostrar las diferencias anatómicas entre ambos bronquios principales y enfatizar la importancia de la posición correcta del tubo endotraqueal para ventilar ambos pulmones.",
-      "tipo": "imagen estática"
-    },
-    {
-      "descripcion": "Animación sobre mecánica alveolar: secuencia que muestre alvéolos colapsándose y expandiéndose con y sin PEEP, y los efectos de un volumen excesivo (sobredistensión).",
-      "objetivo": "Visualizar a nivel microscópico cómo la ventilación mecánica afecta a los alvéolos: la utilidad de PEEP para evitar colapso alveolar y los peligros de la sobrepresión que causa barotrauma.",
-      "tipo": "animación"
-    },
-    {
-      "descripcion": "Tabla de referencia con medidas anatómicas y datos relevantes: longitudes y diámetros aproximados de tráquea y bronquios, ángulos del bronquio derecho vs izquierdo, número de generaciones bronquiales, número aproximado de alvéolos y superficie pulmonar total.",
-      "objetivo": "Proporcionar valores concretos y comparativos de la anatomía respiratoria para reforzar el aprendizaje (por ejemplo, diferencia de ángulo y longitud entre bronquios, dimensiones de la tráquea, magnitud de la superficie alveolar).",
-      "tipo": "tabla"
-    }
-  ],
-  "Casos Prácticos": [
-    {
-      "caso": "Paciente masculino de 58 años, obeso, con antecedentes de apnea del sueño, es admitido en UCI por neumonía severa que requiere intubación. Durante la laringoscopia, se observan dificultades para visualizar la glotis a pesar de la posición adecuada. Finalmente se intuba con videolaringoscopio. Se constata luego que el paciente tenía cuello corto y Mallampati IV.",
-      "preguntas": [
-        "¿Qué características anatómicas contribuyeron a la dificultad de intubación en este paciente?",
-        "Mencione al menos dos maniobras o dispositivos que pueden mejorar la visualización de la glotis en una vía aérea difícil.",
-        "¿Por qué la obesidad y el cuello corto pueden dificultar la ventilación con máscara y la intubación endotraqueal?"
-      ]
-    },
-    {
-      "caso": "Paciente femenino de 70 años intubada por insuficiencia respiratoria. Tras la intubación, la saturación de oxígeno sigue baja y al auscultar se escuchan ruidos respiratorios solo en el lado derecho del tórax. Se sospecha que el tubo quedó insertado selectivamente en un bronquio.",
-      "preguntas": [
-        "¿Cuál es la explicación anatómica más probable de los hallazgos auscultatorios en este escenario?",
-        "¿Qué medidas inmediatas se deben tomar al sospechar una intubación de un solo pulmón?",
-        "¿Qué complicaciones puede sufrir el pulmón no ventilado (en este caso, el izquierdo) si el tubo permanece en esta posición?"
-      ]
-    },
-    {
-      "caso": "Paciente de 45 años con SDRA (síndrome de distrés respiratorio agudo) secundario a sepsis, en ventilación mecánica controlada. Presenta una complacencia pulmonar muy baja (pulmones \"rígidos\") y requiere PEEP elevada para mantener la oxigenación. Se discuten estrategias ventilatorias para proteger el pulmón.",
-      "preguntas": [
-        "Desde el punto de vista anatómico-fisiológico, ¿qué le sucede a los alvéolos en el SDRA que explica la baja oxigenación?",
-        "¿Cuál es el propósito de usar una PEEP alta en este paciente y cómo beneficia a los alvéolos?",
-        "Mencione dos posibles lesiones inducidas por el ventilador que se intentan evitar ajustando cuidadosamente los volúmenes y presiones en este paciente."
-      ]
-    }
-  ],
-  "Puntos Clave": [
-    "La anatomía de la vía aérea superior (especialmente la laringe) es crítica para una intubación segura: la glotis en el adulto es la sección más estrecha y punto de paso obligado del tubo endotraqueal.",
-    "Una correcta posición del tubo endotraqueal es 2–3 cm por encima de la carina; si se introduce demasiado, suele alojarse en el bronquio principal derecho debido a que es más corto, más ancho y más alineado con la tráquea que el izquierdo.",
-    "La nariz y vías aéreas superiores acondicionan el aire (filtran, calientan, humidifican); al ventilar mecánicamente a un paciente intubado, es esencial proveer humidificación y temperatura adecuadas para proteger la mucosa traqueobronquial.",
-    "El árbol bronquial se ramifica en vías cada vez más pequeñas (bronquios lobares, segmentarios y bronquiolos) llevando el aire a todas las regiones pulmonares; una obstrucción o intubación selectiva de un bronquio afectará la ventilación solo del lado comprometido.",
-    "Los alvéolos son el sitio de intercambio gaseoso y deben permanecer abiertos para una oxigenación eficaz. La PEEP del ventilador ayuda a prevenir el colapso alveolar (atelectasias), mejorando la oxigenación en pacientes con áreas del pulmón colapsadas.",
-    "Volúmenes corrientes excesivos o presiones muy altas en la ventilación mecánica pueden dañar la estructura alveolar, provocando barotrauma o volutrauma. Por ello, la estrategia de ventilación protectora utiliza volúmenes moderados y limita la presión alveolar.",
-    "El conocimiento detallado de la anatomía respiratoria permite ajustar los parámetros del ventilador (volumen, presión, PEEP) según las necesidades del paciente, minimizando complicaciones como trauma de vía aérea, ventilación unilateral o lesión pulmonar inducida por el ventilador."
-  ],
-  "Autoevaluación": [
-    {
-      "pregunta": "¿Cuál de las siguientes estructuras corresponde al punto más estrecho de la vía aérea en un adulto durante la intubación endotraqueal?",
-      "tipo": "Opción múltiple",
-      "opciones": [
-        "A. La glotis (espacio entre las cuerdas vocales)",
-        "B. El cartílago cricoides",
-        "C. La tráquea cervical a nivel de la tiroides",
-        "D. La cavidad nasal, a nivel de los cornetes"
-      ],
-      "respuesta_correcta": "A",
-      "explicacion": "En el adulto, la abertura glótica (entre las cuerdas vocales) es la porción más estrecha de la vía aérea, por donde debe pasar el tubo endotraqueal. El cartílago cricoides es el punto más estrecho en niños pequeños, no en adultos. La tráquea cervical tiene mayor calibre (≈1.5–2 cm de diámetro) que la glotis. La cavidad nasal, aunque puede ser estrecha en algunas personas, no es el segmento limitante para la intubación orotraqueal."
-    },
-    {
-      "pregunta": "¿Por qué un tubo endotraqueal insertado demasiado profundo tiende a ventilar solo el pulmón derecho?",
-      "tipo": "Opción múltiple",
-      "opciones": [
-        "A. Porque el bronquio principal derecho es más corto y vertical que el izquierdo, alineado con la tráquea",
-        "B. Porque el bronquio principal izquierdo es más vertical que el derecho",
-        "C. Porque la tráquea está desviada naturalmente hacia la derecha",
-        "D. Porque el pulmón derecho tiene mayor volumen que el izquierdo"
-      ],
-      "respuesta_correcta": "A",
-      "explicacion": "El bronquio derecho se origina de la tráquea con un ángulo menor (≈25°) y es más ancho, lo que facilita que el tubo avance directamente en él. El bronquio izquierdo es más horizontal (≈45°) y más largo, por lo que el tubo suele \"saltar\" hacia el derecho en lugar de entrar al izquierdo. La tráquea normalmente está centrada (no desviada significativamente a la derecha a menos que haya patología). El mayor volumen del pulmón derecho no influye en la dirección del tubo; es la anatomía de los bronquios la responsable."
-    },
-    {
-      "pregunta": "Tras intubar a un paciente, solo se auscultan ruidos respiratorios en el hemitórax derecho. ¿Cuál es la causa más probable?",
-      "tipo": "Opción múltiple",
-      "opciones": [
-        "A. El tubo endotraqueal está insertado en el bronquio principal derecho",
-        "B. El pulmón izquierdo presentó un neumotórax inmediatamente tras la intubación",
-        "C. Broncoespasmo selectivo del pulmón izquierdo",
-        "D. Obstrucción del tubo endotraqueal por secreciones"
-      ],
-      "respuesta_correcta": "A",
-      "explicacion": "La situación descrita es típica de una intubación selectiva del bronquio derecho, que resulta en ventilación únicamente del pulmón derecho y ausencia de entrada de aire al izquierdo. Un neumotórax izquierdo post-intubación es posible pero menos común y suele presentar también dificultad ventilatoria grave y signos radiológicos; además, el escenario inmediato post-intubación sugiere más un problema con la colocación del tubo. El broncoespasmo severo usualmente afecta ambos pulmones de forma difusa, no solo uno. Una obstrucción del tubo (p.ej. por moco) reduciría los sonidos en ambos lados o causaría sibilancias audibles, no aisladamente en un pulmón."
-    },
-    {
-      "pregunta": "¿Cuál es el principal propósito de aplicar PEEP (Presión Positiva al final de la Espiración) en un paciente con ventilación mecánica?",
-      "tipo": "Opción múltiple",
-      "opciones": [
-        "A. Evitar que los alvéolos se colapsen al final de la espiración, mejorando el intercambio gaseoso",
-        "B. Aumentar el volumen corriente administrado en cada ventilación",
-        "C. Promover la eliminación de CO₂ aumentando la ventilación minuto",
-        "D. Prevenir el broncoespasmo manteniendo las vías aéreas abiertas por presión"
-      ],
-      "respuesta_correcta": "A",
-      "explicacion": "La PEEP mantiene una presión residual en las vías respiratorias al final de la espiración, impidiendo el colapso de los alvéolos y aumentando la capacidad residual funcional. Esto mejora la oxigenación al mantener alveolos abiertos para el intercambio gaseoso. La PEEP no está diseñada para aumentar el volumen corriente (eso se ajusta con el parámetro de volumen o presión de ventilación), ni su objetivo principal es eliminar CO₂ (se afecta más por volumen corriente y frecuencia respiratoria). Tampoco previene directamente el broncoespasmo; sin embargo, al mantener la vía aérea distal abierta puede ayudar secundariamente en caso de obstrucción, pero no es su propósito primario."
-    },
-    {
-      "pregunta": "Verdadero/Falso: Durante la ventilación mecánica invasiva, es innecesario humidificar el gas inspirado porque la vía aérea del paciente ya se encarga de ello.",
-      "tipo": "Verdadero/Falso",
-      "respuesta_correcta": "Falso",
-      "explicacion": "Falso. En ventilación mecánica con intubación, el aire suministrado por el ventilador bypassa las vías aéreas superiores (nariz/boca), que normalmente filtran y humidifican el aire. Si no se humidifica el gas inspirado de forma artificial, la mucosa traqueobronquial del paciente puede secarse e irritarse, provocando tapones de moco y lesiones. Por lo tanto, siempre se debe humidificar activamente el aire/oxígeno administrado a un paciente intubado."
-    },
-    {
-      "pregunta": "Verdadero/Falso: El uso de PEEP en un paciente con áreas pulmonares colapsadas ayuda a reclutar alvéolos y a mejorar la oxigenación, aunque un nivel de PEEP demasiado alto puede incrementar el riesgo de barotrauma.",
-      "tipo": "Verdadero/Falso",
-      "respuesta_correcta": "Verdadero",
-      "explicacion": "Verdadero. La PEEP aplica presión positiva al final de la espiración, impidiendo el colapso alveolar y reclutando alvéolos previamente atelectásicos, lo que generalmente mejora la oxigenación del paciente. Sin embargo, niveles excesivos de PEEP pueden sobre-distender regiones pulmonares ya abiertas y contribuir a barotrauma (lesión por presión), por lo que se busca un equilibrio (PEEP óptima) que maximice la apertura alveolar sin causar daño."
-    },
-    {
-      "pregunta": "¿Dónde debe ubicarse idealmente la punta del tubo endotraqueal una vez colocado en un paciente adulto?",
-      "tipo": "Opción múltiple",
-      "opciones": [
-        "A. En la tráquea, aproximadamente 2 cm por encima de la carina",
-        "B. Justo por debajo de las cuerdas vocales (apenas entrando en la tráquea)",
-        "C. En el bronquio principal derecho, para asegurar la ventilación de ese pulmón",
-        "D. A nivel de la carina, en contacto con la bifurcación bronquial"
-      ],
-      "respuesta_correcta": "A",
-      "explicacion": "La punta del tubo debe quedar en la tráquea distal, unos centímetros por encima de la carina, para que ambos pulmones reciban ventilación por igual. Esto usualmente corresponde a la marca de profundidad adecuada (por ejemplo, ~21-23 cm a nivel de los incisivos en adultos, variando según la altura del paciente). Si se deja demasiado alta (como en B, justo bajo las cuerdas vocales), existe riesgo de que se desplace y accidentalmente se extube con el movimiento. Si se avanza hasta la carina o más allá (D), o intencionalmente dentro de un bronquio (C), se ventilaría solo un pulmón y se irritaría la carina, provocando tos y lesión. Por ello, la posición correcta es unos 2-3 cm por encima de la carina, centrada en la tráquea."
-    }
-  ],
-  "Referencias Bibliográficas": [
-    "Nata SC, Launico MV. **Anatomy, Airway**. En: StatPearls [Internet]. Treasure Island (FL): StatPearls Publishing; 2025. (Última actualización Sept 2025).",
-    "Apfelbaum JL, Hagberg CA, Connis RT, et al. 2022 **American Society of Anesthesiologists Practice Guidelines for Management of the Difficult Airway**. *Anesthesiology*. 2022;136(1):31-81.",
-    "Gómez-Ríos MÁ, Sastre JA, Onrubia-Fuertes X, et al. **Guía SEDAR-SEMES-SEORL-CCC para el manejo de la vía aérea difícil (Parte I)**. *Rev Esp Anestesiol Reanim*. 2024;71(4):171-206.",
-    "Kacmarek RM, Stoller JK, Heuer AJ. **Egan’s Fundamentals of Respiratory Care**. 12.ª ed. Elsevier; 2019.",
-    "West JB, Luks AM. **West’s Respiratory Physiology: The Essentials**. 11.ª ed. Wolters Kluwer; 2021.",
-    "Fan E, Brodie D, Slutsky AS. **Acute Respiratory Distress Syndrome: Advances in Diagnosis and Treatment**. *JAMA*. 2018;319(7):698-710.",
-    "Standring S, ed. **Gray’s Anatomy: The Anatomical Basis of Clinical Practice**. 42.ª ed. Elsevier; 2020."
-  ]
+  "resources": {
+    "externalLinks": [
+      {
+        "title": "Anatomía del Sistema Respiratorio - StatPearls",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK470277/",
+        "description": "Recurso completo sobre anatomía de la vía aérea desde StatPearls, actualizado continuamente",
+        "type": "article"
+      },
+      {
+        "title": "Guía de Manejo de Vía Aérea Difícil - ASA 2022",
+        "url": "https://www.asahq.org/standards-and-guidelines/guidelines-for-management-of-difficult-airway",
+        "description": "Guías de práctica clínica de la American Society of Anesthesiologists sobre manejo de vía aérea difícil",
+        "type": "guideline"
+      },
+      {
+        "title": "Atlas de Anatomía Laríngea - SEORL",
+        "url": "https://seorl.net/atlas-anatomia-laringea/",
+        "description": "Atlas visual interactivo de anatomía laríngea de la Sociedad Española de Otorrinolaringología",
+        "type": "tool"
+      }
+    ],
+    "downloadables": [],
+    "references": [
+      {
+        "authors": "Nata SC, Launico MV",
+        "year": 2025,
+        "title": "Anatomy, Airway",
+        "journal": "StatPearls",
+        "publisher": "StatPearls Publishing",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK470277/"
+      },
+      {
+        "authors": "Apfelbaum JL, Hagberg CA, Connis RT, et al.",
+        "year": 2022,
+        "title": "2022 American Society of Anesthesiologists Practice Guidelines for Management of the Difficult Airway",
+        "journal": "Anesthesiology",
+        "volume": "136",
+        "issue": "1",
+        "pages": "31-81",
+        "doi": "10.1097/ALN.0000000000004002"
+      },
+      {
+        "authors": "Gómez-Ríos MÁ, Sastre JA, Onrubia-Fuertes X, et al.",
+        "year": 2024,
+        "title": "Guía SEDAR-SEMES-SEORL-CCC para el manejo de la vía aérea difícil (Parte I)",
+        "journal": "Rev Esp Anestesiol Reanim",
+        "volume": "71",
+        "issue": "4",
+        "pages": "171-206"
+      },
+      {
+        "authors": "Kacmarek RM, Stoller JK, Heuer AJ",
+        "year": 2019,
+        "title": "Egan's Fundamentals of Respiratory Care",
+        "publisher": "Elsevier",
+        "pages": "12th edition"
+      },
+      {
+        "authors": "West JB, Luks AM",
+        "year": 2021,
+        "title": "West's Respiratory Physiology: The Essentials",
+        "publisher": "Wolters Kluwer",
+        "pages": "11th edition"
+      },
+      {
+        "authors": "Fan E, Brodie D, Slutsky AS",
+        "year": 2018,
+        "title": "Acute Respiratory Distress Syndrome: Advances in Diagnosis and Treatment",
+        "journal": "JAMA",
+        "volume": "319",
+        "issue": "7",
+        "pages": "698-710",
+        "doi": "10.1001/jama.2017.21907"
+      },
+      {
+        "authors": "Standring S",
+        "year": 2020,
+        "title": "Gray's Anatomy: The Anatomical Basis of Clinical Practice",
+        "publisher": "Elsevier",
+        "pages": "42nd edition"
+      },
+      {
+        "authors": "Levitzky MG",
+        "year": 2018,
+        "title": "Pulmonary Physiology",
+        "publisher": "McGraw-Hill Education",
+        "pages": "9th edition"
+      }
+    ]
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-02-05T00:00:00.000Z",
+    "author": "Equipo VentyLab - Educación en Ventilación Mecánica",
+    "reviewedBy": [
+      "Dr. Especialista en Medicina Crítica y Terapia Intensiva",
+      "Dr. Especialista en Anestesiología y Reanimación"
+    ],
+    "language": "es"
+  }
 }
