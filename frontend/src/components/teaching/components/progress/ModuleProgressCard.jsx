@@ -479,19 +479,46 @@ const ModuleProgressCard = ({
                 label={module.difficulty || 'Beginner'}
                 color={getDifficultyColor()}
                 size="small"
-                sx={{ fontWeight: 500 }}
+                sx={{ 
+                  fontWeight: 500,
+                  color: '#ffffff !important',
+                  backgroundColor: 'rgba(255, 255, 255, 0.15) !important',
+                  '& .MuiChip-label': {
+                    color: '#ffffff !important',
+                  }
+                }}
               />
               <Chip
                 icon={<AccessTime />}
                 label={`${module.estimatedTime || 0} min`}
                 size="small"
                 variant="outlined"
+                sx={{
+                  color: '#ffffff !important',
+                  borderColor: 'rgba(255, 255, 255, 0.5)',
+                  '& .MuiChip-label': {
+                    color: '#ffffff !important',
+                  },
+                  '& .MuiChip-icon': {
+                    color: '#ffffff !important',
+                  }
+                }}
               />
               <Chip
                 icon={<MenuBook />}
                 label={`${totalLessons} ${totalLessons === 1 ? 'lección' : 'lecciones'}`}
                 size="small"
                 variant="outlined"
+                sx={{
+                  color: '#ffffff !important',
+                  borderColor: 'rgba(255, 255, 255, 0.5)',
+                  '& .MuiChip-label': {
+                    color: '#ffffff !important',
+                  },
+                  '& .MuiChip-icon': {
+                    color: '#ffffff !important',
+                  }
+                }}
               />
             </Box>
           </Grid>

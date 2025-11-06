@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Card,
@@ -11,8 +11,15 @@ import {
   Chip,
   IconButton,
   Tooltip,
+  Tabs,
+  Tab,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider
 } from '@mui/material';
 import {
   CheckCircle,
@@ -22,8 +29,14 @@ import {
   BookmarkBorder,
   Bookmark,
   PlayArrow,
-  Refresh
+  Refresh,
+  MenuBook,
+  Info,
+  School,
+  List as ListIcon
 } from '@mui/icons-material';
+import ModuleLessonsList from './ModuleLessonsList';
+import { useLearningProgress } from '../../../../contexts/LearningProgressContext';
 
 /**
  * ModuleCard - Card minimalista y optimizada para módulos de aprendizaje
@@ -69,6 +82,7 @@ const ModuleCard = ({
   isFavorite,
   onModuleClick,
   onToggleFavorite,
+  onLessonClick, // Nueva prop para manejar clicks en lecciones
   getStatusIcon,
   getButtonText,
   getButtonIcon,
@@ -76,6 +90,12 @@ const ModuleCard = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
+  // Obtener lecciones completadas del contexto
+  const { completedLessons } = useLearningProgress();
+  
+  // Estado para tabs internos de la card
+  const [activeTab, setActiveTab] = useState(0);
 
   /**
    * Determina el estado visual del módulo basado en progreso y disponibilidad
@@ -143,6 +163,7 @@ const ModuleCard = ({
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
+          width: '100%', // Asegura que todas las cards tengan el mismo ancho
           cursor: isAvailable ? 'pointer' : 'default',
           // Opacidad reducida para módulos bloqueados
           opacity: isAvailable ? 1 : 0.5,
@@ -165,7 +186,7 @@ const ModuleCard = ({
             // Border cambia al color del estado
             borderColor: getHoverBorderColor(),
           } : {},
-          // Reducir padding en móvil para mejor uso del espacio
+          // Asegurar ancho completo en todos los breakpoints
           [theme.breakpoints.down('sm')]: {
             width: '100%'
           }
@@ -243,70 +264,54 @@ const ModuleCard = ({
         <CardContent
           sx={{
             flexGrow: 1,
+            display: 'flex',
+            flexDirection: 'column',
             pt: 5,
-            pb: 2,
+            pb: 0,
             px: isMobile ? 2 : 2.5
           }}
         >
-          {/* Título del módulo - truncado a 2 líneas */}
+          {/* Título del módulo - siempre visible */}
           <Typography
             variant="h6"
             sx={{
               fontWeight: 700,
-              mb: 1,
+              mb: 1.5,
               fontSize: '1rem',
               lineHeight: 1.3,
               color: isAvailable ? '#ffffff' : '#9e9e9e',
-              textShadow: isAvailable ? '0 1px 2px rgba(0, 0, 0, 0.2)' : 'none',
+              textShadow: isAvailable ? '0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3)' : 'none',
               // Truncado con ellipsis después de 2 líneas
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
-              textOverflow: 'ellipsis'
+              textOverflow: 'ellipsis',
+              wordBreak: 'break-word', // Permite romper palabras largas
+              overflowWrap: 'break-word' // Asegura el wrap de palabras largas
             }}
           >
             {module.title}
           </Typography>
 
-          {/* Descripción/Learning Objective - truncado a 3 líneas */}
-          <Typography
-            variant="body2"
-            sx={{
-              color: isAvailable ? '#ffffff' : '#9e9e9e',
-              opacity: isAvailable ? 0.95 : 0.7,
-              mb: 2,
-              fontSize: '0.875rem',
-              lineHeight: 1.5,
-              // Truncado con ellipsis después de 3 líneas
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis'
-            }}
-          >
-            {module.learningObjectives?.[0] || module.description}
-          </Typography>
-
-          {/* Barra de progreso minimalista */}
+          {/* Barra de progreso principal - siempre visible */}
           <Box sx={{ mb: 2 }}>
-            {/* Header de la barra de progreso */}
             <Box
               sx={{
                 display: 'flex',
                 justifyContent: 'space-between',
-                alignItems: 'baseline',
-                mb: 0.5
+                alignItems: 'center',
+                mb: 0.75
               }}
             >
               <Typography
                 variant="caption"
                 sx={{
                   color: isAvailable ? '#ffffff' : '#9e9e9e',
-                  opacity: isAvailable ? 0.9 : 0.7,
+                  opacity: isAvailable ? 0.95 : 0.7,
                   fontSize: '0.7rem',
-                  fontWeight: 500
+                  fontWeight: 600,
+                  textShadow: isAvailable ? '0 1px 2px rgba(0, 0, 0, 0.2)' : 'none',
                 }}
               >
                 Progreso
@@ -317,70 +322,360 @@ const ModuleCard = ({
                   color: isAvailable ? '#ffffff' : '#9e9e9e',
                   fontWeight: 700,
                   fontSize: '0.75rem',
-                  textShadow: isAvailable ? '0 1px 1px rgba(0, 0, 0, 0.1)' : 'none'
+                  textShadow: isAvailable ? '0 1px 2px rgba(0, 0, 0, 0.3)' : 'none'
                 }}
               >
                 {moduleProgress.toFixed(0)}%
               </Typography>
             </Box>
-
-            {/* Barra de progreso delgada (5px) */}
             <LinearProgress
               variant="determinate"
               value={moduleProgress}
               sx={{
-                height: 5,
-                borderRadius: 3,
-                // Background gris muy claro con opacidad 0.1
-                backgroundColor: `${theme.palette.grey[400]}10`,
+                height: 8,
+                borderRadius: 4,
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
                 '& .MuiLinearProgress-bar': {
                   backgroundColor: getProgressBarColor(),
-                  borderRadius: 3,
-                  transition: 'transform 0.25s ease-in-out'
+                  borderRadius: 4,
+                  transition: 'transform 0.3s ease-in-out',
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
                 }
               }}
             />
           </Box>
 
-          {/* Chips minimalistas de metadatos - estilo unificado */}
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            {/* Chip de dificultad */}
-            <Chip
-              label={module.difficulty}
-              size="small"
-              variant="outlined"
+          {/* Tabs para organizar el contenido */}
+          <Box sx={{ borderBottom: 1, borderColor: 'rgba(255, 255, 255, 0.2)', mb: 2 }}>
+            <Tabs
+              value={activeTab}
+              onChange={(e, newValue) => {
+                e.stopPropagation(); // Evitar que se active el click de la card
+                setActiveTab(newValue);
+              }}
               sx={{
-                fontSize: '0.7rem',
-                height: 24,
-                fontWeight: 500,
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                borderColor: 'rgba(255, 255, 255, 0.3)',
-                color: isAvailable ? '#ffffff' : '#9e9e9e',
-                transition: 'all 0.25s ease-in-out',
-                '&:hover': {
-                  backgroundColor: isAvailable ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)'
+                minHeight: 36,
+                '& .MuiTab-root': {
+                  minHeight: 36,
+                  fontSize: '0.7rem',
+                  fontWeight: 500,
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  textTransform: 'none',
+                  py: 0.5,
+                  px: 1,
+                  minWidth: 'auto',
+                  '&.Mui-selected': {
+                    color: '#ffffff',
+                    fontWeight: 600,
+                  },
+                },
+                '& .MuiTabs-indicator': {
+                  backgroundColor: '#ffffff',
+                  height: 2,
                 }
               }}
-            />
+            >
+              <Tab icon={<Info sx={{ fontSize: 14 }} />} iconPosition="start" label="Resumen" />
+              {module.lessons && module.lessons.length > 0 && (
+                <Tab icon={<School sx={{ fontSize: 14 }} />} iconPosition="start" label={`Lecciones (${module.lessons.length})`} />
+              )}
+              <Tab icon={<ListIcon sx={{ fontSize: 14 }} />} iconPosition="start" label="Detalles" />
+            </Tabs>
+          </Box>
 
-            {/* Chip de duración */}
-            <Chip
-              label={formatDuration(module.duration)}
-              size="small"
-              variant="outlined"
-              sx={{
-                fontSize: '0.7rem',
-                height: 24,
-                fontWeight: 500,
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                borderColor: 'rgba(255, 255, 255, 0.3)',
-                color: isAvailable ? '#ffffff' : '#9e9e9e',
-                transition: 'all 0.25s ease-in-out',
+          {/* Contenido de los tabs */}
+          <Box 
+            sx={{ 
+              flex: 1,
+              minHeight: isMobile ? '180px' : '200px', // Altura mínima razonable
+              overflowY: 'auto', // Scroll solo cuando el contenido exceda el espacio disponible
+              display: 'flex',
+              flexDirection: 'column',
+              '&::-webkit-scrollbar': {
+                width: '4px',
+              },
+              '&::-webkit-scrollbar-track': {
+                background: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: 2,
+              },
+              '&::-webkit-scrollbar-thumb': {
+                background: 'rgba(255, 255, 255, 0.3)',
+                borderRadius: 2,
                 '&:hover': {
-                  backgroundColor: isAvailable ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)'
-                }
-              }}
-            />
+                  background: 'rgba(255, 255, 255, 0.5)',
+                },
+              },
+            }}
+          >
+            {/* Tab 0: Resumen */}
+            {activeTab === 0 && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                {/* Descripción */}
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: isAvailable ? '#ffffff' : '#9e9e9e',
+                    opacity: isAvailable ? 0.95 : 0.7,
+                    mb: 2,
+                    fontSize: '0.8rem',
+                    lineHeight: 1.6,
+                    wordBreak: 'break-word', // Permite que las palabras largas se rompan
+                    overflowWrap: 'break-word', // Rompe palabras muy largas
+                  }}
+                >
+                  {module.learningObjectives?.[0] || module.description || 'Sin descripción disponible'}
+                </Typography>
+
+                {/* Barra de progreso */}
+                <Box sx={{ mb: 2 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'baseline',
+                      mb: 0.5
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: isAvailable ? '#ffffff' : '#9e9e9e',
+                        opacity: isAvailable ? 0.9 : 0.7,
+                        fontSize: '0.7rem',
+                        fontWeight: 500
+                      }}
+                    >
+                      Progreso del Módulo
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: isAvailable ? '#ffffff' : '#9e9e9e',
+                        fontWeight: 700,
+                        fontSize: '0.75rem',
+                        textShadow: isAvailable ? '0 1px 1px rgba(0, 0, 0, 0.1)' : 'none'
+                      }}
+                    >
+                      {moduleProgress.toFixed(0)}%
+                    </Typography>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={moduleProgress}
+                    sx={{
+                      height: 6,
+                      borderRadius: 3,
+                      backgroundColor: `${theme.palette.grey[400]}10`,
+                      '& .MuiLinearProgress-bar': {
+                        backgroundColor: getProgressBarColor(),
+                        borderRadius: 3,
+                        transition: 'transform 0.25s ease-in-out'
+                      }
+                    }}
+                  />
+                </Box>
+
+                {/* Chips de metadatos */}
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 2 }}>
+                  <Chip
+                    label={module.difficulty}
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      fontSize: '0.7rem',
+                      height: 24,
+                      fontWeight: 500,
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      color: isAvailable ? '#ffffff !important' : '#9e9e9e',
+                      '& .MuiChip-label': {
+                        color: isAvailable ? '#ffffff !important' : '#9e9e9e',
+                      }
+                    }}
+                  />
+                  <Chip
+                    label={formatDuration(module.duration)}
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      fontSize: '0.7rem',
+                      height: 24,
+                      fontWeight: 500,
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      color: isAvailable ? '#ffffff !important' : '#9e9e9e',
+                      '& .MuiChip-label': {
+                        color: isAvailable ? '#ffffff !important' : '#9e9e9e',
+                      }
+                    }}
+                  />
+                  {module.lessons && module.lessons.length > 0 && (
+                    <Chip
+                      icon={<MenuBook sx={{ fontSize: 14, color: isAvailable ? '#ffffff' : '#9e9e9e' }} />}
+                      label={`${module.lessons.length} lecciones`}
+                      size="small"
+                      variant="outlined"
+                      sx={{
+                        fontSize: '0.7rem',
+                        height: 24,
+                        fontWeight: 500,
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        borderColor: 'rgba(255, 255, 255, 0.3)',
+                        color: isAvailable ? '#ffffff !important' : '#9e9e9e',
+                        '& .MuiChip-label': {
+                          color: isAvailable ? '#ffffff !important' : '#9e9e9e',
+                        },
+                        '& .MuiChip-icon': {
+                          color: isAvailable ? '#ffffff !important' : '#9e9e9e'
+                        }
+                      }}
+                    />
+                  )}
+                </Box>
+              </Box>
+            )}
+
+            {/* Tab 1: Lecciones */}
+            {activeTab === 1 && module.lessons && module.lessons.length > 0 && (
+              <ModuleLessonsList
+                lessons={module.lessons}
+                moduleId={module.id}
+                completedLessons={completedLessons}
+                onLessonClick={onLessonClick ? (lessonId) => onLessonClick(module.id, lessonId) : undefined}
+                isModuleAvailable={isAvailable}
+                maxLessonsToShow={999} // Mostrar todas las lecciones en este tab
+                showTitle={false} // No mostrar título porque ya está en el tab
+              />
+            )}
+
+            {/* Tab 2: Detalles */}
+            {activeTab === 2 && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                {/* Objetivos de Aprendizaje */}
+                {module.learningObjectives && module.learningObjectives.length > 0 && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: '0.75rem',
+                        color: '#ffffff',
+                        mb: 1,
+                        textTransform: 'uppercase',
+                        letterSpacing: 0.5,
+                        textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+                      }}
+                    >
+                      Objetivos de Aprendizaje
+                    </Typography>
+                    <List dense sx={{ py: 0 }}>
+                      {module.learningObjectives.map((objective, index) => (
+                        <ListItem key={index} sx={{ py: 0.5, px: 0 }}>
+                          <ListItemIcon sx={{ minWidth: 24 }}>
+                            <CheckCircle sx={{ fontSize: 16, color: '#4CAF50' }} />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  fontSize: '0.75rem',
+                                  color: 'rgba(255, 255, 255, 0.9)',
+                                  lineHeight: 1.5,
+                                  wordBreak: 'break-word',
+                                  overflowWrap: 'break-word',
+                                }}
+                              >
+                                {objective}
+                              </Typography>
+                            }
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Box>
+                )}
+
+                {/* Prerequisitos */}
+                {module.prerequisites && module.prerequisites.length > 0 && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: '0.75rem',
+                        color: '#ffffff',
+                        mb: 1,
+                        textTransform: 'uppercase',
+                        letterSpacing: 0.5,
+                        textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+                      }}
+                    >
+                      Prerequisitos
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                      {module.prerequisites.map((prereqId, index) => (
+                        <Chip
+                          key={index}
+                          label={prereqId}
+                          size="small"
+                          sx={{
+                            fontSize: '0.65rem',
+                            height: 20,
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            color: '#ffffff !important',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            '& .MuiChip-label': {
+                              color: '#ffffff !important',
+                            }
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+
+                {/* Información adicional */}
+                <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: '0.7rem',
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      display: 'block',
+                      mb: 0.5,
+                    }}
+                  >
+                    Nivel: {module.level || 'N/A'}
+                  </Typography>
+                  {module.bloomLevel && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: '0.7rem',
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        display: 'block',
+                        mb: 0.5,
+                      }}
+                    >
+                      Nivel de Bloom: {module.bloomLevel}
+                    </Typography>
+                  )}
+                  {module.estimatedTime && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: '0.7rem',
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        display: 'block',
+                      }}
+                    >
+                      Tiempo estimado: {module.estimatedTime}
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            )}
           </Box>
         </CardContent>
 
@@ -465,6 +760,8 @@ ModuleCard.propTypes = {
   onModuleClick: PropTypes.func.isRequired,
   /** Callback para toggle del estado de favorito */
   onToggleFavorite: PropTypes.func.isRequired,
+  /** Callback para cuando se hace click en una lección (opcional) */
+  onLessonClick: PropTypes.func,
   /** Función para obtener el icono de estado apropiado */
   getStatusIcon: PropTypes.func.isRequired,
   /** Función para obtener el texto del botón según estado */

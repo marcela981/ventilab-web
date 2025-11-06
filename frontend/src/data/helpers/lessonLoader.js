@@ -166,6 +166,10 @@ export function getLessonPath(lessonId, moduleId) {
     'anatomy-overview': 'respiratory-anatomy', // curriculumData uses 'anatomy-overview', file is 'respiratory-anatomy'
     'airway-structures': 'respiratory-anatomy', // sub-lesson, same file
     'lung-mechanics': 'respiratory-anatomy', // sub-lesson, same file
+    'respiratory-anatomy': 'respiratory-anatomy', // Direct mapping
+    'respiratory-mechanics': 'respiratory-mechanics', // Direct mapping
+    'gas-exchange': 'gas-exchange', // Direct mapping
+    'arterial-blood-gas': 'arterial-blood-gas', // Direct mapping
   };
 
   // Mapping of lesson IDs to file numbers
@@ -285,18 +289,24 @@ export function validateLessonData(lessonData) {
  * // Returns data with consistent structure
  */
 export function normalizeLessonData(rawData) {
-  // Already in new format
+  // Already in new format with content.introduction
   if (rawData.lessonId && rawData.content && rawData.content.introduction) {
     return rawData;
+  }
+
+  // Check if it's the new format with sections array
+  if (rawData.sections && Array.isArray(rawData.sections)) {
+    console.log('[lessonLoader] Normalizing sections format to content structure...');
+    return normalizeSectionsFormat(rawData);
   }
 
   console.log('[lessonLoader] Normalizing legacy format...');
 
   // Extract or infer basic metadata
   const normalized = {
-    lessonId: rawData.lessonId || '',
+    lessonId: rawData.id || rawData.lessonId || '',
     moduleId: rawData.moduleId || '',
-    title: rawData.title || rawData['Título'] || 'Untitled Lesson',
+    title: rawData.title || rawData.titulo || rawData['Título'] || 'Untitled Lesson',
     lastUpdated: rawData.lastUpdated || new Date().toISOString(),
     authors: rawData.authors || [],
     reviewers: rawData.reviewers || [],
@@ -304,9 +314,12 @@ export function normalizeLessonData(rawData) {
       introduction: {
         text: rawData.content?.introduction?.text ||
               rawData['Introducción']?.texto ||
-              rawData['Introducción']?.text || '',
+              rawData['Introducción']?.text ||
+              rawData.introduccion || '',
         objectives: rawData.content?.introduction?.objectives ||
-                   rawData['Introducción']?.objetivos || [],
+                   rawData.learningObjectives ||
+                   rawData['Introducción']?.objetivos ||
+                   rawData.objetivos_de_aprendizaje || [],
       },
       theory: {
         sections: rawData.content?.theory?.sections ||
@@ -314,27 +327,151 @@ export function normalizeLessonData(rawData) {
                    title: 'Conceptos Teóricos',
                    content: typeof rawData['Conceptos Teóricos'] === 'string'
                      ? rawData['Conceptos Teóricos']
-                     : '',
+                     : rawData.conceptos_teoricos || '',
                  }] : []),
         examples: rawData.content?.theory?.examples || [],
         analogies: rawData.content?.theory?.analogies || [],
       },
       visualElements: rawData.content?.visualElements ||
-                     rawData['Elementos Visuales'] || [],
+                     rawData['Elementos Visuales'] ||
+                     rawData.elementos_visuales_requeridos || [],
       practicalCases: rawData.content?.practicalCases ||
-                      rawData['Casos Prácticos'] || [],
+                      rawData['Casos Prácticos'] ||
+                      rawData.casos_practicos || [],
       keyPoints: rawData.content?.keyPoints ||
-                rawData['Puntos Clave'] || [],
+                rawData['Puntos Clave'] ||
+                rawData.puntos_clave || [],
       assessment: {
         questions: rawData.content?.assessment?.questions ||
-                  rawData['Autoevaluación'] || [],
+                  rawData['Autoevaluación'] ||
+                  rawData.autoevaluacion || [],
       },
       references: rawData.content?.references ||
-                 rawData['Referencias Bibliográficas'] || [],
+                 rawData['Referencias Bibliográficas'] ||
+                 rawData.referencias || [],
     },
   };
 
   return normalized;
+}
+
+/**
+ * Normalizes lesson data with sections array to content structure
+ * Converts sections array format to the format expected by LessonViewer
+ * 
+ * @param {Object} rawData - Lesson data with sections array
+ * @returns {Object} Normalized lesson data with content structure
+ */
+function normalizeSectionsFormat(rawData) {
+  const sections = rawData.sections || [];
+  
+  // Extract introduction section
+  const introductionSection = sections.find(s => s.type === 'introduction');
+  const introductionText = introductionSection?.content?.markdown || 
+                          introductionSection?.content?.text || 
+                          introductionSection?.content || '';
+  
+  // Extract theory sections
+  const theorySections = sections
+    .filter(s => s.type === 'theory')
+    .map(s => ({
+      title: s.title || '',
+      content: s.content?.markdown || s.content?.text || s.content || '',
+      media: s.content?.media || s.media || null,
+    }));
+
+  // Extract visual elements from sections with media
+  const visualElements = [];
+  sections.forEach(section => {
+    if (section.content?.media?.images) {
+      section.content.media.images.forEach(img => {
+        visualElements.push({
+          name: img.id || img.alt || 'Image',
+          description: img.caption || img.alt || '',
+          type: 'image',
+          url: img.url || '',
+        });
+      });
+    }
+  });
+
+  // Extract practical cases
+  const practicalCases = sections
+    .filter(s => s.type === 'case' || s.type === 'practical')
+    .map(s => ({
+      id: s.id || `case-${s.order}`,
+      title: s.title || '',
+      description: s.content?.markdown || s.content?.text || s.content || '',
+      patientData: s.content?.patientData || null,
+      questions: s.content?.questions || [],
+    }));
+
+  // Extract key points from summary sections or dedicated sections
+  const keyPoints = [];
+  const summarySection = sections.find(s => s.type === 'summary');
+  if (summarySection) {
+    const summaryContent = summarySection.content?.markdown || summarySection.content?.text || '';
+    // Try to extract bullet points from markdown
+    const bulletPoints = summaryContent.match(/^[-*]\s+(.+)$/gm);
+    if (bulletPoints) {
+      keyPoints.push(...bulletPoints.map(bp => bp.replace(/^[-*]\s+/, '')));
+    }
+  }
+
+  // Extract assessment from sections
+  const assessmentQuestions = [];
+  sections.forEach(section => {
+    if (section.content?.questions && Array.isArray(section.content.questions)) {
+      assessmentQuestions.push(...section.content.questions);
+    }
+    if (section.type === 'assessment' || section.type === 'quiz') {
+      const questions = section.content?.questions || section.questions || [];
+      assessmentQuestions.push(...questions);
+    }
+  });
+
+  // Extract references from sections
+  const references = [];
+  sections.forEach(section => {
+    if (section.content?.references) {
+      references.push(...section.content.references);
+    }
+    if (section.references) {
+      references.push(...section.references);
+    }
+  });
+
+  return {
+    lessonId: rawData.id || rawData.lessonId || '',
+    moduleId: rawData.moduleId || '',
+    title: rawData.title || 'Untitled Lesson',
+    description: rawData.description || '',
+    lastUpdated: rawData.lastUpdated || new Date().toISOString(),
+    authors: rawData.authors || [],
+    reviewers: rawData.reviewers || [],
+    learningObjectives: rawData.learningObjectives || [],
+    estimatedTime: rawData.estimatedTime || 45,
+    difficulty: rawData.difficulty || 'beginner',
+    bloomLevel: rawData.bloomLevel || 'understand',
+    content: {
+      introduction: {
+        text: introductionText,
+        objectives: rawData.learningObjectives || [],
+      },
+      theory: {
+        sections: theorySections,
+        examples: [],
+        analogies: [],
+      },
+      visualElements: visualElements.length > 0 ? visualElements : rawData.content?.visualElements || [],
+      practicalCases: practicalCases.length > 0 ? practicalCases : rawData.content?.practicalCases || [],
+      keyPoints: keyPoints.length > 0 ? keyPoints : rawData.content?.keyPoints || rawData.keyPoints || [],
+      assessment: {
+        questions: assessmentQuestions.length > 0 ? assessmentQuestions : rawData.content?.assessment?.questions || [],
+      },
+      references: references.length > 0 ? references : rawData.content?.references || rawData.references || [],
+    },
+  };
 }
 
 // =============================================================================

@@ -4,6 +4,16 @@
  * Based on detailed research curriculum for mechanical ventilation
  */
 
+// =============================================================================
+// IMPORTAR LECCIONES DESDE ARCHIVOS JSON
+// =============================================================================
+
+// Módulo 01: Fundamentos Fisiológicos y Respiratorios
+import lesson01Anatomy from './lessons/module-01-fundamentals/lesson-01-respiratory-anatomy.json';
+import lesson02Mechanics from './lessons/module-01-fundamentals/lesson-02-respiratory-mechanics.json';
+import lesson03GasExchange from './lessons/module-01-fundamentals/lesson-03-gas-exchange.json';
+import lesson04ArterialBloodGas from './lessons/module-01-fundamentals/lesson-04-arterial-blood-gas.json';
+
 export const curriculumData = {
   levels: [
     {
@@ -36,80 +46,94 @@ export const curriculumData = {
   ],
 
   modules: {
-    // NIVEL PRINCIPIANTE - Fundamentos Fisiológicos
+    // NIVEL PRINCIPIANTE - Fundamentos Fisiológicos y Respiratorios
+    // Módulo principal que agrupa todas las lecciones de fundamentos
+    'module-01-fundamentals': {
+      id: 'module-01-fundamentals',
+      title: 'Fundamentos Fisiológicos y Respiratorios',
+      level: 'beginner',
+      order: 1,
+      duration: 180, // minutos (suma de todas las lecciones)
+      prerequisites: [],
+      learningObjectives: [
+        'Identificar las estructuras anatómicas del sistema respiratorio',
+        'Comprender la mecánica respiratoria y la relación presión-volumen',
+        'Analizar el intercambio gaseoso y los factores que lo afectan',
+        'Interpretar gasometrías arteriales en el contexto de ventilación mecánica'
+      ],
+      bloomLevel: 'comprender',
+      difficulty: 'básico',
+      estimatedTime: '3 horas',
+      // ✅ CONECTAR LECCIONES REALES DESDE JSON
+      lessons: [
+        {
+          id: 'respiratory-anatomy',
+          title: lesson01Anatomy.title,
+          description: lesson01Anatomy.description,
+          estimatedTime: lesson01Anatomy.estimatedTime,
+          difficulty: lesson01Anatomy.difficulty,
+          order: lesson01Anatomy.order || 1,
+          // Mantener referencia al JSON completo para uso en useLesson hook
+          lessonData: lesson01Anatomy
+        },
+        {
+          id: 'respiratory-mechanics',
+          title: lesson02Mechanics.titulo || 'Mecánica Respiratoria',
+          description: lesson02Mechanics.introduccion || '',
+          estimatedTime: 45,
+          difficulty: 'básico',
+          order: 2,
+          lessonData: lesson02Mechanics
+        },
+        {
+          id: 'gas-exchange',
+          title: 'Intercambio Gaseoso',
+          description: 'Principios del intercambio gaseoso alveolar',
+          estimatedTime: 35,
+          difficulty: 'básico',
+          order: 3,
+          lessonData: lesson03GasExchange
+        },
+        {
+          id: 'arterial-blood-gas',
+          title: lesson04ArterialBloodGas.title || 'Gasometría Arterial',
+          description: 'Interpretación de gasometrías arteriales en ventilación mecánica',
+          estimatedTime: lesson04ArterialBloodGas.estimatedTime || 40,
+          difficulty: 'básico',
+          order: 4,
+          lessonData: lesson04ArterialBloodGas
+        }
+      ]
+    },
+
+    // Módulo de Anatomía (mantener para compatibilidad con código existente)
     'respiratory-anatomy': {
       id: 'respiratory-anatomy',
       title: 'Anatomía del Sistema Respiratorio',
       level: 'beginner',
       order: 1,
-      duration: 120, // minutos
+      duration: lesson01Anatomy.estimatedTime || 120, // minutos
       prerequisites: [],
-      learningObjectives: [
+      learningObjectives: lesson01Anatomy.learningObjectives || [
         'Identificar las estructuras anatómicas del sistema respiratorio',
         'Comprender la función de cada componente anatómico',
         'Relacionar anatomía con fisiología respiratoria'
       ],
-      bloomLevel: 'comprender',
-      difficulty: 'básico',
-      estimatedTime: '2 horas',
+      bloomLevel: lesson01Anatomy.bloomLevel || 'comprender',
+      difficulty: lesson01Anatomy.difficulty || 'básico',
+      estimatedTime: `${lesson01Anatomy.estimatedTime || 45} min`,
+      // ✅ Usar lección JSON real - mapear IDs para compatibilidad
       lessons: [
         {
-          id: 'anatomy-overview',
-          type: 'video',
-          title: 'Visión General del Sistema Respiratorio',
-          duration: 25,
-          content: {
-            videoUrl: '/videos/anatomy-overview.mp4',
-            transcript: 'El sistema respiratorio se compone de...',
-            keyPoints: [
-              'Vías aéreas superiores e inferiores',
-              'Pulmones y pleura',
-              'Músculos respiratorios'
-            ]
-          }
-        },
-        {
-          id: 'airway-structures',
-          type: 'interactive',
-          title: 'Estructuras de las Vías Aéreas',
-          duration: 30,
-          content: {
-            interactiveType: '3d-explorer',
-            description: 'Explora las estructuras anatómicas en 3D',
-            checkpoints: ['tráquea', 'bronquios', 'alvéolos']
-          }
-        },
-        {
-          id: 'lung-mechanics',
-          type: 'reading',
-          title: 'Mecánica Pulmonar Básica',
-          duration: 20,
-          content: {
-            text: 'La mecánica pulmonar se basa en...',
-            diagrams: ['/images/lung-mechanics.png'],
-            references: ['West, J.B. (2012). Respiratory Physiology']
-          }
+          id: 'respiratory-anatomy', // Mapeo: anatomy-overview -> respiratory-anatomy
+          title: lesson01Anatomy.title,
+          description: lesson01Anatomy.description,
+          estimatedTime: lesson01Anatomy.estimatedTime,
+          difficulty: lesson01Anatomy.difficulty,
+          order: lesson01Anatomy.order || 1,
+          lessonData: lesson01Anatomy
         }
-      ],
-      quiz: {
-        id: 'anatomy-quiz',
-        type: 'formative',
-        questions: [
-          {
-            id: 'q1',
-            type: 'mcq',
-            question: '¿Cuál es la función principal de los alvéolos?',
-            options: [
-              'Transportar oxígeno a los tejidos',
-              'Intercambiar gases con la sangre',
-              'Filtrar partículas del aire',
-              'Producir surfactante pulmonar'
-            ],
-            correct: 1,
-            explanation: 'Los alvéolos son estructuras microscópicas donde ocurre el intercambio gaseoso entre el aire y la sangre.'
-          }
-        ]
-      }
+      ]
     },
 
     'respiratory-physiology': {
@@ -127,28 +151,34 @@ export const curriculumData = {
       bloomLevel: 'analizar',
       difficulty: 'básico-intermedio',
       estimatedTime: '2.5 horas',
+      // ✅ Usar lecciones JSON reales
       lessons: [
         {
-          id: 'gas-exchange',
-          type: 'video',
-          title: 'Intercambio Gaseoso',
-          duration: 35,
-          content: {
-            videoUrl: '/videos/gas-exchange.mp4',
-            transcript: 'El intercambio gaseoso ocurre por difusión...',
-            keyPoints: ['Difusión de gases', 'Ley de Fick', 'Factores que afectan la difusión']
-          }
+          id: 'respiratory-mechanics',
+          title: lesson02Mechanics.titulo || 'Mecánica Respiratoria',
+          description: lesson02Mechanics.introduccion || '',
+          estimatedTime: 45,
+          difficulty: 'básico',
+          order: 1,
+          lessonData: lesson02Mechanics
         },
         {
-          id: 'ventilation-mechanics',
-          type: 'simulation',
-          title: 'Simulación de Mecánica Ventilatoria',
-          duration: 45,
-          content: {
-            simulationType: 'lung-compliance',
-            objectives: ['Demostrar presión-volumen', 'Mostrar elasticidad pulmonar'],
-            parameters: ['compliance', 'resistance', 'volume']
-          }
+          id: 'gas-exchange',
+          title: 'Intercambio Gaseoso',
+          description: 'Principios del intercambio gaseoso alveolar',
+          estimatedTime: 35,
+          difficulty: 'básico',
+          order: 2,
+          lessonData: lesson03GasExchange
+        },
+        {
+          id: 'arterial-blood-gas',
+          title: lesson04ArterialBloodGas.title || 'Gasometría Arterial',
+          description: 'Interpretación de gasometrías arteriales en ventilación mecánica',
+          estimatedTime: lesson04ArterialBloodGas.estimatedTime || 40,
+          difficulty: 'básico',
+          order: 3,
+          lessonData: lesson04ArterialBloodGas
         }
       ],
       quiz: {
@@ -177,21 +207,27 @@ export const curriculumData = {
       title: 'Principios de Ventilación Mecánica',
       level: 'beginner',
       order: 3,
-      duration: 180,
+      duration: 180, // minutos (suma de todas las lecciones)
       prerequisites: ['respiratory-physiology'],
       learningObjectives: [
         'Definir los objetivos de la ventilación mecánica',
         'Identificar las indicaciones y contraindicaciones',
-        'Comprender los parámetros ventilatorios básicos'
+        'Comprender los parámetros ventilatorios básicos',
+        'Aplicar principios de seguridad en la configuración del ventilador'
       ],
       bloomLevel: 'comprender',
       difficulty: 'básico',
       estimatedTime: '3 horas',
+      description: 'Introducción a los principios fundamentales de la ventilación mecánica, incluyendo indicaciones, objetivos y parámetros básicos de configuración.',
       lessons: [
         {
           id: 'vm-indications',
           type: 'reading',
           title: 'Indicaciones de Ventilación Mecánica',
+          description: 'Aprende cuándo y por qué se indica la ventilación mecánica, así como sus objetivos principales.',
+          estimatedTime: 25, // Convertir duration a estimatedTime
+          difficulty: 'básico',
+          order: 1,
           duration: 25,
           content: {
             text: 'La ventilación mecánica se indica cuando...',
@@ -203,6 +239,10 @@ export const curriculumData = {
           id: 'basic-parameters',
           type: 'interactive',
           title: 'Parámetros Ventilatorios Básicos',
+          description: 'Explora los parámetros fundamentales del ventilador y aprende a configurarlos correctamente.',
+          estimatedTime: 40, // Convertir duration a estimatedTime
+          difficulty: 'básico',
+          order: 2,
           duration: 40,
           content: {
             interactiveType: 'parameter-explorer',

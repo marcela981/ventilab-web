@@ -171,15 +171,23 @@ const useLesson = (lessonId, moduleId) => {
       return null;
     }
 
-    // Get module from curriculumData
-    const module = curriculumData?.modules?.[lessonData.moduleId] || 
-                   Object.values(curriculumData?.modules || {}).find(
-                     m => m.id === lessonData.moduleId || 
+    // Get module from curriculumData - try both the moduleId from JSON and the passed moduleId
+    // This handles cases where JSON has 'module-01-fundamentals' but curriculumData uses 'respiratory-anatomy'
+    let module = curriculumData?.modules?.[moduleId] || 
+                 curriculumData?.modules?.[lessonData.moduleId];
+    
+    // If not found, try searching by title or other fields
+    if (!module) {
+      module = Object.values(curriculumData?.modules || {}).find(
+        m => m.id === moduleId || 
+        m.id === lessonData.moduleId ||
+        m.title?.toLowerCase().includes(moduleId.toLowerCase()) ||
                      m.title?.toLowerCase().includes(lessonData.moduleId.toLowerCase())
                    );
+    }
 
     if (!module) {
-      console.warn(`[useLesson] Module ${lessonData.moduleId} not found in curriculumData, using minimal metadata`);
+      console.warn(`[useLesson] Module ${moduleId} or ${lessonData.moduleId} not found in curriculumData, using minimal metadata`);
     }
 
     // Get lessons array from module

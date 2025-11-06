@@ -166,7 +166,10 @@ const ModuleGrid = ({
     <Grid
       container
       spacing={3}
-      sx={{ mt: 1 }}
+      sx={{ 
+        mt: 1,
+        alignItems: 'stretch' // Asegura que todas las cards tengan la misma altura
+      }}
       role="list"
       aria-label="Lista de módulos de aprendizaje"
     >
@@ -187,6 +190,7 @@ const ModuleGrid = ({
             isFavorite={isFavorite}
             onModuleClick={handleModuleClick}
             onToggleFavorite={handleToggleFavorite}
+            onLessonClick={onModuleClick} // Reutilizar handleModuleClick para lecciones
             getStatusIcon={getStatusIconFn}
             getButtonText={getButtonTextFn}
             getButtonIcon={getButtonIconFn}
@@ -201,7 +205,9 @@ const ModuleGrid = ({
             timeout={300 + index * 50}
             style={{ transitionDelay: `${index * 50}ms` }}
           >
-            <div>{cardContent}</div>
+            <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              {cardContent}
+            </Box>
           </Fade>
         ) : (
           cardContent
@@ -214,6 +220,12 @@ const ModuleGrid = ({
             key={module.id}
             role="listitem"
             aria-label={`Módulo: ${module.title}`}
+            sx={{
+              display: 'flex', // Asegura que el contenido de la card se estire
+              flexDirection: 'column',
+              width: '100%', // Asegura ancho consistente
+              minWidth: 0 // Previene overflow en flexbox
+            }}
           >
             {wrappedContent}
           </Grid>
