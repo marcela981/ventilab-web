@@ -3,15 +3,47 @@ import { curriculumData } from '../../../data/curriculumData';
 
 /**
  * useModuleAvailability - Hook personalizado para manejo de disponibilidad de módulos
- * 
- * Proporciona funciones para verificar la disponibilidad de módulos basándose
- * en prerequisites y otras condiciones del curriculum.
- * 
- * @param {Function} calculateModuleProgress - Función para calcular progreso de módulo
- * @returns {Object} Objeto con funciones de disponibilidad
+ *
+ * Puede usarse de dos formas:
+ * 1. Con parámetro (para uso global con calculateModuleProgress)
+ * 2. Con objeto de configuración (para uso individual en componentes)
+ *
+ * @param {Function|Object} configOrCalculate - Función calculateModuleProgress o configuración del módulo
+ * @returns {Object} Objeto con funciones de disponibilidad o estado del módulo
  */
-const useModuleAvailability = (calculateModuleProgress) => {
-  
+const useModuleAvailability = (configOrCalculate) => {
+  // Detectar si es uso individual (objeto con moduleId) o global (función)
+  const isIndividualUse = configOrCalculate && typeof configOrCalculate === 'object' && configOrCalculate.moduleId;
+
+  if (isIndividualUse) {
+    // Uso individual: retornar estado específico del módulo
+    const { moduleId, prerequisites = [], completedModules = [] } = configOrCalculate;
+
+    // ⚠️ TEMPORAL PARA TESTING: Prerequisites deshabilitados
+    // TODO: Revertir esto en producción para habilitar el sistema de prerequisites
+    const isAvailable = true;
+
+    /* CÓDIGO ORIGINAL - Descomentar para producción:
+    const isAvailable = !prerequisites || prerequisites.length === 0 ||
+      prerequisites.every(prereqId => completedModules.includes(prereqId));
+    */
+
+    const missingPrerequisites = isAvailable ? [] :
+      prerequisites.filter(prereqId => !completedModules.includes(prereqId))
+        .map(prereqId => curriculumData.modules?.[prereqId]?.title || prereqId);
+
+    const status = isAvailable ? 'available' : 'blocked';
+
+    return {
+      isAvailable,
+      missingPrerequisites,
+      status
+    };
+  }
+
+  // Uso global: comportamiento original
+  const calculateModuleProgress = configOrCalculate;
+
   /**
    * Verifica si un módulo está disponible basándose en prerequisites
    * @param {string} moduleId - ID del módulo
@@ -27,7 +59,7 @@ const useModuleAvailability = (calculateModuleProgress) => {
     /* CÓDIGO ORIGINAL - Descomentar para producción:
     const module = curriculumData.modules[moduleId];
     if (!module) return false;
-    
+
     // Si no tiene prerequisites, está disponible
     if (!module.prerequisites || module.prerequisites.length === 0) {
       return true;

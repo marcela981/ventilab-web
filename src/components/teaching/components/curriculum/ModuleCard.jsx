@@ -24,60 +24,98 @@ import {
   Refresh,
   AccessTime
 } from '@mui/icons-material';
+import useModuleAvailability from '../../hooks/useModuleAvailability';
+import ModuleStatusIcons from './ModuleStatusIcons';
+import PrerequisiteTooltip from './PrerequisiteTooltip';
 
 /**
  * ModuleCard - Card individual de módulo de aprendizaje
- * 
+ *
  * Muestra información de un módulo específico incluyendo:
  * - Estado (completado, en progreso, disponible, bloqueado)
- * - Progreso visual
+ * - Progreso visual con sistema de bloqueo/desbloqueo
  * - Metadatos (dificultad, tiempo estimado)
  * - Botón de favorito
  * - Acción principal
- * 
- * @param {Object} module - Datos del módulo
+ *
+ * @param {Object} module - Datos del módulo (debe incluir id, title, prerequisites, etc.)
  * @param {Object} moduleProgress - Progreso del módulo
- * @param {boolean} isAvailable - Si el módulo está disponible
+ * @param {boolean} isAvailable - Si el módulo está disponible (DEPRECATED: se calcula internamente)
  * @param {boolean} isFavorite - Si es favorito del usuario
  * @param {Function} onModuleClick - Callback para click en el módulo
  * @param {Function} onToggleFavorite - Callback para toggle de favorito
- * @param {Function} getStatusIcon - Función para obtener icono de estado
+ * @param {Function} getStatusIcon - Función para obtener icono de estado (DEPRECATED: se usa ModuleStatusIcons)
  * @param {Function} getButtonText - Función para obtener texto del botón
  * @param {Function} getButtonIcon - Función para obtener icono del botón
  * @param {string} levelColor - Color del nivel del módulo
+ * @param {Array<string>} completedModules - Array de IDs de módulos completados (opcional)
  */
-const ModuleCard = ({ 
+const ModuleCard = ({
   module,
   moduleProgress,
-  isAvailable,
+  isAvailable: isAvailableProp,
   isFavorite,
   onModuleClick,
   onToggleFavorite,
   getStatusIcon,
   getButtonText,
   getButtonIcon,
-  levelColor
+  levelColor,
+  completedModules = []
 }) => {
   const theme = useTheme();
-  
-  const status = moduleProgress === 100 ? 'completed' : 
-                moduleProgress > 0 ? 'in-progress' : 
+
+  // Calcular disponibilidad usando el hook
+  const {
+    isAvailable: isAvailableHook,
+    missingPrerequisites,
+    status: availabilityStatus
+  } = useModuleAvailability({
+    moduleId: module.id,
+    prerequisites: module.prerequisites || [],
+    completedModules
+  });
+
+  // Usar prop si está definida (compatibilidad hacia atrás), sino usar hook
+  const isAvailable = isAvailableProp !== undefined ? isAvailableProp : isAvailableHook;
+
+  // Calcular estado del módulo basándose en progreso y disponibilidad
+  const status = moduleProgress === 100 ? 'completed' :
+                moduleProgress > 0 ? 'in-progress' :
                 isAvailable ? 'available' : 'locked';
 
+  // Colores de borde según estado
+  const getBorderColor = () => {
+    if (isAvailable) {
+      return '#0BBAF4'; // Disponible
+    }
+    return '#e0e0e0'; // Bloqueado
+  };
+
   return (
-    <Tooltip title={`${isAvailable ? `Disponible - ${moduleProgress.toFixed(0)}% completado` : 'Módulo bloqueado'}`} arrow placement="top">
-      <Card
+    <Card
+      sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        border: `2px solid ${getBorderColor()}`,
+        borderRadius: 2,
+        position: 'relative',
+        transition: 'all 0.3s ease',
+        overflow: 'visible' // Para permitir tooltips fuera del card
+      }}
+      role="article"
+      aria-label={`Módulo: ${module.title}`}
+    >
+      {/* Contenedor con interacción (puede ser bloqueado) */}
+      <Box
         sx={{
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
           cursor: isAvailable ? 'pointer' : 'default',
           opacity: isAvailable ? 1 : 0.6,
-          border: status === 'available' ? '2px solid #2196F3' : 
-                 status === 'in-progress' ? '2px solid #FF9800' :
-                 status === 'completed' ? '2px solid #4CAF50' : '1px solid #e0e0e0',
-          borderRadius: 2,
-          position: 'relative',
+          pointerEvents: isAvailable ? 'auto' : 'none',
           transition: 'all 0.3s ease',
           '&:hover': isAvailable ? {
             transform: 'translateY(-4px)',
@@ -85,23 +123,32 @@ const ModuleCard = ({
           } : {}
         }}
         onClick={() => isAvailable && onModuleClick(module.id)}
+        aria-disabled={!isAvailable}
+        title={isAvailable ? undefined : 'Módulo bloqueado'}
       >
-        {/* Estado del módulo */}
-        <Box sx={{
-          position: 'absolute',
-          top: 8,
-          right: 8,
-          zIndex: 1
-        }}>
-          {getStatusIcon(status)}
-        </Box>
+        {/* Texto invisible para screen readers */}
+        <span className="sr-only" style={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }}>
+          Módulo {status === 'locked' ? 'bloqueado' : 'disponible'}
+        </span>
+
+        {/* Estado del módulo - Ícono de estado en la esquina superior derecha */}
+        {isAvailable && (
+          <Box sx={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            zIndex: 2
+          }}>
+            <ModuleStatusIcons status={status} size={20} />
+          </Box>
+        )}
 
         {/* Botón de favorito */}
         <Box sx={{
           position: 'absolute',
           top: 8,
           left: 8,
-          zIndex: 1
+          zIndex: 2
         }}>
           <IconButton
             size="small"
@@ -114,8 +161,8 @@ const ModuleCard = ({
               '&:hover': { backgroundColor: 'rgba(255,255,255,1)' }
             }}
           >
-            {isFavorite ? 
-              <Bookmark sx={{ color: '#FF9800', fontSize: 16 }} /> : 
+            {isFavorite ?
+              <Bookmark sx={{ color: '#FF9800', fontSize: 16 }} /> :
               <BookmarkBorder sx={{ color: '#666', fontSize: 16 }} />
             }
           </IconButton>
@@ -217,8 +264,53 @@ const ModuleCard = ({
             {getButtonText(status)}
           </Button>
         </CardActions>
-      </Card>
-    </Tooltip>
+      </Box>
+
+      {/* Overlay de bloqueo - Solo visible cuando el módulo está bloqueado */}
+      {!isAvailable && (
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'start',
+            justifyContent: 'end',
+            padding: 1,
+            pointerEvents: 'auto',
+            background: 'transparent',
+            zIndex: 3
+          }}
+        >
+          <PrerequisiteTooltip
+            missingPrerequisites={missingPrerequisites}
+            placement="top"
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                borderRadius: '50%',
+                width: 32,
+                height: 32,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                cursor: 'help',
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 1)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label="Ver prerrequisitos faltantes"
+            >
+              <ModuleStatusIcons status="locked" size={20} />
+            </Box>
+          </PrerequisiteTooltip>
+        </Box>
+      )}
+    </Card>
   );
 };
 
@@ -229,17 +321,19 @@ ModuleCard.propTypes = {
     description: PropTypes.string,
     learningObjectives: PropTypes.array,
     difficulty: PropTypes.string.isRequired,
-    duration: PropTypes.number.isRequired
+    duration: PropTypes.number.isRequired,
+    prerequisites: PropTypes.arrayOf(PropTypes.string) // Array de IDs de prerrequisitos
   }).isRequired,
   moduleProgress: PropTypes.number.isRequired,
-  isAvailable: PropTypes.bool.isRequired,
+  isAvailable: PropTypes.bool, // Ahora opcional (se calcula internamente si no se proporciona)
   isFavorite: PropTypes.bool.isRequired,
   onModuleClick: PropTypes.func.isRequired,
   onToggleFavorite: PropTypes.func.isRequired,
   getStatusIcon: PropTypes.func.isRequired,
   getButtonText: PropTypes.func.isRequired,
   getButtonIcon: PropTypes.func.isRequired,
-  levelColor: PropTypes.string.isRequired
+  levelColor: PropTypes.string.isRequired,
+  completedModules: PropTypes.arrayOf(PropTypes.string) // Array de IDs de módulos completados (opcional)
 };
 
 export default ModuleCard;
