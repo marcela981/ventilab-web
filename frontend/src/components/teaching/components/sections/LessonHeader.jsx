@@ -26,7 +26,7 @@ const LessonHeader = ({ data, currentPage, totalPages }) => {
         gutterBottom 
         sx={{ 
           fontWeight: 600,
-          color: '#ffffff',
+          color: '#0BBAF4',
           textShadow: '0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3)',
         }}
       >
@@ -60,7 +60,7 @@ const LessonHeader = ({ data, currentPage, totalPages }) => {
       </Box>
       
       {data.moduleInfo && (
-        <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+        <Typography variant="subtitle1" gutterBottom sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
           {data.moduleInfo.title}
         </Typography>
       )}
@@ -71,7 +71,18 @@ const LessonHeader = ({ data, currentPage, totalPages }) => {
             label={data.moduleInfo.level}
             size="small"
             color="primary"
-            variant="outlined"
+            variant="filled"
+            sx={{
+              maxWidth: 1,
+              '& .MuiChip-label': {
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              },
+              '&:focus-visible': {
+                outline: '2px solid #003A6B',
+                outlineOffset: '2px',
+              },
+            }}
           />
         )}
         {data.moduleInfo?.difficulty && (
@@ -79,23 +90,59 @@ const LessonHeader = ({ data, currentPage, totalPages }) => {
             label={data.moduleInfo.difficulty}
             size="small"
             color="secondary"
-            variant="outlined"
+            variant="filled"
+            sx={{
+              maxWidth: 1,
+              '& .MuiChip-label': {
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                // Preservar el overlay del tema - no sobrescribir position ni ::before
+              },
+              '&:focus-visible': {
+                outline: '2px solid #003A6B',
+                outlineOffset: '2px',
+              },
+            }}
           />
         )}
         {data.moduleInfo?.bloomLevel && (
           <Chip
             label={`Bloom: ${data.moduleInfo.bloomLevel}`}
             size="small"
-            color="default"
-            variant="outlined"
+            color="primary"
+            variant="filled"
+            sx={{
+              maxWidth: 1,
+              '& .MuiChip-label': {
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              },
+              '&:focus-visible': {
+                outline: '2px solid #003A6B',
+                outlineOffset: '2px',
+              },
+            }}
           />
         )}
         {data.moduleInfo?.estimatedTime && (
           <Chip
-            icon={<SchoolIcon />}
+            icon={<SchoolIcon sx={{ color: '#0BBAF4' }} />}
             label={data.moduleInfo.estimatedTime}
             size="small"
-            variant="outlined"
+            color="primary"
+            variant="filled"
+            sx={{
+              maxWidth: 1,
+              '& .MuiChip-label': {
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              },
+              '&:focus-visible': {
+                outline: '2px solid #003A6B',
+                outlineOffset: '2px',
+              },
+            }}
           />
         )}
       </Box>

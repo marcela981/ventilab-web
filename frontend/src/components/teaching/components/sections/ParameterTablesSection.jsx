@@ -25,7 +25,7 @@ const ParameterTablesSection = ({ data }) => {
         return (
           <Box key={idx} sx={{ mb: 4 }}>
             {section.title && (
-              <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+              <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 3, color: '#0BBAF4' }}>
                 {section.title}
               </Typography>
             )}
@@ -44,7 +44,7 @@ const ParameterTablesSection = ({ data }) => {
             />
             
             {section.description && (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+              <Typography variant="body2" sx={{ mt: 2, color: '#ffffff' }}>
                 {section.description}
               </Typography>
             )}

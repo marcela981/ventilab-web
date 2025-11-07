@@ -33,18 +33,18 @@ const AssessmentSection = ({
   
   return (
     <Box sx={{ mb: 4 }}>
-      <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+      <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 3, color: '#0BBAF4' }}>
         Autoevaluación
       </Typography>
       
-      <Paper elevation={2} sx={{ p: { xs: 2, md: 3 } }}>
+      <Paper elevation={2} sx={{ p: { xs: 2, md: 3 }, color: '#ffffff' }}>
         {questions.map((question, index) => {
           const questionId = question.questionId || `q-${index}`;
           const userAnswer = assessmentAnswers[questionId];
           
           return (
             <Box key={index} sx={{ mb: 4, pb: 3, borderBottom: index < questions.length - 1 ? '1px solid' : 'none', borderColor: 'divider' }}>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2, color: '#0BBAF4' }}>
                 {index + 1}. {question.questionText}
               </Typography>
               
@@ -102,9 +102,9 @@ const AssessmentSection = ({
                     </Alert>
                   )}
                   {question.explanation && (
-                    <Paper sx={{ p: 2, backgroundColor: 'info.light', mt: 1 }}>
-                      <Typography variant="body2">
-                        <strong>Explicación:</strong> {question.explanation}
+                    <Paper sx={{ p: 2, backgroundColor: 'rgba(11, 186, 244, 0.15)', mt: 1 }}>
+                      <Typography variant="body2" sx={{ color: '#ffffff' }}>
+                        <strong style={{ color: '#BBECFC' }}>Explicación:</strong> {question.explanation}
                       </Typography>
                     </Paper>
                   )}

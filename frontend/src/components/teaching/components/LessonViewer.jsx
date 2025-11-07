@@ -50,7 +50,10 @@ import {
   DialogContent,
   DialogActions,
   Typography,
+  CssBaseline,
 } from '@mui/material';
+import { ThemeProvider } from '@mui/material/styles';
+import { teachingModuleTheme } from '../../../theme/teachingModuleTheme';
 
 import useLesson from '../hooks/useLesson';
 import { useLearningProgress } from '../../../contexts/LearningProgressContext';
@@ -350,14 +353,17 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate }) => {
   
   if (isLoading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Skeleton variant="rectangular" height={200} sx={{ mb: 3, borderRadius: 1 }} />
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 1 }} />
+      <ThemeProvider theme={teachingModuleTheme}>
+        <CssBaseline />
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <Skeleton variant="rectangular" height={200} sx={{ mb: 3, borderRadius: 1 }} />
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 1 }} />
+            </Grid>
           </Grid>
-        </Grid>
-      </Container>
+        </Container>
+      </ThemeProvider>
     );
   }
   
@@ -367,18 +373,21 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate }) => {
   
   if (error || !data) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert
-          severity="error"
-          action={
-            <Button color="inherit" size="small" onClick={refetch}>
-              Reintentar
-            </Button>
-          }
-        >
-          {error || 'No se pudo cargar la lección. Por favor, intenta de nuevo.'}
-        </Alert>
-      </Container>
+      <ThemeProvider theme={teachingModuleTheme}>
+        <CssBaseline />
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <Alert
+            severity="error"
+            action={
+              <Button color="inherit" size="small" onClick={refetch}>
+                Reintentar
+              </Button>
+            }
+          >
+            {error || 'No se pudo cargar la lección. Por favor, intenta de nuevo.'}
+          </Alert>
+        </Container>
+      </ThemeProvider>
     );
   }
   
@@ -387,59 +396,74 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate }) => {
   // ============================================================================
   
   return (
-    <Box sx={{ minHeight: '100vh', pb: { xs: 12, sm: 12 } }}>
-    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
-        <Box ref={contentRef} sx={{ minHeight: '70vh' }}>
-          {renderCurrentPage()}
+    <ThemeProvider theme={teachingModuleTheme}>
+      <CssBaseline />
+      <Box sx={{ minHeight: '100vh', pb: { xs: 12, sm: 12 } }}>
+        <Container 
+          ref={contentRef}
+          maxWidth="lg" 
+            sx={{
+            py: { xs: 2, md: 4 },
+              backgroundColor: (theme) => theme.palette.teaching.paperBg,
+              borderRadius: 2,
+              p: { xs: 2, md: 3 },
+            minHeight: '70vh',
+            color: '#ffffff',
+            '& .MuiTypography-root': {
+              color: '#ffffff',
+            },
+            }}
+          >
+              {renderCurrentPage()}
+        </Container>
+        
+        {/* Global Navigation - Always visible */}
+        <LessonNavigation
+          currentPage={currentPage}
+          totalPages={totalPages}
+          data={data}
+          onPrevPage={handlePrevPage}
+          onNextPage={handleNextPage}
+          onNavigateToLesson={handleNavigateToLesson}
+        />
+        
+        {/* Snackbar */}
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={4000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert onClose={handleCloseSnackbar} severity="success" variant="filled">
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
+        
+        {/* Completion Dialog */}
+        <Dialog open={completionDialogOpen} onClose={() => setCompletionDialogOpen(false)}>
+          <DialogTitle>¡Lección Completada!</DialogTitle>
+          <DialogContent>
+            <Typography variant="body1">
+              Has completado exitosamente esta lección. ¡Felicidades!
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setCompletionDialogOpen(false)}>Cerrar</Button>
+            {data?.navigation?.nextLesson && (
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setCompletionDialogOpen(false);
+                  handleNavigateToLesson(data.navigation.nextLesson.id, data.moduleId);
+                }}
+              >
+                Continuar a la Siguiente Lección
+              </Button>
+            )}
+          </DialogActions>
+        </Dialog>
       </Box>
-      </Container>
-      
-      {/* Global Navigation - Always visible */}
-      <LessonNavigation
-        currentPage={currentPage}
-        totalPages={totalPages}
-        data={data}
-        onPrevPage={handlePrevPage}
-        onNextPage={handleNextPage}
-        onNavigateToLesson={handleNavigateToLesson}
-      />
-      
-      {/* Snackbar */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity="success" variant="filled">
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-      
-      {/* Completion Dialog */}
-      <Dialog open={completionDialogOpen} onClose={() => setCompletionDialogOpen(false)}>
-        <DialogTitle>¡Lección Completada!</DialogTitle>
-        <DialogContent>
-          <Typography variant="body1">
-            Has completado exitosamente esta lección. ¡Felicidades!
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCompletionDialogOpen(false)}>Cerrar</Button>
-          {data?.navigation?.nextLesson && (
-            <Button
-              variant="contained"
-              onClick={() => {
-                setCompletionDialogOpen(false);
-                handleNavigateToLesson(data.navigation.nextLesson.id, data.moduleId);
-              }}
-            >
-              Continuar a la Siguiente Lección
-            </Button>
-          )}
-        </DialogActions>
-      </Dialog>
-    </Box>
+    </ThemeProvider>
   );
 });
 

@@ -30,14 +30,14 @@ const MarkdownContainer = styled(Box)(({ theme }) => ({
     lineHeight: 1.8,
   },
 
-  // Estilos para encabezados
+  // Estilos para encabezados - Textos importantes en azul
   '& h1': {
     ...theme.typography.h3,
     fontWeight: 700,
     marginTop: theme.spacing(4),
     marginBottom: theme.spacing(2),
-    color: theme.palette.primary.main,
-    borderBottom: `3px solid ${theme.palette.primary.main}`,
+    color: '#0BBAF4',
+    borderBottom: `3px solid #0BBAF4`,
     paddingBottom: theme.spacing(1),
   },
 
@@ -46,8 +46,8 @@ const MarkdownContainer = styled(Box)(({ theme }) => ({
     fontWeight: 600,
     marginTop: theme.spacing(3.5),
     marginBottom: theme.spacing(1.5),
-    color: theme.palette.primary.dark,
-    borderBottom: `2px solid ${theme.palette.divider}`,
+    color: '#0BBAF4',
+    borderBottom: `2px solid #0BBAF4`,
     paddingBottom: theme.spacing(0.75),
   },
 
@@ -56,7 +56,7 @@ const MarkdownContainer = styled(Box)(({ theme }) => ({
     fontWeight: 600,
     marginTop: theme.spacing(3),
     marginBottom: theme.spacing(1.5),
-    color: theme.palette.text.primary,
+    color: '#0BBAF4',
   },
 
   '& h4': {
@@ -64,7 +64,7 @@ const MarkdownContainer = styled(Box)(({ theme }) => ({
     fontWeight: 600,
     marginTop: theme.spacing(2.5),
     marginBottom: theme.spacing(1),
-    color: theme.palette.text.primary,
+    color: '#BBECFC',
   },
 
   '& h5': {
@@ -72,7 +72,7 @@ const MarkdownContainer = styled(Box)(({ theme }) => ({
     fontWeight: 600,
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(1),
-    color: theme.palette.text.primary,
+    color: '#BBECFC',
   },
 
   '& h6': {
@@ -80,30 +80,33 @@ const MarkdownContainer = styled(Box)(({ theme }) => ({
     fontWeight: 600,
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(1),
-    color: theme.palette.text.secondary,
+    color: '#BBECFC',
   },
 
-  // Estilos para listas
+  // Estilos para listas - Texto en blanco
   '& ul, & ol': {
     marginTop: theme.spacing(1.5),
     marginBottom: theme.spacing(1.5),
     paddingLeft: theme.spacing(4),
+    color: '#ffffff',
   },
 
   '& li': {
     marginTop: theme.spacing(0.75),
     marginBottom: theme.spacing(0.75),
     lineHeight: 1.7,
+    color: '#ffffff',
   },
 
   '& li > p': {
     marginTop: theme.spacing(0.5),
     marginBottom: theme.spacing(0.5),
+    color: '#ffffff',
   },
 
-  // Estilos para citas
+  // Estilos para citas - Texto en blanco con fondo azul claro
   '& blockquote': {
-    borderLeft: `4px solid ${theme.palette.primary.main}`,
+    borderLeft: `4px solid #0BBAF4`,
     paddingLeft: theme.spacing(2),
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
@@ -111,15 +114,16 @@ const MarkdownContainer = styled(Box)(({ theme }) => ({
     marginRight: 0,
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
-    backgroundColor: theme.palette.action.hover,
+    backgroundColor: 'rgba(11, 186, 244, 0.1)',
     borderRadius: theme.shape.borderRadius,
     fontStyle: 'italic',
-    color: theme.palette.text.secondary,
+    color: 'rgba(255, 255, 255, 0.9)',
   },
 
   '& blockquote p': {
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
+    color: 'rgba(255, 255, 255, 0.9)',
   },
 
   // Estilos para líneas horizontales
@@ -130,14 +134,14 @@ const MarkdownContainer = styled(Box)(({ theme }) => ({
     marginBottom: theme.spacing(3),
   },
 
-  // Estilos para enlaces
+  // Estilos para enlaces - Texto importante en azul
   '& a': {
-    color: theme.palette.primary.main,
+    color: '#0BBAF4',
     textDecoration: 'none',
     fontWeight: 500,
     transition: 'color 0.2s ease',
     '&:hover': {
-      color: theme.palette.primary.dark,
+      color: '#BBECFC',
       textDecoration: 'underline',
     },
   },
@@ -145,7 +149,7 @@ const MarkdownContainer = styled(Box)(({ theme }) => ({
   // Estilos para texto en negrita y cursiva
   '& strong': {
     fontWeight: 700,
-    color: theme.palette.text.primary,
+    color: '#BBECFC',
   },
 
   '& em': {
@@ -176,29 +180,29 @@ const MarkdownContainer = styled(Box)(({ theme }) => ({
  * Componentes personalizados para react-markdown
  */
 const components = {
-  // Encabezados
+  // Encabezados - Textos importantes en azul
   h1: ({ node, ...props }) => (
-    <Typography variant="h3" component="h1" {...props} />
+    <Typography variant="h3" component="h1" sx={{ color: '#0BBAF4' }} {...props} />
   ),
   h2: ({ node, ...props }) => (
-    <Typography variant="h4" component="h2" {...props} />
+    <Typography variant="h4" component="h2" sx={{ color: '#0BBAF4' }} {...props} />
   ),
   h3: ({ node, ...props }) => (
-    <Typography variant="h5" component="h3" {...props} />
+    <Typography variant="h5" component="h3" sx={{ color: '#0BBAF4' }} {...props} />
   ),
   h4: ({ node, ...props }) => (
-    <Typography variant="h6" component="h4" {...props} />
+    <Typography variant="h6" component="h4" sx={{ color: '#BBECFC' }} {...props} />
   ),
   h5: ({ node, ...props }) => (
-    <Typography variant="subtitle1" component="h5" {...props} />
+    <Typography variant="subtitle1" component="h5" sx={{ color: '#BBECFC' }} {...props} />
   ),
   h6: ({ node, ...props }) => (
-    <Typography variant="subtitle2" component="h6" {...props} />
+    <Typography variant="subtitle2" component="h6" sx={{ color: '#BBECFC' }} {...props} />
   ),
 
-  // Párrafos
+  // Párrafos - Texto normal en blanco
   p: ({ node, ...props }) => (
-    <Typography variant="body1" component="p" paragraph {...props} />
+    <Typography variant="body1" component="p" paragraph sx={{ color: '#ffffff' }} {...props} />
   ),
 
   // Enlaces
@@ -241,14 +245,14 @@ const components = {
       component="blockquote"
       sx={{
         borderLeft: 4,
-        borderColor: 'primary.main',
+        borderColor: '#0BBAF4',
         pl: 2,
         py: 1,
         my: 2,
-        backgroundColor: 'action.hover',
+        backgroundColor: 'rgba(11, 186, 244, 0.1)',
         borderRadius: 1,
         fontStyle: 'italic',
-        color: 'text.secondary',
+        color: 'rgba(255, 255, 255, 0.9)',
       }}
       {...props}
     >

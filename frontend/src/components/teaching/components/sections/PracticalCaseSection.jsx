@@ -23,15 +23,7 @@ const PracticalCaseSection = ({
   const caseId = practicalCase.caseId || `case-${caseIndex}`;
   
   return (
-    <Paper
-      elevation={2}
-      sx={{
-        p: { xs: 2, md: 3 },
-        borderRadius: 2,
-        backgroundColor: 'rgba(255, 255, 255, 0.98)',
-        minHeight: '60vh',
-      }}
-    >
+    <Box>
       <Typography 
         variant="h4" 
         component="h2" 
@@ -39,26 +31,37 @@ const PracticalCaseSection = ({
         sx={{ 
           fontWeight: 600, 
           mb: 3,
-          color: theme.palette.secondary.main,
+          color: '#0BBAF4',
           pb: 2,
-          borderBottom: `3px solid ${theme.palette.secondary.main}`,
+          borderBottom: `3px solid #0BBAF4`,
         }}
       >
         {practicalCase.title || `Caso Clínico ${caseIndex + 1}`}
       </Typography>
       
+      <Paper
+        elevation={2}
+        sx={{
+          p: { xs: 2, md: 3 },
+          borderRadius: 2,
+          backgroundColor: 'transparent',
+          minHeight: '60vh',
+          color: '#ffffff',
+        }}
+      >
+      
       {practicalCase.patientData && (
         <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2, color: '#0BBAF4' }}>
             Datos del Paciente:
           </Typography>
           <Box component="dl" sx={{ pl: 2 }}>
             {Object.entries(practicalCase.patientData).map(([key, value]) => (
               <Box key={key} sx={{ display: 'flex', mb: 1 }}>
-                <Typography component="dt" variant="body1" sx={{ fontWeight: 600, mr: 2, minWidth: 150 }}>
+                <Typography component="dt" variant="body1" sx={{ fontWeight: 600, mr: 2, minWidth: 150, color: '#BBECFC' }}>
                   {key}:
                 </Typography>
-                <Typography component="dd" variant="body1">
+                <Typography component="dd" variant="body1" sx={{ color: '#ffffff' }}>
                   {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                 </Typography>
               </Box>
@@ -69,10 +72,10 @@ const PracticalCaseSection = ({
       
       {(practicalCase.clinicalScenario || practicalCase.caso) && (
         <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2, color: '#0BBAF4' }}>
             Escenario Clínico:
           </Typography>
-          <Typography variant="body1" paragraph sx={{ lineHeight: 1.8 }}>
+          <Typography variant="body1" paragraph sx={{ lineHeight: 1.8, color: '#ffffff' }}>
             {practicalCase.clinicalScenario || practicalCase.caso || practicalCase.escenario}
           </Typography>
         </Box>
@@ -80,7 +83,7 @@ const PracticalCaseSection = ({
       
       {practicalCase.questions && practicalCase.questions.length > 0 && (
         <Box sx={{ mb: 2 }}>
-          <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2, color: '#0BBAF4' }}>
             Preguntas:
           </Typography>
           {practicalCase.questions.map((question, qIndex) => {
@@ -98,7 +101,7 @@ const PracticalCaseSection = ({
             
             return (
               <Box key={qIndex} sx={{ mb: 3 }}>
-                <Typography variant="body1" gutterBottom sx={{ fontWeight: 500, mb: 1 }}>
+                <Typography variant="body1" gutterBottom sx={{ fontWeight: 500, mb: 1, color: '#ffffff' }}>
                   {qIndex + 1}. {questionText}
                 </Typography>
                 <TextField
@@ -114,20 +117,20 @@ const PracticalCaseSection = ({
                   <Box sx={{ mt: 2, p: 2, backgroundColor: 'success.light', borderRadius: 1 }}>
                     {expectedAnswer && (
                       <>
-                        <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
+                        <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, color: '#BBECFC' }}>
                           Respuesta Esperada:
                         </Typography>
-                        <Typography variant="body2" paragraph>
+                        <Typography variant="body2" paragraph sx={{ color: '#ffffff' }}>
                           {expectedAnswer}
                         </Typography>
                       </>
                     )}
                     {explanation && (
                       <>
-                        <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, mt: expectedAnswer ? 1 : 0 }}>
+                        <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, mt: expectedAnswer ? 1 : 0, color: '#BBECFC' }}>
                           Explicación:
                         </Typography>
-                        <Typography variant="body2">
+                        <Typography variant="body2" sx={{ color: '#ffffff' }}>
                           {explanation}
                         </Typography>
                       </>
@@ -147,7 +150,8 @@ const PracticalCaseSection = ({
       >
         {showAnswers ? 'Ocultar Respuestas' : 'Mostrar Respuestas Esperadas'}
       </Button>
-    </Paper>
+      </Paper>
+    </Box>
   );
 };
 

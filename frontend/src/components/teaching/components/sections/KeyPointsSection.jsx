@@ -20,38 +20,39 @@ const KeyPointsSection = ({ keyPoints }) => {
   if (!keyPoints || keyPoints.length === 0) return null;
   
   return (
-    <Paper
-      elevation={2}
-      sx={{
-        p: { xs: 2, md: 3 },
-        mb: 4,
-        backgroundColor: 'rgba(255, 193, 7, 0.15)',
-      }}
-    >
+    <Box sx={{ mb: 4 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-        <StarIcon sx={{ color: 'warning.main', mr: 1 }} />
-        <Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
+        <StarIcon sx={{ color: '#0BBAF4', mr: 1 }} />
+        <Typography variant="h5" component="h2" sx={{ fontWeight: 600, color: '#0BBAF4' }}>
           Puntos Clave
         </Typography>
       </Box>
       
-      <List>
-        {keyPoints.map((point, index) => (
-          <ListItem key={index} sx={{ pl: 0, alignItems: 'flex-start' }}>
-            <ListItemIcon sx={{ minWidth: 36, mt: 0.5 }}>
-              <TrophyIcon sx={{ color: 'warning.main', fontSize: 20 }} />
-            </ListItemIcon>
-            <ListItemText
-              primary={point}
-              primaryTypographyProps={{
-                variant: 'body1',
-                sx: { fontWeight: 500, lineHeight: 1.7 },
-              }}
-            />
-          </ListItem>
-        ))}
-      </List>
-    </Paper>
+      <Paper
+        elevation={2}
+        sx={{
+          p: { xs: 2, md: 3 },
+          backgroundColor: 'rgba(255, 193, 7, 0.15)',
+        }}
+      >
+        <List>
+          {keyPoints.map((point, index) => (
+            <ListItem key={index} sx={{ pl: 0, alignItems: 'flex-start' }}>
+              <ListItemIcon sx={{ minWidth: 36, mt: 0.5 }}>
+                <TrophyIcon sx={{ color: '#0BBAF4', fontSize: 20 }} />
+              </ListItemIcon>
+              <ListItemText
+                primary={point}
+                primaryTypographyProps={{
+                  variant: 'body1',
+                  sx: { fontWeight: 500, lineHeight: 1.7, color: '#ffffff' },
+                }}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </Paper>
+    </Box>
   );
 };
 
