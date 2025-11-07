@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
-  Card,
-  CardContent,
-  CardActions,
   Button,
   Typography,
   Box,
@@ -18,8 +15,7 @@ import {
   List,
   ListItem,
   ListItemIcon,
-  ListItemText,
-  Divider
+  ListItemText
 } from '@mui/material';
 import {
   CheckCircle,
@@ -37,6 +33,8 @@ import {
 } from '@mui/icons-material';
 import ModuleLessonsList from './ModuleLessonsList';
 import { useLearningProgress } from '../../../../contexts/LearningProgressContext';
+// Importar estilos CSS Module para estandarización visual de la card
+import styles from '@/styles/curriculum.module.css';
 
 /**
  * ModuleCard - Card minimalista y optimizada para módulos de aprendizaje
@@ -152,46 +150,58 @@ const ModuleCard = ({
     return hours % 1 === 0 ? `${hours}h` : `${hours.toFixed(1)}h`;
   };
 
+  // Handler para prevenir que el click de la card se active cuando se hace scroll en el body
+  const handleCardClick = (e) => {
+    // Si el click viene del cardBody, footer, o botones/interactivos, no activar el onClick de la card
+    const target = e.target;
+    const isClickableElement = target.closest('button') || 
+                               target.closest('a') || 
+                               target.closest('[role="tab"]') ||
+                               target.closest(`.${styles.cardBody}`) ||
+                               target.closest(`.${styles.cardFooter}`);
+    
+    if (isClickableElement) {
+      return;
+    }
+    
+    if (isAvailable && onModuleClick) {
+      onModuleClick(module.id);
+    }
+  };
+
+  // Handler para el cardBody para prevenir propagación de eventos
+  const handleCardBodyInteraction = (e) => {
+    e.stopPropagation();
+  };
+
+  // Estado para manejar hover de la card
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
     <Tooltip
       title={isAvailable ? `${moduleProgress.toFixed(0)}% completado` : 'Módulo bloqueado - Completa los requisitos previos'}
       arrow
       placement="top"
     >
-      <Card
-        sx={{
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          width: '100%', // Asegura que todas las cards tengan el mismo ancho
+      <article
+        className={`${styles.card} ${status === 'locked' ? styles.locked : ''} ${status === 'completed' ? styles.completed : ''} ${status === 'in-progress' ? styles.inProgress : ''} ${status === 'available' ? styles.available : ''}`}
+        role="article"
+        aria-label={`Módulo: ${module.title}`}
+        onClick={handleCardClick}
+        style={{
+          // Estilos específicos que no están en el CSS Module (colores y comportamiento)
+          // NOTA: No definir height, minHeight, maxHeight aquí - se controlan en CSS Module
+          // La opacidad para locked se maneja en el CSS Module via .card.locked
+          // El backgroundColor se maneja en el CSS Module (.card y .card:hover)
           cursor: isAvailable ? 'pointer' : 'default',
-          // Opacidad reducida para módulos bloqueados
-          opacity: isAvailable ? 1 : 0.5,
-          // Border neutral sutil de 1px con fondo transparente
-          border: '1px solid',
-          borderColor: 'rgba(255, 255, 255, 0.1)',
-          borderRadius: 2,
           position: 'relative',
-          // Sin sombra por defecto (flat design)
-          boxShadow: 'none',
-          backgroundColor: '#A0DBE9',
-          // Transición suave y rápida
-          transition: 'all 0.25s ease-in-out',
-          // Hover effect elegante y sutil
-          '&:hover': isAvailable ? {
-            // Elevación mínima de 2px
-            transform: 'translateY(-2px)',
-            // Fondo más claro en hover
-            backgroundColor: '#B5E3F0',
-            // Border cambia al color del estado
-            borderColor: getHoverBorderColor(),
-          } : {},
-          // Asegurar ancho completo en todos los breakpoints
-          [theme.breakpoints.down('sm')]: {
-            width: '100%'
-          }
         }}
-        onClick={() => isAvailable && onModuleClick(module.id)}
+        onMouseEnter={() => {
+          setIsHovered(true);
+        }}
+        onMouseLeave={() => {
+          setIsHovered(false);
+        }}
       >
         {/* Icono de estado - reducido a 20px */}
         <Box
@@ -201,10 +211,7 @@ const ModuleCard = ({
             right: 12,
             zIndex: 2,
             transition: 'transform 0.25s ease-in-out',
-            // Pequeña animación en hover de la card
-            '.MuiCard-root:hover &': isAvailable ? {
-              transform: 'scale(1.1)'
-            } : {}
+            transform: isHovered && isAvailable ? 'scale(1.1)' : 'scale(1)'
           }}
         >
           {/* Renderizar icono según estado con tamaño reducido */}
@@ -237,6 +244,8 @@ const ModuleCard = ({
               e.stopPropagation();
               onToggleFavorite(module.id);
             }}
+            aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+            aria-pressed={isFavorite}
             sx={{
               width: 32,
               height: 32,
@@ -260,42 +269,35 @@ const ModuleCard = ({
           </IconButton>
         </Box>
 
-        {/* Contenido principal de la card */}
-        <CardContent
-          sx={{
-            flexGrow: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            pt: 5,
-            pb: 0,
-            px: isMobile ? 2 : 2.5
-          }}
-        >
-          {/* Título del módulo - siempre visible */}
+        {/* Header - Título del módulo */}
+        <header className={styles.cardHeader} style={{ paddingTop: '48px' }}>
           <Typography
             variant="h6"
-            sx={{
+            component="h3"
+            style={{
               fontWeight: 700,
-              mb: 1.5,
-              fontSize: '1rem',
-              lineHeight: 1.3,
+              fontSize: '1.05rem',
+              lineHeight: 1.35,
               color: isAvailable ? '#ffffff' : '#9e9e9e',
               textShadow: isAvailable ? '0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3)' : 'none',
-              // Truncado con ellipsis después de 2 líneas
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              wordBreak: 'break-word', // Permite romper palabras largas
-              overflowWrap: 'break-word' // Asegura el wrap de palabras largas
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+              margin: 0,
             }}
           >
             {module.title}
           </Typography>
+        </header>
 
-          {/* Barra de progreso principal - siempre visible */}
-          <Box sx={{ mb: 2 }}>
+        {/* Meta - Progreso y metadatos */}
+        <div className={styles.cardMeta}>
+          {/* Barra de progreso */}
+          <Box sx={{ mb: 1.5 }}>
             <Box
               sx={{
                 display: 'flex',
@@ -345,6 +347,76 @@ const ModuleCard = ({
             />
           </Box>
 
+          {/* Chips de metadatos (dificultad, duración, lecciones) */}
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Chip
+              label={module.difficulty}
+              size="small"
+              variant="outlined"
+              sx={{
+                fontSize: '0.7rem',
+                height: 24,
+                fontWeight: 500,
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                color: isAvailable ? '#ffffff !important' : '#9e9e9e',
+                '& .MuiChip-label': {
+                  color: isAvailable ? '#ffffff !important' : '#9e9e9e',
+                }
+              }}
+            />
+            <Chip
+              label={formatDuration(module.duration)}
+              size="small"
+              variant="outlined"
+              sx={{
+                fontSize: '0.7rem',
+                height: 24,
+                fontWeight: 500,
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                color: isAvailable ? '#ffffff !important' : '#9e9e9e',
+                '& .MuiChip-label': {
+                  color: isAvailable ? '#ffffff !important' : '#9e9e9e',
+                }
+              }}
+            />
+            {module.lessons && module.lessons.length > 0 && (
+              <Chip
+                icon={<MenuBook sx={{ fontSize: 14, color: isAvailable ? '#ffffff' : '#9e9e9e' }} />}
+                label={`${module.lessons.length} lecciones`}
+                size="small"
+                variant="outlined"
+                sx={{
+                  fontSize: '0.7rem',
+                  height: 24,
+                  fontWeight: 500,
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  borderColor: 'rgba(255, 255, 255, 0.3)',
+                  color: isAvailable ? '#ffffff !important' : '#9e9e9e',
+                  '& .MuiChip-label': {
+                    color: isAvailable ? '#ffffff !important' : '#9e9e9e',
+                  },
+                  '& .MuiChip-icon': {
+                    color: isAvailable ? '#ffffff !important' : '#9e9e9e'
+                  }
+                }}
+              />
+            )}
+          </Box>
+        </div>
+
+        {/* Body - Contenido scrollable con tabs */}
+        <div
+          className={styles.cardBody}
+          role="region"
+          aria-label="Contenido del módulo"
+          tabIndex={0}
+          onClick={handleCardBodyInteraction}
+          onWheel={handleCardBodyInteraction}
+          onTouchMove={handleCardBodyInteraction}
+          onMouseDown={handleCardBodyInteraction}
+        >
           {/* Tabs para organizar el contenido */}
           <Box sx={{ borderBottom: 1, borderColor: 'rgba(255, 255, 255, 0.2)', mb: 2 }}>
             <Tabs
@@ -386,30 +458,13 @@ const ModuleCard = ({
           {/* Contenido de los tabs */}
           <Box 
             sx={{ 
-              flex: 1,
-              minHeight: isMobile ? '180px' : '200px', // Altura mínima razonable
-              overflowY: 'auto', // Scroll solo cuando el contenido exceda el espacio disponible
               display: 'flex',
               flexDirection: 'column',
-              '&::-webkit-scrollbar': {
-                width: '4px',
-              },
-              '&::-webkit-scrollbar-track': {
-                background: 'rgba(255, 255, 255, 0.1)',
-                borderRadius: 2,
-              },
-              '&::-webkit-scrollbar-thumb': {
-                background: 'rgba(255, 255, 255, 0.3)',
-                borderRadius: 2,
-                '&:hover': {
-                  background: 'rgba(255, 255, 255, 0.5)',
-                },
-              },
             }}
           >
             {/* Tab 0: Resumen */}
             {activeTab === 0 && (
-              <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                 {/* Descripción */}
                 <Typography
                   variant="body2"
@@ -419,119 +474,12 @@ const ModuleCard = ({
                     mb: 2,
                     fontSize: '0.8rem',
                     lineHeight: 1.6,
-                    wordBreak: 'break-word', // Permite que las palabras largas se rompan
-                    overflowWrap: 'break-word', // Rompe palabras muy largas
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
                   }}
                 >
                   {module.learningObjectives?.[0] || module.description || 'Sin descripción disponible'}
                 </Typography>
-
-                {/* Barra de progreso */}
-                <Box sx={{ mb: 2 }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'baseline',
-                      mb: 0.5
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: isAvailable ? '#ffffff' : '#9e9e9e',
-                        opacity: isAvailable ? 0.9 : 0.7,
-                        fontSize: '0.7rem',
-                        fontWeight: 500
-                      }}
-                    >
-                      Progreso del Módulo
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: isAvailable ? '#ffffff' : '#9e9e9e',
-                        fontWeight: 700,
-                        fontSize: '0.75rem',
-                        textShadow: isAvailable ? '0 1px 1px rgba(0, 0, 0, 0.1)' : 'none'
-                      }}
-                    >
-                      {moduleProgress.toFixed(0)}%
-                    </Typography>
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={moduleProgress}
-                    sx={{
-                      height: 6,
-                      borderRadius: 3,
-                      backgroundColor: `${theme.palette.grey[400]}10`,
-                      '& .MuiLinearProgress-bar': {
-                        backgroundColor: getProgressBarColor(),
-                        borderRadius: 3,
-                        transition: 'transform 0.25s ease-in-out'
-                      }
-                    }}
-                  />
-                </Box>
-
-                {/* Chips de metadatos */}
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 2 }}>
-                  <Chip
-                    label={module.difficulty}
-                    size="small"
-                    variant="outlined"
-                    sx={{
-                      fontSize: '0.7rem',
-                      height: 24,
-                      fontWeight: 500,
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      borderColor: 'rgba(255, 255, 255, 0.3)',
-                      color: isAvailable ? '#ffffff !important' : '#9e9e9e',
-                      '& .MuiChip-label': {
-                        color: isAvailable ? '#ffffff !important' : '#9e9e9e',
-                      }
-                    }}
-                  />
-                  <Chip
-                    label={formatDuration(module.duration)}
-                    size="small"
-                    variant="outlined"
-                    sx={{
-                      fontSize: '0.7rem',
-                      height: 24,
-                      fontWeight: 500,
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      borderColor: 'rgba(255, 255, 255, 0.3)',
-                      color: isAvailable ? '#ffffff !important' : '#9e9e9e',
-                      '& .MuiChip-label': {
-                        color: isAvailable ? '#ffffff !important' : '#9e9e9e',
-                      }
-                    }}
-                  />
-                  {module.lessons && module.lessons.length > 0 && (
-                    <Chip
-                      icon={<MenuBook sx={{ fontSize: 14, color: isAvailable ? '#ffffff' : '#9e9e9e' }} />}
-                      label={`${module.lessons.length} lecciones`}
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        fontSize: '0.7rem',
-                        height: 24,
-                        fontWeight: 500,
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                        borderColor: 'rgba(255, 255, 255, 0.3)',
-                        color: isAvailable ? '#ffffff !important' : '#9e9e9e',
-                        '& .MuiChip-label': {
-                          color: isAvailable ? '#ffffff !important' : '#9e9e9e',
-                        },
-                        '& .MuiChip-icon': {
-                          color: isAvailable ? '#ffffff !important' : '#9e9e9e'
-                        }
-                      }}
-                    />
-                  )}
-                </Box>
               </Box>
             )}
 
@@ -550,7 +498,7 @@ const ModuleCard = ({
 
             {/* Tab 2: Detalles */}
             {activeTab === 2 && (
-              <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                 {/* Objetivos de Aprendizaje */}
                 {module.learningObjectives && module.learningObjectives.length > 0 && (
                   <Box sx={{ mb: 2 }}>
@@ -677,21 +625,26 @@ const ModuleCard = ({
               </Box>
             )}
           </Box>
-        </CardContent>
+        </div>
 
-        {/* Acciones de la card */}
-        <CardActions
-          sx={{
-            p: 2,
-            pt: 0,
-            px: isMobile ? 2 : 2.5
-          }}
-        >
+        {/* Footer - Acciones de la card */}
+        <footer className={styles.cardFooter}>
           <Button
             // Outlined cuando completado, contained cuando disponible/en progreso
             variant={status === 'completed' ? 'outlined' : 'contained'}
             fullWidth
             disabled={!isAvailable}
+            onClick={(e) => {
+              e.stopPropagation(); // Prevenir que active el onClick de la card
+              if (isAvailable && onModuleClick) {
+                onModuleClick(module.id);
+              }
+            }}
+            aria-label={
+              status === 'completed' ? 'Módulo completado' :
+              status === 'in-progress' ? 'Continuar módulo' :
+              isAvailable ? 'Comenzar módulo' : 'Módulo bloqueado'
+            }
             startIcon={
               status === 'completed' ? <CheckCircle /> :
               status === 'in-progress' ? <Refresh /> :
@@ -727,8 +680,8 @@ const ModuleCard = ({
               status === 'in-progress' ? 'Continuar' :
                 isAvailable ? 'Comenzar' : 'Bloqueado'}
           </Button>
-        </CardActions>
-      </Card>
+        </footer>
+      </article>
     </Tooltip>
   );
 };

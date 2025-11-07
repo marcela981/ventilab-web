@@ -6,14 +6,7 @@ import {
   Box,
   Typography,
   LinearProgress,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
-  Button,
   Chip,
-  Tooltip,
-  IconButton,
   useTheme,
   useMediaQuery,
   Accordion,
@@ -21,17 +14,9 @@ import {
   AccordionDetails
 } from '@mui/material';
 import {
-  CheckCircle,
-  Refresh,
-  PlayArrow,
-  Lock,
-  LockOpen,
-  TrendingUp,
-  AccessTime,
-  BookmarkBorder,
-  Bookmark,
   ExpandMore
 } from '@mui/icons-material';
+import ModuleGrid from './ModuleGrid';
 
 /**
  * LevelStepper - Componente minimalista de niveles de aprendizaje
@@ -136,23 +121,8 @@ const LevelStepper = ({
     return { label: 'Sin iniciar', color: 'default' };
   };
 
-  /**
-   * Obtiene el color de la barra de progreso según el estado del módulo
-   * @param {string} status - Estado del módulo
-   * @returns {string} Color hexadecimal
-   */
-  const getProgressBarColor = (status) => {
-    switch (status) {
-      case 'completed':
-        return '#4CAF50';
-      case 'in-progress':
-        return '#FF9800';
-      default:
-        return '#9e9e9e';
-    }
-  };
 
-  // Renderizar módulos directamente si no se proporciona moduleGrid
+  // Renderizar módulos usando ModuleGrid si no se proporciona moduleGrid custom
   const renderModuleGrid = (levelModules, level) => {
     if (moduleGrid) {
       return moduleGrid;
@@ -177,272 +147,29 @@ const LevelStepper = ({
       );
     }
 
+    // Usar ModuleGrid estandarizado con CSS Grid
     return (
-      <Grid container spacing={3} sx={{ mt: 1 }}>
-        {visibleModules.map((module) => {
-          const moduleProgress = calculateModuleProgress ? calculateModuleProgress(module.id) : 0;
-          const available = isModuleAvailable ? isModuleAvailable(module.id) : true;
-          const moduleStatus = getModuleStatus ? getModuleStatus(module, moduleProgress) : 'available';
-
-          return (
-            <Grid item xs={12} sm={6} md={4} key={module.id}>
-              <Tooltip
-                title={getTooltipMessage ? getTooltipMessage(module, moduleProgress) : module.title}
-                arrow
-                placement="top"
-              >
-                <Card
-                  sx={{
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    cursor: available ? 'pointer' : 'default',
-                    opacity: available ? 1 : 0.6,
-                    // Bordes sutiles según estado con fondo del hover del box anterior
-                    border: '1px solid',
-                    borderColor:
-                      moduleStatus === 'available' ? 'rgba(33, 150, 243, 0.3)' :
-                      moduleStatus === 'in-progress' ? 'rgba(255, 152, 0, 0.3)' :
-                      moduleStatus === 'completed' ? 'rgba(76, 175, 80, 0.3)' : 'rgba(255, 255, 255, 0.1)',
-                    borderRadius: 2,
-                    position: 'relative',
-                    boxShadow: 'none',
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': available ? {
-                      transform: 'translateY(-4px)',
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      borderColor: moduleStatus === 'available' ? 'rgba(33, 150, 243, 0.5)' :
-                        moduleStatus === 'in-progress' ? 'rgba(255, 152, 0, 0.5)' :
-                        moduleStatus === 'completed' ? 'rgba(76, 175, 80, 0.5)' : level.color,
-                      boxShadow: `0 8px 20px ${level.color}20`
-                    } : {}
-                  }}
-                  onClick={() => available && handleModuleClick && handleModuleClick(module.id)}
-                >
-                  {/* Icono de estado del módulo */}
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 12,
-                      right: 12,
-                      zIndex: 1
-                    }}
-                  >
-                    {moduleStatus === 'completed' && (
-                      <CheckCircle sx={{ color: '#4CAF50', fontSize: 20 }} />
-                    )}
-                    {moduleStatus === 'in-progress' && (
-                      <TrendingUp sx={{ color: '#FF9800', fontSize: 20 }} />
-                    )}
-                    {moduleStatus === 'available' && (
-                      <LockOpen sx={{ color: '#2196F3', fontSize: 20 }} />
-                    )}
-                    {moduleStatus === 'locked' && (
-                      <Lock sx={{ color: '#9E9E9E', fontSize: 20 }} />
-                    )}
-                  </Box>
-
-                  {/* Botón de favorito minimalista */}
-                  {onToggleFavorite && (
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: 12,
-                        left: 12,
-                        zIndex: 1
-                      }}
-                    >
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onToggleFavorite(module.id);
-                        }}
-                        sx={{
-                          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                          border: '1px solid rgba(255, 255, 255, 0.2)',
-                          width: 28,
-                          height: 28,
-                          transition: 'all 0.3s ease',
-                          '&:hover': {
-                            backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                            transform: 'scale(1.1)'
-                          }
-                        }}
-                      >
-                        {favoriteModules.has(module.id) ? (
-                          <Bookmark sx={{ color: '#FF9800', fontSize: 16 }} />
-                        ) : (
-                          <BookmarkBorder sx={{ color: '#e8f4fd', fontSize: 16 }} />
-                        )}
-                      </IconButton>
-                    </Box>
-                  )}
-
-                  <CardContent sx={{ flexGrow: 1, pt: 5, pb: 2 }}>
-                    {/* Título del módulo */}
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        fontWeight: 600,
-                        mb: 1,
-                        fontSize: '1rem',
-                        color: available ? '#ffffff' : '#9e9e9e',
-                        lineHeight: 1.3
-                      }}
-                    >
-                      {module.title}
-                    </Typography>
-
-                    {/* Descripción del módulo */}
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: '#e8f4fd',
-                        mb: 2,
-                        fontSize: '0.85rem',
-                        lineHeight: 1.6
-                      }}
-                    >
-                      {module.learningObjectives?.[0] || module.description}
-                    </Typography>
-
-                    {/* Barra de progreso del módulo */}
-                    {calculateModuleProgress && (
-                      <Box sx={{ mb: 2 }}>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            mb: 0.5
-                          }}
-                        >
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: '#e8f4fd',
-                              fontSize: '0.7rem',
-                              fontWeight: 500
-                            }}
-                          >
-                            Progreso
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: getProgressBarColor(moduleStatus),
-                              fontWeight: 700,
-                              fontSize: '0.75rem'
-                            }}
-                          >
-                            {moduleProgress.toFixed(0)}%
-                          </Typography>
-                        </Box>
-                        <LinearProgress
-                          variant="determinate"
-                          value={moduleProgress}
-                          sx={{
-                            height: 6,
-                            borderRadius: 3,
-                            backgroundColor: `${theme.palette.grey[400]}10`,
-                            '& .MuiLinearProgress-bar': {
-                              backgroundColor: getProgressBarColor(moduleStatus),
-                              borderRadius: 3,
-                              transition: 'transform 0.3s ease'
-                            }
-                          }}
-                        />
-                      </Box>
-                    )}
-
-                    {/* Chips de metadatos minimalistas */}
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                      {module.difficulty && (
-                        <Chip
-                          label={module.difficulty}
-                          size="small"
-                          sx={{
-                            fontSize: '0.65rem',
-                            height: 22,
-                            fontWeight: 500,
-                            backgroundColor: available ? `${level.color}15` : '#f5f5f5',
-                            color: available ? level.color : '#9e9e9e',
-                            border: 'none',
-                            transition: 'all 0.3s ease'
-                          }}
-                        />
-                      )}
-                      {module.duration && (
-                        <Chip
-                          icon={<AccessTime sx={{ fontSize: 11 }} />}
-                          label={`${Math.round(module.duration / 60)}h`}
-                          size="small"
-                          sx={{
-                            fontSize: '0.65rem',
-                            height: 22,
-                            fontWeight: 500,
-                            backgroundColor: available ? '#e8f5e9' : '#f5f5f5',
-                            color: available ? '#2e7d32' : '#9e9e9e',
-                            border: 'none',
-                            transition: 'all 0.3s ease'
-                          }}
-                        />
-                      )}
-                    </Box>
-                  </CardContent>
-
-                  {/* Botón de acción minimalista */}
-                  <CardActions sx={{ p: 2, pt: 0 }}>
-                    <Button
-                      variant={moduleStatus === 'completed' ? 'outlined' : 'contained'}
-                      fullWidth
-                      disabled={!available || moduleStatus === 'locked'}
-                      startIcon={
-                        !available || moduleStatus === 'locked' ? <Lock /> :
-                        moduleStatus === 'completed' ? <CheckCircle /> :
-                        moduleStatus === 'in-progress' ? <Refresh /> :
-                        <PlayArrow />
-                      }
-                      sx={{
-                        fontSize: '0.85rem',
-                        fontWeight: 600,
-                        textTransform: 'none',
-                        py: 1,
-                        borderRadius: 1.5,
-                        backgroundColor: available && moduleStatus !== 'completed' && moduleStatus !== 'locked' ? level.color : 'transparent',
-                        borderColor: available && moduleStatus !== 'locked' ? level.color : 'rgba(158, 158, 158, 0.3)',
-                        color: available && moduleStatus !== 'completed' && moduleStatus !== 'locked' ? '#fff' : level.color,
-                        boxShadow: 'none',
-                        transition: 'all 0.3s ease',
-                        cursor: available && moduleStatus !== 'locked' ? 'pointer' : 'not-allowed',
-                        opacity: !available || moduleStatus === 'locked' ? 0.5 : 1,
-                        '&:hover': available && moduleStatus !== 'locked' ? {
-                          backgroundColor: moduleStatus !== 'completed' ? level.color : 'transparent',
-                          filter: 'brightness(0.9)',
-                          boxShadow: 'none'
-                        } : {},
-                        '&.Mui-disabled': {
-                          backgroundColor: 'rgba(158, 158, 158, 0.1)',
-                          borderColor: 'rgba(158, 158, 158, 0.3)',
-                          color: 'rgba(158, 158, 158, 0.6)',
-                          opacity: 0.5,
-                          cursor: 'not-allowed'
-                        }
-                      }}
-                    >
-                      {!available || moduleStatus === 'locked' ? 'Bloqueado' :
-                        moduleStatus === 'completed' ? 'Completado' :
-                        moduleStatus === 'in-progress' ? 'Continuar' :
-                        'Comenzar'}
-                    </Button>
-                  </CardActions>
-                </Card>
-              </Tooltip>
-            </Grid>
-          );
-        })}
-      </Grid>
+      <Box sx={{ mt: 1 }}>
+        <ModuleGrid
+          modules={visibleModules}
+          calculateModuleProgress={calculateModuleProgress}
+          isModuleAvailable={isModuleAvailable}
+          onModuleClick={handleModuleClick}
+          onToggleFavorite={onToggleFavorite}
+          favoriteModules={favoriteModules}
+          getStatusIcon={() => null} // ModuleCard maneja sus propios iconos
+          getButtonText={(module, progress, available) => {
+            if (!available) return 'Bloqueado';
+            if (progress === 100) return 'Completado';
+            if (progress > 0) return 'Continuar';
+            return 'Comenzar';
+          }}
+          getButtonIcon={() => null} // ModuleCard maneja sus propios iconos
+          levelColor={level.color}
+          enableAnimations={true}
+          emptyMessage="No hay módulos disponibles en este nivel"
+        />
+      </Box>
     );
   };
 

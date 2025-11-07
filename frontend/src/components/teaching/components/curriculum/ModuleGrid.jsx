@@ -3,19 +3,24 @@
 import React, { useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import {
-  Grid,
   Box,
   Typography,
   Fade
 } from '@mui/material';
 import ModuleCard from './ModuleCard';
+// Importar estilos CSS Module para grid y cards del currículo
+import styles from '@/styles/curriculum.module.css';
 
 /**
  * ModuleGrid - Componente unificado y optimizado para renderizar grid de módulos
  *
- * Renderiza un grid responsive de módulos de aprendizaje con soporte para
+ * Renderiza un grid responsive de módulos de aprendizaje usando CSS Grid con soporte para
  * ordenamiento, animaciones, y personalización completa. Optimizado con
  * React.memo, useMemo y useCallback para máximo rendimiento.
+ *
+ * Utiliza CSS Grid con auto-fill para crear un layout responsive que se adapta
+ * automáticamente al tamaño de la pantalla. Las cards mantienen un aspect-ratio
+ * consistente (16:10) con alturas mínimas y máximas definidas.
  *
  * @component
  * @param {Array} modules - Array de módulos a renderizar
@@ -29,7 +34,7 @@ import ModuleCard from './ModuleCard';
  * @param {Function} getButtonIcon - Función para icono del botón
  * @param {string} levelColor - Color hex del nivel
  * @param {React.Component} moduleCard - Componente ModuleCard customizado (opcional)
- * @param {Object} columns - Breakpoints personalizados (opcional)
+ * @param {Object} columns - Breakpoints personalizados (deprecated: ahora se usa CSS Grid auto-fill)
  * @param {string} sortBy - Campo por el cual ordenar (opcional)
  * @param {string} sortOrder - Orden asc o desc (opcional)
  * @param {boolean} enableAnimations - Habilitar animaciones fade-in (default: true)
@@ -48,7 +53,7 @@ const ModuleGrid = ({
   getButtonIcon,
   levelColor,
   moduleCard: CustomModuleCard,
-  columns = { xs: 12, sm: 6, md: 4, lg: 3 },
+  columns, // Deprecated: ahora se usa CSS Grid con auto-fill, se mantiene por compatibilidad
   sortBy,
   sortOrder = 'asc',
   enableAnimations = true,
@@ -163,13 +168,8 @@ const ModuleGrid = ({
   const CardComponent = CustomModuleCard || ModuleCard;
 
   return (
-    <Grid
-      container
-      spacing={3}
-      sx={{ 
-        mt: 1,
-        alignItems: 'stretch' // Asegura que todas las cards tengan la misma altura
-      }}
+    <div
+      className={styles.grid}
       role="list"
       aria-label="Lista de módulos de aprendizaje"
     >
@@ -199,39 +199,32 @@ const ModuleGrid = ({
         );
 
         // Renderizar con o sin animación
+        // Nota: Fade necesita un wrapper, pero lo mantenemos mínimo para no romper el grid
         const wrappedContent = enableAnimations ? (
           <Fade
             in={true}
             timeout={300 + index * 50}
             style={{ transitionDelay: `${index * 50}ms` }}
           >
-            <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <div>
               {cardContent}
-            </Box>
+            </div>
           </Fade>
         ) : (
           cardContent
         );
 
         return (
-          <Grid
-            item
-            {...columns}
+          <div
             key={module.id}
             role="listitem"
             aria-label={`Módulo: ${module.title}`}
-            sx={{
-              display: 'flex', // Asegura que el contenido de la card se estire
-              flexDirection: 'column',
-              width: '100%', // Asegura ancho consistente
-              minWidth: 0 // Previene overflow en flexbox
-            }}
           >
             {wrappedContent}
-          </Grid>
+          </div>
         );
       })}
-    </Grid>
+    </div>
   );
 };
 
@@ -290,7 +283,7 @@ MemoizedModuleGrid.propTypes = {
   levelColor: PropTypes.string,
   /** Componente ModuleCard customizado (opcional) */
   moduleCard: PropTypes.elementType,
-  /** Breakpoints personalizados para el Grid (default: { xs: 12, sm: 6, md: 4, lg: 3 }) */
+  /** Breakpoints personalizados para el Grid (deprecated: ahora se usa CSS Grid con auto-fill) */
   columns: PropTypes.shape({
     xs: PropTypes.number,
     sm: PropTypes.number,
