@@ -35,7 +35,7 @@
  * @param {Function} [props.onNavigate] - Callback when navigating to different lesson
  */
 
-import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
+import React, { useState, useEffect, useCallback, useRef, memo, Suspense, lazy } from 'react';
 import PropTypes from 'prop-types';
 import {
   Container,
@@ -52,7 +52,11 @@ import {
   Typography,
   CssBaseline,
   Portal,
+  Stack,
 } from '@mui/material';
+import {
+  OpenInNew as OpenInNewIcon,
+} from '@mui/icons-material';
 import { ThemeProvider } from '@mui/material/styles';
 import { teachingModuleTheme } from '../../../theme/teachingModuleTheme';
 
@@ -75,6 +79,102 @@ import {
   PracticalCaseSection,
   CompletionPage,
 } from './sections';
+
+// Lazy load multimedia components
+const LazyVideoPlayer = lazy(() => import('./media/VideoPlayer'));
+const LazyImageGallery = lazy(() => import('./media/ImageGallery'));
+const LazyInteractiveDiagram = lazy(() => import('./media/InteractiveDiagram'));
+
+/**
+ * MediaSkeleton - Local skeleton component for media blocks
+ */
+const MediaSkeleton = ({ variant = 'video' }) => {
+  if (variant === 'imageGallery') {
+    return (
+      <Grid container spacing={2}>
+        {[1, 2, 3, 4].map((i) => (
+          <Grid item xs={6} sm={4} md={3} key={i}>
+            <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 1 }} />
+          </Grid>
+        ))}
+      </Grid>
+    );
+  }
+  
+  // Default: video/diagram skeleton (16:9 aspect ratio)
+  return (
+    <Skeleton
+      variant="rectangular"
+      sx={{
+        width: '100%',
+        paddingTop: '56.25%', // 16:9 aspect ratio
+        borderRadius: 1,
+      }}
+    />
+  );
+};
+
+MediaSkeleton.propTypes = {
+  variant: PropTypes.oneOf(['video', 'diagram', 'imageGallery']),
+};
+
+/**
+ * MediaFallback - Componente unificado para estados vacíos y errores
+ * Última red de seguridad cuando un bloque multimedia está malformado
+ */
+const MediaFallback = memo(({ message, actionUrl, blockIndex, blockType }) => {
+  const handleOpenExternal = useCallback(() => {
+    if (actionUrl) {
+      window.open(actionUrl, '_blank', 'noopener,noreferrer');
+    }
+  }, [actionUrl]);
+
+  // Emitir warning para debug
+  useEffect(() => {
+    if (blockIndex !== undefined && blockType) {
+      console.warn(
+        `[LessonViewer] Fallback activado para bloque multimedia ${blockIndex + 1} (tipo: ${blockType}):`,
+        message
+      );
+    }
+  }, [message, blockIndex, blockType]);
+
+  return (
+    <Alert
+      severity="warning"
+      sx={{ my: 2 }}
+      action={
+        actionUrl ? (
+          <Button
+            color="inherit"
+            size="small"
+            onClick={handleOpenExternal}
+            startIcon={<OpenInNewIcon />}
+          >
+            Abrir en nueva pestaña
+          </Button>
+        ) : null
+      }
+    >
+      {message || 'Contenido no disponible'}
+    </Alert>
+  );
+});
+
+MediaFallback.displayName = 'MediaFallback';
+
+MediaFallback.propTypes = {
+  message: PropTypes.string.isRequired,
+  actionUrl: PropTypes.string,
+  blockIndex: PropTypes.number,
+  blockType: PropTypes.string,
+};
+
+MediaFallback.defaultProps = {
+  actionUrl: null,
+  blockIndex: undefined,
+  blockType: undefined,
+};
 
 /**
  * LessonViewer - Main component for displaying lesson content
@@ -296,6 +396,203 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   }, [data, lessonId]);
   
   // ============================================================================
+  // Media Blocks Rendering
+  // ============================================================================
+  
+  /**
+   * Renders a single media block based on its type
+   * @param {Object} block - Media block object with type and data
+   * @param {number} index - Index of the block in the media array
+   * @returns {React.Element} Rendered media component or fallback
+   */
+  const renderMediaBlock = useCallback((block, index) => {
+    // Validación inicial: bloque malformado
+    if (!block || !block.type || !block.data) {
+      console.warn(
+        `[LessonViewer] Bloque multimedia ${index + 1} malformado:`,
+        'Falta type o data',
+        block
+      );
+      return (
+        <MediaFallback
+          message="Contenido no disponible: estructura de datos inválida"
+          blockIndex={index}
+          blockType="unknown"
+        />
+      );
+    }
+
+    const { type, data } = block;
+    const ariaLabelBase = `Bloque multimedia ${index + 1}`;
+
+    switch (type) {
+      case 'video': {
+        // Validación: video sin URL
+        if (!data.url || typeof data.url !== 'string') {
+          console.warn(
+            `[LessonViewer] Bloque video ${index + 1} inválido:`,
+            'URL no proporcionada o inválida',
+            data
+          );
+          return (
+            <MediaFallback
+              message="Video: URL no proporcionada o inválida"
+              actionUrl={data.url} // Por si acaso hay una URL pero está mal formada
+              blockIndex={index}
+              blockType="video"
+            />
+          );
+        }
+
+        const ariaLabel = data.title 
+          ? `Video: ${data.title}` 
+          : `${ariaLabelBase} - Video`;
+
+        return (
+          <Suspense fallback={<MediaSkeleton variant="video" />}>
+            <Box sx={{ my: 2 }} aria-label={ariaLabel}>
+              <LazyVideoPlayer
+                url={data.url}
+                title={data.title}
+                provider={data.provider || 'auto'}
+                start={data.start}
+                poster={data.poster}
+                onError={(error, url) => {
+                  console.warn(
+                    `[LessonViewer] Error en video ${index + 1}:`,
+                    error,
+                    { url, blockIndex: index }
+                  );
+                }}
+              />
+            </Box>
+          </Suspense>
+        );
+      }
+
+      case 'imageGallery': {
+        // Validación: galería sin imágenes o array vacío
+        if (!data.images || !Array.isArray(data.images) || data.images.length === 0) {
+          console.warn(
+            `[LessonViewer] Bloque imageGallery ${index + 1} inválido:`,
+            'No hay imágenes o array inválido',
+            data
+          );
+          return (
+            <MediaFallback
+              message="Galería: No hay imágenes disponibles"
+              blockIndex={index}
+              blockType="imageGallery"
+            />
+          );
+        }
+
+        const ariaLabel = `${ariaLabelBase} - Galería de imágenes`;
+
+        return (
+          <Suspense fallback={<MediaSkeleton variant="imageGallery" />}>
+            <Box sx={{ my: 2 }} aria-label={ariaLabel}>
+              <LazyImageGallery
+                images={data.images}
+                columns={data.columns}
+                onImageError={(imgIndex, src) => {
+                  console.warn(
+                    `[LessonViewer] Error en imagen ${imgIndex + 1} de galería ${index + 1}:`,
+                    { src, imageIndex: imgIndex, galleryIndex: index }
+                  );
+                }}
+              />
+            </Box>
+          </Suspense>
+        );
+      }
+
+      case 'diagram': {
+        // Validación: diagrama sin svgSrc ni svgString
+        if (!data.svgSrc && !data.svgString) {
+          console.warn(
+            `[LessonViewer] Bloque diagram ${index + 1} inválido:`,
+            'No se proporcionó svgSrc ni svgString',
+            data
+          );
+          return (
+            <MediaFallback
+              message="Diagrama: No se proporcionó svgSrc ni svgString"
+              actionUrl={data.svgSrc} // Por si hay svgSrc pero está mal formado
+              blockIndex={index}
+              blockType="diagram"
+            />
+          );
+        }
+
+        const ariaLabel = data.ariaLabel || `${ariaLabelBase} - Diagrama interactivo`;
+
+        return (
+          <Suspense fallback={<MediaSkeleton variant="diagram" />}>
+            <Box sx={{ my: 2 }} aria-label={ariaLabel}>
+              <LazyInteractiveDiagram
+                svgSrc={data.svgSrc}
+                svgString={data.svgString}
+                height={data.height || 500}
+                width={data.width || '100%'}
+                initialScale={data.initialScale || 1}
+                onLoad={() => {
+                  console.log(
+                    `[LessonViewer] Diagrama ${index + 1} cargado exitosamente`,
+                    { blockIndex: index }
+                  );
+                }}
+                onError={(error) => {
+                  console.warn(
+                    `[LessonViewer] Error en diagrama ${index + 1}:`,
+                    error,
+                    { blockIndex: index, svgSrc: data.svgSrc }
+                  );
+                }}
+                aria-label={ariaLabel}
+              />
+            </Box>
+          </Suspense>
+        );
+      }
+
+      default:
+        console.warn(
+          `[LessonViewer] Tipo de bloque multimedia no soportado:`,
+          type,
+          { blockIndex: index, block }
+        );
+        return (
+          <MediaFallback
+            message={`Tipo de contenido multimedia no soportado: ${type}`}
+            blockIndex={index}
+            blockType={type}
+          />
+        );
+    }
+  }, []);
+
+  /**
+   * Renders all media blocks from lesson.media array
+   * @returns {React.Element|null} Stack of media blocks or null if no media
+   */
+  const renderMediaBlocks = useCallback(() => {
+    if (!data?.media || !Array.isArray(data.media) || data.media.length === 0) {
+      return null;
+    }
+
+    return (
+      <Stack spacing={2} sx={{ my: 3 }}>
+        {data.media.map((block, index) => (
+          <Box key={`media-block-${index}`}>
+            {renderMediaBlock(block, index)}
+          </Box>
+        ))}
+      </Stack>
+    );
+  }, [data, renderMediaBlock]);
+
+  // ============================================================================
   // Render Functions
   // ============================================================================
   
@@ -458,6 +755,9 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
             }}
           >
               {renderCurrentPage()}
+              
+              {/* Media Blocks Section - Rendered after main content */}
+              {renderMediaBlocks()}
         </Container>
         
         {/* Global Navigation - Always visible */}

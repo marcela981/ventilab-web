@@ -25,10 +25,15 @@ export { default as PersonalNotes } from './PersonalNotes';
 export { default as MedicalCodeBlock } from './MedicalCodeBlock';
 export { default as StyledTable } from './StyledTable';
 export { default as ZoomableImage } from './ZoomableImage';
+export { default as ZoomableSVG } from './ZoomableSVG';
 export { default as ModalityComparisonTable } from './ModalityComparisonTable';
 export { default as WaveformVisualization } from './WaveformVisualization';
 export { default as ClinicalCase } from './ClinicalCase';
 export { default as ParameterTable } from './ParameterTable';
+
+// Componentes reutilizables de media
+export { default as MediaSkeleton } from './MediaSkeleton';
+export { default as MediaFallback } from './MediaFallback';
 
 // Exportación por defecto del componente principal
 export { default } from './MarkdownRenderer';
