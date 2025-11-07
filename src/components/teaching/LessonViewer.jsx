@@ -43,8 +43,10 @@ import {
   Tooltip,
   Collapse,
   Fab,
-  Badge
+  Badge,
+  CssBaseline
 } from '@mui/material';
+import { ThemeProvider, alpha } from '@mui/material/styles';
 import {
   Home,
   School,
@@ -77,6 +79,7 @@ import {
 } from '@mui/icons-material';
 import { useLearningProgress } from '../../contexts/LearningProgressContext';
 import { curriculumData, getModulesByLevel, getModuleById } from '../../data/curriculumData';
+import { teachingModuleTheme } from '../../theme/teachingModuleTheme';
 
 const LessonViewer = ({ 
   lessonData, 
@@ -782,7 +785,17 @@ const LessonViewer = ({
   );
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    <ThemeProvider theme={teachingModuleTheme}>
+      <CssBaseline />
+      <Box
+        className="LessonViewer-paper"
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100vh',
+          backgroundColor: (t) => t.palette.teaching.paperBg,
+        }}
+      >
       {/* Header de la Lección */}
       <Paper elevation={2} sx={{ p: 2, zIndex: 1200 }}>
         <Container maxWidth="xl">
@@ -1060,6 +1073,7 @@ const LessonViewer = ({
                           label={ref.type}
                           size="small"
                           variant="outlined"
+                          color="secondary"
                           sx={{ fontSize: '0.75rem', height: 20 }}
                         />
                       </Box>
@@ -1263,7 +1277,8 @@ const LessonViewer = ({
           )}
         </DialogContent>
       </Dialog>
-    </Box>
+      </Box>
+    </ThemeProvider>
   );
 };
 
