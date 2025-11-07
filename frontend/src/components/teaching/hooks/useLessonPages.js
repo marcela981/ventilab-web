@@ -3,9 +3,11 @@ import { useMemo } from 'react';
 /**
  * Hook para calcular las páginas de una lección
  * @param {Object} data - Datos de la lección
+ * @param {string} [moduleId] - ID del módulo (opcional, para caso clínico)
+ * @param {number} [moduleCompletion] - Porcentaje de completitud del módulo (0-100, opcional)
  * @returns {Array} Array de objetos de página con type y contenido
  */
-const useLessonPages = (data) => {
+const useLessonPages = (data, moduleId = null, moduleCompletion = 0) => {
   return useMemo(() => {
     if (!data) return [];
     
@@ -79,8 +81,14 @@ const useLessonPages = (data) => {
     // Página final de completación (gamificada)
     pages.push({ type: 'completion', index: pageIndex++ });
     
+    // Página de Caso Clínico (siempre aparece si hay moduleId, pero puede estar bloqueada)
+    // Aparece después de la página de completion
+    if (moduleId) {
+      pages.push({ type: 'clinical-case', index: pageIndex++ });
+    }
+    
     return pages;
-  }, [data]);
+  }, [data, moduleId, moduleCompletion]);
 };
 
 export default useLessonPages;

@@ -36,19 +36,32 @@ import {
   Topic
 } from '@mui/icons-material';
 import { loadLessonById } from '../../../../data/helpers/lessonLoader';
+import { useContext } from 'react';
+import LearningProgressContext from '../../../../contexts/LearningProgressContext';
 
 /**
  * Componente individual para cada lección en la lista
  */
 const LessonItem = ({ 
   lesson, 
-  lessonProgress, 
+  lessonProgress: lessonProgressProp, 
   isCompleted, 
   isLocked, 
   isAvailable,
   onLessonClick,
   moduleId
 }) => {
+  const { progressMap, progressVersion } = useContext(LearningProgressContext);
+  
+  // Obtener progreso real del contexto
+  const entry = progressMap[lesson.id];
+  const calculatedProgress = entry 
+    ? Math.round((entry.isCompleted ? 1 : entry.progress || 0) * 100) 
+    : 0;
+  
+  // Usar progreso del contexto si está disponible, sino usar el prop
+  const lessonProgress = entry ? calculatedProgress : (lessonProgressProp || 0);
+  const actualIsCompleted = entry ? entry.isCompleted : isCompleted;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [expanded, setExpanded] = useState(false);
@@ -102,13 +115,13 @@ const LessonItem = ({
           mb: 0.5,
           borderRadius: 1,
           cursor: isAvailable && !isLocked ? 'pointer' : 'default',
-          backgroundColor: isCompleted 
+          backgroundColor: actualIsCompleted 
             ? 'rgba(76, 175, 80, 0.1)' 
             : isLocked 
               ? 'rgba(255, 255, 255, 0.05)' 
               : 'rgba(255, 255, 255, 0.08)',
           border: '1px solid',
-          borderColor: isCompleted
+          borderColor: actualIsCompleted
             ? 'rgba(76, 175, 80, 0.3)'
             : isLocked
               ? 'rgba(255, 255, 255, 0.1)'
@@ -128,7 +141,7 @@ const LessonItem = ({
           <Box sx={{ mr: 1.5, display: 'flex', alignItems: 'center' }}>
             {isLocked ? (
               <Lock sx={{ fontSize: 16, color: 'rgba(255, 255, 255, 0.5)' }} />
-            ) : isCompleted ? (
+            ) : actualIsCompleted ? (
               <CheckCircle sx={{ fontSize: 18, color: '#4CAF50' }} />
             ) : (
               <RadioButtonUnchecked sx={{ fontSize: 16, color: 'rgba(255, 255, 255, 0.7)' }} />
@@ -141,10 +154,10 @@ const LessonItem = ({
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: isCompleted ? 600 : 500,
+                  fontWeight: actualIsCompleted ? 600 : 500,
                   fontSize: '0.8rem',
                   color: isLocked ? 'rgba(255, 255, 255, 0.6)' : '#ffffff',
-                  textDecoration: isCompleted ? 'line-through' : 'none',
+                  textDecoration: actualIsCompleted ? 'line-through' : 'none',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
@@ -153,6 +166,26 @@ const LessonItem = ({
               >
                 {lesson.title}
               </Typography>
+              
+              {/* Badge de progreso */}
+              <Chip
+                label={`${lessonProgress}%`}
+                size="small"
+                sx={{
+                  height: 20,
+                  fontSize: '0.65rem',
+                  ml: 1,
+                  backgroundColor: actualIsCompleted 
+                    ? 'rgba(76, 175, 80, 0.2)' 
+                    : 'rgba(255, 255, 255, 0.1)',
+                  color: actualIsCompleted ? '#4CAF50' : '#ffffff',
+                  border: '1px solid',
+                  borderColor: actualIsCompleted 
+                    ? 'rgba(76, 175, 80, 0.4)' 
+                    : 'rgba(255, 255, 255, 0.2)',
+                  fontWeight: 600,
+                }}
+              />
               
               {/* Duración - usa estimatedTime o duration como fallback */}
               {(lesson.estimatedTime || lesson.duration) && (
@@ -181,30 +214,17 @@ const LessonItem = ({
               <Box sx={{ mt: 0.5 }}>
                 <LinearProgress
                   variant="determinate"
-                  value={isCompleted ? 100 : lessonProgress || 0}
+                  value={actualIsCompleted ? 100 : lessonProgress || 0}
                   sx={{
                     height: 3,
                     borderRadius: 2,
                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
                     '& .MuiLinearProgress-bar': {
-                      backgroundColor: isCompleted ? '#4CAF50' : '#FF9800',
+                      backgroundColor: actualIsCompleted ? '#4CAF50' : '#FF9800',
                       borderRadius: 2,
                     }
                   }}
                 />
-                {!isCompleted && lessonProgress > 0 && (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontSize: '0.65rem',
-                      color: 'rgba(255, 255, 255, 0.8)',
-                      mt: 0.25,
-                      display: 'block',
-                    }}
-                  >
-                    {lessonProgress.toFixed(0)}%
-                  </Typography>
-                )}
               </Box>
             )}
           </Box>
@@ -406,7 +426,7 @@ const ModuleLessonsList = ({
               <List sx={{ p: 0 }}>
                 <LessonItem
                   lesson={lesson}
-                  lessonProgress={isCompleted ? 100 : 0} // TODO: Calcular progreso real de cada lección
+                  lessonProgress={isCompleted ? 100 : 0} // Fallback si no hay progreso en contexto
                   isCompleted={isCompleted}
                   isLocked={isLocked}
                   isAvailable={isModuleAvailable}

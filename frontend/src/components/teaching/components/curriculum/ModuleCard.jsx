@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTheme, useMediaQuery } from '@mui/material';
 import { useLearningProgress } from '../../../../contexts/LearningProgressContext';
@@ -10,6 +10,8 @@ import ModuleCardBody from './ModuleCardBody';
 import ModuleCardFooter from './ModuleCardFooter';
 import ModuleCardOverlay from './ModuleCardOverlay';
 import styles from '@/styles/curriculum.module.css';
+import CurriculumProgressBar from './CurriculumProgressBar';
+import useCurriculumProgress from '../../../../hooks/useCurriculumProgress';
 
 /**
  * ModuleCard - Card minimalista y optimizada para módulos de aprendizaje
@@ -61,13 +63,23 @@ const ModuleCard = ({
   getButtonText, // Mantenido por compatibilidad, no se usa (manejado internamente)
   getButtonIcon, // Mantenido por compatibilidad, no se usa (manejado internamente)
   levelColor,
-  completedModules = []
+  completedModules = [],
+  precalculatedProgress // Progreso precalculado desde ModuleGrid (opcional)
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   // Obtener lecciones completadas del contexto
   const { completedLessons } = useLearningProgress();
+
+  // Usar progreso precalculado si está disponible, sino calcularlo localmente
+  const moduleDef = useMemo(() => [module], [module]);
+  const localProgressByModule = useCurriculumProgress(moduleDef);
+  const moduleProgressAggregate = precalculatedProgress ?? localProgressByModule[module.id] ?? {
+    percentInt: 0,
+    completedLessons: 0,
+    totalLessons: (module?.lessons || []).length,
+  };
   
   // Estado para tabs internos de la card
   const [activeTab, setActiveTab] = useState(0);
@@ -170,10 +182,7 @@ const ModuleCard = ({
 
         <ModuleCardMeta
           module={module}
-          moduleProgress={moduleProgress}
           isAvailable={finalIsAvailable}
-          status={status}
-          theme={theme}
         />
 
         <ModuleCardBody
@@ -194,6 +203,13 @@ const ModuleCard = ({
           onModuleClick={onModuleClick}
           moduleId={module.id}
         />
+
+        <div style={{ marginTop: 8, opacity: finalIsAvailable ? 1 : 0.6 }}>
+          <CurriculumProgressBar
+            value={moduleProgressAggregate.percentInt}
+            label={`${moduleProgressAggregate.completedLessons}/${moduleProgressAggregate.totalLessons || (module?.lessons || []).length || 0}`}
+          />
+        </div>
       </div>
 
       {/* Overlay para módulos bloqueados */}
@@ -242,7 +258,14 @@ ModuleCard.propTypes = {
   /** Color hex del nivel para personalización visual */
   levelColor: PropTypes.string.isRequired,
   /** Array de IDs de módulos completados por el usuario (opcional) */
-  completedModules: PropTypes.arrayOf(PropTypes.string)
+  completedModules: PropTypes.arrayOf(PropTypes.string),
+  /** Progreso precalculado desde ModuleGrid para optimización (opcional) */
+  precalculatedProgress: PropTypes.shape({
+    percent: PropTypes.number,
+    percentInt: PropTypes.number,
+    completedLessons: PropTypes.number,
+    totalLessons: PropTypes.number
+  })
 };
 
 export default ModuleCard;

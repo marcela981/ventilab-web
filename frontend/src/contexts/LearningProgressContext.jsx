@@ -1,441 +1,859 @@
-"use client";
+'use client';
 
 import React, {
   createContext,
-  useContext,
-  useState,
   useCallback,
+  useContext,
+  useEffect,
   useMemo,
-  useEffect
+  useRef,
+  useState,
 } from 'react';
-import { Snackbar, Alert } from '@mui/material';
+import Chip from '@mui/material/Chip';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CloudOffIcon from '@mui/icons-material/CloudOff';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import SyncIcon from '@mui/icons-material/Sync';
+import {
+  configureProgressService,
+  fetchProgress,
+  upsertProgress,
+  bulkSyncProgress,
+} from '@/services/api/progressService';
+import { getAuthToken, getUserData } from '@/services/authService';
 
-// API Base URL - Adjust according to your environment
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const PROGRESS_MAP_KEY = 'vlab:progress:map';
+const PROGRESS_QUEUE_KEY = 'vlab:progress:queue';
+const AUTOSAVE_INTERVAL_MS = 30_000;
+const MAX_SYNC_BATCH = 100;
 
-/**
- * Helper function to get authentication token
- * Checks both localStorage and sessionStorage
- *
- * @returns {string|null} Authentication token or null
- */
-const getAuthToken = () => {
-  if (typeof window === 'undefined') return null;
-
-  // Try localStorage first, then sessionStorage
-  return localStorage.getItem('token') || sessionStorage.getItem('token') || null;
-};
-
-/**
- * Helper function to make authenticated API calls
- *
- * @param {string} endpoint - API endpoint (relative to API_BASE_URL)
- * @param {Object} options - Fetch options
- * @returns {Promise<any>} Response data
- */
-const apiCall = async (endpoint, options = {}) => {
-  const token = getAuthToken();
-
-  if (!token) {
-    throw new Error('No authentication token found. Please log in.');
+const normalizeRecord = (record, lessonIdFallback, moduleIdFallback) => {
+  if (!record && !lessonIdFallback) {
+    return null;
   }
 
-  const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-    ...options.headers,
+  const lessonId = record?.lessonId ?? lessonIdFallback;
+  if (!lessonId) {
+    return null;
+  }
+
+  const positionSeconds = Number.isFinite(record?.positionSeconds)
+    ? record.positionSeconds
+    : 0;
+  const progress = typeof record?.progress === 'number' ? record.progress : 0;
+  const attempts = Number.isFinite(record?.attempts) ? record.attempts : 0;
+  const score = record?.score === null || record?.score === undefined
+    ? null
+    : Number(record.score);
+
+  return {
+    moduleId: record?.moduleId ?? moduleIdFallback ?? null,
+    lessonId,
+    positionSeconds: positionSeconds >= 0 ? positionSeconds : 0,
+    progress: progress >= 0 ? progress : 0,
+    isCompleted: Boolean(record?.isCompleted),
+    attempts: attempts >= 0 ? attempts : 0,
+    score: Number.isFinite(score) ? score : null,
+    metadata: record?.metadata ?? null,
+    clientUpdatedAt: record?.clientUpdatedAt ?? null,
+    serverUpdatedAt: record?.serverUpdatedAt ?? null,
   };
-
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || data.error || 'API call failed');
-  }
-
-  return data;
 };
 
-// Crear el Context con valores por defecto expandidos
+const createDefaultProgress = (lessonId, moduleId) => normalizeRecord({
+  lessonId,
+  moduleId: moduleId ?? null,
+  positionSeconds: 0,
+  progress: 0,
+  isCompleted: false,
+  attempts: 0,
+  score: null,
+  metadata: null,
+  clientUpdatedAt: null,
+  serverUpdatedAt: null,
+}, lessonId, moduleId ?? null);
+
+const appendUnique = (queue, record) => {
+  const normalized = normalizeRecord(record);
+  if (!normalized) {
+    return queue;
+  }
+  const filtered = queue.filter((item) => item.lessonId !== normalized.lessonId);
+  return [...filtered, normalized];
+};
+
+const mergeUnique = (queue, records) => {
+  if (!records || !records.length) {
+    return queue;
+  }
+  return records.reduce((acc, item) => appendUnique(acc, item), queue);
+};
+
+/**
+ * Resolve last-write-wins conflict using PUT/POST /api/progress contracts.
+ * Expects server responses shaped as:
+ * {
+ *   id,
+ *   userId,
+ *   moduleId,
+ *   lessonId,
+ *   positionSeconds,
+ *   progress,
+ *   isCompleted,
+ *   attempts,
+ *   score,
+ *   metadata,
+ *   clientUpdatedAt: '2025-11-07T13:10:00.000Z',
+ *   serverUpdatedAt: '2025-11-07T13:10:00.532Z',
+ *   createdAt
+ * }
+ */
+const resolveLWWConflict = (localRecord, serverRecord) => {
+  const normalizedLocal = normalizeRecord(localRecord);
+  const normalizedServer = normalizeRecord(
+    serverRecord,
+    normalizedLocal?.lessonId,
+    normalizedLocal?.moduleId,
+  );
+
+  if (!normalizedServer) {
+    return {
+      record: normalizedLocal,
+      shouldRequeue: false,
+    };
+  }
+
+  if (!normalizedLocal) {
+    return {
+      record: {
+        ...normalizedServer,
+        clientUpdatedAt: normalizedServer.clientUpdatedAt
+          ?? normalizedServer.serverUpdatedAt
+          ?? new Date().toISOString(),
+      },
+      shouldRequeue: false,
+    };
+  }
+
+  const localTime = normalizedLocal.clientUpdatedAt
+    ? Date.parse(normalizedLocal.clientUpdatedAt)
+    : 0;
+  const serverTime = normalizedServer.serverUpdatedAt
+    ? Date.parse(normalizedServer.serverUpdatedAt)
+    : Number.POSITIVE_INFINITY;
+
+  if (localTime && localTime > serverTime) {
+    const merged = normalizeRecord({
+      ...normalizedServer,
+      ...normalizedLocal,
+      lessonId: normalizedServer.lessonId ?? normalizedLocal.lessonId,
+      moduleId: normalizedLocal.moduleId ?? normalizedServer.moduleId ?? null,
+      clientUpdatedAt: normalizedLocal.clientUpdatedAt,
+      serverUpdatedAt: normalizedServer.serverUpdatedAt,
+    }, normalizedServer.lessonId ?? normalizedLocal.lessonId, normalizedLocal.moduleId ?? normalizedServer.moduleId ?? null);
+
+    return {
+      record: merged,
+      shouldRequeue: true,
+    };
+  }
+
+  return {
+    record: {
+      ...normalizedServer,
+      clientUpdatedAt: normalizedServer.clientUpdatedAt
+        ?? normalizedServer.serverUpdatedAt
+        ?? normalizedLocal.clientUpdatedAt
+        ?? new Date().toISOString(),
+    },
+    shouldRequeue: false,
+  };
+};
+
+const mapSyncErrorMessage = (code) => {
+  switch (code) {
+    case 'INVALID_ITEM':
+      return 'Entrada de progreso inválida recibida durante la sincronización.';
+    case 'INVALID_IDENTIFIERS':
+      return 'Identificadores de módulo o lección inválidos.';
+    case 'INVALID_TIMESTAMP':
+      return 'Timestamp de cliente inválido para el progreso.';
+    case 'INVALID_POSITION':
+      return 'positionSeconds debe ser un entero no negativo.';
+    case 'INVALID_ATTEMPTS':
+      return 'attempts debe ser un entero no negativo.';
+    case 'INVALID_PROGRESS':
+      return 'progress debe estar entre 0 y 1.';
+    case 'INVALID_SCORE':
+      return 'score debe ser un número válido o null.';
+    case 'INVALID_METADATA':
+      return 'metadata de progreso inválida. Debe ser un JSON válido.';
+    case 'METADATA_TOO_LARGE':
+      return 'metadata supera el tamaño máximo permitido (8KB).';
+    default:
+      return code || 'Error durante la sincronización.';
+  }
+};
+
 const LearningProgressContext = createContext({
-  // Estado existente
+  progressMap: {},
+  currentLessonId: null,
+  syncStatus: 'idle',
+  lastSyncError: null,
+  setCurrentLesson: async () => {},
+  updateProgress: () => {},
+  flushNow: async () => false,
+  getLessonProgress: () => null,
   completedLessons: new Set(),
+  markLessonComplete: async () => {},
   quizScores: {},
-  timeSpent: 0,
-  currentModule: '',
-  flashcards: [],
-  flashcardReviews: {},
-
-  // Nuevos estados de progreso estructurado
-  streak: 0,
-  badges: [],
-  nextRecommendedLesson: null,
-  isLoadingProgress: false,
-  progressError: null,
-
-  // Funciones existentes
-  markLessonComplete: () => {},
   saveQuizScore: () => {},
+  timeSpent: 0,
   updateTimeSpent: () => {},
-  setCurrentModule: () => {},
+  flashcards: [],
   addFlashcard: () => {},
   updateFlashcard: () => {},
+  flashcardReviews: {},
   markFlashcardReviewed: () => {},
   getFlashcardsDue: () => [],
-  getFlashcardStats: {},
-
-  // Nuevas funciones de API
-  fetchProgressFromAPI: async () => {},
-  fetchStreak: async () => {},
-  fetchNextRecommendedLesson: async () => {},
-  startLesson: async () => {},
+  getFlashcardStats: {
+    total: 0,
+    due: 0,
+    new: 0,
+    reviewed: 0,
+    completionRate: 0,
+  },
   dismissError: () => {},
 });
 
-// Hook personalizado para usar el contexto
-export const useLearningProgress = () => {
-  const context = useContext(LearningProgressContext);
-  if (!context) {
-    throw new Error('useLearningProgress debe ser usado dentro de LearningProgressProvider');
-  }
-  return context;
-};
-
-// Provider del contexto
 export const LearningProgressProvider = ({ children }) => {
-  // =========================================================================
-  // ESTADO EXISTENTE (mantenido para compatibilidad)
-  // =========================================================================
-  const [completedLessons, setCompletedLessons] = useState(new Set());
+  const [progressMap, setProgressMap] = useState({});
+  const [progressVersion, setProgressVersion] = useState(0);
+  const [queue, setQueue] = useState([]);
+  const [currentLessonId, setCurrentLessonId] = useState(null);
+  const [syncStatus, setSyncStatus] = useState('idle');
+  const [lastSyncError, setLastSyncError] = useState(null);
+  const [currentModule, setCurrentModuleState] = useState(null);
+
   const [quizScores, setQuizScores] = useState({});
   const [timeSpent, setTimeSpent] = useState(0);
-  const [currentModule, setCurrentModule] = useState('');
   const [flashcards, setFlashcards] = useState([]);
   const [flashcardReviews, setFlashcardReviews] = useState({});
 
-  // =========================================================================
-  // NUEVOS ESTADOS DE PROGRESO ESTRUCTURADO
-  // =========================================================================
-  const [streak, setStreak] = useState(0);
-  const [badges, setBadges] = useState([]);
-  const [nextRecommendedLesson, setNextRecommendedLesson] = useState(null);
-  const [isLoadingProgress, setIsLoadingProgress] = useState(false);
-  const [progressError, setProgressError] = useState(null);
+  const progressMapRef = useRef(progressMap);
+  const queueRef = useRef(queue);
+  const currentLessonIdRef = useRef(currentLessonId);
+  const currentModuleIdRef = useRef(null);
+  const isFlushingRef = useRef(false);
 
-  // Estado para Snackbar de errores
-  const [showErrorSnackbar, setShowErrorSnackbar] = useState(false);
-
-  // =========================================================================
-  // NUEVAS FUNCIONES DE API
-  // =========================================================================
-
-  /**
-   * Fetch overall user progress from backend API
-   * Updates all progress-related states with data from server
-   *
-   * @returns {Promise<void>}
-   */
-  const fetchProgressFromAPI = useCallback(async () => {
-    try {
-      setIsLoadingProgress(true);
-      setProgressError(null);
-
-      console.log('[Progress Context] Fetching progress from API...');
-
-      const response = await apiCall('/progress');
-
-      if (response.success && response.data) {
-        const {
-          completedLessons: completedLessonsCount,
-          totalTimeSpent,
-          streak: currentStreak,
-        } = response.data;
-
-        // Update time spent
-        setTimeSpent(totalTimeSpent || 0);
-
-        // Update streak
-        setStreak(currentStreak || 0);
-
-        console.log('[Progress Context] Progress updated successfully', {
-          completedLessons: completedLessonsCount,
-          timeSpent: totalTimeSpent,
-          streak: currentStreak,
-        });
-      }
-    } catch (error) {
-      console.error('[Progress Context] Error fetching progress:', error);
-      setProgressError(error.message);
-      setShowErrorSnackbar(true);
-    } finally {
-      setIsLoadingProgress(false);
-    }
+  const bumpVersion = useCallback(() => {
+    setProgressVersion((v) => v + 1);
   }, []);
 
-  /**
-   * Fetch user's current streak from backend API
-   *
-   * @returns {Promise<void>}
-   */
-  const fetchStreak = useCallback(async () => {
-    try {
-      console.log('[Progress Context] Fetching streak...');
+  useEffect(() => {
+    progressMapRef.current = progressMap;
+  }, [progressMap]);
 
-      const response = await apiCall('/progress/streak');
+  useEffect(() => {
+    queueRef.current = queue;
+  }, [queue]);
 
-      if (response.success && response.data) {
-        const { streak: currentStreak, isActive } = response.data;
-        setStreak(currentStreak || 0);
+  useEffect(() => {
+    currentLessonIdRef.current = currentLessonId;
+  }, [currentLessonId]);
 
-        console.log('[Progress Context] Streak updated:', {
-          streak: currentStreak,
-          isActive,
-        });
-      }
-    } catch (error) {
-      console.error('[Progress Context] Error fetching streak:', error);
-      // Silently fail for streak - not critical
-    }
-  }, []);
-
-  /**
-   * Fetch next recommended lesson from backend API
-   *
-   * @returns {Promise<void>}
-   */
-  const fetchNextRecommendedLesson = useCallback(async () => {
-    try {
-      console.log('[Progress Context] Fetching next recommended lesson...');
-
-      const response = await apiCall('/progress/next-lesson');
-
-      if (response.success) {
-        setNextRecommendedLesson(response.data || null);
-
-        console.log('[Progress Context] Next lesson updated:', response.data);
-      }
-    } catch (error) {
-      console.error('[Progress Context] Error fetching next lesson:', error);
-      // Silently fail - not critical
-      setNextRecommendedLesson(null);
-    }
-  }, []);
-
-  /**
-   * Start a lesson - marks it as started in the backend
-   * Creates or updates lesson progress with lastAccessed timestamp
-   *
-   * @param {string} moduleId - ID of the module
-   * @param {string} lessonId - ID of the lesson to start
-   * @returns {Promise<boolean>} Success status
-   */
-  const startLesson = useCallback(async (moduleId, lessonId) => {
-    try {
-      console.log('[Progress Context] Starting lesson:', { moduleId, lessonId });
-
-      const response = await apiCall(`/progress/lessons/${lessonId}/start`, {
-        method: 'POST',
-      });
-
-      if (response.success) {
-        console.log('[Progress Context] Lesson started successfully');
-
-        // Update current module
-        setCurrentModule(moduleId);
-
-        return true;
-      }
-
-      return false;
-    } catch (error) {
-      console.error('[Progress Context] Error starting lesson:', error);
-      setProgressError(error.message);
-      setShowErrorSnackbar(true);
-      return false;
-    }
-  }, []);
-
-  /**
-   * Mark a lesson as completed
-   * UPDATED: Now calls backend API in addition to local state update
-   *
-   * @param {string} lessonId - ID of the lesson to complete
-   * @param {string} moduleId - ID of the module (optional, for better tracking)
-   * @param {number} lessonTimeSpent - Time spent on this specific lesson in minutes
-   * @returns {Promise<Object|null>} Response data with achievements or null on error
-   */
-  const markLessonComplete = useCallback(async (lessonId, moduleId = null, lessonTimeSpent = 0) => {
-    try {
-      console.log('[Progress Context] Completing lesson:', {
-        lessonId,
-        moduleId,
-        lessonTimeSpent
-      });
-
-      // Update local state immediately for optimistic UI
-      setCompletedLessons(prev => new Set([...prev, lessonId]));
-
-      // Call backend API
-      const response = await apiCall(`/progress/lessons/${lessonId}/complete`, {
-        method: 'POST',
-        body: JSON.stringify({
-          timeSpent: lessonTimeSpent
-        }),
-      });
-
-      if (response.success && response.data) {
-        const {
-          moduleCompleted,
-          achievements = [],
-          timeSpent: totalTimeSpent
-        } = response.data;
-
-        console.log('[Progress Context] Lesson completed successfully', {
-          moduleCompleted,
-          achievements,
-        });
-
-        // Update time spent if returned from backend
-        if (totalTimeSpent) {
-          setTimeSpent(totalTimeSpent);
-        }
-
-        // If achievements were unlocked, update badges
-        if (achievements.length > 0) {
-          // Fetch updated progress to get latest badges
-          await fetchProgressFromAPI();
-        }
-
-        // Fetch next recommended lesson after completion
-        await fetchNextRecommendedLesson();
-
-        // Return response for UI to show achievements
-        return response.data;
-      }
-
-      return null;
-    } catch (error) {
-      console.error('[Progress Context] Error completing lesson:', error);
-      setProgressError(error.message);
-      setShowErrorSnackbar(true);
-
-      // Don't revert local state - degrade gracefully
-      // The lesson will appear completed in UI even if API fails
-      return null;
-    }
-  }, [fetchProgressFromAPI, fetchNextRecommendedLesson]);
-
-  // =========================================================================
-  // FUNCIONES EXISTENTES (mantenidas para compatibilidad)
-  // =========================================================================
-
-  /**
-   * Save quiz score for a lesson
-   *
-   * @param {string} lessonId - ID of the lesson
-   * @param {number} score - Quiz score
-   */
-  const saveQuizScore = useCallback((lessonId, score) => {
-    setQuizScores(prev => ({
-      ...prev,
-      [lessonId]: score
-    }));
-  }, []);
-
-  /**
-   * Update total time spent learning
-   *
-   * @param {number} increment - Time increment in minutes
-   */
-  const updateTimeSpent = useCallback((increment = 1) => {
-    setTimeSpent(prev => prev + increment);
-  }, []);
-
-  /**
-   * Set the current module being studied
-   *
-   * @param {string} moduleId - ID of the module
-   */
-  const setCurrentModuleHandler = useCallback((moduleId) => {
-    setCurrentModule(moduleId);
-  }, []);
-
-  /**
-   * Add a flashcard to the user's collection
-   *
-   * @param {Object} flashcard - Flashcard object
-   */
-  const addFlashcard = useCallback((flashcard) => {
-    setFlashcards(prev => {
-      const exists = prev.some(f => f.id === flashcard.id);
-      if (exists) return prev;
-
-      return [...prev, {
-        ...flashcard,
-        createdAt: new Date().toISOString()
-      }];
+  useEffect(() => {
+    configureProgressService({
+      getAuth: () => {
+        const token = getAuthToken();
+        const user = getUserData?.();
+        return {
+          token,
+          userId: user?.id ?? user?._id ?? null,
+        };
+      },
     });
   }, []);
 
-  /**
-   * Update an existing flashcard
-   *
-   * @param {Object} updatedFlashcard - Updated flashcard object
-   */
-  const updateFlashcard = useCallback((updatedFlashcard) => {
-    setFlashcards(prev =>
-      prev.map(f =>
-        f.id === updatedFlashcard.id ? updatedFlashcard : f
-      )
-    );
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    try {
+      const storedMapRaw = localStorage.getItem(PROGRESS_MAP_KEY);
+      if (storedMapRaw) {
+        const storedMap = JSON.parse(storedMapRaw);
+        const restored = Object.entries(storedMap).reduce((acc, [lessonId, value]) => {
+          const normalized = normalizeRecord({
+            ...value,
+            lessonId,
+          }, lessonId, value?.moduleId ?? null);
+          if (normalized) {
+            acc[lessonId] = normalized;
+          }
+          return acc;
+        }, {});
+        setProgressMap(restored);
+      }
+    } catch (error) {
+      console.warn('[LearningProgressContext] Falló la restauración de progressMap', error);
+    }
+
+    try {
+      const storedQueueRaw = localStorage.getItem(PROGRESS_QUEUE_KEY);
+      if (storedQueueRaw) {
+        const storedQueue = JSON.parse(storedQueueRaw);
+        const restoredQueue = Array.isArray(storedQueue)
+          ? storedQueue.reduce((acc, item) => {
+            const normalized = normalizeRecord(item);
+            return normalized ? [...acc, normalized] : acc;
+          }, [])
+          : [];
+        setQueue(restoredQueue);
+        if (restoredQueue.length > 0) {
+          setSyncStatus('offline-queued');
+        }
+      }
+    } catch (error) {
+      console.warn('[LearningProgressContext] Falló la restauración de la cola de progreso', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    try {
+      localStorage.setItem(PROGRESS_MAP_KEY, JSON.stringify(progressMap));
+    } catch (error) {
+      console.warn('[LearningProgressContext] No se pudo persistir progressMap', error);
+    }
+  }, [progressMap]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    try {
+      localStorage.setItem(PROGRESS_QUEUE_KEY, JSON.stringify(queue));
+    } catch (error) {
+      console.warn('[LearningProgressContext] No se pudo persistir la cola de progreso', error);
+    }
+  }, [queue]);
+
+  const applyServerMerge = useCallback((updatesArray = []) => {
+    if (!Array.isArray(updatesArray) || updatesArray.length === 0) {
+      return;
+    }
+
+    setProgressMap((prev) => {
+      const next = { ...prev };
+      updatesArray.forEach((updRaw) => {
+        const normalized = normalizeRecord(updRaw);
+        if (!normalized?.lessonId) {
+          return;
+        }
+        const previous = next[normalized.lessonId] || createDefaultProgress(normalized.lessonId, normalized.moduleId ?? null);
+        next[normalized.lessonId] = {
+          ...previous,
+          ...normalized,
+          moduleId: normalized.moduleId ?? previous.moduleId ?? null,
+        };
+      });
+      return next;
+    });
+    bumpVersion();
+  }, [bumpVersion]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const token = getAuthToken();
+    if (!token || !navigator.onLine) {
+      return;
+    }
+
+    let isMounted = true;
+
+    (async () => {
+      try {
+        const remoteRecords = await fetchProgress();
+        if (!isMounted || !Array.isArray(remoteRecords) || remoteRecords.length === 0) {
+          return;
+        }
+
+        const normalizedRecords = remoteRecords
+          .map((record) => normalizeRecord(record))
+          .filter(Boolean);
+
+        if (normalizedRecords.length === 0) {
+          return;
+        }
+
+        const toRequeue = [];
+
+        const nextToApply = [];
+        normalizedRecords.forEach((serverRecord) => {
+          const lessonId = serverRecord.lessonId;
+          if (!lessonId) {
+            return;
+          }
+          const localRecord = progressMapRef.current[lessonId];
+          if (!localRecord) {
+            nextToApply.push(serverRecord);
+            return;
+          }
+          const { record: mergedRecord, shouldRequeue } = resolveLWWConflict(localRecord, serverRecord);
+          nextToApply.push(mergedRecord);
+          if (shouldRequeue) {
+            toRequeue.push(mergedRecord);
+          }
+        });
+        applyServerMerge(nextToApply);
+
+        if (toRequeue.length > 0) {
+          setQueue((prev) => mergeUnique(prev, toRequeue));
+          setSyncStatus('offline-queued');
+        }
+      } catch (error) {
+        console.debug('[LearningProgressContext] No se pudo cargar progreso remoto', error);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const enqueueForLater = useCallback((record) => {
+    if (!record) {
+      return;
+    }
+    setQueue((prev) => appendUnique(prev, record));
   }, []);
 
   /**
-   * Mark a flashcard as reviewed
+   * Flush local progress state to API.
    *
-   * @param {string} flashcardId - ID of the flashcard
-   * @param {number} rating - Review rating
+   * PUT /api/progress body (single lesson example):
+   * {
+   *   "moduleId": "module-ventilation-basics",
+   *   "lessonId": "lesson-ventilator-modes",
+   *   "positionSeconds": 185,
+   *   "progress": 0.42,
+   *   "isCompleted": false,
+   *   "clientUpdatedAt": "2025-11-07T13:10:00.000Z"
+   * }
+   *
+   * POST /api/progress/sync body:
+   * { "items": [ { ...UserProgressLike, "clientUpdatedAt": "2025-11-07T13:12:00.000Z" } ] }
+   *
+   * Response shape from sync:
+   * {
+   *   "data": {
+   *     "merged": [ { "lessonId": "lesson-ventilator-modes", "merged": true } ],
+   *     "records": [ { "lessonId": "lesson-ventilator-modes", "serverUpdatedAt": "2025-11-07T13:12:00.447Z", ... } ]
+   *   }
+   * }
    */
+  const flushNow = useCallback(async () => {
+    if (isFlushingRef.current || typeof window === 'undefined') {
+      return false;
+    }
+
+    const activeLessonId = currentLessonIdRef.current;
+    const activeRecord = activeLessonId
+      ? progressMapRef.current[activeLessonId]
+      : null;
+
+    if (!navigator.onLine) {
+      if (activeRecord) {
+        enqueueForLater(activeRecord);
+      }
+      setSyncStatus('offline-queued');
+      return false;
+    }
+
+    isFlushingRef.current = true;
+
+    setSyncStatus('saving');
+    setLastSyncError(null);
+
+    const queueSnapshot = queueRef.current;
+    const totalQueueLength = queueSnapshot.length;
+    const pendingRequeue = [];
+    let queueForLater = [];
+    const recordsToApply = [];
+    let encounteredError = null;
+    const debugMergeSummary = [];
+
+    if (activeRecord) {
+      try {
+        const serverRecord = await upsertProgress(activeRecord);
+        const normalizedServer = normalizeRecord(serverRecord, activeRecord.lessonId, activeRecord.moduleId);
+
+        if (!normalizedServer) {
+          encounteredError = new Error('Invalid server response for active lesson');
+          pendingRequeue.push(activeRecord);
+        } else {
+          const { record: mergedRecord, shouldRequeue } = resolveLWWConflict(activeRecord, normalizedServer);
+          recordsToApply.push(mergedRecord);
+          if (shouldRequeue) {
+            pendingRequeue.push(mergedRecord);
+          }
+          debugMergeSummary.push({
+            lessonId: mergedRecord.lessonId,
+            merged: !shouldRequeue,
+            source: 'active',
+          });
+        }
+      } catch (error) {
+        encounteredError = error;
+        pendingRequeue.push(activeRecord);
+      }
+    }
+
+    if (!encounteredError && totalQueueLength > 0) {
+      let cursor = 0;
+
+      while (!encounteredError && cursor < totalQueueLength) {
+        const batch = queueSnapshot.slice(cursor, cursor + MAX_SYNC_BATCH);
+        cursor += MAX_SYNC_BATCH;
+
+        try {
+          const syncResponse = await bulkSyncProgress(batch);
+          const mergedEntries = Array.isArray(syncResponse?.merged) ? syncResponse.merged : [];
+          const serverRecords = Array.isArray(syncResponse?.records) ? syncResponse.records : [];
+
+          batch.forEach((item, index) => {
+            const mergedEntry = mergedEntries[index];
+            const serverRecordRaw = serverRecords[index];
+
+            if (mergedEntry?.error) {
+              const message = mapSyncErrorMessage(mergedEntry.error);
+              encounteredError = encounteredError || new Error(message);
+              queueForLater = appendUnique(queueForLater, item);
+              debugMergeSummary.push({
+                lessonId: item.lessonId,
+                merged: false,
+                error: mergedEntry.error,
+              });
+              return;
+            }
+
+            if (!serverRecordRaw) {
+              encounteredError = encounteredError || new Error('Sync response missing record data');
+              queueForLater = appendUnique(queueForLater, item);
+              return;
+            }
+
+            const normalizedServer = normalizeRecord(serverRecordRaw, item.lessonId, item.moduleId);
+            if (!normalizedServer) {
+              encounteredError = encounteredError || new Error('Sync response invalid format');
+              queueForLater = appendUnique(queueForLater, item);
+              return;
+            }
+
+            const { record: mergedRecord, shouldRequeue } = resolveLWWConflict(item, normalizedServer);
+            recordsToApply.push(mergedRecord);
+
+            const mergedFlag = mergedEntry?.merged ?? !shouldRequeue;
+            if (shouldRequeue || mergedFlag === false) {
+              pendingRequeue.push(mergedRecord);
+            }
+
+            debugMergeSummary.push({
+              lessonId: mergedRecord.lessonId,
+              merged: mergedFlag,
+              conflict: shouldRequeue,
+            });
+          });
+        } catch (error) {
+          // Si es un error de conexión, no lo tratamos como error crítico
+          // El progreso se mantendrá en la cola para sincronizar más tarde
+          const isNetworkError = error.message?.includes('conectar') || 
+                                 error.message?.includes('fetch') ||
+                                 error.name === 'TypeError';
+          
+          if (isNetworkError) {
+            console.warn('[LearningProgress] Network error during bulk sync, will retry later:', error.message);
+            queueForLater = mergeUnique(queueForLater, batch);
+          } else {
+            encounteredError = error;
+            queueForLater = mergeUnique(queueForLater, batch);
+          }
+        }
+      }
+
+      if (encounteredError && cursor < totalQueueLength) {
+        queueForLater = mergeUnique(queueForLater, queueSnapshot.slice(cursor));
+      }
+    }
+
+    if (totalQueueLength > MAX_SYNC_BATCH) {
+      console.debug('[LearningProgress] Queue processed in %d batches', Math.ceil(totalQueueLength / MAX_SYNC_BATCH));
+    }
+
+    const finalQueue = mergeUnique(queueForLater, pendingRequeue);
+
+    if (recordsToApply.length > 0) {
+      applyServerMerge(recordsToApply);
+    }
+
+    setQueue(finalQueue);
+
+    if (debugMergeSummary.length > 0) {
+      console.debug('[LearningProgress] Sync summary', debugMergeSummary);
+    }
+
+    if (encounteredError) {
+      // Solo mostrar como error si no es un error de red
+      const isNetworkError = encounteredError.message?.includes('conectar') || 
+                            encounteredError.message?.includes('fetch') ||
+                            encounteredError.name === 'TypeError';
+      
+      if (isNetworkError) {
+        // Errores de red se tratan como offline
+        setSyncStatus('offline-queued');
+        setLastSyncError(null);
+      } else {
+        setSyncStatus('error');
+        setLastSyncError(encounteredError.message || 'Error al sincronizar progreso.');
+      }
+      isFlushingRef.current = false;
+      return false;
+    }
+
+    setLastSyncError(null);
+    setSyncStatus(finalQueue.length === 0 ? 'saved' : 'offline-queued');
+    isFlushingRef.current = false;
+    return true;
+  }, [applyServerMerge, enqueueForLater]);
+
+  useEffect(() => {
+    if (!currentLessonId) {
+      return undefined;
+    }
+
+    const interval = setInterval(() => {
+      flushNow().catch(() => {});
+    }, AUTOSAVE_INTERVAL_MS);
+
+    return () => clearInterval(interval);
+  }, [currentLessonId, flushNow]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const handleOnline = () => {
+      flushNow().catch(() => {});
+    };
+
+    const handleOffline = () => {
+      setSyncStatus('offline-queued');
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        flushNow().catch(() => {});
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      flushNow().catch(() => {});
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [flushNow]);
+
+  const setCurrentModuleCompat = useCallback((value) => {
+    const normalized = typeof value === 'string' ? value : null;
+    currentModuleIdRef.current = normalized;
+    setCurrentModuleState(normalized);
+  }, []);
+
+  const setCurrentLesson = useCallback(async (lessonId, moduleId) => {
+    if (!lessonId) {
+      setCurrentLessonId(null);
+      setCurrentModuleCompat(null);
+      return null;
+    }
+
+    setCurrentLessonId(lessonId);
+    const resolvedModuleId = moduleId ?? currentModuleIdRef.current ?? null;
+    setCurrentModuleCompat(resolvedModuleId);
+
+    const localRecord = progressMapRef.current[lessonId]
+      || createDefaultProgress(lessonId, resolvedModuleId ?? null);
+
+    let recordToApply = {
+      ...localRecord,
+      moduleId: resolvedModuleId ?? localRecord?.moduleId ?? null,
+    };
+    let shouldRequeue = false;
+
+    if (typeof window !== 'undefined' && navigator.onLine) {
+      try {
+        const remote = await fetchProgress({ lessonId });
+        if (Array.isArray(remote) && remote.length > 0) {
+          const serverRecord = normalizeRecord(remote[0], lessonId, resolvedModuleId ?? localRecord.moduleId);
+          const result = resolveLWWConflict(localRecord, serverRecord);
+          recordToApply = result.record;
+          shouldRequeue = result.shouldRequeue;
+        }
+      } catch (error) {
+        console.debug('[LearningProgressContext] No se pudo precargar progreso remoto', error);
+      }
+    }
+
+    applyServerMerge([recordToApply]);
+
+    if (shouldRequeue) {
+      setQueue((prev) => appendUnique(prev, recordToApply));
+      setSyncStatus('offline-queued');
+    }
+
+    return recordToApply;
+  }, [applyServerMerge]);
+
+  const updateProgress = useCallback((partial = {}) => {
+    const lessonId = currentLessonIdRef.current;
+    const moduleId = partial.moduleId ?? currentModuleIdRef.current ?? null;
+
+    if (!lessonId) {
+      return;
+    }
+
+    setProgressMap((prev) => {
+      const existing = prev[lessonId] || createDefaultProgress(lessonId, moduleId);
+      const updated = normalizeRecord({
+        ...existing,
+        ...partial,
+        lessonId,
+        moduleId: moduleId ?? existing.moduleId,
+        clientUpdatedAt: new Date().toISOString(),
+      }, lessonId, moduleId ?? existing.moduleId);
+
+      return {
+        ...prev,
+        [lessonId]: updated,
+      };
+    });
+
+    setSyncStatus((prev) => (prev === 'offline-queued' ? prev : 'idle'));
+    setLastSyncError(null);
+  }, []);
+
+  const getLessonProgress = useCallback((lessonId) => {
+    if (!lessonId) {
+      return null;
+    }
+    return progressMapRef.current[lessonId]
+      || createDefaultProgress(lessonId, progressMapRef.current[lessonId]?.moduleId ?? null);
+  }, []);
+
+  const markLessonComplete = useCallback(async (lessonId, moduleId = currentModuleIdRef.current) => {
+    if (!lessonId) {
+      return;
+    }
+    if (lessonId !== currentLessonIdRef.current) {
+      await setCurrentLesson(lessonId, moduleId);
+    }
+    updateProgress({
+      isCompleted: true,
+      progress: 1,
+      moduleId,
+    });
+  }, [setCurrentLesson, updateProgress]);
+
+  const saveQuizScore = useCallback((lessonId, score) => {
+    if (!lessonId) {
+      return;
+    }
+    setQuizScores((prev) => ({
+      ...prev,
+      [lessonId]: score,
+    }));
+  }, []);
+
+  const updateTimeSpent = useCallback((increment = 1) => {
+    setTimeSpent((prev) => prev + (Number.isFinite(increment) ? increment : 0));
+  }, []);
+
+  const addFlashcard = useCallback((flashcard) => {
+    if (!flashcard || !flashcard.id) {
+      return;
+    }
+    setFlashcards((prev) => {
+      const exists = prev.some((item) => item.id === flashcard.id);
+      if (exists) {
+        return prev;
+      }
+      return [
+        ...prev,
+        {
+          ...flashcard,
+          createdAt: new Date().toISOString(),
+        },
+      ];
+    });
+  }, []);
+
+  const updateFlashcard = useCallback((updatedFlashcard) => {
+    if (!updatedFlashcard || !updatedFlashcard.id) {
+      return;
+    }
+    setFlashcards((prev) => prev.map((flashcard) => (
+      flashcard.id === updatedFlashcard.id
+        ? { ...flashcard, ...updatedFlashcard }
+        : flashcard
+    )));
+  }, []);
+
   const markFlashcardReviewed = useCallback((flashcardId, rating) => {
-    setFlashcardReviews(prev => ({
+    if (!flashcardId) {
+      return;
+    }
+    setFlashcardReviews((prev) => ({
       ...prev,
       [flashcardId]: {
         ...prev[flashcardId],
         lastReview: new Date().toISOString(),
         rating,
-        totalReviews: (prev[flashcardId]?.totalReviews || 0) + 1
-      }
+        totalReviews: (prev[flashcardId]?.totalReviews || 0) + 1,
+      },
     }));
   }, []);
 
-  /**
-   * Get flashcards that are due for review
-   *
-   * @returns {Array} Array of due flashcards
-   */
   const getFlashcardsDue = useCallback(() => {
-    if (!Array.isArray(flashcards)) return [];
+    if (!Array.isArray(flashcards)) {
+      return [];
+    }
 
     const now = new Date();
-    return flashcards.filter(flashcard => {
+    return flashcards.filter((flashcard) => {
       if (!flashcard || !flashcard.sm2Data || !flashcard.sm2Data.nextReviewDate) {
-        return true; // New cards are always due
+        return true;
       }
-
       const nextReview = new Date(flashcard.sm2Data.nextReviewDate);
       return now >= nextReview;
     });
   }, [flashcards]);
 
-  /**
-   * Get flashcard statistics
-   *
-   * @returns {Object} Flashcard stats
-   */
   const getFlashcardStats = useMemo(() => {
     if (!Array.isArray(flashcards)) {
       return {
@@ -443,166 +861,242 @@ export const LearningProgressProvider = ({ children }) => {
         due: 0,
         new: 0,
         reviewed: 0,
-        completionRate: 0
+        completionRate: 0,
       };
     }
 
-    const due = flashcards.filter(flashcard => {
-      if (!flashcard || !flashcard.sm2Data || !flashcard.sm2Data.nextReviewDate) {
-        return true;
-      }
-
-      const nextReview = new Date(flashcard.sm2Data.nextReviewDate);
-      const now = new Date();
-      return now >= nextReview;
-    }).length;
-
     const total = flashcards.length;
-    const newCards = flashcards.filter(f => f && (!f.sm2Data || f.sm2Data.repetitions === 0)).length;
-    const reviewed = flashcards.filter(f => f && f.sm2Data && f.sm2Data.repetitions > 0).length;
+    const due = getFlashcardsDue().length;
+    const newCards = flashcards.filter((card) => !card?.sm2Data || card.sm2Data.repetitions === 0).length;
+    const reviewed = flashcards.filter((card) => card?.sm2Data && card.sm2Data.repetitions > 0).length;
 
     return {
       total,
       due,
       new: newCards,
       reviewed,
-      completionRate: total > 0 ? (reviewed / total) * 100 : 0
+      completionRate: total > 0 ? (reviewed / total) * 100 : 0,
     };
-  }, [flashcards]);
+  }, [flashcards, getFlashcardsDue]);
 
-  /**
-   * Dismiss error message
-   */
   const dismissError = useCallback(() => {
-    setProgressError(null);
-    setShowErrorSnackbar(false);
+    setLastSyncError(null);
   }, []);
 
-  // =========================================================================
-  // EFFECTS - Initial data loading
-  // =========================================================================
-
-  /**
-   * Load initial progress data from backend on mount
-   * Only runs if user is authenticated (has token)
-   */
-  useEffect(() => {
-    const token = getAuthToken();
-
-    if (token) {
-      console.log('[Progress Context] Initializing progress data...');
-
-      // Load all initial data in parallel
-      Promise.all([
-        fetchProgressFromAPI(),
-        fetchStreak(),
-        fetchNextRecommendedLesson(),
-      ]).catch(error => {
-        console.error('[Progress Context] Error loading initial data:', error);
-      });
-    } else {
-      console.log('[Progress Context] No auth token found, skipping progress fetch');
+  const getModuleProgress = useCallback((moduleId, lessonIds = []) => {
+    if (!moduleId) {
+      return {
+        percent: 0,
+        percentInt: 0,
+        completedLessons: 0,
+        totalLessons: 0,
+      };
     }
-  }, []); // Empty dependency array - only run on mount
 
-  // =========================================================================
-  // CONTEXT VALUE
-  // =========================================================================
+    const normalizedLessons = Array.isArray(lessonIds) ? lessonIds.filter(Boolean) : [];
+
+    const entries = Object.values(progressMap).filter(
+      (entry) => entry?.moduleId === moduleId && entry?.lessonId,
+    );
+
+    const lessonSet = normalizedLessons.length > 0
+      ? new Set(normalizedLessons)
+      : new Set(entries.map((entry) => entry.lessonId));
+
+    if (lessonSet.size === 0) {
+      return {
+        percent: 0,
+        percentInt: 0,
+        completedLessons: 0,
+        totalLessons: 0,
+      };
+    }
+
+    const entryMap = entries.reduce((acc, entry) => {
+      if (entry.lessonId) {
+        acc[entry.lessonId] = entry;
+      }
+      return acc;
+    }, {});
+
+    let completed = 0;
+    let percentSum = 0;
+
+    lessonSet.forEach((lessonId) => {
+      const record = entryMap[lessonId];
+      const progressValue = record
+        ? (record.isCompleted ? 1 : Math.max(0, Math.min(1, record.progress ?? 0)))
+        : 0;
+
+      percentSum += progressValue;
+      if (progressValue >= 1) {
+        completed += 1;
+      }
+    });
+
+    const totalLessons = lessonSet.size;
+    const percent = totalLessons ? percentSum / totalLessons : 0;
+
+    return {
+      percent,
+      percentInt: Math.round(percent * 100),
+      completedLessons: completed,
+      totalLessons,
+    };
+  }, [progressMap, progressVersion]);
+
+  const getCurriculumProgress = useCallback((modules) => {
+    if (!Array.isArray(modules) || modules.length === 0) {
+      return {};
+    }
+
+    return modules.reduce((acc, module) => {
+      if (!module || !module.id) {
+        return acc;
+      }
+
+      const lessonIds = Array.isArray(module.lessons)
+        ? module.lessons.map((lesson) => lesson?.id).filter(Boolean)
+        : [];
+
+      acc[module.id] = getModuleProgress(module.id, lessonIds);
+      return acc;
+    }, {});
+  }, [getModuleProgress]);
+
+  const completedLessons = useMemo(() => new Set(
+    Object.values(progressMap)
+      .filter((record) => record?.isCompleted)
+      .map((record) => record.lessonId),
+  ), [progressMap]);
 
   const contextValue = useMemo(() => ({
-    // Estado existente
-    completedLessons,
-    quizScores,
-    timeSpent,
+    progressMap,
+    currentLessonId,
     currentModule,
-    flashcards,
-    flashcardReviews,
-
-    // Nuevos estados
-    streak,
-    badges,
-    nextRecommendedLesson,
-    isLoadingProgress,
-    progressError,
-
-    // Funciones existentes (markLessonComplete ahora actualizada)
+    syncStatus,
+    lastSyncError,
+    setCurrentLesson,
+    setCurrentModule: setCurrentModuleCompat,
+    updateProgress,
+    flushNow,
+    getLessonProgress,
+    getModuleProgress,
+    getCurriculumProgress,
+    completedLessons,
     markLessonComplete,
+    quizScores,
     saveQuizScore,
+    timeSpent,
     updateTimeSpent,
-    setCurrentModule: setCurrentModuleHandler,
+    flashcards,
     addFlashcard,
     updateFlashcard,
+    flashcardReviews,
     markFlashcardReviewed,
     getFlashcardsDue,
     getFlashcardStats,
-
-    // Nuevas funciones
-    fetchProgressFromAPI,
-    fetchStreak,
-    fetchNextRecommendedLesson,
-    startLesson,
     dismissError,
   }), [
-    // Estado existente
-    completedLessons,
-    quizScores,
-    timeSpent,
+    progressMap,
+    currentLessonId,
     currentModule,
-    flashcards,
-    flashcardReviews,
-
-    // Nuevos estados
-    streak,
-    badges,
-    nextRecommendedLesson,
-    isLoadingProgress,
-    progressError,
-
-    // Funciones existentes
+    syncStatus,
+    lastSyncError,
+    setCurrentLesson,
+    setCurrentModuleCompat,
+    updateProgress,
+    flushNow,
+    getLessonProgress,
+    getModuleProgress,
+    getCurriculumProgress,
+    completedLessons,
     markLessonComplete,
+    quizScores,
     saveQuizScore,
+    timeSpent,
     updateTimeSpent,
-    setCurrentModuleHandler,
+    flashcards,
     addFlashcard,
     updateFlashcard,
+    flashcardReviews,
     markFlashcardReviewed,
     getFlashcardsDue,
     getFlashcardStats,
-
-    // Nuevas funciones
-    fetchProgressFromAPI,
-    fetchStreak,
-    fetchNextRecommendedLesson,
-    startLesson,
     dismissError,
   ]);
-
-  // =========================================================================
-  // RENDER
-  // =========================================================================
 
   return (
     <LearningProgressContext.Provider value={contextValue}>
       {children}
-
-      {/* Error Snackbar */}
-      <Snackbar
-        open={showErrorSnackbar}
-        autoHideDuration={6000}
-        onClose={dismissError}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      >
-        <Alert
-          onClose={dismissError}
-          severity="error"
-          sx={{ width: '100%' }}
-          variant="filled"
-        >
-          {progressError || 'Error al actualizar el progreso'}
-        </Alert>
-      </Snackbar>
     </LearningProgressContext.Provider>
   );
 };
 
+export const useLearningProgress = () => {
+  const context = useContext(LearningProgressContext);
+  if (context === undefined) {
+    throw new Error('useLearningProgress debe utilizarse dentro de un LearningProgressProvider');
+  }
+  return context;
+};
+
+const getChipProps = (status, errorMessage) => {
+  switch (status) {
+    case 'saving':
+      return {
+        icon: <SyncIcon fontSize="small" className="progress-sync-badge__spin" />,
+        color: 'info',
+        label: 'Guardando…',
+      };
+    case 'saved':
+      return {
+        icon: <CheckCircleIcon fontSize="small" />,
+        color: 'success',
+        label: 'Guardado',
+      };
+    case 'offline-queued':
+      return {
+        icon: <CloudOffIcon fontSize="small" />,
+        color: 'warning',
+        label: 'Offline: en cola',
+      };
+    case 'error':
+      return {
+        icon: <ErrorOutlineIcon fontSize="small" />,
+        color: 'error',
+        label: errorMessage ? `Error: ${errorMessage}` : 'Error al sincronizar',
+      };
+    default:
+      return null;
+  }
+};
+
+export const ProgressSyncBadge = () => {
+  const { syncStatus, lastSyncError } = useLearningProgress();
+  const chipProps = getChipProps(syncStatus, lastSyncError);
+
+  if (!chipProps) {
+    return null;
+  }
+
+  return (
+    <Chip
+      size="small"
+      variant="filled"
+      {...chipProps}
+      sx={{
+        '& .progress-sync-badge__spin': {
+          animation: 'progress-sync-spin 1s linear infinite',
+        },
+        '@keyframes progress-sync-spin': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
+      }}
+    />
+  );
+};
+
 export default LearningProgressContext;
+

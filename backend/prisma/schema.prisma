@@ -341,6 +341,30 @@ model LessonProgress {
   @@map("lesson_progress")
 }
 
+/// UserProgress - Detailed tracking of user interaction with lessons
+/// Stores granular playback and completion metadata per user, module, and lesson
+model UserProgress {
+  id              String   @id @default(cuid())
+  userId          String
+  moduleId        String
+  lessonId        String
+  positionSeconds Int      @default(0)
+  progress        Float    @default(0.0)
+  isCompleted     Boolean  @default(false)
+  attempts        Int      @default(0)
+  score           Float?
+  metadata        Json?
+  clientUpdatedAt DateTime @default(now())
+  serverUpdatedAt DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@unique([userId, moduleId, lessonId])
+  @@index([userId])
+  @@index([moduleId])
+  @@index([lessonId])
+  @@map("user_progress")
+}
+
 // =============================================================================
 // QUIZ AND ASSESSMENT MODELS
 // =============================================================================

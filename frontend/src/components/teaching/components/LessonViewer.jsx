@@ -35,7 +35,7 @@
  * @param {Function} [props.onNavigate] - Callback when navigating to different lesson
  */
 
-import React, { useState, useEffect, useCallback, useRef, memo, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useCallback, useRef, memo, Suspense, lazy, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import {
   Container,
@@ -53,9 +53,11 @@ import {
   CssBaseline,
   Portal,
   Stack,
+  Paper,
 } from '@mui/material';
 import {
   OpenInNew as OpenInNewIcon,
+  Lock as LockIcon,
 } from '@mui/icons-material';
 import { ThemeProvider } from '@mui/material/styles';
 import { teachingModuleTheme } from '../../../theme/teachingModuleTheme';
@@ -63,8 +65,13 @@ import { teachingModuleTheme } from '../../../theme/teachingModuleTheme';
 import useLesson from '../hooks/useLesson';
 import { useLearningProgress } from '../../../contexts/LearningProgressContext';
 import useLessonPages from '../hooks/useLessonPages';
+import useLessonProgress from '../hooks/useLessonProgress';
 import LessonNavigation from './LessonNavigation';
 import { AITutorChat } from './ai';
+// Lazy load clinical case components for code splitting
+const ClinicalCaseViewer = lazy(() => import('./clinical/ClinicalCaseViewer'));
+import PrerequisiteTooltip from './curriculum/PrerequisiteTooltip';
+import { getModuleById } from '../../../data/curriculumData';
 import {
   LessonHeader,
   IntroductionSection,
@@ -197,7 +204,30 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   }, [error, onNavigate]);
   
   // Get progress context for marking lessons as complete
-  const { markLessonComplete } = useLearningProgress();
+  const { markLessonComplete, completedLessons } = useLearningProgress();
+  
+  // Calculate module completion percentage
+  const { calculateModuleProgress } = useLessonProgress(completedLessons);
+  const moduleCompletion = useMemo(() => {
+    if (!moduleId) return 0;
+    return Math.round(calculateModuleProgress(moduleId));
+  }, [moduleId, calculateModuleProgress]);
+  
+  // Get module data to count total lessons
+  const module = useMemo(() => {
+    return getModuleById(moduleId);
+  }, [moduleId]);
+  
+  const totalLessons = useMemo(() => {
+    return module?.lessons?.length || 0;
+  }, [module]);
+  
+  const completedLessonsCount = useMemo(() => {
+    if (!module || !module.lessons) return 0;
+    return module.lessons.filter(lesson => 
+      completedLessons.has(`${moduleId}-${lesson.id}`)
+    ).length;
+  }, [module, moduleId, completedLessons]);
   
   // ============================================================================
   // State Management
@@ -330,8 +360,8 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   // Page Structure and Navigation
   // ============================================================================
   
-  // Calculate pages using custom hook
-  const calculatePages = useLessonPages(data);
+  // Calculate pages using custom hook (including clinical case page if module is complete)
+  const calculatePages = useLessonPages(data, moduleId, moduleCompletion);
   const totalPages = calculatePages.length;
   const currentPageData = calculatePages[currentPage];
   
@@ -351,8 +381,11 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   
   // Auto-advance to completion page when reaching the last content page
   useEffect(() => {
-    if (currentPage === totalPages - 2 && !lessonCompleted && data) {
-      // Si estamos en la penúltima página (antes de completion), marcar como completada
+    // Find the completion page index
+    const completionPageIndex = calculatePages.findIndex(page => page.type === 'completion');
+    
+    // Mark lesson as complete when reaching the completion page
+    if (completionPageIndex >= 0 && currentPage === completionPageIndex && !lessonCompleted && data) {
       const timeSpent = Math.round((Date.now() - startTimeRef.current) / 60000);
       markLessonComplete(data.lessonId, data.moduleId, timeSpent).then(() => {
         setLessonCompleted(true);
@@ -361,7 +394,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
         }
       });
     }
-  }, [currentPage, totalPages, lessonCompleted, data, markLessonComplete, onComplete]);
+  }, [currentPage, calculatePages, lessonCompleted, data, markLessonComplete, onComplete]);
   
   // ============================================================================
   // Build lesson context for AI Tutor
@@ -681,6 +714,79 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
             onNavigateToLesson={handleNavigateToLesson}
             startTime={startTimeRef.current}
           />
+        );
+      case 'clinical-case':
+        return (
+          <Box id="clinical-case-section">
+            {moduleCompletion === 100 ? (
+              <Suspense fallback={
+                <Paper sx={{ p: 4, textAlign: 'center' }}>
+                  <Skeleton variant="rectangular" width="100%" height={200} sx={{ mb: 2 }} />
+                  <Skeleton variant="text" width="60%" sx={{ mx: 'auto' }} />
+                </Paper>
+              }>
+                <ClinicalCaseViewer
+                  moduleId={moduleId}
+                  onBack={() => {
+                    // Navegar a la página anterior (completion)
+                    const completionPageIndex = calculatePages.findIndex(page => page.type === 'completion');
+                    if (completionPageIndex >= 0) {
+                      setCurrentPage(completionPageIndex);
+                    }
+                  }}
+                />
+              </Suspense>
+            ) : (
+              <Paper
+                sx={{
+                  p: 4,
+                  textAlign: 'center',
+                  backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  position: 'relative',
+                }}
+              >
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 16,
+                    right: 16,
+                  }}
+                >
+                  <PrerequisiteTooltip
+                    missing={[]}
+                    side="top"
+                  >
+                    <LockIcon
+                      sx={{
+                        fontSize: 40,
+                        color: 'text.disabled',
+                      }}
+                      aria-label="Caso clínico bloqueado"
+                    />
+                  </PrerequisiteTooltip>
+                </Box>
+
+                <Box sx={{ mt: 4, mb: 2 }}>
+                  <LockIcon
+                    sx={{
+                      fontSize: 64,
+                      color: 'text.disabled',
+                      mb: 2,
+                    }}
+                  />
+                </Box>
+
+                <Typography variant="h6" fontWeight={600} gutterBottom>
+                  Caso Clínico Bloqueado
+                </Typography>
+
+                <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 500, mx: 'auto', mt: 2 }}>
+                  Debes completar {completedLessonsCount}/{totalLessons} lecciones antes de iniciar el caso clínico
+                </Typography>
+              </Paper>
+            )}
+          </Box>
         );
       default:
         return null;

@@ -8,6 +8,7 @@ import authRoutes from './auth.routes';
 import userRoutes from './user.routes';
 import moduleRoutes from './module.routes';
 import lessonRoutes from './lesson.routes';
+import userProgressRoutes from './progressRoutes.js';
 import progressRoutes from './progress.routes';
 import quizRoutes from './quiz.routes';
 import achievementRoutes from './achievement.routes';
@@ -28,6 +29,7 @@ router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/modules', moduleRoutes);
 router.use('/lessons', lessonRoutes);
+router.use('/progress', userProgressRoutes);
 router.use('/progress', progressRoutes);
 
 // Quiz routes

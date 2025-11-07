@@ -10,6 +10,7 @@ import {
 import ModuleCard from './ModuleCard';
 // Importar estilos CSS Module para grid y cards del currículo
 import styles from '@/styles/curriculum.module.css';
+import useCurriculumProgress from '@/hooks/useCurriculumProgress';
 
 /**
  * ModuleGrid - Componente unificado y optimizado para renderizar grid de módulos
@@ -59,6 +60,9 @@ const ModuleGrid = ({
   enableAnimations = true,
   emptyMessage = 'No hay módulos disponibles'
 }) => {
+  // Precalcular progreso agregado para todos los módulos de una vez
+  const progressByModule = useCurriculumProgress(modules);
+
   /**
    * Ordena módulos según el campo y orden especificados
    * @param {Array} modulesToSort - Array de módulos a ordenar
@@ -72,8 +76,9 @@ const ModuleGrid = ({
 
       switch (sortBy) {
         case 'progress':
-          aValue = calculateModuleProgress ? calculateModuleProgress(a.id) : 0;
-          bValue = calculateModuleProgress ? calculateModuleProgress(b.id) : 0;
+          // Usar progreso precalculado si está disponible, sino usar la función legacy
+          aValue = progressByModule[a.id]?.percentInt ?? (calculateModuleProgress ? calculateModuleProgress(a.id) : 0);
+          bValue = progressByModule[b.id]?.percentInt ?? (calculateModuleProgress ? calculateModuleProgress(b.id) : 0);
           break;
         case 'difficulty':
           const difficultyOrder = { básico: 1, intermedio: 2, avanzado: 3 };
@@ -105,7 +110,7 @@ const ModuleGrid = ({
     });
 
     return sorted;
-  }, [modules, sortBy, sortOrder, calculateModuleProgress]);
+  }, [modules, sortBy, sortOrder, calculateModuleProgress, progressByModule]);
 
   /**
    * Handler memoizado para clicks en módulos
@@ -182,9 +187,13 @@ const ModuleGrid = ({
       aria-label="Lista de módulos de aprendizaje"
     >
       {sortedModules.map((module, index) => {
-        const moduleProgress = calculateModuleProgress
-          ? calculateModuleProgress(module.id)
-          : 0;
+        // Usar progreso precalculado si está disponible, sino usar función legacy
+        const precalculatedProgress = progressByModule[module.id];
+        const moduleProgress = precalculatedProgress?.percentInt ?? (
+          calculateModuleProgress
+            ? calculateModuleProgress(module.id)
+            : 0
+        );
         const available = isModuleAvailable
           ? isModuleAvailable(module.id)
           : true;
@@ -204,6 +213,7 @@ const ModuleGrid = ({
             getButtonIcon={getButtonIconFn}
             levelColor={levelColor}
             completedModules={completedModules}
+            precalculatedProgress={precalculatedProgress} // Pasar progreso agregado completo
           />
         );
 

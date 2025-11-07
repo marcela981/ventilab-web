@@ -1,75 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box, Chip, LinearProgress, Typography } from '@mui/material';
+import { Box, Chip } from '@mui/material';
 import { MenuBook } from '@mui/icons-material';
-import { formatDuration, getProgressBarColor } from './moduleCardHelpers';
+import { formatDuration } from './moduleCardHelpers';
 import styles from '@/styles/curriculum.module.css';
 
 /**
- * Sección de metadatos de la ModuleCard (progreso y chips)
+ * Sección de metadatos de la ModuleCard (chips de información)
  */
 const ModuleCardMeta = ({
   module,
-  moduleProgress,
-  isAvailable,
-  status,
-  theme
+  isAvailable
 }) => {
-  const progressBarColor = getProgressBarColor(status, theme);
 
   return (
     <div className={styles.cardMeta}>
-      {/* Barra de progreso */}
-      <Box sx={{ mb: 1.5 }}>
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            mb: 0.75
-          }}
-        >
-          <Typography
-            variant="caption"
-            sx={{
-              color: isAvailable ? '#ffffff' : '#9e9e9e',
-              opacity: isAvailable ? 0.95 : 0.7,
-              fontSize: '0.7rem',
-              fontWeight: 600,
-              textShadow: isAvailable ? '0 1px 2px rgba(0, 0, 0, 0.2)' : 'none',
-            }}
-          >
-            Progreso
-          </Typography>
-          <Typography
-            variant="caption"
-            sx={{
-              color: isAvailable ? '#ffffff' : '#9e9e9e',
-              fontWeight: 700,
-              fontSize: '0.75rem',
-              textShadow: isAvailable ? '0 1px 2px rgba(0, 0, 0, 0.3)' : 'none'
-            }}
-          >
-            {moduleProgress.toFixed(0)}%
-          </Typography>
-        </Box>
-        <LinearProgress
-          variant="determinate"
-          value={moduleProgress}
-          sx={{
-            height: 8,
-            borderRadius: 4,
-            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-            '& .MuiLinearProgress-bar': {
-              backgroundColor: progressBarColor,
-              borderRadius: 4,
-              transition: 'transform 0.3s ease-in-out',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
-            }
-          }}
-        />
-      </Box>
-
       {/* Chips de metadatos (dificultad, duración, lecciones) */}
       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
         <Chip
@@ -133,10 +78,7 @@ const ModuleCardMeta = ({
 
 ModuleCardMeta.propTypes = {
   module: PropTypes.object.isRequired,
-  moduleProgress: PropTypes.number.isRequired,
-  isAvailable: PropTypes.bool.isRequired,
-  status: PropTypes.string.isRequired,
-  theme: PropTypes.object.isRequired
+  isAvailable: PropTypes.bool.isRequired
 };
 
 export default ModuleCardMeta;
