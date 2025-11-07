@@ -1,8 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {
-  Grid
-} from '@mui/material';
+import styles from '@/styles/curriculum.module.css';
 
 /**
  * ModuleGrid - Grid de cards de módulos por nivel
@@ -22,7 +20,7 @@ import {
  * @param {string} levelColor - Color del nivel
  * @param {JSX.Element} moduleCard - Componente ModuleCard
  */
-const ModuleGrid = ({ 
+const ModuleGrid = ({
   modules = [],
   calculateModuleProgress,
   isModuleAvailable,
@@ -36,29 +34,26 @@ const ModuleGrid = ({
   moduleCard
 }) => {
   return (
-    <Grid container spacing={2} sx={{ mt: 1 }}>
+    <div className={styles.grid}>
       {modules.map((module) => {
         const moduleProgress = calculateModuleProgress(module.id);
         const available = isModuleAvailable(module.id);
-        
-        return (
-          <Grid item xs={12} sm={6} md={4} key={module.id}>
-            {React.cloneElement(moduleCard, {
-              module,
-              moduleProgress,
-              isAvailable: available,
-              isFavorite: favoriteModules.has(module.id),
-              onModuleClick,
-              onToggleFavorite,
-              getStatusIcon,
-              getButtonText,
-              getButtonIcon,
-              levelColor
-            })}
-          </Grid>
-        );
+
+        return React.cloneElement(moduleCard, {
+          key: module.id,
+          module,
+          moduleProgress,
+          isAvailable: available,
+          isFavorite: favoriteModules.has(module.id),
+          onModuleClick,
+          onToggleFavorite,
+          getStatusIcon,
+          getButtonText,
+          getButtonIcon,
+          levelColor
+        });
       })}
-    </Grid>
+    </div>
   );
 };
 
