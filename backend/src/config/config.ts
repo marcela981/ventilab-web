@@ -21,6 +21,13 @@ export interface Config {
   // Rate Limiting Configuration
   rateLimitWindowMs: number;
   rateLimitMaxRequests: number;
+
+  // AI Configuration
+  aiProvider: string;
+  aiModelOpenAI: string;
+  aiModelAnthropic: string;
+  aiModelGoogle: string;
+  redisUrl?: string;
 }
 
 /**
@@ -71,6 +78,13 @@ const loadConfig = (): Config => {
       process.env.RATE_LIMIT_MAX_REQUESTS || '100',
       10
     ), // Default: 100 requests
+
+    // AI Configuration
+    aiProvider: process.env.AI_PROVIDER || 'google',
+    aiModelOpenAI: process.env.AI_MODEL_OPENAI || 'gpt-4o-mini',
+    aiModelAnthropic: process.env.AI_MODEL_ANTHROPIC || 'claude-3-5-haiku-20241022',
+    aiModelGoogle: process.env.AI_MODEL_GOOGLE || 'gemini-1.5-flash',
+    redisUrl: process.env.REDIS_URL,
   };
 };
 

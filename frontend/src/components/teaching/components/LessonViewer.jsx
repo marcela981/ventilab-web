@@ -51,6 +51,7 @@ import {
   DialogActions,
   Typography,
   CssBaseline,
+  Portal,
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { teachingModuleTheme } from '../../../theme/teachingModuleTheme';
@@ -59,6 +60,7 @@ import useLesson from '../hooks/useLesson';
 import { useLearningProgress } from '../../../contexts/LearningProgressContext';
 import useLessonPages from '../hooks/useLessonPages';
 import LessonNavigation from './LessonNavigation';
+import { AITutorChat } from './ai';
 import {
   LessonHeader,
   IntroductionSection,
@@ -77,7 +79,7 @@ import {
 /**
  * LessonViewer - Main component for displaying lesson content
  */
-const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate }) => {
+const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, defaultOpen = false }) => {
   // ============================================================================
   // Hooks
   // ============================================================================
@@ -123,6 +125,9 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate }) => {
   // Lesson completion state
   const [lessonCompleted, setLessonCompleted] = useState(false);
   
+  // Track previous lesson ID to detect changes
+  const previousLessonIdRef = useRef(lessonId);
+  
   // ============================================================================
   // Refs
   // ============================================================================
@@ -140,6 +145,12 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate }) => {
     // Reset to first page when lesson changes
     setCurrentPage(0);
     setLessonCompleted(false);
+    
+    // Cuando cambia la lección, el hook useAITutor creará una nueva sesión automáticamente
+    // La sesión anterior se conserva en localStorage según la lógica del hook
+    if (previousLessonIdRef.current !== lessonId) {
+      previousLessonIdRef.current = lessonId;
+    }
   }, [lessonId, moduleId]);
   
   // ============================================================================
@@ -251,6 +262,38 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate }) => {
       });
     }
   }, [currentPage, totalPages, lessonCompleted, data, markLessonComplete, onComplete]);
+  
+  // ============================================================================
+  // Build lesson context for AI Tutor
+  // ============================================================================
+  
+  const buildLessonContext = useCallback(() => {
+    if (!data) return null;
+    
+    // Extraer tags del contenido o metadata
+    const tags = data.tags || 
+                 data.content?.tags || 
+                 (data.content?.theory?.sections?.[0]?.tags) || 
+                 [];
+    
+    // Determinar tipo de lección desde metadata o inferir del contenido
+    const tipoDeLeccion = data.tipoDeLeccion || 
+                          data.type || 
+                          (data.content?.practicalCases?.length > 0 ? 'caso_clinico' : 
+                           data.content?.assessment?.questions?.length > 0 ? 'evaluacion' : 
+                           'teoria');
+    
+    return {
+      lessonId: data.lessonId || lessonId,
+      title: data.title || '',
+      objectives: data.content?.introduction?.objectives || 
+                  data.learningObjectives || 
+                  data.objectives || 
+                  [],
+      tags: Array.isArray(tags) ? tags : [],
+      tipoDeLeccion: tipoDeLeccion,
+    };
+  }, [data, lessonId]);
   
   // ============================================================================
   // Render Functions
@@ -462,6 +505,29 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate }) => {
             )}
           </DialogActions>
         </Dialog>
+        
+        {/* AI Tutor Chat Widget - Usando Portal para z-index alto */}
+        {data && buildLessonContext() && (
+          <Portal>
+            <Box
+              sx={{
+                position: 'fixed',
+                right: 0,
+                bottom: 0,
+                zIndex: 1700, // Mayor que navegación sticky (1200) y otros elementos
+                pointerEvents: 'none', // Permitir clicks a través del contenedor
+                '& > *': {
+                  pointerEvents: 'auto', // Restaurar clicks en el widget
+                },
+              }}
+            >
+              <AITutorChat 
+                lessonContext={buildLessonContext()}
+                defaultOpen={defaultOpen}
+              />
+            </Box>
+          </Portal>
+        )}
       </Box>
     </ThemeProvider>
   );
@@ -491,11 +557,18 @@ LessonViewer.propTypes = {
    * Receives (lessonId, moduleId) as parameters
    */
   onNavigate: PropTypes.func,
+  
+  /**
+   * Si es true, el chat del tutor IA se abre automáticamente al montar
+   * Útil para demos y pruebas
+   */
+  defaultOpen: PropTypes.bool,
 };
 
 LessonViewer.defaultProps = {
   onComplete: null,
   onNavigate: null,
+  defaultOpen: false,
 };
 
 export default LessonViewer;

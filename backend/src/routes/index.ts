@@ -16,6 +16,7 @@ import contentGeneratorRoutes from './content-generator.routes';
 import recommendationRoutes from './recommendation.routes';
 import searchRoutes from './search.routes';
 import adminRoutes from './admin.routes';
+import aiTutorRoutes from './ai-tutor.routes';
 
 const router = Router();
 
@@ -38,6 +39,9 @@ router.use('/achievements', achievementRoutes);
 router.use('/content-generator', contentGeneratorRoutes);
 router.use('/recommendations', recommendationRoutes);
 router.use('/search', searchRoutes);
+
+// AI Tutor routes
+router.use('/ai', aiTutorRoutes);
 
 // Admin routes
 router.use('/admin/users', adminUsersRoutes);

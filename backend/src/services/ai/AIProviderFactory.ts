@@ -1,0 +1,115 @@
+/**
+ * AI Provider Factory
+ * Creates and manages AI provider instances (OpenAI, Anthropic, Google)
+ */
+
+import { OpenAIProvider } from './providers/OpenAIProvider';
+import { AnthropicProvider } from './providers/AnthropicProvider';
+import { GoogleProvider } from './providers/GoogleProvider';
+
+export interface AIProvider {
+  name: string;
+  stream(params: StreamParams): AsyncGenerator<StreamChunk, void, unknown>;
+}
+
+export interface StreamParams {
+  messages: Array<{ role: string; content: string }>;
+  system?: string;
+  temperature?: number;
+  top_p?: number;
+  tools?: any[];
+}
+
+export interface StreamChunk {
+  type: 'token' | 'end' | 'error';
+  delta?: string;
+  messageId?: string;
+  usage?: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
+  suggestions?: string[];
+  error?: string;
+  noCache?: boolean;
+}
+
+/**
+ * AI Provider Factory
+ * Creates provider instances based on environment configuration
+ */
+export class AIProviderFactory {
+  private static providers: Map<string, AIProvider> = new Map();
+  private static defaultProvider: string;
+
+  /**
+   * Initialize providers from environment variables
+   */
+  static initialize(): void {
+    const providerName = process.env.AI_PROVIDER || 'google';
+    this.defaultProvider = providerName;
+
+    // Initialize OpenAI if API key is available
+    if (process.env.OPENAI_API_KEY) {
+      const model = process.env.AI_MODEL_OPENAI || 'gpt-4o-mini';
+      this.providers.set('openai', new OpenAIProvider(process.env.OPENAI_API_KEY, model));
+      console.log(`✅ OpenAI Provider initialized (model: ${model})`);
+    }
+
+    // Initialize Anthropic if API key is available
+    if (process.env.ANTHROPIC_API_KEY) {
+      const model = process.env.AI_MODEL_ANTHROPIC || 'claude-3-5-haiku-20241022';
+      this.providers.set('anthropic', new AnthropicProvider(process.env.ANTHROPIC_API_KEY, model));
+      console.log(`✅ Anthropic Provider initialized (model: ${model})`);
+    }
+
+    // Initialize Google if API key is available
+    if (process.env.GOOGLE_API_KEY) {
+      const model = process.env.AI_MODEL_GOOGLE || 'gemini-1.5-flash';
+      this.providers.set('google', new GoogleProvider(process.env.GOOGLE_API_KEY, model));
+      console.log(`✅ Google Provider initialized (model: ${model})`);
+    }
+
+    if (this.providers.size === 0) {
+      console.warn('⚠️ No AI providers configured. Set at least one API key.');
+    } else {
+      console.log(`🎯 Default provider: ${this.defaultProvider}`);
+    }
+  }
+
+  /**
+   * Get a provider instance by name
+   */
+  static getProvider(name: string): AIProvider | null {
+    const provider = this.providers.get(name.toLowerCase());
+    if (!provider) {
+      console.warn(`⚠️ Provider "${name}" not available. Available: ${Array.from(this.providers.keys()).join(', ')}`);
+    }
+    return provider || null;
+  }
+
+  /**
+   * Get the default provider
+   */
+  static getDefaultProvider(): AIProvider | null {
+    return this.getProvider(this.defaultProvider);
+  }
+
+  /**
+   * Get all available provider names
+   */
+  static getAvailableProviders(): string[] {
+    return Array.from(this.providers.keys());
+  }
+
+  /**
+   * Check if a provider is available
+   */
+  static isProviderAvailable(name: string): boolean {
+    return this.providers.has(name.toLowerCase());
+  }
+}
+
+// Auto-initialize on module load
+AIProviderFactory.initialize();
+

@@ -10,10 +10,15 @@ dotenv.config();
 import express, { Application, Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
+import compression from 'compression';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
-import { config } from './config/config';
+import { config, isProduction } from './config/config';
 import { helmetConfig, corsConfig, apiLimits } from './config/security';
 import { apiLimiter } from './middleware/rateLimiter';
+import { initializeCache } from './services/ai/AICacheService';
+import { createServer } from 'http';
+import { WebSocketServer } from 'ws';
+import { handleTutorWebSocket } from './services/ai/WebSocketTutorService';
 
 /**
  * Initialize Express application
@@ -33,6 +38,14 @@ app.use(helmet(helmetConfig));
  * Uses configuration from security.ts
  */
 app.use(cors(corsConfig));
+
+/**
+ * Compression Middleware (Production only)
+ * Compress HTTP responses to reduce bandwidth
+ */
+if (isProduction()) {
+  app.use(compression());
+}
 
 /**
  * Body Parser Middleware
@@ -94,11 +107,39 @@ app.use(errorHandler);
 
 /**
  * Start Server
- * Listen on the configured port
+ * Listen on the configured port and initialize WebSocket server
  */
-const startServer = () => {
+const startServer = async () => {
   try {
-    app.listen(config.port, () => {
+    // Initialize cache service
+    await initializeCache();
+
+    // Create HTTP server
+    const server = createServer(app);
+
+    // Create WebSocket server
+    const wss = new WebSocketServer({
+      server,
+      path: '/ws/ai/tutor',
+    });
+
+    // Handle WebSocket connections
+    wss.on('connection', (ws, req) => {
+      // Validate origin (CORS for WebSocket)
+      const origin = req.headers.origin;
+      const allowedOrigins = [config.frontendUrl, 'http://localhost:3000'];
+      
+      if (origin && !allowedOrigins.includes(origin)) {
+        console.warn(`⚠️ WebSocket connection rejected from origin: ${origin}`);
+        ws.close(1008, 'Origin not allowed');
+        return;
+      }
+
+      handleTutorWebSocket(ws, req);
+    });
+
+    // Start server
+    server.listen(config.port, () => {
       console.log('='.repeat(50));
       console.log('🚀 VentyLab Backend Server Started');
       console.log('='.repeat(50));
@@ -106,6 +147,7 @@ const startServer = () => {
       console.log(`🔗 Server URL: http://localhost:${config.port}`);
       console.log(`🏥 Health Check: http://localhost:${config.port}/health`);
       console.log(`🌐 Frontend URL: ${config.frontendUrl}`);
+      console.log(`🔌 WebSocket: ws://localhost:${config.port}/ws/ai/tutor`);
       console.log('='.repeat(50));
     });
   } catch (error) {

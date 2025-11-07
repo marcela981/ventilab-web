@@ -471,6 +471,47 @@ model SearchLog {
 }
 
 // =============================================================================
+// AI TUTOR MODELS
+// =============================================================================
+
+/// AiChatSession - Tracks AI tutor chat sessions
+/// Stores session metadata and links to lesson context
+model AiChatSession {
+  id        String   @id @default(cuid())
+  lessonId  String   // Lesson identifier
+  sessionId String   @unique // UUID v4 session identifier from frontend
+  provider  String   // AI provider used (openai, anthropic, google)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  messages AiMessage[] // Messages in this session
+
+  @@index([lessonId])
+  @@index([sessionId])
+  @@index([createdAt])
+  @@map("ai_chat_sessions")
+}
+
+/// AiMessage - Individual messages in AI tutor chat sessions
+/// Stores conversation history for context and analytics
+model AiMessage {
+  id        String   @id @default(cuid())
+  sessionId String
+  role      String   // 'user' or 'assistant'
+  content   String   @db.Text // Message content
+  createdAt DateTime @default(now())
+
+  // Relations
+  session AiChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([createdAt])
+  @@index([role])
+  @@map("ai_messages")
+}
+
+// =============================================================================
 // MIGRATION AND SETUP INSTRUCTIONS
 // =============================================================================
 //
