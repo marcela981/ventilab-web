@@ -7,7 +7,6 @@ import {
   Step,
   StepLabel,
   StepContent,
-  Grid,
   LinearProgress,
   Avatar,
   Paper
@@ -108,10 +107,10 @@ const LevelStepper = ({
               </StepLabel>
               
               <StepContent>
-                <Grid container spacing={2} sx={{ mt: 1 }}>
-                  {/* Aquí se renderizará el grid de módulos */}
+                {/* Grid de módulos - sin wrapper, el componente ya maneja su layout con CSS Grid */}
+                <Box sx={{ mt: 1 }}>
                   {moduleGrid}
-                </Grid>
+                </Box>
               </StepContent>
             </Step>
           );
