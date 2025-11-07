@@ -2,9 +2,8 @@ import React from 'react';
 import {
   Button,
   Typography,
-  Container,
+  Box,
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
 import {
   ArrowBack as ArrowBackIcon,
   ArrowForward as ArrowForwardIcon,
@@ -13,7 +12,7 @@ import {
 
 /**
  * LessonNavigation - Componente para la navegación global de la lección
- * Botones fijos al final del contenido sin superponerse al sidebar
+ * Botones al final del contenido como continuación visual
  */
 const LessonNavigation = ({
   currentPage,
@@ -23,26 +22,16 @@ const LessonNavigation = ({
   onNextPage,
   onNavigateToLesson,
 }) => {
-  const theme = useTheme();
-  
   return (
-    <Container
+    <Box
       sx={{
-        position: 'fixed',
-        bottom: 0,
-        left: { xs: 0, sm: '240px' }, // Respeta el espacio del sidebar
-        right: { xs: 0, sm: 'auto' },
-        width: { xs: '100%', sm: 'calc(100% - 240px)' }, // Ancho menos el sidebar
-        maxWidth: { xs: '100%', sm: '1200px' }, // max-width estándar de lg
-        zIndex: theme.zIndex.appBar + 5,
-        p: 2,
-        px: 3,
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         gap: 2,
-        backgroundColor: 'transparent', // Sin fondo
-        margin: '0 auto', // Centra el contenido
+        width: '100%',
+        mt: 4,
+        pt: 2,
       }}
     >
       <Button
@@ -52,7 +41,7 @@ const LessonNavigation = ({
         disabled={currentPage === 0}
         size="large"
         sx={{
-          minWidth: { xs: 120, sm: 150 },
+          minWidth: { xs: 150, sm: 180 },
         }}
       >
         Anterior
@@ -78,7 +67,7 @@ const LessonNavigation = ({
         disabled={currentPage === totalPages - 1 && !data?.navigation?.nextLesson}
         size="large"
         sx={{
-          minWidth: { xs: 150, sm: 200 },
+          minWidth: { xs: 150, sm: 180 },
           background: currentPage === totalPages - 1
             ? 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)'
             : undefined,
@@ -96,7 +85,7 @@ const LessonNavigation = ({
           ? (data?.navigation?.nextLesson ? 'Siguiente Lección' : 'Finalizar')
           : 'Siguiente'}
       </Button>
-    </Container>
+    </Box>
   );
 };
 

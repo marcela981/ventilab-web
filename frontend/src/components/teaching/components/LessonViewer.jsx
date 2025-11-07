@@ -398,14 +398,14 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate }) => {
   return (
     <ThemeProvider theme={teachingModuleTheme}>
       <CssBaseline />
-      <Box sx={{ minHeight: '100vh', pb: { xs: 12, sm: 12 } }}>
-        <Container 
+      <Box sx={{ minHeight: '100vh' }}>
+        <Container
           ref={contentRef}
-          maxWidth="lg" 
+          maxWidth="lg"
             sx={{
             py: { xs: 2, md: 4 },
               backgroundColor: (theme) => theme.palette.teaching.paperBg,
-              borderRadius: 2,
+              borderRadius: '8px 8px 0 0', // Redondeado solo arriba para continuar con la navegación
               p: { xs: 2, md: 3 },
             minHeight: '70vh',
             color: '#ffffff',
