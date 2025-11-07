@@ -1,393 +1,103 @@
 import React from 'react';
-import { Tooltip } from '@mui/material';
-import {
-  Lock,
-  LockOpen,
-  TrendingUp,
-  CheckCircle,
-  Refresh,
-  PlayArrow
-} from '@mui/icons-material';
+import { Lock, LockOpen } from '@mui/icons-material';
 
 /**
- * ModuleStatusIcons - Sistema de iconografía para estados de módulos
- *
- * Proporciona un conjunto consistente de íconos, colores y textos para todos
- * los estados posibles de un módulo en el curriculum. Centraliza la configuración
- * visual y textual para mantener consistencia en toda la aplicación.
- *
- * Estados soportados:
- * - locked: Módulo bloqueado por prerequisitos
- * - available: Módulo disponible para comenzar
- * - in-progress: Módulo iniciado pero no completado
- * - completed: Módulo completado al 100%
- * - review: Módulo completado pero marcado para revisión
- *
- * @module ModuleStatusIcons
- * @version 1.0.0
- */
-
-// ==================== CONSTANTES ====================
-
-/**
- * Estados válidos para un módulo
- * @constant {Object}
- */
-export const MODULE_STATES = {
-  LOCKED: 'locked',
-  AVAILABLE: 'available',
-  IN_PROGRESS: 'in-progress',
-  COMPLETED: 'completed',
-  REVIEW: 'review'
-};
-
-/**
- * Tamaño estándar para todos los íconos de estado
- * Mantener consistente en 20px para uniformidad visual
- * @constant {number}
- */
-export const ICON_SIZE = 20;
-
-/**
- * Configuración de colores para cada estado
- * Usa colores del theme de Material UI para consistencia
- * @constant {Object}
- */
-export const STATUS_COLORS = {
-  [MODULE_STATES.LOCKED]: '#9e9e9e',      // Gris suave - deshabilitado
-  [MODULE_STATES.AVAILABLE]: '#10aede',   // Primary - disponible
-  [MODULE_STATES.IN_PROGRESS]: '#FF9800', // Warning - en curso
-  [MODULE_STATES.COMPLETED]: '#4CAF50',   // Success - completado
-  [MODULE_STATES.REVIEW]: '#10aede'       // Info - para revisar
-};
-
-/**
- * Colores de borde para las cards según estado
- * Versiones más sutiles de los colores principales
- * @constant {Object}
- */
-export const STATUS_BORDER_COLORS = {
-  [MODULE_STATES.LOCKED]: '#e0e0e0',      // Gris muy claro
-  [MODULE_STATES.AVAILABLE]: '#2196F3',   // Azul vibrante
-  [MODULE_STATES.IN_PROGRESS]: '#FF9800', // Naranja
-  [MODULE_STATES.COMPLETED]: '#4CAF50',   // Verde
-  [MODULE_STATES.REVIEW]: '#00a1db'       // Cyan claro
-};
-
-/**
- * Textos de tooltips para cada estado
- * Explican al usuario qué significa cada estado
- * @constant {Object}
- */
-export const STATUS_TOOLTIPS = {
-  [MODULE_STATES.LOCKED]: 'Módulo bloqueado - Completa los requisitos previos para desbloquearlo',
-  [MODULE_STATES.AVAILABLE]: 'Módulo disponible - Haz clic para comenzar',
-  [MODULE_STATES.IN_PROGRESS]: 'Módulo en progreso - Continúa donde lo dejaste',
-  [MODULE_STATES.COMPLETED]: 'Módulo completado - ¡Excelente trabajo!',
-  [MODULE_STATES.REVIEW]: 'Módulo completado - Marcado para revisión'
-};
-
-/**
- * Textos para los botones de acción según estado
- * @constant {Object}
- */
-export const STATUS_BUTTON_TEXTS = {
-  [MODULE_STATES.LOCKED]: 'Bloqueado',
-  [MODULE_STATES.AVAILABLE]: 'Comenzar',
-  [MODULE_STATES.IN_PROGRESS]: 'Continuar',
-  [MODULE_STATES.COMPLETED]: 'Completado',
-  [MODULE_STATES.REVIEW]: 'Revisar'
-};
-
-/**
- * Configuración de tooltips consistente
- * @constant {Object}
- */
-export const TOOLTIP_CONFIG = {
-  placement: 'top',
-  arrow: true,
-  enterDelay: 300,
-  enterNextDelay: 300
-};
-
-// ==================== FUNCIONES HELPER ====================
-
-/**
- * Obtiene el color apropiado para un estado dado
- *
- * @param {string} status - Estado del módulo
- * @returns {string} Color hexadecimal
- *
- * @example
- * getStatusColor('completed') // '#4CAF50'
- */
-export const getStatusColor = (status) => {
-  return STATUS_COLORS[status] || STATUS_COLORS[MODULE_STATES.LOCKED];
-};
-
-/**
- * Obtiene el color de borde apropiado para un estado dado
- * Usado en las cards de módulos para indicar visualmente el estado
- *
- * @param {string} status - Estado del módulo
- * @returns {string} Color hexadecimal
- *
- * @example
- * getStatusBorderColor('available') // '#2196F3'
- */
-export const getStatusBorderColor = (status) => {
-  return STATUS_BORDER_COLORS[status] || STATUS_BORDER_COLORS[MODULE_STATES.LOCKED];
-};
-
-/**
- * Obtiene el texto del tooltip para un estado dado
- *
- * @param {string} status - Estado del módulo
- * @returns {string} Texto descriptivo del estado
- *
- * @example
- * getStatusTooltip('in-progress') // 'Módulo en progreso - Continúa donde lo dejaste'
- */
-export const getStatusTooltip = (status) => {
-  return STATUS_TOOLTIPS[status] || STATUS_TOOLTIPS[MODULE_STATES.LOCKED];
-};
-
-/**
- * Obtiene el texto del botón de acción para un estado dado
- *
- * @param {string} status - Estado del módulo
- * @returns {string} Texto del botón
- *
- * @example
- * getStatusButtonText('available') // 'Comenzar'
- */
-export const getStatusButtonText = (status) => {
-  return STATUS_BUTTON_TEXTS[status] || STATUS_BUTTON_TEXTS[MODULE_STATES.LOCKED];
-};
-
-/**
- * Obtiene el ícono apropiado para un estado dado sin tooltip
- * Útil cuando se necesita el ícono sin el wrapper de tooltip
- *
- * @param {string} status - Estado del módulo
- * @param {Object} props - Props adicionales para el ícono
+ * ModuleStatusIcons - Componente presentacional para mostrar el estado de disponibilidad de un módulo
+ * 
+ * Componente puramente visual que muestra un ícono de candado según la disponibilidad del módulo.
+ * No contiene lógica de negocio, solo renderiza el ícono apropiado.
+ * 
+ * @param {Object} props - Props del componente
+ * @param {boolean} props.isAvailable - Si el módulo está disponible (true = candado abierto, false = candado cerrado)
+ * @param {number} [props.size=20] - Tamaño del ícono en píxeles
+ * @param {string} [props.className=''] - Clases CSS adicionales para el ícono
+ * @param {string} [props.color] - Color del ícono cuando está disponible (opcional, por defecto usa color del tema)
  * @returns {JSX.Element} Componente de ícono
- *
+ * 
  * @example
- * getRawStatusIcon('completed') // <CheckCircle sx={{ color: '#4CAF50', fontSize: 20 }} />
- */
-export const getRawStatusIcon = (status, props = {}) => {
-  const color = getStatusColor(status);
-  const iconProps = {
-    sx: {
-      color,
-      fontSize: ICON_SIZE,
-      ...props.sx
-    },
-    ...props
-  };
-
-  switch (status) {
-    case MODULE_STATES.LOCKED:
-      return <Lock {...iconProps} />;
-
-    case MODULE_STATES.AVAILABLE:
-      return <LockOpen {...iconProps} />;
-
-    case MODULE_STATES.IN_PROGRESS:
-      return <TrendingUp {...iconProps} />;
-
-    case MODULE_STATES.COMPLETED:
-      return <CheckCircle {...iconProps} />;
-
-    case MODULE_STATES.REVIEW:
-      return <Refresh {...iconProps} />;
-
-    default:
-      return <Lock {...iconProps} />;
-  }
-};
-
-/**
- * Obtiene el ícono apropiado para un estado dado envuelto en un Tooltip
- * Esta es la función principal para obtener íconos de estado con información contextual
- *
- * @param {string} status - Estado del módulo
- * @param {Object} iconProps - Props adicionales para el ícono
- * @param {Object} tooltipProps - Props adicionales para el Tooltip
- * @returns {JSX.Element} Ícono envuelto en Tooltip
- *
+ * // Módulo disponible
+ * <ModuleStatusIcons isAvailable={true} size={24} className="my-icon" />
+ * 
  * @example
- * getStatusIcon('in-progress')
- * // <Tooltip title="Módulo en progreso...">
- * //   <TrendingUp sx={{ color: '#FF9800', fontSize: 20 }} />
- * // </Tooltip>
+ * // Módulo bloqueado
+ * <ModuleStatusIcons isAvailable={false} />
  */
-export const getStatusIcon = (status, iconProps = {}, tooltipProps = {}) => {
-  const tooltip = getStatusTooltip(status);
-  const icon = getRawStatusIcon(status, iconProps);
+const ModuleStatusIcons = ({ isAvailable, size = 20, className = '', color }) => {
+  const IconComponent = isAvailable ? LockOpen : Lock;
+  const ariaLabel = isAvailable ? 'Módulo disponible' : 'Módulo bloqueado';
+  
+  // Color: disponible usa el color proporcionado o color del tema, bloqueado SIEMPRE negro
+  // Si no está disponible, ignoramos cualquier color pasado y forzamos negro explícitamente
+  const iconColor = !isAvailable 
+    ? '#000000'              // Si está bloqueado, SIEMPRE negro, sin excepciones
+    : (color || undefined); // Si está disponible, usa el color proporcionado o undefined (color del tema)
 
   return (
-    <Tooltip
-      title={tooltip}
-      {...TOOLTIP_CONFIG}
-      {...tooltipProps}
-    >
-      {icon}
-    </Tooltip>
+    <IconComponent
+      sx={{
+        width: size,
+        height: size,
+        fontSize: size,
+        // Forzar color negro cuando no está disponible, ignorando cualquier estilo heredado
+        color: !isAvailable ? '#000000' : iconColor,
+        // Asegurar que el color negro se aplique a todos los elementos del SVG
+        ...(isAvailable ? {} : {
+          color: '#000000 !important',
+          '& *': {
+            color: '#000000 !important',
+            fill: 'currentColor'
+          }
+        })
+      }}
+      className={className}
+      aria-label={ariaLabel}
+      aria-hidden={false}
+      focusable="false"
+    />
   );
 };
 
 /**
- * Obtiene el ícono apropiado para un botón según el estado
- * Versión simplificada sin tooltip para usar dentro de botones
- *
- * @param {string} status - Estado del módulo
- * @param {Object} props - Props adicionales para el ícono
- * @returns {JSX.Element} Componente de ícono
- *
+ * ModuleLockBadge - Wrapper utilitario para ModuleStatusIcons con contenedor circular
+ * 
+ * Renderiza ModuleStatusIcons dentro de un contenedor circular con fondo semitransparente
+ * para una apariencia consistente en las cards de módulos. Útil para mostrar el estado
+ * de bloqueo/desbloqueo en la esquina de las cards.
+ * 
+ * @param {Object} props - Props del componente
+ * @param {boolean} props.isAvailable - Si el módulo está disponible
+ * @param {number} [props.size=20] - Tamaño del ícono en píxeles
+ * @param {string} [props.className=''] - Clases CSS adicionales para el contenedor
+ * @param {string} [props.color] - Color del ícono cuando está disponible (opcional)
+ * @returns {JSX.Element} Badge con ícono de estado
+ * 
  * @example
- * getButtonIcon('available') // <PlayArrow />
- */
-export const getButtonIcon = (status, props = {}) => {
-  switch (status) {
-    case MODULE_STATES.LOCKED:
-      return <Lock {...props} />;
-
-    case MODULE_STATES.AVAILABLE:
-      return <PlayArrow {...props} />;
-
-    case MODULE_STATES.IN_PROGRESS:
-      return <Refresh {...props} />;
-
-    case MODULE_STATES.COMPLETED:
-      return <CheckCircle {...props} />;
-
-    case MODULE_STATES.REVIEW:
-      return <Refresh {...props} />;
-
-    default:
-      return <PlayArrow {...props} />;
-  }
-};
-
-/**
- * Determina el estado de un módulo basado en su progreso
- * Función de conveniencia para calcular el estado automáticamente
- *
- * @param {number} progress - Porcentaje de progreso (0-100)
- * @param {boolean} isAvailable - Si el módulo está disponible
- * @param {boolean} markedForReview - Si está marcado para revisión
- * @returns {string} Estado del módulo
- *
+ * // Módulo disponible
+ * <ModuleLockBadge isAvailable={true} size={20} />
+ * 
  * @example
- * getModuleStatus(50, true, false) // 'in-progress'
- * getModuleStatus(100, true, true) // 'review'
- * getModuleStatus(0, false, false) // 'locked'
+ * // Módulo bloqueado
+ * <ModuleLockBadge isAvailable={false} />
  */
-export const getModuleStatus = (progress, isAvailable, markedForReview = false) => {
-  if (!isAvailable) {
-    return MODULE_STATES.LOCKED;
-  }
-
-  if (progress === 100) {
-    return markedForReview ? MODULE_STATES.REVIEW : MODULE_STATES.COMPLETED;
-  }
-
-  if (progress > 0) {
-    return MODULE_STATES.IN_PROGRESS;
-  }
-
-  return MODULE_STATES.AVAILABLE;
+export const ModuleLockBadge = ({ isAvailable, size = 20, className = '', color }) => {
+  return (
+    <div
+      className={className}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '8px',
+        borderRadius: '50%',
+        backgroundColor: isAvailable 
+          ? 'rgba(255, 255, 255, 0.15)'  // Fondo muy claro para disponible
+          : 'rgba(0, 0, 0, 0.3)',         // Fondo semitransparente oscuro para bloqueado
+        transition: 'background-color 0.2s ease-in-out'
+      }}
+    >
+      <ModuleStatusIcons isAvailable={isAvailable} size={size} color={color} />
+    </div>
+  );
 };
 
-/**
- * Verifica si un estado es válido
- *
- * @param {string} status - Estado a verificar
- * @returns {boolean} true si es válido
- *
- * @example
- * isValidStatus('completed') // true
- * isValidStatus('invalid') // false
- */
-export const isValidStatus = (status) => {
-  return Object.values(MODULE_STATES).includes(status);
-};
-
-/**
- * Obtiene todos los estados disponibles
- * Útil para iteraciones o validaciones
- *
- * @returns {Array<string>} Array de estados válidos
- *
- * @example
- * getAllStatuses() // ['locked', 'available', 'in-progress', 'completed', 'review']
- */
-export const getAllStatuses = () => {
-  return Object.values(MODULE_STATES);
-};
-
-// ==================== EXPORTS ====================
-
-/**
- * Export por defecto con todas las funciones
- * Permite importar todo el módulo de una vez
- */
-export default {
-  // Constantes
-  MODULE_STATES,
-  ICON_SIZE,
-  STATUS_COLORS,
-  STATUS_BORDER_COLORS,
-  STATUS_TOOLTIPS,
-  STATUS_BUTTON_TEXTS,
-  TOOLTIP_CONFIG,
-
-  // Funciones
-  getStatusColor,
-  getStatusBorderColor,
-  getStatusTooltip,
-  getStatusButtonText,
-  getRawStatusIcon,
-  getStatusIcon,
-  getButtonIcon,
-  getModuleStatus,
-  isValidStatus,
-  getAllStatuses
-};
-
-/**
- * GUÍA DE USO:
- *
- * 1. Importar funciones específicas:
- * import { getStatusIcon, getStatusColor } from './ModuleStatusIcons';
- *
- * 2. Usar en un componente:
- * const icon = getStatusIcon('in-progress');
- * const color = getStatusColor('completed');
- *
- * 3. Calcular estado automáticamente:
- * const status = getModuleStatus(progress, isAvailable, markedForReview);
- * const icon = getStatusIcon(status);
- *
- * 4. Usar en botones:
- * <Button startIcon={getButtonIcon(status)}>
- *   {getStatusButtonText(status)}
- * </Button>
- *
- * 5. Usar colores en estilos:
- * <Box sx={{ borderColor: getStatusBorderColor(status) }}>
- *
- * EXTENSIBILIDAD:
- *
- * Para agregar un nuevo estado:
- * 1. Agregar a MODULE_STATES
- * 2. Agregar color a STATUS_COLORS
- * 3. Agregar color de borde a STATUS_BORDER_COLORS
- * 4. Agregar tooltip a STATUS_TOOLTIPS
- * 5. Agregar texto de botón a STATUS_BUTTON_TEXTS
- * 6. Agregar case en getRawStatusIcon()
- * 7. Agregar case en getButtonIcon()
- * 8. Actualizar tests
- */
+export default ModuleStatusIcons;

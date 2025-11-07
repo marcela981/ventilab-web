@@ -167,6 +167,14 @@ const ModuleGrid = ({
   // Componente de card a usar (custom o por defecto)
   const CardComponent = CustomModuleCard || ModuleCard;
 
+  // Calcular módulos completados (progreso = 100%)
+  const completedModules = useMemo(() => {
+    if (!calculateModuleProgress || modules.length === 0) return [];
+    return modules
+      .filter(module => calculateModuleProgress(module.id) === 100)
+      .map(module => module.id);
+  }, [modules, calculateModuleProgress]);
+
   return (
     <div
       className={styles.grid}
@@ -195,6 +203,7 @@ const ModuleGrid = ({
             getButtonText={getButtonTextFn}
             getButtonIcon={getButtonIconFn}
             levelColor={levelColor}
+            completedModules={completedModules}
           />
         );
 
