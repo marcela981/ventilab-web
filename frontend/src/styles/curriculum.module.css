@@ -1,0 +1,158 @@
+/**
+ * Hoja de estilos modular para componentes del Currículo
+ * Estandariza aspecto visual de cards y grid contenedor
+ */
+
+/* Grid contenedor responsivo */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  align-items: start;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Card con aspect ratio 16:10 y límites de altura */
+.card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  padding: 16px;
+  aspect-ratio: 16 / 10;
+  min-height: 420px;
+  max-height: 480px;
+  overflow: hidden; /* oculta scroll externo; el interno va en cardBody */
+  transition: box-shadow 0.2s ease, outline 0.2s ease;
+}
+
+/* Estado hover para mejor UX */
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* Estado de foco accesible */
+.card:focus-within {
+  outline: 2px solid #2563eb; /* azul accesible */
+  outline-offset: 2px;
+}
+
+/* Encabezado de la card */
+.cardHeader {
+  font-weight: 600;
+  font-size: 1.05rem;
+  line-height: 1.35;
+  margin-bottom: 8px;
+  color: #1f2937; /* gray-800 para buen contraste */
+}
+
+/* Metadatos (info secundaria) */
+.cardMeta {
+  color: #6b7280; /* gray-500 */
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+/* Cuerpo de la card con scroll interno */
+.cardBody {
+  flex: 1 1 auto;
+  min-height: 0; /* crítico: habilita overflow en flex child */
+  overflow-y: auto; /* scroll interno para contenido extenso */
+  overflow-x: hidden;
+  padding-right: 6px; /* espacio para el scrollbar */
+  overscroll-behavior: contain; /* evita scroll del contenedor padre */
+  color: #374151; /* gray-700 */
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Estilos personalizados del scrollbar (WebKit) */
+.cardBody::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cardBody::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cardBody::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+.cardBody::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Fallback para Firefox */
+.cardBody {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+/* Pie de la card */
+.cardFooter {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+/* Responsive: ajustes para pantallas pequeñas */
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .card {
+    min-height: 380px;
+    max-height: 450px;
+  }
+}
+
+/* Responsive: pantallas medianas */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+/* Ajustes para modo oscuro (opcional, si el sistema lo soporta) */
+@media (prefers-color-scheme: dark) {
+  .card {
+    background: #1f2937;
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  .cardHeader {
+    color: #f9fafb;
+  }
+
+  .cardMeta {
+    color: #9ca3af;
+  }
+
+  .cardBody {
+    color: #e5e7eb;
+  }
+
+  .cardBody::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .cardBody::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+  }
+}
