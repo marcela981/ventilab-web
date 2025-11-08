@@ -16,6 +16,7 @@ import useModuleProgress from '../../hooks/useModuleProgress';
 
 // Datos del curriculum
 import { curriculumData } from '../../../../data/curriculumData';
+import { getModulesCount, getAllModules } from '../../../../data/curriculum/selectors.js';
 
 // Importar componentes gamificados
 import {
@@ -150,9 +151,10 @@ const ProgressDashboard = () => {
   
   // Datos para ModuleMilestones (useMemo debe estar antes de returns)
   const moduleMilestones = useMemo(() => {
-    // Simular hitos basados en progreso
-    const totalModules = Object.keys(curriculumData.modules || {}).length;
-    const completedModules = Object.values(curriculumData.modules || {}).filter(
+    // Calcular hitos basados en progreso (data-driven)
+    const modulesArray = getAllModules();
+    const totalModules = getModulesCount();
+    const completedModules = modulesArray.filter(
       module => {
         const progress = calculateModuleProgress(module, completedLessons);
         return progress >= 100;

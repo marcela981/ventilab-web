@@ -1,0 +1,453 @@
+{
+"id": "lesson-03-pressure-support-ventilation",
+"moduleId": "module-02-modalidades-parametros",
+"title": "Ventilación con Soporte de Presión (PSV): paquete de lecciones avanzadas",
+"description": "Conjunto de lecciones a nivel residencia/doctorado sobre la ventilación con soporte de presión (PSV). Se abordan fundamentos (trigger/limit/cycle), parametrización segura (nivel de soporte, PEEP, sensibilidad de disparo, criterio de ciclaje por flujo, rise time), lectura de curvas, asincronías y su resolución, y uso en destete (SBT). Incluye ejemplos numéricos, casos clínicos, listas de verificación, imágenes y videos.",
+"order": 3,
+"estimatedTime": 240,
+"difficulty": "advanced",
+"bloomLevel": "evaluate",
+"nivel": "investigativo-doctoral",
+"prerequisites": [
+"Mecánica respiratoria (compliance, resistencia, tiempo constante, auto-PEEP)",
+"Interpretación de curvas presión–flujo–volumen",
+"Gasometría arterial y criterios de destete"
+],
+"learningObjectives": [
+"Diferenciar con precisión las variables de control, límite y ciclado en PSV y relacionarlas con las curvas de presión, flujo y volumen.",
+"Programar de forma segura el nivel de soporte, PEEP, sensibilidad de disparo, tiempo/rampa de presurización y porcentaje de ciclaje por flujo.",
+"Reconocer y resolver asincronías características de PSV (ciclado precoz/tardío, esfuerzos inefectivos, auto-disparo) ajustando ciclaje, disparo, PEEP y rise time.",
+"Aplicar PSV en el destete con SBTs de bajo soporte, integrando criterios fisiológicos y guías contemporáneas."
+],
+"lessons": [
+{
+"id": "lesson-01-psv-fundamentos-ondas",
+"moduleId": "module-02-modalidades-parametros",
+"title": "Fundamentos de PSV y lectura de ondas",
+"description": "Definición de PSV como modo asistido, paciente-disparado y típicamente ciclo por flujo; el volumen resultante depende del esfuerzo, la mecánica y el nivel de soporte. Revisión de curvas y su interpretación clínica.",
+"order": 1,
+"estimatedTime": 55,
+"difficulty": "advanced",
+"bloomLevel": "analyze",
+"learningObjectives": [
+"Precisar que en PSV cada ciclo es disparado por el paciente y el ventilador finaliza la inspiración cuando el flujo cae a un umbral porcentual del pico (típicamente 25%).",
+"Describir la morfología de las curvas: presión \"cuadrada\" o suavemente redondeada, flujo desacelerado y volumen ascendente no lineal.",
+"Correlacionar cambios de Vt con variaciones de esfuerzo, resistencia y compliance."
+],
+"sections": [
+{
+"id": "intro-psv",
+"order": 1,
+"type": "introduction",
+"title": "¿Qué es PSV?",
+"content": {
+"markdown": "En **PSV** cada ciclo es **disparado por el paciente** y **ciclado por flujo**: el ventilador termina el soporte cuando el flujo inspiratorio desciende a un **umbral porcentual del pico (p. ej., 25%)**. No provee volumen ni ventilación minuto garantizados; el **Vt** depende del **nivel de soporte**, **PEEP**, **mecánica** y **esfuerzo** del paciente. ([CNIB][1])"
+}
+},
+{
+"id": "ondas-psv",
+"order": 2,
+"type": "theory",
+"title": "Ondas y significado clínico",
+"content": {
+"markdown": "• **Presión**: ascenso rápido al nivel de soporte y mantenimiento durante la inspiración.  \n• **Flujo**: **desacelerado**; el ciclaje ocurre al alcanzar el **% del pico** programado.  \n• **Volumen**: variable; aumenta con mayor soporte, menor resistencia, mayor compliance o mayor esfuerzo.  \n**Claves**: la **configuración del porcentaje de ciclaje** y de la **sensibilidad de disparo** modulan la sincronía. ([CNIB][1])"
+}
+},
+{
+"id": "tlc-psv",
+"order": 3,
+"type": "theory",
+"title": "Trigger, Límite y Ciclado en PSV",
+"content": {
+"markdown": "**Trigger**: por flujo o por presión (paciente-disparado).  \n**Límite**: **presión** (nivel de soporte).  \n**Ciclado**: por **flujo** (umbral configurable, a menudo **25%** del pico; algunos equipos usan valores fijos). ([CNIB][1])"
+}
+},
+{
+"id": "checklist-ondas-psv",
+"order": 4,
+"type": "procedure",
+"title": "Checklist de lectura de ondas (PSV)",
+"content": {
+"markdown": "1) Confirma **PEEP**, **nivel de soporte**, **sensibilidad de disparo** y **% de ciclaje**; 2) verifica **flujo desacelerado** y **ciclaje** adecuado al final del esfuerzo; 3) correlaciona **Vt/PBW** con metas clínicas; 4) reevalúa tras cambios de mecánica o sedación. ([CNIB][1])"
+}
+}
+],
+"media": {
+"videos": [
+{
+"id": "vid-openpeds-waveforms",
+"title": "Ventilator Waveforms: lectura práctica (incluye PSV)",
+"provider": "OPENPediatrics (YouTube)",
+"url": "[https://www.youtube.com/watch?v=THLdV5gJ9Uw](https://www.youtube.com/watch?v=THLdV5gJ9Uw)",
+"credit": "Curvas presión/flujo/volumen y sincronía",
+"note": "Comparación de curvas en VCV/PCV/PSV. ([YouTube][2])"
+}
+],
+"images": [
+{
+"id": "img-onepager-modes",
+"url": "[https://www.openanesthesia.org/wp-content/uploads/2024/12/02/ICU_one_pager_vent_basics.pdf](https://www.openanesthesia.org/wp-content/uploads/2024/12/02/ICU_one_pager_vent_basics.pdf)",
+"alt": "Tarjeta visual: modos y esquema Trigger/Limit/Cycle",
+"caption": "Resumen visual de modos con enfoque T/L/C; incluye PS sobre PEEP. ([OpenAnesthesia][3])"
+}
+]
+},
+"resources": {
+"keyReadings": [
+"OpenAnesthesia – Pressure Support Ventilation (actualizado 2025). ([OpenAnesthesia][4])",
+"StatPearls – Pressure Support Ventilation (definición, 25% del pico, SBT). ([CNIB][1])"
+]
+},
+"metadata": { "estimatedWorkloadMinutes": 55, "assessmentType": "formative" }
+},
+{
+"id": "lesson-02-psv-parametrizacion",
+"moduleId": "module-02-modalidades-parametros",
+"title": "Parametrización segura en PSV",
+"description": "Cómo fijar nivel de soporte, PEEP, sensibilidad de disparo, **porcentaje de ciclaje por flujo** y **rise time**; alarmas y consideraciones en VM invasiva y no invasiva.",
+"order": 2,
+"estimatedTime": 65,
+"difficulty": "advanced",
+"bloomLevel": "apply",
+"learningObjectives": [
+"Ajustar nivel de soporte y PEEP para alcanzar Vt objetivo sin sobreasistencia.",
+"Programar **% de ciclaje por flujo** (p. ej., 25% por defecto) y **sensibilidad de disparo** (evitar auto-disparo y esfuerzos inefectivos).",
+"Optimizar **rise time** y comprender su impacto en confort y potencia entregada."
+],
+"sections": [
+{
+"id": "parametros-clave-psv",
+"order": 1,
+"type": "theory",
+"title": "Parámetros clave y lógica de ajuste",
+"content": {
+"markdown": "• **Nivel de soporte (cmH₂O)**: principal determinante del **pico de flujo** y del **Vt** resultante.  \n• **PEEP**: reclutamiento y contrapeso de **auto-PEEP**.  \n• **% de ciclaje**: umbral de flujo al que el ventilador **termina** la inspiración (a menudo **25%** del pico; rango amplio en la mayoría de ventiladores).  \n• **Sensibilidad de disparo** (flujo/presión) y **rise time**: modulan esfuerzo y confort. ([CNIB][1])"
+}
+},
+{
+"id": "ciclaje-por-flujo",
+"order": 2,
+"type": "theory",
+"title": "Ciclaje por flujo: concepto y valores típicos",
+"content": {
+"markdown": "El **ciclaje** suele fijarse en **≈25% del pico** de flujo inspiratorio; valores **más altos** acortan TI y corrigen **ciclado tardío** (útil en **EPOC/obstrucción**), y valores **más bajos** prolongan TI para evitar **ciclado precoz** (útil en restricción/ARDS). ([SAGE Journals][5])"
+}
+},
+{
+"id": "niv-niv",
+"order": 3,
+"type": "theory",
+"title": "Particularidades en NIV (IPAP/EPAP) y fugas",
+"content": {
+"markdown": "En **NIV**, el soporte se expresa como **IPAP–EPAP** (soporte = IPAP−EPAP). Las **fugas** pueden provocar **auto-disparo** o **ciclado anómalo**; ajustar **sensibilidad** y **% de ciclaje**, y activar **compensación de fugas** cuando esté disponible. ([CNIB][1])"
+}
+},
+{
+"id": "alarmas-seguridad",
+"order": 4,
+"type": "procedure",
+"title": "Alarmas y seguridad",
+"content": {
+"markdown": "• **Volumen/ventilación minuto bajos**: evaluar esfuerzo, mecánica y nivel de soporte; considerar cambiar de modo si el impulso neural disminuye.  \n• **Auto-disparo**: revisar **sensibilidad**, fugas y oscilaciones.  \n• **Esfuerzos inefectivos**: revisar **PEEP** (auto-PEEP), **% de ciclaje** y **rise time**. ([CNIB][1])"
+}
+},
+{
+"id": "ejemplo-numerico-psv",
+"order": 5,
+"type": "example",
+"title": "Ejemplo numérico de programación",
+"content": {
+"markdown": "Paciente 70 kg (PBW). Metas iniciales: **Vt ~6 ml/kg ≈ 420 ml** y confort. Inicia **PEEP 5**, **PS 10–12**, **% ciclaje 25%**, **disparo por flujo** sensible sin auto-disparo; ajustar **rise time** intermedio. Si Vt es bajo y hay signos de fatiga, ↑ **PS** (2–4 cmH₂O) y reevalúa gases y sincronía. ([CNIB][1])"
+}
+}
+],
+"media": {
+"videos": [
+{
+"id": "vid-psv-curves",
+"title": "PSV: curvas e interpretación",
+"provider": "YouTube",
+"url": "[https://www.youtube.com/watch?v=wscen06LtiU](https://www.youtube.com/watch?v=wscen06LtiU)",
+"credit": "Demostración visual del soporte por presión y ciclaje",
+"note": "Comparación con PCV/VCV. ([YouTube][6])"
+}
+],
+"images": [
+{
+"id": "img-occ-ps",
+"url": "[https://opencriticalcare.org/resources/pressure-support-ps-ventilation-mode/](https://opencriticalcare.org/resources/pressure-support-ps-ventilation-mode/)",
+"alt": "Infografía del modo Pressure Support",
+"caption": "Recurso visual libre con iconografía de PS. ([Open Critical Care][7])"
+}
+]
+},
+"resources": {
+"keyReadings": [
+"StatPearls – PSV: parámetros y técnica (25% del pico; SBT 5–8/PEEP 5–8). ([CNIB][1])",
+"Revisión de ciclaje por flujo y sincronía (Gentile 2011). ([SAGE Journals][5])"
+]
+},
+"metadata": { "estimatedWorkloadMinutes": 65, "assessmentType": "formative" }
+},
+{
+"id": "lesson-03-psv-asincronias",
+"moduleId": "module-02-modalidades-parametros",
+"title": "Asincronías típicas de PSV y su resolución",
+"description": "Identificación en curvas, fisiopatología y manejo de ciclado precoz/tardío, esfuerzos inefectivos, auto-disparo y doble disparo; uso del método de **waveforms**.",
+"order": 3,
+"estimatedTime": 60,
+"difficulty": "advanced",
+"bloomLevel": "evaluate",
+"learningObjectives": [
+"Reconocer en curvas **ciclado precoz** (umbral demasiado alto) y **ciclado tardío** (umbral demasiado bajo).",
+"Detectar **esfuerzos inefectivos** por auto-PEEP y **auto-disparo** por fugas.",
+"Aplicar intervenciones: ajustar **% de ciclaje**, **PEEP**, **sensibilidad** y **rise time**; considerar modos proporcionales cuando aplique."
+],
+"sections": [
+{
+"id": "mapeo-asincronias",
+"order": 1,
+"type": "theory",
+"title": "Mapa rápido: precoz vs tardío, inefectivo y auto-disparo",
+"content": {
+"markdown": "**Precoz (restricción/ARDS)**: TI termina antes del final del impulso → ↓Vt, doble disparo; **bajar** % de ciclaje.  \n**Tardío (EPOC/obstrucción)**: TI se prolonga más allá del impulso → esfuerzo espiratorio activo, atrapamiento → **subir** % de ciclaje y **optimizar PEEP**.  \n**Esfuerzos inefectivos**: umbral de disparo no alcanzado por **auto-PEEP** → ↑PEEP externa (matching), ajustar sensibilidad.  \n**Auto-disparo**: fugas/artefactos → reducir sensibilidad o cambiar tipo de trigger; controlar fugas. ([Frontiers][8])"
+}
+},
+{
+"id": "waveform-method",
+"order": 2,
+"type": "theory",
+"title": "Método de waveforms para detectar el impulso neural",
+"content": {
+"markdown": "El **método de waveforms** usa reglas explícitas sobre presión (Paw) y flujo para estimar el **inicio** y **fin** del esfuerzo y clasificar asincronías (auto-disparo, doble disparo, esfuerzos inefectivos) con **alta concordancia** frente a Pes. ([BioMed Central][9])"
+}
+},
+{
+"id": "algoritmo-psv-asincronias",
+"order": 3,
+"type": "procedure",
+"title": "Algoritmo práctico de resolución",
+"content": {
+"markdown": "1) **Identifica** el patrón (precoz/tardío/inefectivo/auto-disparo) en curvas.  \n2) **Ajusta** primero el **% de ciclaje** (↓ en precoz; ↑ en tardío).  \n3) **Compensa auto-PEEP** con **PEEP externa** y sensibilidad adecuada.  \n4) Optimiza **rise time** y **trigger**.  \n5) Reevalúa **Vt/PBW, FR, confort y gases** a 10–15 min. ([SAGE Journals][5])"
+}
+},
+{
+"id": "modos-proporcionales",
+"order": 4,
+"type": "theory",
+"title": "Cuándo considerar modos proporcionales (PAV/NAVA)",
+"content": {
+"markdown": "En escenarios con asincronías persistentes en PSV, los **modos proporcionales** pueden reducir **índice de asincronías** y **fracaso de destete**, especialmente **PAV** (evidencia heterogénea; selección individualizada). ([SpringerOpen][10])"
+}
+}
+],
+"media": {
+"videos": [
+{
+"id": "vid-waveform-sync",
+"title": "Waveforms y sincronía en ventilación",
+"provider": "YouTube",
+"url": "[https://www.youtube.com/watch?v=U7dPEM3IfGE](https://www.youtube.com/watch?v=U7dPEM3IfGE)",
+"credit": "Interpretación aplicada a asincronías",
+"note": "Reconocimiento visual de patrones típicos. ([YouTube][11])"
+}
+]
+},
+"resources": {
+"keyReadings": [
+"Critical Care (Mojoli 2022): método de waveforms para PSV. ([BioMed Central][9])",
+"Respir Care (Gentile 2011): ciclaje y ajuste del % del pico. ([SAGE Journals][5])"
+]
+},
+"metadata": { "estimatedWorkloadMinutes": 60, "assessmentType": "formative" }
+},
+{
+"id": "lesson-04-psv-destete-sbt",
+"moduleId": "module-02-modalidades-parametros",
+"title": "PSV en destete: evidencia y práctica (SBT)",
+"description": "Uso de PSV en pruebas de respiración espontánea (SBT) de bajo soporte; criterios contemporáneos y consideraciones de seguridad.",
+"order": 4,
+"estimatedTime": 60,
+"difficulty": "advanced",
+"bloomLevel": "apply",
+"learningObjectives": [
+"Implementar SBT con PSV bajo (5–8 cmH₂O) y PEEP 5 cmH₂O cuando corresponda.",
+"Integrar criterios de selección y finalización de SBT según guías recientes.",
+"Evitar errores frecuentes (p. ej., modificar innecesariamente la FiO₂ durante el SBT)."
+],
+"sections": [
+{
+"id": "sbt-psv-bajos",
+"order": 1,
+"type": "theory",
+"title": "Configuración típica del SBT en PSV",
+"content": {
+"markdown": "SBT con **PSV bajo (≈5–8 cmH₂O) + PEEP 5 cmH₂O** para compensar trabajo impuesto por el tubo/circuito; observar tolerancia 30–120 min con objetivos de FR, Vt, oxigenación y confort. ([CNIB][1])"
+}
+},
+{
+"id": "guias-2024-2025",
+"order": 2,
+"type": "theory",
+"title": "Guías y ensayos contemporáneos",
+"content": {
+"markdown": "Guías 2024 **AARC** recomiendan **evaluación diaria** y SBT oportuno, diferenciando **liberación** de **extubación**; varios ECA históricos muestran que protocolos con SBT superan prácticas no protocolizadas. Ensayos recientes comparan **PSV vs T-piece** con resultados variables; el enfoque actual prioriza **SBT estandarizado** y criterios clínicos. ([AARC][12])"
+}
+},
+{
+"id": "oxigenacion-y-riesgos",
+"order": 3,
+"type": "theory",
+"title": "Oxigenación y riesgos durante SBT",
+"content": {
+"markdown": "Evidencia metodológica sugiere **no aumentar arbitrariamente la FiO₂** durante el SBT (mantener condiciones basales) para evitar **falsos positivos**; suspender si hay hipoxemia, fatiga o inestabilidad. ([AARC][12])"
+}
+},
+{
+"id": "ejemplo-clinico-sbt",
+"order": 4,
+"type": "example",
+"title": "Ejemplo clínico de SBT con PSV bajo",
+"content": {
+"markdown": "Paciente con neumonía resuelta, hemodinámicamente estable: SBT **PS 7 / PEEP 5** por 60 min; FR 18–24, Vt 6–7 ml/kg, SpO₂ 94% con FiO₂ 0,35, sin aumento de trabajo; pasa SBT. Plan: extubación con medidas de prevención de fracaso. ([CNIB][1])"
+}
+}
+],
+"media": {
+"videos": [
+{
+"id": "vid-ats-vent-modes",
+"title": "Vent Modes 101 – enfoque en curvas",
+"provider": "ATS/UCSF",
+"url": "[https://www.thoracic.org/professionals/clinical-resources/video-lecture-series/mechanical-ventilation/vent-modes-101-focus-on-the-waveform.php](https://www.thoracic.org/professionals/clinical-resources/video-lecture-series/mechanical-ventilation/vent-modes-101-focus-on-the-waveform.php)",
+"credit": "Comparativa conceptual útil para SBT",
+"note": "Revisión de curvas relevantes para destete. ([YouTube][6])"
+}
+]
+},
+"resources": {
+"keyReadings": [
+"AARC 2024 – Guía de SBT (evaluación diaria, no aumentar FiO₂ indiscriminadamente). ([AARC][12])",
+"NEJM 2022 – SBT con PSV vs T-piece (comparación). ([New England Journal of Medicine][13])"
+]
+},
+"metadata": { "estimatedWorkloadMinutes": 60, "assessmentType": "summative" }
+},
+{
+"id": "lesson-05-psv-casos",
+"moduleId": "module-02-modalidades-parametros",
+"title": "Casos prácticos integrados en PSV",
+"description": "Tres escenarios clínicos para aplicar ajustes de **% de ciclaje**, **PEEP**, **disparo** y **nivel de soporte**; incluye razonamiento con curvas.",
+"order": 5,
+"estimatedTime": 55,
+"difficulty": "advanced",
+"bloomLevel": "create",
+"learningObjectives": [
+"Aplicar un algoritmo de decisión ante **ciclado tardío** en EPOC y **precoz** en restricción.",
+"Resolver esfuerzos inefectivos por auto-PEEP con ajuste de PEEP y sensibilidad.",
+"Implementar SBT con PSV bajo con criterios de seguridad."
+],
+"sections": [
+{
+"id": "caso-1-epoc-ciclado-tardio",
+"order": 1,
+"type": "case",
+"title": "Caso 1: EPOC con ciclado tardío",
+"content": {
+"markdown": "**Datos**: PSV, PEEP 5, **PS 12**, **% ciclaje 25%**; curva muestra TI prolongado con esfuerzo espiratorio activo. **Acción**: ↑ **% ciclaje a 40–60%** y optimizar **PEEP** para auto-PEEP; mejora sincronía y ↓ atrapamiento. ([ResearchGate][14])"
+}
+},
+{
+"id": "caso-2-ards-ciclado-precoz",
+"order": 2,
+"type": "case",
+"title": "Caso 2: ARDS con ciclado precoz y doble disparo",
+"content": {
+"markdown": "**Datos**: restrictivo; terminación al **30%** del pico → TI corto y **doble disparo**. **Acción**: ↓ **% de ciclaje** (p. ej., 15–20%) para acompasar el final del impulso; revalorar Vt, FR y confort. ([Frontiers][8])"
+}
+},
+{
+"id": "caso-3-niv-fugas-autodisparo",
+"order": 3,
+"type": "case",
+"title": "Caso 3: NIV con fugas y auto-disparo",
+"content": {
+"markdown": "**Datos**: NIV IPAP/EPAP con fugas; activaciones sin esfuerzo. **Acción**: reducir **sensibilidad de disparo** o pasar a trigger por presión, activar **compensación de fugas** y reajustar interfaz; desaparece auto-disparo. ([Liebert Publishing][15])"
+}
+}
+],
+"media": {
+"videos": [
+{
+"id": "vid-waveforms-casos",
+"title": "Waveforms y casos comunes",
+"provider": "YouTube",
+"url": "[https://www.youtube.com/watch?v=sXlG7Tytqf4](https://www.youtube.com/watch?v=sXlG7Tytqf4)",
+"credit": "Escenarios prácticos identificados por curvas",
+"note": "De básico a clínico aplicado. ([YouTube][16])"
+}
+]
+},
+"resources": {
+"keyReadings": [
+"Deranged Physiology – Ciclaje e interpretación de flujo. ([Deranged Physiology][17])",
+"Revisión de asincronías y ajuste de ciclaje en EPOC. ([PubMed][18])"
+]
+},
+"metadata": { "estimatedWorkloadMinutes": 55, "assessmentType": "practical" }
+}
+],
+"assessment": {
+"quiz": {
+"id": "quiz-psv-advanced",
+"type": "multiple-choice",
+"attemptsAllowed": 2,
+"questions": [
+{
+"id": "q1",
+"stem": "En PSV, el **ciclaje** de la inspiración ocurre típicamente cuando el flujo cae a:",
+"options": ["Un valor fijo de 5 L/min", "El 25% del pico de flujo inspiratorio", "El 50% del volumen espirado", "Una presión predefinida"],
+"answer": 2,
+"rationale": "PSV es **ciclado por flujo** y típicamente se programa alrededor del **25% del pico** (ajustable). ([CNIB][1])"
+},
+{
+"id": "q2",
+"stem": "Ante **ciclado tardío** en un paciente con **EPOC** en PSV, la intervención inicial más razonable es:",
+"options": ["Disminuir el % de ciclaje", "Aumentar el % de ciclaje", "Cambiar a VCV de inmediato", "Reducir la PEEP a 0 cmH₂O"],
+"answer": 2,
+"rationale": "En obstrucción/auto-PEEP el **% de ciclaje mayor** acorta TI y mejora la sincronía; además, optimizar PEEP. ([ResearchGate][14])"
+},
+{
+"id": "q3",
+"stem": "Durante un **SBT** con PSV, una configuración habitual basada en la evidencia es:",
+"options": ["PS 15–20 y PEEP 0", "PS 5–8 y PEEP 5", "PS 0 y PEEP 10", "PS 12 y PEEP 12"],
+"answer": 2,
+"rationale": "SBT con **PS bajo (5–8) y PEEP 5** compensa trabajo impuesto sin sobreasistir. ([CNIB][1])"
+},
+{
+"id": "q4",
+"stem": "En **NIV** con fugas y auto-disparo en PSV, una medida apropiada es:",
+"options": ["Aumentar sensibilidad del trigger", "Disminuir sensibilidad o cambiar a trigger por presión y controlar fugas", "Bajar drásticamente la PEEP", "Subir % de ciclaje a 80%"],
+"answer": 2,
+"rationale": "Las **fugas** favorecen auto-disparo; se ajusta **sensibilidad**/tipo de trigger y se corrige la interfaz. ([Liebert Publishing][15])"
+    }
+    ]
+    }
+    },
+    "sources": [
+"OpenAnesthesia – Pressure Support Ventilation (definición, 25% del pico, SBT 5–8/PEEP 5). ([OpenAnesthesia][4])",
+"StatPearls – Pressure Support Ventilation (modo, ciclaje por flujo ~25%, SBT). ([CNIB][1])",
+"Respiratory Care (Gentile 2011) – Ciclaje del ventilador y ajustes del % del pico. ([SAGE Journals][5])",
+"Frontiers in Medicine / Crit Care – Ajuste automático de trigger y ciclaje; método de waveforms. ([Frontiers][8])",
+"AARC 2024 – Guía de SBT (evaluación diaria, FiO₂ durante SBT, criterios). ([AARC][12])",
+"Revisión y guías sobre asincronías y ciclaje en EPOC/ARDS. ([PubMed][18])",
+"OPENPediatrics – Lectura de curvas (video). ([YouTube][2])",
+"OpenAnesthesia One-Pager (T/L/C). ([OpenAnesthesia][3])"
+],
+"metadata": {
+"version": "1.0.0",
+"lastUpdated": "2025-11-08",
+"language": "es-CO",
+"tags": ["PSV", "Soporte de Presión", "Ciclaje por flujo", "Sensibilidad de disparo", "PEEP", "NIV", "SBT", "Asincronías"]
+}
+}

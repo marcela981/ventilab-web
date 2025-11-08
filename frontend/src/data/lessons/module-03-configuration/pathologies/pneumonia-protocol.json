@@ -94,6 +94,14 @@
     "Mandell LA, Wunderink RG, Anzueto A, et al. Infectious Diseases Society of America/American Thoracic Society consensus guidelines on the management of community-acquired pneumonia in adults. Clin Infect Dis. 2007;44 Suppl 2:S27-72.",
     "The ARDS Network. Ventilation with lower tidal volumes as compared with traditional tidal volumes for acute lung injury and the acute respiratory distress syndrome. N Engl J Med. 2000;342(18):1301-8.",
     "Fan E, Del Sorbo L, Goligher EC, et al. An Official American Thoracic Society/European Society of Intensive Care Medicine/Society of Critical Care Medicine Clinical Practice Guideline: Mechanical Ventilation in Adult Patients with Acute Respiratory Distress Syndrome. Am J Respir Crit Care Med. 2017;195(9):1253-63."
-  ]
+  ],
+  "moduleId": "module-03",
+  "metadata": {
+    "updatedAt": "2025-11-08T03:42:27.650Z",
+    "description": "Descripción pendiente de curaduría (metadatos).",
+    "version": "1.0.0"
+  },
+  "id": "protocolo-de-ventilacion-mecanica-para-neumonia-severa",
+  "quiz": [],
+  "resources": []
 }
-

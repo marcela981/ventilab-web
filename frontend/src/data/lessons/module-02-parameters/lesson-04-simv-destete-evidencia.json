@@ -1,0 +1,429 @@
+{
+    "id": "lesson-04-simv-destete-evidencia",
+    "moduleId": "module-02-modalidades-parametros",
+    "title": "Ventilación Mandatoria Intermitente Sincronizada (SIMV): paquete de lecciones avanzadas",
+    "description": "Conjunto de lecciones a nivel de residencia/doctorado sobre SIMV (Synchronized Intermittent Mandatory Ventilation), en sus variantes controladas por volumen (SIMV-VC) y por presión (SIMV-PC), y el acoplamiento de soporte de presión (PS) para respiraciones espontáneas. Se abordan fundamentos (trigger/limit/cycle y ventana de sincronía), parametrización segura (frecuencia mandataria, Vt o Pinsp, PEEP, soporte de presión, sensibilidad de disparo), lectura de curvas, asincronías y su resolución, y el rol contemporáneo de SIMV en comparación con AC/VC, PCV y estrategias de destete dirigidas por SBT/PSV. Incluye ejemplos numéricos, casos clínicos, listas de verificación, imágenes y videos.",
+    "order": 4,
+    "estimatedTime": 240,
+    "difficulty": "advanced",
+    "bloomLevel": "evaluate",
+    "nivel": "investigativo-doctoral",
+    "prerequisites": [
+    "Mecánica respiratoria (compliance, resistencia, tiempo constante, auto-PEEP)",
+    "Interpretación de curvas presión–flujo–volumen",
+    "Estrategias de ventilación protectora y destete (SBT)"
+    ],
+    "learningObjectives": [
+    "Diferenciar con precisión la lógica de SIMV (ventana de sincronía y respiraciones obligatorias) en comparación con AC y modos de soporte.",
+    "Configurar de forma segura SIMV-VC y SIMV-PC e integrar soporte de presión en respiraciones espontáneas.",
+    "Reconocer y resolver asincronías típicas de SIMV (apilamiento de respiraciones, esfuerzos inefectivos, auto-disparo) mediante ajustes de ventana de sincronía, sensibilidad y PS.",
+    "Sustentar decisiones de destete comparando SIMV con SBT/PSV conforme a la evidencia clínica contemporánea."
+    ],
+    "lessons": [
+    {
+    "id": "lesson-01-simv-fundamentos-ondas",
+    "moduleId": "module-02-modalidades-parametros",
+    "title": "Fundamentos de SIMV y lectura de ondas",
+    "description": "Definición de SIMV, variantes por volumen y por presión, y el concepto de sincronización de respiraciones obligatorias dentro de una ventana de disparo; integración de respiraciones espontáneas con o sin soporte de presión.",
+    "order": 1,
+    "estimatedTime": 55,
+    "difficulty": "advanced",
+    "bloomLevel": "analyze",
+    "learningObjectives": [
+    "Precisar que SIMV entrega un número fijado de respiraciones **mandatorias** sincronizadas con el esfuerzo del paciente dentro de una **ventana de sincronía**, permitiendo respiraciones espontáneas entre ellas.",
+    "Describir SIMV-VC (volumen objetivo en la respiración mandataria) vs SIMV-PC (presión objetivo; Vt variable).",
+    "Relacionar cómo el agregado de **PS** a las respiraciones espontáneas modifica trabajo respiratorio y confort."
+    ],
+    "sections": [
+    {
+    "id": "intro-simv",
+    "order": 1,
+    "type": "introduction",
+    "title": "¿Qué es SIMV?",
+    "content": {
+    "markdown": "En **SIMV** se programa una **frecuencia mandataria**; cada respiración obligatoria se **sincroniza** con el esfuerzo del paciente dentro de una **ventana** durante la fase espiratoria. Entre respiraciones mandatorias, el paciente puede realizar **respiraciones espontáneas**, frecuentemente con **soporte de presión (PS)** para reducir el trabajo impuesto por el sistema. ([CNIB][1])"
+    }
+    },
+    {
+    "id": "simv-variantes",
+    "order": 2,
+    "type": "theory",
+    "title": "SIMV-VC vs SIMV-PC y control de variables",
+    "content": {
+    "markdown": "• **SIMV-VC**: en las mandatorias se fija **Vt**; la presión resultante depende de la mecánica.  \n• **SIMV-PC**: en las mandatorias se fija **Pinsp** sobre PEEP y **TI**; el **Vt** resultante **varía** según la mecánica.  \n• Las respiraciones **espontáneas** (entre mandatorias) son típicamente **presión-limitadas** (PS). En SIMV pueden coexistir variables de control distintas entre mandatorias y espontáneas. ([weinmann-emergency.com][2])"
+    }
+    },
+    {
+    "id": "tlc-simv",
+    "order": 3,
+    "type": "theory",
+    "title": "Trigger, Límite y Ciclado (T/L/C) aplicados a SIMV",
+    "content": {
+    "markdown": "**Trigger**: tiempo (mandatoria) o esfuerzo (flujo/presión en la ventana de sincronía). **Límite**: volumen (SIMV-VC) o presión (SIMV-PC / respiraciones espontáneas). **Ciclado**: por **tiempo** (mandatorias en PC) o por **volumen** (mandatorias en VC); las espontáneas suelen **ciclar por flujo**. Marco T/L/C para reducir ambigüedades. ([Deranged Physiology][3])"
+    }
+    },
+    {
+    "id": "checklist-ondas-simv",
+    "order": 4,
+    "type": "procedure",
+    "title": "Checklist de lectura de ondas (SIMV)",
+    "content": {
+    "markdown": "1) Identifica **mandatorias** y **espontáneas**; 2) comprueba **sincronía** en la ventana (disparo alineado); 3) en SIMV-VC, distingue **PIP vs Pplat**; en SIMV-PC, verifica que el flujo se aproxime a cero al final del **TI**; 4) correlaciona **PS** con **Vt/PBW** y confort; 5) reevalúa tras cualquier cambio de mecánica o sedación. ([CNIB][1])"
+    }
+    }
+    ],
+    "media": {
+    "videos": [
+    {
+    "id": "vid-modes-overview",
+    "title": "Vent Modes 101 – Focus on the Waveform (ATS)",
+    "provider": "ATS Video Lecture",
+    "url": "[https://www.thoracic.org/professionals/clinical-resources/video-lecture-series/mechanical-ventilation/](https://www.thoracic.org/professionals/clinical-resources/video-lecture-series/mechanical-ventilation/)",
+    "credit": "ATS/UCSF",
+    "note": "Panorama de modos y curvas (incluye SIMV). ([American Thoracic Society][4])"
+    }
+    ],
+    "images": [
+    {
+    "id": "img-onepager-modes",
+    "url": "[https://www.openanesthesia.org/wp-content/uploads/2024/12/02/ICU_one_pager_vent_basics.pdf](https://www.openanesthesia.org/wp-content/uploads/2024/12/02/ICU_one_pager_vent_basics.pdf)",
+    "alt": "Tarjeta visual de modos con esquema Trigger/Limit/Cycle",
+    "caption": "Resumen visual de modos (incluye SIMV, PS, VC/PC). ([OpenAnesthesia][5])"
+    }
+    ]
+    },
+    "resources": {
+    "keyReadings": [
+    "OpenAnesthesia – Modes of Mechanical Ventilation (definición, pros/contras SIMV). ([OpenAnesthesia][6])",
+    "NCBI Bookshelf – SIMV (definición, sincronización y espontáneas). ([CNIB][1])"
+    ]
+    },
+    "metadata": { "estimatedWorkloadMinutes": 55, "assessmentType": "formative" }
+    },
+    {
+    "id": "lesson-02-simv-parametrizacion",
+    "moduleId": "module-02-modalidades-parametros",
+    "title": "Parametrización segura en SIMV (VC/PC) + soporte de presión",
+    "description": "Cómo fijar la frecuencia mandataria, elegir VC vs PC para las mandatorias, ajustar PEEP, PS para espontáneas, sensibilidad de disparo y ventana de sincronía; alarmas clave.",
+    "order": 2,
+    "estimatedTime": 65,
+    "difficulty": "advanced",
+    "bloomLevel": "apply",
+    "learningObjectives": [
+    "Programar **frecuencia mandataria (RRm)** y parámetros de las mandatorias: **Vt** (SIMV-VC) o **Pinsp/TI** (SIMV-PC).",
+    "Seleccionar **PS** para espontáneas equilibrando Vt/PBW, esfuerzo y confort.",
+    "Configurar sensibilidad de disparo y **ventana de sincronía** para minimizar asincronías."
+    ],
+    "sections": [
+    {
+    "id": "parametros-clave-simv",
+    "order": 1,
+    "type": "theory",
+    "title": "Parámetros clave y lógica de ajuste",
+    "content": {
+    "markdown": "• **SIMV-VC** (mandatorias): fija **Vt** y **flujo/TI**; monitoriza **PIP/Pplat**.  \n• **SIMV-PC** (mandatorias): fija **Pinsp** sobre **PEEP** y **TI**; observa **Vt** resultante.  \n• **PS** en espontáneas: típicamente 5–15 cmH₂O según mecánica/esfuerzo y para compensar trabajo del tubo.  \n• **Sensibilidad/ventana**: optimizar para sincronizar mandatorias con el esfuerzo y evitar auto-disparo. ([weinmann-emergency.com][2])"
+    }
+    },
+    {
+    "id": "alarmas-seguridad-simv",
+    "order": 2,
+    "type": "procedure",
+    "title": "Alarmas y seguridad",
+    "content": {
+    "markdown": "• **Presión alta / PIP**: evaluar circuito/tubo/moco y mecánica.  \n• **Volumen/ventilación minuto bajos**: puede indicar caída del **esfuerzo** o **compliance**; en SIMV-PC ajusta **Pinsp/TI** o RRm; revisa **PS**.  \n• **Auto-disparo**: revisar sensibilidad y **fugas** (sobre todo en interfaces NIV). ([CNIB][1])"
+    }
+    },
+    {
+    "id": "ejemplos-numericos",
+    "order": 3,
+    "type": "example",
+    "title": "Ejemplos numéricos (VC y PC)",
+    "content": {
+    "markdown": "**SIMV-VC + PS** (PBW 70 kg): RRm 12, **Vt 6 ml/kg = 420 ml**, PEEP 8, PS 10; ajustar **flujo** para tiempo inspiratorio 0,9 s; verificar **Pplat ≤30** si es posible.  \n**SIMV-PC + PS**: RRm 12, **Pinsp 12** sobre PEEP 8, TI 0,9 s; observar **Vt** resultante (~6 ml/kg) y ajustar **PS** para confort y **Vt** en espontáneas. ([OpenAnesthesia][5])"
+    }
+    }
+    ],
+    "media": {
+    "videos": [
+    {
+    "id": "vid-modes-youtube",
+    "title": "Modes of Mechanical Ventilation (incluye SIMV)",
+    "provider": "YouTube",
+    "url": "[https://www.youtube.com/watch?v=0PoAN2Cvt2w](https://www.youtube.com/watch?v=0PoAN2Cvt2w)",
+    "credit": "T. Wolbrink – Repaso de modos",
+    "note": "Comparativa VC/PC/SIMV/PS. ([YouTube][7])"
+    }
+    ]
+    },
+    "resources": {
+    "keyReadings": [
+    "Med Intensiva (2013) – Convivencia de variables de control en SIMV. ([medintensiva.org][8])",
+    "OpenAnesthesia – Vent Basics (OnePager, parámetros). ([OpenAnesthesia][5])"
+    ]
+    },
+    "metadata": { "estimatedWorkloadMinutes": 65, "assessmentType": "formative" }
+    },
+    {
+    "id": "lesson-03-simv-asincronias",
+    "moduleId": "module-02-modalidades-parametros",
+    "title": "Asincronías típicas de SIMV y su resolución",
+    "description": "Identificación en curvas, fisiopatología y manejo de apilamiento de respiraciones (breath stacking), esfuerzos inefectivos y auto-disparo en SIMV con y sin PS.",
+    "order": 3,
+    "estimatedTime": 50,
+    "difficulty": "advanced",
+    "bloomLevel": "evaluate",
+    "learningObjectives": [
+    "Reconocer apilamiento de respiraciones por mala sincronización de mandatorias con el esfuerzo.",
+    "Detectar esfuerzos inefectivos por auto-PEEP y ajustar PS/PEEP/ventana de sincronía.",
+    "Corregir auto-disparo por fugas/sensibilidad inadecuada."
+    ],
+    "sections": [
+    {
+    "id": "ventana-sincronia",
+    "order": 1,
+    "type": "theory",
+    "title": "Ventana de sincronía y disparo",
+    "content": {
+    "markdown": "La **ventana de sincronía** intenta alinear la respiración mandataria con el esfuerzo; su configuración deficiente favorece **apilamiento** o **mandatorias no sincronizadas**. Ajustar **sensibilidad** (flujo/presión) y la ventana reduce asincronías. ([CNIB][1])"
+    }
+    },
+    {
+    "id": "ps-fugas",
+    "order": 2,
+    "type": "theory",
+    "title": "PS, auto-PEEP y fugas",
+    "content": {
+    "markdown": "El **PS** adecuado disminuye el trabajo en espontáneas; la **auto-PEEP** eleva el umbral de disparo (**esfuerzos inefectivos**). En NIV o con fugas, el **auto-disparo** es frecuente: reduce sensibilidad, corrige fugas o usa trigger alternativo. ([CNIB][9])"
+    }
+    },
+    {
+    "id": "algoritmo-asincronias-simv",
+    "order": 3,
+    "type": "procedure",
+    "title": "Algoritmo práctico",
+    "content": {
+    "markdown": "1) Identifica patrón en curvas (apilamiento/inefectivo/auto-disparo).  \n2) **Sincronía**: ajusta ventana/sensibilidad; considera reducir RRm si hay sobreimpulso.  \n3) **Auto-PEEP**: ↑PEEP externa con matching y optimiza TI espiratorio.  \n4) **PS**: ajusta para confort y Vt en espontáneas.  \n5) Reevalúa Vt/PBW, FR y gases a 10–15 min. ([Respiratory Therapy][10])"
+    }
+    }
+    ],
+    "media": {
+    "images": [
+    {
+    "id": "img-waveforms-review",
+    "url": "[https://pmc.ncbi.nlm.nih.gov/articles/PMC7782574/pdf/main.pdf](https://pmc.ncbi.nlm.nih.gov/articles/PMC7782574/pdf/main.pdf)",
+    "alt": "Curvas de ventilador: presión, flujo y volumen",
+    "caption": "Revisión de curvas para reconocer asincronías. ([PMC][11])"
+    }
+    ]
+    },
+    "resources": {
+    "keyReadings": [
+    "Deranged Physiology – Variables de fase (disparo/límite/ciclado). ([Deranged Physiology][3])",
+    "Respiratory Therapy – Waveforms y evaluación. ([Respiratory Therapy][10])"
+    ]
+    },
+    "metadata": { "estimatedWorkloadMinutes": 50, "assessmentType": "formative" }
+    },
+    {
+    "id": "lesson-04-simv-destete-evidencia",
+    "moduleId": "module-02-modalidades-parametros",
+    "title": "SIMV en el destete: evidencia y práctica contemporánea",
+    "description": "Síntesis de ensayos y guías sobre destete con SIMV vs SBT/PSV; ventajas y limitaciones, y recomendaciones actuales.",
+    "order": 4,
+    "estimatedTime": 60,
+    "difficulty": "advanced",
+    "bloomLevel": "apply",
+    "learningObjectives": [
+    "Comparar la eficacia de SIMV, PSV y SBT (T-piece) para la liberación de la VM.",
+    "Aplicar guías AARC 2024 para seleccionar y ejecutar SBT.",
+    "Reconocer escenarios donde SIMV puede aún considerarse, integrando PS y objetivos de protección pulmonar."
+    ],
+    "sections": [
+    {
+    "id": "evidencia-clave",
+    "order": 1,
+    "type": "theory",
+    "title": "Evidencia clave (NEJM 1995; revisiones posteriores)",
+    "content": {
+    "markdown": "El ECA multicéntrico de **Esteban et al., NEJM 1995** mostró que un **SBT diario** liberó a los pacientes **≈3× más rápido** que IMV/SIMV y **≈2× más rápido** que PSV; múltiples SBT diarios también fueron eficaces. Revisiones y guías posteriores han desaconsejado **SIMV** como estrategia primaria de destete por **mayor duración** de la ventilación. ([marshall-surgery.net][12])"
+    }
+    },
+    {
+    "id": "guias-2024",
+    "order": 2,
+    "type": "theory",
+    "title": "Guías AARC 2024 para SBT",
+    "content": {
+    "markdown": "Las guías **AARC 2024** recomiendan **evaluación diaria** y **SBT** oportuno; no hallan diferencias consistentes entre **SBT con PSV** y **T-piece**; enfatizan evitar cambios arbitrarios de FiO₂ durante el SBT y detener si hay signos de fracaso. ([PubMed][13])"
+    }
+    },
+    {
+    "id": "cuando-simv",
+    "order": 3,
+    "type": "theory",
+    "title": "¿Cuándo considerar SIMV?",
+    "content": {
+    "markdown": "SIMV puede considerarse en entornos donde se busca **participación muscular** con control sobre mandatorias y soporte a espontáneas (p. ej., protocolos locales o quirúrgicos específicos), siempre **vigilando** trabajo respiratorio y **asincronías**. El agregado de **PS** a espontáneas **reduce trabajo** y mejora comodidad. ([Medscape][14])"
+    }
+    },
+    {
+    "id": "ejemplo-clinico-destete",
+    "order": 4,
+    "type": "example",
+    "title": "Ejemplo clínico (transición a SBT)",
+    "content": {
+    "markdown": "Paciente estable en **SIMV-VC + PS** (RRm 8, Vt 6 ml/kg, PS 8, PEEP 5). Tras criterios de aptitud, se realiza **SBT** 30–60 min (PS 5–8, PEEP 5 o T-piece). Si tolera (FR 18–28, Vt ≥5–6 ml/kg, SpO₂ adecuada), plan de extubación. ([PubMed][13])"
+    }
+    }
+    ],
+    "media": {
+    "videos": [
+    {
+    "id": "vid-vent-modes-ats",
+    "title": "Vent Modes 101 – Waveform focus",
+    "provider": "ATS/UCSF",
+    "url": "[https://www.thoracic.org/professionals/clinical-resources/video-lecture-series/mechanical-ventilation/](https://www.thoracic.org/professionals/clinical-resources/video-lecture-series/mechanical-ventilation/)",
+    "credit": "Serie de ventilación mecánica ATS",
+    "note": "Apoyo visual para decisiones de destete. ([American Thoracic Society][4])"
+    }
+    ]
+    },
+    "resources": {
+    "keyReadings": [
+    "NEJM 1995 – Comparison of four weaning methods. ([marshall-surgery.net][12])",
+    "AARC 2024 – Spontaneous Breathing Trials CPG. ([PMC][15])"
+    ]
+    },
+    "metadata": { "estimatedWorkloadMinutes": 60, "assessmentType": "summative" }
+    },
+    {
+    "id": "lesson-05-simv-casos",
+    "moduleId": "module-02-modalidades-parametros",
+    "title": "Casos prácticos integrados en SIMV",
+    "description": "Tres escenarios clínicos para aplicar ajustes de ventana de sincronía, sensibilidad de disparo, PS y parámetros mandatarios (VC/PC) con lectura de curvas.",
+    "order": 5,
+    "estimatedTime": 55,
+    "difficulty": "advanced",
+    "bloomLevel": "create",
+    "learningObjectives": [
+    "Aplicar un algoritmo de decisión ante apilamiento por mala sincronía.",
+    "Resolver esfuerzos inefectivos por auto-PEEP ajustando PEEP y sensibilidad.",
+    "Optimizar PS en espontáneas sin perder metas de Vt/PBW y confort."
+    ],
+    "sections": [
+    {
+    "id": "caso-1-apilamiento",
+    "order": 1,
+    "type": "case",
+    "title": "Caso 1: Apilamiento por ventana de sincronía inadecuada",
+    "content": {
+    "markdown": "**Datos**: SIMV-VC RRm 14, Vt 6 ml/kg, PEEP 8, PS 8; curvas muestran mandatoria cayendo sobre esfuerzo tardío → **doble ciclo**. **Acción**: ajustar **ventana** y **sensibilidad** para alinear el disparo; considerar ↓RRm si sobreimpulso; revaluar PIP/Pplat y confort. ([CNIB][1])"
+    }
+    },
+    {
+    "id": "caso-2-inefectivos-autopeep",
+    "order": 2,
+    "type": "case",
+    "title": "Caso 2: Esfuerzos inefectivos por auto-PEEP",
+    "content": {
+    "markdown": "**Datos**: SIMV-PC RRm 10, Pinsp 14 sobre PEEP 8, TI 0,9 s; múltiples esfuerzos sin disparo. **Acción**: ↑ **PEEP** externa (matching parcial 50–80% de la iPEEP), optimiza **tiempo espiratorio** y sensibilidad; PS estable para espontáneas. ([Respiratory Therapy][10])"
+    }
+    },
+    {
+    "id": "caso-3-ps-fugas",
+    "order": 3,
+    "type": "case",
+    "title": "Caso 3: Auto-disparo por fugas con PS",
+    "content": {
+    "markdown": "**Datos**: SIMV-VC + **PS** en NIV; activaciones sin esfuerzo. **Acción**: reducir **sensibilidad** o cambiar tipo de trigger, corregir **fugas** de interfaz; activar compensación de fugas si disponible; revalorar Vt y ventilación minuto. ([weinmann-emergency.com][2])"
+    }
+    }
+    ],
+    "media": {
+    "images": [
+    {
+    "id": "img-modes-pocket",
+    "url": "[https://www.nursingcenter.com/getattachment/clinical-resources/nursing-pocket-cards/mechanical-ventilation-settings-and-basic-modes/Pocket-Card_Mechanical-Ventilation-Settings-and-Basic-Modes_Nov-2024.pdf.aspx](https://www.nursingcenter.com/getattachment/clinical-resources/nursing-pocket-cards/mechanical-ventilation-settings-and-basic-modes/Pocket-Card_Mechanical-Ventilation-Settings-and-Basic-Modes_Nov-2024.pdf.aspx)",
+    "alt": "Pocket card de modos y parámetros",
+    "caption": "Guía rápida de parámetros y modos (incluye SIMV). ([nursingcenter.com][16])"
+    }
+    ]
+    },
+    "resources": {
+    "keyReadings": [
+    "OpenAnesthesia – Pros/contras de SIMV y PS en espontáneas. ([OpenAnesthesia][6])",
+    "NCBI Bookshelf – SIMV (detalles de trigger y sincronización). ([CNIB][1])"
+    ]
+    },
+    "metadata": { "estimatedWorkloadMinutes": 55, "assessmentType": "practical" }
+    }
+    ],
+    "assessment": {
+    "quiz": {
+    "id": "quiz-simv-advanced",
+    "type": "multiple-choice",
+    "attemptsAllowed": 2,
+    "questions": [
+    {
+    "id": "q1",
+    "stem": "En SIMV, las respiraciones **mandatorias** se caracterizan por:",
+    "options": [
+    "Ser siempre disparadas por el paciente",
+    "Ignorar la sincronía con el esfuerzo",
+    "Sincronizarse con el esfuerzo dentro de una ventana de disparo",
+    "Ciclarse por flujo en todos los casos"
+    ],
+    "answer": 3,
+    "rationale": "SIMV intenta **sincronizar** las mandatorias con el esfuerzo dentro de una **ventana de sincronía**. ([CNIB][1])"
+    },
+    {
+    "id": "q2",
+    "stem": "En **SIMV-VC**, la variable **controlada** en las respiraciones mandatorias es:",
+    "options": ["La presión", "El volumen corriente (Vt)", "El flujo espiratorio", "La PEEP media"],
+    "answer": 2,
+    "rationale": "En **SIMV-VC** se fija **Vt**; en **SIMV-PC** se fija **Pinsp**. ([medintensiva.org][8])"
+    },
+    {
+    "id": "q3",
+    "stem": "Respecto al **destete**, la evidencia (NEJM 1995, guías AARC 2024) sugiere que:",
+    "options": [
+    "SIMV acelera la liberación vs SBT",
+    "SIMV y SBT son equivalentes",
+    "SBT diarios liberan más rápido que SIMV",
+    "SIMV siempre reduce la duración de VM frente a PSV"
+    ],
+    "answer": 3,
+    "rationale": "El ECA de **Esteban 1995** y guías **AARC 2024** favorecen **SBT** sobre SIMV para acelerar la liberación. ([marshall-surgery.net][12])"
+    },
+    {
+    "id": "q4",
+    "stem": "El agregado de **soporte de presión (PS)** a las respiraciones espontáneas en SIMV:",
+    "options": [
+    "Aumenta el trabajo respiratorio",
+    "Reduce el trabajo impuesto por el tubo/circuito y mejora confort",
+    "Impide la sincronía de las mandatorias",
+    "Elimina la necesidad de ajustar sensibilidad"
+    ],
+    "answer": 2,
+    "rationale": "El **PS** sobre espontáneas **disminuye** el trabajo respiratorio y mejora la comodidad. ([OpenAnesthesia][6])"
+    }
+    ]
+    }
+    },
+    "sources": [
+    "OpenAnesthesia – Modes of Mechanical Ventilation (definición, pros/contras de SIMV, PS en espontáneas). ([OpenAnesthesia][6])",
+    "NCBI Bookshelf – Synchronized Intermittent Mandatory Ventilation (sincronización, respiraciones espontáneas, variantes). ([CNIB][1])",
+    "Med Intensiva (2013) – Variables de control coexistentes en SIMV (VC/PC en mandatorias y PS en espontáneas). ([medintensiva.org][8])",
+    "NEJM 1995 – Esteban et al., comparación de 4 métodos de destete (SBT vs SIMV/PSV). ([marshall-surgery.net][12])",
+    "AARC 2024 – Spontaneous Breathing Trials Guideline (recomendaciones de SBT). ([PMC][15])",
+    "Weinmann – Descripción práctica de SIMV y SIMV-PSV; ventana de disparo. ([weinmann-emergency.com][2])",
+    "Deranged Physiology – Variables de fase T/L/C y sincronización. ([Deranged Physiology][3])",
+    "OpenAnesthesia ICU OnePager – Resumen visual de modos y parámetros. ([OpenAnesthesia][5])"
+    ],
+    "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-08",
+    "language": "es-CO",
+    "tags": ["SIMV", "SIMV-VC", "SIMV-PC", "Ventana de sincronía", "Soporte de presión", "Asincronías", "Destete", "SBT"]
+    }
+    }

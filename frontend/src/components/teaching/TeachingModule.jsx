@@ -587,13 +587,23 @@ const TeachingModule = () => {
         {
           id: 'modules',
           title: 'Completar Módulos',
-          progress: Math.min((Object.keys(curriculumData.modules).filter(moduleId => 
-            calculateModuleProgress(moduleId) === 100
-          ).length / Object.keys(curriculumData.modules).length) * 100, 100),
-          target: Object.keys(curriculumData.modules).length,
-          current: Object.keys(curriculumData.modules).filter(moduleId => 
-            calculateModuleProgress(moduleId) === 100
-          ).length,
+          // Use data-driven count via selectors
+          progress: (() => {
+            const modulesArray = Object.values(curriculumData.modules || {});
+            const totalModules = modulesArray.length;
+            const completedModules = modulesArray.filter(module => 
+              calculateModuleProgress(module.id) === 100
+            ).length;
+            return totalModules > 0 ? Math.min((completedModules / totalModules) * 100, 100) : 0;
+          })(),
+          target: (() => {
+            return Object.keys(curriculumData.modules || {}).length;
+          })(),
+          current: (() => {
+            return Object.values(curriculumData.modules || {}).filter(module => 
+              calculateModuleProgress(module.id) === 100
+            ).length;
+          })(),
           unit: ' módulos'
         }
       ],

@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
+import { getModulesCount, getAllModules } from '../../../data/curriculum/selectors.js';
 
 /**
  * Hook personalizado para encapsular la lógica del árbol de progreso del usuario
@@ -147,8 +148,9 @@ const useProgressTree = (
       };
     }
 
-    const modules = Object.values(curriculumData.modules);
-    const totalModules = modules.length;
+    // Use selector for data-driven count
+    const modules = getAllModules();
+    const totalModules = getModulesCount();
 
     // Contar módulos completados
     let completedModules = 0;

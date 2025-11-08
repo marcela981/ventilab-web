@@ -9,10 +9,9 @@
 // =============================================================================
 
 // Módulo 01: Fundamentos Fisiológicos y Respiratorios
-import lesson01Anatomy from './lessons/module-01-fundamentals/lesson-01-respiratory-anatomy.json';
-import lesson02Mechanics from './lessons/module-01-fundamentals/lesson-02-respiratory-mechanics.json';
-import lesson03GasExchange from './lessons/module-01-fundamentals/lesson-03-gas-exchange.json';
-import lesson04ArterialBloodGas from './lessons/module-01-fundamentals/lesson-04-arterial-blood-gas.json';
+import lesson01Mechanics from './lessons/module-01-fundamentals/lesson-01-respiratory-mechanics.json';
+import lesson02GasExchange from './lessons/module-01-fundamentals/lesson-02-gas-exchange.json';
+import lesson03ArterialBloodGas from './lessons/module-01-fundamentals/lesson-03-arterial-blood-gas.json';
 
 export const curriculumData = {
   levels: [
@@ -22,7 +21,7 @@ export const curriculumData = {
       description: 'Fundamentos fisiológicos y conceptos básicos de ventilación mecánica',
       color: '#4CAF50',
       emoji: '🌱',
-      totalModules: 10,
+      // totalModules is now computed dynamically via selectors
       estimatedDuration: '20-25 horas'
     },
     {
@@ -31,7 +30,7 @@ export const curriculumData = {
       description: 'Modalidades ventilatorias y manejo de parámetros críticos',
       color: '#FF9800',
       emoji: '🎯',
-      totalModules: 12,
+      // totalModules is now computed dynamically via selectors
       estimatedDuration: '30-35 horas'
     },
     {
@@ -40,7 +39,7 @@ export const curriculumData = {
       description: 'Estrategias especializadas y casos clínicos complejos',
       color: '#F44336',
       emoji: '🚀',
-      totalModules: 10,
+      // totalModules is now computed dynamically via selectors
       estimatedDuration: '25-30 horas'
     }
   ],
@@ -56,7 +55,6 @@ export const curriculumData = {
       duration: 180, // minutos (suma de todas las lecciones)
       prerequisites: [],
       learningObjectives: [
-        'Identificar las estructuras anatómicas del sistema respiratorio',
         'Comprender la mecánica respiratoria y la relación presión-volumen',
         'Analizar el intercambio gaseoso y los factores que lo afectan',
         'Interpretar gasometrías arteriales en el contexto de ventilación mecánica'
@@ -67,74 +65,53 @@ export const curriculumData = {
       // ✅ CONECTAR LECCIONES REALES DESDE JSON
       lessons: [
         {
-          id: 'respiratory-anatomy',
-          title: lesson01Anatomy.title,
-          description: lesson01Anatomy.description,
-          estimatedTime: lesson01Anatomy.estimatedTime,
-          difficulty: lesson01Anatomy.difficulty,
-          order: lesson01Anatomy.order || 1,
-          // Mantener referencia al JSON completo para uso en useLesson hook
-          lessonData: lesson01Anatomy
-        },
-        {
           id: 'respiratory-mechanics',
-          title: lesson02Mechanics.titulo || 'Mecánica Respiratoria',
-          description: lesson02Mechanics.introduccion || '',
-          estimatedTime: 45,
-          difficulty: 'básico',
-          order: 2,
-          lessonData: lesson02Mechanics
+          title: lesson01Mechanics.title || 'Mecánica Respiratoria',
+          description: lesson01Mechanics.description || '',
+          estimatedTime: lesson01Mechanics.estimatedTime || 75,
+          difficulty: lesson01Mechanics.difficulty || 'intermediate',
+          order: lesson01Mechanics.order || 1,
+          lessonData: lesson01Mechanics
         },
         {
           id: 'gas-exchange',
-          title: 'Intercambio Gaseoso',
-          description: 'Principios del intercambio gaseoso alveolar',
-          estimatedTime: 35,
-          difficulty: 'básico',
-          order: 3,
-          lessonData: lesson03GasExchange
+          title: lesson02GasExchange.title || 'Intercambio Gaseoso',
+          description: lesson02GasExchange.description || 'Principios del intercambio gaseoso alveolar',
+          estimatedTime: lesson02GasExchange.estimatedTime || 85,
+          difficulty: lesson02GasExchange.difficulty || 'intermediate',
+          order: lesson02GasExchange.order || 2,
+          lessonData: lesson02GasExchange
         },
         {
           id: 'arterial-blood-gas',
-          title: lesson04ArterialBloodGas.title || 'Gasometría Arterial',
-          description: 'Interpretación de gasometrías arteriales en ventilación mecánica',
-          estimatedTime: lesson04ArterialBloodGas.estimatedTime || 40,
-          difficulty: 'básico',
-          order: 4,
-          lessonData: lesson04ArterialBloodGas
+          title: lesson03ArterialBloodGas.title || 'Gasometría Arterial',
+          description: lesson03ArterialBloodGas.description || 'Interpretación de gasometrías arteriales en ventilación mecánica',
+          estimatedTime: lesson03ArterialBloodGas.estimatedTime || 60,
+          difficulty: lesson03ArterialBloodGas.difficulty || 'intermediate',
+          order: lesson03ArterialBloodGas.order || 3,
+          lessonData: lesson03ArterialBloodGas
         }
       ]
     },
 
-    // Módulo de Anatomía (mantener para compatibilidad con código existente)
-    'respiratory-anatomy': {
-      id: 'respiratory-anatomy',
-      title: 'Anatomía del Sistema Respiratorio',
-      level: 'beginner',
-      order: 1,
-      duration: lesson01Anatomy.estimatedTime || 120, // minutos
-      prerequisites: [],
-      learningObjectives: lesson01Anatomy.learningObjectives || [
-        'Identificar las estructuras anatómicas del sistema respiratorio',
-        'Comprender la función de cada componente anatómico',
-        'Relacionar anatomía con fisiología respiratoria'
-      ],
-      bloomLevel: lesson01Anatomy.bloomLevel || 'comprender',
-      difficulty: lesson01Anatomy.difficulty || 'básico',
-      estimatedTime: `${lesson01Anatomy.estimatedTime || 45} min`,
-      // ✅ Usar lección JSON real - mapear IDs para compatibilidad
-      lessons: [
-        {
-          id: 'respiratory-anatomy', // Mapeo: anatomy-overview -> respiratory-anatomy
-          title: lesson01Anatomy.title,
-          description: lesson01Anatomy.description,
-          estimatedTime: lesson01Anatomy.estimatedTime,
-          difficulty: lesson01Anatomy.difficulty,
-          order: lesson01Anatomy.order || 1,
-          lessonData: lesson01Anatomy
-        }
-      ]
-    },
+    // Módulo de Anatomía (comentado - archivo JSON no existe aún)
+    // 'respiratory-anatomy': {
+    //   id: 'respiratory-anatomy',
+    //   title: 'Anatomía del Sistema Respiratorio',
+    //   level: 'beginner',
+    //   order: 1,
+    //   duration: 120, // minutos
+    //   prerequisites: [],
+    //   learningObjectives: [
+    //     'Identificar las estructuras anatómicas del sistema respiratorio',
+    //     'Comprender la función de cada componente anatómico',
+    //     'Relacionar anatomía con fisiología respiratoria'
+    //   ],
+    //   bloomLevel: 'comprender',
+    //   difficulty: 'básico',
+    //   estimatedTime: '45 min',
+    //   lessons: []
+    // },
 
     'respiratory-physiology': {
       id: 'respiratory-physiology',
@@ -142,7 +119,7 @@ export const curriculumData = {
       level: 'beginner',
       order: 2,
       duration: 150,
-      prerequisites: ['respiratory-anatomy'],
+      prerequisites: [], // Removed 'respiratory-anatomy' as it doesn't exist
       learningObjectives: [
         'Comprender los principios del intercambio gaseoso',
         'Analizar la mecánica de la ventilación',
@@ -155,30 +132,30 @@ export const curriculumData = {
       lessons: [
         {
           id: 'respiratory-mechanics',
-          title: lesson02Mechanics.titulo || 'Mecánica Respiratoria',
-          description: lesson02Mechanics.introduccion || '',
-          estimatedTime: 45,
-          difficulty: 'básico',
-          order: 1,
-          lessonData: lesson02Mechanics
+          title: lesson01Mechanics.title || 'Mecánica Respiratoria',
+          description: lesson01Mechanics.description || '',
+          estimatedTime: lesson01Mechanics.estimatedTime || 75,
+          difficulty: lesson01Mechanics.difficulty || 'intermediate',
+          order: lesson01Mechanics.order || 1,
+          lessonData: lesson01Mechanics
         },
         {
           id: 'gas-exchange',
-          title: 'Intercambio Gaseoso',
-          description: 'Principios del intercambio gaseoso alveolar',
-          estimatedTime: 35,
-          difficulty: 'básico',
-          order: 2,
-          lessonData: lesson03GasExchange
+          title: lesson02GasExchange.title || 'Intercambio Gaseoso',
+          description: lesson02GasExchange.description || 'Principios del intercambio gaseoso alveolar',
+          estimatedTime: lesson02GasExchange.estimatedTime || 85,
+          difficulty: lesson02GasExchange.difficulty || 'intermediate',
+          order: lesson02GasExchange.order || 2,
+          lessonData: lesson02GasExchange
         },
         {
           id: 'arterial-blood-gas',
-          title: lesson04ArterialBloodGas.title || 'Gasometría Arterial',
-          description: 'Interpretación de gasometrías arteriales en ventilación mecánica',
-          estimatedTime: lesson04ArterialBloodGas.estimatedTime || 40,
-          difficulty: 'básico',
-          order: 3,
-          lessonData: lesson04ArterialBloodGas
+          title: lesson03ArterialBloodGas.title || 'Gasometría Arterial',
+          description: lesson03ArterialBloodGas.description || 'Interpretación de gasometrías arteriales en ventilación mecánica',
+          estimatedTime: lesson03ArterialBloodGas.estimatedTime || 60,
+          difficulty: lesson03ArterialBloodGas.difficulty || 'intermediate',
+          order: lesson03ArterialBloodGas.order || 3,
+          lessonData: lesson03ArterialBloodGas
         }
       ],
       quiz: {
@@ -717,10 +694,12 @@ export const curriculumData = {
   },
 
   // Metadatos adicionales
+  // NOTE: totalModules, totalLessons, and estimatedTotalTime are now computed dynamically
+  // Use getCurriculumMetadata() from data/curriculum/selectors.js instead
   metadata: {
-    totalModules: 10,
-    totalLessons: 45,
-    estimatedTotalTime: '75-90 horas',
+    // totalModules: computed via getCurriculumMetadata()
+    // totalLessons: computed via getCurriculumMetadata()
+    // estimatedTotalTime: computed via getCurriculumMetadata()
     lastUpdated: '2024-01-15',
     version: '1.0',
     difficultyProgression: {
@@ -741,10 +720,15 @@ export const getModuleById = (moduleId) => {
   return curriculumData.modules[moduleId] || null;
 };
 
+// NOTE: getModulesByLevel is now also exported from selectors.js
+// Keeping this for backward compatibility, but prefer using selectors
 export const getModulesByLevel = (level) => {
+  if (!curriculumData?.modules) {
+    return [];
+  }
   return Object.values(curriculumData.modules)
     .filter(module => module.level === level)
-    .sort((a, b) => a.order - b.order);
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
 };
 
 export const getPrerequisites = (moduleId) => {

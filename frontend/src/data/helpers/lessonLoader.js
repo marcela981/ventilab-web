@@ -160,6 +160,19 @@ const lessonCache = new LRUCache(MAX_CACHE_SIZE);
  * // Returns: 'lessons/module-01-fundamentals/lesson-01-respiratory-anatomy.json'
  */
 export function getLessonPath(lessonId, moduleId) {
+  // Normalize lessonId: Extract name from IDs with format "lesson-XX-name"
+  // Examples: "lesson-02-gas-exchange" -> "gas-exchange", "lesson-01-respiratory-mechanics" -> "respiratory-mechanics"
+  let normalizedLessonId = lessonId;
+  if (lessonId.startsWith('lesson-')) {
+    // Extract the name part after "lesson-XX-"
+    // Pattern: lesson-XX-name -> name
+    const parts = lessonId.split('-');
+    if (parts.length >= 3 && /^\d+$/.test(parts[1])) {
+      // parts[0] = "lesson", parts[1] = number, parts[2+] = name
+      normalizedLessonId = parts.slice(2).join('-');
+    }
+  }
+
   // Mapping of lesson IDs to file names (for lessons with different IDs than filenames)
   // This maps curriculum lesson IDs to actual JSON file names
   const lessonIdToFileName = {
@@ -178,10 +191,10 @@ export function getLessonPath(lessonId, moduleId) {
     'anatomy-overview': '01',
     'airway-structures': '01',
     'lung-mechanics': '01',
-    'respiratory-mechanics': '02',
-    'ventilation-mechanics': '02',
-    'gas-exchange': '03',
-    'arterial-blood-gas': '04',
+    'respiratory-mechanics': '01',
+    'ventilation-mechanics': '01',
+    'gas-exchange': '02',
+    'arterial-blood-gas': '03',
   };
 
   // Normalize module folder
@@ -190,24 +203,24 @@ export function getLessonPath(lessonId, moduleId) {
     moduleFolder = `module-01-fundamentals`; // Default fallback
   }
 
-  // Determine lesson number and filename
-  const lessonNumber = lessonIdToNumber[lessonId] || '01';
+  // Determine lesson number and filename using normalized ID
+  const lessonNumber = lessonIdToNumber[normalizedLessonId] || '01';
   
   // Check if this lessonId maps to a different filename
-  const fileName = lessonIdToFileName[lessonId] || lessonId;
+  const fileName = lessonIdToFileName[normalizedLessonId] || normalizedLessonId;
 
   // Construct file path
   // Handle special cases for module-03-configuration with subcategories
   if (moduleFolder === 'module-03-configuration') {
-    // Check if lessonId suggests a subcategory
+    // Check if normalizedLessonId suggests a subcategory
     const subcategories = ['pathologies', 'protective-strategies', 'weaning'];
     for (const subcat of subcategories) {
-      if (lessonId.includes(subcat.split('-')[0])) {
-        return `${LESSON_PATH_PREFIX}/${moduleFolder}/${subcat}/${lessonId}.json`;
+      if (normalizedLessonId.includes(subcat.split('-')[0])) {
+        return `${LESSON_PATH_PREFIX}/${moduleFolder}/${subcat}/${normalizedLessonId}.json`;
       }
     }
     // Check for protocol files
-    if (lessonId.includes('protocol') || lessonId.includes('criteria') || lessonId.includes('sbt')) {
+    if (normalizedLessonId.includes('protocol') || normalizedLessonId.includes('criteria') || normalizedLessonId.includes('sbt')) {
       const categoryMap = {
         'sdra': 'pathologies',
         'copd': 'pathologies',
@@ -222,8 +235,8 @@ export function getLessonPath(lessonId, moduleId) {
       };
 
       for (const [keyword, category] of Object.entries(categoryMap)) {
-        if (lessonId.includes(keyword)) {
-          return `${LESSON_PATH_PREFIX}/${moduleFolder}/${category}/${lessonId}.json`;
+        if (normalizedLessonId.includes(keyword)) {
+          return `${LESSON_PATH_PREFIX}/${moduleFolder}/${category}/${normalizedLessonId}.json`;
         }
       }
     }

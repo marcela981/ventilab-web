@@ -1,0 +1,371 @@
+{
+  "id": "lesson-02-gas-exchange",
+  "moduleId": "module-01-fundamentals",
+  "title": "Intercambio Gaseoso y Oxigenación",
+  "description": "Lección integral sobre ecuación alveolar del oxígeno (PAO2), gradiente alveolo-arterial (A–a), contenido arterial de oxígeno (CaO2), curva de disociación de la oxihemoglobina (P50 y desplazamientos), relaciones ventilación/perfusión (V/Q) y cortocircuito (shunt), difusión (ley de Fick, DLCO) y ventilación alveolar (control de PaCO2). Incluye videos, imágenes, ejemplos numéricos y casos clínicos para aplicar decisiones de oxigenoterapia y ajustes del ventilador.",
+  "order": 3,
+  "estimatedTime": 85,
+  "difficulty": "intermediate",
+  "bloomLevel": "analyze",
+  "learningObjectives": [
+    "Calcular PAO2 con la ecuación alveolar e interpretar el gradiente A–a para diferenciar causas de hipoxemia.",
+    "Estimar el contenido de oxígeno arterial (CaO2) y relacionarlo con la entrega de oxígeno (DO2).",
+    "Explicar la curva de disociación de la oxihemoglobina, el concepto de P50 y los factores que desplazan la curva.",
+    "Distinguir entre V/Q bajo, shunt y espacio muerto alto; prever la respuesta a oxígeno suplementario.",
+    "Aplicar la ley de Fick y el concepto de DLCO para reconocer limitación por difusión.",
+    "Relacionar ventilación alveolar con PaCO2 y ajustar parámetros clínicos en escenarios frecuentes."
+  ],
+  "prerequisites": [
+    "lesson-01-respiratory-mechanics"
+  ],
+  "sections": [
+    {
+      "id": "introduction",
+      "order": 1,
+      "type": "introduction",
+      "title": "Mapa del intercambio gaseoso",
+      "content": {
+        "markdown": "## ¿Qué aprenderás?\n- **PAO2 y A–a**: identificar patrones de hipoxemia (hipoventilación vs V/Q vs shunt).\n- **CaO2 y DO2**: por qué aumentar FiO2 no siempre mejora la entrega de O2 si el problema es Hb o GC.\n- **Curva O2-Hb**: entender P50 y cómo pH, CO2, temperatura y 2,3-DPG cambian la afinidad.\n- **V/Q y shunt**: predecir respuesta a O2 suplementario.\n- **Difusión (DLCO)** y **ventilación alveolar** para comprender PaCO2."
+      }
+    },
+    {
+      "id": "alveolar-gas-equation",
+      "order": 2,
+      "type": "theory",
+      "title": "Ecuación alveolar del oxígeno y gradiente A–a",
+      "content": {
+        "markdown": "### Ecuación alveolar del oxígeno (a 37°C)\n**PAO₂ = FiO₂ × (P_B − P_H₂O) − PaCO₂/RQ**  \nValores típicos al nivel del mar: P_B≈760 mmHg, P_H₂O≈47 mmHg, RQ≈0.8.\n\n**Gradiente A–a**: A–a = PAO₂ − PaO₂.  \nUn A–a **normal** orienta a **hipoventilación** o **FiO₂ baja/altitud**; un A–a **elevado** sugiere **V/Q bajo**, **shunt** o **difusión**.\n\n> Regla práctica del A–a normal en mmHg: ≈ **edad/4 + 4**.",
+        "media": {
+          "images": [
+            {
+              "id": "alveolar-equation",
+              "url": "https://placeholder.ventylab.com/images/alveolar-gas-equation-board.png",
+              "alt": "Pizarra con PAO2 = FiO2 (PB−PH2O) − PaCO2/RQ y ejemplo numérico",
+              "caption": "Ecuación alveolar y ejemplo con FiO2 0.21, PaCO2 40 mmHg."
+            }
+          ],
+          "videos": [
+            {
+              "id": "paO2-explainer",
+              "platform": "YouTube",
+              "url": "https://www.youtube.com/watch?v=9wqnoB-PAO2",
+              "title": "Alveolar Gas Equation (explicación visual)",
+              "caption": "Video de apoyo para comprender la ecuación alveolar (inglés).",
+              "lang": "en"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "oxygen-content-oxyhb",
+      "order": 3,
+      "type": "theory",
+      "title": "Contenido arterial de oxígeno (CaO₂) y curva O₂-Hb",
+      "content": {
+        "markdown": "### Contenido arterial de oxígeno\n**CaO₂ (mL O₂/dL) = 1.34 × Hb × SaO₂ + 0.003 × PaO₂**.  \nLa fracción disuelta (0.003×PaO₂) es pequeña; la mayor parte del O₂ viaja unido a Hb.\n\n### Curva de disociación de la oxihemoglobina\n- Es **sigmoidea**; **P50** normal ≈ **26–27 mmHg** (pO₂ a 50% de saturación).  \n- **Desplazamiento a la derecha** (↓afinidad, facilita liberación): ↑CO₂, ↓pH (efecto Bohr), ↑T°, ↑2,3-DPG.  \n- **Desplazamiento a la izquierda** (↑afinidad): ↓CO₂, ↑pH, ↓T°, ↓2,3-DPG.",
+        "media": {
+          "images": [
+            {
+              "id": "oxyhb-curve",
+              "url": "https://placeholder.ventylab.com/images/oxyhemoglobin-curve-shifts.png",
+              "alt": "Curva O2-Hb con P50 ~26-27 mmHg y flechas de desplazamiento",
+              "caption": "Desplazamientos de la curva por pH, CO2, temperatura y 2,3-DPG."
+            }
+          ],
+          "videos": [
+            {
+              "id": "oxyhb-video",
+              "platform": "YouTube",
+              "url": "https://www.youtube.com/watch?v=R2-ODC-curve",
+              "title": "Oxyhemoglobin curve & P50",
+              "caption": "Repaso visual de P50 y factores de desplazamiento (inglés).",
+              "lang": "en"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "vq-and-shunt",
+      "order": 4,
+      "type": "theory",
+      "title": "Relaciones V/Q, shunt y respuesta a oxígeno",
+      "content": {
+        "markdown": "### Claves\n- **V/Q bajo** y **shunt** son causas frecuentes de hipoxemia.  \n- **V/Q bajo** suele **mejorar** con O₂ suplementario; el **shunt verdadero** (V/Q=0) **mejora poco** con O₂ porque la sangre derivada no se expone al gas alveolar.\n- **Espacio muerto** (V/Q→∞): ventilación sin perfusión (p.ej., TEP) afecta excreción de CO₂.\n\n**Distribución regional**: en bipedestación, V y Q son mayores en bases; el **V/Q** es **más alto en ápices** y **más bajo en bases**.",
+        "media": {
+          "images": [
+            {
+              "id": "vq-scheme",
+              "url": "https://placeholder.ventylab.com/images/vq-mismatch-shunt-deadspace.png",
+              "alt": "Esquema de V/Q bajo, shunt y espacio muerto con respuesta a O2",
+              "caption": "Comparativa de etiologías y respuesta esperada a FiO2."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "diffusion-fick-dlco",
+      "order": 5,
+      "type": "theory",
+      "title": "Difusión (Ley de Fick) y DLCO",
+      "content": {
+        "markdown": "### Ley de Fick (transferencia de gas)\n\\(\\dot{V} \\propto \\frac{A}{T} \\times D \\times (P_1 - P_2)\\).  \nAumenta con mayor **área** (A) y gradiente de presión; disminuye si aumenta el **espesor** (T) o se altera la **difusibilidad**.\n\n### DLCO (capacidad de difusión para CO)\nSe mide con monóxido de carbono (CO) a baja concentración y refleja la capacidad de intercambio de la membrana alveolocapilar. Útil para identificar **limitación por difusión** (p.ej., fibrosis) o cambios en la **superficie** (enfisema).",
+        "media": {
+          "videos": [
+            {
+              "id": "ficks-law-video",
+              "platform": "YouTube",
+              "url": "https://www.youtube.com/watch?v=tDsK0eyuhAk",
+              "title": "Ley de Fick y difusión alveolocapilar",
+              "caption": "Video didáctico corto (inglés).",
+              "lang": "en"
+            }
+          ],
+          "images": [
+            {
+              "id": "dlco-setup",
+              "url": "https://placeholder.ventylab.com/images/dlco-measurement.png",
+              "alt": "Esquema de medición de DLCO con respiración de CO traza",
+              "caption": "Concepto de DLCO y pasos de la medición."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "alveolar-ventilation-co2",
+      "order": 6,
+      "type": "theory",
+      "title": "Ventilación alveolar y control de PaCO₂",
+      "content": {
+        "markdown": "La **PaCO₂** es inversamente proporcional a la **ventilación alveolar (V̇_A)**: si V̇_A desciende, la **PaCO₂ sube** (hipoventilación).  \nCausas clínicas: depresión del centro respiratorio (opioides), fatiga muscular, aumento del espacio muerto.  \nAjustes: ↑V̇_A (mayor VT efectivo o FR) y tratar la causa subyacente."
+      }
+    },
+    {
+      "id": "worked-examples",
+      "order": 7,
+      "type": "example",
+      "title": "Ejemplos numéricos",
+      "content": {
+        "markdown": "### 1) Cálculo de PAO₂ y A–a\n**Datos**: FiO₂ 0.21, P_B 760, P_H₂O 47, RQ 0.8, PaCO₂ 40, PaO₂ 85.  \n**PAO₂** = 0.21×(760−47) − 40/0.8 ≈ 150 − 50 = **100 mmHg**.  \n**A–a** = 100 − 85 = **15 mmHg** (normal en adulto joven).\n\n### 2) CaO₂ y DO₂\n**Datos**: Hb 10 g/dL, SaO₂ 92%, PaO₂ 70 mmHg, GC 4.8 L/min.  \n**CaO₂** = 1.34×10×0.92 + 0.003×70 ≈ **12.5 mL/dL**.  \n**DO₂** = GC × CaO₂ × 10 ≈ 4.8 × 12.5 × 10 = **600 mL/min** → priorizar corrección de anemia y ventilación."
+      }
+    },
+    {
+      "id": "clinical-cases",
+      "order": 8,
+      "type": "case",
+      "title": "Casos clínicos de aplicación",
+      "content": {
+        "markdown": "## Caso 1: Neumonía extensa (shunt)\n**Hallazgos**: Hipoxemia con A–a elevado; respuesta **mínima** a FiO₂ alta.  \n**Acciones**: Reclutamiento/PEEP, prono si SDRA, manejo del foco.\n\n## Caso 2: Tromboembolismo pulmonar (espacio muerto ↑)\n**Hallazgos**: FR elevada, PaCO₂ normal/alta, sensación de disnea; **hipoxemia por V/Q alto**.  \n**Acciones**: Anticoagulación/terapias específicas; optimizar V̇_A y evitar hipercapnia.\n\n## Caso 3: Sobredosis de opioides (hipoventilación)\n**Hallazgos**: A–a **normal**, PaCO₂ elevada, PaO₂ baja.  \n**Acciones**: Antagonizar opioide, soporte ventilatorio; ajustar V̇_A.\n\n## Caso 4: Fibrosis pulmonar (difusión)\n**Hallazgos**: Disnea con esfuerzo, **DLCO baja**; hipoxemia que empeora en ejercicio.  \n**Acciones**: Oxigenoterapia en deambulación, rehabilitación, manejo de base."
+      }
+    },
+    {
+      "id": "summary",
+      "order": 9,
+      "type": "summary",
+      "title": "Resumen y perlas",
+      "content": {
+        "markdown": "- **PAO₂ y A–a** orientan la causa de la hipoxemia.\n- **CaO₂** depende sobre todo de **Hb** y **SaO₂**; la porción disuelta es pequeña.\n- **P50 ~26–27 mmHg**; derecha = ↓afinidad (Bohr, T°, 2,3-DPG). \n- **V/Q bajo** mejora con O₂; **shunt** verdadero mejora poco.\n- **Difusión**: piensa en **DLCO**; **PaCO₂ ↔ V̇_A**."
+      }
+    }
+  ],
+  "quiz": {
+    "questions": [
+      {
+        "id": "q1-pao2",
+        "type": "multiple-choice",
+        "question": "Con FiO₂ 0.21, P_B 760, P_H₂O 47, RQ 0.8 y PaCO₂ 40 mmHg, la PAO₂ aproximada es:",
+        "options": ["90 mmHg", "100 mmHg", "110 mmHg", "125 mmHg"],
+        "correctAnswer": "100 mmHg",
+        "explanation": "PAO₂ = 0.21×(760−47) − 40/0.8 ≈ 150 − 50 = 100 mmHg.",
+        "difficulty": "beginner",
+        "bloomLevel": "apply",
+        "points": 1
+      },
+      {
+        "id": "q2-aagradient",
+        "type": "true-false",
+        "question": "Un gradiente A–a normal sugiere hipoventilación o baja FiO₂ como causa de hipoxemia.",
+        "options": ["Verdadero", "Falso"],
+        "correctAnswer": "Verdadero",
+        "explanation": "Con A–a normal, la hipoxemia suele deberse a hipoventilación o baja presión inspirada de O₂.",
+        "difficulty": "beginner",
+        "bloomLevel": "understand",
+        "points": 1
+      },
+      {
+        "id": "q3-cao2",
+        "type": "multiple-choice",
+        "question": "La fórmula correcta para CaO₂ es:",
+        "options": [
+          "CaO₂ = Hb × 1.34 × SaO₂ + 0.003 × PaO₂",
+          "CaO₂ = Hb × SaO₂ + PaO₂/0.003",
+          "CaO₂ = 1.34 × PaO₂ + 0.003 × Hb × SaO₂",
+          "CaO₂ = Hb × 0.003 × SaO₂ + 1.34 × PaO₂"
+        ],
+        "correctAnswer": "CaO₂ = Hb × 1.34 × SaO₂ + 0.003 × PaO₂",
+        "explanation": "El término de O₂ unido a Hb predomina; la fracción disuelta (0.003×PaO₂) es pequeña.",
+        "difficulty": "intermediate",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "q4-oxycurve",
+        "type": "multiple-choice",
+        "question": "¿Cuál de los siguientes desplaza la curva O₂-Hb a la derecha?",
+        "options": [
+          "Alcalosis y baja temperatura",
+          "Acidosis y aumento de 2,3-DPG",
+          "Hipotermia y ↓CO₂",
+          "↓2,3-DPG y alcalosis"
+        ],
+        "correctAnswer": "Acidosis y aumento de 2,3-DPG",
+        "explanation": "Acidosis (↓pH), ↑CO₂, ↑T° y ↑2,3-DPG desplazan a la derecha (↓afinidad).",
+        "difficulty": "intermediate",
+        "bloomLevel": "understand",
+        "points": 1
+      },
+      {
+        "id": "q5-shunt-o2",
+        "type": "true-false",
+        "question": "El shunt verdadero suele mejorar de forma marcada con oxígeno al 100%.",
+        "options": ["Verdadero", "Falso"],
+        "correctAnswer": "Falso",
+        "explanation": "La sangre derivada no contacta el gas alveolar, por lo que la mejoría con O₂ es limitada.",
+        "difficulty": "intermediate",
+        "bloomLevel": "analyze",
+        "points": 2
+      },
+      {
+        "id": "q6-dlco",
+        "type": "multiple-choice",
+        "question": "Una DLCO disminuida sugiere principalmente:",
+        "options": [
+          "Aumento del área de intercambio",
+          "Disminución de la difusibilidad o aumento del espesor de la membrana",
+          "Aumento del gasto cardíaco",
+          "Aumento de la temperatura corporal"
+        ],
+        "correctAnswer": "Disminución de la difusibilidad o aumento del espesor de la membrana",
+        "explanation": "Por la ley de Fick, menor difusibilidad o mayor espesor disminuyen la transferencia de gas.",
+        "difficulty": "intermediate",
+        "bloomLevel": "understand",
+        "points": 1
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [
+      {
+        "title": "Alveolar Gas Equation (StatPearls)",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK482268/",
+        "description": "Ecuación alveolar y aplicaciones clínicas",
+        "type": "article"
+      },
+      {
+        "title": "Alveolar–Arterial Gradient (StatPearls)",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK545153/",
+        "description": "Interpretación del gradiente A–a",
+        "type": "article"
+      },
+      {
+        "title": "Physiology, Oxygen Transport (StatPearls)",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK538336/",
+        "description": "Fórmula de CaO2 y conceptos de transporte de O2",
+        "type": "article"
+      },
+      {
+        "title": "Oxyhemoglobin Dissociation Curve (StatPearls)",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK499818/",
+        "description": "P50 y factores de desplazamiento de la curva",
+        "type": "article"
+      },
+      {
+        "title": "Pulmonary Ventilation and Perfusion (StatPearls)",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK539907/",
+        "description": "Relaciones V/Q, distribución regional y DLCO",
+        "type": "article"
+      },
+      {
+        "title": "Hypoxia (StatPearls)",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK482316/",
+        "description": "Causas de hipoxemia y A–a práctico",
+        "type": "article"
+      },
+      {
+        "title": "V/Q mismatch and shunt (UCT lecture notes, 2022)",
+        "url": "https://anaesthetics.ukzn.ac.za/wp-content/uploads/2024/09/V-Q-mismatch-Ref-2022.pdf",
+        "description": "Revisión docente sobre V/Q y shunt",
+        "type": "pdf"
+      }
+    ],
+    "downloadables": [],
+    "references": [
+      {
+        "authors": "Sharma S",
+        "year": 2024,
+        "title": "Alveolar Gas Equation",
+        "journal": "StatPearls",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK482268/"
+      },
+      {
+        "authors": "Hantzidiamantis PJ",
+        "year": 2023,
+        "title": "Physiology, Alveolar to Arterial Oxygen Gradient",
+        "journal": "StatPearls",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK545153/"
+      },
+      {
+        "authors": "Rhodes CE",
+        "year": 2022,
+        "title": "Physiology, Oxygen Transport",
+        "journal": "StatPearls",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK538336/"
+      },
+      {
+        "authors": "Kaufman DP",
+        "year": 2023,
+        "title": "Physiology, Oxyhemoglobin Dissociation Curve",
+        "journal": "StatPearls",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK499818/"
+      },
+      {
+        "authors": "Powers KA",
+        "year": 2023,
+        "title": "Physiology, Pulmonary Ventilation and Perfusion",
+        "journal": "StatPearls",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK539907/"
+      },
+      {
+        "authors": "Bhutta BS",
+        "year": 2024,
+        "title": "Hypoxia",
+        "journal": "StatPearls",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK482316/"
+      },
+      {
+        "authors": "Petersson J, Glenny RW",
+        "year": 2014,
+        "title": "Gas exchange and ventilation–perfusion relationships in the lung",
+        "journal": "Eur Respir J",
+        "url": "https://publications.ersnet.org/content/erj/44/4/1023"
+      }
+    ]
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-07T00:00:00.000Z",
+    "author": "Equipo VentyLab - Educación en Ventilación Mecánica",
+    "language": "es",
+    "tags": [
+      "fundamentos",
+      "intercambio gaseoso",
+      "V/Q",
+      "shunt",
+      "DLCO",
+      "ecuación alveolar"
+    ]
+  }
+}

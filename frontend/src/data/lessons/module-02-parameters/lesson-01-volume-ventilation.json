@@ -1,0 +1,472 @@
+{
+    "id": "lesson-01-volume-ventilation",
+    "moduleId": "module-02-modalidades-parametros",
+    "title": "Ventilación Controlada por Volumen (VCV): paquete de lecciones avanzadas",
+    "description": "Conjunto de lecciones a nivel de residencia/doctorado sobre la ventilación controlada por volumen (VCV). Se cubren fundamentos fisiológicos, parametrización, lectura de ondas, seguridad (Pplat, PIP), asincronías típicas de VCV (p. ej., doble disparo y flow starvation) y aplicación protectora tipo ARDSNet en ARDS. Incluye ejemplos numéricos, casos clínicos, listas de verificación, imágenes y videos.",
+    "order": 1,
+    "estimatedTime": 240,
+    "difficulty": "advanced",
+    "bloomLevel": "evaluate",
+    "nivel": "investigativo-doctoral",
+    "prerequisites": [
+    "Fisiología respiratoria y mecánica (compliance, resistencia, tiempo constante)",
+    "Interpretación de curvas presión–flujo–volumen en ventilación mecánica",
+    "Gasometría arterial y objetivos de oxigenación/ventilación"
+    ],
+    "learningObjectives": [
+    "Diferenciar con precisión las variables de control, límite y ciclado en VCV y su impacto en las curvas de presión, flujo y volumen.",
+    "Ajustar de forma segura Vt, RR, tiempo inspiratorio, patrón de flujo y pausa inspiratoria para lograr ventilación protectora manteniendo Pplat ≤ 30 cmH2O cuando sea posible.",
+    "Interpretar PIP vs Pplat en VCV para distinguir problemas de resistencia versus complacencia y guiar intervenciones.",
+    "Reconocer y resolver asincronías frecuentes en VCV (doble disparo, flow starvation, ciclado tardío/temprano).",
+    "Implementar la estrategia protectora basada en VCV (bajo volumen corriente tipo ARDSNet) en ARDS."
+    ],
+    "lessons": [
+    {
+    "id": "lesson-01-vcv-fundamentos-ondas",
+    "moduleId": "module-02-modalidades-parametros",
+    "title": "Fundamentos de VCV y lectura de ondas",
+    "description": "Definición de VCV como modo con volumen objetivo fijo y flujo preseteado; presión variable según la mecánica del paciente. Revisión detallada de las curvas típicas (flujo cuadrado, volumen ascendente lineal, presión ascendente hasta PIP) y del papel de la pausa inspiratoria para medir Pplat.",
+    "order": 1,
+    "estimatedTime": 55,
+    "difficulty": "advanced",
+    "bloomLevel": "analyze",
+    "learningObjectives": [
+    "Describir cómo el ventilador calcula el flujo requerido a partir de Vt y TI en VCV.",
+    "Reconocer la morfología típica de las curvas en VCV y la diferencia fisiopatológica entre PIP y Pplat.",
+    "Relacionar cambios en resistencia/compliance con modificaciones de PIP y Pplat en VCV."
+    ],
+    "sections": [
+    {
+    "id": "intro-vcv",
+    "order": 1,
+    "type": "introduction",
+    "title": "¿Qué es VCV?",
+    "content": {
+    "markdown": "En **VCV** el profesional fija un **volumen corriente (Vt)** y un **flujo/tiempo inspiratorio (TI)**; la **presión** resultante varía con la mecánica respiratoria. El flujo suele programarse como **onda cuadrada**; el **volumen** asciende linealmente hasta el Vt objetivo y la **presión** aumenta hasta un **PIP** dependiente de resistencia y compliance. La **pausa inspiratoria** (0,3–1,0 s) permite medir **Pplat**, reflejo de la presión alveolar estática."
+    }
+    },
+    {
+    "id": "ondas-vcv",
+    "order": 2,
+    "type": "theory",
+    "title": "Ondas en VCV y significado clínico",
+    "content": {
+    "markdown": "• **Volumen**: rampa lineal hasta Vt.  \n• **Flujo**: típicamente **cuadrado** (constante) durante la inspiración; espiración pasiva exponencial.  \n• **Presión**: ascenso hasta **PIP**; con pausa inspiratoria se obtiene **Pplat**.  \n**Interpretación**:  \n- ↑ **PIP** con **Pplat normal** → problema de **resistencia** (moco, mordida del tubo, broncoespasmo).  \n- ↑ **PIP y Pplat** → ↓ **compliance** (edema pulmonar, distensión alveolar)."
+    }
+    },
+    {
+    "id": "checklist-ondas",
+    "order": 3,
+    "type": "procedure",
+    "title": "Checklist de lectura de ondas (VCV)",
+    "content": {
+    "markdown": "1) Verifica **Vt** entregado; 2) confirma **flujo** programado y **TI**; 3) realiza **pausa inspiratoria** para medir **Pplat**; 4) compara **PIP vs Pplat**; 5) correlaciona con la clínica (hemodinamia, oxigenación/ventilación)."
+    }
+    }
+    ],
+    "media": {
+    "videos": [
+    {
+    "id": "vid-vcv-basics",
+    "title": "Assist control/volume control ventilation (introducción práctica)",
+    "provider": "YouTube",
+    "url": "[https://www.youtube.com/watch?v=rVnfANudz2o](https://www.youtube.com/watch?v=rVnfANudz2o)",
+    "credit": "Clinical Medicine – Mechanical Ventilation Basics",
+    "note": "Repaso visual de curvas presión–flujo–volumen en VCV. ([YouTube][1])"
+    }
+    ],
+    "images": [
+    {
+    "id": "img-vcv-onepager",
+    "url": "[https://www.openanesthesia.org/wp-content/uploads/2024/12/02/ICU_one_pager_vent_basics.pdf](https://www.openanesthesia.org/wp-content/uploads/2024/12/02/ICU_one_pager_vent_basics.pdf)",
+    "alt": "Infografía de modos (incluye resumen de VCV)",
+    "caption": "Resumen visual de modos; VCV como modo general para ventilación protectora. ([OpenAnesthesia][2])"
+    },
+    {
+    "id": "img-deranged-vs",
+    "url": "[https://derangedphysiology.com/main/cicm-primary-exam/respiratory-system/Chapter-542/practical-differences-between-pressure-and-volume-controlled-ventilation](https://derangedphysiology.com/main/cicm-primary-exam/respiratory-system/Chapter-542/practical-differences-between-pressure-and-volume-controlled-ventilation)",
+    "alt": "Diferencias prácticas entre control por presión y por volumen",
+    "caption": "Comparativa de ondas y efectos en presión media de vía aérea. ([Deranged Physiology][3])"
+    }
+    ]
+    },
+    "resources": {
+    "keyReadings": [
+    "Definición y parámetros de VCV en OpenAnesthesia. ([OpenAnesthesia][4])",
+    "Conceptos de PIP y Pplat aplicados a VCV (StatPearls). ([CNIB][5])"
+    ]
+    },
+    "metadata": {
+    "estimatedWorkloadMinutes": 55,
+    "assessmentType": "formative"
+    }
+    },
+    {
+    "id": "lesson-02-vcv-parametrizacion-segura",
+    "moduleId": "module-02-modalidades-parametros",
+    "title": "Parametrización segura en VCV",
+    "description": "Cómo fijar Vt, RR, patrón de flujo, TI y pausa; establecimiento y lectura de alarmas; objetivos de seguridad con Pplat y Vt protectores.",
+    "order": 2,
+    "estimatedTime": 60,
+    "difficulty": "advanced",
+    "bloomLevel": "apply",
+    "learningObjectives": [
+    "Programar Vt, RR, TI y patrón de flujo en VCV según objetivos clínicos.",
+    "Usar pausa inspiratoria para medir Pplat y derivar intervenciones.",
+    "Configurar alarmas de PIP alto y volumen/ventilación minuto para seguridad."
+    ],
+    "sections": [
+    {
+    "id": "parametros-clave",
+    "order": 1,
+    "type": "theory",
+    "title": "Parámetros clave en VCV",
+    "content": {
+    "markdown": "**Vt** (ml/kg de peso predicho), **RR**, **flujo y TI** (definen el patrón inspiratorio), **PEEP** y **FiO₂**. En VCV el ventilador divide el Vt por el TI para determinar el flujo necesario; la **onda cuadrada** es la más usada. Mantener **Pplat ≤ 30 cmH₂O** cuando sea posible. ([OpenAnesthesia][6])"
+    }
+    },
+    {
+    "id": "ppeak-pplat",
+    "order": 2,
+    "type": "theory",
+    "title": "Diferenciar PIP vs Pplat en VCV",
+    "content": {
+    "markdown": "• **PIP** refleja resistencia + elasticidad; **Pplat** (medida con pausa) refleja presión alveolar estática.  \n• ↑PIP con Pplat normal sugiere **resistencia**; ↑PIP y ↑Pplat sugiere **↓compliance**.  \n• Objetivo: **Pplat ≤ 30 cmH₂O** para reducir riesgo de sobre-distensión. ([CNIB][5])"
+    }
+    },
+    {
+    "id": "alarmas-vcv",
+    "order": 3,
+    "type": "procedure",
+    "title": "Alarmas y seguridad",
+    "content": {
+    "markdown": "Configura **alarma de PIP alto** (p. ej., 35–40 cmH₂O) y de **minuto ventilatorio/volumen bajo**. Un **PIP** elevado en VCV debe gatillar evaluación del circuito, del tubo y del paciente (moco, acodamiento, broncoespasmo, neumotórax). ([CNIB][7])"
+    }
+    },
+    {
+    "id": "ejemplo-numerico",
+    "order": 4,
+    "type": "example",
+    "title": "Ejemplo numérico de programación",
+    "content": {
+    "markdown": "Paciente 70 kg (PBW): **Vt 6 ml/kg = 420 ml**, **RR 18/min**, **TI 0,9 s**, **PEEP 8 cmH₂O**, **FiO₂ 0,5**. Flujo requerido ≈ **28 L/min** (0,42 L / 0,9 s × 60). Realiza pausa para **Pplat**; si **Pplat > 30**, reduce Vt en pasos de 0,5–1 ml/kg o evalúa la mecánica."
+    }
+    }
+    ],
+    "media": {
+    "videos": [
+    {
+    "id": "vid-setup-vcv",
+    "title": "Principles of Mechanical Ventilation: Assist Control Volume (configuración)",
+    "provider": "YouTube",
+    "url": "[https://www.youtube.com/watch?v=wH2jydEgqGs](https://www.youtube.com/watch?v=wH2jydEgqGs)",
+    "credit": "Series educativa – Principles of Mechanical Ventilation",
+    "note": "Demostración de parámetros en VCV. ([YouTube][8])"
+    }
+    ]
+    },
+    "resources": {
+    "keyReadings": [
+    "Resumen operacional de VCV (OpenAnesthesia, modos). ([OpenAnesthesia][4])",
+    "Manejo de presiones y seguridad (StatPearls). ([CNIB][5])"
+    ]
+    },
+    "metadata": {
+    "estimatedWorkloadMinutes": 60,
+    "assessmentType": "formative"
+    }
+    },
+    {
+    "id": "lesson-03-vcv-asincronias",
+    "moduleId": "module-02-modalidades-parametros",
+    "title": "Asincronías típicas de VCV y su resolución",
+    "description": "Identificación en curvas, fisiopatología y manejo de flow starvation y doble disparo en VCV.",
+    "order": 3,
+    "estimatedTime": 50,
+    "difficulty": "advanced",
+    "bloomLevel": "evaluate",
+    "learningObjectives": [
+    "Reconocer en curvas la **flow starvation** durante flujo cuadrado en VCV.",
+    "Detectar **doble disparo** por TI insuficiente o esfuerzo elevado en VCV.",
+    "Aplicar intervenciones: ajustar flujo/TI/umbral de ciclado o cambiar la estrategia de asistencia."
+    ],
+    "sections": [
+    {
+    "id": "flow-starvation",
+    "order": 1,
+    "type": "theory",
+    "title": "Flow starvation en VCV",
+    "content": {
+    "markdown": "La **flow starvation** ocurre cuando el flujo preseteado **no satisface** la demanda inspiratoria del paciente: curva de presión con **inflexión inicial** y sensación de disnea; puede conducir a trabajo respiratorio excesivo y asincronía. **Intervenciones**: ↑ flujo (o acortar TI manteniendo Vt), optimizar sedación/analgesia, evaluar resistencia. ([BioMed Central][9])"
+    }
+    },
+    {
+    "id": "doble-disparo",
+    "order": 2,
+    "type": "theory",
+    "title": "Doble disparo en VCV",
+    "content": {
+    "markdown": "Frecuente cuando el **TI** es demasiado corto para el impulso neural del paciente o el **Vt** objetivo es bajo respecto al esfuerzo, generando **dos ciclos** consecutivos con un solo esfuerzo. **Intervenciones**: prolongar **TI** o incrementar ligeramente **Vt** dentro de límites protectores; optimizar sedación; valorar modos de soporte que acompañen mejor el esfuerzo si persiste. ([Lippincott Journals][10])"
+    }
+    },
+    {
+    "id": "algoritmo-asincronias",
+    "order": 3,
+    "type": "procedure",
+    "title": "Algoritmo práctico de resolución",
+    "content": {
+    "markdown": "1) Identifica el patrón en curvas; 2) correlaciona con ventilación/minuto y esfuerzo clínico; 3) **ajusta flujo/TI** en VCV; 4) revalora PIP/Pplat; 5) reevalúa comodidad y gasometría a 10–15 min."
+    }
+    },
+    {
+    "id": "ejemplo-curvas",
+    "order": 4,
+    "type": "example",
+    "title": "Ejemplo interpretativo",
+    "content": {
+    "markdown": "En VCV con flujo 30 L/min y TI 0,7 s, el paciente muestra concavidad de presión al inicio y activación de músculos accesorios. Se aumenta el flujo a 45 L/min manteniendo Vt; desaparece la concavidad y disminuye la disnea."
+    }
+    }
+    ],
+    "media": {
+    "videos": [
+    {
+    "id": "vid-asincronias",
+    "title": "Waveforms y asincronías (visión general útil)",
+    "provider": "YouTube",
+    "url": "[https://www.youtube.com/watch?v=x1lhRMYafhE](https://www.youtube.com/watch?v=x1lhRMYafhE)",
+    "credit": "Anesthesia & Critical Care – Interpretación de loops y ondas",
+    "note": "Revisión macroscópica de ondas útil para reconocer patrones. ([YouTube][11])"
+    }
+    ]
+    },
+    "resources": {
+    "keyReadings": [
+    "Asociación de asincronías con desenlaces (estudios recientes). ([Nature][12])"
+    ]
+    },
+    "metadata": {
+    "estimatedWorkloadMinutes": 50,
+    "assessmentType": "formative"
+    }
+    },
+    {
+    "id": "lesson-04-vcv-protectora-ardsnet",
+    "moduleId": "module-02-modalidades-parametros",
+    "title": "VCV protectora en ARDS: estrategia tipo ARDSNet",
+    "description": "Implementación paso a paso de ventilación protectora con VCV (bajo volumen corriente) y uso de tablas FiO₂/PEEP; límites de Pplat.",
+    "order": 4,
+    "estimatedTime": 60,
+    "difficulty": "advanced",
+    "bloomLevel": "apply",
+    "learningObjectives": [
+    "Aplicar **Vt 4–6 ml/kg de peso predicho** con **Pplat ≤ 30 cmH₂O** en ARDS.",
+    "Usar tablas **FiO₂/PEEP** como guía inicial y revaluar según mecánica y oxigenación.",
+    "Ajustar parámetros manteniendo enfoque protector y monitoreo periódico."
+    ],
+    "sections": [
+    {
+    "id": "evidencia-ardsnet",
+    "order": 1,
+    "type": "theory",
+    "title": "Evidencia clave",
+    "content": {
+    "markdown": "El ensayo **ARDSNet (NEJM 2000)** demostró que ventilar con **Vt bajo (6 ml/kg PBW)** frente a 12 ml/kg **reduce mortalidad** y aumenta días libres de ventilador. La protocolización incluyó uso de **tablas FiO₂/PEEP** y control estricto de **Pplat**. ([New England Journal of Medicine][13])"
+    }
+    },
+    {
+    "id": "paso-a-paso-ards",
+    "order": 2,
+    "type": "procedure",
+    "title": "Protocolo práctico (paso a paso)",
+    "content": {
+    "markdown": "1) Calcula **PBW** y fija **Vt 6 ml/kg** (mínimo 4 ml/kg si requiere bajar por Pplat); 2) establece **RR** para PaCO₂ objetivo (aceptando hipercapnia permisiva según pH); 3) usa **FiO₂/PEEP** de tabla y reevalúa; 4) realiza **pausas** para asegurar **Pplat ≤ 30**; 5) reevalúa gasometría y mecánica cada 2–4 h y tras cambios. ([New England Journal of Medicine][14])"
+    }
+    },
+    {
+    "id": "objetivos-oxigenacion",
+    "order": 3,
+    "type": "theory",
+    "title": "Objetivos de oxigenación",
+    "content": {
+    "markdown": "Objetiva **PaO₂ 55–80 mmHg** o **SpO₂ 88–95%**; ajusta FiO₂ y PEEP según tablas y tolerancia hemodinámica. ([ahrq.gov][15])"
+    }
+    },
+    {
+    "id": "ejemplo-clinico-ards",
+    "order": 4,
+    "type": "example",
+    "title": "Ejemplo clínico (configuración inicial)",
+    "content": {
+    "markdown": "Paciente ARDS, PBW 60 kg → **Vt 360 ml**; **RR 22/min**; **PEEP/FiO₂** según tabla (p. ej., FiO₂ 0,6 con PEEP 10 cmH₂O); pausa inspiratoria: **Pplat 27 cmH₂O**. Mantener y reevaluar."
+    }
+    }
+    ],
+    "media": {
+    "videos": [
+    {
+    "id": "vid-ardsnet-overview",
+    "title": "Estudio ARDSNet (resumen didáctico)",
+    "provider": "YouTube",
+    "url": "[https://www.youtube.com/watch?v=MJHwHwCXVBI](https://www.youtube.com/watch?v=MJHwHwCXVBI)",
+    "credit": "Study summary – ARMA trial",
+    "note": "Resumen del ensayo de bajo Vt. ([YouTube][16])"
+    }
+    ],
+    "images": [
+    {
+    "id": "img-ards-pocket",
+    "url": "[https://www.med.upenn.edu/uphscovid19education/assets/user-content/documents/ards-pocket-card-4.7-qr.pdf](https://www.med.upenn.edu/uphscovid19education/assets/user-content/documents/ards-pocket-card-4.7-qr.pdf)",
+    "alt": "Tarjeta de bolsillo con tablas FiO₂/PEEP",
+    "caption": "Guía de objetivos y tablas PEEP/FiO₂ estilo ARDSNet. ([Med Penn][17])"
+    }
+    ]
+    },
+    "resources": {
+    "keyReadings": [
+    "Ensayo NEJM 2000 y tablas FiO₂/PEEP. ([New England Journal of Medicine][13])",
+    "Guías/hojas de ruta para LTVV. ([ahrq.gov][15])"
+    ]
+    },
+    "metadata": {
+    "estimatedWorkloadMinutes": 60,
+    "assessmentType": "summative"
+    }
+    },
+    {
+    "id": "lesson-05-vcv-casos",
+    "moduleId": "module-02-modalidades-parametros",
+    "title": "Casos prácticos integrados en VCV",
+    "description": "Tres escenarios clínicos para aplicar VCV: ajuste por resistencia alta, por baja compliance y por asincronía de flujo.",
+    "order": 5,
+    "estimatedTime": 55,
+    "difficulty": "advanced",
+    "bloomLevel": "create",
+    "learningObjectives": [
+    "Aplicar un algoritmo de decisión en VCV frente a cambios de PIP/Pplat.",
+    "Resolver asincronía por flujo en VCV ajustando flujo y TI.",
+    "Implementar ajustes protectores en ARDS sin perder metas de ventilación."
+    ],
+    "sections": [
+    {
+    "id": "caso-1-resistencia",
+    "order": 1,
+    "type": "case",
+    "title": "Caso 1: ↑PIP con Pplat normal (resistencia)",
+    "content": {
+    "markdown": "**Datos**: VCV, Vt 420 ml, RR 18, PEEP 8; PIP 40, Pplat 22. **Acción**: aspira secreciones, evalúa mordida/curva de flujo; tras aspiración PIP 26. **Conclusión**: incremento resistivo resuelto sin cambio en compliance."
+    }
+    },
+    {
+    "id": "caso-2-compliance",
+    "order": 2,
+    "type": "case",
+    "title": "Caso 2: ↑PIP y ↑Pplat (compliance baja)",
+    "content": {
+    "markdown": "**Datos**: VCV, Vt 6 ml/kg; PIP 38, Pplat 32. **Acción**: reducir **Vt a 5 ml/kg**, reevaluar Pplat y gasometría; Pplat baja a 28 con PaCO₂ aceptable. **Conclusión**: se prioriza protección alveolar."
+    }
+    },
+    {
+    "id": "caso-3-flow-starvation",
+    "order": 3,
+    "type": "case",
+    "title": "Caso 3: Flow starvation en VCV",
+    "content": {
+    "markdown": "**Datos**: concavidad inicial de presión, uso de accesorios, doble disparo intermitente; flujo 25 L/min, TI 0,7 s. **Acción**: ↑ flujo a 45 L/min (mismo Vt), optimiza sedación; desaparece la asincronía. **Fundamento**: el flujo preset era insuficiente para la demanda. ([BioMed Central][9])"
+    }
+    }
+    ],
+    "media": {
+    "videos": [
+    {
+    "id": "vid-ac-vs-simv",
+    "title": "AC vs SIMV y preferencia por VCV al inicio (visión general)",
+    "provider": "YouTube",
+    "url": "[https://www.youtube.com/watch?v=PIf7-c-0jyI](https://www.youtube.com/watch?v=PIf7-c-0jyI)",
+    "credit": "Lección introductoria con racional de VCV inicial",
+    "note": "Material de apoyo para discusión de casos. ([YouTube][18])"
+    }
+    ]
+    },
+    "resources": {
+    "keyReadings": [
+    "Revisión de diferencias prácticas y ondas en VCV. ([Deranged Physiology][3])",
+    "Asincronías y desenlaces: evidencia reciente. ([Nature][12])"
+    ]
+    },
+    "metadata": {
+    "estimatedWorkloadMinutes": 55,
+    "assessmentType": "practical"
+    }
+    }
+    ],
+    "assessment": {
+    "quiz": {
+    "id": "quiz-vcv-advanced",
+    "type": "multiple-choice",
+    "attemptsAllowed": 2,
+    "questions": [
+    {
+    "id": "q1",
+    "stem": "En VCV, un aumento del PIP con Pplat estable sugiere principalmente:",
+    "options": [
+    "Disminución de la compliance pulmonar",
+    "Aumento de la resistencia de la vía aérea",
+    "Aumento de la presión transpulmonar",
+    "Fuga significativa en el circuito"
+    ],
+    "answer": 2,
+    "rationale": "En VCV, ↑PIP con Pplat estable apunta a **resistencia** (p. ej., moco, mordida, broncoespasmo). ([CNIB][5])"
+    },
+    {
+    "id": "q2",
+    "stem": "La finalidad de la pausa inspiratoria en VCV es medir:",
+    "options": ["PIP", "Paw media", "Pplat", "Auto-PEEP"],
+    "answer": 3,
+    "rationale": "La pausa permite medir **Pplat**, aproximación de la presión alveolar estática. ([CNIB][5])"
+    },
+    {
+    "id": "q3",
+    "stem": "El ensayo ARDSNet demostró que, comparado con 12 ml/kg, usar 6 ml/kg de PBW en VCV:",
+    "options": [
+    "No cambió la mortalidad",
+    "Aumentó la mortalidad",
+    "Redujo la mortalidad y aumentó los días libres de ventilador",
+    "Solo mejoró la oxigenación"
+    ],
+    "answer": 3,
+    "rationale": "Ventilación con **Vt bajo** redujo **mortalidad** y aumentó días libres de ventilador. ([New England Journal of Medicine][13])"
+    },
+    {
+    "id": "q4",
+    "stem": "¿Cuál intervención es más adecuada ante flow starvation en VCV con flujo cuadrado?",
+    "options": [
+    "Disminuir el flujo inspiratorio",
+    "Aumentar el flujo inspiratorio o prolongar TI manteniendo Vt",
+    "Reducir PEEP a cero",
+    "Aumentar la sensibilidad del disparo"
+    ],
+    "answer": 2,
+    "rationale": "La **flow starvation** se corrige entregando **más flujo** (o ajustando TI) acorde a la demanda. ([BioMed Central][9])"
+    }
+    ]
+    }
+    },
+    "sources": [
+    "NEJM 2000: Ventilation with Lower Tidal Volumes (ARDSNet). ([New England Journal of Medicine][13])",
+    "OpenAnesthesia – Modes of Mechanical Ventilation (definiciones de VCV/AC-VC). ([OpenAnesthesia][4])",
+    "OpenAnesthesia – Overview of Ventilator Modes (OnePager PDF). ([OpenAnesthesia][2])",
+    "StatPearls – Mechanical Ventilation (Pplat ≤ 30 cmH₂O en enfoque protector). ([CNIB][5])",
+    "University of Pennsylvania – ARDS Pocket Card (tablas FiO₂/PEEP; objetivos de oxigenación). ([Med Penn][17])",
+    "AHRQ – Low Tidal Volume Ventilation Guide (tablas FiO₂/PEEP; metas de PaO₂/SpO₂). ([ahrq.gov][15])",
+    "Critical Care (2024) – Flow starvation durante ventilación con flujo cuadrado. ([BioMed Central][9])",
+    "CCM Journal (ahead-of-print) – Asincronías y resultados clínicos (doble disparo/flow starvation). ([Lippincott Journals][10])",
+    "Deranged Physiology – Diferencias prácticas de ondas y efectos en VCV. ([Deranged Physiology][3])"
+    ],
+    "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-08",
+    "language": "es-CO",
+    "tags": ["VCV", "AC-VC", "PIP", "Pplat", "FiO2/PEEP", "Asincronías"]
+    }
+    }

@@ -186,28 +186,49 @@ const ModuleGrid = ({
   });
   const getButtonIconFn = getButtonIcon || (() => null);
 
-  // Renderizar mensaje vacío
+  // Renderizar estado vacío elegante con CTA
   if (sortedModules.length === 0) {
     return (
       <Box
         sx={{
           textAlign: 'center',
-          py: 6,
-          px: 2
+          py: 8,
+          px: 2,
+          maxWidth: 500,
+          mx: 'auto'
         }}
         role="status"
         aria-live="polite"
+        aria-label="No hay módulos disponibles"
       >
+        <Typography
+          variant="h6"
+          sx={{
+            color: 'text.primary',
+            fontSize: '1.25rem',
+            fontWeight: 600,
+            mb: 2,
+            // WCAG AA: Ensure sufficient contrast
+            '@media (prefers-contrast: high)': {
+              fontWeight: 700,
+            },
+          }}
+        >
+          No hay módulos disponibles todavía
+        </Typography>
         <Typography
           variant="body2"
           sx={{
-            color: '#e8f4fd',
+            color: 'text.secondary',
             fontSize: '0.95rem',
-            opacity: 0.8
+            opacity: 0.8,
+            mb: 3,
+            lineHeight: 1.6
           }}
         >
-          {emptyMessage}
+          {emptyMessage || 'Los módulos de aprendizaje se habilitarán próximamente. Vuelve pronto para comenzar tu formación.'}
         </Typography>
+        {/* CTA button could be added here if needed */}
       </Box>
     );
   }

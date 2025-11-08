@@ -226,6 +226,8 @@ model Module {
   difficulty    ModuleDifficulty  // Difficulty level with proper enum type
   estimatedTime Int      // Estimated completion time in minutes
   isActive      Boolean  @default(true) // Soft delete flag - inactive modules are hidden
+  status        String?  @default("available") // Module status: "available", "locked", "coming_soon"
+  isPlaceholder Boolean  @default(false) // Flag indicating if module is a placeholder (coming soon)
   thumbnail     String?  // Optional URL to module thumbnail image
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

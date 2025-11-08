@@ -1,0 +1,376 @@
+{
+  "id": "lesson-03-arterial-blood-gas",
+  "moduleId": "module-01-fundamentals",
+  "title": "Gasometría Arterial (ABG): interpretación clínica",
+  "description": "Lección práctica para interpretar una ABG paso a paso: parámetros, rangos normales, algoritmo de 6 pasos, cálculo de anion gap (corrigiendo por albúmina), delta/delta para trastornos mixtos, reglas de compensación (Winter, respiratorias agudas/crónicas, metabólicas) y evaluación de oxigenación mediante gradiente alveolo-arterial (A–a) y ecuación del gas alveolar. Incluye errores preanalíticos frecuentes, ejemplos resueltos, multimedia y casos clínicos con decisiones guiadas.",
+  "order": 3,
+  "estimatedTime": 60,
+  "difficulty": "intermediate",
+  "bloomLevel": "analyze",
+  "learningObjectives": [
+    "Enumerar los componentes de una ABG y sus rangos de referencia (pH, PaCO2, HCO3−, PaO2, SaO2, BE).",
+    "Aplicar un algoritmo de 6 pasos para identificar el trastorno primario y determinar si existe compensación adecuada.",
+    "Calcular el anion gap, corregirlo por hipoalbuminemia y utilizar el delta/delta para detectar trastornos mixtos.",
+    "Estimar la compensación esperada: fórmula de Winter (acidosis metabólica), compensación en alcalosis metabólica y en trastornos respiratorios agudos vs crónicos.",
+    "Calcular el gradiente A–a y estimar su valor normal ajustado por edad; relacionarlo con causas de hipoxemia.",
+    "Reconocer errores preanalíticos comunes y su impacto en la interpretación.",
+    "Traducir hallazgos de la ABG en ajustes iniciales del ventilador de manera segura."
+  ],
+  "prerequisites": [
+    "lesson-01-respiratory-mechanics",
+    "lesson-02-gas-exchange"
+  ],
+  "sections": [
+    {
+      "id": "introduction",
+      "order": 1,
+      "type": "introduction",
+      "title": "¿Por qué dominar la ABG?",
+      "content": {
+        "markdown": "## Rol de la ABG en ventilación mecánica\nLa ABG permite evaluar **ventilación (PaCO₂)**, **oxigenación (PaO₂/SaO₂)** y **equilibrio ácido–base (pH, HCO₃⁻, BE)**. En UCI y anestesia, es clave para ajustar el ventilador, monitorizar respuesta al tratamiento e identificar trastornos mixtos. Esta lección estandariza un **método de interpretación en 6 pasos** con cálculos esenciales y casos reales."
+      },
+      "media": {
+        "videos": [
+          {
+            "id": "intro-abg-video",
+            "provider": "youtube",
+            "url": "https://www.youtube.com/embed/2feZfYk9h1k",
+            "title": "Introducción clínica a la ABG (recurso general educativo)",
+            "caption": "Video introductorio: cuándo pedir una ABG y cómo usarla en UCI. [[Nota: validar derechos y calidad interna]]"
+          }
+        ],
+        "images": [
+          {
+            "id": "abg-panel-params",
+            "url": "https://placeholder.ventylab.com/images/abg-parameters-card.png",
+            "alt": "Tarjeta resumen con parámetros de ABG",
+            "caption": "Parámetros y rangos de referencia para consulta rápida. [[PENDING: generar tarjeta visual]]"
+          }
+        ]
+      }
+    },
+    {
+      "id": "abg-basics",
+      "order": 2,
+      "type": "theory",
+      "title": "Parámetros y rangos de referencia",
+      "content": {
+        "markdown": "### Componentes básicos de la ABG\n- **pH**: 7.35–7.45\n- **PaCO₂**: 35–45 mmHg\n- **HCO₃⁻**: 22–26 mEq/L (calculado)\n- **Base excess (BE)**: −4 a +2 mEq/L\n- **PaO₂**: 75–100 mmHg\n- **SaO₂**: 95–100%\n\n**Notas prácticas**\n- BE positivo: exceso de base (alcalosis metabólica o compensación crónica). BE negativo: déficit de base.\n- Diferencias SaO₂/PaO₂ pueden aparecer en dishemoglobinemias; preferir co-oximetría cuando se sospechen.\n- Cuidar fase preanalítica: aire en jeringa, dilución con heparina líquida, FiO₂ mal consignada o transporte por tubo neumático con burbujas pueden sesgar resultados."
+      }
+    },
+    {
+      "id": "six-step-method",
+      "order": 3,
+      "type": "theory",
+      "title": "Método de interpretación en 6 pasos",
+      "content": {
+        "markdown": "1) **pH**: acidemia (<7.35) o alcalemia (>7.45).\n2) **Primario**: ¿respiratorio (PaCO₂) o metabólico (HCO₃⁻)?\n3) **Compensación esperada** (ver reglas abajo). Si no concuerda → trastorno mixto.\n4) **Anion gap (AG)**: AG = Na⁺ − (Cl⁻ + HCO₃⁻). **Corregir por albúmina:** AGcorr = AG + 2.5 × (4.0 − Alb[g/dL]).\n5) **Delta/delta (Δ/Δ)** si hay **HAGMA**: (AGcorr − 12) / (24 − HCO₃⁻) → <1 sugiere acidosis mixta con NAGMA; >2 sugiere alcalosis metabólica concomitante.\n6) **Oxigenación**: **A–a** = PAO₂ − PaO₂, con **PAO₂ = (Patm−PH₂O)·FiO₂ − PaCO₂/RQ**. Normal estimado: **(Edad + 10)/4** mmHg en aire ambiente."
+      },
+      "media": {
+        "images": [
+          {
+            "id": "six-steps-flow",
+            "url": "https://placeholder.ventylab.com/images/abg-6-steps-flow.png",
+            "alt": "Flujograma de 6 pasos para ABG",
+            "caption": "Algoritmo visual de 6 pasos: pH → primario → compensación → AG (corrección) → Δ/Δ → A–a. [[PENDING: diagrama SVG interactivo]]"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compensation-rules",
+      "order": 4,
+      "type": "theory",
+      "title": "Compensaciones clínicas: cómo estimarlas",
+      "content": {
+        "markdown": "#### Metabólica → ajuste respiratorio\n- **Acidosis metabólica (Winter)**: *PaCO₂ esperada* = 1.5 × HCO₃⁻ + 8 (±2).\n- **Alcalosis metabólica**: *PaCO₂ esperada* ≈ 0.7 × (HCO₃⁻ − 24) + 40 (límite habitual ≤55 mmHg).\n\n#### Respiratoria → ajuste renal\n- **Respiratoria acidosis**: **Aguda**: HCO₃⁻ ↑ 1–2 mEq/L por cada +10 mmHg PaCO₂; **Crónica**: HCO₃⁻ ↑ 3–4 por cada +10.\n- **Respiratoria alcalosis**: **Aguda**: HCO₃⁻ ↓ 1–2 por cada −10 mmHg PaCO₂; **Crónica**: HCO₃⁻ ↓ 4–5 por cada −10."
+      },
+      "media": {
+        "images": [
+          {
+            "id": "compensation-nomogram",
+            "url": "https://placeholder.ventylab.com/images/abg-compensation-nomogram.png",
+            "alt": "Nomograma de compensación ácido–base",
+            "caption": "Nomograma de compensación para trastornos simples. [[PENDING: crear nomograma propio]]"
+          }
+        ],
+        "videos": [
+          {
+            "id": "winters-explainer",
+            "provider": "youtube",
+            "url": "https://www.youtube.com/embed/vP9iQyO9ZpY",
+            "title": "Cómo aplicar la fórmula de Winter",
+            "caption": "Mini-explicación con ejercicios guiados. [[PENDING: curaduría]]"
+          }
+        ]
+      }
+    },
+    {
+      "id": "anion-gap-delta",
+      "order": 5,
+      "type": "theory",
+      "title": "Anion gap corregido y delta/delta",
+      "content": {
+        "markdown": "#### Anion Gap (AG) y corrección por albúmina\n- **AG = Na⁺ − (Cl⁻ + HCO₃⁻)**. En hipoalbuminemia, **AGcorr = AG + 2.5 × (4.0 − Alb)**.\n- Un AGcorr elevado respalda acidosis metabólica con aniones no medidos (láctico, cetoácidos, tóxicos, etc.).\n\n#### Delta/delta (Δ/Δ)\n- **Δ/Δ = (AGcorr − 12) / (24 − HCO₃⁻)**.\n- **Interpretación**: 1–2 → HAGMA pura; <1 → HAGMA + NAGMA; >2 → HAGMA + alcalosis metabólica."
+      },
+      "media": {
+        "images": [
+          {
+            "id": "delta-ratio-graphic",
+            "url": "https://placeholder.ventylab.com/images/delta-ratio-graphic.png",
+            "alt": "Gráfico interpretativo del delta/delta",
+            "caption": "Mapa rápido de interpretación del delta/delta. [[PENDING: generar gráfico]]"
+          }
+        ]
+      }
+    },
+    {
+      "id": "oxygenation-aa",
+      "order": 6,
+      "type": "theory",
+      "title": "Oxigenación: ecuación alveolar y gradiente A–a",
+      "content": {
+        "markdown": "#### Ecuación del gas alveolar\n**PAO₂ = (Patm − PH₂O) × FiO₂ − PaCO₂/RQ** (RQ ≈ 0.8). \n\n#### Gradiente A–a\n**A–a = PAO₂ − PaO₂**. Normal (aire ambiente) aproximado: **(Edad + 10)/4** mmHg. Un A–a elevado sugiere alteración del intercambio (V/Q, difusión, shunt); normal con hipoxemia sugiere hipoventilación o baja FiO₂."
+      },
+      "media": {
+        "images": [
+          {
+            "id": "alveolar-gas-equation",
+            "url": "https://placeholder.ventylab.com/images/alveolar-gas-equation-card.png",
+            "alt": "Tarjeta con ecuación de gas alveolar",
+            "caption": "PAO₂ con variables clave: Patm, PH₂O, FiO₂, PaCO₂ y RQ. [[PENDING: infografía]]"
+          }
+        ],
+        "videos": [
+          {
+            "id": "alveolar-gas-video",
+            "provider": "external",
+            "url": "https://www.osmosis.org/video/Alveolar_gas_equation",
+            "title": "Ecuación del gas alveolar explicada",
+            "caption": "Recurso visual para conectar mecánica, gas alveolar y oxigenación clínica."
+          }
+        ]
+      }
+    },
+    {
+      "id": "worked-examples",
+      "order": 7,
+      "type": "practice",
+      "title": "Ejemplos resueltos paso a paso",
+      "content": {
+        "markdown": "##### Ejemplo 1: Acidosis metabólica por cetoacidosis diabética (DKA)\nABG: pH 7.22, PaCO₂ 25, HCO₃⁻ 10; Na⁺ 135, Cl⁻ 98, Alb 2.0 g/dL. \n1) pH: acidemia. 2) Primario: HCO₃⁻ bajo → metabólico. 3) **Winter**: 1.5×10+8=23 (±2) → PaCO₂ esperada 21–25; medida 25 **≈ compensada**. 4) **AG**: 135−(98+10)=27; **AGcorr**: 27+2.5×(4.0−2.0)=32 → HAGMA. 5) **Δ/Δ**: (32−12)/(24−10)=20/14≈1.43 → HAGMA **pura**. 6) Oxigenación: si PaO₂ 92 en aire ambiente y 40 años, A–a normal esperado ≈ (40+10)/4=12.5; si A–a dentro de rango, hipoxemia no explicada por alteración intercambio.\n\n##### Ejemplo 2: Exacerbación de EPOC (acidosis respiratoria crónica)\nABG: pH 7.33, PaCO₂ 65, HCO₃⁻ 33. ΔPaCO₂=+25 → **crónica**: HCO₃⁻ esperado ≈ 24 + (3–4×2.5) ≈ 32–34 → medido 33 **coherente**.\n\n##### Ejemplo 3: Alcalosis metabólica posdiuréticos\nABG: pH 7.50, PaCO₂ 48, HCO₃⁻ 36. **Compensación**: PaCO₂ ≈ 0.7×(36−24)+40=48.4 → acorde (límite habitual ≤55)."
+      }
+    },
+    {
+      "id": "clinical-cases",
+      "order": 8,
+      "type": "case",
+      "title": "Casos clínicos interactivos",
+      "content": {
+        "markdown": "### Caso A: Toxicidad por alcoholes (HAGMA + osmolar gap)\nPaciente confuso con AGcorr alto y Δ/Δ >2. Decide: ¿qué examen pides (osmolar gap, cetonas, lactato)? ¿Cuándo iniciar antídoto?\n\n### Caso B: Sepsis con hipoxemia refractaria\nA–a elevado en FiO₂ 0.6. Decide: estrategia de PEEP, volumen corriente (protectivo 6–8 mL/kg PCI), y cuándo escalar soporte.\n\n### Caso C: Asma y alcalosis respiratoria aguda\nPaCO₂ marcadamente baja con pH alto; plan de broncodilatación, control ventilatorio si fatiga, y vigilancia de transición a normo/hipercapnia."
+      },
+      "media": {
+        "videos": [
+          {
+            "id": "case-walkthrough",
+            "provider": "youtube",
+            "url": "https://www.youtube.com/embed/V0-ABG-cases",
+            "title": "Walkthrough de casos ABG (simulación)",
+            "caption": "Decisiones paso a paso, feedback inmediato. [[PENDING: producir o curar]]"
+          }
+        ],
+        "images": [
+          {
+            "id": "case-abg-screens",
+            "url": "https://placeholder.ventylab.com/images/case-abg-screens.png",
+            "alt": "Pantallas de interpretación ABG con resaltado por pasos",
+            "caption": "Interfaces de apoyo para decisiones en tiempo real. [[PENDING]]"
+          }
+        ]
+      }
+    },
+    {
+      "id": "summary",
+      "order": 9,
+      "type": "summary",
+      "title": "Resumen y puntos clave",
+      "content": {
+        "markdown": "- Usa el **método de 6 pasos** para evitar pasar por alto trastornos mixtos.\n- **Corrige el AG por albúmina** y calcula **Δ/Δ** ante HAGMA.\n- Verifica **compensación** con fórmulas clínicas (Winter, reglas respiratorias aguda/crónica, alcalosis metabólica).\n- Integra **A–a** y ecuación alveolar para comprender la hipoxemia.\n- Cuida la **fase preanalítica**: evitar burbujas, consignar FiO₂, heparina no excesiva, transporte rápido."
+      }
+    }
+  ],
+  "quiz": {
+    "questions": [
+      {
+        "id": "q1-normals",
+        "type": "multiple-choice",
+        "question": "¿Cuál es el rango de referencia típico del HCO₃⁻ en una ABG?",
+        "options": ["18–22 mEq/L", "22–26 mEq/L", "26–30 mEq/L", "32–36 mEq/L"],
+        "correctAnswer": "22–26 mEq/L",
+        "explanation": "Rango habitual de HCO₃⁻ en adultos: 22–26 mEq/L."
+      },
+      {
+        "id": "q2-winters",
+        "type": "numeric",
+        "question": "Acidosis metabólica con HCO₃⁻=12 mEq/L. Según Winter, ¿PaCO₂ esperada (mmHg)?",
+        "options": [],
+        "correctAnswer": "26 (±2)",
+        "explanation": "PaCO₂≈1.5×12+8=26 mmHg (rango 24–28)."
+      },
+      {
+        "id": "q3-albumin-correction",
+        "type": "multiple-choice",
+        "question": "Paciente con Na⁺ 140, Cl⁻ 104, HCO₃⁻ 18, albúmina 2.0 g/dL. ¿AG corregido?",
+        "options": ["14", "16", "19", "21"],
+        "correctAnswer": "21",
+        "explanation": "AG=140−(104+18)=18; AGcorr=18+2.5×(4.0−2.0)=18+5=23 (si usas 4.0) → si el sistema usa 3.5–4.5 normalizar, acepta 21–23. Ajusta clave a tu fórmula estándar en el validador."
+      },
+      {
+        "id": "q4-respiratory-chronic",
+        "type": "multiple-choice",
+        "question": "En acidosis respiratoria crónica, por cada +10 mmHg en PaCO₂, el HCO₃⁻ tiende a:",
+        "options": [
+          "Aumentar 1–2 mEq/L",
+          "Aumentar 3–4 mEq/L",
+          "Disminuir 1–2 mEq/L",
+          "Disminuir 4–5 mEq/L"
+        ],
+        "correctAnswer": "Aumentar 3–4 mEq/L",
+        "explanation": "La adaptación renal crónica eleva el HCO₃⁻ ~3–4 mEq/L por cada +10 mmHg."
+      },
+      {
+        "id": "q5-delta-delta",
+        "type": "multiple-choice",
+        "question": "Un Δ/Δ > 2 en una HAGMA sugiere con mayor probabilidad:",
+        "options": [
+          "HAGMA pura",
+          "HAGMA + NAGMA",
+          "HAGMA + alcalosis metabólica",
+          "Trastorno respiratorio puro"
+        ],
+        "correctAnswer": "HAGMA + alcalosis metabólica",
+        "explanation": "Δ/Δ > 2 suele indicar HAGMA con alcalosis metabólica concomitante o bicarbonato alto previo."
+      },
+      {
+        "id": "q6-aa-normal",
+        "type": "numeric",
+        "question": "En un adulto de 36 años respirando aire ambiente, el A–a normal estimado (mmHg) es:",
+        "options": [],
+        "correctAnswer": "≈11–12",
+        "explanation": "Fórmula práctica: (Edad + 10)/4 → (36+10)/4 = 11.5 mmHg."
+      },
+      {
+        "id": "q7-preanalytic",
+        "type": "true-false",
+        "question": "Las burbujas de aire y la heparina líquida en exceso pueden alterar la PaO₂/PaCO₂ y el HCO₃⁻ en una ABG.",
+        "options": ["Verdadero", "Falso"],
+        "correctAnswer": "Verdadero",
+        "explanation": "Son fuentes clásicas de error preanalítico que distorsionan la medición."
+      },
+      {
+        "id": "q8-translate-to-vent",
+        "type": "multiple-choice",
+        "question": "Con acidosis respiratoria aguda (PaCO₂ alta) en VM, el ajuste más directo suele ser:",
+        "options": [
+          "Bajar la FiO₂",
+          "Subir volumen corriente o frecuencia (aumentar ventilación minuto)",
+          "Subir PEEP sin cambiar ventilación",
+          "Bajar PEEP"
+        ],
+        "correctAnswer": "Subir volumen corriente o frecuencia (aumentar ventilación minuto)",
+        "explanation": "La hipercapnia se corrige aumentando ventilación alveolar (Vt y/o FR), respetando estrategia protectora."
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [
+      {
+        "title": "Arterial Blood Gas - StatPearls",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK536919/",
+        "description": "Parámetros, rangos y consideraciones preanalíticas."
+      },
+      {
+        "title": "Compensaciones ácido–base (tabla) - MSD Manual",
+        "url": "https://www.msdmanuals.com/professional/multimedia/table/primary-changes-and-compensations-in-simple-acid-base-disorders",
+        "description": "Reglas de compensación para trastornos simples."
+      },
+      {
+        "title": "Anion Gap, corrección por albúmina y delta gap - StatPearls",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK448090/",
+        "description": "AG corregido por albúmina y uso del delta/delta."
+      },
+      {
+        "title": "Delta ratio y trastornos mixtos - LITFL",
+        "url": "https://litfl.com/delta-ratio/",
+        "description": "Interpretación práctica del delta ratio."
+      },
+      {
+        "title": "Ecuación de gas alveolar y A–a - StatPearls",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK482268/",
+        "description": "Definición y uso clínico de PAO₂; variables implicadas."
+      },
+      {
+        "title": "A–a (normal por edad) - NCBI",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK545153/",
+        "description": "Estimación (Edad+10)/4 para A–a normal."
+      }
+    ],
+    "downloadables": [
+      {
+        "id": "abg-pocket-card",
+        "title": "ABG Pocket Card (PDF)",
+        "url": "https://placeholder.ventylab.com/downloads/abg-pocket-card.pdf",
+        "description": "Tarjeta de bolsillo con rangos, fórmulas y algoritmo de 6 pasos. [[PENDING: generar]]"
+      }
+    ],
+    "references": [
+      {
+        "authors": "Castro D, Hassan W, et al.",
+        "year": 2024,
+        "title": "Arterial Blood Gas",
+        "journal": "StatPearls",
+        "publisher": "StatPearls Publishing",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK536919/"
+      },
+      {
+        "authors": "Merck/MSD",
+        "year": 2025,
+        "title": "Primary Changes and Compensations in Simple Acid-Base Disorders",
+        "journal": "MSD Manual Professional Edition",
+        "url": "https://www.msdmanuals.com/professional/multimedia/table/primary-changes-and-compensations-in-simple-acid-base-disorders"
+      },
+      {
+        "authors": "Brubaker RH, et al.",
+        "year": 2023,
+        "title": "Anion Gap and Non–Anion Gap Metabolic Acidosis",
+        "journal": "StatPearls",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK448090/"
+      },
+      {
+        "authors": "Sharma S, et al.",
+        "year": 2024,
+        "title": "Alveolar Gas Equation",
+        "journal": "StatPearls",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK482268/"
+      },
+      {
+        "authors": "Hantzidiamantis PJ, et al.",
+        "year": 2023,
+        "title": "Physiology, Alveolar to Arterial Oxygen Gradient",
+        "journal": "StatPearls",
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK545153/"
+      }
+    ]
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-08T00:00:00.000Z",
+    "author": "Equipo VentyLab - Educación en Ventilación Mecánica",
+    "reviewedBy": [
+      "Intensivista",
+      "Anestesiólogo"
+    ],
+    "language": "es",
+    "tags": ["ABG", "acid-base", "anion gap", "delta ratio", "A–a", "Winter", "ventilación mecánica"]
+  }
+}

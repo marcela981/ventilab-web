@@ -109,14 +109,63 @@ async function createUsers() {
 }
 
 /**
+ * Helper function to map frontend level to Prisma difficulty
+ */
+function mapLevelToDifficulty(level: string): 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' {
+  switch (level) {
+    case 'beginner':
+      return 'BEGINNER';
+    case 'intermediate':
+      return 'INTERMEDIATE';
+    case 'advanced':
+      return 'ADVANCED';
+    default:
+      return 'BEGINNER';
+  }
+}
+
+/**
+ * Helper function to map frontend level to Prisma category
+ */
+function mapLevelToCategory(level: string): 'FUNDAMENTALS' | 'VENTILATION_PRINCIPLES' | 'CLINICAL_APPLICATIONS' | 'ADVANCED_TECHNIQUES' {
+  switch (level) {
+    case 'beginner':
+      return 'FUNDAMENTALS';
+    case 'intermediate':
+      return 'VENTILATION_PRINCIPLES';
+    case 'advanced':
+      return 'CLINICAL_APPLICATIONS';
+    default:
+      return 'FUNDAMENTALS';
+  }
+}
+
+/**
+ * Helper function to parse duration string to minutes
+ */
+function parseDurationToMinutes(duration: string | number): number {
+  if (typeof duration === 'number') {
+    return duration;
+  }
+  // Handle "3 horas" format
+  const match = duration.match(/(\d+)\s*hora/i);
+  if (match) {
+    return parseInt(match[1], 10) * 60;
+  }
+  // Default to 180 minutes if can't parse
+  return 180;
+}
+
+/**
  * Create Module 1: Fundamentos Fisiológicos
  */
 async function createModule1() {
   console.log('📚 Creating Module 1: Fundamentos Fisiológicos...');
 
-  const module = await prisma.module.create({
-    data: {
-      title: 'Fundamentos Fisiológicos del Sistema Respiratorio',
+  const module = await prisma.module.upsert({
+    where: { id: 'module-01-fundamentals' },
+    update: {
+      title: 'Fundamentos Fisiológicos y Respiratorios',
       description:
         'Este módulo fundamental cubre los conceptos esenciales de la anatomía y fisiología respiratoria. ' +
         'Aprenderás sobre la estructura del sistema respiratorio, la mecánica de la ventilación, ' +
@@ -127,6 +176,24 @@ async function createModule1() {
       difficulty: 'BEGINNER',
       estimatedTime: 180,
       isActive: true,
+      status: 'available',
+      isPlaceholder: false,
+    },
+    create: {
+      id: 'module-01-fundamentals',
+      title: 'Fundamentos Fisiológicos y Respiratorios',
+      description:
+        'Este módulo fundamental cubre los conceptos esenciales de la anatomía y fisiología respiratoria. ' +
+        'Aprenderás sobre la estructura del sistema respiratorio, la mecánica de la ventilación, ' +
+        'el intercambio gaseoso a nivel alveolar, y la interpretación básica de gasometrías arteriales. ' +
+        'Es la base necesaria para comprender la ventilación mecánica.',
+      order: 1,
+      category: 'FUNDAMENTALS',
+      difficulty: 'BEGINNER',
+      estimatedTime: 180,
+      isActive: true,
+      status: 'available',
+      isPlaceholder: false,
     },
   });
 

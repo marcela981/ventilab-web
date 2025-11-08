@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { curriculumData, getLevelProgress } from '../../../data/curriculumData';
+import { getModulesCount, getAllModules } from '../../../data/curriculum/selectors.js';
 
 /**
  * useModuleProgress - Hook personalizado para manejo de progreso de módulos
@@ -36,11 +37,13 @@ const useModuleProgress = (completedLessons, timeSpent = 0) => {
    * @returns {Object} Objeto con estadísticas globales
    */
   const calculateGlobalStats = useMemo(() => {
-    const totalModules = Object.keys(curriculumData.modules).length;
-    const completedModules = Object.keys(curriculumData.modules).filter(moduleId => 
-      calculateModuleProgress(moduleId) === 100
+    // Use selectors for data-driven counts
+    const modules = getAllModules();
+    const totalModules = getModulesCount();
+    const completedModules = modules.filter(module => 
+      calculateModuleProgress(module.id) === 100
     ).length;
-    const totalLessons = Object.values(curriculumData.modules).reduce((acc, module) => 
+    const totalLessons = modules.reduce((acc, module) => 
       acc + (module.lessons?.length || 0), 0
     );
     const completedLessonsCount = completedLessons.size;

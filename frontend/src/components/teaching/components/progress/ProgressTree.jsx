@@ -183,6 +183,7 @@ const ProgressTree = ({ modules, userProgress, onModuleClick, onLessonClick }) =
   // Calcular estadísticas globales
   const globalStats = useMemo(() => {
     const modulesArray = Object.values(modules);
+    // Use data-driven count - modulesArray.length is already correct
     const totalModules = modulesArray.length;
 
     let completedModules = 0;

@@ -10,6 +10,8 @@ import ModuleCardMeta from './ModuleCardMeta';
 import ModuleCardBody from './ModuleCardBody';
 import ModuleCardFooter from './ModuleCardFooter';
 import ModuleCardOverlay from './ModuleCardOverlay';
+import ComingSoonBadge from './ComingSoonBadge';
+import { isModuleComingSoon } from '../../../../data/curriculum/selectors.js';
 import styles from '@/styles/curriculum.module.css';
 import CurriculumProgressBar from './CurriculumProgressBar';
 
@@ -131,6 +133,9 @@ const ModuleCard = ({
     // No necesitamos hacer nada adicional aquí, solo re-renderizar cuando cambia
   }, [progress]);
   
+  // Check if module is coming soon or placeholder
+  const isComingSoon = isModuleComingSoon(module.id);
+  
   // Calcular disponibilidad usando el hook centralizado
   const { isAvailable, missingPrerequisites, status: availabilityStatus } = useModuleAvailability({
     moduleId: module.id,
@@ -140,9 +145,12 @@ const ModuleCard = ({
   
   // Prioridad: si completedModules tiene datos, usar siempre el cálculo interno (más preciso)
   // Si no hay completedModules, usar isAvailableProp si está disponible, o el cálculo interno
-  const finalIsAvailable = completedModules.length > 0
-    ? isAvailable  // Si hay datos de módulos completados, usar cálculo interno basado en prerrequisitos
-    : (isAvailableProp !== undefined ? isAvailableProp : isAvailable);
+  // IMPORTANT: Módulos coming_soon nunca están disponibles
+  const finalIsAvailable = isComingSoon 
+    ? false  // Módulos coming_soon siempre están bloqueados
+    : (completedModules.length > 0
+      ? isAvailable  // Si hay datos de módulos completados, usar cálculo interno basado en prerrequisitos
+      : (isAvailableProp !== undefined ? isAvailableProp : isAvailable));
   
   // Usar progreso para determinar el status
   const moduleProgressPercent = moduleProgressAggregate.percentInt;
@@ -193,8 +201,11 @@ const ModuleCard = ({
         role="article"
         aria-label={`Módulo: ${module.title}`}
         onClick={handleCardClick}
-        aria-disabled={!finalIsAvailable}
-        title={!finalIsAvailable ? 'Módulo bloqueado' : undefined}
+        aria-disabled={!finalIsAvailable || isComingSoon}
+        title={isComingSoon 
+          ? 'Este módulo está en preparación y se habilitará pronto' 
+          : (!finalIsAvailable ? 'Módulo bloqueado' : undefined)
+        }
         style={{
           cursor: finalIsAvailable ? 'pointer' : 'not-allowed',
           position: 'relative',
@@ -229,6 +240,16 @@ const ModuleCard = ({
             onToggleFavorite={onToggleFavorite}
             completedAt={moduleProgressAggregate.completedAt}
           />
+          
+          {/* Badge "En construcción" para módulos coming_soon */}
+          {isComingSoon && (
+            <Box sx={{ px: 2, pb: 1, display: 'flex', justifyContent: 'flex-start' }}>
+              <ComingSoonBadge 
+                show={true}
+                tooltip="Este módulo está en preparación y se habilitará pronto"
+              />
+            </Box>
+          )}
   
           <ModuleCardMeta
             module={module}

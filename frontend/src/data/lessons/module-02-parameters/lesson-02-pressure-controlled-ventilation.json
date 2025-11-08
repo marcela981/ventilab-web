@@ -1,0 +1,494 @@
+{
+    "id": "lesson-02-pressure-controlled-ventilation",
+    "moduleId": "module-02-modalidades-parametros",
+    "title": "Ventilación Controlada por Presión (PCV): paquete de lecciones avanzadas",
+    "description": "Conjunto de lecciones a nivel de residencia/doctorado sobre la ventilación controlada por presión (PCV). Se abordan fundamentos (variable de control, límite y ciclado), parametrización (Pinsp sobre PEEP, tiempo inspiratorio, frecuencia, rise time), lectura de ondas (presión cuadrada, flujo desacelerado, volumen dependiente), seguridad (monitorización de Vt y ΔP), asincronías características de PCV y su resolución, y aplicación protectora basada en ΔP y metas de volumen corriente en distintos fenotipos. Incluye ejemplos numéricos, casos clínicos, listas de verificación, imágenes y videos.",
+    "order": 2,
+    "estimatedTime": 240,
+    "difficulty": "advanced",
+    "bloomLevel": "evaluate",
+    "nivel": "investigativo-doctoral",
+    "prerequisites": [
+    "Mecánica respiratoria (compliance, resistencia, tiempo constante)",
+    "Interpretación de curvas presión–flujo–volumen en ventilación",
+    "Gasometría arterial y objetivos de oxigenación/ventilación"
+    ],
+    "learningObjectives": [
+    "Diferenciar con precisión las variables de control, límite y ciclado en PCV y su impacto en las curvas de presión, flujo y volumen.",
+    "Programar de forma segura Pinsp (por encima de PEEP), TI, RR y rise time, entendiendo que el Vt resultante es variable y depende de la mecánica.",
+    "Reconocer y resolver asincronías frecuentes en PCV (ciclado precoz/tardío, overshoot por rise time, doble disparo cuando TI no acompaña el impulso neural).",
+    "Implementar una estrategia protectora basada en ΔP y objetivos de Vt por PBW, supervisando variaciones de Vt ante cambios de compliance/resistencia."
+    ],
+    "lessons": [
+    {
+    "id": "lesson-01-pcv-fundamentos-ondas",
+    "moduleId": "module-02-modalidades-parametros",
+    "title": "Fundamentos de PCV y lectura de ondas",
+    "description": "Definición de PCV como modo de presión limitada y tiempo ciclado; la presión inspiratoria se mantiene durante un TI programado y el Vt resultante depende de la mecánica. Revisión de curvas típicas (presión ‘cuadrada’, flujo desacelerado, volumen ascendente no lineal) y del significado clínico.",
+    "order": 1,
+    "estimatedTime": 55,
+    "difficulty": "advanced",
+    "bloomLevel": "analyze",
+    "learningObjectives": [
+    "Describir la lógica de control de PCV: presión objetivo (Pinsp) por encima de PEEP, TI y RR.",
+    "Reconocer la morfología típica de las curvas en PCV y sus implicaciones.",
+    "Correlacionar cambios de Vt con variaciones de compliance y resistencia en PCV."
+    ],
+    "sections": [
+    {
+    "id": "intro-pcv",
+    "order": 1,
+    "type": "introduction",
+    "title": "¿Qué es PCV?",
+    "content": {
+    "markdown": "En **PCV** se fija una **presión inspiratoria (Pinsp, sobre la PEEP)** y un **tiempo inspiratorio (TI)**; la **frecuencia respiratoria (RR)** determina el número de ciclos y el **volumen corriente (Vt)** es **resultado** de la mecánica. El flujo inspiratorio es típicamente **desacelerado** y la presión **se mantiene** (onda “cuadrada”) durante el TI. El ciclado es por **tiempo** (al finalizar el TI). ([CNIB][1])"
+    }
+    },
+    {
+    "id": "ondas-pcv",
+    "order": 2,
+    "type": "theory",
+    "title": "Ondas en PCV y significado clínico",
+    "content": {
+    "markdown": "• **Presión**: alcanza rápidamente el **Pinsp** y se mantiene hasta el ciclado por **TI**.  \n• **Flujo**: **desacelerado** (pico alto al inicio → menor al final), favoreciendo presiones pico más bajas y mayor **presión media** de vía aérea.  \n• **Volumen**: ascenso curvilíneo dependiente de la **compliance**; por ello el **Vt varía** si cambia la mecánica.  \n**Implicaciones**: el patrón desacelerado puede **reducir PIP** y mejorar **distribución** y oxigenación, con la salvedad de vigilar hemodinamia y Vt. ([Respiratory Therapy][2])"
+    }
+    },
+    {
+    "id": "trigger-limit-cycle",
+    "order": 3,
+    "type": "theory",
+    "title": "Trigger, Límite y Ciclado en PCV",
+    "content": {
+    "markdown": "Marco moderno: **Trigger** (inicio del ciclo), **Límite** (variable que no se supera: la **presión**), **Ciclado** (qué termina la inspiración: **tiempo** en PCV). Este lenguaje reduce confusiones entre modos. ([OpenAnesthesia][3])"
+    }
+    },
+    {
+    "id": "checklist-ondas-pcv",
+    "order": 4,
+    "type": "procedure",
+    "title": "Checklist de lectura de ondas (PCV)",
+    "content": {
+    "markdown": "1) Confirma **Pinsp**, **PEEP**, **TI** y **RR**; 2) observa **flujo desacelerado** y que tienda a cero al final del TI; 3) correlaciona **Vt** con clínica y mecánica; 4) vigila **ΔP = (Pinsp)** en PCV pasiva y **Vt/PBW**; 5) reevalúa tras cada cambio. ([CNIB][1])"
+    }
+    }
+    ],
+    "media": {
+    "videos": [
+    {
+    "id": "vid-pcv-fundamentals",
+    "title": "Pressure Control Ventilation – Fundamentos",
+    "provider": "YouTube",
+    "url": "[https://www.youtube.com/watch?v=DMPnCOs59KM](https://www.youtube.com/watch?v=DMPnCOs59KM)",
+    "credit": "Tutorial: principios de PCV",
+    "note": "Repaso visual de PCV y curvas. ([YouTube][4])"
+    },
+    {
+    "id": "vid-waveforms-overview",
+    "title": "Ventilator Waveforms: PCV vs VCV",
+    "provider": "YouTube",
+    "url": "[https://www.youtube.com/watch?v=THLdV5gJ9Uw](https://www.youtube.com/watch?v=THLdV5gJ9Uw)",
+    "credit": "OPENPediatrics – Waveforms",
+    "note": "Comparación de ondas en distintos modos. ([YouTube][5])"
+    }
+    ],
+    "images": [
+    {
+    "id": "img-onepager-modes",
+    "url": "[https://www.openanesthesia.org/wp-content/uploads/2024/12/02/ICU_one_pager_vent_basics.pdf](https://www.openanesthesia.org/wp-content/uploads/2024/12/02/ICU_one_pager_vent_basics.pdf)",
+    "alt": "Infografía de modos: variables de trigger, límite y ciclado",
+    "caption": "Resumen visual de modos (incluye PCV con límite de presión y ciclado por tiempo). ([OpenAnesthesia][6])"
+    },
+    {
+    "id": "img-deranged-pcv",
+    "url": "[https://derangedphysiology.com/main/cicm-primary-exam/respiratory-system/Chapter-534/control-variables-volume-and-pressure](https://derangedphysiology.com/main/cicm-primary-exam/respiratory-system/Chapter-534/control-variables-volume-and-pressure)",
+    "alt": "Control por presión vs volumen: efectos prácticos",
+    "caption": "Control por **presión** limita barotrauma y favorece oxigenación; control por **volumen** estabiliza PaCO₂. ([Deranged Physiology][7])"
+    }
+    ]
+    },
+    "resources": {
+    "keyReadings": [
+    "StatPearls – Pressure Control Ventilation (definición y parámetros). ([CNIB][1])",
+    "OpenAnesthesia – Modes of Mechanical Ventilation (T/L/C). ([OpenAnesthesia][3])"
+    ]
+    },
+    "metadata": {
+    "estimatedWorkloadMinutes": 55,
+    "assessmentType": "formative"
+    }
+    },
+    {
+    "id": "lesson-02-pcv-parametrizacion-segura",
+    "moduleId": "module-02-modalidades-parametros",
+    "title": "Parametrización segura en PCV",
+    "description": "Cómo fijar Pinsp (sobre PEEP), TI, RR y rise time; establecimiento y lectura de alarmas; uso de ΔP y objetivos de Vt por PBW; consideraciones de potencia mecánica.",
+    "order": 2,
+    "estimatedTime": 65,
+    "difficulty": "advanced",
+    "bloomLevel": "apply",
+    "learningObjectives": [
+    "Programar Pinsp, TI, RR, PEEP y rise time en PCV según metas clínicas.",
+    "Utilizar ΔP (≈ Pinsp en PCV pasiva) y Vt/PBW como ejes de protección.",
+    "Configurar alarmas de volumen bajo y presión alta para seguridad."
+    ],
+    "sections": [
+    {
+    "id": "parametros-clave-pcv",
+    "order": 1,
+    "type": "theory",
+    "title": "Parámetros clave y lógica de ajuste",
+    "content": {
+    "markdown": "**Pinsp (sobre PEEP)** determina la **ΔP** y, junto con **TI**, condiciona el **Vt resultante**; **RR** cierra la ventilación minuto; **rise time** modula la velocidad de ascenso a Pinsp. En PCV se **observa** el **Vt** y se ajusta **Pinsp/TI** para alcanzar objetivos (p. ej., 4–6 ml/kg PBW en estrategia protectora), manteniendo seguridad hemodinámica. ([CNIB][1])"
+    }
+    },
+    {
+    "id": "driving-pressure-pcv",
+    "order": 2,
+    "type": "theory",
+    "title": "ΔP como métrica de protección (aplicable a PCV)",
+    "content": {
+    "markdown": "La **presión de conducción (ΔP = Pplat − PEEP)** se asoció a supervivencia en ARDS; reducir ΔP se asoció a mejor pronóstico. En **PCV pasiva**, el **Pinsp** (sobre PEEP) aproxima la **ΔP** al final del TI si el flujo se acerca a cero. Objetivo práctico: **ΔP baja** con **Vt objetivo**, vigilando gases. ([New England Journal of Medicine][8])"
+    }
+    },
+    {
+    "id": "rise-time-potencia",
+    "order": 3,
+    "type": "theory",
+    "title": "Rise time y potencia mecánica",
+    "content": {
+    "markdown": "El **rise time** muy corto puede producir **overshoot** y mayor entrega de energía al inicio; tiempos intermedios suelen optimizar comodidad y sincronía. La **potencia mecánica** en PCV depende de ΔP, Vt, flujo y RR; su estimación dinámica se afecta por el rise time. Minimizar potencia co-optimiza ΔP, Vt y RR. ([YouTube][9])"
+    }
+    },
+    {
+    "id": "alarmas-pcv",
+    "order": 4,
+    "type": "procedure",
+    "title": "Alarmas y seguridad",
+    "content": {
+    "markdown": "• **Presión alta**: investigar acodamiento/tubo/moco/neumotórax.  \n• **Volumen bajo/minuto bajo**: puede indicar **↓compliance** o desconexión; en PCV el Vt **cae** si empeora la mecánica → evaluar y **reajustar Pinsp/TI** o estrategia. ([CNIB][10])"
+    }
+    },
+    {
+    "id": "ejemplo-numerico-pcv",
+    "order": 5,
+    "type": "example",
+    "title": "Ejemplo numérico de programación",
+    "content": {
+    "markdown": "Paciente 70 kg (PBW). Metas: **Vt ~6 ml/kg ≈ 420 ml**. Inicia **PEEP 8**, **Pinsp 12 (sobre PEEP)**, **TI 0,9 s**, **RR 18**; ajusta **rise time** intermedio. Si el Vt observado es 360 ml, ↑ **Pinsp** a 14–16 y reevalúa gasometría y hemodinamia."
+    }
+    }
+    ],
+    "media": {
+    "videos": [
+    {
+    "id": "vid-rise-time",
+    "title": "Optimizing Inspiratory Pressure Rise Time",
+    "provider": "YouTube",
+    "url": "[https://www.youtube.com/watch?v=JHgrbDqN61c](https://www.youtube.com/watch?v=JHgrbDqN61c)",
+    "credit": "Respiratory Therapy Education",
+    "note": "Conceptos prácticos de rise time. ([YouTube][11])"
+    }
+    ]
+    },
+    "resources": {
+    "keyReadings": [
+    "StatPearls – Pressure Control Ventilation (parámetros, TI). ([CNIB][1])",
+    "NEJM/PubMed – ΔP y supervivencia en ARDS. ([New England Journal of Medicine][8])",
+    "U.D. Mercy – Ventilators (PCV CMV descripción práctica). ([healthprofessions.udmercy.edu][12])"
+    ]
+    },
+    "metadata": {
+    "estimatedWorkloadMinutes": 65,
+    "assessmentType": "formative"
+    }
+    },
+    {
+    "id": "lesson-03-pcv-asincronias",
+    "moduleId": "module-02-modalidades-parametros",
+    "title": "Asincronías típicas de PCV y su resolución",
+    "description": "Identificación en curvas, fisiopatología y manejo de ciclado precoz/tardío, overshoot por rise time y doble disparo en PCV.",
+    "order": 3,
+    "estimatedTime": 50,
+    "difficulty": "advanced",
+    "bloomLevel": "evaluate",
+    "learningObjectives": [
+    "Reconocer en curvas el **ciclado inadecuado** cuando el TI no coincide con el impulso neural.",
+    "Detectar **overshoot** de presión/flujo por rise time inapropiado.",
+    "Aplicar intervenciones: ajustar **TI**, **rise time**, **RR/PEEP**, o modo de asistencia."
+    ],
+    "sections": [
+    {
+    "id": "ciclado-ti",
+    "order": 1,
+    "type": "theory",
+    "title": "Ciclado por tiempo: cuándo es demasiado corto o largo",
+    "content": {
+    "markdown": "En PCV, el **TI** fija la duración del plateau de presión: **TI corto** → doble disparo o trabajo muscular persistente; **TI largo** → esfuerzo espiratorio activo o atrapamiento si el paciente intenta exhalar antes. Ajustar el **TI** observando la **decadencia de flujo**: lo ideal es que se aproxime a cero al final de la inspiración. ([CNIB][1])"
+    }
+    },
+    {
+    "id": "rise-time-overshoot",
+    "order": 2,
+    "type": "theory",
+    "title": "Rise time y overshoot",
+    "content": {
+    "markdown": "Un **rise time** excesivamente **rápido** puede producir **overshoot** de presión y molestias; demasiado **lento** puede inducir sensación de flujo insuficiente. Ajustes intermedios mejoran **sincronía** y pueden reducir la energía de la insuflación. ([YouTube][9])"
+    }
+    },
+    {
+    "id": "algoritmo-asincronias-pcv",
+    "order": 3,
+    "type": "procedure",
+    "title": "Algoritmo práctico",
+    "content": {
+    "markdown": "1) Identifica el patrón en curvas; 2) correlaciona con ventilación/minuto y comodidad; 3) **ajusta TI** para hacer coincidir el fin inspiratorio con el fin del impulso; 4) modula **rise time**; 5) reevalúa Vt/ΔP/gasometría a 10–15 min. ([Medic's Corner][13])"
+    }
+    },
+    {
+    "id": "ejemplo-curvas-pcv",
+    "order": 4,
+    "type": "example",
+    "title": "Ejemplo interpretativo",
+    "content": {
+    "markdown": "PCV con **TI 0,6 s** y **rise time** muy corto muestra **overshoot** y doble disparo intermitente. Se **prolonga TI a 0,9 s** y se ajusta **rise time** a intermedio; desaparece el doble disparo y el paciente refiere menor disnea. ([YouTube][9])"
+    }
+    }
+    ],
+    "media": {
+    "videos": [
+    {
+    "id": "vid-rise-vs-ti",
+    "title": "Inspiratory Time vs Rise Time (diferencias)",
+    "provider": "YouTube",
+    "url": "[https://www.youtube.com/watch?v=T40QAJl1prU](https://www.youtube.com/watch?v=T40QAJl1prU)",
+    "credit": "Respiratory Therapy",
+    "note": "Diferencia entre TI y rise time aplicada a gráficos. ([YouTube][14])"
+    }
+    ]
+    },
+    "resources": {
+    "keyReadings": [
+    "Deranged Physiology – Dyssynchrony (revisión con enfoque práctico). ([Medic's Corner][13])"
+    ]
+    },
+    "metadata": {
+    "estimatedWorkloadMinutes": 50,
+    "assessmentType": "formative"
+    }
+    },
+    {
+    "id": "lesson-04-pcv-evidencia-comparativa",
+    "moduleId": "module-02-modalidades-parametros",
+    "title": "PCV vs VCV: evidencia, ventajas y cautelas",
+    "description": "Síntesis de evidencia comparativa (oxigenación, presiones pico, Vt variable), escenarios quirúrgicos (OLV) y la centralidad de ΔP en protección pulmonar.",
+    "order": 4,
+    "estimatedTime": 60,
+    "difficulty": "advanced",
+    "bloomLevel": "apply",
+    "learningObjectives": [
+    "Comparar PCV vs VCV en términos de presión pico, distribución y estabilidad del Vt.",
+    "Aplicar hallazgos en contextos específicos (p. ej., ventilación unipulmonar).",
+    "Priorizar ΔP y Vt objetivo por sobre la “etiqueta” del modo."
+    ],
+    "sections": [
+    {
+    "id": "pros-cons",
+    "order": 1,
+    "type": "theory",
+    "title": "Ventajas y cautelas",
+    "content": {
+    "markdown": "PCV puede **reducir PIP** y **aumentar presión media** con **flujo desacelerado**, lo que favorece la **oxigenación** en algunos escenarios; sin embargo, el **Vt es variable** ante cambios de mecánica y requiere monitorización continua. ([Respiratory Therapy][15])"
+    }
+    },
+    {
+    "id": "olv-context",
+    "order": 2,
+    "type": "theory",
+    "title": "Evidencia en ventilación unipulmonar (OLV)",
+    "content": {
+    "markdown": "Ensayos comparativos en OLV han mostrado mejoras de **oxigenación** y **presiones** con PCV o con **flujos desacelerados** frente a VCV de **flujo constante**, aunque la relevancia en outcomes duros es variable. ([PubMed][16])"
+    }
+    },
+    {
+    "id": "driving-pressure-central",
+    "order": 3,
+    "type": "theory",
+    "title": "La centralidad de la ΔP en protección",
+    "content": {
+    "markdown": "Metaanálisis y análisis integrados muestran que **disminuir ΔP** se asocia con **mayor supervivencia** en ARDS, independientemente del **modo**; por ello, PCV debe usarse para **alcanzar** ΔP y **Vt** protectores, no como fin en sí mismo. ([New England Journal of Medicine][8])"
+    }
+    },
+    {
+    "id": "ejemplo-clinico-comparativa",
+    "order": 4,
+    "type": "example",
+    "title": "Ejemplo clínico (comparativa guiada por ΔP)",
+    "content": {
+    "markdown": "Paciente con ARDS moderado: En **VCV** con Vt 6 ml/kg, Pplat 30, ΔP 22 (PEEP 8). Se cambia a **PCV** y se titula **Pinsp** para mantener Vt 6 ml/kg; ΔP (≈ Pinsp) baja a 15 sin deterioro de gases. Se mantiene PCV y se evalúa prono según criterios."
+    }
+    }
+    ],
+    "media": {
+    "videos": [
+    {
+    "id": "vid-vs-overview",
+    "title": "Vent Modes 101 – Focus on the Waveform (UCSF/ATS)",
+    "provider": "ATS Video Lecture",
+    "url": "[https://www.thoracic.org/professionals/clinical-resources/video-lecture-series/mechanical-ventilation/vent-modes-101-focus-on-the-waveform.php](https://www.thoracic.org/professionals/clinical-resources/video-lecture-series/mechanical-ventilation/vent-modes-101-focus-on-the-waveform.php)",
+    "credit": "ATS/UCSF",
+    "note": "Comparativa conceptual enfocada en curvas. ([American Thoracic Society][17])"
+    }
+    ]
+    },
+    "resources": {
+    "keyReadings": [
+    "Deranged Physiology – Control variables (presión vs volumen). ([Deranged Physiology][7])",
+    "Estudios comparativos PCV/VCV en OLV. ([PubMed][16])"
+    ]
+    },
+    "metadata": {
+    "estimatedWorkloadMinutes": 60,
+    "assessmentType": "summative"
+    }
+    },
+    {
+    "id": "lesson-05-pcv-casos",
+    "moduleId": "module-02-modalidades-parametros",
+    "title": "Casos prácticos integrados en PCV",
+    "description": "Tres escenarios clínicos para aplicar PCV: caída de Vt por compliance, overshoot por rise time y ajuste de TI para sincronía.",
+    "order": 5,
+    "estimatedTime": 55,
+    "difficulty": "advanced",
+    "bloomLevel": "create",
+    "learningObjectives": [
+    "Aplicar un algoritmo de decisión en PCV frente a **Vt bajo** por cambios mecánicos.",
+    "Resolver **overshoot** ajustando rise time y TI.",
+    "Implementar ajustes protectores priorizando ΔP baja con Vt objetivo."
+    ],
+    "sections": [
+    {
+    "id": "caso-1-compliance-baja",
+    "order": 1,
+    "type": "case",
+    "title": "Caso 1: Disminución brusca de Vt por ↓compliance",
+    "content": {
+    "markdown": "**Datos**: PCV, PEEP 8, **Pinsp 14**, TI 1,0 s, RR 20; Vt previo 420 ml → ahora 300 ml, SpO₂ estable. **Acción**: evalúa causa de ↓compliance (edema, atelectasia), **↑Pinsp a 16** para recuperar Vt ~360–420 ml, reevalúa ΔP, hemodinamia y gases."
+    }
+    },
+    {
+    "id": "caso-2-overshoot-rise",
+    "order": 2,
+    "type": "case",
+    "title": "Caso 2: Overshoot por rise time",
+    "content": {
+    "markdown": "**Datos**: overshoot de presión y disconfort; rise time muy corto. **Acción**: ajusta rise time a intermedio, reevalúa curvas; mejora sincronía y desaparece overshoot. ([YouTube][9])"
+    }
+    },
+    {
+    "id": "caso-3-ti-sincronia",
+    "order": 3,
+    "type": "case",
+    "title": "Caso 3: TI no acompasa el impulso neural",
+    "content": {
+    "markdown": "**Datos**: doble disparo intermitente con **TI 0,6 s**; flujo no alcanza a acercarse a cero al final. **Acción**: **prolonga TI** a 0,9–1,0 s (sin generar auto-PEEP), reevalúa; desaparece doble disparo y mejora confort. ([CNIB][1])"
+    }
+    }
+    ],
+    "media": {
+    "videos": [
+    {
+    "id": "vid-pcv-acpc",
+    "title": "Mechanical Ventilation Basics – AC/PC",
+    "provider": "YouTube",
+    "url": "[https://m.youtube.com/watch?v=y5NKLMJsCNg](https://m.youtube.com/watch?v=y5NKLMJsCNg)",
+    "credit": "Series educativa – PCV",
+    "note": "Demostración de parámetros y gráfica típica en PCV. ([YouTube][18])"
+    }
+    ]
+    },
+    "resources": {
+    "keyReadings": [
+    "StatPearls – Pressure Control Ventilation. ([CNIB][1])",
+    "OpenAnesthesia – Modes (T/L/C y tarjetas visuales). ([OpenAnesthesia][3])"
+    ]
+    },
+    "metadata": {
+    "estimatedWorkloadMinutes": 55,
+    "assessmentType": "practical"
+    }
+    }
+    ],
+    "assessment": {
+    "quiz": {
+    "id": "quiz-pcv-advanced",
+    "type": "multiple-choice",
+    "attemptsAllowed": 2,
+    "questions": [
+    {
+    "id": "q1",
+    "stem": "En PCV, la variable **limitante** del ciclo es:",
+    "options": [
+    "El volumen corriente",
+    "La presión inspiratoria (Pinsp)",
+    "El flujo inspiratorio",
+    "La presión media de la vía aérea"
+    ],
+    "answer": 2,
+    "rationale": "PCV es **presión-limitado** y **tiempo-ciclado**; la presión es la variable que no se supera. ([OpenAnesthesia][3])"
+    },
+    {
+    "id": "q2",
+    "stem": "Respecto al **Vt** durante PCV, lo correcto es:",
+    "options": [
+    "Permanece constante por diseño del modo",
+    "Depende de la mecánica y puede variar",
+    "Siempre es mayor que en VCV",
+    "No se ve afectado por el TI"
+    ],
+    "answer": 2,
+    "rationale": "En PCV el **Vt es resultado** de la mecánica y los ajustes (Pinsp/TI); no es fijo por diseño. ([CNIB][1])"
+    },
+    {
+    "id": "q3",
+    "stem": "La **ΔP** relevante para protección pulmonar en PCV pasiva se aproxima a:",
+    "options": [
+    "PEEP",
+    "PIP − PEEP en VCV",
+    "Pinsp (sobre PEEP)",
+    "PAw media"
+    ],
+    "answer": 3,
+    "rationale": "En PCV pasiva, al final del TI, **Pinsp** (sobre PEEP) se aproxima a **ΔP**; disminuir ΔP se asocia a mejor supervivencia. ([New England Journal of Medicine][8])"
+    },
+    {
+    "id": "q4",
+    "stem": "¿Qué ajuste es más adecuado ante **overshoot** de presión por rise time en PCV?",
+    "options": [
+    "Aumentar aún más el rise time",
+    "Disminuir el Pinsp",
+    "Ajustar el rise time a un valor intermedio y reevaluar",
+    "Acortar el TI"
+    ],
+    "answer": 3,
+    "rationale": "Un **rise time** excesivamente rápido favorece **overshoot**; un ajuste intermedio suele mejorar la sincronía. ([YouTube][9])"
+    }
+    ]
+    }
+    },
+    "sources": [
+    "StatPearls – Pressure Control Ventilation (definición, TI, parámetros). ([CNIB][1])",
+    "OpenAnesthesia – Modes of Mechanical Ventilation (trigger/limit/cycle) y One-Pager PDF. ([OpenAnesthesia][3])",
+    "Respiratory Therapy – PCV (flujo desacelerado, PIP). ([Respiratory Therapy][2])",
+    "Deranged Physiology – Control variables (presión vs volumen) y dyssynchrony. ([Deranged Physiology][7])",
+    "NEJM/PubMed – ΔP y supervivencia en ARDS (Amato 2015). ([New England Journal of Medicine][8])",
+    "Estudios PCV vs VCV en OLV (ejemplos 1996, 2014). ([PubMed][16])",
+    "Efecto del rise time en potencia mecánica (Acicbe 2023, open-access). ([PMC][19])",
+    "U.D. Mercy – Ventilators (descripción práctica de PCV CMV). ([healthprofessions.udmercy.edu][12])"
+    ],
+    "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-08",
+    "language": "es-CO",
+    "tags": ["PCV", "AC-PC", "Pinsp", "TI", "PEEP", "ΔP", "Rise time", "Asincronías"]
+    }
+    }

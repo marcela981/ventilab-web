@@ -35,7 +35,7 @@ const DashboardHeader = ({
       case 0:
         return "Aprende los fundamentos de la mecánica ventilatoria de manera interactiva.";
       case 1:
-        return "Explora el currículo completo y planifica tu camino de aprendizaje.";
+        return "Explora nuestro currículo completo y en expansión, y planifica tu camino de aprendizaje.";
       case 2:
         return "Analiza tu desempeño, revisa tus logros y métricas detalladas de tu progreso.";
       default:

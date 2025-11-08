@@ -732,12 +732,14 @@ export function useAdminDashboard() {
         }
       } catch (err) {
         console.error('[useAdminDashboard] Error fetching system stats:', err);
-        // Mock data
+        // Mock data - NOTE: This should be removed once API is working
+        // For now, use a fallback that indicates data is not available
+        console.warn('[useAdminDashboard] Using fallback stats - API endpoint not available');
         systemStats = {
-          totalUsers: 156,
-          totalModules: 18,
-          totalLessons: 145,
-          activeUsers: 89,
+          totalUsers: 0,
+          totalModules: 0, // Removed hardcoded 18 - will be computed from API
+          totalLessons: 0,
+          activeUsers: 0,
         };
       }
 
