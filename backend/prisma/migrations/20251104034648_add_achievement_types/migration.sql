@@ -1,3 +1,6 @@
+-- Install pg_trgm extension (required for GIN indexes with gin_trgm_ops)
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 -- CreateEnum
 CREATE TYPE "UserRole" AS ENUM ('STUDENT', 'TEACHER', 'EXPERT', 'ADMIN');
 

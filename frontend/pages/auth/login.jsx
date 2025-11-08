@@ -52,7 +52,7 @@ const VentiLabLogo = () => (
   >
     <Box
       component="img"
-      src="/logo.png"
+      src="/images/logo.png"
       alt="VentyLab Logo"
       sx={{
         height: 60,

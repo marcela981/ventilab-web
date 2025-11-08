@@ -105,16 +105,19 @@ export const useAITutor = (lessonContext) => {
     setError(null);
     
     // Inicializar con mensaje de bienvenida si no hay mensajes
-    if (messages.length === 0) {
-      const welcomeMessage = {
-        id: Date.now(),
-        role: 'assistant',
-        content: `¡Hola! Soy tu tutor IA. Estoy aquí para ayudarte con "${lessonContext?.title || 'esta lección'}". ¿En qué puedo ayudarte?`,
-        time: new Date().toISOString(),
-      };
-      setMessages([welcomeMessage]);
-    }
-  }, [isOpen, messages.length, lessonContext?.title]);
+    setMessages(prev => {
+      if (prev.length === 0) {
+        const welcomeMessage = {
+          id: Date.now(),
+          role: 'assistant',
+          content: `¡Hola! Soy tu tutor IA. Estoy aquí para ayudarte con "${lessonContext?.title || 'esta lección'}". ¿En qué puedo ayudarte?`,
+          time: new Date().toISOString(),
+        };
+        return [welcomeMessage];
+      }
+      return prev;
+    });
+  }, [lessonContext?.title]);
 
   /**
    * Cerrar el chat
@@ -128,6 +131,53 @@ export const useAITutor = (lessonContext) => {
     }
     setIsStreaming(false);
     currentMessageRef.current = '';
+  }, []);
+
+  /**
+   * Toggle abrir/cerrar chat
+   */
+  const toggle = useCallback(() => {
+    setIsOpen(prev => {
+      const newValue = !prev;
+      if (newValue) {
+        // Si se está abriendo, inicializar con mensaje de bienvenida si no hay mensajes
+        setMessages(currentMessages => {
+          if (currentMessages.length === 0) {
+            const welcomeMessage = {
+              id: Date.now(),
+              role: 'assistant',
+              content: `¡Hola! Soy tu tutor IA. Estoy aquí para ayudarte con "${lessonContext?.title || 'esta lección'}". ¿En qué puedo ayudarte?`,
+              time: new Date().toISOString(),
+            };
+            return [welcomeMessage];
+          }
+          return currentMessages;
+        });
+        setError(null);
+      } else {
+        // Si se está cerrando, limpiar
+        if (wsRef.current) {
+          wsRef.current.close();
+          wsRef.current = null;
+        }
+        setIsStreaming(false);
+        currentMessageRef.current = '';
+      }
+      return newValue;
+    });
+  }, [lessonContext?.title]);
+
+  /**
+   * Cancelar streaming actual
+   */
+  const cancelStream = useCallback(() => {
+    setIsStreaming(false);
+    currentMessageRef.current = '';
+    // Cerrar WebSocket si está abierto
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
   }, []);
 
   /**
@@ -262,18 +312,24 @@ export const useAITutor = (lessonContext) => {
 
   return {
     // Estado
+    open: isOpen, // Alias para compatibilidad
     isOpen,
     messages,
+    typing: isStreaming, // Alias para compatibilidad
     isStreaming,
     provider,
     error,
 
     // Acciones
+    toggle,
     openChat,
     closeChat,
+    send: sendMessage, // Alias para compatibilidad
     sendMessage,
+    setProvider: changeProvider, // Alias para compatibilidad
     changeProvider,
     clearHistory,
+    cancelStream,
   };
 };
 

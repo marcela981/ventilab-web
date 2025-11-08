@@ -51,3 +51,9 @@ export interface PaginatedResult<T> {
     totalPages: number;
   };
 }
+
+// =============================================================================
+// Progress Types (re-exported from progress.ts)
+// =============================================================================
+
+export * from './progress';

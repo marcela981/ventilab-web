@@ -300,21 +300,19 @@ model LearningProgress {
   id          String    @id @default(cuid())
   userId      String
   moduleId    String
-  completedAt DateTime? // When the user completed the entire module
-  timeSpent   Int       @default(0) // Total time spent in minutes
-  score       Float?    // Overall score/grade for the module (0-100)
+  completedAt DateTime?
+  timeSpent   Int       @default(0)
+  score       Float?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  // Relations
   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   module         Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  lessonProgress LessonProgress[] // Detailed progress for each lesson
+  lessonProgress LessonProgress[]
 
-  @@unique([userId, moduleId]) // One progress record per user per module
+  @@unique([userId, moduleId])
   @@index([userId])
   @@index([moduleId])
-  @@index([completedAt])
   @@map("learning_progress")
 }
 
@@ -322,47 +320,22 @@ model LearningProgress {
 /// Provides granular tracking of which lessons have been completed
 model LessonProgress {
   id           String    @id @default(cuid())
-  progressId   String    // References LearningProgress
+  progressId   String
   lessonId     String
   completed    Boolean   @default(false)
-  timeSpent    Int       @default(0) // Time spent on this lesson in minutes
-  lastAccessed DateTime? // Last time user accessed this lesson
+  timeSpent    Int       @default(0)
+  lastAccessed DateTime?
+  progress     Float     @default(0)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  // Relations
   learningProgress LearningProgress @relation(fields: [progressId], references: [id], onDelete: Cascade)
   lesson           Lesson           @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
-  @@unique([progressId, lessonId]) // One progress record per lesson per user
+  @@unique([progressId, lessonId])
   @@index([progressId])
   @@index([lessonId])
-  @@index([completed])
   @@map("lesson_progress")
-}
-
-/// UserProgress - Detailed tracking of user interaction with lessons
-/// Stores granular playback and completion metadata per user, module, and lesson
-model UserProgress {
-  id              String   @id @default(cuid())
-  userId          String
-  moduleId        String
-  lessonId        String
-  positionSeconds Int      @default(0)
-  progress        Float    @default(0.0)
-  isCompleted     Boolean  @default(false)
-  attempts        Int      @default(0)
-  score           Float?
-  metadata        Json?
-  clientUpdatedAt DateTime @default(now())
-  serverUpdatedAt DateTime @default(now())
-  createdAt       DateTime @default(now())
-
-  @@unique([userId, moduleId, lessonId])
-  @@index([userId])
-  @@index([moduleId])
-  @@index([lessonId])
-  @@map("user_progress")
 }
 
 // =============================================================================

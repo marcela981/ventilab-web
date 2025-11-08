@@ -16,7 +16,7 @@ import {
   ERROR_MESSAGES,
   SUCCESS_MESSAGES,
 } from '../config/constants';
-import { AuthRequest } from '../types';
+import { AuthRequest } from '../middleware/auth';
 import * as achievementService from '../services/achievement.service';
 
 /**
@@ -97,7 +97,15 @@ export const login = asyncHandler(
       );
     }
 
-    // Verify password
+    // Verify password (user.password is required for credentials login)
+    if (!user.password) {
+      throw new AppError(
+        ERROR_MESSAGES.INVALID_CREDENTIALS,
+        HTTP_STATUS.UNAUTHORIZED,
+        ERROR_CODES.INVALID_CREDENTIALS
+      );
+    }
+
     const isPasswordValid = await comparePassword(password, user.password);
 
     if (!isPasswordValid) {
@@ -235,7 +243,7 @@ export const getMe = asyncHandler(
         email: true,
         name: true,
         role: true,
-        avatar: true,
+        image: true,
         bio: true,
         createdAt: true,
         updatedAt: true,
@@ -251,5 +259,77 @@ export const getMe = asyncHandler(
     }
 
     sendSuccess(res, HTTP_STATUS.OK, 'User data retrieved successfully', user);
+  }
+);
+
+/**
+ * Generate backend JWT token for NextAuth authenticated user
+ * This endpoint allows NextAuth sessions to obtain a backend JWT token
+ * @route   POST /api/auth/nextauth-token
+ * @access  Public (but requires userId and email in body for validation)
+ */
+export const generateNextAuthToken = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const { userId, email } = req.body;
+
+    if (!userId || !email) {
+      throw new AppError(
+        'User ID and email are required',
+        HTTP_STATUS.BAD_REQUEST,
+        ERROR_CODES.INVALID_INPUT
+      );
+    }
+
+    // Verify user exists and matches the provided email
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        isActive: true,
+      },
+    });
+
+    if (!user) {
+      throw new AppError(
+        ERROR_MESSAGES.USER_NOT_FOUND,
+        HTTP_STATUS.NOT_FOUND,
+        ERROR_CODES.USER_NOT_FOUND
+      );
+    }
+
+    if (user.email !== email) {
+      throw new AppError(
+        'Email does not match user',
+        HTTP_STATUS.UNAUTHORIZED,
+        ERROR_CODES.UNAUTHORIZED
+      );
+    }
+
+    if (!user.isActive) {
+      throw new AppError(
+        'User account is inactive',
+        HTTP_STATUS.UNAUTHORIZED,
+        ERROR_CODES.UNAUTHORIZED
+      );
+    }
+
+    // Generate JWT token
+    const token = generateToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
+    // Send response
+    sendSuccess(res, HTTP_STATUS.OK, 'Token generated successfully', {
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
+    });
   }
 );

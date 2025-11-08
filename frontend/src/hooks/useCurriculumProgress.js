@@ -1,14 +1,21 @@
 'use client';
 
-import { useContext, useMemo } from 'react';
-import LearningProgressContext from '@/contexts/LearningProgressContext';
+import { useMemo } from 'react';
+import { useLearningProgress } from '@/contexts/LearningProgressContext';
 
+/**
+ * useCurriculumProgress Hook
+ * Get progress for all modules in curriculum
+ * 
+ * @param {Array} modules - Array of module objects with id and lessons
+ * @returns {Object} Progress data by moduleId
+ */
 export default function useCurriculumProgress(modules) {
-  const { getCurriculumProgress, progressVersion } = useContext(LearningProgressContext);
+  const { getCurriculumProgress, progressByModule } = useLearningProgress();
 
   return useMemo(
     () => getCurriculumProgress(modules),
-    [getCurriculumProgress, progressVersion, modules],
+    [getCurriculumProgress, progressByModule, modules],
   );
 }
 

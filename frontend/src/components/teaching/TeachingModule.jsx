@@ -718,7 +718,7 @@ const TeachingModule = () => {
 
   // Effect: inicialización y responsive
   useEffect(() => {
-    setCurrentModule('teaching');
+    setCurrentModule('teaching', { loadProgress: false });
 
     const checkIsMobile = () => {
       setIsMobile(window.innerWidth < 960);

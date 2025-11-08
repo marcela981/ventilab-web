@@ -16,7 +16,8 @@ const ModuleCardHeader = ({
   availabilityStatus,
   levelColor,
   isHovered,
-  onToggleFavorite
+  onToggleFavorite,
+  completedAt
 }) => {
   return (
     <>
@@ -29,10 +30,31 @@ const ModuleCardHeader = ({
             right: 12,
             zIndex: 2,
             transition: 'transform 0.25s ease-in-out',
-            transform: isHovered ? 'scale(1.1)' : 'scale(1)'
+            transform: isHovered ? 'scale(1.1)' : 'scale(1)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: 0.5
           }}
+          title={completedAt ? `Completado el ${new Date(completedAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' })}` : 'Módulo completado'}
         >
           <CheckCircle sx={{ color: '#4CAF50', fontSize: 20 }} />
+          {completedAt && (
+            <Typography
+              variant="caption"
+              sx={{
+                fontSize: '0.65rem',
+                color: '#4CAF50',
+                backgroundColor: 'rgba(76, 175, 80, 0.15)',
+                padding: '2px 4px',
+                borderRadius: 1,
+                fontWeight: 600,
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {new Date(completedAt).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}
+            </Typography>
+          )}
         </Box>
       )}
       {status === 'in-progress' && (
@@ -141,7 +163,8 @@ ModuleCardHeader.propTypes = {
   availabilityStatus: PropTypes.string.isRequired,
   levelColor: PropTypes.string.isRequired,
   isHovered: PropTypes.bool.isRequired,
-  onToggleFavorite: PropTypes.func.isRequired
+  onToggleFavorite: PropTypes.func.isRequired,
+  completedAt: PropTypes.string
 };
 
 export default ModuleCardHeader;

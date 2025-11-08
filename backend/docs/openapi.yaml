@@ -1,0 +1,577 @@
+openapi: 3.0.3
+info:
+  title: VentyLab API
+  description: |
+    API for VentyLab - Educational mechanical ventilation application.
+    
+    This API provides endpoints for managing user progress, modules, lessons, and achievements.
+    
+    ## Progress Tracking
+    
+    The progress system uses a unified model with:
+    - **LearningProgress**: Module-level progress tracking
+    - **LessonProgress**: Lesson-level progress tracking
+    
+    All progress endpoints require authentication via Bearer token.
+  version: 1.0.0
+  contact:
+    name: VentyLab Team
+    email: support@ventylab.com
+
+servers:
+  - url: http://localhost:3001/api
+    description: Development server
+  - url: https://api.ventylab.com/api
+    description: Production server
+
+tags:
+  - name: Progress
+    description: User progress tracking endpoints
+
+paths:
+  /progress/modules/{moduleId}:
+    get:
+      tags:
+        - Progress
+      summary: Get module progress
+      description: |
+        Returns the learning progress for a specific module, including all lesson progress records.
+        Creates learning progress if it doesn't exist.
+      operationId: getModuleProgress
+      parameters:
+        - name: moduleId
+          in: path
+          required: true
+          description: Unique identifier of the module
+          schema:
+            type: string
+            example: "module-123"
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Module progress retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleProgressResponse'
+              example:
+                success: true
+                message: "Module progress retrieved successfully"
+                data:
+                  learningProgress:
+                    id: "lp-123"
+                    userId: "user-456"
+                    moduleId: "module-123"
+                    completedAt: "2025-11-07T10:00:00.000Z"
+                    timeSpent: 120
+                    score: 85.5
+                    createdAt: "2025-11-01T08:00:00.000Z"
+                    updatedAt: "2025-11-07T10:00:00.000Z"
+                  lessonProgress:
+                    - id: "lpp-1"
+                      progressId: "lp-123"
+                      lessonId: "lesson-1"
+                      completed: true
+                      timeSpent: 30
+                      lastAccessed: "2025-11-07T09:00:00.000Z"
+                      progress: 1.0
+                      createdAt: "2025-11-01T08:00:00.000Z"
+                      updatedAt: "2025-11-07T09:00:00.000Z"
+                    - id: "lpp-2"
+                      progressId: "lp-123"
+                      lessonId: "lesson-2"
+                      completed: false
+                      timeSpent: 15
+                      lastAccessed: "2025-11-07T10:00:00.000Z"
+                      progress: 0.5
+                      createdAt: "2025-11-01T08:00:00.000Z"
+                      updatedAt: "2025-11-07T10:00:00.000Z"
+                  isAvailable: true
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Module not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /progress/lesson:
+    put:
+      tags:
+        - Progress
+      summary: Update lesson progress
+      description: |
+        Updates lesson progress and recalculates module aggregates atomically.
+        Uses upsert semantics - creates if doesn't exist, updates if exists.
+        
+        **Note**: `timeSpentDelta` is added to existing `timeSpent`, not replaced.
+      operationId: updateLessonProgress
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLessonProgressRequest'
+            example:
+              lessonId: "lesson-123"
+              progress: 0.75
+              completed: false
+              timeSpentDelta: 5
+              lastAccessed: "2025-11-07T10:00:00.000Z"
+      responses:
+        '200':
+          description: Lesson progress updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateLessonProgressResponse'
+              example:
+                success: true
+                message: "Lesson progress updated successfully"
+                data:
+                  lessonProgress:
+                    id: "lpp-1"
+                    progressId: "lp-123"
+                    lessonId: "lesson-123"
+                    completed: false
+                    timeSpent: 25
+                    lastAccessed: "2025-11-07T10:00:00.000Z"
+                    progress: 0.75
+                    createdAt: "2025-11-01T08:00:00.000Z"
+                    updatedAt: "2025-11-07T10:00:00.000Z"
+                  moduleProgress:
+                    progressPercentage: 60
+                    timeSpent: 120
+                    score: 85.5
+                    isCompleted: false
+                    completedAt: null
+        '400':
+          description: Bad request (missing lessonId or invalid data)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Lesson not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /progress/summary:
+    get:
+      tags:
+        - Progress
+      summary: Get progress summary
+      description: |
+        Returns a summary of progress for all modules, including completion percentage,
+        time spent, and scores.
+      operationId: getProgressSummary
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Progress summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressSummaryResponse'
+              example:
+                success: true
+                message: "Progress summary retrieved successfully"
+                data:
+                  modules:
+                    - moduleId: "module-1"
+                      moduleTitle: "Introduction to Ventilation"
+                      progressPercentage: 75
+                      timeSpent: 120
+                      score: 85.5
+                      isCompleted: false
+                      completedAt: null
+                    - moduleId: "module-2"
+                      moduleTitle: "Advanced Techniques"
+                      progressPercentage: 100
+                      timeSpent: 180
+                      score: 92.0
+                      isCompleted: true
+                      completedAt: "2025-11-07T10:00:00.000Z"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from /auth/login
+
+  schemas:
+    LessonProgressDTO:
+      type: object
+      description: Lesson progress data transfer object
+      required:
+        - id
+        - progressId
+        - lessonId
+        - completed
+        - timeSpent
+        - progress
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the lesson progress record
+          example: "lpp-123"
+        progressId:
+          type: string
+          description: Reference to the learning progress (module-level)
+          example: "lp-456"
+        lessonId:
+          type: string
+          description: Unique identifier of the lesson
+          example: "lesson-789"
+        completed:
+          type: boolean
+          description: Whether the lesson is completed
+          example: true
+        timeSpent:
+          type: integer
+          description: Time spent on the lesson in minutes
+          minimum: 0
+          example: 30
+        lastAccessed:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last time the lesson was accessed (ISO 8601)
+          example: "2025-11-07T10:00:00.000Z"
+        progress:
+          type: number
+          format: float
+          description: Progress value between 0.0 and 1.0
+          minimum: 0
+          maximum: 1
+          example: 0.75
+        createdAt:
+          type: string
+          format: date-time
+          description: When the record was created (ISO 8601)
+          example: "2025-11-01T08:00:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the record was last updated (ISO 8601)
+          example: "2025-11-07T10:00:00.000Z"
+
+    LearningProgressDTO:
+      type: object
+      description: Learning progress data transfer object (module-level)
+      required:
+        - id
+        - userId
+        - moduleId
+        - timeSpent
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the learning progress record
+          example: "lp-123"
+        userId:
+          type: string
+          description: Unique identifier of the user
+          example: "user-456"
+        moduleId:
+          type: string
+          description: Unique identifier of the module
+          example: "module-789"
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the module was completed (ISO 8601)
+          example: "2025-11-07T10:00:00.000Z"
+        timeSpent:
+          type: integer
+          description: Total time spent on the module in minutes
+          minimum: 0
+          example: 120
+        score:
+          type: number
+          format: float
+          nullable: true
+          description: Average score for the module (0-100) or null if no scores available
+          minimum: 0
+          maximum: 100
+          example: 85.5
+        createdAt:
+          type: string
+          format: date-time
+          description: When the record was created (ISO 8601)
+          example: "2025-11-01T08:00:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the record was last updated (ISO 8601)
+          example: "2025-11-07T10:00:00.000Z"
+
+    ModuleProgressResponse:
+      type: object
+      description: Response from GET /api/progress/modules/:moduleId
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Module progress retrieved successfully"
+        data:
+          type: object
+          required:
+            - learningProgress
+            - lessonProgress
+          properties:
+            learningProgress:
+              $ref: '#/components/schemas/LearningProgressDTO'
+            lessonProgress:
+              type: array
+              items:
+                $ref: '#/components/schemas/LessonProgressDTO'
+            isAvailable:
+              type: boolean
+              description: Whether the module is available (prerequisites met)
+              example: true
+
+    UpdateLessonProgressRequest:
+      type: object
+      description: Request body for PUT /api/progress/lesson
+      required:
+        - lessonId
+      properties:
+        lessonId:
+          type: string
+          description: Unique identifier of the lesson (required)
+          example: "lesson-123"
+        progress:
+          type: number
+          format: float
+          description: Progress value between 0.0 and 1.0 (optional)
+          minimum: 0
+          maximum: 1
+          example: 0.75
+        completed:
+          type: boolean
+          description: Whether the lesson is completed (optional)
+          example: false
+        timeSpentDelta:
+          type: integer
+          description: Time spent delta in minutes (will be added to existing timeSpent) (optional)
+          minimum: 0
+          example: 5
+        lastAccessed:
+          type: string
+          format: date-time
+          description: Last accessed timestamp (ISO 8601 string) (optional)
+          example: "2025-11-07T10:00:00.000Z"
+
+    UpdateLessonProgressResponse:
+      type: object
+      description: Response from PUT /api/progress/lesson
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Lesson progress updated successfully"
+        data:
+          type: object
+          required:
+            - lessonProgress
+            - moduleProgress
+          properties:
+            lessonProgress:
+              $ref: '#/components/schemas/LessonProgressDTO'
+            moduleProgress:
+              type: object
+              required:
+                - progressPercentage
+                - timeSpent
+                - isCompleted
+              properties:
+                progressPercentage:
+                  type: integer
+                  description: Completion percentage (0-100)
+                  minimum: 0
+                  maximum: 100
+                  example: 60
+                timeSpent:
+                  type: integer
+                  description: Total time spent in minutes
+                  minimum: 0
+                  example: 120
+                score:
+                  type: number
+                  format: float
+                  nullable: true
+                  description: Average score or null
+                  minimum: 0
+                  maximum: 100
+                  example: 85.5
+                isCompleted:
+                  type: boolean
+                  description: Whether module is completed
+                  example: false
+                completedAt:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: When module was completed (ISO 8601 string or null)
+                  example: "2025-11-07T10:00:00.000Z"
+
+    ModuleProgressSummaryDTO:
+      type: object
+      description: Module progress summary item
+      required:
+        - moduleId
+        - moduleTitle
+        - progressPercentage
+        - timeSpent
+        - isCompleted
+      properties:
+        moduleId:
+          type: string
+          description: Unique identifier of the module
+          example: "module-123"
+        moduleTitle:
+          type: string
+          description: Title of the module
+          example: "Introduction to Ventilation"
+        progressPercentage:
+          type: integer
+          description: Completion percentage (0-100)
+          minimum: 0
+          maximum: 100
+          example: 75
+        timeSpent:
+          type: integer
+          description: Total time spent on the module in minutes
+          minimum: 0
+          example: 120
+        score:
+          type: number
+          format: float
+          nullable: true
+          description: Average score for the module (0-100) or null
+          minimum: 0
+          maximum: 100
+          example: 85.5
+        isCompleted:
+          type: boolean
+          description: Whether the module is fully completed
+          example: false
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the module was completed (ISO 8601 string or null)
+          example: "2025-11-07T10:00:00.000Z"
+
+    ProgressSummaryResponse:
+      type: object
+      description: Response from GET /api/progress/summary
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Progress summary retrieved successfully"
+        data:
+          type: object
+          required:
+            - modules
+          properties:
+            modules:
+              type: array
+              items:
+                $ref: '#/components/schemas/ModuleProgressSummaryDTO'
+
+    ErrorResponse:
+      type: object
+      description: Standard error response
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Error message"
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              example: "MODULE_NOT_FOUND"
+            message:
+              type: string
+              example: "Module not found"
+            details:
+              type: object
+              description: Additional error details
+
+  responses:
+    UnauthorizedError:
+      description: Unauthorized - Invalid or missing authentication token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "UNAUTHORIZED"
+              message: "Authentication required"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "INTERNAL_SERVER_ERROR"
+              message: "An unexpected error occurred"
+

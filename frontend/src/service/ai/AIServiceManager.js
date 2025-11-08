@@ -124,6 +124,16 @@ export class AIServiceManager {
       };
     }
 
+    // Verificar si hay providers disponibles
+    if (this.providers.size === 0) {
+      return {
+        success: false,
+        error: 'No hay providers de IA configurados',
+        response: 'El servicio de IA no está disponible. Por favor, configura una API Key (NEXT_PUBLIC_GEMINI_API_KEY) en las variables de entorno.',
+        providers: []
+      };
+    }
+
     // Intentar con el provider actual
     if (this.currentProvider) {
       try {
@@ -185,12 +195,23 @@ export class AIServiceManager {
       }
     }
 
-    // Si todos los providers fallan
+    // Si todos los providers fallan o no hay providers disponibles
+    const availableProviders = Array.from(this.providers.keys());
+    if (availableProviders.length === 0) {
+      return {
+        success: false,
+        error: 'No hay providers de IA configurados',
+        response: 'El servicio de IA no está disponible. Por favor, configura una API Key (NEXT_PUBLIC_GEMINI_API_KEY) en las variables de entorno.',
+        providers: [],
+        fallbackUsed: false
+      };
+    }
+    
     return {
       success: false,
       error: 'Todos los providers de IA no están disponibles',
       response: 'El servicio de IA no está disponible en este momento. Por favor, intenta más tarde.',
-      providers: Array.from(this.providers.keys()),
+      providers: availableProviders,
       fallbackUsed: true
     };
   }

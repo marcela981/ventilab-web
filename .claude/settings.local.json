@@ -39,7 +39,9 @@
       "Bash(if not exist \"frontend\\src\\data\\helpers\" mkdir \"frontend\\src\\data\\helpers\")",
       "Bash(node scripts/test-lessonLoader.js:*)",
       "Bash(node scripts/migrateLessons.js:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(psql:*)",
+      "Bash(timeout 10 bash:*)"
     ],
     "deny": [],
     "ask": []

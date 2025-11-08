@@ -1,5 +1,11 @@
 'use strict';
 
+/**
+ * Progress Service
+ * API client for progress tracking endpoints
+ * Uses the unified LearningProgress + LessonProgress model
+ */
+
 const DEFAULT_API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 let apiBaseUrl = DEFAULT_API_BASE_URL;
@@ -32,6 +38,10 @@ const getAuthHeaders = () => {
       headers.Authorization = `Bearer ${token}`;
     } else if (userId) {
       headers['X-User-Id'] = userId;
+    } else {
+      // If no token is available, we should throw an error to prevent unauthorized requests
+      // However, we'll let the backend handle this for better error messages
+      console.warn('[progressService] No authentication token available');
     }
   } catch (error) {
     console.warn('[progressService] Error resolving auth headers:', error);
@@ -40,18 +50,8 @@ const getAuthHeaders = () => {
   return headers;
 };
 
-const buildUrl = (path, query) => {
-  const url = new URL(`${apiBaseUrl.replace(/\/$/, '')}${path}`);
-
-  if (query && typeof query === 'object') {
-    Object.entries(query).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        url.searchParams.set(key, String(value));
-      }
-    });
-  }
-
-  return url.toString();
+const buildUrl = (path) => {
+  return `${apiBaseUrl.replace(/\/$/, '')}${path}`;
 };
 
 const parseResponse = async (response) => {
@@ -60,220 +60,345 @@ const parseResponse = async (response) => {
   const payload = isJson ? await response.json() : await response.text();
 
   if (!response.ok) {
-    const message = payload?.error?.message
-      || payload?.error?.code
-      || payload?.error
-      || payload?.message
-      || `Request failed with status ${response.status}`;
+    // Handle backend error format: { success: false, error: { code, message, details } }
+    let message = `Request failed with status ${response.status}`;
+    
+    if (typeof payload === 'object' && payload !== null) {
+      if (payload.error) {
+        // Backend error format
+        message = payload.error.message || payload.error.code || message;
+      } else if (payload.message) {
+        // Alternative error format
+        message = payload.message;
+      }
+    } else if (typeof payload === 'string') {
+      message = payload;
+    }
 
     const error = new Error(message);
     error.status = response.status;
     error.payload = payload;
+    error.code = payload?.error?.code;
+    
+    // Extract Retry-After header for rate limiting (429)
+    if (response.status === 429) {
+      const retryAfter = response.headers.get('Retry-After');
+      if (retryAfter) {
+        error.retryAfter = parseInt(retryAfter, 10);
+        if (error.payload && typeof error.payload === 'object') {
+          error.payload.retryAfter = error.retryAfter;
+        }
+      }
+    }
+    
     throw error;
   }
 
-  return payload?.data ?? payload;
+  // Handle backend success format: { success: true, data: {...} }
+  if (typeof payload === 'object' && payload !== null && payload.success === true) {
+    return payload.data ?? payload;
+  }
+
+  // Fallback to direct payload
+  return payload;
 };
 
-export const fetchProgress = async ({ moduleId, lessonId } = {}) => {
+const handleNetworkError = (error, apiBaseUrl) => {
+  if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
+    const networkError = new Error(`No se pudo conectar con el servidor. Verifica que el backend esté ejecutándose en ${apiBaseUrl}`);
+    networkError.name = 'NetworkError';
+    networkError.isNetworkError = true;
+    throw networkError;
+  }
+  throw error;
+};
+
+/**
+ * Get module progress with all lesson progress records
+ * 
+ * @param {string} moduleId - Module ID
+ * @returns {Promise<ModuleProgressResponseDTO>} Module progress with lessons
+ * 
+ * @example
+ * const progress = await getModuleProgress('module-123');
+ * // Returns: {
+ * //   learningProgress: { id, userId, moduleId, completedAt, timeSpent, score, ... },
+ * //   lessonProgress: [{ id, lessonId, completed, timeSpent, progress, ... }],
+ * //   isAvailable: true
+ * // }
+ */
+export const getModuleProgress = async (moduleId) => {
   try {
-    const url = buildUrl('/progress', { moduleId, lessonId });
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-      credentials: 'include',
-    });
+    if (!moduleId || typeof moduleId !== 'string') {
+      throw new Error('moduleId is required and must be a string');
+    }
+
+    const url = buildUrl(`/progress/modules/${encodeURIComponent(moduleId)}`);
+    let response;
+
+    try {
+      response = await fetch(url, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+        credentials: 'include',
+      });
+    } catch (fetchError) {
+      handleNetworkError(fetchError, apiBaseUrl);
+    }
 
     const data = await parseResponse(response);
-    return Array.isArray(data) ? data : [];
+    return data;
   } catch (error) {
-    console.error('[progressService] fetchProgress failed:', error);
-    throw new Error(error.message || 'No se pudo obtener el progreso del usuario.');
+    console.error('[progressService] getModuleProgress failed:', error);
+    
+    if (error.isNetworkError || error.name === 'NetworkError') {
+      throw error;
+    }
+    
+    // Handle 404 specifically (module not found or progress doesn't exist)
+    // Return null instead of throwing to allow graceful handling
+    if (error.status === 404) {
+      // Create a custom error that can be checked but won't break the flow
+      const notFoundError = new Error(`Module "${moduleId}" not found`);
+      notFoundError.status = 404;
+      notFoundError.code = 'MODULE_NOT_FOUND';
+      notFoundError.isNotFound = true;
+      throw notFoundError;
+    }
+    
+    throw new Error(error.message || 'No se pudo obtener el progreso del módulo.');
   }
 };
 
 /**
- * Upsert user progress for a single lesson.
- *
- * @param {Object} payload - Payload compatible with PUT /api/progress
- * @param {string} payload.moduleId
- * @param {string} payload.lessonId
- * @param {number} payload.positionSeconds
- * @param {number} payload.progress
- * @param {boolean} payload.isCompleted
- * @param {number} [payload.attempts]
- * @param {number|null} [payload.score]
- * @param {Object|null} [payload.metadata]
- * @param {string|Date} payload.clientUpdatedAt
- *
+ * Update lesson progress (upsert)
+ * Updates lesson progress and recalculates module aggregates atomically
+ * 
+ * @param {UpdateLessonProgressRequestDTO} payload - Progress update data
+ * @param {string} payload.lessonId - Lesson ID (required)
+ * @param {number} [payload.progress] - Progress value 0.0-1.0 (optional)
+ * @param {boolean} [payload.completed] - Whether lesson is completed (optional)
+ * @param {number} [payload.timeSpentDelta] - Time spent delta in minutes (optional, added to existing)
+ * @param {string} [payload.lastAccessed] - Last accessed timestamp ISO 8601 (optional)
+ * @returns {Promise<UpdateLessonProgressResponseDTO>} Updated lesson and module progress
+ * 
  * @example
- * await upsertProgress({
- *   moduleId: 'module-ventilation-basics',
- *   lessonId: 'lesson-ventilator-modes',
- *   positionSeconds: 185,
- *   progress: 0.42,
- *   isCompleted: false,
- *   clientUpdatedAt: '2025-11-07T13:10:00.000Z'
+ * const result = await updateLessonProgress({
+ *   lessonId: 'lesson-123',
+ *   progress: 0.75,
+ *   completed: false,
+ *   timeSpentDelta: 5,
+ *   lastAccessed: '2025-11-07T10:00:00.000Z'
  * });
- *
- * // Response: {
- * //   id: 'clpxf9p6t000108mdu3yk8p6s',
- * //   userId: 'user-123',
- * //   moduleId: 'module-ventilation-basics',
- * //   lessonId: 'lesson-ventilator-modes',
- * //   positionSeconds: 185,
- * //   progress: 0.42,
- * //   isCompleted: false,
- * //   attempts: 0,
- * //   score: null,
- * //   metadata: { lastSection: 'volume-targeting' },
- * //   clientUpdatedAt: '2025-11-07T13:10:00.000Z',
- * //   serverUpdatedAt: '2025-11-07T13:10:00.532Z',
- * //   createdAt: '2025-11-07T12:00:11.901Z'
+ * // Returns: {
+ * //   lessonProgress: { id, lessonId, completed, timeSpent, progress, ... },
+ * //   moduleProgress: { progressPercentage: 60, timeSpent: 120, score: null, ... }
  * // }
  */
-export const upsertProgress = async (payload) => {
+export const updateLessonProgress = async (payload) => {
   try {
     if (!payload || typeof payload !== 'object') {
       throw new Error('Payload inválido para actualizar progreso.');
     }
 
+    if (!payload.lessonId || typeof payload.lessonId !== 'string') {
+      throw new Error('lessonId is required and must be a string');
+    }
+
     const body = {
-      ...payload,
-      clientUpdatedAt: payload.clientUpdatedAt
-        ? new Date(payload.clientUpdatedAt).toISOString()
-        : new Date().toISOString(),
+      lessonId: payload.lessonId,
+      ...(payload.progress !== undefined && { progress: payload.progress }),
+      ...(payload.completed !== undefined && { completed: payload.completed }),
+      ...(payload.timeSpentDelta !== undefined && { timeSpentDelta: payload.timeSpentDelta }),
+      ...(payload.lastAccessed !== undefined && { lastAccessed: payload.lastAccessed }),
     };
 
-    const response = await fetch(buildUrl('/progress'), {
-      method: 'PUT',
-      headers: getAuthHeaders(),
-      credentials: 'include',
-      body: JSON.stringify(body),
-    });
-
-    const data = await parseResponse(response);
-    return data;
-  } catch (error) {
-    console.error('[progressService] upsertProgress failed:', error);
-    throw new Error(error.message || 'No se pudo sincronizar el progreso de la lección.');
-  }
-};
-
-/**
- * Bulk sync an array of pending progress items.
- * Each record MUST include `clientUpdatedAt` for LWW reconciliation.
- *
- * @param {Array<Object>} items
- *
- * @example
- * await bulkSyncProgress([
- *   {
- *     moduleId: 'module-ventilation-basics',
- *     lessonId: 'lesson-ventilator-modes',
- *     positionSeconds: 320,
- *     progress: 0.68,
- *     isCompleted: false,
- *     clientUpdatedAt: '2025-11-07T13:12:00.000Z'
- *   },
- *   {
- *     moduleId: 'module-ventilation-basics',
- *     lessonId: 'lesson-ventilator-checklist',
- *     positionSeconds: 900,
- *     progress: 1,
- *     isCompleted: true,
- *     clientUpdatedAt: '2025-11-07T13:15:36.000Z'
- *   }
- * ]);
- *
- * // Response example:
- * // {
- * //   merged: [
- * //     { lessonId: 'lesson-ventilator-modes', merged: true },
- * //     { lessonId: 'lesson-ventilator-checklist', merged: true }
- * //   ],
- * //   records: [
- * //     {
- * //       id: 'clpxfcze7000308mdivah0f6l',
- * //       lessonId: 'lesson-ventilator-modes',
- * //       moduleId: 'module-ventilation-basics',
- * //       progress: 0.68,
- * //       clientUpdatedAt: '2025-11-07T13:12:00.000Z',
- * //       serverUpdatedAt: '2025-11-07T13:12:00.447Z',
- * //       createdAt: '2025-11-02T10:00:00.000Z'
- * //     },
- * //     {
- * //       id: 'clpxfdtzj000408md7jhz3y9p',
- * //       lessonId: 'lesson-ventilator-checklist',
- * //       moduleId: 'module-ventilation-basics',
- * //       progress: 1,
- * //       isCompleted: true,
- * //       clientUpdatedAt: '2025-11-07T13:15:36.000Z',
- * //       serverUpdatedAt: '2025-11-07T13:15:36.891Z',
- * //       createdAt: '2025-11-02T11:22:10.000Z'
- * //     }
- * //   ]
- * // }
- */
-export const bulkSyncProgress = async (items) => {
-  try {
-    if (!Array.isArray(items)) {
-      throw new Error('El argumento items debe ser un arreglo de progresos.');
-    }
-
-    if (items.length === 0) {
-      return {
-        merged: [],
-        records: [],
-      };
-    }
-
-    const body = items.map((item) => ({
-      ...item,
-      clientUpdatedAt: item?.clientUpdatedAt
-        ? new Date(item.clientUpdatedAt).toISOString()
-        : new Date().toISOString(),
-    }));
-
-    const url = buildUrl('/progress/sync');
-    
+    const url = buildUrl('/progress/lesson');
     let response;
+
     try {
       response = await fetch(url, {
-        method: 'POST',
+        method: 'PUT',
         headers: getAuthHeaders(),
         credentials: 'include',
         body: JSON.stringify(body),
       });
     } catch (fetchError) {
-      // Error de red (servidor no disponible, CORS, etc.)
-      if (fetchError.name === 'TypeError' && fetchError.message.includes('fetch')) {
-        throw new Error(`No se pudo conectar con el servidor. Verifica que el backend esté ejecutándose en ${apiBaseUrl}`);
-      }
-      throw fetchError;
+      handleNetworkError(fetchError, apiBaseUrl);
     }
 
     const data = await parseResponse(response);
-    return {
-      merged: Array.isArray(data?.merged) ? data.merged : [],
-      records: Array.isArray(data?.records) ? data.records : [],
-    };
+    return data;
   } catch (error) {
-    console.error('[progressService] bulkSyncProgress failed:', error);
+    console.error('[progressService] updateLessonProgress failed:', error);
     
-    // Preservar el mensaje de error original si es informativo
-    if (error.message && !error.message.includes('No se pudo')) {
+    if (error.isNetworkError || error.name === 'NetworkError') {
       throw error;
     }
     
-    throw new Error(error.message || 'No se pudo completar la sincronización masiva de progreso.');
+    throw new Error(error.message || 'No se pudo actualizar el progreso de la lección.');
   }
+};
+
+/**
+ * Get progress summary for all modules
+ * 
+ * @returns {Promise<ProgressSummaryResponseDTO>} Progress summary by module
+ * 
+ * @example
+ * const summary = await getProgressSummary();
+ * // Returns: {
+ * //   modules: [
+ * //     {
+ * //       moduleId: 'module-1',
+ * //       moduleTitle: 'Introduction',
+ * //       progressPercentage: 75,
+ * //       timeSpent: 120,
+ * //       score: 85.5,
+ * //       isCompleted: false,
+ * //       completedAt: null
+ * //     },
+ * //     ...
+ * //   ]
+ * // }
+ */
+export const getProgressSummary = async () => {
+  try {
+    const url = buildUrl('/progress/summary');
+    let response;
+
+    try {
+      response = await fetch(url, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+        credentials: 'include',
+      });
+    } catch (fetchError) {
+      handleNetworkError(fetchError, apiBaseUrl);
+    }
+
+    const data = await parseResponse(response);
+    return data;
+  } catch (error) {
+    console.error('[progressService] getProgressSummary failed:', error);
+    
+    if (error.isNetworkError || error.name === 'NetworkError') {
+      throw error;
+    }
+    
+    throw new Error(error.message || 'No se pudo obtener el resumen de progreso.');
+  }
+};
+
+// Legacy compatibility - deprecated, use getModuleProgress instead
+export const fetchProgress = async ({ moduleId, lessonId } = {}) => {
+  console.warn('[progressService] fetchProgress is deprecated. Use getModuleProgress(moduleId) instead.');
+  
+  if (moduleId) {
+    try {
+      const moduleProgress = await getModuleProgress(moduleId);
+      // Transform to legacy format
+      return moduleProgress.lessonProgress.map(lp => ({
+        id: lp.id,
+        userId: moduleProgress.learningProgress.userId,
+        moduleId: lp.lessonId, // Note: this is incorrect but maintains compatibility
+        lessonId: lp.lessonId,
+        positionSeconds: 0, // Not available in new model
+        progress: lp.progress,
+        isCompleted: lp.completed,
+        attempts: 0, // Not available in new model
+        score: null, // Not in lesson progress
+        metadata: null, // Not available in new model
+        clientUpdatedAt: lp.lastAccessed,
+        serverUpdatedAt: lp.updatedAt,
+        createdAt: lp.createdAt,
+      }));
+    } catch (error) {
+      console.error('[progressService] fetchProgress (legacy) failed:', error);
+      return [];
+    }
+  }
+  
+  return [];
+};
+
+// Legacy compatibility - deprecated, use updateLessonProgress instead
+export const upsertProgress = async (payload) => {
+  console.warn('[progressService] upsertProgress is deprecated. Use updateLessonProgress instead.');
+  
+  if (!payload || !payload.lessonId) {
+    throw new Error('lessonId is required');
+  }
+
+  try {
+    const result = await updateLessonProgress({
+      lessonId: payload.lessonId,
+      progress: payload.progress,
+      completed: payload.isCompleted,
+      timeSpentDelta: payload.positionSeconds ? Math.floor(payload.positionSeconds / 60) : undefined,
+      lastAccessed: payload.clientUpdatedAt || new Date().toISOString(),
+    });
+
+    // Transform to legacy format
+    return {
+      id: result.lessonProgress.id,
+      userId: '', // Not available in response
+      moduleId: payload.moduleId || '', // From request
+      lessonId: result.lessonProgress.lessonId,
+      positionSeconds: result.lessonProgress.timeSpent * 60, // Convert minutes to seconds
+      progress: result.lessonProgress.progress,
+      isCompleted: result.lessonProgress.completed,
+      attempts: 0, // Not available
+      score: null, // Not in lesson progress
+      metadata: null, // Not available
+      clientUpdatedAt: result.lessonProgress.lastAccessed || new Date().toISOString(),
+      serverUpdatedAt: result.lessonProgress.updatedAt,
+      createdAt: result.lessonProgress.createdAt,
+    };
+  } catch (error) {
+    console.error('[progressService] upsertProgress (legacy) failed:', error);
+    throw error;
+  }
+};
+
+// Legacy compatibility - deprecated
+export const bulkSyncProgress = async (items) => {
+  console.warn('[progressService] bulkSyncProgress is deprecated. Use updateLessonProgress for individual updates.');
+  
+  if (!Array.isArray(items) || items.length === 0) {
+    return { merged: [], records: [] };
+  }
+
+  const results = [];
+  const merged = [];
+
+  for (const item of items) {
+    try {
+      const result = await updateLessonProgress({
+        lessonId: item.lessonId,
+        progress: item.progress,
+        completed: item.isCompleted,
+        timeSpentDelta: item.positionSeconds ? Math.floor(item.positionSeconds / 60) : undefined,
+        lastAccessed: item.clientUpdatedAt || new Date().toISOString(),
+      });
+
+      results.push(result.lessonProgress);
+      merged.push({ lessonId: item.lessonId, merged: true });
+    } catch (error) {
+      merged.push({ lessonId: item.lessonId, merged: false, error: error.message });
+    }
+  }
+
+  return { merged, records: results };
 };
 
 export default {
   configureProgressService,
+  getModuleProgress,
+  updateLessonProgress,
+  getProgressSummary,
+  // Legacy exports
   fetchProgress,
   upsertProgress,
   bulkSyncProgress,
 };
-

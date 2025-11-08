@@ -158,6 +158,74 @@ router.post(
 router.get('/next-lesson', progressController.getNextLesson);
 
 /**
+ * @route   PUT /api/progress/lesson
+ * @desc    Update lesson progress (upsert)
+ * @access  Private
+ * @body    {Object} Progress update data:
+ *          - lessonId: (required) ID of the lesson
+ *          - progress: (optional) Progress value 0..1
+ *          - completed: (optional) Whether lesson is completed
+ *          - timeSpentDelta: (optional) Time spent delta in minutes (added to existing)
+ *          - lastAccessed: (optional) Last accessed timestamp
+ * @returns {Object} Updated lesson progress and module aggregates:
+ *          - lessonProgress: Updated lesson progress object
+ *          - moduleProgress: Module progress with recalculated aggregates
+ * @effects - Upserts LessonProgress record
+ *          - Recalculates module aggregates (timeSpent, score, completedAt)
+ *          - Uses atomic transaction for consistency
+ * @errors  400 - Bad request (missing lessonId or invalid data)
+ *          401 - Unauthorized (invalid or missing token)
+ *          404 - Lesson not found
+ *          500 - Internal server error
+ */
+router.put(
+  '/lesson',
+  validateRequest([
+    body('lessonId')
+      .isString()
+      .trim()
+      .notEmpty()
+      .withMessage('lessonId is required and must be a valid string'),
+    body('progress')
+      .optional()
+      .isFloat({ min: 0, max: 1 })
+      .withMessage('progress must be a number between 0 and 1'),
+    body('completed')
+      .optional()
+      .isBoolean()
+      .withMessage('completed must be a boolean'),
+    body('timeSpentDelta')
+      .optional()
+      .isInt({ min: 0 })
+      .withMessage('timeSpentDelta must be a non-negative integer')
+      .toInt(),
+    body('lastAccessed')
+      .optional()
+      .isISO8601()
+      .withMessage('lastAccessed must be a valid ISO 8601 date string')
+  ]),
+  progressController.updateLessonProgress
+);
+
+/**
+ * @route   GET /api/progress/summary
+ * @desc    Get progress summary by module
+ * @access  Private
+ * @returns {Object} Progress summary:
+ *          - modules: Array of module progress items with:
+ *            - moduleId: Module identifier
+ *            - moduleTitle: Title of the module
+ *            - progressPercentage: Completion percentage (0-100)
+ *            - timeSpent: Time spent on module (in minutes)
+ *            - score: Average score (or null)
+ *            - isCompleted: Whether module is completed
+ *            - completedAt: Timestamp when module was completed (or null)
+ * @errors  401 - Unauthorized (invalid or missing token)
+ *          500 - Internal server error
+ */
+router.get('/summary', progressController.getProgressSummary);
+
+/**
  * @route   GET /api/progress/streak
  * @desc    Get user's current learning streak
  * @access  Private

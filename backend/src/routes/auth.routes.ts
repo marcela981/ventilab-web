@@ -8,7 +8,7 @@ import { body } from 'express-validator';
 import { validateRequest } from '../middleware/validate';
 import { VALIDATION } from '../config/constants';
 import { authenticate } from '../middleware/auth';
-import { register, login, logout, getMe } from '../controllers/auth.controller';
+import { register, login, logout, getMe, generateNextAuthToken } from '../controllers/auth.controller';
 
 const router = Router();
 
@@ -73,5 +73,24 @@ router.post('/logout', authenticate, logout);
  * @access  Private
  */
 router.get('/me', authenticate, getMe);
+
+/**
+ * @route   POST /api/auth/nextauth-token
+ * @desc    Generate backend JWT token for NextAuth authenticated user
+ * @access  Public (validates userId and email)
+ */
+router.post(
+  '/nextauth-token',
+  validateRequest([
+    body('userId')
+      .notEmpty()
+      .withMessage('User ID is required'),
+    body('email')
+      .isEmail()
+      .normalizeEmail()
+      .withMessage('Valid email is required'),
+  ]),
+  generateNextAuthToken
+);
 
 export default router;

@@ -1,14 +1,23 @@
 'use client';
 
+/**
+ * useUserProgress Hook
+ * Simplified hook for accessing and updating lesson progress
+ * Uses the new unified progress model via LearningProgressContext
+ */
+
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useLearningProgress } from '@/contexts/LearningProgressContext';
 
 const noop = () => {};
 const POSITION_UPDATE_THRESHOLD_SECONDS = 5;
 
+/**
+ * Get default progress object (legacy format for compatibility)
+ */
 const getDefaultProgress = (lessonId, moduleId) => ({
   moduleId: moduleId ?? null,
-  lessonId,
+  lessonId: lessonId ?? null,
   positionSeconds: 0,
   progress: 0,
   isCompleted: false,
@@ -19,6 +28,9 @@ const getDefaultProgress = (lessonId, moduleId) => ({
   serverUpdatedAt: null,
 });
 
+/**
+ * Resolve metadata update
+ */
 const resolveMetadata = (current, metadata) => {
   if (typeof metadata === 'function') {
     try {
@@ -34,6 +46,14 @@ const resolveMetadata = (current, metadata) => {
   return current ?? null;
 };
 
+/**
+ * useUserProgress Hook
+ * 
+ * @param {Object} params - Hook parameters
+ * @param {string} params.moduleId - Module ID
+ * @param {string} params.lessonId - Lesson ID
+ * @returns {Object} Progress state and update functions
+ */
 export const useUserProgress = (params = {}) => {
   const { moduleId: rawModuleId, lessonId: rawLessonId } = params;
   const moduleId = typeof rawModuleId === 'string' ? rawModuleId : undefined;
@@ -41,15 +61,47 @@ export const useUserProgress = (params = {}) => {
 
   const {
     setCurrentLesson,
-    updateProgress,
+    updateLessonProgress,
     getLessonProgress,
+    loadModuleProgress,
     syncStatus,
     lastSyncError,
+    currentModuleId,
+    currentLessonId,
   } = useLearningProgress();
 
   const lastMinuteRef = useRef(null);
   const lastCommittedPositionRef = useRef(0);
 
+  // Load module progress when moduleId changes
+  useEffect(() => {
+    if (!moduleId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        await loadModuleProgress(moduleId, { force: false });
+        if (!cancelled && lessonId) {
+          const progressSnapshot = getLessonProgress(lessonId, moduleId);
+          if (progressSnapshot) {
+            const minute = Math.floor((progressSnapshot.timeSpent * 60) / 60);
+            lastMinuteRef.current = minute;
+          }
+        }
+      } catch (error) {
+        console.warn('[useUserProgress] Failed to load module progress:', error);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [moduleId, lessonId, loadModuleProgress, getLessonProgress]);
+
+  // Set current lesson when lessonId changes
   useEffect(() => {
     if (!lessonId) {
       return noop;
@@ -59,11 +111,14 @@ export const useUserProgress = (params = {}) => {
 
     (async () => {
       try {
-        await setCurrentLesson(lessonId, moduleId);
+        setCurrentLesson(lessonId, moduleId);
         if (!cancelled) {
-          const progressSnapshot = getLessonProgress(lessonId);
-          const minute = progressSnapshot ? Math.floor(progressSnapshot.positionSeconds / 60) : null;
-          lastMinuteRef.current = minute;
+          const progressSnapshot = getLessonProgress(lessonId, moduleId);
+          if (progressSnapshot) {
+            const minute = Math.floor((progressSnapshot.timeSpent * 60) / 60);
+            lastMinuteRef.current = minute;
+            lastCommittedPositionRef.current = progressSnapshot.timeSpent * 60;
+          }
         }
       } catch (error) {
         console.warn('[useUserProgress] setCurrentLesson failed', error);
@@ -75,84 +130,134 @@ export const useUserProgress = (params = {}) => {
     };
   }, [lessonId, moduleId, setCurrentLesson, getLessonProgress]);
 
+  // Get current progress (converted to legacy format for compatibility)
   const progress = useMemo(() => {
     if (!lessonId) {
       return getDefaultProgress(undefined, moduleId);
     }
-    return getLessonProgress(lessonId) ?? getDefaultProgress(lessonId, moduleId);
+
+    const lessonProgress = getLessonProgress(lessonId, moduleId);
+    
+    if (!lessonProgress) {
+      return getDefaultProgress(lessonId, moduleId);
+    }
+
+    // Convert new format to legacy format
+    return {
+      moduleId: moduleId || null,
+      lessonId: lessonProgress.lessonId,
+      positionSeconds: lessonProgress.timeSpent * 60, // Convert minutes to seconds
+      progress: lessonProgress.progress,
+      isCompleted: lessonProgress.completed,
+      attempts: 0, // Not available in new model
+      score: null, // Not in lesson progress
+      metadata: null, // Not available in new model
+      clientUpdatedAt: lessonProgress.lastAccessed,
+      serverUpdatedAt: lessonProgress.updatedAt,
+    };
   }, [getLessonProgress, lessonId, moduleId]);
 
+  // Update last committed position
   useEffect(() => {
     lastCommittedPositionRef.current = progress.positionSeconds ?? 0;
   }, [progress.positionSeconds]);
 
+  /**
+   * Set video position (in seconds)
+   */
   const setPosition = useCallback((seconds) => {
     if (!lessonId || !Number.isFinite(seconds)) {
       return;
     }
+
     const normalizedSeconds = Math.max(0, Math.round(seconds));
     const lastCommitted = lastCommittedPositionRef.current ?? 0;
 
+    // Only update if change is significant
     if (Math.abs(normalizedSeconds - lastCommitted) < POSITION_UPDATE_THRESHOLD_SECONDS) {
       lastCommittedPositionRef.current = normalizedSeconds;
       return;
     }
 
     lastCommittedPositionRef.current = normalizedSeconds;
-    updateProgress({
-      lessonId,
-      moduleId,
-      positionSeconds: normalizedSeconds,
-    });
-  }, [lessonId, moduleId, updateProgress]);
+    
+    // Convert seconds to minutes for timeSpentDelta
+    const minutesDelta = Math.floor((normalizedSeconds - lastCommitted) / 60);
+    
+    if (minutesDelta > 0) {
+      updateLessonProgress({
+        lessonId,
+        moduleId,
+        timeSpentDelta: minutesDelta,
+      }).catch(error => {
+        console.warn('[useUserProgress] Failed to update position:', error);
+      });
+    }
+  }, [lessonId, moduleId, updateLessonProgress]);
 
+  /**
+   * Set progress percentage (0-1)
+   */
   const setPercent = useCallback((percent) => {
     if (!lessonId || typeof percent !== 'number') {
       return;
     }
+
     const value = Math.min(1, Math.max(0, percent));
-    updateProgress({
+    
+    updateLessonProgress({
       lessonId,
       moduleId,
       progress: value,
-      isCompleted: progress.isCompleted || value >= 1,
+      completed: progress.isCompleted || value >= 1,
+    }).catch(error => {
+      console.warn('[useUserProgress] Failed to update progress:', error);
     });
-  }, [lessonId, moduleId, updateProgress, progress.isCompleted]);
+  }, [lessonId, moduleId, progress.isCompleted, updateLessonProgress]);
 
+  /**
+   * Mark lesson as completed
+   */
   const markCompleted = useCallback(() => {
     if (!lessonId) {
       return;
     }
-    updateProgress({
+
+    updateLessonProgress({
       lessonId,
       moduleId,
       progress: 1,
-      isCompleted: true,
+      completed: true,
+    }).catch(error => {
+      console.warn('[useUserProgress] Failed to mark completed:', error);
     });
-  }, [lessonId, moduleId, updateProgress]);
+  }, [lessonId, moduleId, updateLessonProgress]);
 
+  /**
+   * Set score (legacy - not used in new model)
+   */
   const setScore = useCallback((value) => {
     if (!lessonId || (value !== null && typeof value !== 'number')) {
       return;
     }
-    updateProgress({
-      lessonId,
-      moduleId,
-      score: value,
-    });
-  }, [lessonId, moduleId, updateProgress]);
+    // Score is not part of lesson progress in new model
+    // This is kept for compatibility but does nothing
+    console.warn('[useUserProgress] setScore is deprecated. Score is not part of lesson progress.');
+  }, [lessonId]);
 
+  /**
+   * Set metadata (legacy - not used in new model)
+   */
   const setMetadata = useCallback((metadata) => {
     if (!lessonId) {
       return;
     }
-  updateProgress({
-    lessonId,
-    moduleId,
-    metadata: resolveMetadata(progress.metadata, metadata),
-  });
-}, [lessonId, moduleId, updateProgress, progress.metadata]);
+    // Metadata is not part of lesson progress in new model
+    // This is kept for compatibility but does nothing
+    console.warn('[useUserProgress] setMetadata is deprecated. Metadata is not part of lesson progress.');
+  }, [lessonId]);
 
+  // Listen for progress events
   useEffect(() => {
     if (!lessonId) {
       return noop;
@@ -221,4 +326,3 @@ export const useUserProgress = (params = {}) => {
 };
 
 export default useUserProgress;
-

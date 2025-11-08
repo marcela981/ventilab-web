@@ -10,6 +10,11 @@ import prisma from '../config/database';
 import { AppError } from '../middleware/errorHandler';
 import { HTTP_STATUS } from '../config/constants';
 import * as achievementService from '../services/achievement.service';
+import * as progressService from '../services/progress.service';
+import type {
+  UpdateLessonProgressResponseDTO,
+  ApiResponseDTO
+} from '../types/progress';
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -25,24 +30,6 @@ interface ProgressStats {
   streak: number;
 }
 
-interface ModuleProgressDetail {
-  moduleId: string;
-  moduleTitle: string;
-  moduleDescription: string | null;
-  progressPercentage: number;
-  timeSpent: number;
-  isCompleted: boolean;
-  completedAt: string | null;
-  lessonsCompleted: number;
-  lessonsTotal: number;
-  lessons: Array<{
-    id: string;
-    title: string;
-    completed: boolean;
-    timeSpent: number;
-    lastAccessed: string | null;
-  }>;
-}
 
 interface NextLessonRecommendation {
   moduleId: string;
@@ -294,10 +281,11 @@ export const getUserProgress = async (
 
 /**
  * Get detailed progress for a specific module
+ * Uses the new ProgressService
  *
  * @route   GET /api/progress/modules/:moduleId
  * @access  Private
- * @returns Detailed module progress including all lessons
+ * @returns LearningProgress + array of LessonProgress
  */
 export const getModuleProgress = async (
   req: AuthRequest,
@@ -310,83 +298,102 @@ export const getModuleProgress = async (
 
     console.log(`[Progress] Fetching module progress for user: ${userId}, module: ${moduleId}`);
 
-    // Get module with lessons
-    const module = await prisma.module.findUnique({
-      where: { id: moduleId },
-      include: {
-        lessons: {
-          orderBy: { order: 'asc' }
-        }
-      }
-    });
-
-    if (!module) {
-      throw new AppError(
-        'Module not found',
-        HTTP_STATUS.NOT_FOUND,
-        'MODULE_NOT_FOUND'
-      );
-    }
+    const moduleProgress = await progressService.getModuleProgress(userId, moduleId);
 
     // Check if prerequisites are met
     const prerequisitesMet = await arePrerequisitesMet(moduleId, userId);
 
-    // Get or create learning progress
-    let learningProgress = await prisma.learningProgress.findUnique({
-      where: {
-        userId_moduleId: {
-          userId,
-          moduleId
-        }
-      },
-      include: {
-        lessonProgress: true
-      }
-    });
-
-    // Calculate progress percentage
-    const progressPercentage = await calculateModuleProgress(moduleId, userId);
-
-    // Map lessons with completion status
-    const lessonsWithProgress = module.lessons.map(lesson => {
-      const lessonProg = learningProgress?.lessonProgress.find(
-        lp => lp.lessonId === lesson.id
-      );
-
-      return {
-        id: lesson.id,
-        title: lesson.title,
-        completed: lessonProg?.completed || false,
-        timeSpent: lessonProg?.timeSpent || 0,
-        lastAccessed: lessonProg?.lastAccessed?.toISOString() || null
-      };
-    });
-
-    const moduleProgressDetail: ModuleProgressDetail = {
-      moduleId: module.id,
-      moduleTitle: module.title,
-      moduleDescription: module.description,
-      progressPercentage,
-      timeSpent: learningProgress?.timeSpent || 0,
-      isCompleted: learningProgress?.completedAt !== null,
-      completedAt: learningProgress?.completedAt?.toISOString() || null,
-      lessonsCompleted: lessonsWithProgress.filter(l => l.completed).length,
-      lessonsTotal: module.lessons.length,
-      lessons: lessonsWithProgress
-    };
-
-    console.log(`[Progress] Module progress: ${progressPercentage}%`);
-
-    res.status(HTTP_STATUS.OK).json({
+    const response: ApiResponseDTO<typeof moduleProgress & { isAvailable: boolean }> = {
       success: true,
       data: {
-        ...moduleProgressDetail,
+        ...moduleProgress,
         isAvailable: prerequisitesMet
       },
       message: 'Module progress retrieved successfully'
-    });
+    };
+
+    res.status(HTTP_STATUS.OK).json(response);
   } catch (error) {
     console.error('[Progress] Error fetching module progress:', error);
+    next(error);
+  }
+};
+
+/**
+ * Update lesson progress (upsert)
+ * Uses ProgressService for atomic updates with aggregate recalculation
+ *
+ * @route   PUT /api/progress/lesson
+ * @access  Private
+ * @body    { lessonId, progress?, completed?, timeSpentDelta?, lastAccessed? }
+ * @returns Updated module progress with recalculated aggregates
+ */
+export const updateLessonProgress = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const { lessonId, progress, completed, timeSpentDelta, lastAccessed } = req.body;
+
+    if (!lessonId) {
+      throw new AppError(
+        'lessonId is required',
+        HTTP_STATUS.BAD_REQUEST,
+        'LESSON_ID_REQUIRED'
+      );
+    }
+
+    console.log(`[Progress] Updating lesson progress for user: ${userId}, lesson: ${lessonId}`);
+
+    // Convert request DTO to service update format
+    const updateData: progressService.LessonProgressUpdate = {
+      lessonId,
+      ...(progress !== undefined && { progress }),
+      ...(completed !== undefined && { completed }),
+      ...(timeSpentDelta !== undefined && { timeSpentDelta }),
+      ...(lastAccessed !== undefined && { lastAccessed: new Date(lastAccessed) })
+    };
+
+    const moduleProgress = await progressService.updateLessonProgress(userId, updateData);
+
+    // Get the updated lesson progress
+    const updatedLessonProgress = moduleProgress.lessonProgress.find(
+      lp => lp.lessonId === lessonId
+    );
+
+    if (!updatedLessonProgress) {
+      throw new AppError(
+        'Failed to update lesson progress',
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        'UPDATE_FAILED'
+      );
+    }
+
+    console.log(`[Progress] Lesson progress updated successfully`);
+
+    const response: ApiResponseDTO<UpdateLessonProgressResponseDTO> = {
+      success: true,
+      data: {
+        lessonProgress: updatedLessonProgress,
+        moduleProgress: {
+          progressPercentage: progressService.calculateModuleProgressPercentage(
+            moduleProgress.lessonProgress.length,
+            moduleProgress.lessonProgress.filter(lp => lp.completed).length
+          ),
+          timeSpent: moduleProgress.learningProgress.timeSpent,
+          score: moduleProgress.learningProgress.score,
+          isCompleted: moduleProgress.learningProgress.completedAt !== null,
+          completedAt: moduleProgress.learningProgress.completedAt
+        }
+      },
+      message: 'Lesson progress updated successfully'
+    };
+
+    res.status(HTTP_STATUS.OK).json(response);
+  } catch (error) {
+    console.error('[Progress] Error updating lesson progress:', error);
     next(error);
   }
 };
@@ -433,45 +440,13 @@ export const startLesson = async (
       );
     }
 
-    // Get or create learning progress for module
-    let learningProgress = await prisma.learningProgress.findUnique({
-      where: {
-        userId_moduleId: {
-          userId,
-          moduleId: lesson.moduleId
-        }
-      }
+    // Use ProgressService to update lesson progress
+    const moduleProgress = await progressService.updateLessonProgress(userId, {
+      lessonId,
+      lastAccessed: new Date()
     });
 
-    if (!learningProgress) {
-      learningProgress = await prisma.learningProgress.create({
-        data: {
-          userId,
-          moduleId: lesson.moduleId,
-          timeSpent: 0
-        }
-      });
-    }
-
-    // Create or update lesson progress
-    const lessonProgress = await prisma.lessonProgress.upsert({
-      where: {
-        progressId_lessonId: {
-          progressId: learningProgress.id,
-          lessonId
-        }
-      },
-      update: {
-        lastAccessed: new Date()
-      },
-      create: {
-        progressId: learningProgress.id,
-        lessonId,
-        completed: false,
-        timeSpent: 0,
-        lastAccessed: new Date()
-      }
-    });
+    const lessonProgress = moduleProgress.lessonProgress.find(lp => lp.lessonId === lessonId);
 
     // Create or update learning session
     const today = new Date();
@@ -498,9 +473,9 @@ export const startLesson = async (
     res.status(HTTP_STATUS.OK).json({
       success: true,
       data: {
-        lessonId: lessonProgress.lessonId,
-        completed: lessonProgress.completed,
-        lastAccessed: lessonProgress.lastAccessed
+        lessonId: lessonProgress!.lessonId,
+        completed: lessonProgress!.completed,
+        lastAccessed: lessonProgress!.lastAccessed
       },
       message: 'Lesson started successfully'
     });
@@ -792,6 +767,38 @@ export const getNextLesson = async (
     });
   } catch (error) {
     console.error('[Progress] Error getting next lesson:', error);
+    next(error);
+  }
+};
+
+/**
+ * Get progress summary by module
+ *
+ * @route   GET /api/progress/summary
+ * @access  Private
+ * @returns Progress summary with % completed, timeSpent, score per module
+ */
+export const getProgressSummary = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+
+    console.log(`[Progress] Fetching progress summary for user: ${userId}`);
+
+    const summary = await progressService.getProgressSummary(userId);
+
+    const response: ApiResponseDTO<typeof summary> = {
+      success: true,
+      data: summary,
+      message: 'Progress summary retrieved successfully'
+    };
+
+    res.status(HTTP_STATUS.OK).json(response);
+  } catch (error) {
+    console.error('[Progress] Error fetching progress summary:', error);
     next(error);
   }
 };

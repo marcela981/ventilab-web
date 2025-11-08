@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -95,12 +95,12 @@ const AITutorChat = ({ lessonContext, defaultOpen = false }) => {
 
   // Mapear nombres para compatibilidad
   const isOpen = open;
-  const openChat = () => {
+  const openChat = useCallback(() => {
     if (!open) toggle();
-  };
-  const closeChat = () => {
+  }, [open, toggle]);
+  const closeChat = useCallback(() => {
     if (open) toggle();
-  };
+  }, [open, toggle]);
 
   // Extraer error del último mensaje si existe
   const error = messages.length > 0 && messages[messages.length - 1]?.error 
@@ -110,9 +110,9 @@ const AITutorChat = ({ lessonContext, defaultOpen = false }) => {
   // Abrir automáticamente si defaultOpen es true
   useEffect(() => {
     if (defaultOpen && !isOpen) {
-      openChat();
+      toggle();
     }
-  }, [defaultOpen, isOpen, openChat]);
+  }, [defaultOpen, isOpen, toggle]);
 
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef(null);

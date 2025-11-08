@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -11,6 +11,7 @@ import ModuleCard from './ModuleCard';
 // Importar estilos CSS Module para grid y cards del currículo
 import styles from '@/styles/curriculum.module.css';
 import useCurriculumProgress from '@/hooks/useCurriculumProgress';
+import { useLearningProgress } from '@/contexts/LearningProgressContext';
 
 /**
  * ModuleGrid - Componente unificado y optimizado para renderizar grid de módulos
@@ -23,9 +24,14 @@ import useCurriculumProgress from '@/hooks/useCurriculumProgress';
  * automáticamente al tamaño de la pantalla. Las cards mantienen un aspect-ratio
  * consistente (16:10) con alturas mínimas y máximas definidas.
  *
+ * Características nuevas:
+ * - Carga automática del progreso de todos los módulos al montar
+ * - Actualización en caliente cuando cambia el progreso
+ * - Usa el nuevo modelo unificado LearningProgress + LessonProgress
+ *
  * @component
  * @param {Array} modules - Array de módulos a renderizar
- * @param {Function} calculateModuleProgress - Función que retorna progreso (0-100)
+ * @param {Function} calculateModuleProgress - Función que retorna progreso (0-100) [DEPRECATED]
  * @param {Function} isModuleAvailable - Función que determina disponibilidad
  * @param {Function} onModuleClick - Callback al hacer click en un módulo
  * @param {Function} onToggleFavorite - Callback para toggle de favoritos
@@ -44,7 +50,7 @@ import useCurriculumProgress from '@/hooks/useCurriculumProgress';
  */
 const ModuleGrid = ({
   modules = [],
-  calculateModuleProgress,
+  calculateModuleProgress, // DEPRECATED: mantener por compatibilidad
   isModuleAvailable,
   onModuleClick,
   onToggleFavorite,
@@ -60,9 +66,46 @@ const ModuleGrid = ({
   enableAnimations = true,
   emptyMessage = 'No hay módulos disponibles'
 }) => {
+  const { loadModuleProgress, progressByModule } = useLearningProgress();
+  
   // Precalcular progreso agregado para todos los módulos de una vez
-  const progressByModule = useCurriculumProgress(modules);
-
+  const progressByModuleFromHook = useCurriculumProgress(modules);
+  
+  // Cargar progreso de todos los módulos al montar (con throttling para evitar rate limiting)
+  useEffect(() => {
+    if (modules.length === 0) return;
+    
+    // Cargar progreso de módulos en lotes para evitar rate limiting
+    const loadAllProgress = async () => {
+      const BATCH_SIZE = 3; // Cargar 3 módulos a la vez
+      const DELAY_BETWEEN_BATCHES = 500; // 500ms entre lotes
+      
+      for (let i = 0; i < modules.length; i += BATCH_SIZE) {
+        const batch = modules.slice(i, i + BATCH_SIZE);
+        
+        // Cargar lote en paralelo
+        const loadPromises = batch.map(module => 
+          loadModuleProgress(module.id, { force: false }).catch(error => {
+            // Ignorar errores de rate limiting ya que se manejan en el contexto
+            if (error.status !== 429 && !error.message?.includes('Too many requests')) {
+              console.warn(`[ModuleGrid] Failed to load progress for module ${module.id}:`, error);
+            }
+            return null;
+          })
+        );
+        
+        await Promise.allSettled(loadPromises);
+        
+        // Esperar antes de cargar el siguiente lote (excepto para el último)
+        if (i + BATCH_SIZE < modules.length) {
+          await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_BATCHES));
+        }
+      }
+    };
+    
+    loadAllProgress();
+  }, [modules, loadModuleProgress]);
+  
   /**
    * Ordena módulos según el campo y orden especificados
    * @param {Array} modulesToSort - Array de módulos a ordenar
@@ -77,8 +120,8 @@ const ModuleGrid = ({
       switch (sortBy) {
         case 'progress':
           // Usar progreso precalculado si está disponible, sino usar la función legacy
-          aValue = progressByModule[a.id]?.percentInt ?? (calculateModuleProgress ? calculateModuleProgress(a.id) : 0);
-          bValue = progressByModule[b.id]?.percentInt ?? (calculateModuleProgress ? calculateModuleProgress(b.id) : 0);
+          aValue = progressByModuleFromHook[a.id]?.percentInt ?? (calculateModuleProgress ? calculateModuleProgress(a.id) : 0);
+          bValue = progressByModuleFromHook[b.id]?.percentInt ?? (calculateModuleProgress ? calculateModuleProgress(b.id) : 0);
           break;
         case 'difficulty':
           const difficultyOrder = { básico: 1, intermedio: 2, avanzado: 3 };
@@ -110,7 +153,7 @@ const ModuleGrid = ({
     });
 
     return sorted;
-  }, [modules, sortBy, sortOrder, calculateModuleProgress, progressByModule]);
+  }, [modules, sortBy, sortOrder, calculateModuleProgress, progressByModuleFromHook]);
 
   /**
    * Handler memoizado para clicks en módulos
@@ -174,11 +217,13 @@ const ModuleGrid = ({
 
   // Calcular módulos completados (progreso = 100%)
   const completedModules = useMemo(() => {
-    if (!calculateModuleProgress || modules.length === 0) return [];
     return modules
-      .filter(module => calculateModuleProgress(module.id) === 100)
+      .filter(module => {
+        const progress = progressByModuleFromHook[module.id];
+        return progress?.percentInt === 100;
+      })
       .map(module => module.id);
-  }, [modules, calculateModuleProgress]);
+  }, [modules, progressByModuleFromHook]);
 
   return (
     <div
@@ -187,13 +232,16 @@ const ModuleGrid = ({
       aria-label="Lista de módulos de aprendizaje"
     >
       {sortedModules.map((module, index) => {
-        // Usar progreso precalculado si está disponible, sino usar función legacy
-        const precalculatedProgress = progressByModule[module.id];
+        // Usar progreso precalculado del hook
+        const precalculatedProgress = progressByModuleFromHook[module.id];
+        
+        // Mantener compatibilidad con función legacy si no hay progreso del hook
         const moduleProgress = precalculatedProgress?.percentInt ?? (
           calculateModuleProgress
             ? calculateModuleProgress(module.id)
             : 0
         );
+        
         const available = isModuleAvailable
           ? isModuleAvailable(module.id)
           : true;
@@ -202,7 +250,7 @@ const ModuleGrid = ({
         const cardContent = (
           <CardComponent
             module={module}
-            moduleProgress={moduleProgress}
+            moduleProgress={moduleProgress} // DEPRECATED: mantener por compatibilidad
             isAvailable={available}
             isFavorite={isFavorite}
             onModuleClick={handleModuleClick}
@@ -282,7 +330,7 @@ MemoizedModuleGrid.propTypes = {
     difficulty: PropTypes.string,
     duration: PropTypes.number
   })),
-  /** Función que calcula el progreso del módulo (retorna 0-100) */
+  /** Función que calcula el progreso del módulo (retorna 0-100) [DEPRECATED] */
   calculateModuleProgress: PropTypes.func,
   /** Función que determina si un módulo está disponible */
   isModuleAvailable: PropTypes.func,
