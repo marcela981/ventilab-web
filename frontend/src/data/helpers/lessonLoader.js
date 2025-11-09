@@ -233,6 +233,25 @@ export function getLessonPath(lessonId, moduleId) {
         'sbt': 'weaning',
         'readiness': 'weaning',
       };
+      
+      // Also check for exact matches first (more specific)
+      const exactMatches = {
+        'sdra-protocol': 'pathologies',
+        'copd-protocol': 'pathologies',
+        'asthma-protocol': 'pathologies',
+        'pneumonia-protocol': 'pathologies',
+        'low-tidal-volume': 'protective-strategies',
+        'permissive-hypercapnia': 'protective-strategies',
+        'peep-strategies': 'protective-strategies',
+        'lung-protective-ventilation': 'protective-strategies',
+        'sbt-protocol': 'weaning',
+        'readiness-criteria': 'weaning',
+      };
+      
+      // Check exact matches first
+      if (exactMatches[normalizedLessonId]) {
+        return `${LESSON_PATH_PREFIX}/${moduleFolder}/${exactMatches[normalizedLessonId]}/${normalizedLessonId}.json`;
+      }
 
       for (const [keyword, category] of Object.entries(categoryMap)) {
         if (normalizedLessonId.includes(keyword)) {

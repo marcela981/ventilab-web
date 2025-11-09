@@ -90,7 +90,8 @@
   "metadata": {
     "updatedAt": "2025-11-08T03:42:27.545Z",
     "description": "Descripción pendiente de curaduría (metadatos).",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "allowEmpty": false
   },
   "id": "ventilacion-con-bajo-volumen-tidal-estrategia-de-proteccion-pulmonar",
   "quiz": [],

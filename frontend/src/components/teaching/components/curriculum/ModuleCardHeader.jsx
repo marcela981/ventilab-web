@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Box, IconButton, Typography } from '@mui/material';
 import { BookmarkBorder, Bookmark, CheckCircle, TrendingUp } from '@mui/icons-material';
 import ModuleStatusIcons from './ModuleStatusIcons';
+import PrerequisiteTooltip from './PrerequisiteTooltip';
 import styles from '@/styles/curriculum.module.css';
 
 /**
@@ -17,7 +18,8 @@ const ModuleCardHeader = ({
   levelColor,
   isHovered,
   onToggleFavorite,
-  completedAt
+  completedAt,
+  missingPrerequisites = []
 }) => {
   return (
     <>
@@ -28,7 +30,8 @@ const ModuleCardHeader = ({
             position: 'absolute',
             top: 12,
             right: 12,
-            zIndex: 2,
+            zIndex: 11,
+            pointerEvents: 'auto',
             transition: 'transform 0.25s ease-in-out',
             transform: isHovered ? 'scale(1.1)' : 'scale(1)',
             display: 'flex',
@@ -63,7 +66,8 @@ const ModuleCardHeader = ({
             position: 'absolute',
             top: 12,
             right: 12,
-            zIndex: 2,
+            zIndex: 11,
+            pointerEvents: 'auto',
             transition: 'transform 0.25s ease-in-out',
             transform: isHovered ? 'scale(1.1)' : 'scale(1)'
           }}
@@ -71,18 +75,40 @@ const ModuleCardHeader = ({
           <TrendingUp sx={{ color: '#FF9800', fontSize: 20 }} />
         </Box>
       )}
-      {status === 'available' && (
+      {/* Icono de estado de disponibilidad (Lock/LockOpen) */}
+      {(status === 'available' || status === 'locked') && (
         <Box
           sx={{
             position: 'absolute',
             top: 12,
             right: 12,
-            zIndex: 2,
+            zIndex: 11, // Mayor que el contenido para permitir interacción con tooltip
             transition: 'transform 0.25s ease-in-out',
-            transform: isHovered ? 'scale(1.1)' : 'scale(1)'
+            transform: isHovered ? 'scale(1.1)' : 'scale(1)',
+            pointerEvents: 'auto', // Permitir eventos incluso cuando el contenido está bloqueado
           }}
         >
-          <ModuleStatusIcons isAvailable={true} size={20} color={levelColor} />
+          {status === 'locked' ? (
+            <PrerequisiteTooltip
+              missing={missingPrerequisites}
+              side="top"
+              maxWidth={280}
+            >
+              <span style={{ display: 'inline-flex', cursor: 'help' }}>
+                <ModuleStatusIcons 
+                  isAvailable={false} 
+                  size={20} 
+                  color={undefined} 
+                />
+              </span>
+            </PrerequisiteTooltip>
+          ) : (
+            <ModuleStatusIcons 
+              isAvailable={true} 
+              size={20} 
+              color={levelColor} 
+            />
+          )}
         </Box>
       )}
 
@@ -92,7 +118,8 @@ const ModuleCardHeader = ({
           position: 'absolute',
           top: 12,
           left: 12,
-          zIndex: 2
+          zIndex: 11, // Mayor que el contenido para permitir interacción incluso cuando está bloqueado
+          pointerEvents: 'auto', // Permitir eventos incluso cuando el contenido está bloqueado
         }}
       >
         <IconButton
@@ -164,7 +191,8 @@ ModuleCardHeader.propTypes = {
   levelColor: PropTypes.string.isRequired,
   isHovered: PropTypes.bool.isRequired,
   onToggleFavorite: PropTypes.func.isRequired,
-  completedAt: PropTypes.string
+  completedAt: PropTypes.string,
+  missingPrerequisites: PropTypes.arrayOf(PropTypes.string)
 };
 
 export default ModuleCardHeader;

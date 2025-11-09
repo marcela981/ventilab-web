@@ -8,6 +8,7 @@
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useLearningProgress } from '@/contexts/LearningProgressContext';
+import { calculateModuleFilteredProgress } from '@/components/teaching/components/curriculum/lessonHelpers';
 
 /**
  * useModuleProgress
@@ -38,9 +39,9 @@ export const useModuleProgress = (moduleId, options = {}) => {
     return progressByModule[moduleId] || null;
   }, [progressByModule, moduleId]);
   
-  // Calcular progreso agregado
+  // Calcular progreso agregado usando lecciones filtradas
   const progress = useMemo(() => {
-    if (!moduleData) {
+    if (!moduleData || !moduleId) {
       return {
         percent: 0,
         percentInt: 0,
@@ -50,54 +51,37 @@ export const useModuleProgress = (moduleId, options = {}) => {
         completedAt: null,
         timeSpent: 0,
         score: null,
+        completedPages: 0,
+        totalPages: 0,
       };
     }
     
-    const { learningProgress, lessonsById } = moduleData;
-    const lessons = Object.values(lessonsById);
-    const totalLessons = lessons.length;
+    const { learningProgress } = moduleData;
     
-    if (totalLessons === 0) {
-      return {
-        percent: 0,
-        percentInt: 0,
-        completedLessons: 0,
-        totalLessons: 0,
-        isCompleted: false,
-        completedAt: learningProgress?.completedAt || null,
-        timeSpent: learningProgress?.timeSpent || 0,
-        score: learningProgress?.score || null,
-      };
-    }
+    // Calcular progreso filtrado (excluye allowEmpty del denominador, calcula por páginas)
+    // Pasamos solo el módulo actual ya que la función solo necesita ese módulo
+    const filteredProgress = calculateModuleFilteredProgress(
+      { [moduleId]: moduleData },
+      moduleId
+    );
     
-    // Calcular progreso: promedio ponderado por número de lecciones
-    let completedCount = 0;
-    let progressSum = 0;
-    
-    lessons.forEach(lessonProgress => {
-      if (lessonProgress.completed) {
-        completedCount++;
-        progressSum += 1;
-      } else {
-        // Usar progress (0-1) si existe, sino 0
-        progressSum += lessonProgress.progress || 0;
-      }
-    });
-    
-    const percent = totalLessons > 0 ? progressSum / totalLessons : 0;
-    const isCompleted = learningProgress?.completedAt !== null || completedCount === totalLessons;
+    const isCompleted = learningProgress?.completedAt !== null || 
+                       (filteredProgress.totalLessons > 0 && 
+                        filteredProgress.completedLessons === filteredProgress.totalLessons);
     
     return {
-      percent,
-      percentInt: Math.round(percent * 100),
-      completedLessons: completedCount,
-      totalLessons,
+      percent: filteredProgress.percentage / 100, // Convertir de 0-100 a 0-1
+      percentInt: Math.round(filteredProgress.percentage),
+      completedLessons: filteredProgress.completedLessons,
+      totalLessons: filteredProgress.totalLessons,
       isCompleted,
       completedAt: learningProgress?.completedAt || null,
       timeSpent: learningProgress?.timeSpent || 0,
       score: learningProgress?.score || null,
+      completedPages: filteredProgress.completedPages,
+      totalPages: filteredProgress.totalPages,
     };
-  }, [moduleData]);
+  }, [moduleData, moduleId]);
   
   // Función para cargar progreso
   const load = useCallback(async (force = false) => {

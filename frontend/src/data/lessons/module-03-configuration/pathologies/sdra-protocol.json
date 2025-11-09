@@ -4,58 +4,102 @@
   "estimatedTime": 45,
   "sections": [
     {
+      "id": "contexto-clinico-sdra",
       "type": "text",
       "order": 1,
+      "title": "Introducción",
+      "summary": "Contexto clínico del SDRA: definición según criterios de Berlín, clasificación por severidad (leve, moderado, severo) y fisiopatología. El SDRA es una forma severa de insuficiencia respiratoria aguda que requiere estrategias de ventilación protectora para prevenir VILI.",
+      "estimatedTime": 8,
       "content": "# Contexto Clínico del SDRA\n\nEl Síndrome de Dificultad Respiratoria Aguda (SDRA) es una forma severa de insuficiencia respiratoria aguda caracterizada por infiltrados pulmonares bilaterales, edema pulmonar no cardiogénico y deterioro severo del intercambio gaseoso. El SDRA se define por los criterios de Berlín:\n\n- **Inicio agudo**: Síntomas respiratorios dentro de 7 días de la lesión conocida\n- **Opacidades bilaterales** en radiografía de tórax no explicadas por derrame, atelectasia o nódulos\n- **Disfunción respiratoria** no explicada por fallo cardiaco o sobrecarga de volumen\n- **PaO₂/FiO₂ ≤ 300 mmHg** con PEEP ≥ 5 cmH₂O\n\nEl SDRA se clasifica en tres niveles de severidad según la relación PaO₂/FiO₂:\n\n- **Leve**: PaO₂/FiO₂ 200-300 mmHg\n- **Moderado**: PaO₂/FiO₂ 100-200 mmHg\n- **Severo**: PaO₂/FiO₂ < 100 mmHg\n\nLa fisiopatología del SDRA incluye pérdida de surfactante, aumento de la permeabilidad capilar, edema alveolar y colapso de unidades alveolares, resultando en pulmones \"rígidos\" con compliance severamente reducida. La ventilación mecánica convencional puede causar daño adicional (VILI - Ventilator-Induced Lung Injury) si no se aplican estrategias protectoras."
     },
     {
+      "id": "objetivos-terapeuticos-sdra",
       "type": "text",
       "order": 2,
+      "title": "Objetivos",
+      "summary": "Objetivos principales del protocolo de ventilación para SDRA: mantener oxigenación adecuada, garantizar ventilación alveolar con hipercapnia permisiva, prevenir VILI limitando presión plateau, reclutar alveolos con PEEP, mantener hemodinamia estable y reducir mortalidad. El protocolo ARDSnet demostró reducción de mortalidad del 40% al 31%.",
+      "estimatedTime": 5,
       "content": "# Objetivos Terapéuticos\n\nLos objetivos principales del protocolo de ventilación para SDRA son:\n\n1. **Mantener oxigenación adecuada**: PaO₂ 55-80 mmHg o SpO₂ 88-95% (hiperoxemia permisiva)\n2. **Garantizar ventilación alveolar**: Permitiendo hipercapnia permisiva (pH ≥ 7.15)\n3. **Prevenir lesión pulmonar inducida por ventilador (VILI)**: Limitando presión plateau ≤ 30 cmH₂O y usando volúmenes protectores\n4. **Reclutar unidades alveolares colapsadas**: Optimizando PEEP según tablas ARDSnet\n5. **Mantener hemodinamia estable**: Minimizando efectos cardiovasculares adversos de la ventilación\n6. **Reducir mortalidad**: Aplicando estrategias basadas en evidencia que han demostrado mejoría de supervivencia\n\nEl protocolo ARDSnet demostró una reducción de mortalidad del 31% al 40% al aplicar ventilación con bajo volumen tidal comparado con volúmenes tradicionales (12 mL/kg)."
     },
     {
+      "id": "modalidades-ventilatorias-sdra",
       "type": "text",
       "order": 3,
+      "title": "Modalidades Ventilatorias",
+      "summary": "Modalidades ventilatorias recomendadas para SDRA: VCV como modalidad principal, PCV como alternativa, APRV y PRVC para casos específicos. VCV es recomendada porque garantiza volumen tidal preciso, permite medición exacta de presión plateau y facilita aplicación del protocolo ARDSnet.",
+      "estimatedTime": 8,
       "content": "# Modalidades Ventilatorias Recomendadas\n\n## Modalidad Principal: Ventilación Controlada por Volumen (VCV) o Asistida-Control\n\n**VCV es la modalidad recomendada inicialmente** porque:\n- Garantiza volumen tidal preciso y constante\n- Permite medición exacta de presión plateau\n- Facilita aplicación del protocolo ARDSnet estandarizado\n- Proporciona ventilación minuto predecible\n\n## Modalidades Alternativas\n\n**Presión Controlada (PCV)** puede considerarse cuando:\n- Presión plateau persiste > 30 cmH₂O a pesar de VT reducido\n- Se requiere mejor distribución del gas y menor presión pico\n- El paciente muestra mejor tolerancia a PCV\n\n**APRV (Airway Pressure Release Ventilation)** puede usarse en casos refractarios, pero requiere experiencia clínica avanzada.\n\n**PRVC (Presión Regulada por Volumen)** ofrece ventajas de control dual pero no tiene evidencia superior a VCV en SDRA."
     },
     {
+      "id": "configuracion-paso-a-paso-sdra",
       "type": "text",
       "order": 4,
+      "title": "Configuración Inicial",
+      "summary": "Configuración paso a paso del protocolo ARDSnet: calcular PCI, configurar VT inicial (6 mL/kg), configurar PEEP y FiO₂ según tabla, configurar frecuencia respiratoria, flujo inspiratorio, relación I:E y medir presión plateau. Usar PCI, no peso real, para evitar volúmenes excesivos.",
+      "estimatedTime": 12,
       "content": "# Configuración Paso a Paso\n\n## Paso 1: Calcular Peso Corporal Ideal (PCI)\n\n**Fórmula de Devine (1974):**\n- Hombres: PCI (kg) = 50 + 2.3 × (altura en pulgadas - 60)\n- Mujeres: PCI (kg) = 45.5 + 2.3 × (altura en pulgadas - 60)\n\n**Alternativa:**\n- Hombres: PCI (kg) = 50 + 0.91 × (altura en cm - 152.4)\n- Mujeres: PCI (kg) = 45.5 + 0.91 × (altura en cm - 152.4)\n\n**Importante**: Usar PCI, NO peso real, para evitar volúmenes excesivos en pacientes obesos.\n\n## Paso 2: Configurar Volumen Tidal Inicial\n\n**Objetivo**: 6 mL/kg de PCI\n- Ejemplo: Paciente hombre, 170 cm, PCI = 50 + 0.91 × (170 - 152.4) = 66 kg\n- VT inicial = 6 × 66 = **396 mL** (redondear a 400 mL)\n\n## Paso 3: Configurar PEEP y FiO₂ según Tabla ARDSnet\n\nVer tabla en siguiente sección.\n\n## Paso 4: Configurar Frecuencia Respiratoria\n\n**Inicial**: 16-20 respiraciones/minuto\n**Ajustar** según PaCO₂ objetivo, permitiendo hipercapnia permisiva (pH ≥ 7.15)\n**Máximo**: 35 respiraciones/minuto si es necesario para mantener pH\n\n## Paso 5: Configurar Flujo Inspiratorio\n\n**60-80 L/min** para acortar tiempo inspiratorio y maximizar tiempo espiratorio\n\n## Paso 6: Configurar Relación I:E\n\n**1:1 a 1:2** (evitar inversión de I:E salvo casos muy específicos)\n\n## Paso 7: Medir Presión Plateau\n\n**Realizar pausa inspiratoria de 0.5 segundos** después de cada ajuste para medir Pplateau."
     },
     {
+      "id": "tabla-parametros-ardsnet",
       "type": "text",
       "order": 5,
+      "title": "Algoritmo de Ajustes",
+      "summary": "Tabla de parámetros ARDSnet: tabla PEEP/FiO₂ para optimizar oxigenación, tabla de ajuste de VT según presión plateau, tabla de ajuste de frecuencia según pH, y parámetros iniciales recomendados. Objetivo: mantener PaO₂ 55-80 mmHg o SpO₂ 88-95%, presión plateau ≤ 30 cmH₂O.",
+      "estimatedTime": 10,
       "content": "# Tabla de Parámetros ARDSnet\n\n## Tabla PEEP/FiO₂\n\n| FiO₂ | PEEP (cmH₂O) |\n|------|--------------|\n| 0.3  | 5            |\n| 0.4  | 5-8          |\n| 0.5  | 8-10         |\n| 0.6  | 10           |\n| 0.7  | 10-12        |\n| 0.8  | 12-14        |\n| 0.9  | 14           |\n| 1.0  | 14-16        |\n\n**Objetivo**: Mantener PaO₂ 55-80 mmHg o SpO₂ 88-95%\n\n## Tabla de Ajuste de VT según Presión Plateau\n\n| Presión Plateau | Acción |\n|----------------|--------|\n| < 30 cmH₂O | Mantener VT actual o aumentar ligeramente si VT < 6 mL/kg y pH > 7.30 |\n| 30 cmH₂O | Reducir VT en 1 mL/kg (mínimo 4 mL/kg) |\n| > 30 cmH₂O | Reducir VT inmediatamente, verificar posición del tubo, considerar cambio a PCV |\n\n## Tabla de Ajuste de Frecuencia según pH\n\n| pH | Acción |\n|----|--------|\n| > 7.45 | Reducir frecuencia (riesgo de alcalosis) |\n| 7.30-7.45 | Mantener frecuencia actual |\n| 7.15-7.30 | Aumentar frecuencia hasta 35/min si es necesario, aceptar hipercapnia permisiva |\n| < 7.15 | Aumentar frecuencia a máximo, considerar bicarbonato IV, evaluar cambio de modalidad |\n\n## Parámetros Iniciales Recomendados\n\n| Parámetro | Valor |\n|-----------|-------|\n| VT | 6 mL/kg PCI |\n| FR | 16-20/min |\n| PEEP | Según tabla PEEP/FiO₂ |\n| FiO₂ | 1.0 inicial, reducir según tabla |\n| Flujo | 60-80 L/min |\n| I:E | 1:1 a 1:2 |\n| Trigger | -2 a -5 L/min (flujo) o -1 a -2 cmH₂O (presión) |"
     },
     {
+      "id": "estrategias-ajuste-sdra",
       "type": "text",
       "order": 6,
+      "title": "Algoritmo de Ajustes",
+      "summary": "Estrategias de ajuste para SDRA: ajuste de PEEP/FiO₂ (reducir FiO₂ primero, luego PEEP), ajuste de volumen tidal según presión plateau, estrategia de hipercapnia permisiva (aceptar pH ≥ 7.15), y estrategias adyuvantes (posición prono, bloqueo neuromuscular, maniobras de reclutamiento, ECMO).",
+      "estimatedTime": 10,
       "content": "# Estrategias de Ajuste\n\n## Estrategia de Ajuste de PEEP/FiO₂\n\n**Principio**: Reducir FiO₂ primero, luego PEEP\n\n1. **Si PaO₂ > 80 mmHg o SpO₂ > 95%**: Reducir FiO₂ en 0.1 cada 30-60 minutos\n2. **Si FiO₂ < 0.4 y oxigenación adecuada**: Reducir PEEP gradualmente (2 cmH₂O cada 2-4 horas)\n3. **Si PaO₂ < 55 mmHg o SpO₂ < 88%**: Aumentar PEEP según tabla, luego FiO₂ si necesario\n\n## Estrategia de Ajuste de Volumen Tidal\n\n1. **Medir presión plateau cada 4 horas** o después de cambios significativos\n2. **Si Pplateau > 30 cmH₂O**: Reducir VT en 1 mL/kg (mínimo 4 mL/kg)\n3. **Si Pplateau < 25 cmH₂O y VT < 6 mL/kg**: Puede aumentarse VT gradualmente hasta 6 mL/kg\n4. **Si Pplateau persiste alta a pesar de VT mínimo**: Considerar cambio a PCV o estrategias avanzadas\n\n## Estrategia de Hipercapnia Permisiva\n\n**Aceptar PaCO₂ elevada si**:\n- pH ≥ 7.15\n- Hemodinamia estable\n- Sin signos de hipertensión intracraneal\n- Sin contraindicaciones de hipercapnia (ej: acidosis metabólica severa)\n\n**Aumentar frecuencia respiratoria** hasta 35/min para mantener pH si es necesario.\n\n## Estrategias Adyuvantes\n\n1. **Posición prono**: Considerar en SDRA moderado-severo (PaO₂/FiO₂ < 150) con FiO₂ > 0.6\n2. **Bloqueo neuromuscular**: Considerar en primeras 48 horas de SDRA severo para mejorar sincronía\n3. **Maniobras de reclutamiento**: Solo en casos seleccionados, con monitorización cuidadosa\n4. **ECMO**: Considerar en casos refractarios a todas las estrategias convencionales"
     },
     {
+      "id": "monitorizacion-sdra",
       "type": "text",
       "order": 7,
+      "title": "Monitorización/Curvas/Alarmas",
+      "summary": "Monitorización continua en SDRA: presión plateau (medir cada 4 horas, objetivo ≤ 30 cmH₂O), presión pico, gases arteriales, saturación de oxígeno, compliance dinámica, curvas ventilatorias (presión-tiempo, flujo-tiempo, volumen-tiempo, lazo presión-volumen), hemodinamia y signos de asincronía.",
+      "estimatedTime": 12,
       "content": "# Monitorización\n\n## Parámetros a Monitorizar Continuamente\n\n1. **Presión Plateau (Pplateau)**: Medir cada 4 horas o después de cambios\n   - **Objetivo**: ≤ 30 cmH₂O\n   - **Técnica**: Pausa inspiratoria de 0.5 segundos\n\n2. **Presión Pico (PIP)**: Monitorear continuamente\n   - **Diferencia PIP - Pplateau**: Indica resistencia (normal < 10 cmH₂O)\n\n3. **Gases Arteriales**:\n   - **Frecuencia**: Cada 4-6 horas inicialmente, luego según necesidad\n   - **Objetivos**: PaO₂ 55-80 mmHg, PaCO₂ según pH objetivo, pH ≥ 7.15\n\n4. **Saturación de Oxígeno (SpO₂)**: Monitoreo continuo\n   - **Objetivo**: 88-95%\n\n5. **Compliance Dinámica**: C = VT / (Pplateau - PEEP)\n   - **Normal**: > 50 mL/cmH₂O\n   - **SDRA leve**: 30-50 mL/cmH₂O\n   - **SDRA moderado-severo**: < 30 mL/cmH₂O\n\n6. **Curvas Ventilatorias**:\n   - **Presión-tiempo**: Evaluar forma de la curva, detección de auto-PEEP\n   - **Flujo-tiempo**: Detectar espiración incompleta\n   - **Volumen-tiempo**: Detectar fugas\n   - **Lazo presión-volumen**: Evaluar punto de inflexión inferior y superior\n\n7. **Hemodinamia**:\n   - Presión arterial, frecuencia cardíaca, gasto cardíaco si disponible\n   - Efectos de PEEP en precarga y poscarga\n\n8. **Signos de Asincronía**: Observar esfuerzos ineficaces, doble disparo, etc."
     },
     {
+      "id": "criterios-exito-sdra",
       "type": "text",
       "order": 8,
+      "title": "Criterios de Éxito",
+      "summary": "Criterios de éxito del protocolo ARDSnet: criterios de oxigenación (PaO₂/FiO₂ > 200 mmHg, SpO₂ 88-95% con FiO₂ ≤ 0.6), criterios de ventilación (pH ≥ 7.25, presión plateau ≤ 30 cmH₂O), criterios de estabilidad (hemodinamia estable, sin complicaciones) y criterios para considerar destete.",
+      "estimatedTime": 5,
       "content": "# Criterios de Éxito\n\nEl protocolo se considera exitoso cuando se logran:\n\n## Criterios de Oxigenación\n\n- ✅ PaO₂/FiO₂ > 200 mmHg (mejora desde inicio)\n- ✅ SpO₂ 88-95% con FiO₂ ≤ 0.6\n- ✅ PEEP ≤ 10 cmH₂O con oxigenación adecuada\n\n## Criterios de Ventilación\n\n- ✅ pH ≥ 7.25 sin necesidad de frecuencia > 30/min\n- ✅ PaCO₂ estable o en mejoría\n- ✅ Presión plateau ≤ 30 cmH₂O\n\n## Criterios de Estabilidad\n\n- ✅ Hemodinamia estable sin necesidad de aumento de vasopresores\n- ✅ Sin nuevas complicaciones ventilatorias (barotrauma, fugas)\n- ✅ Paciente estable o mejorando clínicamente\n\n## Criterios para Considerar Destete\n\n- ✅ PaO₂/FiO₂ > 200 mmHg con PEEP ≤ 8 cmH₂O y FiO₂ ≤ 0.4\n- ✅ Presión plateau < 25 cmH₂O\n- ✅ Paciente despierto, con esfuerzo respiratorio presente\n- ✅ Sin fiebre, infección activa o inestabilidad hemodinámica severa\n- ✅ Evaluación de criterios de preparación para destete (ver módulo de destete)"
     },
     {
+      "id": "complicaciones-manejo-sdra",
       "type": "text",
       "order": 9,
+      "title": "Complicaciones y Manejo",
+      "summary": "Complicaciones comunes en SDRA y su manejo: barotrauma/volutrauma (prevención con Pplateau ≤ 30 cmH₂O, manejo con drenaje), hipercapnia severa (aumentar frecuencia, considerar bicarbonato), hipoxemia refractaria (posición prono, ECMO), auto-PEEP (reducir frecuencia, aumentar tiempo espiratorio) y efectos hemodinámicos (optimizar volemia, reducir PEEP).",
+      "estimatedTime": 8,
       "content": "# Complicaciones y Manejo\n\n## Complicaciones Comunes\n\n### 1. Barotrauma/Volutrauma\n\n**Manifestaciones**: Neumotórax, neumomediastino, enfisema subcutáneo\n\n**Prevención**:\n- Mantener Pplateau ≤ 30 cmH₂O\n- Usar VT protector (6 mL/kg)\n- Evitar PEEP excesiva\n\n**Manejo**:\n- Drenaje de neumotórax si necesario\n- Reducir presiones ventilatorias\n- Considerar drenaje torácico\n\n### 2. Hipercapnia Severa\n\n**Manifestaciones**: pH < 7.15, efectos hemodinámicos, confusión\n\n**Manejo**:\n- Aumentar frecuencia hasta 35/min\n- Considerar bicarbonato IV si pH < 7.15 y hemodinamia comprometida\n- Evaluar cambio de modalidad (PCV puede mejorar distribución)\n- Considerar ECMO en casos extremos\n\n### 3. Hipoxemia Refractaria\n\n**Manifestaciones**: PaO₂/FiO₂ < 100 a pesar de optimización\n\n**Manejo**:\n- Posición prono (≥ 16 horas/día)\n- Optimizar PEEP (tabla ARDSnet)\n- Considerar bloqueo neuromuscular\n- Evaluar ECMO\n\n### 4. Auto-PEEP\n\n**Manifestaciones**: Presión espiratoria no retorna a cero, dificultad para disparar respiraciones\n\n**Manejo**:\n- Reducir frecuencia respiratoria\n- Aumentar tiempo espiratorio\n- Reducir VT si es necesario\n- Medir auto-PEEP con pausa espiratoria\n\n### 5. Efectos Hemodinámicos\n\n**Manifestaciones**: Hipotensión, reducción de gasto cardíaco\n\n**Manejo**:\n- Optimizar volemia\n- Reducir PEEP si causa hipotensión severa\n- Considerar vasopresores si necesario\n- Monitoreo hemodinámico avanzado"
     },
     {
+      "id": "caso-clinico-sdra",
       "type": "text",
       "order": 10,
+      "title": "Caso Práctico",
+      "summary": "Caso clínico de SDRA severo: paciente de 45 años con neumonía comunitaria que evoluciona a SDRA. Configuración inicial del ventilador según protocolo ARDSnet, evolución y ajustes según presión plateau y gases arteriales. Resultado: mejoría de PaO₂/FiO₂ desde 58 a 200 mmHg, presión plateau controlada, paciente listo para destete.",
+      "estimatedTime": 10,
       "content": "# Caso Clínico\n\n## Presentación del Caso\n\n**Paciente**: Hombre de 45 años, 175 cm de altura, 80 kg de peso, sin antecedentes relevantes\n\n**Historia**: Admitido por neumonía comunitaria severa. Evoluciona con insuficiencia respiratoria aguda que requiere intubación y ventilación mecánica.\n\n**Gases arteriales iniciales**:\n- pH: 7.28\n- PaCO₂: 52 mmHg\n- PaO₂: 58 mmHg (FiO₂ 1.0)\n- HCO₃⁻: 24 mEq/L\n- PaO₂/FiO₂: 58 mmHg (SDRA severo)\n\n**Radiografía de tórax**: Opacidades bilaterales difusas\n\n## Configuración Inicial del Ventilador\n\n1. **Calcular PCI**: 50 + 0.91 × (175 - 152.4) = **70.5 kg** (redondear a 71 kg)\n\n2. **VT inicial**: 6 × 71 = **426 mL** (configurar 420 mL)\n\n3. **PEEP/FiO₂**: Según tabla, con FiO₂ 1.0 → PEEP **14-16 cmH₂O** (iniciar con 14 cmH₂O)\n\n4. **FR**: 18/min (inicial, ajustar según pH)\n\n5. **Flujo**: 70 L/min\n\n6. **I:E**: 1:1.5\n\n**Configuración resultante**:\n- Modo: VCV Asistido-Control\n- VT: 420 mL\n- FR: 18/min\n- PEEP: 14 cmH₂O\n- FiO₂: 1.0\n- Flujo: 70 L/min\n- I:E: 1:1.5\n\n## Evolución y Ajustes\n\n**A las 2 horas**:\n- Pplateau: 32 cmH₂O (⚠️ excede límite)\n- Gases: pH 7.26, PaCO₂ 54, PaO₂ 72 (FiO₂ 0.9)\n- **Ajuste**: Reducir VT a 350 mL (5 mL/kg)\n\n**A las 6 horas**:\n- Pplateau: 28 cmH₂O (✅ dentro de límite)\n- Gases: pH 7.28, PaCO₂ 58, PaO₂ 85 (FiO₂ 0.8)\n- **Ajuste**: Reducir FiO₂ a 0.7, aumentar PEEP a 12 cmH₂O según tabla\n\n**A las 12 horas**:\n- Pplateau: 27 cmH₂O\n- Gases: pH 7.30, PaCO₂ 52, PaO₂ 78 (FiO₂ 0.6)\n- PaO₂/FiO₂: 130 mmHg (mejora desde 58)\n- **Ajuste**: Mantener configuración, reducir FiO₂ gradualmente\n\n**A las 24 horas**:\n- Pplateau: 25 cmH₂O\n- Gases: pH 7.32, PaCO₂ 48, PaO₂ 82 (FiO₂ 0.5)\n- PaO₂/FiO₂: 164 mmHg (mejora continua)\n- **Ajuste**: Reducir PEEP a 10 cmH₂O, FiO₂ a 0.4\n\n## Resultado Final\n\nAl día 3, el paciente muestra:\n- PaO₂/FiO₂: 200 mmHg\n- Pplateau: 22 cmH₂O\n- pH: 7.35, PaCO₂: 42 mmHg\n- PEEP: 8 cmH₂O, FiO₂: 0.4\n- Paciente despierto, con esfuerzo respiratorio\n\n**Próximos pasos**: Evaluar criterios de preparación para destete y comenzar protocolo de trial de respiración espontánea."
     },
     {
+      "id": "quiz-sdra-1",
       "type": "quiz",
       "order": 11,
+      "title": "Quiz",
+      "summary": "Pregunta sobre volumen tidal inicial según protocolo ARDSnet para paciente con SDRA severo.",
+      "estimatedTime": 2,
       "question": "Un paciente con SDRA severo tiene PCI de 70 kg. ¿Cuál es el volumen tidal inicial apropiado según el protocolo ARDSnet?",
       "options": [
         "420 mL (6 mL/kg)",
@@ -67,8 +111,12 @@
       "explanation": "El protocolo ARDSnet establece VT inicial de 6 mL/kg de peso corporal ideal. Para un PCI de 70 kg: 6 × 70 = 420 mL. Este volumen reduce la mortalidad comparado con volúmenes tradicionales (8-12 mL/kg)."
     },
     {
+      "id": "quiz-sdra-2",
       "type": "quiz",
       "order": 12,
+      "title": "Quiz",
+      "summary": "Pregunta sobre acción apropiada cuando presión plateau excede límite en SDRA.",
+      "estimatedTime": 2,
       "question": "Un paciente con SDRA está en ventilación con VT 6 mL/kg, pero la presión plateau es 32 cmH₂O. ¿Cuál es la acción más apropiada?",
       "options": [
         "Aumentar VT a 8 mL/kg para mejorar ventilación",
@@ -100,7 +148,8 @@
   "metadata": {
     "updatedAt": "2025-11-08T03:42:27.664Z",
     "description": "Descripción pendiente de curaduría (metadatos).",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "allowEmpty": false
   },
   "id": "protocolo-de-ventilacion-mecanica-para-sindrome-de-dificultad-respiratoria-aguda-sdra",
   "quiz": [],

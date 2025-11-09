@@ -4,33 +4,57 @@
   "estimatedTime": 28,
   "sections": [
     {
+      "id": "concepto-trial-respiracion-espontanea",
       "type": "text",
       "order": 1,
+      "title": "Introducción",
+      "summary": "Concepto de trial de respiración espontánea (SBT): prueba que evalúa si un paciente puede mantener respiración espontánea sin asistencia del ventilador antes de extubación. Tipos de SBT: T-piece, CPAP 5 cmH₂O, PSV baja (5-7 cmH₂O). Objetivos: evaluar capacidad de respiración espontánea, reducir reintubación, optimizar tiempo de destete.",
+      "estimatedTime": 5,
       "content": "# Concepto de Trial de Respiración Espontánea\n\nEl **trial de respiración espontánea (SBT - Spontaneous Breathing Trial)** es una prueba que evalúa si un paciente puede mantener respiración espontánea sin asistencia del ventilador antes de proceder con extubación.\n\n## Objetivos del SBT\n\n1. **Evaluar capacidad de respiración espontánea**: Determinar si el paciente puede ventilar sin asistencia\n2. **Reducir reintubación**: Identificar pacientes que fallarán antes de extubar\n3. **Optimizar tiempo de destete**: Facilitar destete temprano cuando sea apropiado\n4. **Evaluar tolerancia**: Determinar si el paciente tolera el esfuerzo respiratorio\n\n## Tipos de SBT\n\n1. **T-piece (T-connector)**: Paciente respira sin asistencia, solo con oxígeno\n2. **CPAP (5 cmH₂O)**: Presión positiva continua, sin asistencia de presión\n3. **PSV baja (5-7 cmH₂O)**: Presión de soporte mínima para vencer resistencia del tubo\n\n## Evidencia\n\nLos estudios demuestran que realizar SBT diariamente reduce días de VM y facilita destete temprano."
     },
     {
+      "id": "criterios-iniciar-sbt",
       "type": "text",
       "order": 2,
+      "title": "Criterios para Iniciar SBT",
+      "summary": "Criterios de preparación para iniciar SBT: causa original resuelta, PaO₂/FiO₂ ≥ 200 mmHg, SpO₂ ≥ 88% con FiO₂ ≤ 0.4-0.5, PEEP ≤ 5-8 cmH₂O, pH ≥ 7.25, PaCO₂ ≤ 50 mmHg, estabilidad hemodinámica, esfuerzo respiratorio presente, paciente despierto. Contraindicaciones: inestabilidad hemodinámica severa, arritmias, hipertensión intracraneal, sedación profunda.",
+      "estimatedTime": 5,
       "content": "# Criterios para Iniciar SBT\n\n## Criterios de Preparación (Pre-SBT)\n\nEl paciente debe cumplir criterios de preparación antes de iniciar SBT:\n\n- ✅ Causa original resuelta o en resolución\n- ✅ PaO₂/FiO₂ ≥ 200 mmHg\n- ✅ SpO₂ ≥ 88% con FiO₂ ≤ 0.4-0.5\n- ✅ PEEP ≤ 5-8 cmH₂O\n- ✅ pH ≥ 7.25\n- ✅ PaCO₂ ≤ 50 mmHg o similar a basal\n- ✅ Estabilidad hemodinámica\n- ✅ Esfuerzo respiratorio presente\n- ✅ Paciente despierto, alerta\n\n## Contraindicaciones para SBT\n\n- ❌ Inestabilidad hemodinámica severa\n- ❌ Arritmias significativas\n- ❌ Hipertensión intracraneal activa\n- ❌ Sedación profunda\n- ❌ Esfuerzo respiratorio ausente o muy débil\n- ❌ Oxigenación inadecuada a pesar de optimización"
     },
     {
+      "id": "metodos-sbt",
       "type": "text",
       "order": 3,
+      "title": "Métodos de SBT",
+      "summary": "Métodos de SBT: T-piece (evalúa capacidad completamente espontánea, sin monitoreo automático), CPAP 5 cmH₂O (monitoreo continuo, menos estresante) y PSV baja 5-7 cmH₂O (compensa resistencia del tubo, monitoreo continuo). CPAP 5 o PSV 5-7 son preferidos por permitir monitoreo continuo y facilitar detección temprana de problemas.",
+      "estimatedTime": 8,
       "content": "# Métodos de SBT\n\n## Método 1: T-Piece (T-Connector)\n\n**Configuración**:\n- Desconectar del ventilador\n- Conectar a fuente de oxígeno humidificado\n- FiO₂ igual o ligeramente mayor que en ventilador\n- Sin PEEP ni asistencia de presión\n\n**Ventajas**:\n- Evalúa capacidad completamente espontánea\n- Sin interferencia del ventilador\n- Simula condición post-extubación\n\n**Desventajas**:\n- Sin monitoreo de parámetros del ventilador\n- Requiere monitoreo manual\n- Puede ser más estresante para el paciente\n\n**Uso**:\n- Método tradicional\n- Ampliamente usado\n- Requiere monitoreo cercano\n\n## Método 2: CPAP 5 cmH₂O\n\n**Configuración**:\n- Modo CPAP\n- PEEP 5 cmH₂O\n- FiO₂ igual que en ventilador\n- Sin asistencia de presión\n\n**Ventajas**:\n- Monitoreo continuo de parámetros\n- Menos estresante que T-piece\n- Mantiene PEEP baja\n\n**Desventajas**:\n- Requiere circuito del ventilador\n- Puede tener pequeña asistencia residual\n\n**Uso**:\n- Método común\n- Fácil de implementar\n- Permite monitoreo continuo\n\n## Método 3: PSV Baja (5-7 cmH₂O)\n\n**Configuración**:\n- Modo PSV\n- Presión de soporte 5-7 cmH₂O\n- PEEP 5 cmH₂O\n- FiO₂ igual que en ventilador\n\n**Ventajas**:\n- Compensa resistencia del tubo endotraqueal\n- Monitoreo continuo\n- Menos trabajo respiratorio que T-piece\n\n**Desventajas**:\n- Proporciona pequeña asistencia\n- Puede sobreestimar capacidad\n\n**Uso**:\n- Útil en pacientes con trabajo respiratorio aumentado\n- Puede ser más cómodo\n\n## Comparación de Métodos\n\n| Método | Ventajas | Desventajas | Uso Recomendado |\n|--------|----------|-------------|-----------------|\n| T-piece | Evalúa capacidad completa, sin asistencia | Sin monitoreo automático | Pacientes estables, monitoreo cercano |\n| CPAP 5 | Monitoreo continuo, menos estresante | Requiere circuito | Método común, fácil implementación |\n| PSV 5-7 | Compensa resistencia del tubo | Pequeña asistencia | Pacientes con trabajo respiratorio aumentado |\n\n## Recomendación\n\n**CPAP 5 cmH₂O o PSV 5-7 cmH₂O** son preferidos porque:\n- Permiten monitoreo continuo\n- Son menos estresantes\n- Facilitan detección temprana de problemas"
     },
     {
+      "id": "protocolo-sbt",
       "type": "text",
       "order": 4,
+      "title": "Algoritmo de Ajustes",
+      "summary": "Protocolo de SBT: duración 30-120 minutos (típicamente 30-60), monitoreo continuo de SpO₂, frecuencia respiratoria, frecuencia cardíaca, presión arterial, signos de esfuerzo y fatiga. Criterios de éxito: SpO₂ ≥ 88-92%, frecuencia respiratoria 12-35/min, frecuencia cardíaca < 120/min, presión arterial estable, pH ≥ 7.25. Criterios de fracaso: SpO₂ < 88%, frecuencia respiratoria > 35/min, inestabilidad hemodinámica, signos de fatiga.",
+      "estimatedTime": 10,
       "content": "# Protocolo de SBT\n\n## Duración del SBT\n\n### Duración Recomendada\n\n- **30-120 minutos** (típicamente 30-60 minutos)\n- **Inicio**: 30 minutos si paciente estable\n- **Extensión**: Hasta 120 minutos si tolera bien\n\n### Monitoreo Durante SBT\n\n**Continuo**:\n- SpO₂, frecuencia respiratoria, frecuencia cardíaca, presión arterial\n- Signos de esfuerzo respiratorio\n- Signos de fatiga\n- Confort del paciente\n\n**Cada 15-30 minutos**:\n- Evaluar parámetros\n- Detectar signos tempranos de fracaso\n\n## Criterios de Éxito del SBT\n\n### Criterios Objetivos\n\n- ✅ **SpO₂**: ≥ 88-92% (mantiene oxigenación)\n- ✅ **Frecuencia respiratoria**: 12-35/min (sin taquipnea excesiva)\n- ✅ **Frecuencia cardíaca**: < 120/min o sin cambios significativos\n- ✅ **Presión arterial**: Estable, sin hipotensión\n- ✅ **pH**: Mantiene ≥ 7.25 (si se miden gases)\n- ✅ **Signos de esfuerzo**: Adecuados, sin fatiga\n\n### Criterios Subjetivos\n\n- ✅ **Confort**: Paciente cómodo o mínimamente incómodo\n- ✅ **Estado mental**: Sin deterioro significativo\n- ✅ **Signos de fatiga**: Ausentes o mínimos\n\n## Criterios de Fracaso del SBT\n\n### Criterios Objetivos (Detener SBT si):\n\n- ❌ **SpO₂**: < 88% a pesar de FiO₂ alta\n- ❌ **Frecuencia respiratoria**: > 35/min o < 8/min\n- ❌ **Frecuencia cardíaca**: > 140/min o cambios > 20%\n- ❌ **Presión arterial**: Hipotensión o cambios > 20%\n- ❌ **pH**: < 7.25 (si se miden gases)\n- ❌ **Signos de esfuerzo excesivo**: Uso de músculos accesorios, paradoja abdominal\n\n### Criterios Subjetivos (Detener SBT si):\n\n- ❌ **Angustia respiratoria**: Significativa\n- ❌ **Dolor**: Severo\n- ❌ **Somnolencia**: Excesiva\n- ❌ **Sudoración**: Profusa\n- ❌ **Ansiedad**: Severa\n\n## Algoritmo de SBT\n\n```\nINICIO\n  ↓\n¿Cumple criterios de preparación?\n  ├─ NO → Continuar VM, re-evaluar en 24 horas\n  └─ SÍ → Continuar\n  ↓\nIniciar SBT (CPAP 5 o PSV 5-7)\n  ↓\nMonitoreo continuo (30-120 min)\n  ↓\n¿Criterios de fracaso presentes?\n  ├─ SÍ → Detener SBT, reiniciar VM\n  │        Evaluar causa de fracaso\n  │        Optimizar antes de próximo SBT\n  └─ NO → Continuar\n  ↓\n¿SBT completado exitosamente (30-120 min)?\n  ├─ NO → Continuar monitoreo\n  └─ SÍ → Evaluar candidatura para extubación\n  ↓\n¿Candidato para extubación?\n  ├─ NO → Continuar VM, re-evaluar\n  └─ SÍ → Proceder con extubación\n  ↓\nFIN\n```"
     },
     {
+      "id": "monitorizacion-sbt",
       "type": "text",
       "order": 5,
+      "title": "Monitorización/Curvas/Alarmas",
+      "summary": "Monitorización durante SBT: parámetros ventilatorios (frecuencia respiratoria, volumen tidal, patrón respiratorio), oxigenación (SpO₂ continuo), hemodinamia (presión arterial, frecuencia cardíaca), confort (nivel de comodidad, signos de angustia). Manejo después del SBT: si exitoso, evaluar candidatura para extubación; si falla, detener SBT, evaluar causa, optimizar y re-evaluar en 24 horas.",
+      "estimatedTime": 8,
       "content": "# Manejo Durante y Después del SBT\n\n## Durante el SBT\n\n### Monitoreo Continuo\n\n1. **Parámetros ventilatorios**:\n   - Frecuencia respiratoria\n   - Volumen tidal espontáneo\n   - Patrón respiratorio\n   - Signos de esfuerzo\n\n2. **Oxigenación**:\n   - SpO₂ continuo\n   - Evaluar necesidad de ajustar FiO₂\n\n3. **Hemodinamia**:\n   - Presión arterial\n   - Frecuencia cardíaca\n   - Signos de inestabilidad\n\n4. **Confort**:\n   - Evaluar nivel de comodidad\n   - Detectar signos de angustia\n   - Monitorear estado mental\n\n### Intervenciones Durante SBT\n\n**Si SpO₂ disminuye ligeramente**:\n- Aumentar FiO₂ ligeramente\n- Continuar monitoreo\n- Evaluar si es aceptable\n\n**Si hay signos tempranos de fatiga**:\n- Evaluar si es transitorio\n- Monitorear más de cerca\n- Considerar detener si empeora\n\n**Si hay inestabilidad hemodinámica leve**:\n- Evaluar si es transitoria\n- Monitorear continuamente\n- Detener si es significativa\n\n## Después del SBT\n\n### Si el SBT es Exitoso\n\n1. **Evaluar candidatura para extubación**:\n   - Revisar criterios de extubación\n   - Evaluar capacidad de protección de vía aérea\n   - Considerar factores de riesgo\n\n2. **Preparar para extubación**:\n   - Asegurar equipo necesario\n   - Preparar medicamentos si necesario\n   - Informar al equipo\n\n3. **Proceder con extubación** si es apropiado\n\n### Si el SBT Falla\n\n1. **Detener SBT inmediatamente**:\n   - Reiniciar ventilación mecánica\n   - Usar configuración previa o optimizada\n\n2. **Evaluar causa de fracaso**:\n   - ¿Oxigenación inadecuada?\n   - ¿Ventilación inadecuada?\n   - ¿Fatiga muscular?\n   - ¿Inestabilidad hemodinámica?\n   - ¿Factores reversibles?\n\n3. **Optimizar antes de próximo SBT**:\n   - Tratar causas reversibles\n   - Optimizar función respiratoria\n   - Optimizar hemodinamia\n   - Rehabilitación si es necesario\n\n4. **Re-evaluar en 24 horas**:\n   - No intentar SBT inmediatamente\n   - Dar tiempo para optimización\n   - Re-evaluar criterios de preparación"
     },
     {
+      "id": "caso-practico-sbt",
       "type": "text",
       "order": 6,
+      "title": "Caso Práctico",
+      "summary": "Frecuencia de SBT: realizar SBT diariamente cuando el paciente cumple criterios de preparación. Ventajas: facilita destete temprano, reduce días de VM, evalúa progreso, optimiza recursos. No realizar SBT si: paciente no cumple criterios, SBT falló recientemente (esperar 24 horas), inestabilidad aguda, procedimientos recientes. Estrategia: evaluar diariamente, realizar SBT si cumple criterios, monitorear cuidadosamente, optimizar si falla, extubar si exitoso.",
+      "estimatedTime": 5,
       "content": "# Frecuencia de SBT\n\n## Recomendación\n\n**Realizar SBT diariamente** cuando el paciente cumpla criterios de preparación.\n\n## Ventajas de SBT Diario\n\n- **Facilita destete temprano**: Identifica pacientes listos para extubación\n- **Reduce días de VM**: Destete más rápido cuando es apropiado\n- **Evalúa progreso**: Monitorea mejoría del paciente\n- **Optimiza recursos**: Uso eficiente de recursos de UCI\n\n## Cuándo NO Realizar SBT\n\n- **Paciente no cumple criterios de preparación**: Esperar hasta que se cumplan\n- **SBT falló recientemente**: Esperar 24 horas antes de re-intentar\n- **Inestabilidad aguda**: No realizar durante crisis aguda\n- **Procedimientos recientes**: Esperar según necesidad\n\n## Estrategia de SBT\n\n1. **Evaluar diariamente**: Revisar criterios de preparación\n2. **Realizar SBT si cumple criterios**: Iniciar SBT apropiado\n3. **Monitorear cuidadosamente**: Detectar fracaso temprano\n4. **Optimizar si falla**: Tratar causas, re-evaluar en 24 horas\n5. **Extubar si exitoso**: Proceder con extubación si es apropiado"
     },
     {
@@ -79,7 +103,8 @@
   "metadata": {
     "updatedAt": "2025-11-08T03:42:27.694Z",
     "description": "Descripción pendiente de curaduría (metadatos).",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "allowEmpty": false
   },
   "id": "protocolo-de-trial-de-respiracion-espontanea-sbt",
   "quiz": [],

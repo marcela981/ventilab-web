@@ -8,10 +8,12 @@ import {
   Fade
 } from '@mui/material';
 import ModuleCard from './ModuleCard';
+import LessonCard from './LessonCard';
 // Importar estilos CSS Module para grid y cards del currículo
 import styles from '@/styles/curriculum.module.css';
 import useCurriculumProgress from '@/hooks/useCurriculumProgress';
 import { useLearningProgress } from '@/contexts/LearningProgressContext';
+import { buildLessonsArray } from './lessonHelpers';
 
 /**
  * ModuleGrid - Componente unificado y optimizado para renderizar grid de módulos
@@ -46,7 +48,9 @@ import { useLearningProgress } from '@/contexts/LearningProgressContext';
  * @param {string} sortOrder - Orden asc o desc (opcional)
  * @param {boolean} enableAnimations - Habilitar animaciones fade-in (default: true)
  * @param {string} emptyMessage - Mensaje cuando no hay módulos (opcional)
- * @returns {JSX.Element} Grid de módulos optimizado
+ * @param {string} mode - Modo de renderizado: 'modules' (default) o 'lessons'
+ * @param {string} levelId - ID del nivel para filtrar lecciones cuando mode='lessons' (opcional)
+ * @returns {JSX.Element} Grid de módulos o lecciones optimizado
  */
 const ModuleGrid = ({
   modules = [],
@@ -64,16 +68,27 @@ const ModuleGrid = ({
   sortBy,
   sortOrder = 'asc',
   enableAnimations = true,
-  emptyMessage = 'No hay módulos disponibles'
+  emptyMessage = 'No hay módulos disponibles',
+  mode = 'modules', // 'modules' o 'lessons'
+  levelId = null // Para filtrar lecciones por nivel cuando mode='lessons'
 }) => {
   const { loadModuleProgress, progressByModule } = useLearningProgress();
   
-  // Precalcular progreso agregado para todos los módulos de una vez
-  const progressByModuleFromHook = useCurriculumProgress(modules);
+  // Si mode === 'lessons', construir arreglo plano de lecciones
+  const lessons = useMemo(() => {
+    if (mode === 'lessons') {
+      return buildLessonsArray(levelId);
+    }
+    return [];
+  }, [mode, levelId]);
+  
+  // Precalcular progreso agregado para todos los módulos de una vez (solo si mode === 'modules')
+  const progressByModuleFromHook = useCurriculumProgress(mode === 'modules' ? modules : []);
   
   // Cargar progreso de todos los módulos al montar (con throttling para evitar rate limiting)
+  // Solo si mode === 'modules'
   useEffect(() => {
-    if (modules.length === 0) return;
+    if (mode !== 'modules' || modules.length === 0) return;
     
     // Cargar progreso de módulos en lotes para evitar rate limiting
     const loadAllProgress = async () => {
@@ -104,27 +119,33 @@ const ModuleGrid = ({
     };
     
     loadAllProgress();
-  }, [modules, loadModuleProgress]);
+  }, [modules, loadModuleProgress, mode]);
   
   /**
-   * Ordena módulos según el campo y orden especificados
-   * @param {Array} modulesToSort - Array de módulos a ordenar
+   * Ordena módulos o lecciones según el campo y orden especificados
    * @returns {Array} Array ordenado
    */
-  const sortedModules = useMemo(() => {
-    if (!sortBy || modules.length === 0) return modules;
+  const sortedItems = useMemo(() => {
+    const itemsToSort = mode === 'lessons' ? lessons : modules;
+    
+    if (!sortBy || itemsToSort.length === 0) return itemsToSort;
 
-    const sorted = [...modules].sort((a, b) => {
+    const sorted = [...itemsToSort].sort((a, b) => {
       let aValue, bValue;
 
       switch (sortBy) {
         case 'progress':
-          // Usar progreso precalculado si está disponible, sino usar la función legacy
-          aValue = progressByModuleFromHook[a.id]?.percentInt ?? (calculateModuleProgress ? calculateModuleProgress(a.id) : 0);
-          bValue = progressByModuleFromHook[b.id]?.percentInt ?? (calculateModuleProgress ? calculateModuleProgress(b.id) : 0);
+          if (mode === 'modules') {
+            // Usar progreso precalculado si está disponible, sino usar la función legacy
+            aValue = progressByModuleFromHook[a.id]?.percentInt ?? (calculateModuleProgress ? calculateModuleProgress(a.id) : 0);
+            bValue = progressByModuleFromHook[b.id]?.percentInt ?? (calculateModuleProgress ? calculateModuleProgress(b.id) : 0);
+          } else {
+            // Para lecciones, el progreso se calcula en LessonCard
+            return 0;
+          }
           break;
         case 'difficulty':
-          const difficultyOrder = { básico: 1, intermedio: 2, avanzado: 3 };
+          const difficultyOrder = { básico: 1, intermedio: 2, avanzado: 3, basic: 1, intermediate: 2, advanced: 3 };
           aValue = difficultyOrder[a.difficulty?.toLowerCase()] || 0;
           bValue = difficultyOrder[b.difficulty?.toLowerCase()] || 0;
           break;
@@ -133,8 +154,8 @@ const ModuleGrid = ({
           bValue = b.title?.toLowerCase() || '';
           break;
         case 'duration':
-          aValue = a.duration || 0;
-          bValue = b.duration || 0;
+          aValue = mode === 'modules' ? (a.duration || 0) : (a.estimatedTime || 0);
+          bValue = mode === 'modules' ? (b.duration || 0) : (b.estimatedTime || 0);
           break;
         default:
           return 0;
@@ -153,7 +174,7 @@ const ModuleGrid = ({
     });
 
     return sorted;
-  }, [modules, sortBy, sortOrder, calculateModuleProgress, progressByModuleFromHook]);
+  }, [mode, modules, lessons, sortBy, sortOrder, calculateModuleProgress, progressByModuleFromHook]);
 
   /**
    * Handler memoizado para clicks en módulos
@@ -161,6 +182,17 @@ const ModuleGrid = ({
   const handleModuleClick = useCallback((moduleId) => {
     if (onModuleClick) {
       onModuleClick(moduleId);
+    }
+  }, [onModuleClick]);
+
+  /**
+   * Handler memoizado para clicks en lecciones (acepta moduleId y lessonId)
+   */
+  const handleLessonClick = useCallback((moduleId, lessonId) => {
+    // Si onModuleClick está definido, llamarlo con ambos parámetros
+    // Esto debería ser handleSectionClick de TeachingModule.jsx
+    if (onModuleClick) {
+      onModuleClick(moduleId, lessonId);
     }
   }, [onModuleClick]);
 
@@ -187,7 +219,14 @@ const ModuleGrid = ({
   const getButtonIconFn = getButtonIcon || (() => null);
 
   // Renderizar estado vacío elegante con CTA
-  if (sortedModules.length === 0) {
+  if (sortedItems.length === 0) {
+    const emptyTitle = mode === 'lessons' 
+      ? 'No hay lecciones disponibles todavía'
+      : 'No hay módulos disponibles todavía';
+    const emptyDescription = mode === 'lessons'
+      ? 'Las lecciones se habilitarán próximamente. Vuelve pronto para comenzar tu formación.'
+      : (emptyMessage || 'Los módulos de aprendizaje se habilitarán próximamente. Vuelve pronto para comenzar tu formación.');
+    
     return (
       <Box
         sx={{
@@ -199,7 +238,7 @@ const ModuleGrid = ({
         }}
         role="status"
         aria-live="polite"
-        aria-label="No hay módulos disponibles"
+        aria-label={mode === 'lessons' ? 'No hay lecciones disponibles' : 'No hay módulos disponibles'}
       >
         <Typography
           variant="h6"
@@ -214,7 +253,7 @@ const ModuleGrid = ({
             },
           }}
         >
-          No hay módulos disponibles todavía
+          {emptyTitle}
         </Typography>
         <Typography
           variant="body2"
@@ -226,91 +265,146 @@ const ModuleGrid = ({
             lineHeight: 1.6
           }}
         >
-          {emptyMessage || 'Los módulos de aprendizaje se habilitarán próximamente. Vuelve pronto para comenzar tu formación.'}
+          {emptyDescription}
         </Typography>
         {/* CTA button could be added here if needed */}
       </Box>
     );
   }
 
-  // Componente de card a usar (custom o por defecto)
-  const CardComponent = CustomModuleCard || ModuleCard;
+  // Componente de card a usar según el modo
+  const CardComponent = mode === 'lessons' 
+    ? LessonCard 
+    : (CustomModuleCard || ModuleCard);
 
-  // Calcular módulos completados (progreso = 100%)
+  // Calcular módulos completados (progreso = 100%) - solo para modo modules
   const completedModules = useMemo(() => {
+    if (mode !== 'modules') return [];
     return modules
       .filter(module => {
         const progress = progressByModuleFromHook[module.id];
         return progress?.percentInt === 100;
       })
       .map(module => module.id);
-  }, [modules, progressByModuleFromHook]);
+  }, [modules, progressByModuleFromHook, mode]);
 
   return (
     <div
       className={styles.grid}
       role="list"
-      aria-label="Lista de módulos de aprendizaje"
+      aria-label={mode === 'lessons' ? 'Lista de lecciones de aprendizaje' : 'Lista de módulos de aprendizaje'}
     >
-      {sortedModules.map((module, index) => {
-        // Usar progreso precalculado del hook
-        const precalculatedProgress = progressByModuleFromHook[module.id];
-        
-        // Mantener compatibilidad con función legacy si no hay progreso del hook
-        const moduleProgress = precalculatedProgress?.percentInt ?? (
-          calculateModuleProgress
-            ? calculateModuleProgress(module.id)
-            : 0
-        );
-        
-        const available = isModuleAvailable
-          ? isModuleAvailable(module.id)
-          : true;
-        const isFavorite = favoriteModules.has(module.id);
+      {sortedItems.map((item, index) => {
+        if (mode === 'lessons') {
+          // Renderizar LessonCard
+          const lesson = item;
+          // Verificar disponibilidad usando isModuleAvailable si está disponible
+          // Por ahora, todas las lecciones están disponibles (se puede mejorar con prerequisitos)
+          const available = isModuleAvailable
+            ? isModuleAvailable(lesson.moduleId)
+            : true;
+          
+          // Obtener allowEmpty del lesson
+          const allowEmpty = lesson.allowEmpty === true;
+          
+          const cardContent = (
+            <CardComponent
+              lesson={lesson}
+              isAvailable={available && !allowEmpty}
+              allowEmpty={allowEmpty}
+              levelColor={levelColor}
+              onLessonClick={handleLessonClick}
+            />
+          );
 
-        const cardContent = (
-          <CardComponent
-            module={module}
-            moduleProgress={moduleProgress} // DEPRECATED: mantener por compatibilidad
-            isAvailable={available}
-            isFavorite={isFavorite}
-            onModuleClick={handleModuleClick}
-            onToggleFavorite={handleToggleFavorite}
-            onLessonClick={onModuleClick} // Reutilizar handleModuleClick para lecciones
-            getStatusIcon={getStatusIconFn}
-            getButtonText={getButtonTextFn}
-            getButtonIcon={getButtonIconFn}
-            levelColor={levelColor}
-            completedModules={completedModules}
-            precalculatedProgress={precalculatedProgress} // Pasar progreso agregado completo
-          />
-        );
+          // Renderizar con o sin animación
+          const wrappedContent = enableAnimations ? (
+            <Fade
+              in={true}
+              timeout={300 + index * 50}
+              style={{ transitionDelay: `${index * 50}ms` }}
+            >
+              <div>
+                {cardContent}
+              </div>
+            </Fade>
+          ) : (
+            cardContent
+          );
 
-        // Renderizar con o sin animación
-        // Nota: Fade necesita un wrapper, pero lo mantenemos mínimo para no romper el grid
-        const wrappedContent = enableAnimations ? (
-          <Fade
-            in={true}
-            timeout={300 + index * 50}
-            style={{ transitionDelay: `${index * 50}ms` }}
-          >
-            <div>
-              {cardContent}
+          return (
+            <div
+              key={`${lesson.moduleId}-${lesson.lessonId}`}
+              role="listitem"
+              aria-label={`Lección: ${lesson.title}`}
+            >
+              {wrappedContent}
             </div>
-          </Fade>
-        ) : (
-          cardContent
-        );
+          );
+        } else {
+          // Renderizar ModuleCard (código original)
+          const module = item;
+          // Usar progreso precalculado del hook
+          const precalculatedProgress = progressByModuleFromHook[module.id];
+          
+          // Mantener compatibilidad con función legacy si no hay progreso del hook
+          const moduleProgress = precalculatedProgress?.percentInt ?? (
+            calculateModuleProgress
+              ? calculateModuleProgress(module.id)
+              : 0
+          );
+          
+          const available = isModuleAvailable
+            ? isModuleAvailable(module.id)
+            : true;
+          const isFavorite = favoriteModules && typeof favoriteModules.has === 'function' 
+            ? favoriteModules.has(module.id) 
+            : false;
 
-        return (
-          <div
-            key={module.id}
-            role="listitem"
-            aria-label={`Módulo: ${module.title}`}
-          >
-            {wrappedContent}
-          </div>
-        );
+          const cardContent = (
+            <CardComponent
+              module={module}
+              moduleProgress={moduleProgress} // DEPRECATED: mantener por compatibilidad
+              isAvailable={available}
+              isFavorite={isFavorite}
+              onModuleClick={handleModuleClick}
+              onToggleFavorite={handleToggleFavorite}
+              onLessonClick={onModuleClick} // Reutilizar handleModuleClick para lecciones
+              getStatusIcon={getStatusIconFn}
+              getButtonText={getButtonTextFn}
+              getButtonIcon={getButtonIconFn}
+              levelColor={levelColor}
+              completedModules={completedModules}
+              precalculatedProgress={precalculatedProgress} // Pasar progreso agregado completo
+            />
+          );
+
+          // Renderizar con o sin animación
+          // Nota: Fade necesita un wrapper, pero lo mantenemos mínimo para no romper el grid
+          const wrappedContent = enableAnimations ? (
+            <Fade
+              in={true}
+              timeout={300 + index * 50}
+              style={{ transitionDelay: `${index * 50}ms` }}
+            >
+              <div>
+                {cardContent}
+              </div>
+            </Fade>
+          ) : (
+            cardContent
+          );
+
+          return (
+            <div
+              key={module.id}
+              role="listitem"
+              aria-label={`Módulo: ${module.title}`}
+            >
+              {wrappedContent}
+            </div>
+          );
+        }
       })}
     </div>
   );
@@ -319,17 +413,31 @@ const ModuleGrid = ({
 // Optimización con React.memo
 const MemoizedModuleGrid = React.memo(ModuleGrid, (prevProps, nextProps) => {
   // Comparación personalizada para optimización
-  if (prevProps.modules.length !== nextProps.modules.length) return false;
+  if (prevProps.mode !== nextProps.mode) return false;
+  if (prevProps.levelId !== nextProps.levelId) return false;
+  
+  // Solo comparar módulos si estamos en modo 'modules'
+  if (prevProps.mode === 'modules') {
+    if (prevProps.modules.length !== nextProps.modules.length) return false;
+  }
+  
   if (prevProps.sortBy !== nextProps.sortBy) return false;
   if (prevProps.sortOrder !== nextProps.sortOrder) return false;
   if (prevProps.enableAnimations !== nextProps.enableAnimations) return false;
   if (prevProps.levelColor !== nextProps.levelColor) return false;
   
-  // Comparar Sets de favoritos
-  if (prevProps.favoriteModules.size !== nextProps.favoriteModules.size) return false;
-  const prevFavs = Array.from(prevProps.favoriteModules);
-  const nextFavs = Array.from(nextProps.favoriteModules);
-  if (!prevFavs.every((id, i) => id === nextFavs[i])) return false;
+  // Comparar Sets de favoritos (solo si están definidos)
+  const prevFavModules = prevProps.favoriteModules;
+  const nextFavModules = nextProps.favoriteModules;
+  if (prevFavModules && nextFavModules) {
+    if (prevFavModules.size !== nextFavModules.size) return false;
+    const prevFavs = Array.from(prevFavModules);
+    const nextFavs = Array.from(nextFavModules);
+    if (!prevFavs.every((id, i) => id === nextFavs[i])) return false;
+  } else if (prevFavModules !== nextFavModules) {
+    // Si uno está definido y el otro no, son diferentes
+    return false;
+  }
 
   // Si las funciones son las mismas referencias, no re-renderizar
   if (prevProps.calculateModuleProgress !== nextProps.calculateModuleProgress) return false;
@@ -386,7 +494,11 @@ MemoizedModuleGrid.propTypes = {
   /** Habilitar animaciones fade-in (default: true) */
   enableAnimations: PropTypes.bool,
   /** Mensaje a mostrar cuando no hay módulos */
-  emptyMessage: PropTypes.string
+  emptyMessage: PropTypes.string,
+  /** Modo de renderizado: 'modules' (default) o 'lessons' */
+  mode: PropTypes.oneOf(['modules', 'lessons']),
+  /** ID del nivel para filtrar lecciones cuando mode='lessons' (opcional) */
+  levelId: PropTypes.string
 };
 
 // DisplayName para React DevTools

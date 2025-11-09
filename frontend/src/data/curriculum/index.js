@@ -16,13 +16,18 @@ import { curriculumData } from '../curriculumData.js';
 // Import metadata to determine strategy
 import curriculumMeta from './meta.js';
 
+// Import module03Content to count virtual lessons
+import module03Content from '../lessons/module-03-configuration/index.js';
+
 const metadata = curriculumMeta || { strategy: 'data-driven', declaredTotal: null };
 
 // Only import placeholder modules if strategy is "roadmap" (not "data-driven")
-// For "data-driven" strategy, we only show real modules
+// For "data-driven" strategy, we only show real modules and ignore modules.generated
 // Note: Placeholder modules are not loaded for data-driven strategy
 let generatedModulesData = { modules: [] };
 
+// For data-driven strategy, we explicitly ignore modules.generated
+// This ensures that only real modules from curriculumData are used
 // Lazy load placeholder modules only when needed (for roadmap strategy)
 // This is done inside getAllModules() to avoid top-level await issues
 
@@ -58,11 +63,13 @@ export function getAllModules() {
   }));
   
   // Only include placeholders if strategy is "roadmap"
-  // For "data-driven" strategy, only return real modules
-  // Note: For roadmap strategy, placeholder modules should be loaded asynchronously
-  // For now, we only return base modules since strategy is "data-driven"
-  // If roadmap strategy is needed, implement async loading in the component that uses this
-  const allModules = normalizedBaseModules;
+  // For "data-driven" strategy, only return real modules and ignore modules.generated
+  // This ensures that modules.generated is completely ignored when strategy is 'data-driven'
+  let allModules = normalizedBaseModules;
+  
+  // For roadmap strategy: would include placeholder modules (async loading needed)
+  // Note: Currently not implemented, but structure is ready for it
+  // For data-driven strategy: modules.generated is completely ignored (allModules = normalizedBaseModules)
   
   // Sort by level and order
   const levelOrder = { beginner: 1, intermediate: 2, advanced: 3 };
@@ -150,6 +157,9 @@ export function getModuleById(moduleId) {
 
 /**
  * Get curriculum metadata with computed totals
+ * Computes totals exclusively from selectors:
+ * - Modules: real modules from getAllModules() (excludes placeholders when strategy is data-driven)
+ * - Lessons: real module lessons + virtual lessons from M03 (flatten)
  * @returns {Object} Metadata object with computed totals
  */
 export function getCurriculumMetadata() {
@@ -157,10 +167,53 @@ export function getCurriculumMetadata() {
   const placeholderModules = getPlaceholderModules();
   const availableModules = allModules.filter(m => !m.isPlaceholder);
   
-  // Count lessons
-  const totalLessons = allModules.reduce((acc, module) => {
+  // Count lessons from real modules
+  const moduleLessons = allModules.reduce((acc, module) => {
     return acc + (module.lessons?.length || 0);
   }, 0);
+  
+  // Count virtual lessons from M03 (module-03-configuration)
+  // These are flattened from the category-based structure
+  // Count lessons from each category, excluding placeholders
+  let virtualLessonsCount = 0;
+  let virtualLessonsTime = 0;
+  
+  if (module03Content) {
+    // Count real lessons from pathologyProtocols
+    if (module03Content.pathologyProtocols) {
+      Object.values(module03Content.pathologyProtocols).forEach(lesson => {
+        if (lesson && lesson.title) {
+          virtualLessonsCount++;
+          virtualLessonsTime += lesson.estimatedTime || 0;
+        }
+      });
+    }
+    
+    // Count real lessons from protectiveStrategies
+    if (module03Content.protectiveStrategies) {
+      Object.values(module03Content.protectiveStrategies).forEach(lesson => {
+        if (lesson && lesson.title) {
+          virtualLessonsCount++;
+          virtualLessonsTime += lesson.estimatedTime || 0;
+        }
+      });
+    }
+    
+    // Count real lessons from weaningContent
+    if (module03Content.weaningContent) {
+      Object.values(module03Content.weaningContent).forEach(lesson => {
+        if (lesson && lesson.title) {
+          virtualLessonsCount++;
+          virtualLessonsTime += lesson.estimatedTime || 0;
+        }
+      });
+    }
+    
+    // Note: troubleshootingGuides and checklistProtocols are placeholders, so we exclude them
+  }
+  
+  // Total lessons = module lessons + virtual lessons from M03
+  const totalLessons = moduleLessons + virtualLessonsCount;
   
   // Calculate estimated time (only for available modules)
   const estimatedTimes = availableModules
@@ -172,6 +225,12 @@ export function getCurriculumMetadata() {
       return 0;
     })
     .filter(t => t > 0);
+  
+  // Add estimated time from virtual lessons (M03)
+  const virtualLessonsHours = Math.ceil(virtualLessonsTime / 60);
+  if (virtualLessonsHours > 0) {
+    estimatedTimes.push(virtualLessonsHours);
+  }
   
   const totalHours = estimatedTimes.reduce((acc, hours) => acc + hours, 0);
   const estimatedTotalTime = totalHours > 0 
@@ -210,6 +269,53 @@ export function getLevelsWithComputedTotals() {
   });
 }
 
+/**
+ * Get level progress based on completed lessons
+ * Uses filtered modules (excludes duplicates like respiratory-physiology)
+ * @param {Array<string>} completedLessons - Array of completed lesson IDs in format "moduleId-lessonId"
+ * @returns {Object} Object with progress by level (total, completed, percentage)
+ */
+export function getLevelProgress(completedLessons) {
+  const progress = {};
+  const levels = curriculumData.levels || [];
+  
+  // Convert completedLessons Set/Array to Set for efficient lookup
+  const completedLessonsSet = new Set(completedLessons);
+  
+  levels.forEach(level => {
+    // Use filtered modules (excludes duplicates)
+    const modulesInLevel = getModulesByLevel(level.id);
+    
+    // Count completed modules: a module is completed if all its lessons are completed
+    let completedModules = 0;
+    
+    modulesInLevel.forEach(module => {
+      if (!module.lessons || module.lessons.length === 0) {
+        return;
+      }
+      
+      // Check if all lessons in this module are completed
+      const allLessonsCompleted = module.lessons.every(lesson => 
+        completedLessonsSet.has(`${module.id}-${lesson.id}`)
+      );
+      
+      if (allLessonsCompleted) {
+        completedModules++;
+      }
+    });
+    
+    progress[level.id] = {
+      total: modulesInLevel.length,
+      completed: completedModules,
+      percentage: modulesInLevel.length > 0 
+        ? (completedModules / modulesInLevel.length) * 100 
+        : 0
+    };
+  });
+  
+  return progress;
+}
+
 // Export default: modules object for backward compatibility
 export default {
   modules: getModulesObject(),
@@ -223,4 +329,5 @@ export default {
   getModuleById,
   getCurriculumMetadata,
   getLevelsWithComputedTotals,
+  getLevelProgress,
 };

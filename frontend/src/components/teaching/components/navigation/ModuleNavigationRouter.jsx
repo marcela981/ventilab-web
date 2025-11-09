@@ -27,6 +27,7 @@ import ModuleCategoryNav from './ModuleCategoryNav';
 import { TeachingModuleProvider } from '../../contexts/TeachingModuleContext';
 import LevelStepper from '../curriculum/LevelStepper';
 import ModuleInfoPanel from '../curriculum/ModuleInfoPanel';
+import { getModulesByLevel } from '../../../../data/curriculum/index.js';
 
 // Category icon mapping
 const CATEGORY_ICONS = {
@@ -163,14 +164,19 @@ const ModuleNavigationRouter = ({
 
   const handleCategoryChange = useCallback((categoryId) => {
     setCategory(categoryId);
-    router.push({
-      pathname: router.pathname,
-      query: { ...router.query, category: categoryId },
-    }, undefined, { shallow: true });
-  }, [router, setCategory]);
+    // Usar handleSectionClick centralizado para preservar moduleId y lessonId
+    // al cambiar de categoría
+    const currentLessonId = lessonIdFromQuery || activeLessonId;
+    if (moduleIdFromQuery) {
+      handleSectionClick(moduleIdFromQuery, currentLessonId || null, categoryId);
+    }
+  }, [setCategory, handleSectionClick, moduleIdFromQuery, lessonIdFromQuery, activeLessonId]);
 
   const handleLessonClick = useCallback((lessonId, categoryId) => {
-    handleSectionClick(moduleIdFromQuery, lessonId);
+    // Usar handleSectionClick centralizado para navegación
+    if (moduleIdFromQuery) {
+      handleSectionClick(moduleIdFromQuery, lessonId, categoryId || null);
+    }
     setLesson(lessonId, categoryId);
   }, [handleSectionClick, setLesson, moduleIdFromQuery]);
 
@@ -211,10 +217,7 @@ const ModuleNavigationRouter = ({
       <LevelStepper
         levels={levels}
         levelProgress={levelProgress}
-        getModulesByLevel={(levelId) => {
-          const { getModulesByLevel: getModules } = require('../../../../data/curriculumData');
-          return getModules(levelId);
-        }}
+        getModulesByLevel={getModulesByLevel}
         calculateModuleProgress={calculateModuleProgress}
         isModuleAvailable={isModuleAvailable}
         getModuleStatus={getModuleStatus}
@@ -222,6 +225,7 @@ const ModuleNavigationRouter = ({
         onSectionClick={handleSectionClick}
         favoriteModules={favoriteModules}
         onToggleFavorite={toggleFavorite}
+        renderMode="lessons" // Usar modo 'lessons' para mostrar cards por lección en niveles 1, 2, 3
       />
       <ModuleInfoPanel />
     </Box>

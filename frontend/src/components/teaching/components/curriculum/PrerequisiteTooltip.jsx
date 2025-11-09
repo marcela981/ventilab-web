@@ -1,5 +1,6 @@
 import React from 'react';
 import { Tooltip } from '@mui/material';
+import { curriculumData } from '../../../../data/curriculumData';
 
 /**
  * PrerequisiteTooltip - Componente accesible para mostrar información sobre prerrequisitos faltantes
@@ -8,7 +9,7 @@ import { Tooltip } from '@mui/material';
  * Se activa con hover y focus sobre el elemento hijo (típicamente un ícono de candado).
  * 
  * @param {Object} props - Props del componente
- * @param {string[]} [props.missing=[]] - Array de IDs o nombres de módulos prerrequisitos faltantes
+ * @param {string[]} [props.missing=[]] - Array de IDs de módulos prerrequisitos faltantes
  * @param {React.ReactNode} props.children - Elemento hijo sobre el cual se activa el tooltip
  * @param {'top'|'bottom'|'left'|'right'} [props.side='top'] - Posición del tooltip
  * @param {number} [props.maxWidth=280] - Ancho máximo del tooltip en píxeles
@@ -16,7 +17,7 @@ import { Tooltip } from '@mui/material';
  * 
  * @example
  * // Módulo bloqueado con prerrequisitos faltantes
- * <PrerequisiteTooltip missing={['module-1', 'module-2']} side="top">
+ * <PrerequisiteTooltip missing={['module-01-fundamentals', 'module-02-parameters']} side="top">
  *   <LockIcon />
  * </PrerequisiteTooltip>
  * 
@@ -38,8 +39,23 @@ const PrerequisiteTooltip = ({
       return 'Este módulo está disponible.';
     }
     
-    const missingList = missing.join(', ');
-    return `Para desbloquear este módulo, completa: ${missingList}`;
+    // Obtener títulos de módulos desde curriculumData
+    const missingTitles = missing
+      .map(moduleId => {
+        const module = curriculumData.modules?.[moduleId];
+        return module?.title || moduleId;
+      })
+      .filter(Boolean);
+    
+    if (missingTitles.length === 0) {
+      return 'Este módulo requiere completar módulos previos.';
+    }
+    
+    if (missingTitles.length === 1) {
+      return `Para desbloquear este módulo, completa: ${missingTitles[0]}`;
+    }
+    
+    return `Para desbloquear este módulo, completa los siguientes módulos: ${missingTitles.join(', ')}`;
   };
 
   return (

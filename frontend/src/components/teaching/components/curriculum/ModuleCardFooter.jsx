@@ -39,6 +39,7 @@ const ModuleCardFooter = ({
         variant={status === 'completed' ? 'outlined' : 'contained'}
         fullWidth
         disabled={!isAvailable}
+        aria-disabled={!isAvailable}
         onClick={(e) => {
           e.stopPropagation();
           if (isAvailable && onModuleClick) {

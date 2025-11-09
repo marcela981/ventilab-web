@@ -121,21 +121,20 @@ const Module03CurriculumView = ({
   }, [isModule03]);
 
   // Handle category change for Module 03
+  // Preserva moduleId y lessonId al cambiar de categoría
   const handleModule03CategoryChange = useCallback((categoryId) => {
     setCategory(categoryId);
-    // Update URL if needed
-    router.push({
-      pathname: router.pathname,
-      query: {
-        ...router.query,
-        category: categoryId,
-      },
-    }, undefined, { shallow: true });
-  }, [router, setCategory]);
+    // Usar handleSectionClick centralizado para preservar moduleId y lessonId
+    // Si hay un lessonId activo, mantenerlo; si no, solo cambiar la categoría
+    const currentLessonId = lessonIdFromQuery || activeLessonId;
+    handleSectionClick('module-03-configuration', currentLessonId || null, categoryId);
+  }, [setCategory, handleSectionClick, lessonIdFromQuery, activeLessonId]);
 
   // Handle lesson click for Module 03
+  // Usa handleSectionClick centralizado para navegación
   const handleModule03LessonClick = useCallback((lessonId, categoryId) => {
-    handleSectionClick('module-03-configuration', lessonId);
+    // Usar handleSectionClick centralizado que preserva moduleId y maneja category
+    handleSectionClick('module-03-configuration', lessonId, categoryId);
     setLesson(lessonId, categoryId);
   }, [handleSectionClick, setLesson]);
 

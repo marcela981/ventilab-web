@@ -9,7 +9,6 @@ import ModuleCardHeader from './ModuleCardHeader';
 import ModuleCardMeta from './ModuleCardMeta';
 import ModuleCardBody from './ModuleCardBody';
 import ModuleCardFooter from './ModuleCardFooter';
-import ModuleCardOverlay from './ModuleCardOverlay';
 import ComingSoonBadge from './ComingSoonBadge';
 import { isModuleComingSoon } from '../../../../data/curriculum/selectors.js';
 import styles from '@/styles/curriculum.module.css';
@@ -213,7 +212,7 @@ const ModuleCard = ({
           borderWidth: '1px',
           borderStyle: 'solid',
           opacity: !finalIsAvailable ? 0.6 : 1,
-          pointerEvents: !finalIsAvailable ? 'none' : 'auto',
+          pointerEvents: finalIsAvailable ? 'auto' : undefined, // No aplicar 'none' aquí para permitir tooltip
           transition: 'opacity 0.25s ease-in-out',
         }}
         onMouseEnter={() => {
@@ -226,7 +225,7 @@ const ModuleCard = ({
         {/* Contenido de la card */}
         <div
           style={{
-            pointerEvents: 'inherit',
+            pointerEvents: finalIsAvailable ? 'auto' : 'none', // Bloquear eventos en el contenido cuando está bloqueado
           }}
         >
           <ModuleCardHeader
@@ -239,6 +238,7 @@ const ModuleCard = ({
             isHovered={isHovered}
             onToggleFavorite={onToggleFavorite}
             completedAt={moduleProgressAggregate.completedAt}
+            missingPrerequisites={missingPrerequisites}
           />
           
           {/* Badge "En construcción" para módulos coming_soon */}
@@ -286,16 +286,12 @@ const ModuleCard = ({
             ) : (
               <CurriculumProgressBar
                 value={moduleProgressAggregate.percentInt}
-                label={`${moduleProgressAggregate.completedLessons}/${moduleProgressAggregate.totalLessons || (module?.lessons || []).length || 0}`}
+                completedLessons={moduleProgressAggregate.completedLessons}
+                totalLessons={moduleProgressAggregate.totalLessons || (module?.lessons || []).length || 0}
               />
             )}
           </div>
         </div>
-  
-        {/* Overlay para módulos bloqueados */}
-        {!finalIsAvailable && (
-          <ModuleCardOverlay missingPrerequisites={missingPrerequisites} />
-        )}
       </article>
       
       {/* Snackbar para errores de sincronización */}

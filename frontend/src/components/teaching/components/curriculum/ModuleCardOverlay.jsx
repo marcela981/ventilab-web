@@ -1,71 +1,39 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import ModuleStatusIcons from './ModuleStatusIcons';
-import PrerequisiteTooltip from './PrerequisiteTooltip';
 
 /**
- * Overlay para módulos bloqueados - muestra candado pero sin interacción
+ * Overlay para módulos bloqueados - bloqueador transparente para prevenir interacciones
+ * 
+ * Este overlay proporciona una capa adicional de protección contra clicks
+ * en módulos bloqueados. El icono Lock y el tooltip se muestran en el header.
  */
-const ModuleCardOverlay = ({ missingPrerequisites }) => {
+const ModuleCardOverlay = () => {
   return (
     <div
       data-block-overlay
       style={{
         position: 'absolute',
         inset: 0,
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'flex-end',
-        padding: '8px',
-        pointerEvents: 'none',
+        pointerEvents: 'auto', // Permitir eventos para bloquear clicks en el contenido
         background: 'transparent',
         zIndex: 10,
+        cursor: 'not-allowed',
       }}
-    >
-      <div
-        style={{
-          pointerEvents: 'auto',
-        }}
-        onClick={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-        }}
-        onMouseDown={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-        }}
-      >
-        <PrerequisiteTooltip
-          missing={missingPrerequisites}
-          side="top"
-          maxWidth={280}
-        >
-          <span 
-            tabIndex={-1} 
-            style={{ 
-              outline: 'none',
-              cursor: 'not-allowed',
-              pointerEvents: 'auto'
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-            }}
-            onMouseDown={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-            }}
-          >
-            <ModuleStatusIcons isAvailable={false} size={20} color={undefined} />
-          </span>
-        </PrerequisiteTooltip>
-      </div>
-    </div>
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+      }}
+      onMouseDown={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+      }}
+      aria-hidden="true"
+    />
   );
 };
 
 ModuleCardOverlay.propTypes = {
-  missingPrerequisites: PropTypes.array.isRequired
+  // missingPrerequisites ya no se usa aquí, se pasa al header para el tooltip
 };
 
 export default ModuleCardOverlay;

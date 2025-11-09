@@ -85,7 +85,8 @@
   "metadata": {
     "updatedAt": "2025-11-08T03:42:27.572Z",
     "description": "Descripción pendiente de curaduría (metadatos).",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "allowEmpty": false
   },
   "id": "estrategias-de-peep-optimizacion-de-la-presion-positiva-al-final-de-la-espiracion",
   "quiz": [],

@@ -92,7 +92,8 @@ const ProgressDashboard = () => {
     completedLessons,
     timeSpent,
     setCurrentModule,
-    isLoadingProgress
+    isLoadingProgress,
+    progressByModule
   } = useLearningProgress();
 
   // Estados locales
@@ -105,10 +106,10 @@ const ProgressDashboard = () => {
     router.push(`/teaching/module/${moduleId}/lesson/${lessonId}`);
   };
 
-  // Hook: progreso de módulos
+  // Hook: progreso de módulos (pasa progressByModule para cálculo por páginas)
   const {
     calculateModuleProgress
-  } = useModuleProgress(completedLessons, timeSpent);
+  } = useModuleProgress(completedLessons, timeSpent, progressByModule);
 
   // Usar el hook useProgressTree
   const {

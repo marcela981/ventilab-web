@@ -8,6 +8,7 @@
     "id",
     "moduleId",
     "title",
+    "description",
     "sections",
     "quiz",
     "resources",
@@ -29,6 +30,11 @@
       "type": "string",
       "description": "Título completo de la lección",
       "minLength": 3
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripción de la lección",
+      "minLength": 1
     },
     "sections": {
       "type": "array",
@@ -119,7 +125,27 @@
     "section": {
       "type": "object",
       "description": "Sección de contenido educativo flexible",
+      "required": [
+        "id",
+        "title",
+        "order"
+      ],
       "properties": {
+        "id": {
+          "type": "string",
+          "description": "Identificador único de la sección",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "description": "Título de la sección",
+          "minLength": 1
+        },
+        "order": {
+          "type": "integer",
+          "description": "Orden de la sección dentro de la lección (debe ser >= 1)",
+          "minimum": 1
+        },
         "type": {
           "type": "string",
           "description": "Tipo de sección que determina cómo se presenta el contenido",
@@ -138,7 +164,10 @@
             "interactive",
             "case",
             "summary",
-            "quiz"
+            "quiz",
+            "example",
+            "procedure",
+            "practice"
           ]
         },
         "heading": {
@@ -163,25 +192,6 @@
           "type": "object",
           "description": "Contenedor de elementos multimedia",
           "additionalProperties": true
-        },
-        "id": {
-          "type": "string",
-          "description": "Identificador único de la sección"
-        },
-        "order": {
-          "description": "Orden de la sección dentro de la lección",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "title": {
-          "type": "string",
-          "description": "Título de la sección"
         }
       },
       "additionalProperties": true

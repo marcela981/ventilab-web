@@ -9,6 +9,7 @@
 
 import curriculumModules from './index.js';
 import { curriculumData } from '../curriculumData';
+import module03Content from '../lessons/module-03-configuration';
 
 /**
  * Get total count of modules
@@ -110,5 +111,298 @@ export const getCurriculumMetadata = () => {
  */
 export const getLevelsWithComputedTotals = () => {
   return curriculumModules.getLevelsWithComputedTotals();
+};
+
+/**
+ * Derive lessonId from filename (slug)
+ * Converts filename like "sdra-protocol.json" to "sdra-protocol"
+ * 
+ * @param {string} filename - Filename or path
+ * @returns {string} Lesson ID slug
+ */
+function deriveLessonIdFromFilename(filename) {
+  // Extract filename from path if needed
+  const name = filename.split('/').pop().replace(/\.json$/, '');
+  return name;
+}
+
+/**
+ * Convert module-03-configuration JSON sections to lesson sections format
+ * Each section in the JSON becomes a section in the lesson
+ * 
+ * @param {Array} jsonSections - Sections array from JSON file
+ * @returns {Array} Formatted sections array
+ */
+function convertSectionsToLessonFormat(jsonSections) {
+  if (!Array.isArray(jsonSections)) {
+    return [];
+  }
+  
+  return jsonSections.map((section, index) => {
+    // Use the section's id if available, or generate one from order
+    const sectionId = section.id || `section-${section.order || index + 1}`;
+    
+    return {
+      id: sectionId,
+      title: section.title || section.heading || `Sección ${section.order || index + 1}`,
+      order: section.order || index + 1,
+      type: section.type || 'text',
+      content: section.content || '',
+      // Include any additional properties
+      ...(section.media && { media: section.media }),
+      ...(section.question && { question: section.question }),
+      ...(section.options && { options: section.options }),
+      ...(section.correctAnswer && { correctAnswer: section.correctAnswer }),
+      ...(section.explanation && { explanation: section.explanation }),
+    };
+  });
+}
+
+/**
+ * Virtual Lessons Map for Module 03 Configuration
+ * Flattens module-03-configuration/index.js content into individual lessons
+ * Each JSON with a title is exposed as a lesson with:
+ * - moduleId='module-03-configuration'
+ * - lessonId derived from filename (slug)
+ * - sections calculated from blocks/sections in JSON
+ * 
+ * @returns {Map<string, Object>} Map of lessonId to lesson data
+ */
+export const getVirtualLessonsMap = () => {
+  const lessonsMap = new Map();
+  const MODULE_ID = 'module-03-configuration';
+  
+  // Category to filename mapping for deriving lessonId
+  const categoryFileMap = {
+    pathologyProtocols: {
+      sdra: 'sdra-protocol',
+      copd: 'copd-protocol',
+      asthma: 'asthma-protocol',
+      pneumonia: 'pneumonia-protocol',
+    },
+    protectiveStrategies: {
+      lowTidalVolume: 'low-tidal-volume',
+      permissiveHypercapnia: 'permissive-hypercapnia',
+      peepStrategies: 'peep-strategies',
+      lungProtectiveVentilation: 'lung-protective-ventilation',
+    },
+    weaningContent: {
+      readinessCriteria: 'readiness-criteria',
+      sbtProtocol: 'sbt-protocol',
+    },
+  };
+  
+  // Process pathology protocols (4 lessons)
+  if (module03Content.pathologyProtocols) {
+    Object.entries(module03Content.pathologyProtocols).forEach(([key, lessonData]) => {
+      if (lessonData && lessonData.title) {
+        const filename = categoryFileMap.pathologyProtocols[key] || key;
+        const lessonId = deriveLessonIdFromFilename(filename);
+        
+        const lesson = {
+          moduleId: MODULE_ID,
+          lessonId: lessonId,
+          title: lessonData.title,
+          description: lessonData.summary || lessonData.description || '',
+          estimatedTime: lessonData.estimatedTime || 30,
+          difficulty: lessonData.difficulty || 'intermediate',
+          order: 0, // Will be set based on category and order within category
+          pages: lessonData.sections ? lessonData.sections.length : 0,
+          sections: convertSectionsToLessonFormat(lessonData.sections || []),
+          keyPoints: lessonData.keyPoints || [],
+          references: lessonData.references || [],
+          quiz: lessonData.quiz || [],
+          resources: lessonData.resources || [],
+          metadata: lessonData.metadata || {},
+          // Store full lesson data for reference
+          lessonData: lessonData,
+          category: 'pathologyProtocols',
+          moduleLevel: 'advanced', // Module 03 is advanced level
+        };
+        
+        lessonsMap.set(lessonId, lesson);
+      }
+    });
+  }
+  
+  // Process protective strategies (4 lessons)
+  if (module03Content.protectiveStrategies) {
+    Object.entries(module03Content.protectiveStrategies).forEach(([key, lessonData]) => {
+      if (lessonData && lessonData.title) {
+        const filename = categoryFileMap.protectiveStrategies[key] || key;
+        const lessonId = deriveLessonIdFromFilename(filename);
+        
+        const lesson = {
+          moduleId: MODULE_ID,
+          lessonId: lessonId,
+          title: lessonData.title,
+          description: lessonData.summary || lessonData.description || '',
+          estimatedTime: lessonData.estimatedTime || 30,
+          difficulty: lessonData.difficulty || 'intermediate',
+          order: 0,
+          pages: lessonData.sections ? lessonData.sections.length : 0,
+          sections: convertSectionsToLessonFormat(lessonData.sections || []),
+          keyPoints: lessonData.keyPoints || [],
+          references: lessonData.references || [],
+          quiz: lessonData.quiz || [],
+          resources: lessonData.resources || [],
+          metadata: lessonData.metadata || {},
+          lessonData: lessonData,
+          category: 'protectiveStrategies',
+          moduleLevel: 'advanced',
+        };
+        
+        lessonsMap.set(lessonId, lesson);
+      }
+    });
+  }
+  
+  // Process weaning content (2 lessons)
+  if (module03Content.weaningContent) {
+    Object.entries(module03Content.weaningContent).forEach(([key, lessonData]) => {
+      if (lessonData && lessonData.title) {
+        const filename = categoryFileMap.weaningContent[key] || key;
+        const lessonId = deriveLessonIdFromFilename(filename);
+        
+        const lesson = {
+          moduleId: MODULE_ID,
+          lessonId: lessonId,
+          title: lessonData.title,
+          description: lessonData.summary || lessonData.description || '',
+          estimatedTime: lessonData.estimatedTime || 30,
+          difficulty: lessonData.difficulty || 'intermediate',
+          order: 0,
+          pages: lessonData.sections ? lessonData.sections.length : 0,
+          sections: convertSectionsToLessonFormat(lessonData.sections || []),
+          keyPoints: lessonData.keyPoints || [],
+          references: lessonData.references || [],
+          quiz: lessonData.quiz || [],
+          resources: lessonData.resources || [],
+          metadata: lessonData.metadata || {},
+          lessonData: lessonData,
+          category: 'weaningContent',
+          moduleLevel: 'advanced',
+        };
+        
+        lessonsMap.set(lessonId, lesson);
+      }
+    });
+  }
+  
+  // Create placeholders for troubleshooting (empty category)
+  const troubleshootingPlaceholders = [
+    {
+      id: 'high-pressure-alarm',
+      title: 'Alarma de Presión Alta',
+      filename: 'high-pressure-alarm',
+    },
+    {
+      id: 'low-tidal-volume-alarm',
+      title: 'Alarma de Volumen Tidal Bajo',
+      filename: 'low-tidal-volume-alarm',
+    },
+    {
+      id: 'patient-ventilator-asynchrony',
+      title: 'Asincronía Paciente-Ventilador',
+      filename: 'patient-ventilator-asynchrony',
+    },
+    {
+      id: 'hypoxemia-management',
+      title: 'Manejo de Hipoxemia',
+      filename: 'hypoxemia-management',
+    },
+  ];
+  
+  troubleshootingPlaceholders.forEach((placeholder) => {
+    const lessonId = deriveLessonIdFromFilename(placeholder.filename);
+    
+    const lesson = {
+      moduleId: MODULE_ID,
+      lessonId: lessonId,
+      title: placeholder.title,
+      description: 'Contenido próximamente disponible',
+      estimatedTime: 25,
+      difficulty: 'intermediate',
+      order: 0,
+      pages: 0,
+      sections: [],
+      keyPoints: [],
+      references: [],
+      quiz: [],
+      resources: [],
+      metadata: {
+        isPlaceholder: true,
+        comingSoon: true,
+      },
+      lessonData: null,
+      category: 'troubleshootingGuides',
+      moduleLevel: 'advanced',
+      isPlaceholder: true,
+    };
+    
+    lessonsMap.set(lessonId, lesson);
+  });
+  
+  // Create placeholders for checklists (empty category)
+  const checklistPlaceholders = [
+    {
+      id: 'initial-setup-checklist',
+      title: 'Checklist de Configuración Inicial',
+      filename: 'initial-setup-checklist',
+    },
+    {
+      id: 'daily-assessment-checklist',
+      title: 'Checklist de Evaluación Diaria',
+      filename: 'daily-assessment-checklist',
+    },
+    {
+      id: 'pre-extubation-checklist',
+      title: 'Checklist Pre-Extubación',
+      filename: 'pre-extubation-checklist',
+    },
+  ];
+  
+  checklistPlaceholders.forEach((placeholder) => {
+    const lessonId = deriveLessonIdFromFilename(placeholder.filename);
+    
+    const lesson = {
+      moduleId: MODULE_ID,
+      lessonId: lessonId,
+      title: placeholder.title,
+      description: 'Contenido próximamente disponible',
+      estimatedTime: 15,
+      difficulty: 'intermediate',
+      order: 0,
+      pages: 0,
+      sections: [],
+      keyPoints: [],
+      references: [],
+      quiz: [],
+      resources: [],
+      metadata: {
+        isPlaceholder: true,
+        comingSoon: true,
+      },
+      lessonData: null,
+      category: 'checklistProtocols',
+      moduleLevel: 'advanced',
+      isPlaceholder: true,
+    };
+    
+    lessonsMap.set(lessonId, lesson);
+  });
+  
+  return lessonsMap;
+};
+
+/**
+ * Get all virtual lessons as an array
+ * Useful for grid display and lesson listing
+ * 
+ * @returns {Array} Array of virtual lesson objects
+ */
+export const getVirtualLessonsArray = () => {
+  const lessonsMap = getVirtualLessonsMap();
+  return Array.from(lessonsMap.values());
 };
 

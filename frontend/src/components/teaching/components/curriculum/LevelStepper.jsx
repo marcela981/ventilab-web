@@ -38,6 +38,7 @@ import ModuleGrid from './ModuleGrid';
  * @param {Set} favoriteModules - Set de IDs de módulos marcados como favoritos
  * @param {Function} onToggleFavorite - Callback para toggle de favorito en un módulo
  * @param {JSX.Element} moduleGrid - Componente renderizado del grid de módulos (opcional, si no se proporciona se renderiza directamente)
+ * @param {string} renderMode - Modo de renderizado: 'modules' (default) o 'lessons'
  * @returns {JSX.Element} Componente de niveles de aprendizaje
  */
 const LevelStepper = ({
@@ -52,7 +53,8 @@ const LevelStepper = ({
   onSectionClick,
   favoriteModules = new Set(),
   onToggleFavorite,
-  moduleGrid
+  moduleGrid,
+  renderMode = 'modules' // 'modules' o 'lessons'
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -122,12 +124,34 @@ const LevelStepper = ({
   };
 
 
-  // Renderizar módulos usando ModuleGrid si no se proporciona moduleGrid custom
+  // Renderizar módulos o lecciones usando ModuleGrid si no se proporciona moduleGrid custom
   const renderModuleGrid = (levelModules, level) => {
     if (moduleGrid) {
       return moduleGrid;
     }
 
+    // Si renderMode === 'lessons', ModuleGrid construirá las lecciones automáticamente
+    if (renderMode === 'lessons') {
+      return (
+        <Box sx={{ mt: 1 }}>
+          <ModuleGrid
+            modules={[]} // No se necesitan módulos en modo lessons
+            mode="lessons"
+            levelId={level.id}
+            levelColor={level.color}
+            enableAnimations={true}
+            emptyMessage={`No hay lecciones disponibles en ${level.title}`}
+            favoriteModules={favoriteModules || new Set()} // Proporcionar Set vacío por defecto
+            onToggleFavorite={onToggleFavorite || (() => {})} // Función vacía por defecto
+            isModuleAvailable={isModuleAvailable || (() => true)} // Verificar disponibilidad basada en prerequisitos
+            calculateModuleProgress={calculateModuleProgress || (() => 0)} // Función por defecto
+            onModuleClick={handleModuleClick} // Pasar handleModuleClick (que es onSectionClick || onModuleClick)
+          />
+        </Box>
+      );
+    }
+
+    // Modo 'modules' (comportamiento original)
     // Filtrar módulos bloqueados (no mostrar los que están bloqueados)
     const visibleModules = levelModules.filter((module) => {
       if (!calculateModuleProgress || !getModuleStatus) return true;
@@ -168,6 +192,7 @@ const LevelStepper = ({
           levelColor={level.color}
           enableAnimations={true}
           emptyMessage="No hay módulos disponibles en este nivel"
+          mode="modules"
         />
       </Box>
     );
@@ -402,7 +427,8 @@ LevelStepper.propTypes = {
   onSectionClick: PropTypes.func,
   favoriteModules: PropTypes.instanceOf(Set),
   onToggleFavorite: PropTypes.func,
-  moduleGrid: PropTypes.element
+  moduleGrid: PropTypes.element,
+  renderMode: PropTypes.oneOf(['modules', 'lessons'])
 };
 
 export default LevelStepper;
