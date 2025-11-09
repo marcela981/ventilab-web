@@ -14,6 +14,8 @@ import styles from '@/styles/curriculum.module.css';
 import useCurriculumProgress from '@/hooks/useCurriculumProgress';
 import { useLearningProgress } from '@/contexts/LearningProgressContext';
 import { buildLessonsArray } from './lessonHelpers';
+import { useLessonAvailability } from '../../hooks/useLessonAvailability';
+import { curriculumData } from '../../../../data/curriculumData';
 
 /**
  * ModuleGrid - Componente unificado y optimizado para renderizar grid de módulos
@@ -73,6 +75,7 @@ const ModuleGrid = ({
   levelId = null // Para filtrar lecciones por nivel cuando mode='lessons'
 }) => {
   const { loadModuleProgress, progressByModule } = useLearningProgress();
+  const { isLessonAvailable } = useLessonAvailability();
   
   // Si mode === 'lessons', construir arreglo plano de lecciones
   const lessons = useMemo(() => {
@@ -81,6 +84,38 @@ const ModuleGrid = ({
     }
     return [];
   }, [mode, levelId]);
+
+  // Ordenar lecciones por nivel y orden para verificación de disponibilidad
+  // IMPORTANTE: Debe ordenar primero por módulo (order del módulo) y luego por lección (order de la lección)
+  const sortedLessonsInLevel = useMemo(() => {
+    if (mode !== 'lessons' || !levelId || !lessons || lessons.length === 0) {
+      return [];
+    }
+    
+    // Crear una copia y ordenar las lecciones
+    const sorted = [...lessons].sort((a, b) => {
+      // Primero, obtener los módulos
+      const moduleA = curriculumData?.modules?.[a.moduleId];
+      const moduleB = curriculumData?.modules?.[b.moduleId];
+      
+      // Si no encontramos los módulos, usar orden 0
+      const moduleOrderA = moduleA?.order ?? 999;
+      const moduleOrderB = moduleB?.order ?? 999;
+      
+      // Si los módulos tienen diferente order, ordenar por módulo
+      if (moduleOrderA !== moduleOrderB) {
+        return moduleOrderA - moduleOrderB;
+      }
+      
+      // Si están en el mismo módulo, ordenar por order de la lección
+      const lessonOrderA = a.order ?? 999;
+      const lessonOrderB = b.order ?? 999;
+      
+      return lessonOrderA - lessonOrderB;
+    });
+    
+    return sorted;
+  }, [lessons, mode, levelId]);
   
   // Precalcular progreso agregado para todos los módulos de una vez (solo si mode === 'modules')
   const progressByModuleFromHook = useCurriculumProgress(mode === 'modules' ? modules : []);
@@ -126,7 +161,10 @@ const ModuleGrid = ({
    * @returns {Array} Array ordenado
    */
   const sortedItems = useMemo(() => {
-    const itemsToSort = mode === 'lessons' ? lessons : modules;
+    // Para lecciones, usar las lecciones ya ordenadas por nivel
+    const itemsToSort = mode === 'lessons' 
+      ? (sortedLessonsInLevel.length > 0 ? sortedLessonsInLevel : lessons)
+      : modules;
     
     if (!sortBy || itemsToSort.length === 0) return itemsToSort;
 
@@ -298,11 +336,8 @@ const ModuleGrid = ({
         if (mode === 'lessons') {
           // Renderizar LessonCard
           const lesson = item;
-          // Verificar disponibilidad usando isModuleAvailable si está disponible
-          // Por ahora, todas las lecciones están disponibles (se puede mejorar con prerequisitos)
-          const available = isModuleAvailable
-            ? isModuleAvailable(lesson.moduleId)
-            : true;
+          // Verificar disponibilidad usando la lógica de desbloqueo secuencial
+          const available = isLessonAvailable(lesson, sortedLessonsInLevel);
           
           // Obtener allowEmpty del lesson
           const allowEmpty = lesson.allowEmpty === true;

@@ -23,12 +23,16 @@ export const createProgressMap = (progressByModule) => {
 
 /**
  * Get completed lessons set from progressByModule
+ * Uses format: "moduleId-lessonId" for consistency with lesson availability checks
  */
 export const getCompletedLessons = (progressByModule) => {
   const set = new Set();
-  for (const moduleData of Object.values(progressByModule)) {
+  for (const [moduleId, moduleData] of Object.entries(progressByModule)) {
     for (const [lessonId, lessonProgress] of Object.entries(moduleData.lessonsById)) {
       if (lessonProgress.completed) {
+        // Use format: "moduleId-lessonId" for consistency
+        set.add(`${moduleId}-${lessonId}`);
+        // Also add just lessonId for backward compatibility
         set.add(lessonId);
       }
     }

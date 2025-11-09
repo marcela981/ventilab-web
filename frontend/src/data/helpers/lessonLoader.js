@@ -415,9 +415,9 @@ function normalizeSectionsFormat(rawData) {
                           introductionSection?.content?.text || 
                           introductionSection?.content || '';
   
-  // Extract theory sections
+  // Extract theory sections (include both 'theory' and 'procedure' types)
   const theorySections = sections
-    .filter(s => s.type === 'theory')
+    .filter(s => s.type === 'theory' || s.type === 'procedure')
     .map(s => ({
       title: s.title || '',
       content: s.content?.markdown || s.content?.text || s.content || '',

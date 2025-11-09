@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -34,6 +34,7 @@ import {
   CheckCircleOutline,
   RadioButtonUnchecked,
 } from '@mui/icons-material';
+import { curriculumData, getModulesByLevel } from '../../../../data/curriculumData';
 
 /**
  * Subcomponente para renderizar un item de lección individual
@@ -353,25 +354,234 @@ const ModuleProgressCard = ({
   };
 
   /**
-   * Verifica si una lección está desbloqueada (desbloqueo lineal)
-   * La primera lección siempre está desbloqueada.
-   * Las siguientes solo se desbloquean si la anterior está completada.
+   * Calcula el progreso de un módulo específico
    */
-  const isLessonUnlocked = (lessonIndex, sortedLessons) => {
-    // La primera lección siempre está desbloqueada
-    if (lessonIndex === 0) {
-      return true;
+  const calculateModuleProgress = useMemo(() => {
+    return (moduleId) => {
+      const targetModule = curriculumData?.modules?.[moduleId];
+      if (!targetModule || !targetModule.lessons || targetModule.lessons.length === 0) {
+        return 0;
+      }
+
+      const completedCount = targetModule.lessons.filter((lesson) => {
+        const lessonKey = `${moduleId}-${lesson.id}`;
+        return completedLessons.has(lessonKey);
+      }).length;
+
+      return Math.round((completedCount / targetModule.lessons.length) * 100);
+    };
+  }, [completedLessons]);
+
+  /**
+   * Verifica si todos los módulos de un nivel están completados al 100%
+   */
+  const isLevelCompleted = useMemo(() => {
+    return (levelId) => {
+      if (!levelId || !curriculumData?.modules) {
+        return false;
+      }
+
+      const modulesInLevel = getModulesByLevel(levelId);
+      if (modulesInLevel.length === 0) {
+        return true; // Si no hay módulos, considerar completado
+      }
+
+      // Verificar que todos los módulos del nivel estén completados al 100%
+      return modulesInLevel.every((mod) => {
+        const moduleProgress = calculateModuleProgress(mod.id);
+        return moduleProgress === 100;
+      });
+    };
+  }, [calculateModuleProgress]);
+
+  /**
+   * Verifica si el módulo actual es el primer módulo de su nivel
+   */
+  const isFirstModuleInLevel = useMemo(() => {
+    if (!module.level || !curriculumData?.modules) {
+      return false;
+    }
+
+    const modulesInLevel = getModulesByLevel(module.level);
+    if (modulesInLevel.length === 0) {
+      return false;
+    }
+
+    // Ordenar módulos por order y obtener el primero
+    const sortedModules = [...modulesInLevel].sort((a, b) => {
+      const orderA = a.order || 0;
+      const orderB = b.order || 0;
+      return orderA - orderB;
+    });
+
+    return sortedModules[0]?.id === module.id;
+  }, [module.id, module.level]);
+
+  /**
+   * Obtiene el nivel anterior al nivel actual
+   */
+  const getPreviousLevel = (currentLevel) => {
+    const levelOrder = { beginner: 1, intermediate: 2, advanced: 3 };
+    const levelNames = ['beginner', 'intermediate', 'advanced'];
+    const currentIndex = levelOrder[currentLevel];
+    
+    if (currentIndex === 1) {
+      return null; // No hay nivel anterior para beginner
     }
     
-    // Verificar que todas las lecciones anteriores estén completadas
-    for (let i = 0; i < lessonIndex; i++) {
-      const previousLesson = sortedLessons[i];
-      if (!isLessonCompleted(previousLesson.id)) {
+    return levelNames[currentIndex - 2];
+  };
+
+  /**
+   * Verifica si todos los módulos anteriores en el mismo nivel están completados
+   */
+  const arePreviousModulesInLevelCompleted = useMemo(() => {
+    if (!module.level || !curriculumData?.modules) {
+      return true;
+    }
+
+    const modulesInLevel = getModulesByLevel(module.level);
+    if (modulesInLevel.length === 0) {
+      return true;
+    }
+
+    // Ordenar módulos por order
+    const sortedModules = [...modulesInLevel].sort((a, b) => {
+      const orderA = a.order || 0;
+      const orderB = b.order || 0;
+      return orderA - orderB;
+    });
+
+    // Encontrar el índice del módulo actual
+    const currentModuleIndex = sortedModules.findIndex((mod) => mod.id === module.id);
+    if (currentModuleIndex === -1 || currentModuleIndex === 0) {
+      return true; // Es el primer módulo o no se encontró
+    }
+
+    // Verificar que todos los módulos anteriores en el nivel estén completados al 100%
+    for (let i = 0; i < currentModuleIndex; i++) {
+      const previousModule = sortedModules[i];
+      const moduleProgress = calculateModuleProgress(previousModule.id);
+      if (moduleProgress !== 100) {
         return false;
       }
     }
-    
+
     return true;
+  }, [module.id, module.level, calculateModuleProgress]);
+
+  /**
+   * Verifica si todas las lecciones anteriores en el nivel están completadas
+   * (incluyendo lecciones de módulos anteriores en el mismo nivel)
+   */
+  const areAllPreviousLessonsInLevelCompleted = (lessonIndex, sortedLessons) => {
+    if (!module.level || !curriculumData?.modules) {
+      return true;
+    }
+
+    const modulesInLevel = getModulesByLevel(module.level);
+    if (modulesInLevel.length === 0) {
+      return true;
+    }
+
+    // Ordenar módulos por order
+    const sortedModules = [...modulesInLevel].sort((a, b) => {
+      const orderA = a.order || 0;
+      const orderB = b.order || 0;
+      return orderA - orderB;
+    });
+
+    // Encontrar el índice del módulo actual
+    const currentModuleIndex = sortedModules.findIndex((mod) => mod.id === module.id);
+    if (currentModuleIndex === -1) {
+      return true;
+    }
+
+    // Verificar todas las lecciones de módulos anteriores en el nivel
+    for (let i = 0; i < currentModuleIndex; i++) {
+      const previousModule = sortedModules[i];
+      if (!previousModule.lessons || previousModule.lessons.length === 0) {
+        continue;
+      }
+
+      // Ordenar lecciones del módulo anterior por order
+      const sortedPreviousLessons = [...previousModule.lessons].sort((a, b) => {
+        const orderA = a.order !== undefined ? a.order : 0;
+        const orderB = b.order !== undefined ? b.order : 0;
+        return orderA - orderB;
+      });
+
+      // Verificar que todas las lecciones del módulo anterior estén completadas
+      for (const lesson of sortedPreviousLessons) {
+        const lessonKey = `${previousModule.id}-${lesson.id}`;
+        if (!completedLessons.has(lessonKey)) {
+          return false;
+        }
+      }
+    }
+
+    // Si estamos en el módulo actual, verificar lecciones anteriores en este módulo
+    if (lessonIndex > 0) {
+      for (let i = 0; i < lessonIndex; i++) {
+        const previousLesson = sortedLessons[i];
+        if (!isLessonCompleted(previousLesson.id)) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  };
+
+  /**
+   * Verifica si una lección está desbloqueada (desbloqueo lineal entre niveles y dentro de niveles)
+   * 
+   * Lógica:
+   * 1. Si es beginner: todas las lecciones se desbloquean secuencialmente dentro del módulo
+   * 2. Si es la primera lección del primer módulo de un nivel (que no sea beginner):
+   *    - Verificar que todos los módulos del nivel anterior estén completados al 100%
+   * 3. Si es cualquier otra lección de un nivel que no sea beginner:
+   *    - PRIMERO: Verificar que el nivel anterior esté completo
+   *    - SEGUNDO: Verificar que TODAS las lecciones anteriores en el nivel estén completadas
+   *      (incluyendo lecciones de módulos anteriores en el mismo nivel)
+   */
+  const isLessonUnlocked = (lessonIndex, sortedLessons) => {
+    // Si es beginner, todas las lecciones se desbloquean secuencialmente
+    if (module.level === 'beginner') {
+      // La primera lección siempre está disponible
+      if (lessonIndex === 0) {
+        return true;
+      }
+      // Las demás lecciones requieren que las anteriores estén completadas
+      for (let i = 0; i < lessonIndex; i++) {
+        const previousLesson = sortedLessons[i];
+        if (!isLessonCompleted(previousLesson.id)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    // Para niveles que NO son beginner:
+    
+    // PRIMERO: Verificar que el nivel anterior esté completo (para TODAS las lecciones)
+    const previousLevel = getPreviousLevel(module.level);
+    if (previousLevel) {
+      if (!isLevelCompleted(previousLevel)) {
+        // Si el nivel anterior no está completo, ninguna lección de este nivel está disponible
+        return false;
+      }
+    }
+
+    // SEGUNDO: Si es la primera lección del primer módulo del nivel, ya está disponible
+    // (porque el nivel anterior está completo)
+    if (lessonIndex === 0 && isFirstModuleInLevel) {
+      return true;
+    }
+
+    // TERCERO: Para cualquier otra lección, verificar que TODAS las lecciones anteriores
+    // en el nivel estén completadas (incluyendo lecciones de módulos anteriores)
+    return areAllPreviousLessonsInLevelCompleted(lessonIndex, sortedLessons);
   };
 
   /**

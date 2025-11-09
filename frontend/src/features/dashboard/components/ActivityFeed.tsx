@@ -186,6 +186,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
                 primary={
                   <Typography
                     variant="subtitle2"
+                    component="div"
                     sx={{
                       color: '#ffffff',
                       fontWeight: 600,
@@ -197,9 +198,10 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
                   </Typography>
                 }
                 secondary={
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <Box component="div" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }}>
                     <Typography
                       variant="body2"
+                      component="div"
                       sx={{
                         color: '#e8f4fd',
                         fontSize: '0.875rem'
@@ -210,6 +212,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                       <Typography
                         variant="caption"
+                        component="span"
                         sx={{
                           color: '#9e9e9e',
                           fontSize: '0.7rem'
