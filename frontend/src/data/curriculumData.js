@@ -13,6 +13,12 @@ import lesson01Mechanics from './lessons/module-01-fundamentals/lesson-01-respir
 import lesson02GasExchange from './lessons/module-01-fundamentals/lesson-02-gas-exchange.json';
 import lesson03ArterialBloodGas from './lessons/module-01-fundamentals/lesson-03-arterial-blood-gas.json';
 
+// Módulo 02: Modalidades y Parámetros
+import lesson01VolumeVentilation from './lessons/module-02-parameters/lesson-01-volume-ventilation.json';
+import lesson02PressureControlled from './lessons/module-02-parameters/lesson-02-pressure-controlled-ventilation.json';
+import lesson03PressureSupport from './lessons/module-02-parameters/lesson-03-pressure-support-ventilation.json';
+import lesson04SIMV from './lessons/module-02-parameters/lesson-04-simv-destete-evidencia.json';
+
 export const curriculumData = {
   levels: [
     {
@@ -346,11 +352,69 @@ export const curriculumData = {
       ]
     },
 
+    'module-02-modalidades-parametros': {
+      id: 'module-02-modalidades-parametros',
+      title: 'Modalidades Ventilatorias y Parámetros',
+      level: 'intermediate',
+      order: 2,
+      duration: 240, // minutos (suma de todas las lecciones: 60*4)
+      prerequisites: ['module-01-fundamentals'],
+      learningObjectives: [
+        'Comprender las modalidades ventilatorias controladas por volumen y presión',
+        'Dominar la configuración de parámetros ventilatorios',
+        'Interpretar curvas ventilatorias y resolver asincronías',
+        'Aplicar estrategias de ventilación protectora'
+      ],
+      bloomLevel: 'aplicar',
+      difficulty: 'intermedio',
+      estimatedTime: '4 horas',
+      description: 'Modalidades ventilatorias y manejo de parámetros críticos en ventilación mecánica',
+      // ✅ CONECTAR LECCIONES REALES DESDE JSON
+      lessons: [
+        {
+          id: 'lesson-01-volume-ventilation',
+          title: lesson01VolumeVentilation.title || 'Ventilación Controlada por Volumen (VCV)',
+          description: lesson01VolumeVentilation.description || '',
+          estimatedTime: lesson01VolumeVentilation.estimatedTime || 60,
+          difficulty: lesson01VolumeVentilation.difficulty || 'intermediate',
+          order: lesson01VolumeVentilation.order || 1,
+          lessonData: lesson01VolumeVentilation
+        },
+        {
+          id: 'lesson-02-pressure-controlled-ventilation',
+          title: lesson02PressureControlled.title || 'Ventilación Controlada por Presión (PCV)',
+          description: lesson02PressureControlled.description || '',
+          estimatedTime: lesson02PressureControlled.estimatedTime || 60,
+          difficulty: lesson02PressureControlled.difficulty || 'intermediate',
+          order: lesson02PressureControlled.order || 2,
+          lessonData: lesson02PressureControlled
+        },
+        {
+          id: 'lesson-03-pressure-support-ventilation',
+          title: lesson03PressureSupport.title || 'Ventilación con Soporte de Presión (PSV)',
+          description: lesson03PressureSupport.description || '',
+          estimatedTime: lesson03PressureSupport.estimatedTime || 60,
+          difficulty: lesson03PressureSupport.difficulty || 'intermediate',
+          order: lesson03PressureSupport.order || 3,
+          lessonData: lesson03PressureSupport
+        },
+        {
+          id: 'lesson-04-simv-destete-evidencia',
+          title: lesson04SIMV.title || 'SIMV y Destete - Evidencia',
+          description: lesson04SIMV.description || '',
+          estimatedTime: lesson04SIMV.estimatedTime || 60,
+          difficulty: lesson04SIMV.difficulty || 'intermediate',
+          order: lesson04SIMV.order || 4,
+          lessonData: lesson04SIMV
+        }
+      ]
+    },
+
     'volume-control': {
       id: 'volume-control',
       title: 'Ventilación Controlada por Volumen (VCV)',
       level: 'intermediate',
-      order: 2,
+      order: 3,
       duration: 200,
       prerequisites: ['ventilation-principles'],
       learningObjectives: [
@@ -406,7 +470,7 @@ export const curriculumData = {
       id: 'pressure-control',
       title: 'Ventilación Controlada por Presión (PCV)',
       level: 'intermediate',
-      order: 3,
+      order: 4,
       duration: 180,
       prerequisites: ['volume-control'],
       learningObjectives: [
@@ -447,7 +511,7 @@ export const curriculumData = {
       id: 'psv-mode',
       title: 'Ventilación con Soporte de Presión (PSV)',
       level: 'intermediate',
-      order: 4,
+      order: 5,
       duration: 160,
       prerequisites: ['pressure-control'],
       learningObjectives: [
@@ -477,7 +541,7 @@ export const curriculumData = {
       id: 'simv-mode',
       title: 'Ventilación Mandatoria Intermitente Sincronizada (SIMV)',
       level: 'intermediate',
-      order: 5,
+      order: 6,
       duration: 170,
       prerequisites: ['psv-mode'],
       learningObjectives: [

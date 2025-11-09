@@ -592,15 +592,12 @@ const ProgressTree = ({ modules, userProgress, onModuleClick, onLessonClick }) =
                                     {lesson.title}
                                   </Typography>
                                 }
-                                secondary={
-                                  <Typography 
-                                    variant="caption" 
-                                    color={!isUnlocked ? 'text.disabled' : 'text.secondary'}
-                                    sx={{ opacity: !isUnlocked ? 0.6 : 1 }}
-                                  >
-                                    {lesson.estimatedTime} min
-                                  </Typography>
-                                }
+                                secondary={`${lesson.estimatedTime} min`}
+                                secondaryTypographyProps={{
+                                  variant: 'caption',
+                                  color: !isUnlocked ? 'text.disabled' : 'text.secondary',
+                                  sx: { opacity: !isUnlocked ? 0.6 : 1 }
+                                }}
                               />
                             </ListItemButton>
                           </ListItem>

@@ -1,140 +1,115 @@
 /**
  * Helpers para construir y manejar lecciones
+ * 
+ * NOTE: This file now uses getVisibleLessonsByLevel from selectors.js
+ * which handles M03 flattening and filtering logic.
  */
 
-import { getAllModules } from '../../../../data/curriculum/index.js';
-import { getVirtualLessonsArray } from '../../../../data/curriculum/selectors.js';
+import { getVisibleLessonsByLevel } from '../../../../data/curriculum/selectors.js';
+
+/**
+ * Calcula el número real de páginas que se mostrarán en una lección
+ * Basándose en sectionsCount + páginas adicionales que siempre se agregan
+ * 
+ * useLessonPages agrega siempre:
+ * - 1 página de completación
+ * - 1 página de caso clínico (si hay moduleId)
+ * 
+ * Las secciones del JSON se mapean a páginas en useLessonPages, pero siempre
+ * se agregan estas 2 páginas adicionales al final.
+ * 
+ * @param {Object} lesson - Objeto de lección con sectionsCount y moduleId
+ * @returns {number} Número real de páginas que se mostrarán
+ */
+function calculateRealPages(lesson) {
+  if (lesson.allowEmpty || !lesson.sectionsCount || lesson.sectionsCount === 0) {
+    return 0;
+  }
+  
+  // Páginas base: las secciones del JSON
+  let pages = lesson.sectionsCount;
+  
+  // Páginas adicionales que siempre se agregan en useLessonPages:
+  // 1. Página de completación (siempre se agrega)
+  pages += 1;
+  
+  // 2. Página de caso clínico (siempre se agrega si hay moduleId)
+  // Todas las lecciones tienen moduleId, así que siempre se agrega
+  if (lesson.moduleId) {
+    pages += 1;
+  }
+  
+  return pages;
+}
 
 /**
  * Construye un arreglo plano de lecciones a partir de todos los módulos
- * Cada item expone: moduleId, lessonId, title, description, estimatedTime, difficulty, order y pages (sections.length)
+ * Cada item expone: moduleId, lessonId, title, description, estimatedTime, difficulty, order y pages
  * 
- * @param {string} levelId - ID del nivel para filtrar módulos (opcional)
- * @returns {Array} Arreglo plano de lecciones
+ * El número de páginas se calcula usando calculateRealPages, que incluye:
+ * - sectionsCount (número de secciones en el JSON)
+ * - 1 página de completación (siempre)
+ * - 1 página de caso clínico (si hay moduleId, que es siempre)
+ * 
+ * This function now uses getVisibleLessonsByLevel from selectors.js which:
+ * 1. Flattens M03 to virtual lessons
+ * 2. Filters lessons with sections.length > 0
+ * 3. Excludes empty ones except when metadata.allowEmpty === true
+ * 
+ * @param {string} levelId - ID del nivel para filtrar módulos (opcional, null = all levels)
+ * @returns {Array} Arreglo plano de lecciones con pages calculado correctamente
  */
 export function buildLessonsArray(levelId = null) {
-  const allModules = getAllModules();
+  // If levelId is provided, use getVisibleLessonsByLevel for that level
+  if (levelId) {
+    const lessons = getVisibleLessonsByLevel(levelId);
+    // Convert to format with pages property using real page count
+    return lessons.map(lesson => ({
+      ...lesson,
+      pages: calculateRealPages(lesson),
+    }));
+  }
   
-  // Filtrar por nivel si se proporciona
-  const modules = levelId 
-    ? allModules.filter(module => module.level === levelId)
-    : allModules;
+  // If no levelId, get lessons for all levels
+  const allLevels = ['beginner', 'intermediate', 'advanced'];
+  const allLessons = [];
   
-  const lessonsArray = [];
-  
-  // Process regular modules with lessons array
-  modules.forEach(module => {
-    if (!module.lessons || module.lessons.length === 0) {
-      return;
-    }
-    
-    module.lessons.forEach(lesson => {
-      // Obtener el número de páginas (sections.length) desde lessonData si está disponible
-      let pages = 0;
-      let sections = [];
-      if (lesson.lessonData && lesson.lessonData.sections) {
-        sections = lesson.lessonData.sections;
-        pages = sections.length;
-      } else if (lesson.sections) {
-        sections = lesson.sections;
-        pages = sections.length;
-      }
-      
-      // Obtener metadata.allowEmpty
-      const metadata = lesson.lessonData?.metadata || lesson.metadata || {};
-      const allowEmpty = metadata.allowEmpty === true;
-      
-      // Filtrar: solo incluir si sections.length > 0 OR metadata.allowEmpty === true
-      if (sections.length === 0 && !allowEmpty) {
-        return; // No incluir esta lección
-      }
-      
-      // Construir el objeto de lección con todas las propiedades requeridas
-      const lessonItem = {
-        moduleId: module.id,
-        lessonId: lesson.id,
-        title: lesson.title || lesson.lessonData?.title || 'Sin título',
-        description: lesson.description || lesson.lessonData?.description || '',
-        estimatedTime: lesson.estimatedTime || lesson.lessonData?.estimatedTime || 0,
-        difficulty: lesson.difficulty || lesson.lessonData?.difficulty || module.difficulty || 'intermedio',
-        order: lesson.order || lesson.lessonData?.order || 0,
-        pages: allowEmpty ? 0 : pages, // Mostrar 0 solo cuando allowEmpty === true
-        allowEmpty: allowEmpty,
-        // Propiedades adicionales que pueden ser útiles
-        lessonData: lesson.lessonData || lesson,
-        moduleLevel: module.level,
-        moduleTitle: module.title,
-        sections: sections
-      };
-      
-      lessonsArray.push(lessonItem);
-    });
+  allLevels.forEach(level => {
+    const levelLessons = getVisibleLessonsByLevel(level);
+    allLessons.push(...levelLessons.map(lesson => ({
+      ...lesson,
+      pages: calculateRealPages(lesson),
+    })));
   });
   
-  // Add virtual lessons from module-03-configuration
-  // These are flattened from the category-based structure
-  const virtualLessons = getVirtualLessonsArray();
-  virtualLessons.forEach(virtualLesson => {
-    // Filter by level if specified
-    if (levelId && virtualLesson.moduleLevel !== levelId) {
-      return;
-    }
-    
-    // Obtener sections y metadata
-    const sections = virtualLesson.sections || [];
-    const metadata = virtualLesson.metadata || {};
-    const allowEmpty = metadata.allowEmpty === true;
-    
-    // Filtrar: solo incluir si sections.length > 0 OR metadata.allowEmpty === true
-    if (sections.length === 0 && !allowEmpty) {
-      return; // No incluir esta lección
-    }
-    
-    // Convert virtual lesson to lesson array format
-    const lessonItem = {
-      moduleId: virtualLesson.moduleId,
-      lessonId: virtualLesson.lessonId,
-      title: virtualLesson.title,
-      description: virtualLesson.description,
-      estimatedTime: virtualLesson.estimatedTime,
-      difficulty: virtualLesson.difficulty,
-      order: virtualLesson.order,
-      pages: allowEmpty ? 0 : sections.length, // Mostrar 0 solo cuando allowEmpty === true
-      allowEmpty: allowEmpty,
-      lessonData: virtualLesson.lessonData,
-      moduleLevel: virtualLesson.moduleLevel,
-      moduleTitle: 'Configuración y Manejo del Ventilador Mecánico',
-      // Additional virtual lesson properties
-      category: virtualLesson.category,
-      isPlaceholder: virtualLesson.isPlaceholder || false,
-      sections: sections,
-      keyPoints: virtualLesson.keyPoints,
-      references: virtualLesson.references,
-    };
-    
-    lessonsArray.push(lessonItem);
-  });
-  
-  // Ordenar por nivel del módulo, luego por orden dentro del módulo
+  // Sort by level, then by order
   const levelOrder = { beginner: 1, intermediate: 2, advanced: 3 };
-  lessonsArray.sort((a, b) => {
+  allLessons.sort((a, b) => {
     const levelDiff = (levelOrder[a.moduleLevel] || 99) - (levelOrder[b.moduleLevel] || 99);
     if (levelDiff !== 0) return levelDiff;
-    
-    // Si son del mismo nivel, ordenar por order
     return (a.order || 0) - (b.order || 0);
   });
   
-  return lessonsArray;
+  return allLessons;
 }
 
 /**
  * Obtiene lecciones filtradas por nivel
+ * Uses getVisibleLessonsByLevel from selectors.js
+ * 
  * @param {string} levelId - ID del nivel
  * @returns {Array} Arreglo de lecciones del nivel
  */
 export function getLessonsByLevel(levelId) {
-  return buildLessonsArray(levelId);
+  if (!levelId) {
+    return [];
+  }
+  const lessons = getVisibleLessonsByLevel(levelId);
+  // Convert to format with pages property using real page count
+  return lessons.map(lesson => ({
+    ...lesson,
+    pages: calculateRealPages(lesson),
+  }));
 }
 
 /**

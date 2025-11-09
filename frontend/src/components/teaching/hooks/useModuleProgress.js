@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { curriculumData } from '../../../data/curriculumData';
-import { getModulesCount, getAllModules, getVirtualLessonsArray } from '../../../data/curriculum/selectors.js';
-import { getLevelProgress } from '../../../data/curriculum/index.js';
+import { getModulesCount, getAllModules, getVisibleLessonsByLevel } from '../../../data/curriculum/selectors.js';
+import { getLevelProgress, getModulesByLevel } from '../../../data/curriculum/index.js';
 import { buildLessonsArray, calculateFilteredProgress } from '../components/curriculum/lessonHelpers';
 
 /**
@@ -69,21 +69,39 @@ function flattenLessonsByLevel(modules, virtualLessons) {
  */
 const useModuleProgress = (completedLessons, timeSpent = 0, progressByModule = null) => {
   
-  // Get virtual lessons from M03
+  // Get virtual lessons from M03 (for backward compatibility with calculateModuleProgress)
   const virtualLessons = useMemo(() => {
     try {
-      return getVirtualLessonsArray();
+      // Get virtual lessons from advanced level (M03)
+      const advancedLessons = getVisibleLessonsByLevel('advanced');
+      return advancedLessons.filter(lesson => lesson.moduleId === 'module-03-configuration');
     } catch (error) {
       console.warn('[useModuleProgress] Error getting virtual lessons:', error);
       return [];
     }
   }, []);
 
-  // Flatten all lessons by level
+  // Flatten all lessons by level using getVisibleLessonsByLevel
   const lessonsByLevel = useMemo(() => {
-    const modules = getAllModules();
-    return flattenLessonsByLevel(modules, virtualLessons);
-  }, [virtualLessons]);
+    const allLevels = ['beginner', 'intermediate', 'advanced'];
+    const lessonsByLevelObj = {
+      beginner: [],
+      intermediate: [],
+      advanced: [],
+    };
+    
+    allLevels.forEach(levelId => {
+      const visibleLessons = getVisibleLessonsByLevel(levelId);
+      lessonsByLevelObj[levelId] = visibleLessons.map(lesson => ({
+        moduleId: lesson.moduleId,
+        lessonId: lesson.lessonId,
+        title: lesson.title,
+        level: lesson.moduleLevel,
+      }));
+    });
+    
+    return lessonsByLevelObj;
+  }, []);
 
   /**
    * Calcula el progreso de un módulo específico basándose en lecciones completadas
@@ -91,34 +109,44 @@ const useModuleProgress = (completedLessons, timeSpent = 0, progressByModule = n
    * @returns {number} Porcentaje de progreso (0-100)
    */
   const calculateModuleProgress = useCallback((moduleId) => {
-    const module = curriculumData.modules[moduleId];
-    if (!module) {
-      // Check if it's M03 (module-03-configuration)
-      if (moduleId === 'module-03-configuration') {
-        // Count completed virtual lessons
-        const completedVirtualLessons = virtualLessons.filter(lesson => 
-          completedLessons.has(`${moduleId}-${lesson.lessonId}`)
-        );
-        return virtualLessons.length > 0 
-          ? (completedVirtualLessons.length / virtualLessons.length) * 100 
-          : 0;
-      }
+    // Use getVisibleLessonsByLevel to get lessons for this module
+    // First, find which level this module belongs to
+    const modules = getAllModules();
+    const module = modules.find(m => m.id === moduleId);
+    const moduleLevel = module?.level;
+    
+    if (!moduleLevel) {
       return 0;
     }
     
-    // Contar lecciones completadas para este módulo
-    const moduleLessons = module.lessons || [];
-    const completedModuleLessons = moduleLessons.filter(lesson => 
-      completedLessons.has(`${moduleId}-${lesson.id}`)
-    );
+    // Get visible lessons for this level
+    const visibleLessons = getVisibleLessonsByLevel(moduleLevel);
+    // Filter lessons for this specific module
+    const moduleLessons = visibleLessons.filter(lesson => lesson.moduleId === moduleId);
+    // Only count completable lessons (exclude allowEmpty)
+    const completableLessons = moduleLessons.filter(lesson => !lesson.allowEmpty);
     
-    return moduleLessons.length > 0 ? (completedModuleLessons.length / moduleLessons.length) * 100 : 0;
-  }, [completedLessons, virtualLessons]);
+    if (completableLessons.length === 0) {
+      return 0;
+    }
+    
+    // Count completed lessons
+    const completedLessonsSet = completedLessons instanceof Set 
+      ? completedLessons 
+      : new Set(completedLessons);
+    
+    const completedCount = completableLessons.filter(lesson => 
+      completedLessonsSet.has(`${moduleId}-${lesson.lessonId}`)
+    ).length;
+    
+    return (completedCount / completableLessons.length) * 100;
+  }, [completedLessons]);
 
   /**
    * Agregador por nivel: compute completedLessons y totalLessons desde el flatten de lecciones filtrado
    * Usa cálculo filtrado que excluye allowEmpty del denominador y calcula por páginas si está disponible
-   * @returns {Object} Objeto con progreso por nivel: { [levelId]: { completedLessons, totalLessons, percentage, completedPages, totalPages } }
+   * También incluye el conteo de módulos (cards) por nivel
+   * @returns {Object} Objeto con progreso por nivel: { [levelId]: { completedLessons, totalLessons, percentage, completedPages, totalPages, totalModules } }
    */
   const levelProgressAggregated = useMemo(() => {
     const progress = {};
@@ -128,12 +156,23 @@ const useModuleProgress = (completedLessons, timeSpent = 0, progressByModule = n
     if (progressByModule && typeof progressByModule === 'object') {
       levels.forEach(levelId => {
         const filteredProgress = calculateFilteredProgress(progressByModule, levelId);
+        // Obtener módulos (cards) en este nivel
+        const modulesInLevel = getModulesByLevel(levelId);
+        // Filtrar módulos bloqueados (no mostrar los que están bloqueados)
+        // Un módulo está disponible si tiene al menos una lección visible
+        const visibleModules = modulesInLevel.filter(module => {
+          // Verificar si el módulo tiene lecciones visibles
+          const visibleLessons = getVisibleLessonsByLevel(levelId);
+          return visibleLessons.some(lesson => lesson.moduleId === module.id);
+        });
+        
         progress[levelId] = {
           completedLessons: filteredProgress.completedLessons,
           totalLessons: filteredProgress.totalLessons,
           percentage: filteredProgress.percentage,
           completedPages: filteredProgress.completedPages,
           totalPages: filteredProgress.totalPages,
+          totalModules: visibleModules.length, // Cantidad de cards (módulos) en el nivel
         };
       });
       return progress;
@@ -184,12 +223,21 @@ const useModuleProgress = (completedLessons, timeSpent = 0, progressByModule = n
         percentage = (completedLessonsCount / totalLessons) * 100;
       }
       
+      // Obtener módulos (cards) en este nivel
+      const modulesInLevel = getModulesByLevel(levelId);
+      // Filtrar módulos que tienen lecciones visibles
+      const visibleLessons = getVisibleLessonsByLevel(levelId);
+      const visibleModules = modulesInLevel.filter(module => {
+        return visibleLessons.some(lesson => lesson.moduleId === module.id);
+      });
+      
       progress[levelId] = {
         completedLessons: completedLessonsCount,
         totalLessons: totalLessons,
         percentage: percentage,
         completedPages: completedPages,
         totalPages: totalPages,
+        totalModules: visibleModules.length, // Cantidad de cards (módulos) en el nivel
       };
     });
 
@@ -198,6 +246,7 @@ const useModuleProgress = (completedLessons, timeSpent = 0, progressByModule = n
 
   /**
    * Calcula estadísticas globales de progreso
+   * Uses getVisibleLessonsByLevel to count lessons (excludes allowEmpty from totals)
    * @returns {Object} Objeto con estadísticas globales
    */
   const calculateGlobalStats = useMemo(() => {
@@ -208,12 +257,15 @@ const useModuleProgress = (completedLessons, timeSpent = 0, progressByModule = n
       calculateModuleProgress(module.id) === 100
     ).length;
     
-    // Count total lessons including virtual lessons from M03
-    const moduleLessonsCount = modules.reduce((acc, module) => 
-      acc + (module.lessons?.length || 0), 0
-    );
-    const virtualLessonsCount = virtualLessons.length;
-    const totalLessons = moduleLessonsCount + virtualLessonsCount;
+    // Count total lessons using getVisibleLessonsByLevel (excludes allowEmpty from totals)
+    const allLevels = ['beginner', 'intermediate', 'advanced'];
+    let totalLessons = 0;
+    allLevels.forEach(levelId => {
+      const visibleLessons = getVisibleLessonsByLevel(levelId);
+      // Only count completable lessons (exclude allowEmpty)
+      const completableLessons = visibleLessons.filter(lesson => !lesson.allowEmpty);
+      totalLessons += completableLessons.length;
+    });
     
     const completedLessonsCount = completedLessons.size;
     
@@ -224,7 +276,7 @@ const useModuleProgress = (completedLessons, timeSpent = 0, progressByModule = n
       completedLessons: completedLessonsCount,
       lessonsCompletion: totalLessons > 0 ? (completedLessonsCount / totalLessons) * 100 : 0
     };
-  }, [calculateModuleProgress, completedLessons, timeSpent, virtualLessons]);
+  }, [calculateModuleProgress, completedLessons, timeSpent]);
 
   /**
    * Obtiene el progreso por nivel usando la función del curriculumData (legacy)

@@ -121,7 +121,7 @@ const LessonProgressItem = ({
             </Typography>
           }
           secondary={
-            <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+            <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', mt: 0.5 }}>
               <AccessTime sx={{ 
                 fontSize: 14, 
                 mr: 0.5, 
@@ -129,6 +129,7 @@ const LessonProgressItem = ({
                 opacity: isLocked ? 0.6 : 1,
               }} />
               <Typography 
+                component="span"
                 variant="caption" 
                 color={isLocked ? 'text.disabled' : 'text.secondary'}
                 sx={{ opacity: isLocked ? 0.6 : 1 }}

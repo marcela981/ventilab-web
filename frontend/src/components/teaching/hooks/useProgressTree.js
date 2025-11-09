@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { getModulesCount, getAllModules } from '../../../data/curriculum/selectors.js';
+import { getModulesCount, getAllModules, getVisibleLessonsByLevel } from '../../../data/curriculum/selectors.js';
 
 /**
  * Hook personalizado para encapsular la lógica del árbol de progreso del usuario
@@ -154,18 +154,22 @@ const useProgressTree = (
 
     // Contar módulos completados
     let completedModules = 0;
-    let totalLessons = 0;
 
     modules.forEach((module) => {
       const moduleProgress = calculateModuleProgress(module.id);
       if (moduleProgress === 100) {
         completedModules++;
       }
+    });
 
-      // Sumar lecciones totales
-      if (module.lessons && Array.isArray(module.lessons)) {
-        totalLessons += module.lessons.length;
-      }
+    // Count total lessons using getVisibleLessonsByLevel (excludes allowEmpty from totals)
+    const allLevels = ['beginner', 'intermediate', 'advanced'];
+    let totalLessons = 0;
+    allLevels.forEach(levelId => {
+      const visibleLessons = getVisibleLessonsByLevel(levelId);
+      // Only count completable lessons (exclude allowEmpty)
+      const completableLessons = visibleLessons.filter(lesson => !lesson.allowEmpty);
+      totalLessons += completableLessons.length;
     });
 
     // Calcular porcentaje global de módulos

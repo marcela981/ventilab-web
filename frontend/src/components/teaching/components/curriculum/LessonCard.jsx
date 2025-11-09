@@ -192,7 +192,6 @@ const LessonCard = ({
         <div style={{ marginTop: 8, opacity: isAvailable ? 1 : 0.6 }}>
           <CurriculumProgressBar
             value={progressPercent}
-            label={isCompleted ? '1/1' : '0/1'}
           />
         </div>
       </div>

@@ -198,8 +198,14 @@ export function getLessonPath(lessonId, moduleId) {
   };
 
   // Normalize module folder
-  let moduleFolder = moduleId;
-  if (!moduleId.startsWith('module-')) {
+  // Map module IDs to actual folder names
+  const moduleIdToFolder = {
+    'module-02-modalidades-parametros': 'module-02-parameters',
+    // Add other mappings as needed
+  };
+  
+  let moduleFolder = moduleIdToFolder[moduleId] || moduleId;
+  if (!moduleFolder.startsWith('module-')) {
     moduleFolder = `module-01-fundamentals`; // Default fallback
   }
 
@@ -262,6 +268,12 @@ export function getLessonPath(lessonId, moduleId) {
   }
 
   // Standard path for module-01-fundamentals and others
+  // For module-02-parameters, use the lessonId directly if it already has the format lesson-XX-name
+  if (moduleFolder === 'module-02-parameters' && lessonId.startsWith('lesson-')) {
+    // Use lessonId directly as it matches the filename format
+    return `${LESSON_PATH_PREFIX}/${moduleFolder}/${lessonId}.json`;
+  }
+  
   // Use fileName instead of lessonId to handle ID mappings
   return `${LESSON_PATH_PREFIX}/${moduleFolder}/lesson-${lessonNumber}-${fileName}.json`;
 }

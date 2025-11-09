@@ -16,7 +16,7 @@ import { curriculumData } from '../curriculumData.js';
 // Import metadata to determine strategy
 import curriculumMeta from './meta.js';
 
-// Import module03Content to count virtual lessons
+// Import module03Content to count virtual lessons (legacy, now handled by getVisibleLessonsByLevel)
 import module03Content from '../lessons/module-03-configuration/index.js';
 
 const metadata = curriculumMeta || { strategy: 'data-driven', declaredTotal: null };
@@ -159,7 +159,7 @@ export function getModuleById(moduleId) {
  * Get curriculum metadata with computed totals
  * Computes totals exclusively from selectors:
  * - Modules: real modules from getAllModules() (excludes placeholders when strategy is data-driven)
- * - Lessons: real module lessons + virtual lessons from M03 (flatten)
+ * - Lessons: uses getVisibleLessonsByLevel to count visible lessons (excludes allowEmpty from totals)
  * @returns {Object} Metadata object with computed totals
  */
 export function getCurriculumMetadata() {
@@ -167,74 +167,88 @@ export function getCurriculumMetadata() {
   const placeholderModules = getPlaceholderModules();
   const availableModules = allModules.filter(m => !m.isPlaceholder);
   
-  // Count lessons from real modules
-  const moduleLessons = allModules.reduce((acc, module) => {
-    return acc + (module.lessons?.length || 0);
-  }, 0);
+  // Count lessons using buildLessonsArray logic (same as getVisibleLessonsByLevel but without circular dependency)
+  // This replaces the old method of counting from modules.lessons and module03Content
+  // Note: We duplicate the logic here to avoid circular dependency with selectors.js
+  const allLevels = ['beginner', 'intermediate', 'advanced'];
+  let totalLessons = 0;
+  let totalEstimatedTimeMinutes = 0;
   
-  // Count virtual lessons from M03 (module-03-configuration)
-  // These are flattened from the category-based structure
-  // Count lessons from each category, excluding placeholders
-  let virtualLessonsCount = 0;
-  let virtualLessonsTime = 0;
-  
-  if (module03Content) {
-    // Count real lessons from pathologyProtocols
-    if (module03Content.pathologyProtocols) {
-      Object.values(module03Content.pathologyProtocols).forEach(lesson => {
-        if (lesson && lesson.title) {
-          virtualLessonsCount++;
-          virtualLessonsTime += lesson.estimatedTime || 0;
-        }
-      });
-    }
+  // Count lessons from modules (same logic as getVisibleLessonsByLevel but inline)
+  allLevels.forEach(levelId => {
+    const modulesInLevel = allModules.filter(module => module.level === levelId);
     
-    // Count real lessons from protectiveStrategies
-    if (module03Content.protectiveStrategies) {
-      Object.values(module03Content.protectiveStrategies).forEach(lesson => {
-        if (lesson && lesson.title) {
-          virtualLessonsCount++;
-          virtualLessonsTime += lesson.estimatedTime || 0;
-        }
-      });
-    }
-    
-    // Count real lessons from weaningContent
-    if (module03Content.weaningContent) {
-      Object.values(module03Content.weaningContent).forEach(lesson => {
-        if (lesson && lesson.title) {
-          virtualLessonsCount++;
-          virtualLessonsTime += lesson.estimatedTime || 0;
-        }
-      });
-    }
-    
-    // Note: troubleshootingGuides and checklistProtocols are placeholders, so we exclude them
-  }
-  
-  // Total lessons = module lessons + virtual lessons from M03
-  const totalLessons = moduleLessons + virtualLessonsCount;
-  
-  // Calculate estimated time (only for available modules)
-  const estimatedTimes = availableModules
-    .map(m => {
-      if (m.duration) {
-        const hours = Math.ceil(m.duration / 60);
-        return hours;
+    modulesInLevel.forEach(module => {
+      if (!module.lessons || module.lessons.length === 0) {
+        return;
       }
-      return 0;
-    })
-    .filter(t => t > 0);
+      
+      module.lessons.forEach(lesson => {
+        let sections = [];
+        if (lesson.lessonData && lesson.lessonData.sections) {
+          sections = lesson.lessonData.sections;
+        } else if (lesson.sections) {
+          sections = lesson.sections;
+        }
+        
+        const metadata = lesson.lessonData?.metadata || lesson.metadata || {};
+        const allowEmpty = metadata.allowEmpty === true;
+        
+        // Only count completable lessons (exclude allowEmpty and empty lessons)
+        if (sections.length > 0 && !allowEmpty) {
+          totalLessons++;
+          totalEstimatedTimeMinutes += lesson.estimatedTime || lesson.lessonData?.estimatedTime || 0;
+        }
+      });
+    });
+    
+    // Count virtual lessons from M03 (only for advanced level)
+    if (levelId === 'advanced' && module03Content) {
+      // Count pathology protocols
+      if (module03Content.pathologyProtocols) {
+        Object.values(module03Content.pathologyProtocols).forEach(lesson => {
+          if (lesson && lesson.title && lesson.sections && lesson.sections.length > 0) {
+            const metadata = lesson.metadata || {};
+            if (!metadata.allowEmpty) {
+              totalLessons++;
+              totalEstimatedTimeMinutes += lesson.estimatedTime || 0;
+            }
+          }
+        });
+      }
+      
+      // Count protective strategies
+      if (module03Content.protectiveStrategies) {
+        Object.values(module03Content.protectiveStrategies).forEach(lesson => {
+          if (lesson && lesson.title && lesson.sections && lesson.sections.length > 0) {
+            const metadata = lesson.metadata || {};
+            if (!metadata.allowEmpty) {
+              totalLessons++;
+              totalEstimatedTimeMinutes += lesson.estimatedTime || 0;
+            }
+          }
+        });
+      }
+      
+      // Count weaning content
+      if (module03Content.weaningContent) {
+        Object.values(module03Content.weaningContent).forEach(lesson => {
+          if (lesson && lesson.title && lesson.sections && lesson.sections.length > 0) {
+            const metadata = lesson.metadata || {};
+            if (!metadata.allowEmpty) {
+              totalLessons++;
+              totalEstimatedTimeMinutes += lesson.estimatedTime || 0;
+            }
+          }
+        });
+      }
+    }
+  });
   
-  // Add estimated time from virtual lessons (M03)
-  const virtualLessonsHours = Math.ceil(virtualLessonsTime / 60);
-  if (virtualLessonsHours > 0) {
-    estimatedTimes.push(virtualLessonsHours);
-  }
-  
-  const totalHours = estimatedTimes.reduce((acc, hours) => acc + hours, 0);
+  // Calculate estimated time from lesson estimatedTime (in minutes)
+  const totalHours = Math.ceil(totalEstimatedTimeMinutes / 60);
   const estimatedTotalTime = totalHours > 0 
-    ? `${totalHours}-${totalHours + Math.ceil(estimatedTimes.length * 0.5)} horas`
+    ? `${totalHours}-${totalHours + Math.ceil(totalLessons * 0.1)} horas`
     : 'Próximamente';
   
   return {

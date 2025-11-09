@@ -406,3 +406,117 @@ export const getVirtualLessonsArray = () => {
   return Array.from(lessonsMap.values());
 };
 
+/**
+ * Get visible lessons by level
+ * 
+ * This function:
+ * 1. Flattens M03 to virtual lessons
+ * 2. Filters lessons with sections.length > 0
+ * 3. Excludes empty ones except when metadata.allowEmpty === true
+ * 4. Returns only lessons for the specified level
+ * 
+ * Lessons with allowEmpty === true are included but don't count in progress calculations
+ * 
+ * @param {string} levelId - Level ID (beginner, intermediate, advanced)
+ * @returns {Array} Array of visible lesson objects with { moduleId, lessonId, sections, allowEmpty, ... }
+ */
+export const getVisibleLessonsByLevel = (levelId) => {
+  if (!levelId) {
+    return [];
+  }
+  
+  const allModules = getAllModules();
+  const visibleLessons = [];
+  
+  // Process regular modules with lessons
+  const modulesInLevel = allModules.filter(module => module.level === levelId);
+  
+  modulesInLevel.forEach(module => {
+    if (!module.lessons || module.lessons.length === 0) {
+      return;
+    }
+    
+    module.lessons.forEach(lesson => {
+      // Get sections from lessonData
+      let sections = [];
+      if (lesson.lessonData && lesson.lessonData.sections) {
+        sections = lesson.lessonData.sections;
+      } else if (lesson.sections) {
+        sections = lesson.sections;
+      }
+      
+      // Get metadata
+      const metadata = lesson.lessonData?.metadata || lesson.metadata || {};
+      const allowEmpty = metadata.allowEmpty === true;
+      
+      // Filter: only include if sections.length > 0 OR metadata.allowEmpty === true
+      if (sections.length === 0 && !allowEmpty) {
+        return; // Skip empty lessons
+      }
+      
+      visibleLessons.push({
+        moduleId: module.id,
+        lessonId: lesson.id,
+        title: lesson.title || lesson.lessonData?.title || 'Sin título',
+        description: lesson.description || lesson.lessonData?.description || '',
+        estimatedTime: lesson.estimatedTime || lesson.lessonData?.estimatedTime || 0,
+        difficulty: lesson.difficulty || lesson.lessonData?.difficulty || module.difficulty || 'intermedio',
+        order: lesson.order || lesson.lessonData?.order || 0,
+        sections: sections,
+        sectionsCount: sections.length,
+        allowEmpty: allowEmpty,
+        lessonData: lesson.lessonData || lesson,
+        moduleLevel: module.level,
+        moduleTitle: module.title,
+      });
+    });
+  });
+  
+  // Add virtual lessons from M03 (module-03-configuration)
+  // Only include if level matches
+  if (levelId === 'advanced') {
+    const virtualLessons = getVirtualLessonsArray();
+    virtualLessons.forEach(virtualLesson => {
+      // Virtual lessons from M03 are always advanced level
+      if (virtualLesson.moduleLevel !== 'advanced') {
+        return;
+      }
+      
+      // Get sections and metadata
+      const sections = virtualLesson.sections || [];
+      const metadata = virtualLesson.metadata || {};
+      const allowEmpty = metadata.allowEmpty === true;
+      
+      // Filter: only include if sections.length > 0 OR metadata.allowEmpty === true
+      if (sections.length === 0 && !allowEmpty) {
+        return; // Skip empty lessons
+      }
+      
+      visibleLessons.push({
+        moduleId: virtualLesson.moduleId,
+        lessonId: virtualLesson.lessonId,
+        title: virtualLesson.title,
+        description: virtualLesson.description || '',
+        estimatedTime: virtualLesson.estimatedTime || 0,
+        difficulty: virtualLesson.difficulty || 'intermediate',
+        order: virtualLesson.order || 0,
+        sections: sections,
+        sectionsCount: sections.length,
+        allowEmpty: allowEmpty,
+        lessonData: virtualLesson.lessonData,
+        moduleLevel: virtualLesson.moduleLevel,
+        moduleTitle: 'Configuración y Manejo del Ventilador Mecánico',
+        category: virtualLesson.category,
+        isPlaceholder: virtualLesson.isPlaceholder || false,
+        keyPoints: virtualLesson.keyPoints,
+        references: virtualLesson.references,
+      });
+    });
+  }
+  
+  // Sort by order
+  visibleLessons.sort((a, b) => (a.order || 0) - (b.order || 0));
+  
+  return visibleLessons;
+};
+

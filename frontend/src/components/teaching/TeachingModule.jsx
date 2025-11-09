@@ -70,7 +70,7 @@ import DashboardTab from '../../features/dashboard/DashboardTab';
  * Este componente envuelve LessonViewer para capturar errores de carga
  * y mostrarlos de manera amigable al usuario
  */
-const LessonViewerWrapper = ({ lessonId, moduleId, onComplete, onNavigate, onError }) => {
+const LessonViewerWrapper = ({ lessonId, moduleId, onComplete, onNavigate, onError, onBackToDashboard }) => {
   const router = useRouter();
   const { data, isLoading, error, refetch } = useLesson(lessonId, moduleId);
   
@@ -95,15 +95,17 @@ const LessonViewerWrapper = ({ lessonId, moduleId, onComplete, onNavigate, onErr
       >
         <AlertTitle>Error al cargar la lección</AlertTitle>
         {error}
-        <Box sx={{ mt: 2 }}>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={handleBackToDashboard}
-          >
-            Volver al Curriculum
-          </Button>
-        </Box>
+        {onBackToDashboard && (
+          <Box sx={{ mt: 2 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={onBackToDashboard}
+            >
+              Volver al Curriculum
+            </Button>
+          </Box>
+        )}
       </Alert>
     );
   }
@@ -201,7 +203,8 @@ const TeachingModule = () => {
   const {
     calculateModuleProgress,
     calculateGlobalStats,
-    levelProgress
+    levelProgress,
+    levelProgressAggregated
   } = useModuleProgress(completedLessons, timeSpent, progressByModule);
 
   // Hook: disponibilidad de módulos
@@ -1067,6 +1070,7 @@ const TeachingModule = () => {
                   onComplete={handleLessonComplete}
                   onNavigate={handleNavigateLesson}
                   onError={handleLessonError}
+                  onBackToDashboard={handleBackToDashboard}
                 />
               </Suspense>
             )}
@@ -1242,7 +1246,7 @@ const TeachingModule = () => {
             setCategory={setCategory}
             setLesson={setLesson}
             handleSectionClick={handleSectionClick}
-            levelProgress={levelProgress}
+            levelProgress={levelProgressAggregated || levelProgress}
             calculateModuleProgress={calculateModuleProgress}
             isModuleAvailable={isModuleAvailable}
             getModuleStatus={getModuleStatus}

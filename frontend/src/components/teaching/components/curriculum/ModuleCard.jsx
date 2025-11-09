@@ -100,6 +100,8 @@ const ModuleCard = ({
       totalLessons: (module?.lessons || []).length,
       isCompleted: (moduleProgressProp || 0) >= 100,
       completedAt: null,
+      completedPages: 0,
+      totalPages: 0,
     };
   }, [progress, precalculatedProgress, moduleProgressProp, module?.lessons]);
   
@@ -281,13 +283,10 @@ const ModuleCard = ({
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Skeleton variant="rectangular" width="100%" height={8} sx={{ borderRadius: 4, flex: 1 }} />
                 <Skeleton variant="text" width={36} />
-                <Skeleton variant="text" width={40} />
               </Box>
             ) : (
               <CurriculumProgressBar
                 value={moduleProgressAggregate.percentInt}
-                completedLessons={moduleProgressAggregate.completedLessons}
-                totalLessons={moduleProgressAggregate.totalLessons || (module?.lessons || []).length || 0}
               />
             )}
           </div>

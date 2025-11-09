@@ -217,10 +217,40 @@ const LevelStepper = ({
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {levels.map((level, levelIndex) => {
           const levelModules = getModulesByLevel ? getModulesByLevel(level.id) : [];
-          const levelProg = levelProgress[level.id] || {
-            total: 0,
-            completed: 0,
-            percentage: 0
+          
+          // Calcular módulos visibles (no bloqueados) para mostrar el conteo preciso de cards
+          // Nota: No usar useMemo dentro de map, calcular directamente
+          let visibleModulesCount = 0;
+          if (renderMode === 'modules') {
+            // Filtrar módulos bloqueados (igual que en renderModuleGrid)
+            if (calculateModuleProgress && getModuleStatus) {
+              const visibleModules = levelModules.filter((module) => {
+                const moduleProgress = calculateModuleProgress(module.id);
+                const moduleStatus = getModuleStatus(module, moduleProgress);
+                return moduleStatus !== 'locked';
+              });
+              visibleModulesCount = visibleModules.length;
+            } else {
+              visibleModulesCount = levelModules.length;
+            }
+          }
+          
+          // levelProgress ahora puede tener estructura nueva (levelProgressAggregated) o legacy
+          const levelProgRaw = levelProgress[level.id] || {};
+          // Detectar si es la estructura nueva (tiene completedLessons y totalLessons) o legacy (tiene completed y total)
+          const isNewStructure = 'completedLessons' in levelProgRaw || 'totalLessons' in levelProgRaw;
+          const levelProg = isNewStructure ? {
+            // Estructura nueva: basada en lecciones completadas
+            completedLessons: levelProgRaw.completedLessons || 0,
+            totalLessons: levelProgRaw.totalLessons || 0,
+            percentage: levelProgRaw.percentage || 0,
+            totalModules: visibleModulesCount > 0 ? visibleModulesCount : (levelProgRaw.totalModules || levelModules.length), // Usar conteo preciso de cards visibles
+          } : {
+            // Estructura legacy: basada en módulos completados
+            completed: levelProgRaw.completed || 0,
+            total: levelProgRaw.total || levelModules.length,
+            percentage: levelProgRaw.percentage || 0,
+            totalModules: visibleModulesCount > 0 ? visibleModulesCount : levelModules.length,
           };
           const status = getLevelStatus(levelProg.percentage);
           const isCurrentLevel = level.id === currentLevelId;
@@ -362,30 +392,53 @@ const LevelStepper = ({
                       <Box
                         sx={{
                           display: 'flex',
-                          alignItems: 'baseline',
-                          gap: 0.5,
-                          minWidth: isMobile ? '80px' : '100px'
+                          flexDirection: 'column',
+                          alignItems: 'flex-end',
+                          gap: 0.25,
+                          minWidth: isMobile ? '100px' : '120px'
                         }}
                       >
-                        <Typography
-                          variant="body2"
+                        <Box
                           sx={{
-                            color: level.color,
-                            fontWeight: 700,
-                            fontSize: '0.95rem'
+                            display: 'flex',
+                            alignItems: 'baseline',
+                            gap: 0.5
                           }}
                         >
-                          {levelProg.percentage.toFixed(0)}%
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: '#e8f4fd',
-                            fontSize: '0.7rem'
-                          }}
-                        >
-                          ({levelProg.completed}/{levelProg.total})
-                        </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: level.color,
+                              fontWeight: 700,
+                              fontSize: '0.95rem'
+                            }}
+                          >
+                            {levelProg.percentage.toFixed(0)}%
+                          </Typography>
+                          {/* Mostrar lecciones completadas / total lecciones */}
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: '#e8f4fd',
+                              fontSize: '0.7rem'
+                            }}
+                          >
+                            ({isNewStructure ? levelProg.completedLessons : levelProg.completed}/{isNewStructure ? levelProg.totalLessons : levelProg.total} lecciones)
+                          </Typography>
+                        </Box>
+                        {/* Mostrar cantidad de cards (módulos) - solo en modo modules */}
+                        {renderMode === 'modules' && levelProg.totalModules > 0 && (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: '#b0bec5',
+                              fontSize: '0.65rem',
+                              fontStyle: 'italic'
+                            }}
+                          >
+                            {levelProg.totalModules} {levelProg.totalModules === 1 ? 'tarjeta' : 'tarjetas'}
+                          </Typography>
+                        )}
                       </Box>
                     </Box>
                   </Box>
@@ -414,9 +467,16 @@ LevelStepper.propTypes = {
     emoji: PropTypes.string // Emoji opcional para cada nivel
   })),
   levelProgress: PropTypes.objectOf(PropTypes.shape({
+    // Estructura nueva (levelProgressAggregated): basada en lecciones
+    completedLessons: PropTypes.number,
+    totalLessons: PropTypes.number,
+    percentage: PropTypes.number,
+    totalModules: PropTypes.number,
+    completedPages: PropTypes.number,
+    totalPages: PropTypes.number,
+    // Estructura legacy: basada en módulos
     total: PropTypes.number,
     completed: PropTypes.number,
-    percentage: PropTypes.number
   })),
   getModulesByLevel: PropTypes.func,
   calculateModuleProgress: PropTypes.func,
