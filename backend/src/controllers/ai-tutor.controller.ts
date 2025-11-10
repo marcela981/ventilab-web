@@ -273,7 +273,7 @@ export const getHealth = async (req: Request, res: Response): Promise<void> => {
           configured: {
             openai: !!process.env.OPENAI_API_KEY,
             anthropic: !!process.env.ANTHROPIC_API_KEY,
-            google: !!process.env.GOOGLE_API_KEY,
+            google: !!(process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY),
           },
         },
         cache: {
@@ -283,7 +283,7 @@ export const getHealth = async (req: Request, res: Response): Promise<void> => {
         models: {
           openai: process.env.AI_MODEL_OPENAI || 'gpt-4o-mini',
           anthropic: process.env.AI_MODEL_ANTHROPIC || 'claude-3-5-haiku-20241022',
-          google: process.env.AI_MODEL_GOOGLE || 'gemini-1.5-flash',
+          google: process.env.AI_MODEL_GOOGLE || 'gemini-2.0-flash',
         },
         timestamp: new Date().toISOString(),
       },

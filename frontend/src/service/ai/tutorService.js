@@ -306,8 +306,9 @@ export const completionsHTTP = async ({
     const token = getAuthToken();
     
     // Intentar SSE primero
+    // Usar el mismo endpoint unificado que el chat por página: /ai/chat/completions
     const baseUrl = API_BASE_HTTP || API_BASE_URL;
-    const sseResponse = await fetch(`${baseUrl}/ai/tutor/completions`, {
+    const sseResponse = await fetch(`${baseUrl}/ai/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -316,7 +317,7 @@ export const completionsHTTP = async ({
       },
       body: JSON.stringify({
         messages: trimHistory(messages),
-        lessonContext,
+        lessonContext, // Formato TutorAI
         provider,
       }),
     });

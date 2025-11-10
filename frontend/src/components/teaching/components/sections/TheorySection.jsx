@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import {
   Paper,
   Typography,
@@ -7,13 +7,29 @@ import {
 import { useTheme, alpha } from '@mui/material/styles';
 import { MarkdownRenderer } from '../content';
 
+// Lazy load AITopicExpander
+const AITopicExpander = lazy(() => import('../ai/AITopicExpander'));
+
 /**
  * TheorySection - Componente para renderizar una sección de teoría
  */
-const TheorySection = ({ section, sectionIndex, theory }) => {
+const TheorySection = ({ 
+  section, 
+  sectionIndex, 
+  theory,
+  moduleId,
+  lessonId,
+  lessonData,
+  currentPageType,
+}) => {
   const theme = useTheme();
   
   if (!section) return null;
+  
+  // Determinar si el expansor de IA está habilitado para esta sección
+  // Por defecto habilitado, pero se puede deshabilitar con metadata
+  const aiExpanderEnabled = section.metadata?.aiExpanderEnabled !== false;
+  const aiExpanderMode = section.metadata?.aiExpanderMode || 'button'; // 'button' | 'accordion'
   
   return (
     <Box>
@@ -43,12 +59,51 @@ const TheorySection = ({ section, sectionIndex, theory }) => {
             backgroundColor: 'transparent',
             mb: 3,
             color: '#ffffff',
+            position: 'relative',
           }}
         >
           <Box sx={{ lineHeight: 1.8, color: '#ffffff' }}>
-            <MarkdownRenderer content={section.content} />
+            <MarkdownRenderer content={
+              typeof section.content === 'string' 
+                ? section.content 
+                : section.content.markdown || section.content.text || ''
+            } />
           </Box>
+          
+          {/* AI Topic Expander - Modo botón (no intrusivo) */}
+          {aiExpanderEnabled && aiExpanderMode === 'button' && moduleId && lessonId && lessonData && (
+            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+              <Suspense fallback={null}>
+                <AITopicExpander
+                  moduleId={moduleId}
+                  lessonId={lessonId}
+                  lessonData={lessonData}
+                  currentSection={section}
+                  currentPageType={currentPageType}
+                  mode="button"
+                  enabled={aiExpanderEnabled}
+                />
+              </Suspense>
+            </Box>
+          )}
         </Paper>
+      )}
+      
+      {/* AI Topic Expander - Modo acordeón */}
+      {aiExpanderEnabled && aiExpanderMode === 'accordion' && moduleId && lessonId && lessonData && (
+        <Box sx={{ mb: 3 }}>
+          <Suspense fallback={null}>
+            <AITopicExpander
+              moduleId={moduleId}
+              lessonId={lessonId}
+              lessonData={lessonData}
+              currentSection={section}
+              currentPageType={currentPageType}
+              mode="accordion"
+              enabled={aiExpanderEnabled}
+            />
+          </Suspense>
+        </Box>
       )}
       
       {/* Examples associated with this section */}

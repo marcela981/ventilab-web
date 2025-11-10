@@ -4,6 +4,7 @@
  * Protects the API from abuse and ensures fair usage
  */
 
+import { Request, Response, NextFunction } from 'express';
 import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit';
 
 /**
@@ -279,5 +280,125 @@ export const createRateLimiter = (
     },
     standardHeaders: true,
     legacyHeaders: false,
+    // Add Retry-After header for 429 responses
+    handler: (req, res) => {
+      const retryAfter = Math.ceil(windowMs / 1000); // Retry-After in seconds
+      res.setHeader('Retry-After', retryAfter.toString());
+      res.status(429).json({
+        success: false,
+        error: {
+          code: 'RATE_LIMIT_EXCEEDED',
+          message,
+          details: [
+            `You have exceeded the maximum number of requests`,
+            `Limit: ${max} requests per ${windowMs / 1000} seconds`,
+            `Please try again after ${retryAfter} seconds`
+          ],
+        },
+      });
+    },
   });
+};
+
+/**
+ * Create Compound Rate Limiter
+ * Creates a rate limiter that checks multiple limits (e.g., per minute and per day)
+ * Applies limiters sequentially - if any limit is exceeded, returns 429
+ *
+ * @param limits - Array of limit configurations
+ * @param message - Custom error message
+ * @returns Middleware that checks all limits
+ *
+ * Usage:
+ * const compoundLimiter = createCompoundRateLimiter([
+ *   { windowMs: 60000, max: 10 }, // 10 per minute
+ *   { windowMs: 24 * 60 * 60 * 1000, max: 100 }, // 100 per day
+ * ], 'Rate limit exceeded');
+ */
+export const createCompoundRateLimiter = (
+  limits: Array<{ windowMs: number; max: number }>,
+  message: string = 'Rate limit exceeded'
+) => {
+  // Create individual rate limiters
+  const limiters = limits.map((limit) => 
+    rateLimit({
+      windowMs: limit.windowMs,
+      max: limit.max,
+      standardHeaders: true,
+      legacyHeaders: false,
+      skip: () => false,
+      handler: (req, res) => {
+        // Calculate Retry-After in seconds (minimum 1 second)
+        const retryAfter = Math.max(1, Math.ceil(limit.windowMs / 1000));
+        res.setHeader('Retry-After', retryAfter.toString());
+        
+        // Format time window for display
+        let timeWindow: string;
+        if (limit.windowMs < 60000) {
+          timeWindow = `${Math.floor(limit.windowMs / 1000)} segundos`;
+        } else if (limit.windowMs < 3600000) {
+          timeWindow = `${Math.floor(limit.windowMs / 60000)} minutos`;
+        } else if (limit.windowMs < 86400000) {
+          timeWindow = `${Math.floor(limit.windowMs / 3600000)} horas`;
+        } else {
+          timeWindow = `${Math.floor(limit.windowMs / 86400000)} días`;
+        }
+        
+        res.status(429).json({
+          success: false,
+          error: {
+            code: 'RATE_LIMIT_EXCEEDED',
+            message,
+            details: [
+              `Has excedido el número máximo de solicitudes`,
+              `Límite: ${limit.max} solicitudes por ${timeWindow}`,
+              `Por favor, intenta nuevamente después de ${retryAfter} segundos`
+            ],
+          },
+        });
+      },
+    })
+  );
+
+  // Return middleware that applies limiters sequentially
+  // If any limiter fails, the response is sent and the chain stops
+  return (req: Request, res: Response, next: NextFunction) => {
+    // Track if response has been sent
+    let responseSent = false;
+    const originalEnd = res.end;
+    
+    // Override res.end to track when response is sent
+    res.end = function(...args: any[]) {
+      responseSent = true;
+      return originalEnd.apply(this, args as any);
+    };
+
+    let limiterIndex = 0;
+
+    const applyNextLimiter = () => {
+      // If response was already sent (rate limit exceeded), stop
+      if (responseSent) {
+        return;
+      }
+
+      // If all limiters passed, continue to next middleware
+      if (limiterIndex >= limiters.length) {
+        res.end = originalEnd; // Restore original end
+        return next();
+      }
+
+      // Apply current limiter
+      const limiter = limiters[limiterIndex];
+      limiter(req, res, () => {
+        // This callback is only called if the limiter passed
+        // (i.e., limit not exceeded)
+        if (!responseSent) {
+          limiterIndex++;
+          applyNextLimiter();
+        }
+      });
+    };
+
+    applyNextLimiter();
+  };
 };

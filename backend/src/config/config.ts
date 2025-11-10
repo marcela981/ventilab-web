@@ -83,7 +83,7 @@ const loadConfig = (): Config => {
     aiProvider: process.env.AI_PROVIDER || 'google',
     aiModelOpenAI: process.env.AI_MODEL_OPENAI || 'gpt-4o-mini',
     aiModelAnthropic: process.env.AI_MODEL_ANTHROPIC || 'claude-3-5-haiku-20241022',
-    aiModelGoogle: process.env.AI_MODEL_GOOGLE || 'gemini-1.5-flash',
+    aiModelGoogle: process.env.AI_MODEL_GOOGLE || 'gemini-2.0-flash',
     redisUrl: process.env.REDIS_URL,
   };
 };

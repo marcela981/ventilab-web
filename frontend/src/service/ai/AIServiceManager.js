@@ -70,7 +70,21 @@ export class AIServiceManager {
       return true;
     }
     
-    console.warn(`⚠️ Provider ${providerName} no disponible`);
+    // Si no hay providers disponibles, no es un error crítico (algunos componentes usan backend)
+    const availableProviders = Array.from(this.providers.keys());
+    if (availableProviders.length === 0) {
+      // Silenciar el warning si no hay providers - podría ser normal si se usa backend
+      return false;
+    }
+    
+    console.warn(`⚠️ Provider ${providerName} no disponible. Disponibles: ${availableProviders.join(', ')}`);
+    // Intentar usar el primer proveedor disponible como fallback
+    if (availableProviders.length > 0) {
+      this.currentProvider = this.providers.get(availableProviders[0]);
+      console.log(`🔄 Usando proveedor disponible: ${availableProviders[0]}`);
+      return true;
+    }
+    
     return false;
   }
 

@@ -6,7 +6,6 @@ import {
   Box,
   List,
   ListItem,
-  ListItemText,
   ListItemIcon,
   Skeleton,
   Chip
@@ -182,62 +181,71 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
                   {item.icon ? <span>{item.icon}</span> : getIcon(item.type)}
                 </Box>
               </ListItemIcon>
-              <ListItemText
-                primary={
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography
+                  variant="subtitle2"
+                  component="div"
+                  sx={{
+                    color: '#ffffff',
+                    fontWeight: 600,
+                    fontSize: '0.9rem',
+                    mb: 0.5
+                  }}
+                >
+                  {item.title}
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 0.5,
+                    mt: 0.5
+                  }}
+                >
                   <Typography
-                    variant="subtitle2"
+                    variant="body2"
                     component="div"
                     sx={{
-                      color: '#ffffff',
-                      fontWeight: 600,
-                      fontSize: '0.9rem',
-                      mb: 0.5
+                      color: '#e8f4fd',
+                      fontSize: '0.875rem'
                     }}
                   >
-                    {item.title}
+                    {item.description}
                   </Typography>
-                }
-                secondary={
-                  <Box component="div" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      gap: 1,
+                      alignItems: 'center'
+                    }}
+                  >
                     <Typography
-                      variant="body2"
-                      component="div"
+                      variant="caption"
+                      component="span"
                       sx={{
-                        color: '#e8f4fd',
-                        fontSize: '0.875rem'
+                        color: '#9e9e9e',
+                        fontSize: '0.7rem'
                       }}
                     >
-                      {item.description}
+                      {formatRelativeTime(item.timestamp)}
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                      <Typography
-                        variant="caption"
-                        component="span"
+                    {item.xpDelta !== undefined && item.xpDelta !== 0 && (
+                      <Chip
+                        icon={<TrendingUp sx={{ fontSize: 14 }} />}
+                        label={`${item.xpDelta > 0 ? '+' : ''}${item.xpDelta} XP`}
+                        size="small"
                         sx={{
-                          color: '#9e9e9e',
-                          fontSize: '0.7rem'
+                          backgroundColor: item.xpDelta > 0 ? 'rgba(76, 175, 80, 0.2)' : 'rgba(244, 67, 54, 0.2)',
+                          color: item.xpDelta > 0 ? '#4CAF50' : '#f44336',
+                          border: `1px solid ${item.xpDelta > 0 ? 'rgba(76, 175, 80, 0.5)' : 'rgba(244, 67, 54, 0.5)'}`,
+                          fontSize: '0.7rem',
+                          height: 20
                         }}
-                      >
-                        {formatRelativeTime(item.timestamp)}
-                      </Typography>
-                      {item.xpDelta !== undefined && item.xpDelta !== 0 && (
-                        <Chip
-                          icon={<TrendingUp sx={{ fontSize: 14 }} />}
-                          label={`${item.xpDelta > 0 ? '+' : ''}${item.xpDelta} XP`}
-                          size="small"
-                          sx={{
-                            backgroundColor: item.xpDelta > 0 ? 'rgba(76, 175, 80, 0.2)' : 'rgba(244, 67, 54, 0.2)',
-                            color: item.xpDelta > 0 ? '#4CAF50' : '#f44336',
-                            border: `1px solid ${item.xpDelta > 0 ? 'rgba(76, 175, 80, 0.5)' : 'rgba(244, 67, 54, 0.5)'}`,
-                            fontSize: '0.7rem',
-                            height: 20
-                          }}
-                        />
-                      )}
-                    </Box>
+                      />
+                    )}
                   </Box>
-                }
-              />
+                </Box>
+              </Box>
             </ListItem>
           ))}
         </List>

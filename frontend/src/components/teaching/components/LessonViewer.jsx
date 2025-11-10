@@ -68,6 +68,8 @@ import useLessonPages from '../hooks/useLessonPages';
 import useLessonProgress from '../hooks/useLessonProgress';
 import LessonNavigation from './LessonNavigation';
 import { AITutorChat } from './ai';
+import AITopicExpander from './ai/AITopicExpander';
+import { useTopicContext } from '../../../hooks/useTopicContext';
 // Lazy load clinical case components for code splitting
 const ClinicalCaseViewer = lazy(() => import('./clinical/ClinicalCaseViewer'));
 import PrerequisiteTooltip from './curriculum/PrerequisiteTooltip';
@@ -365,6 +367,18 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   const totalPages = calculatePages.length;
   const currentPageData = calculatePages[currentPage];
   
+  // Obtener contexto de la página actual para AITopicExpander
+  // Se calcula después de currentPageData para tener la información de la sección actual
+  const topicContext = useTopicContext({
+    contentRef,
+    moduleId,
+    lessonId,
+    sectionId: currentPageData?.section?.id || currentPageData?.sectionId || null,
+    moduleData: module,
+    lessonData: data,
+    sectionData: currentPageData?.section || currentPageData || null,
+  });
+  
   const handleNextPage = useCallback(() => {
     if (currentPage < totalPages - 1) {
       setCurrentPage(prev => prev + 1);
@@ -649,6 +663,10 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
             section={currentPageData.section}
             sectionIndex={currentPageData.sectionIndex}
             theory={data.content?.theory}
+            moduleId={moduleId}
+            lessonId={lessonId}
+            lessonData={data}
+            currentPageType={currentPageData.type}
           />
         );
       case 'analogies':
@@ -846,7 +864,6 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
       <CssBaseline />
       <Box sx={{ minHeight: '100vh' }}>
         <Container
-          ref={contentRef}
           maxWidth="lg"
             sx={{
             py: { xs: 2, md: 4 },
@@ -860,10 +877,23 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
             },
             }}
           >
-              {renderCurrentPage()}
-              
-              {/* Media Blocks Section - Rendered after main content */}
-              {renderMediaBlocks()}
+              <article id="lesson-content" ref={contentRef}>
+                {renderCurrentPage()}
+                
+                {/* Media Blocks Section - Rendered after main content */}
+                {renderMediaBlocks()}
+                
+                {/* AI Topic Expander - Renderizado al final del contenido */}
+                {data && (
+                  <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+                    <AITopicExpander
+                      context={topicContext}
+                      variant={data.metadata?.aiExpanderVariant || 'button'}
+                      enabled={data.metadata?.aiExpander !== false}
+                    />
+                  </Box>
+                )}
+              </article>
         </Container>
         
         {/* Global Navigation - Always visible */}

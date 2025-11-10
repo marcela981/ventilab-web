@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import tutorService from '../../service/ai/tutorService';
+import chatService from '../../services/ai/chatService';
 
 /**
  * Generar UUID v4
@@ -469,6 +470,7 @@ export const useAITutor = (lessonContext) => {
 
   /**
    * Fallback a HTTP cuando WebSocket falla
+   * Usa chatService unificado
    */
   const handleHTTPFallback = useCallback(async (text) => {
     setTyping(true);
@@ -484,51 +486,78 @@ export const useAITutor = (lessonContext) => {
       time: new Date().toISOString(),
     }]);
 
-    await tutorService.completionsHTTP({
-      question: text,
-      lessonContext,
-      provider,
-      history: tutorService.trimHistory(fullHistoryRef.current),
-      onToken: (delta) => {
-        setMessages(prev => 
-          prev.map(msg => 
-            msg.id === assistantMsgId
-              ? { ...msg, content: msg.content + delta }
-              : msg
-          )
-        );
-      },
-      onEnd: (messageId, usage, backendSuggestions) => {
-        setTyping(false);
-        setMessages(prev => 
-          prev.map(msg => 
-            msg.id === assistantMsgId
-              ? { ...msg, time: new Date().toISOString() }
-              : msg
-          )
-        );
-        // Guardar en caché
-        tutorService.putCache(text, lessonContext, provider, 
-          messages.find(m => m.id === assistantMsgId)?.content || '', usage);
-        // Actualizar sugerencias
-        if (backendSuggestions) {
-          setSuggestions(prev => mergeSuggestions(prev, backendSuggestions));
-        }
-        currentAssistantMessageIdRef.current = null;
-      },
-      onError: (error) => {
-        setTyping(false);
-        setSending(false);
-        setMessages(prev => 
-          prev.map(msg => 
-            msg.id === assistantMsgId
-              ? { ...msg, error: error, time: new Date().toISOString() }
-              : msg
-          )
-        );
-        currentAssistantMessageIdRef.current = null;
-      },
-    });
+    // Construir historial en formato de mensajes
+    const historyMessages = chatService.trimHistory(fullHistoryRef.current).map(msg => ({
+      role: msg.role,
+      content: msg.content,
+    }));
+
+    try {
+      await chatService.sendMessage({
+        system: undefined, // El backend construirá el system prompt desde el contexto
+        user: text,
+        history: historyMessages,
+        context: {
+          lessonId: lessonContext.lessonId,
+          title: lessonContext.title,
+          objectives: lessonContext.objectives,
+          tags: lessonContext.tags,
+          tipoDeLeccion: lessonContext.tipoDeLeccion,
+        },
+        provider,
+        stream: true,
+        onToken: (delta) => {
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === assistantMsgId
+                ? { ...msg, content: msg.content + delta }
+                : msg
+            )
+          );
+        },
+        onEnd: (messageId, usage, backendSuggestions) => {
+          setTyping(false);
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === assistantMsgId
+                ? { ...msg, time: new Date().toISOString() }
+                : msg
+            )
+          );
+          // Guardar en caché
+          tutorService.putCache(text, lessonContext, provider, 
+            messages.find(m => m.id === assistantMsgId)?.content || '', usage);
+          // Actualizar sugerencias
+          if (backendSuggestions) {
+            setSuggestions(prev => mergeSuggestions(prev, backendSuggestions));
+          }
+          currentAssistantMessageIdRef.current = null;
+        },
+        onError: (error) => {
+          setTyping(false);
+          setSending(false);
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === assistantMsgId
+                ? { ...msg, error: error, time: new Date().toISOString() }
+                : msg
+            )
+          );
+          currentAssistantMessageIdRef.current = null;
+        },
+      });
+    } catch (error) {
+      setTyping(false);
+      setSending(false);
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === assistantMsgId
+            ? { ...msg, error: error.message || 'Error desconocido', time: new Date().toISOString() }
+            : msg
+        )
+      );
+      currentAssistantMessageIdRef.current = null;
+    }
   }, [lessonContext, provider, messages, mergeSuggestions]);
 
   /**

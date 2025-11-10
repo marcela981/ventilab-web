@@ -63,11 +63,18 @@ export class AIProviderFactory {
       console.log(`✅ Anthropic Provider initialized (model: ${model})`);
     }
 
-    // Initialize Google if API key is available
-    if (process.env.GOOGLE_API_KEY) {
-      const model = process.env.AI_MODEL_GOOGLE || 'gemini-1.5-flash';
-      this.providers.set('google', new GoogleProvider(process.env.GOOGLE_API_KEY, model));
-      console.log(`✅ Google Provider initialized (model: ${model})`);
+    // Initialize Google/Gemini if API key is available
+    // Soporta GOOGLE_API_KEY, GEMINI_API_KEY, y NEXT_PUBLIC_GEMINI_API_KEY (para compatibilidad)
+    // Nota: NEXT_PUBLIC_ es un prefijo de Next.js, pero lo soportamos como fallback
+    const googleApiKey = process.env.GOOGLE_API_KEY
+      || process.env.GEMINI_API_KEY
+      || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    if (googleApiKey) {
+      // Usar gemini-2.0-flash como modelo por defecto (más estable y ampliamente disponible)
+      // Los usuarios pueden especificar otro modelo mediante AI_MODEL_GOOGLE o AI_MODEL_GEMINI
+      const model = process.env.AI_MODEL_GOOGLE || process.env.AI_MODEL_GEMINI || 'gemini-2.0-flash';
+      this.providers.set('google', new GoogleProvider(googleApiKey, model));
+      console.log(`✅ Google/Gemini Provider initialized (model: ${model})`);
     }
 
     if (this.providers.size === 0) {

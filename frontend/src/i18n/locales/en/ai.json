@@ -1,0 +1,49 @@
+{
+  "prefill": {
+    "askAbout": "Give me more information about {{topic}}"
+  },
+  "suggestions": {
+    "seeMore": "See more suggestions",
+    "ariaLabel": "Question suggestions"
+  },
+  "topicExpander": {
+    "button": {
+      "label": "Would you like to expand this topic?",
+      "ariaLabel": "Expand topic with AI"
+    },
+    "accordion": {
+      "title": "Would you like to expand this topic?",
+      "ariaLabel": "Expand topic with AI"
+    },
+    "panel": {
+      "title": "Topic Expansion with AI",
+      "inputLabel": "Your question",
+      "inputPlaceholder": "Write your question or leave blank for automatic expansion",
+      "submitButton": "Send",
+      "cancelButton": "Cancel",
+      "stopButton": "Stop",
+      "loading": "Consulting AI…",
+      "error": "Error expanding topic",
+      "offline": "Offline mode: showing local summary",
+      "rateLimit": "Too many requests. Please wait a moment.",
+      "networkError": "No connection",
+      "timeoutError": "Request timeout",
+      "tryAgain": "Try again",
+      "closeAria": "Close expansion panel",
+      "tooltip": "Explore with AI",
+      "charCounter": "{{count}}/1000 characters"
+    },
+    "results": {
+      "expandedExplanation": "Explanation",
+      "keyPoints": "Key Points",
+      "deeperDive": "To dive deeper",
+      "suggestedResources": "Suggested Resources",
+      "suggestedReferences": "Suggested References",
+      "internalLinks": "Internal Links",
+      "insertInternalReferences": "Insert internal references",
+      "noResults": "Could not generate content",
+      "offlineNote": "Summary generated locally (offline mode)"
+    }
+  }
+}
+

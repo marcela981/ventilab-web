@@ -9,6 +9,8 @@ import ErrorBoundary from '../src/components/common/ErrorBoundary';
 import { useRouter } from 'next/router';
 import theme from '../src/theme/theme';
 import '../src/App.css';
+// Importar y inicializar i18n
+import '../src/i18n/i18n';
 
 // Context para el estado del sidebar
 const SidebarContext = createContext();
