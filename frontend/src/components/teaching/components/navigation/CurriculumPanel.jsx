@@ -10,9 +10,11 @@
  * @component
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import ModuleNavigationRouter from './ModuleNavigationRouter';
+import { debug } from '@/utils/debug';
+import { useLearningProgress } from '@/contexts/LearningProgressContext';
 
 /**
  * Dynamically loads module content and metadata
@@ -74,6 +76,19 @@ const CurriculumPanel = ({
   toggleFavorite,
   levels,
 }) => {
+  const { snapshot, isLoadingSnapshot, snapshotError } = useLearningProgress();
+  
+  useEffect(() => {
+    const g = debug.group('CurriculumPanel render');
+    g.info('state', {
+      loading: isLoadingSnapshot, error: !!snapshotError,
+      source: snapshot?.source,
+      completed: snapshot?.overview?.completedLessons,
+      total: snapshot?.overview?.totalLessons
+    });
+    g.end();
+  }, [isLoadingSnapshot, snapshotError, snapshot]);
+
   // Load module data if a specific module is selected
   const { moduleContent, moduleMetadata } = useMemo(
     () => loadModuleData(moduleIdFromQuery || router.query.module),

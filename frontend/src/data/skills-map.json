@@ -1,0 +1,51 @@
+[
+  {
+    "id": "skill-compliance",
+    "label": "Compliancia",
+    "description": "Comprensión de la compliancia pulmonar y su relación con la mecánica ventilatoria",
+    "category": "Fisiología",
+    "dependsOn": [],
+    "relatedLessons": ["lesson-01-respiratory-mechanics"]
+  },
+  {
+    "id": "skill-resistance",
+    "label": "Resistencia de la Vía Aérea",
+    "description": "Entendimiento de la resistencia al flujo de aire y su impacto en la ventilación",
+    "category": "Fisiología",
+    "dependsOn": [],
+    "relatedLessons": ["lesson-01-respiratory-mechanics"]
+  },
+  {
+    "id": "skill-pressure-volume",
+    "label": "Curvas Presión-Volumen",
+    "description": "Análisis e interpretación de curvas presión-volumen en ventilación mecánica",
+    "category": "Fisiología",
+    "dependsOn": ["skill-compliance"],
+    "relatedLessons": ["lesson-02-pressure-volume-loops"]
+  },
+  {
+    "id": "skill-ards-protective",
+    "label": "Estrategias Protectoras en SDRA",
+    "description": "Aplicación de estrategias de ventilación protectora en síndrome de distrés respiratorio agudo",
+    "category": "Crítico",
+    "dependsOn": ["skill-compliance", "skill-pressure-volume"],
+    "relatedLessons": ["lesson-XX-ards"]
+  },
+  {
+    "id": "skill-weaning",
+    "label": "Proceso de Destete",
+    "description": "Evaluación y manejo del proceso de destete de la ventilación mecánica",
+    "category": "Manejo Clínico",
+    "dependsOn": ["skill-compliance", "skill-resistance"],
+    "relatedLessons": ["lesson-XX-weaning"]
+  },
+  {
+    "id": "skill-modalities",
+    "label": "Modalidades Ventilatorias",
+    "description": "Selección y configuración de modalidades ventilatorias según el caso clínico",
+    "category": "Configuración",
+    "dependsOn": ["skill-pressure-volume"],
+    "relatedLessons": ["lesson-XX-modalities"]
+  }
+]
+

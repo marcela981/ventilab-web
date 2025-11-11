@@ -43,6 +43,7 @@ import useLesson from './hooks/useLesson';
 import useTeachingModule from '../../hooks/useTeachingModule';
 import useUserProgress from '../../hooks/useUserProgress';
 import { curriculumData } from '../../data/curriculumData';
+import debug from '../../utils/debug';
 
 // Module 03 content and navigation
 import CurriculumPanel from './components/navigation/CurriculumPanel';
@@ -58,7 +59,7 @@ import QuickAccessLessons from './components/dashboard/QuickAccessLessons';
 
 // Lazy load LessonViewer and ProgressDashboard for better performance
 const LessonViewer = lazy(() => import('./components/LessonViewer'));
-const ProgressDashboard = lazy(() => import('./components/progress/ProgressDashboard'));
+const ProgressTab = lazy(() => import('../../features/progress/components/ProgressTab'));
 const Module3ProgressDashboard = lazy(() => import('./components/dashboard/Module3ProgressDashboard'));
 const ReadinessIndicator = lazy(() => import('./components/evaluation/ReadinessIndicator'));
 
@@ -169,7 +170,10 @@ const TeachingModule = () => {
     setCurrentModule,
     isLoadingProgress,
     streak,
-    progressByModule
+    progressByModule,
+    snapshot,
+    refetchSnapshot,
+    upsertLessonProgressUnified
   } = useLearningProgress();
 
   // Teaching module context (for category navigation) - Only use if available
@@ -461,7 +465,13 @@ const TeachingModule = () => {
       const module = curriculumData.modules[moduleIdFromQuery];
       const estimatedTime = module?.duration || 30;
       
-      markLessonComplete(lessonFullId, moduleIdFromQuery, estimatedTime);
+      // Use unified progress update
+      if (upsertLessonProgressUnified) {
+        upsertLessonProgressUnified(lessonIdFromQuery, 1.0);
+      } else {
+        // Fallback to legacy method
+        markLessonComplete(lessonFullId, moduleIdFromQuery, estimatedTime);
+      }
       
       // Track analytics event
       if (typeof window !== 'undefined' && window.gtag) {
@@ -542,9 +552,17 @@ const TeachingModule = () => {
       { shallow: true }
     );
 
+    // Revalidate progress when switching to Curriculum or Mi Progreso tabs
+    if (newValue === 1 || newValue === 2) {
+      debug.info(`Tab changed to ${tabParam}, revalidating progress...`);
+      if (refetchSnapshot) {
+        refetchSnapshot();
+      }
+    }
+
     // Scroll to top on tab change
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [router]);
+  }, [router, refetchSnapshot]);
 
   // Calcular estadísticas globales
   const globalStats = calculateGlobalStats;
@@ -553,11 +571,12 @@ const TeachingModule = () => {
   // Memoizar allModules para evitar recreaciones innecesarias
   const allModules = useMemo(() => Object.values(curriculumData.modules), []);
 
-  // Calcular XP y nivel para el dashboard
-  const xpTotal = completedLessons.size * 100; // 100 XP por lección
-  const currentLevel = Math.floor(completedLessons.size / 5) + 1; // Nivel cada 5 lecciones
-  const xpForCurrentLevel = (completedLessons.size % 5) * 100;
-  const xpForNextLevel = 500; // 5 lecciones * 100 XP
+  // Calcular XP y nivel para el dashboard (usar snapshot unificado si disponible)
+  const completedLessonsCount = snapshot?.overview?.completedLessons || completedLessons.size;
+  const xpTotal = snapshot?.overview?.xpTotal || (completedLessonsCount * 100); // 100 XP por lección
+  const currentLevel = snapshot?.overview?.level || Math.floor(completedLessonsCount / 5) + 1; // Nivel cada 5 lecciones
+  const xpForCurrentLevel = (completedLessonsCount % 5) * 100;
+  const xpForNextLevel = snapshot?.overview?.nextLevelXp || 500; // 5 lecciones * 100 XP
   const levelProgressPercentage = (xpForCurrentLevel / xpForNextLevel) * 100;
   const xpToday = 0; // Esto debería calcularse desde el backend o tracking diario
 
@@ -1337,7 +1356,7 @@ const TeachingModule = () => {
                 </Paper>
               </Box>
             ) : (
-              <ProgressDashboard />
+              <ProgressTab />
             )}
           </Suspense>
         </Box>

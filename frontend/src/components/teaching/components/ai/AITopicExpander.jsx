@@ -39,12 +39,14 @@ import {
   ExpandMore as ExpandMoreIcon,
   OpenInNew as OpenInNewIcon,
   Link as LinkIcon,
+  Star as StarIcon,
 } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { sendLessonAI } from '../../../../services/ai/sharedAI';
 import { buildLessonContext, toTutorAILessonContext } from '../../../../services/ai/contextBuilder';
+import notesService from '../../../../services/notes/notesService';
 import {
   trackExpandClick,
   trackOpenMode,
@@ -118,6 +120,8 @@ const AITopicExpander = ({
   const [userMessage, setUserMessage] = useState(null); // Mensaje del usuario enviado
   const [chatHistory, setChatHistory] = useState([]); // Historial del chat
   const [threadId, setThreadId] = useState(null); // ID del hilo para persistencia
+  const [savingNote, setSavingNote] = useState(false); // Estado de guardado de nota
+  const [noteSaved, setNoteSaved] = useState(false); // Nota guardada exitosamente
   
   const inputRef = useRef(null);
   const buttonRef = useRef(null);
@@ -126,13 +130,25 @@ const AITopicExpander = ({
   const panelId = 'ai-topic-expander-panel';
   const resultId = 'ai-topic-expander-result';
   
+  // Extraer valores del contexto de forma segura para usar en dependencias
+  const moduleId = context?.moduleId || null;
+  const lessonId = context?.lessonId || null;
+  const sectionId = context?.sectionId || null;
+  const pageId = context?.pageId || null;
+  const moduleTitle = context?.moduleTitle || null;
+  const lessonTitle = context?.lessonTitle || null;
+  const sectionTitle = context?.sectionTitle || null;
+  const pageTitle = context?.pageTitle || null;
+  const sectionContent = context?.sectionContent || null;
+  const visibleText = context?.visibleText || null;
+  
   // Generar threadId determinístico: ai:thread:${moduleId}:${lessonId}:${pageId}
   const calculatedThreadId = useMemo(() => {
-    const pageId = context.sectionId || context.pageId || 'default';
-    const moduleId = context.moduleId || 'default';
-    const lessonId = context.lessonId || 'default';
-    return `ai:thread:${moduleId}:${lessonId}:${pageId}`;
-  }, [context.moduleId, context.lessonId, context.sectionId, context.pageId]);
+    const pageIdValue = sectionId || pageId || 'default';
+    const moduleIdValue = moduleId || 'default';
+    const lessonIdValue = lessonId || 'default';
+    return `ai:thread:${moduleIdValue}:${lessonIdValue}:${pageIdValue}`;
+  }, [moduleId, lessonId, sectionId, pageId]);
   
   // Cargar historial desde localStorage al montar
   useEffect(() => {
@@ -174,9 +190,9 @@ const AITopicExpander = ({
   // Formato: "Bríndame más información sobre {moduleTitle} → {lessonTitle} → {pageTitle}"
   const prefilledText = useMemo(() => {
     const topicParts = [
-      context.moduleTitle,
-      context.lessonTitle,
-      context.sectionTitle || context.pageTitle,
+      moduleTitle,
+      lessonTitle,
+      sectionTitle || pageTitle,
     ].filter(Boolean);
     
     if (topicParts.length === 0) {
@@ -189,7 +205,7 @@ const AITopicExpander = ({
     return i18n.language === 'en' 
       ? `Give me more information about ${topicString}`
       : `Bríndame más información sobre ${topicString}`;
-  }, [context.moduleTitle, context.lessonTitle, context.sectionTitle, context.pageTitle, i18n.language]);
+  }, [moduleTitle, lessonTitle, sectionTitle, pageTitle, i18n.language]);
 
   // Usar hook de sugerencias
   // Nota: el bank de metadata se puede pasar si está disponible en el contexto
@@ -250,15 +266,15 @@ const AITopicExpander = ({
 
   // Trackear visualización de sugerencias al abrir el panel
   useEffect(() => {
-    if (open && candidateBank && candidateBank.length > 0) {
+    if (open && candidateBank && candidateBank.length > 0 && context) {
       trackSuggestionView({
-        moduleId: context.moduleId,
-        lessonId: context.lessonId,
-        sectionId: context.sectionId,
+        moduleId: moduleId,
+        lessonId: lessonId,
+        sectionId: sectionId,
         suggestionsCount: candidateBank.length,
       });
     }
-  }, [open, candidateBank, context]);
+  }, [open, candidateBank, moduleId, lessonId, sectionId, context]);
 
   // Manejar tecla Escape para cerrar
   useEffect(() => {
@@ -276,28 +292,31 @@ const AITopicExpander = ({
     }
   }, [open]);
 
+
   // Manejar apertura del panel
   const handleOpen = useCallback(() => {
+    if (!context) return;
+    
     // Trackear evento antes de abrir
     trackExpandClick({
-      moduleId: context.moduleId,
-      lessonId: context.lessonId,
-      sectionId: context.sectionId,
-      pageType: context.pageType,
-      sectionType: context.sectionType,
+      moduleId: moduleId,
+      lessonId: lessonId,
+      sectionId: sectionId,
+      pageType: context?.pageType,
+      sectionType: context?.sectionType,
     });
     
     trackOpenMode(variant, {
-      moduleId: context.moduleId,
-      lessonId: context.lessonId,
-      sectionId: context.sectionId,
+      moduleId: moduleId,
+      lessonId: lessonId,
+      sectionId: sectionId,
     });
     
     setOpen(true);
     setError(null);
     setResponse(null);
     setMessageId(null);
-  }, [variant, context]);
+  }, [variant, context, moduleId, lessonId, sectionId]);
 
   // Manejar cierre del panel
   const handleClose = useCallback(() => {
@@ -337,13 +356,13 @@ const AITopicExpander = ({
     
     // Trackear refresh de sugerencias
     trackSuggestionsRefresh({
-      moduleId: context.moduleId,
-      lessonId: context.lessonId,
-      sectionId: context.sectionId,
+      moduleId: moduleId,
+      lessonId: lessonId,
+      sectionId: sectionId,
       suggestionsRefreshIndex: 0, // El hook maneja el índice interno
       suggestionsCount: candidateBank?.length || 0,
     });
-  }, [refreshSuggestions, candidateBank, context]);
+  }, [refreshSuggestions, candidateBank, moduleId, lessonId, sectionId]);
 
   // Manejar detener generación
   const handleStop = useCallback(() => {
@@ -382,44 +401,46 @@ const AITopicExpander = ({
     };
     setChatHistory(prev => [...prev, userMsg]);
     
+    if (!context) return;
+
     // Trackear solicitud
     trackExpandRequest({
-      moduleId: context.moduleId,
-      lessonId: context.lessonId,
-      sectionId: context.sectionId,
-      pageType: context.pageType,
-      sectionType: context.sectionType,
-      hasUserSelection: !!context.selectionText || !!context.userSelection,
-      hasVisibleTextBlock: !!context.visibleText || !!context.visibleTextBlock,
+      moduleId: moduleId,
+      lessonId: lessonId,
+      sectionId: sectionId,
+      pageType: context?.pageType,
+      sectionType: context?.sectionType,
+      hasUserSelection: !!context?.selectionText || !!context?.userSelection,
+      hasVisibleTextBlock: !!context?.visibleText || !!context?.visibleTextBlock,
     });
 
     try {
       // Construir contexto enriquecido de la lección/página
-      const pageIdentifier = context.sectionId || context.pageId || null;
+      const pageIdentifier = sectionId || pageId || null;
       let lessonContextPayload;
 
-      if (!context.lessonId) {
+      if (!lessonId) {
         console.warn('[AITopicExpander] lessonId no disponible; usando contexto mínimo.');
         lessonContextPayload = {
-          module: context.moduleTitle
+          module: moduleTitle
             ? {
-                id: context.moduleId || null,
-                title: context.moduleTitle,
+                id: moduleId || null,
+                title: moduleTitle,
                 level: null,
                 objectives: [],
               }
             : null,
           lesson: {
-            id: context.lessonId || null,
-            title: context.lessonTitle || context.sectionTitle || 'Lección sin título',
+            id: lessonId || null,
+            title: lessonTitle || sectionTitle || 'Lección sin título',
             description: null,
             tags: [],
           },
-          page: context.sectionTitle
+          page: sectionTitle
             ? {
                 id: pageIdentifier,
-                title: context.sectionTitle,
-                type: context.sectionType || context.pageType || null,
+                title: sectionTitle,
+                type: context?.sectionType || context?.pageType || null,
               }
             : null,
           learningObjectives: [],
@@ -429,32 +450,32 @@ const AITopicExpander = ({
       } else {
         try {
           lessonContextPayload = await buildLessonContext({
-            moduleId: context.moduleId || null,
-            lessonId: context.lessonId,
+            moduleId: moduleId || null,
+            lessonId: lessonId,
             pageId: pageIdentifier,
           });
         } catch (builderError) {
           console.warn('[AITopicExpander] Error construyendo contexto de la lección:', builderError);
           lessonContextPayload = {
-            module: context.moduleTitle
+            module: moduleTitle
               ? {
-                  id: context.moduleId || null,
-                  title: context.moduleTitle,
+                  id: moduleId || null,
+                  title: moduleTitle,
                   level: null,
                   objectives: [],
                 }
               : null,
             lesson: {
-              id: context.lessonId,
-              title: context.lessonTitle || 'Lección sin título',
+              id: lessonId,
+              title: lessonTitle || 'Lección sin título',
               description: null,
               tags: [],
             },
-            page: context.sectionTitle
+            page: sectionTitle
               ? {
                   id: pageIdentifier,
-                  title: context.sectionTitle,
-                  type: context.sectionType || context.pageType || null,
+                  title: sectionTitle,
+                  type: context?.sectionType || context?.pageType || null,
                 }
               : null,
             learningObjectives: [],
@@ -547,9 +568,9 @@ const AITopicExpander = ({
           }, 100);
           
           trackExpandSuccess({
-            moduleId: context.moduleId,
-            lessonId: context.lessonId,
-            sectionId: context.sectionId,
+            moduleId: moduleId,
+            lessonId: lessonId,
+            sectionId: sectionId,
             requestDuration: 0,
           });
         },
@@ -574,9 +595,9 @@ const AITopicExpander = ({
           }, 100);
           
           trackExpandError({
-            moduleId: context.moduleId,
-            lessonId: context.lessonId,
-            sectionId: context.sectionId,
+            moduleId: moduleId,
+            lessonId: lessonId,
+            sectionId: sectionId,
             errorCode: errorCode,
             errorStatus: errorStatus,
           });
@@ -608,9 +629,9 @@ const AITopicExpander = ({
       });
       
       trackExpandError({
-        moduleId: context.moduleId,
-        lessonId: context.lessonId,
-        sectionId: context.sectionId,
+        moduleId: moduleId,
+        lessonId: lessonId,
+        sectionId: sectionId,
         errorCode: errorCode,
         errorStatus: errorStatus,
       });
@@ -618,7 +639,32 @@ const AITopicExpander = ({
       setLoading(false);
       setController(null);
     }
-  }, [loading, input, context, t, chatHistory]);
+  }, [loading, input, context, t, chatHistory, moduleId, lessonId, sectionId, pageId, moduleTitle, lessonTitle, sectionTitle]);
+
+  // Escuchar evento para abrir con prompt desde TutorAI Pop-Up
+  useEffect(() => {
+    const handleOpenWithPrompt = (event) => {
+      const { prompt: promptText, context: eventContext } = event.detail;
+      if (promptText && context) {
+        // Abrir el panel si no está abierto
+        if (!open) {
+          setOpen(true);
+        }
+        // Pre-llenar el input con el prompt
+        setInput(promptText);
+        setDebouncedInput(promptText);
+        // Enviar automáticamente después de un pequeño delay
+        setTimeout(() => {
+          handleSubmitInternal(promptText);
+        }, 300);
+      }
+    };
+
+    window.addEventListener('aiExpansion:openWithPrompt', handleOpenWithPrompt);
+    return () => {
+      window.removeEventListener('aiExpansion:openWithPrompt', handleOpenWithPrompt);
+    };
+  }, [open, context, handleSubmitInternal]);
 
   // Manejar click en sugerencia - copiar al input y enviar automáticamente
   const handleSuggestionClick = useCallback((suggestion) => {
@@ -628,9 +674,9 @@ const AITopicExpander = ({
     
     // Trackear click en sugerencia
     trackSuggestionClick({
-      moduleId: context.moduleId,
-      lessonId: context.lessonId,
-      sectionId: context.sectionId,
+      moduleId: moduleId,
+      lessonId: lessonId,
+      sectionId: sectionId,
       suggestionId: suggestion.id,
       suggestionLength: suggestionText.length,
     });
@@ -639,7 +685,7 @@ const AITopicExpander = ({
     setTimeout(() => {
       handleSubmitInternal(suggestionText);
     }, 100);
-  }, [context, handleSubmitInternal]);
+  }, [moduleId, lessonId, sectionId, handleSubmitInternal]);
 
   // Manejar teclado en sugerencias (Enter/Espacio)
   const handleSuggestionKeyDown = useCallback((e, suggestion) => {
@@ -653,6 +699,58 @@ const AITopicExpander = ({
   const handleSubmit = useCallback(async () => {
     await handleSubmitInternal();
   }, [handleSubmitInternal]);
+
+  // Guardar respuesta de IA en notas
+  const handleSaveToNotes = useCallback(async () => {
+    if (!response || !response.expandedExplanation) return;
+
+    try {
+      setSavingNote(true);
+      const noteContext = {
+        userId: context?.userId,
+        moduleId: moduleId || null,
+        lessonId: lessonId || null,
+        pageId: sectionId || pageId || null,
+      };
+
+      const fullContent = [
+        response.expandedExplanation,
+        response.keyPoints && response.keyPoints.length > 0
+          ? `\n\n## Puntos Clave\n\n${response.keyPoints.map(p => `- ${p}`).join('\n')}`
+          : '',
+        response.deeperDive && response.deeperDive.length > 0
+          ? `\n\n## Para Profundizar\n\n${response.deeperDive.map(d => `- ${d}`).join('\n')}`
+          : '',
+      ]
+        .filter(Boolean)
+        .join('');
+
+      await notesService.saveAIExcerpt(noteContext, {
+        content: fullContent,
+        source: 'ai',
+        meta: {
+          provider: 'unknown', // Se puede obtener del response si está disponible
+          tokensEstimados: Math.ceil(fullContent.length / 4), // Aproximación
+          messageId: messageId || null,
+          ts: Date.now(),
+        },
+      });
+
+      setNoteSaved(true);
+      setTimeout(() => setNoteSaved(false), 3000);
+
+      // Disparar evento para mostrar toast en TutorAI Pop-Up
+      const event = new CustomEvent('tutor:note-saved', {
+        detail: { message: 'Guardado en TutorAI ▸ Guardados del Chat' },
+      });
+      window.dispatchEvent(event);
+    } catch (error) {
+      console.error('[AITopicExpander] Error saving to notes:', error);
+      setNoteSaved(false);
+    } finally {
+      setSavingNote(false);
+    }
+  }, [response, messageId, moduleId, lessonId, sectionId, pageId, context]);
 
   // Renderizar resultados (diseño compacto para chat)
   const renderResults = () => {
@@ -680,12 +778,30 @@ const AITopicExpander = ({
           color: '#1a1a1a',
         }}
       >
+        {/* Header con botón de guardar */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+          <Typography variant="subtitle2" sx={{ color: '#0BBAF4', fontWeight: 600 }}>
+            {t('topicExpander.results.expandedExplanation')}
+          </Typography>
+          <IconButton
+            size="small"
+            onClick={handleSaveToNotes}
+            disabled={savingNote || noteSaved}
+            sx={{
+              color: noteSaved ? '#4caf50' : '#0BBAF4',
+              '&:hover': {
+                backgroundColor: 'rgba(11, 186, 244, 0.2)',
+              },
+            }}
+            title={noteSaved ? 'Guardado' : 'Guardar en Notas'}
+          >
+            <StarIcon fontSize="small" />
+          </IconButton>
+        </Box>
+
         {/* Explicación */}
         {response.expandedExplanation && (
           <Box>
-            <Typography variant="subtitle2" sx={{ color: '#0BBAF4', fontWeight: 600, mb: 1 }}>
-              {t('topicExpander.results.expandedExplanation')}
-            </Typography>
             <Box sx={{ color: '#e0e0e0', lineHeight: 1.7, fontSize: '0.95rem', '& p': { color: '#e0e0e0' }, '& strong': { color: '#ffffff' } }}>
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {response.expandedExplanation}
@@ -1228,7 +1344,7 @@ const AITopicExpander = ({
                 />
                 <IconButton
                   onClick={handleSubmit}
-                  disabled={(!input.trim() && !context.sectionContent && !context.visibleText) || loading}
+                  disabled={(!input.trim() && !sectionContent && !visibleText) || loading}
                   sx={{
                     backgroundColor: '#0BBAF4',
                     color: '#ffffff',
@@ -1401,7 +1517,7 @@ const AITopicExpander = ({
               onClick={handleSubmit}
               variant="contained"
               color="primary"
-              disabled={loading || (!input.trim() && !context.sectionContent && !context.visibleText)}
+              disabled={loading || (!input.trim() && !sectionContent && !visibleText)}
               startIcon={<SparklesIcon />}
             >
               {t('topicExpander.panel.submitButton')}

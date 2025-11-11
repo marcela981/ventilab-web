@@ -104,7 +104,20 @@ export const useTokenManager = () => {
       
       (async () => {
         try {
-          const response = await fetch('/api/auth/backend-token');
+          const response = await fetch('/api/auth/backend-token', {
+            cache: 'no-store',
+            headers: {
+              'cache-control': 'no-cache',
+            },
+          });
+          
+          // Manejar 304 sin intentar parsear JSON vacío
+          if (response.status === 304) {
+            tokenFetchRef.current = false;
+            tokenPromiseRef.current = null;
+            return;
+          }
+          
           if (response.ok) {
             const data = await response.json();
             if (data.success && data.token) {

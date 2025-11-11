@@ -11,6 +11,8 @@ import { AppError } from '../middleware/errorHandler';
 import { HTTP_STATUS } from '../config/constants';
 import * as achievementService from '../services/achievement.service';
 import * as progressService from '../services/progress.service';
+import * as skillsService from '../services/skills.service';
+import * as milestonesService from '../services/milestones.service';
 import type {
   UpdateLessonProgressResponseDTO,
   ApiResponseDTO
@@ -859,5 +861,447 @@ export const getStreak = async (
   } catch (error) {
     console.error('[Progress] Error fetching streak:', error);
     next(error);
+  }
+};
+
+// =============================================================================
+// NEW PROGRESS TAB ENDPOINTS
+// =============================================================================
+
+/**
+ * Get progress overview with XP, level, streak, calendar, and module stats
+ *
+ * @route   GET /api/progress/overview
+ * @access  Private
+ * @returns Overview data: xpTotal, level, nextLevelXp, streakDays, calendar, completedLessons, totalLessons, modulesCompleted, totalModules
+ */
+export const getOverview = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+
+    console.log(`[Progress] Fetching overview for user: ${userId}`);
+
+    // Use Prisma transaction to fetch all data in parallel
+    // This avoids LEFT JOIN issues and ensures data consistency
+    const [allModules, allLessons, userProgress, sessions, allLessonProgress] = await prisma.$transaction([
+      // Get all active modules
+      prisma.module.findMany({
+        where: { isActive: true },
+        select: { id: true }
+      }),
+      
+      // Get all lessons
+      prisma.lesson.findMany({
+        select: { id: true }
+      }),
+      
+      // Get user's learning progress with completed lessons count
+      prisma.learningProgress.findMany({
+        where: { userId },
+        select: {
+          id: true,
+          moduleId: true,
+          completedAt: true,
+          timeSpent: true,
+          score: true,
+          updatedAt: true,
+          lessonProgress: {
+            where: { completed: true },
+            select: { lessonId: true }
+          }
+        }
+      }),
+      
+      // Get learning sessions for streak calculation
+      prisma.learningSession.findMany({
+        where: { userId },
+        orderBy: { startTime: 'desc' },
+        take: 50, // Limit to avoid performance issues
+        select: { startTime: true }
+      }),
+      
+      // Get all lesson progress for this user using relational filter
+      // This uses Prisma's native filtering which handles the JOIN correctly
+      prisma.lessonProgress.findMany({
+        where: {
+          learningProgress: {
+            userId
+          }
+        },
+        select: {
+          lessonId: true,
+          progress: true,
+          completed: true,
+          updatedAt: true,
+          progressId: true,
+          learningProgress: {
+            select: {
+              moduleId: true
+            }
+          }
+        }
+      })
+    ]);
+
+    // Calculate stats
+    const completedLessons = userProgress.reduce(
+      (sum, p) => sum + p.lessonProgress.length,
+      0
+    );
+    const completedModules = userProgress.filter(p => p.completedAt !== null).length;
+    const xpTotal = completedLessons * 100; // 100 XP per lesson
+
+    // Calculate level (1 level per 5 lessons, starting at level 1)
+    const level = Math.floor(completedLessons / 5) + 1;
+    const nextLevelXp = level * 5 * 100; // XP needed for next level
+
+    // Calculate streak
+    const streakDays = calculateStreak(sessions);
+
+    // Build calendar entries (last 30 days)
+    const calendar: Array<{ date: string; hasActivity: boolean; lessonsCompleted: number }> = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Group sessions by date
+    const sessionsByDate = new Map<string, number>();
+    sessions.forEach(session => {
+      const date = new Date(session.startTime);
+      date.setHours(0, 0, 0, 0);
+      const dateKey = date.toISOString().split('T')[0];
+      sessionsByDate.set(dateKey, (sessionsByDate.get(dateKey) || 0) + 1);
+    });
+
+    // Build calendar for last 30 days
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateKey = date.toISOString().split('T')[0];
+      const lessonsCompleted = sessionsByDate.get(dateKey) || 0;
+
+      calendar.push({
+        date: dateKey,
+        hasActivity: lessonsCompleted > 0,
+        lessonsCompleted
+      });
+    }
+
+    // Transform to snapshot format
+    // Filter out any orphaned lesson_progress (shouldn't happen with correct query, but safety check)
+    const lessons = allLessonProgress
+      .filter(lp => lp.learningProgress !== null) // Safety check for orphans
+      .map(lp => ({
+        lessonId: lp.lessonId,
+        progress: lp.completed ? 1.0 : lp.progress,
+        updatedAt: lp.updatedAt.toISOString()
+      }));
+
+    const overview = {
+      xpTotal,
+      level,
+      nextLevelXp,
+      streakDays,
+      calendar,
+      completedLessons,
+      totalLessons: allLessons.length,
+      modulesCompleted: completedModules,
+      totalModules: allModules.length,
+      lessons // Include lessons in overview
+    };
+
+    if (process.env.DEBUG_PROGRESS === 'true') {
+      const rid = (req as any).rid;
+      console.info('[progress] overview payload', {
+        rid,
+        userId: req.user!.id,
+        completedLessons: overview.completedLessons,
+        totalLessons: overview.totalLessons,
+        modulesCompleted: overview.modulesCompleted,
+        totalModules: overview.totalModules
+      });
+    }
+
+    // Force 200 status and remove ETag to prevent 304 Not Modified
+    // This endpoint has user-specific state that changes frequently
+    res.removeHeader('ETag');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      data: overview,
+      message: 'Overview retrieved successfully'
+    });
+  } catch (error) {
+    console.error('[Progress] Error fetching overview:', error);
+    next(error);
+  }
+};
+
+/**
+ * Get user skills with unlock status and mastery
+ *
+ * @route   GET /api/progress/skills
+ * @access  Private
+ * @returns Skills data: skills array and unlockedSkillIds array
+ */
+export const getSkills = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+
+    console.log(`[Progress] Fetching skills for user: ${userId}`);
+
+    const skills = await skillsService.getUserSkills(userId);
+    const unlockedSkillIds = await skillsService.getUnlockedSkillIds(userId);
+
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      data: {
+        skills,
+        unlockedSkillIds
+      },
+      message: 'Skills retrieved successfully'
+    });
+  } catch (error) {
+    console.error('[Progress] Error fetching skills:', error);
+    next(error);
+  }
+};
+
+/**
+ * Get user milestones with progress
+ *
+ * @route   GET /api/progress/milestones
+ * @access  Private
+ * @returns Milestones array with progress
+ */
+export const getMilestones = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+
+    console.log(`[Progress] Fetching milestones for user: ${userId}`);
+
+    const milestones = await milestonesService.getUserMilestones(userId);
+
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      data: {
+        milestones
+      },
+      message: 'Milestones retrieved successfully'
+    });
+  } catch (error) {
+    console.error('[Progress] Error fetching milestones:', error);
+    next(error);
+  }
+};
+
+/**
+ * Get user achievements and medals
+ *
+ * @route   GET /api/progress/achievements
+ * @access  Private
+ * @returns Achievements and medals arrays
+ */
+export const getAchievements = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+
+    console.log(`[Progress] Fetching achievements for user: ${userId}`);
+
+    // Get all achievements with status
+    const allAchievements = await achievementService.getAllAchievementsWithStatus(userId);
+
+    // Transform to match frontend format
+    const achievements = allAchievements.map(ach => ({
+      id: ach.type,
+      title: ach.title,
+      description: ach.description,
+      earnedAt: ach.unlockedAt?.toISOString(),
+      icon: ach.icon,
+      rarity: ach.rarity.toLowerCase() as 'common' | 'rare' | 'epic' | 'legendary'
+    }));
+
+    // Calculate medals based on XP
+    const userProgress = await prisma.learningProgress.findMany({
+      where: { userId },
+      include: {
+        lessonProgress: {
+          where: { completed: true },
+          select: { lessonId: true }
+        }
+      }
+    });
+
+    const completedLessons = userProgress.reduce(
+      (sum, p) => sum + p.lessonProgress.length,
+      0
+    );
+    const xpTotal = completedLessons * 100;
+
+    // Medal tiers based on XP
+    const medals: Array<{
+      id: string;
+      title: string;
+      tier: 'bronze' | 'silver' | 'gold' | 'platinum';
+      earnedAt?: string;
+    }> = [];
+
+    if (xpTotal >= 6000) {
+      medals.push({
+        id: 'medal-platinum',
+        title: 'Medalla Platino',
+        tier: 'platinum',
+        earnedAt: new Date().toISOString() // TODO: Track actual earned date
+      });
+    }
+    if (xpTotal >= 3000) {
+      medals.push({
+        id: 'medal-gold',
+        title: 'Medalla Oro',
+        tier: 'gold',
+        earnedAt: new Date().toISOString()
+      });
+    }
+    if (xpTotal >= 1500) {
+      medals.push({
+        id: 'medal-silver',
+        title: 'Medalla Plata',
+        tier: 'silver',
+        earnedAt: new Date().toISOString()
+      });
+    }
+    if (xpTotal >= 500) {
+      medals.push({
+        id: 'medal-bronze',
+        title: 'Medalla Bronce',
+        tier: 'bronze',
+        earnedAt: new Date().toISOString()
+      });
+    }
+
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      data: {
+        achievements,
+        medals
+      },
+      message: 'Achievements retrieved successfully'
+    });
+  } catch (error) {
+    console.error('[Progress] Error fetching achievements:', error);
+    next(error);
+  }
+};
+
+/**
+ * Get user state (authentication and last activity)
+ *
+ * @route   GET /api/progress/user-state
+ * @access  Private
+ * @returns User state: isAuthenticated, lastActivityAt
+ */
+export const getUserState = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+
+    // Get last activity from most recent learning session
+    const lastSession = await prisma.learningSession.findFirst({
+      where: { userId },
+      orderBy: { startTime: 'desc' },
+      select: { startTime: true }
+    });
+
+    const userState = {
+      isAuthenticated: true,
+      lastActivityAt: lastSession?.startTime.toISOString() || null
+    };
+
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      data: userState,
+      message: 'User state retrieved successfully'
+    });
+  } catch (error) {
+    console.error('[Progress] Error fetching user state:', error);
+    next(error);
+  }
+};
+
+/**
+ * Debug endpoint for progress tracking
+ *
+ * @route   GET /api/progress/debug
+ * @access  Private
+ * @returns Debug information: rid, userId, env, counts
+ */
+export const getDebug = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const rid = (req as any).rid;
+    const userId = req.user!.id || null;
+
+    // Get counts from database
+    const totalLessons = await prisma.lesson.count();
+    const totalModules = await prisma.module.count({ where: { isActive: true } });
+    const userLessons = userId
+      ? await prisma.lessonProgress.count({
+          where: {
+            learningProgress: {
+              userId
+            },
+            progress: { gt: 0 }
+          }
+        })
+      : 0;
+
+    res.setHeader('x-request-id', rid);
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      data: {
+        rid,
+        userId,
+        env: process.env.NODE_ENV,
+        counts: {
+          totalLessons,
+          totalModules,
+          userLessons
+        }
+      }
+    });
+  } catch (error: any) {
+    const rid = (req as any).rid;
+    console.error('[Progress] Error in debug endpoint:', error);
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      error: {
+        rid,
+        message: error?.message || 'Internal server error'
+      }
+    });
   }
 };

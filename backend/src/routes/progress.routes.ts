@@ -243,4 +243,52 @@ router.get('/summary', progressController.getProgressSummary);
  */
 router.get('/streak', progressController.getStreak);
 
+/**
+ * @route   GET /api/progress/overview
+ * @desc    Get progress overview with XP, level, streak, calendar, and module stats
+ * @access  Private
+ * @returns {Object} Overview data
+ */
+router.get('/overview', progressController.getOverview);
+
+/**
+ * @route   GET /api/progress/skills
+ * @desc    Get user skills with unlock status and mastery
+ * @access  Private
+ * @returns {Object} Skills data: skills array and unlockedSkillIds array
+ */
+router.get('/skills', progressController.getSkills);
+
+/**
+ * @route   GET /api/progress/milestones
+ * @desc    Get user milestones with progress
+ * @access  Private
+ * @returns {Object} Milestones array with progress
+ */
+router.get('/milestones', progressController.getMilestones);
+
+/**
+ * @route   GET /api/progress/achievements
+ * @desc    Get user achievements and medals
+ * @access  Private
+ * @returns {Object} Achievements and medals arrays
+ */
+router.get('/achievements', progressController.getAchievements);
+
+/**
+ * @route   GET /api/progress/user-state
+ * @desc    Get user state (authentication and last activity)
+ * @access  Private
+ * @returns {Object} User state: isAuthenticated, lastActivityAt
+ */
+router.get('/user-state', progressController.getUserState);
+
+/**
+ * @route   GET /api/progress/debug
+ * @desc    Get debug information for progress tracking
+ * @access  Private
+ * @returns {Object} Debug data: rid, userId, env, counts
+ */
+router.get('/debug', progressController.getDebug);
+
 export default router;

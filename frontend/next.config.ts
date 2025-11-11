@@ -14,6 +14,16 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  // Rewrites para evitar CORS y puertos cruzados en dev
+  // Proxy SOLO cuando el path empieza por /backend (aislado del espacio /api de NextAuth)
+  async rewrites() {
+    return [
+      {
+        source: '/backend/:path*',
+        destination: 'http://localhost:3001/api/:path*',
+      },
+    ];
+  },
   // Configuración de webpack para manejar archivos .md
   webpack: (config, { isServer }) => {
     // Manejar archivos .md como assets de texto para evitar errores de módulo desconocido

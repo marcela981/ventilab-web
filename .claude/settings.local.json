@@ -41,7 +41,8 @@
       "Bash(node scripts/migrateLessons.js:*)",
       "Bash(node:*)",
       "Bash(psql:*)",
-      "Bash(timeout 10 bash:*)"
+      "Bash(timeout 10 bash:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

@@ -4,6 +4,7 @@ import { SessionProvider } from 'next-auth/react';
 import { AuthProvider } from '../src/contexts/AuthContext';
 import { PatientDataProvider } from '../src/contexts/PatientDataContext';
 import { NotificationProvider } from '../src/contexts/NotificationContext';
+import Providers from '../src/providers/Providers';
 import Sidebar from '../src/components/navigation/Sidebar';
 import ErrorBoundary from '../src/components/common/ErrorBoundary';
 import { useRouter } from 'next/router';
@@ -41,36 +42,61 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
         console.warn('HMR Error (ignorando):', error.message);
         return;
       }
+      // Ignorar errores de red que ya están siendo manejados por los componentes
+      if (error.reason?.isNetworkError || error.reason?.name === 'NetworkError') {
+        // Estos errores ya están siendo manejados por los componentes con .catch()
+        return;
+      }
+      if (error.isNetworkError || error.name === 'NetworkError') {
+        return;
+      }
       console.error('Error en la aplicación:', error);
     };
 
+    const handleUnhandledRejection = (event) => {
+      const error = event.reason;
+      if (error?.message?.includes('HMR') || error?.message?.includes('Invalid message')) {
+        console.warn('HMR Error (ignorando):', error.message);
+        event.preventDefault();
+        return;
+      }
+      // Ignorar errores de red que ya están siendo manejados
+      if (error?.isNetworkError || error?.name === 'NetworkError') {
+        // Estos errores ya están siendo manejados por los componentes con .catch()
+        event.preventDefault();
+        return;
+      }
+      console.error('Unhandled promise rejection:', error);
+    };
+
     window.addEventListener('error', handleError);
-    window.addEventListener('unhandledrejection', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
 
     return () => {
       window.removeEventListener('error', handleError);
-      window.removeEventListener('unhandledrejection', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, []);
 
   return (
     <ErrorBoundary>
-      {/*
-        SessionProvider: Provides NextAuth.js session to all components
-        - session: Initial session from getServerSideProps (SSR optimization)
-        - refetchInterval: Refetch session every 5 minutes to keep it updated
-        - refetchOnWindowFocus: Revalidate session when user returns to window
-      */}
-      <SessionProvider
-        session={session}
-        refetchInterval={5 * 60} // 5 minutes in seconds
-        refetchOnWindowFocus={true}
-      >
-        <AuthProvider>
-          <ThemeProvider theme={theme}>
-            <NotificationProvider>
-              <PatientDataProvider>
-                <CssBaseline />
+      <Providers>
+        {/*
+          SessionProvider: Provides NextAuth.js session to all components
+          - session: Initial session from getServerSideProps (SSR optimization)
+          - refetchInterval: Refetch session every 5 minutes to keep it updated
+          - refetchOnWindowFocus: Revalidate session when user returns to window
+        */}
+        <SessionProvider
+          session={session}
+          refetchInterval={5 * 60} // 5 minutes in seconds
+          refetchOnWindowFocus={false} // Desactivado para evitar revalidaciones agresivas
+        >
+          <AuthProvider>
+            <ThemeProvider theme={theme}>
+              <NotificationProvider>
+                <PatientDataProvider>
+                  <CssBaseline />
                 {/* Auth pages: render without sidebar */}
                 {isAuthPage ? (
                   <ErrorBoundary>
@@ -102,11 +128,12 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
                     </Box>
                   </SidebarContext.Provider>
                 )}
-              </PatientDataProvider>
-            </NotificationProvider>
-          </ThemeProvider>
-        </AuthProvider>
-      </SessionProvider>
+                </PatientDataProvider>
+              </NotificationProvider>
+            </ThemeProvider>
+          </AuthProvider>
+        </SessionProvider>
+      </Providers>
     </ErrorBoundary>
   );
 }

@@ -18,6 +18,8 @@ import React, {
 import { configureProgressService, getProgressSummary } from '@/services/api/progressService';
 import { getAuthToken, getUserData } from '@/services/authService';
 import { getOutboxStats } from '@/utils/progressOutbox';
+import { ProgressSource } from '@/services/progress/ProgressSource';
+import { debug } from '@/utils/debug';
 
 // Hooks
 import { useTokenManager } from './learningProgress/hooks/useTokenManager';
@@ -41,6 +43,11 @@ import { inferModuleIdFromLesson } from './learningProgress/utils/progressHelper
 import { AUTOSAVE_INTERVAL_MS } from './learningProgress/constants';
 
 const LearningProgressContext = createContext({
+  // Unified progress snapshot
+  snapshot: null,
+  isLoadingSnapshot: false,
+  snapshotError: null,
+  
   // State
   progressByModule: {},
   currentModuleId: null,
@@ -48,6 +55,10 @@ const LearningProgressContext = createContext({
   syncStatus: 'idle',
   lastSyncError: null,
   loadingModules: new Set(),
+  
+  // Unified progress actions
+  refetchSnapshot: async () => {},
+  upsertLessonProgressUnified: async () => {},
   
   // Actions
   loadModuleProgress: async () => {},
@@ -92,6 +103,11 @@ const LearningProgressContext = createContext({
 export const LearningProgressProvider = ({ children }) => {
   // Get NextAuth session and token management
   const { waitForToken, session } = useTokenManager();
+  
+  // Unified progress snapshot state
+  const [snapshot, setSnapshot] = useState(null);
+  const [isLoadingSnapshot, setIsLoadingSnapshot] = useState(false);
+  const [snapshotError, setSnapshotError] = useState(null);
   
   // Normalized state by module
   const [progressByModule, setProgressByModule] = useState({});
@@ -144,6 +160,111 @@ export const LearningProgressProvider = ({ children }) => {
       },
     });
   }, [session]);
+
+  // Track ongoing snapshot load to prevent concurrent calls
+  const loadingSnapshotRef = useRef(false);
+
+  // Load unified snapshot on mount and when session changes
+  const loadSnapshot = useCallback(async (label='initial') => {
+    // Prevent concurrent calls
+    if (loadingSnapshotRef.current) {
+      debug.info(`Skipping loadSnapshot(${label}) - already loading`);
+      return;
+    }
+
+    loadingSnapshotRef.current = true;
+    const g = debug.group(`LearningProgressProvider.load (${label})`);
+    setIsLoadingSnapshot(true);
+    setSnapshotError(null);
+    
+    try {
+      const s = await ProgressSource.getSnapshot();
+      setSnapshot(s);
+      g.info('loaded', { source: s.source, completed: s.overview.completedLessons, total: s.overview.totalLessons });
+    } catch (error) {
+      setSnapshotError(error?.message || 'Error al cargar el progreso');
+      g.error('failed', error?.message);
+    } finally {
+      setIsLoadingSnapshot(false);
+      loadingSnapshotRef.current = false;
+      g.end();
+    }
+  }, []);
+
+  // Refetch snapshot (for revalidation)
+  const refetchSnapshot = useCallback(async () => {
+    return loadSnapshot('refetch');
+  }, [loadSnapshot]);
+
+  // Unified upsert lesson progress
+  const upsertLessonProgressUnified = useCallback(async (lessonId, progress) => {
+    try {
+      await ProgressSource.upsertLessonProgress(lessonId, progress);
+      // Refetch snapshot after update
+      await loadSnapshot('upsert');
+      
+      // Also emit event for other listeners
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('progress:updated', {
+          detail: { lessonId, progress }
+        }));
+      }
+    } catch (error) {
+      debug.error('Failed to upsert lesson progress:', error);
+      throw error;
+    }
+  }, [loadSnapshot]);
+
+  // Load snapshot on mount
+  useEffect(() => {
+    debug.info('LearningProgressProvider mount');
+    loadSnapshot('mount');
+
+    function onFocus() { loadSnapshot('focus'); }
+    function onVisibility() { if (document.visibilityState === 'visible') loadSnapshot('tab-visible'); }
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [loadSnapshot]);
+
+
+  // Listen for progress:updated events
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const handleProgressUpdated = () => {
+      loadSnapshot('progress-event');
+    };
+
+    window.addEventListener('progress:updated', handleProgressUpdated);
+
+    return () => {
+      window.removeEventListener('progress:updated', handleProgressUpdated);
+    };
+  }, [loadSnapshot]);
+
+  // Migrate local to DB on login
+  useEffect(() => {
+    const userId = getUserData()?.id || getUserData()?._id || session?.user?.id || null;
+    const hasToken = !!getAuthToken();
+
+    if (userId && hasToken && snapshot?.source === 'local') {
+      debug.info('User logged in with local progress, migrating to DB...');
+      ProgressSource.migrateLocalToDB()
+        .then(() => {
+          debug.info('Migration complete, refetching snapshot...');
+          loadSnapshot('migration');
+        })
+        .catch(error => {
+          debug.error('Migration failed:', error);
+        });
+    }
+  }, [session, snapshot?.source, loadSnapshot]);
 
   // Progress loading hook
   const { loadModuleProgress } = useProgressLoader({
@@ -359,6 +480,13 @@ export const LearningProgressProvider = ({ children }) => {
   }, []);
 
   const contextValue = useMemo(() => ({
+    // Unified progress snapshot
+    snapshot,
+    isLoadingSnapshot,
+    snapshotError,
+    refetchSnapshot: () => loadSnapshot('refetch'),
+    upsertLessonProgressUnified,
+    
     // New API
     progressByModule,
     currentModuleId,
@@ -398,6 +526,11 @@ export const LearningProgressProvider = ({ children }) => {
     getFlashcardStats,
     dismissError,
   }), [
+    snapshot,
+    isLoadingSnapshot,
+    snapshotError,
+    loadSnapshot,
+    upsertLessonProgressUnified,
     progressByModule,
     currentModuleId,
     currentLessonId,

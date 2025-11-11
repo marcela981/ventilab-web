@@ -13,7 +13,8 @@ import { useLearningProgress } from '../../../contexts/LearningProgressContext';
  * @returns {Function} Función isLessonAvailable(lesson, allLessonsInLevel) que retorna boolean
  */
 export const useLessonAvailability = () => {
-  const { completedLessons, progressByModule } = useLearningProgress();
+  const { completedLessons, progressByModule, snapshot } = useLearningProgress();
+  const { selectLessonProgress, selectModuleProgress } = require('@/services/progress/selectors');
 
   /**
    * Calcula el progreso de un módulo
@@ -49,6 +50,17 @@ export const useLessonAvailability = () => {
       return progress;
     }
 
+    // Try unified snapshot if available
+    if (snapshot && snapshot.lessons) {
+      const moduleLessons = snapshot.lessons.filter(l => {
+        // Match lesson by ID (adjust logic based on your lessonId format)
+        return module.lessons.some(ml => ml.id === l.lessonId || l.lessonId.includes(ml.id));
+      });
+      const completedCount = moduleLessons.filter(l => l.progress >= 1.0).length;
+      const progress = Math.round((completedCount / module.lessons.length) * 100);
+      return progress;
+    }
+
     // Fallback: usar completedLessons Set
     const completedCount = module.lessons.filter((lesson) => {
       const lessonKey1 = `${moduleId}-${lesson.id}`;
@@ -58,7 +70,7 @@ export const useLessonAvailability = () => {
 
     const progress = Math.round((completedCount / module.lessons.length) * 100);
     return progress;
-  }, [completedLessons, progressByModule]);
+  }, [completedLessons, progressByModule, snapshot]);
 
   /**
    * Verifica si todos los módulos de un nivel están completados al 100%

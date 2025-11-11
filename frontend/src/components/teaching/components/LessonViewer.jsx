@@ -67,7 +67,7 @@ import { useLearningProgress } from '../../../contexts/LearningProgressContext';
 import useLessonPages from '../hooks/useLessonPages';
 import useLessonProgress from '../hooks/useLessonProgress';
 import LessonNavigation from './LessonNavigation';
-import { AITutorChat } from './ai';
+import TutorAIPopup from './ai/TutorAIPopup';
 import AITopicExpander from './ai/AITopicExpander';
 import { useTopicContext } from '../../../hooks/useTopicContext';
 // Lazy load clinical case components for code splitting
@@ -406,9 +406,31 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
         if (onComplete) {
           onComplete(data);
         }
+        
+        // Disparar evento para sugerencias finales del TutorAI
+        const event = new CustomEvent('tutor:finalSuggestions', {
+          detail: {
+            ctx: {
+              moduleId: data?.moduleId || moduleId,
+              lessonId: data?.lessonId || lessonId,
+              pageId: currentPageData?.section?.id || currentPageData?.id,
+              sectionId: currentPageData?.section?.id,
+              moduleTitle: module?.title,
+              lessonTitle: data?.title,
+              pageTitle: currentPageData?.section?.title || currentPageData?.title,
+              sectionTitle: currentPageData?.section?.title,
+            },
+            results: assessmentScore ? {
+              correct: assessmentScore.correct,
+              total: assessmentScore.total,
+              percentage: assessmentScore.percentage,
+            } : null,
+          },
+        });
+        window.dispatchEvent(event);
       });
     }
-  }, [currentPage, calculatePages, lessonCompleted, data, markLessonComplete, onComplete]);
+  }, [currentPage, calculatePages, lessonCompleted, data, markLessonComplete, onComplete, moduleId, lessonId, module, currentPageData, assessmentScore]);
   
   // ============================================================================
   // Build lesson context for AI Tutor
@@ -957,9 +979,20 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
                 },
               }}
             >
-              <AITutorChat 
+              <TutorAIPopup
                 lessonContext={buildLessonContext()}
+                context={{
+                  moduleId: data?.moduleId || moduleId,
+                  lessonId: data?.lessonId || lessonId,
+                  pageId: currentPageData?.section?.id || currentPageData?.id,
+                  sectionId: currentPageData?.section?.id,
+                  moduleTitle: module?.title,
+                  lessonTitle: data?.title,
+                  pageTitle: currentPageData?.section?.title || currentPageData?.title,
+                  sectionTitle: currentPageData?.section?.title,
+                }}
                 defaultOpen={defaultOpen}
+                defaultTab="suggestions"
               />
             </Box>
           </Portal>

@@ -136,14 +136,15 @@ export const readLimiter: RateLimitRequestHandler = rateLimit({
  * Balanced limits for general API usage
  *
  * Limits:
- * - 100 requests per 15 minutes per IP
+ * - Development: 1000 requests per 15 minutes per IP (very permissive)
+ * - Production: 100 requests per 15 minutes per IP
  * - General protection for all API routes
  *
  * Usage: app.use('/api', apiLimiter);
  */
 export const apiLimiter: RateLimitRequestHandler = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // 100 requests per 15 minutes
+  max: process.env.NODE_ENV === 'production' ? 100 : 1000, // More permissive in development
   message: {
     success: false,
     error: {
@@ -152,12 +153,16 @@ export const apiLimiter: RateLimitRequestHandler = rateLimit({
       details: [
         'You have exceeded the maximum number of API requests',
         'Please wait 15 minutes before making more requests',
-        'Current limit: 100 requests per 15 minutes'
+        `Current limit: ${process.env.NODE_ENV === 'production' ? 100 : 1000} requests per 15 minutes`
       ],
     },
   },
   standardHeaders: true,
   legacyHeaders: false,
+  // Skip rate limiting if DISABLE_RATE_LIMIT is set (useful for development)
+  skip: (req) => {
+    return process.env.DISABLE_RATE_LIMIT === 'true';
+  },
 });
 
 /**

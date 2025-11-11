@@ -68,7 +68,7 @@
  * =============================================================================
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import useAuth from './useAuth';
 
 /**
@@ -197,11 +197,17 @@ export function useLevelContent(moduleId, lessonId) {
   // Fetch User Level and Load Content
   // ============================================================================
 
+  // Ref para evitar doble ejecución en StrictMode (dev)
+  const fetchedRef = useRef(false);
+
   /**
    * Effect to fetch user level from profile and load content
    * Runs when authentication state changes or when moduleId/lessonId changes
    */
   useEffect(() => {
+    // Reset fetched flag cuando cambian las dependencias críticas
+    fetchedRef.current = false;
+
     // Don't attempt to load if auth is still loading
     if (authLoading) {
       return;
@@ -224,6 +230,12 @@ export function useLevelContent(moduleId, lessonId) {
       return;
     }
 
+    // Evitar doble ejecución en StrictMode dev
+    if (fetchedRef.current) {
+      return;
+    }
+    fetchedRef.current = true;
+
     // Get user level from user object
     // The user object should have a userLevel field after the backend update
     let level = user.userLevel || user.level;
@@ -234,18 +246,29 @@ export function useLevelContent(moduleId, lessonId) {
 
       // Fetch user profile to get userLevel
       fetch('/api/users/profile', {
+        cache: 'no-store', // Evita cache del navegador y 304 en dev
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'cache-control': 'no-cache',
         },
       })
         .then(response => {
+          // Manejar 304 sin intentar parsear JSON vacío
+          if (response.status === 304) {
+            // Usar nivel por defecto si hay 304
+            level = 'BEGINNER';
+            setUserLevel(level);
+            loadContent(level, moduleId, lessonId);
+            return;
+          }
+          
           if (!response.ok) {
             throw new Error('No se pudo obtener el perfil del usuario');
           }
           return response.json();
         })
         .then(result => {
-          if (result.success && result.data?.user?.userLevel) {
+          if (result && result.success && result.data?.user?.userLevel) {
             level = result.data.user.userLevel;
             setUserLevel(level);
             loadContent(level, moduleId, lessonId);

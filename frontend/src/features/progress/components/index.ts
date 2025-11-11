@@ -15,3 +15,14 @@ export { default as LeaderboardCompact } from './LeaderboardCompact';
 export { default as StudyCalendar } from './StudyCalendar';
 export { default as NarrativeProgress } from './NarrativeProgress';
 
+// New refactored components
+export { default as ProgressTab } from './ProgressTab';
+export { default as SkillTreeRefactored } from './SkillTreeRefactored';
+export { default as MilestonesRefactored } from './MilestonesRefactored';
+export { default as AchievementsRefactored } from './AchievementsRefactored';
+export { default as XpLevelCard } from './XpLevelCard';
+export { default as StreakCard } from './StreakCard';
+export { default as CalendarCard } from './CalendarCard';
+export { default as EmptyState } from './EmptyState';
+export { ProgressSkeleton, SkillTreeSkeleton, MilestonesSkeleton, AchievementsSkeleton } from './Skeletons';
+

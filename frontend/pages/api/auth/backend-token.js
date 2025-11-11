@@ -10,6 +10,12 @@ import { authOptions } from './[...nextauth]';
 const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default async function handler(req, res) {
+  // Prevent 304 Not Modified responses
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.removeHeader('ETag');
+
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -51,6 +57,7 @@ export default async function handler(req, res) {
     const data = await backendResponse.json();
 
     // Return token and user data
+    // Force 200 status (already set headers above)
     return res.status(200).json({
       success: true,
       token: data.data?.token,

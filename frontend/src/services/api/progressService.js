@@ -6,7 +6,15 @@
  * Uses the unified LearningProgress + LessonProgress model
  */
 
+import http from './http';
+
 const DEFAULT_API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+
+// Debug: Print API base URL once on module load
+if (typeof window !== 'undefined') {
+  console.debug('[progressService] API Base URL:', DEFAULT_API_BASE_URL);
+  console.debug('[progressService] NEXT_PUBLIC_API_URL env:', process.env.NEXT_PUBLIC_API_URL);
+}
 
 let apiBaseUrl = DEFAULT_API_BASE_URL;
 let authResolver = () => {
@@ -392,11 +400,137 @@ export const bulkSyncProgress = async (items) => {
   return { merged, records: results };
 };
 
+/**
+ * Get progress overview
+ * 
+ * @param {AbortSignal} [signal] - Optional abort signal for request cancellation
+ * @returns {Promise<Object>} Overview data
+ */
+export const getOverview = async (signal) => {
+  const { data } = await http.get('/progress/overview', { signal });
+  return data;
+};
+
+/**
+ * Get user skills
+ * 
+ * @param {AbortSignal} [signal] - Optional abort signal for request cancellation
+ * @returns {Promise<Object>} Skills data: { skills, unlockedSkillIds }
+ */
+export const getSkills = async (signal) => {
+  const { data } = await http.get('/progress/skills', { signal });
+  return data;
+};
+
+/**
+ * Get user milestones
+ * 
+ * @returns {Promise<Object>} Milestones data: { milestones }
+ */
+export const getMilestones = async () => {
+  try {
+    const url = buildUrl('/progress/milestones');
+    let response;
+
+    try {
+      response = await fetch(url, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+        credentials: 'include',
+      });
+    } catch (fetchError) {
+      handleNetworkError(fetchError, apiBaseUrl);
+    }
+
+    const data = await parseResponse(response);
+    return data;
+  } catch (error) {
+    console.error('[progressService] getMilestones failed:', error);
+    
+    if (error.isNetworkError || error.name === 'NetworkError') {
+      throw error;
+    }
+    
+    throw new Error(error.message || 'No se pudieron obtener los hitos.');
+  }
+};
+
+/**
+ * Get user achievements and medals
+ * 
+ * @returns {Promise<Object>} Achievements data: { achievements, medals }
+ */
+export const getAchievements = async () => {
+  try {
+    const url = buildUrl('/progress/achievements');
+    let response;
+
+    try {
+      response = await fetch(url, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+        credentials: 'include',
+      });
+    } catch (fetchError) {
+      handleNetworkError(fetchError, apiBaseUrl);
+    }
+
+    const data = await parseResponse(response);
+    return data;
+  } catch (error) {
+    console.error('[progressService] getAchievements failed:', error);
+    
+    if (error.isNetworkError || error.name === 'NetworkError') {
+      throw error;
+    }
+    
+    throw new Error(error.message || 'No se pudieron obtener los logros.');
+  }
+};
+
+/**
+ * Get user state
+ * 
+ * @returns {Promise<Object>} User state: { isAuthenticated, lastActivityAt }
+ */
+export const getUserState = async () => {
+  try {
+    const url = buildUrl('/progress/user-state');
+    let response;
+
+    try {
+      response = await fetch(url, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+        credentials: 'include',
+      });
+    } catch (fetchError) {
+      handleNetworkError(fetchError, apiBaseUrl);
+    }
+
+    const data = await parseResponse(response);
+    return data;
+  } catch (error) {
+    console.error('[progressService] getUserState failed:', error);
+    
+    if (error.isNetworkError || error.name === 'NetworkError') {
+      throw error;
+    }
+    
+    throw new Error(error.message || 'No se pudo obtener el estado del usuario.');
+  }
+};
+
 export default {
   configureProgressService,
   getModuleProgress,
   updateLessonProgress,
   getProgressSummary,
+  getOverview,
+  getSkills,
+  getMilestones,
+  getAchievements,
+  getUserState,
   // Legacy exports
   fetchProgress,
   upsertProgress,

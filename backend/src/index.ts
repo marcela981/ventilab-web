@@ -15,6 +15,7 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { config, isProduction } from './config/config';
 import { helmetConfig, corsConfig, apiLimits } from './config/security';
 import { apiLimiter } from './middleware/rateLimiter';
+import { withRequestId, progressLogger } from './middleware/progressLogger';
 import { initializeCache } from './services/ai/AICacheService';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
@@ -24,6 +25,13 @@ import { handleTutorWebSocket } from './services/ai/WebSocketTutorService';
  * Initialize Express application
  */
 const app: Application = express();
+
+/**
+ * Disable ETag globally
+ * ETag causes 304 Not Modified responses which can break JSON endpoints
+ * that have user-specific state (like progress/overview)
+ */
+app.disable('etag');
 
 /**
  * Security Middleware
@@ -66,6 +74,32 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 /**
+ * Request ID Middleware
+ * Generate or use existing request ID for request tracing
+ */
+app.use(withRequestId);
+
+/**
+ * Progress Logger Middleware
+ * Log progress-related requests when DEBUG_PROGRESS is enabled
+ */
+app.use(progressLogger);
+
+/**
+ * Cache Control Middleware for API Routes
+ * Prevent 304 Not Modified responses for JSON endpoints with user-specific state
+ * This ensures fresh data is always returned
+ */
+app.use('/api', (req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  // Remove ETag header if it exists
+  res.removeHeader('ETag');
+  next();
+});
+
+/**
  * Rate Limiting
  * Prevent abuse by limiting the number of requests per IP
  * Uses apiLimiter from rateLimiter.ts
@@ -91,6 +125,19 @@ app.get('/health', (req: Request, res: Response) => {
  */
 import routes from './routes';
 app.use('/api', routes);
+
+/**
+ * API Health Check Endpoint
+ * Simple health check endpoint at /api/health for frontend verification
+ */
+app.get('/api/health', (req: Request, res: Response) => {
+  res.status(200).json({
+    status: 'ok',
+    success: true,
+    message: 'VentyLab API is running',
+    timestamp: new Date().toISOString(),
+  });
+});
 
 /**
  * 404 Handler
