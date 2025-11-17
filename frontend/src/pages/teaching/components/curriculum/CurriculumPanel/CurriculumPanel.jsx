@@ -12,7 +12,7 @@
 
 import React, { useMemo, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import ModuleNavigationRouter from './ModuleNavigationRouter';
+import ModuleNavigationRouter from '../../../../../components/teaching/components/navigation/ModuleNavigationRouter';
 import { debug } from '@/utils/debug';
 import { useLearningProgress } from '@/contexts/LearningProgressContext';
 
@@ -147,3 +147,4 @@ CurriculumPanel.propTypes = {
 };
 
 export default CurriculumPanel;
+

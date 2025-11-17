@@ -101,3 +101,4 @@ export const ModuleLockBadge = ({ isAvailable, size = 20, className = '', color 
 };
 
 export default ModuleStatusIcons;
+

@@ -1,18 +1,18 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useTheme, useMediaQuery, Skeleton, Snackbar, Alert, Box } from '@mui/material';
-import { useLearningProgress } from '../../../../contexts/LearningProgressContext';
-import useModuleAvailability from '../../../../hooks/useModuleAvailability';
-import { useModuleProgress } from '../../../../hooks/useModuleProgress';
-import useProgress from '../../../../hooks/useProgress';
-import { useModuleLessonsCount } from '../../../../hooks/useModuleLessonsCount';
+import { useLearningProgress } from '@/contexts/LearningProgressContext';
+import useModuleAvailability from '@/hooks/useModuleAvailability';
+import { useModuleProgress } from '@/hooks/useModuleProgress';
+import useProgress from '@/hooks/useProgress';
+import { useModuleLessonsCount } from '@/hooks/useModuleLessonsCount';
 import { getModuleStatus } from './moduleCardHelpers';
 import ModuleCardHeader from './ModuleCardHeader';
 import ModuleCardMeta from './ModuleCardMeta';
 import ModuleCardBody from './ModuleCardBody';
 import ModuleCardFooter from './ModuleCardFooter';
 import ComingSoonBadge from './ComingSoonBadge';
-import { isModuleComingSoon } from '../../../../data/curriculum/selectors.js';
+import { isModuleComingSoon } from '@/data/curriculum/selectors.js';
 import styles from '@/styles/curriculum.module.css';
 import CurriculumProgressBar from './CurriculumProgressBar';
 
@@ -434,3 +434,4 @@ ModuleCard.propTypes = {
 };
 
 export default ModuleCard;
+

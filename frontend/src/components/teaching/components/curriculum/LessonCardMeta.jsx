@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, Chip } from '@mui/material';
 import { MenuBook, AccessTime } from '@mui/icons-material';
-import { formatDuration } from './moduleCardHelpers';
+import { formatDuration } from '../../../../pages/teaching/components/curriculum/ModuleCard/moduleCardHelpers';
 import styles from '@/styles/curriculum.module.css';
 
 /**

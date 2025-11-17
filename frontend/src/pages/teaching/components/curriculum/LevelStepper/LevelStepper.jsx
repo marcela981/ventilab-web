@@ -16,7 +16,7 @@ import {
 import {
   ExpandMore
 } from '@mui/icons-material';
-import ModuleGrid from './ModuleGrid';
+import ModuleGrid from '../../../../../components/teaching/components/curriculum/ModuleGrid';
 
 /**
  * LevelStepper - Componente minimalista de niveles de aprendizaje
@@ -492,3 +492,4 @@ LevelStepper.propTypes = {
 };
 
 export default LevelStepper;
+

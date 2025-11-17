@@ -56,7 +56,7 @@ import clinicalCasesData from '../../../../data/clinicalCases';
 import { getModuleById } from '../../../../data/curriculumData';
 import useLessonProgress from '../../hooks/useLessonProgress';
 import { useLearningProgress } from '../../../../contexts/LearningProgressContext';
-import PrerequisiteTooltip from '../curriculum/PrerequisiteTooltip';
+import PrerequisiteTooltip from '../../../../pages/teaching/components/curriculum/ModuleCard/PrerequisiteTooltip';
 import { postResult } from '../../../../services/clinicalCasesService';
 
 // =============================================================================

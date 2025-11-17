@@ -7,6 +7,7 @@
  */
 
 import http from './http';
+import { setAuthToken, removeAuthToken } from '../authService';
 
 const DEFAULT_API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
@@ -31,6 +32,129 @@ export const configureProgressService = ({ baseUrl, getAuth }) => {
 
   if (typeof getAuth === 'function') {
     authResolver = getAuth;
+  }
+};
+
+const isClient = typeof window !== 'undefined';
+const SESSION_EXPIRED_REGEX = /session has expired/i;
+let tokenRefreshPromise = null;
+
+const shouldAttemptSessionRefresh = (error) => {
+  if (!isClient || !error) {
+    return false;
+  }
+
+  if (error.status !== 401) {
+    return false;
+  }
+
+  if (error.code === 'TOKEN_EXPIRED') {
+    return true;
+  }
+
+  const message = (error.message || '').toLowerCase();
+  return SESSION_EXPIRED_REGEX.test(message);
+};
+
+const notifySessionExpired = (reason) => {
+  if (!isClient || typeof window.dispatchEvent !== 'function') {
+    return;
+  }
+
+  try {
+    window.dispatchEvent(new CustomEvent('auth:session-expired', { detail: { reason } }));
+  } catch {
+    // Ignore environments without CustomEvent
+  }
+};
+
+const refreshBackendToken = async () => {
+  if (!isClient) {
+    throw new Error('Backend token refresh is only available in the browser');
+  }
+
+  if (tokenRefreshPromise) {
+    return tokenRefreshPromise;
+  }
+
+  tokenRefreshPromise = (async () => {
+    let response;
+    try {
+      response = await fetch('/api/auth/backend-token', {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache',
+          Pragma: 'no-cache',
+        },
+        credentials: 'include',
+      });
+    } catch (networkError) {
+      const error = new Error(networkError.message || 'Failed to refresh backend session');
+      error.cause = networkError;
+      throw error;
+    }
+
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      const error = new Error(payload?.error || 'Failed to refresh backend session');
+      error.status = response.status;
+      throw error;
+    }
+
+    if (payload?.success && payload?.token) {
+      setAuthToken(payload.token);
+
+      if (payload.user) {
+        try {
+          localStorage.setItem('ventilab_user_data', JSON.stringify(payload.user));
+        } catch {
+          // Ignore quota errors
+        }
+      }
+
+      return true;
+    }
+
+    throw new Error('Backend token response missing token');
+  })();
+
+  try {
+    return await tokenRefreshPromise;
+  } finally {
+    tokenRefreshPromise = null;
+  }
+};
+
+const maybeRefreshSession = async (error) => {
+  if (!shouldAttemptSessionRefresh(error)) {
+    return false;
+  }
+
+  try {
+    await refreshBackendToken();
+    return true;
+  } catch (refreshError) {
+    console.error('[progressService] Session refresh failed:', refreshError);
+
+    if (refreshError?.status === 401) {
+      removeAuthToken();
+      notifySessionExpired(refreshError?.message);
+    }
+
+    return false;
+  }
+};
+
+const executeWithAuthRetry = async (operation, attempt = 0) => {
+  try {
+    return await operation();
+  } catch (error) {
+    if (attempt === 0 && (await maybeRefreshSession(error))) {
+      return executeWithAuthRetry(operation, attempt + 1);
+    }
+
+    throw error;
   }
 };
 
@@ -136,46 +260,55 @@ const handleNetworkError = (error, apiBaseUrl) => {
  * // }
  */
 export const getModuleProgress = async (moduleId) => {
-  try {
-    if (!moduleId || typeof moduleId !== 'string') {
-      throw new Error('moduleId is required and must be a string');
-    }
-
-    const url = buildUrl(`/progress/modules/${encodeURIComponent(moduleId)}`);
-    let response;
-
+  return executeWithAuthRetry(async () => {
     try {
-      response = await fetch(url, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-        credentials: 'include',
-      });
-    } catch (fetchError) {
-      handleNetworkError(fetchError, apiBaseUrl);
-    }
+      if (!moduleId || typeof moduleId !== 'string') {
+        throw new Error('moduleId is required and must be a string');
+      }
 
-    const data = await parseResponse(response);
-    return data;
-  } catch (error) {
-    console.error('[progressService] getModuleProgress failed:', error);
-    
-    if (error.isNetworkError || error.name === 'NetworkError') {
-      throw error;
+      const url = buildUrl(`/progress/modules/${encodeURIComponent(moduleId)}`);
+      let response;
+
+      try {
+        response = await fetch(url, {
+          method: 'GET',
+          headers: getAuthHeaders(),
+          credentials: 'include',
+        });
+      } catch (fetchError) {
+        handleNetworkError(fetchError, apiBaseUrl);
+      }
+
+      const data = await parseResponse(response);
+      return data;
+    } catch (error) {
+      console.error('[progressService] getModuleProgress failed:', error);
+      
+      if (error.isNetworkError || error.name === 'NetworkError') {
+        throw error;
+      }
+      
+      // Handle 404 specifically (module not found or progress doesn't exist)
+      // Return null instead of throwing to allow graceful handling
+      if (error.status === 404) {
+        // Create a custom error that can be checked but won't break the flow
+        const notFoundError = new Error(`Module "${moduleId}" not found`);
+        notFoundError.status = 404;
+        notFoundError.code = 'MODULE_NOT_FOUND';
+        notFoundError.isNotFound = true;
+        throw notFoundError;
+      }
+      
+      if (error instanceof Error) {
+        if (!error.message) {
+          error.message = 'No se pudo obtener el progreso del módulo.';
+        }
+        throw error;
+      }
+
+      throw new Error('No se pudo obtener el progreso del módulo.');
     }
-    
-    // Handle 404 specifically (module not found or progress doesn't exist)
-    // Return null instead of throwing to allow graceful handling
-    if (error.status === 404) {
-      // Create a custom error that can be checked but won't break the flow
-      const notFoundError = new Error(`Module "${moduleId}" not found`);
-      notFoundError.status = 404;
-      notFoundError.code = 'MODULE_NOT_FOUND';
-      notFoundError.isNotFound = true;
-      throw notFoundError;
-    }
-    
-    throw new Error(error.message || 'No se pudo obtener el progreso del módulo.');
-  }
+  });
 };
 
 /**
@@ -204,48 +337,57 @@ export const getModuleProgress = async (moduleId) => {
  * // }
  */
 export const updateLessonProgress = async (payload) => {
-  try {
-    if (!payload || typeof payload !== 'object') {
-      throw new Error('Payload inválido para actualizar progreso.');
-    }
-
-    if (!payload.lessonId || typeof payload.lessonId !== 'string') {
-      throw new Error('lessonId is required and must be a string');
-    }
-
-    const body = {
-      lessonId: payload.lessonId,
-      ...(payload.progress !== undefined && { progress: payload.progress }),
-      ...(payload.completed !== undefined && { completed: payload.completed }),
-      ...(payload.timeSpentDelta !== undefined && { timeSpentDelta: payload.timeSpentDelta }),
-      ...(payload.lastAccessed !== undefined && { lastAccessed: payload.lastAccessed }),
-    };
-
-    const url = buildUrl('/progress/lesson');
-    let response;
-
+  return executeWithAuthRetry(async () => {
     try {
-      response = await fetch(url, {
-        method: 'PUT',
-        headers: getAuthHeaders(),
-        credentials: 'include',
-        body: JSON.stringify(body),
-      });
-    } catch (fetchError) {
-      handleNetworkError(fetchError, apiBaseUrl);
-    }
+      if (!payload || typeof payload !== 'object') {
+        throw new Error('Payload inválido para actualizar progreso.');
+      }
 
-    const data = await parseResponse(response);
-    return data;
-  } catch (error) {
-    console.error('[progressService] updateLessonProgress failed:', error);
-    
-    if (error.isNetworkError || error.name === 'NetworkError') {
-      throw error;
+      if (!payload.lessonId || typeof payload.lessonId !== 'string') {
+        throw new Error('lessonId is required and must be a string');
+      }
+
+      const body = {
+        lessonId: payload.lessonId,
+        ...(payload.progress !== undefined && { progress: payload.progress }),
+        ...(payload.completed !== undefined && { completed: payload.completed }),
+        ...(payload.timeSpentDelta !== undefined && { timeSpentDelta: payload.timeSpentDelta }),
+        ...(payload.lastAccessed !== undefined && { lastAccessed: payload.lastAccessed }),
+      };
+
+      const url = buildUrl('/progress/lesson');
+      let response;
+
+      try {
+        response = await fetch(url, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          credentials: 'include',
+          body: JSON.stringify(body),
+        });
+      } catch (fetchError) {
+        handleNetworkError(fetchError, apiBaseUrl);
+      }
+
+      const data = await parseResponse(response);
+      return data;
+    } catch (error) {
+      console.error('[progressService] updateLessonProgress failed:', error);
+      
+      if (error.isNetworkError || error.name === 'NetworkError') {
+        throw error;
+      }
+      
+      if (error instanceof Error) {
+        if (!error.message) {
+          error.message = 'No se pudo actualizar el progreso de la lección.';
+        }
+        throw error;
+      }
+
+      throw new Error('No se pudo actualizar el progreso de la lección.');
     }
-    
-    throw new Error(error.message || 'No se pudo actualizar el progreso de la lección.');
-  }
+  });
 };
 
 /**
@@ -271,31 +413,40 @@ export const updateLessonProgress = async (payload) => {
  * // }
  */
 export const getProgressSummary = async () => {
-  try {
-    const url = buildUrl('/progress/summary');
-    let response;
-
+  return executeWithAuthRetry(async () => {
     try {
-      response = await fetch(url, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-        credentials: 'include',
-      });
-    } catch (fetchError) {
-      handleNetworkError(fetchError, apiBaseUrl);
-    }
+      const url = buildUrl('/progress/summary');
+      let response;
 
-    const data = await parseResponse(response);
-    return data;
-  } catch (error) {
-    console.error('[progressService] getProgressSummary failed:', error);
-    
-    if (error.isNetworkError || error.name === 'NetworkError') {
-      throw error;
+      try {
+        response = await fetch(url, {
+          method: 'GET',
+          headers: getAuthHeaders(),
+          credentials: 'include',
+        });
+      } catch (fetchError) {
+        handleNetworkError(fetchError, apiBaseUrl);
+      }
+
+      const data = await parseResponse(response);
+      return data;
+    } catch (error) {
+      console.error('[progressService] getProgressSummary failed:', error);
+      
+      if (error.isNetworkError || error.name === 'NetworkError') {
+        throw error;
+      }
+      
+      if (error instanceof Error) {
+        if (!error.message) {
+          error.message = 'No se pudo obtener el resumen de progreso.';
+        }
+        throw error;
+      }
+
+      throw new Error('No se pudo obtener el resumen de progreso.');
     }
-    
-    throw new Error(error.message || 'No se pudo obtener el resumen de progreso.');
-  }
+  });
 };
 
 // Legacy compatibility - deprecated, use getModuleProgress instead
@@ -428,31 +579,40 @@ export const getSkills = async (signal) => {
  * @returns {Promise<Object>} Milestones data: { milestones }
  */
 export const getMilestones = async () => {
-  try {
-    const url = buildUrl('/progress/milestones');
-    let response;
-
+  return executeWithAuthRetry(async () => {
     try {
-      response = await fetch(url, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-        credentials: 'include',
-      });
-    } catch (fetchError) {
-      handleNetworkError(fetchError, apiBaseUrl);
-    }
+      const url = buildUrl('/progress/milestones');
+      let response;
 
-    const data = await parseResponse(response);
-    return data;
-  } catch (error) {
-    console.error('[progressService] getMilestones failed:', error);
-    
-    if (error.isNetworkError || error.name === 'NetworkError') {
-      throw error;
+      try {
+        response = await fetch(url, {
+          method: 'GET',
+          headers: getAuthHeaders(),
+          credentials: 'include',
+        });
+      } catch (fetchError) {
+        handleNetworkError(fetchError, apiBaseUrl);
+      }
+
+      const data = await parseResponse(response);
+      return data;
+    } catch (error) {
+      console.error('[progressService] getMilestones failed:', error);
+      
+      if (error.isNetworkError || error.name === 'NetworkError') {
+        throw error;
+      }
+      
+      if (error instanceof Error) {
+        if (!error.message) {
+          error.message = 'No se pudieron obtener los hitos.';
+        }
+        throw error;
+      }
+
+      throw new Error('No se pudieron obtener los hitos.');
     }
-    
-    throw new Error(error.message || 'No se pudieron obtener los hitos.');
-  }
+  });
 };
 
 /**
@@ -461,31 +621,40 @@ export const getMilestones = async () => {
  * @returns {Promise<Object>} Achievements data: { achievements, medals }
  */
 export const getAchievements = async () => {
-  try {
-    const url = buildUrl('/progress/achievements');
-    let response;
-
+  return executeWithAuthRetry(async () => {
     try {
-      response = await fetch(url, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-        credentials: 'include',
-      });
-    } catch (fetchError) {
-      handleNetworkError(fetchError, apiBaseUrl);
-    }
+      const url = buildUrl('/progress/achievements');
+      let response;
 
-    const data = await parseResponse(response);
-    return data;
-  } catch (error) {
-    console.error('[progressService] getAchievements failed:', error);
-    
-    if (error.isNetworkError || error.name === 'NetworkError') {
-      throw error;
+      try {
+        response = await fetch(url, {
+          method: 'GET',
+          headers: getAuthHeaders(),
+          credentials: 'include',
+        });
+      } catch (fetchError) {
+        handleNetworkError(fetchError, apiBaseUrl);
+      }
+
+      const data = await parseResponse(response);
+      return data;
+    } catch (error) {
+      console.error('[progressService] getAchievements failed:', error);
+      
+      if (error.isNetworkError || error.name === 'NetworkError') {
+        throw error;
+      }
+      
+      if (error instanceof Error) {
+        if (!error.message) {
+          error.message = 'No se pudieron obtener los logros.';
+        }
+        throw error;
+      }
+
+      throw new Error('No se pudieron obtener los logros.');
     }
-    
-    throw new Error(error.message || 'No se pudieron obtener los logros.');
-  }
+  });
 };
 
 /**
@@ -494,31 +663,40 @@ export const getAchievements = async () => {
  * @returns {Promise<Object>} User state: { isAuthenticated, lastActivityAt }
  */
 export const getUserState = async () => {
-  try {
-    const url = buildUrl('/progress/user-state');
-    let response;
-
+  return executeWithAuthRetry(async () => {
     try {
-      response = await fetch(url, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-        credentials: 'include',
-      });
-    } catch (fetchError) {
-      handleNetworkError(fetchError, apiBaseUrl);
-    }
+      const url = buildUrl('/progress/user-state');
+      let response;
 
-    const data = await parseResponse(response);
-    return data;
-  } catch (error) {
-    console.error('[progressService] getUserState failed:', error);
-    
-    if (error.isNetworkError || error.name === 'NetworkError') {
-      throw error;
+      try {
+        response = await fetch(url, {
+          method: 'GET',
+          headers: getAuthHeaders(),
+          credentials: 'include',
+        });
+      } catch (fetchError) {
+        handleNetworkError(fetchError, apiBaseUrl);
+      }
+
+      const data = await parseResponse(response);
+      return data;
+    } catch (error) {
+      console.error('[progressService] getUserState failed:', error);
+      
+      if (error.isNetworkError || error.name === 'NetworkError') {
+        throw error;
+      }
+      
+      if (error instanceof Error) {
+        if (!error.message) {
+          error.message = 'No se pudo obtener el estado del usuario.';
+        }
+        throw error;
+      }
+
+      throw new Error('No se pudo obtener el estado del usuario.');
     }
-    
-    throw new Error(error.message || 'No se pudo obtener el estado del usuario.');
-  }
+  });
 };
 
 export default {

@@ -46,7 +46,7 @@ import { curriculumData } from '../../data/curriculumData';
 import debug from '../../utils/debug';
 
 // Module 03 content and navigation
-import CurriculumPanel from './components/navigation/CurriculumPanel';
+import { CurriculumPanel } from '../../pages/teaching/components/curriculum';
 
 // Componentes hijos
 import DashboardHeader from './components/DashboardHeader';

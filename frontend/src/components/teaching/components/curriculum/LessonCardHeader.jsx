@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
 import { CheckCircle, TrendingUp } from '@mui/icons-material';
-import ModuleStatusIcons from './ModuleStatusIcons';
+import ModuleStatusIcons from '../../../../pages/teaching/components/curriculum/ModuleCard/ModuleStatusIcons';
 import styles from '@/styles/curriculum.module.css';
 
 /**

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, Chip, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
 import { CheckCircle } from '@mui/icons-material';
-import ModuleLessonsList from './ModuleLessonsList';
+import ModuleLessonsList from '../ModuleLessonsList/ModuleLessonsList';
 
 /**
  * Contenido de los tabs de la ModuleCard

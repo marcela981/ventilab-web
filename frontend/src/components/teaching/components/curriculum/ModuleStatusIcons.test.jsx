@@ -30,7 +30,7 @@ import {
   getModuleStatus,
   isValidStatus,
   getAllStatuses
-} from './ModuleStatusIcons';
+} from '../../../../pages/teaching/components/curriculum/ModuleCard/ModuleStatusIcons';
 
 // ==================== TESTS DE CONSTANTES ====================
 

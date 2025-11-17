@@ -25,7 +25,7 @@ import {
 } from '@mui/icons-material';
 import ModuleCategoryNav from './ModuleCategoryNav';
 import { TeachingModuleProvider } from '../../contexts/TeachingModuleContext';
-import LevelStepper from '../curriculum/LevelStepper';
+import { LevelStepper } from '../../../../pages/teaching/components/curriculum';
 import ModuleInfoPanel from '../curriculum/ModuleInfoPanel';
 import { getModulesByLevel } from '../../../../data/curriculum/index.js';
 
