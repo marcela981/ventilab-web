@@ -12,3 +12,4 @@ export default function Home() {
 
   return null; // This will not render anything as we redirect immediately
 }
+
