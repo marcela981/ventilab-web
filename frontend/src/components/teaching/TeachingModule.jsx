@@ -49,19 +49,21 @@ import debug from '../../utils/debug';
 import { CurriculumPanel } from '../../pages/teaching/components/curriculum';
 
 // Componentes hijos
-import DashboardHeader from './components/DashboardHeader';
-import ContinueLearningSection from './components/ContinueLearningSection';
-import SessionStats from './components/SessionStats';
-import ProgressOverview from './components/ProgressOverview';
-import ModuleInfoPanel from './components/ModuleInfoPanel';
+import {
+  DashboardHeader,
+  ContinueLearningSection,
+  SessionStats,
+  ProgressOverview,
+  ModuleInfoPanel,
+  QuickAccessLessons
+} from '../../pages/teaching/components/dashboard';
 import FlashcardSystem from './FlashcardSystem';
-import QuickAccessLessons from './components/dashboard/QuickAccessLessons';
 
 // Lazy load LessonViewer and ProgressDashboard for better performance
 const LessonViewer = lazy(() => import('./components/LessonViewer'));
 const ProgressTab = lazy(() => import('../../features/progress/components/ProgressTab'));
-const Module3ProgressDashboard = lazy(() => import('./components/dashboard/Module3ProgressDashboard'));
-const ReadinessIndicator = lazy(() => import('./components/evaluation/ReadinessIndicator'));
+const Module3ProgressDashboard = lazy(() => import('../../pages/teaching/components/dashboard/Module3ProgressDashboard'));
+const ReadinessIndicator = lazy(() => import('../../pages/teaching/components/dashboard/ReadinessIndicator'));
 
 // Importar DashboardTab
 import DashboardTab from '../../features/dashboard/DashboardTab';
