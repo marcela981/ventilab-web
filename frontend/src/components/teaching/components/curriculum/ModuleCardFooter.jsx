@@ -20,6 +20,9 @@ const ModuleCardFooter = ({
     if (status === 'in-progress') return 'Continuar';
     return isAvailable ? 'Comenzar' : 'Bloqueado';
   };
+  
+  // Ocultar botón "Continuar" si el módulo no tiene lecciones
+  const shouldShowButton = isAvailable;
 
   const getButtonIcon = () => {
     if (status === 'completed') return <CheckCircle />;
@@ -32,6 +35,11 @@ const ModuleCardFooter = ({
     if (status === 'in-progress') return 'Continuar módulo';
     return isAvailable ? 'Comenzar módulo' : 'Módulo bloqueado';
   };
+
+  // No mostrar el botón si no está disponible (incluye caso de módulo sin lecciones)
+  if (!shouldShowButton) {
+    return null;
+  }
 
   return (
     <footer className={styles.cardFooter}>

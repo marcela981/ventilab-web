@@ -127,6 +127,7 @@ const AITopicExpander = ({
   const buttonRef = useRef(null);
   const resultAreaRef = useRef(null);
   const debounceTimerRef = useRef(null);
+  const prevPrefilledTextRef = useRef(null);
   const panelId = 'ai-topic-expander-panel';
   const resultId = 'ai-topic-expander-result';
   
@@ -186,26 +187,69 @@ const AITopicExpander = ({
     return null;
   }
 
-  // Generar texto prellenado usando títulos reales calculados en runtime
-  // Formato: "Bríndame más información sobre {moduleTitle} → {lessonTitle} → {pageTitle}"
+  // Generar texto prellenado usando solo el título de la lección actual
+  // Formato: "Bríndame más información sobre {TítuloDeLaLecciónActual}"
   const prefilledText = useMemo(() => {
-    const topicParts = [
-      moduleTitle,
-      lessonTitle,
-      sectionTitle || pageTitle,
-    ].filter(Boolean);
+    const currentLessonTitle = lessonTitle || moduleTitle || 'esta lección';
     
-    if (topicParts.length === 0) {
-      return i18n.language === 'en' 
-        ? 'Give me more information about this topic'
-        : 'Bríndame más información sobre este tema';
+    return i18n.language === 'en' 
+      ? `Give me more information about ${currentLessonTitle}`
+      : `Bríndame más información sobre ${currentLessonTitle}`;
+  }, [lessonTitle, moduleTitle, i18n.language]);
+
+  // Generar 2 sugerencias derivadas del tema de la lección
+  const topicSuggestions = useMemo(() => {
+    const suggestions = [];
+    
+    // Obtener tags o temas del contexto
+    const tags = context?.tags || [];
+    const tipoDeLeccion = context?.tipoDeLeccion || 'teoria';
+    const title = lessonTitle || moduleTitle || '';
+    
+    // Generar sugerencias basadas en el tipo de lección y temas
+    if (tipoDeLeccion === 'caso_clinico') {
+      // Sugerencias para casos clínicos
+      if (tags.some(tag => tag.toLowerCase().includes('peep') || tag.toLowerCase().includes('sdra'))) {
+        suggestions.push('¿Cómo ajusto PEEP en SDRA?');
+      } else {
+        suggestions.push('¿Cómo ajusto los parámetros ventilatorios en este caso?');
+      }
+      
+      if (tags.some(tag => tag.toLowerCase().includes('vcv') || tag.toLowerCase().includes('pcv'))) {
+        suggestions.push('Explica la diferencia entre VCV y PCV');
+      } else {
+        suggestions.push('¿Qué estrategia de ventilación usarías aquí?');
+      }
+    } else if (tipoDeLeccion === 'teoria') {
+      // Sugerencias para teoría
+      if (tags.some(tag => tag.toLowerCase().includes('vcv') || tag.toLowerCase().includes('pcv'))) {
+        suggestions.push('Explica la diferencia entre VCV y PCV');
+      } else if (title.toLowerCase().includes('ventilación') || title.toLowerCase().includes('modos')) {
+        suggestions.push('Explica la diferencia entre los modos ventilatorios principales');
+      } else {
+        suggestions.push('Explícame los conceptos fundamentales de esta lección');
+      }
+      
+      if (tags.some(tag => tag.toLowerCase().includes('peep'))) {
+        suggestions.push('¿Cómo ajusto PEEP en diferentes situaciones clínicas?');
+      } else if (title.toLowerCase().includes('peep') || title.toLowerCase().includes('presión')) {
+        suggestions.push('¿Cómo ajusto PEEP en SDRA?');
+      } else {
+        suggestions.push('¿Cómo aplico estos conceptos en la práctica clínica?');
+      }
+    } else {
+      // Sugerencias genéricas
+      suggestions.push('Explícame los conceptos clave de esta lección');
+      suggestions.push('¿Cómo aplico esto en la práctica clínica?');
     }
     
-    const topicString = topicParts.join(' → ');
-    return i18n.language === 'en' 
-      ? `Give me more information about ${topicString}`
-      : `Bríndame más información sobre ${topicString}`;
-  }, [moduleTitle, lessonTitle, sectionTitle, pageTitle, i18n.language]);
+    // Asegurar que siempre haya 2 sugerencias
+    while (suggestions.length < 2) {
+      suggestions.push('Bríndame más información sobre esta lección');
+    }
+    
+    return suggestions.slice(0, 2);
+  }, [context?.tags, context?.tipoDeLeccion, lessonTitle, moduleTitle]);
 
   // Usar hook de sugerencias
   // Nota: el bank de metadata se puede pasar si está disponible en el contexto
@@ -242,6 +286,7 @@ const AITopicExpander = ({
   }, [input, rerankSuggestions]);
 
   // Pre-llenar input cuando se abre el panel (solo una vez)
+  // El texto inicial es editable y se actualiza en tiempo real según el título de la lección
   useEffect(() => {
     if (open && !hasPrefilled) {
       setInput(prefilledText);
@@ -254,6 +299,12 @@ const AITopicExpander = ({
       setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.focus();
+          // Mover cursor al final del texto para que sea fácil editar
+          const inputElement = inputRef.current.querySelector('textarea') || inputRef.current;
+          if (inputElement && inputElement.setSelectionRange) {
+            const length = prefilledText.length;
+            inputElement.setSelectionRange(length, length);
+          }
         }
       }, 100);
     } else if (!open) {
@@ -263,6 +314,17 @@ const AITopicExpander = ({
       resetSuggestions();
     }
   }, [open, prefilledText, hasPrefilled, rerankSuggestions, resetSuggestions]);
+
+  // Actualizar el texto del input cuando cambia el título de la lección (si el usuario no ha editado)
+  // Solo actualizar si el input actual coincide con el prefilledText anterior
+  useEffect(() => {
+    if (open && hasPrefilled && prevPrefilledTextRef.current && input === prevPrefilledTextRef.current) {
+      // El usuario no ha editado, podemos actualizar con el nuevo título
+      setInput(prefilledText);
+      setDebouncedInput(prefilledText);
+    }
+    prevPrefilledTextRef.current = prefilledText;
+  }, [prefilledText, open, hasPrefilled, input]);
 
   // Trackear visualización de sugerencias al abrir el panel
   useEffect(() => {
@@ -1289,6 +1351,54 @@ const AITopicExpander = ({
                 backgroundColor: '#16202d',
               }}
             >
+              {/* 2 Sugerencias arriba del input con click-to-fill */}
+              {topicSuggestions.length > 0 && !response && chatHistory.length === 0 && (
+                <Box
+                  sx={{
+                    mb: 1.5,
+                    display: 'flex',
+                    gap: 1,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  {topicSuggestions.map((suggestion, index) => (
+                    <Chip
+                      key={`topic-suggestion-${index}`}
+                      label={suggestion}
+                      onClick={() => {
+                        setInput(suggestion);
+                        // Focus en el input después de llenar
+                        setTimeout(() => {
+                          if (inputRef.current) {
+                            inputRef.current.focus();
+                            // Mover cursor al final del texto
+                            const inputElement = inputRef.current.querySelector('textarea') || inputRef.current;
+                            if (inputElement && inputElement.setSelectionRange) {
+                              const length = suggestion.length;
+                              inputElement.setSelectionRange(length, length);
+                            }
+                          }
+                        }, 50);
+                      }}
+                      sx={{
+                        fontSize: '0.75rem',
+                        height: 32,
+                        backgroundColor: 'rgba(11, 186, 244, 0.15)',
+                        color: '#BBECFC',
+                        border: '1px solid rgba(11, 186, 244, 0.3)',
+                        cursor: 'pointer',
+                        '&:hover': {
+                          backgroundColor: 'rgba(11, 186, 244, 0.25)',
+                          borderColor: 'rgba(11, 186, 244, 0.5)',
+                          transform: 'translateY(-1px)',
+                        },
+                        transition: 'all 0.2s ease',
+                      }}
+                    />
+                  ))}
+                </Box>
+              )}
+              
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}>
                 <TextField
                   inputRef={inputRef}

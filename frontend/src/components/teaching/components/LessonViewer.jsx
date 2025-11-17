@@ -58,6 +58,7 @@ import {
 import {
   OpenInNew as OpenInNewIcon,
   Lock as LockIcon,
+  CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 import { ThemeProvider } from '@mui/material/styles';
 import { teachingModuleTheme } from '../../../theme/teachingModuleTheme';
@@ -206,7 +207,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   }, [error, onNavigate]);
   
   // Get progress context for marking lessons as complete
-  const { markLessonComplete, completedLessons } = useLearningProgress();
+  const { markLessonComplete, completedLessons, updateLessonProgress } = useLearningProgress();
   
   // Calculate module completion percentage
   const { calculateModuleProgress } = useLessonProgress(completedLessons);
@@ -266,6 +267,9 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   
   const contentRef = useRef(null);
   const startTimeRef = useRef(Date.now());
+  const progressIntervalRef = useRef(null);
+  const lastProgressUpdateRef = useRef(Date.now());
+  const isTabVisibleRef = useRef(true);
   
   // ============================================================================
   // Scroll to top on mount or lesson change
@@ -273,7 +277,32 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Reset timers and send lastAccess when lesson changes
+    if (previousLessonIdRef.current !== lessonId && previousLessonIdRef.current) {
+      // Send lastAccess for previous lesson before switching
+      const previousLessonId = previousLessonIdRef.current;
+      if (updateLessonProgress && previousLessonId) {
+        updateLessonProgress({
+          lessonId: previousLessonId,
+          moduleId: moduleId,
+          lastAccessed: new Date().toISOString(),
+        }).catch(error => {
+          console.error('[LessonViewer] Failed to update lastAccess for previous lesson:', error);
+        });
+      }
+    }
+    
+    // Clear existing interval
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+    
+    // Reset timers for new lesson
     startTimeRef.current = Date.now();
+    lastProgressUpdateRef.current = Date.now();
+    
     // Reset to first page when lesson changes
     setCurrentPage(0);
     setLessonCompleted(false);
@@ -283,13 +312,93 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     if (previousLessonIdRef.current !== lessonId) {
       previousLessonIdRef.current = lessonId;
     }
-  }, [lessonId, moduleId]);
+  }, [lessonId, moduleId, updateLessonProgress]);
+  
+  // ============================================================================
+  // Progress Tracking with Page Visibility API
+  // ============================================================================
+  
+  // Update progress every 45 seconds while tab is active
+  useEffect(() => {
+    if (!data || !lessonId || !moduleId || !updateLessonProgress) {
+      return;
+    }
+    
+    const updateProgressPeriodically = () => {
+      if (!isTabVisibleRef.current) {
+        return; // Skip if tab is not visible
+      }
+      
+      const now = Date.now();
+      const timeSpentMinutes = Math.round((now - lastProgressUpdateRef.current) / 60000); // Convert to minutes
+      
+      if (timeSpentMinutes > 0) {
+        updateLessonProgress({
+          lessonId: lessonId,
+          moduleId: moduleId,
+          timeSpentDelta: timeSpentMinutes,
+        }).catch(error => {
+          console.error('[LessonViewer] Failed to update progress:', error);
+        });
+        
+        lastProgressUpdateRef.current = now;
+      }
+    };
+    
+    // Set up interval to update progress every 45 seconds
+    progressIntervalRef.current = setInterval(updateProgressPeriodically, 45000);
+    
+    // Handle Page Visibility API
+    const handleVisibilityChange = () => {
+      isTabVisibleRef.current = document.visibilityState === 'visible';
+      
+      // If tab becomes visible, update lastProgressUpdateRef to current time
+      if (isTabVisibleRef.current) {
+        lastProgressUpdateRef.current = Date.now();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Initial check
+    isTabVisibleRef.current = document.visibilityState === 'visible';
+    
+    // Cleanup
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [data, lessonId, moduleId, updateLessonProgress]);
   
   // ============================================================================
   // Navigation Handlers
   // ============================================================================
   
   const handleNavigateToLesson = useCallback((targetLessonId, targetModuleId) => {
+    // Send lastAccess before navigating
+    if (lessonId && moduleId && updateLessonProgress) {
+      updateLessonProgress({
+        lessonId: lessonId,
+        moduleId: moduleId,
+        lastAccessed: new Date().toISOString(),
+      }).catch(error => {
+        console.error('[LessonViewer] Failed to update lastAccess:', error);
+      });
+    }
+    
+    // Clear progress interval
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+    
+    // Reset timers
+    startTimeRef.current = Date.now();
+    lastProgressUpdateRef.current = Date.now();
+    
     if (onNavigate) {
       onNavigate(targetLessonId, targetModuleId);
     } else {
@@ -299,7 +408,51 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
         window.location.href = `/teaching/lesson/${targetModuleId}/${targetLessonId}`;
       }
     }
-  }, [onNavigate]);
+  }, [lessonId, moduleId, updateLessonProgress, onNavigate]);
+  
+  // ============================================================================
+  // Mark Lesson as Complete Handler
+  // ============================================================================
+  
+  const handleMarkAsCompleted = useCallback(async () => {
+    if (!data || !lessonId || !moduleId || !updateLessonProgress) {
+      return;
+    }
+    
+    try {
+      // Calculate time spent
+      const timeSpentMinutes = Math.round((Date.now() - startTimeRef.current) / 60000);
+      
+      // Update progress with completed=true
+      await updateLessonProgress({
+        lessonId: lessonId,
+        moduleId: moduleId,
+        completed: true,
+        progress: 1,
+        timeSpentDelta: timeSpentMinutes,
+        lastAccessed: new Date().toISOString(),
+      });
+      
+      setLessonCompleted(true);
+      setSnackbarMessage('¡Lección marcada como completada!');
+      setSnackbarOpen(true);
+      
+      // Clear progress interval since lesson is completed
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      
+      // Call onComplete callback if provided
+      if (onComplete) {
+        onComplete(data);
+      }
+    } catch (error) {
+      console.error('[LessonViewer] Failed to mark lesson as completed:', error);
+      setSnackbarMessage('Error al marcar la lección como completada');
+      setSnackbarOpen(true);
+    }
+  }, [data, lessonId, moduleId, updateLessonProgress, onComplete]);
   
   // ============================================================================
   // Practical Cases Handlers
@@ -904,6 +1057,33 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
                 
                 {/* Media Blocks Section - Rendered after main content */}
                 {renderMediaBlocks()}
+                
+                {/* Mark as Completed Button */}
+                {data && !lessonCompleted && (
+                  <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      size="large"
+                      startIcon={<CheckCircleIcon />}
+                      onClick={handleMarkAsCompleted}
+                      sx={{
+                        px: 4,
+                        py: 1.5,
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        boxShadow: 3,
+                        '&:hover': {
+                          boxShadow: 6,
+                        },
+                      }}
+                    >
+                      Marcar como completada
+                    </Button>
+                  </Box>
+                )}
                 
                 {/* AI Topic Expander - Renderizado al final del contenido */}
                 {data && (

@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   // Configuración optimizada para deployment en Vercel
@@ -24,7 +25,7 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // Configuración de webpack para manejar archivos .md
+  // Configuración de webpack para manejar archivos .md y path aliases
   webpack: (config, { isServer }) => {
     // Manejar archivos .md como assets de texto para evitar errores de módulo desconocido
     // Esto evita que Next.js intente procesar archivos .md como módulos JavaScript
@@ -32,6 +33,18 @@ const nextConfig: NextConfig = {
       test: /\.md$/,
       type: 'asset/source',
     });
+    
+    // Configurar path aliases para resolver imports con @/
+    if (!config.resolve) {
+      config.resolve = {};
+    }
+    if (!config.resolve.alias) {
+      config.resolve.alias = {};
+    }
+    
+    // Set up @ alias to point to src directory
+    // This allows imports like @/lib/auth-config to resolve to src/lib/auth-config
+    config.resolve.alias['@'] = path.resolve(__dirname, 'src');
     
     return config;
   },

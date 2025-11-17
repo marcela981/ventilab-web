@@ -1,55 +1,384 @@
-// =============================================================================
-// VentyLab Prisma Schema
-// Medical Ventilation Education Platform - Complete Database Schema
-// =============================================================================
-// This schema defines all models for the VentyLab platform, including:
-// - User management and authentication
-// - Module and lesson structure
-// - Learning progress tracking
-// - Quiz and assessment system
-// - Gamification with achievements
-// - Learning session analytics
-// =============================================================================
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  // For development with SQLite (no setup required):
-  // provider = "sqlite"
-
-  // For production with PostgreSQL (recommended):
   provider = "postgresql"
-
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
-// =============================================================================
-// PostgreSQL Extensions Required
-// =============================================================================
-// For full-text search optimization with trigram similarity, run this SQL:
-// CREATE EXTENSION IF NOT EXISTS pg_trgm;
-// This enables the gin_trgm_ops operator class used in search indexes
-// =============================================================================
+/// User model - Represents all users in the system (students, instructors, experts, admins)
+/// Handles authentication via NextAuth.js with support for OAuth providers and credentials
+model User {
+  id               String             @id @default(cuid())
+  email            String             @unique
+  emailVerified    DateTime?
+  password         String?
+  name             String
+  role             UserRole           @default(STUDENT)
+  userLevel        UserLevel          @default(BEGINNER)
+  image            String?
+  bio              String?
+  isActive         Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  accounts         Account[]
+  achievements     Achievement[]
+  learningProgress LearningProgress[] // Legacy
+  progress         Progress[]         // New unified progress
+  learningSessions LearningSession[]
+  quizAttempts     QuizAttempt[]
+  searchLogs       SearchLog[]
+  sessions         Session[]
 
-// =============================================================================
-// ENUMS (For PostgreSQL)
-// =============================================================================
+  @@index([email])
+  @@index([role])
+  @@index([userLevel])
+  @@index([isActive])
+  @@map("users")
+}
+
+/// Account model - Stores OAuth provider account information
+/// Links user accounts with external OAuth providers (Google, GitHub, etc.)
+/// Each user can have multiple accounts (one per provider)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+/// Session model - Stores active user sessions
+/// Used by NextAuth.js database session strategy (alternative to JWT)
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@map("sessions")
+}
+
+/// VerificationToken model - Stores tokens for email verification and password reset
+/// Used for magic link sign-in and other verification flows
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+/// Module model - Represents a learning module (e.g., "Introduction to Mechanical Ventilation")
+/// Modules contain multiple lessons and can have prerequisites
+model Module {
+  id               String               @id @default(cuid())
+  title            String
+  description      String?
+  order            Int
+  category         ModuleCategory
+  difficulty       ModuleDifficulty
+  estimatedTime    Int
+  isActive         Boolean              @default(true)
+  thumbnail        String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  isPlaceholder    Boolean              @default(false)
+  status           String?              @default("available")
+  learningProgress LearningProgress[] // Legacy
+  progress         Progress[]         // New unified progress
+  lessons          Lesson[]
+  prerequisites    ModulePrerequisite[] @relation("ModuleToPrerequisite")
+  dependentModules ModulePrerequisite[] @relation("PrerequisiteToModule")
+
+  @@index([category])
+  @@index([difficulty])
+  @@index([isActive])
+  @@index([order])
+  @@index([title], map: "modules_title_simple_idx")
+  @@index([title(ops: raw("gin_trgm_ops"))], map: "modules_title_gin_idx", type: Gin)
+  @@map("modules")
+}
+
+/// ModulePrerequisite - Junction table for module prerequisites
+/// Defines which modules must be completed before starting another module
+model ModulePrerequisite {
+  id             String @id @default(cuid())
+  moduleId       String
+  prerequisiteId String
+  module         Module @relation("ModuleToPrerequisite", fields: [moduleId], references: [id], onDelete: Cascade)
+  prerequisite   Module @relation("PrerequisiteToModule", fields: [prerequisiteId], references: [id], onDelete: Cascade)
+
+  @@unique([moduleId, prerequisiteId])
+  @@index([moduleId])
+  @@index([prerequisiteId])
+  @@map("module_prerequisites")
+}
+
+/// Lesson model - Individual lessons within a module
+/// Contains the actual learning content (text, images, videos, etc.)
+model Lesson {
+  id             String           @id @default(cuid())
+  moduleId       String
+  title          String
+  content        Json              // Changed from String to Json
+  order          Int
+  difficulty     Difficulty        @default(BEGINNER) // New field
+  estimatedTime  Int
+  aiGenerated    Boolean          @default(false)
+  sourcePrompt   String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  slug           String?
+  lessonProgress LessonProgress[] // Legacy
+  progress       Progress[]       // New unified progress
+  module         Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  quizzes        Quiz[]
+
+  @@index([moduleId])
+  @@index([order])
+  @@index([slug])
+  @@index([title], map: "lessons_title_simple_idx")
+  @@index([title(ops: raw("gin_trgm_ops"))], map: "lessons_title_gin_idx", type: Gin)
+  @@map("lessons")
+}
+
+/// LearningProgress - Tracks user's overall progress in a module (LEGACY)
+/// One record per user per module
+/// NOTE: Consider migrating to Progress model
+model LearningProgress {
+  id             String           @id @default(cuid())
+  userId         String
+  moduleId       String
+  completedAt    DateTime?
+  timeSpent      Int              @default(0)
+  score          Float?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  module         Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonProgress LessonProgress[]
+
+  @@unique([userId, moduleId])
+  @@index([userId])
+  @@index([moduleId])
+  @@map("learning_progress")
+}
+
+/// LessonProgress - Tracks user's progress for individual lessons (LEGACY)
+/// Provides granular tracking of which lessons have been completed
+/// NOTE: Consider migrating to Progress model
+model LessonProgress {
+  id               String           @id @default(cuid())
+  progressId       String
+  lessonId         String
+  completed        Boolean          @default(false)
+  timeSpent        Int              @default(0)
+  lastAccessed     DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  progress         Float            @default(0)
+  lesson           Lesson           @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  learningProgress LearningProgress @relation(fields: [progressId], references: [id], onDelete: Cascade)
+
+  @@unique([progressId, lessonId])
+  @@index([progressId])
+  @@index([lessonId])
+  @@map("lesson_progress")
+}
+
+/// Progress - Unified progress tracking model
+/// Can track progress for both modules and lessons
+/// One record per user per module OR per user per lesson
+model Progress {
+  id         String    @id @default(cuid())
+  userId     String
+  moduleId   String?   // Optional: null if tracking lesson progress
+  lessonId   String?   // Optional: null if tracking module progress
+  completed  Boolean   @default(false)
+  score      Float?
+  timeSpent  Int       @default(0)
+  lastAccess DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module Module? @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  lesson Lesson? @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId], name: "progress_user_lesson_unique") // One progress record per user per lesson
+  @@unique([userId, moduleId], name: "progress_user_module_unique") // One progress record per user per module
+  @@index([userId])
+  @@index([moduleId])
+  @@index([lessonId])
+  @@index([completed])
+  @@map("progress")
+}
+
+/// Quiz - Questions integrated into lessons for knowledge assessment
+/// Can be multiple choice, true/false, or other question types
+model Quiz {
+  id            String        @id @default(cuid())
+  lessonId      String
+  question      String
+  options       String
+  correctAnswer String
+  explanation   String?
+  order         Int
+  points        Int           @default(10)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  quizAttempts  QuizAttempt[]
+  lesson        Lesson        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId])
+  @@index([order])
+  @@map("quizzes")
+}
+
+/// QuizAttempt - Records each user's attempt at answering a quiz question
+/// Allows tracking of learning patterns and areas needing improvement
+model QuizAttempt {
+  id          String   @id @default(cuid())
+  userId      String
+  quizId      String
+  answer      String
+  isCorrect   Boolean
+  timeSpent   Int?
+  attemptedAt DateTime @default(now())
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([quizId])
+  @@index([isCorrect])
+  @@index([attemptedAt])
+  @@map("quiz_attempts")
+}
+
+/// LearningSession - Tracks individual study sessions
+/// Useful for analytics and understanding user engagement patterns
+model LearningSession {
+  id              String    @id @default(cuid())
+  userId          String
+  startTime       DateTime  @default(now())
+  endTime         DateTime?
+  duration        Int?
+  modulesAccessed String?
+  lessonsViewed   Int       @default(0)
+  quizzesTaken    Int       @default(0)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([startTime])
+  @@map("learning_sessions")
+}
+
+/// Achievement - Badges and achievements for gamification
+/// Motivates users by recognizing milestones and accomplishments
+model Achievement {
+  id          String          @id @default(cuid())
+  userId      String
+  type        AchievementType
+  title       String
+  description String
+  icon        String?
+  points      Int             @default(0)
+  unlockedAt  DateTime        @default(now())
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([unlockedAt])
+  @@map("achievements")
+}
+
+/// SearchLog model - Tracks user search activity for analytics and improvements
+/// Stores search queries, filters, results count, and user interactions
+/// Used to identify popular searches, low-quality results, and content gaps
+model SearchLog {
+  id             String   @id @default(cuid())
+  userId         String?
+  query          String
+  filters        Json?
+  resultsCount   Int
+  selectedResult String?
+  selectedType   String?
+  timestamp      DateTime @default(now())
+  sessionId      String?
+  responseTime   Int?
+  user           User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([query])
+  @@index([timestamp])
+  @@index([sessionId])
+  @@index([resultsCount])
+  @@map("search_logs")
+}
+
+/// AiChatSession - Tracks AI tutor chat sessions
+/// Stores session metadata and links to lesson context
+model AiChatSession {
+  id        String      @id @default(cuid())
+  lessonId  String
+  sessionId String      @unique
+  provider  String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  messages  AiMessage[]
+
+  @@index([lessonId])
+  @@index([sessionId])
+  @@index([createdAt])
+  @@map("ai_chat_sessions")
+}
+
+/// AiMessage - Individual messages in AI tutor chat sessions
+/// Stores conversation history for context and analytics
+model AiMessage {
+  id        String        @id @default(cuid())
+  sessionId String
+  role      String
+  content   String
+  createdAt DateTime      @default(now())
+  session   AiChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([createdAt])
+  @@index([role])
+  @@map("ai_messages")
+}
 
 /// User roles in the VentyLab platform
 enum UserRole {
-  STUDENT    // Regular students learning ventilation
-  TEACHER    // Teachers who create and manage content
-  EXPERT     // Medical experts with advanced privileges
-  ADMIN      // System administrators with full access
+  STUDENT
+  TEACHER
+  EXPERT
+  ADMIN
 }
 
 /// User learning level - tracks student's current skill level
 enum UserLevel {
-  BEGINNER      // New students starting with fundamentals
-  INTERMEDIATE  // Students with basic knowledge advancing their skills
-  ADVANCED      // Experienced students working on advanced topics
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
 }
 
 enum ModuleCategory {
@@ -67,478 +396,49 @@ enum ModuleDifficulty {
   ADVANCED
 }
 
+/// Simplified Role enum for new Progress model
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+/// Simplified Difficulty enum for Lesson model
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
 /// Achievement types for the gamification system
 /// Each type represents a specific milestone or accomplishment in the learning journey
 enum AchievementType {
-  // === First Steps & Exploration ===
-  FIRST_LESSON          // Unlocked: Complete your first lesson
-  FIRST_MODULE          // Unlocked: Complete your first module
-  EXPLORING             // Unlocked: Access 5 different lessons (not necessarily complete them)
-  
-  // === Lesson Completion Milestones ===
-  LESSONS_10            // Unlocked: Complete 10 lessons total
-  LESSONS_25            // Unlocked: Complete 25 lessons total
-  LESSONS_50            // Unlocked: Complete 50 lessons total
-  
-  // === Specific Module Completion ===
-  MODULE_COMPLETE       // Unlocked: Complete any module (generic achievement)
-  MODULE_FUNDAMENTALS   // Unlocked: Complete the Fundamentals module
-  MODULE_VENTILATION    // Unlocked: Complete the Ventilation Principles module
-  MODULE_CLINICAL       // Unlocked: Complete the Clinical Applications module
-  MODULE_ADVANCED       // Unlocked: Complete the Advanced Techniques module
-  
-  // === Level Mastery ===
-  ALL_BEGINNER          // Unlocked: Complete all modules of Beginner difficulty level
-  ALL_INTERMEDIATE      // Unlocked: Complete all modules of Intermediate difficulty level
-  ALL_ADVANCED          // Unlocked: Complete all modules of Advanced difficulty level
-  COMPLETE_KNOWLEDGE    // Unlocked: Complete all available modules in the platform
-  MASTER_LEVEL          // Unlocked: Reach master level in your learning journey
-  
-  // === Learning Streaks ===
-  STREAK_3_DAYS         // Unlocked: Study for 3 consecutive days
-  STREAK_7_DAYS         // Unlocked: Study for 7 consecutive days (1 week)
-  STREAK_30_DAYS        // Unlocked: Study for 30 consecutive days (1 month)
-  
-  // === Time-Based Learning Habits ===
-  MORNING_LEARNER       // Unlocked: Study before 7:00 AM
-  NIGHT_OWL             // Unlocked: Study after 10:00 PM
-  DEDICATED_STUDENT     // Unlocked: Show consistent dedication to learning
-  SPEED_LEARNER         // Unlocked: Complete lessons faster than estimated time
-  
-  // === Quiz Excellence ===
-  PERFECT_QUIZ          // Unlocked: Score 100% on a quiz
-  FIVE_PERFECT_QUIZZES  // Unlocked: Score 100% on 5 consecutive quizzes
-  
-  // === Review & Practice ===
-  REVIEWING_PRO         // Unlocked: Review 10 lessons that were already completed
-  
-  // === Platform Engagement ===
-  CURIOUS_SEARCHER      // Unlocked: Use the search feature 20 times
-  FEEDBACK_CONTRIBUTOR  // Unlocked: Contribute feedback (if feedback system is implemented)
+  FIRST_LESSON
+  FIRST_MODULE
+  EXPLORING
+  LESSONS_10
+  LESSONS_25
+  LESSONS_50
+  MODULE_COMPLETE
+  MODULE_FUNDAMENTALS
+  MODULE_VENTILATION
+  MODULE_CLINICAL
+  MODULE_ADVANCED
+  ALL_BEGINNER
+  ALL_INTERMEDIATE
+  ALL_ADVANCED
+  COMPLETE_KNOWLEDGE
+  MASTER_LEVEL
+  STREAK_3_DAYS
+  STREAK_7_DAYS
+  STREAK_30_DAYS
+  MORNING_LEARNER
+  NIGHT_OWL
+  DEDICATED_STUDENT
+  SPEED_LEARNER
+  PERFECT_QUIZ
+  FIVE_PERFECT_QUIZZES
+  REVIEWING_PRO
+  CURIOUS_SEARCHER
+  FEEDBACK_CONTRIBUTOR
 }
-
-// =============================================================================
-// USER MODELS
-// =============================================================================
-
-/// User model - Represents all users in the system (students, instructors, experts, admins)
-/// Handles authentication via NextAuth.js with support for OAuth providers and credentials
-model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  emailVerified DateTime? // Timestamp when email was verified (used by NextAuth)
-  password      String?   // Hashed password using bcryptjs (nullable for OAuth-only users)
-  name          String
-  role          UserRole  @default(STUDENT) // User role with proper enum type
-  userLevel     UserLevel @default(BEGINNER) // Current learning level - tracks student's progression
-  image         String?   // Avatar image URL (populated by OAuth providers or custom upload)
-  bio           String?   // Optional user biography
-  isActive      Boolean   @default(true) // Soft delete flag - inactive users cannot login
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // NextAuth.js Relations
-  accounts Account[] // Linked OAuth accounts (Google, GitHub, etc.)
-  sessions Session[] // Active user sessions
-
-  // VentyLab Relations
-  learningProgress LearningProgress[] // User's progress across all modules
-  quizAttempts     QuizAttempt[]      // User's quiz attempts
-  learningSessions LearningSession[]  // User's learning sessions
-  achievements     Achievement[]      // User's unlocked achievements
-  searchLogs       SearchLog[]        // User's search activity logs
-
-  @@index([email])
-  @@index([role])
-  @@index([userLevel])
-  @@index([isActive])
-  @@map("users")
-}
-
-// =============================================================================
-// NEXTAUTH.JS ADAPTER MODELS
-// =============================================================================
-// These models are required by NextAuth.js Prisma Adapter
-// Documentation: https://authjs.dev/reference/adapter/prisma
-
-/// Account model - Stores OAuth provider account information
-/// Links user accounts with external OAuth providers (Google, GitHub, etc.)
-/// Each user can have multiple accounts (one per provider)
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String  // "oauth" | "oidc" | "email" | "credentials"
-  provider          String  // OAuth provider name (e.g., "google", "github")
-  providerAccountId String  // User's ID in the OAuth provider's system
-  refresh_token     String? @db.Text // OAuth refresh token (for token renewal)
-  access_token      String? @db.Text // OAuth access token (for API calls)
-  expires_at        Int?    // Unix timestamp when access_token expires
-  token_type        String? // Token type (usually "Bearer")
-  scope             String? // OAuth scopes granted
-  id_token          String? @db.Text // OpenID Connect ID token
-  session_state     String? // OAuth session state
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId]) // Prevent duplicate provider accounts
-  @@index([userId])
-  @@map("accounts")
-}
-
-/// Session model - Stores active user sessions
-/// Used by NextAuth.js database session strategy (alternative to JWT)
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique // Unique session token stored in cookies
-  userId       String
-  expires      DateTime // Session expiration timestamp
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([sessionToken])
-  @@map("sessions")
-}
-
-/// VerificationToken model - Stores tokens for email verification and password reset
-/// Used for magic link sign-in and other verification flows
-model VerificationToken {
-  identifier String   // User's email or phone number
-  token      String   @unique // Unique verification token
-  expires    DateTime // Token expiration timestamp
-
-  @@unique([identifier, token]) // Composite key ensures one token per identifier
-  @@map("verification_tokens")
-}
-
-// =============================================================================
-// MODULE AND LESSON MODELS
-// =============================================================================
-
-/// Module model - Represents a learning module (e.g., "Introduction to Mechanical Ventilation")
-/// Modules contain multiple lessons and can have prerequisites
-model Module {
-  id            String   @id @default(cuid())
-  title         String
-  description   String?           // Detailed description of module content
-  order         Int               // Display order in the curriculum
-  category      ModuleCategory    // Module category with proper enum type
-  difficulty    ModuleDifficulty  // Difficulty level with proper enum type
-  estimatedTime Int      // Estimated completion time in minutes
-  isActive      Boolean  @default(true) // Soft delete flag - inactive modules are hidden
-  status        String?  @default("available") // Module status: "available", "locked", "coming_soon"
-  isPlaceholder Boolean  @default(false) // Flag indicating if module is a placeholder (coming soon)
-  thumbnail     String?  // Optional URL to module thumbnail image
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  // Relations
-  lessons          Lesson[]           // Lessons within this module
-  learningProgress LearningProgress[] // User progress for this module
-
-  // Self-referential many-to-many for prerequisites
-  prerequisites    ModulePrerequisite[] @relation("ModuleToPrerequisite")
-  dependentModules ModulePrerequisite[] @relation("PrerequisiteToModule")
-
-  @@index([category])
-  @@index([difficulty])
-  @@index([isActive])
-  @@index([order])
-  @@index([title], map: "modules_title_simple_idx") // Index for search performance
-  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, map: "modules_title_gin_idx") // Full-text search index for PostgreSQL with trigram similarity
-  @@map("modules")
-}
-
-/// ModulePrerequisite - Junction table for module prerequisites
-/// Defines which modules must be completed before starting another module
-model ModulePrerequisite {
-  id             String @id @default(cuid())
-  moduleId       String
-  prerequisiteId String
-
-  // Relations
-  module       Module @relation("ModuleToPrerequisite", fields: [moduleId], references: [id], onDelete: Cascade)
-  prerequisite Module @relation("PrerequisiteToModule", fields: [prerequisiteId], references: [id], onDelete: Cascade)
-
-  @@unique([moduleId, prerequisiteId]) // Prevent duplicate prerequisites
-  @@index([moduleId])
-  @@index([prerequisiteId])
-  @@map("module_prerequisites")
-}
-
-/// Lesson model - Individual lessons within a module
-/// Contains the actual learning content (text, images, videos, etc.)
-model Lesson {
-  id            String   @id @default(cuid())
-  moduleId      String
-  title         String
-  content       String   // JSON string containing structured lesson content (use Json type with PostgreSQL)
-  order         Int      // Order within the module
-  estimatedTime Int      // Estimated completion time in minutes
-  aiGenerated   Boolean  @default(false) // Flag if content was AI-generated
-  sourcePrompt  String?  // Optional: The AI prompt used to generate this lesson
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  // Relations
-  module         Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  lessonProgress LessonProgress[] // User progress for this lesson
-  quizzes        Quiz[]           // Quizzes embedded in this lesson
-
-  @@index([moduleId])
-  @@index([order])
-  @@index([title], map: "lessons_title_simple_idx") // Index for search performance
-  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, map: "lessons_title_gin_idx") // Full-text search index for PostgreSQL with trigram similarity
-  @@map("lessons")
-}
-
-// =============================================================================
-// PROGRESS TRACKING MODELS
-// =============================================================================
-
-/// LearningProgress - Tracks user's overall progress in a module
-/// One record per user per module
-model LearningProgress {
-  id          String    @id @default(cuid())
-  userId      String
-  moduleId    String
-  completedAt DateTime?
-  timeSpent   Int       @default(0)
-  score       Float?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  module         Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  lessonProgress LessonProgress[]
-
-  @@unique([userId, moduleId])
-  @@index([userId])
-  @@index([moduleId])
-  @@map("learning_progress")
-}
-
-/// LessonProgress - Tracks user's progress for individual lessons
-/// Provides granular tracking of which lessons have been completed
-model LessonProgress {
-  id           String    @id @default(cuid())
-  progressId   String
-  lessonId     String
-  completed    Boolean   @default(false)
-  timeSpent    Int       @default(0)
-  lastAccessed DateTime?
-  progress     Float     @default(0)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  learningProgress LearningProgress @relation(fields: [progressId], references: [id], onDelete: Cascade)
-  lesson           Lesson           @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-
-  @@unique([progressId, lessonId])
-  @@index([progressId])
-  @@index([lessonId])
-  @@map("lesson_progress")
-}
-
-// =============================================================================
-// QUIZ AND ASSESSMENT MODELS
-// =============================================================================
-
-/// Quiz - Questions integrated into lessons for knowledge assessment
-/// Can be multiple choice, true/false, or other question types
-model Quiz {
-  id            String @id @default(cuid())
-  lessonId      String
-  question      String // The question text
-  options       String // JSON array of answer options (use Json type with PostgreSQL)
-  correctAnswer String // The correct answer (must match one of the options)
-  explanation   String? // Optional explanation of why the answer is correct
-  order         Int     // Order of quiz within the lesson
-  points        Int     @default(10) // Points awarded for correct answer
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  // Relations
-  lesson       Lesson        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  quizAttempts QuizAttempt[] // User attempts for this quiz
-
-  @@index([lessonId])
-  @@index([order])
-  @@map("quizzes")
-}
-
-/// QuizAttempt - Records each user's attempt at answering a quiz question
-/// Allows tracking of learning patterns and areas needing improvement
-model QuizAttempt {
-  id          String   @id @default(cuid())
-  userId      String
-  quizId      String
-  answer      String   // The answer provided by the user
-  isCorrect   Boolean  // Whether the answer was correct
-  timeSpent   Int?     // Optional: Time taken to answer in seconds
-  attemptedAt DateTime @default(now())
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([quizId])
-  @@index([isCorrect])
-  @@index([attemptedAt])
-  @@map("quiz_attempts")
-}
-
-// =============================================================================
-// ANALYTICS AND SESSION TRACKING
-// =============================================================================
-
-/// LearningSession - Tracks individual study sessions
-/// Useful for analytics and understanding user engagement patterns
-model LearningSession {
-  id              String    @id @default(cuid())
-  userId          String
-  startTime       DateTime  @default(now())
-  endTime         DateTime? // Null if session is still active
-  duration        Int?      // Duration in minutes (calculated when endTime is set)
-  modulesAccessed String?   // Comma-separated list of module IDs accessed (use String[] array with PostgreSQL)
-  lessonsViewed   Int       @default(0) // Number of lessons viewed in this session
-  quizzesTaken    Int       @default(0) // Number of quizzes attempted in this session
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([startTime])
-  @@map("learning_sessions")
-}
-
-// =============================================================================
-// GAMIFICATION MODELS
-// =============================================================================
-
-/// Achievement - Badges and achievements for gamification
-/// Motivates users by recognizing milestones and accomplishments
-model Achievement {
-  id          String          @id @default(cuid())
-  userId      String
-  type        AchievementType // Achievement type with proper enum type
-  title       String          // Display title of the achievement
-  description String   // Description of what was accomplished
-  icon        String?  // Optional icon identifier or URL
-  points      Int      @default(0) // Points awarded for this achievement
-  unlockedAt  DateTime @default(now())
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([type])
-  @@index([unlockedAt])
-  @@map("achievements")
-}
-
-// =============================================================================
-// SEARCH ANALYTICS MODELS
-// =============================================================================
-
-/// SearchLog model - Tracks user search activity for analytics and improvements
-/// Stores search queries, filters, results count, and user interactions
-/// Used to identify popular searches, low-quality results, and content gaps
-model SearchLog {
-  id             String    @id @default(cuid())
-  userId         String?   // Optional: nullable for anonymous searches or privacy
-  query          String    // The search term entered by the user
-  filters        Json?     // JSON object with applied filters (categories, difficulties, etc.)
-  resultsCount   Int       // Number of results returned for this search
-  selectedResult String?   // ID of the result the user clicked on (if any)
-  selectedType   String?   // Type of selected result: 'module' or 'lesson'
-  timestamp      DateTime  @default(now()) // When the search was performed
-  sessionId      String?   // Session identifier to group related searches
-  responseTime   Int?      // Search response time in milliseconds (for performance monitoring)
-  
-  // Relations
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  // Indexes for efficient analytics queries
-  @@index([userId])
-  @@index([query])
-  @@index([timestamp])
-  @@index([sessionId])
-  @@index([resultsCount]) // For finding searches with no results
-  @@map("search_logs")
-}
-
-// =============================================================================
-// AI TUTOR MODELS
-// =============================================================================
-
-/// AiChatSession - Tracks AI tutor chat sessions
-/// Stores session metadata and links to lesson context
-model AiChatSession {
-  id        String   @id @default(cuid())
-  lessonId  String   // Lesson identifier
-  sessionId String   @unique // UUID v4 session identifier from frontend
-  provider  String   // AI provider used (openai, anthropic, google)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  messages AiMessage[] // Messages in this session
-
-  @@index([lessonId])
-  @@index([sessionId])
-  @@index([createdAt])
-  @@map("ai_chat_sessions")
-}
-
-/// AiMessage - Individual messages in AI tutor chat sessions
-/// Stores conversation history for context and analytics
-model AiMessage {
-  id        String   @id @default(cuid())
-  sessionId String
-  role      String   // 'user' or 'assistant'
-  content   String   @db.Text // Message content
-  createdAt DateTime @default(now())
-
-  // Relations
-  session AiChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-
-  @@index([sessionId])
-  @@index([createdAt])
-  @@index([role])
-  @@map("ai_messages")
-}
-
-// =============================================================================
-// MIGRATION AND SETUP INSTRUCTIONS
-// =============================================================================
-//
-// INITIAL SETUP (PostgreSQL):
-// 1. Ensure PostgreSQL is installed and running
-// 2. Create a database: CREATE DATABASE ventilab_dev;
-// 3. Configure DATABASE_URL in .env.local with your PostgreSQL credentials
-// 4. Generate Prisma Client: npm run prisma:generate (or npx prisma generate)
-// 5. Create tables: npm run prisma:migrate (or npx prisma migrate dev --name init)
-// 6. (Optional) Seed database: npm run prisma:seed
-//
-// VIEWING DATABASE:
-// - Open Prisma Studio: npx prisma studio
-// - Or use any PostgreSQL client (pgAdmin, DBeaver, etc.)
-//
-// UPDATING SCHEMA:
-// After making changes to this schema file:
-// 1. Generate new migration: npx prisma migrate dev --name describe_your_changes
-// 2. The migration will be applied automatically to your development database
-// 3. Prisma Client will be regenerated automatically
-//
-// NEXTAUTH.JS INTEGRATION:
-// The Account, Session, and VerificationToken models are required by NextAuth.js
-// Prisma Adapter. Do not modify these models unless you know what you're doing.
-// Reference: https://authjs.dev/reference/adapter/prisma
-//
-// PRODUCTION DEPLOYMENT:
-// 1. Set DATABASE_URL to production database
-// 2. Run: npx prisma migrate deploy (applies pending migrations)
-// 3. Generate client: npx prisma generate
-// =============================================================================

@@ -72,8 +72,32 @@ const validateModuleAccess = async (moduleId: string, userId: string): Promise<b
 };
 
 /**
+ * Helper function to find a lesson by ID or slug
+ * Handles both CUID IDs (database IDs) and frontend lesson IDs (slugs)
+ */
+async function findLessonByIdOrSlug(lessonIdOrSlug: string) {
+  // Check if it looks like a CUID (starts with 'cl' and is ~25 characters)
+  const isCuid = /^cl[a-z0-9]{23}$/.test(lessonIdOrSlug);
+  
+  if (isCuid) {
+    // Try to find by CUID first
+    const lesson = await prisma.lesson.findUnique({
+      where: { id: lessonIdOrSlug },
+    });
+    if (lesson) return lesson;
+  }
+  
+  // Try to find by slug (frontend lesson ID)
+  const lesson = await prisma.lesson.findFirst({
+    where: { slug: lessonIdOrSlug },
+  });
+  
+  return lesson;
+}
+
+/**
  * Get lesson by ID with optional user progress
- * @param lessonId - Lesson ID
+ * @param lessonId - Lesson ID (CUID) or slug (frontend lesson ID)
  * @param userId - Optional user ID to include progress
  * @returns Lesson with module, quizzes, and optional progress
  */
@@ -81,8 +105,33 @@ export const getLessonById = async (
   lessonId: string,
   userId?: string
 ): Promise<Lesson & { module: any; quizzes: any[]; progress?: LessonProgress }> => {
-  const lesson = await prisma.lesson.findUnique({
-    where: { id: lessonId },
+  // Support both CUID IDs and frontend lesson IDs (slugs)
+  const lesson = await findLessonByIdOrSlug(lessonId);
+  
+  if (!lesson) {
+    // If not found, try to get full details for better error message
+    const lessonWithDetails = await prisma.lesson.findUnique({
+      where: { id: lessonId },
+      include: {
+        module: true,
+        quizzes: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
+    
+    if (!lessonWithDetails) {
+      throw new AppError(
+        'Lección no encontrada',
+        HTTP_STATUS.NOT_FOUND,
+        'LESSON_NOT_FOUND'
+      );
+    }
+  }
+  
+  // Get full lesson details with relations
+  const fullLesson = await prisma.lesson.findUnique({
+    where: { id: lesson.id },
     include: {
       module: true,
       quizzes: {
@@ -91,7 +140,7 @@ export const getLessonById = async (
     },
   });
 
-  if (!lesson) {
+  if (!fullLesson) {
     throw new AppError(
       'Lección no encontrada',
       HTTP_STATUS.NOT_FOUND,
@@ -100,7 +149,7 @@ export const getLessonById = async (
   }
 
   // Validate module is active
-  if (!lesson.module.isActive) {
+  if (!fullLesson.module.isActive) {
     throw new AppError(
       'El módulo de esta lección no está disponible',
       HTTP_STATUS.FORBIDDEN,
@@ -110,7 +159,7 @@ export const getLessonById = async (
 
   // If user is provided, check access and include progress
   if (userId) {
-    const hasAccess = await validateModuleAccess(lesson.moduleId, userId);
+    const hasAccess = await validateModuleAccess(fullLesson.moduleId, userId);
 
     if (!hasAccess) {
       throw new AppError(
@@ -125,7 +174,7 @@ export const getLessonById = async (
       where: {
         userId_moduleId: {
           userId,
-          moduleId: lesson.moduleId,
+          moduleId: fullLesson.moduleId,
         },
       },
     });
@@ -134,26 +183,27 @@ export const getLessonById = async (
       learningProgress = await prisma.learningProgress.create({
         data: {
           userId,
-          moduleId: lesson.moduleId,
+          moduleId: fullLesson.moduleId,
           timeSpent: 0,
         },
       });
     }
 
     // Get user progress for this lesson
+    // Use database lesson ID (CUID) for progress lookup
     const progress = await prisma.lessonProgress.findUnique({
       where: {
         progressId_lessonId: {
           progressId: learningProgress.id,
-          lessonId,
+          lessonId: fullLesson.id,
         },
       },
     });
 
-    return { ...lesson, progress: progress || undefined };
+    return { ...fullLesson, progress: progress || undefined };
   }
 
-  return lesson;
+  return fullLesson;
 };
 
 /**

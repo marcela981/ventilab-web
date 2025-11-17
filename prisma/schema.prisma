@@ -1,0 +1,166 @@
+// =============================================================================
+// VentyLab Prisma Schema - Root Level
+// Medical Ventilation Education Platform - Core Models
+// =============================================================================
+// This schema defines the core models for the VentyLab platform:
+// - User: User management and authentication
+// - Module: Learning modules (e.g., "Introduction to Mechanical Ventilation")
+// - Lesson: Individual lessons within modules
+// - Progress: Unified progress tracking for modules and lessons
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+/// User roles in the VentyLab platform
+enum UserRole {
+  STUDENT
+  TEACHER
+  EXPERT
+  ADMIN
+}
+
+/// User learning level - tracks student's current skill level
+enum UserLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum ModuleCategory {
+  FUNDAMENTALS
+  VENTILATION_PRINCIPLES
+  CLINICAL_APPLICATIONS
+  ADVANCED_TECHNIQUES
+  TROUBLESHOOTING
+  PATIENT_SAFETY
+}
+
+enum ModuleDifficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+/// Simplified Difficulty enum for Lesson model
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+// =============================================================================
+// MODELS
+// =============================================================================
+
+/// User model - Represents all users in the system (students, instructors, experts, admins)
+/// Handles authentication via NextAuth.js with support for OAuth providers and credentials
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  emailVerified DateTime?
+  password      String?
+  name          String
+  role          UserRole   @default(STUDENT)
+  userLevel     UserLevel  @default(BEGINNER)
+  image         String?
+  bio           String?
+  isActive      Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  progress      Progress[]
+
+  @@index([email])
+  @@index([role])
+  @@index([userLevel])
+  @@index([isActive])
+  @@map("users")
+}
+
+/// Module model - Represents a learning module (e.g., "Introduction to Mechanical Ventilation")
+/// Modules contain multiple lessons and can have prerequisites
+model Module {
+  id            String     @id @default(cuid())
+  title         String
+  description   String?
+  order         Int
+  category      ModuleCategory
+  difficulty    ModuleDifficulty
+  estimatedTime Int
+  isActive      Boolean    @default(true)
+  thumbnail     String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  isPlaceholder Boolean    @default(false)
+  status        String?    @default("available")
+  lessons       Lesson[]
+  progress      Progress[]
+
+  @@index([category])
+  @@index([difficulty])
+  @@index([isActive])
+  @@index([order])
+  @@map("modules")
+}
+
+/// Lesson model - Individual lessons within a module
+/// Contains the actual learning content (text, images, videos, etc.)
+model Lesson {
+  id            String     @id @default(cuid())
+  moduleId      String
+  title         String
+  content       Json       // JSON containing structured lesson content
+  order         Int
+  difficulty    Difficulty @default(BEGINNER)
+  estimatedTime Int
+  aiGenerated   Boolean    @default(false)
+  sourcePrompt  String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  slug          String?
+  module        Module     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress      Progress[]
+
+  @@index([moduleId])
+  @@index([order])
+  @@index([slug])
+  @@map("lessons")
+}
+
+/// Progress - Unified progress tracking model
+/// Can track progress for both modules and lessons
+/// One record per user per module OR per user per lesson
+model Progress {
+  id         String    @id @default(cuid())
+  userId     String
+  moduleId   String?   // Optional: null if tracking lesson progress
+  lessonId   String?   // Optional: null if tracking module progress
+  completed  Boolean   @default(false)
+  score      Float?
+  timeSpent  Int       @default(0)
+  lastAccess DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module Module? @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  lesson Lesson? @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId], name: "progress_user_lesson_unique") // One progress record per user per lesson
+  @@unique([userId, moduleId], name: "progress_user_module_unique") // One progress record per user per module
+  @@index([userId])
+  @@index([moduleId])
+  @@index([lessonId])
+  @@index([completed])
+  @@map("progress")
+}
+

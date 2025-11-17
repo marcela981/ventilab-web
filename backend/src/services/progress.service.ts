@@ -288,13 +288,34 @@ export async function getModuleProgress(
  * @param update - Lesson progress update data
  * @returns Updated module progress (DTO format)
  */
-export async function updateLessonProgress(
-  userId: string,
-  update: LessonProgressUpdate
-): Promise<ModuleProgressResponseDTO> {
-  // Validate lesson exists and get moduleId
-  const lesson = await prisma.lesson.findUnique({
-    where: { id: update.lessonId },
+/**
+ * Helper function to find a lesson by ID or slug
+ * Handles both CUID IDs (database IDs) and frontend lesson IDs (slugs)
+ */
+async function findLessonByIdOrSlug(lessonIdOrSlug: string) {
+  // Check if it looks like a CUID (starts with 'cl' and is ~25 characters)
+  const isCuid = /^cl[a-z0-9]{23}$/.test(lessonIdOrSlug);
+  
+  if (isCuid) {
+    // Try to find by CUID first
+    const lesson = await prisma.lesson.findUnique({
+      where: { id: lessonIdOrSlug },
+      include: {
+        module: {
+          include: {
+            lessons: {
+              select: { id: true }
+            }
+          }
+        }
+      }
+    });
+    if (lesson) return lesson;
+  }
+  
+  // Try to find by slug (frontend lesson ID)
+  const lesson = await prisma.lesson.findFirst({
+    where: { slug: lessonIdOrSlug },
     include: {
       module: {
         include: {
@@ -305,6 +326,17 @@ export async function updateLessonProgress(
       }
     }
   });
+  
+  return lesson;
+}
+
+export async function updateLessonProgress(
+  userId: string,
+  update: LessonProgressUpdate
+): Promise<ModuleProgressResponseDTO> {
+  // Validate lesson exists and get moduleId
+  // Support both CUID IDs and frontend lesson IDs (slugs)
+  const lesson = await findLessonByIdOrSlug(update.lessonId);
 
   if (!lesson) {
     throw new AppError(
@@ -316,6 +348,10 @@ export async function updateLessonProgress(
 
   const moduleId = lesson.moduleId;
   const totalLessons = lesson.module.lessons.length;
+  
+  // Use the database lesson ID (CUID) for lesson progress records
+  // This ensures we're using the correct ID even if update.lessonId was a slug
+  const dbLessonId = lesson.id;
 
   // Use transaction for atomic updates
   return await prisma.$transaction(async (tx) => {
@@ -346,8 +382,9 @@ export async function updateLessonProgress(
     }
 
     // Get current lesson progress or create if doesn't exist
+    // Use database lesson ID for matching
     let currentLessonProgress = learningProgress.lessonProgress.find(
-      lp => lp.lessonId === update.lessonId
+      lp => lp.lessonId === dbLessonId
     );
 
     // Calculate new timeSpent: if timeSpentDelta is provided, add it to existing
@@ -386,16 +423,17 @@ export async function updateLessonProgress(
     }
 
     // Upsert lesson progress
+    // Use database lesson ID (CUID) for lesson progress records
     await tx.lessonProgress.upsert({
       where: {
         progressId_lessonId: {
           progressId: learningProgress.id,
-          lessonId: update.lessonId
+          lessonId: dbLessonId
         }
       },
       create: {
         progressId: learningProgress.id,
-        lessonId: update.lessonId,
+        lessonId: dbLessonId,
         ...finalUpdateData
       },
       update: finalUpdateData

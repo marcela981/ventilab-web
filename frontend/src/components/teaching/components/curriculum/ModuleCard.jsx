@@ -4,6 +4,8 @@ import { useTheme, useMediaQuery, Skeleton, Snackbar, Alert, Box } from '@mui/ma
 import { useLearningProgress } from '../../../../contexts/LearningProgressContext';
 import useModuleAvailability from '../../../../hooks/useModuleAvailability';
 import { useModuleProgress } from '../../../../hooks/useModuleProgress';
+import useProgress from '../../../../hooks/useProgress';
+import { useModuleLessonsCount } from '../../../../hooks/useModuleLessonsCount';
 import { getModuleStatus } from './moduleCardHelpers';
 import ModuleCardHeader from './ModuleCardHeader';
 import ModuleCardMeta from './ModuleCardMeta';
@@ -74,7 +76,13 @@ const ModuleCard = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
-  // Obtener progreso del módulo usando el nuevo hook
+  // Obtener progreso global del usuario usando useProgress
+  const { progress: userProgress, stats, refetch: refetchProgress } = useProgress();
+  
+  // Obtener conteo real de lecciones del módulo desde la BD
+  const { count: totalLessonsFromDB, loading: isLoadingLessonsCount } = useModuleLessonsCount(module.id);
+  
+  // Obtener progreso del módulo usando el nuevo hook (para compatibilidad)
   const { progress, isLoading: isLoadingProgress, error: progressError } = useModuleProgress(
     module.id,
     { autoLoad: true, reloadOnMount: false }
@@ -83,27 +91,88 @@ const ModuleCard = ({
   // Obtener lecciones completadas del contexto para compatibilidad
   const { completedLessons, syncStatus } = useLearningProgress();
   
-  // Usar progreso del hook o precalculado/legacy como fallback
+  // Calcular progreso basado en lecciones completadas del módulo desde useProgress
   const moduleProgressAggregate = useMemo(() => {
-    // Prioridad: progreso del hook > precalculado > legacy prop
+    // Filtrar progreso de lecciones de este módulo
+    const moduleLessonsProgress = userProgress.filter(
+      p => p.lessonId && p.moduleId === module.id && p.completed
+    );
+    
+    const completedLessonsCount = moduleLessonsProgress.length;
+    
+    // Usar conteo real desde BD, o fallback a otros métodos
+    const totalLessons = totalLessonsFromDB > 0 
+      ? totalLessonsFromDB 
+      : (progress?.totalLessons || precalculatedProgress?.totalLessons || (module?.lessons || []).length || 0);
+    
+    // Calcular porcentaje: lecciones completadas / total lecciones
+    const percentInt = totalLessons > 0 
+      ? Math.round((completedLessonsCount / totalLessons) * 100)
+      : 0;
+    
+    // Si no hay lecciones, retornar 0%
+    if (totalLessons === 0) {
+      return {
+        percent: 0,
+        percentInt: 0,
+        completedLessons: 0,
+        totalLessons: 0,
+        isCompleted: false,
+        completedAt: null,
+        completedPages: 0,
+        totalPages: 0,
+      };
+    }
+    
+    // Prioridad: cálculo desde useProgress > progreso del hook > precalculado > legacy prop
+    if (totalLessonsFromDB > 0 || completedLessonsCount > 0) {
+      return {
+        percent: percentInt / 100,
+        percentInt,
+        completedLessons: completedLessonsCount,
+        totalLessons,
+        isCompleted: percentInt >= 100,
+        completedAt: moduleLessonsProgress.length > 0 && percentInt >= 100 
+          ? new Date() 
+          : null,
+        completedPages: progress?.completedPages || 0,
+        totalPages: progress?.totalPages || 0,
+      };
+    }
+    
+    // Fallback a progreso del hook si está disponible
     if (progress && progress.totalLessons > 0) {
       return progress;
     }
+    
+    // Fallback a precalculado
     if (precalculatedProgress) {
       return precalculatedProgress;
     }
-    // Fallback a cálculo legacy si no hay datos
+    
+    // Fallback final a cálculo legacy
     return {
       percent: (moduleProgressProp || 0) / 100,
       percentInt: moduleProgressProp || 0,
       completedLessons: 0,
-      totalLessons: (module?.lessons || []).length,
+      totalLessons: totalLessons || 0,
       isCompleted: (moduleProgressProp || 0) >= 100,
       completedAt: null,
       completedPages: 0,
       totalPages: 0,
     };
-  }, [progress, precalculatedProgress, moduleProgressProp, module?.lessons]);
+  }, [
+    userProgress, 
+    module.id, 
+    totalLessonsFromDB, 
+    progress, 
+    precalculatedProgress, 
+    moduleProgressProp, 
+    module?.lessons
+  ]);
+  
+  // Determinar si el módulo tiene lecciones
+  const hasLessons = moduleProgressAggregate.totalLessons > 0;
   
   // Estado para tabs internos de la card
   const [activeTab, setActiveTab] = useState(0);
@@ -154,8 +223,10 @@ const ModuleCard = ({
       : (isAvailableProp !== undefined ? isAvailableProp : isAvailable));
   
   // Usar progreso para determinar el status
+  // Si no hay lecciones, el módulo no está disponible para continuar
   const moduleProgressPercent = moduleProgressAggregate.percentInt;
-  const status = getModuleStatus(moduleProgressPercent, finalIsAvailable);
+  const effectiveIsAvailable = finalIsAvailable && hasLessons;
+  const status = getModuleStatus(moduleProgressPercent, effectiveIsAvailable);
   
   // Handler para prevenir que el click de la card se active cuando se hace scroll en el body
   const handleCardClick = (e) => {
@@ -270,7 +341,7 @@ const ModuleCard = ({
   
           <ModuleCardFooter
             status={status}
-            isAvailable={finalIsAvailable}
+            isAvailable={effectiveIsAvailable}
             levelColor={levelColor}
             theme={theme}
             onModuleClick={onModuleClick}
@@ -278,8 +349,8 @@ const ModuleCard = ({
           />
   
           {/* Barra de progreso con skeleton mientras carga */}
-          <div style={{ marginTop: 8, opacity: finalIsAvailable ? 1 : 0.6 }}>
-            {isLoadingProgress ? (
+          <div style={{ marginTop: 8, opacity: effectiveIsAvailable ? 1 : 0.6 }}>
+            {(isLoadingProgress || isLoadingLessonsCount) ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Skeleton variant="rectangular" width="100%" height={8} sx={{ borderRadius: 4, flex: 1 }} />
                 <Skeleton variant="text" width={36} />
