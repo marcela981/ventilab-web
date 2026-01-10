@@ -12,7 +12,7 @@
  */
 
 import React from 'react';
-import { StudentDashboard } from '../src/components/dashboard';
+import { StudentDashboard } from '@/components/dashboard';
 
 /**
  * Página del Dashboard de Estudiante

@@ -13,7 +13,7 @@
  */
 
 import React from 'react';
-import { TeacherDashboard } from '../src/components/dashboard';
+import { TeacherDashboard } from '@/components/dashboard';
 
 /**
  * Página del Dashboard de Profesor

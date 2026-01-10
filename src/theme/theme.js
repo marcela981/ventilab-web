@@ -551,9 +551,6 @@ export default theme;
 // Exportar colores para uso directo
 export { colors, levelColors };
 
-// Exportar funciones helper
-export { getColorWithOpacity, getLevelColor, getStatusColor };
-
 /**
  * Guía de uso:
  *

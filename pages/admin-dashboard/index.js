@@ -12,7 +12,7 @@
  */
 
 import React from 'react';
-import { AdminDashboard } from '../src/components/dashboard';
+import { AdminDashboard } from '@/components/dashboard';
 
 /**
  * Página del Dashboard de Administrador
