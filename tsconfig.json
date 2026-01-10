@@ -46,7 +46,7 @@
       "@/contexts/*": ["./src/contexts/*"],
       "@/services/*": ["./src/services/*"],
       "@/utils/*": ["./src/utils/*"],
-      "@/lib/*": ["./src/lib/*"],
+      "@/lib/*": ["./lib/*", "./src/lib/*"],
       "@/data/*": ["./src/data/*"],
       "@/theme/*": ["./src/theme/*"],
       "@/styles/*": ["./src/styles/*"],
