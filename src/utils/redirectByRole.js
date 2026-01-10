@@ -56,7 +56,9 @@ const DEFAULT_DASHBOARD = '/dashboard';
 export function getRedirectPath(role) {
   // Validate role parameter
   if (!role || typeof role !== 'string') {
-    console.warn('[redirectByRole] Invalid role provided:', role);
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[redirectByRole] Invalid role provided:', role);
+    }
     return DEFAULT_DASHBOARD;
   }
 
@@ -142,7 +144,9 @@ export function isSafeRedirectUrl(url, baseUrl) {
     return urlObj.origin === baseUrlObj.origin;
   } catch (error) {
     // Invalid URL format
-    console.warn('[redirectByRole] Invalid URL format:', url);
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[redirectByRole] Invalid URL format:', url);
+    }
     return false;
   }
 }

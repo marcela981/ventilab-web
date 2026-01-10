@@ -34,9 +34,10 @@ const ROUTE_PERMISSIONS = {
 
 /**
  * Public routes that don't require authentication
+ * NOTE: '/' is NOT included - all routes require authentication
+ * The home page redirects to dashboard, which requires auth
  */
 const PUBLIC_ROUTES = [
-  '/',
   '/about',
   '/contact',
   '/privacy',
@@ -89,32 +90,37 @@ function getAccessDeniedReason(pathname, userRole) {
  * This function runs on every request to protected routes.
  * It verifies authentication and authorization before allowing access.
  */
+// Helper to check if we're in development mode
+const isDev = process.env.NODE_ENV === 'development';
+
 export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token;
     const pathname = req.nextUrl.pathname;
     const url = req.nextUrl.clone();
 
-    // Log access attempt for security monitoring
-    console.log('[Middleware] Access attempt:', {
-      path: pathname,
-      user: token?.email || 'unauthenticated',
-      role: token?.role || 'none',
-      timestamp: new Date().toISOString(),
-    });
+    // Log access attempt ONLY in development to avoid spam in production
+    if (isDev) {
+      console.log('[Middleware] Access attempt:', {
+        path: pathname,
+        user: token?.email || 'unauthenticated',
+        role: token?.role || 'none',
+      });
+    }
 
     // If no token, the withAuth callback will handle redirect to login
     if (!token) {
-      console.warn('[Middleware] Unauthenticated access attempt:', pathname);
+      if (isDev) {
+        console.warn('[Middleware] Unauthenticated access attempt:', pathname);
+      }
       return NextResponse.redirect(new URL('/auth/login', req.url));
     }
 
     // Check if user is active
     if (token.isActive === false) {
-      console.warn('[Middleware] Inactive user attempted access:', {
-        email: token.email,
-        path: pathname,
-      });
+      if (isDev) {
+        console.warn('[Middleware] Inactive user attempted access:', token.email);
+      }
 
       url.pathname = '/auth/error';
       url.searchParams.set('error', 'AccountDeactivated');
@@ -124,11 +130,13 @@ export default withAuth(
     // Check role-based permissions
     const userRole = token.role;
     if (!hasPermission(pathname, userRole)) {
-      console.warn('[Middleware] Unauthorized role access attempt:', {
-        user: token.email,
-        role: userRole,
-        path: pathname,
-      });
+      if (isDev) {
+        console.warn('[Middleware] Unauthorized role access:', {
+          user: token.email,
+          role: userRole,
+          path: pathname,
+        });
+      }
 
       // Redirect to access denied page with reason
       const reason = getAccessDeniedReason(pathname, userRole);
@@ -137,12 +145,7 @@ export default withAuth(
       return NextResponse.redirect(url);
     }
 
-    // All checks passed - allow access
-    console.log('[Middleware] Access granted:', {
-      user: token.email,
-      role: userRole,
-      path: pathname,
-    });
+    // All checks passed - allow access (no log in production)
 
     // Add security headers
     const response = NextResponse.next();
@@ -223,10 +226,14 @@ export const config = {
     '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|auth).*)',
 
     // Explicitly protect these routes
+    '/',
     '/dashboard/:path*',
     '/admin/:path*',
     '/instructor/:path*',
-    '/teaching/create/:path*',
+    '/teaching/:path*',
+    '/evaluation/:path*',
+    '/flashcards/:path*',
+    '/search/:path*',
     '/analytics/:path*',
     '/profile/:path*',
     '/settings/:path*',
