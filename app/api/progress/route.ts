@@ -298,6 +298,23 @@ export async function POST(request: NextRequest) {
       const timeSpentToAdd = timeSpent || 0;
       const newTimeSpent = currentTimeSpent + timeSpentToAdd;
 
+      // Build update object - only include score if explicitly provided
+      // to avoid overwriting existing values with NULL
+      const updateData: {
+        completed: boolean;
+        timeSpent: number;
+        lastAccess: Date;
+        score?: number;
+      } = {
+        completed,
+        timeSpent: newTimeSpent,
+        lastAccess: new Date(),
+      };
+      
+      if (score !== undefined) {
+        updateData.score = score;
+      }
+
       // Upsert progress record
       const updatedProgress = await tx.progress.upsert({
         where: {
@@ -315,12 +332,7 @@ export async function POST(request: NextRequest) {
           timeSpent: newTimeSpent,
           lastAccess: new Date(),
         },
-        update: {
-          completed,
-          score: score !== undefined ? score : undefined,
-          timeSpent: newTimeSpent,
-          lastAccess: new Date(),
-        },
+        update: updateData,
       });
 
       // Registrar upsert en métricas
