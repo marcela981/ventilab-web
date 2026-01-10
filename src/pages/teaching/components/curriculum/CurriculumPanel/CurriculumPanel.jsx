@@ -16,38 +16,27 @@ import ModuleNavigationRouter from '../../../../../components/teaching/component
 import { debug } from '@/utils/debug';
 import { useLearningProgress } from '@/contexts/LearningProgressContext';
 
+// Static imports for module data (required for Next.js bundler)
+import module03Content, { metadata as module03Metadata } from '@/data/lessons/module-03-configuration';
+
 /**
- * Dynamically loads module content and metadata
+ * Gets module content and metadata based on moduleId
  * @param {string} moduleId - The module identifier
  * @returns {Object} Object containing moduleContent and moduleMetadata
  */
 const loadModuleData = (moduleId) => {
   if (!moduleId) return { moduleContent: null, moduleMetadata: null };
 
-  try {
-    // Dynamic module loading based on moduleId
-    switch (moduleId) {
-      case 'module-03-configuration': {
-        const module03 = require('../../../../data/lessons/module-03-configuration');
-        return {
-          moduleContent: module03.default,
-          moduleMetadata: module03.metadata,
-        };
-      }
-      // Add more modules here as they implement category-based navigation
-      // case 'module-04-advanced': {
-      //   const module04 = require('../../../../data/lessons/module-04-advanced');
-      //   return {
-      //     moduleContent: module04.default,
-      //     moduleMetadata: module04.metadata,
-      //   };
-      // }
-      default:
-        return { moduleContent: null, moduleMetadata: null };
-    }
-  } catch (error) {
-    console.error(`Failed to load module ${moduleId}:`, error);
-    return { moduleContent: null, moduleMetadata: null };
+  // Static module mapping (bundler-compatible)
+  switch (moduleId) {
+    case 'module-03-configuration':
+      return {
+        moduleContent: module03Content,
+        moduleMetadata: module03Metadata,
+      };
+    // Add more modules here as they implement category-based navigation
+    default:
+      return { moduleContent: null, moduleMetadata: null };
   }
 };
 
