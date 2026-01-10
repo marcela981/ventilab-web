@@ -55,3 +55,30 @@ backend/node_modules/
 backend/dist/
 backend/.env
 !backend/.env.example
+
+.claude/
+.cursor/
+.vscode/
+.idea/
+.github/
+
+# Archivos temporales de scripts
+scripts/*.log
+scripts/*.tmp
+scripts/test-*.js.backup
+
+# Archivos de caché y temporales
+*.cache
+*.tmp
+.temp/
+temp/
+
+# Documentación temporal
+**/MIGRATION*.md
+**/TODO.md
+**/NOTES.md
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+desktop.ini
