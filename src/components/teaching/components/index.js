@@ -5,19 +5,27 @@
  */
 
 // Main components exports
-export * from './dashboard';
 export * from './curriculum';
 
+// Dashboard components (feature-based path)
+export {
+  DashboardHeader,
+  ContinueLearningSection,
+  SessionStats,
+  FlashcardDashboard,
+  ProgressOverview,
+  ModuleInfoPanel,
+  DashboardStats,
+  QuickAccessLessons,
+  Module3ProgressDashboard,
+  ReadinessIndicator
+} from '@/pages/teaching/components/dashboard';
+
 // Individual component exports
-export { default as DashboardHeader } from './DashboardHeader';
-export { default as ContinueLearningSection } from './ContinueLearningSection';
-export { default as SessionStats } from './SessionStats';
-export { default as FlashcardDashboard } from './FlashcardDashboard';
-export { default as ProgressOverview } from './ProgressOverview';
-export { default as RecommendationsPanel } from './RecommendationsPanel';
-export { default as LevelStepper } from './LevelStepper';
-export { default as ModuleInfoPanel } from './ModuleInfoPanel';
-export { default as DashboardStats } from './DashboardStats';
 export { default as LessonCard } from './LessonCard';
 export { default as QuizComponent } from './QuizComponent';
 export { default as SimulationControls } from './SimulationControls';
+
+// Lesson viewer and content components
+export { default as LessonViewer } from './LessonViewer';
+export * from './content';

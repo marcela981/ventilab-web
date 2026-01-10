@@ -1,0 +1,108 @@
+{
+  "id": "module-03-configuration",
+  "title": "Configuración y Manejo del Ventilador Mecánico",
+  "description": "Este módulo cubre aplicaciones prácticas y protocolos clínicos para la configuración y manejo del ventilador mecánico. Incluye protocolos específicos por patología (SDRA, EPOC, asma, neumonía), estrategias de protección pulmonar, protocolos de destete ventilatorio, guías de troubleshooting para problemas comunes, y checklists clínicos para configuración inicial, evaluación diaria y pre-extubación. Este módulo proporciona herramientas prácticas para aplicar los principios de ventilación mecánica en la práctica clínica.",
+  "level": "intermediate",
+  "totalLessons": 21,
+  "estimatedDuration": 650,
+  "prerequisites": [
+    "module-01-fundamentals",
+    "module-02-principles"
+  ],
+  "learningObjectives": [
+    "Aplicar protocolos específicos de ventilación mecánica para diferentes patologías (SDRA, EPOC, asma, neumonía)",
+    "Implementar estrategias de protección pulmonar para prevenir lesión pulmonar inducida por el ventilador (VILI)",
+    "Evaluar criterios de preparación para destete ventilatorio y realizar trials de respiración espontánea",
+    "Identificar y resolver problemas comunes durante la ventilación mecánica (alarmas, asincronías, hipoxemia, hipercapnia)",
+    "Utilizar checklists clínicos para configuración inicial, evaluación diaria y preparación para extubación",
+    "Optimizar parámetros ventilatorios según la patología del paciente y respuesta clínica",
+    "Aplicar estrategias de hipercapnia permisiva y optimización de PEEP según evidencia"
+  ],
+  "keywords": [
+    "ventilación mecánica",
+    "configuración del ventilador",
+    "protocolos clínicos",
+    "SDRA",
+    "EPOC",
+    "asma",
+    "neumonía",
+    "ventilación protectora",
+    "bajo volumen tidal",
+    "hipercapnia permisiva",
+    "PEEP",
+    "destete ventilatorio",
+    "trial de respiración espontánea",
+    "troubleshooting",
+    "alarmas del ventilador",
+    "asincronías",
+    "hipoxemia",
+    "hipercapnia",
+    "inestabilidad hemodinámica",
+    "checklists clínicos",
+    "configuración inicial",
+    "evaluación diaria",
+    "pre-extubación",
+    "VILI",
+    "volutrauma",
+    "barotrauma",
+    "atelectrauma",
+    "auto-PEEP",
+    "presión plateau",
+    "ARDSnet"
+  ],
+  "categories": {
+    "pathologyProtocols": {
+      "description": "Protocolos específicos de ventilación mecánica para diferentes patologías",
+      "lessons": [
+        "sdra-protocol",
+        "copd-protocol",
+        "asthma-protocol",
+        "pneumonia-protocol"
+      ]
+    },
+    "protectiveStrategies": {
+      "description": "Estrategias de protección pulmonar para prevenir VILI",
+      "lessons": [
+        "low-tidal-volume",
+        "permissive-hypercapnia",
+        "peep-strategies",
+        "lung-protective-ventilation"
+      ]
+    },
+    "weaning": {
+      "description": "Protocolos y guías para destete ventilatorio",
+      "lessons": [
+        "readiness-criteria",
+        "sbt-protocol",
+        "weaning-methods",
+        "difficult-weaning"
+      ]
+    },
+    "troubleshooting": {
+      "description": "Guías prácticas para resolver problemas comunes",
+      "lessons": [
+        "high-pressure-alarm",
+        "low-tidal-volume-alarm",
+        "patient-ventilator-asynchrony",
+        "hypoxemia-management",
+        "hypercapnia-management",
+        "hemodynamic-instability"
+      ]
+    },
+    "protocols": {
+      "description": "Checklists y protocolos rápidos de referencia",
+      "lessons": [
+        "initial-setup-checklist",
+        "daily-assessment-checklist",
+        "pre-extubation-checklist"
+      ]
+    }
+  },
+  "lastUpdated": "2025-01-11T00:00:00.000Z",
+  "version": "1.0.0",
+  "authors": [
+    "VentyLab Educational Team"
+  ],
+  "reviewers": []
+}
+

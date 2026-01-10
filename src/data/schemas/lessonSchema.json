@@ -1,0 +1,232 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ventylab.com/schemas/lessonSchema.json",
+  "title": "Lesson Schema - VentyLab",
+  "description": "Schema JSON flexible para lecciones de VentyLab. Valida estructura mínima requerida permitiendo flexibilidad en contenido clínico.",
+  "type": "object",
+  "required": [
+    "id",
+    "moduleId",
+    "title",
+    "description",
+    "sections",
+    "quiz",
+    "resources",
+    "metadata"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Identificador único de la lección en formato kebab-case",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "examples": ["lesson-01-respiratory-anatomy", "low-tidal-volume"]
+    },
+    "moduleId": {
+      "type": "string",
+      "description": "Identificador del módulo padre al que pertenece la lección",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "description": "Título completo de la lección",
+      "minLength": 3
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripción de la lección",
+      "minLength": 1
+    },
+    "sections": {
+      "type": "array",
+      "description": "Array de secciones de contenido educativo que componen la lección",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/section"
+      }
+    },
+    "quiz": {
+      "description": "Quiz de evaluación. Puede ser un objeto con estructura de preguntas o un array de preguntas",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": true
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      ]
+    },
+    "resources": {
+      "description": "Recursos adicionales. Puede ser un array de objetos resource o un objeto con estructura legacy (externalLinks, downloadables, references)",
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/resource"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": true
+        }
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Metadatos administrativos y de control de versión de la lección. Debe contener al menos 'updatedAt' o 'lastUpdated'.",
+      "anyOf": [
+        {
+          "required": ["updatedAt"]
+        },
+        {
+          "required": ["lastUpdated"]
+        }
+      ],
+      "properties": {
+        "updatedAt": {
+          "type": "string",
+          "description": "Fecha de última actualización en formato ISO 8601",
+          "format": "date-time"
+        },
+        "lastUpdated": {
+          "type": "string",
+          "description": "Fecha de última actualización en formato ISO 8601 (alias para updatedAt, compatibilidad con lecciones existentes)",
+          "format": "date-time"
+        },
+        "level": {
+          "type": "string",
+          "description": "Nivel educativo o de dificultad"
+        },
+        "tags": {
+          "type": "array",
+          "description": "Array de etiquetas para categorización",
+          "items": {
+            "type": "string"
+          }
+        },
+        "description": {
+          "type": "string",
+          "description": "Descripción breve de la lección"
+        },
+        "version": {
+          "type": "string",
+          "description": "Versión del contenido de la lección"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "section": {
+      "type": "object",
+      "description": "Sección de contenido educativo flexible",
+      "required": [
+        "id",
+        "title",
+        "order"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Identificador único de la sección",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "description": "Título de la sección",
+          "minLength": 1
+        },
+        "order": {
+          "type": "integer",
+          "description": "Orden de la sección dentro de la lección (debe ser >= 1)",
+          "minimum": 1
+        },
+        "type": {
+          "type": "string",
+          "description": "Tipo de sección que determina cómo se presenta el contenido",
+          "enum": [
+            "text",
+            "image",
+            "video",
+            "diagram",
+            "list",
+            "callout",
+            "code",
+            "unknown",
+            "introduction",
+            "theory",
+            "visual",
+            "interactive",
+            "case",
+            "summary",
+            "quiz",
+            "example",
+            "procedure",
+            "practice"
+          ]
+        },
+        "heading": {
+          "type": "string",
+          "description": "Título o encabezado de la sección"
+        },
+        "content": {
+          "description": "Contenido de la sección. Puede ser string, objeto o cualquier estructura",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
+        "media": {
+          "type": "object",
+          "description": "Contenedor de elementos multimedia",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "resource": {
+      "type": "object",
+      "description": "Recurso adicional relacionado con la lección",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Tipo de recurso",
+          "enum": [
+            "image",
+            "video",
+            "paper",
+            "link",
+            "dataset",
+            "other"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "description": "Etiqueta o título del recurso"
+        },
+        "url": {
+          "type": "string",
+          "description": "URL del recurso",
+          "format": "uri"
+        },
+        "title": {
+          "type": "string",
+          "description": "Título del recurso (alternativo a label)"
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

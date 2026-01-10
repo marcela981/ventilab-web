@@ -58,11 +58,13 @@ export class GeminiProvider {
     try {
       // Solo inicializar en el cliente
       if (typeof window === 'undefined') {
-        throw new Error('Gemini solo está disponible en el cliente');
+        console.warn('⚠️ Gemini solo está disponible en el cliente');
+        return false;
       }
 
       if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
-        throw new Error('API Key de Gemini no configurada');
+        console.warn('⚠️ API Key de Gemini no configurada. El servicio de AI tutor no estará disponible hasta que se configure NEXT_PUBLIC_GEMINI_API_KEY en las variables de entorno.');
+        return false;
       }
 
       this.genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
@@ -533,4 +535,3 @@ Responde en español.`;
   }
 }
 
-export default new GeminiProvider();

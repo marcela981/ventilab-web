@@ -27,6 +27,12 @@ export class AIServiceManager {
    * Inicializar todos los proveedores disponibles
    */
   async initializeProviders() {
+    // Solo inicializar en el cliente
+    if (typeof window === 'undefined') {
+      console.log('⏭️ Saltando inicialización de AI Service Manager (server-side)');
+      return;
+    }
+    
     console.log('🚀 Inicializando AI Service Manager...');
     
     // Inicializar Gemini Provider
@@ -64,7 +70,21 @@ export class AIServiceManager {
       return true;
     }
     
-    console.warn(`⚠️ Provider ${providerName} no disponible`);
+    // Si no hay providers disponibles, no es un error crítico (algunos componentes usan backend)
+    const availableProviders = Array.from(this.providers.keys());
+    if (availableProviders.length === 0) {
+      // Silenciar el warning si no hay providers - podría ser normal si se usa backend
+      return false;
+    }
+    
+    console.warn(`⚠️ Provider ${providerName} no disponible. Disponibles: ${availableProviders.join(', ')}`);
+    // Intentar usar el primer proveedor disponible como fallback
+    if (availableProviders.length > 0) {
+      this.currentProvider = this.providers.get(availableProviders[0]);
+      console.log(`🔄 Usando proveedor disponible: ${availableProviders[0]}`);
+      return true;
+    }
+    
     return false;
   }
 
@@ -115,6 +135,16 @@ export class AIServiceManager {
         error: 'Rate limit excedido',
         response: `Demasiadas solicitudes. Intenta en ${rateLimitCheck.retryAfter}ms`,
         retryAfter: rateLimitCheck.retryAfter
+      };
+    }
+
+    // Verificar si hay providers disponibles
+    if (this.providers.size === 0) {
+      return {
+        success: false,
+        error: 'No hay providers de IA configurados',
+        response: 'El servicio de IA no está disponible. Por favor, configura una API Key (NEXT_PUBLIC_GEMINI_API_KEY) en las variables de entorno.',
+        providers: []
       };
     }
 
@@ -179,12 +209,23 @@ export class AIServiceManager {
       }
     }
 
-    // Si todos los providers fallan
+    // Si todos los providers fallan o no hay providers disponibles
+    const availableProviders = Array.from(this.providers.keys());
+    if (availableProviders.length === 0) {
+      return {
+        success: false,
+        error: 'No hay providers de IA configurados',
+        response: 'El servicio de IA no está disponible. Por favor, configura una API Key (NEXT_PUBLIC_GEMINI_API_KEY) en las variables de entorno.',
+        providers: [],
+        fallbackUsed: false
+      };
+    }
+    
     return {
       success: false,
       error: 'Todos los providers de IA no están disponibles',
       response: 'El servicio de IA no está disponible en este momento. Por favor, intenta más tarde.',
-      providers: Array.from(this.providers.keys()),
+      providers: availableProviders,
       fallbackUsed: true
     };
   }
@@ -496,14 +537,48 @@ Responde en español.`;
   }
 }
 
-// Instancia singleton
-const aiServiceManager = new AIServiceManager();
+// Instancia singleton - se crea de forma lazy solo en el cliente
+let aiServiceManagerInstance = null;
 
-// Hacer disponible para debugging en el navegador
-if (typeof window !== 'undefined') {
-  window.AIServiceManager = aiServiceManager;
-  console.log('🛠️ AIServiceManager disponible globalmente');
-  console.log('Prueba: AIServiceManager.getProviderStats()');
-}
+const getAIServiceManager = () => {
+  if (typeof window === 'undefined') {
+    // En el servidor, devolvemos un objeto mock que no hace nada
+    return {
+      isProviderAvailable: () => false,
+      getAvailableProviders: () => [],
+      analyzeVentilatorConfiguration: async () => ({
+        success: false,
+        error: 'AI Service no disponible en el servidor'
+      }),
+      generateResponse: async () => ({
+        success: false,
+        error: 'AI Service no disponible en el servidor'
+      }),
+      switchModel: () => ({
+        success: false,
+        error: 'AI Service no disponible en el servidor'
+      }),
+      getProviderStats: () => ({
+        currentProvider: null,
+        availableProviders: [],
+        globalStats: {},
+        providerStats: {}
+      }),
+      resetProvider: () => {},
+      resetRateLimit: () => {},
+      getRequestHistory: () => []
+    };
+  }
 
-export default aiServiceManager;
+  // En el cliente, crear la instancia si no existe
+  if (!aiServiceManagerInstance) {
+    aiServiceManagerInstance = new AIServiceManager();
+    window.AIServiceManager = aiServiceManagerInstance;
+    console.log('🛠️ AIServiceManager disponible globalmente');
+    console.log('Prueba: AIServiceManager.getProviderStats()');
+  }
+
+  return aiServiceManagerInstance;
+};
+
+export default getAIServiceManager();

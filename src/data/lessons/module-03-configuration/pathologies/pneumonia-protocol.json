@@ -1,0 +1,108 @@
+{
+  "title": "Protocolo de Ventilación Mecánica para Neumonía Severa",
+  "summary": "Protocolo específico para el manejo ventilatorio de neumonía severa, incluyendo estrategias para consolidación pulmonar, optimización de oxigenación, manejo de secreciones y prevención de complicaciones. Adapta parámetros según extensión y severidad de la neumonía.",
+  "estimatedTime": 38,
+  "sections": [
+    {
+      "type": "text",
+      "order": 1,
+      "content": "# Contexto Clínico de la Neumonía Severa\n\nLa neumonía severa es una causa común de insuficiencia respiratoria aguda que requiere ventilación mecánica. Las características fisiopatológicas clave incluyen:\n\n- **Consolidación pulmonar**: Reemplazo de aire por líquido, células inflamatorias y bacterias\n- **Disminución de compliance**: Áreas consolidadas son menos distensibles\n- **Shunt intrapulmonar**: Sangre que perfunde áreas no ventiladas, causando hipoxemia\n- **Atelectasia**: Colapso de unidades alveolares alrededor de áreas consolidadas\n- **Desequilibrio ventilación-perfusión**: Múltiples áreas con diferentes relaciones V/Q\n- **Producción de secreciones**: Moco y exudado inflamatorio que pueden obstruir vías aéreas\n\nLa neumonía puede ser:\n- **Unilateral o bilateral**: Afecta estrategias ventilatorias\n- **Focal o difusa**: Determina extensión de consolidación\n- **Comunitaria o nosocomial**: Diferentes patógenos y estrategias antimicrobianas\n\nSi la neumonía evoluciona a SDRA (PaO₂/FiO₂ < 300 con infiltrados bilaterales), se aplica protocolo de SDRA. Si es neumonía focal o unilateral, se requieren estrategias específicas."
+    },
+    {
+      "type": "text",
+      "order": 2,
+      "content": "# Objetivos Terapéuticos\n\nLos objetivos del protocolo de ventilación para neumonía severa son:\n\n1. **Optimizar oxigenación**: Mantener SpO₂ ≥ 92% o PaO₂ 60-80 mmHg\n2. **Mantener ventilación adecuada**: PaCO₂ normal o ligeramente elevada (pH ≥ 7.30)\n3. **Prevenir lesión pulmonar inducida por ventilador (VILI)**: Aplicar principios de ventilación protectora\n4. **Facilitar eliminación de secreciones**: Optimizar drenaje y prevenir atelectasia\n5. **Manejar áreas consolidadas**: Estrategias para áreas no ventiladas\n6. **Prevenir complicaciones**: Atelectasia, derrame pleural, empiema\n7. **Facilitar destete temprano**: Cuando la neumonía se resuelve\n\n**Importante**: La neumonía puede evolucionar a SDRA. Si aparecen criterios de SDRA (infiltrados bilaterales, PaO₂/FiO₂ < 300), aplicar protocolo de SDRA."
+    },
+    {
+      "type": "text",
+      "order": 3,
+      "content": "# Modalidades Ventilatorias Recomendadas\n\n## Modalidad Principal: Ventilación Controlada por Volumen (VCV) o Asistida-Control\n\n**VCV es recomendada inicialmente** porque:\n- Garantiza volumen tidal constante\n- Permite medición precisa de presión plateau\n- Facilita aplicación de ventilación protectora\n- Proporciona ventilación minuto predecible\n\n## Modalidad Alternativa: Presión Controlada (PCV)\n\nPuede usarse cuando:\n- Presión plateau es alta a pesar de VT reducido\n- Se requiere mejor distribución del gas\n- El paciente muestra mejor tolerancia\n\n## Modalidad para Destete: SIMV + PSV o PSV\n\nÚtil cuando:\n- El paciente comienza a mejorar\n- Se requiere transición hacia destete\n- Esfuerzo respiratorio presente\n\n## Consideraciones Especiales\n\n**Neumonía Unilateral**:\n- Considerar posición lateral (pulmón sano hacia abajo) para mejorar V/Q\n- Ajustar parámetros según respuesta\n\n**Neumonía Bilateral Difusa**:\n- Similar a SDRA, aplicar protocolo de SDRA si cumple criterios\n- Ventilación protectora estricta"
+    },
+    {
+      "type": "text",
+      "order": 4,
+      "content": "# Configuración Paso a Paso\n\n## Paso 1: Evaluar Severidad y Extensión\n\n**Evaluar**:\n- Radiografía de tórax: unilateral vs bilateral, focal vs difusa\n- Gases arteriales: PaO₂/FiO₂\n- Signos clínicos: fiebre, leucocitosis, hipotensión\n- Criterios de SDRA: Si PaO₂/FiO₂ < 300 con infiltrados bilaterales → aplicar protocolo SDRA\n\n## Paso 2: Calcular Peso Corporal Ideal (PCI)\n\n**Fórmula de Devine**:\n- Hombres: PCI = 50 + 0.91 × (altura cm - 152.4)\n- Mujeres: PCI = 45.5 + 0.91 × (altura cm - 152.4)\n\n## Paso 3: Configurar Volumen Tidal\n\n**Objetivo**: 6-8 mL/kg de PCI\n\n- Si neumonía focal/leve: 8 mL/kg\n- Si neumonía severa/bilateral: 6 mL/kg (ventilación protectora)\n- Ejemplo: PCI 70 kg → VT 420-560 mL (preferir 420-490 mL en severa)\n\n## Paso 4: Configurar PEEP\n\n**Objetivo**: 5-10 cmH₂O inicialmente\n\n- Neumonía leve: 5-8 cmH₂O\n- Neumonía moderada-severa: 8-10 cmH₂O\n- Si evoluciona a SDRA: Seguir tabla PEEP/FiO₂ de ARDSnet\n- **Función**: Reclutar alveolos colapsados alrededor de áreas consolidadas\n\n## Paso 5: Configurar Frecuencia Respiratoria\n\n**Objetivo**: 14-20 respiraciones/minuto\n\n- Ajustar según PaCO₂ objetivo\n- Normalmente no requiere hipercapnia permisiva como en SDRA\n\n## Paso 6: Configurar Flujo Inspiratorio\n\n**Objetivo**: 60-80 L/min\n\n- Permitir tiempo espiratorio adecuado\n- Evitar auto-PEEP\n\n## Paso 7: Configurar Relación I:E\n\n**Objetivo**: 1:2 a 1:2.5\n\n- Normal, no requiere prolongación como en EPOC/asma\n\n## Paso 8: Configurar FiO₂\n\n**Objetivo**: Mantener SpO₂ ≥ 92% o PaO₂ 60-80 mmHg\n\n- Iniciar con FiO₂ 0.6-1.0 según severidad\n- Reducir según respuesta\n- **NO** aceptar hipoxemia permisiva como en asma/SDRA severo"
+    },
+    {
+      "type": "text",
+      "order": 5,
+      "content": "# Tabla de Parámetros Recomendados\n\n## Parámetros Iniciales según Severidad\n\n| Parámetro | Neumonía Leve | Neumonía Moderada | Neumonía Severa |\n|-----------|--------------|-------------------|-----------------|\n| **VT** | 8 mL/kg PCI | 6-8 mL/kg PCI | 6 mL/kg PCI |\n| **FR** | 14-16/min | 16-18/min | 18-20/min |\n| **PEEP** | 5-8 cmH₂O | 8-10 cmH₂O | 8-12 cmH₂O |\n| **FiO₂** | 0.4-0.6 | 0.6-0.8 | 0.8-1.0 |\n| **Flujo** | 60 L/min | 60-70 L/min | 70-80 L/min |\n| **I:E** | 1:2 | 1:2 | 1:2 |\n\n## Tabla de Ajuste de PEEP según Oxigenación\n\n| PaO₂/FiO₂ | SpO₂ | PEEP Recomendada |\n|-----------|------|------------------|\n| > 300 | > 95% | 5 cmH₂O |\n| 200-300 | 92-95% | 5-8 cmH₂O |\n| 150-200 | 88-92% | 8-10 cmH₂O |\n| < 150 | < 88% | 10-12 cmH₂O (considerar protocolo SDRA) |\n\n## Tabla de Ajuste según Evolución\n\n| Situación | Acción |\n|-----------|--------|\n| Mejora de oxigenación | Reducir FiO₂ primero, luego PEEP |\n| PaO₂/FiO₂ < 300 con infiltrados bilaterales | Aplicar protocolo SDRA |\n| Consolidación persistente | Aumentar PEEP, optimizar manejo de secreciones |\n| Atelectasia | Aumentar PEEP, fisioterapia, considerar broncoscopia |\n\n## Parámetros de Ventilación Protectora\n\n| Parámetro | Valor | Justificación |\n|-----------|-------|---------------|\n| VT máximo | 8 mL/kg PCI | Prevenir volutrauma |\n| Pplateau máximo | ≤ 30 cmH₂O | Prevenir barotrauma |\n| PEEP mínima | 5 cmH₂O | Reclutar alveolos |\n| FiO₂ objetivo | ≤ 0.6 | Reducir toxicidad por oxígeno |"
+    },
+    {
+      "type": "text",
+      "order": 6,
+      "content": "# Estrategias de Ajuste\n\n## Estrategia de Optimización de Oxigenación\n\n1. **Aplicar PEEP adecuada**: 5-12 cmH₂O según severidad\n2. **Reclutar alveolos colapsados**: PEEP ayuda a abrir alveolos alrededor de consolidación\n3. **Optimizar FiO₂**: Mantener SpO₂ ≥ 92%, reducir cuando sea posible\n4. **Evaluar posición**: En neumonía unilateral, considerar posición lateral\n5. **Manejo de secreciones**: Succión frecuente, fisioterapia\n\n## Estrategia de Manejo de Secreciones\n\n1. **Fisioterapia respiratoria**: Cada 4-6 horas\n2. **Succión frecuente**: Según necesidad, evitar sobre-succión\n3. **Humidificación adecuada**: Prevenir tapones de moco\n4. **Posicionamiento**: Cambios de posición para drenaje\n5. **Broncoscopia**: Si hay atelectasia o secreciones retenidas\n6. **Mucolíticos**: Considerar según necesidad\n\n## Estrategia de Ventilación Protectora\n\n1. **Usar VT protector**: 6-8 mL/kg (tendiendo a 6 mL/kg en severa)\n2. **Limitar presión plateau**: ≤ 30 cmH₂O\n3. **Aplicar PEEP adecuada**: Para reclutar alveolos\n4. **Monitorear continuamente**: Presiones, volúmenes, gases arteriales\n\n## Estrategia de Posicionamiento\n\n**Neumonía Unilateral**:\n- Considerar posición lateral con pulmón sano hacia abajo\n- Mejora relación ventilación-perfusión\n- Puede mejorar oxigenación\n\n**Neumonía Bilateral**:\n- Posición semi-Fowler\n- Cambios de posición regulares\n- Evitar posición supina prolongada\n\n## Estrategia de Destete Progresivo\n\n1. **Reducir FiO₂ gradualmente**: Cuando oxigenación mejora\n2. **Reducir PEEP gradualmente**: Cuando consolidación se resuelve\n3. **Cambiar a modalidades asistidas**: SIMV + PSV o PSV\n4. **Evaluar criterios de preparación**: Cuando neumonía mejora\n5. **Trial de respiración espontánea**: Cuando criterios se cumplen"
+    },
+    {
+      "type": "text",
+      "order": 7,
+      "content": "# Monitorización\n\n## Parámetros Críticos a Monitorizar\n\n1. **Gases Arteriales**:\n   - **Frecuencia**: Cada 4-6 horas inicialmente\n   - **Objetivos**:\n     - PaO₂: 60-80 mmHg\n     - SpO₂: ≥ 92%\n     - PaCO₂: 35-45 mmHg (normal)\n     - pH: 7.35-7.45\n   - **PaO₂/FiO₂**: Monitorear para detectar evolución a SDRA\n\n2. **Presión Plateau**:\n   - **Método**: Pausa inspiratoria de 0.5 segundos\n   - **Frecuencia**: Cada 4-6 horas o después de cambios\n   - **Objetivo**: ≤ 30 cmH₂O\n   - **Importante**: Detecta cambios en compliance\n\n3. **Presión Pico**:\n   - **Monitorizar**: Continuamente\n   - **Diferencia Pico-Plateau**: Indica resistencia (puede estar aumentada por secreciones)\n\n4. **Saturación de Oxígeno**:\n   - **Objetivo**: ≥ 92%\n   - **Monitorización**: Continua\n\n5. **Radiografía de Tórax**:\n   - **Frecuencia**: Diaria o según necesidad\n   - **Evaluar**: Extensión de consolidación, evolución, complicaciones\n\n6. **Signos de Mejora**:\n   - Reducción de infiltrados en radiografía\n   - Mejora de oxigenación\n   - Reducción de fiebre\n   - Mejora de leucocitosis\n   - Reducción de secreciones\n\n7. **Signos de Complicaciones**:\n   - Derrame pleural\n   - Empiema\n   - Atelectasia\n   - Evolución a SDRA\n   - Barotrauma\n\n8. **Signos de Resolución**:\n   - Mejora de gases arteriales\n   - Reducción de infiltrados\n   - Paciente afebril\n   - Reducción de secreciones\n   - Esfuerzo respiratorio presente"
+    },
+    {
+      "type": "text",
+      "order": 8,
+      "content": "# Criterios de Éxito\n\n## Criterios de Estabilidad Ventilatoria\n\n- ✅ Presión plateau ≤ 30 cmH₂O\n- ✅ Presión pico < 35 cmH₂O\n- ✅ Sin signos de barotrauma\n- ✅ Compliance estable o mejorando\n\n## Criterios de Oxigenación\n\n- ✅ SpO₂ ≥ 92% con FiO₂ ≤ 0.6\n- ✅ PaO₂ 60-80 mmHg\n- ✅ PaO₂/FiO₂ > 200 mmHg\n- ✅ Sin necesidad de FiO₂ alta\n\n## Criterios de Ventilación\n\n- ✅ pH 7.35-7.45\n- ✅ PaCO₂ 35-45 mmHg\n- ✅ Ventilación minuto adecuada\n\n## Criterios de Resolución de Neumonía\n\n- ✅ Mejora de infiltrados en radiografía\n- ✅ Reducción de fiebre\n- ✅ Mejora de leucocitosis\n- ✅ Reducción de secreciones\n- ✅ Mejora clínica general\n\n## Criterios para Considerar Destete\n\n- ✅ SpO₂ ≥ 92% con FiO₂ ≤ 0.4\n- ✅ PEEP ≤ 8 cmH₂O\n- ✅ Presión plateau < 25 cmH₂O\n- ✅ Paciente afebril o fiebre en resolución\n- ✅ Paciente despierto, con esfuerzo respiratorio\n- ✅ Sin inestabilidad hemodinámica\n- ✅ Evaluación de criterios de preparación (ver módulo de destete)"
+    },
+    {
+      "type": "text",
+      "order": 9,
+      "content": "# Complicaciones y Manejo\n\n## Complicaciones Comunes\n\n### 1. Evolución a SDRA\n\n**Manifestaciones**:\n- Infiltrados bilaterales en radiografía\n- PaO₂/FiO₂ < 300 mmHg\n- Deterioro de oxigenación\n- Compliance reducida\n\n**Manejo**:\n- Aplicar protocolo de SDRA inmediatamente\n- Ventilación protectora estricta (VT 6 mL/kg)\n- PEEP según tabla ARDSnet\n- Estrategias adyuvantes si necesario\n\n### 2. Atelectasia\n\n**Manifestaciones**:\n- Deterioro de oxigenación\n- Opacidad en radiografía\n- Disminución de compliance\n\n**Manejo**:\n- Aumentar PEEP\n- Fisioterapia respiratoria\n- Succión frecuente\n- Considerar broncoscopia\n- Posicionamiento adecuado\n\n### 3. Derrame Pleural\n\n**Manifestaciones**:\n- Opacidad en radiografía\n- Deterioro de oxigenación\n- Disminución de compliance\n\n**Manejo**:\n- Evaluar necesidad de drenaje\n- Toracocentesis si es necesario\n- Drenaje torácico si es grande o infectado\n\n### 4. Empiema\n\n**Manifestaciones**:\n- Derrame pleural infectado\n- Fiebre persistente\n- Leucocitosis\n\n**Manejo**:\n- Drenaje torácico\n- Antibióticos apropiados\n- Evaluar necesidad de cirugía\n\n### 5. Barotrauma\n\n**Manifestaciones**:\n- Neumotórax\n- Neumomediastino\n- Enfisema subcutáneo\n\n**Prevención**:\n- Ventilación protectora\n- Limitar presiones\n\n**Manejo**:\n- Drenaje de neumotórax si necesario\n- Reducir presiones ventilatorias\n\n### 6. Dificultad para Destete\n\n**Manifestaciones**:\n- Falla repetida de trials de respiración espontánea\n\n**Manejo**:\n- Asegurar resolución completa de neumonía\n- Optimizar manejo de secreciones\n- Considerar traqueostomía temprana\n- Rehabilitación pulmonar\n- Evaluar causas: atelectasia residual, derrame, debilidad muscular"
+    },
+    {
+      "type": "text",
+      "order": 10,
+      "content": "# Caso Clínico\n\n## Presentación del Caso\n\n**Paciente**: Hombre de 58 años, 170 cm, 75 kg, fumador de 30 paquetes-año\n\n**Historia**: Neumonía comunitaria por Streptococcus pneumoniae. Admitido con fiebre, tos productiva, disnea. Evoluciona con insuficiencia respiratoria que requiere intubación.\n\n**Gases arteriales pre-intubación**:\n- pH: 7.32\n- PaCO₂: 48 mmHg\n- PaO₂: 52 mmHg (FiO₂ 0.6 con mascarilla)\n- HCO₃⁻: 24 mEq/L\n- PaO₂/FiO₂: 87 mmHg (severa)\n\n**Radiografía de tórax**: Consolidación en lóbulo inferior derecho y parches bilaterales\n\n## Configuración Inicial del Ventilador\n\n1. **Evaluar**: Neumonía severa bilateral, PaO₂/FiO₂ 87 (cerca de SDRA, pero iniciar protocolo de neumonía)\n\n2. **Calcular PCI**: 50 + 0.91 × (170 - 152.4) = **66 kg**\n\n3. **VT inicial**: 6 × 66 = **396 mL** (redondear a 400 mL, ventilación protectora)\n\n4. **PEEP**: **10 cmH₂O** (neumonía severa)\n\n5. **FR**: **18/min**\n\n6. **Flujo**: **70 L/min**\n\n7. **I:E**: **1:2**\n\n8. **FiO₂**: **0.8** (inicial, titular según SpO₂)\n\n**Configuración resultante**:\n- Modo: VCV Asistido-Control\n- VT: 400 mL\n- FR: 18/min\n- PEEP: 10 cmH₂O\n- FiO₂: 0.8\n- Flujo: 70 L/min\n- I:E: 1:2\n\n## Evolución y Ajustes\n\n**A las 6 horas** (después de antibióticos y manejo de secreciones):\n- Gases: pH 7.34, PaCO₂ 44, PaO₂ 68 (FiO₂ 0.7)\n- SpO₂: 92%\n- PaO₂/FiO₂: 97 mmHg (mejora desde 87)\n- Pplateau: 26 cmH₂O\n- **Ajuste**: Reducir FiO₂ a 0.6, mantener PEEP 10 cmH₂O\n\n**A las 12 horas**:\n- Gases: pH 7.36, PaCO₂ 42, PaO₂ 75 (FiO₂ 0.5)\n- SpO₂: 94%\n- PaO₂/FiO₂: 150 mmHg (mejora)\n- **Ajuste**: Reducir PEEP a 8 cmH₂O, reducir FiO₂ a 0.4\n\n**A las 24 horas**:\n- Gases: pH 7.38, PaCO₂ 40, PaO₂ 82 (FiO₂ 0.4)\n- SpO₂: 95%\n- PaO₂/FiO₂: 205 mmHg (mejora significativa)\n- Pplateau: 22 cmH₂O\n- Radiografía: Mejora de infiltrados\n- Paciente afebril\n- **Ajuste**: Cambiar a SIMV + PSV, FR 14/min, PSV 10 cmH₂O\n\n**A las 48 horas**:\n- Gases: pH 7.40, PaCO₂ 38, PaO₂ 88 (FiO₂ 0.35)\n- SpO₂: 97%\n- PaO₂/FiO₂: 251 mmHg\n- PEEP: 6 cmH₂O\n- Paciente despierto, colaborador\n- **Ajuste**: Reducir FR SIMV a 10/min, PSV 8 cmH₂O\n\n## Resultado Final\n\nAl día 3:\n- PaO₂/FiO₂: 280 mmHg\n- SpO₂: 97% con FiO₂ 0.3\n- PEEP: 5 cmH₂O\n- Paciente listo para trial de respiración espontánea\n\n**Próximos pasos**: Evaluar criterios de preparación y comenzar protocolo de trial de respiración espontánea."
+    },
+    {
+      "type": "quiz",
+      "order": 11,
+      "question": "Un paciente con neumonía severa tiene PaO₂/FiO₂ de 180 mmHg con infiltrados bilaterales. ¿Qué acción es más apropiada?",
+      "options": [
+        "Aplicar protocolo de SDRA (PaO₂/FiO₂ < 300)",
+        "Continuar con protocolo de neumonía y aumentar PEEP a 10-12 cmH₂O",
+        "Aumentar VT a 10 mL/kg para mejorar ventilación",
+        "Reducir PEEP para evitar barotrauma"
+      ],
+      "correctAnswer": "Aplicar protocolo de SDRA (PaO₂/FiO₂ < 300)",
+      "explanation": "Cuando neumonía cumple criterios de SDRA (PaO₂/FiO₂ < 300 con infiltrados bilaterales), se debe aplicar protocolo de SDRA inmediatamente, incluyendo ventilación protectora estricta (VT 6 mL/kg) y PEEP según tabla ARDSnet."
+    },
+    {
+      "type": "quiz",
+      "order": 12,
+      "question": "En un paciente con neumonía unilateral, ¿qué estrategia puede mejorar la oxigenación?",
+      "options": [
+        "Aumentar VT a 10 mL/kg",
+        "Posición lateral con pulmón sano hacia abajo",
+        "Reducir PEEP a 3 cmH₂O",
+        "Aumentar frecuencia respiratoria a 25/min"
+      ],
+      "correctAnswer": "Posición lateral con pulmón sano hacia abajo",
+      "explanation": "En neumonía unilateral, la posición lateral con pulmón sano hacia abajo mejora la relación ventilación-perfusión (V/Q) al dirigir más flujo sanguíneo hacia el pulmón sano que está mejor ventilado, mejorando la oxigenación."
+    }
+  ],
+  "keyPoints": [
+    "La neumonía severa requiere ventilación protectora (VT 6-8 mL/kg) similar a SDRA para prevenir VILI.",
+    "Si la neumonía cumple criterios de SDRA (PaO₂/FiO₂ < 300 con infiltrados bilaterales), se debe aplicar protocolo de SDRA inmediatamente.",
+    "El manejo adecuado de secreciones (fisioterapia, succión frecuente, broncoscopia si necesario) es crucial para prevenir atelectasia y mejorar oxigenación.",
+    "PEEP de 5-12 cmH₂O ayuda a reclutar alveolos colapsados alrededor de áreas consolidadas y mejorar oxigenación.",
+    "En neumonía unilateral, la posición lateral con pulmón sano hacia abajo puede mejorar la relación V/Q y la oxigenación.",
+    "La monitorización de presión plateau (≤ 30 cmH₂O) es esencial para prevenir barotrauma y detectar cambios en compliance.",
+    "El destete puede considerarse cuando la neumonía se resuelve, con SpO₂ ≥ 92% con FiO₂ ≤ 0.4 y PEEP ≤ 8 cmH₂O."
+  ],
+  "references": [
+    "Torres A, Niederman MS, Chastre J, et al. International ERS/ESICM/ESCMID/ALAT guidelines for the management of hospital-acquired pneumonia and ventilator-associated pneumonia. Eur Respir J. 2017;50(3):1700582.",
+    "Mandell LA, Wunderink RG, Anzueto A, et al. Infectious Diseases Society of America/American Thoracic Society consensus guidelines on the management of community-acquired pneumonia in adults. Clin Infect Dis. 2007;44 Suppl 2:S27-72.",
+    "The ARDS Network. Ventilation with lower tidal volumes as compared with traditional tidal volumes for acute lung injury and the acute respiratory distress syndrome. N Engl J Med. 2000;342(18):1301-8.",
+    "Fan E, Del Sorbo L, Goligher EC, et al. An Official American Thoracic Society/European Society of Intensive Care Medicine/Society of Critical Care Medicine Clinical Practice Guideline: Mechanical Ventilation in Adult Patients with Acute Respiratory Distress Syndrome. Am J Respir Crit Care Med. 2017;195(9):1253-63."
+  ],
+  "moduleId": "module-03",
+  "metadata": {
+    "updatedAt": "2025-11-08T03:42:27.650Z",
+    "description": "Descripción pendiente de curaduría (metadatos).",
+    "version": "1.0.0",
+    "allowEmpty": false
+  },
+  "id": "protocolo-de-ventilacion-mecanica-para-neumonia-severa",
+  "quiz": [],
+  "resources": []
+}

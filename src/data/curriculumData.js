@@ -4,6 +4,21 @@
  * Based on detailed research curriculum for mechanical ventilation
  */
 
+// =============================================================================
+// IMPORTAR LECCIONES DESDE ARCHIVOS JSON
+// =============================================================================
+
+// Módulo 01: Fundamentos Fisiológicos y Respiratorios
+import lesson01Mechanics from './lessons/module-01-fundamentals/lesson-01-respiratory-mechanics.json';
+import lesson02GasExchange from './lessons/module-01-fundamentals/lesson-02-gas-exchange.json';
+import lesson03ArterialBloodGas from './lessons/module-01-fundamentals/lesson-03-arterial-blood-gas.json';
+
+// Módulo 02: Modalidades y Parámetros
+import lesson01VolumeVentilation from './lessons/module-02-parameters/lesson-01-volume-ventilation.json';
+import lesson02PressureControlled from './lessons/module-02-parameters/lesson-02-pressure-controlled-ventilation.json';
+import lesson03PressureSupport from './lessons/module-02-parameters/lesson-03-pressure-support-ventilation.json';
+import lesson04SIMV from './lessons/module-02-parameters/lesson-04-simv-destete-evidencia.json';
+
 export const curriculumData = {
   levels: [
     {
@@ -11,103 +26,98 @@ export const curriculumData = {
       title: 'Nivel Principiante',
       description: 'Fundamentos fisiológicos y conceptos básicos de ventilación mecánica',
       color: '#4CAF50',
-      totalModules: 10,
+      emoji: '🌱',
+      // totalModules is now computed dynamically via selectors
       estimatedDuration: '20-25 horas'
     },
     {
-      id: 'intermediate', 
+      id: 'intermediate',
       title: 'Nivel Intermedio',
       description: 'Modalidades ventilatorias y manejo de parámetros críticos',
       color: '#FF9800',
-      totalModules: 12,
+      emoji: '🎯',
+      // totalModules is now computed dynamically via selectors
       estimatedDuration: '30-35 horas'
     },
     {
       id: 'advanced',
-      title: 'Nivel Avanzado', 
+      title: 'Nivel Avanzado',
       description: 'Estrategias especializadas y casos clínicos complejos',
       color: '#F44336',
-      totalModules: 10,
+      emoji: '🚀',
+      // totalModules is now computed dynamically via selectors
       estimatedDuration: '25-30 horas'
     }
   ],
 
   modules: {
-    // NIVEL PRINCIPIANTE - Fundamentos Fisiológicos
-    'respiratory-anatomy': {
-      id: 'respiratory-anatomy',
-      title: 'Anatomía del Sistema Respiratorio',
+    // NIVEL PRINCIPIANTE - Fundamentos Fisiológicos y Respiratorios
+    // Módulo principal que agrupa todas las lecciones de fundamentos
+    'module-01-fundamentals': {
+      id: 'module-01-fundamentals',
+      title: 'Fundamentos Fisiológicos y Respiratorios',
       level: 'beginner',
       order: 1,
-      duration: 120, // minutos
+      duration: 180, // minutos (suma de todas las lecciones)
       prerequisites: [],
       learningObjectives: [
-        'Identificar las estructuras anatómicas del sistema respiratorio',
-        'Comprender la función de cada componente anatómico',
-        'Relacionar anatomía con fisiología respiratoria'
+        'Comprender la mecánica respiratoria y la relación presión-volumen',
+        'Analizar el intercambio gaseoso y los factores que lo afectan',
+        'Interpretar gasometrías arteriales en el contexto de ventilación mecánica'
       ],
       bloomLevel: 'comprender',
       difficulty: 'básico',
-      estimatedTime: '2 horas',
+      estimatedTime: '3 horas',
+      // ✅ CONECTAR LECCIONES REALES DESDE JSON
       lessons: [
         {
-          id: 'anatomy-overview',
-          type: 'video',
-          title: 'Visión General del Sistema Respiratorio',
-          duration: 25,
-          content: {
-            videoUrl: '/videos/anatomy-overview.mp4',
-            transcript: 'El sistema respiratorio se compone de...',
-            keyPoints: [
-              'Vías aéreas superiores e inferiores',
-              'Pulmones y pleura',
-              'Músculos respiratorios'
-            ]
-          }
+          id: 'respiratory-mechanics',
+          title: lesson01Mechanics.title || 'Mecánica Respiratoria',
+          description: lesson01Mechanics.description || '',
+          estimatedTime: lesson01Mechanics.estimatedTime || 75,
+          difficulty: lesson01Mechanics.difficulty || 'intermediate',
+          order: lesson01Mechanics.order || 1,
+          lessonData: lesson01Mechanics
         },
         {
-          id: 'airway-structures',
-          type: 'interactive',
-          title: 'Estructuras de las Vías Aéreas',
-          duration: 30,
-          content: {
-            interactiveType: '3d-explorer',
-            description: 'Explora las estructuras anatómicas en 3D',
-            checkpoints: ['tráquea', 'bronquios', 'alvéolos']
-          }
+          id: 'gas-exchange',
+          title: lesson02GasExchange.title || 'Intercambio Gaseoso',
+          description: lesson02GasExchange.description || 'Principios del intercambio gaseoso alveolar',
+          estimatedTime: lesson02GasExchange.estimatedTime || 85,
+          difficulty: lesson02GasExchange.difficulty || 'intermediate',
+          order: lesson02GasExchange.order || 2,
+          lessonData: lesson02GasExchange
         },
         {
-          id: 'lung-mechanics',
-          type: 'reading',
-          title: 'Mecánica Pulmonar Básica',
-          duration: 20,
-          content: {
-            text: 'La mecánica pulmonar se basa en...',
-            diagrams: ['/images/lung-mechanics.png'],
-            references: ['West, J.B. (2012). Respiratory Physiology']
-          }
+          id: 'arterial-blood-gas',
+          title: lesson03ArterialBloodGas.title || 'Gasometría Arterial',
+          description: lesson03ArterialBloodGas.description || 'Interpretación de gasometrías arteriales en ventilación mecánica',
+          estimatedTime: lesson03ArterialBloodGas.estimatedTime || 60,
+          difficulty: lesson03ArterialBloodGas.difficulty || 'intermediate',
+          order: lesson03ArterialBloodGas.order || 3,
+          lessonData: lesson03ArterialBloodGas
         }
-      ],
-      quiz: {
-        id: 'anatomy-quiz',
-        type: 'formative',
-        questions: [
-          {
-            id: 'q1',
-            type: 'mcq',
-            question: '¿Cuál es la función principal de los alvéolos?',
-            options: [
-              'Transportar oxígeno a los tejidos',
-              'Intercambiar gases con la sangre',
-              'Filtrar partículas del aire',
-              'Producir surfactante pulmonar'
-            ],
-            correct: 1,
-            explanation: 'Los alvéolos son estructuras microscópicas donde ocurre el intercambio gaseoso entre el aire y la sangre.'
-          }
-        ]
-      }
+      ]
     },
+
+    // Módulo de Anatomía (comentado - archivo JSON no existe aún)
+    // 'respiratory-anatomy': {
+    //   id: 'respiratory-anatomy',
+    //   title: 'Anatomía del Sistema Respiratorio',
+    //   level: 'beginner',
+    //   order: 1,
+    //   duration: 120, // minutos
+    //   prerequisites: [],
+    //   learningObjectives: [
+    //     'Identificar las estructuras anatómicas del sistema respiratorio',
+    //     'Comprender la función de cada componente anatómico',
+    //     'Relacionar anatomía con fisiología respiratoria'
+    //   ],
+    //   bloomLevel: 'comprender',
+    //   difficulty: 'básico',
+    //   estimatedTime: '45 min',
+    //   lessons: []
+    // },
 
     'respiratory-physiology': {
       id: 'respiratory-physiology',
@@ -115,7 +125,7 @@ export const curriculumData = {
       level: 'beginner',
       order: 2,
       duration: 150,
-      prerequisites: ['respiratory-anatomy'],
+      prerequisites: [], // Removed 'respiratory-anatomy' as it doesn't exist
       learningObjectives: [
         'Comprender los principios del intercambio gaseoso',
         'Analizar la mecánica de la ventilación',
@@ -124,28 +134,34 @@ export const curriculumData = {
       bloomLevel: 'analizar',
       difficulty: 'básico-intermedio',
       estimatedTime: '2.5 horas',
+      // ✅ Usar lecciones JSON reales
       lessons: [
         {
-          id: 'gas-exchange',
-          type: 'video',
-          title: 'Intercambio Gaseoso',
-          duration: 35,
-          content: {
-            videoUrl: '/videos/gas-exchange.mp4',
-            transcript: 'El intercambio gaseoso ocurre por difusión...',
-            keyPoints: ['Difusión de gases', 'Ley de Fick', 'Factores que afectan la difusión']
-          }
+          id: 'respiratory-mechanics',
+          title: lesson01Mechanics.title || 'Mecánica Respiratoria',
+          description: lesson01Mechanics.description || '',
+          estimatedTime: lesson01Mechanics.estimatedTime || 75,
+          difficulty: lesson01Mechanics.difficulty || 'intermediate',
+          order: lesson01Mechanics.order || 1,
+          lessonData: lesson01Mechanics
         },
         {
-          id: 'ventilation-mechanics',
-          type: 'simulation',
-          title: 'Simulación de Mecánica Ventilatoria',
-          duration: 45,
-          content: {
-            simulationType: 'lung-compliance',
-            objectives: ['Demostrar presión-volumen', 'Mostrar elasticidad pulmonar'],
-            parameters: ['compliance', 'resistance', 'volume']
-          }
+          id: 'gas-exchange',
+          title: lesson02GasExchange.title || 'Intercambio Gaseoso',
+          description: lesson02GasExchange.description || 'Principios del intercambio gaseoso alveolar',
+          estimatedTime: lesson02GasExchange.estimatedTime || 85,
+          difficulty: lesson02GasExchange.difficulty || 'intermediate',
+          order: lesson02GasExchange.order || 2,
+          lessonData: lesson02GasExchange
+        },
+        {
+          id: 'arterial-blood-gas',
+          title: lesson03ArterialBloodGas.title || 'Gasometría Arterial',
+          description: lesson03ArterialBloodGas.description || 'Interpretación de gasometrías arteriales en ventilación mecánica',
+          estimatedTime: lesson03ArterialBloodGas.estimatedTime || 60,
+          difficulty: lesson03ArterialBloodGas.difficulty || 'intermediate',
+          order: lesson03ArterialBloodGas.order || 3,
+          lessonData: lesson03ArterialBloodGas
         }
       ],
       quiz: {
@@ -174,21 +190,27 @@ export const curriculumData = {
       title: 'Principios de Ventilación Mecánica',
       level: 'beginner',
       order: 3,
-      duration: 180,
+      duration: 180, // minutos (suma de todas las lecciones)
       prerequisites: ['respiratory-physiology'],
       learningObjectives: [
         'Definir los objetivos de la ventilación mecánica',
         'Identificar las indicaciones y contraindicaciones',
-        'Comprender los parámetros ventilatorios básicos'
+        'Comprender los parámetros ventilatorios básicos',
+        'Aplicar principios de seguridad en la configuración del ventilador'
       ],
       bloomLevel: 'comprender',
       difficulty: 'básico',
       estimatedTime: '3 horas',
+      description: 'Introducción a los principios fundamentales de la ventilación mecánica, incluyendo indicaciones, objetivos y parámetros básicos de configuración.',
       lessons: [
         {
           id: 'vm-indications',
           type: 'reading',
           title: 'Indicaciones de Ventilación Mecánica',
+          description: 'Aprende cuándo y por qué se indica la ventilación mecánica, así como sus objetivos principales.',
+          estimatedTime: 25, // Convertir duration a estimatedTime
+          difficulty: 'básico',
+          order: 1,
           duration: 25,
           content: {
             text: 'La ventilación mecánica se indica cuando...',
@@ -200,6 +222,10 @@ export const curriculumData = {
           id: 'basic-parameters',
           type: 'interactive',
           title: 'Parámetros Ventilatorios Básicos',
+          description: 'Explora los parámetros fundamentales del ventilador y aprende a configurarlos correctamente.',
+          estimatedTime: 40, // Convertir duration a estimatedTime
+          difficulty: 'básico',
+          order: 2,
           duration: 40,
           content: {
             interactiveType: 'parameter-explorer',
@@ -216,11 +242,179 @@ export const curriculumData = {
     },
 
     // NIVEL INTERMEDIO - Modalidades Ventilatorias
+    'principles-mechanical-ventilation': {
+      id: 'principles-mechanical-ventilation',
+      title: 'Principios de Ventilación Mecánica',
+      level: 'intermediate',
+      order: 1,
+      duration: 180, // minutos
+      prerequisites: ['ventilation-principles'],
+      learningObjectives: [
+        'Comprender las diferencias entre modalidades controladas por volumen y por presión',
+        'Identificar las indicaciones clínicas para cada modalidad ventilatoria',
+        'Interpretar curvas de presión, flujo y volumen en tiempo real',
+        'Reconocer y resolver alarmas del ventilador',
+        'Seleccionar parámetros ventilatorios apropiados según la patología'
+      ],
+      bloomLevel: 'aplicar',
+      difficulty: 'intermedio',
+      estimatedTime: '3 horas',
+      lessons: [
+        {
+          id: 'ventilation-modes-vcv-pcv',
+          type: 'reading',
+          title: 'Modalidades VCV y PCV',
+          duration: 30,
+          content: {
+            text: '',
+            keyPoints: [],
+            documentId: 'documento-2-principios-ventilacion'
+          }
+        },
+        {
+          id: 'ventilation-modes-assisted',
+          type: 'reading',
+          title: 'Modalidades Asistidas SIMV y PSV',
+          duration: 35,
+          content: {
+            text: '',
+            keyPoints: [],
+            documentId: 'documento-2-principios-ventilacion'
+          }
+        },
+        {
+          id: 'ventilation-parameters',
+          type: 'interactive',
+          title: 'Parámetros Ventilatorios Fundamentales',
+          duration: 25,
+          content: {
+            interactiveType: 'parameter-explorer',
+            checkpoints: [
+              'Volumen tidal (VT)',
+              'Frecuencia respiratoria (FR)',
+              'PEEP',
+              'FiO2',
+              'Relación I:E'
+            ],
+            documentId: 'documento-2-principios-ventilacion'
+          }
+        },
+        {
+          id: 'waveform-interpretation',
+          type: 'video',
+          title: 'Interpretación de Curvas Ventilatorias',
+          duration: 40,
+          content: {
+            videoUrl: '/videos/waveform-interpretation.mp4',
+            transcript: '',
+            keyPoints: [
+              'Curva Presión-Tiempo',
+              'Curva Flujo-Tiempo',
+              'Curva Volumen-Tiempo',
+              'Lazo Presión-Volumen'
+            ],
+            documentId: 'documento-2-principios-ventilacion'
+          }
+        },
+        {
+          id: 'alarm-management',
+          type: 'interactive',
+          title: 'Sistema de Alarmas y Resolución',
+          duration: 30,
+          content: {
+            interactiveType: 'alarm-troubleshooting',
+            checkpoints: [
+              'Alarmas de presión',
+              'Alarmas de volumen',
+              'Alarmas de apnea',
+              'Alarmas técnicas',
+              'Protocolo de resolución'
+            ],
+            documentId: 'documento-2-principios-ventilacion'
+          }
+        },
+        {
+          id: 'mode-comparison-practice',
+          type: 'practice',
+          title: 'Práctica Comparación de Modalidades',
+          duration: 20,
+          content: {
+            practiceType: 'mode-comparison',
+            scenarios: [
+              'SDRA severo',
+              'EPOC exacerbado',
+              'Destete ventilatorio',
+              'Postoperatorio sin complicaciones'
+            ],
+            documentId: 'documento-2-principios-ventilacion'
+          }
+        }
+      ]
+    },
+
+    'module-02-modalidades-parametros': {
+      id: 'module-02-modalidades-parametros',
+      title: 'Modalidades Ventilatorias y Parámetros',
+      level: 'intermediate',
+      order: 2,
+      duration: 240, // minutos (suma de todas las lecciones: 60*4)
+      prerequisites: ['module-01-fundamentals'],
+      learningObjectives: [
+        'Comprender las modalidades ventilatorias controladas por volumen y presión',
+        'Dominar la configuración de parámetros ventilatorios',
+        'Interpretar curvas ventilatorias y resolver asincronías',
+        'Aplicar estrategias de ventilación protectora'
+      ],
+      bloomLevel: 'aplicar',
+      difficulty: 'intermedio',
+      estimatedTime: '4 horas',
+      description: 'Modalidades ventilatorias y manejo de parámetros críticos en ventilación mecánica',
+      // ✅ CONECTAR LECCIONES REALES DESDE JSON
+      lessons: [
+        {
+          id: 'lesson-01-volume-ventilation',
+          title: lesson01VolumeVentilation.title || 'Ventilación Controlada por Volumen (VCV)',
+          description: lesson01VolumeVentilation.description || '',
+          estimatedTime: lesson01VolumeVentilation.estimatedTime || 60,
+          difficulty: lesson01VolumeVentilation.difficulty || 'intermediate',
+          order: lesson01VolumeVentilation.order || 1,
+          lessonData: lesson01VolumeVentilation
+        },
+        {
+          id: 'lesson-02-pressure-controlled-ventilation',
+          title: lesson02PressureControlled.title || 'Ventilación Controlada por Presión (PCV)',
+          description: lesson02PressureControlled.description || '',
+          estimatedTime: lesson02PressureControlled.estimatedTime || 60,
+          difficulty: lesson02PressureControlled.difficulty || 'intermediate',
+          order: lesson02PressureControlled.order || 2,
+          lessonData: lesson02PressureControlled
+        },
+        {
+          id: 'lesson-03-pressure-support-ventilation',
+          title: lesson03PressureSupport.title || 'Ventilación con Soporte de Presión (PSV)',
+          description: lesson03PressureSupport.description || '',
+          estimatedTime: lesson03PressureSupport.estimatedTime || 60,
+          difficulty: lesson03PressureSupport.difficulty || 'intermediate',
+          order: lesson03PressureSupport.order || 3,
+          lessonData: lesson03PressureSupport
+        },
+        {
+          id: 'lesson-04-simv-destete-evidencia',
+          title: lesson04SIMV.title || 'SIMV y Destete - Evidencia',
+          description: lesson04SIMV.description || '',
+          estimatedTime: lesson04SIMV.estimatedTime || 60,
+          difficulty: lesson04SIMV.difficulty || 'intermediate',
+          order: lesson04SIMV.order || 4,
+          lessonData: lesson04SIMV
+        }
+      ]
+    },
+
     'volume-control': {
       id: 'volume-control',
       title: 'Ventilación Controlada por Volumen (VCV)',
       level: 'intermediate',
-      order: 1,
+      order: 3,
       duration: 200,
       prerequisites: ['ventilation-principles'],
       learningObjectives: [
@@ -276,7 +470,7 @@ export const curriculumData = {
       id: 'pressure-control',
       title: 'Ventilación Controlada por Presión (PCV)',
       level: 'intermediate',
-      order: 2,
+      order: 4,
       duration: 180,
       prerequisites: ['volume-control'],
       learningObjectives: [
@@ -317,7 +511,7 @@ export const curriculumData = {
       id: 'psv-mode',
       title: 'Ventilación con Soporte de Presión (PSV)',
       level: 'intermediate',
-      order: 3,
+      order: 5,
       duration: 160,
       prerequisites: ['pressure-control'],
       learningObjectives: [
@@ -347,7 +541,7 @@ export const curriculumData = {
       id: 'simv-mode',
       title: 'Ventilación Mandatoria Intermitente Sincronizada (SIMV)',
       level: 'intermediate',
-      order: 4,
+      order: 6,
       duration: 170,
       prerequisites: ['psv-mode'],
       learningObjectives: [
@@ -564,10 +758,12 @@ export const curriculumData = {
   },
 
   // Metadatos adicionales
+  // NOTE: totalModules, totalLessons, and estimatedTotalTime are now computed dynamically
+  // Use getCurriculumMetadata() from data/curriculum/selectors.js instead
   metadata: {
-    totalModules: 10,
-    totalLessons: 45,
-    estimatedTotalTime: '75-90 horas',
+    // totalModules: computed via getCurriculumMetadata()
+    // totalLessons: computed via getCurriculumMetadata()
+    // estimatedTotalTime: computed via getCurriculumMetadata()
     lastUpdated: '2024-01-15',
     version: '1.0',
     difficultyProgression: {
@@ -588,10 +784,15 @@ export const getModuleById = (moduleId) => {
   return curriculumData.modules[moduleId] || null;
 };
 
+// NOTE: getModulesByLevel is now also exported from selectors.js
+// Keeping this for backward compatibility, but prefer using selectors
 export const getModulesByLevel = (level) => {
+  if (!curriculumData?.modules) {
+    return [];
+  }
   return Object.values(curriculumData.modules)
     .filter(module => module.level === level)
-    .sort((a, b) => a.order - b.order);
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
 };
 
 export const getPrerequisites = (moduleId) => {

@@ -1,0 +1,101 @@
+{
+  "moduleId": "respiratory-physiology",
+  "level": "ADVANCED",
+  "lessons": [
+    {
+      "lessonId": "respiratory-basics",
+      "title": "Fisiopatología Avanzada de la Mecánica Respiratoria",
+      "content": {
+        "intro": "El análisis cuantitativo de la mecánica respiratoria requiere comprensión profunda de los modelos de impedancia pulmonar, viscoelasticidad tisular, y heterogeneidad regional de ventilación-perfusión. Esta lección aborda aspectos avanzados de fisiopatología respiratoria relevantes para la ventilación mecánica invasiva y manejo de SDRA.",
+        "mainContent": [
+          {
+            "type": "text",
+            "content": "El modelo monocompartimental del sistema respiratorio describe la relación entre presión, volumen y flujo mediante la ecuación del movimiento: Paw = V/C + R·V̇ + PEEPi, donde Paw es presión de vía aérea, C es compliance del sistema respiratorio, R es resistencia, y PEEPi es auto-PEEP. Sin embargo, este modelo simplificado no captura fenómenos como stress relaxation, pendelluft, ni heterogeneidad regional."
+          },
+          {
+            "type": "list",
+            "title": "Conceptos avanzados en mecánica respiratoria",
+            "content": [
+              "Driving pressure (ΔP = Pplat - PEEP): predictor independiente de mortalidad en SDRA (Amato et al., NEJM 2015)",
+              "Mechanical power: energía transferida del ventilador al pulmón por unidad de tiempo, integra múltiples variables (VT, RR, flujo, presión)",
+              "Stress (presión transpulmonar) y strain (deformación tisular): determinantes de VILI según hipótesis baby lung",
+              "P/F ratio vs. PaO2/FiO2: marcador de severidad de hipoxemia, limitaciones por efecto shunt y FiO2",
+              "Esophageal manometry: estimación de presión pleural para calcular presión transpulmonar (Ptp = Paw - Pes)",
+              "Electrical Impedance Tomography (EIT): monitorización de distribución regional de ventilación en tiempo real",
+              "Time constant (τ = R × C): determina velocidad de equilibrio de presión alveolar, fundamental para configurar Ti, Te"
+            ]
+          },
+          {
+            "type": "clinical-case",
+            "title": "SDRA severo: Optimización ventilatoria guiada por mecánica pulmonar",
+            "content": "Paciente con SDRA p/f 80, en VMI con VT 6 ml/kg PBW, PEEP 14, FiO2 0.8. Pplat 32 cmH2O (driving pressure 18 cmH2O), compliance 25 ml/cmH2O. EIT muestra sobredistensión en regiones anteriores, colapso cíclico en posteriores. Se coloca catéter esofágico: Pes end-exp 12 cmH2O, Pes end-insp 18 cmH2O. Presión transpulmonar end-insp 14 cmH2O (bajo riesgo barotrauma), pero ΔPtp 6 cmH2O (strain excesivo). Se ajusta PEEP a 18 cmH2O (Pes end-exp 14, Ptp end-exp 4), mejorando reclutamiento dorsal y reduciendo driving pressure a 12 cmH2O. Mechanical power disminuye de 28 J/min a 19 J/min."
+          },
+          {
+            "type": "example",
+            "title": "Fenómeno de pendelluft en SDRA heterogéneo",
+            "content": "El pendelluft es el movimiento de gas entre regiones pulmonares con diferentes constantes de tiempo durante la misma fase respiratoria. En SDRA con heterogeneidad severa, regiones poco compliance (consolidadas) y regiones normales coexisten. Durante inspiración espontánea, la presión pleural negativa generada por esfuerzo inspiratorio puede causar colapso de regiones dependientes (con P transpulmonar muy negativa) mientras simultáneamente sobredistiende regiones no dependientes. Este fenómeno, invisible en curvas de ventilador, contribuye a P-SILI (patient self-inflicted lung injury) y puede requerir bloqueo neuromuscular para su control."
+          }
+        ],
+        "keyPoints": [
+          "Driving pressure <15 cmH2O asociado con menor mortalidad en SDRA (ARDSnet, Amato NEJM 2015)",
+          "Mechanical power >17 J/min es predictor independiente de outcomes adversos (Gattinoni et al.)",
+          "Presión transpulmonar end-inspiratoria <20-25 cmH2O limita riesgo de barotrauma",
+          "Strain (VT/FRC) >2.0 predice VILI; objetivo <1.5 según evidencia experimental",
+          "PEEP óptimo balancea reclutamiento alveolar vs. sobredistensión regional (análisis EIT o Ptp)",
+          "Baby lung concept: SDRA reduce volumen pulmonar aereado a ~200-500 ml (vs. 2000 ml normal)"
+        ],
+        "examples": [
+          {
+            "scenario": "Cálculo de mechanical power en paciente con SDRA",
+            "parameters": {
+              "VT": "350 ml (6 ml/kg PBW)",
+              "RR": "28 /min",
+              "Pplat": "28 cmH2O",
+              "PEEP": "12 cmH2O",
+              "PIP": "35 cmH2O",
+              "FlujoPico": "60 L/min"
+            },
+            "explanation": "Mechanical Power = 0.098 × VT × RR × (PIP - ΔP/2), donde ΔP = Pplat - PEEP = 16 cmH2O. MP = 0.098 × 0.35 × 28 × (35 - 8) = 26.0 J/min. Este valor >17 J/min sugiere alto riesgo de VILI. Estrategias: reducir VT a 4-5 ml/kg, disminuir RR si permisible (hipercapnia permisiva), o considerar ECMO si refractario."
+          },
+          {
+            "scenario": "Interpretación de presión transpulmonar en obesidad mórbida",
+            "parameters": {
+              "Paw_end_insp": "35 cmH2O",
+              "Pes_end_insp": "22 cmH2O",
+              "Paw_end_exp": "10 cmH2O (PEEP)",
+              "Pes_end_exp": "18 cmH2O"
+            },
+            "explanation": "Ptp end-insp = 35 - 22 = 13 cmH2O (aceptable); Ptp end-exp = 10 - 18 = -8 cmH2O (negativa!). A pesar de PEEP 10, la presión transpulmonar espiratoria es negativa debido a elevada presión pleural por obesidad, causando colapso espiratorio. Requiere PEEP 20-22 cmH2O para mantener Ptp end-exp positiva y prevenir atelectrauma. Este ejemplo ilustra por qué PEEP óptimo en obesos es mayor que en pacientes con peso normal."
+          }
+        ],
+        "summary": "El manejo avanzado de mecánica respiratoria en pacientes críticos requiere comprensión de conceptos como driving pressure, mechanical power, y presión transpulmonar. La heterogeneidad regional del SDRA exige estrategias personalizadas de ventilación guiadas por monitoreo avanzado (manometría esofágica, EIT). El balance entre reclutamiento alveolar y prevención de sobredistensión es fundamental para limitar VILI. La evidencia actual favorece estrategias de ventilación protectora con VT bajo, PEEP adecuado, y limitación de driving pressure y mechanical power."
+      },
+      "quiz": {
+        "questions": [
+          {
+            "question": "En el contexto del SDRA, ¿cuál es el mecanismo fisiopatológico por el cual un driving pressure elevado aumenta mortalidad?",
+            "options": [
+              "Aumenta la PaCO2 y causa acidosis respiratoria",
+              "Aumenta el strain (deformación) del tejido pulmonar aereado, causando biotrauma",
+              "Reduce el gasto cardíaco por compresión de cavidades derechas",
+              "Disminuye la compliance de la pared torácica"
+            ],
+            "correctAnswer": 1,
+            "explanation": "El driving pressure (ΔP = Pplat - PEEP) refleja el cambio de volumen normalizado por la compliance del sistema respiratorio (ΔP = VT/C). En SDRA, la compliance está reducida debido a la pérdida de volumen pulmonar aereado ('baby lung'). Un ΔP elevado indica que el mismo VT genera mayor deformación (strain) en el tejido pulmonar funcional remanente. Este strain excesivo (>2.0) activa cascadas inflamatorias (biotrauma), liberación de citoquinas, y perpetúa el daño pulmonar. El metanálisis de Amato (NEJM 2015) demostró que ΔP es el mejor predictor ventilatorio de mortalidad, superando a VT y Pplat."
+          },
+          {
+            "question": "Un paciente con SDRA tiene Paw end-insp 32 cmH2O y Pes end-insp 18 cmH2O. ¿Cuál es la presión transpulmonar y su implicación clínica?",
+            "options": [
+              "50 cmH2O, riesgo alto de barotrauma inmediato",
+              "14 cmH2O, presión aceptable sin riesgo de sobredistensión",
+              "18 cmH2O, sugiere ajustar PEEP",
+              "32 cmH2O, requiere reducción urgente de VT"
+            ],
+            "correctAnswer": 1,
+            "explanation": "Ptp = Paw - Pes = 32 - 18 = 14 cmH2O. Esta presión transpulmonar está dentro del rango seguro (<20-25 cmH2O según literatura). La diferencia entre Paw (32 cmH2O, aparentemente alta) y Ptp (14 cmH2O, aceptable) se debe a la elevada presión pleural (18 cmH2O), común en pacientes obesos o con edema de pared. Este caso ilustra por qué la Paw sola puede ser engañosa: una Paw alta no necesariamente indica sobredistensión pulmonar si la presión pleural también está elevada. La manometría esofágica permite individualizar PEEP y VT basándose en Ptp, mejorando seguridad."
+          }
+        ]
+      }
+    }
+  ]
+}

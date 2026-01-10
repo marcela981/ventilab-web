@@ -1,0 +1,49 @@
+{
+  "prefill": {
+    "askAbout": "Bríndame más información sobre {{topic}}"
+  },
+  "suggestions": {
+    "seeMore": "Ver otras sugerencias",
+    "ariaLabel": "Sugerencias de preguntas"
+  },
+  "topicExpander": {
+    "button": {
+      "label": "¿Te gustaría expandir más este tema?",
+      "ariaLabel": "Expandir tema con IA"
+    },
+    "accordion": {
+      "title": "¿Te gustaría expandir más este tema?",
+      "ariaLabel": "Expandir tema con IA"
+    },
+    "panel": {
+      "title": "Expansión de Tema con IA",
+      "inputLabel": "Tu pregunta",
+      "inputPlaceholder": "Escribe tu pregunta o deja en blanco para expandir automáticamente",
+      "submitButton": "Enviar",
+      "cancelButton": "Cancelar",
+      "stopButton": "Detener",
+      "loading": "Consultando IA…",
+      "error": "Error al expandir el tema",
+      "offline": "Modo offline: mostrando resumen local",
+      "rateLimit": "Demasiadas solicitudes. Por favor, espera un momento.",
+      "networkError": "Sin conexión",
+      "timeoutError": "Tiempo de espera agotado",
+      "tryAgain": "Inténtalo de nuevo",
+      "closeAria": "Cerrar panel de expansión",
+      "tooltip": "Explorar con IA",
+      "charCounter": "{{count}}/1000 caracteres"
+    },
+    "results": {
+      "expandedExplanation": "Explicación",
+      "keyPoints": "Puntos Clave",
+      "deeperDive": "Para profundizar",
+      "suggestedResources": "Recursos sugeridos",
+      "suggestedReferences": "Referencias Sugeridas",
+      "internalLinks": "Enlaces Internos",
+      "insertInternalReferences": "Insertar referencias internas",
+      "noResults": "No se pudo generar contenido",
+      "offlineNote": "Resumen generado localmente (modo offline)"
+    }
+  }
+}
+

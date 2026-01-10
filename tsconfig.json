@@ -19,7 +19,7 @@
     "isolatedModules": true,
     "noEmit": true,
     /* JavaScript Support */
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     /* Type Checking - Configuración estricta para calidad de código */
     "noImplicitAny": true,
@@ -41,25 +41,36 @@
       "@/*": [
         "./src/*"
       ],
+      "@/lib/*": [
+        "./lib/*",
+        "./src/lib/*"
+      ],
+      "@/app/*": [
+        "./app/*"
+      ],
       "@/components/*": [
+        "./components/*",
         "./src/components/*"
       ],
       "@/pages/*": [
         "./src/pages/*"
       ],
       "@/services/*": [
+        "./lib/services/*",
         "./src/services/*"
       ],
       "@/utils/*": [
         "./src/utils/*"
       ],
       "@/hooks/*": [
+        "./hooks/*",
         "./src/hooks/*"
       ],
       "@/context/*": [
-        "./src/context/*"
+        "./src/contexts/*"
       ],
       "@/data/*": [
+        "./data/*",
         "./src/data/*"
       ],
       "@/theme/*": [
@@ -81,7 +92,8 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

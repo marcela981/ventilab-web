@@ -1,3 +1,35 @@
+/**
+ * ⚠️ COMPONENTE TEMPORALMENTE REMOVIDO DEL DASHBOARD PRINCIPAL ⚠️
+ *
+ * Este componente fue removido del dashboard principal del módulo de enseñanza
+ * como parte de la HU-001: Limpieza y Reorganización del Dashboard.
+ *
+ * RAZÓN DE REMOCIÓN:
+ * - Simplificación del layout del dashboard principal
+ * - Reducción de componentes en el dashboard para mejor UX
+ * - El sistema de repetición espaciada será reubicado en una sección dedicada
+ *
+ * ESTADO ACTUAL:
+ * - El archivo se mantiene intacto y funcional
+ * - Todas las referencias en TeachingModule.jsx fueron eliminadas
+ * - El componente está listo para ser reintegrado cuando sea necesario
+ *
+ * USO FUTURO PLANEADO:
+ * - Sección dedicada de "Sistema de Repetición Espaciada"
+ * - Página independiente para gestión de flashcards
+ * - Integración en features avanzadas de aprendizaje
+ *
+ * MANTENIMIENTO:
+ * - NO eliminar este archivo
+ * - Mantener actualizaciones de dependencies y theme
+ * - Documentar cualquier cambio en la estructura del componente
+ *
+ * @version 1.0.0
+ * @status TEMPORALMENTE_DESHABILITADO
+ * @fecha_remoción 2025-01-04
+ * @historia_usuario HU-001
+ */
+
 import React, { useState } from 'react';
 import {
   Box,
@@ -34,6 +66,15 @@ import {
 import { useLearningProgress } from '../../../contexts/LearningProgressContext';
 import FlashcardSystem from '../FlashcardSystem';
 
+/**
+ * FlashcardDashboard - Widget de sistema de repetición espaciada
+ *
+ * Muestra estadísticas de flashcards y botones de acción rápida para
+ * el sistema de repetición espaciada basado en el algoritmo SM-2.
+ *
+ * @param {Function} onOpenFlashcards - Callback para abrir el sistema completo de flashcards
+ * @returns {JSX.Element} Widget del dashboard de flashcards
+ */
 const FlashcardDashboard = ({ onOpenFlashcards }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));

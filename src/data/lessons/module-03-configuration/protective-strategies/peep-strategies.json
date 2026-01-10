@@ -1,0 +1,94 @@
+{
+  "title": "Estrategias de PEEP: Optimización de la Presión Positiva al Final de la Espiración",
+  "summary": "Guía completa sobre estrategias de PEEP para optimizar oxigenación y prevenir colapso alveolar. Incluye tabla PEEP/FiO₂ de ARDSnet, métodos de titulación, optimización de PEEP, detección de auto-PEEP y aplicación en diferentes patologías.",
+  "estimatedTime": 32,
+  "sections": [
+    {
+      "type": "text",
+      "order": 1,
+      "content": "# Fundamentos de la PEEP\n\nLa **PEEP (Positive End-Expiratory Pressure)** es la presión positiva mantenida en la vía aérea al final de la espiración. Es un componente esencial de la ventilación mecánica moderna.\n\n## Mecanismos de Acción\n\n### 1. Prevención de Colapso Alveolar\n\n- **Mantiene alveolos abiertos**: Al final de la espiración, la PEEP previene el colapso de unidades alveolares\n- **Aumenta capacidad residual funcional (CRF)**: La PEEP aumenta el volumen pulmonar al final de la espiración\n- **Reduce atelectasia**: Previene el colapso de alveolos que tienden a cerrarse\n\n### 2. Mejora de Oxigenación\n\n- **Reclutamiento alveolar**: La PEEP puede abrir (reclutar) alveolos previamente colapsados\n- **Mejora relación V/Q**: Al mantener alveolos abiertos, mejora la relación ventilación-perfusión\n- **Reducción de shunt**: Menos sangre perfunde áreas no ventiladas\n\n### 3. Reducción de Trabajo Respiratorio\n\n- **Disminuye trabajo inspiratorio**: El paciente no necesita vencer presión negativa para iniciar inspiración\n- **Facilita disparo de respiraciones**: Especialmente importante en pacientes con auto-PEEP\n\n## Tipos de PEEP\n\n### PEEP Extrínseca\n\n- **Aplicada por el ventilador**: Configurada intencionalmente\n- **Objetivo terapéutico**: Reclutar alveolos, mejorar oxigenación\n- **Valores típicos**: 5-16 cmH₂O según patología\n\n### Auto-PEEP (PEEP Intrínseca)\n\n- **No intencional**: Resultado de espiración incompleta\n- **Causas**: Obstrucción de vías aéreas, tiempo espiratorio insuficiente, volúmenes altos\n- **Medición**: Pausa espiratoria de 2-3 segundos\n- **Manejo**: Reducir frecuencia, aumentar flujo, reducir VT, broncodilatadores\n\n## PEEP Total\n\n**PEEP total = PEEP extrínseca + Auto-PEEP**\n\n- Es la presión real al final de la espiración\n- Debe medirse con pausa espiratoria\n- Es la presión que afecta hemodinamia y oxigenación"
+    },
+    {
+      "type": "text",
+      "order": 2,
+      "content": "# Tabla PEEP/FiO₂ de ARDSnet\n\nEl estudio ARDSnet estableció una tabla de PEEP/FiO₂ que optimiza oxigenación mientras minimiza toxicidad por oxígeno.\n\n## Tabla Estándar\n\n| FiO₂ | PEEP (cmH₂O) |\n|------|--------------|\n| 0.3  | 5            |\n| 0.4  | 5-8          |\n| 0.5  | 8-10         |\n| 0.6  | 10           |\n| 0.7  | 10-12        |\n| 0.8  | 12-14        |\n| 0.9  | 14           |\n| 1.0  | 14-16        |\n\n## Objetivos de la Tabla\n\n1. **Mantener oxigenación adecuada**: PaO₂ 55-80 mmHg o SpO₂ 88-95%\n2. **Reducir FiO₂**: Minimizar toxicidad por oxígeno\n3. **Optimizar PEEP**: Balancear reclutamiento vs sobredistensión\n\n## Uso de la Tabla\n\n### Paso 1: Evaluar Oxigenación Actual\n\n- Medir PaO₂ o SpO₂\n- Evaluar si está en rango objetivo (PaO₂ 55-80 mmHg, SpO₂ 88-95%)\n\n### Paso 2: Ajustar FiO₂ y PEEP según Tabla\n\n**Si oxigenación es adecuada**:\n- Reducir FiO₂ según tabla\n- Reducir PEEP cuando FiO₂ < 0.4\n\n**Si oxigenación es inadecuada**:\n- Aumentar PEEP según tabla\n- Aumentar FiO₂ si necesario\n\n### Paso 3: Monitorear Respuesta\n\n- Evaluar PaO₂/SpO₂ después de ajustes\n- Verificar que Pplateau no aumente excesivamente\n- Monitorear efectos hemodinámicos\n\n## Ejemplo de Aplicación\n\n**Situación inicial**:\n- FiO₂: 1.0\n- PEEP: 14 cmH₂O\n- PaO₂: 75 mmHg (adecuada)\n\n**Ajuste**:\n1. Reducir FiO₂ a 0.9 → PEEP 14 cmH₂O (según tabla)\n2. Si PaO₂ sigue adecuada, reducir FiO₂ a 0.8 → PEEP 12-14 cmH₂O\n3. Continuar reduciendo FiO₂ gradualmente\n4. Cuando FiO₂ < 0.4, reducir PEEP gradualmente"
+    },
+    {
+      "type": "text",
+      "order": 3,
+      "content": "# Métodos de Titulación de PEEP\n\n## Método 1: Tabla PEEP/FiO₂ (Estándar)\n\n**Ventajas**:\n- Simple y estandarizado\n- Basado en evidencia (ARDSnet)\n- Fácil de implementar\n\n**Desventajas**:\n- No individualizado\n- No considera compliance específica\n\n**Uso**:\n- Método estándar en SDRA\n- Recomendado por múltiples guidelines\n\n## Método 2: Lazo Presión-Volumen\n\n**Concepto**:\n- Identificar punto de inflexión inferior (LIP)\n- Configurar PEEP ligeramente por encima de LIP\n- Recluta alveolos sin sobredistensión\n\n**Técnica**:\n1. Realizar maniobra de reclutamiento\n2. Obtener lazo presión-volumen\n3. Identificar LIP (punto donde curva se dobla)\n4. Configurar PEEP = LIP + 2-3 cmH₂O\n\n**Ventajas**:\n- Individualizado\n- Optimiza reclutamiento\n\n**Desventajas**:\n- Requiere experiencia\n- Puede ser difícil identificar LIP\n- No siempre disponible\n\n**Uso**:\n- Casos seleccionados de SDRA\n- Requiere experiencia clínica\n\n## Método 3: Titulación según Compliance\n\n**Concepto**:\n- Medir compliance a diferentes niveles de PEEP\n- Seleccionar PEEP que maximiza compliance\n- Indica mejor reclutamiento\n\n**Técnica**:\n1. Medir compliance a diferentes PEEP (5, 8, 10, 12, 14 cmH₂O)\n2. Calcular: C = VT / (Pplateau - PEEP)\n3. Seleccionar PEEP con mayor compliance\n\n**Ventajas**:\n- Individualizado\n- Basado en mecánica pulmonar\n\n**Desventajas**:\n- Requiere múltiples mediciones\n- Puede ser laborioso\n\n**Uso**:\n- Casos seleccionados\n- Investigación\n\n## Método 4: Titulación según Oxigenación\n\n**Concepto**:\n- Aumentar PEEP gradualmente\n- Monitorear oxigenación\n- Seleccionar PEEP que optimiza PaO₂\n\n**Técnica**:\n1. Aumentar PEEP en incrementos de 2 cmH₂O\n2. Esperar 15-30 minutos entre cambios\n3. Medir PaO₂/SpO₂\n4. Seleccionar PEEP con mejor oxigenación sin efectos adversos\n\n**Ventajas**:\n- Simple\n- Basado en resultado clínico\n\n**Desventajas**:\n- Puede no optimizar mecánica\n- Requiere tiempo\n\n**Uso**:\n- Casos donde tabla no es suficiente\n- Neumonía focal\n\n## Método 5: Estrategia de PEEP Alta vs Baja (ALVEOLI)\n\n**Concepto**:\n- Estudio ALVEOLI comparó PEEP alta vs baja\n- PEEP alta: Tabla más agresiva\n- PEEP baja: Tabla conservadora\n\n**Resultados**:\n- Sin diferencia en mortalidad\n- PEEP alta mejoró oxigenación\n- PEEP alta aumentó días de VM\n\n**Conclusión**:\n- Tabla estándar ARDSnet es apropiada\n- No se requiere PEEP muy alta rutinariamente"
+    },
+    {
+      "type": "text",
+      "order": 4,
+      "content": "# Optimización de PEEP\n\n## Factores a Considerar\n\n### 1. Patología del Paciente\n\n**SDRA**:\n- PEEP moderada-alta (8-16 cmH₂O)\n- Según tabla PEEP/FiO₂\n- Objetivo: Reclutar alveolos colapsados\n\n**EPOC**:\n- PEEP baja (3-5 cmH₂O)\n- 75% de auto-PEEP medida\n- Objetivo: Reducir trabajo inspiratorio\n\n**Asma**:\n- PEEP baja (3-5 cmH₂O)\n- Conservadora\n- Objetivo: No empeorar hiperinsuflación\n\n**Neumonía**:\n- PEEP moderada (5-10 cmH₂O)\n- Según severidad\n- Objetivo: Reclutar alveolos alrededor de consolidación\n\n### 2. Compliance Pulmonar\n\n- **Compliance alta**: PEEP puede ser más alta\n- **Compliance baja**: PEEP debe ser más cuidadosa\n- **Monitorear**: Compliance = VT / (Pplateau - PEEP)\n\n### 3. Hemodinamia\n\n- **PEEP alta puede**:\n  - Reducir retorno venoso\n  - Disminuir gasto cardíaco\n  - Causar hipotensión\n\n- **Monitorear**:\n  - Presión arterial\n  - Frecuencia cardíaca\n  - Gasto cardíaco si disponible\n  - Retorno venoso\n\n### 4. Presión Plateau\n\n- **PEEP aumenta Pplateau**:\n  - Pplateau = Presión elástica + PEEP\n  - Si PEEP aumenta, Pplateau puede aumentar\n\n- **Objetivo**:\n  - Mantener Pplateau ≤ 30 cmH₂O\n  - Si Pplateau > 30 cmH₂O después de aumentar PEEP:\n    - Considerar reducir VT adicionalmente\n    - O aceptar Pplateau ligeramente > 30 si beneficio de PEEP es mayor\n\n## Balance Reclutamiento vs Sobredistensión\n\n### Reclutamiento (Beneficio)\n\n- Abre alveolos colapsados\n- Mejora oxigenación\n- Aumenta superficie de intercambio\n- Reduce shunt\n\n### Sobredistensión (Daño)\n\n- Estira alveolos más allá de capacidad\n- Causa volutrauma\n- Aumenta presión transpulmonar\n- Puede causar barotrauma\n\n### Estrategia de Balance\n\n1. **Aumentar PEEP gradualmente**: 2 cmH₂O a la vez\n2. **Monitorear oxigenación**: ¿Mejora?\n3. **Monitorear compliance**: ¿Aumenta o disminuye?\n4. **Monitorear Pplateau**: ¿Se mantiene ≤ 30 cmH₂O?\n5. **Monitorear hemodinamia**: ¿Se mantiene estable?\n6. **Detener si**:\n   - No hay mejora de oxigenación\n   - Compliance disminuye\n   - Pplateau > 30 cmH₂O\n   - Efectos hemodinámicos adversos"
+    },
+    {
+      "type": "text",
+      "order": 5,
+      "content": "# Detección y Manejo de Auto-PEEP\n\n## Detección de Auto-PEEP\n\n### Método 1: Pausa Espiratoria\n\n**Técnica**:\n1. Activar pausa espiratoria de 2-3 segundos\n2. Leer presión en pantalla del ventilador\n3. Comparar con PEEP configurada\n4. Diferencia = Auto-PEEP\n\n**Ejemplo**:\n- PEEP configurada: 5 cmH₂O\n- Presión en pausa espiratoria: 12 cmH₂O\n- Auto-PEEP: 12 - 5 = **7 cmH₂O**\n\n### Método 2: Curva de Flujo-Tiempo\n\n**Signo de auto-PEEP**:\n- Flujo espiratorio NO retorna a cero antes de siguiente inspiración\n- Indica espiración incompleta\n\n**Evaluación**:\n- Observar curva de flujo en pantalla del ventilador\n- Si flujo no llega a cero: Hay auto-PEEP\n\n### Método 3: Lazo Presión-Volumen\n\n**Signo de auto-PEEP**:\n- Bucle desplazado hacia la derecha\n- Indica presión positiva inicial que debe vencer paciente\n\n## Manejo de Auto-PEEP\n\n### 1. Reducir Frecuencia Respiratoria\n\n- **Objetivo**: Permitir tiempo espiratorio más largo\n- **Ejemplo**: Reducir de 16/min a 12/min\n- **Efecto**: Más tiempo para espiración completa\n\n### 2. Aumentar Flujo Inspiratorio\n\n- **Objetivo**: Acortar tiempo inspiratorio\n- **Ejemplo**: Aumentar de 60 L/min a 80-100 L/min\n- **Efecto**: Más tiempo espiratorio disponible\n\n### 3. Reducir Volumen Tidal\n\n- **Objetivo**: Menos volumen a expirar\n- **Ejemplo**: Reducir de 8 mL/kg a 6 mL/kg\n- **Efecto**: Menos tiempo necesario para espiración\n\n### 4. Prolongar Relación I:E\n\n- **Objetivo**: Más tiempo espiratorio\n- **Ejemplo**: Cambiar de 1:2 a 1:3 o 1:4\n- **Efecto**: Tiempo espiratorio más largo\n\n### 5. Aplicar PEEP Extrínseca\n\n**En EPOC/Asma**:\n- PEEP extrínseca = 75% de auto-PEEP medida\n- Reduce trabajo inspiratorio\n- **NO** aplicar PEEP > auto-PEEP\n\n**Ejemplo**:\n- Auto-PEEP: 12 cmH₂O\n- PEEP extrínseca: 75% × 12 = **9 cmH₂O** (iniciar con 8 cmH₂O por seguridad)\n\n### 6. Tratar Causa Reversible\n\n- **Broncodilatadores**: Nebulización frecuente\n- **Secreciones**: Succión, fisioterapia\n- **Broncoespasmo**: Esteroides, broncodilatadores\n- **Posición del tubo**: Verificar, ajustar si necesario"
+    },
+    {
+      "type": "text",
+      "order": 6,
+      "content": "# Aplicación según Patología\n\n## SDRA\n\n**PEEP**: Moderada-alta (8-16 cmH₂O)\n\n**Método**: Tabla PEEP/FiO₂ de ARDSnet\n\n**Objetivos**:\n- Reclutar alveolos colapsados\n- Mejorar oxigenación\n- Reducir FiO₂\n\n**Consideraciones**:\n- Monitorear Pplateau (no debe aumentar > 30 cmH₂O)\n- Balancear reclutamiento vs sobredistensión\n\n## EPOC Agudizado\n\n**PEEP**: Baja (3-5 cmH₂O)\n\n**Método**: 75% de auto-PEEP medida\n\n**Objetivos**:\n- Reducir trabajo inspiratorio\n- Facilitar disparo de respiraciones\n- NO empeorar hiperinsuflación\n\n**Consideraciones**:\n- Medir auto-PEEP regularmente\n- NO aplicar PEEP > auto-PEEP\n- Ajustar según respuesta\n\n## Asma Severa\n\n**PEEP**: Baja (3-5 cmH₂O)\n\n**Método**: Conservadora, 50-75% de auto-PEEP medida\n\n**Objetivos**:\n- Reducir trabajo inspiratorio\n- Prevenir barotrauma\n- NO empeorar hiperinsuflación\n\n**Consideraciones**:\n- Ser más conservador que en EPOC\n- Auto-PEEP puede ser muy alta (15-20 cmH₂O)\n- Priorizar prevenir barotrauma\n\n## Neumonía Severa\n\n**PEEP**: Moderada (5-10 cmH₂O)\n\n**Método**: Según severidad y oxigenación\n\n**Objetivos**:\n- Reclutar alveolos alrededor de consolidación\n- Mejorar oxigenación\n\n**Consideraciones**:\n- Si evoluciona a SDRA, aplicar tabla ARDSnet\n- Ajustar según respuesta\n\n## Postoperatorio\n\n**PEEP**: Baja-moderada (5-8 cmH₂O)\n\n**Método**: Según necesidad de oxigenación\n\n**Objetivos**:\n- Prevenir atelectasia\n- Mejorar oxigenación\n\n**Consideraciones**:\n- Monitorear efectos hemodinámicos\n- Ajustar según respuesta"
+    },
+    {
+      "type": "text",
+      "order": 7,
+      "content": "# Complicaciones y Precauciones\n\n## Complicaciones de PEEP Alta\n\n### 1. Efectos Hemodinámicos\n\n**Mecanismos**:\n- Reducción de retorno venoso\n- Aumento de presión intratorácica\n- Disminución de gasto cardíaco\n- Reducción de presión de perfusión\n\n**Manifestaciones**:\n- Hipotensión\n- Disminución de gasto cardíaco\n- Reducción de presión de pulso\n\n**Manejo**:\n- Optimizar volemia\n- Reducir PEEP si efectos severos\n- Considerar vasopresores\n- Monitoreo hemodinámico avanzado\n\n### 2. Barotrauma\n\n**Mecanismos**:\n- Sobredistensión alveolar\n- Aumento de presión transpulmonar\n- Ruptura de estructuras alveolares\n\n**Manifestaciones**:\n- Neumotórax\n- Neumomediastino\n- Enfisema subcutáneo\n\n**Prevención**:\n- Monitorear Pplateau (≤ 30 cmH₂O)\n- Balancear reclutamiento vs sobredistensión\n- No aumentar PEEP excesivamente\n\n### 3. Sobredistensión\n\n**Mecanismos**:\n- PEEP demasiado alta para compliance del paciente\n- Estiramiento excesivo de alveolos abiertos\n\n**Manifestaciones**:\n- Disminución de compliance\n- Aumento de Pplateau\n- Sin mejora de oxigenación\n\n**Manejo**:\n- Reducir PEEP\n- Evaluar lazo presión-volumen\n- Optimizar según compliance\n\n### 4. Reducción de Ventilación\n\n**Mecanismos**:\n- Aumento de espacio muerto\n- Reducción de volumen disponible para ventilación\n\n**Manifestaciones**:\n- Aumento de PaCO₂\n- Necesidad de aumentar frecuencia\n\n**Manejo**:\n- Aumentar frecuencia respiratoria\n- Aceptar hipercapnia permisiva\n- Balancear oxigenación vs ventilación\n\n## Precauciones\n\n1. **Monitoreo continuo**: Pplateau, hemodinamia, oxigenación\n2. **Ajustes graduales**: 2 cmH₂O a la vez\n3. **Evaluar respuesta**: Después de cada cambio\n4. **Reconocer límites**: No aumentar PEEP sin beneficio\n5. **Considerar efectos adversos**: Hemodinamia, barotrauma"
+    },
+    {
+      "type": "quiz",
+      "order": 8,
+      "question": "Un paciente con SDRA tiene FiO₂ 0.7 y PaO₂ 68 mmHg. Según la tabla PEEP/FiO₂ de ARDSnet, ¿qué PEEP es apropiada?",
+      "options": [
+        "8 cmH₂O",
+        "10-12 cmH₂O",
+        "14 cmH₂O",
+        "5 cmH₂O"
+      ],
+      "correctAnswer": "10-12 cmH₂O",
+      "explanation": "Según la tabla PEEP/FiO₂ de ARDSnet, con FiO₂ 0.7, la PEEP recomendada es 10-12 cmH₂O. Esta tabla optimiza oxigenación mientras minimiza toxicidad por oxígeno."
+    },
+    {
+      "type": "quiz",
+      "order": 9,
+      "question": "Un paciente con EPOC tiene auto-PEEP de 10 cmH₂O medida con pausa espiratoria. ¿Qué nivel de PEEP extrínseca es más apropiado?",
+      "options": [
+        "10 cmH₂O (igual a auto-PEEP)",
+        "12 cmH₂O (mayor que auto-PEEP)",
+        "7-8 cmH₂O (75% de auto-PEEP)",
+        "5 cmH₂O (valor fijo)"
+      ],
+      "correctAnswer": "7-8 cmH₂O (75% de auto-PEEP)",
+      "explanation": "En EPOC, la PEEP extrínseca debe ser 75-85% de la auto-PEEP medida para reducir el trabajo inspiratorio necesario para vencer la auto-PEEP, sin empeorar la hiperinsuflación. Para auto-PEEP de 10 cmH₂O: 75% = 7.5 cmH₂O (redondear a 7-8 cmH₂O)."
+    }
+  ],
+  "keyPoints": [
+    "La tabla PEEP/FiO₂ de ARDSnet optimiza oxigenación mientras minimiza toxicidad por oxígeno, con PEEP de 5-16 cmH₂O según FiO₂.",
+    "La auto-PEEP se detecta con pausa espiratoria de 2-3 segundos y se maneja reduciendo frecuencia, aumentando flujo, reduciendo VT o aplicando PEEP extrínseca.",
+    "En EPOC, la PEEP extrínseca debe ser 75-85% de la auto-PEEP medida para reducir trabajo inspiratorio sin empeorar hiperinsuflación.",
+    "La PEEP alta puede causar efectos hemodinámicos (hipotensión, reducción de gasto cardíaco) y debe monitorearse continuamente.",
+    "El balance entre reclutamiento (beneficio) y sobredistensión (daño) es crucial al optimizar PEEP.",
+    "La Pplateau puede aumentar con PEEP y debe mantenerse ≤ 30 cmH₂O, considerando reducir VT si es necesario.",
+    "Diferentes patologías requieren diferentes estrategias de PEEP: SDRA (alta), EPOC (baja), asma (baja conservadora), neumonía (moderada)."
+  ],
+  "references": [
+    "The ARDS Network. Ventilation with lower tidal volumes as compared with traditional tidal volumes for acute lung injury and the acute respiratory distress syndrome. N Engl J Med. 2000;342(18):1301-8.",
+    "Brower RG, Lanken PN, MacIntyre N, et al. Higher versus lower positive end-expiratory pressures in patients with the acute respiratory distress syndrome. N Engl J Med. 2004;351(4):327-36.",
+    "Gattinoni L, Caironi P, Cressoni M, et al. Lung recruitment in patients with the acute respiratory distress syndrome. N Engl J Med. 2006;354(17):1775-86.",
+    "Fan E, Del Sorbo L, Goligher EC, et al. An Official American Thoracic Society/European Society of Intensive Care Medicine/Society of Critical Care Medicine Clinical Practice Guideline: Mechanical Ventilation in Adult Patients with Acute Respiratory Distress Syndrome. Am J Respir Crit Care Med. 2017;195(9):1253-63.",
+    "Tuxen DV, Lane S. The effects of ventilatory pattern on hyperinflation, airway pressures, and circulation in mechanical ventilation of patients with severe air-flow obstruction. Am Rev Respir Dis. 1987;136(4):872-9."
+  ],
+  "moduleId": "module-03",
+  "metadata": {
+    "updatedAt": "2025-11-08T03:42:27.572Z",
+    "description": "Descripción pendiente de curaduría (metadatos).",
+    "version": "1.0.0",
+    "allowEmpty": false
+  },
+  "id": "estrategias-de-peep-optimizacion-de-la-presion-positiva-al-final-de-la-espiracion",
+  "quiz": [],
+  "resources": []
+}

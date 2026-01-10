@@ -634,9 +634,9 @@ const LessonViewer = ({
             color: isCurrentLesson ? theme.palette.primary.main : 'inherit'
           }}
           secondary={
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+            <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
               <AccessTime sx={{ fontSize: 12, color: 'text.secondary' }} />
-              <Typography variant="caption" color="text.secondary">
+              <Typography component="span" variant="caption" color="text.secondary">
                 {lessonItem.duration} min
               </Typography>
             </Box>
@@ -678,7 +678,7 @@ const LessonViewer = ({
                      !isAvailable ? 'text.disabled' : 'inherit'
             }}
             secondary={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 0.5 }}>
+              <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 2, mt: 0.5 }}>
                 <LinearProgress 
                   variant="determinate" 
                   value={moduleProgress} 
@@ -693,7 +693,7 @@ const LessonViewer = ({
                     }
                   }}
                 />
-                <Typography variant="caption" color="text.secondary">
+                <Typography component="span" variant="caption" color="text.secondary">
                   {moduleProgress.toFixed(0)}%
                 </Typography>
                 {!isAvailable && (

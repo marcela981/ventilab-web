@@ -1,0 +1,362 @@
+{
+  "id": "lesson-01-respiratory-mechanics",
+  "moduleId": "module-01-fundamentals",
+  "title": "Mecánica Respiratoria Esencial para Ventilación Mecánica",
+  "description": "Lección práctica que integra conceptos de compliance, elastancia, resistencia, presión transpulmonar, presión plateau y driving pressure, constantes de tiempo (τ = R·C), auto-PEEP, curvas presión–volumen (histeresis) e interpretación básica de waveforms y loops del ventilador. Incluye videos, imágenes, ejemplos resueltos y dos casos clínicos para aplicar ajustes de PEEP, VT y tiempo espiratorio de forma segura.",
+  "order": 2,
+  "estimatedTime": 75,
+  "difficulty": "intermediate",
+  "bloomLevel": "apply",
+  "learningObjectives": [
+  "Definir y calcular compliance (estática y dinámica), elastancia y resistencia de la vía aérea; relacionarlas con el trabajo respiratorio.",
+  "Explicar y estimar la presión de conducción (driving pressure: ΔP = Pplat − PEEP) y su uso como indicador de riesgo en SDRA.",
+  "Describir la presión transpulmonar y su estimación con balón esofágico para orientar la titulación de PEEP.",
+  "Aplicar el concepto de constante de tiempo (τ = R·C) para prevenir auto-PEEP ajustando FR, I:E y VT.",
+  "Interpretar curvas presión–volumen (histeresis) y loops flujo–volumen para detectar sobredistensión, reclutamiento y atrapamiento aéreo.",
+  "Ajustar parámetros (VT, PEEP, FR, flujo) en escenarios clínicos frecuentes para minimizar lesión pulmonar inducida por ventilación (VILI)."
+  ],
+  "prerequisites": [],
+  "sections": [
+  {
+  "id": "intro-mechanics",
+  "order": 1,
+  "type": "introduction",
+  "title": "Introducción y mapa de la lección",
+  "content": {
+  "markdown": "## ¿Por qué estudiar mecánica respiratoria?\nComprender **compliance (C)**, **elastancia (E=1/C)** y **resistencia (R)** permite traducir la fisiopatología del paciente a parámetros concretos del ventilador. La **presión plateau (Pplat)** refleja los componentes elásticos (medida en pausa inspiratoria), mientras que el **pico de presión (Ppeak)** incluye resistencia de la vía aérea; su diferencia orienta si el problema es **R** (aumento de Ppeak con Pplat normal) o **C** (Pplat elevada). La **presión de conducción (ΔP = Pplat − PEEP)** aproxima la tensión cíclica sobre el “pulmón bebé” en SDRA, y niveles más bajos se asocian a mejores desenlaces. ([PMC][1])\n\n### Lo que vas a practicar\n- Cálculos de C, R, ΔP y τ con datos de cama.\n- Detección de auto-PEEP y atrapamiento aéreo en loops.\n- Lectura de curvas P–V (histeresis) para reconocer sobredistensión y reclutamiento. ([PubMed][2])"
+  }
+  },
+  {
+  "id": "compliance-resistance",
+  "order": 2,
+  "type": "theory",
+  "title": "Compliance, Elastancia y Resistencia",
+  "content": {
+  "markdown": "### Definiciones clave\n- **Compliance estática (Cstat)** ≈ VT / (Pplat − PEEP). Representa la distensión del sistema respiratorio sin flujo.\n- **Compliance dinámica (Cdyn)** ≈ VT / (Ppeak − PEEP). Sensible a cambios en resistencia.\n- **Elastancia (E)** = 1/Compliance.\n- **Resistencia (R)** ≈ (Ppeak − Pplat) / Flujo (L/s).\n\n**Perlas clínicas**\n- ↑Ppeak con **Pplat normal** → problema resistivo (broncoespasmo, secreciones, tubo acodado).\n- ↑Pplat (con Ppeak también alta) → ↓compliance (edema/SDRA/atelectasias).\n- **ΔP** = Pplat − PEEP; objetivo práctico en SDRA: mantener ΔP bajo (≈ <15 cmH₂O) junto con VT bajo (≈ 6 mL/kg PC). ([PMC][1])",
+  "media": {
+  "images": [
+  {
+  "id": "pressures-schematic",
+  "url": "[https://placeholder.ventylab.com/images/pressures-Ppeak-Pplat-PEEP-schematic.png](https://placeholder.ventylab.com/images/pressures-Ppeak-Pplat-PEEP-schematic.png)",
+  "alt": "Esquema de Ppeak, Pplat y PEEP durante un ciclo controlado por volumen con pausa inspiratoria",
+  "caption": "Identificación de Ppeak (pico), Pplat (pausa inspiratoria) y PEEP en la curva de presión-tiempo."
+  }
+  ],
+  "videos": [
+  {
+  "id": "mechanics-overview",
+  "platform": "YouTube",
+  "url": "[https://www.youtube.com/watch?v=1LpnPqo-soY](https://www.youtube.com/watch?v=1LpnPqo-soY)",
+  "title": "Mechanics of Breathing (visión general)",
+  "caption": "Resumen de fuerzas elásticas y resistivas. (Apoyo conceptual)",
+  "lang": "en"
+  }
+  ]
+  }
+  }
+  },
+  {
+  "id": "driving-pressure",
+  "order": 3,
+  "type": "theory",
+  "title": "Presión de Conducción (ΔP) y Ventilación Protectora",
+  "content": {
+  "markdown": "La **presión de conducción** (ΔP = Pplat − PEEP) refleja la presión cíclica aplicada al sistema respiratorio por cada VT. En SDRA, **ΔP más baja** se asocia independientemente con **mejor supervivencia**; por ello se recomienda optimizar VT y PEEP para reducir ΔP, manteniendo **Pplat ≤30 cmH₂O** y **VT ≈ 6 mL/kg de peso corporal ideal**. ([New England Journal of Medicine][3])\n\n**Ejemplo rápido**: Si Pplat=28 y PEEP=12 → ΔP=16 cmH₂O. Ajustes posibles: reducir VT, reevaluar PEEP (si contribuye a sobredistensión) y optimizar posición/prono según contexto.",
+  "media": {
+  "images": [
+  {
+  "id": "driving-pressure-concept",
+  "url": "[https://placeholder.ventylab.com/images/driving-pressure-concept-diagram.png](https://placeholder.ventylab.com/images/driving-pressure-concept-diagram.png)",
+  "alt": "Diagrama que ilustra ΔP como diferencia entre Pplat y PEEP",
+  "caption": "ΔP en relación con VT y compliance del sistema respiratorio."
+  }
+  ]
+  }
+  }
+  },
+  {
+  "id": "time-constants-autopeep",
+  "order": 4,
+  "type": "theory",
+  "title": "Constantes de tiempo (τ = R·C) y auto-PEEP",
+  "content": {
+  "markdown": "Cada unidad pulmonar tiene una **constante de tiempo** τ = R·C. Se requieren ~3–5 τ para completar el vaciamiento espiratorio; si el tiempo espiratorio es insuficiente (FR alta, I:E corto, ↑R), se produce **atrapamiento aéreo** y **auto-PEEP**. Para mitigarlo: ↓FR, ↑tiempo espiratorio, ↓VT (si procede), tratar broncoespasmo y secreciones. ([PMC][4])",
+  "media": {
+  "images": [
+  {
+  "id": "autopeep-loop",
+  "url": "[https://placeholder.ventylab.com/images/flow-volume-loop-air-trapping.png](https://placeholder.ventylab.com/images/flow-volume-loop-air-trapping.png)",
+  "alt": "Loop flujo–volumen mostrando flujo espiratorio que no retorna a cero antes del siguiente ciclo (atrapamiento)",
+  "caption": "Identificación de atrapamiento: flujo que no vuelve a 0 antes del siguiente ciclo."
+  }
+  ]
+  }
+  }
+  },
+  {
+  "id": "pv-curve-hysteresis",
+  "order": 5,
+  "type": "theory",
+  "title": "Curvas Presión–Volumen e Histeresis",
+  "content": {
+  "markdown": "La **curva P–V cuasiestática** describe el comportamiento elástico de pulmón y pared torácica. La **histeresis** (diferencia entre las ramas inspiratoria y espiratoria) refleja reclutamiento/superficie y propiedades del surfactante. Puede orientar **PEEP** para mantener unidades reclutadas y evitar sobredistensión en la rama inspiratoria. ([PubMed][2])",
+  "media": {
+  "images": [
+  {
+  "id": "pv-curve",
+  "url": "[https://placeholder.ventylab.com/images/pv-curve-hysteresis.png](https://placeholder.ventylab.com/images/pv-curve-hysteresis.png)",
+  "alt": "Curva presión–volumen con ramas inspiratoria y espiratoria y área de histeresis",
+  "caption": "Curva P–V: identificación de puntos de inflexión, sobredistensión y zona de mejor compliance."
+  }
+  ]
+  }
+  }
+  },
+  {
+  "id": "transpulmonary-pressure",
+  "order": 6,
+  "type": "theory",
+  "title": "Presión Transpulmonar y Balón Esofágico",
+  "content": {
+  "markdown": "La **presión transpulmonar (PL)** = Presión alveolar − Presión pleural (estimable con presión esofágica). Monitorizar PL puede ayudar a personalizar PEEP y reducir colapso regional, especialmente en SDRA con pared torácica rígida/obesidad. Evidencia y guías recientes revisan la técnica y su utilidad clínica. ([publications.ersnet.org][5])",
+  "media": {
+  "videos": [
+  {
+  "id": "ats-esophageal-balloon",
+  "platform": "ATS",
+  "url": "[https://www.thoracic.org/professionals/clinical-resources/video-lecture-series/mechanical-ventilation/measurement-of-transpulmonary-pressure-with-esophageal-balloons-to-titrate-peep.php](https://www.thoracic.org/professionals/clinical-resources/video-lecture-series/mechanical-ventilation/measurement-of-transpulmonary-pressure-with-esophageal-balloons-to-titrate-peep.php)",
+  "title": "Medición de presión transpulmonar con balón esofágico",
+  "caption": "Video ATS: fundamentos y titulación de PEEP guiada por balón esofágico.",
+  "lang": "en"
+  }
+  ]
+  }
+  }
+  },
+  {
+  "id": "waveforms-loops",
+  "order": 7,
+  "type": "theory",
+  "title": "Interpretación de Waveforms y Loops del Ventilador",
+  "content": {
+  "markdown": "#### Claves rápidas\n- **Presión–tiempo**: Pplat elevada con pausa → ↓C; gap Ppeak−Pplat grande → ↑R.  \n- **Flujo–tiempo**: espiración que no llega a 0 antes del siguiente ciclo → atrapamiento/auto-PEEP.  \n- **Volumen–tiempo**: plató incompleto sugiere fugas.  \n- **Loop P–V**: gancho superior derecho → sobredistensión; desplazamiento hacia la derecha → ↓C.  \n- **Loop F–V**: muescas/irregularidades → secreciones/broncoespasmo.\n\nPractica asociar hallazgos con ajustes: **↓VT**, **↑PEEP** (si colapso), **↓FR**/**↑flujo** (si auto-PEEP), broncodilatador y aspiración si ↑R. ([PMC][1])",
+  "media": {
+  "images": [
+  {
+  "id": "loops-panel",
+  "url": "[https://placeholder.ventylab.com/images/ventilator-loops-panel.png](https://placeholder.ventylab.com/images/ventilator-loops-panel.png)",
+  "alt": "Panel con ejemplos de loops P–V y F–V anotados",
+  "caption": "Loops anotados: sobredistensión, reclutamiento y atrapamiento."
+  }
+  ]
+  }
+  }
+  },
+  {
+  "id": "worked-examples",
+  "order": 8,
+  "type": "example",
+  "title": "Ejemplos resueltos de cama",
+  "content": {
+  "markdown": "### Ejemplo 1: Calcular C, R y ΔP\n**Datos**: VT 420 mL, PEEP 10, Ppeak 32, Pplat 26, flujo 60 L/min (1 L/s).  \nCstat = 0.42 /(26−10)= **26 mL/cmH₂O**.  \nR = (32−26)/1 = **6 cmH₂O·s/L**.  \nΔP = 26−10= **16 cmH₂O** → considerar ↓VT a 6 mL/kg PC, reevaluar PEEP.\n\n### Ejemplo 2: Sospecha de auto-PEEP\n**Datos**: FR 24, I:E 1:2, flujo espiratorio no llega a 0; PEEPi de 5 cmH₂O.  \nAcciones: ↓FR a 18, ↑flujo inspiratorio para acortar Ti, tratar broncoespasmo. Revalorar loops tras intervención. ([PMC][4])"
+  }
+  },
+  {
+  "id": "clinical-cases",
+  "order": 9,
+  "type": "case",
+  "title": "Casos clínicos de aplicación",
+  "content": {
+  "markdown": "## Caso 1: SDRA con ΔP elevada\n**Paciente**: 72 kg (PC ideal). VM VC: VT 480 mL (6.7 mL/kg), PEEP 10, Pplat 31, PaO₂/FiO₂ 120.  \n**Problema**: ΔP = 21 cmH₂O (alta).  \n**Estrategia**: Reducir VT a 6 mL/kg (430 mL), considerar prono; re-evaluar PEEP buscando mejor oxigenación con ΔP más baja y **Pplat ≤30**; monitorizar hemodinamia. ([New England Journal of Medicine][6])\n\n## Caso 2: Atrapamiento aéreo en EPOC\n**Paciente**: VM PC, FR 22, I:E 1:2, presencia de auto-PEEP clínica (dificultad de disparo).  \n**Acciones**: ↓FR a 14–16, ↑flujo inspiratorio (acortar Ti), considerar VT moderado y broncodilatadores. Evaluar PEEPe para ayudar al disparo si auto-PEEP significativa (con cautela). ([liebertpub.com][7])"
+  }
+  },
+  {
+  "id": "summary-keypoints",
+  "order": 10,
+  "type": "summary",
+  "title": "Resumen y puntos clave",
+  "content": {
+  "markdown": "- **ΔP baja** + **VT bajo** + **Pplat ≤30** son pilares de protección en SDRA. ([New England Journal of Medicine][6])  \n- **Auto-PEEP** es consecuencia de tiempos espiratorios insuficientes (τ largas por ↑R o ↑C): corrige con ↓FR y ↑TE. ([PMC][4])  \n- La **curva P–V** y los **loops** guían detección de sobredistensión, reclutamiento y atrapamiento. ([PubMed][2])  \n- **PL** estimada con balón esofágico puede individualizar PEEP en casos seleccionados. ([publications.ersnet.org][5])"
+  }
+  }
+  ],
+  "quiz": {
+  "questions": [
+  {
+  "id": "q1-compliance",
+  "type": "multiple-choice",
+  "question": "Con VT 420 mL, PEEP 8 y Pplat 28 cmH₂O, ¿cuál es la compliance estática aproximada?",
+  "options": [
+  "21 mL/cmH₂O",
+  "26 mL/cmH₂O",
+  "30 mL/cmH₂O",
+  "35 mL/cmH₂O"
+  ],
+  "correctAnswer": "21 mL/cmH₂O",
+  "explanation": "Cstat ≈ VT/(Pplat−PEEP) = 0,42 L / (28−8) = 0,021 L/cmH₂O = 21 mL/cmH₂O.",
+  "difficulty": "intermediate",
+  "bloomLevel": "apply",
+  "points": 2
+  },
+  {
+  "id": "q2-driving-pressure",
+  "type": "multiple-choice",
+  "question": "La presión de conducción (ΔP) se calcula como:",
+  "options": [
+  "Ppeak − PEEP",
+  "Pplat − PEEP",
+  "Pplat − Ppeak",
+  "PEEP − P0.1"
+  ],
+  "correctAnswer": "Pplat − PEEP",
+  "explanation": "ΔP = Pplat − PEEP; es un marcador de la tensión cíclica aplicada con cada VT.",
+  "difficulty": "beginner",
+  "bloomLevel": "remember",
+  "points": 1
+  },
+  {
+  "id": "q3-autopeep",
+  "type": "multiple-choice",
+  "question": "¿Cuál de los siguientes cambios reduce con mayor probabilidad la auto-PEEP en EPOC?",
+  "options": [
+  "Aumentar la frecuencia respiratoria",
+  "Disminuir el tiempo espiratorio",
+  "Aumentar el flujo inspiratorio para acortar el tiempo inspiratorio",
+  "Aumentar el VT para mejorar el vaciamiento"
+  ],
+  "correctAnswer": "Aumentar el flujo inspiratorio para acortar el tiempo inspiratorio",
+  "explanation": "Al acortar Ti, se prolonga Te (para el mismo ciclo), facilitando el vaciamiento y disminuyendo el atrapamiento.",
+  "difficulty": "intermediate",
+  "bloomLevel": "analyze",
+  "points": 2
+  },
+  {
+  "id": "q4-pv-curve",
+  "type": "true-false",
+  "question": "En la curva P–V, un gancho en la esquina superior derecha sugiere sobredistensión alveolar.",
+  "options": [
+  "Verdadero",
+  "Falso"
+  ],
+  "correctAnswer": "Verdadero",
+  "explanation": "La deformación superior de la rama inspiratoria suele indicar sobredistensión.",
+  "difficulty": "beginner",
+  "bloomLevel": "understand",
+  "points": 1
+  },
+  {
+  "id": "q5-resistance",
+  "type": "multiple-choice",
+  "question": "Si Ppeak aumenta pero Pplat se mantiene estable, el hallazgo más consistente es:",
+  "options": [
+  "Disminución de compliance",
+  "Aumento de resistencia de la vía aérea",
+  "Aumento de PEEP intrínseca",
+  "Fuga del circuito"
+  ],
+  "correctAnswer": "Aumento de resistencia de la vía aérea",
+  "explanation": "El incremento aislado de Ppeak con Pplat normal sugiere componente resistivo (R) elevado.",
+  "difficulty": "intermediate",
+  "bloomLevel": "apply",
+  "points": 1
+  }
+  ]
+  },
+  "resources": {
+  "externalLinks": [
+  {
+  "title": "The basics of respiratory mechanics",
+  "url": "[https://pmc.ncbi.nlm.nih.gov/articles/PMC6212352/](https://pmc.ncbi.nlm.nih.gov/articles/PMC6212352/)",
+  "description": "Revisión clínica sobre parámetros del ventilador, compliance, resistencia y lectura de curvas",
+  "type": "review"
+  },
+  {
+  "title": "ARDSNet (NEJM 2000) – Volúmenes corrientes bajos",
+  "url": "[https://www.nejm.org/doi/full/10.1056/NEJM200005043421801](https://www.nejm.org/doi/full/10.1056/NEJM200005043421801)",
+  "description": "Ensayo pivotal: VT 6 mL/kg y límite de Pplat ≤30 cmH₂O",
+  "type": "trial"
+  },
+  {
+  "title": "Amato 2015 – Driving Pressure y supervivencia en SDRA",
+  "url": "[https://www.nejm.org/doi/full/10.1056/NEJMsa1410639](https://www.nejm.org/doi/full/10.1056/NEJMsa1410639)",
+  "description": "Meta-análisis individual que identifica ΔP como variable pronóstica clave",
+  "type": "study"
+  },
+  {
+  "title": "ERS Review 2023 – Balón esofágico",
+  "url": "[https://publications.ersnet.org/content/errev/32/168/220186](https://publications.ersnet.org/content/errev/32/168/220186)",
+  "description": "Fundamentos fisiológicos y aplicaciones clínicas para estimar presión pleural",
+  "type": "review"
+  },
+  {
+  "title": "ATS – Video: Medición de presión transpulmonar",
+  "url": "[https://www.thoracic.org/professionals/clinical-resources/video-lecture-series/mechanical-ventilation/measurement-of-transpulmonary-pressure-with-esophageal-balloons-to-titrate-peep.php](https://www.thoracic.org/professionals/clinical-resources/video-lecture-series/mechanical-ventilation/measurement-of-transpulmonary-pressure-with-esophageal-balloons-to-titrate-peep.php)",
+  "description": "Video educativo sobre técnica de balón esofágico y titulación de PEEP",
+  "type": "video"
+  },
+  {
+  "title": "Curva P–V y técnicas de medición",
+  "url": "[https://pubmed.ncbi.nlm.nih.gov/15636647/](https://pubmed.ncbi.nlm.nih.gov/15636647/)",
+  "description": "Revisión de métodos para adquirir curvas P–V cuasiestáticas",
+  "type": "review"
+  }
+  ],
+  "downloadables": [],
+  "references": [
+  {
+  "authors": "Silva PL, et al.",
+  "year": 2018,
+  "title": "The basics of respiratory mechanics",
+  "journal": "Ann Transl Med",
+  "url": "[https://pmc.ncbi.nlm.nih.gov/articles/PMC6212352/](https://pmc.ncbi.nlm.nih.gov/articles/PMC6212352/)"
+  },
+  {
+  "authors": "The ARDS Network",
+  "year": 2000,
+  "title": "Ventilation with Lower Tidal Volumes as Compared with Traditional Tidal Volumes for Acute Lung Injury and the Acute Respiratory Distress Syndrome",
+  "journal": "N Engl J Med",
+  "doi": "10.1056/NEJM200005043421801"
+  },
+  {
+  "authors": "Amato MBP, et al.",
+  "year": 2015,
+  "title": "Driving Pressure and Survival in the Acute Respiratory Distress Syndrome",
+  "journal": "N Engl J Med",
+  "doi": "10.1056/NEJMsa1410639"
+  },
+  {
+  "authors": "Jonkman AH, et al.",
+  "year": 2023,
+  "title": "The oesophageal balloon for respiratory monitoring in the ICU",
+  "journal": "Eur Respir Rev",
+  "doi": "10.1183/16000617.0186-2022"
+  },
+  {
+  "authors": "Harris RS",
+  "year": 2005,
+  "title": "Pressure-volume curves of the respiratory system",
+  "journal": "Respir Care",
+  "pmid": "15636647"
+  },
+  {
+  "authors": "Gertler R, et al.",
+  "year": 2021,
+  "title": "Respiratory Mechanics",
+  "journal": "Curr Anesthesiol Rep",
+  "url": "[https://pmc.ncbi.nlm.nih.gov/articles/PMC8360707/](https://pmc.ncbi.nlm.nih.gov/articles/PMC8360707/)"
+  }
+  ]
+  },
+  "metadata": {
+  "version": "1.0.0",
+  "lastUpdated": "2025-11-07T00:00:00.000Z",
+  "author": "Equipo VentyLab - Educación en Ventilación Mecánica",
+  "language": "es",
+  "tags": [
+  "fundamentos",
+  "mecánica respiratoria",
+  "SDRA",
+  "ventilación protectora"
+  ]
+  }
+  }

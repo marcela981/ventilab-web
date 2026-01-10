@@ -1,0 +1,285 @@
+{
+  "moduleId": "respiratory-physiology",
+  "level": "BEGINNER",
+  "lessons": [
+    {
+      "lessonId": "respiratory-basics",
+      "title": "Fundamentos de la Respiración",
+      "content": {
+        "intro": "La respiración es el proceso mediante el cual nuestro cuerpo obtiene el oxígeno que necesita y elimina el dióxido de carbono que produce. Piensa en tus pulmones como una fábrica que intercambia gases: entra aire fresco (con oxígeno) y sale aire usado (con dióxido de carbono). En esta lección aprenderás cómo funciona este increíble sistema de una manera sencilla.",
+        "mainContent": [
+          {
+            "type": "text",
+            "content": "Cada vez que respiramos, realizamos dos movimientos principales: la inspiración (cuando el aire entra a nuestros pulmones) y la espiración (cuando el aire sale). Este proceso ocurre aproximadamente 12 a 20 veces por minuto en un adulto en reposo, ¡eso son más de 20,000 respiraciones al día!"
+          },
+          {
+            "type": "list",
+            "title": "¿Qué sucede cuando respiramos?",
+            "content": [
+              "El diafragma (un músculo grande debajo de los pulmones) se contrae y baja, creando más espacio en el pecho",
+              "Los músculos entre las costillas se contraen, expandiendo la caja torácica hacia afuera",
+              "Esta expansión crea una presión negativa (como un vacío suave) que hace que el aire entre naturalmente",
+              "El aire viaja por la tráquea (tubo de respiración) hasta los pulmones",
+              "En los pulmones, el aire llega a pequeños sacos llamados alvéolos donde ocurre el intercambio de gases",
+              "El oxígeno pasa a la sangre y el dióxido de carbono sale de la sangre hacia los alvéolos",
+              "Al exhalar, el diafragma se relaja y sube, empujando el aire usado hacia afuera"
+            ]
+          },
+          {
+            "type": "example",
+            "title": "Analogía del globo",
+            "content": "Imagina que tus pulmones son como dos globos dentro de una caja (tu caja torácica). Cuando expandes la caja, los globos se inflan automáticamente porque hay más espacio. Cuando la caja se hace más pequeña, los globos se desinflan. Así es como funciona la respiración: no 'succionamos' aire activamente, sino que creamos espacio y el aire entra naturalmente."
+          },
+          {
+            "type": "text",
+            "content": "El oxígeno es esencial para que nuestras células produzcan energía. Sin oxígeno, nuestras células no pueden funcionar correctamente. Por eso la respiración es tan importante: es el sistema de entrega de oxígeno a todo nuestro cuerpo."
+          },
+          {
+            "type": "clinical-case",
+            "title": "¿Por qué nos falta el aire al correr?",
+            "content": "Cuando hacemos ejercicio, nuestros músculos necesitan más oxígeno para producir energía. Por eso, nuestro cuerpo responde respirando más rápido y más profundo, aumentando de 12-20 respiraciones por minuto en reposo a 40-60 durante el ejercicio intenso. Esto es completamente normal y saludable."
+          }
+        ],
+        "keyPoints": [
+          "La respiración tiene dos fases: inspiración (aire entra) y espiración (aire sale)",
+          "El diafragma es el músculo principal de la respiración",
+          "Los alvéolos son pequeños sacos donde se intercambian oxígeno y dióxido de carbono",
+          "Respiramos aproximadamente 12-20 veces por minuto en reposo",
+          "El oxígeno es necesario para que nuestras células produzcan energía",
+          "La respiración es un proceso mayormente automático controlado por nuestro cerebro"
+        ],
+        "examples": [
+          {
+            "scenario": "Paciente en reposo sentado",
+            "parameters": {
+              "frecuenciaRespiratoria": "14 respiraciones/minuto",
+              "profundidad": "Normal (500 ml por respiración)",
+              "esfuerzo": "Mínimo, respiración tranquila"
+            },
+            "explanation": "Esta es una respiración normal y saludable. El paciente está relajado, su diafragma se mueve suavemente hacia arriba y abajo, y no se ven músculos accesorios trabajando. Es como respirar mientras ves televisión o lees un libro."
+          },
+          {
+            "scenario": "Niño jugando en el parque",
+            "parameters": {
+              "frecuenciaRespiratoria": "30-35 respiraciones/minuto",
+              "profundidad": "Aumentada (más profunda)",
+              "esfuerzo": "Moderado, con movimiento visible del pecho"
+            },
+            "explanation": "Durante el juego activo, el cuerpo necesita más oxígeno. La frecuencia respiratoria aumenta (respira más veces por minuto) y la profundidad también (cada respiración trae más aire). Esto es completamente normal y saludable durante el ejercicio."
+          }
+        ],
+        "summary": "La respiración es el proceso vital que nos permite obtener oxígeno y eliminar dióxido de carbono. Funciona gracias al movimiento del diafragma y los músculos de las costillas que crean espacio para que el aire entre. En los alvéolos, pequeños sacos en los pulmones, ocurre el intercambio de gases: el oxígeno pasa a la sangre y el dióxido de carbono sale. Este proceso ocurre automáticamente unas 20,000 veces al día, adaptándose a nuestras necesidades de actividad."
+      },
+      "quiz": {
+        "questions": [
+          {
+            "question": "¿Cuál es el músculo principal que nos ayuda a respirar?",
+            "options": [
+              "El corazón",
+              "El diafragma",
+              "Los músculos del brazo",
+              "El estómago"
+            ],
+            "correctAnswer": 1,
+            "explanation": "El diafragma es el músculo principal de la respiración. Es un músculo grande en forma de cúpula que está debajo de los pulmones. Cuando se contrae, baja y crea espacio para que los pulmones se expandan y el aire entre."
+          },
+          {
+            "question": "¿Qué sucede durante la inspiración (cuando inhalamos)?",
+            "options": [
+              "El aire sale de los pulmones",
+              "El diafragma sube y empuja el aire hacia afuera",
+              "El diafragma baja y el aire entra a los pulmones",
+              "Los pulmones se encogen"
+            ],
+            "correctAnswer": 2,
+            "explanation": "Durante la inspiración, el diafragma se contrae y baja, creando más espacio en la cavidad torácica. Esto genera una presión negativa que hace que el aire entre naturalmente a los pulmones. Es como cuando expandes un acordeón: al crear más espacio, el aire entra."
+          },
+          {
+            "question": "¿Dónde ocurre el intercambio de oxígeno y dióxido de carbono?",
+            "options": [
+              "En la tráquea",
+              "En la nariz",
+              "En los alvéolos (pequeños sacos en los pulmones)",
+              "En el corazón"
+            ],
+            "correctAnswer": 2,
+            "explanation": "Los alvéolos son pequeños sacos al final de las vías respiratorias donde ocurre el intercambio de gases. Están rodeados de pequeños vasos sanguíneos (capilares) donde el oxígeno pasa a la sangre y el dióxido de carbono sale de la sangre hacia los alvéolos para ser exhalado."
+          },
+          {
+            "question": "¿Cuántas veces aproximadamente respira un adulto en reposo por minuto?",
+            "options": [
+              "5-8 veces",
+              "12-20 veces",
+              "30-40 veces",
+              "50-60 veces"
+            ],
+            "correctAnswer": 1,
+            "explanation": "Un adulto sano en reposo respira aproximadamente entre 12 y 20 veces por minuto. Esta frecuencia aumenta durante el ejercicio o cuando el cuerpo necesita más oxígeno, y puede disminuir durante el sueño profundo o la relajación."
+          },
+          {
+            "question": "¿Por qué respiramos más rápido cuando hacemos ejercicio?",
+            "options": [
+              "Porque nos cansamos",
+              "Para enfriarnos",
+              "Porque nuestros músculos necesitan más oxígeno",
+              "Es un reflejo sin razón específica"
+            ],
+            "correctAnswer": 2,
+            "explanation": "Durante el ejercicio, nuestros músculos trabajan más y necesitan más oxígeno para producir la energía necesaria. El cuerpo responde automáticamente aumentando la frecuencia y profundidad de la respiración para traer más oxígeno y eliminar más dióxido de carbono, que se produce en mayor cantidad durante la actividad física."
+          }
+        ]
+      }
+    },
+    {
+      "lessonId": "oxygen-journey",
+      "title": "El Viaje del Oxígeno en Nuestro Cuerpo",
+      "content": {
+        "intro": "¿Alguna vez te has preguntado qué sucede con el aire después de que entra por tu nariz? En esta lección seguiremos el increíble viaje del oxígeno desde que entra a tu cuerpo hasta que llega a cada una de tus células. Es como un sistema de entrega súper eficiente que funciona las 24 horas del día.",
+        "mainContent": [
+          {
+            "type": "text",
+            "content": "El viaje del oxígeno comienza en el momento en que inhalas. El aire puede entrar por la nariz o por la boca, aunque la nariz es preferible porque filtra, calienta y humedece el aire antes de que llegue a los pulmones."
+          },
+          {
+            "type": "list",
+            "title": "El camino del aire (sistema respiratorio)",
+            "content": [
+              "Nariz/Boca: El aire entra aquí. La nariz tiene vellos y mucosidad que atrapan polvo y gérmenes",
+              "Faringe: La garganta, donde se cruzan las vías del aire y la comida",
+              "Laringe: Contiene las cuerdas vocales y protege la entrada a la tráquea",
+              "Tráquea: Un tubo largo y resistente que lleva el aire hacia los pulmones (puedes sentirlo en la parte frontal de tu cuello)",
+              "Bronquios: La tráquea se divide en dos tubos (como una 'Y'), uno para cada pulmón",
+              "Bronquiolos: Los bronquios se dividen en tubos cada vez más pequeños, como las ramas de un árbol",
+              "Alvéolos: Pequeñísimos sacos de aire al final de los bronquiolos donde ocurre la magia del intercambio de gases"
+            ]
+          },
+          {
+            "type": "example",
+            "title": "Analogía del árbol invertido",
+            "content": "Imagina que tu sistema respiratorio es como un árbol al revés: la tráquea es el tronco, los bronquios son las ramas grandes, los bronquiolos son las ramas más pequeñas, y los alvéolos son como las hojas. Hay millones de 'hojas' (alvéolos) donde ocurre el intercambio de gases."
+          },
+          {
+            "type": "text",
+            "content": "Una vez que el oxígeno llega a los alvéolos, ocurre algo fascinante llamado 'difusión'. Los alvéolos están rodeados por pequeños vasos sanguíneos llamados capilares. El oxígeno pasa desde los alvéolos (donde hay mucho) hacia la sangre en los capilares (donde hay menos). Al mismo tiempo, el dióxido de carbono hace el viaje opuesto: sale de la sangre hacia los alvéolos para ser exhalado."
+          },
+          {
+            "type": "list",
+            "title": "¿Qué sucede después del intercambio de gases?",
+            "content": [
+              "El oxígeno se une a unas moléculas especiales en los glóbulos rojos llamadas hemoglobina",
+              "La hemoglobina es como un taxi que transporta el oxígeno a través de la sangre",
+              "El corazón bombea esta sangre rica en oxígeno a todo el cuerpo",
+              "Las células toman el oxígeno y lo usan para producir energía",
+              "Como resultado, las células producen dióxido de carbono (un producto de desecho)",
+              "La sangre recoge el dióxido de carbono y lo lleva de vuelta a los pulmones",
+              "En los pulmones, el dióxido de carbono sale de la sangre, entra a los alvéolos, y lo exhalamos"
+            ]
+          },
+          {
+            "type": "clinical-case",
+            "title": "La importancia del oxígeno en la sangre",
+            "content": "Los médicos pueden medir cuánto oxígeno hay en tu sangre usando un pequeño dispositivo que se coloca en el dedo llamado 'oxímetro de pulso'. Un nivel normal es 95-100%. Si el nivel baja, puede significar que los pulmones no están trabajando bien o que el corazón tiene dificultad para bombear la sangre. Por eso es una medición muy importante en hospitales."
+          },
+          {
+            "type": "example",
+            "title": "Analogía del sistema de distribución",
+            "content": "Piensa en tu cuerpo como una ciudad: los pulmones son la planta de tratamiento de aire, el corazón es la estación de bombeo central, las arterias son las carreteras principales, los capilares son las calles pequeñas, y cada célula es como una casa que necesita entregas de oxígeno. La hemoglobina es como los camiones de entrega que llevan oxígeno a cada 'casa' y recogen la 'basura' (dióxido de carbono) para llevarla de vuelta a la planta de tratamiento (los pulmones)."
+          }
+        ],
+        "keyPoints": [
+          "El aire viaja desde la nariz/boca → faringe → laringe → tráquea → bronquios → bronquiolos → alvéolos",
+          "En los alvéolos ocurre el intercambio de gases: el oxígeno entra a la sangre y el dióxido de carbono sale",
+          "La hemoglobina en los glóbulos rojos transporta el oxígeno por todo el cuerpo",
+          "Las células usan el oxígeno para producir energía y generan dióxido de carbono como desecho",
+          "El dióxido de carbono regresa a los pulmones para ser exhalado",
+          "Todo este proceso ocurre constantemente, cada segundo del día"
+        ],
+        "examples": [
+          {
+            "scenario": "Medición de oxígeno en sangre con oxímetro de pulso",
+            "parameters": {
+              "saturacionOxigeno": "98%",
+              "frecuenciaCardiaca": "72 latidos/minuto",
+              "interpretacion": "Normal"
+            },
+            "explanation": "Una saturación de oxígeno del 98% significa que la hemoglobina en la sangre está transportando oxígeno de manera muy eficiente. El valor normal es entre 95-100%. Esto nos dice que los pulmones están haciendo un buen trabajo intercambiando gases y que la sangre está llevando suficiente oxígeno a todas las células del cuerpo."
+          },
+          {
+            "scenario": "Comparación entre respirar en reposo y después de ejercicio",
+            "parameters": {
+              "enReposo": {
+                "frecuenciaRespiratoria": "14/min",
+                "consumoOxigeno": "250 ml/min"
+              },
+              "despuesEjercicio": {
+                "frecuenciaRespiratoria": "40/min",
+                "consumoOxigeno": "2000 ml/min"
+              }
+            },
+            "explanation": "Durante el ejercicio, los músculos necesitan hasta 8 veces más oxígeno que en reposo. El cuerpo responde aumentando la frecuencia respiratoria (respirar más veces por minuto) y la profundidad de cada respiración. También aumenta la frecuencia cardíaca para bombear más sangre oxigenada a los músculos que están trabajando. Es una coordinación perfecta entre los sistemas respiratorio y cardiovascular."
+          }
+        ],
+        "summary": "El oxígeno sigue un viaje fascinante en nuestro cuerpo: entra por la nariz o boca, viaja por la tráquea, llega a los bronquios y bronquiolos, y finalmente alcanza los alvéolos. Allí, mediante un proceso llamado difusión, el oxígeno pasa a la sangre donde se une a la hemoglobina. El corazón bombea esta sangre oxigenada a todo el cuerpo. Las células usan el oxígeno para producir energía y generan dióxido de carbono, que hace el viaje de regreso a los pulmones para ser exhalado. Este ciclo continuo mantiene vivas y funcionando a todas nuestras células."
+      },
+      "quiz": {
+        "questions": [
+          {
+            "question": "¿Por qué es mejor respirar por la nariz que por la boca?",
+            "options": [
+              "Porque la nariz es más grande",
+              "Porque la nariz filtra, calienta y humedece el aire",
+              "Porque la boca es solo para comer",
+              "No hay diferencia"
+            ],
+            "correctAnswer": 1,
+            "explanation": "La nariz tiene una función muy importante: filtra partículas y gérmenes con sus vellos y mucosidad, calienta el aire frío antes de que llegue a los pulmones, y lo humedece. Esto protege las vías respiratorias y hace que la respiración sea más eficiente. La boca no tiene estas capacidades de filtrado y acondicionamiento."
+          },
+          {
+            "question": "¿Qué son los alvéolos?",
+            "options": [
+              "Músculos que ayudan a respirar",
+              "Huesos de la caja torácica",
+              "Pequeños sacos de aire donde se intercambia oxígeno y dióxido de carbono",
+              "Tubos grandes que llevan aire"
+            ],
+            "correctAnswer": 2,
+            "explanation": "Los alvéolos son estructuras microscópicas al final de las vías respiratorias que parecen pequeños racimos de uvas. Están rodeados de capilares sanguíneos y es donde ocurre el intercambio de gases: el oxígeno pasa del aire a la sangre y el dióxido de carbono pasa de la sangre al aire. Tenemos millones de alvéolos en nuestros pulmones."
+          },
+          {
+            "question": "¿Qué hace la hemoglobina?",
+            "options": [
+              "Ayuda a filtrar el aire",
+              "Transporta oxígeno en la sangre",
+              "Produce energía en las células",
+              "Bombea la sangre"
+            ],
+            "correctAnswer": 1,
+            "explanation": "La hemoglobina es una proteína especial que se encuentra dentro de los glóbulos rojos. Su trabajo es transportar oxígeno desde los pulmones a todas las células del cuerpo, como un taxi molecular. También ayuda a transportar algo del dióxido de carbono de regreso a los pulmones. Sin hemoglobina, nuestra sangre no podría llevar suficiente oxígeno."
+          },
+          {
+            "question": "¿Cuál es el rango normal de saturación de oxígeno en la sangre?",
+            "options": [
+              "50-60%",
+              "70-80%",
+              "95-100%",
+              "100-110%"
+            ],
+            "correctAnswer": 2,
+            "explanation": "La saturación de oxígeno normal es entre 95-100%. Esto significa que la hemoglobina está transportando la cantidad adecuada de oxígeno. Valores por debajo de 95% pueden indicar que los pulmones no están trabajando correctamente o que hay algún problema con el transporte de oxígeno. Los médicos usan el oxímetro de pulso (ese dispositivo que se pone en el dedo) para medir esto de forma rápida y no invasiva."
+          },
+          {
+            "question": "¿Qué sucede con el oxígeno cuando llega a las células?",
+            "options": [
+              "Se almacena para uso futuro",
+              "Se elimina como desecho",
+              "Se usa para producir energía",
+              "Se convierte en agua solamente"
+            ],
+            "correctAnswer": 2,
+            "explanation": "Las células usan el oxígeno en un proceso llamado respiración celular para producir energía (en forma de ATP) a partir de los nutrientes que comemos. Este proceso también genera dióxido de carbono y agua como productos de desecho. El dióxido de carbono se lleva de vuelta a los pulmones para ser exhalado. Sin oxígeno, nuestras células no pueden producir la energía que necesitan para funcionar."
+          }
+        ]
+      }
+    }
+  ]
+}

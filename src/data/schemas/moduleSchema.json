@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ventylab.com/schemas/moduleSchema.json",
+  "title": "Module Schema - VentyLab",
+  "description": "Schema JSON formal para módulos de VentyLab",
+  "type": "object",
+  "required": ["id", "title", "level", "status", "lessons", "metadata"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Identificador único del módulo",
+      "pattern": "^[a-z0-9-]+$",
+      "examples": ["module-01-fundamentals", "module-14-advanced"]
+    },
+    "title": {
+      "type": "string",
+      "description": "Título del módulo",
+      "minLength": 3,
+      "maxLength": 200
+    },
+    "subtitle": {
+      "type": "string",
+      "description": "Subtítulo o descripción breve del módulo",
+      "maxLength": 500
+    },
+    "level": {
+      "type": "string",
+      "description": "Nivel del módulo",
+      "enum": ["beginner", "intermediate", "advanced", "Nivel 1", "Nivel 2", "Nivel 3"],
+      "examples": ["beginner", "intermediate", "advanced"]
+    },
+    "status": {
+      "type": "string",
+      "description": "Estado del módulo",
+      "enum": ["available", "locked", "coming_soon"],
+      "default": "available"
+    },
+    "isPlaceholder": {
+      "type": "boolean",
+      "description": "Indica si el módulo es un placeholder (en construcción)",
+      "default": false
+    },
+    "order": {
+      "type": "number",
+      "description": "Orden de visualización del módulo",
+      "minimum": 1
+    },
+    "duration": {
+      "type": "number",
+      "description": "Duración estimada en minutos",
+      "minimum": 0
+    },
+    "estimatedTime": {
+      "type": "string",
+      "description": "Tiempo estimado en formato legible",
+      "examples": ["3 horas", "2.5 horas", "45 min"]
+    },
+    "difficulty": {
+      "type": "string",
+      "description": "Nivel de dificultad",
+      "enum": ["básico", "intermedio", "avanzado", "básico-intermedio"]
+    },
+    "prerequisites": {
+      "type": "array",
+      "description": "IDs de módulos prerequisitos",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "learningObjectives": {
+      "type": "array",
+      "description": "Objetivos de aprendizaje",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "lessons": {
+      "type": "array",
+      "description": "Array de lecciones del módulo",
+      "items": {
+        "type": "object"
+      },
+      "default": []
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["createdAt", "updatedAt"],
+      "properties": {
+        "createdAt": {
+          "type": "string",
+          "description": "Fecha de creación en formato ISO 8601",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Fecha de actualización en formato ISO 8601",
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}
+

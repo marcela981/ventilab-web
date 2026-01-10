@@ -39,20 +39,20 @@ const ContinueLearningSection = ({ nextModule, onContinue, calculateProgress }) 
       sx={{
         p: 3,
         mb: 4,
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
         color: 'white',
         position: 'relative',
         overflow: 'hidden'
       }}
     >
-      {/* Patrón de fondo */}
+      {/* Patrón de fondo decorativo */}
       <Box sx={{
         position: 'absolute',
         top: 0,
         right: 0,
         width: '200px',
         height: '100%',
-        background: 'rgba(255,255,255,0.1)',
+        background: 'rgba(255, 255, 255, 0.1)',
         borderRadius: '50%',
         transform: 'translateX(50%)'
       }} />
@@ -85,9 +85,9 @@ const ContinueLearningSection = ({ nextModule, onContinue, calculateProgress }) 
               sx={{
                 height: 8,
                 borderRadius: 4,
-                backgroundColor: 'rgba(255,255,255,0.2)',
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
                 '& .MuiLinearProgress-bar': {
-                  backgroundColor: '#fff',
+                  backgroundColor: '#ffffff',
                   borderRadius: 4,
                 }
               }}
@@ -100,19 +100,19 @@ const ContinueLearningSection = ({ nextModule, onContinue, calculateProgress }) 
               icon={<AccessTime />}
               label={`${nextModule.estimatedTime || Math.round(nextModule.duration / 60)}h`}
               size="small"
-              sx={{ backgroundColor: 'rgba(255,255,255,0.2)', color: 'white' }}
+              sx={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', color: '#ffffff' }}
             />
             <Chip
               icon={<Star />}
               label={nextModule.difficulty}
               size="small"
-              sx={{ backgroundColor: 'rgba(255,255,255,0.2)', color: 'white' }}
+              sx={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', color: '#ffffff' }}
             />
             <Chip
               icon={<Person />}
               label={curriculumData.levels.find(l => l.id === nextModule.level)?.title}
               size="small"
-              sx={{ backgroundColor: 'rgba(255,255,255,0.2)', color: 'white' }}
+              sx={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', color: '#ffffff' }}
             />
           </Box>
         </Grid>
@@ -124,15 +124,15 @@ const ContinueLearningSection = ({ nextModule, onContinue, calculateProgress }) 
             onClick={onContinue}
             startIcon={<PlayCircleOutline />}
             sx={{
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              color: 'white',
-              border: '2px solid rgba(255,255,255,0.3)',
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              color: '#ffffff',
+              border: '2px solid rgba(255, 255, 255, 0.3)',
               px: 4,
               py: 1.5,
               fontSize: '1.1rem',
               fontWeight: 600,
               '&:hover': {
-                backgroundColor: 'rgba(255,255,255,0.3)',
+                backgroundColor: 'rgba(255, 255, 255, 0.3)',
                 transform: 'translateY(-2px)',
               }
             }}

@@ -1,0 +1,99 @@
+{
+  "title": "Ventilación Protectora Pulmonar: Estrategia Integral",
+  "summary": "Documento integrador que sintetiza todas las estrategias de protección pulmonar: bajo volumen tidal, hipercapnia permisiva, optimización de PEEP y limitación de presión. Incluye protocolo completo, algoritmos de decisión y aplicación práctica.",
+  "estimatedTime": 35,
+  "sections": [
+    {
+      "type": "text",
+      "order": 1,
+      "content": "# Concepto de Ventilación Protectora Pulmonar\n\nLa **ventilación protectora pulmonar (LPV - Lung Protective Ventilation)** es una estrategia integral diseñada para prevenir la lesión pulmonar inducida por el ventilador (VILI - Ventilator-Induced Lung Injury). Combina múltiples componentes que trabajan sinérgicamente para proteger los pulmones durante la ventilación mecánica.\n\n## Componentes Principales\n\n1. **Bajo volumen tidal (LTVV)**: 6 mL/kg de peso corporal ideal\n2. **Limitación de presión plateau**: ≤ 30 cmH₂O\n3. **Hipercapnia permisiva**: Aceptar pH ≥ 7.15\n4. **Optimización de PEEP**: Según tabla PEEP/FiO₂\n5. **Manejo de auto-PEEP**: Detección y corrección\n\n## Objetivos Fundamentales\n\n- **Prevenir volutrauma**: Daño por volúmenes excesivos\n- **Prevenir barotrauma**: Daño por presiones excesivas\n- **Prevenir atelectrauma**: Daño por colapso y reapertura cíclica\n- **Prevenir biotrauma**: Daño por activación de cascadas inflamatorias\n\n## Evidencia de Eficacia\n\nEl estudio ARDSnet (2000) demostró:\n- **Reducción de mortalidad**: 40% → 31% (reducción absoluta 9%, relativa 22%)\n- **Reducción de días de VM**: Más días libres de ventilación mecánica\n- **Reducción de barotrauma**: Menor incidencia de neumotórax\n\nEsta evidencia estableció la ventilación protectora como estándar de cuidado en SDRA."
+    },
+    {
+      "type": "text",
+      "order": 2,
+      "content": "# Los Cuatro Tipos de Trauma Pulmonar\n\n## 1. Volutrauma\n\n**Definición**: Lesión causada por volúmenes excesivos que sobrestiran los alveolos.\n\n**Mecanismo**:\n- Sobredistensión de unidades alveolares abiertas\n- Aumento de presión transpulmonar\n- Ruptura de estructuras alveolares\n- Activación de mecanotransducción\n\n**Prevención**:\n- Volumen tidal ≤ 6 mL/kg (PCI)\n- Monitorear volumen espiratorio\n- Evitar volúmenes espontáneos excesivos\n\n## 2. Barotrauma\n\n**Definición**: Lesión causada por presiones excesivas.\n\n**Mecanismo**:\n- Presión plateau alta (> 30 cmH₂O)\n- Presión transpulmonar excesiva\n- Ruptura de estructuras\n\n**Prevención**:\n- Limitar presión plateau ≤ 30 cmH₂O\n- Ajustar VT según Pplateau\n- Monitorear presiones continuamente\n\n## 3. Atelectrauma\n\n**Definición**: Lesión causada por colapso y reapertura cíclica de alveolos.\n\n**Mecanismo**:\n- Colapso de alveolos al final de espiración\n- Reapertura forzada durante inspiración\n- Cizallamiento de estructuras alveolares\n- Activación inflamatoria\n\n**Prevención**:\n- PEEP adecuada para mantener alveolos abiertos\n- Optimizar PEEP según tabla\n- Evitar PEEP muy baja\n\n## 4. Biotrauma\n\n**Definición**: Lesión causada por activación de cascadas inflamatorias.\n\n**Mecanismo**:\n- Activación de mecanotransducción\n- Liberación de citoquinas proinflamatorias\n- Activación de neutrófilos\n- Propagación de inflamación sistémica\n\n**Prevención**:\n- Ventilación protectora integral\n- Reducir todos los tipos de trauma\n- Minimizar estrés mecánico"
+    },
+    {
+      "type": "text",
+      "order": 3,
+      "content": "# Protocolo Integral de Ventilación Protectora\n\n## Paso 1: Evaluación Inicial\n\n1. **Diagnosticar patología**:\n   - SDRA (PaO₂/FiO₂ < 300, infiltrados bilaterales)\n   - Neumonía severa\n   - Otra patología\n\n2. **Calcular peso corporal ideal (PCI)**:\n   - Hombres: PCI = 50 + 0.91 × (altura cm - 152.4)\n   - Mujeres: PCI = 45.5 + 0.91 × (altura cm - 152.4)\n\n3. **Evaluar contraindicaciones**:\n   - Hipertensión intracraneal\n   - Arritmias ventriculares\n   - Otras contraindicaciones\n\n## Paso 2: Configuración Inicial\n\n### Configuración Básica\n\n| Parámetro | Valor | Justificación |\n|-----------|-------|---------------|\n| **Modalidad** | VCV Asistido-Control | Garantiza VT constante |\n| **VT** | 6 mL/kg × PCI | Reduce volutrauma |\n| **FR** | 16-20/min | Compensa VT bajo |\n| **PEEP** | Según tabla PEEP/FiO₂ | Recluta alveolos |\n| **FiO₂** | 1.0 inicial | Seguro al inicio |\n| **Flujo** | 60-80 L/min | Tiempo espiratorio adecuado |\n| **I:E** | 1:1 a 1:2 | Normal |\n\n### Ejemplo de Cálculo\n\n**Paciente**: Hombre, 170 cm, 80 kg\n\n1. **PCI**: 50 + 0.91 × (170 - 152.4) = 66 kg\n2. **VT**: 6 × 66 = 396 mL (configurar 400 mL)\n3. **FR**: 18/min\n4. **PEEP**: Según FiO₂ (iniciar con FiO₂ 1.0 → PEEP 14-16 cmH₂O)\n\n## Paso 3: Medición de Presión Plateau\n\n### Técnica\n\n1. Esperar 2-3 respiraciones después de configurar\n2. Activar pausa inspiratoria de 0.5 segundos\n3. Leer presión plateau en pantalla del ventilador\n4. Registrar valor\n\n### Objetivo\n\n- **Pplateau ≤ 30 cmH₂O** (crítico)\n- Idealmente < 25 cmH₂O\n\n### Ajuste según Pplateau\n\n| Pplateau | Acción |\n|----------|--------|\n| < 25 cmH₂O | Si VT < 6 mL/kg, puede aumentarse gradualmente hasta 6 mL/kg |\n| 25-30 cmH₂O | Mantener VT actual |\n| > 30 cmH₂O | Reducir VT en 1 mL/kg (mínimo 4 mL/kg) |\n\n## Paso 4: Ajuste de PEEP/FiO₂\n\n### Usar Tabla ARDSnet\n\n| FiO₂ | PEEP (cmH₂O) |\n|------|--------------|\n| 0.3  | 5            |\n| 0.4  | 5-8          |\n| 0.5  | 8-10         |\n| 0.6  | 10           |\n| 0.7  | 10-12        |\n| 0.8  | 12-14        |\n| 0.9  | 14           |\n| 1.0  | 14-16        |\n\n### Objetivos\n\n- **PaO₂**: 55-80 mmHg\n- **SpO₂**: 88-95%\n\n### Estrategia de Ajuste\n\n- **Si oxigenación adecuada**: Reducir FiO₂ primero, luego PEEP\n- **Si oxigenación inadecuada**: Aumentar PEEP según tabla, luego FiO₂ si necesario\n\n## Paso 5: Manejo de Hipercapnia Permisiva\n\n### Límites Aceptables\n\n| pH | Acción |\n|----|--------|\n| > 7.30 | Mantener configuración |\n| 7.25-7.30 | Mantener o aumentar FR ligeramente |\n| 7.15-7.25 | Aumentar FR a 24-30/min |\n| < 7.15 | Aumentar FR a 30-35/min, considerar bicarbonato IV |\n\n### Estrategia\n\n1. **Aceptar hipercapnia** si pH ≥ 7.15\n2. **Aumentar frecuencia respiratoria** hasta 35/min si necesario\n3. **NO aumentar VT** para normalizar PaCO₂\n4. **Considerar bicarbonato IV** si pH < 7.15 y hemodinamia comprometida\n\n## Paso 6: Detección y Manejo de Auto-PEEP\n\n### Detección\n\n- **Pausa espiratoria**: Medir presión residual\n- **Curva flujo-tiempo**: Flujo no retorna a cero\n- **Lazo presión-volumen**: Desplazado a la derecha\n\n### Manejo\n\n1. Reducir frecuencia respiratoria\n2. Aumentar flujo inspiratorio\n3. Reducir volumen tidal\n4. Prolongar relación I:E\n5. Tratar causas reversibles (secreciones, broncoespasmo)"
+    },
+    {
+      "type": "text",
+      "order": 4,
+      "content": "# Algoritmo de Decisión\n\n## Algoritmo Principal\n\n```\nINICIO\n  ↓\nCalcular PCI\n  ↓\nConfigurar VT = 6 mL/kg × PCI\n  ↓\nConfigurar FR = 16-20/min\n  ↓\nConfigurar PEEP según tabla PEEP/FiO₂\n  ↓\nMedir Pplateau (pausa inspiratoria)\n  ↓\n¿Pplateau > 30 cmH₂O?\n  ├─ SÍ → Reducir VT en 1 mL/kg (mín 4 mL/kg)\n  │        Aumentar FR si necesario\n  │        Medir Pplateau nuevamente\n  └─ NO → Continuar\n  ↓\nMedir gases arteriales\n  ↓\n¿pH < 7.15?\n  ├─ SÍ → Aumentar FR hasta 35/min\n  │        Considerar bicarbonato IV\n  └─ NO → Continuar\n  ↓\n¿PaO₂/FiO₂ adecuado?\n  ├─ SÍ → Reducir FiO₂ según tabla\n  └─ NO → Aumentar PEEP según tabla\n  ↓\nMonitorear continuamente\n  ↓\nFIN\n```\n\n## Algoritmo de Ajuste de PEEP\n\n```\nINICIO\n  ↓\nEvaluar oxigenación actual\n  ↓\n¿PaO₂ 55-80 mmHg o SpO₂ 88-95%?\n  ├─ SÍ → Reducir FiO₂ según tabla\n  │        Reducir PEEP cuando FiO₂ < 0.4\n  └─ NO → Aumentar PEEP según tabla\n  │        Aumentar FiO₂ si necesario\n  ↓\nMedir Pplateau\n  ↓\n¿Pplateau > 30 cmH₂O?\n  ├─ SÍ → Considerar reducir VT adicionalmente\n  └─ NO → Continuar\n  ↓\nMonitorear efectos hemodinámicos\n  ↓\nFIN\n```\n\n## Algoritmo de Manejo de Auto-PEEP\n\n```\nINICIO\n  ↓\nMedir auto-PEEP (pausa espiratoria)\n  ↓\n¿Auto-PEEP > 5 cmH₂O?\n  ├─ SÍ → Reducir FR\n  │        Aumentar flujo inspiratorio\n  │        Reducir VT si necesario\n  │        Prolongar I:E\n  │        Aplicar PEEP extrínreca (75% auto-PEEP)\n  │        Tratar causas reversibles\n  └─ NO → Continuar\n  ↓\nRe-evaluar auto-PEEP\n  ↓\nFIN\n```"
+    },
+    {
+      "type": "text",
+      "order": 5,
+      "content": "# Monitorización Integral\n\n## Parámetros Críticos a Monitorizar\n\n### 1. Presión Plateau\n\n- **Frecuencia**: Cada 4 horas o después de cambios\n- **Método**: Pausa inspiratoria de 0.5 segundos\n- **Objetivo**: ≤ 30 cmH₂O\n- **Acción si > 30**: Reducir VT en 1 mL/kg\n\n### 2. Gases Arteriales\n\n- **Frecuencia**: Cada 4-6 horas inicialmente\n- **Parámetros clave**:\n  - pH: ≥ 7.15 (hipercapnia permisiva)\n  - PaCO₂: Monitorear, aceptar valores altos si pH ≥ 7.15\n  - PaO₂: 55-80 mmHg\n  - PaO₂/FiO₂: Monitorear para detectar mejoría\n\n### 3. Volumen Tidal\n\n- **Monitorear**: Volumen exhalado vs programado\n- **Diferencia**: Indica fugas\n- **Objetivo**: Volumen exhalado ≈ volumen programado\n\n### 4. Compliance Dinámica\n\n- **Cálculo**: C = VT / (Pplateau - PEEP)\n- **Valores normales**: > 50 mL/cmH₂O\n- **SDRA**: < 30 mL/cmH₂O\n- **Mejora de compliance**: Indica mejoría de SDRA\n\n### 5. Auto-PEEP\n\n- **Frecuencia**: Cada 4-6 horas o cuando se sospeche\n- **Método**: Pausa espiratoria de 2-3 segundos\n- **Objetivo**: < 5 cmH₂O\n\n### 6. Curvas Ventilatorias\n\n- **Presión-tiempo**: Evaluar forma, detectar auto-PEEP\n- **Flujo-tiempo**: Detectar espiración incompleta\n- **Volumen-tiempo**: Detectar fugas\n- **Lazo presión-volumen**: Evaluar reclutamiento\n\n### 7. Hemodinamia\n\n- **Presión arterial**: Monitorear efectos de PEEP\n- **Frecuencia cardíaca**: Taquicardia puede indicar efectos adversos\n- **Gasto cardíaco**: Si disponible, monitorear efectos de PEEP\n\n### 8. Signos de Barotrauma\n\n- **Neumotórax**: Asimetría torácica, hipoxemia aguda\n- **Neumomediastino**: Enfisema subcutáneo\n- **Enfisema subcutáneo**: Palpable en cuello/tórax\n\n## Frecuencia de Monitoreo\n\n| Parámetro | Frecuencia |\n|-----------|------------|\n| Pplateau | Cada 4 horas o después de cambios |\n| Gases arteriales | Cada 4-6 horas inicialmente |\n| Auto-PEEP | Cada 4-6 horas o cuando se sospeche |\n| Curvas ventilatorias | Continuamente |\n| Hemodinamia | Continuamente |\n| Compliance | Cada 4-6 horas |"
+    },
+    {
+      "type": "text",
+      "order": 6,
+      "content": "# Aplicación en Diferentes Patologías\n\n## SDRA\n\n**Estrategia completa de ventilación protectora**:\n\n- VT: 6 mL/kg PCI\n- Pplateau: ≤ 30 cmH₂O\n- PEEP: Tabla ARDSnet (8-16 cmH₂O)\n- Hipercapnia permisiva: pH ≥ 7.15\n- FR: Hasta 35/min si necesario\n\n**Evidencia**: Fuerte (estudio ARDSnet)\n\n## Neumonía Severa\n\n**Ventilación protectora si evoluciona a SDRA**:\n\n- VT: 6-8 mL/kg (tendiendo a 6 mL/kg si severa)\n- Pplateau: ≤ 30 cmH₂O\n- PEEP: 5-12 cmH₂O según severidad\n- Hipercapnia permisiva: pH ≥ 7.25 (más conservador)\n\n**Evidencia**: Moderada\n\n## EPOC Agudizado\n\n**Estrategias específicas para EPOC**:\n\n- VT: 6-8 mL/kg PCI\n- FR: 10-14/min (baja para prevenir auto-PEEP)\n- PEEP: 3-5 cmH₂O (75% de auto-PEEP)\n- Hipercapnia permisiva: pH ≥ 7.20, aceptar valores basales\n- Flujo: 80-100 L/min (alto)\n- I:E: 1:3 a 1:4 (prolongada)\n\n**Evidencia**: Moderada\n\n## Asma Severa\n\n**Ventilación permisiva más agresiva**:\n\n- VT: 4-6 mL/kg PCI\n- FR: 8-12/min (muy baja)\n- PEEP: 3-5 cmH₂O (conservadora)\n- Hipercapnia permisiva: pH ≥ 7.10 (más permisiva)\n- Flujo: 100+ L/min (muy alto)\n- I:E: 1:4 a 1:5 (muy prolongada)\n\n**Evidencia**: Moderada (estudios observacionales)\n\n## Postoperatorio\n\n**Ventilación protectora en pacientes de alto riesgo**:\n\n- VT: 6-8 mL/kg PCI\n- Pplateau: ≤ 30 cmH₂O\n- PEEP: 5-8 cmH₂O\n- Hipercapnia permisiva: pH ≥ 7.25 (conservador)\n\n**Evidencia**: Limitada"
+    },
+    {
+      "type": "text",
+      "order": 7,
+      "content": "# Errores Comunes y Cómo Evitarlos\n\n## Error 1: Usar Peso Real en Lugar de PCI\n\n**Problema**:\n- Pacientes obesos reciben volúmenes excesivos\n- Causa volutrauma\n\n**Solución**:\n- Siempre calcular PCI\n- Usar fórmula de Devine\n- Verificar cálculo\n\n## Error 2: No Medir Pplateau Regularmente\n\n**Problema**:\n- No detecta presiones altas\n- Permite volutrauma/barotrauma\n\n**Solución**:\n- Medir Pplateau cada 4 horas\n- Medir después de cada cambio\n- Documentar valores\n\n## Error 3: Aumentar VT cuando Pplateau es Alta\n\n**Problema**:\n- Violación del protocolo\n- Empeora volutrauma\n\n**Solución**:\n- Reducir VT cuando Pplateau > 30 cmH₂O\n- Aumentar FR en su lugar\n- Aceptar hipercapnia permisiva\n\n## Error 4: Intentar Normalizar PaCO₂\n\n**Problema**:\n- Requiere aumentar VT o presiones\n- Causa volutrauma/barotrauma\n\n**Solución**:\n- Aceptar hipercapnia permisiva\n- Aumentar FR si pH < 7.15\n- NO aumentar VT\n\n## Error 5: PEEP Muy Baja\n\n**Problema**:\n- Atelectrauma\n- Colapso alveolar cíclico\n\n**Solución**:\n- Usar tabla PEEP/FiO₂\n- Asegurar PEEP mínima 5 cmH₂O\n- Optimizar según necesidad\n\n## Error 6: Ignorar Auto-PEEP\n\n**Problema**:\n- Hiperinsuflación\n- Dificultad para disparar respiraciones\n- Efectos hemodinámicos\n\n**Solución**:\n- Medir auto-PEEP regularmente\n- Aplicar estrategias de reducción\n- Aplicar PEEP extrínseca si apropiado\n\n## Error 7: No Monitorear Efectos Hemodinámicos\n\n**Problema**:\n- Hipotensión no detectada\n- Reducción de gasto cardíaco\n\n**Solución**:\n- Monitorear presión arterial continuamente\n- Evaluar efectos de PEEP\n- Optimizar volemia\n- Ajustar PEEP si efectos adversos"
+    },
+    {
+      "type": "text",
+      "order": 8,
+      "content": "# Caso Clínico Integrador\n\n## Presentación\n\n**Paciente**: Hombre de 50 años, 175 cm, 85 kg (obeso), sin antecedentes relevantes\n\n**Diagnóstico**: SDRA secundario a neumonía\n\n**Gases arteriales iniciales**:\n- pH: 7.28\n- PaCO₂: 52 mmHg\n- PaO₂: 58 mmHg (FiO₂ 1.0)\n- PaO₂/FiO₂: 58 mmHg (SDRA severo)\n\n## Aplicación del Protocolo\n\n### Paso 1: Calcular PCI\n\nPCI = 50 + 0.91 × (175 - 152.4) = 50 + 0.91 × 22.6 = **70.6 kg** (redondear a 71 kg)\n\n### Paso 2: Configuración Inicial\n\n- **VT**: 6 × 71 = **426 mL** (configurar 420 mL)\n- **FR**: 18/min\n- **PEEP**: Según tabla, FiO₂ 1.0 → **14-16 cmH₂O** (iniciar con 14 cmH₂O)\n- **FiO₂**: 1.0\n- **Flujo**: 70 L/min\n- **I:E**: 1:1.5\n\n### Paso 3: Medición de Pplateau\n\n**Resultado**: 32 cmH₂O (⚠️ excede límite)\n\n**Acción**: Reducir VT a 350 mL (5 mL/kg)\n\n### Paso 4: Re-evaluación\n\n**Después de reducir VT**:\n- Pplateau: 28 cmH₂O (✅ dentro de límite)\n- Gases: pH 7.26, PaCO₂ 58, PaO₂ 72 (FiO₂ 0.9)\n\n**Ajuste PEEP/FiO₂**:\n- FiO₂ 0.9 → PEEP 14 cmH₂O (según tabla)\n- Reducir FiO₂ a 0.8 → PEEP 12-14 cmH₂O\n\n### Paso 5: Evolución\n\n**A las 12 horas**:\n- Pplateau: 27 cmH₂O\n- Gases: pH 7.30, PaCO₂ 52, PaO₂ 78 (FiO₂ 0.6)\n- PaO₂/FiO₂: 130 mmHg (mejora desde 58)\n- Compliance: 25 mL/cmH₂O (mejora desde 20)\n\n**Ajustes**:\n- Reducir PEEP a 10 cmH₂O (FiO₂ 0.6 según tabla)\n- Reducir FiO₂ a 0.5\n\n**A las 24 horas**:\n- Pplateau: 25 cmH₂O\n- Gases: pH 7.32, PaCO₂ 48, PaO₂ 82 (FiO₂ 0.5)\n- PaO₂/FiO₂: 164 mmHg (mejora continua)\n- Compliance: 30 mL/cmH₂O (mejora)\n\n**Ajustes**:\n- Reducir PEEP a 8 cmH₂O\n- Reducir FiO₂ a 0.4\n- Aumentar VT ligeramente a 380 mL (5.3 mL/kg) ya que Pplateau < 25 cmH₂O\n\n## Resultado Final\n\n**Al día 3**:\n- Pplateau: 22 cmH₂O\n- PaO₂/FiO₂: 200 mmHg\n- pH: 7.35, PaCO₂: 42 mmHg\n- PEEP: 6 cmH₂O, FiO₂: 0.4\n- Compliance: 35 mL/cmH₂O\n- Paciente despierto, con esfuerzo respiratorio\n\n**Próximos pasos**: Evaluar criterios de preparación para destete."
+    },
+    {
+      "type": "quiz",
+      "order": 9,
+      "question": "¿Cuál es el componente MÁS importante de la ventilación protectora pulmonar?",
+      "options": [
+        "Optimización de PEEP",
+        "Bajo volumen tidal (6 mL/kg)",
+        "Hipercapnia permisiva",
+        "Limitación de presión plateau"
+      ],
+      "correctAnswer": "Bajo volumen tidal (6 mL/kg)",
+      "explanation": "El bajo volumen tidal (6 mL/kg) es el componente más importante y mejor estudiado, demostrando reducción de mortalidad del 40% al 31% en el estudio ARDSnet. Todos los componentes son importantes, pero el bajo volumen tidal tiene la evidencia más fuerte."
+    },
+    {
+      "type": "quiz",
+      "order": 10,
+      "question": "Un paciente con SDRA tiene Pplateau de 28 cmH₂O con VT 6 mL/kg. ¿Qué acción es apropiada?",
+      "options": [
+        "Aumentar VT a 8 mL/kg para mejorar ventilación",
+        "Mantener VT actual ya que Pplateau está dentro de límite",
+        "Reducir VT a 4 mL/kg para reducir más la presión",
+        "Aumentar PEEP para mejorar oxigenación"
+      ],
+      "correctAnswer": "Mantener VT actual ya que Pplateau está dentro de límite",
+      "explanation": "Con Pplateau de 28 cmH₂O (dentro del límite de ≤ 30 cmH₂O), se debe mantener el VT actual. Aumentar VT violaría el principio de protección pulmonar. Reducir VT no es necesario si Pplateau está dentro de límite. PEEP se ajusta según tabla PEEP/FiO₂, no directamente por Pplateau."
+    }
+  ],
+  "keyPoints": [
+    "La ventilación protectora pulmonar integra múltiples componentes: bajo volumen tidal, limitación de presión, hipercapnia permisiva y optimización de PEEP.",
+    "El estudio ARDSnet estableció el estándar de cuidado con reducción de mortalidad del 40% al 31% usando VT de 6 mL/kg.",
+    "Los cuatro tipos de trauma pulmonar (volutrauma, barotrauma, atelectrauma, biotrauma) deben prevenirse mediante estrategias integrales.",
+    "La presión plateau debe medirse regularmente (cada 4 horas) y mantenerse ≤ 30 cmH₂O mediante ajuste de VT, no aumentando VT.",
+    "La tabla PEEP/FiO₂ de ARDSnet optimiza oxigenación mientras minimiza toxicidad por oxígeno.",
+    "La hipercapnia permisiva (pH ≥ 7.15) es aceptable y preferible a volúmenes o presiones altas que causen VILI.",
+    "El monitoreo integral de Pplateau, gases arteriales, compliance, auto-PEEP y hemodinamia es esencial para ventilación protectora exitosa."
+  ],
+  "references": [
+    "The ARDS Network. Ventilation with lower tidal volumes as compared with traditional tidal volumes for acute lung injury and the acute respiratory distress syndrome. N Engl J Med. 2000;342(18):1301-8.",
+    "Fan E, Del Sorbo L, Goligher EC, et al. An Official American Thoracic Society/European Society of Intensive Care Medicine/Society of Critical Care Medicine Clinical Practice Guideline: Mechanical Ventilation in Adult Patients with Acute Respiratory Distress Syndrome. Am J Respir Crit Care Med. 2017;195(9):1253-63.",
+    "Slutsky AS, Ranieri VM. Ventilator-induced lung injury. N Engl J Med. 2013;369(22):2126-36.",
+    "Amato MB, Barbas CS, Medeiros DM, et al. Effect of a protective-ventilation strategy on mortality in the acute respiratory distress syndrome. N Engl J Med. 1998;338(6):347-54.",
+    "Brower RG, Lanken PN, MacIntyre N, et al. Higher versus lower positive end-expiratory pressures in patients with the acute respiratory distress syndrome. N Engl J Med. 2004;351(4):327-36."
+  ],
+  "moduleId": "module-03",
+  "metadata": {
+    "updatedAt": "2025-11-08T03:42:27.557Z",
+    "description": "Descripción pendiente de curaduría (metadatos).",
+    "version": "1.0.0",
+    "allowEmpty": false
+  },
+  "id": "ventilacion-protectora-pulmonar-estrategia-integral",
+  "quiz": [],
+  "resources": []
+}

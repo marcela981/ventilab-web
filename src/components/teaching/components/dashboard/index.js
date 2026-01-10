@@ -1,5 +1,2 @@
-// Dashboard components exports
-export { default as DashboardHeader } from './DashboardHeader';
-export { default as ContinueLearningSection } from './ContinueLearningSection';
-export { default as ProgressOverview } from './ProgressOverview';
-export { default as RecommendationsPanel } from './RecommendationsPanel';
+// Dashboard components exports (re-exported from feature-based structure)
+export { DashboardHeader, ContinueLearningSection, ProgressOverview } from '@/pages/teaching/components/dashboard';

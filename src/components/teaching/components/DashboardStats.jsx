@@ -11,7 +11,6 @@ import {
 } from '@mui/icons-material';
 import FlashcardDashboard from './FlashcardDashboard';
 import ProgressOverview from './ProgressOverview';
-import RecommendationsPanel from './RecommendationsPanel';
 
 /**
  * DashboardStats - Componente de estadísticas del dashboard
@@ -20,10 +19,9 @@ import RecommendationsPanel from './RecommendationsPanel';
  *
  * @param {Function} onOpenFlashcards - Callback para abrir el sistema de flashcards
  * @param {Object} dashboardData - Datos del dashboard
- * @param {Array} recommendations - Recomendaciones generadas
  * @returns {JSX.Element} Componente de estadísticas del dashboard
  */
-const DashboardStats = ({ onOpenFlashcards, dashboardData, recommendations }) => {
+const DashboardStats = ({ onOpenFlashcards, dashboardData }) => {
   return (
     <Paper
       elevation={3}
@@ -50,24 +48,14 @@ const DashboardStats = ({ onOpenFlashcards, dashboardData, recommendations }) =>
       </Typography>
 
       <Grid container spacing={3}>
-        {/* Cuadrante Superior Izquierdo - Sistema de Repetición Espaciada */}
+        {/* Sistema de Repetición Espaciada */}
         <Grid item xs={12} md={6}>
           <FlashcardDashboard onOpenFlashcards={onOpenFlashcards} />
         </Grid>
 
-        {/* Cuadrante Superior Derecho - Sistema de Racha */}
+        {/* Sistema de Racha y Progreso */}
         <Grid item xs={12} md={6}>
           <ProgressOverview dashboardData={dashboardData} />
-        </Grid>
-
-        {/* Cuadrante Inferior Izquierdo - Gráfica de Progreso Temporal */}
-        <Grid item xs={12} md={6}>
-          <ProgressOverview dashboardData={dashboardData} />
-        </Grid>
-
-        {/* Cuadrante Inferior Derecho - Recomendaciones Inteligentes */}
-        <Grid item xs={12} md={6}>
-          <RecommendationsPanel recommendations={recommendations} />
         </Grid>
       </Grid>
     </Paper>

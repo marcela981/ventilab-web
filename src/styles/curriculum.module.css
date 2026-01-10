@@ -1,0 +1,264 @@
+/**
+ * Hoja de estilos modular para componentes del Currículo
+ * Estandariza aspecto visual de cards y grid contenedor
+ * Integrado con variables CSS del tema global (theme.css)
+ */
+
+/* Grid contenedor responsivo */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 24px; /* Gap estándar - ajustado responsivamente */
+  align-items: start;
+  width: 100%;
+  max-width: 100%;
+  padding: 4px 0; /* Padding mínimo para espacio extra */
+}
+
+/* Card con aspecto flexible que se adapta al contenido y ancho */
+.card {
+  display: flex;
+  flex-direction: column;
+  position: relative; /* Necesario para contener elementos posicionados absolutamente */
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-lg, 12px);
+  background: rgba(160, 219, 233, 0.25); /* Azul transparente #A0DBE9 con opacidad baja */
+  box-shadow: var(--shadow-sm, 0 2px 10px rgba(0, 0, 0, 0.04));
+  padding: 12px; /* Padding reducido para cards más compactas */
+  width: 100%; /* Asegura que la card ocupe el 100% del ancho del grid item */
+  max-width: 100%; /* Previene que se salga del contenedor */
+  /* Altura flexible basada en contenido, sin aspect-ratio forzado */
+  /* Usa altura mínima generosa para asegurar que el contenido no se corte */
+  min-height: 280px; /* Mínimo suficiente para header, meta, body mínimo y footer */
+  max-height: 400px; /* Máximo para evitar cards excesivamente altas */
+  height: auto; /* Permite que la altura se ajuste al contenido dentro de los límites */
+  overflow: hidden; /* Contiene el contenido y elementos absolutos dentro de la card */
+  transition: box-shadow var(--transition-normal, 0.2s ease), outline var(--transition-normal, 0.2s ease), background-color var(--transition-normal, 0.2s ease);
+  box-sizing: border-box; /* Asegura que padding y border se incluyan en el tamaño total */
+  isolation: isolate; /* Crea un nuevo contexto de apilamiento para evitar traslapes */
+}
+
+/* Estado hover para mejor UX */
+.card:hover {
+  box-shadow: var(--shadow-md, 0 4px 16px rgba(0, 0, 0, 0.08));
+  background-color: rgba(160, 219, 233, 0.35); /* Azul un poco más intenso en hover */
+  /* Sin transform para evitar traslapes */
+}
+
+/* Estado de foco accesible */
+.card:focus-within {
+  outline: 2px solid var(--color-primary, #2563eb); /* Azul accesible del tema */
+  outline-offset: var(--spacing-xs, 2px);
+}
+
+/* Encabezado de la card */
+.cardHeader {
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  margin-bottom: 6px;
+  color: #1f2937; /* gray-800 para buen contraste */
+  flex-shrink: 0; /* Mantiene header fijo, no se comprime */
+}
+
+/* Metadatos (info secundaria) */
+.cardMeta {
+  color: #6b7280; /* gray-500 */
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin-bottom: 6px;
+  flex-shrink: 0; /* Mantiene meta fijo, no se comprime */
+}
+
+/* Cuerpo de la card con scroll interno */
+.cardBody {
+  flex: 1 1 auto;
+  min-height: 80px; /* Altura mínima para asegurar espacio para contenido */
+  max-height: none; /* Sin límite máximo, el scroll manejará el contenido extenso */
+  overflow-y: auto; /* Scroll interno para contenido extenso */
+  overflow-x: hidden;
+  padding-right: 6px; /* Espacio para el scrollbar */
+  overscroll-behavior: contain; /* Evita scroll del contenedor padre */
+  color: #374151; /* gray-700 */
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* Estilos personalizados del scrollbar (WebKit) */
+.cardBody::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cardBody::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cardBody::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-sm, 6px);
+}
+
+.cardBody::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Fallback para Firefox */
+.cardBody {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+/* Pie de la card */
+.cardFooter {
+  margin-top: 10px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  flex-shrink: 0; /* Mantiene footer fijo, no se comprime */
+  padding-top: 6px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* Variantes de estado para las cards */
+.card.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.card.completed {
+  /* Usa --color-success con opacidad, fallback a rgba hardcodeado */
+  border-color: rgba(76, 175, 80, 0.3);
+}
+
+/* Aplicar color del tema si está disponible usando CSS moderno */
+@supports (background-color: color-mix(in srgb, var(--color-success) 30%, transparent)) {
+  .card.completed {
+    border-color: color-mix(in srgb, var(--color-success, #4caf50) 30%, transparent);
+  }
+}
+
+.card.inProgress {
+  /* Usa --color-warning con opacidad, fallback a rgba hardcodeado */
+  border-color: rgba(255, 152, 0, 0.3);
+}
+
+/* Aplicar color del tema si está disponible usando CSS moderno */
+@supports (background-color: color-mix(in srgb, var(--color-warning) 30%, transparent)) {
+  .card.inProgress {
+    border-color: color-mix(in srgb, var(--color-warning, #ff9800) 30%, transparent);
+  }
+}
+
+.card.available {
+  cursor: pointer;
+}
+
+/* Responsive: ajustes para pantallas pequeñas */
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 20px; /* Separación adecuada en móvil */
+    padding: 4px 0;
+  }
+
+  .card {
+    /* En móvil, altura flexible sin aspect-ratio forzado */
+    min-height: 260px; /* Mínimo para móvil - suficiente para contenido */
+    max-height: 380px; /* Máximo para móvil */
+    padding: 10px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .cardHeader {
+    font-size: 0.9rem;
+  }
+
+  .cardMeta {
+    font-size: 0.8rem;
+  }
+}
+
+/* Responsive: pantallas medianas */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 22px; /* Separación adecuada en tablets */
+    padding: 4px 0;
+  }
+
+  .card {
+    /* En tablets, altura flexible sin aspect-ratio forzado */
+    min-height: 270px; /* Mínimo para tablets - suficiente para contenido */
+    max-height: 390px; /* Máximo para tablets */
+    padding: 11px;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* Responsive: pantallas grandes */
+@media (min-width: 1025px) and (max-width: 1440px) {
+  .grid {
+    gap: 26px; /* Separación ajustada para pantallas grandes */
+  }
+
+  .card {
+    /* En pantallas grandes, altura flexible */
+    min-height: 280px;
+    max-height: 400px;
+  }
+}
+
+/* Responsive: pantallas muy grandes */
+@media (min-width: 1441px) {
+  .grid {
+    gap: 28px; /* Separación para pantallas muy grandes */
+  }
+
+  .card {
+    /* En pantallas muy grandes, altura flexible */
+    min-height: 290px;
+    max-height: 410px;
+  }
+}
+
+/* Ajustes para modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .card {
+    background: rgba(160, 219, 233, 0.15); /* Azul transparente más sutil en modo oscuro */
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-md, 0 2px 10px rgba(0, 0, 0, 0.2));
+  }
+
+  .card:hover {
+    background-color: rgba(160, 219, 233, 0.25); /* Azul un poco más intenso en hover en modo oscuro */
+    box-shadow: var(--shadow-lg, 0 4px 16px rgba(0, 0, 0, 0.3));
+  }
+
+  .cardHeader {
+    color: #f9fafb;
+  }
+
+  .cardMeta {
+    color: #9ca3af;
+  }
+
+  .cardBody {
+    color: #e5e7eb;
+  }
+
+  .cardFooter {
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .cardBody::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .cardBody::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+  }
+}
