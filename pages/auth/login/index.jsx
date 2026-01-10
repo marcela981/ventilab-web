@@ -7,7 +7,7 @@
  * =============================================================================
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { signIn, useSession } from 'next-auth/react';
 import {
@@ -85,6 +85,9 @@ export default function LoginPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const { error: authError, callbackUrl } = router.query;
+  
+  // Ref to prevent multiple redirects (fixes infinite loop)
+  const hasRedirected = useRef(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -101,21 +104,29 @@ export default function LoginPage() {
 
   /**
    * Redirect authenticated users to role-specific dashboard
+   * Uses ref to ensure redirect only happens ONCE (prevents infinite loop)
    * Priority: callbackUrl (attempted route) > role-based dashboard > default dashboard
    */
   useEffect(() => {
-    if (status === 'authenticated' && session?.user) {
+    // Only redirect ONCE if authenticated and hasn't redirected yet
+    if (status === 'authenticated' && session?.user && !hasRedirected.current) {
+      hasRedirected.current = true;
+      
       // Get role-based redirect path with fallback to attempted URL
       const userRole = session.user.role;
       const redirectUrl = getRedirectPathWithFallback(userRole, callbackUrl);
 
-      console.log('[Login] Redirecting authenticated user:', {
-        role: userRole,
-        callbackUrl,
-        finalRedirect: redirectUrl,
-      });
+      // Only log in development to avoid spam in production
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Login] Redirecting authenticated user:', {
+          role: userRole,
+          callbackUrl,
+          finalRedirect: redirectUrl,
+        });
+      }
 
-      router.push(redirectUrl);
+      // Use replace instead of push to prevent back button issues
+      router.replace(redirectUrl);
     }
   }, [status, session, router, callbackUrl]);
 
@@ -206,7 +217,9 @@ export default function LoginPage() {
         callbackUrl: callbackUrl || '/dashboard',
       });
     } catch (err) {
-      console.error('[Login] Google sign in error:', err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[Login] Google sign in error:', err);
+      }
       setError('Error al iniciar sesión con Google. Por favor intenta nuevamente.');
       setLoading(false);
     }
@@ -249,10 +262,14 @@ export default function LoginPage() {
       } else if (result?.ok) {
         // Success - Let the useEffect handle redirect based on session/role
         // The useEffect will trigger once session is established
-        console.log('[Login] Credentials sign in successful, waiting for session...');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[Login] Credentials sign in successful, waiting for session...');
+        }
       }
     } catch (err) {
-      console.error('[Login] Credentials sign in error:', err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[Login] Credentials sign in error:', err);
+      }
       setError('Error al iniciar sesión. Por favor intenta nuevamente.');
       setFormData((prev) => ({ ...prev, password: '' }));
     } finally {
@@ -271,15 +288,41 @@ export default function LoginPage() {
           alignItems: 'center',
           justifyContent: 'center',
           minHeight: '100vh',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         }}
       >
-        <CircularProgress size={60} />
+        <CircularProgress size={60} sx={{ color: 'white' }} />
       </Box>
     );
   }
 
   /**
-   * Render login form
+   * Show loading state when authenticated (redirecting)
+   * This prevents showing the login form briefly before redirect
+   */
+  if (status === 'authenticated') {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          gap: 2,
+        }}
+      >
+        <CircularProgress size={60} sx={{ color: 'white' }} />
+        <Typography variant="h6" sx={{ color: 'white' }}>
+          Redirigiendo...
+        </Typography>
+      </Box>
+    );
+  }
+
+  /**
+   * Render login form (only when unauthenticated)
    */
   return (
     <Box
