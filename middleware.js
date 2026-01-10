@@ -34,9 +34,10 @@ const ROUTE_PERMISSIONS = {
 
 /**
  * Public routes that don't require authentication
+ * NOTE: '/' is NOT included - all routes require authentication
+ * The home page redirects to dashboard, which requires auth
  */
 const PUBLIC_ROUTES = [
-  '/',
   '/about',
   '/contact',
   '/privacy',
@@ -223,10 +224,14 @@ export const config = {
     '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|auth).*)',
 
     // Explicitly protect these routes
+    '/',
     '/dashboard/:path*',
     '/admin/:path*',
     '/instructor/:path*',
-    '/teaching/create/:path*',
+    '/teaching/:path*',
+    '/evaluation/:path*',
+    '/flashcards/:path*',
+    '/search/:path*',
     '/analytics/:path*',
     '/profile/:path*',
     '/settings/:path*',
