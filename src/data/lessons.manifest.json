@@ -1,0 +1,108 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-01-09T00:59:55.569Z",
+  "levels": [
+    {
+      "levelId": "beginner",
+      "totalLessons": 3,
+      "totalPages": 28
+    },
+    {
+      "levelId": "intermediate",
+      "totalLessons": 4,
+      "totalPages": 32
+    },
+    {
+      "levelId": "advanced",
+      "totalLessons": 10,
+      "totalPages": 104
+    }
+  ],
+  "lessons": [
+    {
+      "moduleId": "module-01-fundamentals",
+      "lessonId": "lesson-01-respiratory-mechanics",
+      "sectionsCount": 10
+    },
+    {
+      "moduleId": "module-01-fundamentals",
+      "lessonId": "lesson-02-gas-exchange",
+      "sectionsCount": 9
+    },
+    {
+      "moduleId": "module-01-fundamentals",
+      "lessonId": "lesson-03-arterial-blood-gas",
+      "sectionsCount": 9
+    },
+    {
+      "moduleId": "module-02-modalidades-parametros",
+      "lessonId": "lesson-01-volume-ventilation",
+      "sectionsCount": 8
+    },
+    {
+      "moduleId": "module-02-modalidades-parametros",
+      "lessonId": "lesson-02-pressure-controlled-ventilation",
+      "sectionsCount": 8
+    },
+    {
+      "moduleId": "module-02-modalidades-parametros",
+      "lessonId": "lesson-03-pressure-support-ventilation",
+      "sectionsCount": 8
+    },
+    {
+      "moduleId": "module-02-modalidades-parametros",
+      "lessonId": "lesson-04-simv-destete-evidencia",
+      "sectionsCount": 8
+    },
+    {
+      "moduleId": "module-03-configuration",
+      "lessonId": "asthma-protocol",
+      "sectionsCount": 12
+    },
+    {
+      "moduleId": "module-03-configuration",
+      "lessonId": "copd-protocol",
+      "sectionsCount": 12
+    },
+    {
+      "moduleId": "module-03-configuration",
+      "lessonId": "pneumonia-protocol",
+      "sectionsCount": 12
+    },
+    {
+      "moduleId": "module-03-configuration",
+      "lessonId": "sdra-protocol",
+      "sectionsCount": 12
+    },
+    {
+      "moduleId": "module-03-configuration",
+      "lessonId": "low-tidal-volume",
+      "sectionsCount": 10
+    },
+    {
+      "moduleId": "module-03-configuration",
+      "lessonId": "lung-protective-ventilation",
+      "sectionsCount": 10
+    },
+    {
+      "moduleId": "module-03-configuration",
+      "lessonId": "peep-strategies",
+      "sectionsCount": 9
+    },
+    {
+      "moduleId": "module-03-configuration",
+      "lessonId": "permissive-hypercapnia",
+      "sectionsCount": 10
+    },
+    {
+      "moduleId": "module-03-configuration",
+      "lessonId": "readiness-criteria",
+      "sectionsCount": 9
+    },
+    {
+      "moduleId": "module-03-configuration",
+      "lessonId": "sbt-protocol",
+      "sectionsCount": 8
+    }
+  ]
+}
