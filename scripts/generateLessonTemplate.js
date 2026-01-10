@@ -424,7 +424,7 @@ async function main() {
 
       console.log(`\n${colors.bright}${colors.cyan}📝 Siguientes pasos:${colors.reset}`);
       log('  1. Revisar y editar el archivo generado', 'cyan');
-      log('  2. Ejecutar validación: npm run validate-lessons', 'cyan');
+      log('  2. Ejecutar validación: npm run validate:lessons', 'cyan');
       log('  3. Agregar contenido específico a las secciones', 'cyan');
       log('  4. Verificar rutas de recursos', 'cyan');
 

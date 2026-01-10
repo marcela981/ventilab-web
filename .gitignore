@@ -82,3 +82,36 @@ temp/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# =============================================================================
+# Testing y Debugging (temporal)
+# =============================================================================
+**/__tests__/
+*.test.js
+*.test.jsx
+*.test.ts
+*.test.tsx
+*.spec.js
+*.spec.jsx
+*.spec.ts
+*.spec.tsx
+/coverage/
+.nyc_output/
+
+# =============================================================================
+# IDEs y herramientas de desarrollo
+# =============================================================================
+.claude/
+.cursor/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =============================================================================
+# Scripts de debugging temporal
+# =============================================================================
+scripts/test-*.js
+scripts/test-*.mjs
+scripts/debug-*.js
+scripts/validate-auth.js
