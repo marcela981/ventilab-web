@@ -18,12 +18,13 @@ export const USER_ROLES = {
 
 /**
  * Role-to-dashboard route mapping
- * Each role has a dedicated dashboard view optimized for their needs
+ * Currently all roles use the main dashboard
+ * TODO: Create role-specific dashboard views if needed
  */
 const ROLE_DASHBOARD_MAP = {
-  [USER_ROLES.STUDENT]: '/dashboard/learning',
-  [USER_ROLES.TEACHER]: '/dashboard/teaching',
-  [USER_ROLES.ADMIN]: '/dashboard/admin',
+  [USER_ROLES.STUDENT]: '/dashboard',
+  [USER_ROLES.TEACHER]: '/dashboard',
+  [USER_ROLES.ADMIN]: '/dashboard',
 };
 
 /**

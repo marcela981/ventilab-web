@@ -3,13 +3,13 @@
  * Login Page for VentyLab
  * =============================================================================
  * Primary authentication via Google OAuth with fallback to email/password
- * Responsive, accessible, and user-friendly login experience
+ * Uses getServerSideProps for robust server-side redirect when authenticated
  * =============================================================================
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import { signIn, useSession } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 import {
   Box,
   Card,
@@ -26,7 +26,6 @@ import {
   Checkbox,
   FormControlLabel,
   Container,
-  Paper,
 } from '@mui/material';
 import {
   Visibility,
@@ -36,7 +35,6 @@ import {
 } from '@mui/icons-material';
 import Link from 'next/link';
 import { getAuthErrorMessage } from '@/lib/auth-config';
-import { getRedirectPathWithFallback } from '@/utils/redirectByRole';
 
 /**
  * VentyLab Logo Component
@@ -57,7 +55,6 @@ const VentiLabLogo = () => (
       sx={{
         height: 60,
         width: 'auto',
-        // Fallback if logo doesn't exist
         display: { xs: 'none', sm: 'block' },
       }}
       onError={(e) => {
@@ -80,14 +77,12 @@ const VentiLabLogo = () => (
 
 /**
  * Login Page Component
+ * Note: If user is already authenticated, getServerSideProps redirects to dashboard
+ * This component only renders for unauthenticated users
  */
 export default function LoginPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
   const { error: authError, callbackUrl } = router.query;
-  
-  // Ref to prevent multiple redirects (fixes infinite loop)
-  const hasRedirected = useRef(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -99,45 +94,8 @@ export default function LoginPage() {
   // UI state
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(authError ? getAuthErrorMessage(authError) : '');
   const [validationErrors, setValidationErrors] = useState({});
-
-  /**
-   * Redirect authenticated users to role-specific dashboard
-   * Uses ref to ensure redirect only happens ONCE (prevents infinite loop)
-   * Priority: callbackUrl (attempted route) > role-based dashboard > default dashboard
-   */
-  useEffect(() => {
-    // Only redirect ONCE if authenticated and hasn't redirected yet
-    if (status === 'authenticated' && session?.user && !hasRedirected.current) {
-      hasRedirected.current = true;
-      
-      // Get role-based redirect path with fallback to attempted URL
-      const userRole = session.user.role;
-      const redirectUrl = getRedirectPathWithFallback(userRole, callbackUrl);
-
-      // Only log in development to avoid spam in production
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Login] Redirecting authenticated user:', {
-          role: userRole,
-          callbackUrl,
-          finalRedirect: redirectUrl,
-        });
-      }
-
-      // Use replace instead of push to prevent back button issues
-      router.replace(redirectUrl);
-    }
-  }, [status, session, router, callbackUrl]);
-
-  /**
-   * Display authentication error from URL if present
-   */
-  useEffect(() => {
-    if (authError) {
-      setError(getAuthErrorMessage(authError));
-    }
-  }, [authError]);
 
   /**
    * Validate email format
@@ -203,16 +161,13 @@ export default function LoginPage() {
 
   /**
    * Handle Google Sign In
-   * Note: Role-based redirect happens in the useEffect after successful authentication
    */
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
       setError('');
 
-      // Sign in with Google
-      // The callbackUrl preserves the attempted URL if user was redirected from protected route
-      // After successful auth, useEffect will handle role-based redirect
+      // Sign in with Google - NextAuth handles the redirect
       await signIn('google', {
         callbackUrl: callbackUrl || '/dashboard',
       });
@@ -259,12 +214,11 @@ export default function LoginPage() {
         setError(getAuthErrorMessage('CredentialsSignin'));
         // Clear password field on error
         setFormData((prev) => ({ ...prev, password: '' }));
+        setLoading(false);
       } else if (result?.ok) {
-        // Success - Let the useEffect handle redirect based on session/role
-        // The useEffect will trigger once session is established
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[Login] Credentials sign in successful, waiting for session...');
-        }
+        // Success - redirect to dashboard
+        // Use window.location for a full page reload to ensure clean state
+        window.location.href = callbackUrl || '/dashboard';
       }
     } catch (err) {
       if (process.env.NODE_ENV === 'development') {
@@ -272,57 +226,12 @@ export default function LoginPage() {
       }
       setError('Error al iniciar sesión. Por favor intenta nuevamente.');
       setFormData((prev) => ({ ...prev, password: '' }));
-    } finally {
       setLoading(false);
     }
   };
 
   /**
-   * Show loading spinner while checking session
-   */
-  if (status === 'loading') {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        }}
-      >
-        <CircularProgress size={60} sx={{ color: 'white' }} />
-      </Box>
-    );
-  }
-
-  /**
-   * Show loading state when authenticated (redirecting)
-   * This prevents showing the login form briefly before redirect
-   */
-  if (status === 'authenticated') {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          gap: 2,
-        }}
-      >
-        <CircularProgress size={60} sx={{ color: 'white' }} />
-        <Typography variant="h6" sx={{ color: 'white' }}>
-          Redirigiendo...
-        </Typography>
-      </Box>
-    );
-  }
-
-  /**
-   * Render login form (only when unauthenticated)
+   * Render login form
    */
   return (
     <Box
@@ -549,3 +458,39 @@ export default function LoginPage() {
   );
 }
 
+/**
+ * Server-side redirect for authenticated users
+ * This runs BEFORE the page renders, preventing any client-side redirect issues
+ */
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
+
+  // If user is already authenticated, redirect to dashboard from server
+  if (session) {
+    // Get callbackUrl from query if present
+    const callbackUrl = context.query.callbackUrl;
+    
+    // Validate callbackUrl - only allow relative paths, not auth pages
+    let destination = '/dashboard';
+    if (callbackUrl && typeof callbackUrl === 'string') {
+      const isRelative = callbackUrl.startsWith('/');
+      const isAuthPage = callbackUrl.startsWith('/auth/');
+      
+      if (isRelative && !isAuthPage) {
+        destination = callbackUrl;
+      }
+    }
+
+    return {
+      redirect: {
+        destination,
+        permanent: false,
+      },
+    };
+  }
+
+  // User is not authenticated, render login page
+  return {
+    props: {},
+  };
+}

@@ -106,8 +106,10 @@ export const authOptions: NextAuthOptions = {
             emailVerified: user.emailVerified,
           };
         } catch (error: any) {
-          // Log error for debugging (do not expose to user)
-          console.error('[NextAuth] Credentials authorization error:', error.message);
+          // Log error for debugging (only in development)
+          if (process.env.NODE_ENV === 'development') {
+            console.error('[NextAuth] Credentials authorization error:', error.message);
+          }
 
           // Throw error to display to user
           throw new Error(error.message || 'Error al iniciar sesión');
@@ -251,7 +253,9 @@ export const authOptions: NextAuthOptions = {
 
         return true;
       } catch (error) {
-        console.error('[NextAuth] SignIn callback error:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[NextAuth] SignIn callback error:', error);
+        }
         return '/auth/error?error=SignInError';
       }
     },
@@ -269,7 +273,6 @@ export const authOptions: NextAuthOptions = {
           const isAuthPage = authPages.some(page => callbackUrl.startsWith(page));
 
           if (!isAuthPage) {
-            console.log('[NextAuth] Redirecting to attempted URL:', callbackUrl);
             return callbackUrl.startsWith('/') ? `${baseUrl}${callbackUrl}` : callbackUrl;
           }
         }
@@ -282,10 +285,11 @@ export const authOptions: NextAuthOptions = {
           }
         }
 
-        console.log('[NextAuth] Redirecting to base URL');
         return baseUrl;
       } catch (error) {
-        console.error('[NextAuth] Redirect callback error:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[NextAuth] Redirect callback error:', error);
+        }
         return baseUrl;
       }
     },
@@ -296,19 +300,25 @@ export const authOptions: NextAuthOptions = {
   // =============================================================================
   events: {
     async signIn({ user, account, isNewUser }: { user: any; account: any; isNewUser?: boolean }) {
-      console.log(`[NextAuth] User signed in: ${user.email} (${account.provider})`);
-
-      if (isNewUser) {
-        console.log(`[NextAuth] New user created: ${user.email}`);
+      // Only log in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[NextAuth] User signed in: ${user.email} (${account.provider})`);
+        if (isNewUser) {
+          console.log(`[NextAuth] New user created: ${user.email}`);
+        }
       }
     },
 
     async signOut({ token, session }: { token?: any; session?: any }) {
-      console.log(`[NextAuth] User signed out: ${token?.email || session?.user?.email}`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[NextAuth] User signed out: ${token?.email || session?.user?.email}`);
+      }
     },
 
     async createUser({ user }: { user: any }) {
-      console.log(`[NextAuth] New user account created: ${user.email}`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[NextAuth] New user account created: ${user.email}`);
+      }
     },
   },
 
