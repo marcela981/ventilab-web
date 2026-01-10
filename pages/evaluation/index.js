@@ -20,8 +20,8 @@ import {
   ArrowForward,
   CheckCircle,
 } from '@mui/icons-material';
-import { evaluationService } from '../src/service/api/evaluationService';
-import { useApiClient } from '../src/hooks/useApiClient';
+import { evaluationService } from '../../src/service/api/evaluationService';
+import { useApiClient } from '../../src/hooks/useApiClient';
 
 export default function Evaluation() {
   const router = useRouter();
