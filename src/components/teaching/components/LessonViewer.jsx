@@ -73,7 +73,7 @@ import AITopicExpander from './ai/AITopicExpander';
 import { useTopicContext } from '../../../hooks/useTopicContext';
 // Lazy load clinical case components for code splitting
 const ClinicalCaseViewer = lazy(() => import('./clinical/ClinicalCaseViewer'));
-import PrerequisiteTooltip from '../../../pages/teaching/components/curriculum/ModuleCard/PrerequisiteTooltip';
+import PrerequisiteTooltip from '../../../view-components/teaching/components/curriculum/ModuleCard/PrerequisiteTooltip';
 import { getModuleById } from '../../../data/curriculumData';
 import {
   LessonHeader,

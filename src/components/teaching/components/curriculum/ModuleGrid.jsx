@@ -7,7 +7,7 @@ import {
   Typography,
   Fade
 } from '@mui/material';
-import { ModuleCard } from '../../../../pages/teaching/components/curriculum';
+import { ModuleCard } from '../../../../view-components/teaching/components/curriculum';
 import LessonCard from './LessonCard';
 // Importar estilos CSS Module para grid y cards del currículo
 import styles from '@/styles/curriculum.module.css';

@@ -19,7 +19,7 @@ export {
   QuickAccessLessons,
   Module3ProgressDashboard,
   ReadinessIndicator
-} from '@/pages/teaching/components/dashboard';
+} from '@/view-components/teaching/components/dashboard';
 
 // Individual component exports
 export { default as LessonCard } from './LessonCard';

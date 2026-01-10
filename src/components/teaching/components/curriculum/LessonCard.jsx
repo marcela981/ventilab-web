@@ -8,7 +8,7 @@ import LessonCardMeta from './LessonCardMeta';
 import LessonCardBody from './LessonCardBody';
 import LessonCardFooter from './LessonCardFooter';
 import styles from '@/styles/curriculum.module.css';
-import CurriculumProgressBar from '../../../../pages/teaching/components/curriculum/ModuleCard/CurriculumProgressBar';
+import CurriculumProgressBar from '../../../../view-components/teaching/components/curriculum/ModuleCard/CurriculumProgressBar';
 
 /**
  * LessonCard - Card minimalista y optimizada para lecciones de aprendizaje
