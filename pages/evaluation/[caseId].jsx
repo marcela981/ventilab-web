@@ -26,7 +26,7 @@ import {
   Info,
   Assessment,
 } from '@mui/icons-material';
-import { evaluationService } from '../../src/service/api/evaluationService';
+import evaluationService from '../../src/service/api/evaluationService';
 import { useApiClient } from '../../src/hooks/useApiClient';
 
 export default function EvaluationCasePage() {
