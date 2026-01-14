@@ -1,0 +1,443 @@
+{
+  "id": "module-04-modos-ventilatorios",
+  "moduleId": "module-01-fundamentals",
+  "title": "Taxonomía de los Modos: Volumen vs. Presión (Control y Asistencia)",
+  "description": "",
+  "order": 4,
+  "estimatedTime": 114,
+  "difficulty": "intermediate",
+  "bloomLevel": "apply",
+  "learningObjectives": [
+    "Reconocer conceptos clave y su utilidad clínica.",
+    "Interpretar variables ventilatorias básicas en contexto.",
+    "Aplicar una regla práctica de programación/monitorización."
+  ],
+  "prerequisites": [
+    "Fisiología respiratoria básica",
+    "Conceptos de presión/volumen/flujo",
+    "Módulos 1–2 completados o ecuación del movimiento básica"
+  ],
+  "sections": [
+    {
+      "id": "m4-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción y mapa del módulo",
+      "content": {
+        "markdown": "## Qué vas a aprender en este módulo\n\n**Tema:** Taxonomía de los Modos: Volumen vs. Presión (Control y Asistencia)\n\n\n\n### Objetivos (versión estudiante)\n- (ver objetivos dentro del módulo)\n\n### Cómo estudiar (nivel principiante, contenido intermedio/avanzado)\n- Avanza por **partes cortas** (5–12 min) y usa el *chequeo rápido* al final de cada parte.\n- Si algo te suena “muy técnico”, marca el término y sigue: lo retomamos en el *resumen/chuleta*.\n- Prioriza entender **relaciones**: presión ↔ volumen ↔ flujo ↔ resistencia ↔ compliance.\n\n### Vocabulario mínimo para no perderte\n- **Presión (P):** fuerza por área (en ventilación: cmH₂O).\n- **Volumen (V):** cantidad de gas.\n- **Flujo (V’):** velocidad con la que entra/sale el gas (L/min)."
+      }
+    },
+    {
+      "id": "m4-p2-2",
+      "order": 2,
+      "type": "theory",
+      "title": "Parte 1: lectura guiada (págs. 2–2)",
+      "content": {
+        "markdown": "## Lectura guiada (páginas 2–2)\n\n> **Tip:** Lee primero los subtítulos y busca palabras clave (PEEP, Pplat, C, R, trigger, etc.).\n\nMódulo 4: Taxonomía de los Modos – Ventilación por Volumen vs.\nPresión (Control y Asistencia)\nLa gran variedad de modos de ventilación mecánica se puede entender clasificándolos según dos ejes\nfundamentales: (1) la variable de control principal durante la inspiración (volumen vs. presión) y (2) la\nforma en que se interrelacionan el ventilador y el paciente para iniciar las respiraciones (modos\ncontrolados, asistidos, espontáneos, o combinaciones). A continuación, exploraremos primero la\ndiferencia entre modos controlados por volumen vs. controlados por presión, y luego las\nmodalidades de control vs. asistencia en la ventilación mecánica, incluyendo ejemplos clínicos de cada\ntipo.\nVentilación controlada por volumen vs. por presión\nEn cualquier ventilador moderno, sólo es posible controlar de forma directa una variable a la vez\ndurante la inspiración: presión o volumen/flujo (pero no ambas simultáneamente) 18 . Por ello, los\n2\n\n---\n\n### Chequeo rápido\n- ¿Qué concepto nuevo te quedó más claro en estas páginas?\n- Escribe 1 ejemplo clínico donde esta información cambie una decisión ventilatoria.\n"
+      }
+    },
+    {
+      "id": "m4-p3-3",
+      "order": 3,
+      "type": "theory",
+      "title": "Parte 2: lectura guiada (págs. 3–3)",
+      "content": {
+        "markdown": "## Lectura guiada (páginas 3–3)\n\n> **Tip:** Lee primero los subtítulos y busca palabras clave (PEEP, Pplat, C, R, trigger, etc.).\n\nmodos clásicos de ventilación se dividen en modos de control de volumen versus control de presión\nsegún cuál variable mantiene fija el ventilador. En términos prácticos:\n• En un modo de control por volumen (también llamado volumen controlado, volume control), el\noperador programa un volumen corriente (V<sub>T</sub>) específico o un patrón de flujo fijo; el\nventilador entregará ese volumen predeterminado en cada ciclo. El volumen (y típicamente el\nflujo) son las variables controladas en la inspiración, y por lo tanto permanecen constantes\nciclo a ciclo, independientemente de cambios en la mecánica pulmonar del paciente 19 20 . En\nconsecuencia, la presión de la vía aérea resultante es una variable dependiente: si los\npulmones son más rígidos o las vías aéreas más resistivas, la presión alcanzada será más alta, y\nviceversa 21 22 . Dicho de otro modo, en ventilación por volumen el ventilador garantiza un\nvolumen fijo en cada respiración, mientras las presiones pueden variar de acuerdo a la\nresistencia y distensibilidad del sistema respiratorio 9 . Por ejemplo, si la compliance pulmonar\ndisminuye súbitamente (pulmón más rígido), el ventilador seguirá administrando el mismo\nV<sub>T</sub> pero con una presión pico mayor; esto supone un riesgo de barotrauma si las\npresiones exceden límites seguros. Ventajas de los modos volumétricos incluyen asegurar una\nventilación minuto constante (útil para controlar la PaCO2) y simplicidad en ajuste de objetivos\nde volumen. Desventajas: puede producir presiones elevadas si la mecánica empeora (riesgo de\nvolutrauma/barotrauma), y el flujo inspiratorio fijo puede no adaptarse a demandas variables\ndel paciente (posible disconfort si el patrón de flujo no coincide con el esfuerzo inspiratorio del\npaciente).\n• En un modo de control por presión (presión controlada, pressure control), el ventilador mantiene\nla presión inspiratoria en un nivel preestablecido durante cada respiración. La presión es la\nvariable controlada: típicamente la forma de la onda de presión/tiempo es cuadrada (plana) a\nnivel de la presión objetivo, mientras que el flujo y el volumen pasan a ser variables\ndependientes, resultando de la interacción de esa presión con la mecánica pulmonar del\npaciente 21 22 . En la práctica, el ventilador entregará el flujo necesario (generalmente con un\npatrón desacelerado) para alcanzar y sostener la presión inspiratoria programada; el volumen\ncorriente obtenido en cada ciclo puede variar según la resistencia de las vías aéreas, la\ndistensibilidad pulmonar y el esfuerzo inspiratorio del paciente 23 24 . Por ejemplo, en un\nmodo a presión controlada se puede fijar Pinsp = 20 cmH2O; en un paciente con pulmones\ncompliante eso puede generar un V<sub>T</sub> de, digamos, 500 mL, pero si la compliance\nempeora (SDRA, etc.), ese mismo nivel de presión podría solo insuflar 300 mL. Ventajas de los\nmodos a presión: se limita la presión pico (protección pulmonar al evitar sobrepresurización) y el\nflujo inspiratorio es típicamente desacelerado, lo que favorece una mejor distribución del gas y\npuede mejorar la oxigenación (el flujo alto al inicio llena alvéolos de tiempo constante corto, y\nluego disminuye permitiendo llenar unidades de tiempo constante más largo) 25 26 . Además,\nsuelen ser más cómodos para pacientes respirando espontáneamente, pues el flujo se adapta\nhasta cierto punto a su demanda (el ventilador entrega más flujo al inicio de la inspiración\ncuando el paciente tiene mayor esfuerzo, luego lo va reduciendo). Desventajas: el volumen\nminuto no está garantizado – si cambia la mecánica pulmonar o disminuye el esfuerzo\ninspiratorio, el volumen entregado puede ser insuficiente causando hipoventilación. Por ello, en\nmodos controlados por presión se requiere vigilancia estrecha del volumen corriente y ajustes\nfrecuentes si hay cambios en la condición pulmonar.\nEn resumen, ventilación controlada por volumen vs por presión implica una compensación: control\nde volumen garantiza ventilación pero permite que la presión se eleve según la mecánica,\nmientras que control de presión garantiza limitar la presión pero el volumen obtenido puede\nfluctuar 9 . No existe consenso absoluto sobre cuál estrategia es “mejor” en todos los casos – estudios\nmuestran resultados mixtos y ambos enfoques se usan según la situación clínica 27 . En la práctica\n3\n\n---\n\n### Chequeo rápido\n- ¿Qué concepto nuevo te quedó más claro en estas páginas?\n- Escribe 1 ejemplo clínico donde esta información cambie una decisión ventilatoria.\n"
+      }
+    },
+    {
+      "id": "m4-p4-4",
+      "order": 4,
+      "type": "theory",
+      "title": "Parte 3: lectura guiada (págs. 4–4)",
+      "content": {
+        "markdown": "## Lectura guiada (páginas 4–4)\n\n> **Tip:** Lee primero los subtítulos y busca palabras clave (PEEP, Pplat, C, R, trigger, etc.).\n\nactual de UCI, se tiende a preferir modos de volumen controlado para asegurar un volumen mínimo,\npero ajustando alarmas de presión para proteger al pulmón; o modos de presión controlada/soportada\nen pacientes con riesgo de barotrauma (p. ej. SDRA) para limitar presiones, combinados con monitoreo\nde volumen para evitar hipoventilación. Además, existen modos híbridos o avanzados (p. ej. PRVC –\nPressure Regulated Volume Control, autoflow, etc.) donde el ventilador ajusta automáticamente la presión\npara lograr un volumen objetivo, intentando combinar ventajas de ambos 28 29 . Estos modos\nadaptativos usan algoritmos que regulan la presión ciclo a ciclo para aproximarse a un volumen\npredeterminado, y son ejemplo de cómo la tecnología ha evolucionado integrando la taxonomía básica\nde volumen vs presión.\nComparación de curvas en ventilación controlada por volumen vs por presión. En la gráfica, a la izquierda se\nobservan las formas de onda de presión, volumen y flujo en un modo controlado por volumen (notar\nflujo inspiratorio constante en forma cuadrada, volumen alcanzando un valor fijo cada ciclo, y presión\nque varía dependiendo de la mecánica); a la derecha, las curvas correspondientes en un modo\ncontrolado por presión (presión inspiratoria en meseta cuadrada a nivel fijo, flujo inspiratorio\ndesacelerado y volumen variable según la mecánica pulmonar y esfuerzo) 21 20 . Los primeros dos\nciclos en cada ejemplo son mandatorios (el primero es disparado por tiempo, los siguientes muestran\ndisparo por paciente – indicados por la deflexión negativa en la curva de presión al inicio de la\ninspiración); las trazas de presión muestran PEEP = 10 cmH2O como línea base.\nModos ventilatorios: Controlados vs Asistidos (y modalidades mixtas)\nLa relación entre paciente y ventilador en cuanto a quién inicia y termina las respiraciones define\ndistintos modos de interacción. Tradicionalmente se habla de modos controlados, asistidos y\nespontáneos, así como combinaciones de estos (p. ej. asistido/controlado, mandatorio intermitente\nsincronizado, etc.) 17 30 . A continuación, describimos las principales categorías:\n• Ventilación controlada (modo controlado): El ventilador comanda totalmente la ventilación,\nes decir, aporta todas las respiraciones del paciente. Todos los ciclos son iniciados y ciclados\npor el ventilador según parámetros fijos (frecuencia respiratoria, tiempo inspiratorio, etc.) 17 .\nEste modo se utiliza principalmente cuando el paciente no realiza esfuerzo respiratorio (p. ej.,\nen anestesia general con parálisis muscular, coma profundo, o situaciones de tétanos/status\nepiléptico donde se busca eliminar la actividad muscular respiratoria) 31 . En la práctica, la\nventilación completamente controlada pura es poco frecuente en UCI salvo en momentos de\ninducción o situaciones especiales, porque la mayoría de los ventiladores actuales ofrecen\nmodos asistido/controlado que permiten al paciente participar si puede. No obstante, entender\nel modo controlado puro es útil: aquí el ventilador fija una frecuencia (disparo por tiempo) y un\npatrón de entrega (volumen o presión controlados), el paciente está completamente pasivo.\nVentaja: garantiza una ventilación completamente segura y constante si el paciente no puede\nrespirar (el paciente está “protegido” en el sentido de que no necesita hacer ningún esfuerzo).\nDesventajas: riesgo de asincronía si el paciente realiza intentos (el ventilador podría ignorarlos\nsi está en controlado estricto), posible atrofia de músculos respiratorios por desuso si se\nprolonga, y necesidad de sedación profunda para tolerarlo en pacientes despiertos 31 .\n• Ventilación asistido-controlada (A/C, también llamada asistida/controlada): Es el modo más\ncomún en UCI inicial, ya que combina control y asistencia. En este modo, el ventilador garantiza\nuna frecuencia mínima de respiraciones mandatorias, pero además permite al paciente\ngatillar respiraciones adicionales asistidas 32 . En la práctica, el ventilador está programado\nen A/C (que puede ser A/C por volumen o A/C por presión, según la variable controlada). Si el\npaciente no inicia una respiración dentro del intervalo programado, el ventilador entregará un\nciclo mandatorio por tiempo (asegurando la frecuencia mínima). Pero si el paciente realiza un\n4\n\n---\n\n### Chequeo rápido\n- ¿Qué concepto nuevo te quedó más claro en estas páginas?\n- Escribe 1 ejemplo clínico donde esta información cambie una decisión ventilatoria.\n"
+      }
+    },
+    {
+      "id": "m4-p5-5",
+      "order": 5,
+      "type": "theory",
+      "title": "Parte 4: lectura guiada (págs. 5–5)",
+      "content": {
+        "markdown": "## Lectura guiada (páginas 5–5)\n\n> **Tip:** Lee primero los subtítulos y busca palabras clave (PEEP, Pplat, C, R, trigger, etc.).\n\nesfuerzo inspiratorio (suficiente para superar el umbral de disparo), el ventilador detectará ese\ngatillo y le administrará una respiración asistida completa, con los mismos parámetros que\nuna respiración mandatoria programada 32 17 . Así, en A/C cada respiración recibida por el\npaciente es con ayuda total del ventilador: no hay respiraciones “espontáneas” sin apoyo; o son\nmandatorias por tiempo, o son asistidas (disparadas por el paciente pero cicladas y limitadas\npor el ventilador, por eso igualmente son mandatorias en la clasificación técnica) 33 . Este\nmodo asegura ventilación y al mismo tiempo permite al paciente incrementar la frecuencia si\npuede y lo necesita (por eso también se llama a veces “controlado asistido”). Ventaja:\nproporciona apoyo total, útil en fallo respiratorio agudo, y sincroniza con esfuerzos del paciente\nevitando asincronías de desencadenamiento. El trabajo respiratorio del paciente se minimiza\n(cada inspiración es totalmente asistida) 10 . Desventaja: puede llevar a hiperventilación si el\npaciente está muy ansioso/disneico (ej. taquipnea desencadenando ventilaciones sobre la\nfrecuencia base, resultando en alcalosis respiratoria); además, todos los ciclos tienen alta\nasistencia, lo que a largo plazo podría dificultar el ejercicio muscular respiratorio. Sin embargo,\npara la fase aguda, A/C es el modo de elección en la mayoría de casos por su garantía de\nsoporte. Ejemplo clínico: “Ventilación mandatoria continua (CMV) asistida/controlada por\nvolumen (AC/VC)” – el paciente está conectado, con V<sub>T</sub> fijo digamos 500 mL,\nfrecuencia mínima 12, PEEP 5, y sensibilidad de trigger ajustada; si el paciente respira 18 veces\npor minuto, disparará 6 de esos ciclos y recibirá 18 ventilaciones de 500 mL cada una (12 por\ntiempo + 6 asistidas por esfuerzo).\n• Ventilación mandatoria intermitente sincronizada (SIMV): Es un modo mixto que combina\nrespiraciones mandatorias a intervalos programados con la posibilidad de respiraciones\nespontáneas entre medio. En SIMV (por sus siglas en inglés de Synchronized Intermittent\nMandatory Ventilation), el ventilador entrega un número fijo de respiraciones mandatorias por\nminuto (ya sea controladas por volumen o presión, según ajuste) pero, a diferencia del A/C, no\nasiste automáticamente cada respiración espontánea del paciente. Entre las ventilaciones\nobligatorias, el paciente puede generar sus propias respiraciones espontáneas sin que el\nventilador las controle completamente; típicamente, a esas respiraciones espontáneas se les\npuede agregar soporte de presión (PSV, ver más abajo) para ayudar al paciente. El término\n“sincronizada” indica que el ventilador intentará coordinar la entrega de las respiraciones\nmandatorias con los esfuerzos del paciente, para evitar conflictos: si toca dar una respiración\nmandatoria y el paciente justo intenta inhalar, el ventilador la disparará en sincronía con ese\nesfuerzo; si el paciente está exhalando o no haciendo nada, el ventilador la entregará tras un\nintervalo determinado. Ventajas: SIMV permite al paciente mantener parte de su ventilación\nespontánea, ejercitando músculos respiratorios, y suele usarse en etapas de destete (weaning)\npara ir reduciendo gradualmente el número de respiraciones mandatorias y estimular al\npaciente a asumir más esfuerzo. Además, reduce el riesgo de hiperventilación automática que\npuede ocurrir en A/C, ya que respiraciones por encima de la frecuencia programada deben ser\ngeneradas por el paciente (aunque pueden tener apoyo de presión). Desventajas: puede\nincrementar el trabajo respiratorio del paciente en comparación con A/C, especialmente si se\nprograma una tasa mandatoria baja – el paciente debe asumir las respiraciones intercaladas.\nUna sincronización inadecuada o ajustes inapropiados de soporte pueden llevar a fatiga. No\nobstante, con monitoreo cuidadoso, SIMV ha sido un modo clásico para transición a ventilación\nespontánea 30 . Actualmente algunos protocolos de destete prefieren alternar directamente a\nmodos espontáneos (PSV) en lugar de SIMV, pero este modo aún se usa. Ejemplo: “SIMV VC 6/\nmin + PS 10 cmH2O”: el ventilador dará 6 respiraciones por volumen controlado por minuto (cada\n10 segundos aprox., sincronizadas si el paciente inspira); si el paciente respira más de 6 veces,\nesas respiraciones extra serán espontáneas, en este caso con una ayuda de presión soporte de\n10 cmH2O para superar la resistencia del tubo, etc.\n5\n\n---\n\n### Chequeo rápido\n- ¿Qué concepto nuevo te quedó más claro en estas páginas?\n- Escribe 1 ejemplo clínico donde esta información cambie una decisión ventilatoria.\n"
+      }
+    },
+    {
+      "id": "m4-p6-6",
+      "order": 6,
+      "type": "theory",
+      "title": "Parte 5: lectura guiada (págs. 6–6)",
+      "content": {
+        "markdown": "## Lectura guiada (páginas 6–6)\n\n> **Tip:** Lee primero los subtítulos y busca palabras clave (PEEP, Pplat, C, R, trigger, etc.).\n\n• Ventilación espontánea con soporte (PSV/CPAP): En un modo totalmente espontáneo, todas\nlas respiraciones son iniciadas y terminadas por el paciente – el ventilador no impone frecuencia\nni final de ciclo, simplemente asiste a cada respiración a demanda. El ejemplo prototípico es la\nVentilación con Presión de Soporte (PSV, Pressure Support Ventilation), usualmente\nadministrada en combinación con CPAP (presión positiva contínua en la vía aérea). En PSV, el\npaciente debe desencadenar cada inspiración con su esfuerzo (disparo por presión o flujo) y el\nventilador responde proveyendo una presión positiva preestablecida durante la inspiración\npara ayudar a insuflar los pulmones 10 . La inspiración continúa hasta que el flujo inspiratorio\ndel paciente decae al porcentaje de ciclado estipulado (ej. 25% del pico), momento en el que el\nventilador cicla a espiración – es decir, el ciclado en PSV es habitualmente por flujo,\ndependiente de la reducción del flujo cuando el paciente empieza a exhalar 10 . De esta forma,\nel paciente controla la duración de la inspiración en función de su esfuerzo y demanda. La PEEP\n(o CPAP) mantiene la vía aérea abierta durante la espiración como variable basal. Ventajas: PSV\npermite al paciente un patrón respiratorio totalmente libre y generalmente más cómodo, ya que\nel soporte de presión se ajusta automáticamente al flujo demandado (dentro de lo que la turbina\ndel ventilador puede proveer) – el paciente fija su propio tiempo inspiratorio y frecuencia. Es\nideal para weaning: se va reduciendo gradualmente la presión de soporte a medida que el\npaciente tolera más esfuerzo, hasta que eventualmente puede respirar sin asistencia mecánica.\nDesventaja: al no haber ventilaciones mandatorias de respaldo (en modo puramente\nespontáneo), si el paciente deja de respirar, no recibirá ventilación, por lo que PSV solo es seguro\nen pacientes suficientemente despiertos y con drive respiratorio constante. Por ello, los\nventiladores suelen tener apnea backup (ej., si en PSV el paciente no respira en X segundos,\ncambia a un modo mandatorio de seguridad). Otra desventaja es que en PSV el volumen tidal\npor respiración varía con la mecánica y el esfuerzo, por lo que hay que vigilar que el paciente\nventile adecuadamente y que la frecuencia respiratoria no suba demasiado (signo de esfuerzo).\nEn resumen, PSV ofrece sustitución parcial de la ventilación – el ventilador alivia el trabajo\ninspiratorio proporcionando presión, pero el paciente realiza parte del trabajo y controla el ritmo\n34 35 .\nEn la práctica clínica, los modos ventilatorios se nombran combinando el tipo de interacción y la\nvariable controlada. Por ejemplo: VC-CMV (ventilación mandatoria continua controlada por volumen)\ncorrespondería a un modo asistido/controlado por volumen (AC/VC) en terminología tradicional 36 16 ;\nPC-IMV sería un SIMV a presión; PC-CSV sería presión de soporte pura (ventilación espontánea continua\npor presión), etc. Sin embargo, debido a la multitud de nomenclaturas comerciales, surgió la necesidad\nde una taxonomía estandarizada (como la propuesta por Chatburn) para describir cualquier modo de\nforma consistente 37 38 . En dicha taxonomía se definen formalmente las componentes: variable de\ncontrol (volumen vs presión), secuencia respiratoria (CMV, IMV o CSV, según sean todos los ciclos\nmandatorios, mandatorios intermitentes, o ciclos continuos espontáneos) y patrón de objetivo (p.ej.,\nmodos adaptativos, duales, etc. como PRVC) 16 39 . Por ejemplo, un modo comercial llamado “PRVC”\nen taxonomía se clasifica como PC-CMVa (Presión Controlada – Ventilación Mandatoria Continua –\nobjetivo adaptativo) 40 41 , indicando que en realidad controla presión (no volumen directamente),\ntodos los ciclos son mandatorios (aunque el paciente pueda gatillarlos, el ventilador fija el tiempo\ninspiratorio), y el esquema de control es adaptativo para lograr un volumen objetivo. Esta clasificación\ntécnica detallada excede los objetivos de este módulo, pero ilustra cómo los principios de volumen vs\npresión y control vs asistencia se combinan para describir cualquier modo ventilatorio moderno.\nEn resumen, los módulos 3 y 4 nos brindan los fundamentos para entender la ventilación mecánica:\nprimero, cómo el ventilador “piensa” en términos de fases del ciclo respiratorio (disparo, límite,\nciclado, base) y cómo esas variables definen cada respiración mecánica; y segundo, cómo clasificar y\ndistinguir los modos ventilatorios según la variable controlada (volumen vs presión) y la interacción\npaciente-ventilador (desde control total hasta asistencia parcial o total espontaneidad). Este\n6\n\n---\n\n### Chequeo rápido\n- ¿Qué concepto nuevo te quedó más claro en estas páginas?\n- Escribe 1 ejemplo clínico donde esta información cambie una decisión ventilatoria.\n"
+      }
+    },
+    {
+      "id": "m4-p7-7",
+      "order": 7,
+      "type": "theory",
+      "title": "Parte 6: lectura guiada (págs. 7–7)",
+      "content": {
+        "markdown": "## Lectura guiada (páginas 7–7)\n\n> **Tip:** Lee primero los subtítulos y busca palabras clave (PEEP, Pplat, C, R, trigger, etc.).\n\nconocimiento es crucial para seleccionar el modo adecuado en cada situación clínica, optimizar la\nsincronía con el paciente y garantizar tanto una adecuada oxigenación/ventilación como la protección\npulmonar.\nReferencias y recursos:\n• Chatburn, R.L. Fundamentals of Mechanical Ventilation – conceptos de variables de fase y\ntaxonomía de modos 1 16 .\n• Tobin, M.J. Principles and Practice of Mechanical Ventilation – diferencias entre control de volumen\ny de presión, ventajas y desventajas clínicas 21 20 .\n• Manual de Ventilación Mecánica, Med. Intensiva (2025) – actualización de la taxonomía\nestandarizada de modos ventilatorios 42 43 .\n• Merck Manual Profesional – sección de ventilación mecánica, generalidades sobre métodos y\nmodos (resumen en español de control por volumen vs presión, definición de modos A/C) 9\n32 .\n• Torres, A. Ventilación mecánica en UCI (2024) – guía práctica con descripción de modos\nconvencionales: CMV, SIMV, PSV y parámetros básicos 17 10 .\n1 2 3 6 11 Modos Ventilatorios No Convencionales Final | PDF | Sistema respiratorio | Energía y\nrecursos\nhttps://es.scribd.com/presentation/411314920/Modos-Ventilatorios-No-Convencionales-Final\n4 5 Ventilator Graphics Made Easy | RT\nhttps://respiratory-therapy.com/department-management/clinical/ventilator-graphics-made-easy/\n7 12 13 14 15 Microsoft Word - Ventilacion Mec.nica.doc\nhttp://files.sld.cu/anestesiologia/files/2012/06/ventmeca.pdf?viewType=Print&viewClass=Print\n8 Ventmeca - Ventilacion mecanica, proceso respiratorio, fases de la ventilacion mecanica - - Studocu\nhttps://www.studocu.com/es-mx/document/universidad-autonoma-del-estado-de-morelos/anatomia-y-fisiologia-humana-i/\nventmeca-ventilacion-mecanica-proceso-respiratorio-fases-de-la-ventilacion-mecanica/28620033\n9 32 Generalidades sobre la ventilación mecánica - Cuidados críticos - Manual Merck versión para\nprofesionales\nhttps://www.merckmanuals.com/es-us/professional/cuidados-cr%C3%ADticos/insuficiencia-respiratoria-y-ventilaci%C3%B3n-\nmec%C3%A1nica/generalidades-sobre-la-ventilaci%C3%B3n-mec%C3%A1nica\n10 17 30 31 Microsoft Word - Ventilacion mecanica.doc\nhttps://files.sld.cu/anestesiologia/files/2012/06/ventilacion-mecanica.pdf\n16 23 24 28 29 33 36 39 40 41 42 43 Actualización de la taxonomía de los modos de ventilación\nmecánica | Medicina Intensiva\nhttps://medintensiva.org/en-actualizacion-taxonomia-modos-ventilacion-mecanica-articulo-S0210569125000750\n18 19 20 21 22 27 Modos controlados por presión versus volumen en la ventilación mecánica\ninvasiva | Medicina Intensiva\nhttps://www.medintensiva.org/es-modos-controlados-por-presion-versus-articulo-S0210569112003166\n25 26 Grafica Arellano.doc\nhttps://enfermeria.medicina-intensiva.cl/docs/7.pdf\n34 35 VENTILACION MECANICA: MODOS VENTILATORIOS.pptx\nhttps://es.slideshare.net/slideshow/ventilacion-mecanica-modos-ventilatorios-pptx/269591488\n7\n\n---\n\n### Chequeo rápido\n- ¿Qué concepto nuevo te quedó más claro en estas páginas?\n- Escribe 1 ejemplo clínico donde esta información cambie una decisión ventilatoria.\n"
+      }
+    },
+    {
+      "id": "m4-p8-8",
+      "order": 8,
+      "type": "theory",
+      "title": "Parte 7: lectura guiada (págs. 8–8)",
+      "content": {
+        "markdown": "## Lectura guiada (páginas 8–8)\n\n> **Tip:** Lee primero los subtítulos y busca palabras clave (PEEP, Pplat, C, R, trigger, etc.).\n\n37 38 Actualización de la taxonomía de los modos de ventilación mecánica | Medicina Intensiva\nhttps://www.medintensiva.org/es-actualizacion-taxonomia-modos-ventilacion-mecanica-articulo-S0210569125000750\n8\n\n---\n\n### Chequeo rápido\n- ¿Qué concepto nuevo te quedó más claro en estas páginas?\n- Escribe 1 ejemplo clínico donde esta información cambie una decisión ventilatoria.\n"
+      }
+    },
+    {
+      "id": "m4-case",
+      "order": 9,
+      "type": "case",
+      "title": "Caso clínico: integración y decisiones",
+      "content": {
+        "markdown": "## Caso clínico guiado\n\n**Objetivo:** aplicar lo aprendido para tomar 2–3 decisiones *consciente de los riesgos*.\n\n### Caso\nPaciente adulto con insuficiencia respiratoria aguda, intubado y conectado a ventilación mecánica. Presenta dificultad para sincronizar con el ventilador y alarmas frecuentes.\n\n### Preguntas\n1. ¿Qué **variable** crees que está desajustada (PEEP, VT, FR, trigger, flujo, Ti, ciclado)?\n2. ¿Qué dato del ventilador/monitor usarías primero (Ppico, Pplat, bucles, capnografía, ABG)?\n3. Propón **un ajuste inicial** y explica qué esperas ver en la gráfica o en las presiones.\n\n### Pistas\n- Si hay aumento de **Ppico** con **Pplat** estable, piensa en componente **resistivo**.\n- Si suben **Pplat** y **driving pressure**, piensa en componente **elástico** (compliance).\n- Si hay asincronía, revisa **trigger** y **ciclado** antes de “subir sedación”."
+      }
+    },
+    {
+      "id": "m4-summary",
+      "order": 10,
+      "type": "summary",
+      "title": "Cierre: resumen y checklist",
+      "content": {
+        "markdown": "## Resumen y chuleta del módulo\n\n### Checklist (lo mínimo que debes poder decir en voz alta)\n- Defino **cuál variable controla el ventilador** y cuál mide.\n- Distingo **presión resistiva** vs **presión elástica** en el ventilador.\n- Puedo explicar al menos 3 riesgos de una mala programación (VILI, asincronía, hemodinámica).\n\n### Si te atoras…\n- Vuelve a la **ecuación del movimiento** como “mapa mental”.\n- Mira siempre **pico vs meseta** y **driving pressure** antes de “subir todo”.\n- Usa las **curvas** como “electrocardiograma del ventilador”."
+      }
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Cuál es la diferencia entre control de volumen y control de presión?",
+        "¿Cuándo usar A/C vs SIMV?",
+        "¿Qué ventajas tiene la presión de soporte?",
+        "¿Cómo elegir el modo ventilatorio adecuado?",
+        "¿Qué es un modo dual y cuándo usarlo?",
+        "¿Qué diferencia hay entre ventilación mandatoria y espontánea?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "ai_expand_notes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": ["intermediate", "advanced"],
+        "question_types": ["conceptual", "application", "clinical_case"],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [
+    {
+      "id": "exercise-choose-ventilation-mode",
+      "type": "case_practice",
+      "is_evaluation": false,
+      "title": "Elegir el Modo Ventilatorio Apropiado",
+      "instructions": "Lee cada caso clínico y elige el modo ventilatorio más apropiado. Recibirás feedback sobre tu elección.",
+      "estimated_time": 8,
+      "content": {
+        "cases": [
+          {
+            "id": "case-1",
+            "scenario": "Paciente post-operatorio inmediato, aún sedado, sin esfuerzo respiratorio, hemodinámicamente estable.",
+            "options": [
+              "A/C Volumen",
+              "SIMV + PSV",
+              "PSV pura",
+              "CPAP"
+            ],
+            "correct_answer": "A/C Volumen",
+            "feedback_correct": "Correcto. A/C Volumen es ideal aquí porque el paciente no está respirando espontáneamente y necesitamos garantizar ventilación minuto completa. El control de volumen nos asegura un Vt constante.",
+            "feedback_incorrect": "Considera que el paciente NO tiene esfuerzo respiratorio propio. Necesita un modo completamente controlado que garantice la ventilación. PSV y CPAP requieren que el paciente respire."
+          },
+          {
+            "id": "case-2",
+            "scenario": "Paciente con SDRA, necesita ventilación protectora estricta con Vt bajo y control de presión meseta.",
+            "options": [
+              "A/C Volumen",
+              "A/C Presión",
+              "SIMV Volumen",
+              "PSV"
+            ],
+            "correct_answer": "A/C Volumen",
+            "feedback_correct": "Correcto. Aunque contraintuitivo, A/C Volumen es mejor para SDRA porque permite controlar exactamente el Vt (6 mL/kg) y medir Pplat con pausa inspiratoria. Control de presión no garantiza Vt si la compliance cambia.",
+            "feedback_incorrect": "En ventilación protectora para SDRA, necesitas garantizar un Vt bajo exacto (6 mL/kg) y poder medir Pplat. Control de volumen permite esto mejor que presión."
+          },
+          {
+            "id": "case-3",
+            "scenario": "Paciente despertando, comenzando a respirar espontáneamente, estable, preparándose para destete.",
+            "options": [
+              "A/C Volumen",
+              "SIMV + PSV",
+              "PSV pura",
+              "Control de presión"
+            ],
+            "correct_answer": "PSV pura",
+            "feedback_correct": "Excelente elección. PSV permite al paciente controlar completamente su patrón respiratorio (frecuencia, tiempo inspiratorio) mientras recibe soporte. Es ideal para destete porque el paciente hace el trabajo pero con ayuda ajustable.",
+            "feedback_incorrect": "El paciente está respirando espontáneamente y estable. Un modo totalmente espontáneo como PSV es mejor para evaluarlo y preparar extubación. Modos controlados no dejan ver su verdadera capacidad respiratoria."
+          }
+        ]
+      },
+      "hints": [
+        "¿El paciente puede/quiere respirar? Si no → controlado. Si sí → asistido o espontáneo",
+        "¿Necesitas Vt exacto (SDRA, protección pulmonar)? → Volumen control",
+        "¿Paciente confortable y listo para destete? → PSV",
+        "SIMV es un híbrido, útil en transición pero menos común hoy"
+      ],
+      "feedback_on_complete": "¡Muy bien! Has aplicado correctamente el razonamiento clínico para elegir modos. La clave es match entre el modo y el estado del paciente: totalmente controlado si no respira, asistido en transición, espontáneo si está listo para destete.",
+      "learning_points": [
+        "La elección del modo depende del drive respiratorio del paciente",
+        "Ventilación protectora (SDRA) requiere control de volumen",
+        "Destete se facilita con modos espontáneos como PSV",
+        "No hay un 'mejor modo universal', depende del contexto clínico"
+      ]
+    }
+  ],
+  "quiz": {
+    "id": "quiz-m4",
+    "passingScore": 6,
+    "questions": [
+      {
+        "id": "m4-q1",
+        "type": "multiple-choice",
+        "question": "En modos controlados por volumen (VCV), la variable controlada es:",
+        "options": [
+          "Presión",
+          "Volumen/flujo",
+          "PEEP",
+          "Ciclado"
+        ],
+        "correctAnswer": "Volumen/flujo",
+        "explanation": "En VCV el ventilador garantiza un volumen (y patrón de flujo); la presión resultante varía según mecánica.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "m4-q2",
+        "type": "multiple-choice",
+        "question": "En modos controlados por presión (PCV), la variable controlada es:",
+        "options": [
+          "Volumen",
+          "Presión inspiratoria",
+          "Frecuencia del paciente",
+          "Capnografía"
+        ],
+        "correctAnswer": "Presión inspiratoria",
+        "explanation": "En PCV se fija presión (y tiempo); el volumen entregado depende de compliance/resistencia.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "m4-q3",
+        "type": "multiple-choice",
+        "question": "¿Qué significa 'asistido'?",
+        "options": [
+          "El ventilador nunca entrega ciclos",
+          "El paciente participa disparando o modulando la respiración",
+          "Solo se usa en anestesia",
+          "Siempre es volumen controlado"
+        ],
+        "correctAnswer": "El paciente participa disparando o modulando la respiración",
+        "explanation": "Asistencia implica que el paciente participa (trigger) y el ventilador ayuda según el modo.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "m4-q4",
+        "type": "multiple-choice",
+        "question": "Un riesgo típico de PCV si la compliance mejora súbitamente es:",
+        "options": [
+          "Aumentar el VT y causar volutrauma",
+          "Disminuir VT y causar hipercapnia",
+          "Bajar FiO₂ automáticamente",
+          "Aumentar PEEP"
+        ],
+        "correctAnswer": "Aumentar el VT y causar volutrauma",
+        "explanation": "Si se mantiene presión y aumenta compliance, el volumen entregado puede aumentar y elevar riesgo de volutrauma.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "m4-q5",
+        "type": "multiple-choice",
+        "question": "La forma más útil de clasificar modos para entenderlos rápido es:",
+        "options": [
+          "Por marca del ventilador",
+          "Por variable controlada y variable de ciclado",
+          "Por color de la pantalla",
+          "Por edad del paciente"
+        ],
+        "correctAnswer": "Por variable controlada y variable de ciclado",
+        "explanation": "Pensar en variable controlada (presión/volumen) y en disparo/ciclado ayuda a entender cualquier modo.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [
+      {
+        "title": "es.scribd.com/presentation/411314920/Modos-Ventilatorios-No-...",
+        "type": "article",
+        "url": "https://es.scribd.com/presentation/411314920/Modos-Ventilatorios-No-Convencionales-Final",
+        "description": ""
+      },
+      {
+        "title": "respiratory-therapy.com/department-management/clinical/venti...",
+        "type": "article",
+        "url": "https://respiratory-therapy.com/department-management/clinical/ventilator-graphics-made-easy/",
+        "description": ""
+      },
+      {
+        "title": "files.sld.cu/anestesiologia/files/2012/06/ventmeca.pdf?viewT...",
+        "type": "article",
+        "url": "http://files.sld.cu/anestesiologia/files/2012/06/ventmeca.pdf?viewType=Print&viewClass=Print",
+        "description": ""
+      },
+      {
+        "title": "www.studocu.com/es-mx/document/universidad-autonoma-del-esta...",
+        "type": "article",
+        "url": "https://www.studocu.com/es-mx/document/universidad-autonoma-del-estado-de-morelos/anatomia-y-fisiologia-humana-i/",
+        "description": ""
+      },
+      {
+        "title": "www.merckmanuals.com/es-us/professional/cuidados-cr%C3%ADtic...",
+        "type": "article",
+        "url": "https://www.merckmanuals.com/es-us/professional/cuidados-cr%C3%ADticos/insuficiencia-respiratoria-y-ventilaci%C3%B3n-",
+        "description": ""
+      },
+      {
+        "title": "files.sld.cu/anestesiologia/files/2012/06/ventilacion-mecani...",
+        "type": "article",
+        "url": "https://files.sld.cu/anestesiologia/files/2012/06/ventilacion-mecanica.pdf",
+        "description": ""
+      },
+      {
+        "title": "medintensiva.org/en-actualizacion-taxonomia-modos-ventilacio...",
+        "type": "article",
+        "url": "https://medintensiva.org/en-actualizacion-taxonomia-modos-ventilacion-mecanica-articulo-S0210569125000750",
+        "description": ""
+      },
+      {
+        "title": "www.medintensiva.org/es-modos-controlados-por-presion-versus...",
+        "type": "article",
+        "url": "https://www.medintensiva.org/es-modos-controlados-por-presion-versus-articulo-S0210569112003166",
+        "description": ""
+      },
+      {
+        "title": "enfermeria.medicina-intensiva.cl/docs/7.pdf",
+        "type": "article",
+        "url": "https://enfermeria.medicina-intensiva.cl/docs/7.pdf",
+        "description": ""
+      },
+      {
+        "title": "es.slideshare.net/slideshow/ventilacion-mecanica-modos-venti...",
+        "type": "article",
+        "url": "https://es.slideshare.net/slideshow/ventilacion-mecanica-modos-ventilatorios-pptx/269591488",
+        "description": ""
+      },
+      {
+        "title": "www.medintensiva.org/es-actualizacion-taxonomia-modos-ventil...",
+        "type": "article",
+        "url": "https://www.medintensiva.org/es-actualizacion-taxonomia-modos-ventilacion-mecanica-articulo-S0210569125000750",
+        "description": ""
+      }
+    ],
+    "references": [
+      {
+        "authors": "",
+        "year": null,
+        "title": "y recursos:",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "",
+        "year": null,
+        "title": "Chatburn, R.L",
+        "source": "Fundamentals of Mechanical Ventilation – conceptos de variables de fase y taxonomía de modos 1 16 .",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "",
+        "year": null,
+        "title": "Tobin, M.J",
+        "source": "Principles and Practice of Mechanical Ventilation – diferencias entre control de volumen y de presión, ventajas y desventajas clínicas 21 20 .",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Manual de Ventilación Mecánica, Med. Intensiva",
+        "year": 2025,
+        "title": "– actualización de la taxonomía estandarizada de modos ventilatorios 42 43 .",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "",
+        "year": null,
+        "title": "Merck Manual Profesional – sección de ventilación mecánica, generalidades sobre métodos y modos (resumen en español de control por volumen vs presión, definición de modos A/C) 9 32 .",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Torres, A. Ventilación mecánica en UCI",
+        "year": 2024,
+        "title": "– guía práctica con descripción de modos convencionales: CMV, SIMV, PSV y parámetros básicos 17 10",
+        "source": "1 2 3 6 11 Modos Ventilatorios No Convencionales Final | PDF | Sistema respiratorio | Energía y recursos https://es.scribd.com/presentation/411314920/Modos-Ventilatorios-No-Convencionales-Final 4 5 Ventilator Graphics Made Easy | RT https://respiratory-therapy.com/department-management/clinical/ventilator-graphics-made-easy/ 7 12 13 14 15 Microsoft Word - Ventilacion Mec.nica.doc http://files.sld.cu/anestesiologia/files/2012/06/ventmeca.pdf?viewType=Print&viewClass=Print 8 Ventmeca - Ventilacion mecanica, proceso respiratorio, fases de la ventilacion mecanica - - Studocu https://www.studocu.com/es-mx/document/universidad-autonoma-del-estado-de-morelos/anatomia-y-fisiologia-humana-i/ ventmeca-ventilacion-mecanica-proceso-respiratorio-fases-de-la-ventilacion-mecanica/28620033 9 32 Generalidades sobre la ventilación mecánica - Cuidados críticos - Manual Merck versión para profesionales https://www.merckmanuals.com/es-us/professional/cuidados-cr%C3%ADticos/insuficiencia-respiratoria-y-ventilaci%C3%B3n- mec%C3%A1nica/generalidades-sobre-la-ventilaci%C3%B3n-mec%C3%A1nica 10 17 30 31 Microsoft Word - Ventilacion mecanica.doc https://files.sld.cu/anestesiologia/files/2012/06/ventilacion-mecanica.pdf 16 23 24 28 29 33 36 39 40 41 42 43 Actualización de la taxonomía de los modos de ventilación mecánica | Medicina Intensiva https://medintensiva.org/en-actualizacion-taxonomia-modos-ventilacion-mecanica-articulo-S0210569125000750 18 19 20 21 22 27 Modos controlados por presión versus volumen en la ventilación mecánica invasiva | Medicina Intensiva https://www.medintensiva.org/es-modos-controlados-por-presion-versus-articulo-S0210569112003166 25 26 Grafica Arellano.doc https://enfermeria.medicina-intensiva.cl/docs/7.pdf 34 35 VENTILACION MECANICA: MODOS VENTILATORIOS.pptx https://es.slideshare.net/slideshow/ventilacion-mecanica-modos-ventilatorios-pptx/269591488 37 38 Actualización de la taxonomía de los modos de ventilación mecánica | Medicina Intensiva https://www.medintensiva.org/es-actualizacion-taxonomia-modos-ventilacion-mecanica-articulo-S0210569125000750",
+        "doi": "",
+        "url": "https://es.scribd.com/presentation/411314920/Modos-Ventilatorios-No-Convencionales-Final"
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-14",
+    "source": "VentyLab PDFs (módulos 1–6)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel intermedio. Requiere conocimientos básicos de fisiología respiratoria."
+  }
+}
