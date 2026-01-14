@@ -1,0 +1,12 @@
+{
+  "buildCommand": "npm run build",
+  "installCommand": "npm install && prisma generate",
+  "env": {
+    "PRISMA_GENERATE_SKIP_AUTOINSTALL": "true"
+  },
+  "build": {
+    "env": {
+      "ENABLE_EXPERIMENTAL_COREPACK": "1"
+    }
+  }
+}

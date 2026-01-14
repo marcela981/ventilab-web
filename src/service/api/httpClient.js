@@ -9,34 +9,97 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 segundo
 
+// Clave de localStorage consistente con authService.js
+const TOKEN_KEY = 'ventilab_auth_token';
+
+// Promise para evitar múltiples solicitudes de token simultáneas
+let tokenRefreshPromise = null;
+
 /**
- * Obtener token de autenticación desde NextAuth
- * Nota: En Next.js con NextAuth, el token se maneja automáticamente
- * a través de cookies. Para requests desde el cliente, NextAuth
- * puede proporcionar el token JWT a través de getSession.
- * 
- * Por ahora, intentamos obtener desde localStorage o usar cookies.
- * En producción, deberías usar getSession de next-auth/react.
+ * Obtener token de autenticación
+ * Primero intenta localStorage, luego el endpoint backend-token
  */
 async function getAuthToken() {
   try {
-    if (typeof window !== 'undefined') {
-      // Intentar obtener token desde localStorage (si se guarda ahí)
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        return token;
-      }
-
-      // Si usas NextAuth, el token puede estar en la sesión
-      // Para obtenerlo, necesitarías usar getSession de next-auth/react
-      // Por ahora, retornamos null y el backend manejará la autenticación
-      // a través de cookies si NextAuth está configurado correctamente
+    if (typeof window === 'undefined') {
+      return null;
     }
-    return null;
+
+    // Intentar obtener token desde localStorage
+    const storedToken = localStorage.getItem(TOKEN_KEY);
+    if (storedToken) {
+      return storedToken;
+    }
+
+    // Si no hay token, intentar obtenerlo del endpoint backend-token
+    return await refreshBackendToken();
   } catch (error) {
-    console.error('Error al obtener token de autenticación:', error);
+    console.error('[httpClient] Error al obtener token de autenticación:', error);
     return null;
   }
+}
+
+/**
+ * Obtener token del backend a través de NextAuth
+ */
+async function refreshBackendToken() {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  // Evitar múltiples solicitudes simultáneas
+  if (tokenRefreshPromise) {
+    return tokenRefreshPromise;
+  }
+
+  tokenRefreshPromise = (async () => {
+    try {
+      const response = await fetch('/api/auth/backend-token', {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Usuario no autenticado en NextAuth, no es un error
+          console.debug('[httpClient] Usuario no autenticado en NextAuth');
+          return null;
+        }
+        throw new Error(`Backend token request failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data?.success && data?.token) {
+        // Guardar token en localStorage
+        localStorage.setItem(TOKEN_KEY, data.token);
+        
+        // Guardar datos del usuario si están disponibles
+        if (data.user) {
+          try {
+            localStorage.setItem('ventilab_user_data', JSON.stringify(data.user));
+          } catch {
+            // Ignorar errores de quota
+          }
+        }
+        
+        return data.token;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('[httpClient] Error refreshing backend token:', error);
+      return null;
+    } finally {
+      tokenRefreshPromise = null;
+    }
+  })();
+
+  return tokenRefreshPromise;
 }
 
 /**
@@ -49,20 +112,30 @@ function delay(ms) {
 /**
  * Realizar request con retry logic
  */
-async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
+async function fetchWithRetry(url, options, retries = MAX_RETRIES, hasRetried401 = false) {
   try {
     const response = await fetch(url, options);
     
-    // Si es un error 401, no hacer retry, redirigir a login
-    if (response.status === 401) {
-      handleUnauthorized();
+    // Si es un error 401 y no hemos intentado refrescar el token
+    if (response.status === 401 && !hasRetried401) {
+      const tokenRefreshed = await handleUnauthorized();
+      
+      if (tokenRefreshed) {
+        // Token refrescado, reintentar con nuevo token
+        const newToken = localStorage.getItem(TOKEN_KEY);
+        if (newToken && options.headers) {
+          options.headers['Authorization'] = `Bearer ${newToken}`;
+        }
+        return fetchWithRetry(url, options, retries, true);
+      }
+      
       throw new Error('No autenticado');
     }
 
     // Si es un error 5xx, intentar retry
     if (response.status >= 500 && retries > 0) {
       await delay(RETRY_DELAY);
-      return fetchWithRetry(url, options, retries - 1);
+      return fetchWithRetry(url, options, retries - 1, hasRetried401);
     }
 
     return response;
@@ -70,7 +143,7 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
     // Si es error de red y quedan retries, intentar de nuevo
     if (retries > 0 && (error.name === 'TypeError' || error.message.includes('fetch'))) {
       await delay(RETRY_DELAY);
-      return fetchWithRetry(url, options, retries - 1);
+      return fetchWithRetry(url, options, retries - 1, hasRetried401);
     }
     throw error;
   }
@@ -79,14 +152,34 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
 /**
  * Manejar error 401 (no autenticado)
  */
-function handleUnauthorized() {
+async function handleUnauthorized() {
   if (typeof window !== 'undefined') {
-    // Limpiar token local
-    localStorage.removeItem('authToken');
+    // Intentar refrescar el token primero
+    const newToken = await refreshBackendToken();
+    
+    if (newToken) {
+      // Token refrescado exitosamente, no redirigir
+      return true;
+    }
+    
+    // Limpiar tokens locales
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem('ventilab_user_data');
+    
+    // Disparar evento de sesión expirada
+    try {
+      window.dispatchEvent(new CustomEvent('auth:session-expired', {
+        detail: { reason: 'Token inválido o expirado' }
+      }));
+    } catch {
+      // Ignorar si CustomEvent no está disponible
+    }
     
     // Redirigir a login
     window.location.href = '/auth/signin';
+    return false;
   }
+  return false;
 }
 
 /**
@@ -219,13 +312,35 @@ export const httpClient = {
 };
 
 /**
- * Función helper para obtener token desde NextAuth session
- * Debe ser llamada desde componentes que tengan acceso a useSession
+ * Función helper para guardar token de autenticación
+ * @param {string} token - JWT token a guardar
  */
 export function setAuthToken(token) {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('authToken', token);
+    localStorage.setItem(TOKEN_KEY, token);
   }
+}
+
+/**
+ * Función helper para remover token de autenticación
+ */
+export function removeAuthToken() {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem('ventilab_user_data');
+  }
+}
+
+/**
+ * Función para forzar refresco del token del backend
+ * Útil después de login con NextAuth
+ */
+export async function forceTokenRefresh() {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(TOKEN_KEY);
+    return await refreshBackendToken();
+  }
+  return null;
 }
 
 export default httpClient;
