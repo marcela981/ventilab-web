@@ -75,6 +75,7 @@ export const useOutboxReconciliation = ({
           lessonId: event.lessonId,
           progress: event.progress,
           completed: event.completed,
+          completionPercentage: event.completionPercentage,
           timeSpentDelta: event.timeSpentDelta,
           lastAccessed: event.lastAccessed,
         });

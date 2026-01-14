@@ -183,7 +183,10 @@ const getAuthHeaders = () => {
 };
 
 const buildUrl = (path) => {
-  return `${apiBaseUrl.replace(/\/$/, '')}${path}`;
+  const trimmed = apiBaseUrl.replace(/\/$/, '');
+  const hasApiSegment = /\/api(\/|$)/.test(trimmed);
+  const base = hasApiSegment ? trimmed : `${trimmed}/api`;
+  return `${base}${path}`;
 };
 
 const parseResponse = async (response) => {
@@ -319,6 +322,7 @@ export const getModuleProgress = async (moduleId) => {
  * @param {string} payload.lessonId - Lesson ID (required)
  * @param {number} [payload.progress] - Progress value 0.0-1.0 (optional)
  * @param {boolean} [payload.completed] - Whether lesson is completed (optional)
+ * @param {number} [payload.completionPercentage] - Completion percentage 0-100 (optional)
  * @param {number} [payload.timeSpentDelta] - Time spent delta in minutes (optional, added to existing)
  * @param {string} [payload.lastAccessed] - Last accessed timestamp ISO 8601 (optional)
  * @returns {Promise<UpdateLessonProgressResponseDTO>} Updated lesson and module progress
@@ -351,6 +355,7 @@ export const updateLessonProgress = async (payload) => {
         lessonId: payload.lessonId,
         ...(payload.progress !== undefined && { progress: payload.progress }),
         ...(payload.completed !== undefined && { completed: payload.completed }),
+        ...(payload.completionPercentage !== undefined && { completionPercentage: payload.completionPercentage }),
         ...(payload.timeSpentDelta !== undefined && { timeSpentDelta: payload.timeSpentDelta }),
         ...(payload.lastAccessed !== undefined && { lastAccessed: payload.lastAccessed }),
       };

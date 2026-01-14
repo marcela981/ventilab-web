@@ -4,7 +4,7 @@
   "title": "Ventilación Controlada por Volumen (VCV)",
   "description": "Lección sobre ventilación controlada por volumen (VCV). Cubre fundamentos fisiológicos, parametrización, lectura de ondas, seguridad (Pplat, PIP), asincronías típicas de VCV (doble disparo y flow starvation) y aplicación protectora tipo ARDSNet en ARDS.",
   "order": 1,
-  "estimatedTime": 60,
+  "estimatedTime": 95,
   "difficulty": "intermediate",
   "bloomLevel": "apply",
   "learningObjectives": [
@@ -41,58 +41,148 @@
       }
     },
     {
-      "id": "configuracion-inicial-vcv",
+      "id": "configuracion-inicial-vcv-a",
       "order": 3,
       "type": "procedure",
       "title": "Configuración Inicial",
-      "estimatedTime": 12,
       "content": {
-        "markdown": "### Parámetros clave en VCV\n\n| Parámetro | Valor típico | Justificación |\n|----------|--------------|---------------|\n| **Vt** | 6 ml/kg PBW | Reduce volutrauma (protección pulmonar) |\n| **RR** | 16-20/min | Compensa VT bajo, mantiene ventilación minuto |\n| **PEEP** | Según tabla PEEP/FiO₂ | Recluta alveolos, mejora oxigenación |\n| **FiO₂** | 1.0 inicial, reducir según tabla | Inicio seguro, reducir cuando sea posible |\n| **Flujo** | 60-80 L/min | Permite tiempo espiratorio adecuado |\n| **I:E** | 1:1 a 1:2 | Normal, no requiere prolongación |\n| **Pausa inspiratoria** | 0.3-0.5 s | Permite medir Pplat |\n\n### Pasos de configuración\n\n1. **Calcular PBW (Peso Corporal Ideal)**:\n   - Hombres: PBW = 50 + 0.91 × (altura en cm - 152.4)\n   - Mujeres: PBW = 45.5 + 0.91 × (altura en cm - 152.4)\n\n2. **Calcular VT inicial**:\n   - VT = 6 ml/kg × PBW\n\n3. **Configurar ventilador**:\n   - Modo: VCV Asistido-Control\n   - VT: Valor calculado\n   - RR: 16-20/min\n   - PEEP: Según tabla PEEP/FiO₂\n   - FiO₂: 1.0 inicial\n   - Flujo: 60-80 L/min (onda cuadrada)\n   - Pausa inspiratoria: 0.3-0.5 s\n\n4. **Medir Presión Plateau**:\n   - Esperar 2-3 respiraciones después de configurar\n   - Activar pausa inspiratoria\n   - Leer presión plateau en pantalla del ventilador\n   - **Objetivo**: Pplateau ≤ 30 cmH₂O\n\n5. **Ajustar según Presión Plateau**:\n   - Si Pplateau > 30 cmH₂O: Reducir VT en 1 ml/kg (mínimo 4 ml/kg)\n   - Si Pplateau < 25 cmH₂O y VT < 6 ml/kg: Puede aumentarse VT gradualmente hasta 6 ml/kg\n   - Si Pplateau 25-30 cmH₂O: Mantener configuración actual"
-      }
+        "markdown": "### Parámetros clave en VCV\n\n| Parámetro | Valor típico | Justificación |\n|----------|--------------|---------------|\n| **Vt** | 6 ml/kg PBW | Reduce volutrauma (protección pulmonar) |\n| **RR** | 16-20/min | Compensa VT bajo, mantiene ventilación minuto |\n| **PEEP** | Según tabla PEEP/FiO₂ | Recluta alveolos, mejora oxigenación |\n| **FiO₂** | 1.0 inicial, reducir según tabla | Inicio seguro, reducir cuando sea posible |\n| **Flujo** | 60-80 L/min | Permite tiempo espiratorio adecuado |\n| **I:E** | 1:1 a 1:2 | Normal, no requiere prolongación |\n| **Pausa inspiratoria** | 0.3-0.5 s | Permite medir Pplat |"
+      },
+      "estimatedTime": 5
     },
     {
-      "id": "algoritmo-ajustes-vcv",
+      "id": "configuracion-inicial-vcv-b",
       "order": 4,
       "type": "procedure",
-      "title": "Algoritmo de Ajustes",
-      "estimatedTime": 10,
+      "title": "Continuación",
       "content": {
-        "markdown": "### Algoritmo de ajuste según presión plateau\n\n| Pplateau | Acción |\n|----------|--------|\n| < 25 cmH₂O | Si VT < 6 ml/kg, puede aumentarse gradualmente hasta 6 ml/kg |\n| 25-30 cmH₂O | Mantener VT actual |\n| > 30 cmH₂O | Reducir VT en 1 ml/kg (mínimo 4 ml/kg) |\n\n### Algoritmo de ajuste según pH\n\n| pH | FR Actual | Acción |\n|-----|-----------|--------|\n| > 7.30 | 16-20/min | Mantener |\n| 7.25-7.30 | 16-20/min | Mantener o aumentar ligeramente a 20-24/min |\n| 7.15-7.25 | < 30/min | Aumentar a 24-30/min |\n| < 7.15 | < 35/min | Aumentar a 30-35/min, considerar bicarbonato |\n\n### Interpretación PIP vs Pplat\n\n- **↑PIP con Pplat normal** → problema de **resistencia** (broncoespasmo, secreciones, tubo acodado)\n- **↑PIP y ↑Pplat** → ↓compliance (edema/SDRA/atelectasias)\n- **ΔP** = Pplat − PEEP; objetivo práctico en SDRA: mantener ΔP bajo (≈ <15 cmH₂O) junto con VT bajo (≈ 6 mL/kg PC)\n\n### Resolución de asincronías\n\n**Flow starvation**:\n- Síntomas: concavidad inicial de presión, uso de músculos accesorios\n- Solución: ↑ flujo (o acortar TI manteniendo VT), optimizar sedación/analgesia, evaluar resistencia\n\n**Doble disparo**:\n- Síntomas: dos ciclos consecutivos con un solo esfuerzo\n- Solución: prolongar **TI** o incrementar ligeramente **VT** dentro de límites protectores; optimizar sedación; valorar modos de soporte si persiste"
-      }
+        "markdown": "### Pasos de configuración\n\n1. **Calcular PBW (Peso Corporal Ideal)**:\n   - Hombres: PBW = 50 + 0.91 × (altura en cm - 152.4)\n   - Mujeres: PBW = 45.5 + 0.91 × (altura en cm - 152.4)\n\n2. **Calcular VT inicial**:\n   - VT = 6 ml/kg × PBW\n\n3. **Configurar ventilador**:\n   - Modo: VCV Asistido-Control\n   - VT: Valor calculado\n   - RR: 16-20/min\n   - PEEP: Según tabla PEEP/FiO₂\n   - FiO₂: 1.0 inicial\n   - Flujo: 60-80 L/min (onda cuadrada)\n   - Pausa inspiratoria: 0.3-0.5 s\n\n4. **Medir Presión Plateau**:\n   - Esperar 2-3 respiraciones después de configurar\n   - Activar pausa inspiratoria\n   - Leer presión plateau en pantalla del ventilador\n   - **Objetivo**: Pplateau ≤ 30 cmH₂O\n\n5. **Ajustar según Presión Plateau**:\n   - Si Pplateau > 30 cmH₂O: Reducir VT en 1 ml/kg (mínimo 4 ml/kg)\n   - Si Pplateau < 25 cmH₂O y VT < 6 ml/kg: Puede aumentarse VT gradualmente hasta 6 ml/kg\n   - Si Pplateau 25-30 cmH₂O: Mantener configuración actual"
+      },
+      "estimatedTime": 7
     },
     {
-      "id": "monitorizacion-curvas-vcv",
+      "id": "algoritmo-ajustes-vcv-a",
       "order": 5,
-      "type": "theory",
-      "title": "Monitorización y Curvas",
-      "estimatedTime": 12,
+      "type": "procedure",
+      "title": "Algoritmo de Ajustes",
       "content": {
-        "markdown": "### Interpretación de ondas en VCV\n\n#### Curvas típicas\n\n- **Volumen**: rampa lineal hasta Vt\n- **Flujo**: típicamente **cuadrado** (constante) durante la inspiración; espiración pasiva exponencial\n- **Presión**: ascenso hasta **PIP**; con pausa inspiratoria se obtiene **Pplat**\n\n#### Claves de interpretación\n\n- **Presión–tiempo**: Pplat elevada con pausa → ↓C; gap Ppeak−Pplat grande → ↑R\n- **Flujo–tiempo**: espiración que no llega a 0 antes del siguiente ciclo → atrapamiento/auto-PEEP\n- **Volumen–tiempo**: plató incompleto sugiere fugas\n- **Loop P–V**: gancho superior derecho → sobredistensión; desplazamiento hacia la derecha → ↓C\n- **Loop F–V**: muescas/irregularidades → secreciones/broncoespasmo\n\n### Parámetros críticos a monitorizar\n\n1. **Presión Plateau (Pplateau)**:\n   - Medir cada 4 horas rutinariamente\n   - Después de cada cambio de VT\n   - Después de cambios de PEEP\n   - **Objetivo**: ≤ 30 cmH₂O (crítico)\n\n2. **Volumen Tidal Exhalado**:\n   - Monitorear volumen que realmente sale del paciente\n   - Comparar con volumen programado\n   - Diferencia indica fugas\n\n3. **Compliance Dinámica**:\n   - Cálculo: Compliance (mL/cmH₂O) = VT / (Pplateau - PEEP)\n   - Valores normales: > 50 mL/cmH₂O\n   - SDRA leve: 30-50 mL/cmH₂O\n   - SDRA moderado: 20-30 mL/cmH₂O\n   - SDRA severo: < 20 mL/cmH₂O"
-      }
+        "markdown": "### Algoritmo de ajuste según presión plateau\n\n| Pplateau | Acción |\n|----------|--------|\n| < 25 cmH₂O | Si VT < 6 ml/kg, puede aumentarse gradualmente hasta 6 ml/kg |\n| 25-30 cmH₂O | Mantener VT actual |\n| > 30 cmH₂O | Reducir VT en 1 ml/kg (mínimo 4 ml/kg) |\n\n### Algoritmo de ajuste según pH\n\n| pH | FR Actual | Acción |\n|-----|-----------|--------|\n| > 7.30 | 16-20/min | Mantener |\n| 7.25-7.30 | 16-20/min | Mantener o aumentar ligeramente a 20-24/min |\n| 7.15-7.25 | < 30/min | Aumentar a 24-30/min |\n| < 7.15 | < 35/min | Aumentar a 30-35/min, considerar bicarbonato |"
+      },
+      "estimatedTime": 5
     },
     {
-      "id": "alarmas-resolucion-vcv",
+      "id": "algoritmo-ajustes-vcv-b",
       "order": 6,
       "type": "procedure",
-      "title": "Alarmas y Resolución",
-      "estimatedTime": 8,
+      "title": "Continuación",
       "content": {
-        "markdown": "### Configuración de alarmas\n\n#### Alarmas críticas\n\n1. **Alarma de PIP alto** (p. ej., 35–40 cmH₂O):\n   - Un **PIP** elevado en VCV debe gatillar evaluación del circuito, del tubo y del paciente\n   - Causas comunes: moco, acodamiento, broncoespasmo, neumotórax\n   - Acciones: aspirar secreciones, evaluar posición del tubo, verificar mordida del tubo\n\n2. **Alarma de volumen/ventilación minuto bajo**:\n   - Puede indicar fugas, desconexión o cambios en mecánica\n   - Verificar conexiones del circuito\n   - Evaluar manguito del tubo\n   - Considerar cambio de tubo si es necesario\n\n### Resolución de problemas comunes\n\n#### Problema: PIP elevado con Pplat normal\n\n- **Causa**: Aumento de resistencia (secreciones, broncoespasmo, tubo acodado)\n- **Acción**:\n  1. Aspirar secreciones\n  2. Evaluar posición/acodamiento del tubo\n  3. Tratar broncoespasmo si está presente\n  4. Verificar mordida del tubo\n\n#### Problema: PIP y Pplat elevados\n\n- **Causa**: Disminución de compliance (edema, SDRA, atelectasias)\n- **Acción**:\n  1. Reducir VT en 1 ml/kg (mínimo 4 ml/kg)\n  2. Aumentar frecuencia respiratoria para mantener ventilación minuto\n  3. Aceptar hipercapnia permisiva (pH ≥ 7.15)\n  4. Evaluar causas reversibles (atelectasia, posición)\n\n#### Problema: Flow starvation\n\n- **Síntomas**: Concavidad inicial de presión, uso de músculos accesorios, disnea\n- **Acción**:\n  1. Aumentar flujo (o acortar TI manteniendo VT)\n  2. Optimizar sedación/analgesia\n  3. Evaluar resistencia\n  4. Revalorar curvas tras intervención"
-      }
+        "markdown": "### Interpretación PIP vs Pplat\n\n- **↑PIP con Pplat normal** → problema de **resistencia** (broncoespasmo, secreciones, tubo acodado)\n- **↑PIP y ↑Pplat** → ↓compliance (edema/SDRA/atelectasias)\n- **ΔP** = Pplat − PEEP; objetivo práctico en SDRA: mantener ΔP bajo (≈ <15 cmH₂O) junto con VT bajo (≈ 6 mL/kg PC)\n\n### Resolución de asincronías\n\n**Flow starvation**:\n- Síntomas: concavidad inicial de presión, uso de músculos accesorios\n- Solución: ↑ flujo (o acortar TI manteniendo VT), optimizar sedación/analgesia, evaluar resistencia\n\n**Doble disparo**:\n- Síntomas: dos ciclos consecutivos con un solo esfuerzo\n- Solución: prolongar **TI** o incrementar ligeramente **VT** dentro de límites protectores; optimizar sedación; valorar modos de soporte si persiste"
+      },
+      "estimatedTime": 6
     },
     {
-      "id": "caso-practico-vcv",
+      "id": "monitorizacion-curvas-vcv-a",
       "order": 7,
+      "type": "theory",
+      "title": "Monitorización y Curvas",
+      "content": {
+        "markdown": "### Interpretación de ondas en VCV\n\n#### Curvas típicas\n\n- **Volumen**: rampa lineal hasta Vt\n- **Flujo**: típicamente **cuadrado** (constante) durante la inspiración; espiración pasiva exponencial\n- **Presión**: ascenso hasta **PIP**; con pausa inspiratoria se obtiene **Pplat**"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "monitorizacion-curvas-vcv-b",
+      "order": 8,
+      "type": "theory",
+      "title": "Continuación",
+      "content": {
+        "markdown": "#### Claves de interpretación\n\n- **Presión–tiempo**: Pplat elevada con pausa → ↓C; gap Ppeak−Pplat grande → ↑R\n- **Flujo–tiempo**: espiración que no llega a 0 antes del siguiente ciclo → atrapamiento/auto-PEEP\n- **Volumen–tiempo**: plató incompleto sugiere fugas\n- **Loop P–V**: gancho superior derecho → sobredistensión; desplazamiento hacia la derecha → ↓C\n- **Loop F–V**: muescas/irregularidades → secreciones/broncoespasmo\n\n### Parámetros críticos a monitorizar\n\n1. **Presión Plateau (Pplateau)**:\n   - Medir cada 4 horas rutinariamente\n   - Después de cada cambio de VT\n   - Después de cambios de PEEP\n   - **Objetivo**: ≤ 30 cmH₂O (crítico)\n\n2. **Volumen Tidal Exhalado**:\n   - Monitorear volumen que realmente sale del paciente\n   - Comparar con volumen programado\n   - Diferencia indica fugas\n\n3. **Compliance Dinámica**:\n   - Cálculo: Compliance (mL/cmH₂O) = VT / (Pplateau - PEEP)\n   - Valores normales: > 50 mL/cmH₂O\n   - SDRA leve: 30-50 mL/cmH₂O\n   - SDRA moderado: 20-30 mL/cmH₂O\n   - SDRA severo: < 20 mL/cmH₂O"
+      },
+      "estimatedTime": 9
+    },
+    {
+      "id": "alarmas-resolucion-vcv-a",
+      "order": 9,
+      "type": "procedure",
+      "title": "Alarmas y Resolución",
+      "content": {
+        "markdown": "### Configuración de alarmas\n\n#### Alarmas críticas\n\n1. **Alarma de PIP alto** (p. ej., 35–40 cmH₂O):\n   - Un **PIP** elevado en VCV debe gatillar evaluación del circuito, del tubo y del paciente\n   - Causas comunes: moco, acodamiento, broncoespasmo, neumotórax\n   - Acciones: aspirar secreciones, evaluar posición del tubo, verificar mordida del tubo"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "alarmas-resolucion-vcv-b",
+      "order": 10,
+      "type": "procedure",
+      "title": "- **Causa**: Aumento de resistencia (secreciones, bronc",
+      "content": {
+        "markdown": "2. **Alarma de volumen/ventilación minuto bajo**:\n   - Puede indicar fugas, desconexión o cambios en mecánica\n   - Verificar conexiones del circuito\n   - Evaluar manguito del tubo\n   - Considerar cambio de tubo si es necesario"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "alarmas-resolucion-vcv-c",
+      "order": 11,
+      "type": "procedure",
+      "title": "- **Causa**: Disminución de compliance (edema, SDRA, at",
+      "content": {
+        "markdown": "### Resolución de problemas comunes\n\n#### Problema: PIP elevado con Pplat normal\n\n- **Causa**: Aumento de resistencia (secreciones, broncoespasmo, tubo acodado)\n- **Acción**:\n  1. Aspirar secreciones\n  2. Evaluar posición/acodamiento del tubo\n  3. Tratar broncoespasmo si está presente\n  4. Verificar mordida del tubo"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "alarmas-resolucion-vcv-d",
+      "order": 12,
+      "type": "procedure",
+      "title": "Continuación",
+      "content": {
+        "markdown": "#### Problema: PIP y Pplat elevados\n\n- **Causa**: Disminución de compliance (edema, SDRA, atelectasias)\n- **Acción**:\n  1. Reducir VT en 1 ml/kg (mínimo 4 ml/kg)\n  2. Aumentar frecuencia respiratoria para mantener ventilación minuto\n  3. Aceptar hipercapnia permisiva (pH ≥ 7.15)\n  4. Evaluar causas reversibles (atelectasia, posición)\n\n#### Problema: Flow starvation\n\n- **Síntomas**: Concavidad inicial de presión, uso de músculos accesorios, disnea\n- **Acción**:\n  1. Aumentar flujo (o acortar TI manteniendo VT)\n  2. Optimizar sedación/analgesia\n  3. Evaluar resistencia\n  4. Revalorar curvas tras intervención"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "caso-practico-vcv-a",
+      "order": 13,
       "type": "case",
       "title": "Caso Práctico",
-      "estimatedTime": 10,
       "content": {
-        "markdown": "### Caso 1: SDRA con ΔP elevada\n\n**Paciente**: Hombre, 72 kg (PBW ideal 70 kg). VM VC: VT 480 mL (6.9 mL/kg), PEEP 10, Pplat 31, PaO₂/FiO₂ 120.\n\n**Problema**: ΔP = 21 cmH₂O (alta).\n\n**Estrategia**:\n1. Reducir VT a 6 mL/kg (420 mL)\n2. Considerar prono si es posible\n3. Re-evaluar PEEP buscando mejor oxigenación con ΔP más baja\n4. Mantener **Pplat ≤30**\n5. Monitorizar hemodinamia\n\n**Resultado esperado**: ΔP < 15 cmH₂O, Pplat ≤ 30 cmH₂O, mejor oxigenación\n\n### Caso 2: ↑PIP con Pplat normal (resistencia)\n\n**Datos**: VCV, Vt 420 ml, RR 18, PEEP 8; PIP 40, Pplat 22.\n\n**Acción**:\n1. Aspirar secreciones\n2. Evaluar mordida/curva de flujo\n3. Tras aspiración PIP 26\n\n**Conclusión**: incremento resistivo resuelto sin cambio en compliance.\n\n### Caso 3: Flow starvation en VCV\n\n**Datos**: En VCV con flujo 30 L/min y TI 0,7 s, el paciente muestra concavidad de presión al inicio y activación de músculos accesorios.\n\n**Acción**: Se aumenta el flujo a 45 L/min manteniendo Vt; desaparece la concavidad y disminuye la disnea."
-      }
+        "markdown": "### Caso 1: SDRA con ΔP elevada\n\n**Paciente**: Hombre, 72 kg (PBW ideal 70 kg). VM VC: VT 480 mL (6.9 mL/kg), PEEP 10, Pplat 31, PaO₂/FiO₂ 120.\n\n**Problema**: ΔP = 21 cmH₂O (alta).\n\n**Estrategia**:\n1. Reducir VT a 6 mL/kg (420 mL)\n2. Considerar prono si es posible\n3. Re-evaluar PEEP buscando mejor oxigenación con ΔP más baja\n4. Mantener **Pplat ≤30**\n5. Monitorizar hemodinamia"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "caso-practico-vcv-b",
+      "order": 14,
+      "type": "case",
+      "title": "**Datos**: VCV, Vt 420 ml, RR 18, PEEP 8; PIP 40, Pplat",
+      "content": {
+        "markdown": "**Resultado esperado**: ΔP < 15 cmH₂O, Pplat ≤ 30 cmH₂O, mejor oxigenación"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "caso-practico-vcv-c",
+      "order": 15,
+      "type": "case",
+      "title": "**Conclusión**: incremento resistivo resuelto sin cambi",
+      "content": {
+        "markdown": "### Caso 2: ↑PIP con Pplat normal (resistencia)\n\n**Datos**: VCV, Vt 420 ml, RR 18, PEEP 8; PIP 40, Pplat 22."
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "caso-practico-vcv-d",
+      "order": 16,
+      "type": "case",
+      "title": "Continuación",
+      "content": {
+        "markdown": "**Acción**:\n1. Aspirar secreciones\n2. Evaluar mordida/curva de flujo\n3. Tras aspiración PIP 26\n\n**Conclusión**: incremento resistivo resuelto sin cambio en compliance.\n\n### Caso 3: Flow starvation en VCV\n\n**Datos**: En VCV con flujo 30 L/min y TI 0,7 s, el paciente muestra concavidad de presión al inicio y activación de músculos accesorios.\n\n**Acción**: Se aumenta el flujo a 45 L/min manteniendo Vt; desaparece la concavidad y disminuye la disnea."
+      },
+      "estimatedTime": 5
     },
     {
       "id": "resumen-quiz-vcv",
-      "order": 8,
+      "order": 17,
       "type": "summary",
       "title": "Resumen y Quiz",
       "estimatedTime": 5,

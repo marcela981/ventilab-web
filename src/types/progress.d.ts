@@ -26,6 +26,8 @@ export interface LessonProgressDTO {
   lastAccessed: string | null;
   /** Progress value between 0.0 and 1.0 */
   progress: number;
+  /** Completion percentage (0-100) */
+  completionPercentage?: number;
   /** When the record was created (ISO 8601 string) */
   createdAt: string;
   /** When the record was last updated (ISO 8601 string) */
@@ -109,6 +111,8 @@ export interface UpdateLessonProgressRequestDTO {
   progress?: number;
   /** Whether the lesson is completed (optional) */
   completed?: boolean;
+  /** Completion percentage (0-100) (optional) */
+  completionPercentage?: number;
   /** Time spent delta in minutes (will be added to existing timeSpent) (optional) */
   timeSpentDelta?: number;
   /** Last accessed timestamp (ISO 8601 string) (optional) */

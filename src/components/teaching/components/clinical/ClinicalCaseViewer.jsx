@@ -10,7 +10,7 @@
  * @component
  */
 
-import React, { useState, useCallback, useMemo, Suspense, lazy } from 'react';
+import React, { useState, useCallback, useMemo, Suspense, lazy, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -369,7 +369,7 @@ LockedView.propTypes = {
 // Main Component
 // =============================================================================
 
-const ClinicalCaseViewer = ({ moduleId, onBack }) => {
+const ClinicalCaseViewer = ({ moduleId, onBack, onCompleted }) => {
   const { completedLessons } = useLearningProgress();
   const { calculateModuleProgress } = useLessonProgress(completedLessons);
 
@@ -381,6 +381,7 @@ const ClinicalCaseViewer = ({ moduleId, onBack }) => {
   const [retryDialogOpen, setRetryDialogOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const completionNotifiedRef = useRef(false);
 
   // Cargar caso clínico
   const clinicalCase = useMemo(() => {
@@ -622,8 +623,20 @@ const ClinicalCaseViewer = ({ moduleId, onBack }) => {
     setStepAnswers({});
     setFinalResults(null);
     setNetworkError(false);
+    completionNotifiedRef.current = false;
     // El historial se preserva automáticamente (no se borra)
   }, []);
+
+  useEffect(() => {
+    if (!finalResults || completionNotifiedRef.current) {
+      return;
+    }
+
+    completionNotifiedRef.current = true;
+    if (onCompleted) {
+      onCompleted();
+    }
+  }, [finalResults, onCompleted]);
 
   // Cerrar snackbar
   const handleCloseSnackbar = useCallback(() => {
@@ -1007,10 +1020,12 @@ const ClinicalCaseViewer = ({ moduleId, onBack }) => {
 ClinicalCaseViewer.propTypes = {
   moduleId: PropTypes.string.isRequired,
   onBack: PropTypes.func,
+  onCompleted: PropTypes.func,
 };
 
 ClinicalCaseViewer.defaultProps = {
   onBack: null,
+  onCompleted: null,
 };
 
 export default ClinicalCaseViewer;

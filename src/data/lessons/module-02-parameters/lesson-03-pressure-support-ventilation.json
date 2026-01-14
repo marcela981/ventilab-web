@@ -4,7 +4,7 @@
   "title": "Ventilación con Soporte de Presión (PSV)",
   "description": "Lección sobre ventilación con soporte de presión (PSV). Se abordan fundamentos (trigger/limit/cycle), parametrización segura (nivel de soporte, PEEP, sensibilidad de disparo, criterio de ciclaje por flujo, rise time), lectura de curvas, asincronías y su resolución, y uso en destete (SBT).",
   "order": 3,
-  "estimatedTime": 60,
+  "estimatedTime": 118,
   "difficulty": "intermediate",
   "bloomLevel": "apply",
   "learningObjectives": [
@@ -30,68 +30,208 @@
       }
     },
     {
-      "id": "objetivos-psv",
+      "id": "objetivos-psv-a",
       "order": 2,
       "type": "theory",
       "title": "Objetivos de Aprendizaje",
-      "estimatedTime": 5,
       "content": {
-        "markdown": "### Objetivos de esta lección\n\nAl finalizar esta lección, serás capaz de:\n\n1. **Precisar** que en PSV cada ciclo es disparado por el paciente y el ventilador finaliza la inspiración cuando el flujo cae a un umbral porcentual del pico (típicamente 25%)\n2. **Describir** la morfología de las curvas: presión \"cuadrada\" o suavemente redondeada, flujo desacelerado y volumen ascendente no lineal\n3. **Correlacionar** cambios de Vt con variaciones de esfuerzo, resistencia y compliance\n4. **Ajustar** nivel de soporte y PEEP para alcanzar Vt objetivo sin sobreasistencia\n5. **Programar** % de ciclaje por flujo (p. ej., 25% por defecto) y sensibilidad de disparo (evitar auto-disparo y esfuerzos inefectivos)\n6. **Optimizar** rise time y comprender su impacto en confort y potencia entregada\n7. **Reconocer** en curvas ciclado precoz (umbral demasiado alto) y ciclado tardío (umbral demasiado bajo)\n8. **Detectar** esfuerzos inefectivos por auto-PEEP y auto-disparo por fugas\n9. **Aplicar** intervenciones: ajustar % de ciclaje, PEEP, sensibilidad y rise time\n10. **Implementar** SBT con PSV bajo (5–8 cmH₂O) y PEEP 5 cmH₂O cuando corresponda"
-      }
+        "markdown": "### Objetivos de esta lección\n\nAl finalizar esta lección, serás capaz de:\n\n1. **Precisar** que en PSV cada ciclo es disparado por el paciente y el ventilador finaliza la inspiración cuando el flujo cae a un umbral porcentual del pico (típicamente 25%)\n2. **Describir** la morfología de las curvas: presión \"cuadrada\" o suavemente redondeada, flujo desacelerado y volumen ascendente no lineal\n3. **Correlacionar** cambios de Vt con variaciones de esfuerzo, resistencia y compliance"
+      },
+      "estimatedTime": 5
     },
     {
-      "id": "configuracion-inicial-psv",
+      "id": "objetivos-psv-b",
       "order": 3,
-      "type": "procedure",
-      "title": "Configuración Inicial",
-      "estimatedTime": 12,
+      "type": "theory",
+      "title": "Continuación",
       "content": {
-        "markdown": "### Parámetros clave en PSV\n\n| Parámetro | Valor típico | Justificación |\n|----------|--------------|---------------|\n| **Nivel de soporte (PS)** | 5-15 cmH₂O | Principal determinante del pico de flujo y del Vt resultante |\n| **PEEP** | 5-8 cmH₂O | Reclutamiento y contrapeso de auto-PEEP |\n| **% de ciclaje** | 25% del pico (ajustable) | Umbral de flujo al que el ventilador termina la inspiración |\n| **Sensibilidad de disparo** | Flujo o presión (ajustable) | Modula esfuerzo y confort, evita auto-disparo |\n| **Rise time** | Intermedio | Modula velocidad de ascenso a nivel de soporte |\n| **FiO₂** | Según necesidad | Mantener SpO₂ objetivo (88-95%) |\n\n### Pasos de configuración\n\n1. **Calcular PBW (Peso Corporal Ideal)**:\n   - Hombres: PBW = 50 + 0.91 × (altura en cm - 152.4)\n   - Mujeres: PBW = 45.5 + 0.91 × (altura en cm - 152.4)\n\n2. **Configurar nivel de soporte inicial**:\n   - Metas: Vt ~6 ml/kg ≈ 420 ml (para PBW 70 kg) y confort\n   - Inicia con PS 10-12 cmH₂O\n   - Ajusta según Vt observado y esfuerzo del paciente\n\n3. **Configurar ventilador**:\n   - Modo: PSV\n   - PS: Valor inicial (10-12 cmH₂O)\n   - PEEP: 5-8 cmH₂O\n   - % ciclaje: 25% del pico (por defecto)\n   - Disparo: Por flujo o presión (sensible sin auto-disparo)\n   - Rise time: Intermedio\n   - FiO₂: Según necesidad\n\n4. **Observar Vt y esfuerzo**:\n   - Si Vt es bajo y hay signos de fatiga: ↑ PS (2-4 cmH₂O)\n   - Si Vt es alto (> 8 ml/kg): ↓ PS\n   - Objetivo: Vt ~6-8 ml/kg PBW con confort\n\n5. **Evaluar sincronía**:\n   - Verificar que el ciclaje ocurra al final del esfuerzo\n   - Ajustar % de ciclaje si hay ciclado precoz o tardío\n   - Revaluar gases y confort a 10-15 min\n\n### Configuración para SBT (Spontaneous Breathing Trial)\n\n- **PS**: 5-8 cmH₂O\n- **PEEP**: 5 cmH₂O\n- **% ciclaje**: 25% (mantener)\n- **Duración**: 30-120 min\n- **Objetivos**: FR 18-28, Vt ≥5-6 ml/kg, SpO₂ adecuada, sin aumento de trabajo"
-      }
+        "markdown": "4. **Ajustar** nivel de soporte y PEEP para alcanzar Vt objetivo sin sobreasistencia\n5. **Programar** % de ciclaje por flujo (p. ej., 25% por defecto) y sensibilidad de disparo (evitar auto-disparo y esfuerzos inefectivos)\n6. **Optimizar** rise time y comprender su impacto en confort y potencia entregada\n7. **Reconocer** en curvas ciclado precoz (umbral demasiado alto) y ciclado tardío (umbral demasiado bajo)\n8. **Detectar** esfuerzos inefectivos por auto-PEEP y auto-disparo por fugas\n9. **Aplicar** intervenciones: ajustar % de ciclaje, PEEP, sensibilidad y rise time\n10. **Implementar** SBT con PSV bajo (5–8 cmH₂O) y PEEP 5 cmH₂O cuando corresponda"
+      },
+      "estimatedTime": 5
     },
     {
-      "id": "algoritmo-ajustes-psv",
+      "id": "configuracion-inicial-psv-a",
       "order": 4,
       "type": "procedure",
-      "title": "Algoritmo de Ajustes",
-      "estimatedTime": 10,
+      "title": "Configuración Inicial",
       "content": {
-        "markdown": "### Algoritmo de ajuste según Vt observado\n\n| Vt Observado | Esfuerzo | Acción |\n|--------------|----------|--------|\n| < 4 ml/kg PBW | Alto | Aumentar PS en pasos de 2-4 cmH₂O, evaluar esfuerzo |\n| 4-6 ml/kg PBW | Moderado | Mantener si gases aceptables |\n| 6-8 ml/kg PBW | Bajo | Óptimo, mantener |\n| > 8 ml/kg PBW | Muy bajo | Reducir PS, reevaluar |\n\n### Algoritmo de ajuste de % de ciclaje\n\n- **Ciclado precoz (restricción/ARDS)**:\n  - Síntomas: TI termina antes del final del impulso → ↓Vt, doble disparo\n  - Solución: **Bajar** % de ciclaje (ej: 15-20%)\n\n- **Ciclado tardío (EPOC/obstrucción)**:\n  - Síntomas: TI se prolonga más allá del impulso → esfuerzo espiratorio activo, atrapamiento\n  - Solución: **Subir** % de ciclaje (ej: 40-60%) y **optimizar PEEP**\n\n### Algoritmo de resolución de asincronías\n\n1. **Identifica** el patrón (precoz/tardío/inefectivo/auto-disparo) en curvas\n2. **Ajusta** primero el **% de ciclaje** (↓ en precoz; ↑ en tardío)\n3. **Compensa auto-PEEP** con **PEEP externa** y sensibilidad adecuada\n4. Optimiza **rise time** y **trigger**\n5. Reevalúa **Vt/PBW, FR, confort y gases** a 10-15 min\n\n### Manejo de auto-PEEP\n\n- **Esfuerzos inefectivos**: umbral de disparo no alcanzado por **auto-PEEP**\n- **Solución**: ↑PEEP externa (matching parcial 50-80% de la iPEEP), ajustar sensibilidad\n- **Evaluar**: tiempo espiratorio, frecuencia respiratoria, resistencia"
-      }
+        "markdown": "### Parámetros clave en PSV\n\n| Parámetro | Valor típico | Justificación |\n|----------|--------------|---------------|\n| **Nivel de soporte (PS)** | 5-15 cmH₂O | Principal determinante del pico de flujo y del Vt resultante |\n| **PEEP** | 5-8 cmH₂O | Reclutamiento y contrapeso de auto-PEEP |\n| **% de ciclaje** | 25% del pico (ajustable) | Umbral de flujo al que el ventilador termina la inspiración |\n| **Sensibilidad de disparo** | Flujo o presión (ajustable) | Modula esfuerzo y confort, evita auto-disparo |\n| **Rise time** | Intermedio | Modula velocidad de ascenso a nivel de soporte |\n| **FiO₂** | Según necesidad | Mantener SpO₂ objetivo (88-95%) |"
+      },
+      "estimatedTime": 5
     },
     {
-      "id": "monitorizacion-curvas-psv",
+      "id": "configuracion-inicial-psv-b",
       "order": 5,
-      "type": "theory",
-      "title": "Monitorización y Curvas",
-      "estimatedTime": 12,
+      "type": "procedure",
+      "title": "### Configuración para SBT (Spontaneous Breathing Trial",
       "content": {
-        "markdown": "### Interpretación de ondas en PSV\n\n#### Curvas típicas\n\n- **Presión**: ascenso rápido al nivel de soporte y mantenimiento durante la inspiración\n- **Flujo**: **desacelerado**; el ciclaje ocurre al alcanzar el **% del pico** programado\n- **Volumen**: variable; aumenta con mayor soporte, menor resistencia, mayor compliance o mayor esfuerzo\n\n#### Claves de interpretación\n\n- La **configuración del porcentaje de ciclaje** y de la **sensibilidad de disparo** modulan la sincronía\n- **Flujo desacelerado**: pico alto al inicio, disminuye progresivamente\n- **Ciclaje adecuado**: ocurre al final del esfuerzo inspiratorio\n- **Volumen variable**: depende de esfuerzo, mecánica y nivel de soporte\n\n### Patrones de asincronía en curvas\n\n#### Ciclado precoz\n\n- **Curva**: TI termina antes del final del impulso\n- **Síntomas**: ↓Vt, doble disparo\n- **Causa**: % de ciclaje demasiado alto\n- **Solución**: Bajar % de ciclaje\n\n#### Ciclado tardío\n\n- **Curva**: TI se prolonga más allá del impulso\n- **Síntomas**: Esfuerzo espiratorio activo, atrapamiento\n- **Causa**: % de ciclaje demasiado bajo\n- **Solución**: Subir % de ciclaje, optimizar PEEP\n\n#### Esfuerzos inefectivos\n\n- **Curva**: Múltiples esfuerzos sin disparo\n- **Causa**: Auto-PEEP, umbral de disparo no alcanzado\n- **Solución**: ↑PEEP externa, ajustar sensibilidad\n\n#### Auto-disparo\n\n- **Curva**: Activaciones sin esfuerzo\n- **Causa**: Fugas, sensibilidad demasiado alta\n- **Solución**: Reducir sensibilidad, controlar fugas\n\n### Parámetros críticos a monitorizar\n\n1. **Volumen Tidal (Vt)**:\n   - Monitorear Vt observado vs objetivo (6-8 ml/kg PBW)\n   - Variabilidad indica cambios en esfuerzo o mecánica\n\n2. **Frecuencia Respiratoria (FR)**:\n   - Objetivo: 18-28/min en reposo\n   - FR alta puede indicar fatiga o sobreasistencia\n\n3. **Esfuerzo del paciente**:\n   - Evaluar uso de músculos accesorios\n   - Signos de fatiga\n   - Confort\n\n4. **Sincronía**:\n   - Verificar que el ciclaje ocurra al final del esfuerzo\n   - Detectar asincronías en curvas"
-      }
+        "markdown": "### Pasos de configuración\n\n1. **Calcular PBW (Peso Corporal Ideal)**:\n   - Hombres: PBW = 50 + 0.91 × (altura en cm - 152.4)\n   - Mujeres: PBW = 45.5 + 0.91 × (altura en cm - 152.4)\n\n2. **Configurar nivel de soporte inicial**:\n   - Metas: Vt ~6 ml/kg ≈ 420 ml (para PBW 70 kg) y confort\n   - Inicia con PS 10-12 cmH₂O\n   - Ajusta según Vt observado y esfuerzo del paciente\n\n3. **Configurar ventilador**:\n   - Modo: PSV\n   - PS: Valor inicial (10-12 cmH₂O)\n   - PEEP: 5-8 cmH₂O\n   - % ciclaje: 25% del pico (por defecto)\n   - Disparo: Por flujo o presión (sensible sin auto-disparo)\n   - Rise time: Intermedio\n   - FiO₂: Según necesidad\n\n4. **Observar Vt y esfuerzo**:\n   - Si Vt es bajo y hay signos de fatiga: ↑ PS (2-4 cmH₂O)\n   - Si Vt es alto (> 8 ml/kg): ↓ PS\n   - Objetivo: Vt ~6-8 ml/kg PBW con confort\n\n5. **Evaluar sincronía**:\n   - Verificar que el ciclaje ocurra al final del esfuerzo\n   - Ajustar % de ciclaje si hay ciclado precoz o tardío\n   - Revaluar gases y confort a 10-15 min"
+      },
+      "estimatedTime": 6
     },
     {
-      "id": "alarmas-resolucion-psv",
+      "id": "configuracion-inicial-psv-c",
       "order": 6,
       "type": "procedure",
-      "title": "Alarmas y Resolución",
-      "estimatedTime": 8,
+      "title": "Continuación",
       "content": {
-        "markdown": "### Configuración de alarmas\n\n#### Alarmas críticas\n\n1. **Alarma de volumen/ventilación minuto bajos**:\n   - Evaluar esfuerzo, mecánica y nivel de soporte\n   - Considerar cambiar de modo si el impulso neural disminuye\n   - Verificar conexiones del circuito\n\n2. **Alarma de auto-disparo**:\n   - Revisar **sensibilidad**, fugas y oscilaciones\n   - Reducir sensibilidad si es necesario\n   - Controlar fugas en interfaz (NIV)\n\n3. **Alarma de esfuerzos inefectivos**:\n   - Revisar **PEEP** (auto-PEEP), **% de ciclaje** y **rise time**\n   - Aumentar PEEP externa para compensar auto-PEEP\n   - Ajustar sensibilidad\n\n### Resolución de problemas comunes\n\n#### Problema: Ciclado tardío en EPOC\n\n- **Datos**: PSV, PEEP 5, PS 12, % ciclaje 25%; curva muestra TI prolongado con esfuerzo espiratorio activo\n- **Acción**:\n  1. ↑ **% ciclaje a 40-60%**\n  2. Optimizar **PEEP** para auto-PEEP\n  3. Mejora sincronía y ↓ atrapamiento\n\n#### Problema: Ciclado precoz en ARDS\n\n- **Datos**: Restrictivo; terminación al **30%** del pico → TI corto y **doble disparo**\n- **Acción**:\n  1. ↓ **% de ciclaje** (p. ej., 15-20%)\n  2. Revalorar Vt, FR y confort\n\n#### Problema: Esfuerzos inefectivos por auto-PEEP\n\n- **Datos**: SIMV-PC o PSV; múltiples esfuerzos sin disparo\n- **Acción**:\n  1. ↑ **PEEP** externa (matching parcial 50-80% de la iPEEP)\n  2. Optimiza **tiempo espiratorio**\n  3. Ajusta sensibilidad\n  4. PS estable para espontáneas\n\n#### Problema: Auto-disparo por fugas (NIV)\n\n- **Datos**: NIV IPAP/EPAP con fugas; activaciones sin esfuerzo\n- **Acción**:\n  1. Reducir **sensibilidad de disparo** o pasar a trigger por presión\n  2. Activar **compensación de fugas** si disponible\n  3. Reajustar interfaz\n  4. Desaparece auto-disparo"
-      }
+        "markdown": "### Configuración para SBT (Spontaneous Breathing Trial)\n\n- **PS**: 5-8 cmH₂O\n- **PEEP**: 5 cmH₂O\n- **% ciclaje**: 25% (mantener)\n- **Duración**: 30-120 min\n- **Objetivos**: FR 18-28, Vt ≥5-6 ml/kg, SpO₂ adecuada, sin aumento de trabajo"
+      },
+      "estimatedTime": 5
     },
     {
-      "id": "caso-practico-psv",
+      "id": "algoritmo-ajustes-psv-a",
       "order": 7,
+      "type": "procedure",
+      "title": "Algoritmo de Ajustes",
+      "content": {
+        "markdown": "### Algoritmo de ajuste según Vt observado\n\n| Vt Observado | Esfuerzo | Acción |\n|--------------|----------|--------|\n| < 4 ml/kg PBW | Alto | Aumentar PS en pasos de 2-4 cmH₂O, evaluar esfuerzo |\n| 4-6 ml/kg PBW | Moderado | Mantener si gases aceptables |\n| 6-8 ml/kg PBW | Bajo | Óptimo, mantener |\n| > 8 ml/kg PBW | Muy bajo | Reducir PS, reevaluar |"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "algoritmo-ajustes-psv-b",
+      "order": 8,
+      "type": "procedure",
+      "title": "1. **Identifica** el patrón (precoz/tardío/inefectivo/a",
+      "content": {
+        "markdown": "### Algoritmo de ajuste de % de ciclaje\n\n- **Ciclado precoz (restricción/ARDS)**:\n  - Síntomas: TI termina antes del final del impulso → ↓Vt, doble disparo\n  - Solución: **Bajar** % de ciclaje (ej: 15-20%)\n\n- **Ciclado tardío (EPOC/obstrucción)**:\n  - Síntomas: TI se prolonga más allá del impulso → esfuerzo espiratorio activo, atrapamiento\n  - Solución: **Subir** % de ciclaje (ej: 40-60%) y **optimizar PEEP**"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "algoritmo-ajustes-psv-c",
+      "order": 9,
+      "type": "procedure",
+      "title": "- **Esfuerzos inefectivos**: umbral de disparo no alcan",
+      "content": {
+        "markdown": "### Algoritmo de resolución de asincronías\n\n1. **Identifica** el patrón (precoz/tardío/inefectivo/auto-disparo) en curvas\n2. **Ajusta** primero el **% de ciclaje** (↓ en precoz; ↑ en tardío)\n3. **Compensa auto-PEEP** con **PEEP externa** y sensibilidad adecuada\n4. Optimiza **rise time** y **trigger**\n5. Reevalúa **Vt/PBW, FR, confort y gases** a 10-15 min"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "algoritmo-ajustes-psv-d",
+      "order": 10,
+      "type": "procedure",
+      "title": "Continuación",
+      "content": {
+        "markdown": "### Manejo de auto-PEEP\n\n- **Esfuerzos inefectivos**: umbral de disparo no alcanzado por **auto-PEEP**\n- **Solución**: ↑PEEP externa (matching parcial 50-80% de la iPEEP), ajustar sensibilidad\n- **Evaluar**: tiempo espiratorio, frecuencia respiratoria, resistencia"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "monitorizacion-curvas-psv-a",
+      "order": 11,
+      "type": "theory",
+      "title": "Monitorización y Curvas",
+      "content": {
+        "markdown": "### Interpretación de ondas en PSV\n\n#### Curvas típicas\n\n- **Presión**: ascenso rápido al nivel de soporte y mantenimiento durante la inspiración\n- **Flujo**: **desacelerado**; el ciclaje ocurre al alcanzar el **% del pico** programado\n- **Volumen**: variable; aumenta con mayor soporte, menor resistencia, mayor compliance o mayor esfuerzo"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "monitorizacion-curvas-psv-b",
+      "order": 12,
+      "type": "theory",
+      "title": "- **Curva**: TI termina antes del final del impulso",
+      "content": {
+        "markdown": "#### Claves de interpretación\n\n- La **configuración del porcentaje de ciclaje** y de la **sensibilidad de disparo** modulan la sincronía\n- **Flujo desacelerado**: pico alto al inicio, disminuye progresivamente\n- **Ciclaje adecuado**: ocurre al final del esfuerzo inspiratorio\n- **Volumen variable**: depende de esfuerzo, mecánica y nivel de soporte"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "monitorizacion-curvas-psv-c",
+      "order": 13,
+      "type": "theory",
+      "title": "Continuación",
+      "content": {
+        "markdown": "### Patrones de asincronía en curvas\n\n#### Ciclado precoz\n\n- **Curva**: TI termina antes del final del impulso\n- **Síntomas**: ↓Vt, doble disparo\n- **Causa**: % de ciclaje demasiado alto\n- **Solución**: Bajar % de ciclaje\n\n#### Ciclado tardío\n\n- **Curva**: TI se prolonga más allá del impulso\n- **Síntomas**: Esfuerzo espiratorio activo, atrapamiento\n- **Causa**: % de ciclaje demasiado bajo\n- **Solución**: Subir % de ciclaje, optimizar PEEP\n\n#### Esfuerzos inefectivos\n\n- **Curva**: Múltiples esfuerzos sin disparo\n- **Causa**: Auto-PEEP, umbral de disparo no alcanzado\n- **Solución**: ↑PEEP externa, ajustar sensibilidad\n\n#### Auto-disparo\n\n- **Curva**: Activaciones sin esfuerzo\n- **Causa**: Fugas, sensibilidad demasiado alta\n- **Solución**: Reducir sensibilidad, controlar fugas\n\n### Parámetros críticos a monitorizar\n\n1. **Volumen Tidal (Vt)**:\n   - Monitorear Vt observado vs objetivo (6-8 ml/kg PBW)\n   - Variabilidad indica cambios en esfuerzo o mecánica\n\n2. **Frecuencia Respiratoria (FR)**:\n   - Objetivo: 18-28/min en reposo\n   - FR alta puede indicar fatiga o sobreasistencia\n\n3. **Esfuerzo del paciente**:\n   - Evaluar uso de músculos accesorios\n   - Signos de fatiga\n   - Confort\n\n4. **Sincronía**:\n   - Verificar que el ciclaje ocurra al final del esfuerzo\n   - Detectar asincronías en curvas"
+      },
+      "estimatedTime": 8
+    },
+    {
+      "id": "alarmas-resolucion-psv-a",
+      "order": 14,
+      "type": "procedure",
+      "title": "Alarmas y Resolución",
+      "content": {
+        "markdown": "### Configuración de alarmas\n\n#### Alarmas críticas\n\n1. **Alarma de volumen/ventilación minuto bajos**:\n   - Evaluar esfuerzo, mecánica y nivel de soporte\n   - Considerar cambiar de modo si el impulso neural disminuye\n   - Verificar conexiones del circuito\n\n2. **Alarma de auto-disparo**:\n   - Revisar **sensibilidad**, fugas y oscilaciones\n   - Reducir sensibilidad si es necesario\n   - Controlar fugas en interfaz (NIV)"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "alarmas-resolucion-psv-b",
+      "order": 15,
+      "type": "procedure",
+      "title": "- **Datos**: PSV, PEEP 5, PS 12, % ciclaje 25%; curva m",
+      "content": {
+        "markdown": "3. **Alarma de esfuerzos inefectivos**:\n   - Revisar **PEEP** (auto-PEEP), **% de ciclaje** y **rise time**\n   - Aumentar PEEP externa para compensar auto-PEEP\n   - Ajustar sensibilidad"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "alarmas-resolucion-psv-c",
+      "order": 16,
+      "type": "procedure",
+      "title": "- **Datos**: Restrictivo; terminación al **30%** del pi",
+      "content": {
+        "markdown": "### Resolución de problemas comunes\n\n#### Problema: Ciclado tardío en EPOC\n\n- **Datos**: PSV, PEEP 5, PS 12, % ciclaje 25%; curva muestra TI prolongado con esfuerzo espiratorio activo\n- **Acción**:\n  1. ↑ **% ciclaje a 40-60%**\n  2. Optimizar **PEEP** para auto-PEEP\n  3. Mejora sincronía y ↓ atrapamiento"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "alarmas-resolucion-psv-d",
+      "order": 17,
+      "type": "procedure",
+      "title": "Continuación",
+      "content": {
+        "markdown": "#### Problema: Ciclado precoz en ARDS\n\n- **Datos**: Restrictivo; terminación al **30%** del pico → TI corto y **doble disparo**\n- **Acción**:\n  1. ↓ **% de ciclaje** (p. ej., 15-20%)\n  2. Revalorar Vt, FR y confort\n\n#### Problema: Esfuerzos inefectivos por auto-PEEP\n\n- **Datos**: SIMV-PC o PSV; múltiples esfuerzos sin disparo\n- **Acción**:\n  1. ↑ **PEEP** externa (matching parcial 50-80% de la iPEEP)\n  2. Optimiza **tiempo espiratorio**\n  3. Ajusta sensibilidad\n  4. PS estable para espontáneas\n\n#### Problema: Auto-disparo por fugas (NIV)\n\n- **Datos**: NIV IPAP/EPAP con fugas; activaciones sin esfuerzo\n- **Acción**:\n  1. Reducir **sensibilidad de disparo** o pasar a trigger por presión\n  2. Activar **compensación de fugas** si disponible\n  3. Reajustar interfaz\n  4. Desaparece auto-disparo"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "caso-practico-psv-a",
+      "order": 18,
       "type": "case",
       "title": "Caso Práctico",
-      "estimatedTime": 10,
       "content": {
-        "markdown": "### Caso 1: EPOC con ciclado tardío\n\n**Datos**: PSV, PEEP 5, PS 12, % ciclaje 25%; curva muestra TI prolongado con esfuerzo espiratorio activo.\n\n**Acción**:\n1. ↑ **% ciclaje a 40-60%**\n2. Optimizar **PEEP** para auto-PEEP\n3. Mejora sincronía y ↓ atrapamiento\n\n**Resultado esperado**: Sincronía mejorada, sin atrapamiento, mejor confort\n\n### Caso 2: ARDS con ciclado precoz y doble disparo\n\n**Datos**: Restrictivo; terminación al **30%** del pico → TI corto y **doble disparo**.\n\n**Acción**:\n1. ↓ **% de ciclaje** (p. ej., 15-20%)\n2. Revalorar Vt, FR y confort\n\n**Resultado esperado**: Sincronía mejorada, Vt adecuado, sin doble disparo\n\n### Caso 3: NIV con fugas y auto-disparo\n\n**Datos**: NIV IPAP/EPAP con fugas; activaciones sin esfuerzo.\n\n**Acción**:\n1. Reducir **sensibilidad de disparo** o pasar a trigger por presión\n2. Activar **compensación de fugas** si disponible\n3. Reajustar interfaz\n4. Desaparece auto-disparo\n\n**Resultado esperado**: Sin auto-disparo, mejor sincronía\n\n### Caso 4: SBT con PSV bajo\n\n**Paciente con neumonía resuelta, hemodinámicamente estable**: SBT **PS 7 / PEEP 5** por 60 min; FR 18-24, Vt 6-7 ml/kg, SpO₂ 94% con FiO₂ 0,35, sin aumento de trabajo; pasa SBT. Plan: extubación con medidas de prevención de fracaso.\n\n**Resultado esperado**: SBT exitoso, extubación exitosa"
-      }
+        "markdown": "### Caso 1: EPOC con ciclado tardío\n\n**Datos**: PSV, PEEP 5, PS 12, % ciclaje 25%; curva muestra TI prolongado con esfuerzo espiratorio activo.\n\n**Acción**:\n1. ↑ **% ciclaje a 40-60%**\n2. Optimizar **PEEP** para auto-PEEP\n3. Mejora sincronía y ↓ atrapamiento"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "caso-practico-psv-b",
+      "order": 19,
+      "type": "case",
+      "title": "**Datos**: Restrictivo; terminación al **30%** del pico",
+      "content": {
+        "markdown": "**Resultado esperado**: Sincronía mejorada, sin atrapamiento, mejor confort"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "caso-practico-psv-c",
+      "order": 20,
+      "type": "case",
+      "title": "**Resultado esperado**: Sincronía mejorada, Vt adecuado",
+      "content": {
+        "markdown": "### Caso 2: ARDS con ciclado precoz y doble disparo\n\n**Datos**: Restrictivo; terminación al **30%** del pico → TI corto y **doble disparo**."
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "caso-practico-psv-d",
+      "order": 21,
+      "type": "case",
+      "title": "Continuación",
+      "content": {
+        "markdown": "**Acción**:\n1. ↓ **% de ciclaje** (p. ej., 15-20%)\n2. Revalorar Vt, FR y confort\n\n**Resultado esperado**: Sincronía mejorada, Vt adecuado, sin doble disparo\n\n### Caso 3: NIV con fugas y auto-disparo\n\n**Datos**: NIV IPAP/EPAP con fugas; activaciones sin esfuerzo.\n\n**Acción**:\n1. Reducir **sensibilidad de disparo** o pasar a trigger por presión\n2. Activar **compensación de fugas** si disponible\n3. Reajustar interfaz\n4. Desaparece auto-disparo\n\n**Resultado esperado**: Sin auto-disparo, mejor sincronía\n\n### Caso 4: SBT con PSV bajo\n\n**Paciente con neumonía resuelta, hemodinámicamente estable**: SBT **PS 7 / PEEP 5** por 60 min; FR 18-24, Vt 6-7 ml/kg, SpO₂ 94% con FiO₂ 0,35, sin aumento de trabajo; pasa SBT. Plan: extubación con medidas de prevención de fracaso.\n\n**Resultado esperado**: SBT exitoso, extubación exitosa"
+      },
+      "estimatedTime": 6
     },
     {
       "id": "resumen-quiz-psv",
-      "order": 8,
+      "order": 22,
       "type": "summary",
       "title": "Resumen y Quiz",
       "estimatedTime": 5,

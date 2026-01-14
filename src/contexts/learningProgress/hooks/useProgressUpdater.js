@@ -88,6 +88,7 @@ export const useProgressUpdater = ({
       moduleId: resolvedModuleId,
       progress: updateData.progress,
       completed: updateData.completed,
+      completionPercentage: updateData.completionPercentage,
       timeSpentDelta: updateData.timeSpentDelta,
       lastAccessed: updateData.lastAccessed || new Date().toISOString(),
       ts: Date.now(),

@@ -1,7 +1,7 @@
 {
   "title": "Protocolo de Ventilación Mecánica para Asma Severa",
   "summary": "Protocolo especializado para el manejo ventilatorio del estado asmático severo, enfocándose en ventilación permisiva, prevención de hiperinsuflación dinámica, manejo de auto-PEEP y estrategias para evitar barotrauma. Incluye ajustes específicos para broncoespasmo severo.",
-  "estimatedTime": 60,
+  "estimatedTime": 35,
   "sections": [
     {
       "type": "text",

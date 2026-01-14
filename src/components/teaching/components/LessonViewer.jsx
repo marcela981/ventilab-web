@@ -71,6 +71,7 @@ import LessonNavigation from './LessonNavigation';
 import TutorAIPopup from './ai/TutorAIPopup';
 import AITopicExpander from './ai/AITopicExpander';
 import { useTopicContext } from '../../../hooks/useTopicContext';
+import useScrollCompletion from '../../../hooks/useScrollCompletion';
 // Lazy load clinical case components for code splitting
 const ClinicalCaseViewer = lazy(() => import('./clinical/ClinicalCaseViewer'));
 import PrerequisiteTooltip from '../../../view-components/teaching/components/curriculum/ModuleCard/PrerequisiteTooltip';
@@ -207,7 +208,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   }, [error, onNavigate]);
   
   // Get progress context for marking lessons as complete
-  const { markLessonComplete, completedLessons, updateLessonProgress } = useLearningProgress();
+  const { completedLessons, updateLessonProgress, syncStatus } = useLearningProgress();
   
   // Calculate module completion percentage
   const { calculateModuleProgress } = useLessonProgress(completedLessons);
@@ -231,6 +232,25 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
       completedLessons.has(`${moduleId}-${lesson.id}`)
     ).length;
   }, [module, moduleId, completedLessons]);
+
+  const lessonType = useMemo(() => {
+    if (!data) return 'teoria';
+    return data.tipoDeLeccion ||
+      data.type ||
+      (data.content?.practicalCases?.length > 0 ? 'caso_clinico' :
+        data.content?.assessment?.questions?.length > 0 ? 'evaluacion' :
+        'teoria');
+  }, [data]);
+
+  const estimatedTimeMinutes = useMemo(() => {
+    const base = data?.estimatedTime || data?.duration || data?.metadata?.estimatedTime || module?.estimatedTime || 0;
+    return typeof base === 'number' ? base : 0;
+  }, [data, module]);
+
+  const passingScore = useMemo(() => {
+    const score = data?.content?.assessment?.passingScore ?? data?.assessment?.passingScore ?? data?.metadata?.passingScore;
+    return typeof score === 'number' ? score : 70;
+  }, [data]);
   
   // ============================================================================
   // State Management
@@ -270,6 +290,13 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   const progressIntervalRef = useRef(null);
   const lastProgressUpdateRef = useRef(Date.now());
   const isTabVisibleRef = useRef(true);
+  const autoCompletionRef = useRef(false);
+  const autoCompletionInFlightRef = useRef(false);
+
+  const { isScrolledEnough, meetsReadingTime } = useScrollCompletion({
+    contentRef,
+    estimatedTimeMinutes,
+  });
   
   // ============================================================================
   // Scroll to top on mount or lesson change
@@ -306,6 +333,8 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     // Reset to first page when lesson changes
     setCurrentPage(0);
     setLessonCompleted(false);
+    autoCompletionRef.current = false;
+    autoCompletionInFlightRef.current = false;
     
     // Cuando cambia la lección, el hook useAITutor creará una nueva sesión automáticamente
     // La sesión anterior se conserva en localStorage según la lógica del hook
@@ -411,49 +440,73 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   }, [lessonId, moduleId, updateLessonProgress, onNavigate]);
   
   // ============================================================================
-  // Mark Lesson as Complete Handler
+  // Automatic Completion
   // ============================================================================
-  
-  const handleMarkAsCompleted = useCallback(async () => {
+
+  const triggerAutoCompletion = useCallback(async () => {
     if (!data || !lessonId || !moduleId || !updateLessonProgress) {
-      return;
+      return false;
     }
-    
+
+    if (lessonCompleted || autoCompletionRef.current || autoCompletionInFlightRef.current) {
+      return false;
+    }
+
+    if (syncStatus === 'saving') {
+      return false;
+    }
+
+    autoCompletionInFlightRef.current = true;
+
     try {
-      // Calculate time spent
       const timeSpentMinutes = Math.round((Date.now() - startTimeRef.current) / 60000);
-      
-      // Update progress with completed=true
+
       await updateLessonProgress({
         lessonId: lessonId,
         moduleId: moduleId,
         completed: true,
         progress: 1,
+        completionPercentage: 100,
         timeSpentDelta: timeSpentMinutes,
         lastAccessed: new Date().toISOString(),
       });
-      
+
+      autoCompletionRef.current = true;
       setLessonCompleted(true);
-      setSnackbarMessage('¡Lección marcada como completada!');
-      setSnackbarOpen(true);
-      
-      // Clear progress interval since lesson is completed
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-        progressIntervalRef.current = null;
-      }
-      
-      // Call onComplete callback if provided
+
       if (onComplete) {
         onComplete(data);
       }
+
+      return true;
     } catch (error) {
-      console.error('[LessonViewer] Failed to mark lesson as completed:', error);
-      setSnackbarMessage('Error al marcar la lección como completada');
+      console.error('[LessonViewer] Failed to auto-complete lesson:', error);
+      setSnackbarMessage('No se pudo completar la lección automáticamente.');
       setSnackbarOpen(true);
+      return false;
+    } finally {
+      autoCompletionInFlightRef.current = false;
     }
-  }, [data, lessonId, moduleId, updateLessonProgress, onComplete]);
-  
+  }, [
+    data,
+    lessonId,
+    moduleId,
+    updateLessonProgress,
+    onComplete,
+    lessonCompleted,
+    syncStatus,
+  ]);
+
+  useEffect(() => {
+    if (lessonType !== 'teoria') {
+      return;
+    }
+
+    if (isScrolledEnough && meetsReadingTime) {
+      triggerAutoCompletion();
+    }
+  }, [lessonType, isScrolledEnough, meetsReadingTime, triggerAutoCompletion]);
+
   // ============================================================================
   // Practical Cases Handlers
   // ============================================================================
@@ -499,9 +552,14 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
       }
     });
     
-    setAssessmentScore({ correct, total, percentage: Math.round((correct / total) * 100) });
+    const percentage = Math.round((correct / total) * 100);
+    setAssessmentScore({ correct, total, percentage });
     setShowAssessmentResults(true);
-  }, [data, assessmentAnswers]);
+
+    if (percentage >= passingScore) {
+      triggerAutoCompletion();
+    }
+  }, [data, assessmentAnswers, passingScore, triggerAutoCompletion]);
   
   // ============================================================================
   // Snackbar Handlers
@@ -553,13 +611,11 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     
     // Mark lesson as complete when reaching the completion page
     if (completionPageIndex >= 0 && currentPage === completionPageIndex && !lessonCompleted && data) {
-      const timeSpent = Math.round((Date.now() - startTimeRef.current) / 60000);
-      markLessonComplete(data.lessonId, data.moduleId, timeSpent).then(() => {
-        setLessonCompleted(true);
-        if (onComplete) {
-          onComplete(data);
+      triggerAutoCompletion().then((completed) => {
+        if (!completed) {
+          return;
         }
-        
+
         // Disparar evento para sugerencias finales del TutorAI
         const event = new CustomEvent('tutor:finalSuggestions', {
           detail: {
@@ -583,7 +639,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
         window.dispatchEvent(event);
       });
     }
-  }, [currentPage, calculatePages, lessonCompleted, data, markLessonComplete, onComplete, moduleId, lessonId, module, currentPageData, assessmentScore]);
+  }, [currentPage, calculatePages, lessonCompleted, data, triggerAutoCompletion, moduleId, lessonId, module, currentPageData, assessmentScore]);
   
   // ============================================================================
   // Build lesson context for AI Tutor
@@ -920,6 +976,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
               }>
                 <ClinicalCaseViewer
                   moduleId={moduleId}
+                  onCompleted={triggerAutoCompletion}
                   onBack={() => {
                     // Navegar a la página anterior (completion)
                     const completionPageIndex = calculatePages.findIndex(page => page.type === 'completion');
@@ -1057,33 +1114,6 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
                 
                 {/* Media Blocks Section - Rendered after main content */}
                 {renderMediaBlocks()}
-                
-                {/* Mark as Completed Button */}
-                {data && !lessonCompleted && (
-                  <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-                    <Button
-                      variant="contained"
-                      color="success"
-                      size="large"
-                      startIcon={<CheckCircleIcon />}
-                      onClick={handleMarkAsCompleted}
-                      sx={{
-                        px: 4,
-                        py: 1.5,
-                        fontSize: '1rem',
-                        fontWeight: 600,
-                        borderRadius: 2,
-                        textTransform: 'none',
-                        boxShadow: 3,
-                        '&:hover': {
-                          boxShadow: 6,
-                        },
-                      }}
-                    >
-                      Marcar como completada
-                    </Button>
-                  </Box>
-                )}
                 
                 {/* AI Topic Expander - Renderizado al final del contenido */}
                 {data && (

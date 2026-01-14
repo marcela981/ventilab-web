@@ -1,0 +1,4131 @@
+[
+  {
+    "file": "module-01-fundamentals/module-01-inversion-fisiologica.json",
+    "lessonTitle": "La Inversión Fisiológica: De la Presión Negativa a la Positiva",
+    "lessonId": "module-01-inversion-fisiologica",
+    "totalSteps": 13,
+    "overloadedSteps": [
+      {
+        "stepNumber": 1,
+        "stepId": "m1-intro",
+        "stepTitle": "Introducción y mapa del módulo",
+        "currentLength": 1587,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1079,
+            "reason": "Section header detected: \"Cómo estudiar (nivel principiante, contenido inter\"",
+            "suggestedTitle": "Cómo estudiar (nivel principiante, contenido intermedio/avan"
+          },
+          {
+            "atCharacter": 1079,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "Cómo estudiar (nivel principiante, contenido intermedio/avan"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 2,
+        "stepId": "m1-p1-2-1",
+        "stepTitle": "¿Qué es la ventilación mecánica?",
+        "currentLength": 1114,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 514,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "En otras palabras, se invierte la dinámica de presión: el ve"
+          },
+          {
+            "atCharacter": 789,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "De ahí el título La Inversión Fisiológica: pasamos de un mec"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 3,
+        "stepId": "m1-p1-2-2",
+        "stepTitle": "¿Por qué importa entender esta inversión?",
+        "currentLength": 1215,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 483,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "Este efecto opuesto al de la respiración normal (donde la pr"
+          },
+          {
+            "atCharacter": 663,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "Asimismo, la inversión en la ruta de entrada de aire implica"
+          },
+          {
+            "atCharacter": 795,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "Entender la diferencia fundamental entre presión negativa vs"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 4,
+        "stepId": "m1-p1-2-3",
+        "stepTitle": "¿Dónde se aplica la ventilación mecánica?",
+        "currentLength": 1420,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 578,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "Históricamente, su antecedente se remonta a la epidemia de p"
+          },
+          {
+            "atCharacter": 1032,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "Hoy en día, prácticamente toda la ventilación asistida se re"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 5,
+        "stepId": "m1-p1-2-4",
+        "stepTitle": "Historia de la ventilación mecánica",
+        "currentLength": 1778,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 339,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "A finales de los años 40 y 50, se introdujeron los primeros "
+          },
+          {
+            "atCharacter": 597,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "En las siguientes décadas, la tecnología de ventiladores de "
+          },
+          {
+            "atCharacter": 773,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "Un hito importante fue la implementación de la ventilación m"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 6,
+        "stepId": "m1-p3-4",
+        "stepTitle": "Parte 2: lectura guiada (págs. 3–4)",
+        "currentLength": 7476,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 3197,
+            "reason": "Section header detected: \"volumen y flujo. En la respiración espontánea, la \"",
+            "suggestedTitle": "volumen y flujo. En la respiración espontánea, la contracció"
+          },
+          {
+            "atCharacter": 3496,
+            "reason": "Section header detected: \"principio de la presión negativa: la presión alveo\"",
+            "suggestedTitle": "principio de la presión negativa: la presión alveolar cae po"
+          },
+          {
+            "atCharacter": 4678,
+            "reason": "Section header detected: \"Ventilación por presión negativa: método ventilato\"",
+            "suggestedTitle": "Ventilación por presión negativa: método ventilatorio donde "
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 7,
+        "stepId": "m1-p5-6",
+        "stepTitle": "Parte 3: lectura guiada (págs. 5–6)",
+        "currentLength": 8644,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1140,
+            "reason": "Section header detected: \"volumen corriente como de la frecuencia respirator\"",
+            "suggestedTitle": "volumen corriente como de la frecuencia respiratoria – sin e"
+          },
+          {
+            "atCharacter": 3425,
+            "reason": "Section header detected: \"Volumen corriente (Vt): volumen de gas entregado o\"",
+            "suggestedTitle": "Volumen corriente (Vt): volumen de gas entregado o inhalado "
+          },
+          {
+            "atCharacter": 3957,
+            "reason": "Section header detected: \"Presión inspiratoria (Pinsp): en modos controlados\"",
+            "suggestedTitle": "Presión inspiratoria (Pinsp): en modos controlados por presi"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 8,
+        "stepId": "m1-p7-8",
+        "stepTitle": "Parte 4: lectura guiada (págs. 7–8)",
+        "currentLength": 8177,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1851,
+            "reason": "Section header detected: \"Flujos y procesos en detalle: Consideremos una ins\"",
+            "suggestedTitle": "Flujos y procesos en detalle: Consideremos una inspiración e"
+          },
+          {
+            "atCharacter": 3486,
+            "reason": "Section header detected: \"presión; si está rígido, entrará menos.\"",
+            "suggestedTitle": "presión; si está rígido, entrará menos."
+          },
+          {
+            "atCharacter": 4659,
+            "reason": "Section header detected: \"Comparativas: Vale la pena comparar ventilación es\"",
+            "suggestedTitle": "Comparativas: Vale la pena comparar ventilación espontánea v"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 9,
+        "stepId": "m1-p9-10",
+        "stepTitle": "Parte 5: lectura guiada (págs. 9–10)",
+        "currentLength": 9256,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1288,
+            "reason": "Section header detected: \"flujo en tiempo real para optimizar la entrega (po\"",
+            "suggestedTitle": "flujo en tiempo real para optimizar la entrega (por ejemplo,"
+          },
+          {
+            "atCharacter": 1492,
+            "reason": "Section header detected: \"presión), el ventilador puede cortar la inspiració\"",
+            "suggestedTitle": "presión), el ventilador puede cortar la inspiración para pro"
+          },
+          {
+            "atCharacter": 1747,
+            "reason": "Section header detected: \"Comparativas máquina vs fisiología: Un punto mecán\"",
+            "suggestedTitle": "Comparativas máquina vs fisiología: Un punto mecánico intere"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 10,
+        "stepId": "m1-p11-12",
+        "stepTitle": "Parte 6: lectura guiada (págs. 11–12)",
+        "currentLength": 8505,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 3535,
+            "reason": "Section header detected: \"¿Qué harías? La acción sería ajustar el ventilador\"",
+            "suggestedTitle": "¿Qué harías? La acción sería ajustar el ventilador: por ejem"
+          },
+          {
+            "atCharacter": 4315,
+            "reason": "Section header detected: \"ventilación mecánica = oxigenación. Si bien están \"",
+            "suggestedTitle": "ventilación mecánica = oxigenación. Si bien están relacionad"
+          },
+          {
+            "atCharacter": 4520,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "podría subir mucho el volumen minuto para mejorar la saturac"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 11,
+        "stepId": "m1-p13-13",
+        "stepTitle": "Parte 7: lectura guiada (págs. 13–13)",
+        "currentLength": 3218,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 779,
+            "reason": "Section header detected: \"presión positiva resultaron más versátiles y efect\"",
+            "suggestedTitle": "presión positiva resultaron más versátiles y efectivos en UC"
+          },
+          {
+            "atCharacter": 1744,
+            "reason": "Section header detected: \"cómo pensar en optimizar su uso. Este módulo sient\"",
+            "suggestedTitle": "cómo pensar en optimizar su uso. Este módulo sienta las base"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      }
+    ]
+  },
+  {
+    "file": "module-01-fundamentals/module-02-ecuacion-movimiento.json",
+    "lessonTitle": "El Santo Grial – La Ecuación del Movimiento Respiratorio",
+    "lessonId": "module-02-ecuacion-movimiento",
+    "totalSteps": 10,
+    "overloadedSteps": [
+      {
+        "stepNumber": 1,
+        "stepId": "m2-intro",
+        "stepTitle": "Introducción y mapa del módulo",
+        "currentLength": 2610,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 2102,
+            "reason": "Section header detected: \"Cómo estudiar (nivel principiante, contenido inter\"",
+            "suggestedTitle": "Cómo estudiar (nivel principiante, contenido intermedio/avan"
+          },
+          {
+            "atCharacter": 2102,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "Cómo estudiar (nivel principiante, contenido intermedio/avan"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 2,
+        "stepId": "m2-p14-15",
+        "stepTitle": "Parte 1: lectura guiada (págs. 14–15)",
+        "currentLength": 8541,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 564,
+            "reason": "Section header detected: \"presión, volumen y flujo con las propiedades elást\"",
+            "suggestedTitle": "presión, volumen y flujo con las propiedades elásticas y res"
+          },
+          {
+            "atCharacter": 1459,
+            "reason": "Section header detected: \"cómo los cambios en variables afectan la presión, \"",
+            "suggestedTitle": "cómo los cambios en variables afectan la presión, etc.)"
+          },
+          {
+            "atCharacter": 2915,
+            "reason": "Section header detected: \"flujo-tiempo) porque se usarán en ejemplos.\"",
+            "suggestedTitle": "flujo-tiempo) porque se usarán en ejemplos."
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 3,
+        "stepId": "m2-p16-17",
+        "stepTitle": "Parte 2: lectura guiada (págs. 16–17)",
+        "currentLength": 8089,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1490,
+            "reason": "Section header detected: \"flujo inspiratorio, y $P{\\text{vent}}$ es la presi\"",
+            "suggestedTitle": "flujo inspiratorio, y $P{\\text{vent}}$ es la presión generad"
+          },
+          {
+            "atCharacter": 2395,
+            "reason": "Section header detected: \"presión medida en la vía aérea proximal (por ejemp\"",
+            "suggestedTitle": "presión medida en la vía aérea proximal (por ejemplo, en el "
+          },
+          {
+            "atCharacter": 3529,
+            "reason": "Section header detected: \"presión elástica para el mismo volumen; pulmones m\"",
+            "suggestedTitle": "presión elástica para el mismo volumen; pulmones muy complac"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 4,
+        "stepId": "m2-p18-19",
+        "stepTitle": "Parte 3: lectura guiada (págs. 18–19)",
+        "currentLength": 9196,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 2401,
+            "reason": "Section header detected: \"volumen y presión-flujo a lo largo del tiempo. Sin\"",
+            "suggestedTitle": "volumen y presión-flujo a lo largo del tiempo. Sin profundiz"
+          },
+          {
+            "atCharacter": 4784,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "intentar lograr un cierto $V$ objetivo con la menor presión "
+          },
+          {
+            "atCharacter": 5126,
+            "reason": "Section header detected: \"¿Cómo usar la ecuación en la práctica clínica? Nor\"",
+            "suggestedTitle": "¿Cómo usar la ecuación en la práctica clínica? Normalmente, "
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 5,
+        "stepId": "m2-p20-21",
+        "stepTitle": "Parte 4: lectura guiada (págs. 20–21)",
+        "currentLength": 9446,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1142,
+            "reason": "Section header detected: \"Comparativas cuantitativas: Comparando un pulmón c\"",
+            "suggestedTitle": "Comparativas cuantitativas: Comparando un pulmón con SDRA vs"
+          },
+          {
+            "atCharacter": 3046,
+            "reason": "Section header detected: \"ventilación minuto para evitar ese PEEP intrínseco\"",
+            "suggestedTitle": "ventilación minuto para evitar ese PEEP intrínseco excesivo."
+          },
+          {
+            "atCharacter": 3107,
+            "reason": "Section header detected: \"Flujos dentro del ventilador: Mecánicamente, un ve\"",
+            "suggestedTitle": "Flujos dentro del ventilador: Mecánicamente, un ventilador d"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 6,
+        "stepId": "m2-p22-23",
+        "stepTitle": "Parte 5: lectura guiada (págs. 22–23)",
+        "currentLength": 8982,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 2383,
+            "reason": "Section header detected: \"presión-volumen no es perfectamente lineal: tiene \"",
+            "suggestedTitle": "presión-volumen no es perfectamente lineal: tiene concavidad"
+          },
+          {
+            "atCharacter": 2713,
+            "reason": "Section header detected: \"Ventilación de alta frecuencia oscilatoria (HFOV):\"",
+            "suggestedTitle": "Ventilación de alta frecuencia oscilatoria (HFOV): Este es u"
+          },
+          {
+            "atCharacter": 3008,
+            "reason": "Section header detected: \"flujo). Además, el flujo y presión oscilan sinusoi\"",
+            "suggestedTitle": "flujo). Además, el flujo y presión oscilan sinusoidalmente. "
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 7,
+        "stepId": "m2-p24-25",
+        "stepTitle": "Parte 6: lectura guiada (págs. 24–25)",
+        "currentLength": 8491,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1136,
+            "reason": "Section header detected: \"ejemplo, calcular C usando Ppico en vez de Pplat –\"",
+            "suggestedTitle": "ejemplo, calcular C usando Ppico en vez de Pplat – da un val"
+          },
+          {
+            "atCharacter": 1634,
+            "reason": "Section header detected: \"presión transpulmonar. Esto se mencionó con P-SILI\"",
+            "suggestedTitle": "presión transpulmonar. Esto se mencionó con P-SILI."
+          },
+          {
+            "atCharacter": 2968,
+            "reason": "Section header detected: \"flujo pico ocurre al inicio, la diferencia Ppico-p\"",
+            "suggestedTitle": "flujo pico ocurre al inicio, la diferencia Ppico-plat hay qu"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 8,
+        "stepId": "m2-p26-27",
+        "stepTitle": "Parte 7: lectura guiada (págs. 26–27)",
+        "currentLength": 4094,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 938,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "• Mancilla-Galindo, J., Mendiola-Villalobos, C., Carrión-Moy"
+          },
+          {
+            "atCharacter": 1147,
+            "reason": "Section header detected: \"ventilación mecánica invasiva. Iatreia, 36(1), 112\"",
+            "suggestedTitle": "ventilación mecánica invasiva. Iatreia, 36(1), 112-127. DOI:"
+          },
+          {
+            "atCharacter": 2237,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1 2 9 11 12 15 16 17 18 20 25 27 37 41 42 43 44 45 46 47 51 "
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      }
+    ]
+  },
+  {
+    "file": "module-01-fundamentals/module-03-variables-fase.json",
+    "lessonTitle": "La Lógica de la Máquina: Variables de Fase y el Ciclo Respiratorio",
+    "lessonId": "module-03-variables-fase",
+    "totalSteps": 5,
+    "overloadedSteps": [
+      {
+        "stepNumber": 2,
+        "stepId": "m3-p1-1",
+        "stepTitle": "Parte 1: lectura guiada (págs. 1–1)",
+        "currentLength": 3578,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 632,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "• Disparo (gatillo o trigger): Es la variable que provoca el"
+          },
+          {
+            "atCharacter": 1300,
+            "reason": "Section header detected: \"flujo generado en el circuito). Un ajuste adecuado\"",
+            "suggestedTitle": "flujo generado en el circuito). Un ajuste adecuado de la sen"
+          },
+          {
+            "atCharacter": 1723,
+            "reason": "Section header detected: \"ejemplo, en un modo “limitado por presión”, la pre\"",
+            "suggestedTitle": "ejemplo, en un modo “limitado por presión”, la presión inspi"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 3,
+        "stepId": "m3-p2-2",
+        "stepTitle": "Parte 2: lectura guiada (págs. 2–2)",
+        "currentLength": 3017,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 702,
+            "reason": "Section header detected: \"presión (por ejemplo, PEEP de 5 cmH2O), aunque en \"",
+            "suggestedTitle": "presión (por ejemplo, PEEP de 5 cmH2O), aunque en modos sin "
+          },
+          {
+            "atCharacter": 888,
+            "reason": "Section header detected: \"presión especificado en la vía aérea 11 . Por tant\"",
+            "suggestedTitle": "presión especificado en la vía aérea 11 . Por tanto, el cicl"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      }
+    ]
+  },
+  {
+    "file": "module-01-fundamentals/module-04-modos-ventilatorios.json",
+    "lessonTitle": "Taxonomía de los Modos: Volumen vs. Presión (Control y Asistencia)",
+    "lessonId": "module-04-modos-ventilatorios",
+    "totalSteps": 10,
+    "overloadedSteps": [
+      {
+        "stepNumber": 2,
+        "stepId": "m4-p2-2",
+        "stepTitle": "Parte 1: lectura guiada (págs. 2–2)",
+        "currentLength": 1217,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 811,
+            "reason": "Section header detected: \"Ventilación controlada por volumen vs. por presión\"",
+            "suggestedTitle": "Ventilación controlada por volumen vs. por presión"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 3,
+        "stepId": "m4-p3-3",
+        "stepTitle": "Parte 2: lectura guiada (págs. 3–3)",
+        "currentLength": 4610,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 573,
+            "reason": "Section header detected: \"flujo) son las variables controladas en la inspira\"",
+            "suggestedTitle": "flujo) son las variables controladas en la inspiración, y po"
+          },
+          {
+            "atCharacter": 1036,
+            "reason": "Section header detected: \"volumen fijo en cada respiración, mientras las pre\"",
+            "suggestedTitle": "volumen fijo en cada respiración, mientras las presiones pue"
+          },
+          {
+            "atCharacter": 1491,
+            "reason": "Section header detected: \"ventilación minuto constante (útil para controlar \"",
+            "suggestedTitle": "ventilación minuto constante (útil para controlar la PaCO2) "
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 4,
+        "stepId": "m4-p4-4",
+        "stepTitle": "Parte 3: lectura guiada (págs. 4–4)",
+        "currentLength": 4554,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1136,
+            "reason": "Section header detected: \"flujo inspiratorio constante en forma cuadrada, vo\"",
+            "suggestedTitle": "flujo inspiratorio constante en forma cuadrada, volumen alca"
+          },
+          {
+            "atCharacter": 2816,
+            "reason": "Section header detected: \"ventilación completamente controlada pura es poco \"",
+            "suggestedTitle": "ventilación completamente controlada pura es poco frecuente "
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 5,
+        "stepId": "m4-p5-5",
+        "stepTitle": "Parte 4: lectura guiada (págs. 5–5)",
+        "currentLength": 4704,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1611,
+            "reason": "Section header detected: \"volumen (AC/VC)” – el paciente está conectado, con\"",
+            "suggestedTitle": "volumen (AC/VC)” – el paciente está conectado, con V<sub>T</"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 6,
+        "stepId": "m4-p6-6",
+        "stepTitle": "Parte 5: lectura guiada (págs. 6–6)",
+        "currentLength": 4893,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 406,
+            "reason": "Section header detected: \"Ventilación con Presión de Soporte (PSV, Pressure \"",
+            "suggestedTitle": "Ventilación con Presión de Soporte (PSV, Pressure Support Ve"
+          },
+          {
+            "atCharacter": 4145,
+            "reason": "Section header detected: \"presión y control vs asistencia se combinan para d\"",
+            "suggestedTitle": "presión y control vs asistencia se combinan para describir c"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 7,
+        "stepId": "m4-p7-7",
+        "stepTitle": "Parte 6: lectura guiada (págs. 7–7)",
+        "currentLength": 3135,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 472,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "• Tobin, M.J. Principles and Practice of Mechanical Ventilat"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      }
+    ]
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "lessonTitle": "Monitorización Gráfica I: Escalares, Bucles y Asincronías básicas",
+    "lessonId": "module-05-monitorizacion-grafica",
+    "totalSteps": 26,
+    "overloadedSteps": [
+      {
+        "stepNumber": 1,
+        "stepId": "m5-intro",
+        "stepTitle": "Introducción y mapa del módulo",
+        "currentLength": 2455,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1240,
+            "reason": "Section header detected: \"volumen vs. presión) y condiciones del paciente.\"",
+            "suggestedTitle": "volumen vs. presión) y condiciones del paciente."
+          },
+          {
+            "atCharacter": 1947,
+            "reason": "Section header detected: \"Cómo estudiar (nivel principiante, contenido inter\"",
+            "suggestedTitle": "Cómo estudiar (nivel principiante, contenido intermedio/avan"
+          },
+          {
+            "atCharacter": 1947,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "Cómo estudiar (nivel principiante, contenido intermedio/avan"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 2,
+        "stepId": "m5-p1-2",
+        "stepTitle": "Parte 1: lectura guiada (págs. 1–2)",
+        "currentLength": 6189,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1705,
+            "reason": "Section header detected: \"volumen vs. presión) y condiciones del paciente.\"",
+            "suggestedTitle": "volumen vs. presión) y condiciones del paciente."
+          },
+          {
+            "atCharacter": 3159,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "intensivos, quirófanos y unidades de recuperación donde paci"
+          },
+          {
+            "atCharacter": 3956,
+            "reason": "Section header detected: \"ventilación invasiva, e incluso en ventilación no \"",
+            "suggestedTitle": "ventilación invasiva, e incluso en ventilación no invasiva a"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 3,
+        "stepId": "m5-p3-4",
+        "stepTitle": "Parte 2: lectura guiada (págs. 3–4)",
+        "currentLength": 8191,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 901,
+            "reason": "Section header detected: \"principios globales de ventilación protectora, al \"",
+            "suggestedTitle": "principios globales de ventilación protectora, al tiempo que"
+          },
+          {
+            "atCharacter": 2640,
+            "reason": "Section header detected: \"volumen con cálculos automáticos de compliance din\"",
+            "suggestedTitle": "volumen con cálculos automáticos de compliance dinámica y es"
+          },
+          {
+            "atCharacter": 3023,
+            "reason": "Section header detected: \"presión transpulmonar), curvas de actividad diafra\"",
+            "suggestedTitle": "presión transpulmonar), curvas de actividad diafragmática (N"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 4,
+        "stepId": "m5-p5-6",
+        "stepTitle": "Parte 3: lectura guiada (págs. 5–6)",
+        "currentLength": 8230,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 232,
+            "reason": "Section header detected: \"ventilación mecánica. Visualicemos un mapa concept\"",
+            "suggestedTitle": "ventilación mecánica. Visualicemos un mapa conceptual donde "
+          },
+          {
+            "atCharacter": 717,
+            "reason": "Section header detected: \"presión se eleva de forma variable; ahora en este \"",
+            "suggestedTitle": "presión se eleva de forma variable; ahora en este módulo se "
+          },
+          {
+            "atCharacter": 813,
+            "reason": "Section header detected: \"flujo-tiempo rectangular en inspiración y presión-\"",
+            "suggestedTitle": "flujo-tiempo rectangular en inspiración y presión-tiempo con"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 5,
+        "stepId": "m5-p7-8",
+        "stepTitle": "Parte 4: lectura guiada (págs. 7–8)",
+        "currentLength": 7307,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 899,
+            "reason": "Section header detected: \"presión-tiempo es predeterminada (por ejemplo, sub\"",
+            "suggestedTitle": "presión-tiempo es predeterminada (por ejemplo, sube rápido a"
+          },
+          {
+            "atCharacter": 1099,
+            "reason": "Section header detected: \"principios físicos: en presión controlada, al fija\"",
+            "suggestedTitle": "principios físicos: en presión controlada, al fijar presión,"
+          },
+          {
+            "atCharacter": 1307,
+            "reason": "Section header detected: \"volumen controlado, al fijar flujo constante, la p\"",
+            "suggestedTitle": "volumen controlado, al fijar flujo constante, la presión sub"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 6,
+        "stepId": "m5-p9-10",
+        "stepTitle": "Parte 5: lectura guiada (págs. 9–10)",
+        "currentLength": 7820,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 405,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "• Esfuerzo ineficaz: Paciente realiza un esfuerzo inspirator"
+          },
+          {
+            "atCharacter": 2390,
+            "reason": "Section header detected: \"volumen muestra menor pico de flujo espiratorio y \"",
+            "suggestedTitle": "volumen muestra menor pico de flujo espiratorio y caída más "
+          },
+          {
+            "atCharacter": 3708,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "listados serán utilizados consistentemente en el módulo y fu"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 7,
+        "stepId": "m5-p11-12",
+        "stepTitle": "Parte 6: lectura guiada (págs. 11–12)",
+        "currentLength": 7968,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 504,
+            "reason": "Section header detected: \"presión control) puede indicar flujo inspiratorio \"",
+            "suggestedTitle": "presión control) puede indicar flujo inspiratorio excesivo o"
+          },
+          {
+            "atCharacter": 2064,
+            "reason": "Section header detected: \"volumen), mientras uno vertical (empinado) sugiere\"",
+            "suggestedTitle": "volumen), mientras uno vertical (empinado) sugiere alta dist"
+          },
+          {
+            "atCharacter": 5278,
+            "reason": "Section header detected: \"volumen control 10 ; flujo decreciente (exponencia\"",
+            "suggestedTitle": "volumen control 10 ; flujo decreciente (exponencial) en pres"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 8,
+        "stepId": "m5-p13-14",
+        "stepTitle": "Parte 7: lectura guiada (págs. 13–14)",
+        "currentLength": 8143,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1522,
+            "reason": "Section header detected: \"flujo limitado) es menor a la demanda del paciente\"",
+            "suggestedTitle": "flujo limitado) es menor a la demanda del paciente. El pacie"
+          },
+          {
+            "atCharacter": 2089,
+            "reason": "Section header detected: \"presión con rápida entrega de flujo.\"",
+            "suggestedTitle": "presión con rápida entrega de flujo."
+          },
+          {
+            "atCharacter": 2126,
+            "reason": "Section header detected: \"Flujo excesivo (Overshoot): Menos común, ocurre en\"",
+            "suggestedTitle": "Flujo excesivo (Overshoot): Menos común, ocurre en presión c"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 9,
+        "stepId": "m5-p15-16",
+        "stepTitle": "Parte 8: lectura guiada (págs. 15–16)",
+        "currentLength": 7642,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 412,
+            "reason": "Section header detected: \"Conceptos Clave Jerarquizados\"",
+            "suggestedTitle": "Conceptos Clave Jerarquizados"
+          },
+          {
+            "atCharacter": 1388,
+            "reason": "Section header detected: \"Ejemplo: Saber que la gráfica presión-tiempo muest\"",
+            "suggestedTitle": "Ejemplo: Saber que la gráfica presión-tiempo muestra la evol"
+          },
+          {
+            "atCharacter": 1873,
+            "reason": "Section header detected: \"volumen, flujo inspiratorio constante → presión as\"",
+            "suggestedTitle": "volumen, flujo inspiratorio constante → presión ascendente l"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 10,
+        "stepId": "m5-p17-18",
+        "stepTitle": "Parte 9: lectura guiada (págs. 17–18)",
+        "currentLength": 8592,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1316,
+            "reason": "Section header detected: \"flujo objetivo, pero si nota un cambio de resisten\"",
+            "suggestedTitle": "flujo objetivo, pero si nota un cambio de resistencia (ej. s"
+          },
+          {
+            "atCharacter": 1524,
+            "reason": "Section header detected: \"presión control modula la apertura de válvulas par\"",
+            "suggestedTitle": "presión control modula la apertura de válvulas para alcanzar"
+          },
+          {
+            "atCharacter": 2688,
+            "reason": "Section header detected: \"volumen control, activa su generador de flujo (tur\"",
+            "suggestedTitle": "volumen control, activa su generador de flujo (turbina o fue"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 11,
+        "stepId": "m5-p19-20",
+        "stepTitle": "Parte 10: lectura guiada (págs. 19–20)",
+        "currentLength": 7239,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 718,
+            "reason": "Section header detected: \"presión final: idealmente alveolar igual a PEEP ex\"",
+            "suggestedTitle": "presión final: idealmente alveolar igual a PEEP extrínseca. "
+          },
+          {
+            "atCharacter": 1417,
+            "reason": "Section header detected: \"presión a 40) cortará flujo a 0.8 s para no pasar \"",
+            "suggestedTitle": "presión a 40) cortará flujo a 0.8 s para no pasar de 40 cmH2"
+          },
+          {
+            "atCharacter": 3585,
+            "reason": "Section header detected: \"Flujos y Procesos\"",
+            "suggestedTitle": "Flujos y Procesos"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 12,
+        "stepId": "m5-p21-22",
+        "stepTitle": "Parte 11: lectura guiada (págs. 21–22)",
+        "currentLength": 7737,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 427,
+            "reason": "Section header detected: \"flujo = 0 antes de llegar a base volumen, retenció\"",
+            "suggestedTitle": "flujo = 0 antes de llegar a base volumen, retención. Si paci"
+          },
+          {
+            "atCharacter": 2095,
+            "reason": "Section header detected: \"Flujo de información en paralelo: Además del flujo\"",
+            "suggestedTitle": "Flujo de información en paralelo: Además del flujo de aire, "
+          },
+          {
+            "atCharacter": 2302,
+            "reason": "Section header detected: \"presión excede umbral → alarma de alta presión sue\"",
+            "suggestedTitle": "presión excede umbral → alarma de alta presión suena inmedia"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 13,
+        "stepId": "m5-p23-24",
+        "stepTitle": "Parte 12: lectura guiada (págs. 23–24)",
+        "currentLength": 8439,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 880,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "• Incremento del Esfuerzo Inspiratorio del paciente (Causa) "
+          },
+          {
+            "atCharacter": 965,
+            "reason": "Section header detected: \"presión y riesgo de doble trigger (Efecto): Causa:\"",
+            "suggestedTitle": "presión y riesgo de doble trigger (Efecto): Causa: paciente "
+          },
+          {
+            "atCharacter": 1155,
+            "reason": "Section header detected: \"volumen control, ese mayor esfuerzo se verá como c\"",
+            "suggestedTitle": "volumen control, ese mayor esfuerzo se verá como concavidad "
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 14,
+        "stepId": "m5-p25-26",
+        "stepTitle": "Parte 13: lectura guiada (págs. 25–26)",
+        "currentLength": 7767,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 223,
+            "reason": "Section header detected: \"presión triangular vs cuadrada. Así, un clínico co\"",
+            "suggestedTitle": "presión triangular vs cuadrada. Así, un clínico comparando g"
+          },
+          {
+            "atCharacter": 640,
+            "reason": "Section header detected: \"Comparativa de curvas: En paciente C (obstrucción)\"",
+            "suggestedTitle": "Comparativa de curvas: En paciente C (obstrucción), la curva"
+          },
+          {
+            "atCharacter": 1481,
+            "reason": "Section header detected: \"volumen normal (indicando sobredistensión) 23 .\"",
+            "suggestedTitle": "volumen normal (indicando sobredistensión) 23 ."
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 15,
+        "stepId": "m5-p27-28",
+        "stepTitle": "Parte 14: lectura guiada (págs. 27–28)",
+        "currentLength": 8959,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 2107,
+            "reason": "Section header detected: \"ventilación protectora (por ejemplo en SDRA) recom\"",
+            "suggestedTitle": "ventilación protectora (por ejemplo en SDRA) recomiendan lim"
+          },
+          {
+            "atCharacter": 2612,
+            "reason": "Section header detected: \"cómo cambia la forma cuando el ventilador cambia d\"",
+            "suggestedTitle": "cómo cambia la forma cuando el ventilador cambia de control "
+          },
+          {
+            "atCharacter": 2705,
+            "reason": "Section header detected: \"volumen, uno observa la presión adaptarse ciclo a \"",
+            "suggestedTitle": "volumen, uno observa la presión adaptarse ciclo a ciclo, y t"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 16,
+        "stepId": "m5-p29-30",
+        "stepTitle": "Parte 15: lectura guiada (págs. 29–30)",
+        "currentLength": 8253,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 235,
+            "reason": "Section header detected: \"conceptos de este módulo. Estos ejemplos sirven co\"",
+            "suggestedTitle": "conceptos de este módulo. Estos ejemplos sirven como referen"
+          },
+          {
+            "atCharacter": 360,
+            "reason": "Section header detected: \"Ejemplo 1: Curva de presión-tiempo en Volumen Cont\"",
+            "suggestedTitle": "Ejemplo 1: Curva de presión-tiempo en Volumen Control vs Pre"
+          },
+          {
+            "atCharacter": 1220,
+            "reason": "Section header detected: \"Ejemplo 2: Bucle Presión-Volumen con Puntos de Inf\"",
+            "suggestedTitle": "Ejemplo 2: Bucle Presión-Volumen con Puntos de Inflexión."
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 17,
+        "stepId": "m5-p31-32",
+        "stepTitle": "Parte 16: lectura guiada (págs. 31–32)",
+        "currentLength": 9796,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 2704,
+            "reason": "Section header detected: \"Caso 2: Paciente con SDRA moderado (Restrictivo) -\"",
+            "suggestedTitle": "Caso 2: Paciente con SDRA moderado (Restrictivo) - Ajuste de"
+          },
+          {
+            "atCharacter": 2981,
+            "reason": "Section header detected: \"presión meseta medida es 32 cmH2O, un poco por enc\"",
+            "suggestedTitle": "presión meseta medida es 32 cmH2O, un poco por encima de lo "
+          },
+          {
+            "atCharacter": 3074,
+            "reason": "Section header detected: \"presión-volumen muestra un aplanamiento hacia la p\"",
+            "suggestedTitle": "presión-volumen muestra un aplanamiento hacia la parte final"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 18,
+        "stepId": "m5-p33-34",
+        "stepTitle": "Parte 17: lectura guiada (págs. 33–34)",
+        "currentLength": 8423,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 519,
+            "reason": "Section header detected: \"ventilación controlada, posteriormente recuperado.\"",
+            "suggestedTitle": "ventilación controlada, posteriormente recuperado."
+          },
+          {
+            "atCharacter": 772,
+            "reason": "Section header detected: \"principios son universales. Un EPOC siempre mostra\"",
+            "suggestedTitle": "principios son universales. Un EPOC siempre mostrará flujo e"
+          },
+          {
+            "atCharacter": 1432,
+            "reason": "Section header detected: \"Casos Borde (Edge Cases)\"",
+            "suggestedTitle": "Casos Borde (Edge Cases)"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 19,
+        "stepId": "m5-p35-36",
+        "stepTitle": "Parte 18: lectura guiada (págs. 35–36)",
+        "currentLength": 7969,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1942,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "• Contraejemplo 1: Presión pico alta no siempre indica probl"
+          },
+          {
+            "atCharacter": 3640,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "• Contraejemplo 3: Aumento de compliance aparente no siempre"
+          },
+          {
+            "atCharacter": 5224,
+            "reason": "Section header detected: \"volumen cero – evidenciando desconexión. Este cont\"",
+            "suggestedTitle": "volumen cero – evidenciando desconexión. Este contraejemplo "
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 20,
+        "stepId": "m5-p37-38",
+        "stepTitle": "Parte 19: lectura guiada (págs. 37–38)",
+        "currentLength": 7642,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1632,
+            "reason": "Section header detected: \"presión y flujo. Las curvas asumen un sistema rela\"",
+            "suggestedTitle": "presión y flujo. Las curvas asumen un sistema relativamente "
+          },
+          {
+            "atCharacter": 2057,
+            "reason": "Section header detected: \"ventilación en diferentes regiones del pulmón. Un \"",
+            "suggestedTitle": "ventilación en diferentes regiones del pulmón. Un paciente p"
+          },
+          {
+            "atCharacter": 6632,
+            "reason": "Section header detected: \"presión alveolar vs vía aérea. La presión alveolar\"",
+            "suggestedTitle": "presión alveolar vs vía aérea. La presión alveolar en unidad"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 21,
+        "stepId": "m5-p39-40",
+        "stepTitle": "Parte 20: lectura guiada (págs. 39–40)",
+        "currentLength": 7554,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1463,
+            "reason": "Section header detected: \"¿Por qué es crucial la monitorización gráfica? A e\"",
+            "suggestedTitle": "¿Por qué es crucial la monitorización gráfica? A este punto,"
+          },
+          {
+            "atCharacter": 3739,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "Integración con conocimiento futuro: Sabemos que el siguient"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 22,
+        "stepId": "m5-p41-42",
+        "stepTitle": "Parte 21: lectura guiada (págs. 41–42)",
+        "currentLength": 7787,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 537,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "• Error 2: Ajustar parámetros de forma aislada sin ver reper"
+          },
+          {
+            "atCharacter": 3986,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "• Error 8: Fijarse solo en una curva en lugar de correlacion"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 23,
+        "stepId": "m5-p43-44",
+        "stepTitle": "Parte 22: lectura guiada (págs. 43–44)",
+        "currentLength": 7376,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 908,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "• \"retraso en el disparo\" sería que tu amigo hizo la señal p"
+          },
+          {
+            "atCharacter": 3574,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "• Explicar auto-PEEP de forma sencilla: Auto-PEEP es aire at"
+          },
+          {
+            "atCharacter": 5103,
+            "reason": "Section header detected: \"ventilación, cualquier desviación de la forma espe\"",
+            "suggestedTitle": "ventilación, cualquier desviación de la forma esperada nos h"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 24,
+        "stepId": "m5-p45-45",
+        "stepTitle": "Parte 23: lectura guiada (págs. 45–45)",
+        "currentLength": 4552,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 2199,
+            "reason": "Section header detected: \"volumen tidal actual está llegando a sobredistende\"",
+            "suggestedTitle": "volumen tidal actual está llegando a sobredistender alveolos"
+          },
+          {
+            "atCharacter": 2298,
+            "reason": "Section header detected: \"volumen tidal o la presión inspiratoria para no su\"",
+            "suggestedTitle": "volumen tidal o la presión inspiratoria para no superar ese "
+          },
+          {
+            "atCharacter": 2578,
+            "reason": "Section header detected: \"Caso de Resistencias Elevadas: Paciente con asma e\"",
+            "suggestedTitle": "Caso de Resistencias Elevadas: Paciente con asma en ventilac"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      }
+    ]
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "lessonTitle": "Efectos Sistémicos y Lesión Inducida por la Ventilación (VILI): El precio de ventilar",
+    "lessonId": "module-06-efectos-sistemicos",
+    "totalSteps": 25,
+    "overloadedSteps": [
+      {
+        "stepNumber": 1,
+        "stepId": "m6-intro",
+        "stepTitle": "Introducción y mapa del módulo",
+        "currentLength": 2114,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1606,
+            "reason": "Section header detected: \"Cómo estudiar (nivel principiante, contenido inter\"",
+            "suggestedTitle": "Cómo estudiar (nivel principiante, contenido intermedio/avan"
+          },
+          {
+            "atCharacter": 1606,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "Cómo estudiar (nivel principiante, contenido intermedio/avan"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 2,
+        "stepId": "m6-p46-47",
+        "stepTitle": "Parte 1: lectura guiada (págs. 46–47)",
+        "currentLength": 7799,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 415,
+            "reason": "Section header detected: \"ejemplo, escuchar aire en boca, comprobar cuff). A\"",
+            "suggestedTitle": "ejemplo, escuchar aire en boca, comprobar cuff). Además, en "
+          },
+          {
+            "atCharacter": 636,
+            "reason": "Section header detected: \"presión-tiempo con PIP 28, Pplat 28 (iguales); flu\"",
+            "suggestedTitle": "presión-tiempo con PIP 28, Pplat 28 (iguales); flujo-tiempo "
+          },
+          {
+            "atCharacter": 731,
+            "reason": "Section header detected: \"flujo espiratorio simétrico y retornando a cero; v\"",
+            "suggestedTitle": "flujo espiratorio simétrico y retornando a cero; volumen-tie"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 3,
+        "stepId": "m6-p48-49",
+        "stepTitle": "Parte 2: lectura guiada (págs. 48–49)",
+        "currentLength": 7286,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 266,
+            "reason": "Section header detected: \"ventilación mecánica, aunque salva vidas al suplir\"",
+            "suggestedTitle": "ventilación mecánica, aunque salva vidas al suplir la funció"
+          },
+          {
+            "atCharacter": 1246,
+            "reason": "Section header detected: \"ejemplo evidenció que una ventilación mal manejada\"",
+            "suggestedTitle": "ejemplo evidenció que una ventilación mal manejada en ARDS s"
+          },
+          {
+            "atCharacter": 2183,
+            "reason": "Section header detected: \"¿Dónde más? En la investigación y mejora de equipo\"",
+            "suggestedTitle": "¿Dónde más? En la investigación y mejora de equipos ventilat"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 4,
+        "stepId": "m6-p50-51",
+        "stepTitle": "Parte 3: lectura guiada (págs. 50–51)",
+        "currentLength": 7866,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1717,
+            "reason": "Section header detected: \"ventilación prolongada deja sin ejercicio al diafr\"",
+            "suggestedTitle": "ventilación prolongada deja sin ejercicio al diafragma – es "
+          },
+          {
+            "atCharacter": 3741,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "Se teorizó el \"volutrauma\": en 1987, Dreyfuss demostró en ra"
+          },
+          {
+            "atCharacter": 6205,
+            "reason": "Section header detected: \"casos severos se llevan a ECMO para reducir VILI (\"",
+            "suggestedTitle": "casos severos se llevan a ECMO para reducir VILI (bajando Vt"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 5,
+        "stepId": "m6-p52-53",
+        "stepTitle": "Parte 4: lectura guiada (págs. 52–53)",
+        "currentLength": 7504,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1154,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "• Problema de Daño Pulmonar Inducido por la Terapia: La vent"
+          },
+          {
+            "atCharacter": 1700,
+            "reason": "Section header detected: \"ventilación protectora (bajos volúmenes, limitar P\"",
+            "suggestedTitle": "ventilación protectora (bajos volúmenes, limitar Pplat, etc."
+          },
+          {
+            "atCharacter": 3210,
+            "reason": "Section header detected: \"ventilación.\"",
+            "suggestedTitle": "ventilación."
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 6,
+        "stepId": "m6-p54-55",
+        "stepTitle": "Parte 5: lectura guiada (págs. 54–55)",
+        "currentLength": 7632,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 538,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "• Atelectrauma complementa a volutrauma: alveolos colapsados"
+          },
+          {
+            "atCharacter": 3613,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "• COVID-19 ARDS: se discutió \"fenotipos\" (poco complaciente "
+          },
+          {
+            "atCharacter": 5036,
+            "reason": "Section header detected: \"ejemplo, ECMO saca al pulmón de la ecuación (desca\"",
+            "suggestedTitle": "ejemplo, ECMO saca al pulmón de la ecuación (descansa alveol"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 7,
+        "stepId": "m6-p56-57",
+        "stepTitle": "Parte 6: lectura guiada (págs. 56–57)",
+        "currentLength": 7759,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 234,
+            "reason": "Section header detected: \"Principio de Cierre-Reapertura alveolar (Histeresi\"",
+            "suggestedTitle": "Principio de Cierre-Reapertura alveolar (Histeresis Pulmonar"
+          },
+          {
+            "atCharacter": 1452,
+            "reason": "Section header detected: \"Principio Hemodinámico: Presión Intratorácica vs R\"",
+            "suggestedTitle": "Principio Hemodinámico: Presión Intratorácica vs Retorno Ven"
+          },
+          {
+            "atCharacter": 2122,
+            "reason": "Section header detected: \"Principio de Interdependencia Alveolar y Stress Mu\"",
+            "suggestedTitle": "Principio de Interdependencia Alveolar y Stress Multiplicado"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 8,
+        "stepId": "m6-p58-59",
+        "stepTitle": "Parte 7: lectura guiada (págs. 58–59)",
+        "currentLength": 6974,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 730,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "• Barotrauma: Trauma físico a los tejidos pulmonares por pre"
+          },
+          {
+            "atCharacter": 2930,
+            "reason": "Section header detected: \"volumen excesivo (sobreestiramiento alveolar), bar\"",
+            "suggestedTitle": "volumen excesivo (sobreestiramiento alveolar), barotrauma es"
+          },
+          {
+            "atCharacter": 3754,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "asoció a mortalidad mayor en ARDS. Su reducción (manteniendo"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 9,
+        "stepId": "m6-p60-61",
+        "stepTitle": "Parte 8: lectura guiada (págs. 60–61)",
+        "currentLength": 7620,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 996,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "• Axioma 1: \"Menos es más\" (en volumen tidal). Menor volumen"
+          },
+          {
+            "atCharacter": 3777,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "• Axioma 6: \"Tratar de mantener alveolos lo más homogéneos p"
+          },
+          {
+            "atCharacter": 5501,
+            "reason": "Section header detected: \"ventilación \"permisiva en CO2\" a aumentar FR que i\"",
+            "suggestedTitle": "ventilación \"permisiva en CO2\" a aumentar FR que incremente "
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 10,
+        "stepId": "m6-p62-63",
+        "stepTitle": "Parte 9: lectura guiada (págs. 62–63)",
+        "currentLength": 7079,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 4003,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "PTSD post UCI (no es \"sistémico físico\", pero alveolos prote"
+          },
+          {
+            "atCharacter": 5650,
+            "reason": "Section header detected: \"Conceptos Clave Jerarquizados\"",
+            "suggestedTitle": "Conceptos Clave Jerarquizados"
+          },
+          {
+            "atCharacter": 6602,
+            "reason": "Section header detected: \"Ventilación Protectora reduce mortalidad en ARDS: \"",
+            "suggestedTitle": "Ventilación Protectora reduce mortalidad en ARDS: Hecho clav"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 11,
+        "stepId": "m6-p64-65",
+        "stepTitle": "Parte 10: lectura guiada (págs. 64–65)",
+        "currentLength": 6961,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 12,
+        "stepId": "m6-p66-67",
+        "stepTitle": "Parte 11: lectura guiada (págs. 66–67)",
+        "currentLength": 8728,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 4718,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "O2 Toxicity: - alve high O2 -> generate ROS (like O2- supero"
+          },
+          {
+            "atCharacter": 5137,
+            "reason": "Section header detected: \"Cómo \"funciona\" la protección: - Low Vt: less alve\"",
+            "suggestedTitle": "Cómo \"funciona\" la protección: - Low Vt: less alve strain, a"
+          },
+          {
+            "atCharacter": 5992,
+            "reason": "Section header detected: \"Flujos y Procesos\"",
+            "suggestedTitle": "Flujos y Procesos"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 13,
+        "stepId": "m6-p68-69",
+        "stepTitle": "Parte 12: lectura guiada (págs. 68–69)",
+        "currentLength": 7580,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 940,
+            "reason": "Section header detected: \"Flujo resumen: Resist ↑ -> autoPEEP -> alve ruptur\"",
+            "suggestedTitle": "Flujo resumen: Resist ↑ -> autoPEEP -> alve rupture -> neumo"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 14,
+        "stepId": "m6-p70-71",
+        "stepTitle": "Parte 13: lectura guiada (págs. 70–71)",
+        "currentLength": 7344,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 619,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "• Causa: Pronar al paciente con SDRA severo."
+          },
+          {
+            "atCharacter": 1201,
+            "reason": "Section header detected: \"ventilación, lo que se traduce en menor driving pr\"",
+            "suggestedTitle": "ventilación, lo que se traduce en menor driving pressure alv"
+          },
+          {
+            "atCharacter": 2046,
+            "reason": "Section header detected: \"ventilación. El gasto cardiaco sube (efecto Frank-\"",
+            "suggestedTitle": "ventilación. El gasto cardiaco sube (efecto Frank-Starling),"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 15,
+        "stepId": "m6-p72-73",
+        "stepTitle": "Parte 14: lectura guiada (págs. 72–73)",
+        "currentLength": 8173,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 771,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "• Comparativa 5: Ventilación Invasiva vs No Invasiva (NIV) e"
+          },
+          {
+            "atCharacter": 3938,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "param quim (pH). Y se adaptan param: “Crítico” en esta práct"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 16,
+        "stepId": "m6-p74-75",
+        "stepTitle": "Parte 15: lectura guiada (págs. 74–75)",
+        "currentLength": 7231,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 985,
+            "reason": "Section header detected: \"Ejemplos Canónicos\"",
+            "suggestedTitle": "Ejemplos Canónicos"
+          },
+          {
+            "atCharacter": 1111,
+            "reason": "Section header detected: \"Ejemplo Canónico 1: “Baby Lung” en SDRA sobrediste\"",
+            "suggestedTitle": "Ejemplo Canónico 1: “Baby Lung” en SDRA sobredistendido por "
+          },
+          {
+            "atCharacter": 1881,
+            "reason": "Section header detected: \"por qué 12 ml/kg era devastador: se comparaba con \"",
+            "suggestedTitle": "por qué 12 ml/kg era devastador: se comparaba con ventilar u"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 17,
+        "stepId": "m6-p76-77",
+        "stepTitle": "Parte 16: lectura guiada (págs. 76–77)",
+        "currentLength": 7575,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 858,
+            "reason": "Section header detected: \"casos (pre-2000) donde ventilación agresiva habría\"",
+            "suggestedTitle": "casos (pre-2000) donde ventilación agresiva habría prolongad"
+          },
+          {
+            "atCharacter": 983,
+            "reason": "Section header detected: \"Caso 2: EPOC en Ventilación – Previniendo AutoPEEP\"",
+            "suggestedTitle": "Caso 2: EPOC en Ventilación – Previniendo AutoPEEP y Barotra"
+          },
+          {
+            "atCharacter": 2273,
+            "reason": "Section header detected: \"Caso 3: Politrauma con contusión pulmonar – Efecto\"",
+            "suggestedTitle": "Caso 3: Politrauma con contusión pulmonar – Efectos Sistémic"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 18,
+        "stepId": "m6-p78-79",
+        "stepTitle": "Parte 17: lectura guiada (págs. 78–79)",
+        "currentLength": 6576,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 3042,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "• Contraejemplo 1: Paciente con Pplat baja pero evidencias d"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 19,
+        "stepId": "m6-p80-81",
+        "stepTitle": "Parte 18: lectura guiada (págs. 80–81)",
+        "currentLength": 7639,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 3637,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "Crítica 4: Use of certain interventions sans strong evidence"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 20,
+        "stepId": "m6-p82-83",
+        "stepTitle": "Parte 19: lectura guiada (págs. 82–83)",
+        "currentLength": 7164,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1233,
+            "reason": "Section header detected: \"qué y cómo ventilación daña – hemos diseccionado e\"",
+            "suggestedTitle": "qué y cómo ventilación daña – hemos diseccionado esos mecani"
+          },
+          {
+            "atCharacter": 3717,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "me ayuda mentalmente – calibrar vent me recordará a calibrar"
+          },
+          {
+            "atCharacter": 5499,
+            "reason": "Section header detected: \"qué significa “precio”: alveolos rotos, inflamació\"",
+            "suggestedTitle": "qué significa “precio”: alveolos rotos, inflamación sistémic"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 21,
+        "stepId": "m6-p84-85",
+        "stepTitle": "Parte 20: lectura guiada (págs. 84–85)",
+        "currentLength": 7885,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 733,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "• Error común 4: \"Sobrecompensar sedation para suprimir asyn"
+          },
+          {
+            "atCharacter": 3841,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "• Error común 10: \"No reevaluar readiness for weaning.\" Some"
+          },
+          {
+            "atCharacter": 7359,
+            "reason": "Section header detected: \"presión arterial baja un poco cuando ponemos un ve\"",
+            "suggestedTitle": "presión arterial baja un poco cuando ponemos un ventilador c"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 22,
+        "stepId": "m6-p86-87",
+        "stepTitle": "Parte 21: lectura guiada (págs. 86–87)",
+        "currentLength": 8386,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 791,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "• ¿Qué pasa si ignoramos estas precauciones? Si no prestamos"
+          },
+          {
+            "atCharacter": 877,
+            "reason": "Section header detected: \"ventilación puede empeorar en lugar de mejorar. Po\"",
+            "suggestedTitle": "ventilación puede empeorar en lugar de mejorar. Por ejemplo,"
+          },
+          {
+            "atCharacter": 3818,
+            "reason": "Section header detected: \"ventilación/perfusión, aumentando PaO2 sin subir F\"",
+            "suggestedTitle": "ventilación/perfusión, aumentando PaO2 sin subir FIO2) 29 . "
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 23,
+        "stepId": "m6-p88-89",
+        "stepTitle": "Parte 22: lectura guiada (págs. 88–89)",
+        "currentLength": 6379,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 2398,
+            "reason": "Section header detected: \"ventilación controlada innecesariamente una vez es\"",
+            "suggestedTitle": "ventilación controlada innecesariamente una vez estable, por"
+          },
+          {
+            "atCharacter": 3362,
+            "reason": "Section header detected: \"flujo/19013667\"",
+            "suggestedTitle": "flujo/19013667"
+          },
+          {
+            "atCharacter": 3844,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "11 47 48 49 Doble trigger y ¿falso? reverse trigger | Medici"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      }
+    ]
+  },
+  {
+    "file": "module-02-parameters/lesson-01-volume-ventilation.json",
+    "lessonTitle": "Ventilación Controlada por Volumen (VCV)",
+    "lessonId": "lesson-01-volume-ventilation",
+    "totalSteps": 8,
+    "overloadedSteps": [
+      {
+        "stepNumber": 3,
+        "stepId": "configuracion-inicial-vcv",
+        "stepTitle": "Configuración Inicial",
+        "currentLength": 1550,
+        "currentTime": 12,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 639,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "1. **Calcular PBW (Peso Corporal Ideal)**:"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 4,
+        "stepId": "algoritmo-ajustes-vcv",
+        "stepTitle": "Algoritmo de Ajustes",
+        "currentLength": 1338,
+        "currentTime": 10,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 611,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **↑PIP con Pplat normal** → problema de **resistencia** (b"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 5,
+        "stepId": "monitorizacion-curvas-vcv",
+        "stepTitle": "Monitorización y Curvas",
+        "currentLength": 1306,
+        "currentTime": 12,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 312,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Presión–tiempo**: Pplat elevada con pausa → ↓C; gap Ppea"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 6,
+        "stepId": "alarmas-resolucion-vcv",
+        "stepTitle": "Alarmas y Resolución",
+        "currentLength": 1513,
+        "currentTime": 8,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 403,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Puede indicar fugas, desconexión o cambios en mecánica"
+          },
+          {
+            "atCharacter": 663,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Causa**: Aumento de resistencia (secreciones, broncoespa"
+          },
+          {
+            "atCharacter": 937,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Causa**: Disminución de compliance (edema, SDRA, atelect"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 7,
+        "stepId": "caso-practico-vcv",
+        "stepTitle": "Caso Práctico",
+        "currentLength": 1017,
+        "currentTime": 10,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 381,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Resultado esperado**: ΔP < 15 cmH₂O, Pplat ≤ 30 cmH₂O, mej"
+          },
+          {
+            "atCharacter": 506,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Datos**: VCV, Vt 420 ml, RR 18, PEEP 8; PIP 40, Pplat 22."
+          },
+          {
+            "atCharacter": 663,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Conclusión**: incremento resistivo resuelto sin cambio en "
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      }
+    ]
+  },
+  {
+    "file": "module-02-parameters/lesson-02-pressure-controlled-ventilation.json",
+    "lessonTitle": "Ventilación Controlada por Presión (PCV)",
+    "lessonId": "lesson-02-pressure-controlled-ventilation",
+    "totalSteps": 8,
+    "overloadedSteps": [
+      {
+        "stepNumber": 3,
+        "stepId": "configuracion-inicial-pcv",
+        "stepTitle": "Configuración Inicial",
+        "currentLength": 1462,
+        "currentTime": 12,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 588,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "1. **Calcular PBW (Peso Corporal Ideal)**:"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 4,
+        "stepId": "algoritmo-ajustes-pcv",
+        "stepTitle": "Algoritmo de Ajustes",
+        "currentLength": 1226,
+        "currentTime": 10,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 336,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **TI corto** → doble disparo o trabajo muscular persistent"
+          },
+          {
+            "atCharacter": 670,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Rise time muy rápido** → overshoot de presión y molestia"
+          },
+          {
+            "atCharacter": 910,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- La **presión de conducción (ΔP = Pplat − PEEP)** se asoció"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 5,
+        "stepId": "monitorizacion-curvas-pcv",
+        "stepTitle": "Monitorización y Curvas",
+        "currentLength": 1484,
+        "currentTime": 12,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 439,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- El patrón desacelerado puede **reducir PIP** y mejorar **d"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 6,
+        "stepId": "alarmas-resolucion-pcv",
+        "stepTitle": "Alarmas y Resolución",
+        "currentLength": 1604,
+        "currentTime": 8,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 428,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Verificar conexiones del circuito"
+          },
+          {
+            "atCharacter": 505,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "#### Problema: Disminución brusca de Vt por ↓compliance"
+          },
+          {
+            "atCharacter": 562,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Datos**: PCV, PEEP 8, Pinsp 14, TI 1.0 s, RR 20; Vt prev"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 7,
+        "stepId": "caso-practico-pcv",
+        "stepTitle": "Caso Práctico",
+        "currentLength": 1390,
+        "currentTime": 10,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 309,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Resultado esperado**: Vt recuperado a ~6 ml/kg, ΔP control"
+          },
+          {
+            "atCharacter": 427,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Datos**: Overshoot de presión y disconfort; rise time muy "
+          },
+          {
+            "atCharacter": 603,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Resultado esperado**: Presión estable sin overshoot, mejor"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      }
+    ]
+  },
+  {
+    "file": "module-02-parameters/lesson-03-pressure-support-ventilation.json",
+    "lessonTitle": "Ventilación con Soporte de Presión (PSV)",
+    "lessonId": "lesson-03-pressure-support-ventilation",
+    "totalSteps": 8,
+    "overloadedSteps": [
+      {
+        "stepNumber": 2,
+        "stepId": "objetivos-psv",
+        "stepTitle": "Objetivos de Aprendizaje",
+        "currentLength": 1137,
+        "currentTime": 5,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 481,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "4. **Ajustar** nivel de soporte y PEEP para alcanzar Vt obje"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 3,
+        "stepId": "configuracion-inicial-psv",
+        "stepTitle": "Configuración Inicial",
+        "currentLength": 1890,
+        "currentTime": 12,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 685,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "1. **Calcular PBW (Peso Corporal Ideal)**:"
+          },
+          {
+            "atCharacter": 1654,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "### Configuración para SBT (Spontaneous Breathing Trial)"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 4,
+        "stepId": "algoritmo-ajustes-psv",
+        "stepTitle": "Algoritmo de Ajustes",
+        "currentLength": 1392,
+        "currentTime": 10,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 437,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Síntomas: TI termina antes del final del impulso → ↓Vt, do"
+          },
+          {
+            "atCharacter": 813,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Identifica** el patrón (precoz/tardío/inefectivo/auto-d"
+          },
+          {
+            "atCharacter": 1153,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Esfuerzos inefectivos**: umbral de disparo no alcanzado "
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 5,
+        "stepId": "monitorizacion-curvas-psv",
+        "stepTitle": "Monitorización y Curvas",
+        "currentLength": 2001,
+        "currentTime": 12,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 373,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- La **configuración del porcentaje de ciclaje** y de la **s"
+          },
+          {
+            "atCharacter": 751,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Curva**: TI termina antes del final del impulso"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 6,
+        "stepId": "alarmas-resolucion-psv",
+        "stepTitle": "Alarmas y Resolución",
+        "currentLength": 1716,
+        "currentTime": 8,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 423,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "3. **Alarma de esfuerzos inefectivos**:"
+          },
+          {
+            "atCharacter": 686,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Datos**: PSV, PEEP 5, PS 12, % ciclaje 25%; curva muestr"
+          },
+          {
+            "atCharacter": 956,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Datos**: Restrictivo; terminación al **30%** del pico → "
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 7,
+        "stepId": "caso-practico-psv",
+        "stepTitle": "Caso Práctico",
+        "currentLength": 1304,
+        "currentTime": 10,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 337,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "### Caso 2: ARDS con ciclado precoz y doble disparo"
+          },
+          {
+            "atCharacter": 390,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Datos**: Restrictivo; terminación al **30%** del pico → TI"
+          },
+          {
+            "atCharacter": 561,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Resultado esperado**: Sincronía mejorada, Vt adecuado, sin"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      }
+    ]
+  },
+  {
+    "file": "module-02-parameters/lesson-04-simv-destete-evidencia.json",
+    "lessonTitle": "Ventilación Mandatoria Intermitente Sincronizada (SIMV)",
+    "lessonId": "lesson-04-simv-destete-evidencia",
+    "totalSteps": 8,
+    "overloadedSteps": [
+      {
+        "stepNumber": 2,
+        "stepId": "objetivos-simv",
+        "stepTitle": "Objetivos de Aprendizaje",
+        "currentLength": 1227,
+        "currentTime": 5,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 407,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "3. **Relacionar** cómo el agregado de **PS** a las respiraci"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 3,
+        "stepId": "configuracion-inicial-simv",
+        "stepTitle": "Configuración Inicial",
+        "currentLength": 1999,
+        "currentTime": 12,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 807,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "1. **Calcular PBW (Peso Corporal Ideal)**:"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 4,
+        "stepId": "algoritmo-ajustes-simv",
+        "stepTitle": "Algoritmo de Ajustes",
+        "currentLength": 1219,
+        "currentTime": 10,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 580,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Identifica** patrón en curvas (apilamiento/inefectivo/a"
+          },
+          {
+            "atCharacter": 970,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- La **ventana de sincronía** intenta alinear la respiración"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 5,
+        "stepId": "monitorizacion-curvas-simv",
+        "stepTitle": "Monitorización y Curvas",
+        "currentLength": 1536,
+        "currentTime": 12,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 435,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Mandatorias: forma más uniforme, sincronizadas"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 6,
+        "stepId": "alarmas-resolucion-simv",
+        "stepTitle": "Alarmas y Resolución",
+        "currentLength": 1564,
+        "currentTime": 8,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 413,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Revisar sensibilidad y **fugas** (sobre todo en interfaces"
+          },
+          {
+            "atCharacter": 595,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "#### Problema: Apilamiento por ventana de sincronía inadecua"
+          },
+          {
+            "atCharacter": 659,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Datos**: SIMV-VC RRm 14, Vt 6 ml/kg, PEEP 8, PS 8; curva"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 7,
+        "stepId": "caso-practico-simv",
+        "stepTitle": "Caso Práctico",
+        "currentLength": 1446,
+        "currentTime": 10,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 337,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Resultado esperado**: Sincronía mejorada, sin apilamiento,"
+          },
+          {
+            "atCharacter": 462,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Datos**: SIMV-PC RRm 10, Pinsp 14 sobre PEEP 8, TI 0.9 s; "
+          },
+          {
+            "atCharacter": 718,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Resultado esperado**: Esfuerzos efectivos, mejor sincronía"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 8,
+        "stepId": "resumen-quiz-simv",
+        "stepTitle": "Resumen y Quiz",
+        "currentLength": 929,
+        "currentTime": 5,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 424,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- **Ventana de sincronía** debe configurarse para alinear ma"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      }
+    ]
+  },
+  {
+    "file": "module-03-configuration/pathologies/asthma-protocol.json",
+    "lessonTitle": "Protocolo de Ventilación Mecánica para Asma Severa",
+    "lessonId": "protocolo-de-ventilacion-mecanica-para-asma-severa",
+    "totalSteps": 12,
+    "overloadedSteps": [
+      {
+        "stepNumber": 1,
+        "stepId": "step-1",
+        "stepTitle": "Untitled",
+        "currentLength": 1265,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 453,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- **Auto-PEEP muy alta**: Presión positiva residual al final"
+          },
+          {
+            "atCharacter": 1003,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "La ventilación mecánica en asma severa es especialmente desa"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 2,
+        "stepId": "step-2",
+        "stepTitle": "Untitled",
+        "currentLength": 951,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 465,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "5. **Permitir hipercapnia permisiva severa**: Aceptar pH tan"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 3,
+        "stepId": "step-3",
+        "stepTitle": "Untitled",
+        "currentLength": 969,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 410,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Se requiere transición hacia destete"
+          },
+          {
+            "atCharacter": 516,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "## Evitar Inicialmente: VCV (Ventilación Controlada por Volu"
+          },
+          {
+            "atCharacter": 582,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "VCV puede generar presiones muy altas debido a resistencia a"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 4,
+        "stepId": "step-4",
+        "stepTitle": "Untitled",
+        "currentLength": 1918,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 426,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Si auto-PEEP > 15 cmH₂O: PEEP extrínseca 5-8 cmH₂O máximo"
+          },
+          {
+            "atCharacter": 625,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Objetivo**: **4-6 mL/kg** de peso ideal (más bajo que otro"
+          },
+          {
+            "atCharacter": 700,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- Reducir volúmenes para minimizar hiperinsuflación"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 5,
+        "stepId": "step-5",
+        "stepTitle": "Untitled",
+        "currentLength": 1956,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1036,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "## Tabla de Ajuste según pH (Hipercapnia Permisiva)"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 6,
+        "stepId": "step-6",
+        "stepTitle": "Untitled",
+        "currentLength": 1908,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 462,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "6. **Sedación profunda si necesario**: Para prevenir asincro"
+          },
+          {
+            "atCharacter": 1095,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**NO aumentar frecuencia respiratoria** si causa auto-PEEP o"
+          },
+          {
+            "atCharacter": 1175,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Considerar bicarbonato IV** si pH < 7.10 y hemodinamia com"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 7,
+        "stepId": "step-7",
+        "stepTitle": "Untitled",
+        "currentLength": 1650,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 431,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- **Monitorizar**: Continuamente"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 8,
+        "stepId": "step-8",
+        "stepTitle": "Untitled",
+        "currentLength": 1003,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 414,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- ✅ pH ≥ 7.15 (idealmente ≥ 7.20)"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 9,
+        "stepId": "step-9",
+        "stepTitle": "Untitled",
+        "currentLength": 1918,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 422,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Reducir presiones ventilatorias agresivamente"
+          },
+          {
+            "atCharacter": 1014,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Manifestaciones**: pH < 7.10, somnolencia, confusión"
+          },
+          {
+            "atCharacter": 1635,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Manifestaciones**: Falla repetida de trials de respiración"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 10,
+        "stepId": "step-10",
+        "stepTitle": "Untitled",
+        "currentLength": 2310,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 418,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- HCO₃⁻: 30 mEq/L"
+          },
+          {
+            "atCharacter": 437,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Examen físico**: Sibilancia severa, uso de músculos acceso"
+          },
+          {
+            "atCharacter": 561,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Medir auto-PEEP**: Pausa espiratoria → **18 cmH₂O** (mu"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      }
+    ]
+  },
+  {
+    "file": "module-03-configuration/pathologies/copd-protocol.json",
+    "lessonTitle": "Protocolo de Ventilación Mecánica para EPOC Agudizado",
+    "lessonId": "protocolo-de-ventilacion-mecanica-para-epoc-agudizado",
+    "totalSteps": 12,
+    "overloadedSteps": [
+      {
+        "stepNumber": 1,
+        "stepId": "contexto-clinico-epoc",
+        "stepTitle": "Introducción",
+        "currentLength": 1154,
+        "currentTime": 8,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 417,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- **Auto-PEEP (PEEP intrínseca)**: Presión positiva residual"
+          },
+          {
+            "atCharacter": 896,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "La ventilación mecánica en EPOC presenta desafíos únicos deb"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 2,
+        "stepId": "objetivos-terapeuticos-epoc",
+        "stepTitle": "Objetivos",
+        "currentLength": 908,
+        "currentTime": 5,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 410,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "4. **Evitar hiperinsuflación dinámica**: Limitar volúmenes y"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 3,
+        "stepId": "modalidades-ventilatorias-epoc",
+        "stepTitle": "Modalidades Ventilatorias",
+        "currentLength": 1120,
+        "currentTime": 8,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 426,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Se requiere garantizar frecuencia mínima"
+          },
+          {
+            "atCharacter": 567,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "## Modalidad Inicial: Ventilación Controlada por Presión (PC"
+          },
+          {
+            "atCharacter": 786,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Evitar VCV** inicialmente si es posible, ya que puede gene"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 4,
+        "stepId": "configuracion-paso-a-paso-epoc",
+        "stepTitle": "Configuración Inicial",
+        "currentLength": 1750,
+        "currentTime": 12,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 375,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- Reducir trabajo inspiratorio necesario para vencer auto-PE"
+          },
+          {
+            "atCharacter": 579,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Objetivo**: 6-8 mL/kg de peso ideal (tendiendo a 6 mL/kg)"
+          },
+          {
+            "atCharacter": 640,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- Evitar volúmenes altos que empeoren hiperinsuflación"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 5,
+        "stepId": "tabla-parametros-epoc",
+        "stepTitle": "Algoritmo de Ajustes",
+        "currentLength": 1512,
+        "currentTime": 10,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 6,
+        "stepId": "estrategias-ajuste-epoc",
+        "stepTitle": "Estrategias de Ajuste",
+        "currentLength": 1432,
+        "currentTime": 10,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 525,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- pH ≥ 7.20 (idealmente ≥ 7.25)"
+          },
+          {
+            "atCharacter": 659,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**NO intentar normalizar PaCO₂** si el paciente tiene hiperc"
+          },
+          {
+            "atCharacter": 772,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Reducir PSV gradualmente**: 2-3 cmH₂O cada 12-24 horas"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 7,
+        "stepId": "monitorizacion-epoc",
+        "stepTitle": "Monitorización/Curvas/Alarmas",
+        "currentLength": 1437,
+        "currentTime": 12,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 410,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- **Monitorizar**: Continuamente en pantalla del ventilador"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 9,
+        "stepId": "complicaciones-manejo-epoc",
+        "stepTitle": "Complicaciones y Manejo",
+        "currentLength": 1773,
+        "currentTime": 8,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 438,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Broncodilatadores nebulizados"
+          },
+          {
+            "atCharacter": 556,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Manifestaciones**: pH < 7.20, somnolencia, confusión"
+          },
+          {
+            "atCharacter": 1204,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Manifestaciones**: Neumotórax, neumomediastino, enfisema s"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 10,
+        "stepId": "caso-clinico-epoc",
+        "stepTitle": "Caso Práctico",
+        "currentLength": 2276,
+        "currentTime": 10,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 465,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- PaCO₂ basal: 55-60 mmHg"
+          },
+          {
+            "atCharacter": 551,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Medir auto-PEEP**: Pausa espiratoria → **12 cmH₂O** (al"
+          },
+          {
+            "atCharacter": 616,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "2. **PEEP extrínseca**: 75% de 12 = **9 cmH₂O** (iniciar con"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      }
+    ]
+  },
+  {
+    "file": "module-03-configuration/pathologies/pneumonia-protocol.json",
+    "lessonTitle": "Protocolo de Ventilación Mecánica para Neumonía Severa",
+    "lessonId": "protocolo-de-ventilacion-mecanica-para-neumonia-severa",
+    "totalSteps": 12,
+    "overloadedSteps": [
+      {
+        "stepNumber": 1,
+        "stepId": "step-1",
+        "stepTitle": "Untitled",
+        "currentLength": 1137,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 462,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- **Atelectasia**: Colapso de unidades alveolares alrededor "
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 2,
+        "stepId": "step-2",
+        "stepTitle": "Untitled",
+        "currentLength": 807,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 444,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "5. **Manejar áreas consolidadas**: Estrategias para áreas no"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 3,
+        "stepId": "step-3",
+        "stepTitle": "Untitled",
+        "currentLength": 1008,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 419,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Presión plateau es alta a pesar de VT reducido"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 4,
+        "stepId": "step-4",
+        "stepTitle": "Untitled",
+        "currentLength": 1641,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 445,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Mujeres: PCI = 45.5 + 0.91 × (altura cm - 152.4)"
+          },
+          {
+            "atCharacter": 1376,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- Normal, no requiere prolongación como en EPOC/asma"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 5,
+        "stepId": "step-5",
+        "stepTitle": "Untitled",
+        "currentLength": 1466,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 6,
+        "stepId": "step-6",
+        "stepTitle": "Untitled",
+        "currentLength": 1742,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 471,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "1. **Fisioterapia respiratoria**: Cada 4-6 horas"
+          },
+          {
+            "atCharacter": 851,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Usar VT protector**: 6-8 mL/kg (tendiendo a 6 mL/kg en "
+          },
+          {
+            "atCharacter": 1427,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Reducir FiO₂ gradualmente**: Cuando oxigenación mejora"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 7,
+        "stepId": "step-7",
+        "stepTitle": "Untitled",
+        "currentLength": 1397,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 444,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- **Objetivo**: ≤ 30 cmH₂O"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 8,
+        "stepId": "step-8",
+        "stepTitle": "Untitled",
+        "currentLength": 926,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 464,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- ✅ Mejora de infiltrados en radiografía"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 9,
+        "stepId": "step-9",
+        "stepTitle": "Untitled",
+        "currentLength": 1639,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 423,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Deterioro de oxigenación"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 10,
+        "stepId": "step-10",
+        "stepTitle": "Untitled",
+        "currentLength": 2312,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 403,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- HCO₃⁻: 24 mEq/L"
+          },
+          {
+            "atCharacter": 452,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Radiografía de tórax**: Consolidación en lóbulo inferior d"
+          },
+          {
+            "atCharacter": 583,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Evaluar**: Neumonía severa bilateral, PaO₂/FiO₂ 87 (cer"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      }
+    ]
+  },
+  {
+    "file": "module-03-configuration/pathologies/sdra-protocol.json",
+    "lessonTitle": "Protocolo de Ventilación Mecánica para Síndrome de Dificultad Respiratoria Aguda (SDRA)",
+    "lessonId": "protocolo-de-ventilacion-mecanica-para-sindrome-de-dificultad-respiratoria-aguda-sdra",
+    "totalSteps": 12,
+    "overloadedSteps": [
+      {
+        "stepNumber": 1,
+        "stepId": "contexto-clinico-sdra",
+        "stepTitle": "Introducción",
+        "currentLength": 1182,
+        "currentTime": 8,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 314,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Inicio agudo**: Síntomas respiratorios dentro de 7 días "
+          },
+          {
+            "atCharacter": 631,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "El SDRA se clasifica en tres niveles de severidad según la r"
+          },
+          {
+            "atCharacter": 821,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "La fisiopatología del SDRA incluye pérdida de surfactante, a"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 2,
+        "stepId": "objetivos-terapeuticos-sdra",
+        "stepTitle": "Objetivos",
+        "currentLength": 877,
+        "currentTime": 5,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 407,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "4. **Reclutar unidades alveolares colapsadas**: Optimizando "
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 3,
+        "stepId": "modalidades-ventilatorias-sdra",
+        "stepTitle": "Modalidades Ventilatorias",
+        "currentLength": 879,
+        "currentTime": 8,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 407,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Presión Controlada (PCV)** puede considerarse cuando:"
+          },
+          {
+            "atCharacter": 632,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**APRV (Airway Pressure Release Ventilation)** puede usarse "
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 4,
+        "stepId": "configuracion-paso-a-paso-sdra",
+        "stepTitle": "Configuración Inicial",
+        "currentLength": 1340,
+        "currentTime": 12,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 361,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Importante**: Usar PCI, NO peso real, para evitar volúmene"
+          },
+          {
+            "atCharacter": 662,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "## Paso 3: Configurar PEEP y FiO₂ según Tabla ARDSnet"
+          },
+          {
+            "atCharacter": 1029,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**60-80 L/min** para acortar tiempo inspiratorio y maximizar"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 5,
+        "stepId": "tabla-parametros-ardsnet",
+        "stepTitle": "Algoritmo de Ajustes",
+        "currentLength": 1361,
+        "currentTime": 10,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 6,
+        "stepId": "estrategias-ajuste-sdra",
+        "stepTitle": "Algoritmo de Ajustes",
+        "currentLength": 1464,
+        "currentTime": 10,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 419,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Medir presión plateau cada 4 horas** o después de cambi"
+          },
+          {
+            "atCharacter": 984,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Aumentar frecuencia respiratoria** hasta 35/min para mante"
+          },
+          {
+            "atCharacter": 1096,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Posición prono**: Considerar en SDRA moderado-severo (P"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 7,
+        "stepId": "monitorizacion-sdra",
+        "stepTitle": "Monitorización/Curvas/Alarmas",
+        "currentLength": 1262,
+        "currentTime": 12,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 445,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- **Objetivos**: PaO₂ 55-80 mmHg, PaCO₂ según pH objetivo, p"
+          },
+          {
+            "atCharacter": 518,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "4. **Saturación de Oxígeno (SpO₂)**: Monitoreo continuo"
+          },
+          {
+            "atCharacter": 601,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "5. **Compliance Dinámica**: C = VT / (Pplateau - PEEP)"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 8,
+        "stepId": "criterios-exito-sdra",
+        "stepTitle": "Criterios de Éxito",
+        "currentLength": 909,
+        "currentTime": 5,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 400,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- ✅ Hemodinamia estable sin necesidad de aumento de vasopres"
+          },
+          {
+            "atCharacter": 614,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- ✅ PaO₂/FiO₂ > 200 mmHg con PEEP ≤ 8 cmH₂O y FiO₂ ≤ 0.4"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 9,
+        "stepId": "complicaciones-manejo-sdra",
+        "stepTitle": "Complicaciones y Manejo",
+        "currentLength": 1404,
+        "currentTime": 8,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 397,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Manifestaciones**: pH < 7.15, efectos hemodinámicos, confu"
+          },
+          {
+            "atCharacter": 708,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Manifestaciones**: PaO₂/FiO₂ < 100 a pesar de optimización"
+          },
+          {
+            "atCharacter": 918,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Manifestaciones**: Presión espiratoria no retorna a cero, "
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 10,
+        "stepId": "caso-clinico-sdra",
+        "stepTitle": "Caso Práctico",
+        "currentLength": 2045,
+        "currentTime": 10,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 431,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Radiografía de tórax**: Opacidades bilaterales difusas"
+          },
+          {
+            "atCharacter": 530,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Calcular PCI**: 50 + 0.91 × (175 - 152.4) = **70.5 kg**"
+          },
+          {
+            "atCharacter": 612,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "2. **VT inicial**: 6 × 71 = **426 mL** (configurar 420 mL)"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      }
+    ]
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/low-tidal-volume.json",
+    "lessonTitle": "Ventilación con Bajo Volumen Tidal: Estrategia de Protección Pulmonar",
+    "lessonId": "ventilacion-con-bajo-volumen-tidal-estrategia-de-proteccion-pulmonar",
+    "totalSteps": 10,
+    "overloadedSteps": [
+      {
+        "stepNumber": 1,
+        "stepId": "step-1",
+        "stepTitle": "Untitled",
+        "currentLength": 1746,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 414,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "El **volutrauma** es la lesión pulmonar causada por volúmene"
+          },
+          {
+            "atCharacter": 572,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- Los alveolos se sobredistenden más allá de su capacidad fi"
+          },
+          {
+            "atCharacter": 873,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "En pulmones sanos, el volumen tidal normal es ~6-8 mL/kg. En"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 2,
+        "stepId": "step-2",
+        "stepTitle": "Untitled",
+        "currentLength": 863,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 345,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Mortalidad**: 31% vs 40% (reducción absoluta 9%, relativ"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 3,
+        "stepId": "step-3",
+        "stepTitle": "Untitled",
+        "currentLength": 1506,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 957,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "1. **Calcular PCI**:"
+          },
+          {
+            "atCharacter": 1145,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**⚠️ IMPORTANTE**: Si se usara peso real (90 kg), el VT serí"
+          },
+          {
+            "atCharacter": 1270,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "Si después de configurar VT inicial, la presión plateau es >"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 4,
+        "stepId": "step-4",
+        "stepTitle": "Untitled",
+        "currentLength": 1343,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 729,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Modo: VCV Asistido-Control"
+          },
+          {
+            "atCharacter": 1122,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Si Pplateau > 30 cmH₂O**: Reducir VT en 1 mL/kg (mínimo "
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 5,
+        "stepId": "step-5",
+        "stepTitle": "Untitled",
+        "currentLength": 1348,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 502,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Permite VT bajo**: Sin necesidad de aumentar VT para \"n"
+          },
+          {
+            "atCharacter": 982,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Aumentar frecuencia respiratoria**: Hasta 35/min si es "
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 6,
+        "stepId": "step-6",
+        "stepTitle": "Untitled",
+        "currentLength": 1745,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 426,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Evaluar causas: secreciones, broncoespasmo, atelectasia"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 7,
+        "stepId": "step-7",
+        "stepTitle": "Untitled",
+        "currentLength": 1731,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 615,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "La PEEP se ajusta según tabla PEEP/FiO₂ (ver protocolo SDRA)"
+          },
+          {
+            "atCharacter": 702,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "Sin embargo, cambios de PEEP pueden afectar Pplateau:"
+          },
+          {
+            "atCharacter": 757,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Aumentar PEEP**: Puede aumentar Pplateau ligeramente"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 8,
+        "stepId": "step-8",
+        "stepTitle": "Untitled",
+        "currentLength": 1541,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 418,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- **Reducción de días de VM**"
+          },
+          {
+            "atCharacter": 546,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Mortalidad**: Reducción absoluta 9%, relativa 22%"
+          },
+          {
+            "atCharacter": 910,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Evidencia fuerte**: Múltiples estudios confirman benefic"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      }
+    ]
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/lung-protective-ventilation.json",
+    "lessonTitle": "Ventilación Protectora Pulmonar: Estrategia Integral",
+    "lessonId": "ventilacion-protectora-pulmonar-estrategia-integral",
+    "totalSteps": 10,
+    "overloadedSteps": [
+      {
+        "stepNumber": 1,
+        "stepId": "step-1",
+        "stepTitle": "Untitled",
+        "currentLength": 1311,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 406,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Bajo volumen tidal (LTVV)**: 6 mL/kg de peso corporal i"
+          },
+          {
+            "atCharacter": 699,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Prevenir volutrauma**: Daño por volúmenes excesivos"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 2,
+        "stepId": "step-2",
+        "stepTitle": "Untitled",
+        "currentLength": 1493,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 456,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Definición**: Lesión causada por presiones excesivas."
+          },
+          {
+            "atCharacter": 762,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Definición**: Lesión causada por colapso y reapertura cícl"
+          },
+          {
+            "atCharacter": 1144,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Definición**: Lesión causada por activación de cascadas in"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 3,
+        "stepId": "step-3",
+        "stepTitle": "Untitled",
+        "currentLength": 3202,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 421,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Arritmias ventriculares"
+          },
+          {
+            "atCharacter": 2125,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Si oxigenación adecuada**: Reducir FiO₂ primero, luego P"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 4,
+        "stepId": "step-4",
+        "stepTitle": "Untitled",
+        "currentLength": 1462,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 5,
+        "stepId": "step-5",
+        "stepTitle": "Untitled",
+        "currentLength": 1961,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 454,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- PaO₂: 55-80 mmHg"
+          },
+          {
+            "atCharacter": 885,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Frecuencia**: Cada 4-6 horas o cuando se sospeche"
+          },
+          {
+            "atCharacter": 1043,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Presión-tiempo**: Evaluar forma, detectar auto-PEEP"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 6,
+        "stepId": "step-6",
+        "stepTitle": "Untitled",
+        "currentLength": 1363,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 403,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Pplateau: ≤ 30 cmH₂O"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 7,
+        "stepId": "step-7",
+        "stepTitle": "Untitled",
+        "currentLength": 1585,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 408,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Medir después de cada cambio"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 8,
+        "stepId": "step-8",
+        "stepTitle": "Untitled",
+        "currentLength": 1890,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 352,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "PCI = 50 + 0.91 × (175 - 152.4) = 50 + 0.91 × 22.6 = **70.6 "
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      }
+    ]
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/peep-strategies.json",
+    "lessonTitle": "Estrategias de PEEP: Optimización de la Presión Positiva al Final de la Espiración",
+    "lessonId": "estrategias-de-peep-optimizacion-de-la-presion-positiva-al-final-de-la-espiracion",
+    "totalSteps": 9,
+    "overloadedSteps": [
+      {
+        "stepNumber": 1,
+        "stepId": "step-1",
+        "stepTitle": "Untitled",
+        "currentLength": 1849,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 500,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- **Reduce atelectasia**: Previene el colapso de alveolos qu"
+          },
+          {
+            "atCharacter": 612,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Reclutamiento alveolar**: La PEEP puede abrir (reclutar)"
+          },
+          {
+            "atCharacter": 915,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Disminuye trabajo inspiratorio**: El paciente no necesit"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 2,
+        "stepId": "step-2",
+        "stepTitle": "Untitled",
+        "currentLength": 1485,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 436,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Mantener oxigenación adecuada**: PaO₂ 55-80 mmHg o SpO₂"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 3,
+        "stepId": "step-3",
+        "stepTitle": "Untitled",
+        "currentLength": 2321,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 417,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Configurar PEEP ligeramente por encima de LIP"
+          },
+          {
+            "atCharacter": 1933,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "## Método 5: Estrategia de PEEP Alta vs Baja (ALVEOLI)"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 4,
+        "stepId": "step-4",
+        "stepTitle": "Untitled",
+        "currentLength": 2017,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 427,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Según severidad"
+          },
+          {
+            "atCharacter": 1628,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Aumentar PEEP gradualmente**: 2 cmH₂O a la vez"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 5,
+        "stepId": "step-5",
+        "stepTitle": "Untitled",
+        "currentLength": 2019,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 434,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Flujo espiratorio NO retorna a cero antes de siguiente ins"
+          },
+          {
+            "atCharacter": 867,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Objetivo**: Permitir tiempo espiratorio más largo"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 6,
+        "stepId": "step-6",
+        "stepTitle": "Untitled",
+        "currentLength": 1476,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 419,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Reducir trabajo inspiratorio"
+          },
+          {
+            "atCharacter": 672,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**Método**: Conservadora, 50-75% de auto-PEEP medida"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 7,
+        "stepId": "step-7",
+        "stepTitle": "Untitled",
+        "currentLength": 1747,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 411,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Considerar vasopresores"
+          },
+          {
+            "atCharacter": 1477,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Monitoreo continuo**: Pplateau, hemodinamia, oxigenació"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      }
+    ]
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/permissive-hypercapnia.json",
+    "lessonTitle": "Hipercapnia Permisiva: Estrategia de Ventilación Protectora",
+    "lessonId": "hipercapnia-permisiva-estrategia-de-ventilacion-protectora",
+    "totalSteps": 10,
+    "overloadedSteps": [
+      {
+        "stepNumber": 1,
+        "stepId": "step-1",
+        "stepTitle": "Untitled",
+        "currentLength": 1397,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 435,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "El concepto surgió en la década de 1990 cuando se reconoció "
+          },
+          {
+            "atCharacter": 501,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. Intentar normalizar PaCO₂ en pacientes con SDRA requería "
+          },
+          {
+            "atCharacter": 784,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**\"Es mejor aceptar hipercapnia que causar volutrauma\"**"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 2,
+        "stepId": "step-2",
+        "stepTitle": "Untitled",
+        "currentLength": 1503,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 395,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Vasodilatación sistémica**: La hipercapnia causa vasodi"
+          },
+          {
+            "atCharacter": 770,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Vasodilatación cerebral**: Aumenta flujo sanguíneo cere"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 3,
+        "stepId": "step-3",
+        "stepTitle": "Untitled",
+        "currentLength": 1377,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 665,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- **pH objetivo**: ≥ 7.15 (idealmente ≥ 7.20)"
+          },
+          {
+            "atCharacter": 833,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **pH objetivo**: ≥ 7.10 (puede ser más bajo que SDRA)"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 4,
+        "stepId": "step-4",
+        "stepTitle": "Untitled",
+        "currentLength": 1541,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 409,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "1. **Arritmias ventriculares**:"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 5,
+        "stepId": "step-5",
+        "stepTitle": "Untitled",
+        "currentLength": 2562,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 500,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Aumenta ventilación minuto"
+          },
+          {
+            "atCharacter": 1459,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "### Opción 3: Aumentar Volumen Tidal (NO RECOMENDADO)"
+          },
+          {
+            "atCharacter": 1758,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "### Opción 4: ECMO (Oxigenación por Membrana Extracorpórea)"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 6,
+        "stepId": "step-6",
+        "stepTitle": "Untitled",
+        "currentLength": 1353,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 401,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Efecto sobre surfactante"
+          },
+          {
+            "atCharacter": 495,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- Reducir producción de citoquinas proinflamatorias"
+          },
+          {
+            "atCharacter": 887,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- Desplazamiento de curva de disociación de oxihemoglobina a"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 7,
+        "stepId": "step-7",
+        "stepTitle": "Untitled",
+        "currentLength": 1149,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 489,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Aceptar hipercapnia similar a valores basales"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 8,
+        "stepId": "step-8",
+        "stepTitle": "Untitled",
+        "currentLength": 1736,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 404,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Reducir hipercapnia inmediatamente"
+          },
+          {
+            "atCharacter": 1365,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Monitoreo adecuado**: Gases arteriales, pH, efectos clí"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      }
+    ]
+  },
+  {
+    "file": "module-03-configuration/weaning/readiness-criteria.json",
+    "lessonTitle": "Criterios de Preparación para Destete Ventilatorio",
+    "lessonId": "criterios-de-preparacion-para-destete-ventilatorio",
+    "totalSteps": 9,
+    "overloadedSteps": [
+      {
+        "stepNumber": 1,
+        "stepId": "step-1",
+        "stepTitle": "Untitled",
+        "currentLength": 1217,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 416,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Reducir días de VM**: Destete temprano reduce tiempo de "
+          },
+          {
+            "atCharacter": 750,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Resolución de la causa original**: La patología que req"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 2,
+        "stepId": "step-2",
+        "stepTitle": "Untitled",
+        "currentLength": 2319,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1633,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- ✅ Patología que requirió VM resuelta o en resolución"
+          },
+          {
+            "atCharacter": 1977,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- ✅ Despierto y orientado (o al menos capaz de seguir comand"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 3,
+        "stepId": "step-3",
+        "stepTitle": "Untitled",
+        "currentLength": 1694,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 445,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Debe usarse en conjunto con otros criterios"
+          },
+          {
+            "atCharacter": 1488,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "**No hay una herramienta única perfecta**. La evaluación deb"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 4,
+        "stepId": "step-4",
+        "stepTitle": "Untitled",
+        "currentLength": 1705,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 369,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Riesgo**: Enfermedad pulmonar obstructiva severa"
+          },
+          {
+            "atCharacter": 510,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Riesgo**: Fallo cardiaco aumenta riesgo de fracaso"
+          },
+          {
+            "atCharacter": 657,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Riesgo**: Múltiples enfermedades aumentan riesgo"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 5,
+        "stepId": "step-5",
+        "stepTitle": "Untitled",
+        "currentLength": 2567,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 1243,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- [ ] Causa original resuelta o en resolución"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 6,
+        "stepId": "step-6",
+        "stepTitle": "Untitled",
+        "currentLength": 1050,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 432,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Considerar destete más gradual"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 7,
+        "stepId": "step-7",
+        "stepTitle": "Untitled",
+        "currentLength": 1189,
+        "currentTime": 0,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 424,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- No apresurar el proceso"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      }
+    ]
+  },
+  {
+    "file": "module-03-configuration/weaning/sbt-protocol.json",
+    "lessonTitle": "Protocolo de Trial de Respiración Espontánea (SBT)",
+    "lessonId": "protocolo-de-trial-de-respiracion-espontanea-sbt",
+    "totalSteps": 8,
+    "overloadedSteps": [
+      {
+        "stepNumber": 1,
+        "stepId": "concepto-trial-respiracion-espontanea",
+        "stepTitle": "Introducción",
+        "currentLength": 1021,
+        "currentTime": 5,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 476,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "3. **Optimizar tiempo de destete**: Facilitar destete tempra"
+          },
+          {
+            "atCharacter": 663,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **T-piece (T-connector)**: Paciente respira sin asistenci"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      },
+      {
+        "stepNumber": 3,
+        "stepId": "metodos-sbt",
+        "stepTitle": "Métodos de SBT",
+        "currentLength": 2069,
+        "currentTime": 8,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 425,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Requiere monitoreo manual"
+          },
+          {
+            "atCharacter": 1447,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "| Método | Ventajas | Desventajas | Uso Recomendado |"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 4,
+        "stepId": "protocolo-sbt",
+        "stepTitle": "Algoritmo de Ajustes",
+        "currentLength": 2264,
+        "currentTime": 10,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 425,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Evaluar parámetros"
+          },
+          {
+            "atCharacter": 900,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- ✅ **Confort**: Paciente cómodo o mínimamente incómodo"
+          }
+        ],
+        "recommendedSplit": "4 steps"
+      },
+      {
+        "stepNumber": 5,
+        "stepId": "monitorizacion-sbt",
+        "stepTitle": "Monitorización/Curvas/Alarmas",
+        "currentLength": 1926,
+        "currentTime": 8,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 413,
+            "reason": "List starts - may indicate new subtopic",
+            "suggestedTitle": "- Evaluar nivel de comodidad"
+          }
+        ],
+        "recommendedSplit": "3 steps"
+      },
+      {
+        "stepNumber": 6,
+        "stepId": "caso-practico-sbt",
+        "stepTitle": "Caso Práctico",
+        "currentLength": 1032,
+        "currentTime": 5,
+        "keyPointsCount": 0,
+        "naturalBreakPoints": [
+          {
+            "atCharacter": 429,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "- **Paciente no cumple criterios de preparación**: Esperar h"
+          },
+          {
+            "atCharacter": 717,
+            "reason": "Paragraph break - new topic likely starting",
+            "suggestedTitle": "1. **Evaluar diariamente**: Revisar criterios de preparación"
+          }
+        ],
+        "recommendedSplit": "2 steps"
+      }
+    ]
+  }
+]

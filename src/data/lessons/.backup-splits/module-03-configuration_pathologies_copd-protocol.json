@@ -1,7 +1,7 @@
 {
   "title": "Protocolo de Ventilación Mecánica para EPOC Agudizado",
   "summary": "Protocolo específico para el manejo ventilatorio del EPOC agudizado, enfocándose en prevenir auto-PEEP, optimizar tiempos espiratorios, manejar hipercapnia permisiva y evitar hiperinsuflación dinámica. Incluye estrategias de ajuste de parámetros y manejo de complicaciones.",
-  "estimatedTime": 98,
+  "estimatedTime": 40,
   "sections": [
     {
       "id": "contexto-clinico-epoc",

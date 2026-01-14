@@ -1,0 +1,328 @@
+=== COGNITIVE OVERLOAD ANALYSIS REPORT ===
+
+Analyzed 6 files in module-01-fundamentals/
+
+
+File: module-01-inversion-fisiologica.json
+────────────────────────────────────────────────────────────
+
+  - Step 1: 1587 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Introducción y mapa del módulo" (m1-intro)
+    Concepts: [Qué vas a aprender en este módulo, Cómo estudiar (nivel principiante, contenido intermedio/avan, Presión (P): fuerza por área (en ventilación: cmH₂O)....]
+
+  - Step 2: 7665 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 1: lectura guiada (págs. 1–2)" (m1-p1-2)
+    Concepts: [Ventilación Mecánica: Módulos Educativos, principios fisiológicos a escenarios clínicos), ¿Por qué importa? Comprender esta inversión de la mecánica r...]
+
+  - Step 3: 7476 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 2: lectura guiada (págs. 3–4)" (m1-p3-4)
+    Concepts: [Problema que resuelve: La ventilación mecánica resuelve la i, principio de la presión negativa: la presión alveolar cae po, Ventilación por presión negativa: método ventilatorio donde ...]
+
+  - Step 4: 8644 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 3: lectura guiada (págs. 5–6)" (m1-p5-6)
+    Concepts: [Glosario técnico: Este módulo emplea algunos términos técnic, Volumen corriente (Vt): volumen de gas entregado o inhalado , Presión inspiratoria (Pinsp): en modos controlados por presi...]
+
+  - Step 5: 8177 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 4: lectura guiada (págs. 7–8)" (m1-p7-8)
+    Concepts: [¿Cómo funciona un ventilador mecánico? En términos mecánicos, Flujos y procesos en detalle: Consideremos una inspiración e, presión; si está rígido, entrará menos....]
+
+  - Step 6: 9256 chars, 4 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 5: lectura guiada (págs. 9–10)" (m1-p9-10)
+    Concepts: [Comparativas máquina vs fisiología: Un punto mecánico intere, Dimensión práctica y crítica, Ejemplos reales de aplicación: Imaginemos un paciente con ex...]
+
+  - Step 7: 8505 chars, 4 concepts, 3 subsections → SPLIT into 4 steps
+    Title: "Parte 6: lectura guiada (págs. 11–12)" (m1-p11-12)
+    Concepts: [¿Qué harías? La acción sería ajustar el ventilador: por ejem, Dimensión metacognitiva, presión. ¿Qué podría estar causándolo y cómo solucionarlo? –...]
+
+  - Step 8: 3218 chars, 3 concepts, 7 subsections → SPLIT into 4 steps
+    Title: "Parte 7: lectura guiada (págs. 13–13)" (m1-p13-13)
+    Concepts: [presión positiva resultaron más versátiles y efectivos en UC, ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+File: module-02-ecuacion-movimiento.json
+────────────────────────────────────────────────────────────
+
+  - Step 1: 2610 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Introducción y mapa del módulo" (m2-intro)
+    Concepts: [Qué vas a aprender en este módulo, Cómo estudiar (nivel principiante, contenido intermedio/avan, Presión (P): fuerza por área (en ventilación: cmH₂O)....]
+
+  - Step 2: 8541 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 1: lectura guiada (págs. 14–15)" (m2-p14-15)
+    Concepts: [cómo los cambios en variables afectan la presión, etc.), flujo-tiempo) porque se usarán en ejemplos., ¿Qué es la “Ecuación del Movimiento Respiratorio”? Es una re...]
+
+  - Step 3: 8089 chars, 4 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 2: lectura guiada (págs. 16–17)" (m2-p16-17)
+    Concepts: [presión elástica para el mismo volumen; pulmones muy complac, presión resistiva sería 20 cmH2O para el mismo flujo; la ala, Glosario técnico específico: En contexto de esta ecuación, d...]
+
+  - Step 4: 9196 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 3: lectura guiada (págs. 18–19)" (m2-p18-19)
+    Concepts: [Relaciones jerarquizadas de la ecuación: Podemos visualizar , Taxonomía relacionada: Vale mencionar cómo la ecuación encaj, ¿Cómo usar la ecuación en la práctica clínica? Normalmente, ...]
+
+  - Step 5: 9446 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 4: lectura guiada (págs. 20–21)" (m2-p20-21)
+    Concepts: [Comparativas cuantitativas: Comparando un pulmón con SDRA vs, ventilación minuto para evitar ese PEEP intrínseco excesivo., Flujos dentro del ventilador: Mecánicamente, un ventilador d...]
+
+  - Step 6: 8982 chars, 4 concepts, 4 subsections → SPLIT into 4 steps
+    Title: "Parte 5: lectura guiada (págs. 22–23)" (m2-p22-23)
+    Concepts: [Caso 5: Predicción de cambio de parámetros: Un escenario: pa, presión-volumen no es perfectamente lineal: tiene concavidad, Ventilación de alta frecuencia oscilatoria (HFOV): Este es u...]
+
+  - Step 7: 8491 chars, 5 concepts, 7 subsections → SPLIT into 4 steps
+    Title: "Parte 6: lectura guiada (págs. 24–25)" (m2-p24-25)
+    Concepts: [ejemplo, calcular C usando Ppico en vez de Pplat – da un val, presión transpulmonar. Esto se mencionó con P-SILI., problemas y explicando a colegas lo que ocurre. Por eso es n...]
+
+  - Step 8: 4094 chars, 3 concepts, 5 subsections → SPLIT into 4 steps
+    Title: "Parte 7: lectura guiada (págs. 26–27)" (m2-p26-27)
+    Concepts: [ventilación mecánica invasiva. Iatreia, 36(1), 112-127. DOI:, ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+File: module-03-variables-fase.json
+────────────────────────────────────────────────────────────
+
+  - Step 1: 683 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Introducción y mapa del módulo" (m3-intro)
+    Concepts: [Qué vas a aprender en este módulo, Cómo estudiar (nivel principiante, contenido intermedio/avan, Presión (P): fuerza por área (en ventilación: cmH₂O)....]
+
+  - Step 2: 3578 chars, 5 concepts, 3 subsections → SPLIT into 4 steps
+    Title: "Parte 1: lectura guiada (págs. 1–1)" (m3-p1-1)
+    Concepts: [flujo generado en el circuito). Un ajuste adecuado de la sen, ejemplo, en un modo “limitado por presión”, la presión inspi, ventilación volumétrica, o la presión en ventilación baromét...]
+
+  - Step 3: 3017 chars, 3 concepts, 1 subsections → SPLIT into 4 steps
+    Title: "Parte 2: lectura guiada (págs. 2–2)" (m3-p2-2)
+    Concepts: [presión (por ejemplo, PEEP de 5 cmH2O), aunque en modos sin , presión especificado en la vía aérea 11 . Por tanto, el cicl, ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+File: module-04-modos-ventilatorios.json
+────────────────────────────────────────────────────────────
+
+  - Step 1: 683 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Introducción y mapa del módulo" (m4-intro)
+    Concepts: [Qué vas a aprender en este módulo, Cómo estudiar (nivel principiante, contenido intermedio/avan, Presión (P): fuerza por área (en ventilación: cmH₂O)....]
+
+  - Step 2: 1217 chars, 3 concepts, 0 subsections → SPLIT into 3 steps
+    Title: "Parte 1: lectura guiada (págs. 2–2)" (m4-p2-2)
+    Concepts: [Presión (Control y Asistencia), Ventilación controlada por volumen vs. por presión, ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+  - Step 3: 4610 chars, 5 concepts, 2 subsections → SPLIT into 4 steps
+    Title: "Parte 2: lectura guiada (págs. 3–3)" (m4-p3-3)
+    Concepts: [flujo) son las variables controladas en la inspiración, y po, volumen fijo en cada respiración, mientras las presiones pue, ventilación minuto constante (útil para controlar la PaCO2) ...]
+
+  - Step 4: 4554 chars, 2 concepts, 2 subsections → SPLIT into 4 steps
+    Title: "Parte 3: lectura guiada (págs. 4–4)" (m4-p4-4)
+    Concepts: [ventilación completamente controlada pura es poco frecuente , ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+  - Step 5: 4704 chars, 2 concepts, 1 subsections → SPLIT into 4 steps
+    Title: "Parte 4: lectura guiada (págs. 5–5)" (m4-p5-5)
+    Concepts: [volumen (AC/VC)” – el paciente está conectado, con V<sub>T</, ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+  - Step 6: 4893 chars, 3 concepts, 1 subsections → SPLIT into 4 steps
+    Title: "Parte 5: lectura guiada (págs. 6–6)" (m4-p6-6)
+    Concepts: [Ventilación con Presión de Soporte (PSV, Pressure Support Ve, presión y control vs asistencia se combinan para describir c, ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+  - Step 7: 3135 chars, 2 concepts, 5 subsections → SPLIT into 4 steps
+    Title: "Parte 6: lectura guiada (págs. 7–7)" (m4-p7-7)
+    Concepts: [taxonomía de modos 1 16 ., ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+  ✓ 1 step(s) are OK
+
+File: module-05-monitorizacion-grafica.json
+────────────────────────────────────────────────────────────
+
+  - Step 1: 2455 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Introducción y mapa del módulo" (m5-intro)
+    Concepts: [Qué vas a aprender en este módulo, volumen vs. presión) y condiciones del paciente., Cómo estudiar (nivel principiante, contenido intermedio/avan...]
+
+  - Step 2: 6189 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 1: lectura guiada (págs. 1–2)" (m5-p1-2)
+    Concepts: [volumen vs. presión) y condiciones del paciente., Dimensión Contextual (¿Por qué y dónde?), ventilación invasiva, e incluso en ventilación no invasiva a...]
+
+  - Step 3: 8191 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 2: lectura guiada (págs. 3–4)" (m5-p3-4)
+    Concepts: [principios globales de ventilación protectora, al tiempo que, volumen con cálculos automáticos de compliance dinámica y es, presión transpulmonar), curvas de actividad diafragmática (N...]
+
+  - Step 4: 8230 chars, 5 concepts, 7 subsections → SPLIT into 4 steps
+    Title: "Parte 3: lectura guiada (págs. 5–6)" (m5-p5-6)
+    Concepts: [ventilación mecánica. Visualicemos un mapa conceptual donde , presión se eleva de forma variable; ahora en este módulo se , flujo-tiempo rectangular en inspiración y presión-tiempo con...]
+
+  - Step 5: 7307 chars, 5 concepts, 13 subsections → SPLIT into 4 steps
+    Title: "Parte 4: lectura guiada (págs. 7–8)" (m5-p7-8)
+    Concepts: [principios se reflejan en gráficas. También abarca la teoría, Glosario de Precisión, volumen-tiempo, flujo-tiempo). Representa la evolución tempo...]
+
+  - Step 6: 7820 chars, 5 concepts, 16 subsections → SPLIT into 4 steps
+    Title: "Parte 5: lectura guiada (págs. 9–10)" (m5-p9-10)
+    Concepts: [volumen muestra menor pico de flujo espiratorio y caída más , Axiomas o Principios Fundamentales, ventilación produce patrones gráficos característicos y pred...]
+
+  - Step 7: 7968 chars, 5 concepts, 3 subsections → SPLIT into 4 steps
+    Title: "Parte 6: lectura guiada (págs. 11–12)" (m5-p11-12)
+    Concepts: [presión control) puede indicar flujo inspiratorio excesivo o, axioma: sospechar trigger inapropiado (por condensación, vib, volumen), mientras uno vertical (empinado) sugiere alta dist...]
+
+  - Step 8: 8143 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 7: lectura guiada (págs. 13–14)" (m5-p13-14)
+    Concepts: [flujo limitado) es menor a la demanda del paciente. El pacie, presión con rápida entrega de flujo., Flujo excesivo (Overshoot): Menos común, ocurre en presión c...]
+
+  - Step 9: 7642 chars, 5 concepts, 7 subsections → SPLIT into 4 steps
+    Title: "Parte 8: lectura guiada (págs. 15–16)" (m5-p15-16)
+    Concepts: [Conceptos Clave Jerarquizados, Ejemplo: Saber que la gráfica presión-tiempo muestra la evol, volumen, flujo inspiratorio constante → presión ascendente l...]
+
+  - Step 10: 8592 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 9: lectura guiada (págs. 17–18)" (m5-p17-18)
+    Concepts: [Dimensión Mecánica (¿Cómo Funciona?), volumen control, activa su generador de flujo (turbina o fue, Presión elástica + PEEP. Al inicio del flujo, hay aceleració...]
+
+  - Step 11: 7239 chars, 3 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 10: lectura guiada (págs. 19–20)" (m5-p19-20)
+    Concepts: [Flujo pasivo: Los pulmones recolectan energías elásticas acu, ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+  - Step 12: 7737 chars, 5 concepts, 3 subsections → SPLIT into 4 steps
+    Title: "Parte 11: lectura guiada (págs. 21–22)" (m5-p21-22)
+    Concepts: [flujo = 0 antes de llegar a base volumen, retención. Si paci, presión excede umbral → alarma de alta presión suena inmedia, flujo espiratorio retardado, posible atrapamiento (volumen e...]
+
+  - Step 13: 8439 chars, 5 concepts, 5 subsections → SPLIT into 4 steps
+    Title: "Parte 12: lectura guiada (págs. 23–24)" (m5-p23-24)
+    Concepts: [presión y riesgo de doble trigger (Efecto): Causa: paciente , volumen control, ese mayor esfuerzo se verá como concavidad , presión 20 , ya que el ventilador no incrementa flujo automá...]
+
+  - Step 14: 7767 chars, 5 concepts, 3 subsections → SPLIT into 4 steps
+    Title: "Parte 13: lectura guiada (págs. 25–26)" (m5-p25-26)
+    Concepts: [presión triangular vs cuadrada. Así, un clínico comparando g, Comparativa de curvas: En paciente C (obstrucción), la curva, volumen normal (indicando sobredistensión) 23 ....]
+
+  - Step 15: 8959 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 14: lectura guiada (págs. 27–28)" (m5-p27-28)
+    Concepts: [ventilación protectora (por ejemplo en SDRA) recomiendan lim, cómo cambia la forma cuando el ventilador cambia de control , volumen, uno observa la presión adaptarse ciclo a ciclo, y t...]
+
+  - Step 16: 8253 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 15: lectura guiada (págs. 29–30)" (m5-p29-30)
+    Concepts: [conceptos de este módulo. Estos ejemplos sirven como referen, Ejemplo 1: Curva de presión-tiempo en Volumen Control vs Pre, Ejemplo 2: Bucle Presión-Volumen con Puntos de Inflexión....]
+
+  - Step 17: 9796 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 16: lectura guiada (págs. 31–32)" (m5-p31-32)
+    Concepts: [Caso 1: Paciente con EPOC exacerbada en UCI (Obstructivo)., Caso 2: Paciente con SDRA moderado (Restrictivo) - Ajuste de, presión meseta medida es 32 cmH2O, un poco por encima de lo ...]
+
+  - Step 18: 8423 chars, 4 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 17: lectura guiada (págs. 33–34)" (m5-p33-34)
+    Concepts: [ventilación controlada, posteriormente recuperado., principios son universales. Un EPOC siempre mostrará flujo e, Casos Borde (Edge Cases)...]
+
+  - Step 19: 7969 chars, 3 concepts, 7 subsections → SPLIT into 4 steps
+    Title: "Parte 18: lectura guiada (págs. 35–36)" (m5-p35-36)
+    Concepts: [volumen cero – evidenciando desconexión. Este contraejemplo , ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+  - Step 20: 7642 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 19: lectura guiada (págs. 37–38)" (m5-p37-38)
+    Concepts: [Limitaciones y Críticas, limitaciones y consideraciones críticas para no sobredimensi, presión y flujo. Las curvas asumen un sistema relativamente ...]
+
+  - Step 21: 7554 chars, 3 concepts, 2 subsections → SPLIT into 4 steps
+    Title: "Parte 20: lectura guiada (págs. 39–40)" (m5-p39-40)
+    Concepts: [Dimensión Metacognitiva (Cierre), ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+  - Step 22: 7787 chars, 3 concepts, 10 subsections → SPLIT into 4 steps
+    Title: "Parte 21: lectura guiada (págs. 41–42)" (m5-p41-42)
+    Concepts: [¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+  - Step 23: 7376 chars, 5 concepts, 12 subsections → SPLIT into 4 steps
+    Title: "Parte 22: lectura guiada (págs. 43–44)" (m5-p43-44)
+    Concepts: [ventilación, cualquier desviación de la forma esperada nos h, casos, calcular o deducir:, presión-tiempo de un paciente, justo al inicio de cada inspi...]
+
+  - Step 24: 4552 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 23: lectura guiada (págs. 45–45)" (m5-p45-45)
+    Concepts: [volumen tidal actual está llegando a sobredistender alveolos, volumen tidal o la presión inspiratoria para no superar ese , Caso de Resistencias Elevadas: Paciente con asma en ventilac...]
+
+File: module-06-efectos-sistemicos.json
+────────────────────────────────────────────────────────────
+
+  - Step 1: 2114 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Introducción y mapa del módulo" (m6-intro)
+    Concepts: [Qué vas a aprender en este módulo, Cómo estudiar (nivel principiante, contenido intermedio/avan, Presión (P): fuerza por área (en ventilación: cmH₂O)....]
+
+  - Step 2: 7799 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 1: lectura guiada (págs. 46–47)" (m6-p46-47)
+    Concepts: [ejemplo, escuchar aire en boca, comprobar cuff). Además, en , presión-tiempo con PIP 28, Pplat 28 (iguales); flujo-tiempo , flujo espiratorio simétrico y retornando a cero; volumen-tie...]
+
+  - Step 3: 7286 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 2: lectura guiada (págs. 48–49)" (m6-p48-49)
+    Concepts: [Dimensión Contextual (¿Por qué y dónde?), ventilación mecánica, aunque salva vidas al suplir la funció, ejemplo evidenció que una ventilación mal manejada en ARDS s...]
+
+  - Step 4: 7866 chars, 2 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 3: lectura guiada (págs. 50–51)" (m6-p50-51)
+    Concepts: [ventilación prolongada deja sin ejercicio al diafragma – es , ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+  - Step 5: 7504 chars, 5 concepts, 8 subsections → SPLIT into 4 steps
+    Title: "Parte 4: lectura guiada (págs. 52–53)" (m6-p52-53)
+    Concepts: [Problema que Resuelve, ventilación protectora (bajos volúmenes, limitar Pplat, etc., problema de VILI, salvamos más vidas....]
+
+  - Step 6: 7632 chars, 4 concepts, 13 subsections → SPLIT into 4 steps
+    Title: "Parte 5: lectura guiada (págs. 54–55)" (m6-p54-55)
+    Concepts: [ejemplo, ECMO saca al pulmón de la ecuación (descansa alveol, Dimensión Teórica (Primeros Principios), Presión vía aérea = (Volumen/Compliance) + (Resistencia x Fl...]
+
+  - Step 7: 7759 chars, 5 concepts, 1 subsections → SPLIT into 4 steps
+    Title: "Parte 6: lectura guiada (págs. 56–57)" (m6-p56-57)
+    Concepts: [Principio de Cierre-Reapertura alveolar (Histeresis Pulmonar, Principio Hemodinámico: Presión Intratorácica vs Retorno Ven, Principio de Interdependencia Alveolar y Stress Multiplicado...]
+
+  - Step 8: 6974 chars, 3 concepts, 18 subsections → SPLIT into 4 steps
+    Title: "Parte 7: lectura guiada (págs. 58–59)" (m6-p58-59)
+    Concepts: [volumen excesivo (sobreestiramiento alveolar), barotrauma es, ventilación protectora 69 ., ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+  - Step 9: 7620 chars, 5 concepts, 13 subsections → SPLIT into 4 steps
+    Title: "Parte 8: lectura guiada (págs. 60–61)" (m6-p60-61)
+    Concepts: [Axiomas o Principios Fundamentales, ventilación "permisiva en CO2" a aumentar FR que incremente , axioma: Ventila alveolos enfermos con aún más cuidado que al...]
+
+  - Step 10: 7079 chars, 3 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 9: lectura guiada (págs. 62–63)" (m6-p62-63)
+    Concepts: [Conceptos Clave Jerarquizados, Ventilación Protectora reduce mortalidad en ARDS: Hecho clav, ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+  - Step 11: 6961 chars, 3 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 10: lectura guiada (págs. 64–65)" (m6-p64-65)
+    Concepts: [Dimensión Mecánica (¿Cómo Funciona?), ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+  - Step 12: 8728 chars, 2 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 11: lectura guiada (págs. 66–67)" (m6-p66-67)
+    Concepts: [Cómo "funciona" la protección: - Low Vt: less alve strain, a, ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+  - Step 13: 7580 chars, 2 concepts, 4 subsections → SPLIT into 4 steps
+    Title: "Parte 12: lectura guiada (págs. 68–69)" (m6-p68-69)
+    Concepts: [Flujo resumen: Resist ↑ -> autoPEEP -> alve rupture -> neumo, ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+  - Step 14: 7344 chars, 4 concepts, 7 subsections → SPLIT into 4 steps
+    Title: "Parte 13: lectura guiada (págs. 70–71)" (m6-p70-71)
+    Concepts: [ventilación, lo que se traduce en menor driving pressure alv, ventilación. El gasto cardiaco sube (efecto Frank-Starling),, presión-tiempo – su Ppl swings. Radiolog no dif en 1 día, pe...]
+
+  - Step 15: 8173 chars, 3 concepts, 1 subsections → SPLIT into 4 steps
+    Title: "Parte 14: lectura guiada (págs. 72–73)" (m6-p72-73)
+    Concepts: [Dimensión Práctica y Crítica, ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+  - Step 16: 7231 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 15: lectura guiada (págs. 74–75)" (m6-p74-75)
+    Concepts: [Ejemplo Canónico 1: “Baby Lung” en SDRA sobredistendido por , por qué 12 ml/kg era devastador: se comparaba con ventilar u, Ejemplo Canónico 2: Neumotórax a tensión en crisis asmática ...]
+
+  - Step 17: 7575 chars, 5 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 16: lectura guiada (págs. 76–77)" (m6-p76-77)
+    Concepts: [casos (pre-2000) donde ventilación agresiva habría prolongad, Caso 2: EPOC en Ventilación – Previniendo AutoPEEP y Barotra, Caso 3: Politrauma con contusión pulmonar – Efectos Sistémic...]
+
+  - Step 18: 6576 chars, 2 concepts, 7 subsections → SPLIT into 4 steps
+    Title: "Parte 17: lectura guiada (págs. 78–79)" (m6-p78-79)
+    Concepts: [Problema: PEEP necesario para ARDS (ej PEEP 15), pero PEEP t, ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+  - Step 19: 7639 chars, 2 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 18: lectura guiada (págs. 80–81)" (m6-p80-81)
+    Concepts: [Limitaciones y Críticas, ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+  - Step 20: 7164 chars, 5 concepts, 2 subsections → SPLIT into 4 steps
+    Title: "Parte 19: lectura guiada (págs. 82–83)" (m6-p82-83)
+    Concepts: [Dimensión Metacognitiva (Cierre), qué y cómo ventilación daña – hemos diseccionado esos mecani, qué significa “precio”: alveolos rotos, inflamación sistémic...]
+
+  - Step 21: 7885 chars, 3 concepts, 11 subsections → SPLIT into 4 steps
+    Title: "Parte 20: lectura guiada (págs. 84–85)" (m6-p84-85)
+    Concepts: [presión arterial baja un poco cuando ponemos un ventilador c, ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+  - Step 22: 8386 chars, 5 concepts, 2 subsections → SPLIT into 4 steps
+    Title: "Parte 21: lectura guiada (págs. 86–87)" (m6-p86-87)
+    Concepts: [ventilación puede empeorar en lugar de mejorar. Por ejemplo,, ventilación/perfusión, aumentando PaO2 sin subir FIO2) 29 . , volumen corriente bajo, una frecuencia respiratoria baja y c...]
+
+  - Step 23: 6379 chars, 2 concepts, 0 subsections → SPLIT into 4 steps
+    Title: "Parte 22: lectura guiada (págs. 88–89)" (m6-p88-89)
+    Concepts: [ventilación controlada innecesariamente una vez estable, por, ¿Qué concepto nuevo te quedó más claro en estas páginas?]
+
+============================================================
+SUMMARY
+============================================================
+
+Total steps analyzed: 74
+Steps with cognitive overload: 73 (99%)
+Steps OK: 1 (1%)
+Average characters per step: 6687
+
+⚠️  RECOMMENDATION: Consider splitting 73 overloaded step(s) to improve learning experience
+   Target: Keep steps under 800 characters or 2 distinct concepts per step

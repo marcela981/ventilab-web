@@ -140,6 +140,7 @@ model Progress {
   moduleId   String?
   lessonId   String?
   completed  Boolean   @default(false)
+  completionPercentage Float @default(0)
   progress   Float     @default(0)
   score      Float?
   timeSpent  Int       @default(0) // en minutos
