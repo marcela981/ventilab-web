@@ -9,9 +9,12 @@
 // =============================================================================
 
 // Módulo 01: Fundamentos Fisiológicos y Respiratorios
-import lesson01Mechanics from './lessons/module-01-fundamentals/lesson-01-respiratory-mechanics.json';
-import lesson02GasExchange from './lessons/module-01-fundamentals/lesson-02-gas-exchange.json';
-import lesson03ArterialBloodGas from './lessons/module-01-fundamentals/lesson-03-arterial-blood-gas.json';
+import module01Inversion from './lessons/module-01-fundamentals/module-01-inversion-fisiologica.json';
+import module02Ecuacion from './lessons/module-01-fundamentals/module-02-ecuacion-movimiento.json';
+import module03Variables from './lessons/module-01-fundamentals/module-03-variables-fase.json';
+import module04Modos from './lessons/module-01-fundamentals/module-04-modos-ventilatorios.json';
+import module05Monitorizacion from './lessons/module-01-fundamentals/module-05-monitorizacion-grafica.json';
+import module06Efectos from './lessons/module-01-fundamentals/module-06-efectos-sistemicos.json';
 
 // Módulo 02: Modalidades y Parámetros
 import lesson01VolumeVentilation from './lessons/module-02-parameters/lesson-01-volume-ventilation.json';
@@ -71,31 +74,58 @@ export const curriculumData = {
       // ✅ CONECTAR LECCIONES REALES DESDE JSON
       lessons: [
         {
-          id: 'respiratory-mechanics',
-          title: lesson01Mechanics.title || 'Mecánica Respiratoria',
-          description: lesson01Mechanics.description || '',
-          estimatedTime: lesson01Mechanics.estimatedTime || 75,
-          difficulty: lesson01Mechanics.difficulty || 'intermediate',
-          order: lesson01Mechanics.order || 1,
-          lessonData: lesson01Mechanics
+          id: 'module-01-inversion-fisiologica',
+          title: module01Inversion.title || 'La Inversión Fisiológica: De la Presión Negativa a la Positiva',
+          description: module01Inversion.description || '',
+          estimatedTime: module01Inversion.estimatedTime || 45,
+          difficulty: module01Inversion.difficulty || 'intermediate',
+          order: module01Inversion.order || 1,
+          lessonData: module01Inversion
         },
         {
-          id: 'gas-exchange',
-          title: lesson02GasExchange.title || 'Intercambio Gaseoso',
-          description: lesson02GasExchange.description || 'Principios del intercambio gaseoso alveolar',
-          estimatedTime: lesson02GasExchange.estimatedTime || 85,
-          difficulty: lesson02GasExchange.difficulty || 'intermediate',
-          order: lesson02GasExchange.order || 2,
-          lessonData: lesson02GasExchange
+          id: 'module-02-ecuacion-movimiento',
+          title: module02Ecuacion.title || 'El Santo Grial – La Ecuación del Movimiento Respiratorio',
+          description: module02Ecuacion.description || '',
+          estimatedTime: module02Ecuacion.estimatedTime || 50,
+          difficulty: module02Ecuacion.difficulty || 'intermediate',
+          order: module02Ecuacion.order || 2,
+          lessonData: module02Ecuacion
         },
         {
-          id: 'arterial-blood-gas',
-          title: lesson03ArterialBloodGas.title || 'Gasometría Arterial',
-          description: lesson03ArterialBloodGas.description || 'Interpretación de gasometrías arteriales en ventilación mecánica',
-          estimatedTime: lesson03ArterialBloodGas.estimatedTime || 60,
-          difficulty: lesson03ArterialBloodGas.difficulty || 'intermediate',
-          order: lesson03ArterialBloodGas.order || 3,
-          lessonData: lesson03ArterialBloodGas
+          id: 'module-03-variables-fase',
+          title: module03Variables.title || 'La Lógica de la Máquina: Variables de Fase y el Ciclo Respiratorio',
+          description: module03Variables.description || '',
+          estimatedTime: module03Variables.estimatedTime || 54,
+          difficulty: module03Variables.difficulty || 'intermediate',
+          order: module03Variables.order || 3,
+          lessonData: module03Variables
+        },
+        {
+          id: 'module-04-modos-ventilatorios',
+          title: module04Modos.title || 'Taxonomía de los Modos: Volumen vs. Presión (Control y Asistencia)',
+          description: module04Modos.description || '',
+          estimatedTime: module04Modos.estimatedTime || 114,
+          difficulty: module04Modos.difficulty || 'intermediate',
+          order: module04Modos.order || 4,
+          lessonData: module04Modos
+        },
+        {
+          id: 'module-05-monitorizacion-grafica',
+          title: module05Monitorizacion.title || 'Monitorización Gráfica I: Escalares, Bucles y Asincronías básicas',
+          description: module05Monitorizacion.description || '',
+          estimatedTime: module05Monitorizacion.estimatedTime || 480,
+          difficulty: module05Monitorizacion.difficulty || 'intermediate',
+          order: module05Monitorizacion.order || 5,
+          lessonData: module05Monitorizacion
+        },
+        {
+          id: 'module-06-efectos-sistemicos',
+          title: module06Efectos.title || 'Efectos Sistémicos y Lesión Inducida por la Ventilación (VILI): El precio de ventilar',
+          description: module06Efectos.description || '',
+          estimatedTime: module06Efectos.estimatedTime || 600,
+          difficulty: module06Efectos.difficulty || 'intermediate',
+          order: module06Efectos.order || 6,
+          lessonData: module06Efectos
         }
       ]
     },
@@ -137,31 +167,31 @@ export const curriculumData = {
       // ✅ Usar lecciones JSON reales
       lessons: [
         {
-          id: 'respiratory-mechanics',
-          title: lesson01Mechanics.title || 'Mecánica Respiratoria',
-          description: lesson01Mechanics.description || '',
-          estimatedTime: lesson01Mechanics.estimatedTime || 75,
-          difficulty: lesson01Mechanics.difficulty || 'intermediate',
-          order: lesson01Mechanics.order || 1,
-          lessonData: lesson01Mechanics
+          id: 'module-01-inversion-fisiologica',
+          title: module01Inversion.title || 'La Inversión Fisiológica: De la Presión Negativa a la Positiva',
+          description: module01Inversion.description || '',
+          estimatedTime: module01Inversion.estimatedTime || 45,
+          difficulty: module01Inversion.difficulty || 'intermediate',
+          order: module01Inversion.order || 1,
+          lessonData: module01Inversion
         },
         {
-          id: 'gas-exchange',
-          title: lesson02GasExchange.title || 'Intercambio Gaseoso',
-          description: lesson02GasExchange.description || 'Principios del intercambio gaseoso alveolar',
-          estimatedTime: lesson02GasExchange.estimatedTime || 85,
-          difficulty: lesson02GasExchange.difficulty || 'intermediate',
-          order: lesson02GasExchange.order || 2,
-          lessonData: lesson02GasExchange
+          id: 'module-02-ecuacion-movimiento',
+          title: module02Ecuacion.title || 'El Santo Grial – La Ecuación del Movimiento Respiratorio',
+          description: module02Ecuacion.description || '',
+          estimatedTime: module02Ecuacion.estimatedTime || 50,
+          difficulty: module02Ecuacion.difficulty || 'intermediate',
+          order: module02Ecuacion.order || 2,
+          lessonData: module02Ecuacion
         },
         {
-          id: 'arterial-blood-gas',
-          title: lesson03ArterialBloodGas.title || 'Gasometría Arterial',
-          description: lesson03ArterialBloodGas.description || 'Interpretación de gasometrías arteriales en ventilación mecánica',
-          estimatedTime: lesson03ArterialBloodGas.estimatedTime || 60,
-          difficulty: lesson03ArterialBloodGas.difficulty || 'intermediate',
-          order: lesson03ArterialBloodGas.order || 3,
-          lessonData: lesson03ArterialBloodGas
+          id: 'module-03-variables-fase',
+          title: module03Variables.title || 'La Lógica de la Máquina: Variables de Fase y el Ciclo Respiratorio',
+          description: module03Variables.description || '',
+          estimatedTime: module03Variables.estimatedTime || 54,
+          difficulty: module03Variables.difficulty || 'intermediate',
+          order: module03Variables.order || 3,
+          lessonData: module03Variables
         }
       ],
       quiz: {

@@ -1,0 +1,266 @@
+{
+  "id": "module-03-variables-fase",
+  "moduleId": "module-01-fundamentals",
+  "title": "La Lógica de la Máquina: Variables de Fase y el Ciclo Respiratorio",
+  "description": "",
+  "order": 3,
+  "estimatedTime": 54,
+  "difficulty": "intermediate",
+  "bloomLevel": "apply",
+  "learningObjectives": [
+    "Reconocer conceptos clave y su utilidad clínica.",
+    "Interpretar variables ventilatorias básicas en contexto.",
+    "Aplicar una regla práctica de programación/monitorización."
+  ],
+  "prerequisites": [
+    "Fisiología respiratoria básica",
+    "Conceptos de presión/volumen/flujo",
+    "Módulos 1–2 completados o ecuación del movimiento básica"
+  ],
+  "sections": [
+    {
+      "id": "m3-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción y mapa del módulo",
+      "content": {
+        "markdown": "## Qué vas a aprender en este módulo\n\n**Tema:** La Lógica de la Máquina: Variables de Fase y el Ciclo Respiratorio\n\n\n\n### Objetivos (versión estudiante)\n- (ver objetivos dentro del módulo)\n\n### Cómo estudiar (nivel principiante, contenido intermedio/avanzado)\n- Avanza por **partes cortas** (5–12 min) y usa el *chequeo rápido* al final de cada parte.\n- Si algo te suena “muy técnico”, marca el término y sigue: lo retomamos en el *resumen/chuleta*.\n- Prioriza entender **relaciones**: presión ↔ volumen ↔ flujo ↔ resistencia ↔ compliance.\n\n### Vocabulario mínimo para no perderte\n- **Presión (P):** fuerza por área (en ventilación: cmH₂O).\n- **Volumen (V):** cantidad de gas.\n- **Flujo (V’):** velocidad con la que entra/sale el gas (L/min)."
+      }
+    },
+    {
+      "id": "m3-p1-1",
+      "order": 2,
+      "type": "theory",
+      "title": "Parte 1: lectura guiada (págs. 1–1)",
+      "content": {
+        "markdown": "## Lectura guiada (páginas 1–1)\n\n> **Tip:** Lee primero los subtítulos y busca palabras clave (PEEP, Pplat, C, R, trigger, etc.).\n\nMódulos 3 y 4: Variables de Fase, Ciclo\nRespiratorio y Taxonomía de Modos\nVentilatorios (Volumen vs Presión)\nMódulo 3: La Lógica de la Máquina – Variables de Fase y el Ciclo\nRespiratorio\nEn ventilación mecánica, la lógica de la máquina se basa en cuatro variables de fase que definen cómo\nel ventilador inicia, mantiene y termina cada respiración, así como las condiciones entre respiraciones.\nEstas variables de fase son: disparo, límite, ciclado y variable de base 1 2 . A continuación se\nexplican cada una:\n• Disparo (gatillo o trigger): Es la variable que provoca el comienzo de la inspiración 1 . Puede\nser activada por tiempo (el ventilador inicia la inspiración según la frecuencia respiratoria\nprogramada, independiente del esfuerzo del paciente) o por el esfuerzo del paciente (detectado\ntípicamente como una caída de presión por debajo de un umbral preajustado, o como un flujo\ninspiratorio hacia el ventilador) 3 . En otras palabras, en modo controlado el disparo es por\ntiempo (el ventilador inicia cada ciclo a intervalos regulares), mientras que en modos asistidos el\npaciente puede gatillar la inspiración generando un esfuerzo detectable (por presión negativa o\nflujo generado en el circuito). Un ajuste adecuado de la sensibilidad de disparo es importante: si\nse requiere un esfuerzo excesivo para gatillar, el trabajo respiratorio del paciente aumenta y\nhabrá retraso en la entrega del flujo 4 5 .\n• Límite: Es la variable que el ventilador mantiene o no excede durante la fase inspiratoria.\nActúa como un tope o límite máximo de algún parámetro mientras dura la inspiración 6 . Por\nejemplo, en un modo “limitado por presión”, la presión inspiratoria se mantendrá en un nivel fijo\n(hasta un máximo determinado) durante toda la inspiración, sin importar si el paciente sigue\ninspirando; en un modo limitado por flujo, se fija un flujo constante o máximo. Importante\ndestacar que la variable límite no termina la inspiración por sí misma (no cicla el respirador), sino\nque restringe el valor pico de esa variable. Si la variable controlada no alcanza el valor límite\nprefijado, simplemente la inspiración continúa hasta ser ciclada por otro mecanismo 6 . En\nresumen, el límite gobierna el flujo de gas o la presión durante la inspiración y permanece\nconstante una vez alcanzado el nivel establecido (se puede limitar típicamente el flujo en\nventilación volumétrica, o la presión en ventilación barométrica) 7 .\n• Ciclado: Es la variable que el ventilador utiliza para dar por terminada la fase inspiratoria e\niniciar la espiración 2 . Cuando la variable de ciclado alcanza un valor predefinido, el\nventilador corta el flujo inspiratorio y abre la válvula espiratoria, pasando a la fase espiratoria. El\nciclado puede basarse en diferentes variables según el modo ventilatorio: por tiempo (p. ej., en\nmodos controlados donde el ventilador termina la inspiración tras un tiempo inspiratorio fijo),\npor volumen (el ventilador entrega un volumen tidal fijo y al alcanzarlo cicla a espiración), por\nflujo (p. ej., en presión de soporte, cuando el flujo inspiratorio del paciente cae a un porcentaje\ndel pico, se da por terminada la inspiración) o incluso por presión en algunos casos 8 2 . Por\nejemplo, en ventilación con control de volumen típicamente el ciclado es por tiempo (derivado\n1\n\n---\n\n### Chequeo rápido\n- ¿Qué concepto nuevo te quedó más claro en estas páginas?\n- Escribe 1 ejemplo clínico donde esta información cambie una decisión ventilatoria.\n"
+      }
+    },
+    {
+      "id": "m3-p2-2",
+      "order": 3,
+      "type": "theory",
+      "title": "Parte 2: lectura guiada (págs. 2–2)",
+      "content": {
+        "markdown": "## Lectura guiada (páginas 2–2)\n\n> **Tip:** Lee primero los subtítulos y busca palabras clave (PEEP, Pplat, C, R, trigger, etc.).\n\ndel volumen y flujo programados), mientras que en ventilación con presión de soporte el ciclado\nes por flujo (la inspiración termina cuando el flujo inspiratorio decae bajo cierto porcentaje) 9\n10 .\n• Variable de base (línea base): Es la variable controlada durante la fase espiratoria 2 .\nUsualmente corresponde a la presión positiva al final de la espiración (PEEP) que el ventilador\nmantiene en la vía aérea cuando el paciente exhala. La PEEP fija una presión basal en el circuito\npara prevenir el colapso alveolar al final de cada espiración. La línea base típicamente es una\npresión (por ejemplo, PEEP de 5 cmH2O), aunque en modos sin PEEP sería la presión atmosférica\n(cero cmH2O). Esta variable de base asegura que entre inspiraciones se mantenga el nivel de\npresión especificado en la vía aérea 11 . Por tanto, el ciclo respiratorio en ventilación mecánica\ntiene una presión basal controlada (PEEP/CPAP) sobre la cual se inician las inspiraciones.\nCiclo respiratorio mecánico: utilizando estas variables de fase, el ventilador estructura cada\nrespiración en dos fases principales (inspiración y espiración) separadas por transiciones controladas.\nUn ciclo ventilatorio completo comienza al iniciarse la insuflación (trigger de inspiración), continúa\ndurante la fase inspiratoria activa (bajo ciertas condiciones limitantes de flujo/presión), luego ocurre el\nciclado que termina la inspiración, y finalmente transcurre la fase espiratoria pasiva hasta el siguiente\nciclo 12 13 . En términos prácticos, durante la inspiración el ventilador aporta flujo de gas al paciente\nhasta que se cumple el criterio de ciclado; en ese momento se abre la válvula exhalatoria y el pulmón se\nvacía pasivamente, regresando la presión al nivel de base (PEEP) al final de la espiración 14 15 .\nVale la pena mencionar la clasificación de los ciclos ventilatorios según quién inicia y termina la\ninspiración, ya que esto define si un ciclo es mandatorio (controlado) o espontáneo. Si el ventilador\ncontrola al menos el inicio o el fin de la inspiración, el ciclo se considera mandatorio. En cambio, un\nciclo espontáneo es aquel iniciado y finalizado por el paciente (el ventilador sólo ayuda durante la\ninspiración pero no impone cuándo comienza o termina) 16 17 . Por ejemplo: un ciclo disparado por el\npaciente pero ciclado por el ventilador (como en un modo asistido/controlado) sigue considerándose\nmandatorio, ya que el ventilador impone el fin de la inspiración; mientras que en un ciclo de presión de\nsoporte (PSV), donde el paciente inicia la inspiración y también, a través de la disminución de su flujo,\ndetermina el ciclado, el ciclo es espontáneo. Esta distinción será importante al hablar de los modos\nventilatorios en el siguiente módulo.\n\n---\n\n### Chequeo rápido\n- ¿Qué concepto nuevo te quedó más claro en estas páginas?\n- Escribe 1 ejemplo clínico donde esta información cambie una decisión ventilatoria.\n"
+      }
+    },
+    {
+      "id": "m3-case",
+      "order": 4,
+      "type": "case",
+      "title": "Caso clínico: integración y decisiones",
+      "content": {
+        "markdown": "## Caso clínico guiado\n\n**Objetivo:** aplicar lo aprendido para tomar 2–3 decisiones *consciente de los riesgos*.\n\n### Caso\nPaciente adulto con insuficiencia respiratoria aguda, intubado y conectado a ventilación mecánica. Presenta dificultad para sincronizar con el ventilador y alarmas frecuentes.\n\n### Preguntas\n1. ¿Qué **variable** crees que está desajustada (PEEP, VT, FR, trigger, flujo, Ti, ciclado)?\n2. ¿Qué dato del ventilador/monitor usarías primero (Ppico, Pplat, bucles, capnografía, ABG)?\n3. Propón **un ajuste inicial** y explica qué esperas ver en la gráfica o en las presiones.\n\n### Pistas\n- Si hay aumento de **Ppico** con **Pplat** estable, piensa en componente **resistivo**.\n- Si suben **Pplat** y **driving pressure**, piensa en componente **elástico** (compliance).\n- Si hay asincronía, revisa **trigger** y **ciclado** antes de “subir sedación”."
+      }
+    },
+    {
+      "id": "m3-summary",
+      "order": 5,
+      "type": "summary",
+      "title": "Cierre: resumen y checklist",
+      "content": {
+        "markdown": "## Resumen y chuleta del módulo\n\n### Checklist (lo mínimo que debes poder decir en voz alta)\n- Defino **cuál variable controla el ventilador** y cuál mide.\n- Distingo **presión resistiva** vs **presión elástica** en el ventilador.\n- Puedo explicar al menos 3 riesgos de una mala programación (VILI, asincronía, hemodinámica).\n\n### Si te atoras…\n- Vuelve a la **ecuación del movimiento** como “mapa mental”.\n- Mira siempre **pico vs meseta** y **driving pressure** antes de “subir todo”.\n- Usa las **curvas** como “electrocardiograma del ventilador”."
+      }
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Qué son las variables de fase en ventilación mecánica?",
+        "¿Cuál es la diferencia entre disparo, límite y ciclado?",
+        "¿Cómo sé si un ciclo es mandatorio o espontáneo?",
+        "¿Qué problemas causa un trigger mal ajustado?",
+        "¿Cómo funciona el ciclado por flujo en PSV?",
+        "¿Qué es la PEEP y cuándo modificarla?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "ai_expand_notes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": ["intermediate", "advanced"],
+        "question_types": ["conceptual", "application", "clinical_case"],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [
+    {
+      "id": "exercise-identify-phase-variables",
+      "type": "interactive_diagram",
+      "is_evaluation": false,
+      "title": "Identificar Variables de Fase en el Ciclo",
+      "instructions": "Observa el diagrama del ciclo respiratorio e identifica qué variable de fase controla cada momento.",
+      "estimated_time": 6,
+      "content": {
+        "diagram_url": "https://placeholder.ventylab.com/images/respiratory-cycle-diagram.svg",
+        "clickable_areas": [
+          {
+            "id": "area-1",
+            "label": "Inicio de inspiración",
+            "correct_answer": "Disparo (Trigger)",
+            "feedback": "Correcto. El disparo es la variable que inicia la inspiración, puede ser por tiempo o por esfuerzo del paciente."
+          },
+          {
+            "id": "area-2",
+            "label": "Durante inspiración",
+            "correct_answer": "Límite",
+            "feedback": "Correcto. El límite es la variable que se mantiene constante durante la inspiración (presión o flujo)."
+          },
+          {
+            "id": "area-3",
+            "label": "Fin de inspiración",
+            "correct_answer": "Ciclado",
+            "feedback": "Correcto. El ciclado determina cuándo termina la inspiración y comienza la espiración."
+          },
+          {
+            "id": "area-4",
+            "label": "Durante espiración",
+            "correct_answer": "Base (PEEP)",
+            "feedback": "Correcto. La variable de base es la PEEP que se mantiene durante la espiración."
+          }
+        ]
+      },
+      "hints": [
+        "Disparo = ¿Qué inicia? | Límite = ¿Qué se mantiene? | Ciclado = ¿Qué termina? | Base = ¿Qué queda?",
+        "El trigger puede ser por tiempo (modo controlado) o por paciente (modo asistido)",
+        "El ciclado puede ser por tiempo, volumen o flujo según el modo"
+      ],
+      "feedback_on_complete": "¡Excelente! Has identificado correctamente las 4 variables de fase. Comprender estas variables es fundamental para entender cómo funciona cualquier modo ventilatorio y para diagnosticar problemas de sincronía paciente-ventilador.",
+      "learning_points": [
+        "Las 4 variables de fase definen completamente el ciclo respiratorio",
+        "Cada modo ventilatorio es una combinación específica de estas variables",
+        "Entender las variables de fase ayuda a predecir el comportamiento del ventilador"
+      ]
+    }
+  ],
+  "quiz": {
+    "id": "quiz-m3",
+    "passingScore": 6,
+    "questions": [
+      {
+        "id": "m3-q1",
+        "type": "multiple-choice",
+        "question": "Las 4 variables de fase clásicas son:",
+        "options": [
+          "PEEP, FiO₂, FR, VT",
+          "Disparo, límite, ciclado y base",
+          "Presión, volumen, tiempo, CO₂",
+          "Compliance, resistencia, inercia, PEEP"
+        ],
+        "correctAnswer": "Disparo, límite, ciclado y base",
+        "explanation": "Las variables de fase describen cómo inicia, progresa y termina una respiración: disparo, límite, ciclado y base.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "m3-q2",
+        "type": "multiple-choice",
+        "question": "El 'disparo' (trigger) define:",
+        "options": [
+          "Qué termina la inspiración",
+          "Qué inicia la inspiración",
+          "La PEEP",
+          "El tipo de onda de flujo"
+        ],
+        "correctAnswer": "Qué inicia la inspiración",
+        "explanation": "Disparo es la variable que inicia la fase inspiratoria (tiempo o esfuerzo del paciente).",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "m3-q3",
+        "type": "multiple-choice",
+        "question": "El 'ciclado' define:",
+        "options": [
+          "Qué inicia la inspiración",
+          "Qué termina la inspiración",
+          "La presión máxima permitida",
+          "La base del ciclo"
+        ],
+        "correctAnswer": "Qué termina la inspiración",
+        "explanation": "Ciclado es la condición que termina la inspiración y pasa a espiración.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "m3-q4",
+        "type": "multiple-choice",
+        "question": "En PSV, el ciclado suele ser:",
+        "options": [
+          "Por tiempo fijo",
+          "Por flujo (cuando cae a un % del pico)",
+          "Por volumen",
+          "Por presión de base"
+        ],
+        "correctAnswer": "Por flujo (cuando cae a un % del pico)",
+        "explanation": "En PSV, el ventilador cicla a espiración cuando el flujo disminuye a un porcentaje del pico.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "m3-q5",
+        "type": "multiple-choice",
+        "question": "Una asincronía por trigger suele sospecharse cuando:",
+        "options": [
+          "El paciente no intenta respirar",
+          "Hay esfuerzo sin entrega de ciclo (disparo fallido) o autociclado",
+          "La Pplat sube",
+          "El CO₂ baja"
+        ],
+        "correctAnswer": "Hay esfuerzo sin entrega de ciclo (disparo fallido) o autociclado",
+        "explanation": "Problemas de trigger incluyen esfuerzos no disparados o autociclado por fugas/sensibilidad excesiva.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-14",
+    "source": "VentyLab PDFs (módulos 1–6)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel intermedio. Requiere conocimientos básicos de fisiología respiratoria."
+  }
+}

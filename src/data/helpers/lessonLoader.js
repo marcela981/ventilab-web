@@ -160,6 +160,26 @@ const lessonCache = new LRUCache(MAX_CACHE_SIZE);
  * // Returns: 'lessons/module-01-fundamentals/lesson-01-respiratory-anatomy.json'
  */
 export function getLessonPath(lessonId, moduleId) {
+  // =================================================================
+  // NUEVO: Mapeo directo para módulos de ventilación mecánica (module-XX-*)
+  // Estos archivos usan formato module-XX-name.json en lugar de lesson-XX-name.json
+  // =================================================================
+  const directModuleMapping = {
+    // Módulo 01: Fundamentos - archivos con formato module-XX-*.json
+    'module-01-inversion-fisiologica': 'lessons/module-01-fundamentals/module-01-inversion-fisiologica.json',
+    'module-02-ecuacion-movimiento': 'lessons/module-01-fundamentals/module-02-ecuacion-movimiento.json',
+    'module-03-variables-fase': 'lessons/module-01-fundamentals/module-03-variables-fase.json',
+    'module-04-modos-ventilatorios': 'lessons/module-01-fundamentals/module-04-modos-ventilatorios.json',
+    'module-05-monitorizacion-grafica': 'lessons/module-01-fundamentals/module-05-monitorizacion-grafica.json',
+    'module-06-efectos-sistemicos': 'lessons/module-01-fundamentals/module-06-efectos-sistemicos.json',
+  };
+  
+  // Si el lessonId tiene mapeo directo, usarlo
+  if (directModuleMapping[lessonId]) {
+    console.log(`[lessonLoader] Using direct mapping for: ${lessonId}`);
+    return directModuleMapping[lessonId];
+  }
+  
   // Normalize lessonId: Extract name from IDs with format "lesson-XX-name"
   // Examples: "lesson-02-gas-exchange" -> "gas-exchange", "lesson-01-respiratory-mechanics" -> "respiratory-mechanics"
   let normalizedLessonId = lessonId;
