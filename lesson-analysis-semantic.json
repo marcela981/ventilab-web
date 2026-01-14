@@ -1,0 +1,1469 @@
+[
+  {
+    "file": "module-01-fundamentals/module-01-inversion-fisiologica.json",
+    "step": 17,
+    "stepId": "m1-p3-4-a",
+    "currentTitle": "Parte 2: lectura guiada (págs. 3–4)",
+    "currentLength": 3196,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-01-inversion-fisiologica.json",
+    "step": 20,
+    "stepId": "m1-p3-4-d",
+    "currentTitle": "Continuación",
+    "currentLength": 2797,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-01-inversion-fisiologica.json",
+    "step": 24,
+    "stepId": "m1-p5-6-d",
+    "currentTitle": "Continuación",
+    "currentLength": 4686,
+    "issue": "MULTIPLE_IDEAS",
+    "identifiedIdeas": [
+      {
+        "ideaNumber": 1,
+        "topic": "Presión inspiratoria (Pinsp): en modos controlados",
+        "startsAt": "Presión inspiratoria (Pinsp): en modos controlados por presi...",
+        "charCount": 476,
+        "reason": "Topic marker: \"Presión inspiratoria (Pinsp): en modos controlados\"",
+        "suggestedTitle": "Presión inspiratoria (Pinsp): en modos controlados p..."
+      },
+      {
+        "ideaNumber": 2,
+        "topic": "trabajo del paciente. El ventilador asume parte o ",
+        "startsAt": "trabajo del paciente. El ventilador asume parte o todo el tr...",
+        "endsAt": "ico donde esta información cambie una decisión ventilatoria.",
+        "charCount": 4208,
+        "reason": "Transition phrase: \"Taxonomía\"",
+        "suggestedTitle": "trabajo del paciente"
+      }
+    ],
+    "recommendation": "SPLIT into 2 steps - ideas are independent and complete"
+  },
+  {
+    "file": "module-01-fundamentals/module-01-inversion-fisiologica.json",
+    "step": 25,
+    "stepId": "m1-p7-8-a",
+    "currentTitle": "Parte 4: lectura guiada (págs. 7–8)",
+    "currentLength": 1850,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-01-inversion-fisiologica.json",
+    "step": 28,
+    "stepId": "m1-p7-8-d",
+    "currentTitle": "Continuación",
+    "currentLength": 3517,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-01-inversion-fisiologica.json",
+    "step": 32,
+    "stepId": "m1-p9-10-d",
+    "currentTitle": "Continuación",
+    "currentLength": 7508,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-01-inversion-fisiologica.json",
+    "step": 33,
+    "stepId": "m1-p11-12-a",
+    "currentTitle": "Parte 6: lectura guiada (págs. 11–12)",
+    "currentLength": 3534,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-01-inversion-fisiologica.json",
+    "step": 36,
+    "stepId": "m1-p11-12-d",
+    "currentTitle": "Continuación",
+    "currentLength": 3984,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-02-ecuacion-movimiento.json",
+    "step": 1,
+    "stepId": "m2-intro-a",
+    "currentTitle": "Introducción y mapa del módulo",
+    "currentLength": 2100,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-02-ecuacion-movimiento.json",
+    "step": 6,
+    "stepId": "m2-p14-15-d",
+    "currentTitle": "Continuación",
+    "currentLength": 5625,
+    "issue": "MULTIPLE_IDEAS",
+    "identifiedIdeas": [
+      {
+        "ideaNumber": 1,
+        "topic": "flujo-tiempo) porque se usarán en ejemplos.",
+        "startsAt": "flujo-tiempo) porque se usarán en ejemplos.\nDimensión contex...",
+        "charCount": 969,
+        "reason": "Transition phrase: \"Dimensión contextual\"",
+        "suggestedTitle": "flujo-tiempo) porque se usarán en ejemplos"
+      },
+      {
+        "ideaNumber": 2,
+        "topic": "¿Por qué se considera tan importante?",
+        "startsAt": "¿Por qué se considera tan importante? Porque es a la ventila...",
+        "endsAt": "ico donde esta información cambie una decisión ventilatoria.",
+        "charCount": 4654,
+        "reason": "Topic marker: \"¿Por qué se considera tan importante? Porque es a \"",
+        "suggestedTitle": "¿Por qué se considera tan importante? Porque es a la..."
+      }
+    ],
+    "recommendation": "SPLIT into 2 steps - ideas are independent and complete"
+  },
+  {
+    "file": "module-01-fundamentals/module-02-ecuacion-movimiento.json",
+    "step": 10,
+    "stepId": "m2-p16-17-d",
+    "currentTitle": "Continuación",
+    "currentLength": 4559,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-02-ecuacion-movimiento.json",
+    "step": 11,
+    "stepId": "m2-p18-19-a",
+    "currentTitle": "Parte 3: lectura guiada (págs. 18–19)",
+    "currentLength": 2400,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-02-ecuacion-movimiento.json",
+    "step": 14,
+    "stepId": "m2-p18-19-d",
+    "currentTitle": "Continuación",
+    "currentLength": 4069,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-02-ecuacion-movimiento.json",
+    "step": 18,
+    "stepId": "m2-p20-21-d",
+    "currentTitle": "Continuación",
+    "currentLength": 6338,
+    "issue": "MULTIPLE_IDEAS",
+    "identifiedIdeas": [
+      {
+        "ideaNumber": 1,
+        "topic": "Flujos dentro del ventilador: Mecánicamente, un ve",
+        "startsAt": "Flujos dentro del ventilador: Mecánicamente, un ventilador d...",
+        "charCount": 1526,
+        "reason": "Topic marker: \"Flujos dentro del ventilador: Mecánicamente, un ve\"",
+        "suggestedTitle": "Flujos dentro del ventilador: Mecánicamente, un vent..."
+      },
+      {
+        "ideaNumber": 2,
+        "topic": "Ejemplo de cálculo aplicado",
+        "startsAt": "Ejemplo de cálculo aplicado: Un residente recibe la tarea: “...",
+        "endsAt": "ico donde esta información cambie una decisión ventilatoria.",
+        "charCount": 4810,
+        "reason": "Topic marker: \"Ejemplo de cálculo aplicado: Un residente recibe l\"",
+        "suggestedTitle": "Ejemplo de cálculo aplicado: Un residente recibe la ..."
+      }
+    ],
+    "recommendation": "SPLIT into 2 steps - ideas are independent and complete"
+  },
+  {
+    "file": "module-01-fundamentals/module-02-ecuacion-movimiento.json",
+    "step": 19,
+    "stepId": "m2-p22-23-a",
+    "currentTitle": "Parte 5: lectura guiada (págs. 22–23)",
+    "currentLength": 2382,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-02-ecuacion-movimiento.json",
+    "step": 22,
+    "stepId": "m2-p22-23-d",
+    "currentTitle": "Continuación",
+    "currentLength": 5973,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-02-ecuacion-movimiento.json",
+    "step": 26,
+    "stepId": "m2-p24-25-d",
+    "currentTitle": "Continuación",
+    "currentLength": 5522,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-02-ecuacion-movimiento.json",
+    "step": 30,
+    "stepId": "m2-p26-27-d",
+    "currentTitle": "Continuación",
+    "currentLength": 1856,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-03-variables-fase.json",
+    "step": 5,
+    "stepId": "m3-p1-1-d",
+    "currentTitle": "Continuación",
+    "currentLength": 1854,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-03-variables-fase.json",
+    "step": 8,
+    "stepId": "m3-p2-2-c",
+    "currentTitle": "Continuación",
+    "currentLength": 2128,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-04-modos-ventilatorios.json",
+    "step": 7,
+    "stepId": "m4-p3-3-d",
+    "currentTitle": "Continuación",
+    "currentLength": 3118,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-04-modos-ventilatorios.json",
+    "step": 10,
+    "stepId": "m4-p4-4-c",
+    "currentTitle": "Continuación",
+    "currentLength": 1737,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-04-modos-ventilatorios.json",
+    "step": 11,
+    "stepId": "m4-p5-5-a",
+    "currentTitle": "Parte 4: lectura guiada (págs. 5–5)",
+    "currentLength": 1610,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-04-modos-ventilatorios.json",
+    "step": 12,
+    "stepId": "m4-p5-5-b",
+    "currentTitle": "Continuación",
+    "currentLength": 3092,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-04-modos-ventilatorios.json",
+    "step": 17,
+    "stepId": "m4-p7-7-b",
+    "currentTitle": "Continuación",
+    "currentLength": 2662,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 4,
+    "stepId": "m5-p1-2-a",
+    "currentTitle": "Parte 1: lectura guiada (págs. 1–2)",
+    "currentLength": 1704,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 7,
+    "stepId": "m5-p1-2-d",
+    "currentTitle": "Continuación",
+    "currentLength": 2232,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 11,
+    "stepId": "m5-p3-4-d",
+    "currentTitle": "Continuación",
+    "currentLength": 5167,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 15,
+    "stepId": "m5-p5-6-d",
+    "currentTitle": "Continuación",
+    "currentLength": 7416,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 19,
+    "stepId": "m5-p7-8-d",
+    "currentTitle": "Continuación",
+    "currentLength": 5999,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 23,
+    "stepId": "m5-p9-10-d",
+    "currentTitle": "Continuación",
+    "currentLength": 4111,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 27,
+    "stepId": "m5-p11-12-d",
+    "currentTitle": "Continuación",
+    "currentLength": 2689,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 28,
+    "stepId": "m5-p13-14-a",
+    "currentTitle": "Parte 7: lectura guiada (págs. 13–14)",
+    "currentLength": 1521,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 31,
+    "stepId": "m5-p13-14-d",
+    "currentTitle": "Continuación",
+    "currentLength": 6016,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 35,
+    "stepId": "m5-p15-16-d",
+    "currentTitle": "Continuación",
+    "currentLength": 5768,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 39,
+    "stepId": "m5-p17-18-d",
+    "currentTitle": "Continuación",
+    "currentLength": 5903,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 43,
+    "stepId": "m5-p19-20-d",
+    "currentTitle": "Continuación",
+    "currentLength": 3653,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 47,
+    "stepId": "m5-p21-22-d",
+    "currentTitle": "Continuación",
+    "currentLength": 5434,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 51,
+    "stepId": "m5-p23-24-d",
+    "currentTitle": "Continuación",
+    "currentLength": 7283,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 55,
+    "stepId": "m5-p25-26-d",
+    "currentTitle": "Continuación",
+    "currentLength": 6285,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 56,
+    "stepId": "m5-p27-28-a",
+    "currentTitle": "Parte 14: lectura guiada (págs. 27–28)",
+    "currentLength": 2106,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 59,
+    "stepId": "m5-p27-28-d",
+    "currentTitle": "Continuación",
+    "currentLength": 6253,
+    "issue": "MULTIPLE_IDEAS",
+    "identifiedIdeas": [
+      {
+        "ideaNumber": 1,
+        "topic": "volumen, uno observa la presión adaptarse ciclo a ",
+        "startsAt": "volumen, uno observa la presión adaptarse ciclo a ciclo, y t...",
+        "charCount": 2030,
+        "reason": "Topic marker: \"volumen, uno observa la presión adaptarse ciclo a \"",
+        "suggestedTitle": "volumen, uno observa la presión adaptarse ciclo a ci..."
+      },
+      {
+        "ideaNumber": 2,
+        "topic": "Pensamiento Crítico #2: Limitaciones técnicas y po",
+        "startsAt": "Pensamiento Crítico #2: Limitaciones técnicas y posibles art...",
+        "endsAt": "ico donde esta información cambie una decisión ventilatoria.",
+        "charCount": 4221,
+        "reason": "Transition phrase: \"Limitaciones\"",
+        "suggestedTitle": "Pensamiento Crítico #2: Limitaciones técnicas y posi..."
+      }
+    ],
+    "recommendation": "SPLIT into 2 steps - ideas are independent and complete"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 63,
+    "stepId": "m5-p29-30-d",
+    "currentTitle": "Continuación",
+    "currentLength": 7032,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 64,
+    "stepId": "m5-p31-32-a",
+    "currentTitle": "Parte 16: lectura guiada (págs. 31–32)",
+    "currentLength": 2703,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 67,
+    "stepId": "m5-p31-32-d",
+    "currentTitle": "Continuación",
+    "currentLength": 6721,
+    "issue": "MULTIPLE_IDEAS",
+    "identifiedIdeas": [
+      {
+        "ideaNumber": 1,
+        "topic": "presión-volumen muestra un aplanamiento hacia la p",
+        "startsAt": "presión-volumen muestra un aplanamiento hacia la parte final...",
+        "charCount": 1858,
+        "reason": "Topic marker: \"presión-volumen muestra un aplanamiento hacia la p\"",
+        "suggestedTitle": "presión-volumen muestra un aplanamiento hacia la par..."
+      },
+      {
+        "ideaNumber": 2,
+        "topic": "Caso 3",
+        "startsAt": "Caso 3: Trauma de tórax con asincronías de lucha (Ventilació...",
+        "endsAt": "ico donde esta información cambie una decisión ventilatoria.",
+        "charCount": 4861,
+        "reason": "Topic marker: \"Caso 3: Trauma de tórax con asincronías de lucha (\"",
+        "suggestedTitle": "Caso 3: Trauma de tórax con asincronías de lucha (Ve..."
+      }
+    ],
+    "recommendation": "SPLIT into 2 steps - ideas are independent and complete"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 71,
+    "stepId": "m5-p33-34-d",
+    "currentTitle": "Continuación",
+    "currentLength": 6990,
+    "issue": "MULTIPLE_IDEAS",
+    "identifiedIdeas": [
+      {
+        "ideaNumber": 1,
+        "topic": "Caso",
+        "startsAt": "Casos Borde (Edge Cases)\nNo todas las situaciones se ajustan...",
+        "charCount": 2665,
+        "reason": "Transition phrase: \"Edge Cases\"",
+        "suggestedTitle": "Casos Borde (Edge Cases)"
+      },
+      {
+        "ideaNumber": 2,
+        "topic": "tip: observar la curva de presión – si con volúmen",
+        "startsAt": "tip: observar la curva de presión – si con volúmenes altos l...",
+        "endsAt": "ico donde esta información cambie una decisión ventilatoria.",
+        "charCount": 4323,
+        "reason": "Transition phrase: \"Edge Case\"",
+        "suggestedTitle": "observar la curva de presión – si con volúmenes alto..."
+      }
+    ],
+    "recommendation": "SPLIT into 2 steps - ideas are independent and complete"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 72,
+    "stepId": "m5-p35-36-a",
+    "currentTitle": "Parte 18: lectura guiada (págs. 35–36)",
+    "currentLength": 1941,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 75,
+    "stepId": "m5-p35-36-d",
+    "currentTitle": "Continuación",
+    "currentLength": 2744,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 76,
+    "stepId": "m5-p37-38-a",
+    "currentTitle": "Parte 19: lectura guiada (págs. 37–38)",
+    "currentLength": 1631,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 82,
+    "stepId": "m5-p39-40-c",
+    "currentTitle": "Continuación",
+    "currentLength": 3814,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 85,
+    "stepId": "m5-p41-42-c",
+    "currentTitle": "Continuación",
+    "currentLength": 3800,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 89,
+    "stepId": "m5-p43-44-d",
+    "currentTitle": "Continuación",
+    "currentLength": 2272,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-05-monitorizacion-grafica.json",
+    "step": 93,
+    "stepId": "m5-p45-45-d",
+    "currentTitle": "Continuación",
+    "currentLength": 1973,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 1,
+    "stepId": "m6-intro-a",
+    "currentTitle": "Introducción y mapa del módulo",
+    "currentLength": 1604,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 6,
+    "stepId": "m6-p46-47-d",
+    "currentTitle": "Continuación",
+    "currentLength": 7067,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 10,
+    "stepId": "m6-p48-49-d",
+    "currentTitle": "Continuación",
+    "currentLength": 5102,
+    "issue": "MULTIPLE_IDEAS",
+    "identifiedIdeas": [
+      {
+        "ideaNumber": 1,
+        "topic": "¿Dónde más?",
+        "startsAt": "¿Dónde más? En la investigación y mejora de equipos ventilat...",
+        "charCount": 1816,
+        "reason": "Topic marker: \"¿Dónde más? En la investigación y mejora de equipo\"",
+        "suggestedTitle": "¿Dónde más? En la investigación y mejora de equipos ..."
+      },
+      {
+        "ideaNumber": 2,
+        "topic": "moderna, pero su uso prolongado o inadecuado puede",
+        "startsAt": "moderna, pero su uso prolongado o inadecuado puede desencade...",
+        "endsAt": "ico donde esta información cambie una decisión ventilatoria.",
+        "charCount": 3284,
+        "reason": "Transition phrase: \"big picture\"",
+        "suggestedTitle": "moderna, pero su uso prolongado o inadecuado puede d..."
+      }
+    ],
+    "recommendation": "SPLIT into 2 steps - ideas are independent and complete"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 11,
+    "stepId": "m6-p50-51-a",
+    "currentTitle": "Parte 3: lectura guiada (págs. 50–51)",
+    "currentLength": 1716,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 14,
+    "stepId": "m6-p50-51-d",
+    "currentTitle": "Continuación",
+    "currentLength": 1660,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 18,
+    "stepId": "m6-p52-53-d",
+    "currentTitle": "Continuación",
+    "currentLength": 4293,
+    "issue": "MULTIPLE_IDEAS",
+    "identifiedIdeas": [
+      {
+        "ideaNumber": 1,
+        "topic": "ventilación.",
+        "startsAt": "ventilación.\n• Problema del Efecto Hemodinámico Adverso: Ven...",
+        "charCount": 476,
+        "reason": "Topic marker: \"ventilación.\"",
+        "suggestedTitle": "ventilación"
+      },
+      {
+        "ideaNumber": 2,
+        "topic": "PEEP incremental vigilando PA. Resolvemos \"¿por qu",
+        "startsAt": "PEEP incremental vigilando PA. Resolvemos \"¿por qué se me ch...",
+        "endsAt": "ico donde esta información cambie una decisión ventilatoria.",
+        "charCount": 3815,
+        "reason": "Topic marker: \"PEEP incremental vigilando PA. Resolvemos \"¿por qu\"",
+        "suggestedTitle": "PEEP incremental vigilando PA"
+      }
+    ],
+    "recommendation": "SPLIT into 2 steps - ideas are independent and complete"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 22,
+    "stepId": "m6-p54-55-d",
+    "currentTitle": "Continuación",
+    "currentLength": 2595,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 26,
+    "stepId": "m6-p56-57-d",
+    "currentTitle": "Continuación",
+    "currentLength": 5636,
+    "issue": "MULTIPLE_IDEAS",
+    "identifiedIdeas": [
+      {
+        "ideaNumber": 1,
+        "topic": "Principio de Interdependencia Alveolar y Stress Multiplicador",
+        "startsAt": "Principio de Interdependencia Alveolar y Stress Multiplicado...",
+        "charCount": 2007,
+        "reason": "Topic marker: \"Principio de Interdependencia Alveolar y Stress Mu\"",
+        "suggestedTitle": "Principio de Interdependencia Alveolar y Stress Mult..."
+      },
+      {
+        "ideaNumber": 2,
+        "topic": "Oxigenación vs Toxicidad: Fuera de ventilador, per",
+        "startsAt": "Oxigenación vs Toxicidad: Fuera de ventilador, pero relacion...",
+        "endsAt": "ico donde esta información cambie una decisión ventilatoria.",
+        "charCount": 3627,
+        "reason": "Section header: \"Oxigenación vs Toxicidad: Fuera de ventilador, per\"",
+        "suggestedTitle": "Oxigenación vs Toxicidad: Fuera de ventilador, pero ..."
+      }
+    ],
+    "recommendation": "SPLIT into 2 steps - ideas are independent and complete"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 30,
+    "stepId": "m6-p58-59-d",
+    "currentTitle": "Continuación",
+    "currentLength": 3219,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 34,
+    "stepId": "m6-p60-61-d",
+    "currentTitle": "Continuación",
+    "currentLength": 2118,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 35,
+    "stepId": "m6-p62-63-a",
+    "currentTitle": "Parte 9: lectura guiada (págs. 62–63)",
+    "currentLength": 4001,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 41,
+    "stepId": "m6-p66-67-a",
+    "currentTitle": "Parte 11: lectura guiada (págs. 66–67)",
+    "currentLength": 4716,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 44,
+    "stepId": "m6-p66-67-d",
+    "currentTitle": "Continuación",
+    "currentLength": 2735,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 46,
+    "stepId": "m6-p68-69-b",
+    "currentTitle": "Continuación",
+    "currentLength": 6639,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 50,
+    "stepId": "m6-p70-71-d",
+    "currentTitle": "Continuación",
+    "currentLength": 5297,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 53,
+    "stepId": "m6-p72-73-c",
+    "currentTitle": "Continuación",
+    "currentLength": 4234,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 57,
+    "stepId": "m6-p74-75-d",
+    "currentTitle": "Continuación",
+    "currentLength": 5349,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 61,
+    "stepId": "m6-p76-77-d",
+    "currentTitle": "Continuación",
+    "currentLength": 5301,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 63,
+    "stepId": "m6-p78-79-b",
+    "currentTitle": "Continuación",
+    "currentLength": 3533,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 64,
+    "stepId": "m6-p80-81-a",
+    "currentTitle": "Parte 18: lectura guiada (págs. 80–81)",
+    "currentLength": 3635,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 65,
+    "stepId": "m6-p80-81-b",
+    "currentTitle": "Continuación",
+    "currentLength": 4001,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 69,
+    "stepId": "m6-p82-83-d",
+    "currentTitle": "Continuación",
+    "currentLength": 1664,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 77,
+    "stepId": "m6-p86-87-d",
+    "currentTitle": "Continuación",
+    "currentLength": 4567,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 78,
+    "stepId": "m6-p88-89-a",
+    "currentTitle": "Parte 22: lectura guiada (págs. 88–89)",
+    "currentLength": 2397,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-01-fundamentals/module-06-efectos-sistemicos.json",
+    "step": 81,
+    "stepId": "m6-p88-89-d",
+    "currentTitle": "Continuación",
+    "currentLength": 2534,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/pathologies/asthma-protocol.json",
+    "step": 1,
+    "stepId": "step-1",
+    "currentTitle": "Untitled",
+    "currentLength": 1265,
+    "issue": "MULTIPLE_IDEAS",
+    "identifiedIdeas": [
+      {
+        "ideaNumber": 1,
+        "topic": "El estado asmático (status asthmaticus) es una eme",
+        "startsAt": "El estado asmático (status asthmaticus) es una emergencia mé...",
+        "endsAt": " Auto-PEEP alta dificulta esfuerzo inspiratorio del paciente",
+        "charCount": 808,
+        "reason": "First paragraph",
+        "suggestedTitle": "El estado asmático (status asthmaticus) es una emerg..."
+      },
+      {
+        "ideaNumber": 2,
+        "topic": "El estado asmático típicamente resulta de:",
+        "startsAt": "El estado asmático típicamente resulta de:\n- Exposición a al...",
+        "endsAt": "capnia y hipoxemia para evitar complicaciones ventilatorias.",
+        "charCount": 419,
+        "reason": "Section header: \"El estado asmático típicamente resulta de:\"",
+        "suggestedTitle": "El estado asmático típicamente resulta de"
+      }
+    ],
+    "recommendation": "SPLIT into 2 steps - ideas are independent and complete"
+  },
+  {
+    "file": "module-03-configuration/pathologies/asthma-protocol.json",
+    "step": 4,
+    "stepId": "step-4",
+    "currentTitle": "Untitled",
+    "currentLength": 1918,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/pathologies/asthma-protocol.json",
+    "step": 5,
+    "stepId": "step-5",
+    "currentTitle": "Untitled",
+    "currentLength": 1956,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/pathologies/asthma-protocol.json",
+    "step": 6,
+    "stepId": "step-6",
+    "currentTitle": "Untitled",
+    "currentLength": 1908,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/pathologies/asthma-protocol.json",
+    "step": 7,
+    "stepId": "step-7",
+    "currentTitle": "Untitled",
+    "currentLength": 1650,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/pathologies/asthma-protocol.json",
+    "step": 9,
+    "stepId": "step-9",
+    "currentTitle": "Untitled",
+    "currentLength": 1918,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/pathologies/asthma-protocol.json",
+    "step": 10,
+    "stepId": "step-10",
+    "currentTitle": "Untitled",
+    "currentLength": 2310,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/pathologies/copd-protocol.json",
+    "step": 1,
+    "stepId": "contexto-clinico-epoc",
+    "currentTitle": "Introducción",
+    "currentLength": 1154,
+    "issue": "MULTIPLE_IDEAS",
+    "identifiedIdeas": [
+      {
+        "ideaNumber": 1,
+        "topic": "La Enfermedad Pulmonar Obstructiva Crónica (EPOC) ",
+        "startsAt": "La Enfermedad Pulmonar Obstructiva Crónica (EPOC) agudizada ...",
+        "endsAt": "tención de CO₂**: Pacientes crónicos adaptados a hipercapnia",
+        "charCount": 658,
+        "reason": "First paragraph",
+        "suggestedTitle": "La Enfermedad Pulmonar Obstructiva Crónica (EPOC) ag..."
+      },
+      {
+        "ideaNumber": 2,
+        "topic": "El EPOC agudizado típicamente resulta de:",
+        "startsAt": "El EPOC agudizado típicamente resulta de:\n- Exacerbación inf...",
+        "endsAt": "iperventilación que puede suprimir el estímulo respiratorio.",
+        "charCount": 455,
+        "reason": "Section header: \"El EPOC agudizado típicamente resulta de:\"",
+        "suggestedTitle": "El EPOC agudizado típicamente resulta de"
+      }
+    ],
+    "recommendation": "SPLIT into 2 steps - ideas are independent and complete"
+  },
+  {
+    "file": "module-03-configuration/pathologies/copd-protocol.json",
+    "step": 3,
+    "stepId": "modalidades-ventilatorias-epoc",
+    "currentTitle": "Modalidades Ventilatorias",
+    "currentLength": 1120,
+    "issue": "MULTIPLE_IDEAS",
+    "identifiedIdeas": [
+      {
+        "ideaNumber": 1,
+        "topic": "## Modalidad Principal: Presión de Soporte (PSV) o",
+        "startsAt": "## Modalidad Principal: Presión de Soporte (PSV) o SIMV + PS...",
+        "endsAt": "el tubo\n- Facilita destete progresivo\n- Minimiza asincronías",
+        "charCount": 331,
+        "reason": "First paragraph",
+        "suggestedTitle": "## Modalidad Principal: Presión de Soporte (PSV) o S..."
+      },
+      {
+        "ideaNumber": 3,
+        "topic": "Puede usarse inicialmente si:",
+        "startsAt": "Puede usarse inicialmente si:\n- El paciente está sedado prof...",
+        "endsAt": "ciones para VMNI\n- Puede prevenir intubación en muchos casos",
+        "charCount": 454,
+        "reason": "Section header: \"Puede usarse inicialmente si:\"",
+        "suggestedTitle": "Puede usarse inicialmente si"
+      }
+    ],
+    "recommendation": "SPLIT into 2 steps - ideas are independent and complete"
+  },
+  {
+    "file": "module-03-configuration/pathologies/copd-protocol.json",
+    "step": 4,
+    "stepId": "configuracion-paso-a-paso-epoc",
+    "currentTitle": "Configuración Inicial",
+    "currentLength": 1750,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/pathologies/copd-protocol.json",
+    "step": 5,
+    "stepId": "tabla-parametros-epoc",
+    "currentTitle": "Algoritmo de Ajustes",
+    "currentLength": 1512,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/pathologies/copd-protocol.json",
+    "step": 9,
+    "stepId": "complicaciones-manejo-epoc",
+    "currentTitle": "Complicaciones y Manejo",
+    "currentLength": 1773,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/pathologies/copd-protocol.json",
+    "step": 10,
+    "stepId": "caso-clinico-epoc",
+    "currentTitle": "Caso Práctico",
+    "currentLength": 2276,
+    "issue": "MULTIPLE_IDEAS",
+    "identifiedIdeas": [
+      {
+        "ideaNumber": 1,
+        "topic": "**Paciente**: Hombre de 68 años, 172 cm, 75 kg, co",
+        "startsAt": "**Paciente**: Hombre de 68 años, 172 cm, 75 kg, con EPOC GOL...",
+        "endsAt": "- **Ajuste**: Reducir FR SIMV a 8/min, reducir PSV a 8 cmH₂O",
+        "charCount": 1710,
+        "reason": "First paragraph",
+        "suggestedTitle": "Paciente: Hombre de 68 años, 172 cm, 75 kg, con EPOC..."
+      },
+      {
+        "ideaNumber": 2,
+        "topic": "Al día 3:",
+        "startsAt": "Al día 3:\n- Auto-PEEP: 2 cmH₂O\n- PaCO₂: 58 mmHg (similar a b...",
+        "endsAt": "otocolo de trial de respiración espontánea (T-piece o CPAP).",
+        "charCount": 314,
+        "reason": "Section header: \"Al día 3:\"",
+        "suggestedTitle": "Al día 3"
+      }
+    ],
+    "recommendation": "SPLIT into 2 steps - ideas are independent and complete"
+  },
+  {
+    "file": "module-03-configuration/pathologies/pneumonia-protocol.json",
+    "step": 1,
+    "stepId": "step-1",
+    "currentTitle": "Untitled",
+    "currentLength": 1137,
+    "issue": "MULTIPLE_IDEAS",
+    "identifiedIdeas": [
+      {
+        "ideaNumber": 1,
+        "topic": "La neumonía severa es una causa común de insuficie",
+        "startsAt": "La neumonía severa es una causa común de insuficiencia respi...",
+        "endsAt": " Moco y exudado inflamatorio que pueden obstruir vías aéreas",
+        "charCount": 683,
+        "reason": "First paragraph",
+        "suggestedTitle": "La neumonía severa es una causa común de insuficienc..."
+      },
+      {
+        "ideaNumber": 2,
+        "topic": "La neumonía puede ser:",
+        "startsAt": "La neumonía puede ser:\n- **Unilateral o bilateral**: Afecta ...",
+        "endsAt": "ía focal o unilateral, se requieren estrategias específicas.",
+        "charCount": 410,
+        "reason": "Section header: \"La neumonía puede ser:\"",
+        "suggestedTitle": "La neumonía puede ser"
+      }
+    ],
+    "recommendation": "SPLIT into 2 steps - ideas are independent and complete"
+  },
+  {
+    "file": "module-03-configuration/pathologies/pneumonia-protocol.json",
+    "step": 3,
+    "stepId": "step-3",
+    "currentTitle": "Untitled",
+    "currentLength": 1008,
+    "issue": "MULTIPLE_IDEAS",
+    "identifiedIdeas": [
+      {
+        "ideaNumber": 1,
+        "topic": "## Modalidad Principal: Ventilación Controlada por",
+        "startsAt": "## Modalidad Principal: Ventilación Controlada por Volumen (...",
+        "endsAt": "ación protectora\n- Proporciona ventilación minuto predecible",
+        "charCount": 302,
+        "reason": "First paragraph",
+        "suggestedTitle": "## Modalidad Principal: Ventilación Controlada por V..."
+      },
+      {
+        "ideaNumber": 3,
+        "topic": "Útil cuando:",
+        "startsAt": "Útil cuando:\n- El paciente comienza a mejorar\n- Se requiere ...",
+        "endsAt": "e SDRA si cumple criterios\n- Ventilación protectora estricta",
+        "charCount": 383,
+        "reason": "Section header: \"Útil cuando:\"",
+        "suggestedTitle": "Útil cuando"
+      }
+    ],
+    "recommendation": "SPLIT into 2 steps - ideas are independent and complete"
+  },
+  {
+    "file": "module-03-configuration/pathologies/pneumonia-protocol.json",
+    "step": 4,
+    "stepId": "step-4",
+    "currentTitle": "Untitled",
+    "currentLength": 1641,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/pathologies/pneumonia-protocol.json",
+    "step": 6,
+    "stepId": "step-6",
+    "currentTitle": "Untitled",
+    "currentLength": 1742,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/pathologies/pneumonia-protocol.json",
+    "step": 9,
+    "stepId": "step-9",
+    "currentTitle": "Untitled",
+    "currentLength": 1639,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/pathologies/pneumonia-protocol.json",
+    "step": 10,
+    "stepId": "step-10",
+    "currentTitle": "Untitled",
+    "currentLength": 2312,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/pathologies/sdra-protocol.json",
+    "step": 10,
+    "stepId": "caso-clinico-sdra",
+    "currentTitle": "Caso Práctico",
+    "currentLength": 2045,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/low-tidal-volume.json",
+    "step": 1,
+    "stepId": "step-1",
+    "currentTitle": "Untitled",
+    "currentLength": 1746,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/low-tidal-volume.json",
+    "step": 3,
+    "stepId": "step-3",
+    "currentTitle": "Untitled",
+    "currentLength": 1506,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/low-tidal-volume.json",
+    "step": 6,
+    "stepId": "step-6",
+    "currentTitle": "Untitled",
+    "currentLength": 1745,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/low-tidal-volume.json",
+    "step": 7,
+    "stepId": "step-7",
+    "currentTitle": "Untitled",
+    "currentLength": 1731,
+    "issue": "MULTIPLE_IDEAS",
+    "identifiedIdeas": [
+      {
+        "ideaNumber": 1,
+        "topic": "| Pplateau | Acción |",
+        "startsAt": "| Pplateau | Acción |\n|----------|--------|\n| < 25 cmH₂O | S...",
+        "endsAt": "abla PEEP/FiO₂ (ver protocolo SDRA), no directamente por VT.",
+        "charCount": 582,
+        "reason": "First paragraph",
+        "suggestedTitle": "| Pplateau | Acción |"
+      },
+      {
+        "ideaNumber": 2,
+        "topic": "Sin embargo, cambios de PEEP pueden afectar Pplate",
+        "startsAt": "Sin embargo, cambios de PEEP pueden afectar Pplateau:...",
+        "endsAt": "ucir Pplateau**: PEEP y Pplateau tienen funciones diferentes",
+        "charCount": 970,
+        "reason": "Transition phrase: \"Sin embargo\"",
+        "suggestedTitle": "Sin embargo, cambios de PEEP pueden afectar Pplateau"
+      }
+    ],
+    "recommendation": "SPLIT into 2 steps - ideas are independent and complete"
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/low-tidal-volume.json",
+    "step": 8,
+    "stepId": "step-8",
+    "currentTitle": "Untitled",
+    "currentLength": 1541,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/lung-protective-ventilation.json",
+    "step": 1,
+    "stepId": "step-1",
+    "currentTitle": "Untitled",
+    "currentLength": 1311,
+    "issue": "MULTIPLE_IDEAS",
+    "identifiedIdeas": [
+      {
+        "ideaNumber": 1,
+        "topic": "La **ventilación protectora pulmonar (LPV - Lung P",
+        "startsAt": "La **ventilación protectora pulmonar (LPV - Lung Protective ...",
+        "endsAt": "r biotrauma**: Daño por activación de cascadas inflamatorias",
+        "charCount": 846,
+        "reason": "First paragraph",
+        "suggestedTitle": "La ventilación protectora pulmonar (LPV - Lung Prote..."
+      },
+      {
+        "ideaNumber": 2,
+        "topic": "El estudio ARDSnet (2000) demostró:",
+        "startsAt": "El estudio ARDSnet (2000) demostró:\n- **Reducción de mortali...",
+        "endsAt": " la ventilación protectora como estándar de cuidado en SDRA.",
+        "charCount": 334,
+        "reason": "Section header: \"El estudio ARDSnet (2000) demostró:\"",
+        "suggestedTitle": "El estudio ARDSnet (2000) demostró"
+      }
+    ],
+    "recommendation": "SPLIT into 2 steps - ideas are independent and complete"
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/lung-protective-ventilation.json",
+    "step": 3,
+    "stepId": "step-3",
+    "currentTitle": "Untitled",
+    "currentLength": 3202,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/lung-protective-ventilation.json",
+    "step": 5,
+    "stepId": "step-5",
+    "currentTitle": "Untitled",
+    "currentLength": 1961,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/lung-protective-ventilation.json",
+    "step": 7,
+    "stepId": "step-7",
+    "currentTitle": "Untitled",
+    "currentLength": 1585,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/lung-protective-ventilation.json",
+    "step": 8,
+    "stepId": "step-8",
+    "currentTitle": "Untitled",
+    "currentLength": 1890,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/peep-strategies.json",
+    "step": 1,
+    "stepId": "step-1",
+    "currentTitle": "Untitled",
+    "currentLength": 1849,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/peep-strategies.json",
+    "step": 3,
+    "stepId": "step-3",
+    "currentTitle": "Untitled",
+    "currentLength": 2321,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/peep-strategies.json",
+    "step": 4,
+    "stepId": "step-4",
+    "currentTitle": "Untitled",
+    "currentLength": 2017,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/peep-strategies.json",
+    "step": 5,
+    "stepId": "step-5",
+    "currentTitle": "Untitled",
+    "currentLength": 2019,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/peep-strategies.json",
+    "step": 7,
+    "stepId": "step-7",
+    "currentTitle": "Untitled",
+    "currentLength": 1747,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/permissive-hypercapnia.json",
+    "step": 2,
+    "stepId": "step-2",
+    "currentTitle": "Untitled",
+    "currentLength": 1503,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/permissive-hypercapnia.json",
+    "step": 4,
+    "stepId": "step-4",
+    "currentTitle": "Untitled",
+    "currentLength": 1541,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/permissive-hypercapnia.json",
+    "step": 5,
+    "stepId": "step-5",
+    "currentTitle": "Untitled",
+    "currentLength": 2562,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/protective-strategies/permissive-hypercapnia.json",
+    "step": 8,
+    "stepId": "step-8",
+    "currentTitle": "Untitled",
+    "currentLength": 1736,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/weaning/readiness-criteria.json",
+    "step": 2,
+    "stepId": "step-2",
+    "currentTitle": "Untitled",
+    "currentLength": 2319,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/weaning/readiness-criteria.json",
+    "step": 3,
+    "stepId": "step-3",
+    "currentTitle": "Untitled",
+    "currentLength": 1694,
+    "issue": "MULTIPLE_IDEAS",
+    "identifiedIdeas": [
+      {
+        "ideaNumber": 1,
+        "topic": "## 1. Índice de Destete Rápido (Rapid Shallow Brea",
+        "startsAt": "## 1. Índice de Destete Rápido (Rapid Shallow Breathing Inde...",
+        "endsAt": "caso por caso\n- **RSBI > 130**: Alta probabilidad de fracaso",
+        "charCount": 339,
+        "reason": "First paragraph",
+        "suggestedTitle": "## 1. Índice de Destete Rápido (Rapid Shallow Breath..."
+      },
+      {
+        "ideaNumber": 2,
+        "topic": "**Limitaciones**:",
+        "startsAt": "**Limitaciones**:\n- No es perfecto, falsos positivos y negat...",
+        "endsAt": "ecuada\n- **PImax > -20 cmH₂O**: Fuerza muscular insuficiente",
+        "charCount": 395,
+        "reason": "Transition phrase: \"Limitaciones\"",
+        "suggestedTitle": "Limitaciones"
+      }
+    ],
+    "recommendation": "SPLIT into 2 steps - ideas are independent and complete"
+  },
+  {
+    "file": "module-03-configuration/weaning/readiness-criteria.json",
+    "step": 4,
+    "stepId": "step-4",
+    "currentTitle": "Untitled",
+    "currentLength": 1705,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/weaning/readiness-criteria.json",
+    "step": 5,
+    "stepId": "step-5",
+    "currentTitle": "Untitled",
+    "currentLength": 2567,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/weaning/sbt-protocol.json",
+    "step": 3,
+    "stepId": "metodos-sbt",
+    "currentTitle": "Métodos de SBT",
+    "currentLength": 2069,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/weaning/sbt-protocol.json",
+    "step": 4,
+    "stepId": "protocolo-sbt",
+    "currentTitle": "Algoritmo de Ajustes",
+    "currentLength": 2264,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  },
+  {
+    "file": "module-03-configuration/weaning/sbt-protocol.json",
+    "step": 5,
+    "stepId": "monitorizacion-sbt",
+    "currentTitle": "Monitorización/Curvas/Alarmas",
+    "currentLength": 1926,
+    "issue": "LONG_BUT_COHERENT",
+    "recommendation": "Keep as single step - one unified concept"
+  }
+]

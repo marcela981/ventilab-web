@@ -4,7 +4,7 @@
   "title": "Ventilación Controlada por Presión (PCV)",
   "description": "Lección sobre ventilación controlada por presión (PCV). Se abordan fundamentos (variable de control, límite y ciclado), parametrización (Pinsp sobre PEEP, tiempo inspiratorio, frecuencia, rise time), lectura de ondas (presión cuadrada, flujo desacelerado, volumen dependiente), seguridad (monitorización de Vt y ΔP), asincronías características de PCV y su resolución, y aplicación protectora basada en ΔP y metas de volumen corriente.",
   "order": 2,
-  "estimatedTime": 60,
+  "estimatedTime": 96,
   "difficulty": "intermediate",
   "bloomLevel": "apply",
   "learningObjectives": [
@@ -40,58 +40,148 @@
       }
     },
     {
-      "id": "configuracion-inicial-pcv",
+      "id": "configuracion-inicial-pcv-a",
       "order": 3,
       "type": "procedure",
       "title": "Configuración Inicial",
-      "estimatedTime": 12,
       "content": {
-        "markdown": "### Parámetros clave en PCV\n\n| Parámetro | Valor típico | Justificación |\n|----------|--------------|---------------|\n| **Pinsp (sobre PEEP)** | 12-20 cmH₂O | Determina ΔP y condiciona Vt resultante |\n| **TI** | 0.8-1.2 s | Define duración del plateau de presión |\n| **RR** | 16-20/min | Cierra la ventilación minuto |\n| **PEEP** | Según tabla PEEP/FiO₂ | Reclutamiento y contrapeso de auto-PEEP |\n| **Rise time** | Intermedio | Modula velocidad de ascenso a Pinsp |\n| **FiO₂** | 1.0 inicial, reducir según tabla | Inicio seguro, reducir cuando sea posible |\n\n### Pasos de configuración\n\n1. **Calcular PBW (Peso Corporal Ideal)**:\n   - Hombres: PBW = 50 + 0.91 × (altura en cm - 152.4)\n   - Mujeres: PBW = 45.5 + 0.91 × (altura en cm - 152.4)\n\n2. **Configurar presión inspiratoria inicial**:\n   - Metas: Vt ~6 ml/kg ≈ 420 ml (para PBW 70 kg)\n   - Inicia con Pinsp 12-16 cmH₂O sobre PEEP\n   - Ajusta según Vt observado\n\n3. **Configurar ventilador**:\n   - Modo: PCV Asistido-Control\n   - Pinsp: Valor inicial (sobre PEEP)\n   - PEEP: Según tabla PEEP/FiO₂ (ej: 8 cmH₂O)\n   - TI: 0.9-1.0 s\n   - RR: 16-20/min\n   - Rise time: Intermedio\n   - FiO₂: 1.0 inicial\n\n4. **Observar Vt resultante**:\n   - Si Vt es bajo (< 6 ml/kg): ↑ Pinsp en pasos de 2-4 cmH₂O\n   - Si Vt es alto (> 8 ml/kg): ↓ Pinsp\n   - Objetivo: Vt ~6 ml/kg PBW\n\n5. **Evaluar ΔP**:\n   - En PCV pasiva, Pinsp (sobre PEEP) aproxima ΔP\n   - Objetivo: ΔP baja con Vt objetivo\n   - Vigilar gases y hemodinamia"
-      }
+        "markdown": "### Parámetros clave en PCV\n\n| Parámetro | Valor típico | Justificación |\n|----------|--------------|---------------|\n| **Pinsp (sobre PEEP)** | 12-20 cmH₂O | Determina ΔP y condiciona Vt resultante |\n| **TI** | 0.8-1.2 s | Define duración del plateau de presión |\n| **RR** | 16-20/min | Cierra la ventilación minuto |\n| **PEEP** | Según tabla PEEP/FiO₂ | Reclutamiento y contrapeso de auto-PEEP |\n| **Rise time** | Intermedio | Modula velocidad de ascenso a Pinsp |\n| **FiO₂** | 1.0 inicial, reducir según tabla | Inicio seguro, reducir cuando sea posible |"
+      },
+      "estimatedTime": 5
     },
     {
-      "id": "algoritmo-ajustes-pcv",
+      "id": "configuracion-inicial-pcv-b",
       "order": 4,
       "type": "procedure",
-      "title": "Algoritmo de Ajustes",
-      "estimatedTime": 10,
+      "title": "Continuación",
       "content": {
-        "markdown": "### Algoritmo de ajuste según Vt observado\n\n| Vt Observado | Acción |\n|--------------|--------|\n| < 4 ml/kg PBW | Aumentar Pinsp en pasos de 2-4 cmH₂O, evaluar compliance |\n| 4-6 ml/kg PBW | Mantener si gases aceptables |\n| 6-8 ml/kg PBW | Óptimo, mantener |\n| > 8 ml/kg PBW | Reducir Pinsp, reevaluar |\n\n### Algoritmo de ajuste de TI\n\n- **TI corto** → doble disparo o trabajo muscular persistente\n- **TI largo** → esfuerzo espiratorio activo o atrapamiento\n- **Objetivo**: TI que permita que el flujo se aproxime a cero al final de la inspiración\n- **Ajuste**: Observar decadencia de flujo; prolongar o acortar TI según necesidad\n\n### Algoritmo de ajuste de rise time\n\n- **Rise time muy rápido** → overshoot de presión y molestias\n- **Rise time muy lento** → sensación de flujo insuficiente\n- **Ajuste intermedio** → mejora sincronía y puede reducir energía de insuflación\n\n### ΔP como métrica de protección\n\n- La **presión de conducción (ΔP = Pplat − PEEP)** se asoció a supervivencia en ARDS\n- En **PCV pasiva**, el **Pinsp** (sobre PEEP) aproxima la **ΔP** al final del TI si el flujo se acerca a cero\n- **Objetivo práctico**: ΔP baja con Vt objetivo, vigilando gases\n- Reducir ΔP se asocia con mayor supervivencia en ARDS"
-      }
+        "markdown": "### Pasos de configuración\n\n1. **Calcular PBW (Peso Corporal Ideal)**:\n   - Hombres: PBW = 50 + 0.91 × (altura en cm - 152.4)\n   - Mujeres: PBW = 45.5 + 0.91 × (altura en cm - 152.4)\n\n2. **Configurar presión inspiratoria inicial**:\n   - Metas: Vt ~6 ml/kg ≈ 420 ml (para PBW 70 kg)\n   - Inicia con Pinsp 12-16 cmH₂O sobre PEEP\n   - Ajusta según Vt observado\n\n3. **Configurar ventilador**:\n   - Modo: PCV Asistido-Control\n   - Pinsp: Valor inicial (sobre PEEP)\n   - PEEP: Según tabla PEEP/FiO₂ (ej: 8 cmH₂O)\n   - TI: 0.9-1.0 s\n   - RR: 16-20/min\n   - Rise time: Intermedio\n   - FiO₂: 1.0 inicial\n\n4. **Observar Vt resultante**:\n   - Si Vt es bajo (< 6 ml/kg): ↑ Pinsp en pasos de 2-4 cmH₂O\n   - Si Vt es alto (> 8 ml/kg): ↓ Pinsp\n   - Objetivo: Vt ~6 ml/kg PBW\n\n5. **Evaluar ΔP**:\n   - En PCV pasiva, Pinsp (sobre PEEP) aproxima ΔP\n   - Objetivo: ΔP baja con Vt objetivo\n   - Vigilar gases y hemodinamia"
+      },
+      "estimatedTime": 7
     },
     {
-      "id": "monitorizacion-curvas-pcv",
+      "id": "algoritmo-ajustes-pcv-a",
       "order": 5,
-      "type": "theory",
-      "title": "Monitorización y Curvas",
-      "estimatedTime": 12,
+      "type": "procedure",
+      "title": "Algoritmo de Ajustes",
       "content": {
-        "markdown": "### Interpretación de ondas en PCV\n\n#### Curvas típicas\n\n- **Presión**: alcanza rápidamente el **Pinsp** y se mantiene hasta el ciclado por **TI**\n- **Flujo**: **desacelerado** (pico alto al inicio → menor al final), favoreciendo presiones pico más bajas y mayor **presión media** de vía aérea\n- **Volumen**: ascenso curvilíneo dependiente de la **compliance**; por ello el **Vt varía** si cambia la mecánica\n\n#### Implicaciones clínicas\n\n- El patrón desacelerado puede **reducir PIP** y mejorar **distribución** y oxigenación\n- **Salvedad**: vigilar hemodinamia y Vt\n- El **Vt es variable** ante cambios de mecánica y requiere monitorización continua\n\n### Parámetros críticos a monitorizar\n\n1. **Volumen Tidal (Vt)**:\n   - Monitorear Vt observado vs objetivo (6 ml/kg PBW)\n   - Si Vt cae → evaluar compliance, ajustar Pinsp/TI\n   - Si Vt aumenta → puede indicar mejoría de mecánica o sobreasistencia\n\n2. **Presión Inspiratoria (Pinsp)**:\n   - En PCV pasiva, Pinsp (sobre PEEP) aproxima ΔP\n   - Objetivo: mantener ΔP baja (< 15 cmH₂O idealmente)\n   - Vigilar cambios que requieran ajuste\n\n3. **Flujo al final de TI**:\n   - Ideal: flujo se aproxima a cero al final de la inspiración\n   - Si no llega a cero → TI puede ser corto (ciclado precoz)\n   - Si llega a cero muy temprano → TI puede ser largo (riesgo de atrapamiento)\n\n4. **Compliance**:\n   - Estimar: Compliance ≈ Vt / (Pinsp)\n   - Monitorizar cambios que indiquen mejoría o empeoramiento\n   - Valores esperados similares a VCV"
-      }
+        "markdown": "### Algoritmo de ajuste según Vt observado\n\n| Vt Observado | Acción |\n|--------------|--------|\n| < 4 ml/kg PBW | Aumentar Pinsp en pasos de 2-4 cmH₂O, evaluar compliance |\n| 4-6 ml/kg PBW | Mantener si gases aceptables |\n| 6-8 ml/kg PBW | Óptimo, mantener |\n| > 8 ml/kg PBW | Reducir Pinsp, reevaluar |"
+      },
+      "estimatedTime": 5
     },
     {
-      "id": "alarmas-resolucion-pcv",
+      "id": "algoritmo-ajustes-pcv-b",
       "order": 6,
       "type": "procedure",
-      "title": "Alarmas y Resolución",
-      "estimatedTime": 8,
+      "title": "- **Rise time muy rápido** → overshoot de presión y mol",
       "content": {
-        "markdown": "### Configuración de alarmas\n\n#### Alarmas críticas\n\n1. **Alarma de presión alta**:\n   - Investigar acodamiento/tubo/moco/neumotórax\n   - Evaluar circuito y posición del tubo\n   - Verificar que Pinsp no esté excesivamente alta\n\n2. **Alarma de volumen bajo/minuto bajo**:\n   - Puede indicar ↓compliance o desconexión\n   - En PCV el Vt **cae** si empeora la mecánica\n   - **Acción**: evaluar y **reajustar Pinsp/TI** o estrategia\n   - Verificar conexiones del circuito\n\n### Resolución de problemas comunes\n\n#### Problema: Disminución brusca de Vt por ↓compliance\n\n- **Datos**: PCV, PEEP 8, Pinsp 14, TI 1.0 s, RR 20; Vt previo 420 ml → ahora 300 ml\n- **Acción**:\n  1. Evalúa causa de ↓compliance (edema, atelectasia)\n  2. ↑ Pinsp a 16-18 cmH₂O para recuperar Vt ~360-420 ml\n  3. Reevalúa ΔP, hemodinamia y gases\n  4. Considerar cambio de modo si no responde\n\n#### Problema: Overshoot por rise time\n\n- **Síntomas**: Overshoot de presión y disconfort; rise time muy corto\n- **Acción**:\n  1. Ajusta rise time a intermedio\n  2. Reevalúa curvas\n  3. Mejora sincronía y desaparece overshoot\n\n#### Problema: TI no acompasa el impulso neural (doble disparo)\n\n- **Datos**: Doble disparo intermitente con TI 0.6 s; flujo no alcanza a acercarse a cero al final\n- **Acción**:\n  1. Prolonga TI a 0.9-1.0 s (sin generar auto-PEEP)\n  2. Reevalúa\n  3. Desaparece doble disparo y mejora confort\n\n#### Problema: Ciclado tardío (TI muy largo)\n\n- **Síntomas**: Esfuerzo espiratorio activo, atrapamiento\n- **Acción**:\n  1. Acortar TI\n  2. Observar que flujo se aproxime a cero al final\n  3. Ajustar según respuesta del paciente"
-      }
+        "markdown": "### Algoritmo de ajuste de TI\n\n- **TI corto** → doble disparo o trabajo muscular persistente\n- **TI largo** → esfuerzo espiratorio activo o atrapamiento\n- **Objetivo**: TI que permita que el flujo se aproxime a cero al final de la inspiración\n- **Ajuste**: Observar decadencia de flujo; prolongar o acortar TI según necesidad"
+      },
+      "estimatedTime": 5
     },
     {
-      "id": "caso-practico-pcv",
+      "id": "algoritmo-ajustes-pcv-c",
       "order": 7,
+      "type": "procedure",
+      "title": "- La **presión de conducción (ΔP = Pplat − PEEP)** se a",
+      "content": {
+        "markdown": "### Algoritmo de ajuste de rise time\n\n- **Rise time muy rápido** → overshoot de presión y molestias\n- **Rise time muy lento** → sensación de flujo insuficiente\n- **Ajuste intermedio** → mejora sincronía y puede reducir energía de insuflación"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "algoritmo-ajustes-pcv-d",
+      "order": 8,
+      "type": "procedure",
+      "title": "Continuación",
+      "content": {
+        "markdown": "### ΔP como métrica de protección\n\n- La **presión de conducción (ΔP = Pplat − PEEP)** se asoció a supervivencia en ARDS\n- En **PCV pasiva**, el **Pinsp** (sobre PEEP) aproxima la **ΔP** al final del TI si el flujo se acerca a cero\n- **Objetivo práctico**: ΔP baja con Vt objetivo, vigilando gases\n- Reducir ΔP se asocia con mayor supervivencia en ARDS"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "monitorizacion-curvas-pcv-a",
+      "order": 9,
+      "type": "theory",
+      "title": "Monitorización y Curvas",
+      "content": {
+        "markdown": "### Interpretación de ondas en PCV\n\n#### Curvas típicas\n\n- **Presión**: alcanza rápidamente el **Pinsp** y se mantiene hasta el ciclado por **TI**\n- **Flujo**: **desacelerado** (pico alto al inicio → menor al final), favoreciendo presiones pico más bajas y mayor **presión media** de vía aérea\n- **Volumen**: ascenso curvilíneo dependiente de la **compliance**; por ello el **Vt varía** si cambia la mecánica"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "monitorizacion-curvas-pcv-b",
+      "order": 10,
+      "type": "theory",
+      "title": "Continuación",
+      "content": {
+        "markdown": "#### Implicaciones clínicas\n\n- El patrón desacelerado puede **reducir PIP** y mejorar **distribución** y oxigenación\n- **Salvedad**: vigilar hemodinamia y Vt\n- El **Vt es variable** ante cambios de mecánica y requiere monitorización continua\n\n### Parámetros críticos a monitorizar\n\n1. **Volumen Tidal (Vt)**:\n   - Monitorear Vt observado vs objetivo (6 ml/kg PBW)\n   - Si Vt cae → evaluar compliance, ajustar Pinsp/TI\n   - Si Vt aumenta → puede indicar mejoría de mecánica o sobreasistencia\n\n2. **Presión Inspiratoria (Pinsp)**:\n   - En PCV pasiva, Pinsp (sobre PEEP) aproxima ΔP\n   - Objetivo: mantener ΔP baja (< 15 cmH₂O idealmente)\n   - Vigilar cambios que requieran ajuste\n\n3. **Flujo al final de TI**:\n   - Ideal: flujo se aproxima a cero al final de la inspiración\n   - Si no llega a cero → TI puede ser corto (ciclado precoz)\n   - Si llega a cero muy temprano → TI puede ser largo (riesgo de atrapamiento)\n\n4. **Compliance**:\n   - Estimar: Compliance ≈ Vt / (Pinsp)\n   - Monitorizar cambios que indiquen mejoría o empeoramiento\n   - Valores esperados similares a VCV"
+      },
+      "estimatedTime": 9
+    },
+    {
+      "id": "alarmas-resolucion-pcv-a",
+      "order": 11,
+      "type": "procedure",
+      "title": "Alarmas y Resolución",
+      "content": {
+        "markdown": "### Configuración de alarmas\n\n#### Alarmas críticas\n\n1. **Alarma de presión alta**:\n   - Investigar acodamiento/tubo/moco/neumotórax\n   - Evaluar circuito y posición del tubo\n   - Verificar que Pinsp no esté excesivamente alta\n\n2. **Alarma de volumen bajo/minuto bajo**:\n   - Puede indicar ↓compliance o desconexión\n   - En PCV el Vt **cae** si empeora la mecánica\n   - **Acción**: evaluar y **reajustar Pinsp/TI** o estrategia\n   - Verificar conexiones del circuito"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "alarmas-resolucion-pcv-b",
+      "order": 12,
+      "type": "procedure",
+      "title": "Continuación",
+      "content": {
+        "markdown": "### Resolución de problemas comunes\n\n#### Problema: Disminución brusca de Vt por ↓compliance\n\n- **Datos**: PCV, PEEP 8, Pinsp 14, TI 1.0 s, RR 20; Vt previo 420 ml → ahora 300 ml\n- **Acción**:\n  1. Evalúa causa de ↓compliance (edema, atelectasia)\n  2. ↑ Pinsp a 16-18 cmH₂O para recuperar Vt ~360-420 ml\n  3. Reevalúa ΔP, hemodinamia y gases\n  4. Considerar cambio de modo si no responde\n\n#### Problema: Overshoot por rise time\n\n- **Síntomas**: Overshoot de presión y disconfort; rise time muy corto\n- **Acción**:\n  1. Ajusta rise time a intermedio\n  2. Reevalúa curvas\n  3. Mejora sincronía y desaparece overshoot\n\n#### Problema: TI no acompasa el impulso neural (doble disparo)\n\n- **Datos**: Doble disparo intermitente con TI 0.6 s; flujo no alcanza a acercarse a cero al final\n- **Acción**:\n  1. Prolonga TI a 0.9-1.0 s (sin generar auto-PEEP)\n  2. Reevalúa\n  3. Desaparece doble disparo y mejora confort\n\n#### Problema: Ciclado tardío (TI muy largo)\n\n- **Síntomas**: Esfuerzo espiratorio activo, atrapamiento\n- **Acción**:\n  1. Acortar TI\n  2. Observar que flujo se aproxime a cero al final\n  3. Ajustar según respuesta del paciente"
+      },
+      "estimatedTime": 6
+    },
+    {
+      "id": "caso-practico-pcv-a",
+      "order": 13,
       "type": "case",
       "title": "Caso Práctico",
-      "estimatedTime": 10,
       "content": {
-        "markdown": "### Caso 1: Disminución brusca de Vt por ↓compliance\n\n**Datos**: PCV, PEEP 8, Pinsp 14, TI 1.0 s, RR 20; Vt previo 420 ml → ahora 300 ml, SpO₂ estable.\n\n**Acción**:\n1. Evalúa causa de ↓compliance (edema, atelectasia)\n2. ↑ Pinsp a 16-18 cmH₂O para recuperar Vt ~360-420 ml\n3. Reevalúa ΔP, hemodinamia y gases\n\n**Resultado esperado**: Vt recuperado a ~6 ml/kg, ΔP controlada, gases estables\n\n### Caso 2: Overshoot por rise time\n\n**Datos**: Overshoot de presión y disconfort; rise time muy corto.\n\n**Acción**:\n1. Ajusta rise time a intermedio\n2. Reevalúa curvas\n3. Mejora sincronía y desaparece overshoot\n\n**Resultado esperado**: Presión estable sin overshoot, mejor confort\n\n### Caso 3: TI no acompasa el impulso neural\n\n**Datos**: Doble disparo intermitente con TI 0.6 s; flujo no alcanza a acercarse a cero al final.\n\n**Acción**:\n1. Prolonga TI a 0.9-1.0 s (sin generar auto-PEEP)\n2. Reevalúa\n3. Desaparece doble disparo y mejora confort\n\n**Resultado esperado**: Sincronía mejorada, sin doble disparo, confort del paciente\n\n### Caso 4: Comparativa PCV vs VCV guiada por ΔP\n\n**Paciente con ARDS moderado**: En VCV con Vt 6 ml/kg, Pplat 30, ΔP 22 (PEEP 8). Se cambia a PCV y se titula Pinsp para mantener Vt 6 ml/kg; ΔP (≈ Pinsp) baja a 15 sin deterioro de gases. Se mantiene PCV y se evalúa prono según criterios.\n\n**Resultado esperado**: ΔP reducida, Vt mantenido, mejor protección pulmonar"
-      }
+        "markdown": "### Caso 1: Disminución brusca de Vt por ↓compliance\n\n**Datos**: PCV, PEEP 8, Pinsp 14, TI 1.0 s, RR 20; Vt previo 420 ml → ahora 300 ml, SpO₂ estable.\n\n**Acción**:\n1. Evalúa causa de ↓compliance (edema, atelectasia)\n2. ↑ Pinsp a 16-18 cmH₂O para recuperar Vt ~360-420 ml\n3. Reevalúa ΔP, hemodinamia y gases"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "caso-practico-pcv-b",
+      "order": 14,
+      "type": "case",
+      "title": "**Datos**: Overshoot de presión y disconfort; rise time",
+      "content": {
+        "markdown": "**Resultado esperado**: Vt recuperado a ~6 ml/kg, ΔP controlada, gases estables"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "caso-practico-pcv-c",
+      "order": 15,
+      "type": "case",
+      "title": "**Resultado esperado**: Presión estable sin overshoot, ",
+      "content": {
+        "markdown": "### Caso 2: Overshoot por rise time\n\n**Datos**: Overshoot de presión y disconfort; rise time muy corto.\n\n**Acción**:\n1. Ajusta rise time a intermedio\n2. Reevalúa curvas\n3. Mejora sincronía y desaparece overshoot"
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "caso-practico-pcv-d",
+      "order": 16,
+      "type": "case",
+      "title": "Continuación",
+      "content": {
+        "markdown": "**Resultado esperado**: Presión estable sin overshoot, mejor confort\n\n### Caso 3: TI no acompasa el impulso neural\n\n**Datos**: Doble disparo intermitente con TI 0.6 s; flujo no alcanza a acercarse a cero al final.\n\n**Acción**:\n1. Prolonga TI a 0.9-1.0 s (sin generar auto-PEEP)\n2. Reevalúa\n3. Desaparece doble disparo y mejora confort\n\n**Resultado esperado**: Sincronía mejorada, sin doble disparo, confort del paciente\n\n### Caso 4: Comparativa PCV vs VCV guiada por ΔP\n\n**Paciente con ARDS moderado**: En VCV con Vt 6 ml/kg, Pplat 30, ΔP 22 (PEEP 8). Se cambia a PCV y se titula Pinsp para mantener Vt 6 ml/kg; ΔP (≈ Pinsp) baja a 15 sin deterioro de gases. Se mantiene PCV y se evalúa prono según criterios.\n\n**Resultado esperado**: ΔP reducida, Vt mantenido, mejor protección pulmonar"
+      },
+      "estimatedTime": 6
     },
     {
       "id": "resumen-quiz-pcv",
-      "order": 8,
+      "order": 17,
       "type": "summary",
       "title": "Resumen y Quiz",
       "estimatedTime": 5,

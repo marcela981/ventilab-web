@@ -1,7 +1,7 @@
 {
   "title": "Protocolo de Trial de Respiración Espontánea (SBT)",
   "summary": "Protocolo completo para realizar trials de respiración espontánea (T-piece, CPAP, PSV baja) como prueba antes de extubación. Incluye criterios para iniciar SBT, métodos de SBT, duración, parámetros de éxito/fracaso y manejo de resultados.",
-  "estimatedTime": 51,
+  "estimatedTime": 28,
   "sections": [
     {
       "id": "concepto-trial-respiracion-espontanea",
