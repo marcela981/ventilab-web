@@ -1,0 +1,419 @@
+{
+  "id": "module-02-ecuacion-movimiento",
+  "moduleId": "module-01-fundamentals",
+  "title": "El Santo Grial – La Ecuación del Movimiento Respiratorio",
+  "description": "En este módulo se aborda en profundidad la ecuación fundamental que rige la mecánica respiratoria durante la ventilación: la ecuación del movimiento del sistema respiratorio. Conocida metafóricamente como “el Santo Grial” de la ventilación mecánica, esta ecuación relaciona presión, volumen y flujo con las propiedades elásticas y resistivas del sistema respiratorio. El módulo desglosa cada término de la ecuación, explica su significado fisiológico y su aplicación clínica. A través de ejemplos numéricos y gráficos, el estudiante aprenderá a interpretar la ecuación en diferentes escenarios (p. ej., cambios de complianza en SDRA vs. cambios de resistencia en asma) y a utilizarla para la toma de decisiones (ajuste de parámetros ventilatorios). Se enfatiza la utilidad práctica de la ecuación para distinguir problemas (como resistencia aumentada vs. distensibilidad reducida) y para comprender los principios detrás de los modos ventilatorios.",
+  "order": 2,
+  "estimatedTime": 50,
+  "difficulty": "intermediate",
+  "bloomLevel": "apply",
+  "learningObjectives": [
+    "Expresar la ecuación del movimiento respiratorio e identificar cada uno de sus componentes: presión",
+    "elástica, presión resistiva, PEEP y presión generada (ventilador y/o paciente).",
+    "Explicar cómo la ecuación del movimiento refleja la interacción entre ventilador y pulmón, y usarla",
+    "para interpretar curvas de presión, volumen y flujo.",
+    "Distinguir, mediante la ecuación, si una elevación de la presión de vía aérea en un paciente ventilado",
+    "se debe a una disminución de complianza (elastancia alta) o a un aumento de resistencia (p. ej.",
+    "broncoespasmo).",
+    "Calcular o estimar valores de complianza estática, resistencia de vía aérea y auto-PEEP a partir de",
+    "datos clínicos, usando la ecuación (e.g., a partir de presiones pico y meseta y flujo).",
+    "Relacionar los modos ventilatorios (control de volumen vs. presión) con la ecuación del movimiento:",
+    "entender qué términos controla el ventilador en cada caso y cuáles varían según el paciente.",
+    "Reconocer las implicaciones de la ecuación en la prevención de lesión pulmonar inducida por"
+  ],
+  "prerequisites": [
+    "Fisiología respiratoria básica",
+    "Conceptos de presión/volumen/flujo"
+  ],
+  "sections": [
+    {
+      "id": "m2-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción y mapa del módulo",
+      "content": {
+        "markdown": "## Qué vas a aprender en este módulo\n\n**Tema:** El Santo Grial – La Ecuación del Movimiento Respiratorio\n\nEn este módulo se aborda en profundidad la ecuación fundamental que rige la mecánica respiratoria durante la ventilación: la ecuación del movimiento del sistema respiratorio. Conocida metafóricamente como “el Santo Grial” de la ventilación mecánica, esta ecuación relaciona presión, volumen y flujo con las propiedades elásticas y resistivas del sistema respiratorio. El módulo desglosa cada término de la ecuación, explica su significado fisiológico y su aplicación clínica. A través de ejemplos numéricos y gráficos, el estudiante aprenderá a interpretar la ecuación en diferentes escenarios (p. ej., cambios de complianza en SDRA vs. cambios de resistencia en asma) y a utilizarla para la toma de decisiones (ajuste de parámetros ventilatorios). Se enfatiza la utilidad práctica de la ecuación para distinguir problemas (como resistencia aumentada vs. distensibilidad reducida) y para comprender los principios detrás de los modos ventilatorios.\n\n### Objetivos (versión estudiante)\n- Expresar la ecuación del movimiento respiratorio e identificar cada uno de sus componentes: presión\n- elástica, presión resistiva, PEEP y presión generada (ventilador y/o paciente).\n- Explicar cómo la ecuación del movimiento refleja la interacción entre ventilador y pulmón, y usarla\n- para interpretar curvas de presión, volumen y flujo.\n- Distinguir, mediante la ecuación, si una elevación de la presión de vía aérea en un paciente ventilado\n- se debe a una disminución de complianza (elastancia alta) o a un aumento de resistencia (p. ej.\n- broncoespasmo).\n- Calcular o estimar valores de complianza estática, resistencia de vía aérea y auto-PEEP a partir de\n- datos clínicos, usando la ecuación (e.g., a partir de presiones pico y meseta y flujo).\n- Relacionar los modos ventilatorios (control de volumen vs. presión) con la ecuación del movimiento:\n- entender qué términos controla el ventilador en cada caso y cuáles varían según el paciente.\n- Reconocer las implicaciones de la ecuación en la prevención de lesión pulmonar inducida por\n\n### Cómo estudiar (nivel principiante, contenido intermedio/avanzado)\n- Avanza por **partes cortas** (5–12 min) y usa el *chequeo rápido* al final de cada parte.\n- Si algo te suena “muy técnico”, marca el término y sigue: lo retomamos en el *resumen/chuleta*.\n- Prioriza entender **relaciones**: presión ↔ volumen ↔ flujo ↔ resistencia ↔ compliance.\n\n### Vocabulario mínimo para no perderte\n- **Presión (P):** fuerza por área (en ventilación: cmH₂O).\n- **Volumen (V):** cantidad de gas.\n- **Flujo (V’):** velocidad con la que entra/sale el gas (L/min)."
+      }
+    },
+    {
+      "id": "m2-p14-15",
+      "order": 2,
+      "type": "theory",
+      "title": "Parte 1: lectura guiada (págs. 14–15)",
+      "content": {
+        "markdown": "## Lectura guiada (páginas 14–15)\n\n> **Tip:** Lee primero los subtítulos y busca palabras clave (PEEP, Pplat, C, R, trigger, etc.).\n\nMódulo 2: El Santo Grial – La Ecuación del Movimiento\nRespiratorio\nID: Módulo 2\nTítulo: El Santo Grial – La Ecuación del Movimiento Respiratorio\nDescripción general: En este módulo se aborda en profundidad la ecuación fundamental que rige la\nmecánica respiratoria durante la ventilación: la ecuación del movimiento del sistema respiratorio.\nConocida metafóricamente como “el Santo Grial” de la ventilación mecánica, esta ecuación relaciona\npresión, volumen y flujo con las propiedades elásticas y resistivas del sistema respiratorio. El módulo\ndesglosa cada término de la ecuación, explica su significado fisiológico y su aplicación clínica. A través\nde ejemplos numéricos y gráficos, el estudiante aprenderá a interpretar la ecuación en diferentes\nescenarios (p. ej., cambios de complianza en SDRA vs. cambios de resistencia en asma) y a utilizarla para\nla toma de decisiones (ajuste de parámetros ventilatorios). Se enfatiza la utilidad práctica de la ecuación\npara distinguir problemas (como resistencia aumentada vs. distensibilidad reducida) y para comprender\nlos principios detrás de los modos ventilatorios.\nDuración estimada: 50 minutos\nDificultad: Avanzada (requiere integrar fisiología, matemáticas básicas y clínica)\nNivel de Bloom: Aplicación/Análisis (el estudiante aplicará la ecuación a situaciones clínicas y analizará\ncómo los cambios en variables afectan la presión, etc.)\nObjetivos de aprendizaje:\n- Expresar la ecuación del movimiento respiratorio e identificar cada uno de sus componentes: presión\nelástica, presión resistiva, PEEP y presión generada (ventilador y/o paciente).\n- Explicar cómo la ecuación del movimiento refleja la interacción entre ventilador y pulmón, y usarla\npara interpretar curvas de presión, volumen y flujo.\n- Distinguir, mediante la ecuación, si una elevación de la presión de vía aérea en un paciente ventilado\nse debe a una disminución de complianza (elastancia alta) o a un aumento de resistencia (p. ej.\nbroncoespasmo).\n- Calcular o estimar valores de complianza estática, resistencia de vía aérea y auto-PEEP a partir de\ndatos clínicos, usando la ecuación (e.g., a partir de presiones pico y meseta y flujo).\n- Relacionar los modos ventilatorios (control de volumen vs. presión) con la ecuación del movimiento:\nentender qué términos controla el ventilador en cada caso y cuáles varían según el paciente.\n- Reconocer las implicaciones de la ecuación en la prevención de lesión pulmonar inducida por\nventilador (limitar presión de distensión, etc.).\nPrerrequisitos: Dominio de conceptos presentados en el Módulo 1 (presión positiva vs negativa,\ncomplianza, resistencia) y conocimientos básicos de física respiratoria (presión, flujo). Idealmente, el\nestudiante ya debe estar familiarizado con la lectura de curvas básica del ventilador (presión-tiempo,\nflujo-tiempo) porque se usarán en ejemplos.\nDimensión contextual\n¿Qué es la “Ecuación del Movimiento Respiratorio”? Es una representación matemática de las fuerzas\nen juego durante la ventilación. Integra las presiones generadas por el ventilador (y/o los músculos\nrespiratorios del paciente) con las propiedades intrínsecas del sistema respiratorio (pulmones y pared\ntorácica) 50 . En palabras simples, la ecuación describe cómo la presión en el sistema respiratorio se\nreparte para mover aire y expandir pulmones. Se le apoda “El Santo Grial” porque conocerla permite\nentender prácticamente todos los fenómenos de la ventilación mecánica: de ella derivan las bases para\nconfigurar un ventilador y para interpretar por qué cambian las presiones cuando algo en el paciente va\nmal o mejora. Históricamente, fue derivada de principios de mecánica ventilatoria décadas atrás y ha\nsido confirmada por la experiencia clínica como una herramienta conceptual indispensable.\n14\n\n¿Por qué se considera tan importante? Porque es a la ventilación mecánica lo que las leyes de\nNewton son a la mecánica clásica: una base fundamental. Con la ecuación del movimiento uno puede\npredecir cómo cambiará la presión si cambia la complianza o la resistencia, puede entender por qué\ncierto modo ventilatorio funciona de determinada manera, y puede solucionar problemas en tiempo\nreal. Por ejemplo, si un paciente presenta súbitamente una presión pico elevada, la ecuación orienta el\npensamiento: ¿Aumentó la resistencia (broncoespasmo, tubo doblado) o disminuyó la distensibilidad\n(edema, neumotórax)? Basta separar la presión resistiva de la elástica (midiento la meseta) para saberlo\n11 . Además, la ecuación respalda la estrategia de ventilación protectora: muestra que la presión de\ndistensión (el componente elástico) es la que lesiona alveolos, por lo que limitarla (mantener P_plat\nbaja) reduce volutrauma 51 . En suma, es la piedra angular para analizar la ventilación de un paciente\nmás allá de simplemente “poner un número en el ventilador”.\n¿Dónde se aplica? En la práctica clínica diaria de UCI, cada vez que un intensivista evalúa las alarmas de\nalta presión o calcula la complianza del paciente post-quirúrgico, está usando esta ecuación aunque no\nsiempre la escriba formalmente. También se aplica en anestesiología (ajustar ventilación\nintraoperatoria según la mecánica del paciente), en neumología (durante pruebas de función pulmonar\nse usa un principio similar para determinar resistencia y complianza, solo que en pacientes\nespontáneos) y en investigación (modelos computacionales de ventilación, diseños de nuevos modos\nventilatorios basados en la ecuación). Además, la industria la incorpora en los ventiladores: muchos\nmicroprocesadores “saben” la ecuación y calculan en tiempo real la complianza y resistencia del\npaciente tras cada maniobra de pausa, mostrando esos valores en la pantalla para apoyo del clínico.\nEn el contexto del aprendizaje, dominar esta ecuación es crucial antes de entrar a módulos de modos\nventilatorios (Módulo 4) y de monitorización gráfica (Módulo 5), pues ambos se fundamentan en\ncomprender cómo se suman las presiones. Por eso este módulo se ubica aquí: tras haber comprendido\nlas diferencias fisiológicas básicas, profundizamos en la relación cuantitativa.\nHistoria y analogía del “Santo Grial”: El término es coloquial, pero refleja que por años clínicos e\ninvestigadores buscaron una forma clara de relacionar variables ventilatorias. Ya en los años 1950 se\nformuló una versión de esta ecuación (Otis et al., 1956, en J. Applied Physiology) para describir el\ntrabajo respiratorio. Con los ventiladores modernos, la ecuación se simplificó en la forma lineal que\nusamos hoy. Algunos la llaman también “ecuación de movimiento del sistema respiratorio” 50 . Se\nvolvió de dominio común en la formación de intensivos a partir de las publicaciones de ARDSNet y de\nexpertos como Luciano Gattinoni, que enfatizaron entender la presión de distensión (driving pressure)\n– la diferencia entre Pplat y PEEP – derivada de esta ecuación para reducir VILI. Así, la ecuación está en\nguías modernas: por ejemplo, conocer que $P_{Plat} - PEEP = V_t / C_{est}$ (presión de distensión =\nvolumen corriente sobre complianza estática) ayuda a mantener ese valor por debajo de ~15 cmH2O,\ncomo recomiendan estudios recientes para mejorar supervivencia en SDRA. En ese sentido, “Santo\nGrial” alude a que es un conocimiento valioso y central que ilumina muchas prácticas.\nBig picture global: En todo el mundo, los profesionales comparten este mismo marco conceptual sin\nimportar la marca del ventilador o el idioma: la ecuación del movimiento es universal. Con ligeras\nvariaciones de notación, en cualquier UCI se entiende que Presión total = Presión elástica + Presión\nresistiva + PEEP 11 . Es un lenguaje común entre profesionales; por eso, dominarla también tiene un\naspecto de comunicación: permite discutir casos con colegas de manera precisa (“Este paciente tiene\nuna complianza de 30 mL/cmH2O y resistencias de 18 cmH2O/L/s, por eso su presión pico está en 35\ncmH2O con ese volumen”, etc.). A un nivel más amplio, entender la ecuación también abre la puerta a\ncomprender avances e investigaciones en ventilación: por ejemplo, el concepto de Mechanical Power\n(potencia mecánica impartida al pulmón) integra volumen, presión, flujo y frecuencia – todos derivados\nde la ecuación del movimiento – como un posible mejor predictor de VILI. En suma, la ecuación del\n15\n\n---\n\n### Chequeo rápido\n- ¿Qué concepto nuevo te quedó más claro en estas páginas?\n- Escribe 1 ejemplo clínico donde esta información cambie una decisión ventilatoria.\n"
+      }
+    },
+    {
+      "id": "m2-p16-17",
+      "order": 3,
+      "type": "theory",
+      "title": "Parte 2: lectura guiada (págs. 16–17)",
+      "content": {
+        "markdown": "## Lectura guiada (páginas 16–17)\n\n> **Tip:** Lee primero los subtítulos y busca palabras clave (PEEP, Pplat, C, R, trigger, etc.).\n\nmovimiento respiratorio es un pilar del conocimiento ventilatorio a nivel global, y es fundamental que\nun especialista la interiorice.\nDimensión teórica\nPrimeros principios y derivación: La ecuación del movimiento se basa en la aplicación de las leyes de\nNewton (dinámica) a la mecánica respiratoria. En concreto, proviene de la suma de las presiones\nnecesarias para: (1) vencer la resistencia al flujo de aire (componente resistivo, análogo a la fricción en\nmecánica de partículas) y (2) vencer la inercia y elasticidad del sistema (componente elástico e inercial).\nDado que en respiración normal las frecuencias son relativamente bajas, el componente inercial (masa\nacelerada del aire y tejido) suele ser muy pequeño comparado a los otros, y se puede ignorar en la\nmayoría de los análisis clínicos 19 . Por tanto, se considera que la relación es cuasi-estática para\nfrecuencias < 1 Hz (~60 rpm): la parte inercial no hace gran diferencia. Con esa simplificación, la\nEcuación del Movimiento Respiratorio lineal se expresa típicamente como:\nP (t) = P +P +P .\naw resistiva elˊastica PEEP\nAlgunos textos la escriben como:\nP +P = E ⋅V +R ⋅V ̇ +P ,\nvent mus rs aw EEP\ndonde $E_{rs}$ es la elastancia (inversa de la complianza) del sistema respiratorio, $V$ el volumen\ncorriente en un momento dado, $R_{aw}$ la resistencia de la vía aérea, $\\dot V$ (V con punto encima) el\nflujo inspiratorio, y $P_{\\text{vent}}$ es la presión generada por el ventilador y $P_{\\text{mus}}$ la\ngenerada por los músculos del paciente 52 30 . Si el paciente está pasivo (musculatura inactiva,\ncompletamente controlado), $P_{mus} = 0$ y entonces la presión de vía aérea medida proviene 100%\ndel ventilador. Si el paciente hace esfuerzo inspiratorio, $P_{mus}$ es negativo (como una presión\n“restada” que ayuda a la ventilación); si puja espirando activamente, $P_{mus}$ sería positivo añadido.\nPara propósitos didácticos iniciales asumimos paciente pasivo, entonces:\nP = E ⋅V +R ⋅V ̇ +P ,\naw rs aw EEP(tot)\ndonde $P_{\\text{EEP(tot)}}$ incluye la PEEP externa y la auto-PEEP si la hubiera. Esta es la forma\n“mágica” en la que todos los componentes aparecen sumándose 53 54 .\nDesglose de términos y definiciones:\n- $P_{\\text{aw}}$ (Presión en vía aérea o presión total del sistema respiratorio $P_{rs}$): Es la\npresión medida en la vía aérea proximal (por ejemplo, en el tubo endotraqueal). Durante la ventilación\nmecánica, la vemos como la curva de presión en la pantalla. Representa en cada instante la suma de\ntodas las presiones presentes. En el pico inspiratorio incluye todos los componentes, durante la meseta\nsólo el elástico y PEEP, etc.\n- $E_{rs} \\cdot V$ (Presión elástica, $P_{\\text{el}}$): Es la porción de presión dedicada a vencer la\nretracción elástica de los pulmones y la pared torácica al expandirlos hasta un cierto volumen $V$.\nPodemos pensarlo como “la presión para inflar un globo hasta cierto volumen”. Elastancia ($E$) es la\nrecíproca de la complianza ($C$). A veces es más intuitivo usar complianza en la ecuación: $P_{el} =\n\\frac{V}{C_{rs}}$. Por ejemplo, si $C_{rs}$ (complianza del sistema resp.) es 50 mL/cmH2O, e insuflamos\n500 mL, la presión elástica será 10 cmH2O (500 mL / 50 mL/cmH2O). Esta presión elástica es justamente\nla presión de meseta si medimos en una pausa inspiratoria (flujo 0) 29 . Refleja propiedades\npulmonares: pulmones rígidos (fibrosis, SDRA) tienen $C$ baja (por ende $E$ alta) resultando en mayor\npresión elástica para el mismo volumen; pulmones muy complacientes (enfisema) tendrán presión\nelástica menor para igual Vt.\n- $R_{aw} \\cdot \\dot V$ (Presión resistiva, $P_{\\text{res}}$): Es la porción de presión necesaria para\n16\n\nempujar el flujo de aire a través de las vías aéreas (árbol traqueobronquial + tubo + circuito) contra la\nresistencia al paso del aire. Sigue la ley de Poiseuille simplificada: $\\Delta P = R \\cdot \\dot V$. Por tanto,\nsi el flujo es mayor, la caída de presión resistiva es mayor (por eso presiones pico suben con flujos altos).\nSi las vías están obstruidas (R aumentada), también se requiere más presión para el mismo flujo. Esta\npresión resistiva se manifiesta como la diferencia entre la presión pico y la presión meseta durante la\nventilación volumen-control: $P_{\\text{res}} = P_{\\text{pico}} - P_{\\text{meseta}}$ (porque en meseta no\nhay flujo entonces no hay componente resistivo) 11 . Por ejemplo, si $R_{aw}$ es 20 cmH2O/(L/s) y el\nflujo inspiratorio es 0.5 L/s (30 L/min), la presión resistiva será 10 cmH2O. Si de repente el tubo se dobla\ny ofrece más resistencia o el paciente tiene broncoespasmo, tal vez $R_{aw}$ sube a 40, entonces la\npresión resistiva sería 20 cmH2O para el mismo flujo; la alarma de alta presión sonará y veremos\n$P_{pico}$ subido, mientras el plateau puede permanecer relativamente normal si la complianza no\ncambió.\n- $P_{\\text{EEP(tot)}}$ (Presión al final de la espiración, total): Representa la presión remanente en\nlos alveolos antes de iniciar la siguiente inspiración. Si tenemos PEEP externa de, digamos, 5 cmH2O y\nno hay atrapamiento aéreo, la presión alveolar al final de espiración es 5. Si hay auto-PEEP\n(atrapamiento), la presión alveolar real puede ser mayor, por ejemplo 8 o 10, pero el ventilador solo\n“sabe” que puso 5 a través de la válvula espiratoria. Esa auto-PEEP se puede medir con una maniobra de\npausa al final de la espiración. Para fines de la ecuación, la sumamos como parte de la presión\nrequerida: esencialmente si hay auto-PEEP, el ventilador en la siguiente inspiración primero tiene que\nsuperar esa presión alveolar inicial antes de generar flujo neto hacia alveolos. Entonces es como si se\nañadiera a la carga. Por eso en ecuaciones a veces se pone $P_{tot} = E \\cdot V + R \\cdot \\dot V +\nPEEP_{ext} + PEEP_{int}$ para dejar claro ambos 12 . En nuestros usos, con PEEP nos referiremos\nusualmente a la total si no aclaramos.\nJuntando todo: la ecuación del movimiento más comúnmente citada es:\nV\nP +P = +R ⋅V ̇ +P .\nvent mus C aw PEEP\nrs\nO en otra forma:\nP (t) = P (t)+P (t)+P .\naw elˊastica resistiva PEEP\nEn esta expresión, cada término puede variar con el tiempo durante la inspiración. Por ejemplo, al inicio\nde la inspiración, $V$ es pequeño (recién comienza a llenarse, así que $P_{elástica}$ es bajo), pero el\nflujo $\\dot V$ puede ser alto (si hay un pico inicial de flujo, $P_{resistiva}$ transitorio es alto). Al final de\nla inspiración, el flujo puede bajar (especialmente en presión control) reduciendo $P_{res}$, pero $V$ ya\nes grande elevando $P_{el}$. La suma en cada instante da la curva de presión resultante. Nota: El\ncomponente inercial (no incluido) sería $I \\cdot \\ddot V$ (donde $I$ es la inercia del sistema), pero de\nnuevo, en clínica usual se ignora por su poca contribución a frecuencias normales 55 .\nGlosario técnico específico: En contexto de esta ecuación, definamos:\n- Complianza estática ($C_{est}$): se calcula con el pulmón en condiciones estáticas, es decir, sin flujo\n(pausa inspiratoria): $C_{est} = V_t / (P_{plat} - PEEP)$ 56 . Representa la distensibilidad del sistema resp.\n(pulmón + pared). - Resistencia de vía aérea ($R_{aw}$): se puede calcular con la ecuación rearranjada:\n$R_{aw} = (P_{pico} - P_{plat}) / \\dot V_{insp}$ (tomando flujo en L/s) 11 . Esto asume flujo constante; si\nel flujo varía, se puede usar el flujo medio o instantáneo en pico. Resistencias normales intubado: ~5-12\ncmH2O/L/s; en EPOC/asmat, pueden ser 15-20+; un tubo estrecho aumenta R. - Presión de meseta\n($P_{plat}$): presión medida tras una inspiración, cuando se realiza una pausa de ~0.3-0.5 s con la\nválvula cerrada 57 . Refleja la presión alveolar al final de la inspiración, sin flujo (es decir, $P_{res}$ se\nfue a cero, queda $P_{el} + PEEP$). - Presión de distensión (Driving pressure, $\\Delta P$): en SDRA se\ndefine como $P_{plat} - PEEP$ 51 , o sea, la porción de presión que efectivamente distiende alveolos\n17\n\n---\n\n### Chequeo rápido\n- ¿Qué concepto nuevo te quedó más claro en estas páginas?\n- Escribe 1 ejemplo clínico donde esta información cambie una decisión ventilatoria.\n"
+      }
+    },
+    {
+      "id": "m2-p18-19",
+      "order": 4,
+      "type": "theory",
+      "title": "Parte 3: lectura guiada (págs. 18–19)",
+      "content": {
+        "markdown": "## Lectura guiada (páginas 18–19)\n\n> **Tip:** Lee primero los subtítulos y busca palabras clave (PEEP, Pplat, C, R, trigger, etc.).\n\npor encima de PEEP. Según estudios, $\\Delta P > 15$ cmH2O se asocia a más mortalidad –\nconceptualmente porque refleja un $V_t$ demasiado alto para la capacidad baby lung. Con la ecuación,\n$\\Delta P = E_{rs} \\cdot V_t$; es proporcional a volumen corriente para una dada elastancia. - Tiempo\nde RC (constante de tiempo): no aparece explícito en la ecuación instantánea, pero es derivado: $\\tau\n= R \\cdot C$. Representa cuánto tarda la presión/flujo en cambiar significativamente. Pulmones con $\n\\tau$ largas (EPOC: alta R, a veces alta C) tardan más en llenarse y vaciarse – predisposición a autoPEEP.\nPulmones con $\\tau$ cortas (fibrosis: baja C, normal R) se llenan rápido pero también colapsan rápido al\nespirar – predisposición a alveolos mal ventilados si no se aplica suficiente PEEP. La constante de tiempo\nes útil para ajustar proporción I:E. - Componentes del sistema respiratorio: a veces se distingue entre\ncomponente pulmonar (elastancia pulmonar) y componente de pared torácica. Nuestra ecuación\n$E_{rs}$ y $C_{rs}$ incluye ambos. Si uno quisiera ser muy preciso: $\\frac{1}{C_{rs}} = \\frac{1}{C_{pulm}}\n+ \\frac{1}{C_{pared}}$ (sumatoria de elastancias). En pacientes con obesidad mórbida o ascitis masiva,\nla pared torácica aporta rigidez, elevando $P_{plat}$ aunque los pulmones intrínsecamente no estén\ntan mal (PEEP a veces ayuda). Esto es un nivel de detalle avanzado, pero importante al analizar por qué\nun Pplat está alto (pulmón vs pared vs ambos) 58 .\nRelaciones jerarquizadas de la ecuación: Podemos visualizar una jerarquía: la presión de vía aérea\ntotal es la suma final. Dentro de ella distinguimos la parte “útil” (elástica, que logra volumen alveolar) y\nla parte “perdida” en tuberías y bronquios (resistiva, que no ventila alveolo sino vence roce). La PEEP es\nun offset presente en todo el ciclo. Entonces se pueden agrupar términos: presión elástica es asociada\nal volumen alveolar (directamente ligada a intercambio gaseoso pero peligrosa si muy alta –\nvolutrauma), presión resistiva asociada al flujo (importante para entrega rápida pero puede disipar\nenergía como calor en las vías – irrelevante para intercambio gaseoso). De hecho, conceptualizaciones\nrecientes hablan de la energía o potencia entregada: combina las dos áreas bajo las curvas de presión-\nvolumen y presión-flujo a lo largo del tiempo. Sin profundizar en fórmulas complejas: el área bajo la\ncurva P-V es la energía elástica almacenada (y liberada en espiración), el área bajo la curva P-flujo es\nenergía resistiva disipada (no recuperable). La sumatoria por minuto es la potencia mecánica (Joules/\nmin) impartida, la cual correlaciona con daño pulmonar en estudios. Todo proviene de la ecuación. Así\nque en jerarquía: por un lado $P_{el}$ (asociado a volutrauma, atelectrauma si alveolos colapsan y se\nreabren), por otro $P_{res}$ (asociado a flujo turbulento, posiblemente más implicado en barotrauma\nproximal, pero en general menos crítico para daño alveolar distal). Este entendimiento jerárquico ha\nllevado a recomendaciones como: prefiere ventilación con flujo desacelerado en vez de flujo\ncuadrado muy alto, porque genera menos presión resistiva pico para mismo volumen (dado que\ndistribuye el flujo en el tiempo) 36 .\nTaxonomía relacionada: Vale mencionar cómo la ecuación encaja con la taxonomía de modos:\n- En modos controlados por volumen, el ventilador fija $V$ (y $\\dot V$ hasta cierto punto con la forma\nde flujo) en la ecuación, dejando que la presión total varíe según $E$ y $R$ del paciente 59 . Es decir,\ngarantiza el término $E \\cdot V$ deseado independientemente de qué presión resulte. Por eso, si\n$E_{rs}$ sube de repente (pulmón se vuelve más rígido), $P_{aw}$ sube notoriamente porque $E \\cdot\nV$ aumentó, ya que $V$ es obligado. En cambio,\n- En modos controlados por presión, el ventilador fija $P_{aw}$ máxima; en la ecuación, entonces\ndelimita la suma $(E \\cdot V + R \\cdot \\dot V + PEEP)$ a no exceder cierto valor. Eso significa que si $E$\ncambia o $R$ cambia, el volumen $V$ resultante cambiará (porque la máquina ajustará flujo para\nmantener P constante pero alveolos tomarán más/menos volumen hasta que $P_{el}$ y $P_{res}$\nllenen ese cupo) 60 . Por ejemplo, si de pronto $C$ mejora (pulmones se ablandan, $E$ baja), a la\nmisma presión de control entrará más volumen (lo notará uno en la pantalla: Vt entregado subió). Al\nrevés, si $C$ empeora, Vt cae.\n- Existen modos llamados “de doble control” (ej. PRVC – Pressure Regulated Volume Control, o VC+ en\nalgunos ventiladores) que básicamente usan la ecuación de forma adaptativa: el ventilador calcula la\n$C_{rs}$ del paciente con un aliento de prueba y luego ajusta la presión meta en cada ciclo para\n18\n\nintentar lograr un cierto $V$ objetivo con la menor presión necesaria, adaptándose si cambian $E$ o\n$R$. Es la ecuación implementada en lazo cerrado.\nAsí, la ecuación es tan central que cada modo ventilatorio se puede describir en términos de qué\nvariable mantiene constante/controlada y cuáles deja variar en la ecuación.\nDimensión mecánica\n¿Cómo usar la ecuación en la práctica clínica? Normalmente, cuando un paciente está conectado al\nventilador, no estamos resolviendo la ecuación con lápiz y papel en cada momento. Pero mentalmente,\nvamos haciendo simplificaciones de ésta para obtener información. Por ejemplo, tras establecer un\nvolumen corriente y ver la presión meseta, calculamos complianza: $C = V_t/(P_{plat}-PEEP)$ 56 . Eso\nnos dice mecánicamente cuán distensible es el sistema. Si al ingreso de UCI el paciente SDRA tenía $C =\n30$ mL/cmH2O y tras 3 días de tratamiento ahora es $C = 45$ mL/cmH2O, es una mejora notable en\nmecánica (tal vez consolidaciones se resolvieron). Igualmente, calculamos resistencia: $R = (P_{pico}-\nP_{plat})/\\dot V$ 11 . Si un asmático crítico inicialmente tenía $R = 25$ cmH2O/L/s y tras\nbroncodilatadores bajó a 15, objetivamos la respuesta. Así que mecánicamente, la ecuación nos\nprovee fórmulas de cálculo para parámetros clave de monitorización. Los ventiladores actuales\nmuchas veces calculan y muestran $C_{est}$ y $R_{aw}$ en pantalla, pero es crucial saber de dónde\nsalen para confiar (o identificar errores si la medición fue imprecisa).\nManiobras prácticas relacionadas:\n- La pausa inspiratoria (inspiratory hold) es una maniobra justamente para aplicar la ecuación en su\nmodo estático puro: se interrumpe el flujo al final de la inspiración, así $P_{aw}$ decae del pico a la\nmeseta y en ese plateau sabemos que $P_{aw} = P_{el} + PEEP$ (ya que $R \\cdot \\dot V = 0$ al no haber\nflujo) 29 . Así obtenemos $P_{el}$ y calculamos $C$. Esta maniobra es útil para distinguir causas de\nhipertensión: si $P_{pico}$ es alto pero $P_{plat}$ normal, sabemos que era resistivo; si $P_{plat}$\ntambién está alto, es un componente estático (compliance mala, autoPEEP) la causa.\n- La pausa espiratoria (expiratory hold) es para medir auto-PEEP: al final de la espiración se cierra la\nválvula espiratoria un instante; si la presión base se eleva por encima de la PEEP set, esa es la presión\natrapada alveolar. Esto cuantifica $PEEP_{intrínseca}$. Y nuevamente, de la ecuación: en final de\nespiración, $V$ no es cero (queda volumen atrapado) y/o el flujo no llegó a cero antes de la siguiente\ninspiración. La pausa forzada permite que ese flujo remanente llegue a cero y eleva Paw hasta alveolar.\nEs un uso práctico para ajustar luego el ventilador: por ejemplo, si auto-PEEP es 8 cmH2O y el paciente\nno puede trigger inspiraciones, uno podría subir PEEP externa de 5 a digamos 7 para “compensar”\nparte y aliviar el esfuerzo del paciente 12 .\n- Ventilación en asma/EPOC: Usemos un caso: paciente con EPOC exacerbado, en ventilación volumen\ncontrol 500 mL, flujo inspiratorio 60 L/min (1 L/s), PEEP 5. Observamos Ppico 40, Pplat 25. A ver:\nResistiva = Ppico - Pplat = 15 cmH2O; como flujo era 1 L/s, $R = 15/1 = 15$ cmH2O/L/s (elevada, normal\nintubado quizás 8). Compliance: $C = 0.5 L / (25-5) = 0.5/20 = 0.025 L/cmH2O = 25$ mL/cmH2O (baja).\nEntonces este paciente tiene ambos problemas: resistencias aumentadas (broncoobstrucción) y\ncompliance baja (pulmón probablemente con atrapamiento crónico, o edema). La ecuación nos dio\nnúmeros. ¿Qué haríamos? A nivel ventilador: quizá reducir volumen o flujo para bajar Ppico (pero\ncuidado, reducir flujo prolonga I y puede aumentar autoPEEP en EPOC; es un balance), subir tiempo\nespiratorio para manejar autoPEEP, etc. A nivel tratamiento: broncodilatadores (para R), corticoides, etc.,\nademás de ventilación protectora. La ecuación nos permite cuantificar la aportación de cada factor. Tras\ntratarlo, medimos de nuevo: Ppico 30, Pplat 20 con mismos settings; R = 10, C = 33 mL/cmH2O – mejora.\nCausa-efecto via ecuación: Tomemos el efecto de cambiar un parámetro en el ventilador: si aumento\nel flujo inspiratorio en volumen-control (es decir, entrego el volumen más rápido), ¿qué pasa con las\npresiones? Ecuación: $P_{\\text{resistiva}} = R \\cdot \\dot V$ subirá proporcionalmente, así que Ppico\n19\n\n---\n\n### Chequeo rápido\n- ¿Qué concepto nuevo te quedó más claro en estas páginas?\n- Escribe 1 ejemplo clínico donde esta información cambie una decisión ventilatoria.\n"
+      }
+    },
+    {
+      "id": "m2-p20-21",
+      "order": 5,
+      "type": "theory",
+      "title": "Parte 4: lectura guiada (págs. 20–21)",
+      "content": {
+        "markdown": "## Lectura guiada (páginas 20–21)\n\n> **Tip:** Lee primero los subtítulos y busca palabras clave (PEEP, Pplat, C, R, trigger, etc.).\n\nsubirá. $P_{elástica}$ depende del volumen y compliance, no cambia por flujo. Entonces Pplat debería\npermanecer igual (porque mismo volumen, mismo pulmón), pero Ppico se eleva por la resistencia. Esto\nlo vemos en práctica: a veces se baja el flujo voluntariamente (aceptando I más larga) para reducir Ppico\n– útil en algunos casos de gran resistencia. Sin embargo, cuidado: si extiendo demasiado la I, robas\ntiempo a la espiración y puedes inducir autoPEEP, lo que a la larga también se suma a presión total en\nsiguiente ciclo. Entonces siempre es un equilibrio. Otro ejemplo: si coloco un filtro o humidificador\nmuy denso en el circuito, aumentará la resistencia externa; esperamos entonces que Ppico suba\npara el mismo volumen/flujo. De hecho, la ecuación predice que hasta un tubo endotraqueal más\nestrecho (por ejemplo en un pediátrico) hace la resistencia mayor – en esos pacientes es normal ver\nPpicos altitos comparado con los plateaus, pero no necesariamente daño alveolar, es resistencia de la\nvía artificial.\nComparativas cuantitativas: Comparando un pulmón con SDRA vs un pulmón con crisis asmática:\n- En SDRA grave: compliance muy baja (imaginemos 20 mL/cmH2O), pero resistencia normal (10 cmH2O/\nL/s). Con un Vt de 0.4 L y flujo 0.5 L/s, calculemos: $P_{el} = V/C = 400 mL/20 = 20 cmH2O$. $P_{res} = R\n\\cdot \\dot V = 10 * 0.5 = 5 cmH2O$. PEEP digamos 10 cmH2O. Entonces Ppico = 20 + 5 + 10 = 35 cmH2O,\nPplat ~ 30 (20+10). Diagnóstico: alta presión principalmente por elastancia, alveolos muy rígidos ->\nriesgo volutrauma. Conducta: Vt bajo, permitir CO2 alto (hipercapnia permisiva) para no subir Pplat más\nde 30, quizás pronar.\n- En Asma severa: compliance normal o alta (digamos 50 mL/cmH2O, pulmones son sanos\nalveolarmente), pero resistencia altísima (ej. 50 cmH2O/L/s). Vt 0.4 L, flujo para ventilar podría ser más\nbajo para tolerar: supongamos 0.3 L/s (18 L/min) porque se da mucho tiempo espiratorio. $P_{el} =\n400/50 = 8 cmH2O$. $P_{res} = 50*0.3 = 15 cmH2O$. PEEP baja, 5 (y tal vez autoPEEP existirá). Ppico ~\n8+15+5 = 28 cmH2O, Pplat ~ 13. Aquí Ppico modesto pero la diferencia Ppico-plat grande (15),\nconfirmando resistencia brutal. Aun así alveolos se inflan con solo 13 cmH2O de plateau (lo alveolar no\nestá mal). El peligro acá es autoPEEP y barotrauma por atrapamiento: el plateau bajo engaña, podría\npensarse “bien, no hay riesgo volutrauma”, pero si no se dejó espirar, la presión alveolar final real puede\nser mucho más alta que 5 (PEEP tot maybe 15), causando distensión dinámica. La ecuación es un\nmomento “foto” por ciclo, pero hay que aplicarla también a lo que pasa en espiración. Con R tan alta, la\nconstante de tiempo es grande, el vaciado incompleto genera $P_{PEEPint}$. Con pausa espiratoria\nmidamos por ejemplo, se detecta autoPEEP de 10. Entonces alveolos en inspiración arrancan ya desde\n10 en vez de 5. Habría que ajustar - la ecuación sugiere: bajar frecuencia, bajar I/E, tolerar menos\nventilación minuto para evitar ese PEEP intrínseco excesivo.\nFlujos dentro del ventilador: Mecánicamente, un ventilador de cuidados intensivos hoy controla todo\nesto con válvulas proporcionales muy precisas. Si decimos queremos una presión tal, la válvula\ninspiratoria modulada por un servocontrol va abriéndose/cerrándose para lograrlo. Internamente corre\nun algoritmo que calcula flujo necesario según la diferencia entre presión medida y deseada (control\ntipo PID). Por ello, cuando graficamos las variables, la ecuación del movimiento se refleja en las curvas:\nen un volumen control, la presión sube linealmente (en un pulmón lineal ideal) porque $P_{el}$ sube\nproporcional a $V$ (que crece lineal con tiempo durante flujo constante) y $P_{res}$ es constante (flujo\nfijo), sumando da una rampa de presión ascendente. En presión control, la presión es horizontal (por\ndefinición), y el flujo baja exponencial porque la diferencia entre presión vent y presión pulmón se\nreduce conforme alveolos se llenan (menor gradiente, menor flujo). De hecho, esa relación decaimiento\nexponencial del flujo tiene como constante de tiempo $R \\cdot C$: alta R o C -> flujo decae lento (a\nveces no llega a cero al final de I, significa alveolos no han completado llenado según su tau). Esto es\nvisible en la gráfica de flujo en PCV: si al final de la inspiración aún queda un flujo no cero significativo,\nindica que tal vez la Ti es corta comparada con la constante de tiempo (tal vez deberíamos aumentar Ti\npara mejores volúmenes). La ecuación nos guía incluso en eso: calcula tau, compáralo con Ti.\n20\n\nEjemplo de cálculo aplicado: Un residente recibe la tarea: “Paciente con C=40 mL/cmH2O, R=12\ncmH2O/L/s, PEEP 8. ¿Qué presión meseta y pico esperas si ventilamos con Vt 0.5 L y flujo 0.8 L/s (48 L/\nmin)?” Responde: $P_{el} = 500/40 = 12.5 cmH2O$. $P_{res} = 12 * 0.8 = 9.6 cmH2O$. PEEP=8. Entonces\n$P_{plat} \\approx 12.5+8 = 20.5$ (~21) y $P_{pico} \\approx 21 + 9.6 = 30.6$ (~31 cmH2O). Efectivamente,\nen la realidad veríamos ~31 de pico, plateau ~21. Es una predicción. Si el ventilador muestra números\nmuy distintos, entonces algo no cuadra con los supuestos: por ejemplo, si el plateau real es 30, mucho\nmayor a calculado, quizás C era peor de lo pensado (el paciente tiene edema pulmonar no\ncontemplado). Este tipo de estimación mental la hace uno a veces al cambiar un parámetro: “voy a subir\nPEEP de 8 a 12, eso sumará 4 cmH2O a todas las presiones alveolares; espero que Pplat suba de 21 a\n~25 si no cambia compliance en ese rango. Lo haré y veré.” Si Pplat sube mucho más (ej a 30), quizá\nindica sobredistensión (la compliance se redujo al recrutar alveolos rígidos o ya está entrando en zona\nsobredistensión).\nDimensión práctica y crítica\nEjemplos clínicos prácticos usando la ecuación:\n- Caso 1: Distress respiratorio con pulmón “rígido”: Paciente con neumonía bilateral (SDRA\nmoderado). Ventilador en A/C volumen, Vt 360 mL (6 mL/kg), PEEP 10, flujo moderado. Registro: Ppico\n32, Pplat 28 cmH2O. Aplicando ecuación: $P_{res}=4$, $P_{el}=18$ (28-10 PEEP), compliance = 360/18 =\n20 mL/cmH2O. Resistencias en realidad 4/ (flujo L/s). Quizá flujo fue 60 L/min (1 L/s), entonces R = 4\ncmH2O/L/s (normalísima, no hay broncoespasmo). Conclusión: El problema es la distensibilidad (C muy\nbaja). Por tanto: esto es pura “ARDS”. Manejo: mantengo estrategia protectora, quizá aumento PEEP\npara reclutar alveolos si hay potencial (aunque Pplat subirá un poco), monitorizo driving pressure\n(28-10=18, un poco alta; intentar disminuir Vt a 5 ml/kg o subir PEEP 2 cm para ver si driving baja por\nreclutamiento). Este ejemplo muestra cómo la ecuación nos hizo foco en compliance vs resistance.\n- Caso 2: Asma con auto-PEEP: Paciente asmático intubado, modo control. Notamos que en el\nventilador: flujo espiratorio no llega a cero antes de la próxima inhalación, y la presión base no vuelve a\n5 sino se mantiene algo elevada. Medimos auto-PEEP: 8 cmH2O. Ppico 28, Pplat 15 en las últimas\nrespiraciones. La ecuación para la inspiración: $P_{el}=15-5=10$ cmH2O (distensión alveolar ok),\n$P_{res}=28-15=13$ (resistiva alta, confirmando asma severo), auto-PEEP 3 (ya que PEEP tot 8, PEEP set\n5). Este auto-PEEP significa que al iniciar inspiración el ventilador cree alveolos en 5, pero en realidad\nparten de 8; por eso el paciente triggereará difícil si quiere respirar. Solución: Redujimos frecuencia\nrespiratoria para dar más tiempo espiratorio, y disminuir Vt si posible (menos volumen = menos tiempo\npara exhalar). Efecto: tras unos minutos, auto-PEEP bajó a 4, Ppico a 25, Pplat 13. Resistencias siguen\naltas pero ya con menos atrapamiento. La ecuación en la práctica sirvió para guiar “necesita más\ntiempo, porque su tau RC es grande; no terminé de exhalar = autoPEEP”.\n- Caso 3: Desconexión accidental del circuito: De repente, suena alarma de presión baja, volúmenes\ncaen a cero. ¿Qué dice la ecuación? Si hay fuga masiva (circuito desconectado), la presión no se puede\ngenerar: Paw ~ 0 porque cualquier intento de presurizar se escapa. Es obvio, pero esta situación ilustra\nque $P_{aw}$ refleja integridad del sistema: un valor anormalmente bajo sugiere desconexión o fuga\ngrande. La acción es reconectar inmediatamente, ventilar manual si hace falta. Aquí la ecuación no la\nusamos aritméticamente, sino cualitativamente: sin circuito no hay presión alveolar que subir, entonces\nno se ventila. - Caso 4: Ventilador en modo PCV, paciente recuperando conciencia: Imaginemos que\nestá en Presión Control 15 cmH2O sobre PEEP 5. Observamos que en los últimos 2 ciclos la presión en\nvía aérea no está alcanzando 15 sino se queda en 12 momentáneamente al inicio, con forma de\n“tironeo”. Esto suele indicar que el paciente está haciendo esfuerzo inspiratorio sin contrarrestar (Pmus\nnegativo), bajando la presión medida (ventilador detecta 15, pero paciente succiona y la presión neta\nalveolar sube más lento). En la ecuación: $P_{vent}+P_{mus}=E V + R \\dot V + PEEP$. Si Pmus es\nsignificativa y negativa, Pvent fijo puede no lograr la presión diana al principio. Este detalle nos dice: el\npaciente está intentando respirar más fuertemente que la máquina, tal vez está listo para un modo\nespontáneo o hay que ajustar sensibilidad. Lo resolvemos cambiando a modo ASISTIDO (PS) o\n21\n\n---\n\n### Chequeo rápido\n- ¿Qué concepto nuevo te quedó más claro en estas páginas?\n- Escribe 1 ejemplo clínico donde esta información cambie una decisión ventilatoria.\n"
+      }
+    },
+    {
+      "id": "m2-p22-23",
+      "order": 6,
+      "type": "theory",
+      "title": "Parte 5: lectura guiada (págs. 22–23)",
+      "content": {
+        "markdown": "## Lectura guiada (páginas 22–23)\n\n> **Tip:** Lee primero los subtítulos y busca palabras clave (PEEP, Pplat, C, R, trigger, etc.).\n\naumentando flujo (en PCV, algunos ventiladores permiten ajustar rise time).\n- Caso 5: Predicción de cambio de parámetros: Un escenario: paciente con Pplat 25 con Vt 500. El jefe\ndice “bajemos volumen a 400 para proteger más”. Podemos predecir: Pplat nueva = PEEP + (400/\ncomplianza). Si la complianza era digamos 50 ml/cmH2O (asumible por 500/(25-PEEP10)=33 ml/cmH2O –\neste no coincide, rehagamos: Pplat25-PEEP10=15 elástica, Vt=0.5 L -> C=33 ml/cmh2o), entonces con Vt\n0.4 L, presión elástica = 400/33=12.1, Pplat nueva=12.1+10=22.1. Efecto de baja Vt: Pplat bajará ~3\ncmH2O. Driving pressure de 15 a ~12. Buen plan. Efectivamente tras ajustar, medimos Pplat ~22. Eso\ntranquiliza al equipo de que el pulmón está más protegido. La predicción concuerda. Este tipo de\nanálisis mental es valioso.\nContraejemplos (mal uso de la ecuación): Un contraejemplo sería aplicar la ecuación sin tener en\ncuenta sus supuestos. Por ejemplo, un médico novel podría calcular compliance en un paciente\nevidentemente activo (agitado) usando Pplat medido, sin darse cuenta que el paciente hizo esfuerzo\ndurante la pausa. Esa Pplat estaría subestimada (porque paciente succionó un poco), resultando en\ncompliance calculada falsamente alta. Esto llevó a errores de interpretación (“oh, su pulmón está muy\ncomplaciente, no es SDRA” cuando sí lo era). Entonces, la ecuación es válida rigurosamente solo en\ncondiciones controladas: paciente pasivo para medir estática, o hay que descontar Pmus si está\npresente (lo cual requiere catéter esofágico idealmente). En ausencia de medición de Pmus, uno debe\nser crítico: ¿el paciente está relajado? Si no, los cálculos no son fiables.\nOtro error es suponer que la ecuación siempre es lineal; en realidad, a volúmenes muy altos, el pulmón\nse vuelve menos complaciente (complianza variable), y las vías aéreas pueden tener resistencia flujo-\ndependiente (turbulencia) e incluso resistencia cambiante con volumen (calibre bronquial mayor al\ninspirar). La ecuación estándar asume linealidad de R y C, lo cual es aproximado en rangos clínicos\nnormales. Pero si uno lleva al pulmón a extremos, esa linealidad falla (ej: alveolos sobredistendidos\naumentan elastancia en fin de inspiración, la curva P-V se aplana). Por eso, en la vida real la curva\npresión-volumen no es perfectamente lineal: tiene concavidades. La ecuación lineal es un modelo\nsimplificado. En pacientes con SDRA, hay reclutamiento alveolar con PEEP – compliance mejora tramo a\ntramo, no es constante. Sin embargo, como primera aproximación, nos sirve, solo sabiendo que hay\nmatices.\nEdge cases y limitaciones:\n- Ventilación de alta frecuencia oscilatoria (HFOV): Este es un edge case donde la ecuación\nconvencional se complica. En HFOV se usan frecuencias de 5 Hz o más (300 rpm), donde ya la inercia no\nes despreciable. El componente inercial hay que considerarlo (presión inercial = masa * aceleración de\nflujo). Además, el flujo y presión oscilan sinusoidalmente. La ecuación se vuelve más compleja (términos\narmónicos, impedancia). En esos casos, la ecuación del movimiento se amplía a conceptos de\nimpedancia respiratoria. Afortunadamente, eso no es rutina en ventilación convencional, pero es bueno\nsaber que la fórmula clásica es una simplificación para ventilación “lenta” comparada a RC del pulmón.\n- Ecuación en ventilación no lineal: por ejemplo, pacientes con PEEP intrínseca enorme – la relación\nflujo-presión a veces no es lineal (por colapso bronquial al espirar, etc.). O tubo ETT con flujo turbulento\n– la resistencia efectiva sube con el flujo (no constante). La ecuación se puede ajustar introduciendo\ntérminos cuadráticos de flujo (para turbulencia) o funciones de volumen para compliance variable. Pero\nesos refinamientos raramente los necesitamos en clínica; se intuyen: “a altísimos flujos, la resistencia\nefectiva es mayor de la calculada linealmente, así que Ppico podría ser más alta de lo predicho”.\n- Asincronías complejas: En esfuerzo inspiratorio vigoroso, la ecuación lineal como la medimos (vía\npresión en vía aérea) se ve alterada: el paciente crea presión negativa pleural, que no se lee en Paw más\nque como una deformación. En tales casos, sin catéter esofágico es difícil cuantificar Pmus; sin\nembargo, la ecuación conceptual nos indica que esa Pmus negativa está supliendo parte de la presión.\nConsecuencia: un paciente que está respirando por sí en A/C volumen puede tener Pplat aparente\nnormal, pero sus músculos aportaron parte, sufriendo esfuerzo. Este es patient self-inflicted lung injury\n22\n\n(P-SILI): cuando un paciente inspira muy fuertemente, puede generar grandes gradientes\ntranspulmonares y lesionarse su pulmón incluso con ventilador en parámetros “seguros”. La ecuación\nnos advierte: $P_{mus}$ no es inocuo, cuenta en la sumatoria total. Un edge case es un paciente con\ndrive altísimo (p. ej. hipercápnico, estimulando respiración): si no se controla, su esfuerzo sumado al\nventilador da una presión transpulmonar excesiva -> daño. Solución en práctica: sedarlo más o\ncontrolar, aunque se pierda ventilación espontánea, para proteger.\n- Limitación en monitores simples: Algunos ventiladores de transporte o anestesia antiguos no\nmedían Pplat, dificultando la aplicación de la ecuación completa. Se podía solo ver Ppico. En esos casos,\nuno asumía ciertas cosas o hacía breves oclusiones manuales. Hoy la mayoría permite al menos Pplat.\nAun así, hay entornos (pre-hospitalario) donde uno ventila manualmente con ambú – no hay forma\ndirecta de “ver” la ecuación, se requiere intuición: vigilar excursión torácica (volumen), sentir\ncompliancia con la mano, etc. La ecuación mentalmente nos acompaña: “está muy rígido, me cuesta\ncomprimir el ambú, no quiero forzar de más -> riesgo barotrauma”.\n“Prueba de fuego” con la ecuación:\n1) Cálculo rápido: Estás ventilando a un paciente con VCV (volumen control) 500 mL, frecuencia 16, flujo\ninspiratorio 50 L/min (0.833 L/s), PEEP 8. Notas: Ppico 40, Pplat 30. Pregunta: ¿Cuáles son la complianza\nestática y resistencia? ¿El problema principal es resistivo o elástico? – Solución: Compliance = 0.5 L /\n(30-8) = 0.5/22 = 0.0227 L/cmH2O (22.7 mL/cmH2O, muy baja). Resistencia = (40-30)/0.833 = 10/0.833 = 12\ncmH2O/L/s (algo alta normal tirando a leve ↑). Problema principal: elástico (compliance mala). –\nInterpretación: Pulmón con SDRA o edema severo.\n2) Ajuste ventilatorio: Mismo paciente, decides bajar Vt a 350 mL para protección. ¿Qué Pplat nueva\nesperas? – Compliance la misma (asumimos lineal): Pplat’ = PEEP + (0.35/C) = 8 + (0.35/0.0227) = 8 + 15.4\n= ~23.4 cmH2O. Resistencias pueden cambiar ligeramente con menor flujo si ajustaste (volumen menor\nsuele venir con flujo menor si I:E constante). Ppico’ probablemente ~32-33. Efectivamente tras cambio:\nPplat midió 24, pico 34. Acorde. – Esto demuestra predicción acertada.\n3) Caso de asma: Paciente de 70 kg con asma conectado a ventilador: lo pones en ACV con Vt 420 mL, f\n14, pero ves autoPEEP 5 cmH2O, Ppico 34, Pplat 20. Decides prolongar espiración y bajar frecuencia a 10\n(hipercapnia permisiva). Tras eso: Ppico 28, Pplat 20, autoPEEP 2. ¡Bien! Pregunta: ¿Por qué Pplat no\ncambió pero Ppico sí bajó? – Respuesta: Pplat depende de volumen y compliance (no cambiaste Vt ni\ncompliance en este cambio, así que quedó 20). Ppico bajó porque al bajar flujo (menos frecuencia ->\nusualmente reducimos flujo pico) y al reducir autoPEEP inicial, la presión resistiva total disminuyó.\nResistencias quizás siguen altas pero con menos flujo y menos presión inicial alveolar, el pico global\nbajó. Esto muestra cómo la ecuación ayuda a razonar: tocar I:E afecta componente resistivo y PEEP\nintrínseca, pero no la elastancia intrínseca.\n4) Desafío conceptual: Si un paciente activa sus músculos inspiratorios durante ventilación controlada\npor volumen, ¿qué pasa con la presión medida y con cada componente? – Respuesta: Durante ese\nesfuerzo, $P_{mus}$ es negativo, así que en la ecuación $P_{vent} + (-|Pmus|) = E V + R \\dot V + PEEP$.\nDado que $P_{vent}$ es fijo (el ventilador no sabe de esfuerzo, sigue entregando flujo), la presión\nalveolar resultante será menor de lo esperado momentáneamente. En la práctica, la curva de presión\nmuestra un “diente” o caída al inicio de la inspiración. El ventilador podría incluso interpretar que el\npaciente disparó (si es Asistido/Controlado) y cambiar poco el patrón. Los componentes: $P_{res}$ en la\nvía aérea se reduce porque el flujo generado por el ventilador en parte va a satisfacer el vacío creado\npor el paciente; $P_{el}$ se genera más rápido (porque el paciente está chupando, alveolos expanden\nun poco más rápido); pero la presión total $P_{aw}$ baja. Esto es signo de asincronía llamada “esfuerzo\nno reconocido” o esfuerzo durante ciclado.\n23\n\n---\n\n### Chequeo rápido\n- ¿Qué concepto nuevo te quedó más claro en estas páginas?\n- Escribe 1 ejemplo clínico donde esta información cambie una decisión ventilatoria.\n"
+      }
+    },
+    {
+      "id": "m2-p24-25",
+      "order": 7,
+      "type": "theory",
+      "title": "Parte 6: lectura guiada (págs. 24–25)",
+      "content": {
+        "markdown": "## Lectura guiada (páginas 24–25)\n\n> **Tip:** Lee primero los subtítulos y busca palabras clave (PEEP, Pplat, C, R, trigger, etc.).\n\n5) Tricky: Tenemos dos pacientes con Ppico 30, Pplat 20, PEEP 5. Uno tiene resistencia alta, el otro\nnormal. ¿Cómo los distingues? – Con la ecuación: Resistencias se calculan = (30-20)/flujo. Si flujo del\nventilador era 60 L/min (1 L/s) en ambos: R = 10 cmH2O/L/s. Eso está un poco elevado, pero no extremo\n– sugiere moderada obstrucción. Sin embargo, podría ser normal con un tubo pequeño. Para distinguir\npacientes: Miras la forma de la curva de flujo espiratorio. Si resistencia es alta (asma/EPOC), el flujo\nespiratorio decaerá lentamente y podría haber autoPEEP. En uno de ellos quizás ves flujo caer a cero\nantes de la mitad de espiración (resistencia normal, expiró rápido), en otro ves que al final de expiración\nsigue fluyendo y queda atrapamiento (R alta). Así complementas la ecuación con la gráfica. La ecuación\npor sí sola con un solo número no siempre identifica todo; hay que integrar la información.\nErrores comunes al aplicar ecuación (metacognitivos): Un error es usar valores incorrectos: por\nejemplo, calcular C usando Ppico en vez de Pplat – da un valor falso bajo. He visto alumnos\nconfundirlos; por eso recalcar: compliance estática con Pplat, compliance dinámica a veces se define\ncon Ppico (pero incluye resistencia), lo cual no es una medida pura. Otro error: confundir unidades –\nasegurarse de convertir mL a L, etc., en cálculos. Y un error conceptual: creer que manteniendo Pplat\nbaja se está totalmente a salvo, sin notar que si el paciente es activo Pplat baja no garantiza baja\npresión transpulmonar. Esto se mencionó con P-SILI.\nEn conclusión, la práctica en UCI cotidianamente valida la utilidad de la ecuación del movimiento. Es\ncomo tener “rayos X” conceptuales para ver dentro del sistema paciente-ventilador: nos dice si el\n“armazón” (complianza) está rígido, si las “tuberías” (bronquios/tubo) están estrechas, cuánta presión\nqueda atrapada al final, etc. Dominarla nos hace más seguros ajustando la ventilación, resolviendo\nproblemas y explicando a colegas lo que ocurre. Por eso es nuestro “Santo Grial” del conocimiento\nventilatorio.\nDimensión metacognitiva\nErrores de concepto a vigilar:\n- Pensar que la ecuación es “demasiado matemática” y no usarla: A veces los estudiantes huyen de\nfórmulas. Un error es confiar solo en la intuición sin cuantificar nada. Ejemplo: “Siento que está duro el\npulmón” vs. medir complianza exactamente. La ecuación brinda datos objetivos; ignorarla puede llevar\na no detectar problemas sutiles (ej., una caída de compliance de 45 a 35 mL/cmH2O puede no ser obvia\na simple vista pero indica edema incipiente). Hay que fomentar traducir observaciones en números con\nla ecuación. - Usar la ecuación sin tener condiciones adecuadas: Como se dijo, calcular compliance con\npaciente haciendo fuerza es error. O calcular resistencia con un flujo variable no es exacto (en PCV, el\nflujo pico ocurre al inicio, la diferencia Ppico-plat hay que tomarla con referencia de ese flujo inicial, no\nes tan trivial). Entonces, conocer las limitaciones: preferible medir R en volumen control con flujo\nconstante; en PC, uno puede estimarla sabiendo la forma de onda, pero es más complejo. - Confundir\ntérminos: Common error: referirse a $P_{plat}$ como “presión estática” y $P_{pico}$ como “presión\ndinámica”, y pensar que son separadas en el tiempo (cuando en realidad Pplat ocurre después de Ppico\nen el mismo ciclo). O confundir PEEP con auto-PEEP. La ecuación ayuda a clarificar: PEEP es un sumando\nconstante; auto-PEEP es parte de ese sumando pero oculto si no se mide. - Olvidar unidades:\nResistencias van en cmH2O por L/s, compliance en mL por cmH2O. A veces uno puede sacar un valor\nilógico por no convertir: e.g., usar Vt 500 sin pasar a 0.5 L, resulta C = 500/(15) = 33 (suena bien en mL/\ncmH2O, pero creía que era L/cmH2O y asustarse “33 es bajísima!”, cuando en L sería 0.033 L/cmH2O, o 33\nmL/cmH2O en unidades correctas).\nTécnica Feynman (explicar en sencillo la ecuación): “Para que alguien pueda respirar, tenemos que\ninflar sus pulmones con aire, ¿verdad? Bueno, imagina que para inflar un globo necesitas dos esfuerzos:\nprimero, empujar el aire a través de un tubito angosto (eso cuesta algo de fuerza por la fricción en el\ntubito), y segundo, estirar la goma del globo para que se llene (eso también cuesta fuerza porque la\n24\n\ngoma se opone). Lo mismo pasa en tus pulmones: tienes tubitos (bronquios, tráquea) que ofrecen\nresistencia al paso del aire, y tienes alveolos que son elásticaos y hay que estirarlos para meter aire.\nEntonces, la presión que usamos para ventilarte se gasta en dos cosas: empujar aire por las vías y\nexpandir los pulmones. Si hay además una válvula que mantiene algo de presión al final (PEEP, para que\nno se desinflen del todo entre respiraciones), eso suma un poco de presión constante. En resumen, la\npresión del ventilador = presión para mover aire + presión para inflar pulmones + presión residual que\ndejamos al final. Cuando vemos el ventilador diciendo ‘presión pico’, es la suma de todo en el momento\nde flujo máximo; cuando hacemos una pausa y vemos ‘presión meseta’, es la presión solo de haber\ninflado el pulmón (porque sin flujo, ya no hay resistencia). Con esas dos podemos calcular cuánto de la\npresión era por la vía (diferencia pico-meseta) y cuánto por distender el pulmón (meseta-PEEP). Es\nexactamente lo que hacemos: medir cuán rígido está el pulmón o cuán obstruida está la vía, para tratar\nlo que corresponda.”\nPreguntas para Chequear comprensión (y sus respuestas esperadas):\n• ¿Qué componentes de la presión contribuyen a la “presión pico” en ventilación mecánica? – Todos:\nresistivo + elástico + PEEP. Es la presión total necesaria para mover el aire.\n• ¿Por qué la presión de meseta es igual a la presión elástica más PEEP y no incluye la resistiva? –\nPorque la meseta se mide cuando el flujo es cero, por lo tanto no hay caída de presión resistiva\n(R·0 = 0) 29 . Representa el equilibrio estático: solo queda la presión necesaria para mantener el\nvolumen inflando el pulmón, sobre la línea de base (PEEP).\n• Si al paciente se le acumulan secreciones en el tubo y bronquios, aumentando la resistencia, ¿qué\nvariables de la ecuación cambiarán y cómo lo observaríamos? – Aumenta $R_{aw}$, por tanto para\nel mismo flujo $\\dot V$ habrá mayor presión resistiva. Observaremos una elevación de la\npresión pico, mientras que la presión meseta idealmente no cambia (los pulmones alveolares\nsiguen iguales) 11 . Por ejemplo Ppico sube de 25 a 35, Pplat queda 18; la diferencia pico-plat\naumentó.\n• Un paciente con PEEP 5 tiene auto-PEEP de 5 cmH2O adicionales. ¿Cómo afectará eso la próxima\ninspiración en términos de presión requerida? – Efectivamente el ventilador comienza la nueva\ninspiración con alveolos ya a 5 cmH2O en vez de 0. Entonces, para generar flujo, primero debe\nsobrepasar esos 5 adicionales. Es como si la PEEP total fuera 10. Entonces la presión de vía aérea\ndurante la inspiración inicial tendrá que subir más simplemente para mover el aire. Notaremos\nque si auto-PEEP no se compensó, el paciente tal vez tiene dificultad para gatillar (debe vencer\nesos 5 extra) y la presión pico podría reflejarlo (en VC, Ppico puede subir algo; en PC, el volumen\nserá menor porque parte de la presión se “gastó” en vencer autoPEEP).\n• Si duplico el volumen corriente manteniendo igual la complianza, ¿qué le pasa a la presión de\nmeseta? ¿Y si duplico el flujo inspiratorio manteniendo igual la resistencia, qué le pasa a la presión\npico? – Duplicar volumen (C constante) duplicará la presión elástica; por tanto Pplat subirá\naproximadamente al doble de la diferencia anterior (por ej., de 15 a 30 cmH2O de driving,\nsumado a PEEP) 30 . Duplicar flujo (R constante) duplicará la caída de presión resistiva, por tanto\nla diferencia Ppico - Pplat aproximadamente se duplicará 36 . Esto asumiendo linealidad.\n• Explica con tus palabras por qué la ecuación del movimiento es relevante para evitar lesión pulmonar.\n– Porque nos indica la presión que realmente están sufriendo los alveolos (presión elástica) y la\nque es “extra” por dinámica de flujo. Sabemos que el riesgo de volutrauma está ligado a la\npresión de distensión alveolar (componentes elásticos) 51 , entonces manteniendo ese término\n25\n\n---\n\n### Chequeo rápido\n- ¿Qué concepto nuevo te quedó más claro en estas páginas?\n- Escribe 1 ejemplo clínico donde esta información cambie una decisión ventilatoria.\n"
+      }
+    },
+    {
+      "id": "m2-p26-27",
+      "order": 8,
+      "type": "theory",
+      "title": "Parte 7: lectura guiada (págs. 26–27)",
+      "content": {
+        "markdown": "## Lectura guiada (páginas 26–27)\n\n> **Tip:** Lee primero los subtítulos y busca palabras clave (PEEP, Pplat, C, R, trigger, etc.).\n\nbajo (Pplat moderada, driving pressure baja) protegemos el pulmón. La ecuación nos permite\nseparar ese componente del resto. Además, muestra que PEEP agrega una presión constante: si\nPEEP es muy alta puede sobredistender alveolos ya abiertos, pero si es muy baja alveolos\ncolapsados causan atelectrauma. En resumen, nos guía en ajustar volúmenes y PEEP para que\nlas presiones que importan se mantengan en rango seguro.\nCon todo esto, se espera que el estudiante no solo sepa recitar la ecuación, sino realmente usarla como\nherramienta mental: que vea números del ventilador y automáticamente analice “¿Esto me indica R alta\no C baja? ¿Qué cambió de ayer a hoy en este paciente?”. Cuando alcancen ese nivel, habrán obtenido el\n“Santo Grial” de comprender la ventilación mecánica desde sus fundamentos.\nReferencias:\n• Mancilla-Galindo, J., Mendiola-Villalobos, C., Carrión-Moya, J. D., et al. (2023). Aplicaciones clínicas\nde la ecuación del movimiento del sistema respiratorio para la toma de decisiones en el paciente bajo\nventilación mecánica invasiva. Iatreia, 36(1), 112-127. DOI: 10.17533/udea.iatreia.179 50 30\n• Pintado, M. C., de Pablo, R., & Trascasa, M. (2013). Monitorización de la mecánica respiratoria en el\npaciente ventilado. Medicina Intensiva, 37(3), 190-198. (Especialmente sección “Ecuación del\nmovimiento” p.193) 48 61\n• Tobin, M. J. (Ed.). (2013). Principles and Practice of Mechanical Ventilation (3rd ed.). McGraw-\nHill. (Cap. 4: Respiratory Mechanics, que discute la ecuación de movimiento detalladamente).\n• Marini, J. J., & Crooke, P. S. (1993). A general mathematical model for respiratory dynamics relevant\nto the clinical setting. Chest, 103(3), 990-1001. (Modelo que incluye componente inercial y no\nlineal, para interesados avanzados).\n• ARDS Network (2000). Ventilation with lower tidal volumes as compared with traditional tidal\nvolumes for acute lung injury and the acute respiratory distress syndrome. NEJM, 342(18),\n1301-1308. (Demostró beneficio de limitar presión de distensión, fundamentado en reducir\n$P_{el}$ en la ecuación) 37 .\n(Continuará con módulos 3 a 6...) 37 38\n26\n\n1 2 9 11 12 15 16 17 18 20 25 27 37 41 42 43 44 45 46 47 51 57 58 59 60 Generalidades\nsobre la ventilación mecánica - Cuidados críticos - Manual Merck versión para profesionales\nhttps://www.merckmanuals.com/es-us/professional/cuidados-cr%C3%ADticos/insuficiencia-respiratoria-y-ventilaci%C3%B3n-\nmec%C3%A1nica/generalidades-sobre-la-ventilaci%C3%B3n-mec%C3%A1nica\n3 5 6 7 10 Pulmón de acero - Wikipedia, la enciclopedia libre\nhttps://es.wikipedia.org/wiki/Pulm%C3%B3n_de_acero\n4 28 35 VENTILACION MECANICA \"CONFIGURACION DE PARAMETROS, MONITOREO Y ALARMAS\"\n\"TERAPIA RESPIRATORIA\" | PPTX\nhttps://es.slideshare.net/slideshow/ventilacion-mecanica-configuracion-de-parametros-monitoreo-y-alarmas-terapia-\nrespiratoria/250460018\n8 Ventilación mecánica: indicaciones, modalidades y programación y ...\nhttps://www.elsevier.es/es-revista-anales-pediatria-continuada-51-articulo-ventilacion-mecanica-indicaciones-modalidades-\nprogramacion-S1696281808755975\n13 14 21 22 23 24 26 34 medintensiva.org\nhttps://www.medintensiva.org/es-download-pdf-S0210569112003166\n19 29 32 33 48 53 54 55 56 61 Monitorización de la mecánica respiratoria en el paciente ventilado\n| Medicina Intensiva\nhttps://www.medintensiva.org/es-monitorizacion-mecanica-respiratoria-el-paciente-articulo-S021056911300212X\n30 31 50 52 Aplicaciones clínicas de la ecuación del movimiento del sistema respiratorio para la toma\nde decisiones en el paciente bajo ventilación mecánica invasiva: artículo de reflexión\nhttps://revistas.udea.edu.co/index.php/iatreia/article/download/350776/20808941/287671\n36 38 39 40 49 Ventilator Graphics Made Easy | RT\nhttps://respiratory-therapy.com/department-management/clinical/ventilator-graphics-made-easy/\n27\n\n---\n\n### Chequeo rápido\n- ¿Qué concepto nuevo te quedó más claro en estas páginas?\n- Escribe 1 ejemplo clínico donde esta información cambie una decisión ventilatoria.\n"
+      }
+    },
+    {
+      "id": "m2-case",
+      "order": 9,
+      "type": "case",
+      "title": "Caso clínico: integración y decisiones",
+      "content": {
+        "markdown": "## Caso clínico guiado\n\n**Objetivo:** aplicar lo aprendido para tomar 2–3 decisiones *consciente de los riesgos*.\n\n### Caso\nPaciente adulto con insuficiencia respiratoria aguda, intubado y conectado a ventilación mecánica. Presenta dificultad para sincronizar con el ventilador y alarmas frecuentes.\n\n### Preguntas\n1. ¿Qué **variable** crees que está desajustada (PEEP, VT, FR, trigger, flujo, Ti, ciclado)?\n2. ¿Qué dato del ventilador/monitor usarías primero (Ppico, Pplat, bucles, capnografía, ABG)?\n3. Propón **un ajuste inicial** y explica qué esperas ver en la gráfica o en las presiones.\n\n### Pistas\n- Si hay aumento de **Ppico** con **Pplat** estable, piensa en componente **resistivo**.\n- Si suben **Pplat** y **driving pressure**, piensa en componente **elástico** (compliance).\n- Si hay asincronía, revisa **trigger** y **ciclado** antes de “subir sedación”."
+      }
+    },
+    {
+      "id": "m2-summary",
+      "order": 10,
+      "type": "summary",
+      "title": "Cierre: resumen y checklist",
+      "content": {
+        "markdown": "## Resumen y chuleta del módulo\n\n### Checklist (lo mínimo que debes poder decir en voz alta)\n- Defino **cuál variable controla el ventilador** y cuál mide.\n- Distingo **presión resistiva** vs **presión elástica** en el ventilador.\n- Puedo explicar al menos 3 riesgos de una mala programación (VILI, asincronía, hemodinámica).\n\n### Si te atoras…\n- Vuelve a la **ecuación del movimiento** como “mapa mental”.\n- Mira siempre **pico vs meseta** y **driving pressure** antes de “subir todo”.\n- Usa las **curvas** como “electrocardiograma del ventilador”."
+      }
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Qué componentes incluye la ecuación del movimiento respiratorio?",
+        "¿Cómo distingo si una presión pico elevada es por resistencia o por compliance?",
+        "¿Cómo se calcula la compliance estática?",
+        "¿Qué es la driving pressure y por qué es importante?",
+        "¿Cuál es la diferencia entre presión pico y presión meseta?",
+        "¿Cómo uso la ecuación para ajustar el ventilador?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "ai_expand_notes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": ["intermediate", "advanced"],
+        "question_types": ["conceptual", "application", "clinical_case"],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [
+    {
+      "id": "exercise-calculate-compliance",
+      "type": "parameter_calculation",
+      "is_evaluation": false,
+      "title": "Calcular Compliance y Resistencia",
+      "instructions": "Usa los datos del paciente para calcular compliance estática y resistencia de vía aérea. El sistema te guiará paso a paso.",
+      "estimated_time": 7,
+      "content": {
+        "scenario": "Paciente en A/C volumen con: Vt = 500 mL, PEEP = 5 cmH₂O, Ppico = 30 cmH₂O, Pplat = 25 cmH₂O, Flujo inspiratorio = 60 L/min (1 L/s)",
+        "steps": [
+          {
+            "step": 1,
+            "question": "¿Cuál es la presión elástica (Pplat - PEEP)?",
+            "answer": "20",
+            "unit": "cmH₂O",
+            "formula": "P_elástica = Pplat - PEEP",
+            "explanation": "Restamos PEEP a Pplat para obtener la presión dedicada solo a expandir los pulmones."
+          },
+          {
+            "step": 2,
+            "question": "¿Cuál es la compliance estática (Vt / presión elástica)?",
+            "answer": "25",
+            "unit": "mL/cmH₂O",
+            "formula": "C = Vt / (Pplat - PEEP)",
+            "explanation": "Dividimos 500 mL entre 20 cmH₂O = 25 mL/cmH₂O. Una compliance normal es ~50-80 mL/cmH₂O, así que este paciente tiene compliance reducida."
+          },
+          {
+            "step": 3,
+            "question": "¿Cuál es la presión resistiva (Ppico - Pplat)?",
+            "answer": "5",
+            "unit": "cmH₂O",
+            "formula": "P_resistiva = Ppico - Pplat",
+            "explanation": "La diferencia entre pico y meseta nos da la presión consumida en vencer la resistencia."
+          },
+          {
+            "step": 4,
+            "question": "¿Cuál es la resistencia de vía aérea (P_resistiva / Flujo)?",
+            "answer": "5",
+            "unit": "cmH₂O/L/s",
+            "formula": "R = (Ppico - Pplat) / Flujo",
+            "explanation": "Dividimos 5 cmH₂O entre 1 L/s = 5 cmH₂O/L/s. Valor normal intubado ~5-12, así que está en rango normal."
+          }
+        ]
+      },
+      "hints": [
+        "Recuerda que Pplat se mide sin flujo (componente estático)",
+        "La diferencia Ppico-Pplat es el componente resistivo",
+        "Compliance normal es ~50-80 mL/cmH₂O en adultos",
+        "Resistencia normal intubado es ~5-12 cmH₂O/L/s"
+      ],
+      "feedback_on_complete": "¡Perfecto! Has usado correctamente la ecuación del movimiento para diagnosticar al paciente. Este tiene compliance baja (probable consolidación o SDRA) pero resistencias normales. Clínicamente, esto sugiere que el problema es en los alveolos (elastancia aumentada) y no en las vías aéreas.",
+      "learning_points": [
+        "La ecuación del movimiento permite separar componente elástico vs resistivo",
+        "Compliance baja indica pulmón rígido (SDRA, fibrosis, edema)",
+        "Resistencia alta indica obstrucción de vías (asma, secreciones, tubo doblado)",
+        "Usar Pplat es clave para distinguir ambos componentes"
+      ]
+    }
+  ],
+  "quiz": {
+    "id": "quiz-m2",
+    "passingScore": 6,
+    "questions": [
+      {
+        "id": "m2-q1",
+        "type": "multiple-choice",
+        "question": "En la ecuación del movimiento, el término resistivo está relacionado principalmente con:",
+        "options": [
+          "Compliance",
+          "Resistencia de la vía aérea y flujo",
+          "PEEP",
+          "Frecuencia solamente"
+        ],
+        "correctAnswer": "Resistencia de la vía aérea y flujo",
+        "explanation": "El término resistivo se asocia a R × flujo (V’) y refleja caída de presión por resistencias.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "m2-q2",
+        "type": "multiple-choice",
+        "question": "Si Ppico aumenta pero Pplat se mantiene, lo más probable es:",
+        "options": [
+          "Mayor elastancia (peor compliance)",
+          "Mayor resistencia/flujo (secreciones, broncoespasmo)",
+          "Aumento de PEEP",
+          "Fuga en circuito"
+        ],
+        "correctAnswer": "Mayor resistencia/flujo (secreciones, broncoespasmo)",
+        "explanation": "Ppico incluye resistivo; Pplat refleja elástico. Si solo sube pico, piensa resistivo.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "m2-q3",
+        "type": "multiple-choice",
+        "question": "La driving pressure (ΔP) se aproxima como:",
+        "options": [
+          "Ppico − PEEP",
+          "Pplat − PEEP",
+          "PEEP − FiO₂",
+          "VT / FR"
+        ],
+        "correctAnswer": "Pplat − PEEP",
+        "explanation": "ΔP ≈ Pplat − PEEP; se usa como marcador de estrés alveolar relativo.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "m2-q4",
+        "type": "multiple-choice",
+        "question": "Duplicar el flujo inspiratorio (R constante) tiende a:",
+        "options": [
+          "No cambiar Ppico",
+          "Aumentar la caída de presión resistiva y subir Ppico",
+          "Disminuir Pplat",
+          "Bajar PEEP"
+        ],
+        "correctAnswer": "Aumentar la caída de presión resistiva y subir Ppico",
+        "explanation": "Si R es constante, aumentar flujo aumenta el término resistivo y eleva Ppico.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "m2-q5",
+        "type": "multiple-choice",
+        "question": "¿Por qué la ecuación del movimiento ayuda a prevención de VILI?",
+        "options": [
+          "Porque elimina el barotrauma",
+          "Porque separa componente elástico (alveolar) del resistivo y guía ajustes de VT/PEEP",
+          "Porque hace que el ventilador sincronice solo",
+          "Porque evita asincronías automáticamente"
+        ],
+        "correctAnswer": "Porque separa componente elástico (alveolar) del resistivo y guía ajustes de VT/PEEP",
+        "explanation": "Permite interpretar qué parte de la presión es realmente distensión alveolar y guiar ajustes protectores.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [
+      {
+        "title": "www.merckmanuals.com/es-us/professional/cuidados-cr%C3%ADtic...",
+        "type": "article",
+        "url": "https://www.merckmanuals.com/es-us/professional/cuidados-cr%C3%ADticos/insuficiencia-respiratoria-y-ventilaci%C3%B3n-",
+        "description": ""
+      },
+      {
+        "title": "es.wikipedia.org/wiki/Pulm%C3%B3n_de_acero",
+        "type": "article",
+        "url": "https://es.wikipedia.org/wiki/Pulm%C3%B3n_de_acero",
+        "description": ""
+      },
+      {
+        "title": "es.slideshare.net/slideshow/ventilacion-mecanica-configuraci...",
+        "type": "article",
+        "url": "https://es.slideshare.net/slideshow/ventilacion-mecanica-configuracion-de-parametros-monitoreo-y-alarmas-terapia-",
+        "description": ""
+      },
+      {
+        "title": "www.elsevier.es/es-revista-anales-pediatria-continuada-51-ar...",
+        "type": "article",
+        "url": "https://www.elsevier.es/es-revista-anales-pediatria-continuada-51-articulo-ventilacion-mecanica-indicaciones-modalidades-",
+        "description": ""
+      },
+      {
+        "title": "www.medintensiva.org/es-download-pdf-S0210569112003166",
+        "type": "article",
+        "url": "https://www.medintensiva.org/es-download-pdf-S0210569112003166",
+        "description": ""
+      },
+      {
+        "title": "www.medintensiva.org/es-monitorizacion-mecanica-respiratoria...",
+        "type": "article",
+        "url": "https://www.medintensiva.org/es-monitorizacion-mecanica-respiratoria-el-paciente-articulo-S021056911300212X",
+        "description": ""
+      },
+      {
+        "title": "revistas.udea.edu.co/index.php/iatreia/article/download/3507...",
+        "type": "article",
+        "url": "https://revistas.udea.edu.co/index.php/iatreia/article/download/350776/20808941/287671",
+        "description": ""
+      },
+      {
+        "title": "respiratory-therapy.com/department-management/clinical/venti...",
+        "type": "article",
+        "url": "https://respiratory-therapy.com/department-management/clinical/ventilator-graphics-made-easy/",
+        "description": ""
+      }
+    ],
+    "references": [
+      {
+        "authors": "Mancilla-Galindo, J., Mendiola-Villalobos, C., Carrión-Moya, J. D., et al",
+        "year": 2023,
+        "title": "Aplicaciones clínicas de la ecuación del movimiento del sistema respiratorio para la toma de decisiones en el paciente bajo ventilación mecánica invasiva",
+        "source": "Iatreia, 36(1), 112-127. DOI: 10.17533/udea.iatreia.179 50 30",
+        "doi": "10.17533/udea.iatreia.179",
+        "url": ""
+      },
+      {
+        "authors": "Pintado, M. C., de Pablo, R., & Trascasa, M",
+        "year": 2013,
+        "title": "Monitorización de la mecánica respiratoria en el paciente ventilado",
+        "source": "Medicina Intensiva, 37(3), 190-198. (Especialmente sección “Ecuación del movimiento” p.193) 48 61",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Tobin, M. J. (Ed.)",
+        "year": 2013,
+        "title": "Principles and Practice of Mechanical Ventilation (3rd ed.)",
+        "source": "McGraw- Hill. (Cap. 4: Respiratory Mechanics, que discute la ecuación de movimiento detalladamente).",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Marini, J. J., & Crooke, P. S",
+        "year": 1993,
+        "title": "A general mathematical model for respiratory dynamics relevant to the clinical setting",
+        "source": "Chest, 103(3), 990-1001. (Modelo que incluye componente inercial y no lineal, para interesados avanzados).",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "ARDS Network",
+        "year": 2000,
+        "title": "Ventilation with lower tidal volumes as compared with traditional tidal volumes for acute lung injury and the acute respiratory distress syndrome",
+        "source": "NEJM, 342(18), 1301-1308. (Demostró beneficio de limitar presión de distensión, fundamentado en reducir $P_{el}$ en la ecuación) 37. (Continuará con módulos 3 a 6...) 37 38 1 2 9 11 12 15 16 17 18 20 25 27 37 41 42 43 44 45 46 47 51 57 58 59 60 Generalidades sobre la ventilación mecánica - Cuidados críticos - Manual Merck versión para profesionales https://www.merckmanuals.com/es-us/professional/cuidados-cr%C3%ADticos/insuficiencia-respiratoria-y-ventilaci%C3%B3n- mec%C3%A1nica/generalidades-sobre-la-ventilaci%C3%B3n-mec%C3%A1nica 3 5 6 7 10 Pulmón de acero - Wikipedia, la enciclopedia libre https://es.wikipedia.org/wiki/Pulm%C3%B3n_de_acero 4 28 35 VENTILACION MECANICA \"CONFIGURACION DE PARAMETROS, MONITOREO Y ALARMAS\" \"TERAPIA RESPIRATORIA\" | PPTX https://es.slideshare.net/slideshow/ventilacion-mecanica-configuracion-de-parametros-monitoreo-y-alarmas-terapia- respiratoria/250460018 8 Ventilación mecánica: indicaciones, modalidades y programación y ... https://www.elsevier.es/es-revista-anales-pediatria-continuada-51-articulo-ventilacion-mecanica-indicaciones-modalidades- programacion-S1696281808755975 13 14 21 22 23 24 26 34 medintensiva.org https://www.medintensiva.org/es-download-pdf-S0210569112003166 19 29 32 33 48 53 54 55 56 61 Monitorización de la mecánica respiratoria en el paciente ventilado | Medicina Intensiva https://www.medintensiva.org/es-monitorizacion-mecanica-respiratoria-el-paciente-articulo-S021056911300212X 30 31 50 52 Aplicaciones clínicas de la ecuación del movimiento del sistema respiratorio para la toma de decisiones en el paciente bajo ventilación mecánica invasiva: artículo de reflexión https://revistas.udea.edu.co/index.php/iatreia/article/download/350776/20808941/287671 36 38 39 40 49 Ventilator Graphics Made Easy | RT https://respiratory-therapy.com/department-management/clinical/ventilator-graphics-made-easy/",
+        "doi": "",
+        "url": "https://www.merckmanuals.com/es-us/professional/cuidados-cr%C3%ADticos/insuficiencia-respiratoria-y-ventilaci%C3%B3n-"
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-14",
+    "source": "VentyLab PDFs (módulos 1–6)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel intermedio. Requiere conocimientos básicos de fisiología respiratoria."
+  }
+}
