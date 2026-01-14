@@ -419,6 +419,7 @@ export const LearningProgressProvider = ({ children }) => {
         moduleId: resolvedModuleId,
         progress: 1,
         completed: true,
+        completionPercentage: 100,
       };
       
       // Add timeSpentDelta if provided (already in minutes)

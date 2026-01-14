@@ -10,6 +10,7 @@ export const calculateOptimisticProgress = (currentLessonProgress, updateData) =
     ...currentLessonProgress,
     ...(updateData.progress !== undefined && { progress: Math.max(0, Math.min(1, updateData.progress)) }),
     ...(updateData.completed !== undefined && { completed: updateData.completed }),
+    ...(updateData.completionPercentage !== undefined && { completionPercentage: updateData.completionPercentage }),
     ...(updateData.timeSpentDelta !== undefined && { 
       timeSpent: Math.max(0, currentLessonProgress.timeSpent + (updateData.timeSpentDelta || 0))
     }),
@@ -30,6 +31,7 @@ export const createDefaultLessonProgress = (lessonId, progressId) => {
     timeSpent: 0,
     lastAccessed: null,
     progress: 0,
+    completionPercentage: 0,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
