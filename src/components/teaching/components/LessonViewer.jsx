@@ -66,12 +66,15 @@ import { teachingModuleTheme } from '../../../theme/teachingModuleTheme';
 import useLesson from '../hooks/useLesson';
 import { useLearningProgress } from '../../../contexts/LearningProgressContext';
 import useLessonPages from '../hooks/useLessonPages';
-import useLessonProgress from '../hooks/useLessonProgress';
+import useLessonProgressOld from '../hooks/useLessonProgress';
+import useLessonProgress from '@/hooks/useLessonProgress';
 import LessonNavigation from './LessonNavigation';
 import TutorAIPopup from './ai/TutorAIPopup';
 import AITopicExpander from './ai/AITopicExpander';
 import { useTopicContext } from '../../../hooks/useTopicContext';
 import useScrollCompletion from '../../../hooks/useScrollCompletion';
+import LessonProgressBar from '@/components/LessonProgressBar';
+import CompletionConfetti from '@/components/CompletionConfetti';
 // Lazy load clinical case components for code splitting
 const ClinicalCaseViewer = lazy(() => import('./clinical/ClinicalCaseViewer'));
 import PrerequisiteTooltip from '../../../view-components/teaching/components/curriculum/ModuleCard/PrerequisiteTooltip';
@@ -211,7 +214,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   const { completedLessons, updateLessonProgress, syncStatus } = useLearningProgress();
   
   // Calculate module completion percentage
-  const { calculateModuleProgress } = useLessonProgress(completedLessons);
+  const { calculateModuleProgress } = useLessonProgressOld(completedLessons);
   const moduleCompletion = useMemo(() => {
     if (!moduleId) return 0;
     return Math.round(calculateModuleProgress(moduleId));
@@ -281,6 +284,9 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   // Track previous lesson ID to detect changes
   const previousLessonIdRef = useRef(lessonId);
   
+  // Confetti state for celebration
+  const [showConfetti, setShowConfetti] = useState(false);
+  
   // ============================================================================
   // Refs
   // ============================================================================
@@ -296,6 +302,29 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   const { isScrolledEnough, meetsReadingTime } = useScrollCompletion({
     contentRef,
     estimatedTimeMinutes,
+  });
+  
+  // ============================================================================
+  // NEW: Automatic Progress Tracking with useLessonProgress Hook
+  // ============================================================================
+  
+  const {
+    localProgress,
+    isSaving,
+    isCompleted,
+    showResumeAlert,
+    dismissResumeAlert,
+  } = useLessonProgress({
+    lessonId,
+    moduleId,
+    contentRef,
+    onComplete: () => {
+      setShowConfetti(true);
+      setLessonCompleted(true);
+      console.log('[LessonViewer] Lesson auto-completed via scroll tracking');
+    },
+    autoSaveThreshold: 10,
+    autoCompleteThreshold: 90,
   });
   
   // ============================================================================
@@ -1095,6 +1124,44 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     <ThemeProvider theme={teachingModuleTheme}>
       <CssBaseline />
       <Box sx={{ minHeight: '100vh' }}>
+        {/* Sticky Progress Bar at Top */}
+        <LessonProgressBar
+          progress={localProgress}
+          isSaving={isSaving}
+          lessonTitle={data?.title || 'Lección'}
+        />
+
+        {/* Resume Alert */}
+        {showResumeAlert && (
+          <Alert
+            severity="info"
+            onClose={dismissResumeAlert}
+            sx={{
+              position: 'fixed',
+              top: 80,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 1300,
+              minWidth: '300px',
+              maxWidth: '500px',
+            }}
+          >
+            Continuando desde {Math.round(localProgress)}%
+          </Alert>
+        )}
+
+        {/* Completion Confetti */}
+        <CompletionConfetti
+          show={showConfetti}
+          onComplete={() => {
+            setShowConfetti(false);
+            // Optionally navigate to next lesson or module
+            console.log('[LessonViewer] Confetti animation complete');
+          }}
+          message="¡Lección completada! ✅"
+          duration={3000}
+        />
+        
         <Container
           maxWidth="lg"
             sx={{
