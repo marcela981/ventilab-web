@@ -351,8 +351,8 @@ export const updateLessonProgress = async (payload) => {
         throw new Error('lessonId is required and must be a string');
       }
 
+      const { lessonId } = payload;
       const body = {
-        lessonId: payload.lessonId,
         ...(payload.progress !== undefined && { progress: payload.progress }),
         ...(payload.completed !== undefined && { completed: payload.completed }),
         ...(payload.completionPercentage !== undefined && { completionPercentage: payload.completionPercentage }),
@@ -360,7 +360,7 @@ export const updateLessonProgress = async (payload) => {
         ...(payload.lastAccessed !== undefined && { lastAccessed: payload.lastAccessed }),
       };
 
-      const url = buildUrl('/progress/lesson');
+      const url = buildUrl(`/progress/lesson/${lessonId}`);
       let response;
 
       try {

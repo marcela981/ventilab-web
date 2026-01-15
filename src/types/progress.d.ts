@@ -102,11 +102,9 @@ export interface ProgressSummaryResponseDTO {
 
 /**
  * Update Lesson Progress Request DTO
- * Request body for PUT /api/progress/lesson
+ * Request body for PUT /api/progress/lesson/:lessonId
  */
 export interface UpdateLessonProgressRequestDTO {
-  /** Unique identifier of the lesson (required) */
-  lessonId: string;
   /** Progress value between 0.0 and 1.0 (optional) */
   progress?: number;
   /** Whether the lesson is completed (optional) */
@@ -121,7 +119,7 @@ export interface UpdateLessonProgressRequestDTO {
 
 /**
  * Update Lesson Progress Response DTO
- * Response from PUT /api/progress/lesson
+ * Response from PUT /api/progress/lesson/:lessonId
  */
 export interface UpdateLessonProgressResponseDTO {
   /** Updated lesson progress */
