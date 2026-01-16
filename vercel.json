@@ -1,6 +1,6 @@
 {
   "buildCommand": "npm run build",
-  "installCommand": "npm install && prisma generate",
+  "installCommand": "npm install && npx prisma generate",
   "env": {
     "PRISMA_GENERATE_SKIP_AUTOINSTALL": "true"
   },
