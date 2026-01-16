@@ -341,6 +341,15 @@ export const getModuleProgress = async (moduleId) => {
  * // }
  */
 export const updateLessonProgress = async (payload) => {
+  console.log('');
+  console.log('═══════════════════════════════════════════════════════════════');
+  console.log('🚀 [FRONTEND] updateLessonProgress CALLED');
+  console.log('═══════════════════════════════════════════════════════════════');
+  console.log('📍 Timestamp:', new Date().toISOString());
+  console.log('📍 Current URL:', typeof window !== 'undefined' ? window.location.href : 'N/A');
+  console.log('📦 payload:', JSON.stringify(payload, null, 2));
+  console.log('');
+  
   return executeWithAuthRetry(async () => {
     try {
       if (!payload || typeof payload !== 'object') {
@@ -361,6 +370,15 @@ export const updateLessonProgress = async (payload) => {
       };
 
       const url = buildUrl(`/progress/lesson/${lessonId}`);
+      
+      console.log('📡 [FRONTEND] Request details:');
+      console.log('   - URL:', url);
+      console.log('   - Method: PUT');
+      console.log('   - Body:', JSON.stringify(body, null, 2));
+      console.log('   - Headers:', JSON.stringify(getAuthHeaders(), null, 2));
+      console.log('═══════════════════════════════════════════════════════════════');
+      console.log('');
+      
       let response;
 
       try {
@@ -370,13 +388,47 @@ export const updateLessonProgress = async (payload) => {
           credentials: 'include',
           body: JSON.stringify(body),
         });
+        
+        console.log('📥 [FRONTEND] Response received:');
+        console.log('   - Status:', response.status);
+        console.log('   - StatusText:', response.statusText);
+        console.log('   - OK:', response.ok);
+        console.log('   - Headers:', JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2));
+        console.log('');
+        
       } catch (fetchError) {
+        console.error('');
+        console.error('═══════════════════════════════════════════════════════════════');
+        console.error('❌ [FRONTEND] FETCH ERROR');
+        console.error('═══════════════════════════════════════════════════════════════');
+        console.error('Error type:', fetchError?.constructor?.name);
+        console.error('Error message:', fetchError?.message);
+        console.error('Full error:', fetchError);
+        console.error('═══════════════════════════════════════════════════════════════');
+        console.error('');
         handleNetworkError(fetchError, apiBaseUrl);
       }
 
       const data = await parseResponse(response);
+      
+      console.log('✅ [FRONTEND] SUCCESS - Response data:');
+      console.log(JSON.stringify(data, null, 2));
+      console.log('═══════════════════════════════════════════════════════════════');
+      console.log('');
+      
       return data;
     } catch (error) {
+      console.error('');
+      console.error('═══════════════════════════════════════════════════════════════');
+      console.error('❌ [FRONTEND] CATCH ERROR in updateLessonProgress');
+      console.error('═══════════════════════════════════════════════════════════════');
+      console.error('Error type:', error?.constructor?.name);
+      console.error('Error message:', error?.message);
+      console.error('Error stack:', error?.stack);
+      console.error('Full error:', error);
+      console.error('═══════════════════════════════════════════════════════════════');
+      console.error('');
+      
       console.error('[progressService] updateLessonProgress failed:', error);
       
       if (error.isNetworkError || error.name === 'NetworkError') {
