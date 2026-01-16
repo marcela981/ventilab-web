@@ -339,6 +339,10 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
       // Send lastAccess for previous lesson before switching
       const previousLessonId = previousLessonIdRef.current;
       if (updateLessonProgress && previousLessonId) {
+        console.log('[LessonViewer] 🔄 Lesson changed - updating lastAccess for previous lesson');
+        console.log('[LessonViewer] Previous lessonId:', previousLessonId);
+        console.log('[LessonViewer] New lessonId:', lessonId);
+        
         updateLessonProgress({
           lessonId: previousLessonId,
           moduleId: moduleId,
@@ -383,23 +387,53 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     }
     
     const updateProgressPeriodically = () => {
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('[LessonViewer] updateProgressPeriodically TRIGGERED');
+      console.log('[LessonViewer] Timestamp:', new Date().toISOString());
+      console.log('[LessonViewer] isTabVisible:', isTabVisibleRef.current);
+      
       if (!isTabVisibleRef.current) {
+        console.log('[LessonViewer] ⏸️ Tab not visible, skipping update');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         return; // Skip if tab is not visible
       }
       
       const now = Date.now();
       const timeSpentMinutes = Math.round((now - lastProgressUpdateRef.current) / 60000); // Convert to minutes
       
+      console.log('[LessonViewer] Current time:', now);
+      console.log('[LessonViewer] Last update:', lastProgressUpdateRef.current);
+      console.log('[LessonViewer] Time since last update (minutes):', timeSpentMinutes);
+      console.log('[LessonViewer] lessonId:', lessonId);
+      console.log('[LessonViewer] moduleId:', moduleId);
+      
       if (timeSpentMinutes > 0) {
-        updateLessonProgress({
+        console.log('[LessonViewer] ⏱️ Time spent > 0, calling updateLessonProgress...');
+        
+        const payload = {
           lessonId: lessonId,
           moduleId: moduleId,
           timeSpentDelta: timeSpentMinutes,
+        };
+        
+        console.log('[LessonViewer] Payload:', payload);
+        console.log('[LessonViewer] updateLessonProgress function exists:', !!updateLessonProgress);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        
+        updateLessonProgress(payload).then(result => {
+          console.log('[LessonViewer] ✅ Progress update SUCCESS:', result);
         }).catch(error => {
-          console.error('[LessonViewer] Failed to update progress:', error);
+          console.error('[LessonViewer] ❌ Progress update FAILED');
+          console.error('[LessonViewer] Error type:', error?.constructor?.name);
+          console.error('[LessonViewer] Error message:', error?.message);
+          console.error('[LessonViewer] Error stack:', error?.stack);
+          console.error('[LessonViewer] Full error:', error);
         });
         
         lastProgressUpdateRef.current = now;
+      } else {
+        console.log('[LessonViewer] ⏭️ Time spent = 0, skipping update');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       }
     };
     
@@ -438,6 +472,10 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   const handleNavigateToLesson = useCallback((targetLessonId, targetModuleId) => {
     // Send lastAccess before navigating
     if (lessonId && moduleId && updateLessonProgress) {
+      console.log('[LessonViewer] 🧭 Navigating to different lesson - updating lastAccess');
+      console.log('[LessonViewer] Current lessonId:', lessonId);
+      console.log('[LessonViewer] Target lessonId:', targetLessonId);
+      
       updateLessonProgress({
         lessonId: lessonId,
         moduleId: moduleId,
@@ -489,6 +527,11 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
 
     try {
       const timeSpentMinutes = Math.round((Date.now() - startTimeRef.current) / 60000);
+
+      console.log('[LessonViewer] 🎉 Auto-completing lesson');
+      console.log('[LessonViewer] lessonId:', lessonId);
+      console.log('[LessonViewer] moduleId:', moduleId);
+      console.log('[LessonViewer] timeSpentMinutes:', timeSpentMinutes);
 
       await updateLessonProgress({
         lessonId: lessonId,

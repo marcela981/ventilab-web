@@ -1,16 +1,16 @@
 {
   "version": "1.0.0",
-  "generatedAt": "2026-01-09T00:59:55.569Z",
+  "generatedAt": "2026-01-16T17:43:46.683Z",
   "levels": [
     {
       "levelId": "beginner",
-      "totalLessons": 3,
-      "totalPages": 28
+      "totalLessons": 9,
+      "totalPages": 309
     },
     {
       "levelId": "intermediate",
       "totalLessons": 4,
-      "totalPages": 32
+      "totalPages": 76
     },
     {
       "levelId": "advanced",
@@ -19,6 +19,56 @@
     }
   ],
   "lessons": [
+    {
+      "moduleId": "module-01-fundamentals",
+      "lessonId": "module-01-inversion-fisiologica",
+      "sectionsCount": 41
+    },
+    {
+      "moduleId": "module-01-fundamentals",
+      "lessonId": "module-02-ecuacion-movimiento",
+      "sectionsCount": 32
+    },
+    {
+      "moduleId": "module-01-fundamentals",
+      "lessonId": "module-03-variables-fase",
+      "sectionsCount": 10
+    },
+    {
+      "moduleId": "module-01-fundamentals",
+      "lessonId": "module-04-modos-ventilatorios",
+      "sectionsCount": 20
+    },
+    {
+      "moduleId": "module-01-fundamentals",
+      "lessonId": "module-05-monitorizacion-grafica",
+      "sectionsCount": 95
+    },
+    {
+      "moduleId": "module-01-fundamentals",
+      "lessonId": "module-06-efectos-sistemicos",
+      "sectionsCount": 83
+    },
+    {
+      "moduleId": "module-02-modalidades-parametros",
+      "lessonId": "lesson-01-volume-ventilation",
+      "sectionsCount": 17
+    },
+    {
+      "moduleId": "module-02-modalidades-parametros",
+      "lessonId": "lesson-02-pressure-controlled-ventilation",
+      "sectionsCount": 17
+    },
+    {
+      "moduleId": "module-02-modalidades-parametros",
+      "lessonId": "lesson-03-pressure-support-ventilation",
+      "sectionsCount": 22
+    },
+    {
+      "moduleId": "module-02-modalidades-parametros",
+      "lessonId": "lesson-04-simv-destete-evidencia",
+      "sectionsCount": 20
+    },
     {
       "moduleId": "module-01-fundamentals",
       "lessonId": "lesson-01-respiratory-mechanics",
@@ -33,26 +83,6 @@
       "moduleId": "module-01-fundamentals",
       "lessonId": "lesson-03-arterial-blood-gas",
       "sectionsCount": 9
-    },
-    {
-      "moduleId": "module-02-modalidades-parametros",
-      "lessonId": "lesson-01-volume-ventilation",
-      "sectionsCount": 8
-    },
-    {
-      "moduleId": "module-02-modalidades-parametros",
-      "lessonId": "lesson-02-pressure-controlled-ventilation",
-      "sectionsCount": 8
-    },
-    {
-      "moduleId": "module-02-modalidades-parametros",
-      "lessonId": "lesson-03-pressure-support-ventilation",
-      "sectionsCount": 8
-    },
-    {
-      "moduleId": "module-02-modalidades-parametros",
-      "lessonId": "lesson-04-simv-destete-evidencia",
-      "sectionsCount": 8
     },
     {
       "moduleId": "module-03-configuration",
