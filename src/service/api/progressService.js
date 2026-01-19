@@ -68,7 +68,7 @@ export async function getLessonProgress(lessonId) {
       throw new Error('ID de la lección es requerido');
     }
 
-    const data = await httpClient.get(`/api/progress/lessons/${lessonId}`);
+    const data = await httpClient.get(`/api/progress/lesson/${lessonId}`);
     return {
       success: true,
       data: {
@@ -96,7 +96,7 @@ export async function completeLesson(lessonId) {
       throw new Error('ID de la lección es requerido');
     }
 
-    const data = await httpClient.post(`/api/progress/lessons/${lessonId}/complete`);
+    const data = await httpClient.post(`/api/progress/lesson/${lessonId}/complete`);
     return {
       success: true,
       data: {

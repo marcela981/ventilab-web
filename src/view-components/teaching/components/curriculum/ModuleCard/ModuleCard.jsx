@@ -4,7 +4,7 @@ import { useTheme, useMediaQuery, Skeleton, Snackbar, Alert, Box } from '@mui/ma
 import { useLearningProgress } from '@/contexts/LearningProgressContext';
 import useModuleAvailability from '@/hooks/useModuleAvailability';
 import { useModuleProgress } from '@/hooks/useModuleProgress';
-import useProgress from '@/hooks/useProgress';
+import { useProgress } from '@/hooks/useProgress';
 import { useModuleLessonsCount } from '@/hooks/useModuleLessonsCount';
 import { getModuleStatus } from './moduleCardHelpers';
 import ModuleCardHeader from './ModuleCardHeader';
@@ -301,6 +301,20 @@ const ModuleCard = ({
             pointerEvents: finalIsAvailable ? 'auto' : 'none', // Bloquear eventos en el contenido cuando está bloqueado
           }}
         >
+          {/* Barra de progreso del módulo - encima de los títulos */}
+          <div style={{ padding: '8px 16px 0', opacity: effectiveIsAvailable ? 1 : 0.6 }}>
+            {(isLoadingProgress || isLoadingLessonsCount) ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Skeleton variant="rectangular" width="100%" height={8} sx={{ borderRadius: 4, flex: 1 }} />
+                <Skeleton variant="text" width={36} />
+              </Box>
+            ) : (
+              <CurriculumProgressBar
+                value={moduleProgressAggregate.percentInt}
+              />
+            )}
+          </div>
+
           <ModuleCardHeader
             module={module}
             isFavorite={isFavorite}
@@ -347,20 +361,6 @@ const ModuleCard = ({
             onModuleClick={onModuleClick}
             moduleId={module.id}
           />
-  
-          {/* Barra de progreso con skeleton mientras carga */}
-          <div style={{ marginTop: 8, opacity: effectiveIsAvailable ? 1 : 0.6 }}>
-            {(isLoadingProgress || isLoadingLessonsCount) ? (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Skeleton variant="rectangular" width="100%" height={8} sx={{ borderRadius: 4, flex: 1 }} />
-                <Skeleton variant="text" width={36} />
-              </Box>
-            ) : (
-              <CurriculumProgressBar
-                value={moduleProgressAggregate.percentInt}
-              />
-            )}
-          </div>
         </div>
       </article>
       

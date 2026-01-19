@@ -1,12 +1,13 @@
 /**
  * useModuleProgress Hook
- * 
+ *
  * Fetches and manages module progress data using SWR
  * Displays progress for module cards and dashboards
  */
 
 import useSWR from 'swr';
 import { getModuleProgress, type ModuleProgress } from '@/services/progressService';
+import { SWR_KEYS } from '@/lib/swrKeys';
 
 // ============================================
 // Type Definitions
@@ -132,14 +133,14 @@ export function useModuleProgress({
     return await getModuleProgress(id);
   };
 
-  // Use SWR for data fetching
+  // Use SWR for data fetching with centralized key
   const {
     data,
     error,
     mutate,
     isLoading,
   } = useSWR<ModuleProgress, Error>(
-    moduleId ? `module-progress-${moduleId}` : null,
+    moduleId ? SWR_KEYS.moduleProgress(moduleId) : null,
     () => (moduleId ? fetcher(moduleId) : null),
     {
       refreshInterval,

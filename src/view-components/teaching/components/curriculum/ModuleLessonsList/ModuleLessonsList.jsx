@@ -17,7 +17,6 @@ import {
   List,
   ListItem,
   ListItemText,
-  LinearProgress,
   Chip,
   Divider,
   Collapse,
@@ -166,27 +165,7 @@ const LessonItem = ({
               >
                 {lesson.title}
               </Typography>
-              
-              {/* Badge de progreso */}
-              <Chip
-                label={`${lessonProgress}%`}
-                size="small"
-                sx={{
-                  height: 20,
-                  fontSize: '0.65rem',
-                  ml: 1,
-                  backgroundColor: actualIsCompleted 
-                    ? 'rgba(76, 175, 80, 0.2)' 
-                    : 'rgba(255, 255, 255, 0.1)',
-                  color: actualIsCompleted ? '#4CAF50' : '#ffffff',
-                  border: '1px solid',
-                  borderColor: actualIsCompleted 
-                    ? 'rgba(76, 175, 80, 0.4)' 
-                    : 'rgba(255, 255, 255, 0.2)',
-                  fontWeight: 600,
-                }}
-              />
-              
+
               {/* Duración - usa estimatedTime o duration como fallback */}
               {(lesson.estimatedTime || lesson.duration) && (
                 <Chip
@@ -208,25 +187,6 @@ const LessonItem = ({
                 />
               )}
             </Box>
-
-            {/* Progress bar individual de la lección */}
-            {!isLocked && (
-              <Box sx={{ mt: 0.5 }}>
-                <LinearProgress
-                  variant="determinate"
-                  value={actualIsCompleted ? 100 : lessonProgress || 0}
-                  sx={{
-                    height: 3,
-                    borderRadius: 2,
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    '& .MuiLinearProgress-bar': {
-                      backgroundColor: actualIsCompleted ? '#4CAF50' : '#FF9800',
-                      borderRadius: 2,
-                    }
-                  }}
-                />
-              </Box>
-            )}
           </Box>
 
           {/* Botón para expandir/colapsar temas */}
