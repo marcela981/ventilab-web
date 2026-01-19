@@ -20,7 +20,8 @@ import {
   Breadcrumbs,
   Link,
   Button,
-  CircularProgress
+  CircularProgress,
+  LinearProgress
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -73,7 +74,7 @@ import DashboardTab from '../../features/dashboard/DashboardTab';
  * Este componente envuelve LessonViewer para capturar errores de carga
  * y mostrarlos de manera amigable al usuario
  */
-const LessonViewerWrapper = ({ lessonId, moduleId, onComplete, onNavigate, onError, onBackToDashboard }) => {
+const LessonViewerWrapper = ({ lessonId, moduleId, onComplete, onNavigate, onError, onBackToDashboard, onProgressUpdate }) => {
   const router = useRouter();
   const { data, isLoading, error, refetch } = useLesson(lessonId, moduleId);
   
@@ -114,12 +115,13 @@ const LessonViewerWrapper = ({ lessonId, moduleId, onComplete, onNavigate, onErr
   }
   
   return (
-    <LessonViewer
-      lessonId={lessonId}
-      moduleId={moduleId}
-      onComplete={onComplete}
-      onNavigate={onNavigate}
-    />
+        <LessonViewer
+          lessonId={lessonId}
+          moduleId={moduleId}
+          onComplete={onComplete}
+          onNavigate={onNavigate}
+          onProgressUpdate={onProgressUpdate}
+        />
   );
 };
 
@@ -234,6 +236,16 @@ const TeachingModule = () => {
 
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  
+  // Estado para el progreso de la lección (para la barra de progreso)
+  const [lessonProgress, setLessonProgress] = useState({ currentPage: 0, totalPages: 0 });
+  
+  // Resetear progreso cuando cambia la lección
+  useEffect(() => {
+    if (lessonIdFromQuery) {
+      setLessonProgress({ currentPage: 0, totalPages: 0 });
+    }
+  }, [lessonIdFromQuery]);
 
   // Estado del dashboard
   const [dashboardData] = useState({
@@ -518,6 +530,13 @@ const TeachingModule = () => {
   const handleLessonError = useCallback((error) => {
     setLessonError(error);
     console.error('Error loading lesson:', error);
+  }, []);
+  
+  /**
+   * Callback para actualizar el progreso de la lección
+   */
+  const handleLessonProgressUpdate = useCallback((currentPage, totalPages) => {
+    setLessonProgress({ currentPage, totalPages });
   }, []);
 
   const handleCloseAlert = useCallback((event, reason) => {
@@ -1048,6 +1067,37 @@ const TeachingModule = () => {
               </Typography>
             </Box>
 
+            {/* Barra de progreso de la lección - debajo del botón Volver */}
+            {lessonProgress.totalPages > 0 && (
+              <Box sx={{ mb: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                    Progreso de la lección
+                  </Typography>
+                  <Typography variant="caption" fontWeight={600} sx={{ color: '#ffffff' }}>
+                    {Math.round(((lessonProgress.currentPage + 1) / lessonProgress.totalPages) * 100)}% ({lessonProgress.currentPage + 1} / {lessonProgress.totalPages})
+                  </Typography>
+                </Box>
+                <LinearProgress
+                  variant="determinate"
+                  value={((lessonProgress.currentPage + 1) / lessonProgress.totalPages) * 100}
+                  sx={{
+                    height: 10,
+                    borderRadius: 5,
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    '& .MuiLinearProgress-bar': {
+                      backgroundColor: ((lessonProgress.currentPage + 1) / lessonProgress.totalPages) * 100 >= 100 ? '#4CAF50' : '#2196f3',
+                      borderRadius: 5,
+                      boxShadow: ((lessonProgress.currentPage + 1) / lessonProgress.totalPages) * 100 >= 100
+                        ? '0 2px 4px rgba(76, 175, 80, 0.4)'
+                        : '0 2px 4px rgba(33, 150, 243, 0.3)',
+                      transition: 'transform 0.3s ease-in-out, background-color 0.3s ease',
+                    },
+                  }}
+                />
+              </Box>
+            )}
+
             {/* Manejo de errores de prerequisitos */}
             {lessonError && lessonError.missingPrerequisites && (
               <Alert severity="warning" sx={{ mb: 3 }}>
@@ -1092,6 +1142,7 @@ const TeachingModule = () => {
                   onNavigate={handleNavigateLesson}
                   onError={handleLessonError}
                   onBackToDashboard={handleBackToDashboard}
+                  onProgressUpdate={handleLessonProgressUpdate}
                 />
               </Suspense>
             )}

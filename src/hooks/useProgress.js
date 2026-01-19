@@ -331,6 +331,23 @@ export default function useProgress() {
   }, [fetchProgress]);
 
   /**
+   * Listen for progress:updated events to refresh data
+   * This ensures the hook stays in sync when progress is updated elsewhere
+   */
+  useEffect(() => {
+    const handleProgressUpdated = () => {
+      console.log('[useProgress] Received progress:updated event, refreshing...');
+      fetchProgress();
+    };
+
+    window.addEventListener('progress:updated', handleProgressUpdated);
+
+    return () => {
+      window.removeEventListener('progress:updated', handleProgressUpdated);
+    };
+  }, [fetchProgress]);
+
+  /**
    * Cleanup: Flush pending updates and clear timers on unmount
    */
   useEffect(() => {

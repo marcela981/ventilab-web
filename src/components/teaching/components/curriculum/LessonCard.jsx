@@ -8,7 +8,6 @@ import LessonCardMeta from './LessonCardMeta';
 import LessonCardBody from './LessonCardBody';
 import LessonCardFooter from './LessonCardFooter';
 import styles from '@/styles/curriculum.module.css';
-import CurriculumProgressBar from '../../../../view-components/teaching/components/curriculum/ModuleCard/CurriculumProgressBar';
 
 /**
  * LessonCard - Card minimalista y optimizada para lecciones de aprendizaje
@@ -113,10 +112,7 @@ const LessonCard = ({
   const handleCardBodyInteraction = (e) => {
     e.stopPropagation();
   };
-  
-  // Calcular porcentaje de progreso (0-100)
-  const progressPercent = isCompleted ? 100 : 0;
-  
+
   return (
     <article
       className={`${styles.card} ${status === 'locked' ? styles.locked : ''} ${status === 'completed' ? styles.completed : ''} ${status === 'in-progress' ? styles.inProgress : ''} ${status === 'available' ? styles.available : ''}`}
@@ -187,13 +183,6 @@ const LessonCard = ({
           lessonTitle={lesson.title}
           sections={lesson.sections || []}
         />
-
-        {/* Barra de progreso */}
-        <div style={{ marginTop: 8, opacity: isAvailable ? 1 : 0.6 }}>
-          <CurriculumProgressBar
-            value={progressPercent}
-          />
-        </div>
       </div>
     </article>
   );

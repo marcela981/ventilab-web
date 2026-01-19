@@ -6,6 +6,7 @@
 import { http } from './http';
 import { mutate } from 'swr';
 import { getAuthToken as getAuthTokenFromService } from './authService';
+import { SWR_KEYS, getProgressInvalidationMatcher } from '@/lib/swrKeys';
 
 // ============================================
 // Type Definitions
@@ -107,7 +108,7 @@ export async function updateLessonProgress(
   data: UpdateLessonProgressParams
 ): Promise<LessonProgress> {
   const token = getAuthToken();
-  
+
   const { res, data: responseData } = await http(`/progress/lesson/${lessonId}`, {
     method: 'PUT',
     body: JSON.stringify(data),
@@ -119,8 +120,24 @@ export async function updateLessonProgress(
     throw new Error(errorMessage);
   }
 
+  // Extract moduleId from lessonId (format: "module-XX-lesson-name")
+  const moduleIdMatch = lessonId.match(/^(module-\d+)/);
+  const moduleId = moduleIdMatch ? moduleIdMatch[1] : responseData?.lesson?.moduleId;
+
   // Invalidate related cache
-  await invalidateProgressCache(responseData?.lesson?.moduleId);
+  await invalidateProgressCache(moduleId, lessonId);
+
+  // Emit progress:updated event for UI components to refresh
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('progress:updated', {
+      detail: {
+        lessonId,
+        moduleId,
+        completionPercentage: data.completionPercentage,
+        completed: responseData?.completed || data.completionPercentage >= 100,
+      }
+    }));
+  }
 
   return responseData;
 }
@@ -133,7 +150,7 @@ export async function getLessonProgress(lessonId: string): Promise<LessonProgres
   const token = getAuthToken();
   
   try {
-    const { res, data } = await http(`/progress/lessons/${lessonId}`, {
+    const { res, data } = await http(`/progress/lesson/${lessonId}`, {
       method: 'GET',
       authToken: token || undefined,
     });
@@ -142,32 +159,31 @@ export async function getLessonProgress(lessonId: string): Promise<LessonProgres
       // Return default progress if not found or error
       if (res.status === 404 || res.status === 401) {
         console.warn(`[progressService] Lesson progress not found for ${lessonId}, using default`);
-        return {
-          completed: false,
-          progress: 0,
-          progressPercentage: 0,
-          lastAccessed: null,
-          completedAt: null,
-          scrollPosition: 0,
-          lastViewedSection: null,
-          timeSpent: 0,
-        };
+        return null; // Return null to indicate no progress found
       }
       throw new Error(data?.message || 'Error al obtener progreso');
     }
 
-    // The backend returns { lesson, progress, quizAttempts }
-    // We need the progress object
-    return data?.progress || {
-      completed: false,
-      progress: 0,
-      progressPercentage: 0,
-      lastAccessed: null,
-      completedAt: null,
-      scrollPosition: 0,
-      lastViewedSection: null,
-      timeSpent: 0,
-    };
+    // The backend returns the progress object directly (not wrapped)
+    // Map server response to client format
+    if (data) {
+      return {
+        id: data.id || '',
+        userId: data.userId || '',
+        lessonId: data.lessonId || lessonId,
+        moduleId: null, // Will be extracted from lessonId if needed
+        completed: data.completed || false,
+        completionPercentage: data.completionPercentage || 0,
+        progress: data.completionPercentage || 0, // Alias for compatibility
+        timeSpent: data.timeSpent || 0,
+        scrollPosition: data.scrollPosition || null,
+        lastViewedSection: data.lastViewedSection || null,
+        lastAccess: data.lastAccess ? new Date(data.lastAccess).toISOString() : null,
+        updatedAt: data.updatedAt ? new Date(data.updatedAt).toISOString() : new Date().toISOString(),
+      };
+    }
+
+    return null;
   } catch (error) {
     console.error('[progressService] getLessonProgress error:', error);
     // Return default progress on error
@@ -263,18 +279,32 @@ export async function getUserOverview(): Promise<UserOverview> {
  * Invalidate progress cache (for SWR)
  * Call this after updating progress to refresh cached data
  */
-export async function invalidateProgressCache(moduleId?: string): Promise<void> {
+export async function invalidateProgressCache(moduleId?: string, lessonId?: string): Promise<void> {
   try {
-    // Invalidate overview
+    // Invalidate overview (legacy and new keys)
     await mutate('/progress/overview');
+    await mutate(SWR_KEYS.userOverview);
 
-    // Invalidate specific module if provided
+    // Invalidate specific module if provided (legacy and new keys)
     if (moduleId) {
       await mutate(`/progress/modules/${moduleId}`);
       await mutate(`/progress/modules/${moduleId}/resume`);
+      await mutate(SWR_KEYS.moduleProgress(moduleId));
+      await mutate(SWR_KEYS.moduleLessonsProgress(moduleId));
     }
 
-    // Invalidate all progress-related keys
+    // Invalidate specific lesson if provided
+    if (lessonId) {
+      await mutate(SWR_KEYS.lessonProgress(lessonId));
+    }
+
+    // Invalidate all progress
+    await mutate(SWR_KEYS.allProgress);
+
+    // Invalidate all progress-related keys using the centralized matcher
+    await mutate(getProgressInvalidationMatcher(), undefined, { revalidate: true });
+
+    // Also invalidate legacy keys
     await mutate(
       (key) => typeof key === 'string' && key.startsWith('/progress'),
       undefined,

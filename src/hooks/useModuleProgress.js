@@ -112,7 +112,26 @@ export const useModuleProgress = (moduleId, options = {}) => {
       load(reloadOnMount);
     }
   }, [moduleId, autoLoad, reloadOnMount, load]);
-  
+
+  // Escuchar evento progress:updated para refrescar datos
+  useEffect(() => {
+    const handleProgressUpdated = (event) => {
+      // Si el evento incluye moduleId y es este módulo, recargar
+      // Si no hay moduleId en el evento, recargar de todos modos para estar seguro
+      const eventModuleId = event?.detail?.moduleId;
+      if (!eventModuleId || eventModuleId === moduleId) {
+        console.log('[useModuleProgress] Received progress:updated event, reloading...');
+        load(true);
+      }
+    };
+
+    window.addEventListener('progress:updated', handleProgressUpdated);
+
+    return () => {
+      window.removeEventListener('progress:updated', handleProgressUpdated);
+    };
+  }, [moduleId, load]);
+
   // Detectar si está cargando desde el contexto
   const isLoadingFromContext = loadingModules.has(moduleId);
   

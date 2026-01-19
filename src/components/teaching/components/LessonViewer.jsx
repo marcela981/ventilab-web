@@ -60,20 +60,19 @@ import {
   Lock as LockIcon,
   CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
-import { ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider, useTheme } from '@mui/material/styles';
 import { teachingModuleTheme } from '../../../theme/teachingModuleTheme';
 
 import useLesson from '../hooks/useLesson';
 import { useLearningProgress } from '../../../contexts/LearningProgressContext';
 import useLessonPages from '../hooks/useLessonPages';
-import useLessonProgressOld from '../hooks/useLessonProgress';
-import useLessonProgress from '@/hooks/useLessonProgress';
+import { useProgress } from '@/hooks/useProgress';
+import { useLessonProgress } from '@/hooks/useLessonProgress';
 import LessonNavigation from './LessonNavigation';
 import TutorAIPopup from './ai/TutorAIPopup';
 import AITopicExpander from './ai/AITopicExpander';
 import { useTopicContext } from '../../../hooks/useTopicContext';
 import useScrollCompletion from '../../../hooks/useScrollCompletion';
-import LessonProgressBar from '@/components/LessonProgressBar';
 import CompletionConfetti from '@/components/CompletionConfetti';
 // Lazy load clinical case components for code splitting
 const ClinicalCaseViewer = lazy(() => import('./clinical/ClinicalCaseViewer'));
@@ -193,7 +192,7 @@ MediaFallback.defaultProps = {
 /**
  * LessonViewer - Main component for displaying lesson content
  */
-const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, defaultOpen = false }) => {
+const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, defaultOpen = false, onProgressUpdate }) => {
   // ============================================================================
   // Hooks
   // ============================================================================
@@ -213,17 +212,19 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   // Get progress context for marking lessons as complete
   const { completedLessons, updateLessonProgress, syncStatus } = useLearningProgress();
   
-  // Calculate module completion percentage
-  const { calculateModuleProgress } = useLessonProgressOld(completedLessons);
-  const moduleCompletion = useMemo(() => {
-    if (!moduleId) return 0;
-    return Math.round(calculateModuleProgress(moduleId));
-  }, [moduleId, calculateModuleProgress]);
-  
   // Get module data to count total lessons
   const module = useMemo(() => {
     return getModuleById(moduleId);
   }, [moduleId]);
+  
+  // Calculate module completion percentage from completed lessons
+  const moduleCompletion = useMemo(() => {
+    if (!moduleId || !module?.lessons) return 0;
+    const completedCount = module.lessons.filter(lesson => 
+      completedLessons.has(`${moduleId}-${lesson.id}`)
+    ).length;
+    return Math.round((completedCount / module.lessons.length) * 100);
+  }, [moduleId, module, completedLessons]);
   
   const totalLessons = useMemo(() => {
     return module?.lessons?.length || 0;
@@ -292,10 +293,6 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   // ============================================================================
   
   const contentRef = useRef(null);
-  const startTimeRef = useRef(Date.now());
-  const progressIntervalRef = useRef(null);
-  const lastProgressUpdateRef = useRef(Date.now());
-  const isTabVisibleRef = useRef(true);
   const autoCompletionRef = useRef(false);
   const autoCompletionInFlightRef = useRef(false);
 
@@ -314,6 +311,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     isCompleted,
     showResumeAlert,
     dismissResumeAlert,
+    saveProgress,
   } = useLessonProgress({
     lessonId,
     moduleId,
@@ -323,7 +321,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
       setLessonCompleted(true);
       console.log('[LessonViewer] Lesson auto-completed via scroll tracking');
     },
-    autoSaveThreshold: 10,
+    autoSaveThreshold: 5, // Guardar cada 5% de progreso (más frecuente)
     autoCompleteThreshold: 90,
   });
   
@@ -333,35 +331,6 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // Reset timers and send lastAccess when lesson changes
-    if (previousLessonIdRef.current !== lessonId && previousLessonIdRef.current) {
-      // Send lastAccess for previous lesson before switching
-      const previousLessonId = previousLessonIdRef.current;
-      if (updateLessonProgress && previousLessonId) {
-        console.log('[LessonViewer] 🔄 Lesson changed - updating lastAccess for previous lesson');
-        console.log('[LessonViewer] Previous lessonId:', previousLessonId);
-        console.log('[LessonViewer] New lessonId:', lessonId);
-        
-        updateLessonProgress({
-          lessonId: previousLessonId,
-          moduleId: moduleId,
-          lastAccessed: new Date().toISOString(),
-        }).catch(error => {
-          console.error('[LessonViewer] Failed to update lastAccess for previous lesson:', error);
-        });
-      }
-    }
-    
-    // Clear existing interval
-    if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
-      progressIntervalRef.current = null;
-    }
-    
-    // Reset timers for new lesson
-    startTimeRef.current = Date.now();
-    lastProgressUpdateRef.current = Date.now();
     
     // Reset to first page when lesson changes
     setCurrentPage(0);
@@ -374,127 +343,16 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     if (previousLessonIdRef.current !== lessonId) {
       previousLessonIdRef.current = lessonId;
     }
-  }, [lessonId, moduleId, updateLessonProgress]);
+  }, [lessonId]);
   
-  // ============================================================================
-  // Progress Tracking with Page Visibility API
-  // ============================================================================
-  
-  // Update progress every 45 seconds while tab is active
-  useEffect(() => {
-    if (!data || !lessonId || !moduleId || !updateLessonProgress) {
-      return;
-    }
-    
-    const updateProgressPeriodically = () => {
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('[LessonViewer] updateProgressPeriodically TRIGGERED');
-      console.log('[LessonViewer] Timestamp:', new Date().toISOString());
-      console.log('[LessonViewer] isTabVisible:', isTabVisibleRef.current);
-      
-      if (!isTabVisibleRef.current) {
-        console.log('[LessonViewer] ⏸️ Tab not visible, skipping update');
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        return; // Skip if tab is not visible
-      }
-      
-      const now = Date.now();
-      const timeSpentMinutes = Math.round((now - lastProgressUpdateRef.current) / 60000); // Convert to minutes
-      
-      console.log('[LessonViewer] Current time:', now);
-      console.log('[LessonViewer] Last update:', lastProgressUpdateRef.current);
-      console.log('[LessonViewer] Time since last update (minutes):', timeSpentMinutes);
-      console.log('[LessonViewer] lessonId:', lessonId);
-      console.log('[LessonViewer] moduleId:', moduleId);
-      
-      if (timeSpentMinutes > 0) {
-        console.log('[LessonViewer] ⏱️ Time spent > 0, calling updateLessonProgress...');
-        
-        const payload = {
-          lessonId: lessonId,
-          moduleId: moduleId,
-          timeSpentDelta: timeSpentMinutes,
-        };
-        
-        console.log('[LessonViewer] Payload:', payload);
-        console.log('[LessonViewer] updateLessonProgress function exists:', !!updateLessonProgress);
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        
-        updateLessonProgress(payload).then(result => {
-          console.log('[LessonViewer] ✅ Progress update SUCCESS:', result);
-        }).catch(error => {
-          console.error('[LessonViewer] ❌ Progress update FAILED');
-          console.error('[LessonViewer] Error type:', error?.constructor?.name);
-          console.error('[LessonViewer] Error message:', error?.message);
-          console.error('[LessonViewer] Error stack:', error?.stack);
-          console.error('[LessonViewer] Full error:', error);
-        });
-        
-        lastProgressUpdateRef.current = now;
-      } else {
-        console.log('[LessonViewer] ⏭️ Time spent = 0, skipping update');
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      }
-    };
-    
-    // Set up interval to update progress every 45 seconds
-    progressIntervalRef.current = setInterval(updateProgressPeriodically, 45000);
-    
-    // Handle Page Visibility API
-    const handleVisibilityChange = () => {
-      isTabVisibleRef.current = document.visibilityState === 'visible';
-      
-      // If tab becomes visible, update lastProgressUpdateRef to current time
-      if (isTabVisibleRef.current) {
-        lastProgressUpdateRef.current = Date.now();
-      }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    // Initial check
-    isTabVisibleRef.current = document.visibilityState === 'visible';
-    
-    // Cleanup
-    return () => {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-        progressIntervalRef.current = null;
-      }
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [data, lessonId, moduleId, updateLessonProgress]);
+  // Progress tracking is now handled by useProgress hook (auto-save every 5 min)
   
   // ============================================================================
   // Navigation Handlers
   // ============================================================================
   
   const handleNavigateToLesson = useCallback((targetLessonId, targetModuleId) => {
-    // Send lastAccess before navigating
-    if (lessonId && moduleId && updateLessonProgress) {
-      console.log('[LessonViewer] 🧭 Navigating to different lesson - updating lastAccess');
-      console.log('[LessonViewer] Current lessonId:', lessonId);
-      console.log('[LessonViewer] Target lessonId:', targetLessonId);
-      
-      updateLessonProgress({
-        lessonId: lessonId,
-        moduleId: moduleId,
-        lastAccessed: new Date().toISOString(),
-      }).catch(error => {
-        console.error('[LessonViewer] Failed to update lastAccess:', error);
-      });
-    }
-    
-    // Clear progress interval
-    if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
-      progressIntervalRef.current = null;
-    }
-    
-    // Reset timers
-    startTimeRef.current = Date.now();
-    lastProgressUpdateRef.current = Date.now();
-    
+    // Progress is automatically saved via useProgress hook on beforeunload
     if (onNavigate) {
       onNavigate(targetLessonId, targetModuleId);
     } else {
@@ -510,39 +368,20 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   // Automatic Completion
   // ============================================================================
 
+  // Trigger auto-completion by saving progress at 100%
+  // This will automatically mark the lesson as completed via useLessonProgress hook
   const triggerAutoCompletion = useCallback(async () => {
-    if (!data || !lessonId || !moduleId || !updateLessonProgress) {
-      return false;
-    }
-
-    if (lessonCompleted || autoCompletionRef.current || autoCompletionInFlightRef.current) {
-      return false;
-    }
-
-    if (syncStatus === 'saving') {
+    if (!data || lessonCompleted || autoCompletionRef.current || autoCompletionInFlightRef.current) {
       return false;
     }
 
     autoCompletionInFlightRef.current = true;
 
     try {
-      const timeSpentMinutes = Math.round((Date.now() - startTimeRef.current) / 60000);
-
-      console.log('[LessonViewer] 🎉 Auto-completing lesson');
-      console.log('[LessonViewer] lessonId:', lessonId);
-      console.log('[LessonViewer] moduleId:', moduleId);
-      console.log('[LessonViewer] timeSpentMinutes:', timeSpentMinutes);
-
-      await updateLessonProgress({
-        lessonId: lessonId,
-        moduleId: moduleId,
-        completed: true,
-        progress: 1,
-        completionPercentage: 100,
-        timeSpentDelta: timeSpentMinutes,
-        lastAccessed: new Date().toISOString(),
-      });
-
+      console.log('[LessonViewer] 🎉 Auto-completing lesson by saving at 100%');
+      // Save progress at 100% to complete the lesson
+      await saveProgress(true); // forceComplete = true
+      
       autoCompletionRef.current = true;
       setLessonCompleted(true);
 
@@ -559,25 +398,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     } finally {
       autoCompletionInFlightRef.current = false;
     }
-  }, [
-    data,
-    lessonId,
-    moduleId,
-    updateLessonProgress,
-    onComplete,
-    lessonCompleted,
-    syncStatus,
-  ]);
-
-  useEffect(() => {
-    if (lessonType !== 'teoria') {
-      return;
-    }
-
-    if (isScrolledEnough && meetsReadingTime) {
-      triggerAutoCompletion();
-    }
-  }, [lessonType, isScrolledEnough, meetsReadingTime, triggerAutoCompletion]);
+  }, [data, lessonCompleted, saveProgress, onComplete]);
 
   // ============================================================================
   // Practical Cases Handlers
@@ -650,6 +471,13 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   const totalPages = calculatePages.length;
   const currentPageData = calculatePages[currentPage];
   
+  // Notificar al padre sobre cambios en el progreso
+  useEffect(() => {
+    if (onProgressUpdate && totalPages > 0) {
+      onProgressUpdate(currentPage, totalPages);
+    }
+  }, [currentPage, totalPages, onProgressUpdate]);
+  
   // Obtener contexto de la página actual para AITopicExpander
   // Se calcula después de currentPageData para tener la información de la sección actual
   const topicContext = useTopicContext({
@@ -681,37 +509,43 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     // Find the completion page index
     const completionPageIndex = calculatePages.findIndex(page => page.type === 'completion');
     
-    // Mark lesson as complete when reaching the completion page
-    if (completionPageIndex >= 0 && currentPage === completionPageIndex && !lessonCompleted && data) {
-      triggerAutoCompletion().then((completed) => {
-        if (!completed) {
-          return;
-        }
-
-        // Disparar evento para sugerencias finales del TutorAI
-        const event = new CustomEvent('tutor:finalSuggestions', {
-          detail: {
-            ctx: {
-              moduleId: data?.moduleId || moduleId,
-              lessonId: data?.lessonId || lessonId,
-              pageId: currentPageData?.section?.id || currentPageData?.id,
-              sectionId: currentPageData?.section?.id,
-              moduleTitle: module?.title,
-              lessonTitle: data?.title,
-              pageTitle: currentPageData?.section?.title || currentPageData?.title,
-              sectionTitle: currentPageData?.section?.title,
-            },
-            results: assessmentScore ? {
-              correct: assessmentScore.correct,
-              total: assessmentScore.total,
-              percentage: assessmentScore.percentage,
-            } : null,
-          },
+    // Mark lesson as complete when reaching the completion page or when progress is completed
+    if ((completionPageIndex >= 0 && currentPage === completionPageIndex || isCompleted) && !lessonCompleted && data) {
+      if (isCompleted) {
+        setShowConfetti(true);
+        setLessonCompleted(true);
+      } else {
+        // Trigger auto-completion if we reach the completion page
+        triggerAutoCompletion().then((completed) => {
+          if (!completed) {
+            return;
+          }
         });
-        window.dispatchEvent(event);
+      }
+
+      // Disparar evento para sugerencias finales del TutorAI
+      const event = new CustomEvent('tutor:finalSuggestions', {
+        detail: {
+          ctx: {
+            moduleId: data?.moduleId || moduleId,
+            lessonId: data?.lessonId || lessonId,
+            pageId: currentPageData?.section?.id || currentPageData?.id,
+            sectionId: currentPageData?.section?.id,
+            moduleTitle: module?.title,
+            lessonTitle: data?.title,
+            pageTitle: currentPageData?.section?.title || currentPageData?.title,
+            sectionTitle: currentPageData?.section?.title,
+          },
+          results: assessmentScore ? {
+            correct: assessmentScore.correct,
+            total: assessmentScore.total,
+            percentage: assessmentScore.percentage,
+          } : null,
+        },
       });
+      window.dispatchEvent(event);
     }
-  }, [currentPage, calculatePages, lessonCompleted, data, triggerAutoCompletion, moduleId, lessonId, module, currentPageData, assessmentScore]);
+  }, [currentPage, calculatePages, lessonCompleted, data, isCompleted, triggerAutoCompletion, moduleId, lessonId, module, currentPageData, assessmentScore]);
   
   // ============================================================================
   // Build lesson context for AI Tutor
@@ -1033,7 +867,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
             data={data}
             totalPages={totalPages}
             onNavigateToLesson={handleNavigateToLesson}
-            startTime={startTimeRef.current}
+            startTime={Date.now()}
           />
         );
       case 'clinical-case':
@@ -1167,13 +1001,6 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     <ThemeProvider theme={teachingModuleTheme}>
       <CssBaseline />
       <Box sx={{ minHeight: '100vh' }}>
-        {/* Sticky Progress Bar at Top */}
-        <LessonProgressBar
-          progress={localProgress}
-          isSaving={isSaving}
-          lessonTitle={data?.title || 'Lección'}
-        />
-
         {/* Resume Alert */}
         {showResumeAlert && (
           <Alert
@@ -1325,6 +1152,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
 LessonViewer.displayName = 'LessonViewer';
 
 LessonViewer.propTypes = {
+  onProgressUpdate: PropTypes.func,
   /**
    * Unique identifier of the lesson to display
    */
