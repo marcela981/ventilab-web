@@ -34,9 +34,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env
+.env.development
+.env.production
 .env.local
 .env*.local
-.env.production
 .env.development.local
 .env.test.local
 .env.production.local

@@ -45,6 +45,7 @@ import useTeachingModule from '../../hooks/useTeachingModule';
 import useUserProgress from '../../hooks/useUserProgress';
 import { curriculumData } from '../../data/curriculumData';
 import debug from '../../utils/debug';
+import { getModuleResumePoint } from '../../services/progressService';
 
 // Module 03 content and navigation
 import { CurriculumPanel } from '../../view-components/teaching/components/curriculum';
@@ -308,11 +309,11 @@ const TeachingModule = () => {
    * @param {string|null} lessonId - ID de la lección (opcional)
    * @param {string|null} category - ID de la categoría (opcional, para M03)
    */
-  const handleSectionClick = useCallback((moduleId, lessonId = null, category = null) => {
-    // Para módulos con categorías (como module-03-configuration), 
+  const handleSectionClick = useCallback(async (moduleId, lessonId = null, category = null) => {
+    // Para módulos con categorías (como module-03-configuration),
     // no validamos prerequisitos de la misma manera ya que la estructura es diferente
     const isCategoryBasedModule = moduleId === 'module-03-configuration';
-    
+
     if (!isCategoryBasedModule) {
       const module = curriculumData.modules[moduleId];
       if (!module) {
@@ -322,8 +323,26 @@ const TeachingModule = () => {
       }
 
       if (module?.lessons?.length > 0) {
-        // Si se proporciona lessonId específico, usarlo; sino usar el primero
-        const targetLessonId = lessonId || module.lessons[0].id;
+        // Determine target lesson: use provided lessonId, or fetch resume point, or fall back to first lesson
+        let targetLessonId = lessonId;
+
+        if (!targetLessonId) {
+          // Try to get resume point from backend
+          try {
+            const resumePoint = await getModuleResumePoint(moduleId);
+            if (resumePoint?.lessonId) {
+              targetLessonId = resumePoint.lessonId;
+              console.log('[TeachingModule] Resuming from:', targetLessonId);
+            }
+          } catch (error) {
+            console.warn('[TeachingModule] Could not fetch resume point:', error);
+          }
+        }
+
+        // Fall back to first lesson if no resume point
+        if (!targetLessonId) {
+          targetLessonId = module.lessons[0].id;
+        }
         
         // Encontrar la lección en el módulo
         const targetLesson = module.lessons.find(l => l.id === targetLessonId);

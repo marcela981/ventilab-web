@@ -312,6 +312,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     showResumeAlert,
     dismissResumeAlert,
     saveProgress,
+    savePageProgress,
   } = useLessonProgress({
     lessonId,
     moduleId,
@@ -319,7 +320,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     onComplete: () => {
       setShowConfetti(true);
       setLessonCompleted(true);
-      console.log('[LessonViewer] Lesson auto-completed via scroll tracking');
+      console.log('[LessonViewer] Lesson auto-completed via page tracking');
     },
     autoSaveThreshold: 5, // Guardar cada 5% de progreso (más frecuente)
     autoCompleteThreshold: 90,
@@ -330,16 +331,39 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   // ============================================================================
   
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // Reset to first page when lesson changes
-    setCurrentPage(0);
+    // Reset state when lesson changes
     setLessonCompleted(false);
     autoCompletionRef.current = false;
     autoCompletionInFlightRef.current = false;
-    
-    // Cuando cambia la lección, el hook useAITutor creará una nueva sesión automáticamente
-    // La sesión anterior se conserva en localStorage según la lógica del hook
+
+    // Try to restore saved page from localStorage
+    try {
+      const savedProgress = localStorage.getItem(`lesson_progress_${lessonId}`);
+      if (savedProgress) {
+        const { currentPage: savedPage, totalPages: savedTotalPages, progress } = JSON.parse(savedProgress);
+        // If we have a saved page number, restore it
+        if (typeof savedPage === 'number' && savedPage > 0) {
+          console.log('[LessonViewer] Restoring saved page:', savedPage + 1);
+          setCurrentPage(savedPage);
+        } else if (progress > 0) {
+          // Fallback: calculate page from progress percentage (will be adjusted when totalPages is known)
+          console.log('[LessonViewer] Restoring from progress percentage:', progress);
+          // Don't reset to 0, let the progress-based restoration happen below
+        } else {
+          setCurrentPage(0);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      } else {
+        setCurrentPage(0);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } catch (e) {
+      console.error('[LessonViewer] Error restoring page:', e);
+      setCurrentPage(0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Track lesson change
     if (previousLessonIdRef.current !== lessonId) {
       previousLessonIdRef.current = lessonId;
     }
@@ -351,8 +375,17 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   // Navigation Handlers
   // ============================================================================
   
-  const handleNavigateToLesson = useCallback((targetLessonId, targetModuleId) => {
-    // Progress is automatically saved via useProgress hook on beforeunload
+  const handleNavigateToLesson = useCallback(async (targetLessonId, targetModuleId) => {
+    // CRITICAL: Save progress before navigation to ensure persistence
+    try {
+      console.log('[LessonViewer] Saving progress before navigation...');
+      await saveProgress(); // Wait for progress to be saved
+      console.log('[LessonViewer] Progress saved, navigating to:', targetLessonId);
+    } catch (error) {
+      console.error('[LessonViewer] Failed to save progress before navigation:', error);
+      // Continue with navigation even if save fails
+    }
+
     if (onNavigate) {
       onNavigate(targetLessonId, targetModuleId);
     } else {
@@ -362,7 +395,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
         window.location.href = `/teaching/lesson/${targetModuleId}/${targetLessonId}`;
       }
     }
-  }, [lessonId, moduleId, updateLessonProgress, onNavigate]);
+  }, [saveProgress, onNavigate]);
   
   // ============================================================================
   // Automatic Completion
@@ -471,6 +504,35 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   const totalPages = calculatePages.length;
   const currentPageData = calculatePages[currentPage];
   
+  // Restore page from backend progress when totalPages becomes available
+  const hasRestoredFromBackendRef = useRef(false);
+  useEffect(() => {
+    // Only restore once per lesson, and only if we have progress from backend
+    if (hasRestoredFromBackendRef.current || totalPages <= 0 || localProgress <= 0) return;
+
+    // Calculate page from progress percentage
+    const calculatedPage = Math.min(
+      Math.floor((localProgress / 100) * totalPages),
+      totalPages - 1
+    );
+
+    // Only restore if calculated page is different from current and greater than 0
+    if (calculatedPage > 0 && calculatedPage !== currentPage) {
+      console.log('[LessonViewer] Restoring page from backend progress:', {
+        progress: localProgress,
+        calculatedPage: calculatedPage + 1,
+        totalPages,
+      });
+      setCurrentPage(calculatedPage);
+      hasRestoredFromBackendRef.current = true;
+    }
+  }, [totalPages, localProgress, currentPage, lessonId]);
+
+  // Reset the restoration flag when lesson changes
+  useEffect(() => {
+    hasRestoredFromBackendRef.current = false;
+  }, [lessonId]);
+
   // Notificar al padre sobre cambios en el progreso
   useEffect(() => {
     if (onProgressUpdate && totalPages > 0) {
@@ -492,17 +554,27 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   
   const handleNextPage = useCallback(() => {
     if (currentPage < totalPages - 1) {
-      setCurrentPage(prev => prev + 1);
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // CRITICAL: Save progress when page changes
+      console.log('[LessonViewer] Next page clicked, saving progress:', newPage + 1, '/', totalPages);
+      savePageProgress(newPage, totalPages);
     }
-  }, [currentPage, totalPages]);
-  
+  }, [currentPage, totalPages, savePageProgress]);
+
   const handlePrevPage = useCallback(() => {
     if (currentPage > 0) {
-      setCurrentPage(prev => prev - 1);
+      const newPage = currentPage - 1;
+      setCurrentPage(newPage);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Save progress when page changes (even going back)
+      console.log('[LessonViewer] Prev page clicked, saving progress:', newPage + 1, '/', totalPages);
+      savePageProgress(newPage, totalPages);
     }
-  }, [currentPage]);
+  }, [currentPage, totalPages, savePageProgress]);
   
   // Auto-advance to completion page when reaching the last content page
   useEffect(() => {

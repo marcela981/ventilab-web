@@ -36,7 +36,8 @@ interface UseLessonProgressReturn {
   isSaving: boolean;
   isCompleted: boolean;
   showResumeAlert: boolean;
-  saveProgress: () => Promise<void>;
+  saveProgress: (forceComplete?: boolean) => Promise<void>;
+  savePageProgress: (currentPage: number, totalPages: number) => Promise<void>;
   dismissResumeAlert: () => void;
 }
 
@@ -131,6 +132,7 @@ export function useLessonProgress({
       const data: UpdateLessonProgressParams = {
         completionPercentage,
         timeSpent,
+        moduleId, // Include moduleId if available
         scrollPosition: scrollPositionRef.current,
       };
 
@@ -206,16 +208,131 @@ export function useLessonProgress({
   );
 
   /**
+   * Save progress based on page number (for paginated content)
+   * This is the PRIMARY way to save progress for step/page-based navigation
+   */
+  const savePageProgress = useCallback(async (currentPage: number, totalPages: number) => {
+    if (totalPages <= 0) return;
+
+    // Calculate percentage from page position
+    const pageProgress = Math.round(((currentPage + 1) / totalPages) * 100);
+
+    console.log('[useLessonProgress] 📄 Page progress:', {
+      currentPage: currentPage + 1,
+      totalPages,
+      percentage: pageProgress,
+    });
+
+    // Update local state immediately
+    setLocalProgress(pageProgress);
+
+    // Check if token is available
+    const token = getAuthToken();
+    if (!token) {
+      console.warn('[useLessonProgress] No auth token, saving to localStorage only');
+      try {
+        localStorage.setItem(`lesson_progress_${lessonId}`, JSON.stringify({
+          progress: pageProgress,
+          currentPage,
+          totalPages,
+          scrollPosition: 0,
+          timestamp: Date.now(),
+        }));
+        localStorage.setItem(`lesson_progress_${lessonId}_failed`, JSON.stringify({
+          progress: pageProgress,
+          currentPage,
+          totalPages,
+          scrollPosition: 0,
+          timeSpent: Math.floor((Date.now() - startTimeRef.current) / 1000),
+          timestamp: Date.now(),
+        }));
+      } catch (e) {
+        console.error('[useLessonProgress] localStorage save failed:', e);
+      }
+      return;
+    }
+
+    // Only save to backend if progress increased significantly or reached 100%
+    const progressDiff = pageProgress - lastSavedProgress;
+    if (progressDiff < autoSaveThreshold && pageProgress < 100) {
+      console.log('[useLessonProgress] Progress change too small, skipping backend save');
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+
+      const timeSpent = Math.floor((Date.now() - startTimeRef.current) / 1000);
+      const data: UpdateLessonProgressParams = {
+        completionPercentage: pageProgress,
+        timeSpent,
+        moduleId,
+        scrollPosition: 0,
+      };
+
+      console.log('[useLessonProgress] 🚀 Saving page progress to backend:', {
+        lessonId,
+        progress: pageProgress,
+        page: `${currentPage + 1}/${totalPages}`,
+      });
+
+      await updateLessonProgress(lessonId, data);
+
+      setLastSavedProgress(pageProgress);
+
+      // Save to localStorage as backup
+      localStorage.setItem(`lesson_progress_${lessonId}`, JSON.stringify({
+        progress: pageProgress,
+        currentPage,
+        totalPages,
+        scrollPosition: 0,
+        timestamp: Date.now(),
+      }));
+
+      // Clear any failed save markers
+      localStorage.removeItem(`lesson_progress_${lessonId}_failed`);
+
+      console.log('[useLessonProgress] ✅ Page progress saved successfully');
+
+      // Check for auto-completion
+      if (pageProgress >= autoCompleteThreshold && !isCompleted) {
+        setIsCompleted(true);
+        if (onComplete) {
+          onComplete();
+        }
+      }
+    } catch (error: any) {
+      console.error('[useLessonProgress] ❌ Save page progress error:', error);
+      // Mark for retry
+      try {
+        localStorage.setItem(`lesson_progress_${lessonId}_failed`, JSON.stringify({
+          progress: pageProgress,
+          currentPage,
+          totalPages,
+          scrollPosition: 0,
+          timeSpent: Math.floor((Date.now() - startTimeRef.current) / 1000),
+          timestamp: Date.now(),
+          error: error?.message || 'Unknown error',
+        }));
+      } catch (e) {
+        // Ignore localStorage errors
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  }, [lessonId, moduleId, lastSavedProgress, autoSaveThreshold, autoCompleteThreshold, isCompleted, onComplete]);
+
+  /**
    * Handle auto-completion
    */
   const handleAutoComplete = useCallback(async () => {
     if (isCompleted) return;
 
     console.log('[useLessonProgress] Auto-completing lesson');
-    
+
     setIsCompleted(true);
     await saveProgress(true);
-    
+
     // Trigger completion callback (e.g., confetti)
     if (onComplete) {
       onComplete();
@@ -455,6 +572,7 @@ export function useLessonProgress({
           await updateLessonProgress(lessonId, {
             completionPercentage: progress,
             timeSpent,
+            moduleId,
             scrollPosition,
           });
           
@@ -480,6 +598,7 @@ export function useLessonProgress({
               await updateLessonProgress(lessonId, {
                 completionPercentage: cachedProgress,
                 timeSpent: 0, // Don't add time for cached progress
+                moduleId,
                 scrollPosition: JSON.parse(cached).scrollPosition || 0,
               });
               console.log('[useLessonProgress] Synced cached progress to server');
@@ -530,6 +649,7 @@ export function useLessonProgress({
     isCompleted,
     showResumeAlert,
     saveProgress,
+    savePageProgress,
     dismissResumeAlert,
   };
 }

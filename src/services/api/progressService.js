@@ -183,10 +183,24 @@ const getAuthHeaders = () => {
 };
 
 const buildUrl = (path) => {
-  const trimmed = apiBaseUrl.replace(/\/$/, '');
-  const hasApiSegment = /\/api(\/|$)/.test(trimmed);
-  const base = hasApiSegment ? trimmed : `${trimmed}/api`;
-  return `${base}${path}`;
+  // Asegurar que apiBaseUrl termine con /api
+  let trimmed = apiBaseUrl.replace(/\/$/, '');
+  
+  // Si no termina con /api, agregarlo
+  if (!trimmed.endsWith('/api')) {
+    // Si termina con /api/, quitar la barra final
+    if (trimmed.endsWith('/api/')) {
+      trimmed = trimmed.slice(0, -1);
+    } else {
+      // Agregar /api si no está presente
+      trimmed = `${trimmed}/api`;
+    }
+  }
+  
+  // Asegurar que el path empiece con /
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  
+  return `${trimmed}${normalizedPath}`;
 };
 
 const parseResponse = async (response) => {
@@ -362,10 +376,14 @@ export const updateLessonProgress = async (payload) => {
 
       const { lessonId } = payload;
       const body = {
+        ...(payload.moduleId !== undefined && { moduleId: payload.moduleId }),
         ...(payload.progress !== undefined && { progress: payload.progress }),
         ...(payload.completed !== undefined && { completed: payload.completed }),
         ...(payload.completionPercentage !== undefined && { completionPercentage: payload.completionPercentage }),
         ...(payload.timeSpentDelta !== undefined && { timeSpentDelta: payload.timeSpentDelta }),
+        ...(payload.timeSpent !== undefined && { timeSpent: payload.timeSpent }),
+        ...(payload.scrollPosition !== undefined && { scrollPosition: payload.scrollPosition }),
+        ...(payload.lastViewedSection !== undefined && { lastViewedSection: payload.lastViewedSection }),
         ...(payload.lastAccessed !== undefined && { lastAccessed: payload.lastAccessed }),
       };
 

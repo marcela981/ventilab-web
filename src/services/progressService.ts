@@ -15,6 +15,7 @@ import { SWR_KEYS, getProgressInvalidationMatcher } from '@/lib/swrKeys';
 export interface UpdateLessonProgressParams {
   completionPercentage: number;
   timeSpent: number; // in seconds
+  moduleId?: string; // Optional module ID
   scrollPosition?: number;
   lastViewedSection?: string;
 }
@@ -186,28 +187,19 @@ export async function getLessonProgress(lessonId: string): Promise<LessonProgres
     return null;
   } catch (error) {
     console.error('[progressService] getLessonProgress error:', error);
-    // Return default progress on error
-    return {
-      completed: false,
-      progress: 0,
-      progressPercentage: 0,
-      lastAccessed: null,
-      completedAt: null,
-      scrollPosition: 0,
-      lastViewedSection: null,
-      timeSpent: 0,
-    };
+    // Return null on error - let the caller handle missing progress
+    return null;
   }
 }
 
 /**
  * Get module progress
- * GET /api/progress/modules/:moduleId
+ * GET /api/progress/module/:moduleId (note: singular "module", not "modules")
  */
 export async function getModuleProgress(moduleId: string): Promise<ModuleProgress> {
   const token = getAuthToken();
-  
-  const { res, data } = await http(`/progress/modules/${moduleId}`, {
+
+  const { res, data } = await http(`/progress/module/${moduleId}`, {
     method: 'GET',
     authToken: token || undefined,
   });
@@ -217,26 +209,28 @@ export async function getModuleProgress(moduleId: string): Promise<ModuleProgres
     throw new Error(errorMessage);
   }
 
-  return data?.progress || {
-    moduleId,
-    progress: 0,
-    completedLessons: 0,
-    totalLessons: 0,
-    timeSpent: 0,
-    lastAccessedAt: null,
-    isCompleted: false,
+  // Backend returns moduleProgress directly with these fields:
+  // { moduleId, completionPercentage, completedLessons, totalLessons, totalTimeSpent, lastAccess, lessons }
+  return {
+    moduleId: data?.moduleId || moduleId,
+    progress: data?.completionPercentage || 0,
+    completedLessons: data?.completedLessons || 0,
+    totalLessons: data?.totalLessons || 0,
+    timeSpent: data?.totalTimeSpent || 0,
+    lastAccessedAt: data?.lastAccess || null,
+    isCompleted: (data?.completionPercentage || 0) >= 100,
   };
 }
 
 /**
  * Get module resume point (first incomplete lesson)
- * GET /api/progress/modules/:moduleId/resume
+ * GET /api/modules/:moduleId/resume (note: uses /modules route, not /progress)
  */
 export async function getModuleResumePoint(moduleId: string): Promise<ModuleResumePoint | null> {
   const token = getAuthToken();
-  
+
   try {
-    const { res, data } = await http(`/progress/modules/${moduleId}/resume`, {
+    const { res, data } = await http(`/modules/${moduleId}/resume`, {
       method: 'GET',
       authToken: token || undefined,
     });
@@ -248,7 +242,18 @@ export async function getModuleResumePoint(moduleId: string): Promise<ModuleResu
       throw new Error(data?.message || 'Error al obtener punto de reanudación');
     }
 
-    return data;
+    // Backend returns: { resumeLessonId, resumeLessonTitle, resumeLessonProgress, resumeLessonOrder, moduleProgress, totalLessons, completedLessons, nextLessonOrder }
+    // Map to expected ModuleResumePoint format
+    const resumeData = data?.data || data;
+    return {
+      lessonId: resumeData?.resumeLessonId || '',
+      lessonTitle: resumeData?.resumeLessonTitle || '',
+      lessonOrder: resumeData?.resumeLessonOrder || 0,
+      moduleId: moduleId,
+      completionPercentage: resumeData?.resumeLessonProgress || 0,
+      scrollPosition: null, // Not provided by backend
+      lastViewedSection: null, // Not provided by backend
+    };
   } catch (error) {
     console.error('[progressService] getModuleResumePoint error:', error);
     return null;
@@ -285,10 +290,10 @@ export async function invalidateProgressCache(moduleId?: string, lessonId?: stri
     await mutate('/progress/overview');
     await mutate(SWR_KEYS.userOverview);
 
-    // Invalidate specific module if provided (legacy and new keys)
+    // Invalidate specific module if provided (using correct paths)
     if (moduleId) {
-      await mutate(`/progress/modules/${moduleId}`);
-      await mutate(`/progress/modules/${moduleId}/resume`);
+      await mutate(`/progress/module/${moduleId}`); // Correct path (singular)
+      await mutate(`/modules/${moduleId}/resume`); // Resume is under /modules
       await mutate(SWR_KEYS.moduleProgress(moduleId));
       await mutate(SWR_KEYS.moduleLessonsProgress(moduleId));
     }
