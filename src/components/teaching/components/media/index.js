@@ -15,6 +15,9 @@ export { default as ImageGallery } from './ImageGallery';
 // Componente de diagrama SVG interactivo
 export { default as InteractiveDiagram } from './InteractiveDiagram';
 
+// Shared media utility components (re-exported from content)
+export { MediaSkeleton, MediaFallback } from '../content';
+
 // Exportación por defecto
 export { default } from './VideoPlayer';
 

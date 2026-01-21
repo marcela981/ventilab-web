@@ -11,7 +11,6 @@ import {
   Snackbar,
   Skeleton,
   Fade,
-  Grid,
   Divider,
   CircularProgress
 } from '@mui/material';
@@ -1018,48 +1017,9 @@ const TeachingModule = () => {
       {/* TAB PANEL 2: Mi Progreso */}
       {activeTab === 2 && (
         <Box>
-          <Suspense
-            fallback={
-              <Box sx={{ py: 4 }}>
-                {/* Loading skeleton for ProgressDashboard */}
-                <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
-                  <Skeleton variant="text" width="40%" height={40} sx={{ mb: 2 }} />
-                  <Grid container spacing={3}>
-                    {[1, 2, 3, 4].map((item) => (
-                      <Grid item xs={12} sm={6} md={3} key={item}>
-                        <Skeleton variant="rectangular" height={120} sx={{ borderRadius: 2 }} />
-                      </Grid>
-                    ))}
-                  </Grid>
-                </Paper>
-
-                <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
-                  <Skeleton variant="text" width="30%" height={40} sx={{ mb: 2 }} />
-                  <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
-                </Paper>
-
-                <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
-                  <Skeleton variant="text" width="35%" height={40} sx={{ mb: 2 }} />
-                  <Grid container spacing={2}>
-                    {[1, 2, 3].map((item) => (
-                      <Grid item xs={12} md={4} key={item}>
-                        <Skeleton variant="rectangular" height={180} sx={{ borderRadius: 2 }} />
-                      </Grid>
-                    ))}
-                  </Grid>
-                </Paper>
-              </Box>
-            }
-          >
+          <Suspense fallback={<ProgressTabSkeleton />}>
             {isLoadingProgress ? (
-              <Box sx={{ py: 4, textAlign: 'center' }}>
-                <Paper elevation={2} sx={{ p: 4, borderRadius: 2 }}>
-                  <Typography variant="h6" sx={{ mb: 2, color: '#6c757d' }}>
-                    Cargando tu progreso...
-                  </Typography>
-                  <Skeleton variant="rectangular" height={300} sx={{ borderRadius: 2, mt: 2 }} />
-                </Paper>
-              </Box>
+              <ProgressTabSkeleton />
             ) : (
               <ProgressTab />
             )}

@@ -56,11 +56,9 @@ import {
   Paper,
 } from '@mui/material';
 import {
-  OpenInNew as OpenInNewIcon,
   Lock as LockIcon,
-  CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
-import { ThemeProvider, useTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { teachingModuleTheme } from '../../../theme/teachingModuleTheme';
 
 import useLesson from '../hooks/useLesson';
@@ -98,96 +96,12 @@ const LazyVideoPlayer = lazy(() => import('./media/VideoPlayer'));
 const LazyImageGallery = lazy(() => import('./media/ImageGallery'));
 const LazyInteractiveDiagram = lazy(() => import('./media/InteractiveDiagram'));
 
-/**
- * MediaSkeleton - Local skeleton component for media blocks
- */
-const MediaSkeleton = ({ variant = 'video' }) => {
-  if (variant === 'imageGallery') {
-    return (
-      <Grid container spacing={2}>
-        {[1, 2, 3, 4].map((i) => (
-          <Grid item xs={6} sm={4} md={3} key={i}>
-            <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 1 }} />
-          </Grid>
-        ))}
-      </Grid>
-    );
-  }
-  
-  // Default: video/diagram skeleton (16:9 aspect ratio)
-  return (
-    <Skeleton
-      variant="rectangular"
-      sx={{
-        width: '100%',
-        paddingTop: '56.25%', // 16:9 aspect ratio
-        borderRadius: 1,
-      }}
-    />
-  );
-};
+// Media utility components (from content folder)
+import { MediaSkeleton, MediaFallback } from './content';
 
-MediaSkeleton.propTypes = {
-  variant: PropTypes.oneOf(['video', 'diagram', 'imageGallery']),
-};
-
-/**
- * MediaFallback - Componente unificado para estados vacíos y errores
- * Última red de seguridad cuando un bloque multimedia está malformado
- */
-const MediaFallback = memo(({ message, actionUrl, blockIndex, blockType }) => {
-  const handleOpenExternal = useCallback(() => {
-    if (actionUrl) {
-      window.open(actionUrl, '_blank', 'noopener,noreferrer');
-    }
-  }, [actionUrl]);
-
-  // Emitir warning para debug
-  useEffect(() => {
-    if (blockIndex !== undefined && blockType) {
-      console.warn(
-        `[LessonViewer] Fallback activado para bloque multimedia ${blockIndex + 1} (tipo: ${blockType}):`,
-        message
-      );
-    }
-  }, [message, blockIndex, blockType]);
-
-  return (
-    <Alert
-      severity="warning"
-      sx={{ my: 2 }}
-      action={
-        actionUrl ? (
-          <Button
-            color="inherit"
-            size="small"
-            onClick={handleOpenExternal}
-            startIcon={<OpenInNewIcon />}
-          >
-            Abrir en nueva pestaña
-          </Button>
-        ) : null
-      }
-    >
-      {message || 'Contenido no disponible'}
-    </Alert>
-  );
-});
-
-MediaFallback.displayName = 'MediaFallback';
-
-MediaFallback.propTypes = {
-  message: PropTypes.string.isRequired,
-  actionUrl: PropTypes.string,
-  blockIndex: PropTypes.number,
-  blockType: PropTypes.string,
-};
-
-MediaFallback.defaultProps = {
-  actionUrl: null,
-  blockIndex: undefined,
-  blockType: undefined,
-};
+// Extracted loading/error state components
+import LessonLoadingSkeleton from './LessonLoadingSkeleton';
+import LessonErrorState from './LessonErrorState';
 
 /**
  * LessonViewer - Main component for displaying lesson content
@@ -1022,47 +936,19 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   };
   
   // ============================================================================
-  // Loading State
+  // Loading State - Using extracted component
   // ============================================================================
-  
+
   if (isLoading) {
-    return (
-      <ThemeProvider theme={teachingModuleTheme}>
-        <CssBaseline />
-        <Container maxWidth="lg" sx={{ py: 4 }}>
-          <Skeleton variant="rectangular" height={200} sx={{ mb: 3, borderRadius: 1 }} />
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 1 }} />
-            </Grid>
-          </Grid>
-        </Container>
-      </ThemeProvider>
-    );
+    return <LessonLoadingSkeleton />;
   }
-  
+
   // ============================================================================
-  // Error State
+  // Error State - Using extracted component
   // ============================================================================
-  
+
   if (error || !data) {
-    return (
-      <ThemeProvider theme={teachingModuleTheme}>
-        <CssBaseline />
-        <Container maxWidth="lg" sx={{ py: 4 }}>
-          <Alert
-            severity="error"
-            action={
-              <Button color="inherit" size="small" onClick={refetch}>
-                Reintentar
-              </Button>
-            }
-          >
-            {error || 'No se pudo cargar la lección. Por favor, intenta de nuevo.'}
-          </Alert>
-        </Container>
-      </ThemeProvider>
-    );
+    return <LessonErrorState error={error} onRetry={refetch} />;
   }
   
   // ============================================================================
