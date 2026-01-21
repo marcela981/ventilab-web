@@ -1,13 +1,13 @@
 /**
- * Barrel exports for curriculum components
- * 
- * This file exports all curriculum-related components from their new
- * co-located structure in src/view-components/teaching/components/curriculum/
+ * COMPATIBILITY SHIM
+ * This file re-exports from the canonical location.
+ * Import from '@/features/teaching/components/curriculum' instead.
+ * @deprecated Use @/features/teaching/components/curriculum
  */
-
-export { default as CurriculumPanel } from './CurriculumPanel/CurriculumPanel';
-export { default as LevelStepper } from './LevelStepper/LevelStepper';
-export { default as ModuleLessonsList } from './ModuleLessonsList/ModuleLessonsList';
-export { default as ModuleCard } from './ModuleCard/ModuleCard';
-export { default as Module03CurriculumView } from './Module03CurriculumView/Module03CurriculumView';
-
+export {
+  CurriculumPanel,
+  LevelStepper,
+  ModuleLessonsList,
+  ModuleCard,
+  Module03CurriculumView
+} from '@/features/teaching/components/curriculum';

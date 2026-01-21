@@ -4,11 +4,18 @@
     "paths": {
       "@/*": ["src/*"],
       "@/components/*": ["src/components/*"],
+      "@/view-components/*": ["src/view-components/*"],
+      "@/features/*": ["src/features/*"],
+      "@/hooks/*": ["src/hooks/*"],
+      "@/contexts/*": ["src/contexts/*"],
+      "@/services/*": ["src/services/*"],
       "@/utils/*": ["src/utils/*"],
-      "@/lib/*": ["src/lib/*"],
+      "@/lib/*": ["lib/*", "src/lib/*"],
+      "@/data/*": ["src/data/*"],
+      "@/theme/*": ["src/theme/*"],
       "@/styles/*": ["src/styles/*"],
-      "@/hooks/*": ["src/hooks/*"]
+      "@/types/*": ["src/types/*"]
     }
   },
-  "exclude": ["node_modules", ".next", "out"]
+  "exclude": ["node_modules", ".next", "out", "dist"]
 }

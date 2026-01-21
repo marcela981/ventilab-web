@@ -2,45 +2,24 @@
 
 import React, { useState, useEffect, useCallback, lazy, Suspense, useMemo } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
 import {
   Container,
   Paper,
   Typography,
   Box,
   Alert,
-  AlertTitle,
   Snackbar,
-  Tabs,
-  Tab,
   Skeleton,
-  IconButton,
   Fade,
   Grid,
-  Breadcrumbs,
-  Link,
-  Button,
-  CircularProgress,
-  LinearProgress
+  Divider,
+  CircularProgress
 } from '@mui/material';
-import {
-  Dashboard as DashboardIcon,
-  School as SchoolIcon,
-  TrendingUp as TrendingUpIcon,
-  ArrowBack,
-  Home as HomeIcon,
-  NavigateNext,
-  MedicalServices as MedicalServicesIcon,
-  Shield as ShieldIcon,
-  Build as BuildIcon,
-  ChecklistRtl as ChecklistIcon,
-} from '@mui/icons-material';
 
 // Hooks personalizados
 import { useLearningProgress } from '../../contexts/LearningProgressContext';
 import useModuleProgress from './hooks/useModuleProgress';
 import useModuleAvailability from './hooks/useModuleAvailability';
-import useLesson from './hooks/useLesson';
 import useTeachingModule from '../../hooks/useTeachingModule';
 import useUserProgress from '../../hooks/useUserProgress';
 import { curriculumData } from '../../data/curriculumData';
@@ -52,88 +31,22 @@ import { CurriculumPanel } from '../../view-components/teaching/components/curri
 
 // Componentes hijos
 import {
-  DashboardHeader,
-  ContinueLearningSection,
-  SessionStats,
-  ProgressOverview,
-  ModuleInfoPanel,
-  QuickAccessLessons
+  DashboardHeader
 } from '../../view-components/teaching/components/dashboard';
 import FlashcardSystem from './FlashcardSystem';
 
-// Lazy load LessonViewer and ProgressDashboard for better performance
-const LessonViewer = lazy(() => import('./components/LessonViewer'));
+// Extracted components
+import TeachingLessonView from './components/TeachingLessonView';
+import TeachingTabs from './components/TeachingTabs';
+import ProgressTabSkeleton from './components/ProgressTabSkeleton';
+
+// Lazy load ProgressDashboard for better performance
 const ProgressTab = lazy(() => import('../../features/progress/components/ProgressTab'));
 const Module3ProgressDashboard = lazy(() => import('../../view-components/teaching/components/dashboard/Module3ProgressDashboard'));
 const ReadinessIndicator = lazy(() => import('../../view-components/teaching/components/dashboard/ReadinessIndicator'));
 
 // Importar DashboardTab
 import DashboardTab from '../../features/dashboard/DashboardTab';
-
-/**
- * Wrapper component para LessonViewer que maneja errores
- * Este componente envuelve LessonViewer para capturar errores de carga
- * y mostrarlos de manera amigable al usuario
- */
-const LessonViewerWrapper = ({ lessonId, moduleId, onComplete, onNavigate, onError, onBackToDashboard, onProgressUpdate }) => {
-  const router = useRouter();
-  const { data, isLoading, error, refetch } = useLesson(lessonId, moduleId);
-  
-  // Notify parent of errors
-  useEffect(() => {
-    if (error && onError) {
-      onError(error);
-    }
-  }, [error, onError]);
-  
-  // Show error state if there's an error
-  if (error && !isLoading) {
-    return (
-      <Alert 
-        severity="error"
-        action={
-          <Button color="inherit" size="small" onClick={refetch}>
-            Reintentar
-          </Button>
-        }
-        sx={{ mb: 3 }}
-      >
-        <AlertTitle>Error al cargar la lección</AlertTitle>
-        {error}
-        {onBackToDashboard && (
-          <Box sx={{ mt: 2 }}>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={onBackToDashboard}
-            >
-              Volver al Curriculum
-            </Button>
-          </Box>
-        )}
-      </Alert>
-    );
-  }
-  
-  return (
-        <LessonViewer
-          lessonId={lessonId}
-          moduleId={moduleId}
-          onComplete={onComplete}
-          onNavigate={onNavigate}
-          onProgressUpdate={onProgressUpdate}
-        />
-  );
-};
-
-// PropTypes removed - using JSDoc for type documentation instead
-// LessonViewerWrapper.propTypes = {
-//   lessonId: PropTypes.string.isRequired,
-//   moduleId: PropTypes.string.isRequired,
-//   onComplete: PropTypes.func,
-//   onNavigate: PropTypes.func,
-//   onError: PropTypes.func,
-// };
 
 /**
  * TeachingModule - Componente orquestador del módulo de enseñanza
@@ -994,180 +907,20 @@ const TeachingModule = () => {
       <Container maxWidth="xl" sx={{ py: 4, minHeight: '100vh' }}>
         {/* Renderizado condicional: LessonViewer o Dashboard normal */}
         {isViewingLesson ? (
-        /* Vista de Lección Completa */
-        <Fade in timeout={500}>
-          <Box>
-            {/* Breadcrumbs de navegación */}
-            {lessonInfo && (
-              <Breadcrumbs
-                separator={<NavigateNext fontSize="small" />}
-                aria-label="breadcrumb"
-                sx={{ mb: 3 }}
-              >
-                <Link
-                  component="button"
-                  variant="body1"
-                  onClick={() => router.push('/teaching')}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    color: 'text.secondary',
-                    textDecoration: 'none',
-                    '&:hover': { color: 'primary.main' },
-                    cursor: 'pointer'
-                  }}
-                >
-                  <HomeIcon sx={{ mr: 0.5, fontSize: 20 }} />
-                  Inicio
-                </Link>
-                <Link
-                  component="button"
-                  variant="body1"
-                  onClick={handleBackToDashboard}
-                  sx={{
-                    color: 'text.secondary',
-                    textDecoration: 'none',
-                    '&:hover': { color: 'primary.main' },
-                    cursor: 'pointer'
-                  }}
-                >
-                  Módulo de Enseñanza
-                </Link>
-                <Link
-                  component="button"
-                  variant="body1"
-                  onClick={() => {
-                    // Volver al curriculum pero manteniendo el módulo
-                    const { lessonId, category, ...restQuery } = router.query;
-                    router.push(
-                      {
-                        pathname: router.pathname,
-                        query: { ...restQuery, tab: 'curriculum' }
-                      },
-                      undefined,
-                      { shallow: true }
-                    );
-                  }}
-                  sx={{
-                    color: 'text.secondary',
-                    textDecoration: 'none',
-                    '&:hover': { color: 'primary.main' },
-                    cursor: 'pointer'
-                  }}
-                >
-                  {lessonInfo.moduleTitle}
-                </Link>
-                <Typography color="text.primary" sx={{ fontWeight: 600 }}>
-                  {lessonInfo.lessonTitle}
-                </Typography>
-              </Breadcrumbs>
-            )}
-
-            {/* Botón para volver */}
-            <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-              <IconButton
-                onClick={handleBackToDashboard}
-                sx={{
-                  backgroundColor: 'background.paper',
-                  boxShadow: 2,
-                  '&:hover': {
-                    backgroundColor: 'action.hover',
-                  },
-                }}
-                aria-label="Volver"
-              >
-                <ArrowBack />
-              </IconButton>
-              <Typography
-                component="span"
-                sx={{ color: 'text.secondary', fontWeight: 500 }}
-              >
-                Volver
-              </Typography>
-            </Box>
-
-            {/* Barra de progreso de la lección - debajo del botón Volver */}
-            {lessonProgress.totalPages > 0 && (
-              <Box sx={{ mb: 3 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-                    Progreso de la lección
-                  </Typography>
-                  <Typography variant="caption" fontWeight={600} sx={{ color: '#ffffff' }}>
-                    {Math.round(((lessonProgress.currentPage + 1) / lessonProgress.totalPages) * 100)}% ({lessonProgress.currentPage + 1} / {lessonProgress.totalPages})
-                  </Typography>
-                </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={((lessonProgress.currentPage + 1) / lessonProgress.totalPages) * 100}
-                  sx={{
-                    height: 10,
-                    borderRadius: 5,
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                    '& .MuiLinearProgress-bar': {
-                      backgroundColor: ((lessonProgress.currentPage + 1) / lessonProgress.totalPages) * 100 >= 100 ? '#4CAF50' : '#2196f3',
-                      borderRadius: 5,
-                      boxShadow: ((lessonProgress.currentPage + 1) / lessonProgress.totalPages) * 100 >= 100
-                        ? '0 2px 4px rgba(76, 175, 80, 0.4)'
-                        : '0 2px 4px rgba(33, 150, 243, 0.3)',
-                      transition: 'transform 0.3s ease-in-out, background-color 0.3s ease',
-                    },
-                  }}
-                />
-              </Box>
-            )}
-
-            {/* Manejo de errores de prerequisitos */}
-            {lessonError && lessonError.missingPrerequisites && (
-              <Alert severity="warning" sx={{ mb: 3 }}>
-                <AlertTitle>Lección no disponible</AlertTitle>
-                {lessonError.details}
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 600 }}>
-                    Prerequisitos pendientes:
-                  </Typography>
-                  <ul style={{ margin: 0, paddingLeft: 20 }}>
-                    {lessonError.missingPrerequisites.map((prereq, index) => (
-                      <li key={index}>
-                        <Typography variant="body2">{prereq}</Typography>
-                      </li>
-                    ))}
-                  </ul>
-                </Box>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={handleBackToDashboard}
-                  sx={{ mt: 2 }}
-                >
-                  Volver al Curriculum
-                </Button>
-              </Alert>
-            )}
-
-            {/* Componente LessonViewer con Suspense y manejo de errores */}
-            {!lessonError && (
-              <Suspense
-                fallback={
-                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-                    <CircularProgress />
-                  </Box>
-                }
-              >
-                <LessonViewerWrapper
-                  lessonId={lessonIdFromQuery}
-                  moduleId={moduleIdFromQuery}
-                  onComplete={handleLessonComplete}
-                  onNavigate={handleNavigateLesson}
-                  onError={handleLessonError}
-                  onBackToDashboard={handleBackToDashboard}
-                  onProgressUpdate={handleLessonProgressUpdate}
-                />
-              </Suspense>
-            )}
-          </Box>
-        </Fade>
-      ) : (
+          /* Vista de Lección Completa - Using extracted component */
+          <TeachingLessonView
+            lessonId={lessonIdFromQuery}
+            moduleId={moduleIdFromQuery}
+            lessonInfo={lessonInfo}
+            lessonProgress={lessonProgress}
+            lessonError={lessonError}
+            onBackToDashboard={handleBackToDashboard}
+            onLessonComplete={handleLessonComplete}
+            onNavigateLesson={handleNavigateLesson}
+            onLessonError={handleLessonError}
+            onProgressUpdate={handleLessonProgressUpdate}
+          />
+        ) : (
         /* Vista de Dashboard Normal */
         <Fade in timeout={500}>
           <Box>
@@ -1176,132 +929,12 @@ const TeachingModule = () => {
               activeTab={activeTab}
             />
 
-      {/* Tabs Navigation - Diseño Moderno */}
-      <Box
-        sx={{
-          mb: 4,
-          position: 'relative',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '1px',
-            background: 'linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.3), transparent)',
-          },
-        }}
-      >
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          variant={isMobile ? 'fullWidth' : 'standard'}
-          sx={{
-            position: 'relative',
-            '& .MuiTab-root': {
-              minHeight: 72,
-              fontSize: isMobile ? '0.875rem' : '1rem',
-              fontWeight: 600,
-              textTransform: 'none',
-              color: 'rgba(255, 255, 255, 0.6)',
-              padding: '12px 24px',
-              marginRight: { xs: 0, sm: 2 },
-              borderRadius: '12px 12px 0 0',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              position: 'relative',
-              '&:hover': {
-                color: 'rgba(255, 255, 255, 0.9)',
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                transform: 'translateY(-2px)',
-              },
-              '&.Mui-selected': {
-                color: '#ffffff',
-                backgroundColor: 'rgba(33, 150, 243, 0.15)',
-              },
-              '& .MuiTab-iconWrapper': {
-                marginRight: { xs: 0.5, sm: 1.5 },
-                transition: 'transform 0.3s ease',
-                fontSize: { xs: '1.1rem', sm: '1.25rem' },
-              },
-              '&:hover .MuiTab-iconWrapper': {
-                transform: 'scale(1.1)',
-              },
-              '&.Mui-selected .MuiTab-iconWrapper': {
-                transform: 'scale(1.15)',
-                color: '#2196F3',
-              },
-            },
-            '& .MuiTabs-indicator': {
-              height: 4,
-              borderRadius: '4px 4px 0 0',
-              background: 'linear-gradient(90deg, #2196F3, #42A5F5, #2196F3)',
-              boxShadow: '0 2px 8px rgba(33, 150, 243, 0.4)',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            },
-            '& .MuiTabs-flexContainer': {
-              gap: { xs: 0, sm: 1 },
-            },
-          }}
-        >
-          <Tab
-            label={isMobile ? '' : 'Dashboard'}
-            icon={<DashboardIcon />}
-            iconPosition="start"
-            value={0}
-            sx={{
-              '&.Mui-selected': {
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '2px',
-                  background: 'linear-gradient(90deg, transparent, #2196F3, transparent)',
-                },
-              },
-            }}
-          />
-          <Tab
-            label={isMobile ? '' : 'Curriculum'}
-            icon={<SchoolIcon />}
-            iconPosition="start"
-            value={1}
-            sx={{
-              '&.Mui-selected': {
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '2px',
-                  background: 'linear-gradient(90deg, transparent, #2196F3, transparent)',
-                },
-              },
-            }}
-          />
-          <Tab
-            label={isMobile ? '' : 'Mi Progreso'}
-            icon={<TrendingUpIcon />}
-            iconPosition="start"
-            value={2}
-            sx={{
-              '&.Mui-selected': {
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '2px',
-                  background: 'linear-gradient(90deg, transparent, #2196F3, transparent)',
-                },
-              },
-            }}
-          />
-        </Tabs>
-      </Box>
+      {/* Tabs Navigation - Using extracted component */}
+      <TeachingTabs
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        isMobile={isMobile}
+      />
 
       {/* TAB PANEL 0: Dashboard */}
       {activeTab === 0 && (
