@@ -78,11 +78,23 @@ export const getModuleProgressLegacy = (progressByModule, moduleId, lessonIds = 
   
   let completed = 0;
   let progressSum = 0;
-  
+
   lessons.forEach(lessonId => {
     const lessonProgress = moduleData.lessonsById[lessonId];
     if (lessonProgress) {
-      const progressValue = lessonProgress.completed ? 1 : Math.max(0, Math.min(1, lessonProgress.progress || 0));
+      // Priority: use completionPercentage (0-100) from DB, else progress (0-1)
+      let progressValue;
+      if (lessonProgress.completed) {
+        progressValue = 1;
+      } else if (typeof lessonProgress.completionPercentage === 'number') {
+        // DB stores completionPercentage as 0-100, convert to 0-1
+        progressValue = Math.max(0, Math.min(1, lessonProgress.completionPercentage / 100));
+      } else if (typeof lessonProgress.progress === 'number') {
+        // Fallback to progress field (already 0-1)
+        progressValue = Math.max(0, Math.min(1, lessonProgress.progress));
+      } else {
+        progressValue = 0;
+      }
       progressSum += progressValue;
       if (progressValue >= 1) {
         completed += 1;

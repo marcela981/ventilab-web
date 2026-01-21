@@ -231,23 +231,6 @@ export const LearningProgressProvider = ({ children }) => {
   }, [loadSnapshot]);
 
 
-  // Listen for progress:updated events
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const handleProgressUpdated = () => {
-      loadSnapshot('progress-event');
-    };
-
-    window.addEventListener('progress:updated', handleProgressUpdated);
-
-    return () => {
-      window.removeEventListener('progress:updated', handleProgressUpdated);
-    };
-  }, [loadSnapshot]);
-
   // Migrate local to DB on login
   useEffect(() => {
     const userId = getUserData()?.id || getUserData()?._id || session?.user?.id || null;
@@ -307,6 +290,33 @@ export const LearningProgressProvider = ({ children }) => {
     getFlashcardsDue,
     getFlashcardStats,
   } = useLegacyFeatures();
+
+  // Listen for progress:updated events (must be after loadModuleProgress is defined)
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const handleProgressUpdated = (event) => {
+      // Refresh the unified snapshot
+      loadSnapshot('progress-event');
+
+      // Also refresh the specific module's progress in progressByModule
+      const moduleId = event?.detail?.moduleId;
+      if (moduleId && loadModuleProgress) {
+        console.log('[LearningProgressContext] Refreshing module progress for:', moduleId);
+        loadModuleProgress(moduleId, { force: true }).catch(err => {
+          console.warn('[LearningProgressContext] Failed to refresh module progress:', err);
+        });
+      }
+    };
+
+    window.addEventListener('progress:updated', handleProgressUpdated);
+
+    return () => {
+      window.removeEventListener('progress:updated', handleProgressUpdated);
+    };
+  }, [loadSnapshot, loadModuleProgress]);
 
   /**
    * Get lesson progress

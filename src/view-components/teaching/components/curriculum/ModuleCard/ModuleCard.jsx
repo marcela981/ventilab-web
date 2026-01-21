@@ -91,25 +91,21 @@ const ModuleCard = ({
   // Obtener lecciones completadas del contexto para compatibilidad
   const { completedLessons, syncStatus } = useLearningProgress();
   
-  // Calcular progreso basado en lecciones completadas del módulo desde useProgress
+  // Calcular progreso basado en completionPercentage de lecciones del módulo desde useProgress
   const moduleProgressAggregate = useMemo(() => {
-    // Filtrar progreso de lecciones de este módulo
+    // Filtrar TODAS las lecciones de este módulo que tienen progreso (no solo completadas)
     const moduleLessonsProgress = userProgress.filter(
-      p => p.lessonId && p.moduleId === module.id && p.completed
+      p => p.lessonId && p.moduleId === module.id
     );
-    
-    const completedLessonsCount = moduleLessonsProgress.length;
-    
+
+    // Contar lecciones completadas (para mostrar X/Y completadas)
+    const completedLessonsCount = moduleLessonsProgress.filter(p => p.completed).length;
+
     // Usar conteo real desde BD, o fallback a otros métodos
-    const totalLessons = totalLessonsFromDB > 0 
-      ? totalLessonsFromDB 
+    const totalLessons = totalLessonsFromDB > 0
+      ? totalLessonsFromDB
       : (progress?.totalLessons || precalculatedProgress?.totalLessons || (module?.lessons || []).length || 0);
-    
-    // Calcular porcentaje: lecciones completadas / total lecciones
-    const percentInt = totalLessons > 0 
-      ? Math.round((completedLessonsCount / totalLessons) * 100)
-      : 0;
-    
+
     // Si no hay lecciones, retornar 0%
     if (totalLessons === 0) {
       return {
@@ -123,33 +119,54 @@ const ModuleCard = ({
         totalPages: 0,
       };
     }
-    
+
+    // Calcular porcentaje usando completionPercentage de cada lección (promedio)
+    // Lecciones sin progreso cuentan como 0%
+    let totalProgressSum = 0;
+    moduleLessonsProgress.forEach(p => {
+      // Use completionPercentage (0-100) from DB
+      if (p.completed) {
+        totalProgressSum += 100;
+      } else if (typeof p.completionPercentage === 'number') {
+        totalProgressSum += Math.max(0, Math.min(100, p.completionPercentage));
+      } else if (typeof p.progress === 'number') {
+        // Fallback: if progress is 0-1, convert to 0-100
+        totalProgressSum += Math.max(0, Math.min(100, p.progress * 100));
+      }
+    });
+
+    // Average progress across ALL lessons in the module (not just ones with progress records)
+    // Lessons without records count as 0%
+    const percentInt = totalLessons > 0
+      ? Math.round(totalProgressSum / totalLessons)
+      : 0;
+
     // Prioridad: cálculo desde useProgress > progreso del hook > precalculado > legacy prop
-    if (totalLessonsFromDB > 0 || completedLessonsCount > 0) {
+    if (totalLessonsFromDB > 0 || moduleLessonsProgress.length > 0) {
       return {
         percent: percentInt / 100,
         percentInt,
         completedLessons: completedLessonsCount,
         totalLessons,
         isCompleted: percentInt >= 100,
-        completedAt: moduleLessonsProgress.length > 0 && percentInt >= 100 
-          ? new Date() 
+        completedAt: completedLessonsCount >= totalLessons && totalLessons > 0
+          ? new Date()
           : null,
         completedPages: progress?.completedPages || 0,
         totalPages: progress?.totalPages || 0,
       };
     }
-    
+
     // Fallback a progreso del hook si está disponible
     if (progress && progress.totalLessons > 0) {
       return progress;
     }
-    
+
     // Fallback a precalculado
     if (precalculatedProgress) {
       return precalculatedProgress;
     }
-    
+
     // Fallback final a cálculo legacy
     return {
       percent: (moduleProgressProp || 0) / 100,
@@ -162,12 +179,12 @@ const ModuleCard = ({
       totalPages: 0,
     };
   }, [
-    userProgress, 
-    module.id, 
-    totalLessonsFromDB, 
-    progress, 
-    precalculatedProgress, 
-    moduleProgressProp, 
+    userProgress,
+    module.id,
+    totalLessonsFromDB,
+    progress,
+    precalculatedProgress,
+    moduleProgressProp,
     module?.lessons
   ]);
   
