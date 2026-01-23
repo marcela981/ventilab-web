@@ -98,25 +98,35 @@ const ModuleCard = ({
    * - Lesson progress is updated
    * - Lesson is completed
    * - Module progress is loaded from backend
+   * 
+   * IMPORTANT: All completion states are derived ONLY from progress values (0-1).
+   * Never use flags (completed, started, visited) as sources of truth.
    */
   const moduleProgressAggregate = useMemo(() => {
     // PRIMARY SOURCE: Get from context's aggregated progress (SINGLE SOURCE OF TRUTH)
     const contextProgress = moduleProgressAggregated?.[module.id];
 
     if (contextProgress) {
+      // Ensure isCompleted is ONLY true when progress === 1 (not based on flags)
+      const progressValue = contextProgress.progress ?? 0;
+      const isCompleted = progressValue === 1;
+      
+      // Normalize percentInt to 0-100 for UI display (consistent with level progress bars)
+      const normalizedPercentInt = Math.max(0, Math.min(100, contextProgress.progressPercent ?? Math.round(progressValue * 100)));
+      
       return {
-        percent: contextProgress.progress,
-        percentInt: contextProgress.progressPercent,
-        completedLessons: contextProgress.completedLessons,
-        totalLessons: contextProgress.totalLessons,
-        isCompleted: contextProgress.isCompleted,
-        completedAt: contextProgress.isCompleted ? new Date() : null,
+        percent: progressValue,
+        percentInt: normalizedPercentInt,
+        completedLessons: contextProgress.completedLessons ?? 0,
+        totalLessons: contextProgress.totalLessons ?? 0,
+        isCompleted,
+        completedAt: isCompleted ? new Date() : null,
         completedPages: progress?.completedPages || 0,
         totalPages: progress?.totalPages || 0,
       };
     }
 
-    // FALLBACK: If context not ready yet, compute locally (temporary)
+    // FALLBACK: If context not ready yet, compute locally from progress values ONLY
     // This ensures the UI doesn't break while context is loading
     const totalLessons = totalLessonsFromDB > 0
       ? totalLessonsFromDB
@@ -135,30 +145,46 @@ const ModuleCard = ({
       };
     }
 
-    // Count completed lessons from context's completedLessons Set
-    const moduleLessons = module?.lessons || [];
-    let completedLessonsCount = moduleLessons.filter((lesson) => {
-      const lessonKey1 = `${module.id}-${lesson.id}`;
-      const lessonKey2 = lesson.id;
-      return completedLessons.has(lessonKey1) || completedLessons.has(lessonKey2);
-    }).length;
+    // Calculate module progress using formula: completedLessons / totalLessons
+    // Iterate through lessons and count completed ones (progress === 1)
+    const moduleLessonsProgress = userProgress.filter(
+      p => p.lessonId && p.moduleId === module.id
+    );
 
-    // Fallback to userProgress if context is empty
-    if (completedLessonsCount === 0 && completedLessons.size === 0) {
-      const moduleLessonsProgress = userProgress.filter(
-        p => p.lessonId && p.moduleId === module.id
-      );
-      completedLessonsCount = moduleLessonsProgress.filter(p => p.completed === true).length;
+    let completedLessonsCount = 0;
+
+    for (const lessonProgress of moduleLessonsProgress) {
+      // Get progress value (0-1) - prefer completionPercentage converted to 0-1, then progress
+      let lessonProgressValue = 0;
+      if (typeof lessonProgress.completionPercentage === 'number') {
+        lessonProgressValue = Math.max(0, Math.min(1, lessonProgress.completionPercentage / 100));
+      } else if (typeof lessonProgress.progress === 'number') {
+        lessonProgressValue = Math.max(0, Math.min(1, lessonProgress.progress));
+      }
+      
+      // A lesson is completed ONLY when its progress === 1
+      if (lessonProgressValue === 1) {
+        completedLessonsCount++;
+      }
     }
 
-    const percentInt = totalLessons > 0
-      ? Math.round((completedLessonsCount / totalLessons) * 100)
-      : 0;
-
-    const isModuleCompleted = completedLessonsCount >= totalLessons && totalLessons > 0;
+    // Module progress = completedLessons / totalLessons (0-1)
+    // Formula: progress = completedLessons / totalLessons
+    // This ensures:
+    // - Partially completed modules show partial progress
+    // - Modules with no completed lessons show 0%
+    // - Fully completed modules show 100%
+    const progressValue = totalLessons > 0 ? (completedLessonsCount / totalLessons) : 0;
+    
+    // Normalize to 0-100 for UI display (consistent with level progress bars)
+    // Ensure value is clamped to 0-100 range for LinearProgress component
+    const percentInt = Math.max(0, Math.min(100, Math.round(progressValue * 100)));
+    
+    // Module is completed ONLY when all lessons are completed (progress === 1)
+    const isModuleCompleted = progressValue === 1;
 
     return {
-      percent: percentInt / 100,
+      percent: progressValue,
       percentInt,
       completedLessons: completedLessonsCount,
       totalLessons,
@@ -170,7 +196,6 @@ const ModuleCard = ({
   }, [
     moduleProgressAggregated,
     module.id,
-    completedLessons,
     userProgress,
     totalLessonsFromDB,
     progress,

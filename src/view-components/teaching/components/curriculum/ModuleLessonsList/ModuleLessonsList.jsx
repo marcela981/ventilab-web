@@ -35,7 +35,7 @@ import {
   Topic
 } from '@mui/icons-material';
 import { loadLessonById } from '@/data/helpers/lessonLoader';
-import { useContext } from 'react';
+import React, { useContext } from 'react';
 import LearningProgressContext from '@/contexts/LearningProgressContext';
 
 /**
@@ -52,15 +52,32 @@ const LessonItem = ({
 }) => {
   const { progressMap, progressVersion } = useContext(LearningProgressContext);
   
-  // Obtener progreso real del contexto
+  // Obtener progreso real del contexto - use ONLY progress values (0-1), never flags
   const entry = progressMap[lesson.id];
-  const calculatedProgress = entry 
-    ? Math.round((entry.isCompleted ? 1 : entry.progress || 0) * 100) 
-    : 0;
   
-  // Usar progreso del contexto si está disponible, sino usar el prop
-  const lessonProgress = entry ? calculatedProgress : (lessonProgressProp || 0);
-  const actualIsCompleted = entry ? entry.isCompleted : isCompleted;
+  let calculatedProgress = 0;
+  let actualIsCompleted = false;
+  
+  if (entry) {
+    // Use progress value directly (0-1), or convert completionPercentage to 0-1
+    let progressValue = 0;
+    if (typeof entry.progress === 'number') {
+      progressValue = Math.max(0, Math.min(1, entry.progress));
+    } else if (typeof entry.completionPercentage === 'number') {
+      progressValue = Math.max(0, Math.min(1, entry.completionPercentage / 100));
+    }
+    
+    calculatedProgress = Math.round(progressValue * 100);
+    // Lesson is completed ONLY when progress === 1 (100%)
+    actualIsCompleted = progressValue === 1;
+  } else {
+    // Fallback to prop if no context entry
+    calculatedProgress = lessonProgressProp || 0;
+    // Only consider completed if progress is exactly 100%
+    actualIsCompleted = isCompleted && calculatedProgress === 100;
+  }
+  
+  const lessonProgress = calculatedProgress;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [expanded, setExpanded] = useState(false);
@@ -306,7 +323,7 @@ LessonItem.propTypes = {
 const ModuleLessonsList = ({
   lessons = [],
   moduleId,
-  completedLessons = new Set(),
+  completedLessons = new Set(), // DEPRECATED: kept for backward compatibility, not used for completion state
   onLessonClick,
   isModuleAvailable = true,
   maxLessonsToShow = 3,
@@ -375,10 +392,24 @@ const ModuleLessonsList = ({
         },
       }}>
         {lessonsToShow.map((lesson, index) => {
-          // Verificar si la lección está completada - puede estar como lessonId o moduleId-lessonId
-          const lessonKey1 = lesson.id;
-          const lessonKey2 = `${moduleId}-${lesson.id}`;
-          const isCompleted = completedLessons.has(lessonKey1) || completedLessons.has(lessonKey2);
+          // Get lesson progress from context - use ONLY progress values (0-1), never flags
+          const { progressMap } = useContext(LearningProgressContext);
+          const entry = progressMap[lesson.id];
+          
+          // Calculate progress from entry - use progress value (0-1), not flags
+          let lessonProgressValue = 0;
+          if (entry) {
+            // Use progress value directly (0-1), or convert completionPercentage to 0-1
+            if (typeof entry.progress === 'number') {
+              lessonProgressValue = Math.max(0, Math.min(1, entry.progress));
+            } else if (typeof entry.completionPercentage === 'number') {
+              lessonProgressValue = Math.max(0, Math.min(1, entry.completionPercentage / 100));
+            }
+          }
+          
+          const lessonProgressPercent = Math.round(lessonProgressValue * 100);
+          // Lesson is completed ONLY when progress === 1 (100%)
+          const isCompleted = lessonProgressValue === 1;
           const isLocked = !isModuleAvailable; // Por ahora, todas las lecciones comparten el estado del módulo
           
           return (
@@ -386,7 +417,7 @@ const ModuleLessonsList = ({
               <List sx={{ p: 0 }}>
                 <LessonItem
                   lesson={lesson}
-                  lessonProgress={isCompleted ? 100 : 0} // Fallback si no hay progreso en contexto
+                  lessonProgress={lessonProgressPercent}
                   isCompleted={isCompleted}
                   isLocked={isLocked}
                   isAvailable={isModuleAvailable}

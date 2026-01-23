@@ -4,11 +4,16 @@
 
 /**
  * Determina el estado visual del módulo basado en progreso y disponibilidad
+ * IMPORTANT: Completion status is ONLY true when progress === 100 (which means progress === 1.0)
+ * Never use flags (completed, started, visited) as sources of truth.
+ * 
  * @param {number} moduleProgress - Porcentaje de progreso (0-100)
  * @param {boolean} isAvailable - Si el módulo está disponible
  * @returns {string} Estado: 'completed', 'in-progress', 'available', 'locked'
  */
 export const getModuleStatus = (moduleProgress, isAvailable) => {
+  // Module is completed ONLY when progress === 100 (which means progress value === 1.0)
+  // This ensures no impossible states like "0% progress but Completed"
   if (moduleProgress === 100) return 'completed';
   if (moduleProgress > 0) return 'in-progress';
   if (isAvailable) return 'available';

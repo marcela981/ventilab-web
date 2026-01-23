@@ -244,6 +244,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     dismissResumeAlert,
     saveProgress,
     savePageProgress,
+    backendProgress,
   } = useLessonProgress({
     lessonId,
     moduleId,
@@ -269,38 +270,70 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     completionNotifiedRef.current = false;
     tutorFinalSuggestionsDispatchedRef.current = false;
 
-    // Try to restore saved page from localStorage
-    try {
-      const savedProgress = localStorage.getItem(`lesson_progress_${lessonId}`);
-      if (savedProgress) {
-        const { currentPage: savedPage, totalPages: savedTotalPages, progress } = JSON.parse(savedProgress);
-        // If we have a saved page number, restore it
-        if (typeof savedPage === 'number' && savedPage > 0) {
-          console.log('[LessonViewer] Restoring saved page:', savedPage + 1);
-          setCurrentPage(savedPage);
-        } else if (progress > 0) {
-          // Fallback: calculate page from progress percentage (will be adjusted when totalPages is known)
-          console.log('[LessonViewer] Restoring from progress percentage:', progress);
-          // Don't reset to 0, let the progress-based restoration happen below
-        } else {
-          setCurrentPage(0);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-      } else {
-        setCurrentPage(0);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    } catch (e) {
-      console.error('[LessonViewer] Error restoring page:', e);
-      setCurrentPage(0);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
     // Track lesson change
     if (previousLessonIdRef.current !== lessonId) {
       previousLessonIdRef.current = lessonId;
     }
   }, [lessonId]);
+
+  // Initialize currentPage from backend progress (synchronized with database)
+  useEffect(() => {
+    if (!backendProgress) {
+      // Backend progress not loaded yet, use localStorage as fallback
+      try {
+        const savedProgress = localStorage.getItem(`lesson_progress_${lessonId}`);
+        if (savedProgress) {
+          const { currentPage: savedPage } = JSON.parse(savedProgress);
+          if (typeof savedPage === 'number' && savedPage >= 0) {
+            console.log('[LessonViewer] Using localStorage page (backend not loaded yet):', savedPage + 1);
+            setCurrentPage(savedPage);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error('[LessonViewer] Error reading localStorage:', e);
+      }
+      // Default to page 0 if no data available
+      setCurrentPage(0);
+      return;
+    }
+
+    // Backend progress is available - use it to initialize currentPage
+    if (backendProgress.completed) {
+      // If lesson is completed, always start at page 0
+      console.log('[LessonViewer] Lesson completed, starting at page 0');
+      setCurrentPage(0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (backendProgress.currentStep && backendProgress.currentStep > 0) {
+      // Initialize from backend currentStep (convert from 1-based to 0-based)
+      const initialPage = backendProgress.currentStep - 1;
+      console.log('[LessonViewer] Initializing from backend progress:', {
+        currentStep: backendProgress.currentStep,
+        initialPage: initialPage + 1,
+        completionPercentage: backendProgress.completionPercentage,
+      });
+      setCurrentPage(initialPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // No step data in backend, fallback to localStorage or page 0
+      try {
+        const savedProgress = localStorage.getItem(`lesson_progress_${lessonId}`);
+        if (savedProgress) {
+          const { currentPage: savedPage } = JSON.parse(savedProgress);
+          if (typeof savedPage === 'number' && savedPage >= 0) {
+            console.log('[LessonViewer] Using localStorage page (no step data in backend):', savedPage + 1);
+            setCurrentPage(savedPage);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error('[LessonViewer] Error reading localStorage:', e);
+      }
+      console.log('[LessonViewer] No step data available, starting at page 0');
+      setCurrentPage(0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [lessonId, backendProgress]);
   
   // Progress tracking is now handled by useProgress hook (auto-save every 5 min)
   
@@ -440,34 +473,13 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   const totalPages = calculatePages.length;
   const currentPageData = calculatePages[currentPage];
   
-  // Restore page from backend progress when totalPages becomes available
-  const hasRestoredFromBackendRef = useRef(false);
-  useEffect(() => {
-    // Only restore once per lesson, and only if we have progress from backend
-    if (hasRestoredFromBackendRef.current || totalPages <= 0 || localProgress <= 0) return;
-
-    // Calculate page from progress percentage
-    const calculatedPage = Math.min(
-      Math.floor((localProgress / 100) * totalPages),
-      totalPages - 1
-    );
-
-    // Only restore if calculated page is different from current and greater than 0
-    if (calculatedPage > 0 && calculatedPage !== currentPage) {
-      console.log('[LessonViewer] Restoring page from backend progress:', {
-        progress: localProgress,
-        calculatedPage: calculatedPage + 1,
-        totalPages,
-      });
-      setCurrentPage(calculatedPage);
-      hasRestoredFromBackendRef.current = true;
-    }
-  }, [totalPages, localProgress, currentPage, lessonId]);
-
-  // Reset the restoration flag when lesson changes
-  useEffect(() => {
-    hasRestoredFromBackendRef.current = false;
-  }, [lessonId]);
+  // REMOVED: Auto-navigation based on progress percentage
+  // This was causing completed lessons to auto-navigate to the final screen.
+  // Navigation to the end must ONLY occur after the user explicitly completes the lesson.
+  // 
+  // Users should always start at the first page when entering a lesson,
+  // regardless of completion status. Completed lessons can be reviewed normally
+  // by navigating through pages manually.
 
   // Notificar al padre sobre cambios en el progreso
   useEffect(() => {
@@ -488,6 +500,14 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     sectionData: currentPageData?.section || currentPageData || null,
   });
   
+  // Calculate totalSteps from lesson sections (backend requires this)
+  const totalSteps = useMemo(() => {
+    if (!data?.sections || !Array.isArray(data.sections)) {
+      return totalPages; // Fallback to totalPages if sections not available
+    }
+    return data.sections.length;
+  }, [data, totalPages]);
+
   const handleNextPage = useCallback(() => {
     if (currentPage < totalPages - 1) {
       const newPage = currentPage + 1;
@@ -495,10 +515,11 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       // CRITICAL: Save progress when page changes
-      console.log('[LessonViewer] Next page clicked, saving progress:', newPage + 1, '/', totalPages);
-      savePageProgress(newPage, totalPages);
+      // Always send currentStep and totalSteps (required by backend)
+      console.log('[LessonViewer] Next page clicked, saving progress:', newPage + 1, '/', totalPages, 'steps:', totalSteps);
+      savePageProgress(newPage, totalPages, totalSteps);
     }
-  }, [currentPage, totalPages, savePageProgress]);
+  }, [currentPage, totalPages, totalSteps, savePageProgress]);
 
   const handlePrevPage = useCallback(() => {
     if (currentPage > 0) {
@@ -507,10 +528,11 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       // Save progress when page changes (even going back)
-      console.log('[LessonViewer] Prev page clicked, saving progress:', newPage + 1, '/', totalPages);
-      savePageProgress(newPage, totalPages);
+      // Always send currentStep and totalSteps (required by backend)
+      console.log('[LessonViewer] Prev page clicked, saving progress:', newPage + 1, '/', totalPages, 'steps:', totalSteps);
+      savePageProgress(newPage, totalPages, totalSteps);
     }
-  }, [currentPage, totalPages, savePageProgress]);
+  }, [currentPage, totalPages, totalSteps, savePageProgress]);
   
   // Handle completion page display and progress marking
   // IMPORTANT: This effect ONLY marks progress and shows confetti.
@@ -1026,7 +1048,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
               maxWidth: '500px',
             }}
           >
-            Continuando desde {Math.round(localProgress)}%
+            Continuando desde {Math.round(backendProgress?.completionPercentage || localProgress)}%
           </Alert>
         )}
 

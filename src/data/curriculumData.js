@@ -841,6 +841,13 @@ export const getNextModule = (moduleId) => {
   return null;
 };
 
+/**
+ * DEPRECATED: This function uses completedModules array (flag-based).
+ * For correct level progress calculation, use levelProgressAggregated from LearningProgressContext
+ * which uses the formula: sum(moduleProgress) / totalModules
+ * 
+ * This function is kept for backward compatibility but should not be used for level progress display.
+ */
 export const getLevelProgress = (completedModules) => {
   const progress = {};
   
@@ -851,10 +858,14 @@ export const getLevelProgress = (completedModules) => {
       return module && module.level === level.id;
     });
     
+    // NOTE: This uses completedModules count, not average of progress values
+    // For correct calculation, use levelProgressAggregated from LearningProgressContext
     progress[level.id] = {
       total: modulesInLevel.length,
       completed: completedInLevel.length,
-      percentage: (completedInLevel.length / modulesInLevel.length) * 100
+      percentage: modulesInLevel.length > 0 
+        ? (completedInLevel.length / modulesInLevel.length) * 100 
+        : 0
     };
   });
   

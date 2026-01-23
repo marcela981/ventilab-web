@@ -37,8 +37,14 @@ interface UseLessonProgressReturn {
   isCompleted: boolean;
   showResumeAlert: boolean;
   saveProgress: (forceComplete?: boolean) => Promise<void>;
-  savePageProgress: (currentPage: number, totalPages: number) => Promise<void>;
+  savePageProgress: (currentPage: number, totalPages: number, totalSteps?: number) => Promise<void>;
   dismissResumeAlert: () => void;
+  backendProgress: {
+    completionPercentage: number;
+    currentStep?: number;
+    totalSteps?: number;
+    completed: boolean;
+  } | null;
 }
 
 // ============================================
@@ -59,6 +65,12 @@ export function useLessonProgress({
   const [isSaving, setIsSaving] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [showResumeAlert, setShowResumeAlert] = useState(false);
+  const [backendProgress, setBackendProgress] = useState<{
+    completionPercentage: number;
+    currentStep?: number;
+    totalSteps?: number;
+    completed: boolean;
+  } | null>(null);
   
   // Refs for tracking
   const startTimeRef = useRef<number>(Date.now());
@@ -87,6 +99,8 @@ export function useLessonProgress({
 
   /**
    * Save progress to backend
+   * NOTE: This function is used for scroll-based tracking and may not have step data.
+   * If step data is not available, we skip the backend call to avoid percentage-only updates.
    */
   const saveProgress = useCallback(async (forceComplete = false) => {
     if (isSaving) {
@@ -97,11 +111,27 @@ export function useLessonProgress({
     const timeSpent = Math.floor((Date.now() - startTimeRef.current) / 1000);
     const completionPercentage = forceComplete ? 100 : localProgress;
 
+    // Try to get step data from localStorage (from previous savePageProgress calls)
+    let currentStep: number | undefined;
+    let totalSteps: number | undefined;
+    try {
+      const cached = localStorage.getItem(`lesson_progress_${lessonId}`);
+      if (cached) {
+        const cachedData = JSON.parse(cached);
+        currentStep = cachedData.currentStep;
+        totalSteps = cachedData.totalSteps;
+      }
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+
     // Always save to localStorage first (immediate feedback)
     try {
       localStorage.setItem(`lesson_progress_${lessonId}`, JSON.stringify({
         progress: completionPercentage,
         scrollPosition: scrollPositionRef.current,
+        currentStep,
+        totalSteps,
         timestamp: Date.now(),
       }));
     } catch (e) {
@@ -117,6 +147,8 @@ export function useLessonProgress({
         localStorage.setItem(`lesson_progress_${lessonId}_failed`, JSON.stringify({
           progress: completionPercentage,
           scrollPosition: scrollPositionRef.current,
+          currentStep,
+          totalSteps,
           timeSpent,
           timestamp: Date.now(),
         }));
@@ -126,11 +158,19 @@ export function useLessonProgress({
       return;
     }
 
+    // CRITICAL: Do not send percentage-only updates - require step data
+    if (!currentStep || !totalSteps) {
+      console.warn('[useLessonProgress] Skipping backend save: step data not available. Use savePageProgress for step-based updates.');
+      return;
+    }
+
     try {
       setIsSaving(true);
 
       const data: UpdateLessonProgressParams = {
         completionPercentage,
+        currentStep,
+        totalSteps,
         timeSpent,
         moduleId, // Include moduleId if available
         scrollPosition: scrollPositionRef.current,
@@ -139,6 +179,7 @@ export function useLessonProgress({
       console.log('[useLessonProgress] Saving to backend:', {
         lessonId,
         progress: completionPercentage,
+        step: `${currentStep}/${totalSteps}`,
         timeSpent,
         hasToken: !!token,
       });
@@ -146,6 +187,19 @@ export function useLessonProgress({
       await updateLessonProgress(lessonId, data);
       
       setLastSavedProgress(completionPercentage);
+      
+      // Dispatch custom event to notify context and other components
+      // This ensures module and level progress update immediately
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('progress:updated', {
+          detail: {
+            lessonId,
+            moduleId,
+            progress: completionPercentage / 100, // Convert to 0-1
+            completionPercentage,
+          },
+        }));
+      }
       
       // Remove failed save marker if it exists
       try {
@@ -210,16 +264,35 @@ export function useLessonProgress({
   /**
    * Save progress based on page number (for paginated content)
    * This is the PRIMARY way to save progress for step/page-based navigation
+   * 
+   * ALWAYS sends currentStep and totalSteps to backend (required fields)
+   * - currentStep = currentPage + 1 (1-based)
+   * - totalSteps = totalSteps parameter if provided, otherwise totalPages
+   * - completionPercentage is derived from currentStep/totalSteps
    */
-  const savePageProgress = useCallback(async (currentPage: number, totalPages: number) => {
-    if (totalPages <= 0) return;
+  const savePageProgress = useCallback(async (currentPage: number, totalPages: number, totalSteps?: number) => {
+    if (totalPages <= 0) {
+      console.warn('[useLessonProgress] savePageProgress ABORTED: totalPages is invalid', { totalPages });
+      return;
+    }
 
-    // Calculate percentage from page position
-    const pageProgress = Math.round(((currentPage + 1) / totalPages) * 100);
+    // Calculate step values (backend requires these)
+    const currentStep = currentPage + 1; // 1-based step number
+    const stepsTotal = totalSteps || totalPages; // Use provided totalSteps or fallback to totalPages
+    
+    if (stepsTotal <= 0) {
+      console.warn('[useLessonProgress] savePageProgress ABORTED: totalSteps is invalid', { totalSteps, totalPages });
+      return;
+    }
+
+    // Calculate percentage from step position (derived from currentStep/totalSteps)
+    const pageProgress = Math.round((currentStep / stepsTotal) * 100);
 
     console.log('[useLessonProgress] 📄 Page progress:', {
       currentPage: currentPage + 1,
       totalPages,
+      currentStep,
+      totalSteps: stepsTotal,
       percentage: pageProgress,
     });
 
@@ -235,6 +308,8 @@ export function useLessonProgress({
           progress: pageProgress,
           currentPage,
           totalPages,
+          currentStep,
+          totalSteps: stepsTotal,
           scrollPosition: 0,
           timestamp: Date.now(),
         }));
@@ -242,6 +317,8 @@ export function useLessonProgress({
           progress: pageProgress,
           currentPage,
           totalPages,
+          currentStep,
+          totalSteps: stepsTotal,
           scrollPosition: 0,
           timeSpent: Math.floor((Date.now() - startTimeRef.current) / 1000),
           timestamp: Date.now(),
@@ -263,8 +340,13 @@ export function useLessonProgress({
       setIsSaving(true);
 
       const timeSpent = Math.floor((Date.now() - startTimeRef.current) / 1000);
+      
+      // ALWAYS send currentStep, totalSteps, and derived completionPercentage
+      // Do not send percentage-only updates
       const data: UpdateLessonProgressParams = {
-        completionPercentage: pageProgress,
+        completionPercentage: pageProgress, // Derived from currentStep/totalSteps
+        currentStep, // REQUIRED by backend
+        totalSteps: stepsTotal, // REQUIRED by backend
         timeSpent,
         moduleId,
         scrollPosition: 0,
@@ -274,17 +356,41 @@ export function useLessonProgress({
         lessonId,
         progress: pageProgress,
         page: `${currentPage + 1}/${totalPages}`,
+        step: `${currentStep}/${stepsTotal}`,
       });
 
       await updateLessonProgress(lessonId, data);
 
       setLastSavedProgress(pageProgress);
+      
+      // Update backendProgress state to reflect the saved progress
+      setBackendProgress({
+        completionPercentage: pageProgress,
+        currentStep,
+        totalSteps: stepsTotal,
+        completed: pageProgress >= 100,
+      });
+      
+      // Dispatch custom event to notify context and other components
+      // This ensures module and level progress update immediately
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('progress:updated', {
+          detail: {
+            lessonId,
+            moduleId,
+            progress: pageProgress / 100, // Convert to 0-1
+            completionPercentage: pageProgress,
+          },
+        }));
+      }
 
       // Save to localStorage as backup
       localStorage.setItem(`lesson_progress_${lessonId}`, JSON.stringify({
         progress: pageProgress,
         currentPage,
         totalPages,
+        currentStep,
+        totalSteps: stepsTotal,
         scrollPosition: 0,
         timestamp: Date.now(),
       }));
@@ -309,6 +415,8 @@ export function useLessonProgress({
           progress: pageProgress,
           currentPage,
           totalPages,
+          currentStep,
+          totalSteps: stepsTotal,
           scrollPosition: 0,
           timeSpent: Math.floor((Date.now() - startTimeRef.current) / 1000),
           timestamp: Date.now(),
@@ -389,6 +497,14 @@ export function useLessonProgress({
         const progress = await getLessonProgress(lessonId);
         
         if (progress && progress.completionPercentage > 0) {
+          // Store backend progress data for parent components
+          setBackendProgress({
+            completionPercentage: progress.completionPercentage,
+            currentStep: progress.currentStep,
+            totalSteps: progress.totalSteps,
+            completed: progress.completed,
+          });
+          
           setLocalProgress(progress.completionPercentage);
           setLastSavedProgress(progress.completionPercentage);
           setIsCompleted(progress.completed);
@@ -592,16 +708,26 @@ export function useLessonProgress({
           const { progress: cachedProgress, timestamp } = JSON.parse(cached);
           // Only sync if cached progress is significant (> 5%) and recent (within 24 hours)
           if (cachedProgress > 5 && timestamp && (Date.now() - timestamp) < 24 * 60 * 60 * 1000) {
-            const serverProgress = await getLessonProgress(lessonId);
-            // If server has less progress, sync the cached one
-            if (!serverProgress || serverProgress.completionPercentage < cachedProgress) {
-              await updateLessonProgress(lessonId, {
-                completionPercentage: cachedProgress,
-                timeSpent: 0, // Don't add time for cached progress
-                moduleId,
-                scrollPosition: JSON.parse(cached).scrollPosition || 0,
-              });
-              console.log('[useLessonProgress] Synced cached progress to server');
+            const cachedData = JSON.parse(cached);
+            const { currentStep, totalSteps } = cachedData;
+            
+            // Only sync if we have step data (do not send percentage-only updates)
+            if (currentStep && totalSteps) {
+              const serverProgress = await getLessonProgress(lessonId);
+              // If server has less progress, sync the cached one
+              if (!serverProgress || serverProgress.completionPercentage < cachedProgress) {
+                await updateLessonProgress(lessonId, {
+                  completionPercentage: cachedProgress,
+                  currentStep,
+                  totalSteps,
+                  timeSpent: 0, // Don't add time for cached progress
+                  moduleId,
+                  scrollPosition: cachedData.scrollPosition || 0,
+                });
+                console.log('[useLessonProgress] Synced cached progress to server');
+              }
+            } else {
+              console.warn('[useLessonProgress] Skipping cached sync: step data not available');
             }
           }
         } catch (error) {
@@ -651,6 +777,7 @@ export function useLessonProgress({
     saveProgress,
     savePageProgress,
     dismissResumeAlert,
+    backendProgress,
   };
 }
 

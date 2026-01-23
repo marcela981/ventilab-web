@@ -35,6 +35,8 @@ export interface UpdateLessonProgressParams {
   moduleId?: string; // Used ONLY for cache invalidation, NOT sent to backend
   scrollPosition?: number;
   lastViewedSection?: string;
+  currentStep?: number; // Step number (1-based), required by backend
+  totalSteps?: number; // Total number of steps, required by backend
 }
 
 // ============================================
@@ -106,6 +108,8 @@ export interface LessonProgress {
   lastViewedSection: string | null;
   lastAccess: string | null;
   updatedAt: string;
+  currentStep?: number; // Current step number (1-based) from backend
+  totalSteps?: number; // Total number of steps from backend
 }
 
 export interface ModuleProgress {
@@ -228,6 +232,14 @@ export async function updateLessonProgress(
     completionPercentage: clampedPercentage,
   };
 
+  // REQUIRED: currentStep and totalSteps (backend now requires these)
+  if (typeof data.currentStep === 'number' && data.currentStep > 0 && !isNaN(data.currentStep)) {
+    payload.currentStep = Math.floor(data.currentStep);
+  }
+  if (typeof data.totalSteps === 'number' && data.totalSteps > 0 && !isNaN(data.totalSteps)) {
+    payload.totalSteps = Math.floor(data.totalSteps);
+  }
+
   // OPTIONAL: timeSpent (only if valid positive number)
   if (typeof data.timeSpent === 'number' && data.timeSpent > 0 && !isNaN(data.timeSpent)) {
     payload.timeSpent = Math.floor(data.timeSpent); // Ensure integer seconds
@@ -347,6 +359,8 @@ export async function getLessonProgress(lessonId: string): Promise<LessonProgres
         lastViewedSection: data.lastViewedSection || null,
         lastAccess: data.lastAccess ? new Date(data.lastAccess).toISOString() : null,
         updatedAt: data.updatedAt ? new Date(data.updatedAt).toISOString() : new Date().toISOString(),
+        currentStep: data.currentStep || undefined, // Current step from backend (1-based)
+        totalSteps: data.totalSteps || undefined, // Total steps from backend
       };
     }
 

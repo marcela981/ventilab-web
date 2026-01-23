@@ -166,8 +166,12 @@ function mergeProgress(
         nextLevelXp: 500,
         streakDays: 0,
         calendar: [],
-        // ONLY count lessons explicitly marked as completed === true
-        completedLessons: localProgress?.lessons.filter(l => l.completed === true).length || 0,
+        // Count lessons with progress === 1 (not based on flags)
+        // Lesson progress (0-1 float) is the single source of truth
+        completedLessons: localProgress?.lessons.filter(l => {
+          const progressValue = Math.max(0, Math.min(1, l.progress || 0));
+          return progressValue === 1;
+        }).length || 0,
         totalLessons: localProgress?.lessons.length || 0,
         modulesCompleted: 0,
         totalModules: 0
@@ -235,8 +239,12 @@ function mergeProgress(
   });
 
   const mergedLessons = Array.from(mergedLessonsMap.values());
-  // ONLY count lessons explicitly marked as completed === true
-  const completedLessons = mergedLessons.filter(l => l.completed === true).length;
+  // Count lessons with progress === 1 (not based on flags)
+  // Lesson progress (0-1 float) is the single source of truth
+  const completedLessons = mergedLessons.filter(l => {
+    const progressValue = Math.max(0, Math.min(1, l.progress || 0));
+    return progressValue === 1;
+  }).length;
 
   // Use DB overview if available, otherwise calculate from merged lessons
   const overview = dbProgress?.overview || {
@@ -268,9 +276,16 @@ function mergeProgress(
   
   // Log divergence if detected
   if (dbProgress && localProgress && dbProgress.lessons) {
-    // ONLY count lessons explicitly marked as completed === true
-    const dbCompleted = dbProgress.lessons.filter(l => l.completed === true).length;
-    const localCompleted = localLessons.filter(l => l.completed === true).length;
+    // Count lessons with progress === 1 (not based on flags)
+    // Lesson progress (0-1 float) is the single source of truth
+    const dbCompleted = dbProgress.lessons.filter(l => {
+      const progressValue = Math.max(0, Math.min(1, l.progress || 0));
+      return progressValue === 1;
+    }).length;
+    const localCompleted = localLessons.filter(l => {
+      const progressValue = Math.max(0, Math.min(1, l.progress || 0));
+      return progressValue === 1;
+    }).length;
     if (Math.abs(dbCompleted - localCompleted) > 0) {
       debug.logDivergence(
         { overview: { completedLessons: localCompleted }, lastSyncAt: localProgress.lastUpdated },
@@ -476,16 +491,19 @@ export const ProgressSource = {
 
       // Migrate all lessons
       await Promise.all(
-        localProgress.lessons.map(lesson =>
-          updateLessonProgress({
+        localProgress.lessons.map(lesson => {
+          // Get progress value (0-1)
+          const progressValue = Math.max(0, Math.min(1, lesson.progress || 0));
+          return updateLessonProgress({
             lessonId: lesson.lessonId,
-            progress: lesson.progress,
-            // Preserve explicit completed flag, don't infer from progress
-            completed: lesson.completed === true
+            progress: progressValue,
+            // Only set completed flag if progress === 1 (explicit completion)
+            // The backend may store this flag, but we don't use it for calculations
+            ...(progressValue === 1 && { completed: true })
           }).catch(err => {
             debug.warn(`Failed to migrate lesson ${lesson.lessonId}:`, err);
-          })
-        )
+          });
+        })
       );
 
       // Clear local progress after successful migration

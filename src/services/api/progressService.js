@@ -433,6 +433,9 @@ export const updateLessonProgress = async (payload) => {
       const body = {
         // REQUIRED: completionPercentage (backend validates this)
         ...(completionPercentage !== undefined && { completionPercentage }),
+        // REQUIRED: currentStep and totalSteps (backend now requires these)
+        ...(typeof payload.currentStep === 'number' && payload.currentStep > 0 && !isNaN(payload.currentStep) && { currentStep: Math.floor(payload.currentStep) }),
+        ...(typeof payload.totalSteps === 'number' && payload.totalSteps > 0 && !isNaN(payload.totalSteps) && { totalSteps: Math.floor(payload.totalSteps) }),
         // OPTIONAL fields - only include if defined
         ...(payload.timeSpentDelta !== undefined && { timeSpentDelta: payload.timeSpentDelta }),
         ...(payload.timeSpent !== undefined && { timeSpent: payload.timeSpent }),

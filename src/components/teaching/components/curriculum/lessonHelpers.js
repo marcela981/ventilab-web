@@ -143,22 +143,18 @@ export function calculateFilteredProgress(progressByModule, levelId = null) {
     totalPages += pages;
     
     if (lessonProgress) {
-      // Priority: use completionPercentage (0-100) from DB, else progress (0-1)
-      let lessonProgressValue;
-      if (lessonProgress.completed) {
-        lessonProgressValue = 1;
+      // Get progress value (0-1) - prefer progress field, then completionPercentage
+      // Lesson progress (0-1 float) is the single source of truth
+      let lessonProgressValue = 0;
+      if (typeof lessonProgress.progress === 'number') {
+        lessonProgressValue = Math.max(0, Math.min(1, lessonProgress.progress));
       } else if (typeof lessonProgress.completionPercentage === 'number') {
         // DB stores completionPercentage as 0-100, convert to 0-1
         lessonProgressValue = Math.max(0, Math.min(1, lessonProgress.completionPercentage / 100));
-      } else if (typeof lessonProgress.progress === 'number') {
-        // Fallback to progress field (already 0-1)
-        lessonProgressValue = Math.max(0, Math.min(1, lessonProgress.progress));
-      } else {
-        lessonProgressValue = 0;
       }
 
-      // Si la lección está completada, contar como completada
-      if (lessonProgress.completed) {
+      // A lesson is completed ONLY when progress === 1 (not based on flags)
+      if (lessonProgressValue === 1) {
         completedLessons++;
       }
 
@@ -228,21 +224,18 @@ export function calculateModuleFilteredProgress(progressByModule, moduleId) {
     const lessonProgress = moduleData?.lessonsById?.[lessonId];
 
     if (lessonProgress) {
-      // Priority: use completionPercentage (0-100) from DB, else progress (0-1)
-      let lessonProgressValue;
-      if (lessonProgress.completed) {
-        lessonProgressValue = 1;
+      // Get progress value (0-1) - prefer progress field, then completionPercentage
+      // Lesson progress (0-1 float) is the single source of truth
+      let lessonProgressValue = 0;
+      if (typeof lessonProgress.progress === 'number') {
+        lessonProgressValue = Math.max(0, Math.min(1, lessonProgress.progress));
       } else if (typeof lessonProgress.completionPercentage === 'number') {
         // DB stores completionPercentage as 0-100, convert to 0-1
         lessonProgressValue = Math.max(0, Math.min(1, lessonProgress.completionPercentage / 100));
-      } else if (typeof lessonProgress.progress === 'number') {
-        // Fallback to progress field (already 0-1)
-        lessonProgressValue = Math.max(0, Math.min(1, lessonProgress.progress));
-      } else {
-        lessonProgressValue = 0;
       }
 
-      if (lessonProgress.completed) {
+      // A lesson is completed ONLY when progress === 1 (not based on flags)
+      if (lessonProgressValue === 1) {
         completedLessons++;
       }
 

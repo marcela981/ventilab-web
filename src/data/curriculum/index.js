@@ -300,30 +300,45 @@ export function getLevelProgress(completedLessons) {
     // Use filtered modules (excludes duplicates)
     const modulesInLevel = getModulesByLevel(level.id);
     
-    // Count completed modules: a module is completed if all its lessons are completed
-    let completedModules = 0;
+    // Calculate level progress as average of module progress values
+    // Formula: sum(moduleProgress) / totalModules
+    // This allows partial module progress to contribute proportionally
+    let moduleProgressSum = 0;
+    let completedModules = 0; // Count for display purposes only
     
     modulesInLevel.forEach(module => {
       if (!module.lessons || module.lessons.length === 0) {
+        // Modules without lessons contribute 0 to progress
+        moduleProgressSum += 0;
         return;
       }
       
-      // Check if all lessons in this module are completed
-      const allLessonsCompleted = module.lessons.every(lesson => 
+      // Calculate module progress: completedLessons / totalLessons
+      const totalLessons = module.lessons.length;
+      const completedLessons = module.lessons.filter(lesson => 
         completedLessonsSet.has(`${module.id}-${lesson.id}`)
-      );
+      ).length;
       
-      if (allLessonsCompleted) {
+      // Module progress value (0-1)
+      const moduleProgressValue = totalLessons > 0 ? (completedLessons / totalLessons) : 0;
+      
+      // Add to sum for level progress calculation
+      moduleProgressSum += moduleProgressValue;
+      
+      // Count completed modules (progress === 1) for display purposes
+      if (moduleProgressValue === 1) {
         completedModules++;
       }
     });
     
+    // Level progress = average of module progress values
+    const totalModules = modulesInLevel.length;
+    const levelProgress = totalModules > 0 ? (moduleProgressSum / totalModules) : 0;
+    
     progress[level.id] = {
-      total: modulesInLevel.length,
+      total: totalModules,
       completed: completedModules,
-      percentage: modulesInLevel.length > 0 
-        ? (completedModules / modulesInLevel.length) * 100 
-        : 0
+      percentage: Math.round(levelProgress * 100)
     };
   });
   

@@ -40,13 +40,18 @@ export const useLessonAvailability = () => {
       const moduleProgress = progressByModule[moduleId];
       const lessonsById = moduleProgress.lessonsById || {};
       
-      // Contar lecciones completadas - ONLY count if explicitly marked completed === true
+      // Contar lecciones completadas - ONLY count if progress === 1 (not based on flags)
       const completedCount = module.lessons.filter((lesson) => {
         const lessonProgress = lessonsById[lesson.id];
-        return lessonProgress && lessonProgress.completed === true;
+        if (!lessonProgress) return false;
+        
+        // Get progress value (0-1) - use progress field, never flags
+        const lessonProgressValue = Math.max(0, Math.min(1, lessonProgress.progress || 0));
+        // A lesson is completed ONLY when progress === 1
+        return lessonProgressValue === 1;
       }).length;
 
-      // Module progress = completedLessons / totalLessons
+      // Module progress = completedLessons / totalLessons (0-1, then convert to 0-100)
       const progress = Math.round((completedCount / module.lessons.length) * 100);
       return progress;
     }
@@ -57,14 +62,18 @@ export const useLessonAvailability = () => {
         // Match lesson by ID (adjust logic based on your lessonId format)
         return module.lessons.some(ml => ml.id === l.lessonId || l.lessonId.includes(ml.id));
       });
-      // ONLY count lessons explicitly marked as completed === true
-      const completedCount = moduleLessons.filter(l => l.completed === true).length;
-      // Module progress = completedLessons / totalLessons
+      // Count lessons with progress === 1 (not based on flags)
+      const completedCount = moduleLessons.filter(l => {
+        const lessonProgressValue = Math.max(0, Math.min(1, l.progress || 0));
+        return lessonProgressValue === 1;
+      }).length;
+      // Module progress = completedLessons / totalLessons (0-1, then convert to 0-100)
       const progress = Math.round((completedCount / module.lessons.length) * 100);
       return progress;
     }
 
-    // Fallback: usar completedLessons Set (which now only contains explicitly completed lessons)
+    // Fallback: usar completedLessons Set (DEPRECATED: should use progress values instead)
+    // This fallback is kept for backward compatibility but should be replaced with progress-based calculation
     const completedCount = module.lessons.filter((lesson) => {
       const lessonKey1 = `${moduleId}-${lesson.id}`;
       const lessonKey2 = lesson.id; // Formato legacy
@@ -173,36 +182,51 @@ export const useLessonAvailability = () => {
 
   /**
    * Verifica si una lección está completada
-   * Checks snapshot first (most recent from backend), then progressByModule, then completedLessons
+   * Checks if a lesson is completed based on progress value (0-1).
+   * Lesson progress (0-1 float) is the single source of truth.
+   * A lesson is completed ONLY when progress === 1 (not based on flags).
    */
   const isLessonCompleted = useCallback((moduleId, lessonId) => {
     // 1. Check unified snapshot first (most accurate, fresh from backend)
-    // ONLY check explicit completed === true flag
     if (snapshot?.lessons && Array.isArray(snapshot.lessons)) {
       // Check for exact match
       const snapshotLesson = snapshot.lessons.find(l => l.lessonId === lessonId);
-      if (snapshotLesson && snapshotLesson.completed === true) {
-        return true;
+      if (snapshotLesson) {
+        const progressValue = Math.max(0, Math.min(1, snapshotLesson.progress || 0));
+        if (progressValue === 1) {
+          return true;
+        }
       }
       // Also check with moduleId-lessonId format
       const compoundKey = `${moduleId}-${lessonId}`;
       const snapshotLessonCompound = snapshot.lessons.find(l => l.lessonId === compoundKey);
-      if (snapshotLessonCompound && snapshotLessonCompound.completed === true) {
-        return true;
+      if (snapshotLessonCompound) {
+        const progressValue = Math.max(0, Math.min(1, snapshotLessonCompound.progress || 0));
+        if (progressValue === 1) {
+          return true;
+        }
       }
     }
 
     // 2. Check progressByModule (local state, may be more recent for current session)
-    // ONLY check explicit completed === true flag
     if (progressByModule && progressByModule[moduleId]) {
       const moduleProgress = progressByModule[moduleId];
       const lessonProgress = moduleProgress.lessonsById?.[lessonId];
-      if (lessonProgress && lessonProgress.completed === true) {
-        return true;
+      if (lessonProgress) {
+        // Get progress value (0-1) - prefer progress field, then completionPercentage
+        let progressValue = 0;
+        if (typeof lessonProgress.progress === 'number') {
+          progressValue = Math.max(0, Math.min(1, lessonProgress.progress));
+        } else if (typeof lessonProgress.completionPercentage === 'number') {
+          progressValue = Math.max(0, Math.min(1, lessonProgress.completionPercentage / 100));
+        }
+        if (progressValue === 1) {
+          return true;
+        }
       }
     }
 
-    // 3. Fallback: usar completedLessons Set (includes both progressByModule and snapshot data)
+    // 3. Fallback: use completedLessons Set (derived from progress === 1, not flags)
     const lessonKey1 = `${moduleId}-${lessonId}`;
     const lessonKey2 = lessonId; // Formato legacy
     const isCompleted = completedLessons.has(lessonKey1) || completedLessons.has(lessonKey2);

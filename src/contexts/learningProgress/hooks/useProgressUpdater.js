@@ -78,13 +78,16 @@ export const useProgressUpdater = ({
     const optimisticLessonProgress = calculateOptimisticProgress(currentLessonProgress, updateData);
     
     // Optimistic update
+    // Use functional update to ensure we have the latest state
     setProgressByModule(prev => {
       const moduleData = prev[resolvedModuleId] || {
         learningProgress: null,
         lessonsById: {},
       };
       
-      return {
+      // Create new object to ensure React detects the change
+      // This ensures moduleProgressAggregated and levelProgressAggregated recalculate
+      const updated = {
         ...prev,
         [resolvedModuleId]: {
           ...moduleData,
@@ -94,6 +97,8 @@ export const useProgressUpdater = ({
           },
         },
       };
+      
+      return updated;
     });
     
     // Check if offline or API will fail
@@ -147,16 +152,25 @@ export const useProgressUpdater = ({
         removeFromOutbox(clientEventId);
         
         // Reconcile with backend response
+        // Use functional update to ensure we have the latest state
         setProgressByModule(prev => {
           const moduleData = prev[resolvedModuleId] || {
             learningProgress: null,
             lessonsById: {},
           };
           
-          // Update lesson progress
+          // Update lesson progress with backend response
+          // Ensure we preserve the progress value (0-1) from backend
+          const backendLessonProgress = result.lessonProgress || {};
+          const progressValue = backendLessonProgress.progress ?? 
+            (backendLessonProgress.completionPercentage ? backendLessonProgress.completionPercentage / 100 : 0);
+          
           const updatedLessonsById = {
             ...moduleData.lessonsById,
-            [lessonId]: result.lessonProgress,
+            [lessonId]: {
+              ...backendLessonProgress,
+              progress: Math.max(0, Math.min(1, progressValue)),
+            },
           };
           
           // Update learning progress if provided
@@ -170,14 +184,29 @@ export const useProgressUpdater = ({
               }
             : moduleData.learningProgress;
           
-          return {
+          // Create new object to ensure React detects the change
+          const updated = {
             ...prev,
             [resolvedModuleId]: {
               learningProgress: updatedLearningProgress,
               lessonsById: updatedLessonsById,
             },
           };
+          
+          return updated;
         });
+        
+        // Dispatch custom event to notify other parts of the app
+        // This ensures components that listen to progress updates can react immediately
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('progress:updated', {
+            detail: {
+              lessonId,
+              moduleId: resolvedModuleId,
+              progress: result.lessonProgress,
+            },
+          }));
+        }
         
         // Remove from pending updates
         pendingUpdatesRef.current.delete(updateId);

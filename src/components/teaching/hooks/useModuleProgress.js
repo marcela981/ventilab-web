@@ -3,6 +3,7 @@ import { curriculumData } from '../../../data/curriculumData';
 import { getModulesCount, getAllModules, getVisibleLessonsByLevel } from '../../../data/curriculum/selectors.js';
 import { getLevelProgress, getModulesByLevel } from '../../../data/curriculum/index.js';
 import { buildLessonsArray, calculateFilteredProgress } from '../components/curriculum/lessonHelpers';
+import { computeModuleProgress } from '../../../utils/computeModuleProgress';
 
 /**
  * Flatten all lessons by level (including M03 virtual lessons)
@@ -105,8 +106,9 @@ const useModuleProgress = (completedLessons, timeSpent = 0, progressByModule = n
 
   /**
    * Calcula el progreso de un módulo específico basándose en lecciones completadas
+   * Uses computeModuleProgress as the single source of truth
    * @param {string} moduleId - ID del módulo
-   * @returns {number} Porcentaje de progreso (0-100)
+   * @returns {number} Porcentaje de progreso (0-100), rounded down
    */
   const calculateModuleProgress = useCallback((moduleId) => {
     // Use getVisibleLessonsByLevel to get lessons for this module
@@ -114,32 +116,38 @@ const useModuleProgress = (completedLessons, timeSpent = 0, progressByModule = n
     const modules = getAllModules();
     const module = modules.find(m => m.id === moduleId);
     const moduleLevel = module?.level;
-    
+
     if (!moduleLevel) {
       return 0;
     }
-    
+
     // Get visible lessons for this level
     const visibleLessons = getVisibleLessonsByLevel(moduleLevel);
     // Filter lessons for this specific module
     const moduleLessons = visibleLessons.filter(lesson => lesson.moduleId === moduleId);
     // Only count completable lessons (exclude allowEmpty)
     const completableLessons = moduleLessons.filter(lesson => !lesson.allowEmpty);
-    
+
     if (completableLessons.length === 0) {
       return 0;
     }
-    
-    // Count completed lessons
-    const completedLessonsSet = completedLessons instanceof Set 
-      ? completedLessons 
+
+    // Count completed lessons using completedLessons Set
+    const completedLessonsSet = completedLessons instanceof Set
+      ? completedLessons
       : new Set(completedLessons);
-    
-    const completedCount = completableLessons.filter(lesson => 
-      completedLessonsSet.has(`${moduleId}-${lesson.lessonId}`)
-    ).length;
-    
-    return (completedCount / completableLessons.length) * 100;
+
+    // Build lessons array for computeModuleProgress
+    // Each lesson gets progress = 100 if completed, 0 otherwise
+    const lessonsWithProgress = completableLessons.map(lesson => ({
+      id: lesson.lessonId,
+      progress: completedLessonsSet.has(`${moduleId}-${lesson.lessonId}`) ? 100 : 0,
+    }));
+
+    // Use computeModuleProgress as single source of truth
+    const { progressPercentage } = computeModuleProgress(lessonsWithProgress);
+
+    return progressPercentage;
   }, [completedLessons]);
 
   /**

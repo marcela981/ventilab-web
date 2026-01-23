@@ -4,6 +4,35 @@
  * Learning Progress Context
  * Manages user progress state with normalized data structure by module
  * State format: { [moduleId]: { learningProgress, lessonsById: { [lessonId]: LessonProgressDTO } } }
+ * 
+ * ARCHITECTURE: Single Source of Truth
+ * ====================================
+ * 
+ * Lesson Progress (0-1 float) is the SINGLE SOURCE OF TRUTH for all progress calculations.
+ * 
+ * 1. STORAGE:
+ *    - Lesson progress is stored in backend as `progress` (0-1) or `completionPercentage` (0-100)
+ *    - Backend may also store a `completed` boolean flag, but this is NOT used for calculations
+ *    - Progress is stored in `progressByModule[moduleId].lessonsById[lessonId].progress`
+ * 
+ * 2. DERIVED VALUES:
+ *    - Module Progress = completedLessons / totalLessons
+ *      where completedLessons = count of lessons with progress === 1
+ *    - Level Progress = sum(moduleProgress) / totalModules
+ *      where moduleProgress is derived from lesson progress
+ * 
+ * 3. CALCULATIONS:
+ *    - A lesson is completed ONLY when progress === 1 (not based on flags)
+ *    - Module progress is calculated from lesson progress values
+ *    - Level progress is calculated from module progress values
+ *    - All calculations use progress values (0-1), never flags
+ * 
+ * 4. UI COMPONENTS:
+ *    - UI components MUST use derived progress values from:
+ *      - moduleProgressAggregated[moduleId].progress (0-1)
+ *      - levelProgressAggregated[levelId].progress (0-1)
+ *    - UI components MUST NOT rely on "completed" flags to calculate progress
+ *    - The `completedLessons` Set is derived from progress === 1, not from flags
  */
 
 import React, {
@@ -20,6 +49,7 @@ import { getAuthToken, getUserData } from '@/services/authService';
 import { getOutboxStats } from '@/utils/progressOutbox';
 import { ProgressSource } from '@/services/progress/ProgressSource';
 import { debug } from '@/utils/debug';
+import { computeModuleProgress } from '@/utils/computeModuleProgress';
 
 // Hooks
 import { useTokenManager } from './learningProgress/hooks/useTokenManager';
@@ -325,13 +355,17 @@ export const LearningProgressProvider = ({ children }) => {
     }
 
     // Only sync if we have meaningful data to sync
-    // ONLY count lessons explicitly marked as completed === true
-    const completedInSnapshot = snapshot.lessons.filter(l => l.completed === true);
-    if (completedInSnapshot.length === 0) {
+    // Count lessons with progress === 1 (not based on flags)
+    // Lesson progress (0-1 float) is the single source of truth
+    const lessonsWithProgress = snapshot.lessons.filter(l => {
+      const progressValue = Math.max(0, Math.min(1, l.progress || 0));
+      return progressValue > 0; // Sync any lesson with progress > 0
+    });
+    if (lessonsWithProgress.length === 0) {
       return;
     }
 
-    debug.info(`[LearningProgressContext] Syncing ${completedInSnapshot.length} completed lessons from snapshot to progressByModule`);
+    debug.info(`[LearningProgressContext] Syncing ${lessonsWithProgress.length} lessons with progress from snapshot to progressByModule`);
 
     setProgressByModule(prev => {
       const updated = { ...prev };
@@ -385,21 +419,69 @@ export const LearningProgressProvider = ({ children }) => {
         }
 
         // Check if this lesson's progress needs to be synced
+        // Lesson progress (0-1 float) is the single source of truth
+        // Defensive: ensure lesson data is valid
+        if (!lesson || typeof lesson !== 'object') {
+          console.warn('[LearningProgressContext] Invalid lesson data in snapshot sync:', lesson);
+          continue;
+        }
+        
         const existingProgress = updated[moduleId].lessonsById[lessonIdOnly];
-        const snapshotProgress = lesson.progress;
-        const snapshotCompleted = snapshotProgress >= 1.0;
+        
+        // Defensive: calculate snapshot progress value safely
+        let snapshotProgressValue = 0;
+        if (typeof lesson.progress === 'number' && !isNaN(lesson.progress)) {
+          snapshotProgressValue = Math.max(0, Math.min(1, lesson.progress));
+        } else {
+          // Log warning for inconsistent data
+          if (lesson.completed === true && (lesson.progress === undefined || lesson.progress < 1)) {
+            console.warn('[LearningProgressContext] Inconsistent snapshot data: lesson marked completed but progress < 1', {
+              lessonId: lesson.lessonId,
+              completed: lesson.completed,
+              progress: lesson.progress,
+            });
+          }
+          snapshotProgressValue = 0; // Default to 0 for missing/invalid data
+        }
 
         // Only update if snapshot has more progress or if the lesson doesn't exist locally
-        const existingProgressValue = existingProgress?.progress ?? 0;
-        const existingCompleted = existingProgress?.completed ?? false;
+        let existingProgressValue = 0;
+        if (existingProgress) {
+          if (typeof existingProgress.progress === 'number' && !isNaN(existingProgress.progress)) {
+            existingProgressValue = existingProgress.progress;
+          } else if (typeof existingProgress.completionPercentage === 'number' && !isNaN(existingProgress.completionPercentage)) {
+            existingProgressValue = existingProgress.completionPercentage / 100;
+          } else {
+            existingProgressValue = 0; // Default to 0
+          }
+        }
 
-        if (!existingProgress || snapshotProgress > existingProgressValue || (snapshotCompleted && !existingCompleted)) {
+        if (!existingProgress || snapshotProgressValue > existingProgressValue) {
+          const finalProgressValue = Math.max(existingProgressValue, snapshotProgressValue);
+          
+          // Defensive: never set completed flag if progress < 1
+          // Only set completed if progress is exactly 1 OR if backend explicitly set it
+          // But log warning if backend says completed but progress < 1
+          let completedFlag = false;
+          if (Math.abs(finalProgressValue - 1) < 0.0001) {
+            completedFlag = true;
+          } else if (lesson.completed === true) {
+            // Backend says completed but progress < 1 - log warning and don't set completed
+            console.warn('[LearningProgressContext] Backend marked lesson as completed but progress < 1, ignoring completed flag', {
+              lessonId: lesson.lessonId,
+              progress: finalProgressValue,
+              backendCompleted: lesson.completed,
+            });
+            completedFlag = false; // Don't trust the flag if progress doesn't match
+          }
+          
           updated[moduleId].lessonsById[lessonIdOnly] = {
-            ...existingProgress,
+            ...(existingProgress || {}),
             lessonId: lessonIdOnly,
-            progress: Math.max(existingProgressValue, snapshotProgress),
-            completed: snapshotCompleted || existingCompleted,
-            completionPercentage: Math.round(Math.max(existingProgressValue, snapshotProgress) * 100),
+            progress: finalProgressValue,
+            // Defensive: only set completed if progress === 1
+            completed: completedFlag,
+            completionPercentage: Math.round(finalProgressValue * 100),
             updatedAt: lesson.updatedAt || new Date().toISOString(),
           };
           hasChanges = true;
@@ -459,11 +541,107 @@ export const LearningProgressProvider = ({ children }) => {
     }
 
     const handleProgressUpdated = (event) => {
-      // Refresh the unified snapshot
+      const { lessonId, moduleId, progress, completionPercentage } = event?.detail || {};
+      
+      // If we have the lesson progress data, update progressByModule immediately
+      // This ensures UI updates without waiting for backend refetch
+      // Defensive: validate inputs before processing
+      if (lessonId && moduleId && typeof lessonId === 'string' && typeof moduleId === 'string' &&
+          (progress !== undefined || completionPercentage !== undefined)) {
+        try {
+          // Defensive: validate and normalize progress value
+          let progressValue = 0;
+          if (typeof progress === 'number' && !isNaN(progress)) {
+            progressValue = Math.max(0, Math.min(1, progress));
+          } else if (typeof completionPercentage === 'number' && !isNaN(completionPercentage)) {
+            progressValue = Math.max(0, Math.min(1, completionPercentage / 100));
+          } else {
+            // Log warning for invalid progress data
+            console.warn('[LearningProgressContext] Invalid progress data in event:', {
+              lessonId,
+              moduleId,
+              progress,
+              completionPercentage,
+            });
+            progressValue = 0; // Default to 0
+          }
+
+          // Update progressByModule optimistically
+          setProgressByModule((prev) => {
+            // Defensive: ensure prev is valid
+            if (!prev || typeof prev !== 'object') {
+              console.warn('[LearningProgressContext] Invalid progressByModule state, initializing:', prev);
+              prev = {};
+            }
+
+            const moduleData = prev[moduleId] || {
+              learningProgress: null,
+              lessonsById: {},
+            };
+
+            // Defensive: ensure moduleData is valid
+            let safeModuleData = moduleData;
+            if (!safeModuleData || typeof safeModuleData !== 'object') {
+              console.warn('[LearningProgressContext] Invalid moduleData, initializing:', moduleId, safeModuleData);
+              safeModuleData = {
+                learningProgress: null,
+                lessonsById: {},
+              };
+            }
+
+            // Update lesson progress
+            const existingLessonProgress = safeModuleData.lessonsById[lessonId] || {};
+
+            // Defensive: never set completed flag if progress < 1
+            // Only set completed if progress is exactly 1
+            const isCompleted = Math.abs(progressValue - 1) < 0.0001;
+
+            const updatedLessonsById = {
+              ...safeModuleData.lessonsById,
+              [lessonId]: {
+                ...existingLessonProgress,
+                progress: progressValue,
+                completionPercentage: completionPercentage ?? (progressValue * 100),
+                updatedAt: new Date().toISOString(),
+                // Defensive: only set completed if progress === 1
+                completed: isCompleted,
+              },
+            };
+
+            // Create new object to ensure React detects the change
+            return {
+              ...prev,
+              [moduleId]: {
+                ...safeModuleData,
+                lessonsById: updatedLessonsById,
+              },
+            };
+          });
+        } catch (error) {
+          // Defensive: catch any errors to prevent crashes
+          console.error('[LearningProgressContext] Error updating progress from event:', error, {
+            lessonId,
+            moduleId,
+            progress,
+            completionPercentage,
+          });
+          // Don't throw - continue execution
+        }
+      } else {
+        // Log warning for missing required data
+        console.warn('[LearningProgressContext] Missing required data in progress:updated event:', {
+          lessonId,
+          moduleId,
+          hasProgress: progress !== undefined,
+          hasCompletionPercentage: completionPercentage !== undefined,
+        });
+      }
+      
+      // Also refresh the unified snapshot in the background
       loadSnapshot('progress-event');
 
-      // Also refresh the specific module's progress in progressByModule
-      const moduleId = event?.detail?.moduleId;
+      // Also refresh the specific module's progress in progressByModule from backend
+      // This ensures we have the latest data from the server
       if (moduleId && loadModuleProgress) {
         console.log('[LearningProgressContext] Refreshing module progress for:', moduleId);
         loadModuleProgress(moduleId, { force: true }).catch(err => {
@@ -642,18 +820,56 @@ export const LearningProgressProvider = ({ children }) => {
       const lessonProgressMap = new Map();
 
       // First, add data from progressByModule (more detailed, per-page progress)
+      // IMPORTANT: Only store progress value (0-1), never store completed flag
+      // Lesson progress (0-1 float) is the single source of truth
       for (const [moduleId, moduleData] of Object.entries(progressByModule)) {
+        // Defensive check: ensure moduleData is valid
+        if (!moduleData || typeof moduleData !== 'object') {
+          console.warn('[LearningProgressContext] Invalid moduleData for moduleId:', moduleId, moduleData);
+          continue;
+        }
+        
         if (!moduleData?.lessonsById) continue;
+        
         for (const [lessonId, lessonProgress] of Object.entries(moduleData.lessonsById)) {
+          // Defensive check: ensure lessonProgress is valid
+          if (!lessonProgress || typeof lessonProgress !== 'object') {
+            console.warn('[LearningProgressContext] Invalid lessonProgress for lessonId:', lessonId, 'in module:', moduleId, lessonProgress);
+            continue;
+          }
+          
           const key = `${moduleId}-${lessonId}`;
+          
+          // Get progress value (0-1) - prefer progress field, then completionPercentage
+          // Defensive: default to 0 if data is missing or invalid
+          let progressValue = 0;
+          if (typeof lessonProgress.progress === 'number' && !isNaN(lessonProgress.progress)) {
+            progressValue = lessonProgress.progress;
+          } else if (typeof lessonProgress.completionPercentage === 'number' && !isNaN(lessonProgress.completionPercentage)) {
+            progressValue = lessonProgress.completionPercentage / 100;
+          } else {
+            // Log warning for inconsistent data
+            if (lessonProgress.completed === true && (lessonProgress.progress === undefined || lessonProgress.progress < 1)) {
+              console.warn('[LearningProgressContext] Inconsistent progress data: lesson marked completed but progress < 1', {
+                lessonId,
+                moduleId,
+                completed: lessonProgress.completed,
+                progress: lessonProgress.progress,
+                completionPercentage: lessonProgress.completionPercentage,
+              });
+            }
+            progressValue = 0; // Default to 0 for missing/invalid data
+          }
+          
+          // Normalize to 0-1 range
+          progressValue = Math.max(0, Math.min(1, progressValue));
+          
           lessonProgressMap.set(key, {
-            progress: lessonProgress.progress ?? (lessonProgress.completionPercentage ? lessonProgress.completionPercentage / 100 : 0),
-            completed: lessonProgress.completed === true,
+            progress: progressValue,
           });
           // Also add by lessonId only for cross-reference
           lessonProgressMap.set(lessonId, {
-            progress: lessonProgress.progress ?? (lessonProgress.completionPercentage ? lessonProgress.completionPercentage / 100 : 0),
-            completed: lessonProgress.completed === true,
+            progress: progressValue,
           });
         }
       }
@@ -661,21 +877,41 @@ export const LearningProgressProvider = ({ children }) => {
       // Then, merge snapshot data (only if we don't already have better data)
       if (snapshot?.lessons && Array.isArray(snapshot.lessons)) {
         for (const lesson of snapshot.lessons) {
+          // Defensive check: ensure lesson data is valid
+          if (!lesson || typeof lesson !== 'object' || !lesson.lessonId) {
+            console.warn('[LearningProgressContext] Invalid lesson data in snapshot:', lesson);
+            continue;
+          }
+          
           if (!lessonProgressMap.has(lesson.lessonId)) {
+            // Defensive: default to 0 if progress is missing or invalid
+            let progressValue = 0;
+            if (typeof lesson.progress === 'number' && !isNaN(lesson.progress)) {
+              progressValue = Math.max(0, Math.min(1, lesson.progress));
+            } else {
+              // Log warning for inconsistent data
+              if (lesson.completed === true && (lesson.progress === undefined || lesson.progress < 1)) {
+                console.warn('[LearningProgressContext] Inconsistent snapshot data: lesson marked completed but progress < 1', {
+                  lessonId: lesson.lessonId,
+                  completed: lesson.completed,
+                  progress: lesson.progress,
+                });
+              }
+              progressValue = 0; // Default to 0 for missing/invalid data
+            }
+            
             lessonProgressMap.set(lesson.lessonId, {
-              progress: lesson.progress ?? 0,
-              completed: lesson.completed === true,
+              progress: progressValue,
             });
           }
         }
       }
 
-      // Now calculate progress for each module
+      // Now calculate progress for each module using computeModuleProgress
       for (const [moduleId, module] of Object.entries(curriculumData.modules)) {
         const lessons = module.lessons || [];
-        const totalLessons = lessons.length;
 
-        if (totalLessons === 0) {
+        if (lessons.length === 0) {
           aggregated[moduleId] = {
             completedLessons: 0,
             totalLessons: 0,
@@ -686,39 +922,46 @@ export const LearningProgressProvider = ({ children }) => {
           continue;
         }
 
-        let completedCount = 0;
-        let progressSum = 0;
+        // Build lessons array with progress values (0-100) for computeModuleProgress
+        const lessonsWithProgress = lessons.map(lesson => {
+          if (!lesson || typeof lesson !== 'object' || !lesson.id) {
+            return { id: 'unknown', progress: 0 };
+          }
 
-        for (const lesson of lessons) {
           const lessonId = lesson.id;
           const key1 = `${moduleId}-${lessonId}`;
 
-          // Try to find progress data
+          // Try to find progress data for this lesson
           const progressData = lessonProgressMap.get(key1) || lessonProgressMap.get(lessonId);
 
-          if (progressData) {
-            // A lesson counts as completed ONLY when explicitly marked completed
-            if (progressData.completed === true) {
-              completedCount++;
-              progressSum += 1;
-            } else {
-              // Use partial progress for incomplete lessons
-              progressSum += Math.max(0, Math.min(1, progressData.progress || 0));
-            }
+          // Get progress value (0-1) and convert to 0-100 for computeModuleProgress
+          let progressValue = 0;
+          if (progressData && typeof progressData.progress === 'number' && !isNaN(progressData.progress)) {
+            progressValue = Math.max(0, Math.min(1, progressData.progress));
           }
-          // If no progress data found, the lesson contributes 0 to progressSum
-        }
 
-        // Module progress = completedLessons / totalLessons
-        // This ensures consistency: module is 100% only when ALL lessons are completed
-        const progress = totalLessons > 0 ? (completedCount / totalLessons) : 0;
-        const isCompleted = completedCount >= totalLessons && totalLessons > 0;
+          // Convert 0-1 to 0-100 for computeModuleProgress
+          // Use Math.round to handle floating point issues (0.9999999 -> 100)
+          const progressPercent = Math.round(progressValue * 100);
+
+          return {
+            id: lessonId,
+            progress: progressPercent,
+          };
+        });
+
+        // Use computeModuleProgress as the single source of truth
+        const { completedLessonsCount, totalLessonsCount, progressPercentage } =
+          computeModuleProgress(lessonsWithProgress);
+
+        // Module is completed ONLY when all lessons have progress === 100
+        const isCompleted = totalLessonsCount > 0 && completedLessonsCount === totalLessonsCount;
 
         aggregated[moduleId] = {
-          completedLessons: completedCount,
-          totalLessons,
-          progress,
-          progressPercent: Math.round(progress * 100),
+          completedLessons: completedLessonsCount,
+          totalLessons: totalLessonsCount,
+          progress: progressPercentage / 100, // Convert back to 0-1 for legacy compatibility
+          progressPercent: progressPercentage, // Already floor'd by computeModuleProgress
           isCompleted,
         };
       }
@@ -775,25 +1018,119 @@ export const LearningProgressProvider = ({ children }) => {
         let totalLessonsInLevel = 0;
         let moduleProgressSum = 0;
 
+        // Iterate through ALL modules in the level
+        // IMPORTANT: Every module must contribute to the average, even if progress is 0
+        // Modules with 0 progress contribute 0 to the sum (not skipped)
         for (const module of modulesInLevel) {
           const moduleProgress = moduleProgressAggregated[module.id];
 
+          // Get module progress value (0-1) - use progress field, never flags
+          // If no progress data exists, the module contributes 0 (not skipped)
+          let moduleProgressValue = 0;
+          
           if (moduleProgress) {
-            if (moduleProgress.isCompleted) {
-              completedModulesCount++;
+            // Defensive: ensure moduleProgress is valid object
+            if (typeof moduleProgress !== 'object') {
+              console.warn('[LearningProgressContext] Invalid moduleProgress data for module:', module.id, moduleProgress);
+              moduleProgressValue = 0;
+            } else {
+              // Normalize progress value to 0-1 range
+              // Defensive: default to 0 if progress is missing or invalid
+              if (typeof moduleProgress.progress === 'number' && !isNaN(moduleProgress.progress)) {
+                moduleProgressValue = Math.max(0, Math.min(1, moduleProgress.progress));
+              } else {
+                // Log warning for inconsistent data
+                if (moduleProgress.isCompleted === true && (moduleProgress.progress === undefined || moduleProgress.progress < 1)) {
+                  console.warn('[LearningProgressContext] Inconsistent module progress: marked completed but progress < 1', {
+                    moduleId: module.id,
+                    isCompleted: moduleProgress.isCompleted,
+                    progress: moduleProgress.progress,
+                  });
+                }
+                moduleProgressValue = 0; // Default to 0 for missing/invalid data
+              }
+              
+              // Aggregate lesson counts for display
+              // Defensive: ensure counts are valid numbers
+              const completedLessons = typeof moduleProgress.completedLessons === 'number' && !isNaN(moduleProgress.completedLessons)
+                ? moduleProgress.completedLessons : 0;
+              const totalLessons = typeof moduleProgress.totalLessons === 'number' && !isNaN(moduleProgress.totalLessons)
+                ? moduleProgress.totalLessons : 0;
+              
+              completedLessonsTotal += completedLessons;
+              totalLessonsInLevel += totalLessons;
             }
-            completedLessonsTotal += moduleProgress.completedLessons;
-            totalLessonsInLevel += moduleProgress.totalLessons;
-            moduleProgressSum += moduleProgress.progress;
           } else {
-            // No progress data, just count total lessons
-            totalLessonsInLevel += (module.lessons?.length || 0);
+            // No progress data - module contributes 0 to progress sum
+            // Still count total lessons for display purposes
+            const moduleLessonsCount = Array.isArray(module.lessons) ? module.lessons.length : 0;
+            totalLessonsInLevel += moduleLessonsCount;
+          }
+          
+          // ALWAYS add to sum (even if 0) - ensures all modules are counted in average
+          // This ensures modules with 0 progress contribute 0, not skipped
+          // Defensive: ensure value is valid before adding
+          if (typeof moduleProgressValue === 'number' && !isNaN(moduleProgressValue)) {
+            moduleProgressSum += moduleProgressValue;
+          } else {
+            console.warn('[LearningProgressContext] Invalid moduleProgressValue, defaulting to 0:', {
+              moduleId: module.id,
+              moduleProgressValue,
+            });
+            moduleProgressSum += 0; // Default to 0
+          }
+          
+          // Count completed modules - a module is completed ONLY when progress === 1
+          // Defensive: use strict check to prevent false positives
+          // Never mark as completed if progress < 1
+          if (Math.abs(moduleProgressValue - 1) < 0.0001) {
+            completedModulesCount++;
           }
         }
 
         // Level progress = average of module progress values
-        const progress = totalModules > 0 ? (moduleProgressSum / totalModules) : 0;
-        const percentage = Math.round(progress * 100);
+        // Formula: sum(moduleProgress) / totalModules
+        // 
+        // Rules:
+        // - ALL modules contribute to the average (including those with 0 progress)
+        // - Modules with 0 progress contribute 0 to the sum, not skipped
+        // - Partial module progress contributes proportionally
+        // - Ignore module.completed flags - only use module.progress values
+        // Defensive: ensure division is safe and result is valid
+        let progress = 0;
+        if (totalModules > 0 && !isNaN(moduleProgressSum) && !isNaN(totalModules)) {
+          progress = moduleProgressSum / totalModules;
+          // Ensure progress is in valid range
+          progress = Math.max(0, Math.min(1, progress));
+        } else {
+          // Log warning for invalid calculation
+          if (totalModules === 0) {
+            console.warn('[LearningProgressContext] Level has no modules:', levelId);
+          } else {
+            console.warn('[LearningProgressContext] Invalid level progress calculation:', {
+              levelId,
+              moduleProgressSum,
+              totalModules,
+            });
+          }
+          progress = 0; // Default to 0
+        }
+        
+        // Normalize to 0-100 for UI display (consistent with module progress bars)
+        // Ensure value is clamped to 0-100 range for LinearProgress component
+        // This ensures consistency between level progress bar and module card progress bars
+        // Use Math.floor to be consistent with computeModuleProgress
+        // Defensive: ensure percentage is valid
+        let percentage = 0;
+        if (typeof progress === 'number' && !isNaN(progress)) {
+          percentage = Math.max(0, Math.min(100, Math.floor(progress * 100)));
+        } else {
+          console.warn('[LearningProgressContext] Invalid progress value for percentage calculation:', {
+            levelId,
+            progress,
+          });
+          percentage = 0; // Default to 0
+        }
 
         aggregated[levelId] = {
           completedModules: completedModulesCount,
