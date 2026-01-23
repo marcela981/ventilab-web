@@ -250,13 +250,16 @@ const useLesson = (lessonId, moduleId) => {
     };
 
     // Combine all data
+    // CRITICAL: Override lessonData.moduleId with the passed moduleId to ensure
+    // navigation stays within the correct module context (fixes cross-module navigation bug)
     return {
       ...lessonData,
+      moduleId: moduleId, // Override JSON's moduleId with the actual module being viewed
       moduleInfo,
       lessonPosition,
       navigation,
     };
-  }, [lessonId]);
+  }, [lessonId, moduleId]);
 
   // ============================================================================
   // Content Loading Function

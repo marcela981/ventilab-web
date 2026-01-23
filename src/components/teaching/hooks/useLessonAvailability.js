@@ -40,12 +40,13 @@ export const useLessonAvailability = () => {
       const moduleProgress = progressByModule[moduleId];
       const lessonsById = moduleProgress.lessonsById || {};
       
-      // Contar lecciones completadas
+      // Contar lecciones completadas - ONLY count if explicitly marked completed === true
       const completedCount = module.lessons.filter((lesson) => {
         const lessonProgress = lessonsById[lesson.id];
         return lessonProgress && lessonProgress.completed === true;
       }).length;
 
+      // Module progress = completedLessons / totalLessons
       const progress = Math.round((completedCount / module.lessons.length) * 100);
       return progress;
     }
@@ -56,18 +57,21 @@ export const useLessonAvailability = () => {
         // Match lesson by ID (adjust logic based on your lessonId format)
         return module.lessons.some(ml => ml.id === l.lessonId || l.lessonId.includes(ml.id));
       });
-      const completedCount = moduleLessons.filter(l => l.progress >= 1.0).length;
+      // ONLY count lessons explicitly marked as completed === true
+      const completedCount = moduleLessons.filter(l => l.completed === true).length;
+      // Module progress = completedLessons / totalLessons
       const progress = Math.round((completedCount / module.lessons.length) * 100);
       return progress;
     }
 
-    // Fallback: usar completedLessons Set
+    // Fallback: usar completedLessons Set (which now only contains explicitly completed lessons)
     const completedCount = module.lessons.filter((lesson) => {
       const lessonKey1 = `${moduleId}-${lesson.id}`;
       const lessonKey2 = lesson.id; // Formato legacy
       return completedLessons.has(lessonKey1) || completedLessons.has(lessonKey2);
     }).length;
 
+    // Module progress = completedLessons / totalLessons
     const progress = Math.round((completedCount / module.lessons.length) * 100);
     return progress;
   }, [completedLessons, progressByModule, snapshot]);
@@ -134,9 +138,12 @@ export const useLessonAvailability = () => {
 
     const moduleProgresses = modulesWithProgress.map((mod) => {
       const moduleProgress = calculateModuleProgress(mod.id);
-      return { moduleId: mod.id, title: mod.title, progress: moduleProgress, isComplete: moduleProgress === 100 };
+      // Module is complete ONLY when ALL its lessons are completed (progress === 100)
+      const isComplete = moduleProgress === 100;
+      return { moduleId: mod.id, title: mod.title, progress: moduleProgress, isComplete };
     });
 
+    // Level is complete ONLY when ALL modules are complete (all have 100% progress = all lessons completed)
     const allModulesCompleted = moduleProgresses.every(m => m.isComplete);
     
     // Solo loggear si el nivel no está completo para debugging
@@ -147,7 +154,7 @@ export const useLessonAvailability = () => {
     }
 
     return allModulesCompleted;
-  }, [calculateModuleProgress, completedLessons]);
+  }, [calculateModuleProgress, completedLessons, progressByModule]);
 
   /**
    * Obtiene el nivel anterior
@@ -166,34 +173,57 @@ export const useLessonAvailability = () => {
 
   /**
    * Verifica si una lección está completada
-   * Usa progressByModule si está disponible (más preciso), sino usa completedLessons
+   * Checks snapshot first (most recent from backend), then progressByModule, then completedLessons
    */
   const isLessonCompleted = useCallback((moduleId, lessonId) => {
-    // Si tenemos progressByModule, usarlo (más preciso y actualizado)
-    if (progressByModule && progressByModule[moduleId]) {
-      const moduleProgress = progressByModule[moduleId];
-      const lessonProgress = moduleProgress.lessonsById?.[lessonId];
-      if (lessonProgress) {
-        return lessonProgress.completed === true;
+    // 1. Check unified snapshot first (most accurate, fresh from backend)
+    // ONLY check explicit completed === true flag
+    if (snapshot?.lessons && Array.isArray(snapshot.lessons)) {
+      // Check for exact match
+      const snapshotLesson = snapshot.lessons.find(l => l.lessonId === lessonId);
+      if (snapshotLesson && snapshotLesson.completed === true) {
+        return true;
+      }
+      // Also check with moduleId-lessonId format
+      const compoundKey = `${moduleId}-${lessonId}`;
+      const snapshotLessonCompound = snapshot.lessons.find(l => l.lessonId === compoundKey);
+      if (snapshotLessonCompound && snapshotLessonCompound.completed === true) {
+        return true;
       }
     }
 
-    // Fallback: usar completedLessons Set
+    // 2. Check progressByModule (local state, may be more recent for current session)
+    // ONLY check explicit completed === true flag
+    if (progressByModule && progressByModule[moduleId]) {
+      const moduleProgress = progressByModule[moduleId];
+      const lessonProgress = moduleProgress.lessonsById?.[lessonId];
+      if (lessonProgress && lessonProgress.completed === true) {
+        return true;
+      }
+    }
+
+    // 3. Fallback: usar completedLessons Set (includes both progressByModule and snapshot data)
     const lessonKey1 = `${moduleId}-${lessonId}`;
     const lessonKey2 = lessonId; // Formato legacy
     const isCompleted = completedLessons.has(lessonKey1) || completedLessons.has(lessonKey2);
     return isCompleted;
-  }, [completedLessons, progressByModule]);
+  }, [completedLessons, progressByModule, snapshot]);
 
   /**
    * Determina si una lección está desbloqueada
-   * 
+   *
+   * UNLOCK LOGIC (per requirements):
+   * - Unlock depends ONLY on lesson order inside the module (not across modules)
+   * - First lesson of each module is always available (for beginner level)
+   * - For intermediate/advanced levels: first lesson available only if previous level is complete
+   * - Subsequent lessons require the previous lesson in the SAME MODULE to be completed
+   *
    * @param {Object} lesson - Objeto de lección con moduleId, lessonId, order, etc.
    * @param {Array} allLessonsInLevel - Array de todas las lecciones del nivel (ordenadas)
    * @returns {boolean} True si la lección está desbloqueada
    */
   const isLessonAvailable = useCallback((lesson, allLessonsInLevel) => {
-    if (!lesson || !allLessonsInLevel || allLessonsInLevel.length === 0) {
+    if (!lesson) {
       return false;
     }
 
@@ -206,74 +236,50 @@ export const useLessonAvailability = () => {
 
     const level = module.level || lesson.moduleLevel || 'beginner';
 
-    // Si es beginner, las lecciones se desbloquean secuencialmente dentro del módulo
-    if (level === 'beginner') {
-      // Encontrar la lección en el array de todas las lecciones del nivel
-      const lessonIndex = allLessonsInLevel.findIndex(
-        l => l.moduleId === lesson.moduleId && l.lessonId === lesson.lessonId
-      );
+    // Get lessons only for THIS module, sorted by order
+    const moduleLessons = (module.lessons || []).map((l, idx) => ({
+      moduleId: lesson.moduleId,
+      lessonId: l.id,
+      order: l.order ?? idx,
+      title: l.title
+    })).sort((a, b) => a.order - b.order);
 
-      if (lessonIndex === -1) {
-        return false;
-      }
-
-      // La primera lección siempre está disponible
-      if (lessonIndex === 0) {
-        return true;
-      }
-
-      // Las demás lecciones requieren que las anteriores estén completadas
-      for (let i = 0; i < lessonIndex; i++) {
-        const previousLesson = allLessonsInLevel[i];
-        if (!isLessonCompleted(previousLesson.moduleId, previousLesson.lessonId)) {
-          return false;
-        }
-      }
-
-      return true;
-    }
-
-    // Para niveles que NO son beginner:
-
-    // PRIMERO: Verificar que el nivel anterior esté completo
-    const previousLevel = getPreviousLevel(level);
-    if (previousLevel) {
-      const previousLevelIsComplete = isLevelCompleted(previousLevel);
-      
-      if (!previousLevelIsComplete) {
-        // Si el nivel anterior no está completo, ninguna lección de este nivel está disponible
-        console.log(`[useLessonAvailability] BLOCKED: Lesson ${lesson.lessonId} (${lesson.title || 'untitled'}) in level ${level} - Previous level ${previousLevel} is not complete`);
-        return false;
-      }
-    }
-
-    // SEGUNDO: Verificar si es la primera lección del nivel
-    const lessonIndex = allLessonsInLevel.findIndex(
-      l => l.moduleId === lesson.moduleId && l.lessonId === lesson.lessonId
+    // Find the index of this lesson within its module
+    const lessonIndexInModule = moduleLessons.findIndex(
+      l => l.lessonId === lesson.lessonId
     );
 
-    if (lessonIndex === -1) {
-      console.warn(`[useLessonAvailability] Lesson ${lesson.lessonId} not found in allLessonsInLevel`);
+    if (lessonIndexInModule === -1) {
+      // Lesson not found in module, check if it's in allLessonsInLevel as fallback
+      console.warn(`[useLessonAvailability] Lesson ${lesson.lessonId} not found in module ${lesson.moduleId}`);
       return false;
     }
 
-    // Si es la primera lección del nivel, está disponible (nivel anterior ya está completo)
-    if (lessonIndex === 0) {
-      console.log(`[useLessonAvailability] AVAILABLE: Lesson ${lesson.lessonId} is first in level ${level} (previous level ${previousLevel || 'none'} is complete)`);
-      return true;
-    }
+    // For non-beginner levels, check if previous level is complete first
+    if (level !== 'beginner') {
+      const previousLevel = getPreviousLevel(level);
+      if (previousLevel) {
+        const previousLevelIsComplete = isLevelCompleted(previousLevel);
 
-    // TERCERO: Para cualquier otra lección, verificar que TODAS las lecciones anteriores
-    // en el nivel estén completadas
-    for (let i = 0; i < lessonIndex; i++) {
-      const previousLesson = allLessonsInLevel[i];
-      if (!isLessonCompleted(previousLesson.moduleId, previousLesson.lessonId)) {
-        return false;
+        if (!previousLevelIsComplete) {
+          // If previous level is not complete, no lesson in this level is available
+          return false;
+        }
       }
     }
 
-    return true;
-  }, [completedLessons, calculateModuleProgress, isLevelCompleted, getPreviousLevel, isLessonCompleted]);
+    // First lesson of the module is always available (after level prerequisites are met)
+    if (lessonIndexInModule === 0) {
+      return true;
+    }
+
+    // For subsequent lessons, check that the PREVIOUS lesson in this module is completed
+    // This is the key fix: only check the immediate previous lesson, not all previous lessons
+    const previousLessonInModule = moduleLessons[lessonIndexInModule - 1];
+    const isPreviousCompleted = isLessonCompleted(lesson.moduleId, previousLessonInModule.lessonId);
+
+    return isPreviousCompleted;
+  }, [isLevelCompleted, getPreviousLevel, isLessonCompleted]);
 
   return {
     isLessonAvailable,

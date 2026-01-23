@@ -47,7 +47,7 @@ const LearningProgressContext = createContext({
   snapshot: null,
   isLoadingSnapshot: false,
   snapshotError: null,
-  
+
   // State
   progressByModule: {},
   currentModuleId: null,
@@ -55,11 +55,11 @@ const LearningProgressContext = createContext({
   syncStatus: 'idle',
   lastSyncError: null,
   loadingModules: new Set(),
-  
+
   // Unified progress actions
   refetchSnapshot: async () => {},
   upsertLessonProgressUnified: async () => {},
-  
+
   // Actions
   loadModuleProgress: async () => {},
   updateLessonProgress: async () => {},
@@ -70,7 +70,13 @@ const LearningProgressContext = createContext({
   setCurrentLesson: () => {},
   reconcileOutbox: async () => {},
   getOutboxStats: () => ({}),
-  
+
+  // Derived progress aggregation (SINGLE SOURCE OF TRUTH for UI)
+  moduleProgressAggregated: {},
+  levelProgressAggregated: {},
+  getModuleProgressAggregated: () => null,
+  getLevelProgressAggregated: () => null,
+
   // Legacy compatibility
   progressMap: {},
   updateProgress: () => {},
@@ -196,24 +202,86 @@ export const LearningProgressProvider = ({ children }) => {
     return loadSnapshot('refetch');
   }, [loadSnapshot]);
 
-  // Unified upsert lesson progress
-  const upsertLessonProgressUnified = useCallback(async (lessonId, progress) => {
+  /**
+   * Validate that a lesson belongs to a module using curriculum data.
+   * @param {string} lessonId - The lesson ID to validate
+   * @param {string} moduleId - The module ID to check against
+   * @returns {boolean} True if the lesson belongs to the module
+   */
+  const validateLessonBelongsToModule = useCallback((lessonId, moduleId) => {
+    // Import curriculum data lazily to avoid circular dependencies
     try {
-      await ProgressSource.upsertLessonProgress(lessonId, progress);
+      const { curriculumData } = require('../data/curriculumData');
+      const module = curriculumData?.modules?.[moduleId];
+
+      if (!module || !Array.isArray(module.lessons)) {
+        // Module not found in curriculum - could be a valid new module
+        // Allow the request but log a warning
+        console.warn(`[LearningProgressContext] Module "${moduleId}" not found in curriculumData - allowing request`);
+        return true;
+      }
+
+      const lessonExists = module.lessons.some(lesson => lesson.id === lessonId);
+      return lessonExists;
+    } catch (error) {
+      // If curriculum data can't be loaded, allow the request but log warning
+      console.warn('[LearningProgressContext] Could not validate lesson against curriculum:', error);
+      return true;
+    }
+  }, []);
+
+  // Unified upsert lesson progress with strict validation
+  const upsertLessonProgressUnified = useCallback(async (lessonId, progress, moduleId = null) => {
+    // ==========================================================================
+    // STRICT VALIDATION - Prevent 400 errors from invalid payloads
+    // ==========================================================================
+
+    // 1. Validate lessonId is a non-empty string
+    if (!lessonId || typeof lessonId !== 'string' || lessonId.trim() === '') {
+      console.warn('[LearningProgressContext] upsertLessonProgressUnified ABORTED: lessonId is invalid or empty', { lessonId });
+      return;
+    }
+
+    // 2. Validate moduleId is provided and is a non-empty string
+    if (!moduleId || typeof moduleId !== 'string' || moduleId.trim() === '') {
+      console.warn('[LearningProgressContext] upsertLessonProgressUnified ABORTED: moduleId is required but was invalid or empty', { lessonId, moduleId });
+      return;
+    }
+
+    // 3. Validate progress is a valid number between 0 and 1
+    if (typeof progress !== 'number' || isNaN(progress) || progress < 0 || progress > 1) {
+      console.warn('[LearningProgressContext] upsertLessonProgressUnified ABORTED: progress must be a number between 0 and 1', { lessonId, moduleId, progress });
+      return;
+    }
+
+    // 4. Validate the lesson belongs to the given module
+    if (!validateLessonBelongsToModule(lessonId, moduleId)) {
+      console.warn('[LearningProgressContext] upsertLessonProgressUnified ABORTED: lesson does not belong to module', { lessonId, moduleId });
+      return;
+    }
+
+    // 5. Log the validated request
+    debug.info('[LearningProgressContext] upsertLessonProgressUnified: Validation passed', { lessonId, moduleId, progress });
+
+    // ==========================================================================
+    // EXECUTE THE UPSERT
+    // ==========================================================================
+    try {
+      await ProgressSource.upsertLessonProgress(lessonId, progress, moduleId);
       // Refetch snapshot after update
       await loadSnapshot('upsert');
-      
+
       // Also emit event for other listeners
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('progress:updated', {
-          detail: { lessonId, progress }
+          detail: { lessonId, moduleId, progress }
         }));
       }
     } catch (error) {
       debug.error('Failed to upsert lesson progress:', error);
       throw error;
     }
-  }, [loadSnapshot]);
+  }, [loadSnapshot, validateLessonBelongsToModule]);
 
   // Load snapshot on mount
   useEffect(() => {
@@ -248,6 +316,99 @@ export const LearningProgressProvider = ({ children }) => {
         });
     }
   }, [session, snapshot?.source, loadSnapshot]);
+
+  // Sync snapshot lessons into progressByModule to ensure data consistency
+  // This ensures that fresh data from the backend is available in progressByModule
+  useEffect(() => {
+    if (!snapshot?.lessons || !Array.isArray(snapshot.lessons) || snapshot.lessons.length === 0) {
+      return;
+    }
+
+    // Only sync if we have meaningful data to sync
+    // ONLY count lessons explicitly marked as completed === true
+    const completedInSnapshot = snapshot.lessons.filter(l => l.completed === true);
+    if (completedInSnapshot.length === 0) {
+      return;
+    }
+
+    debug.info(`[LearningProgressContext] Syncing ${completedInSnapshot.length} completed lessons from snapshot to progressByModule`);
+
+    setProgressByModule(prev => {
+      const updated = { ...prev };
+      let hasChanges = false;
+
+      for (const lesson of snapshot.lessons) {
+        // Try to determine moduleId from lessonId
+        // Common formats: "module-id/lesson-id", "module-id-lesson-id"
+        let moduleId = null;
+        let lessonIdOnly = lesson.lessonId;
+
+        // Check if lessonId contains a separator
+        if (lesson.lessonId.includes('/')) {
+          const parts = lesson.lessonId.split('/');
+          moduleId = parts.slice(0, -1).join('/');
+          lessonIdOnly = parts[parts.length - 1];
+        } else if (lesson.lessonId.includes('-')) {
+          // For pattern like "respiratory-physiology-lesson-1"
+          // Try to find if this matches any existing module
+          for (const existingModuleId of Object.keys(prev)) {
+            if (lesson.lessonId.startsWith(existingModuleId)) {
+              moduleId = existingModuleId;
+              lessonIdOnly = lesson.lessonId.substring(existingModuleId.length + 1);
+              break;
+            }
+          }
+          // If no match found, use the lessonId as-is and try common patterns
+          if (!moduleId) {
+            // Try matching "moduleId-lessonId" pattern
+            const dashParts = lesson.lessonId.split('-');
+            if (dashParts.length >= 2) {
+              // Assume the last part is the lesson identifier
+              moduleId = dashParts.slice(0, -1).join('-');
+              lessonIdOnly = dashParts[dashParts.length - 1];
+            }
+          }
+        }
+
+        // If we still don't have a moduleId, skip this lesson
+        if (!moduleId) {
+          continue;
+        }
+
+        // Ensure module exists in progressByModule
+        if (!updated[moduleId]) {
+          updated[moduleId] = {
+            learningProgress: null,
+            lessonsById: {},
+          };
+          hasChanges = true;
+        }
+
+        // Check if this lesson's progress needs to be synced
+        const existingProgress = updated[moduleId].lessonsById[lessonIdOnly];
+        const snapshotProgress = lesson.progress;
+        const snapshotCompleted = snapshotProgress >= 1.0;
+
+        // Only update if snapshot has more progress or if the lesson doesn't exist locally
+        const existingProgressValue = existingProgress?.progress ?? 0;
+        const existingCompleted = existingProgress?.completed ?? false;
+
+        if (!existingProgress || snapshotProgress > existingProgressValue || (snapshotCompleted && !existingCompleted)) {
+          updated[moduleId].lessonsById[lessonIdOnly] = {
+            ...existingProgress,
+            lessonId: lessonIdOnly,
+            progress: Math.max(existingProgressValue, snapshotProgress),
+            completed: snapshotCompleted || existingCompleted,
+            completionPercentage: Math.round(Math.max(existingProgressValue, snapshotProgress) * 100),
+            updatedAt: lesson.updatedAt || new Date().toISOString(),
+          };
+          hasChanges = true;
+        }
+      }
+
+      return hasChanges ? updated : prev;
+    });
+  }, [snapshot]);
 
   // Progress loading hook
   const { loadModuleProgress } = useProgressLoader({
@@ -448,6 +609,225 @@ export const LearningProgressProvider = ({ children }) => {
     return createProgressMap(progressByModule);
   }, [progressByModule]);
 
+  /**
+   * ==========================================================================
+   * DERIVED PROGRESS AGGREGATION - Unified progress calculation
+   * ==========================================================================
+   * These selectors compute module and level progress from the source of truth
+   * (progressByModule, completedLessons, snapshot) and ensure consistency
+   * across the entire application.
+   */
+
+  /**
+   * Derive module progress for all modules from curriculum data.
+   * This is the SINGLE SOURCE OF TRUTH for module progress in the UI.
+   *
+   * moduleProgressAggregated[moduleId] = {
+   *   completedLessons: number,
+   *   totalLessons: number,
+   *   progress: number (0-1),
+   *   progressPercent: number (0-100),
+   *   isCompleted: boolean
+   * }
+   */
+  const moduleProgressAggregated = useMemo(() => {
+    const aggregated = {};
+
+    try {
+      const { curriculumData } = require('../data/curriculumData');
+      if (!curriculumData?.modules) return aggregated;
+
+      // Create a merged view of lesson progress from all sources
+      // Priority: progressByModule > snapshot.lessons
+      const lessonProgressMap = new Map();
+
+      // First, add data from progressByModule (more detailed, per-page progress)
+      for (const [moduleId, moduleData] of Object.entries(progressByModule)) {
+        if (!moduleData?.lessonsById) continue;
+        for (const [lessonId, lessonProgress] of Object.entries(moduleData.lessonsById)) {
+          const key = `${moduleId}-${lessonId}`;
+          lessonProgressMap.set(key, {
+            progress: lessonProgress.progress ?? (lessonProgress.completionPercentage ? lessonProgress.completionPercentage / 100 : 0),
+            completed: lessonProgress.completed === true,
+          });
+          // Also add by lessonId only for cross-reference
+          lessonProgressMap.set(lessonId, {
+            progress: lessonProgress.progress ?? (lessonProgress.completionPercentage ? lessonProgress.completionPercentage / 100 : 0),
+            completed: lessonProgress.completed === true,
+          });
+        }
+      }
+
+      // Then, merge snapshot data (only if we don't already have better data)
+      if (snapshot?.lessons && Array.isArray(snapshot.lessons)) {
+        for (const lesson of snapshot.lessons) {
+          if (!lessonProgressMap.has(lesson.lessonId)) {
+            lessonProgressMap.set(lesson.lessonId, {
+              progress: lesson.progress ?? 0,
+              completed: lesson.completed === true,
+            });
+          }
+        }
+      }
+
+      // Now calculate progress for each module
+      for (const [moduleId, module] of Object.entries(curriculumData.modules)) {
+        const lessons = module.lessons || [];
+        const totalLessons = lessons.length;
+
+        if (totalLessons === 0) {
+          aggregated[moduleId] = {
+            completedLessons: 0,
+            totalLessons: 0,
+            progress: 0,
+            progressPercent: 0,
+            isCompleted: false,
+          };
+          continue;
+        }
+
+        let completedCount = 0;
+        let progressSum = 0;
+
+        for (const lesson of lessons) {
+          const lessonId = lesson.id;
+          const key1 = `${moduleId}-${lessonId}`;
+
+          // Try to find progress data
+          const progressData = lessonProgressMap.get(key1) || lessonProgressMap.get(lessonId);
+
+          if (progressData) {
+            // A lesson counts as completed ONLY when explicitly marked completed
+            if (progressData.completed === true) {
+              completedCount++;
+              progressSum += 1;
+            } else {
+              // Use partial progress for incomplete lessons
+              progressSum += Math.max(0, Math.min(1, progressData.progress || 0));
+            }
+          }
+          // If no progress data found, the lesson contributes 0 to progressSum
+        }
+
+        // Module progress = completedLessons / totalLessons
+        // This ensures consistency: module is 100% only when ALL lessons are completed
+        const progress = totalLessons > 0 ? (completedCount / totalLessons) : 0;
+        const isCompleted = completedCount >= totalLessons && totalLessons > 0;
+
+        aggregated[moduleId] = {
+          completedLessons: completedCount,
+          totalLessons,
+          progress,
+          progressPercent: Math.round(progress * 100),
+          isCompleted,
+        };
+      }
+    } catch (error) {
+      console.warn('[LearningProgressContext] Error calculating moduleProgressAggregated:', error);
+    }
+
+    return aggregated;
+  }, [progressByModule, snapshot]);
+
+  /**
+   * Derive level progress from module progress.
+   * Level progress = average of module progress values for modules in that level.
+   *
+   * levelProgressAggregated[levelId] = {
+   *   completedModules: number,
+   *   totalModules: number,
+   *   completedLessons: number,
+   *   totalLessons: number,
+   *   progress: number (0-1),
+   *   percentage: number (0-100)
+   * }
+   */
+  const levelProgressAggregated = useMemo(() => {
+    const aggregated = {};
+
+    try {
+      const { curriculumData } = require('../data/curriculumData');
+      if (!curriculumData?.levels || !curriculumData?.modules) return aggregated;
+
+      for (const level of curriculumData.levels) {
+        const levelId = level.id;
+
+        // Get modules belonging to this level
+        const modulesInLevel = Object.values(curriculumData.modules)
+          .filter(module => module.level === levelId);
+
+        const totalModules = modulesInLevel.length;
+
+        if (totalModules === 0) {
+          aggregated[levelId] = {
+            completedModules: 0,
+            totalModules: 0,
+            completedLessons: 0,
+            totalLessons: 0,
+            progress: 0,
+            percentage: 0,
+          };
+          continue;
+        }
+
+        let completedModulesCount = 0;
+        let completedLessonsTotal = 0;
+        let totalLessonsInLevel = 0;
+        let moduleProgressSum = 0;
+
+        for (const module of modulesInLevel) {
+          const moduleProgress = moduleProgressAggregated[module.id];
+
+          if (moduleProgress) {
+            if (moduleProgress.isCompleted) {
+              completedModulesCount++;
+            }
+            completedLessonsTotal += moduleProgress.completedLessons;
+            totalLessonsInLevel += moduleProgress.totalLessons;
+            moduleProgressSum += moduleProgress.progress;
+          } else {
+            // No progress data, just count total lessons
+            totalLessonsInLevel += (module.lessons?.length || 0);
+          }
+        }
+
+        // Level progress = average of module progress values
+        const progress = totalModules > 0 ? (moduleProgressSum / totalModules) : 0;
+        const percentage = Math.round(progress * 100);
+
+        aggregated[levelId] = {
+          completedModules: completedModulesCount,
+          totalModules,
+          completedLessons: completedLessonsTotal,
+          totalLessons: totalLessonsInLevel,
+          progress,
+          percentage,
+        };
+      }
+    } catch (error) {
+      console.warn('[LearningProgressContext] Error calculating levelProgressAggregated:', error);
+    }
+
+    return aggregated;
+  }, [moduleProgressAggregated]);
+
+  /**
+   * Helper function to get module progress from the aggregated data.
+   * Use this instead of computing progress locally in components.
+   */
+  const getModuleProgressAggregated = useCallback((moduleId) => {
+    if (!moduleId) return null;
+    return moduleProgressAggregated[moduleId] || null;
+  }, [moduleProgressAggregated]);
+
+  /**
+   * Helper function to get level progress from the aggregated data.
+   */
+  const getLevelProgressAggregated = useCallback((levelId) => {
+    if (!levelId) return null;
+    return levelProgressAggregated[levelId] || null;
+  }, [levelProgressAggregated]);
+
   // Legacy compatibility: updateProgress
   const updateProgress = useCallback((partial) => {
     const updateData = convertLegacyUpdate(partial, currentLessonId, currentModuleId);
@@ -462,10 +842,10 @@ export const LearningProgressProvider = ({ children }) => {
     });
   }, [currentLessonId, currentModuleId, updateLessonProgressAction]);
 
-  // Completed lessons
+  // Completed lessons - include both progressByModule and snapshot data
   const completedLessons = useMemo(() => {
-    return getCompletedLessons(progressByModule);
-  }, [progressByModule]);
+    return getCompletedLessons(progressByModule, snapshot);
+  }, [progressByModule, snapshot]);
 
   // Auto-save interval
   useEffect(() => {
@@ -497,7 +877,7 @@ export const LearningProgressProvider = ({ children }) => {
     snapshotError,
     refetchSnapshot: () => loadSnapshot('refetch'),
     upsertLessonProgressUnified,
-    
+
     // New API
     progressByModule,
     currentModuleId,
@@ -514,7 +894,13 @@ export const LearningProgressProvider = ({ children }) => {
     setCurrentLesson,
     reconcileOutbox,
     getOutboxStats: getOutboxStatsWrapper,
-    
+
+    // Derived progress aggregation (SINGLE SOURCE OF TRUTH for UI)
+    moduleProgressAggregated,
+    levelProgressAggregated,
+    getModuleProgressAggregated,
+    getLevelProgressAggregated,
+
     // Legacy compatibility
     progressMap,
     updateProgress,
@@ -557,6 +943,10 @@ export const LearningProgressProvider = ({ children }) => {
     setCurrentLesson,
     reconcileOutbox,
     getOutboxStatsWrapper,
+    moduleProgressAggregated,
+    levelProgressAggregated,
+    getModuleProgressAggregated,
+    getLevelProgressAggregated,
     progressMap,
     updateProgress,
     completedLessons,

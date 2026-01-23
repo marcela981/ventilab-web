@@ -22,14 +22,20 @@ export const createProgressMap = (progressByModule) => {
 };
 
 /**
- * Get completed lessons set from progressByModule
+ * Get completed lessons set from progressByModule and/or snapshot
  * Uses format: "moduleId-lessonId" for consistency with lesson availability checks
+ * @param {Object} progressByModule - Normalized progress state by module
+ * @param {Object|null} snapshot - Optional unified snapshot from ProgressSource
  */
-export const getCompletedLessons = (progressByModule) => {
+export const getCompletedLessons = (progressByModule, snapshot = null) => {
   const set = new Set();
+
+  // First, add completed lessons from progressByModule (primary source when available)
+  // ONLY mark as completed if explicitly marked completed === true
   for (const [moduleId, moduleData] of Object.entries(progressByModule)) {
+    if (!moduleData?.lessonsById) continue;
     for (const [lessonId, lessonProgress] of Object.entries(moduleData.lessonsById)) {
-      if (lessonProgress.completed) {
+      if (lessonProgress.completed === true) {
         // Use format: "moduleId-lessonId" for consistency
         set.add(`${moduleId}-${lessonId}`);
         // Also add just lessonId for backward compatibility
@@ -37,6 +43,29 @@ export const getCompletedLessons = (progressByModule) => {
       }
     }
   }
+
+  // Second, add completed lessons from snapshot (ensures fresh data is included)
+  // This is critical for when progressByModule is stale/empty
+  // ONLY mark as completed if explicitly marked completed === true
+  if (snapshot?.lessons && Array.isArray(snapshot.lessons)) {
+    for (const lesson of snapshot.lessons) {
+      if (lesson.completed === true) {
+        // Add the lessonId directly (format from backend)
+        set.add(lesson.lessonId);
+
+        // Try to extract moduleId from lessonId if it follows a pattern
+        // Common patterns: "moduleId-lessonId" or "moduleId/lessonId"
+        const parts = lesson.lessonId.split(/[-\/]/);
+        if (parts.length >= 2) {
+          // If lessonId contains module info, also add the compound key
+          const possibleModuleId = parts.slice(0, -1).join('-');
+          const possibleLessonId = parts[parts.length - 1];
+          set.add(`${possibleModuleId}-${possibleLessonId}`);
+        }
+      }
+    }
+  }
+
   return set;
 };
 
@@ -82,10 +111,12 @@ export const getModuleProgressLegacy = (progressByModule, moduleId, lessonIds = 
   lessons.forEach(lessonId => {
     const lessonProgress = moduleData.lessonsById[lessonId];
     if (lessonProgress) {
-      // Priority: use completionPercentage (0-100) from DB, else progress (0-1)
+      // ONLY count as completed if explicitly marked completed === true
+      // For progress calculation, use completionPercentage or progress, but don't mark as completed
       let progressValue;
-      if (lessonProgress.completed) {
+      if (lessonProgress.completed === true) {
         progressValue = 1;
+        completed += 1;
       } else if (typeof lessonProgress.completionPercentage === 'number') {
         // DB stores completionPercentage as 0-100, convert to 0-1
         progressValue = Math.max(0, Math.min(1, lessonProgress.completionPercentage / 100));
@@ -96,9 +127,6 @@ export const getModuleProgressLegacy = (progressByModule, moduleId, lessonIds = 
         progressValue = 0;
       }
       progressSum += progressValue;
-      if (progressValue >= 1) {
-        completed += 1;
-      }
     }
   });
   

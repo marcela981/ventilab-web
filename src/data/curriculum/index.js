@@ -43,9 +43,9 @@ export function getAllModules() {
   // These modules are kept for backward compatibility but shouldn't be counted in totals
   // Based on curriculum structure analysis:
   // - 'respiratory-anatomy': duplicate/compatibility wrapper (content is in module-01-fundamentals)
-  // - 'respiratory-physiology': duplicate/compatibility (content overlaps with module-01-fundamentals)
   // Keep only unique modules that represent actual distinct content
-  const excludedIds = ['respiratory-anatomy', 'respiratory-physiology']; // Modules to exclude (duplicates/compatibility)
+  // Note: respiratory-physiology is now in prerequisitos level, so it should be included
+  const excludedIds = ['respiratory-anatomy']; // Modules to exclude (duplicates/compatibility)
   
   const uniqueModules = baseModules.filter(module => {
     // Exclude duplicates/compatibility modules
@@ -72,7 +72,7 @@ export function getAllModules() {
   // For data-driven strategy: modules.generated is completely ignored (allModules = normalizedBaseModules)
   
   // Sort by level and order
-  const levelOrder = { beginner: 1, intermediate: 2, advanced: 3 };
+  const levelOrder = { prerequisitos: 0, beginner: 1, intermediate: 2, advanced: 3 };
   allModules.sort((a, b) => {
     const levelDiff = (levelOrder[a.level] || 99) - (levelOrder[b.level] || 99);
     if (levelDiff !== 0) return levelDiff;

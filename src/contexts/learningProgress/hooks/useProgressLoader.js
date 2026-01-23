@@ -4,6 +4,25 @@ import { getAuthToken } from '@/services/authService';
 import { handleRateLimitError, handleNotFoundError } from '../utils/progressHelpers';
 
 /**
+ * Safely convert lessonProgress to an array and build lessonsById map.
+ * Handles undefined, null, or non-array values gracefully.
+ * @param {any} lessonProgress - The lesson progress data from API
+ * @returns {{ lessonProgressArray: Array, lessonsById: Object }}
+ */
+const buildLessonsById = (lessonProgress) => {
+  const lessonProgressArray = Array.isArray(lessonProgress) ? lessonProgress : [];
+
+  const lessonsById = lessonProgressArray.reduce((acc, lp) => {
+    if (lp && lp.lessonId) {
+      acc[lp.lessonId] = lp;
+    }
+    return acc;
+  }, {});
+
+  return { lessonProgressArray, lessonsById };
+};
+
+/**
  * Custom hook to handle loading progress from the API
  */
 export const useProgressLoader = ({
@@ -63,15 +82,15 @@ export const useProgressLoader = ({
       
       try {
         const data = await getModuleProgress(moduleId);
-        
+
+        // Safely handle undefined/null lessonProgress (module never started)
+        const { lessonsById } = buildLessonsById(data.lessonProgress);
+
         setProgressByModule(prev => ({
           ...prev,
           [moduleId]: {
-            learningProgress: data.learningProgress,
-            lessonsById: data.lessonProgress.reduce((acc, lp) => {
-              acc[lp.lessonId] = lp;
-              return acc;
-            }, {}),
+            learningProgress: data.learningProgress ?? null,
+            lessonsById,
           },
         }));
         
@@ -87,21 +106,21 @@ export const useProgressLoader = ({
           error,
           async () => {
             const retryData = await getModuleProgress(moduleId);
-            
+
+            // Safely handle undefined/null lessonProgress
+            const { lessonsById: retryLessonsById } = buildLessonsById(retryData.lessonProgress);
+
             setProgressByModule(prev => ({
               ...prev,
               [moduleId]: {
-                learningProgress: retryData.learningProgress,
-                lessonsById: retryData.lessonProgress.reduce((acc, lp) => {
-                  acc[lp.lessonId] = lp;
-                  return acc;
-                }, {}),
+                learningProgress: retryData.learningProgress ?? null,
+                lessonsById: retryLessonsById,
               },
             }));
-            
+
             setSyncStatus('idle');
             setLastSyncError(null);
-            
+
             return retryData;
           }
         );
@@ -146,21 +165,21 @@ export const useProgressLoader = ({
             if (tokenAvailable || getAuthToken()) {
               // Retry the request
               const retryData = await getModuleProgress(moduleId);
-              
+
+              // Safely handle undefined/null lessonProgress
+              const { lessonsById: tokenRetryLessonsById } = buildLessonsById(retryData.lessonProgress);
+
               setProgressByModule(prev => ({
                 ...prev,
                 [moduleId]: {
-                  learningProgress: retryData.learningProgress,
-                  lessonsById: retryData.lessonProgress.reduce((acc, lp) => {
-                    acc[lp.lessonId] = lp;
-                    return acc;
-                  }, {}),
+                  learningProgress: retryData.learningProgress ?? null,
+                  lessonsById: tokenRetryLessonsById,
                 },
               }));
-              
+
               setSyncStatus('idle');
               setLastSyncError(null);
-              
+
               return retryData;
             }
           } catch (retryError) {
@@ -168,9 +187,33 @@ export const useProgressLoader = ({
           }
         }
         
+        // SAFEGUARD: Instead of throwing, initialize safe empty state to prevent:
+        // - auto-navigation loops
+        // - TutorAI activation
+        // - curriculum reset
+        // The module is treated as "not started" with zero completed lessons
+        console.warn('[useProgressLoader] All retries failed, initializing safe empty state for module:', moduleId);
+
+        setProgressByModule(prev => ({
+          ...prev,
+          [moduleId]: {
+            learningProgress: null,
+            lessonsById: {},
+            _loadFailed: true, // Flag to indicate load failed (for debugging)
+          },
+        }));
+
         setSyncStatus('error');
         setLastSyncError(error.message || 'Error al cargar progreso del módulo.');
-        throw error;
+
+        // Return a safe "not started" structure instead of throwing
+        // This prevents cascading failures in the UI
+        return {
+          learningProgress: null,
+          lessonProgress: [],
+          isAvailable: false,
+          _loadFailed: true,
+        };
       } finally {
         setLoadingModules(prev => {
           const next = new Set(prev);

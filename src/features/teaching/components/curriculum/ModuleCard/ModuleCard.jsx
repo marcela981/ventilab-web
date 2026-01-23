@@ -88,25 +88,40 @@ const ModuleCard = ({
     { autoLoad: true, reloadOnMount: false }
   );
   
-  // Obtener lecciones completadas del contexto para compatibilidad
-  const { completedLessons, syncStatus } = useLearningProgress();
-  
-  // Calcular progreso basado en completionPercentage de lecciones del módulo desde useProgress
+  // Obtener lecciones completadas y progreso agregado del contexto
+  const { completedLessons, syncStatus, moduleProgressAggregated, getModuleProgressAggregated } = useLearningProgress();
+
+  /**
+   * Get module progress from the SINGLE SOURCE OF TRUTH (context).
+   * This replaces the complex local calculation with fallbacks.
+   * The moduleProgressAggregated in context is computed whenever:
+   * - Lesson progress is updated
+   * - Lesson is completed
+   * - Module progress is loaded from backend
+   */
   const moduleProgressAggregate = useMemo(() => {
-    // Filtrar TODAS las lecciones de este módulo que tienen progreso (no solo completadas)
-    const moduleLessonsProgress = userProgress.filter(
-      p => p.lessonId && p.moduleId === module.id
-    );
+    // PRIMARY SOURCE: Get from context's aggregated progress (SINGLE SOURCE OF TRUTH)
+    const contextProgress = moduleProgressAggregated?.[module.id];
 
-    // Contar lecciones completadas (para mostrar X/Y completadas)
-    const completedLessonsCount = moduleLessonsProgress.filter(p => p.completed).length;
+    if (contextProgress) {
+      return {
+        percent: contextProgress.progress,
+        percentInt: contextProgress.progressPercent,
+        completedLessons: contextProgress.completedLessons,
+        totalLessons: contextProgress.totalLessons,
+        isCompleted: contextProgress.isCompleted,
+        completedAt: contextProgress.isCompleted ? new Date() : null,
+        completedPages: progress?.completedPages || 0,
+        totalPages: progress?.totalPages || 0,
+      };
+    }
 
-    // Usar conteo real desde BD, o fallback a otros métodos
+    // FALLBACK: If context not ready yet, compute locally (temporary)
+    // This ensures the UI doesn't break while context is loading
     const totalLessons = totalLessonsFromDB > 0
       ? totalLessonsFromDB
       : (progress?.totalLessons || precalculatedProgress?.totalLessons || (module?.lessons || []).length || 0);
 
-    // Si no hay lecciones, retornar 0%
     if (totalLessons === 0) {
       return {
         percent: 0,
@@ -120,71 +135,46 @@ const ModuleCard = ({
       };
     }
 
-    // Calcular porcentaje usando completionPercentage de cada lección (promedio)
-    // Lecciones sin progreso cuentan como 0%
-    let totalProgressSum = 0;
-    moduleLessonsProgress.forEach(p => {
-      // Use completionPercentage (0-100) from DB
-      if (p.completed) {
-        totalProgressSum += 100;
-      } else if (typeof p.completionPercentage === 'number') {
-        totalProgressSum += Math.max(0, Math.min(100, p.completionPercentage));
-      } else if (typeof p.progress === 'number') {
-        // Fallback: if progress is 0-1, convert to 0-100
-        totalProgressSum += Math.max(0, Math.min(100, p.progress * 100));
-      }
-    });
+    // Count completed lessons from context's completedLessons Set
+    const moduleLessons = module?.lessons || [];
+    let completedLessonsCount = moduleLessons.filter((lesson) => {
+      const lessonKey1 = `${module.id}-${lesson.id}`;
+      const lessonKey2 = lesson.id;
+      return completedLessons.has(lessonKey1) || completedLessons.has(lessonKey2);
+    }).length;
 
-    // Average progress across ALL lessons in the module (not just ones with progress records)
-    // Lessons without records count as 0%
+    // Fallback to userProgress if context is empty
+    if (completedLessonsCount === 0 && completedLessons.size === 0) {
+      const moduleLessonsProgress = userProgress.filter(
+        p => p.lessonId && p.moduleId === module.id
+      );
+      completedLessonsCount = moduleLessonsProgress.filter(p => p.completed === true).length;
+    }
+
     const percentInt = totalLessons > 0
-      ? Math.round(totalProgressSum / totalLessons)
+      ? Math.round((completedLessonsCount / totalLessons) * 100)
       : 0;
 
-    // Prioridad: cálculo desde useProgress > progreso del hook > precalculado > legacy prop
-    if (totalLessonsFromDB > 0 || moduleLessonsProgress.length > 0) {
-      return {
-        percent: percentInt / 100,
-        percentInt,
-        completedLessons: completedLessonsCount,
-        totalLessons,
-        isCompleted: percentInt >= 100,
-        completedAt: completedLessonsCount >= totalLessons && totalLessons > 0
-          ? new Date()
-          : null,
-        completedPages: progress?.completedPages || 0,
-        totalPages: progress?.totalPages || 0,
-      };
-    }
+    const isModuleCompleted = completedLessonsCount >= totalLessons && totalLessons > 0;
 
-    // Fallback a progreso del hook si está disponible
-    if (progress && progress.totalLessons > 0) {
-      return progress;
-    }
-
-    // Fallback a precalculado
-    if (precalculatedProgress) {
-      return precalculatedProgress;
-    }
-
-    // Fallback final a cálculo legacy
     return {
-      percent: (moduleProgressProp || 0) / 100,
-      percentInt: moduleProgressProp || 0,
-      completedLessons: 0,
-      totalLessons: totalLessons || 0,
-      isCompleted: (moduleProgressProp || 0) >= 100,
-      completedAt: null,
-      completedPages: 0,
-      totalPages: 0,
+      percent: percentInt / 100,
+      percentInt,
+      completedLessons: completedLessonsCount,
+      totalLessons,
+      isCompleted: isModuleCompleted,
+      completedAt: isModuleCompleted ? new Date() : null,
+      completedPages: progress?.completedPages || 0,
+      totalPages: progress?.totalPages || 0,
     };
   }, [
-    userProgress,
+    moduleProgressAggregated,
     module.id,
+    completedLessons,
+    userProgress,
     totalLessonsFromDB,
     progress,
     precalculatedProgress,
-    moduleProgressProp,
     module?.lessons
   ]);
   

@@ -28,24 +28,42 @@ export const useProgressUpdater = ({
 
   const updateLessonProgressAction = useCallback(async (update) => {
     const { lessonId, moduleId, ...updateData } = update;
-    
-    if (!lessonId) {
-      throw new Error('lessonId is required');
+
+    // ==========================================================================
+    // STRICT VALIDATION - Prevent 400 errors from invalid payloads
+    // ==========================================================================
+
+    // 1. Validate lessonId is a non-empty string
+    if (!lessonId || typeof lessonId !== 'string' || lessonId.trim() === '') {
+      console.warn('[useProgressUpdater] updateLessonProgressAction ABORTED: lessonId is invalid or empty', { lessonId });
+      return null;
     }
-    
-    // Infer moduleId from current state if not provided
+
+    // 2. Validate moduleId or try to infer it
     let resolvedModuleId = moduleId;
-    if (!resolvedModuleId) {
+    if (!resolvedModuleId || typeof resolvedModuleId !== 'string' || resolvedModuleId.trim() === '') {
       resolvedModuleId = inferModuleIdFromLesson(
         progressByModuleRef.current,
         lessonId,
         currentModuleId
       );
     }
-    
-    if (!resolvedModuleId) {
-      throw new Error('moduleId is required. Cannot infer from context.');
+
+    // 3. Validate that we have a valid moduleId
+    if (!resolvedModuleId || typeof resolvedModuleId !== 'string' || resolvedModuleId.trim() === '') {
+      console.warn('[useProgressUpdater] updateLessonProgressAction ABORTED: moduleId is required but could not be resolved', { lessonId, moduleId });
+      return null;
     }
+
+    // 4. Validate progress value if present
+    if (updateData.progress !== undefined) {
+      if (typeof updateData.progress !== 'number' || isNaN(updateData.progress) || updateData.progress < 0 || updateData.progress > 1) {
+        console.warn('[useProgressUpdater] updateLessonProgressAction ABORTED: progress must be a number between 0 and 1', { lessonId, progress: updateData.progress });
+        return null;
+      }
+    }
+
+    console.log('[useProgressUpdater] Validation passed, proceeding with update', { lessonId, moduleId: resolvedModuleId });
     
     // Generate client event ID for outbox tracking
     const clientEventId = generateClientEventId();

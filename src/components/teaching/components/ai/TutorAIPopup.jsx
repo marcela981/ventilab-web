@@ -105,11 +105,13 @@ const PopupPanel = styled(Paper)(({ theme }) => ({
 /**
  * TutorAIPopup - Componente Pop-Up mejorado del TutorAI
  */
-const TutorAIPopup = ({ 
+const TutorAIPopup = ({
   lessonContext,
   context, // Contexto completo con moduleId, lessonId, pageId, titles
   defaultOpen = false,
   defaultTab = 'suggestions',
+  isFirstLesson = false, // Whether this is the first lesson in the module
+  isLessonCompleted = false, // Whether the lesson was already completed before entering
 }) => {
   // Estados principales
   const [open, setOpen] = useState(defaultOpen);
@@ -135,6 +137,23 @@ const TutorAIPopup = ({
   const noteEditorRef = useRef(null);
   const autoSaveTimerRef = useRef(null);
   const expansionPanelRef = useRef(null);
+
+  // Track if this lesson has been entered before (to prevent auto-open on re-entry)
+  const hasEnteredBeforeRef = useRef(false);
+
+  // Check if user has entered this lesson before (using sessionStorage for session-based tracking)
+  useEffect(() => {
+    const lessonKey = `tutorAI_entered_${context?.moduleId}_${context?.lessonId}`;
+    const hasEntered = sessionStorage.getItem(lessonKey);
+
+    if (hasEntered) {
+      hasEnteredBeforeRef.current = true;
+    } else {
+      // Mark as entered for this session
+      sessionStorage.setItem(lessonKey, 'true');
+      hasEnteredBeforeRef.current = false;
+    }
+  }, [context?.moduleId, context?.lessonId]);
 
   // Construir contexto de notas
   const noteContext = useMemo(() => ({
@@ -268,6 +287,28 @@ const TutorAIPopup = ({
   useEffect(() => {
     const handleFinalSuggestions = (event) => {
       const { ctx, results } = event.detail;
+
+      // GUARD: Prevent TutorAI from auto-opening in these cases:
+      // 1. Lesson was already completed before (re-entry to completed content)
+      // 2. User has already entered this lesson before in this session
+      // TutorAI should ONLY auto-open when:
+      // - It's the FIRST lesson AND user has NEVER entered it before
+      // - OR the user explicitly clicks the TutorAI button (handled separately)
+
+      const shouldAutoOpen = isFirstLesson && !hasEnteredBeforeRef.current && !isLessonCompleted;
+
+      if (!shouldAutoOpen) {
+        console.log('[TutorAIPopup] Skipping auto-open:', {
+          isFirstLesson,
+          hasEnteredBefore: hasEnteredBeforeRef.current,
+          isLessonCompleted,
+        });
+        // Still load suggestions in case user opens manually, but don't auto-open
+        loadSuggestions(true, results);
+        return;
+      }
+
+      console.log('[TutorAIPopup] Auto-opening for first lesson, first entry');
       setActiveTab('suggestions');
       setOpen(true);
       loadSuggestions(true, results);
@@ -288,7 +329,7 @@ const TutorAIPopup = ({
       window.removeEventListener('tutor:finalSuggestions', handleFinalSuggestions);
       window.removeEventListener('tutor:note-saved', handleNoteSaved);
     };
-  }, [activeTab, loadSavedChat, loadSuggestions]);
+  }, [activeTab, loadSavedChat, loadSuggestions, isFirstLesson, isLessonCompleted]);
 
   /**
    * Crear nota
@@ -915,11 +956,17 @@ TutorAIPopup.propTypes = {
   }),
   defaultOpen: PropTypes.bool,
   defaultTab: PropTypes.oneOf(['suggestions', 'notes', 'saved']),
+  /** Whether this is the first lesson in the module */
+  isFirstLesson: PropTypes.bool,
+  /** Whether the lesson was already completed before entering */
+  isLessonCompleted: PropTypes.bool,
 };
 
 TutorAIPopup.defaultProps = {
   defaultOpen: false,
   defaultTab: 'suggestions',
+  isFirstLesson: false,
+  isLessonCompleted: false,
 };
 
 export default TutorAIPopup;

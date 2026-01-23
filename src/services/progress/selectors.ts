@@ -35,15 +35,18 @@ export const selectModuleProgress = (
     return lesson.lessonId.includes(moduleId) || lesson.lessonId.startsWith(moduleId);
   });
 
-  const completedLessons = moduleLessons.filter(l => l.progress >= 1.0).length;
+  // ONLY count lessons explicitly marked as completed === true
+  const completedLessons = moduleLessons.filter(l => l.completed === true).length;
   const totalLessons = moduleLessons.length;
+  // Module progress = completedLessons / totalLessons
   const progress = totalLessons > 0 ? completedLessons / totalLessons : 0;
 
   return {
     completedLessons,
     totalLessons,
     progress,
-    isCompleted: progress >= 1.0
+    // Module is completed ONLY when ALL lessons are completed
+    isCompleted: completedLessons >= totalLessons && totalLessons > 0
   };
 };
 

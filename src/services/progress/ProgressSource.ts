@@ -166,7 +166,8 @@ function mergeProgress(
         nextLevelXp: 500,
         streakDays: 0,
         calendar: [],
-        completedLessons: localProgress?.lessons.filter(l => l.progress >= 1.0).length || 0,
+        // ONLY count lessons explicitly marked as completed === true
+        completedLessons: localProgress?.lessons.filter(l => l.completed === true).length || 0,
         totalLessons: localProgress?.lessons.length || 0,
         modulesCompleted: 0,
         totalModules: 0
@@ -234,7 +235,8 @@ function mergeProgress(
   });
 
   const mergedLessons = Array.from(mergedLessonsMap.values());
-  const completedLessons = mergedLessons.filter(l => l.progress >= 1.0).length;
+  // ONLY count lessons explicitly marked as completed === true
+  const completedLessons = mergedLessons.filter(l => l.completed === true).length;
 
   // Use DB overview if available, otherwise calculate from merged lessons
   const overview = dbProgress?.overview || {
@@ -266,8 +268,9 @@ function mergeProgress(
   
   // Log divergence if detected
   if (dbProgress && localProgress && dbProgress.lessons) {
-    const dbCompleted = dbProgress.lessons.filter(l => l.progress >= 1.0).length;
-    const localCompleted = localLessons.filter(l => l.progress >= 1.0).length;
+    // ONLY count lessons explicitly marked as completed === true
+    const dbCompleted = dbProgress.lessons.filter(l => l.completed === true).length;
+    const localCompleted = localLessons.filter(l => l.completed === true).length;
     if (Math.abs(dbCompleted - localCompleted) > 0) {
       debug.logDivergence(
         { overview: { completedLessons: localCompleted }, lastSyncAt: localProgress.lastUpdated },
@@ -388,10 +391,40 @@ export const ProgressSource = {
 
   /**
    * Upsert lesson progress (save locally and queue for sync)
+   * @param lessonId - The lesson ID (required, non-empty string)
+   * @param progress - Progress value between 0 and 1
+   * @param moduleId - The module ID (optional but recommended for validation)
    */
-  async upsertLessonProgress(lessonId: string, progress: number): Promise<void> {
+  async upsertLessonProgress(lessonId: string, progress: number, moduleId?: string): Promise<void> {
     const g = debug.group('ProgressSource.upsertLessonProgress');
-    g.info('input', { lessonId, progress });
+    g.info('input', { lessonId, progress, moduleId });
+
+    // ==========================================================================
+    // STRICT VALIDATION - Prevent 400 errors from invalid payloads
+    // ==========================================================================
+
+    // 1. Validate lessonId is a non-empty string
+    if (!lessonId || typeof lessonId !== 'string' || lessonId.trim() === '') {
+      g.warn('ABORTED: lessonId is invalid or empty', { lessonId });
+      g.end();
+      return;
+    }
+
+    // 2. Validate progress is a valid number between 0 and 1
+    if (typeof progress !== 'number' || isNaN(progress) || progress < 0 || progress > 1) {
+      g.warn('ABORTED: progress must be a number between 0 and 1', { lessonId, progress });
+      g.end();
+      return;
+    }
+
+    // 3. Warn if moduleId is missing (but don't block - for backwards compatibility)
+    if (!moduleId) {
+      g.warn('moduleId not provided - request may fail if backend requires it', { lessonId });
+    }
+
+    // ==========================================================================
+    // EXECUTE THE UPSERT
+    // ==========================================================================
     const { token } = getAuth();
     if (!token) {
       // cola local modo offline
@@ -405,6 +438,7 @@ export const ProgressSource = {
       const { updateLessonProgress } = await import('../api/progressService');
       await updateLessonProgress({
         lessonId,
+        moduleId, // Include moduleId in the request
         progress,
         completed: progress >= 1.0
       });
@@ -446,7 +480,8 @@ export const ProgressSource = {
           updateLessonProgress({
             lessonId: lesson.lessonId,
             progress: lesson.progress,
-            completed: lesson.progress >= 1.0
+            // Preserve explicit completed flag, don't infer from progress
+            completed: lesson.completed === true
           }).catch(err => {
             debug.warn(`Failed to migrate lesson ${lesson.lessonId}:`, err);
           })

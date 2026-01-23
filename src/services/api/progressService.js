@@ -4,6 +4,22 @@
  * Progress Service
  * API client for progress tracking endpoints
  * Uses the unified LearningProgress + LessonProgress model
+ *
+ * BACKEND PAYLOAD CONTRACT (PUT /api/progress/lesson/:lessonId):
+ * ============================================================
+ * REQUIRED (at least ONE):
+ *   - completionPercentage: number (0-100) - preferred format
+ *   OR
+ *   - currentStep + totalSteps: both numbers - legacy format
+ *
+ * OPTIONAL:
+ *   - timeSpent: number (seconds) - defaults to 0
+ *   - scrollPosition: number
+ *   - lastViewedSection: string
+ *   - completed: boolean - explicit completion flag (NEVER auto-inferred from 100%)
+ *
+ * NOT SENT (backend derives):
+ *   - moduleId: Backend extracts from DB lookup or lessonId pattern
  */
 
 import http from './http';
@@ -283,7 +299,7 @@ export const getModuleProgress = async (moduleId) => {
         throw new Error('moduleId is required and must be a string');
       }
 
-      const url = buildUrl(`/progress/modules/${encodeURIComponent(moduleId)}`);
+      const url = buildUrl(`/progress/module/${encodeURIComponent(moduleId)}`);
       let response;
 
       try {
@@ -363,28 +379,72 @@ export const updateLessonProgress = async (payload) => {
   console.log('📍 Current URL:', typeof window !== 'undefined' ? window.location.href : 'N/A');
   console.log('📦 payload:', JSON.stringify(payload, null, 2));
   console.log('');
-  
+
+  // ==========================================================================
+  // STRICT VALIDATION - Prevent 400 errors from invalid payloads
+  // ==========================================================================
+
+  // 1. Validate payload object
+  if (!payload || typeof payload !== 'object') {
+    console.warn('[progressService] updateLessonProgress ABORTED: payload is invalid', { payload });
+    throw new Error('Payload inválido para actualizar progreso.');
+  }
+
+  // 2. Validate lessonId is a non-empty string
+  if (!payload.lessonId || typeof payload.lessonId !== 'string' || payload.lessonId.trim() === '') {
+    console.warn('[progressService] updateLessonProgress ABORTED: lessonId is invalid or empty', { lessonId: payload.lessonId });
+    throw new Error('lessonId is required and must be a non-empty string');
+  }
+
+  // 3. Validate progress if provided (must be between 0 and 1)
+  if (payload.progress !== undefined) {
+    if (typeof payload.progress !== 'number' || isNaN(payload.progress) || payload.progress < 0 || payload.progress > 1) {
+      console.warn('[progressService] updateLessonProgress ABORTED: progress must be a number between 0 and 1', { lessonId: payload.lessonId, progress: payload.progress });
+      throw new Error('progress must be a number between 0 and 1');
+    }
+  }
+
+  // 4. Validate completionPercentage if provided (must be between 0 and 100)
+  if (payload.completionPercentage !== undefined) {
+    if (typeof payload.completionPercentage !== 'number' || isNaN(payload.completionPercentage) || payload.completionPercentage < 0 || payload.completionPercentage > 100) {
+      console.warn('[progressService] updateLessonProgress ABORTED: completionPercentage must be a number between 0 and 100', { lessonId: payload.lessonId, completionPercentage: payload.completionPercentage });
+      throw new Error('completionPercentage must be a number between 0 and 100');
+    }
+  }
+
+  console.log('[progressService] ✅ Validation passed:', { lessonId: payload.lessonId, moduleId: payload.moduleId });
+
+  // ==========================================================================
+  // BUILD CLEAN PAYLOAD - Only send fields expected by backend
+  // IMPORTANT: moduleId is NOT sent - backend derives it from lessonId or DB lookup
+  // ==========================================================================
+
   return executeWithAuthRetry(async () => {
     try {
-      if (!payload || typeof payload !== 'object') {
-        throw new Error('Payload inválido para actualizar progreso.');
-      }
-
-      if (!payload.lessonId || typeof payload.lessonId !== 'string') {
-        throw new Error('lessonId is required and must be a string');
-      }
-
       const { lessonId } = payload;
+
+      // Backend requires at least completionPercentage (or legacy currentStep/totalSteps)
+      // Calculate completionPercentage from progress (0-1) if only progress is provided
+      let completionPercentage = payload.completionPercentage;
+      if (completionPercentage === undefined && payload.progress !== undefined) {
+        completionPercentage = Math.round(payload.progress * 100);
+      }
+
       const body = {
-        ...(payload.moduleId !== undefined && { moduleId: payload.moduleId }),
-        ...(payload.progress !== undefined && { progress: payload.progress }),
-        ...(payload.completed !== undefined && { completed: payload.completed }),
-        ...(payload.completionPercentage !== undefined && { completionPercentage: payload.completionPercentage }),
+        // REQUIRED: completionPercentage (backend validates this)
+        ...(completionPercentage !== undefined && { completionPercentage }),
+        // OPTIONAL fields - only include if defined
         ...(payload.timeSpentDelta !== undefined && { timeSpentDelta: payload.timeSpentDelta }),
         ...(payload.timeSpent !== undefined && { timeSpent: payload.timeSpent }),
-        ...(payload.scrollPosition !== undefined && { scrollPosition: payload.scrollPosition }),
-        ...(payload.lastViewedSection !== undefined && { lastViewedSection: payload.lastViewedSection }),
+        ...(typeof payload.scrollPosition === 'number' && { scrollPosition: payload.scrollPosition }),
+        ...(typeof payload.lastViewedSection === 'string' && payload.lastViewedSection.trim() && { lastViewedSection: payload.lastViewedSection.trim() }),
         ...(payload.lastAccessed !== undefined && { lastAccessed: payload.lastAccessed }),
+        // NOTE: moduleId is NOT sent - backend derives it from:
+        // 1. DB lookup of the lesson
+        // 2. Pattern extraction from lessonId (e.g., "module-01-..." -> "module-01")
+        // NOTE: progress (0-1 format) is converted to completionPercentage above
+        // NOTE: completed flag is only sent if explicitly provided as true
+        ...(payload.completed === true && { completed: true }),
       };
 
       const url = buildUrl(`/progress/lesson/${lessonId}`);

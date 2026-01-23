@@ -4,11 +4,12 @@
 
 /**
  * Determina el estado visual del módulo basado en progreso y disponibilidad
- * @param {number} moduleProgress - Porcentaje de progreso (0-100)
+ * @param {number} moduleProgress - Porcentaje de progreso (0-100), calculated as completedLessons/totalLessons
  * @param {boolean} isAvailable - Si el módulo está disponible
  * @returns {string} Estado: 'completed', 'in-progress', 'available', 'locked'
  */
 export const getModuleStatus = (moduleProgress, isAvailable) => {
+  // Module is completed ONLY when progress === 100 (which means ALL lessons are completed)
   if (moduleProgress === 100) return 'completed';
   if (moduleProgress > 0) return 'in-progress';
   if (isAvailable) return 'available';

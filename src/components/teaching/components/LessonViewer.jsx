@@ -169,7 +169,20 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     const score = data?.content?.assessment?.passingScore ?? data?.assessment?.passingScore ?? data?.metadata?.passingScore;
     return typeof score === 'number' ? score : 70;
   }, [data]);
-  
+
+  // Check if this is the first lesson in the module (for TutorAI auto-open logic)
+  const isFirstLesson = useMemo(() => {
+    if (!module?.lessons || module.lessons.length === 0) return false;
+    return module.lessons[0]?.id === lessonId;
+  }, [module, lessonId]);
+
+  // Check if the lesson was already completed before entering this session
+  // This is used to prevent TutorAI from auto-opening on re-entry
+  const wasLessonCompletedOnEntry = useMemo(() => {
+    const lessonKey = `${moduleId}-${lessonId}`;
+    return completedLessons.has(lessonKey);
+  }, [moduleId, lessonId, completedLessons]);
+
   // ============================================================================
   // State Management
   // ============================================================================
@@ -198,9 +211,12 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   
   // Track previous lesson ID to detect changes
   const previousLessonIdRef = useRef(lessonId);
-  
+
   // Confetti state for celebration
   const [showConfetti, setShowConfetti] = useState(false);
+
+  // Guard to prevent TutorAI finalSuggestions from firing multiple times
+  const tutorFinalSuggestionsDispatchedRef = useRef(false);
   
   // ============================================================================
   // Refs
@@ -209,6 +225,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   const contentRef = useRef(null);
   const autoCompletionRef = useRef(false);
   const autoCompletionInFlightRef = useRef(false);
+  const completionNotifiedRef = useRef(false);
 
   const { isScrolledEnough, meetsReadingTime } = useScrollCompletion({
     contentRef,
@@ -249,6 +266,8 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     setLessonCompleted(false);
     autoCompletionRef.current = false;
     autoCompletionInFlightRef.current = false;
+    completionNotifiedRef.current = false;
+    tutorFinalSuggestionsDispatchedRef.current = false;
 
     // Try to restore saved page from localStorage
     try {
@@ -328,11 +347,14 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
       console.log('[LessonViewer] 🎉 Auto-completing lesson by saving at 100%');
       // Save progress at 100% to complete the lesson
       await saveProgress(true); // forceComplete = true
-      
+
       autoCompletionRef.current = true;
       setLessonCompleted(true);
 
-      if (onComplete) {
+      // CRITICAL: Notify parent exactly once using completionNotifiedRef guard
+      if (!completionNotifiedRef.current && onComplete) {
+        completionNotifiedRef.current = true;
+        console.log('[LessonViewer] Notifying parent of completion (triggerAutoCompletion)');
         onComplete(data);
       }
 
@@ -490,48 +512,78 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     }
   }, [currentPage, totalPages, savePageProgress]);
   
-  // Auto-advance to completion page when reaching the last content page
+  // Handle completion page display and progress marking
+  // IMPORTANT: This effect ONLY marks progress and shows confetti.
+  // It does NOT trigger navigation - that's handled by user clicking buttons on CompletionPage.
   useEffect(() => {
     // Find the completion page index
     const completionPageIndex = calculatePages.findIndex(page => page.type === 'completion');
-    
-    // Mark lesson as complete when reaching the completion page or when progress is completed
-    if ((completionPageIndex >= 0 && currentPage === completionPageIndex || isCompleted) && !lessonCompleted && data) {
-      if (isCompleted) {
+
+    // When user reaches the completion page, notify parent to update global progress state
+    // Use completionNotifiedRef to ensure we only notify once per lesson session
+    if (completionPageIndex >= 0 && currentPage === completionPageIndex && data) {
+      // Show confetti and mark as completed locally
+      if (!lessonCompleted) {
         setShowConfetti(true);
         setLessonCompleted(true);
-      } else {
-        // Trigger auto-completion if we reach the completion page
-        triggerAutoCompletion().then((completed) => {
-          if (!completed) {
-            return;
-          }
-        });
       }
 
-      // Disparar evento para sugerencias finales del TutorAI
-      const event = new CustomEvent('tutor:finalSuggestions', {
-        detail: {
-          ctx: {
-            moduleId: data?.moduleId || moduleId,
-            lessonId: data?.lessonId || lessonId,
-            pageId: currentPageData?.section?.id || currentPageData?.id,
-            sectionId: currentPageData?.section?.id,
-            moduleTitle: module?.title,
-            lessonTitle: data?.title,
-            pageTitle: currentPageData?.section?.title || currentPageData?.title,
-            sectionTitle: currentPageData?.section?.title,
-          },
-          results: assessmentScore ? {
-            correct: assessmentScore.correct,
-            total: assessmentScore.total,
-            percentage: assessmentScore.percentage,
-          } : null,
-        },
-      });
-      window.dispatchEvent(event);
+      // Notify parent to update progress state (but parent should NOT auto-redirect)
+      // This is done separately from lessonCompleted to handle the case where
+      // progress callback already set lessonCompleted=true before reaching this page
+      if (!completionNotifiedRef.current && onComplete) {
+        completionNotifiedRef.current = true;
+        console.log('[LessonViewer] User reached completion page, notifying parent');
+        onComplete(data);
+      }
+
+      // GUARD: Only dispatch tutor:finalSuggestions ONCE per lesson session
+      // and ONLY if this is a fresh completion (not re-entering a completed lesson)
+      if (!tutorFinalSuggestionsDispatchedRef.current) {
+        // Check if this lesson was already completed before this session
+        const lessonKey = `${moduleId}-${lessonId}`;
+        const wasAlreadyCompleted = completedLessons.has(lessonKey);
+
+        // Only dispatch if this is NOT a re-entry to an already-completed lesson
+        if (!wasAlreadyCompleted) {
+          tutorFinalSuggestionsDispatchedRef.current = true;
+          console.log('[LessonViewer] Dispatching tutor:finalSuggestions (fresh completion)');
+
+          const event = new CustomEvent('tutor:finalSuggestions', {
+            detail: {
+              ctx: {
+                moduleId: data?.moduleId || moduleId,
+                lessonId: data?.lessonId || lessonId,
+                pageId: currentPageData?.section?.id || currentPageData?.id,
+                sectionId: currentPageData?.section?.id,
+                moduleTitle: module?.title,
+                lessonTitle: data?.title,
+                pageTitle: currentPageData?.section?.title || currentPageData?.title,
+                sectionTitle: currentPageData?.section?.title,
+              },
+              results: assessmentScore ? {
+                correct: assessmentScore.correct,
+                total: assessmentScore.total,
+                percentage: assessmentScore.percentage,
+              } : null,
+            },
+          });
+          window.dispatchEvent(event);
+        } else {
+          console.log('[LessonViewer] Skipping tutor:finalSuggestions - lesson already completed');
+        }
+      }
     }
-  }, [currentPage, calculatePages, lessonCompleted, data, isCompleted, triggerAutoCompletion, moduleId, lessonId, module, currentPageData, assessmentScore]);
+
+    // Show confetti when isCompleted becomes true from progress tracking
+    // (before user reaches completion page). Don't notify parent here -
+    // parent notification only happens when user reaches the completion page.
+    if (isCompleted && !lessonCompleted) {
+      setShowConfetti(true);
+      setLessonCompleted(true);
+      console.log('[LessonViewer] Progress completed, showing confetti (no redirect)');
+    }
+  }, [currentPage, calculatePages, lessonCompleted, data, isCompleted, moduleId, lessonId, module, currentPageData, assessmentScore, onComplete, completedLessons]);
   
   // ============================================================================
   // Build lesson context for AI Tutor
@@ -1098,6 +1150,8 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
                 }}
                 defaultOpen={defaultOpen}
                 defaultTab="suggestions"
+                isFirstLesson={isFirstLesson}
+                isLessonCompleted={wasLessonCompletedOnEntry}
               />
             </Box>
           </Portal>

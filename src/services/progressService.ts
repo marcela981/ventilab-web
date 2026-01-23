@@ -1,12 +1,29 @@
 /**
  * Progress Service - TypeScript
  * Simplified service for progress tracking with SWR integration
+ *
+ * BACKEND PAYLOAD CONTRACT (PUT /api/progress/lesson/:lessonId):
+ * ============================================================
+ * REQUIRED (at least ONE):
+ *   - completionPercentage: number (0-100) - preferred format
+ *   OR
+ *   - currentStep + totalSteps: both numbers - legacy format
+ *
+ * OPTIONAL:
+ *   - timeSpent: number (seconds) - defaults to 0
+ *   - scrollPosition: number
+ *   - lastViewedSection: string
+ *   - completed: boolean - explicit completion flag (NEVER auto-inferred from 100%)
+ *
+ * NOT SENT (backend derives):
+ *   - moduleId: Backend extracts from DB lookup or lessonId pattern
  */
 
 import { http } from './http';
 import { mutate } from 'swr';
 import { getAuthToken as getAuthTokenFromService } from './authService';
 import { SWR_KEYS, getProgressInvalidationMatcher } from '@/lib/swrKeys';
+import { curriculumData } from '@/data/curriculumData';
 
 // ============================================
 // Type Definitions
@@ -15,9 +32,65 @@ import { SWR_KEYS, getProgressInvalidationMatcher } from '@/lib/swrKeys';
 export interface UpdateLessonProgressParams {
   completionPercentage: number;
   timeSpent: number; // in seconds
-  moduleId?: string; // Optional module ID
+  moduleId?: string; // Used ONLY for cache invalidation, NOT sent to backend
   scrollPosition?: number;
   lastViewedSection?: string;
+}
+
+// ============================================
+// Curriculum Data Lookup (for validation only)
+// ============================================
+
+/**
+ * Lookup moduleId from curriculum data given a lessonId.
+ * Returns null if not found.
+ * This is used ONLY for validation, NOT for sending to backend.
+ */
+function getModuleIdFromCurriculum(lessonId: string): string | null {
+  if (!lessonId || !curriculumData?.modules) return null;
+
+  // Search through all modules and their lessons
+  for (const [moduleId, module] of Object.entries(curriculumData.modules)) {
+    const moduleData = module as any;
+    if (moduleData.lessons && Array.isArray(moduleData.lessons)) {
+      for (const lesson of moduleData.lessons) {
+        if (lesson.id === lessonId) {
+          return moduleId;
+        }
+      }
+    }
+  }
+
+  // If not found in curriculum, try to extract from lessonId pattern
+  // Pattern: "module-XX-*" -> "module-XX-*" (full module ID)
+  // Pattern: anything with "module-" prefix
+  const moduleMatch = lessonId.match(/^(module-\d+(?:-[a-z]+)*)/i);
+  if (moduleMatch) {
+    return moduleMatch[1];
+  }
+
+  return null;
+}
+
+/**
+ * Validate that a lessonId belongs to the specified moduleId.
+ * Throws an error if validation fails.
+ * This prevents mismatched lessonId/moduleId pairs from being sent.
+ */
+function validateLessonModulePair(lessonId: string, providedModuleId?: string): void {
+  if (!providedModuleId) return; // No moduleId provided, nothing to validate
+
+  const curriculumModuleId = getModuleIdFromCurriculum(lessonId);
+
+  // If we found a moduleId in curriculum and it doesn't match, warn (but don't throw)
+  // The backend will derive the correct moduleId anyway
+  if (curriculumModuleId && curriculumModuleId !== providedModuleId) {
+    console.warn(
+      `[progressService] ⚠️ moduleId mismatch: lessonId "${lessonId}" belongs to ` +
+      `"${curriculumModuleId}" but "${providedModuleId}" was provided. ` +
+      `Backend will derive the correct moduleId.`
+    );
+  }
 }
 
 export interface LessonProgress {
@@ -103,39 +176,132 @@ function getAuthToken(): string | null {
 /**
  * Update lesson progress
  * PUT /api/progress/lesson/:lessonId
+ *
+ * IMPORTANT: This function sends ONLY the fields expected by the backend.
+ * - moduleId is NOT sent (backend derives it from lessonId or DB lookup)
+ * - undefined values are NEVER sent
+ * - completionPercentage OR currentStep/totalSteps is REQUIRED
  */
 export async function updateLessonProgress(
   lessonId: string,
   data: UpdateLessonProgressParams
 ): Promise<LessonProgress> {
+  // ==========================================================================
+  // STRICT VALIDATION - Prevent 400 errors from invalid payloads
+  // ==========================================================================
+
+  // 1. Validate lessonId is a non-empty string
+  if (!lessonId || typeof lessonId !== 'string' || lessonId.trim() === '') {
+    console.warn('[progressService] updateLessonProgress ABORTED: lessonId is invalid or empty', { lessonId });
+    throw new Error('lessonId is required and must be a non-empty string');
+  }
+
+  // 2. Validate data object exists
+  if (!data || typeof data !== 'object') {
+    console.warn('[progressService] updateLessonProgress ABORTED: data is invalid', { data });
+    throw new Error('data object is required');
+  }
+
+  // 3. Validate completionPercentage (REQUIRED field)
+  if (data.completionPercentage === undefined || data.completionPercentage === null) {
+    console.warn('[progressService] updateLessonProgress ABORTED: completionPercentage is required', { lessonId });
+    throw new Error('completionPercentage is required');
+  }
+
+  if (typeof data.completionPercentage !== 'number' || isNaN(data.completionPercentage)) {
+    console.warn('[progressService] updateLessonProgress ABORTED: completionPercentage must be a number', { lessonId, completionPercentage: data.completionPercentage });
+    throw new Error('completionPercentage must be a number');
+  }
+
+  // Clamp completionPercentage between 0 and 100
+  const clampedPercentage = Math.max(0, Math.min(100, Math.round(data.completionPercentage)));
+
+  // 4. Validate lessonId/moduleId pair if moduleId was provided (for cache invalidation)
+  validateLessonModulePair(lessonId, data.moduleId);
+
+  // ==========================================================================
+  // BUILD CLEAN PAYLOAD - Only send fields expected by backend
+  // NEVER send undefined values
+  // ==========================================================================
+  const payload: Record<string, any> = {
+    // REQUIRED: completionPercentage (backend format)
+    completionPercentage: clampedPercentage,
+  };
+
+  // OPTIONAL: timeSpent (only if valid positive number)
+  if (typeof data.timeSpent === 'number' && data.timeSpent > 0 && !isNaN(data.timeSpent)) {
+    payload.timeSpent = Math.floor(data.timeSpent); // Ensure integer seconds
+  }
+
+  // OPTIONAL: scrollPosition (only if valid number)
+  if (typeof data.scrollPosition === 'number' && !isNaN(data.scrollPosition)) {
+    payload.scrollPosition = data.scrollPosition;
+  }
+
+  // OPTIONAL: lastViewedSection (only if non-empty string)
+  if (typeof data.lastViewedSection === 'string' && data.lastViewedSection.trim() !== '') {
+    payload.lastViewedSection = data.lastViewedSection.trim();
+  }
+
+  // NOTE: moduleId is NOT sent - backend derives it from:
+  // 1. DB lookup of the lesson
+  // 2. Pattern extraction from lessonId (e.g., "module-01-..." -> "module-01")
+
+  console.log('[progressService] updateLessonProgress: Sending payload', {
+    lessonId,
+    payload,
+    providedModuleId: data.moduleId, // For cache invalidation only
+  });
+
+  // ==========================================================================
+  // EXECUTE THE UPDATE
+  // ==========================================================================
   const token = getAuthToken();
 
   const { res, data: responseData } = await http(`/progress/lesson/${lessonId}`, {
     method: 'PUT',
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
     authToken: token || undefined,
   });
 
   if (!res.ok) {
     const errorMessage = responseData?.message || responseData?.error || 'Error al actualizar progreso';
+    console.error('[progressService] updateLessonProgress FAILED:', {
+      lessonId,
+      status: res.status,
+      error: errorMessage,
+      payload,
+    });
     throw new Error(errorMessage);
   }
 
-  // Extract moduleId from lessonId (format: "module-XX-lesson-name")
-  const moduleIdMatch = lessonId.match(/^(module-\d+)/);
-  const moduleId = moduleIdMatch ? moduleIdMatch[1] : responseData?.lesson?.moduleId;
+  // ==========================================================================
+  // CACHE INVALIDATION - Use moduleId for cache keys
+  // Determine moduleId: prefer response, then curriculum lookup, then pattern extraction
+  // ==========================================================================
+  const moduleIdFromResponse = responseData?.moduleId || responseData?.lesson?.moduleId;
+  const moduleIdFromCurriculum = getModuleIdFromCurriculum(lessonId);
+  const moduleIdFromPattern = lessonId.match(/^(module-\d+)/)?.[1];
+  const moduleIdForCache = moduleIdFromResponse || data.moduleId || moduleIdFromCurriculum || moduleIdFromPattern;
 
   // Invalidate related cache
-  await invalidateProgressCache(moduleId, lessonId);
+  await invalidateProgressCache(moduleIdForCache, lessonId);
 
   // Emit progress:updated event for UI components to refresh
   if (typeof window !== 'undefined') {
+    console.log('[progressService] Dispatching progress:updated event', {
+      lessonId,
+      moduleId: moduleIdForCache,
+      completionPercentage: clampedPercentage,
+    });
     window.dispatchEvent(new CustomEvent('progress:updated', {
       detail: {
         lessonId,
-        moduleId,
-        completionPercentage: data.completionPercentage,
-        completed: responseData?.completed || data.completionPercentage >= 100,
+        moduleId: moduleIdForCache,
+        completionPercentage: clampedPercentage,
+        // IMPORTANT: Only use explicit completed flag from backend response
+        // NEVER infer completion from completionPercentage
+        completed: responseData?.completed === true,
       }
     }));
   }
@@ -218,7 +384,9 @@ export async function getModuleProgress(moduleId: string): Promise<ModuleProgres
     totalLessons: data?.totalLessons || 0,
     timeSpent: data?.totalTimeSpent || 0,
     lastAccessedAt: data?.lastAccess || null,
-    isCompleted: (data?.completionPercentage || 0) >= 100,
+    // Module is completed ONLY when ALL lessons are completed
+    // Check if completedLessons === totalLessons instead of inferring from completionPercentage
+    isCompleted: (data?.completedLessons || 0) >= (data?.totalLessons || 0) && (data?.totalLessons || 0) > 0,
   };
 }
 

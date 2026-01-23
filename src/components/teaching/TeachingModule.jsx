@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, lazy, Suspense, useMemo } from 'react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 import {
   Container,
   Paper,
@@ -90,7 +91,10 @@ const TeachingModule = () => {
     progressByModule,
     snapshot,
     refetchSnapshot,
-    upsertLessonProgressUnified
+    upsertLessonProgressUnified,
+    // Derived progress aggregation from context (SINGLE SOURCE OF TRUTH)
+    moduleProgressAggregated: contextModuleProgress,
+    levelProgressAggregated: contextLevelProgress,
   } = useLearningProgress();
 
   // Teaching module context (for category navigation) - Only use if available
@@ -400,24 +404,30 @@ const TeachingModule = () => {
 
   /**
    * Handler cuando se completa una lección
+   *
+   * IMPORTANT: This handler ONLY marks the lesson as complete and shows a success message.
+   * Navigation to the next lesson is handled by the user clicking the "Continue" button
+   * on the CompletionPage component. This ensures completed lessons can be revisited
+   * without being auto-redirected away.
    */
   const handleLessonComplete = useCallback((lessonData) => {
     // Marcar lección como completada en el contexto
     if (lessonIdFromQuery && moduleIdFromQuery) {
       const lessonFullId = `${moduleIdFromQuery}.${lessonIdFromQuery}`;
-      
+
       // Calcular tiempo de estudio (estimado basado en duration del módulo)
       const module = curriculumData.modules[moduleIdFromQuery];
       const estimatedTime = module?.duration || 30;
-      
-      // Use unified progress update
+
+      // Use unified progress update with moduleId for validation
+      // IMPORTANT: moduleId is required to prevent 400 errors
       if (upsertLessonProgressUnified) {
-        upsertLessonProgressUnified(lessonIdFromQuery, 1.0);
+        upsertLessonProgressUnified(lessonIdFromQuery, 1.0, moduleIdFromQuery);
       } else {
         // Fallback to legacy method
         markLessonComplete(lessonFullId, moduleIdFromQuery, estimatedTime);
       }
-      
+
       // Track analytics event
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'lesson_completed', {
@@ -427,24 +437,15 @@ const TeachingModule = () => {
           time_spent: estimatedTime
         });
       }
-      
+
       // Mostrar mensaje de éxito
       setAlertMessage('¡Felicitaciones! Has completado la lección.');
       setAlertOpen(true);
-      
-      // Opcional: navegar a la siguiente lección si existe
-      if (lessonData?.navigation?.nextLesson) {
-        setTimeout(() => {
-          handleSectionClick(moduleIdFromQuery, lessonData.navigation.nextLesson.id);
-        }, 2000);
-      } else {
-        // Si no hay siguiente lección, volver al dashboard después de un delay
-        setTimeout(() => {
-          handleBackToDashboard();
-        }, 3000);
-      }
+
+      // NO AUTO-REDIRECT: Navigation to next lesson is user-controlled via CompletionPage button.
+      // This allows users to review completed lessons without being redirected away.
     }
-  }, [lessonIdFromQuery, moduleIdFromQuery, markLessonComplete, handleBackToDashboard, handleSectionClick]);
+  }, [lessonIdFromQuery, moduleIdFromQuery, markLessonComplete, upsertLessonProgressUnified]);
   
   /**
    * Handler para navegar entre lecciones
@@ -643,6 +644,8 @@ const TeachingModule = () => {
           progress: (() => {
             const modulesArray = Object.values(curriculumData.modules || {});
             const totalModules = modulesArray.length;
+            // Level progress = completedModules / totalModules
+            // Module is completed ONLY when ALL its lessons are completed (progress === 100)
             const completedModules = modulesArray.filter(module => 
               calculateModuleProgress(module.id) === 100
             ).length;
@@ -652,6 +655,7 @@ const TeachingModule = () => {
             return Object.keys(curriculumData.modules || {}).length;
           })(),
           current: (() => {
+            // Count modules where ALL lessons are completed (progress === 100)
             return Object.values(curriculumData.modules || {}).filter(module => 
               calculateModuleProgress(module.id) === 100
             ).length;
