@@ -1,0 +1,128 @@
+{
+  "id": "module-09-simv",
+  "moduleId": "module-01-fundamentals",
+  "title": "Módulo 09: Modos Intermitentes – SIMV (La 'Falsa' Sincronía)",
+  "description": "Exploramos el modo más incomprendido y polémico de la ventilación mecánica: la Ventilación Mandatoria Intermitente Sincronizada (SIMV). Analizaremos su algoritmo de ventanas de tiempo, la coexistencia de ciclos controlados y espontáneos, y revisaremos la evidencia crítica que cuestiona su uso rutinario en el destete de adultos.",
+  "order": 9,
+  "estimatedTime": 85,
+  "difficulty": "advanced",
+  "bloomLevel": "analyze",
+  "learningObjectives": [
+    "Describir el algoritmo de funcionamiento del SIMV y el concepto de 'Ventana de Sincronización'.",
+    "Diferenciar clínicamente entre un ciclo mandatorio (sincronizado o controlado) y un ciclo espontáneo dentro del mismo modo.",
+    "Comparar las ventajas y desventajas hemodinámicas y mecánicas del SIMV frente al Asisto-Control (A/C).",
+    "Identificar el error crítico de la falta de soporte en ciclos espontáneos que conduce a la fatiga muscular.",
+    "Evaluar la evidencia actual sobre el uso de SIMV en el proceso de destete (Weaning)."
+  ],
+  "prerequisites": [
+    "module-04-modos-ventilatorios",
+    "module-08-psv-cpap"
+  ],
+  "sections": [
+    {
+      "id": "m9-context",
+      "order": 1,
+      "type": "theory",
+      "title": "1. Contexto: El Híbrido Incomprendido",
+      "content": {
+        "markdown": "## Ni Contigo Ni Sin Ti\nEl SIMV nació intentando combinar lo mejor de dos mundos: la seguridad del volumen minuto garantizado (Control) y la comodidad de la respiración libre (Espontáneo).\n\n### El Problema de la Identidad\nEn la clínica, a menudo vemos pacientes en SIMV que parecen 'luchar' con el ventilador. Esto sucede porque el ventilador cambia de comportamiento constantemente:\n* En el segundo 1, es un ventilador mandatorio.\n* En el segundo 3, es un soporte de presión.\n* En el segundo 10, vuelve a ser mandatorio.\n\nEsta imprevisibilidad puede generar confusión cortical y asincronía si no se ajusta con maestría."
+      }
+    },
+    {
+      "id": "m9-mechanism",
+      "order": 2,
+      "type": "theory",
+      "title": "2. Mecánica: La Ventana de Tiempo",
+      "content": {
+        "markdown": "El secreto del SIMV es cómo decide **qué** tipo de respiración entregar.\n\n### El Algoritmo Simplificado\nImagina que programas una FR de 6 rpm (un ciclo cada 10 segundos).\n\n1.  **Inicio del Ciclo (Ventana de Espera):** Al final del ciclo previo, la máquina abre una 'Ventana' (ej. 0.5 seg). \n    * Si detecta esfuerzo $\\rightarrow$ Dispara respiración **Mandatoria Sincronizada**.\n    * Si NO detecta esfuerzo $\\rightarrow$ Dispara respiración **Mandatoria Controlada**.\n\n2.  **Periodo Espontáneo:** Una vez entregada la mandatoria, el resto de los 10 segundos queda 'libre'.\n    * Cualquier esfuerzo aquí dispara una respiración **Espontánea** (con Presión Soporte si está configurada).\n\n> **Dato Clave:** Si programas una FR muy alta en SIMV, eliminas el tiempo espontáneo y lo conviertes en un A/C ineficiente."
+      }
+    },
+    {
+      "id": "m9-comparison",
+      "order": 3,
+      "type": "theory",
+      "title": "3. Comparativa: SIMV vs A/C",
+      "content": {
+        "markdown": "La confusión más común es entre Asisto-Control (A/C) y SIMV. Veamos la diferencia radical.\n\n| Escenario | Paciente en A/C (Volumen) | Paciente en SIMV (Volumen + PS) |\n| :--- | :--- | :--- |\n| **Configuración** | VT 500ml | VT 500ml (Mandatorio), PS 10 (Espontáneo) |\n| **Paciente hace esfuerzo** | Recibe 500ml. SIEMPRE. | Depende. ¿Cayó en la ventana? Recibe 500ml. ¿Cayó fuera? Recibe lo que genere la PS 10. |\n| **Riesgo de Alcalosis** | Alto (Hiperventilación fácil). | Moderado (Las espontáneas pueden ser pequeñas). |\n| **Músculos** | Descansan más (cada tiro es full support). | Trabajan más (tienen que ganarse las espontáneas). |"
+      }
+    },
+    {
+      "id": "m9-pitfalls",
+      "order": 4,
+      "type": "theory",
+      "title": "4. Profundización: El Mito del Destete",
+      "content": {
+        "markdown": "### ¿Por qué ya no usamos SIMV para destetar?\nEn los 80s y 90s, se creía que bajar la frecuencia SIMV poco a poco entrenaba al paciente. Estudios landmark (Esteban et al.) demostraron lo contrario.\n\n**El Círculo Vicioso del SIMV:**\n1.  El médico baja la FR mandatoria (ej. de 10 a 4).\n2.  El paciente tiene que respirar más veces espontáneamente para compensar.\n3.  Si la Presión Soporte en esas espontáneas es insuficiente, el paciente hace un esfuerzo enorme a través de la resistencia del tubo.\n4.  Resultado: Fatiga diafragmática + aumento del consumo de oxígeno ($VO_2$).\n\n**Conclusión Actual:** Es mejor usar PSV puro para destetar, o pruebas de Tubo en T diarias, que someter al paciente a la carga variable e impredecible del SIMV."
+      }
+    },
+    {
+      "id": "m9-simulation",
+      "order": 5,
+      "type": "interactive",
+      "title": "Simulación: Detectando Fatiga en SIMV",
+      "content": {
+        "markdown": "### Caso Clínico\nPaciente post-operatorio neuroquirúrgico. Modo SIMV-VC. \n* **Parámetros:** FR 8, VT 480ml, PEEP 5, **Presión Soporte 0**. \n* **Monitor:** FR Total 28 rpm. Volumen minuto 12 L/min.\n\n**Análisis:**\nDe las 28 respiraciones, solo 8 son de 480ml (Mandatorias). Las otras 20 respiraciones son esfuerzos del paciente SIN ayuda (PS=0). \n\n**Síntomas:** El paciente está taquicárdico e hipertenso. \n\n**Tu Acción:**\n¿Qué ajuste solucionaría la fatiga inmediatamente?\n1.  Subir la FR mandatoria a 28.\n2.  Añadir Presión Soporte (ej. 12 cmH2O) a los ciclos espontáneos.\n3.  Sedarlo.\n\n> *La respuesta correcta es la 2. Al dar soporte a las espontáneas, reduces el trabajo respiratorio drásticamente.*"
+      }
+    },
+    {
+      "id": "m9-quiz",
+      "order": 6,
+      "type": "quiz",
+      "title": "Evaluación: SIMV",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "multiple-choice",
+          "question": "¿Cuál es la diferencia fundamental entre una respiración mandatoria sincronizada en SIMV y una respiración asistida en modo A/C?",
+          "options": [
+            "En A/C el volumen es variable, en SIMV es fijo.",
+            "En A/C todas las respiraciones disparadas por el paciente son mandatorias completas; en SIMV, las disparadas fuera de la ventana son espontáneas.",
+            "No hay diferencia, son idénticas.",
+            "El SIMV no permite disparo por presión."
+          ],
+          "correctAnswer": "En A/C todas las respiraciones disparadas por el paciente son mandatorias completas; en SIMV, las disparadas fuera de la ventana son espontáneas.",
+          "explanation": "Esta es la esencia del SIMV: discrimina entre ciclos según el momento temporal (ventana), mientras que A/C trata todos los disparos igual.",
+          "difficulty": "advanced"
+        },
+        {
+          "id": "q2",
+          "type": "multiple-choice",
+          "question": "Según la evidencia clínica actual, ¿cómo se compara el destete (weaning) con SIMV frente al destete con PSV o Tubo en T?",
+          "options": [
+            "El SIMV es superior y más rápido.",
+            "El SIMV tiende a retrasar la extubación y prolongar el tiempo en ventilación.",
+            "Son equivalentes en todos los pacientes.",
+            "El SIMV es el único método seguro para pacientes con EPOC."
+          ],
+          "correctAnswer": "El SIMV tiende a retrasar la extubación y prolongar el tiempo en ventilación.",
+          "explanation": "Estudios comparativos han mostrado consistentemente que el SIMV prolonga el destete debido a la fatiga muscular oculta y la mala adaptación.",
+          "difficulty": "intermediate"
+        }
+      ]
+    }
+  ],
+  "resources": {
+    "references": [
+      {
+        "authors": "Esteban A, Frutos F, Tobin MJ, et al.",
+        "year": 1995,
+        "title": "A comparison of four methods of weaning patients from mechanical ventilation",
+        "source": "N Engl J Med. 1995;332(6):345-350",
+        "doi": "10.1056/NEJM199502093320601"
+      },
+      {
+        "authors": "Luce JM",
+        "year": 2018,
+        "title": "The history of mechanical ventilation",
+        "source": "Respiratory Care",
+        "doi": ""
+      }
+    ]
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-24",
+    "source": "VentyLab Curated Content"
+  }
+}

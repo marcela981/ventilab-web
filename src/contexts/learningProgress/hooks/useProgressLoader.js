@@ -136,6 +136,32 @@ export const useProgressLoader = ({
       try {
         const data = await getModuleProgress(moduleId);
 
+        // Check if result is a rate-limited response
+        if (data && typeof data === 'object' && data.type === 'RATE_LIMITED') {
+          console.warn('[useProgressLoader] Rate limited when loading module progress');
+          setSyncStatus('rate_limited');
+          setLastSyncError(null); // Don't show error, just rate limit state
+          setIsRateLimited(true); // Set rate limiting state
+          
+          // Schedule automatic retry after cooldown (default 5 seconds)
+          const retryAfter = data.retryAfter || 5;
+          setTimeout(() => {
+            console.log('[useProgressLoader] Retrying after rate limit cooldown...');
+            setIsRateLimited(false); // Clear rate limit state before retry
+            loadModuleProgress(moduleId, { force: true });
+          }, retryAfter * 1000);
+          
+          // Return existing data or empty structure instead of throwing
+          return existingData || {
+            learningProgress: null,
+            lessonProgress: [],
+            isAvailable: false,
+          };
+        }
+        
+        // Clear rate limit state on successful load
+        setIsRateLimited(false);
+
         // Safely handle undefined/null lessonProgress (module never started)
         // Pass moduleId for lessonId normalization
         const { lessonsById: newLessonsById } = buildLessonsById(data.lessonProgress, moduleId);

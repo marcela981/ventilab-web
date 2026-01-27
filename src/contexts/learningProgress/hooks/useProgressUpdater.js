@@ -145,6 +145,32 @@ export const useProgressUpdater = ({
           ...updateData,
         });
         
+        // Check if result is a rate-limited response
+        if (result && typeof result === 'object' && result.type === 'RATE_LIMITED') {
+          console.warn('[useProgressUpdater] Rate limited when updating lesson progress');
+          setSyncStatus('rate_limited');
+          setLastSyncError(null); // Don't show error, just rate limit state
+          setIsRateLimited(true); // Set rate limiting state
+          
+          // Add to outbox for later retry (don't lose the update)
+          addToOutbox(outboxEvent);
+          
+          // Schedule automatic retry after cooldown (default 5 seconds)
+          const retryAfter = result.retryAfter || 5;
+          setTimeout(() => {
+            console.log('[useProgressUpdater] Retrying after rate limit cooldown...');
+            setIsRateLimited(false); // Clear rate limit state before retry
+            performUpdate(0); // Retry the update
+          }, retryAfter * 1000);
+          
+          // Don't remove from pending updates - will retry later
+          // Return optimistic progress to keep UI updated
+          return optimisticLessonProgress;
+        }
+        
+        // Clear rate limit state on successful update
+        setIsRateLimited(false);
+        
         // Mark event as confirmed
         markAsConfirmed(clientEventId, result);
         

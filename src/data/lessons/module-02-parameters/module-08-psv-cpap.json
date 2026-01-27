@@ -1,0 +1,128 @@
+{
+    "id": "module-08-psv-cpap",
+    "moduleId": "module-01-fundamentals",
+    "title": "Módulo 08: El Arte de Asistir – Presión Soporte (PSV) y CPAP",
+    "description": "El dominio de la ventilación espontánea. Este módulo profundiza en las modalidades donde el paciente recupera el control del ciclo respiratorio: Presión Soporte (PSV) y CPAP. Es la etapa crítica para prevenir la atrofia diafragmática y preparar la desconexión del ventilador. Se analizarán las diferencias hemodinámicas, la mecánica del 'soporte' y los riesgos de la sobre y sub-asistencia.",
+    "order": 8,
+    "estimatedTime": 90,
+    "difficulty": "advanced",
+    "bloomLevel": "evaluate",
+    "learningObjectives": [
+      "Diferenciar fisiológica y mecánicamente entre CPAP (Presión Positiva Continua) y PSV (Presión Soporte).",
+      "Explicar el concepto de 'Delta de Presión' y cómo titula el trabajo respiratorio (WOB) entre el paciente y la máquina.",
+      "Analizar el ciclo ventilatorio en PSV: Disparo por paciente, Límite por presión y Ciclado por flujo.",
+      "Identificar signos clínicos y gráficos de sobre-asistencia (atrofia) y sub-asistencia (fatiga/taquipnea) usando herramientas como la P0.1.",
+      "Manejar situaciones especiales como fugas en VNI y estrategias de respaldo (apnea backup)."
+    ],
+    "prerequisites": [
+      "module-04-modos-ventilatorios",
+      "module-07-fine-tuning"
+    ],
+    "sections": [
+      {
+        "id": "m8-context",
+        "order": 1,
+        "type": "theory",
+        "title": "1. Contexto: El Puente a la Libertad",
+        "content": {
+          "markdown": "## De la Dictadura a la Democracia Ventilatoria\n\nSi los modos controlados son una 'dictadura' benigna donde la máquina decide todo para salvar al paciente, la **Presión Soporte (PSV)** es una democracia asistida. El paciente recupera su autonomía sobre el **cuándo** (frecuencia) y el **cuánto** (tiempo inspiratorio/flujo).\n\n### ¿Por qué es irreemplazable?\nEs la única forma fisiológica de entrenar el diafragma. Un diafragma en reposo absoluto (modo controlado) sufre **atrofia por desuso** visible al microscopio en tan solo 18 horas de ventilación mecánica. La PSV es el gimnasio donde rehabilitamos ese músculo.\n\n### El Equilibrio Delicado\nEl médico en PSV no impone, **sintoniza**. Si das mucho soporte, el músculo no trabaja (atrofia). Si das muy poco, el músculo se agota (fatiga y fallo). Encontrar el 'punto dulce' es el arte de este módulo."
+        }
+      },
+      {
+        "id": "m8-fundamentals",
+        "order": 2,
+        "type": "theory",
+        "title": "2. Fundamentos: CPAP vs PSV",
+        "content": {
+          "markdown": "A menudo se confunden, pero mecánicamente son distintos.\n\n### CPAP (Continuous Positive Airway Pressure)\nEs una presión base elevada y constante. \n* **Mecánica:** El ventilador mantiene, por ejemplo, 5 cmH2O todo el tiempo. Cuando el paciente inspira, la presión puede caer ligeramente (a 4.8) y la máquina da flujo para mantenerla en 5, pero **no ayuda a meter aire**. \n* **Función:** Mantiene el alveolo abierto (oxigenación), evita el colapso, pero el paciente hace **todo** el trabajo de mover el volumen.\n\n### PSV (Pressure Support Ventilation)\nEs CPAP + Ayuda Inspiratoria.\n* **Mecánica:** Hay una PEEP base (ej. 5). Cuando el paciente inspira, el ventilador presuriza súbitamente la vía aérea hasta un nivel superior (ej. 15). Esa diferencia (15 - 5 = 10) es la **Presión Soporte (PS)**.\n* **Ecuación:** $P_{pico} = PEEP + PS$.\n* **Función:** 'Empuja' el aire dentro de los pulmones, reduciendo drásticamente el esfuerzo que el diafragma debe hacer."
+        }
+      },
+      {
+        "id": "m8-dynamics",
+        "order": 3,
+        "type": "theory",
+        "title": "3. Dinámica: El Ciclo de la PSV",
+        "content": {
+          "markdown": "La PSV es un modo **Ciclado por Flujo**. Entender esto es vital para solucionar problemas.\n\n### 1. Disparo (Trigger)\nEl paciente inicia. SIN esfuerzo paciente, NO hay respiración. (Riesgo: Apnea).\n\n### 2. Presurización (Rise Time)\nEl ventilador inyecta flujo para llegar a la Presión Soporte objetivo. La velocidad de esta subida depende del *Rise Time* (ver Módulo 07). Un flujo decelerante es característico: alto al inicio, bajo al final.\n\n### 3. Ciclado (El fin de la inspiración)\nAquí está la clave. El ventilador **NO** sabe cuánto tiempo quiere inspirar el paciente. Lo adivina mirando el flujo.\n* Cuando el pulmón se llena, el flujo de entrada baja.\n* Al llegar a un porcentaje (ej. 25% del flujo máximo), la máquina dice 'ya basta' y corta.\n\n> **Nota Clínica:** Si hay una fuga en el sistema (VNI o tubo roto), el flujo nunca baja. El ventilador se queda soplando eternamente (Ciclado infinito) y el paciente se asfixia con aire a presión. **Solución:** Ajustar $T_{i\\_max}$."
+        }
+      },
+      {
+        "id": "m8-deepening",
+        "order": 4,
+        "type": "theory",
+        "title": "4. Profundización: Weaning y Errores",
+        "content": {
+          "markdown": "### La Trampa de la Sobre-Asistencia\nVer a un paciente 'tranquilo' en PSV no siempre es éxito. Si ajustamos una PS de 20 cmH2O en un paciente que solo necesita 8, estamos haciendo todo el trabajo por él.\n* **Signos:** Volumen corriente alto (> 8-10 ml/kg), frecuencia respiratoria muy baja, P0.1 muy baja (< 1 cmH2O), alcalosis respiratoria en gases.\n* **Consecuencia:** 'Weaning Failure' diferido. El día que intentas extubar, el paciente falla en minutos porque su diafragma es débil.\n\n### El Índice de Tobin (RSBI)\nEs el rey de la predicción en PSV.\n* **Fórmula:** $Frecuencia Respiratoria / Volumen Corriente (en Litros)$.\n* **Ejemplo:** 20 rpm / 0.5 L = 40 (Bien).\n* **Ejemplo:** 35 rpm / 0.3 L = 116 (Mal).\n* **Corte:** > 105 predice fracaso en la extubación. Indica respiración rápida y superficial."
+        }
+      },
+      {
+        "id": "m8-simulation",
+        "order": 5,
+        "type": "interactive",
+        "title": "Simulación: Titulando el Soporte",
+        "content": {
+          "markdown": "### Escenario Clínico\nPaciente post-quirúrgico de abdomen. Lo pasas a PSV. \nConfiguración inicial: PEEP 6, PS 14.\n\n**Observación:**\n* Volumen Corriente: 350 ml (Peso ideal 70kg -> Debería ser ~420-500ml).\n* Frecuencia Respiratoria: 32 rpm.\n* Uso de músculos esternocleidomastoideos visible.\n* Sudoración.\n\n**Diagnóstico:**\nEl paciente tiene **Fallo de soporte (Sub-asistencia)**. El trabajo es excesivo para su capacidad actual.\n\n**Decisión:**\n1.  Aumentar PS a 18 cmH2O.\n2.  Reevaluar en 15 min. Si la FR baja a < 25 y el Volumen sube a 450ml, has encontrado el equilibrio."
+        }
+      },
+      {
+        "id": "m8-quiz",
+        "order": 6,
+        "type": "quiz",
+        "title": "Evaluación: PSV y CPAP",
+        "questions": [
+          {
+            "id": "q1",
+            "type": "multiple-choice",
+            "question": "Un paciente en modo PSV presenta una fuga importante alrededor de la máscara de VNI. La inspiración se prolonga excesivamente y el paciente intenta exhalar forzadamente. ¿Cuál es la causa mecánica?",
+            "options": [
+              "El trigger está muy sensible.",
+              "El criterio de ciclado por flujo no se alcanza debido a la fuga continua.",
+              "El Rise Time es muy rápido.",
+              "Es un problema de distensibilidad pulmonar."
+            ],
+            "correctAnswer": "El criterio de ciclado por flujo no se alcanza debido a la fuga continua.",
+            "explanation": "En PSV, el ventilador espera a que el flujo baje para ciclar. Si hay fuga, el ventilador inyecta flujo continuamente para compensar, y nunca detecta la caída necesaria para terminar la inspiración.",
+            "difficulty": "advanced"
+          },
+          {
+            "id": "q2",
+            "type": "multiple-choice",
+            "question": "¿Cuál es el riesgo principal de mantener niveles elevados de Presión Soporte (>15-20 cmH2O) innecesariamente en un paciente en proceso de destete?",
+            "options": [
+              "Barotrauma inmediato.",
+              "Disfunción diafragmática inducida por ventilador (VIDD) por sobre-asistencia.",
+              "Hipoxemia refractaria.",
+              "Aumento excesivo del retorno venoso."
+            ],
+            "correctAnswer": "Disfunción diafragmática inducida por ventilador (VIDD) por sobre-asistencia.",
+            "explanation": "Niveles altos de soporte eliminan la carga sobre el diafragma. Sin carga, el músculo se atrofia rápidamente, dificultando la extubación futura.",
+            "difficulty": "intermediate"
+          }
+        ]
+      }
+    ],
+    "resources": {
+      "references": [
+        {
+          "authors": "Brochard L, Lellouche F",
+          "year": 2013,
+          "title": "Pressure Support Ventilation",
+          "source": "Tobin MJ (ed) Principles and Practice of Mechanical Ventilation, 3rd ed.",
+          "doi": ""
+        },
+        {
+          "authors": "MacIntyre NR",
+          "year": 2004,
+          "title": "Evidence-based guidelines for weaning and discontinuing ventilatory support",
+          "source": "Chest 120:375S-395S",
+          "doi": "10.1378/chest.120.6_suppl.375S"
+        }
+      ]
+    },
+    "metadata": {
+      "language": "es",
+      "version": "1.0.0",
+      "lastUpdated": "2026-01-24",
+      "source": "VentyLab Curated Content"
+    }
+  }

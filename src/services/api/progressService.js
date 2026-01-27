@@ -162,10 +162,47 @@ const maybeRefreshSession = async (error) => {
   }
 };
 
+/**
+ * Execute operation with automatic auth retry
+ * 
+ * IMPORTANT: NEVER retries on HTTP 429 (Rate Limited)
+ * - 429 responses are returned as structured results, not errors
+ * - Retry logic only applies to:
+ *   - Auth errors (401/403) - will attempt token refresh
+ *   - Server errors (5xx) - may be transient
+ * 
+ * @param {Function} operation - Async function to execute
+ * @param {number} attempt - Current retry attempt (default: 0)
+ * @returns {Promise<any>} Operation result or structured rate limit result
+ */
 const executeWithAuthRetry = async (operation, attempt = 0) => {
   try {
-    return await operation();
+    const result = await operation();
+    
+    // Check if result is a rate-limited response (from parseResponse)
+    // NEVER retry on rate limiting - return the result as-is
+    if (result && typeof result === 'object' && result.type === 'RATE_LIMITED') {
+      console.warn('[progressService] Rate limited detected, not retrying');
+      return result;
+    }
+    
+    return result;
   } catch (error) {
+    // NEVER retry on 429 - it should have been caught by parseResponse
+    // But as a safeguard, check error status
+    if (error.status === 429) {
+      console.warn('[progressService] Rate limited (429) in error handler, not retrying');
+      return {
+        ok: false,
+        status: 429,
+        type: 'RATE_LIMITED',
+        retryAfter: error.retryAfter,
+        payload: error.payload,
+      };
+    }
+    
+    // Only retry on auth errors (401/403) or server errors (5xx)
+    // Never retry on 429 or other client errors
     if (attempt === 0 && (await maybeRefreshSession(error))) {
       return executeWithAuthRetry(operation, attempt + 1);
     }
@@ -219,10 +256,46 @@ const buildUrl = (path) => {
   return `${trimmed}${normalizedPath}`;
 };
 
+/**
+ * Parse HTTP response
+ * 
+ * SPECIAL HANDLING FOR HTTP 429 (Rate Limited):
+ * - Does NOT throw an error for 429 responses
+ * - Returns a structured result: { ok: false, status: 429, type: "RATE_LIMITED", retryAfter?: number }
+ * - This allows callers to handle rate limiting gracefully without triggering error handlers
+ * 
+ * @param {Response} response - Fetch Response object
+ * @returns {Promise<any>} Parsed response data or structured rate limit result
+ */
 const parseResponse = async (response) => {
   const contentType = response.headers.get('content-type') || '';
   const isJson = contentType.includes('application/json');
   const payload = isJson ? await response.json() : await response.text();
+
+  // ==========================================================================
+  // SPECIAL HANDLING FOR HTTP 429 (Rate Limited)
+  // Do NOT treat 429 as a fatal error - return controlled result instead
+  // ==========================================================================
+  if (response.status === 429) {
+    // Extract retry-after header if available (in seconds)
+    const retryAfterHeader = response.headers.get('Retry-After');
+    const retryAfter = retryAfterHeader ? parseInt(retryAfterHeader, 10) : undefined;
+    
+    console.warn('[progressService] Rate limited (429):', {
+      retryAfter,
+      message: typeof payload === 'object' && payload?.message ? payload.message : 'Too many requests',
+    });
+    
+    // Return structured result instead of throwing
+    // This prevents infinite retry loops and allows graceful handling
+    return {
+      ok: false,
+      status: 429,
+      type: 'RATE_LIMITED',
+      retryAfter,
+      payload,
+    };
+  }
 
   if (!response.ok) {
     // Handle backend error format: { success: false, error: { code, message, details } }
@@ -244,17 +317,6 @@ const parseResponse = async (response) => {
     error.status = response.status;
     error.payload = payload;
     error.code = payload?.error?.code;
-    
-    // Extract Retry-After header for rate limiting (429)
-    if (response.status === 429) {
-      const retryAfter = response.headers.get('Retry-After');
-      if (retryAfter) {
-        error.retryAfter = parseInt(retryAfter, 10);
-        if (error.payload && typeof error.payload === 'object') {
-          error.payload.retryAfter = error.retryAfter;
-        }
-      }
-    }
     
     throw error;
   }
@@ -313,6 +375,14 @@ export const getModuleProgress = async (moduleId) => {
       }
 
       const data = await parseResponse(response);
+      
+      // Check if result is a rate-limited response (from parseResponse)
+      // Propagate it upward instead of throwing
+      if (data && typeof data === 'object' && data.type === 'RATE_LIMITED') {
+        console.warn('[progressService] getModuleProgress rate limited');
+        return data; // Return structured rate limit result
+      }
+      
       return data;
     } catch (error) {
       console.error('[progressService] getModuleProgress failed:', error);
@@ -491,6 +561,13 @@ export const updateLessonProgress = async (payload) => {
       }
 
       const data = await parseResponse(response);
+      
+      // Check if result is a rate-limited response (from parseResponse)
+      // Propagate it upward instead of throwing
+      if (data && typeof data === 'object' && data.type === 'RATE_LIMITED') {
+        console.warn('[progressService] updateLessonProgress rate limited');
+        return data; // Return structured rate limit result
+      }
       
       console.log('✅ [FRONTEND] SUCCESS - Response data:');
       console.log(JSON.stringify(data, null, 2));

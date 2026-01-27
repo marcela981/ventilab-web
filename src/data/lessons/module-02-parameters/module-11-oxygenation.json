@@ -1,0 +1,128 @@
+{
+    "id": "module-11-oxygenation",
+    "moduleId": "module-01-fundamentals",
+    "title": "Módulo 11: Estrategias de Oxigenación – PEEP y FiO2",
+    "description": "Dominar la oxigenación es vital en la UCI. En este módulo avanzado aprenderás a manipular la PEEP y la FiO2 para tratar la hipoxemia refractaria sin causar daño pulmonar (VILI) ni colapso cardiovascular. Analizaremos las tablas del estudio ARDSNet, la técnica de titulación por mejor distensibilidad y la peligrosa paradoja del transporte de oxígeno.",
+    "order": 11,
+    "estimatedTime": 95,
+    "difficulty": "advanced",
+    "bloomLevel": "evaluate",
+    "learningObjectives": [
+      "Diferenciar las intervenciones que mejoran la oxigenación (PEEP/FiO2/Pmean) de las que mejoran la ventilación (Volumen Minuto).",
+      "Explicar el concepto de 'Best PEEP' basándose en la mecánica pulmonar (Compliance) y no solo en la saturación.",
+      "Analizar el impacto hemodinámico de la PEEP elevada sobre el retorno venoso y el gasto cardíaco (Interacción Corazón-Pulmón).",
+      "Aplicar las tablas de ARDSNet (High vs Low PEEP) en escenarios simulados de SDRA.",
+      "Evaluar críticamente el uso de maniobras de reclutamiento a la luz de la evidencia reciente (Estudio ART)."
+    ],
+    "prerequisites": [
+      "module-02-ecuacion-movimiento",
+      "module-06-efectos-sistemicos"
+    ],
+    "sections": [
+      {
+        "id": "m11-context",
+        "order": 1,
+        "type": "theory",
+        "title": "1. Contexto: Las Perillas de la Vida",
+        "content": {
+          "markdown": "## Oxigenar vs Ventilar\nEs el error número uno del residente: ver a un paciente desaturado y subirle la frecuencia respiratoria. **¡Error!**\n\n* **Ventilar** es mover aire para sacar CO2. (Depende del Volumen Minuto).\n* **Oxigenar** es pasar moléculas de O2 a la sangre. (Depende de la Presión Media y la FiO2).\n\nPara arreglar la hipoxemia, necesitamos dos cosas:\n1.  **FiO2:** Aumentar la concentración de oxígeno (el combustible).\n2.  **PEEP:** Aumentar el área de superficie alveolar disponible (abrir la fábrica)."
+        }
+      },
+      {
+        "id": "m11-theory",
+        "order": 2,
+        "type": "theory",
+        "title": "2. Fundamentos: El Pulmón de Bebé",
+        "content": {
+          "markdown": "Gattinoni nos enseñó que en el SDRA severo, la parte del pulmón que funciona es pequeñísima (**Baby Lung**). El resto está lleno de agua o colapsado.\n\n### El Objetivo de la PEEP\nNo es 'curar' el pulmón, es mantener abierto lo que se pueda abrir (**Open Lung Concept**) para:\n1.  Mejorar la oxigenación (reclutamiento).\n2.  Evitar que el alveolo se abra y cierre 20 veces por minuto, lo cual causa inflamación (**Atelectrauma**).\n\n> **Advertencia:** La FiO2 > 60% por tiempo prolongado es tóxica. Tu meta es bajar la FiO2 usando la PEEP."
+        }
+      },
+      {
+        "id": "m11-hemodynamics",
+        "order": 3,
+        "type": "theory",
+        "title": "3. Dinámica: La Paradoja Hemodinámica",
+        "content": {
+          "markdown": "Aquí es donde mueren los pacientes si no estás atento.\n\nLa PEEP es presión positiva dentro del tórax. El corazón está dentro del tórax.\n\n**Secuencia del Desastre:**\n1.  Subes PEEP a 18 cmH2O.\n2.  El pulmón se expande y comprime la Vena Cava y el Ventrículo Derecho.\n3.  Llega menos sangre al corazón (**Precarga disminuida**).\n4.  El corazón bombea menos sangre (**Gasto Cardíaco cae**).\n5.  **Resultado:** El monitor muestra SatO2 98%, pero los tejidos se mueren de hipoxia porque no les llega flujo sanguíneo.\n\n> **Regla de Oro:** Al titular PEEP, mira siempre la Presión Arterial y la perfusión, no solo el oxímetro."
+        }
+      },
+      {
+        "id": "m11-strategies",
+        "order": 4,
+        "type": "theory",
+        "title": "4. Profundización: Tablas y Titulación",
+        "content": {
+          "markdown": "### ¿Cómo elegimos la PEEP?\n\n#### Método 1: Tablas ARDSNet (Protocolizado)\nEs seguro y estándar. \n* *Escenario:* Paciente con PaO2/FiO2 de 120 (SDRA Moderado).\n* *Acción:* Usas la tabla 'High PEEP'. Si estás con FiO2 60%, la tabla manda PEEP 14.\n\n#### Método 2: Best Compliance (Fisiológico)\nBuscas la PEEP donde el pulmón es más 'blando'.\n1.  Subes PEEP a 20. Mides Compliance.\n2.  Bajas a 18. Mides.\n3.  Bajas a 16. Mides.\n4.  Donde la Compliance sea más alta, ahí te quedas. Esa es la **Best PEEP**.\n\n### Lo que NO debes hacer (Estudio ART)\nNo hagas maniobras de reclutamiento agresivas (ej. 60 cmH2O). Rompen el pulmón y matan pacientes."
+        }
+      },
+      {
+        "id": "m11-simulation",
+        "order": 5,
+        "type": "interactive",
+        "title": "Simulación: Titulación de PEEP",
+        "content": {
+          "markdown": "### Caso Clínico Interactivo\nPaciente con Neumonía Viral Grave. VM en Modo Volumen. FiO2 80%, PEEP 8, SatO2 85%.\n\n**Paso 1:** Decides subir la PEEP para mejorar oxigenación.\n* Subes PEEP de 8 a 12.\n* **Resultado:** SatO2 sube a 92%. PA 110/70. Compliance sube de 25 a 30.\n\n**Paso 2:** Te animas y subes PEEP de 12 a 16.\n* **Resultado:** SatO2 sube a 96%. PA cae a 85/50. Compliance baja a 22.\n\n**Análisis:**\nCon PEEP 16, la saturación mejoró, PERO la compliance cayó (sobredistensión: el pulmón está tenso como una piedra) y la presión arterial colapsó. \n\n**Decisión Correcta:**\nRegresar a **PEEP 12**. Es la 'Best PEEP' para este paciente. Tolera la SatO2 92%."
+        }
+      },
+      {
+        "id": "m11-quiz",
+        "order": 6,
+        "type": "quiz",
+        "title": "Evaluación: PEEP y FiO2",
+        "questions": [
+          {
+            "id": "q1",
+            "type": "multiple-choice",
+            "question": "¿Cuál es la principal consecuencia hemodinámica adversa de aplicar niveles excesivos de PEEP, especialmente en pacientes hipovolémicos?",
+            "options": [
+              "Aumento de la postcarga del ventrículo izquierdo.",
+              "Disminución del retorno venoso y caída del gasto cardíaco.",
+              "Bradicardia refleja severa.",
+              "Aumento del flujo sanguíneo coronario."
+            ],
+            "correctAnswer": "Disminución del retorno venoso y caída del gasto cardíaco.",
+            "explanation": "El aumento de la presión intratorácica comprime las grandes venas (cava) y las cavidades cardíacas derechas, reduciendo el llenado del corazón.",
+            "difficulty": "intermediate"
+          },
+          {
+            "id": "q2",
+            "type": "multiple-choice",
+            "question": "Estás titulando la PEEP mediante el método de 'Mejor Compliance' (Best Compliance). Al subir la PEEP de 14 a 18, notas que la Compliance Estática disminuye. ¿Qué indica esto fisiológicamente?",
+            "options": [
+              "Que has reclutado más alveolos exitosamente.",
+              "Que el paciente necesita más sedación.",
+              "Que has sobrepasado el punto óptimo y estás causando sobredistensión alveolar.",
+              "Que hay fugas en el circuito."
+            ],
+            "correctAnswer": "Que has sobrepasado el punto óptimo y estás causando sobredistensión alveolar.",
+            "explanation": "Cuando la PEEP sobredistiende los alveolos sanos (Zona M), el pulmón se vuelve menos elástico (más rígido), por lo que la compliance cae. Es una señal de 'stop'.",
+            "difficulty": "advanced"
+          }
+        ]
+      }
+    ],
+    "resources": {
+      "references": [
+        {
+          "authors": "The ARDS Definition Task Force",
+          "year": 2012,
+          "title": "Acute Respiratory Distress Syndrome: The Berlin Definition",
+          "source": "JAMA. 2012;307(23):2526-2533",
+          "doi": "10.1001/jama.2012.5669"
+        },
+        {
+          "authors": "Cavalcanti AB, et al (ART Investigators)",
+          "year": 2017,
+          "title": "Effect of Lung Recruitment and Titrated PEEP vs Low PEEP on Mortality in Patients With Moderate to Severe ARDS",
+          "source": "JAMA. 2017;318(14):1335-1345",
+          "doi": "10.1001/jama.2017.14171"
+        }
+      ]
+    },
+    "metadata": {
+      "language": "es",
+      "version": "1.0.0",
+      "lastUpdated": "2026-01-24",
+      "source": "VentyLab Curated Content"
+    }
+  }

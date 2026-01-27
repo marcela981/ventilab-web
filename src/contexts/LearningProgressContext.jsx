@@ -85,6 +85,7 @@ const LearningProgressContext = createContext({
   syncStatus: 'idle',
   lastSyncError: null,
   loadingModules: new Set(),
+  isRateLimited: false, // Rate limiting state
 
   // Unified progress actions
   refetchSnapshot: async () => {},
@@ -148,6 +149,7 @@ export const LearningProgressProvider = ({ children }) => {
   // Normalized state by module
   const [progressByModule, setProgressByModule] = useState({});
   const [currentModuleId, setCurrentModuleId] = useState(null);
+  const [isRateLimited, setIsRateLimited] = useState(false); // Track rate limiting state
   const [currentLessonId, setCurrentLessonId] = useState(null);
   const [syncStatus, setSyncStatus] = useState('idle');
   const [lastSyncError, setLastSyncError] = useState(null);
@@ -510,6 +512,7 @@ export const LearningProgressProvider = ({ children }) => {
     setProgressByModule,
     setSyncStatus,
     setLastSyncError,
+    setIsRateLimited, // Pass rate limiting state setter
   });
 
   // Outbox reconciliation hook
@@ -1222,6 +1225,7 @@ export const LearningProgressProvider = ({ children }) => {
     syncStatus,
     lastSyncError,
     loadingModules,
+    isRateLimited, // Rate limiting state for UI
     loadModuleProgress,
     updateLessonProgress: updateLessonProgressAction,
     getLessonProgress,

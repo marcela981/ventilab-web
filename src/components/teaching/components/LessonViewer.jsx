@@ -240,6 +240,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     localProgress,
     isSaving,
     isCompleted,
+    isRateLimited, // Track rate limiting state
     showResumeAlert,
     dismissResumeAlert,
     saveProgress,
@@ -1116,6 +1117,32 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
         >
           <Alert onClose={handleCloseSnackbar} severity="success" variant="filled">
             {snackbarMessage}
+          </Alert>
+        </Snackbar>
+        
+        {/* Rate Limit Notification - Friendly message instead of error */}
+        <Snackbar
+          open={isRateLimited}
+          autoHideDuration={null} // Don't auto-hide - user should see it until rate limit expires
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          sx={{ mt: 8 }} // Margin top to avoid overlap with header
+        >
+          <Alert 
+            severity="info" 
+            variant="filled"
+            sx={{ 
+              backgroundColor: '#1976d2', // Blue color for info
+              '& .MuiAlert-icon': {
+                color: 'white',
+              },
+            }}
+          >
+            <Typography variant="body2" sx={{ color: 'white', fontWeight: 500 }}>
+              Estás progresando muy rápido. Por favor continúa un poco más despacio.
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.9)', display: 'block', mt: 0.5 }}>
+              Tu progreso está seguro y se guardará automáticamente en breve.
+            </Typography>
           </Alert>
         </Snackbar>
         

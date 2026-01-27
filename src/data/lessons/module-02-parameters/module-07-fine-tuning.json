@@ -1,0 +1,127 @@
+{
+    "id": "module-07-fine-tuning",
+    "moduleId": "module-01-fundamentals",
+    "title": "Módulo 07: La Sintonía Fina – Trigger, Rise Time y Ciclado",
+    "description": "En este módulo dominaremos los controles secundarios que determinan la comodidad y sincronía: el inicio (Trigger), la velocidad de entrega (Rise Time) y la finalización (Ciclado/ETS). Aprenderás a ajustar el ventilador a la patología del paciente (EPOC vs SDRA) para evitar asincronías.",
+    "order": 7,
+    "estimatedTime": 65,
+    "difficulty": "intermediate",
+    "bloomLevel": "analyze",
+    "learningObjectives": [
+      "Diferenciar entre Trigger por Presión y por Flujo, y sus implicaciones en el trabajo respiratorio (WOB).",
+      "Ajustar el Rise Time (Rampa) para corregir asincronías de flujo o 'hambre de aire'.",
+      "Configurar el Ciclado Espiratorio (ETS) adecuadamente según la constante de tiempo del paciente (Obstructivo vs Restrictivo).",
+      "Identificar en las gráficas ventilatorias los efectos de una mala configuración de sintonía fina."
+    ],
+    "prerequisites": [
+      "module-03-variables-fase",
+      "module-04-modos-ventilatorios"
+    ],
+    "sections": [
+      {
+        "id": "m7-context",
+        "order": 1,
+        "type": "theory",
+        "title": "1. Contexto: La Interfaz Paciente-Máquina",
+        "content": {
+          "markdown": "## ¿Por qué importa la Sintonía Fina?\n\nImagina conducir un coche. El **Modo Ventilatorio** decide la ruta, pero la **Sintonía Fina** es la suspensión y la suavidad del acelerador. Si fallas aquí, el viaje será una tortura.\n\n### El Triángulo de la Sintonía\n1. **Trigger (Disparo):** ¿Cuándo empieza?\n2. **Rise Time (Rampa):** ¿Qué tan rápido acelera?\n3. **Ciclado (ETS):** ¿Cuándo termina?\n\nLa mayoría de las veces que un paciente 'pelea' con el ventilador, no necesitas sedarlo más ni cambiar de modo: necesitas ajustar estos tres controles."
+        }
+      },
+      {
+        "id": "m7-trigger",
+        "order": 2,
+        "type": "theory",
+        "title": "2. Trigger: El Botón de Inicio",
+        "content": {
+          "markdown": "El Trigger es la sensibilidad del ventilador para detectar el esfuerzo del paciente.\n\n### Tipos de Trigger\n* **Trigger por Presión (P):** El paciente debe generar una presión negativa (ej. -2 cmH2O) cerrando válvulas. Es más 'duro' para el paciente.\n* **Trigger por Flujo (V):** El ventilador tiene un flujo base continuo. El paciente inhala y 'roba' parte de ese flujo. Es más sensible y rápido.\n\n> **Regla de Oro:** Siempre prefiere Trigger por Flujo (1 a 3 L/min) salvo que haya muchas fugas o autociclado.\n\n### Riesgos\n* **Trigger muy duro:** Aumenta el trabajo respiratorio (WOB).\n* **Trigger muy sensible:** Autociclado (el ventilador se dispara solo por fugas o latidos cardiacos)."
+        }
+      },
+      {
+        "id": "m7-risetime",
+        "order": 3,
+        "type": "theory",
+        "title": "3. Rise Time: El Acelerador",
+        "content": {
+          "markdown": "El Rise Time (o Rampa/Slope) controla qué tan rápido la válvula se abre para alcanzar la presión objetivo.\n\n### Ajuste Clínico\n* **Rampa Rápida (0.0 - 0.1s):** Para pacientes con **Hambre de Aire** (Acidosis, Drive alto) o **EPOC** (necesitan vencer resistencia inicial).\n* **Rampa Lenta (0.3 - 0.4s):** Para pacientes que requieren confort suave o tienen dolor.\n\n**Signo de Alarma:** Si ves una concavidad (muesca) en el inicio de la curva de presión, el paciente quiere el aire MÁS rápido. **¡Aumenta el Rise Time!**"
+        }
+      },
+      {
+        "id": "m7-cycling",
+        "order": 4,
+        "type": "theory",
+        "title": "4. Ciclado (ETS): El Botón de Stop",
+        "content": {
+          "markdown": "Crucial en **Presión Soporte (PSV)**. El ventilador termina la inspiración cuando el flujo del paciente cae a un % del flujo pico.\n\n### La Paradoja Fisiológica\n\n| Paciente | Fisiología | Ajuste de ETS (Ciclado) | Razón |\n| :--- | :--- | :--- | :--- |\n| **EPOC / Asma** | Alta resistencia, vaciado lento. | **Alto (40-50%)** | Cortar la inspiración rápido para dar tiempo a espirar y evitar Auto-PEEP. |\n| **SDRA / Fibrosis** | Pulmón rígido, llenado rápido. | **Bajo (5-15%)** | Alargar la inspiración para 'ganar' volumen antes de que el pulmón rebote. |"
+        }
+      },
+      {
+        "id": "m7-simulation",
+        "order": 5,
+        "type": "interactive",
+        "title": "Simulación: Ajuste de Controles",
+        "content": {
+          "markdown": "### Caso Clínico Interactivo\n\nPaciente de 65 años con **EPOC exacerbado** en ventilación no invasiva. FR 28 rpm. En la gráfica de flujo se observa que la espiración comienza, pero es interrumpida bruscamente por la siguiente inspiración, y el flujo no llega a cero.\n\n**Diagnóstico:** Atrapamiento aéreo por tiempo inspiratorio muy largo.\n\n**Tu misión:** Ajustar el Ciclado (ETS).\n* **Opción A:** Bajar ETS al 10%.\n* **Opción B:** Subir ETS al 45%.\n\n> *Pista: Necesitas que la inspiración termine ANTES.*"
+        }
+      },
+      {
+        "id": "m7-quiz",
+        "order": 6,
+        "type": "quiz",
+        "title": "Evaluación: Sintonía Fina",
+        "questions": [
+          {
+            "id": "q1",
+            "type": "multiple-choice",
+            "question": "¿Cuál es la consecuencia principal de configurar un Rise Time (Rampa) demasiado lento en un paciente con alto drive respiratorio?",
+            "options": [
+              "Autociclado",
+              "Asincronía de flujo (Flow Hunger) y aumento del WOB",
+              "Atelectrauma",
+              "Barotrauma inmediato"
+            ],
+            "correctAnswer": "Asincronía de flujo (Flow Hunger) y aumento del WOB",
+            "explanation": "Si la válvula abre lento pero el paciente pide aire rápido, el paciente 'chupará' de la válvula cerrada, deformando la curva de presión y sintiendo falta de aire.",
+            "difficulty": "intermediate"
+          },
+          {
+            "id": "q2",
+            "type": "multiple-choice",
+            "question": "En un paciente con EPOC severo en Presión Soporte, ¿cómo debes ajustar el Ciclado (ETS) para evitar la Auto-PEEP?",
+            "options": [
+              "Ajustarlo a un porcentaje bajo (ej. 10%) para llenar más el pulmón.",
+              "Ajustarlo a un porcentaje alto (ej. 50%) para acortar la inspiración.",
+              "El ciclado no afecta la Auto-PEEP.",
+              "Pasarlo a modo Controlado por Volumen inmediatamente."
+            ],
+            "correctAnswer": "Ajustarlo a un porcentaje alto (ej. 50%) para acortar la inspiración.",
+            "explanation": "El EPOC necesita tiempos espiratorios largos. Un ETS alto corta la inspiración precozmente, dejando más tiempo para vaciar el aire atrapado.",
+            "difficulty": "advanced"
+          }
+        ]
+      }
+    ],
+    "resources": {
+      "references": [
+        {
+          "authors": "Tobin MJ, Jubran A, Laghi F",
+          "year": 2020,
+          "title": "Patient-ventilator interaction",
+          "source": "Am J Respir Crit Care Med. 2001;163:1059-1063",
+          "doi": ""
+        },
+        {
+          "authors": "Kacmarek RM",
+          "year": 2011,
+          "title": "The mechanical ventilator: microprocessor-controlled mechanical ventilation",
+          "source": "Foundations of Respiratory Care",
+          "doi": ""
+        }
+      ]
+    },
+    "metadata": {
+      "language": "es",
+      "version": "1.0.0",
+      "lastUpdated": "2026-01-24",
+      "source": "VentyLab Curated Content"
+    }
+  }

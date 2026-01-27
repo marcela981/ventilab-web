@@ -39,6 +39,14 @@ export interface UpdateLessonProgressParams {
   totalSteps?: number; // Total number of steps, required by backend
 }
 
+/**
+ * Result type for updateLessonProgress
+ * Can be either a successful LessonProgress or a rate-limited result
+ */
+export type UpdateLessonProgressResult = 
+  | { success: true; data: LessonProgress }
+  | { success: false; rateLimited: true; retryAfter?: number };
+
 // ============================================
 // Curriculum Data Lookup (for validation only)
 // ============================================
@@ -67,7 +75,7 @@ function getModuleIdFromCurriculum(lessonId: string): string | null {
   // Pattern: "module-XX-*" -> "module-XX-*" (full module ID)
   // Pattern: anything with "module-" prefix
   const moduleMatch = lessonId.match(/^(module-\d+(?:-[a-z]+)*)/i);
-  if (moduleMatch) {
+  if (moduleMatch && moduleMatch[1]) {
     return moduleMatch[1];
   }
 
@@ -185,11 +193,16 @@ function getAuthToken(): string | null {
  * - moduleId is NOT sent (backend derives it from lessonId or DB lookup)
  * - undefined values are NEVER sent
  * - completionPercentage OR currentStep/totalSteps is REQUIRED
+ * 
+ * SPECIAL HANDLING FOR HTTP 429 (Rate Limited):
+ * - Does NOT throw an error for 429 responses
+ * - Returns { success: false, rateLimited: true, retryAfter?: number }
+ * - This allows the caller to handle rate limiting gracefully without showing errors
  */
 export async function updateLessonProgress(
   lessonId: string,
   data: UpdateLessonProgressParams
-): Promise<LessonProgress> {
+): Promise<UpdateLessonProgressResult> {
   // ==========================================================================
   // STRICT VALIDATION - Prevent 400 errors from invalid payloads
   // ==========================================================================
@@ -273,8 +286,31 @@ export async function updateLessonProgress(
   const { res, data: responseData } = await http(`/progress/lesson/${lessonId}`, {
     method: 'PUT',
     body: JSON.stringify(payload),
-    authToken: token || undefined,
+    ...(token && { authToken: token }),
   });
+
+  // ==========================================================================
+  // SPECIAL HANDLING FOR HTTP 429 (Rate Limited)
+  // Do NOT treat 429 as a fatal error - return controlled result instead
+  // ==========================================================================
+  if (res.status === 429) {
+    // Extract retry-after header if available (in seconds)
+    const retryAfterHeader = res.headers.get('retry-after');
+    const retryAfter: number | undefined = retryAfterHeader ? parseInt(retryAfterHeader, 10) : undefined;
+    
+    console.warn('[progressService] Rate limited (429):', {
+      lessonId,
+      retryAfter,
+      message: responseData?.message || 'Too many requests',
+    });
+    
+    // Return rate-limited result instead of throwing
+    // Progress is NOT lost - it's saved locally and will retry automatically
+    const result: UpdateLessonProgressResult = retryAfter !== undefined
+      ? { success: false, rateLimited: true, retryAfter }
+      : { success: false, rateLimited: true };
+    return result;
+  }
 
   if (!res.ok) {
     const errorMessage = responseData?.message || responseData?.error || 'Error al actualizar progreso';
@@ -318,7 +354,11 @@ export async function updateLessonProgress(
     }));
   }
 
-  return responseData;
+  // Return successful result
+  return {
+    success: true,
+    data: responseData,
+  };
 }
 
 /**
@@ -331,7 +371,7 @@ export async function getLessonProgress(lessonId: string): Promise<LessonProgres
   try {
     const { res, data } = await http(`/progress/lesson/${lessonId}`, {
       method: 'GET',
-      authToken: token || undefined,
+      ...(token && { authToken: token }),
     });
 
     if (!res.ok) {
@@ -359,8 +399,8 @@ export async function getLessonProgress(lessonId: string): Promise<LessonProgres
         lastViewedSection: data.lastViewedSection || null,
         lastAccess: data.lastAccess ? new Date(data.lastAccess).toISOString() : null,
         updatedAt: data.updatedAt ? new Date(data.updatedAt).toISOString() : new Date().toISOString(),
-        currentStep: data.currentStep || undefined, // Current step from backend (1-based)
-        totalSteps: data.totalSteps || undefined, // Total steps from backend
+        ...(typeof data.currentStep === 'number' && { currentStep: data.currentStep }), // Current step from backend (1-based)
+        ...(typeof data.totalSteps === 'number' && { totalSteps: data.totalSteps }), // Total steps from backend
       };
     }
 
@@ -381,7 +421,7 @@ export async function getModuleProgress(moduleId: string): Promise<ModuleProgres
 
   const { res, data } = await http(`/progress/module/${moduleId}`, {
     method: 'GET',
-    authToken: token || undefined,
+    ...(token && { authToken: token }),
   });
 
   if (!res.ok) {
@@ -414,7 +454,7 @@ export async function getModuleResumePoint(moduleId: string): Promise<ModuleResu
   try {
     const { res, data } = await http(`/modules/${moduleId}/resume`, {
       method: 'GET',
-      authToken: token || undefined,
+      ...(token && { authToken: token }),
     });
 
     if (!res.ok) {
@@ -451,7 +491,7 @@ export async function getUserOverview(): Promise<UserOverview> {
   
   const { res, data } = await http('/progress/overview', {
     method: 'GET',
-    authToken: token || undefined,
+    ...(token && { authToken: token }),
   });
 
   if (!res.ok) {
@@ -511,7 +551,7 @@ export async function progressFetcher(path: string): Promise<any> {
   
   const { res, data } = await http(path, {
     method: 'GET',
-    authToken: token || undefined,
+    ...(token && { authToken: token }),
   });
 
   if (!res.ok) {

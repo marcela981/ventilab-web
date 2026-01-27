@@ -116,6 +116,16 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES, hasRetried401
   try {
     const response = await fetch(url, options);
     
+    // ==========================================================================
+    // SPECIAL HANDLING FOR HTTP 429 (Rate Limited)
+    // NEVER retry on 429 - return response immediately to allow graceful handling
+    // Retrying on 429 would amplify the rate limit problem
+    // ==========================================================================
+    if (response.status === 429) {
+      console.warn('[httpClient] Rate limited (429), not retrying');
+      return response; // Return immediately, don't retry
+    }
+
     // Si es un error 401 y no hemos intentado refrescar el token
     if (response.status === 401 && !hasRetried401) {
       const tokenRefreshed = await handleUnauthorized();
@@ -132,7 +142,7 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES, hasRetried401
       throw new Error('No autenticado');
     }
 
-    // Si es un error 5xx, intentar retry
+    // Si es un error 5xx, intentar retry (but NEVER retry on 429)
     if (response.status >= 500 && retries > 0) {
       await delay(RETRY_DELAY);
       return fetchWithRetry(url, options, retries - 1, hasRetried401);
@@ -232,6 +242,27 @@ async function request(endpoint, options = {}) {
       data = await response.json();
     } else {
       data = await response.text();
+    }
+
+    // ==========================================================================
+    // SPECIAL HANDLING FOR HTTP 429 (Rate Limited)
+    // Do NOT throw an error for 429 - return structured result instead
+    // ==========================================================================
+    if (response.status === 429) {
+      const retryAfterHeader = response.headers.get('Retry-After');
+      const retryAfter = retryAfterHeader ? parseInt(retryAfterHeader, 10) : undefined;
+      
+      console.warn('[httpClient] Rate limited (429):', { retryAfter });
+      
+      // Return structured result instead of throwing
+      // This prevents infinite retry loops and allows graceful handling
+      return {
+        ok: false,
+        status: 429,
+        type: 'RATE_LIMITED',
+        retryAfter,
+        payload: data,
+      };
     }
 
     // Si la respuesta no es exitosa, lanzar error

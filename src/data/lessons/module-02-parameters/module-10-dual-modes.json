@@ -1,0 +1,119 @@
+{
+    "id": "module-10-dual-modes",
+    "moduleId": "module-01-fundamentals",
+    "title": "Módulo 10: Modos Duales – PRVC y Volumen Garantizado",
+    "description": "Adéntrate en la ventilación inteligente. Los modos duales (PRVC, VC+, Autoflow) son el estándar moderno en muchas UCIs. Aprende cómo el ventilador ajusta automáticamente la presión respiración a respiración para garantizar un volumen objetivo, y descubre por qué esta 'inteligencia' puede fallar catastróficamente en pacientes con alto drive respiratorio o fugas.",
+    "order": 10,
+    "estimatedTime": 75,
+    "difficulty": "advanced",
+    "bloomLevel": "evaluate",
+    "learningObjectives": [
+      "Definir el concepto de modo dual: control por presión con objetivo de volumen.",
+      "Explicar el algoritmo de retroalimentación (Feedback Loop) que utiliza el ventilador para ajustar la presión inspiratoria.",
+      "Identificar las ventajas fisiológicas del flujo desacelerado combinado con la garantía de volumen minuto.",
+      "Analizar el fenómeno de 'Hambre de Flujo' en modos duales y el círculo vicioso de reducción de soporte.",
+      "Reconocer las limitaciones de estos modos ante fugas importantes y cambios bruscos en la mecánica ventilatoria."
+    ],
+    "prerequisites": [
+      "module-04-modos-ventilatorios",
+      "module-02-ecuacion-movimiento"
+    ],
+    "sections": [
+      {
+        "id": "m10-context",
+        "order": 1,
+        "type": "theory",
+        "title": "1. Contexto: La Evolución Inteligente",
+        "content": {
+          "markdown": "## Lo mejor de dos mundos (teóricamente)\nHistóricamente, tenías que elegir:\n* **Volumen Control:** Volumen seguro, presiones variables (y picos altos).\n* **Presión Control:** Presiones seguras (y flujo cómodo), volumen variable (peligroso).\n\nLos ingenieros crearon los **Modos Duales** (PRVC, VC+, Autoflow) para automatizar esta decisión. Tú le dices a la máquina: *'Quiero 500ml (Volumen), pero entrégalos usando la mecánica de flujo desacelerado (Presión), y ajusta la fuerza tú solo según lo necesite el paciente'.*\n\nEs hoy el modo 'por defecto' al encender muchos ventiladores modernos."
+        }
+      },
+      {
+        "id": "m10-mechanism",
+        "order": 2,
+        "type": "theory",
+        "title": "2. Mecánica: El Algoritmo de Búsqueda",
+        "content": {
+          "markdown": "El 'cerebro' del modo dual funciona en un ciclo de prueba y error continuo.\n\n### Paso 1: La Medición\nEl ventilador entrega una respiración con una presión X. Al final, mide cuánto aire salió ($V_{exhalado}$).\n\n### Paso 2: La Comparación\nCompara el $V_{exhalado}$ con el $V_{objetivo}$ que programaste.\n\n### Paso 3: El Ajuste (Ley de Ohm)\n* Si **Faltó aire:** En la *siguiente* respiración, sube la presión (ej. +2 cmH2O).\n* Si **Sobró aire:** En la *siguiente* respiración, baja la presión (ej. -2 cmH2O).\n\n> **Importante:** El ventilador está limitado por la alarma de presión alta. Si necesita 40 cmH2O para meter el volumen pero el límite está en 35, se quedará en 35 y dará una alarma de 'Volumen Bajo'. La seguridad de presión tiene prioridad."
+        }
+      },
+      {
+        "id": "m10-risks",
+        "order": 3,
+        "type": "theory",
+        "title": "3. Profundización: Cuando la IA Falla",
+        "content": {
+          "markdown": "La inteligencia del ventilador es limitada y puede ser engañada.\n\n### El Círculo Vicioso del Hambre de Flujo\nUn paciente despierto con acidosis (quiere mucho aire) hace un esfuerzo muscular tremendo.\n1.  El paciente jala aire con fuerza $\\rightarrow$ El volumen aumenta (ej. 800ml vs 500ml objetivo).\n2.  El ventilador detecta exceso de volumen y decide **BAJAR** la presión de soporte.\n3.  El paciente siente que le quitan el aire y jala **MÁS FUERTE**.\n4.  El ventilador baja **MÁS** la presión.\n\n**Resultado:** Asincronía severa. En estos casos, es mejor pasar a un modo de Volumen puro (VCV) donde el flujo se pueda aumentar manualmente, o Presión Soporte con un Rise Time agresivo."
+        }
+      },
+      {
+        "id": "m10-simulation",
+        "order": 4,
+        "type": "interactive",
+        "title": "Simulación: Interpretando Tendencias",
+        "content": {
+          "markdown": "### Escenario de Monitorización\nEstás vigilando a un paciente con SDRA severo en modo PRVC (VC+). \n* **Objetivo:** VT 420 ml.\n* **Hora 08:00:** Presión Pico 28 cmH2O. VT 420 ml.\n* **Hora 10:00:** Presión Pico 34 cmH2O. VT 410 ml.\n\n**Análisis:**\nEl ventilador está luchando para meter el mismo volumen. Ha tenido que subir la presión progresivamente y ya casi no lo logra (está cerca del límite de seguridad). \n\n**Conclusión Fisiológica:**\nLa **Compliance** está cayendo (el pulmón se está poniendo más rígido) o la **Resistencia** está subiendo. El modo dual te avisa del empeoramiento a través del aumento de presión, no de la caída de volumen."
+        }
+      },
+      {
+        "id": "m10-quiz",
+        "order": 5,
+        "type": "quiz",
+        "title": "Evaluación: Modos Duales",
+        "questions": [
+          {
+            "id": "q1",
+            "type": "multiple-choice",
+            "question": "En un modo dual (ej. PRVC), ¿qué sucede automáticamente si la distensibilidad (compliance) pulmonar del paciente mejora significativamente?",
+            "options": [
+              "El volumen corriente aumenta peligrosamente.",
+              "El ventilador disminuye la presión inspiratoria progresivamente para mantener el mismo volumen objetivo.",
+              "El tiempo inspiratorio se acorta.",
+              "El modo cambia automáticamente a Presión Soporte."
+            ],
+            "correctAnswer": "El ventilador disminuye la presión inspiratoria progresivamente para mantener el mismo volumen objetivo.",
+            "explanation": "Es la gran ventaja del modo. Al mejorar la mecánica, se necesita menos presión para el mismo volumen, y el ventilador ajusta hacia abajo para evitar volutrauma.",
+            "difficulty": "intermediate"
+          },
+          {
+            "id": "q2",
+            "type": "multiple-choice",
+            "question": "¿Por qué no se recomienda usar modos duales (volumen garantizado) en presencia de fugas importantes (ej. fístula broncopleural o VNI con fugas)?",
+            "options": [
+              "Porque el ventilador interpreta la fuga como 'falta de volumen entregado' y aumenta la presión peligrosamente.",
+              "Porque el ventilador se apaga.",
+              "Porque la fuga impide el ciclado por flujo.",
+              "Porque reducen la FiO2."
+            ],
+            "correctAnswer": "Porque el ventilador interpreta la fuga como 'falta de volumen entregado' y aumenta la presión peligrosamente.",
+            "explanation": "El algoritmo se basa en el volumen exhalado. Si este se pierde por una fuga, el ventilador cree que no llenó el pulmón y sube la presión para compensar, lo que aumenta la fuga y el riesgo de barotrauma.",
+            "difficulty": "advanced"
+          }
+        ]
+      }
+    ],
+    "resources": {
+      "references": [
+        {
+          "authors": "Branson RD, Johannigman JA",
+          "year": 2004,
+          "title": "What is the evidence base for the newer ventilation modes?",
+          "source": "Respir Care. 2004;49(7):742-752",
+          "doi": ""
+        },
+        {
+          "authors": "Chatburn RL",
+          "year": 2007,
+          "title": "Classification of mechanical ventilation modes: update and proposal for implementation",
+          "source": "Respir Care. 2007;52(3):301-323",
+          "doi": ""
+        }
+      ]
+    },
+    "metadata": {
+      "language": "es",
+      "version": "1.0.0",
+      "lastUpdated": "2026-01-24",
+      "source": "VentyLab Curated Content"
+    }
+  }
