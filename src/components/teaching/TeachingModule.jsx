@@ -449,12 +449,53 @@ const TeachingModule = () => {
   
   /**
    * Handler para navegar entre lecciones
+   * CRITICAL: This validates the target lesson exists before navigation
    */
   const handleNavigateLesson = useCallback((targetLessonId, targetModuleId) => {
-    if (targetLessonId && targetModuleId) {
-      handleSectionClick(targetModuleId, targetLessonId);
+    // Guard: Both parameters required
+    if (!targetLessonId || !targetModuleId) {
+      console.error('[TeachingModule] ⚠️ handleNavigateLesson called with missing params:', {
+        targetLessonId,
+        targetModuleId,
+      });
+      return;
     }
-  }, [handleSectionClick]);
+
+    // Guard: Prevent navigating to the same lesson (would cause infinite loop)
+    if (targetLessonId === lessonIdFromQuery && targetModuleId === moduleIdFromQuery) {
+      console.warn('[TeachingModule] ⚠️ Attempted to navigate to the SAME lesson. Aborting to prevent loop.', {
+        currentLessonId: lessonIdFromQuery,
+        targetLessonId,
+      });
+      setAlertMessage('Ya estás en esta lección.');
+      setAlertOpen(true);
+      return;
+    }
+
+    // Validate: Target lesson must exist in the module
+    const targetModule = curriculumData.modules[targetModuleId];
+    if (!targetModule) {
+      console.error('[TeachingModule] ⚠️ Target module not found:', targetModuleId);
+      setAlertMessage(`Módulo "${targetModuleId}" no encontrado.`);
+      setAlertOpen(true);
+      return;
+    }
+
+    const lessonExists = targetModule.lessons?.some(l => l.id === targetLessonId);
+    if (!lessonExists) {
+      console.error('[TeachingModule] ⚠️ Target lesson not found in module:', {
+        targetLessonId,
+        targetModuleId,
+        availableLessons: targetModule.lessons?.map(l => l.id),
+      });
+      setAlertMessage(`Lección "${targetLessonId}" no encontrada en el módulo.`);
+      setAlertOpen(true);
+      return;
+    }
+
+    console.log('[TeachingModule] ✓ Navigating to lesson:', { targetLessonId, targetModuleId });
+    handleSectionClick(targetModuleId, targetLessonId);
+  }, [handleSectionClick, lessonIdFromQuery, moduleIdFromQuery]);
   
   /**
    * Handler para errores de carga de lección
