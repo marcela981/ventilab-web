@@ -262,7 +262,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   // ============================================================================
   // Scroll to top on mount or lesson change
   // ============================================================================
-  
+
   useEffect(() => {
     // Reset state when lesson changes
     setLessonCompleted(false);
@@ -271,9 +271,16 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     completionNotifiedRef.current = false;
     tutorFinalSuggestionsDispatchedRef.current = false;
 
-    // Track lesson change
+    // CRITICAL FIX: Reset currentPage to 0 when lessonId changes
+    // This ensures the user starts at the beginning of the new lesson,
+    // not at the page index they were at in the previous lesson
     if (previousLessonIdRef.current !== lessonId) {
+      console.log('[LessonViewer] Lesson changed from', previousLessonIdRef.current, 'to', lessonId, '- resetting to page 0');
+      setCurrentPage(0);
       previousLessonIdRef.current = lessonId;
+
+      // Scroll to top when navigating to new lesson
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [lessonId]);
 

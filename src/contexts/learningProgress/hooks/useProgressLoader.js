@@ -70,6 +70,9 @@ const hasExistingLessonProgress = (existingModuleData) => {
 /**
  * Custom hook to handle loading progress from the API
  */
+// Maximum number of rate-limit retries to prevent infinite loops
+const MAX_RATE_LIMIT_RETRIES = 3;
+
 export const useProgressLoader = ({
   session,
   waitForToken,
@@ -78,8 +81,10 @@ export const useProgressLoader = ({
   setLoadingModules,
   setSyncStatus,
   setLastSyncError,
+  setIsRateLimited,
 }) => {
   const pendingLoadRequestsRef = useRef(new Map()); // Map<moduleId, Promise> - for request deduplication
+  const rateLimitRetryCountRef = useRef(new Map()); // Map<moduleId, number> - track retry attempts
 
   const loadModuleProgress = useCallback(async (moduleId, options = {}) => {
     if (!moduleId) {
@@ -138,19 +143,32 @@ export const useProgressLoader = ({
 
         // Check if result is a rate-limited response
         if (data && typeof data === 'object' && data.type === 'RATE_LIMITED') {
-          console.warn('[useProgressLoader] Rate limited when loading module progress');
+          const currentRetryCount = rateLimitRetryCountRef.current.get(moduleId) || 0;
+          console.warn(`[useProgressLoader] Rate limited when loading module progress (retry ${currentRetryCount}/${MAX_RATE_LIMIT_RETRIES})`);
           setSyncStatus('rate_limited');
           setLastSyncError(null); // Don't show error, just rate limit state
-          setIsRateLimited(true); // Set rate limiting state
-          
-          // Schedule automatic retry after cooldown (default 5 seconds)
-          const retryAfter = data.retryAfter || 5;
-          setTimeout(() => {
-            console.log('[useProgressLoader] Retrying after rate limit cooldown...');
-            setIsRateLimited(false); // Clear rate limit state before retry
-            loadModuleProgress(moduleId, { force: true });
-          }, retryAfter * 1000);
-          
+          setIsRateLimited?.(true); // Set rate limiting state (defensive call)
+
+          // Only retry if we haven't exceeded max retries
+          if (currentRetryCount < MAX_RATE_LIMIT_RETRIES) {
+            // Schedule automatic retry after cooldown (default 5 seconds)
+            const retryAfter = data.retryAfter || 5;
+            rateLimitRetryCountRef.current.set(moduleId, currentRetryCount + 1);
+
+            setTimeout(() => {
+              console.log(`[useProgressLoader] Retrying after rate limit cooldown (attempt ${currentRetryCount + 1})...`);
+              setIsRateLimited?.(false); // Clear rate limit state before retry (defensive call)
+              loadModuleProgress(moduleId, { force: true });
+            }, retryAfter * 1000);
+          } else {
+            // Max retries exceeded - reset counter and give up
+            console.error('[useProgressLoader] Max rate limit retries exceeded, giving up');
+            rateLimitRetryCountRef.current.delete(moduleId);
+            setIsRateLimited?.(false);
+            setSyncStatus('error');
+            setLastSyncError('Demasiados intentos. Por favor, espera un momento antes de reintentar.');
+          }
+
           // Return existing data or empty structure instead of throwing
           return existingData || {
             learningProgress: null,
@@ -158,9 +176,12 @@ export const useProgressLoader = ({
             isAvailable: false,
           };
         }
+
+        // Successful load - reset retry counter for this module
+        rateLimitRetryCountRef.current.delete(moduleId);
         
         // Clear rate limit state on successful load
-        setIsRateLimited(false);
+        setIsRateLimited?.(false);
 
         // Safely handle undefined/null lessonProgress (module never started)
         // Pass moduleId for lessonId normalization
@@ -345,7 +366,7 @@ export const useProgressLoader = ({
     });
     
     return loadPromise;
-  }, [session, waitForToken, progressByModuleRef, setProgressByModule, setLoadingModules, setSyncStatus, setLastSyncError]);
+  }, [session, waitForToken, progressByModuleRef, setProgressByModule, setLoadingModules, setSyncStatus, setLastSyncError, setIsRateLimited]);
 
   return { loadModuleProgress };
 };

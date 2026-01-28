@@ -437,6 +437,15 @@ export const ProgressSource = {
       g.warn('moduleId not provided - request may fail if backend requires it', { lessonId });
     }
 
+    // 4. Check if lesson is already completed - prevent redundant updates
+    const localSnap = readLocalSnapshot();
+    const existingLesson = localSnap?.lessons?.find(l => l.lessonId === lessonId);
+    if (existingLesson && existingLesson.progress >= 1 && progress <= existingLesson.progress) {
+      g.info('SKIPPED: lesson already completed, no progress increase', { lessonId, currentProgress: existingLesson.progress, requestedProgress: progress });
+      g.end();
+      return;
+    }
+
     // ==========================================================================
     // EXECUTE THE UPSERT
     // ==========================================================================
@@ -451,10 +460,13 @@ export const ProgressSource = {
     // Intento directo a DB
     try {
       const { updateLessonProgress } = await import('../api/progressService');
+      // Calculate completionPercentage to send consistent data
+      const completionPercentage = Math.round(progress * 100);
       await updateLessonProgress({
         lessonId,
         moduleId, // Include moduleId in the request
         progress,
+        completionPercentage,
         completed: progress >= 1.0
       });
       g.info('synced to DB');

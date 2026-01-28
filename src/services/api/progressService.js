@@ -7,19 +7,30 @@
  *
  * BACKEND PAYLOAD CONTRACT (PUT /api/progress/lesson/:lessonId):
  * ============================================================
- * REQUIRED (at least ONE):
- *   - completionPercentage: number (0-100) - preferred format
- *   OR
- *   - currentStep + totalSteps: both numbers - legacy format
+ * REQUIRED (ALL THREE):
+ *   - currentStep: number (>= 0) - current step reached
+ *   - totalSteps: number (> 0) - total number of steps
+ *   - completionPercentage: number (0-100) - percentage completed
+ *
+ * VALIDATION RULES:
+ *   - currentStep <= totalSteps (enforced by backend)
+ *   - totalSteps must be > 0
+ *   - All three fields must be numbers
  *
  * OPTIONAL:
  *   - timeSpent: number (seconds) - defaults to 0
  *   - scrollPosition: number
  *   - lastViewedSection: string
- *   - completed: boolean - explicit completion flag (NEVER auto-inferred from 100%)
+ *   - completed: boolean - explicit completion flag
  *
  * NOT SENT (backend derives):
  *   - moduleId: Backend extracts from DB lookup or lessonId pattern
+ *
+ * AUTO-DERIVATION (by this service):
+ *   - If only progress (0-1) is provided:
+ *     - completionPercentage = Math.round(progress * 100)
+ *     - currentStep = completionPercentage
+ *     - totalSteps = 100
  */
 
 import http from './http';
@@ -493,19 +504,46 @@ export const updateLessonProgress = async (payload) => {
     try {
       const { lessonId } = payload;
 
-      // Backend requires at least completionPercentage (or legacy currentStep/totalSteps)
-      // Calculate completionPercentage from progress (0-1) if only progress is provided
+      // ==========================================================================
+      // DERIVE REQUIRED FIELDS - Backend requires: currentStep, totalSteps, completionPercentage
+      // ==========================================================================
+
+      // 1. Calculate completionPercentage from progress (0-1) if not provided
       let completionPercentage = payload.completionPercentage;
       if (completionPercentage === undefined && payload.progress !== undefined) {
         completionPercentage = Math.round(payload.progress * 100);
       }
+      // Default to 0 if still undefined (prevents 400 error)
+      if (completionPercentage === undefined) {
+        completionPercentage = 0;
+      }
+      // Ensure valid range [0, 100]
+      completionPercentage = Math.max(0, Math.min(100, completionPercentage));
+
+      // 2. Derive currentStep and totalSteps if not provided
+      // Backend REQUIRES these fields - using percentage-based approach:
+      // - totalSteps = 100 (treat progress as percentage points)
+      // - currentStep = completionPercentage (current percentage reached)
+      let currentStep = payload.currentStep;
+      let totalSteps = payload.totalSteps;
+
+      if (typeof currentStep !== 'number' || isNaN(currentStep) || currentStep < 0) {
+        // Derive from completionPercentage
+        currentStep = completionPercentage;
+      }
+      if (typeof totalSteps !== 'number' || isNaN(totalSteps) || totalSteps <= 0) {
+        // Use 100 as standard total (percentage-based)
+        totalSteps = 100;
+      }
+
+      // Ensure currentStep doesn't exceed totalSteps (backend validation)
+      currentStep = Math.min(Math.floor(currentStep), totalSteps);
 
       const body = {
-        // REQUIRED: completionPercentage (backend validates this)
-        ...(completionPercentage !== undefined && { completionPercentage }),
-        // REQUIRED: currentStep and totalSteps (backend now requires these)
-        ...(typeof payload.currentStep === 'number' && payload.currentStep > 0 && !isNaN(payload.currentStep) && { currentStep: Math.floor(payload.currentStep) }),
-        ...(typeof payload.totalSteps === 'number' && payload.totalSteps > 0 && !isNaN(payload.totalSteps) && { totalSteps: Math.floor(payload.totalSteps) }),
+        // REQUIRED: All three fields (backend validates these)
+        completionPercentage,
+        currentStep,
+        totalSteps,
         // OPTIONAL fields - only include if defined
         ...(payload.timeSpentDelta !== undefined && { timeSpentDelta: payload.timeSpentDelta }),
         ...(payload.timeSpent !== undefined && { timeSpent: payload.timeSpent }),

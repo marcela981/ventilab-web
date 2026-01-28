@@ -503,6 +503,7 @@ export const LearningProgressProvider = ({ children }) => {
     setLoadingModules,
     setSyncStatus,
     setLastSyncError,
+    setIsRateLimited,
   });
 
   // Progress updating hook
@@ -537,6 +538,11 @@ export const LearningProgressProvider = ({ children }) => {
     getFlashcardStats,
   } = useLegacyFeatures();
 
+  // Debounce refs to prevent cascading reloads on progress:updated events
+  const lastRefreshTimeRef = useRef(0);
+  const pendingRefreshTimerRef = useRef(null);
+  const REFRESH_DEBOUNCE_MS = 2000; // Minimum time between backend refreshes
+
   // Listen for progress:updated events (must be after loadModuleProgress is defined)
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -545,7 +551,7 @@ export const LearningProgressProvider = ({ children }) => {
 
     const handleProgressUpdated = (event) => {
       const { lessonId, moduleId, progress, completionPercentage } = event?.detail || {};
-      
+
       // If we have the lesson progress data, update progressByModule immediately
       // This ensures UI updates without waiting for backend refetch
       // Defensive: validate inputs before processing
@@ -639,17 +645,45 @@ export const LearningProgressProvider = ({ children }) => {
           hasCompletionPercentage: completionPercentage !== undefined,
         });
       }
-      
-      // Also refresh the unified snapshot in the background
-      loadSnapshot('progress-event');
 
-      // Also refresh the specific module's progress in progressByModule from backend
-      // This ensures we have the latest data from the server
-      if (moduleId && loadModuleProgress) {
-        console.log('[LearningProgressContext] Refreshing module progress for:', moduleId);
-        loadModuleProgress(moduleId, { force: true }).catch(err => {
-          console.warn('[LearningProgressContext] Failed to refresh module progress:', err);
-        });
+      // DEBOUNCE: Prevent cascading reloads by limiting backend refresh frequency
+      const now = Date.now();
+      const timeSinceLastRefresh = now - lastRefreshTimeRef.current;
+
+      // Clear any pending refresh timer
+      if (pendingRefreshTimerRef.current) {
+        clearTimeout(pendingRefreshTimerRef.current);
+        pendingRefreshTimerRef.current = null;
+      }
+
+      // Only refresh if enough time has passed since the last refresh
+      if (timeSinceLastRefresh >= REFRESH_DEBOUNCE_MS) {
+        lastRefreshTimeRef.current = now;
+
+        // Refresh the unified snapshot in the background
+        loadSnapshot('progress-event');
+
+        // Refresh the specific module's progress in progressByModule from backend
+        // Use preserveExistingProgress: true to avoid resetting completed lessons
+        if (moduleId && loadModuleProgress) {
+          console.log('[LearningProgressContext] Refreshing module progress for:', moduleId);
+          loadModuleProgress(moduleId, { force: false, preserveExistingProgress: true }).catch(err => {
+            console.warn('[LearningProgressContext] Failed to refresh module progress:', err);
+          });
+        }
+      } else {
+        // Schedule a debounced refresh
+        pendingRefreshTimerRef.current = setTimeout(() => {
+          lastRefreshTimeRef.current = Date.now();
+          loadSnapshot('progress-event-debounced');
+
+          if (moduleId && loadModuleProgress) {
+            console.log('[LearningProgressContext] Debounced refresh for module:', moduleId);
+            loadModuleProgress(moduleId, { force: false, preserveExistingProgress: true }).catch(err => {
+              console.warn('[LearningProgressContext] Failed to refresh module progress:', err);
+            });
+          }
+        }, REFRESH_DEBOUNCE_MS - timeSinceLastRefresh);
       }
     };
 
@@ -657,6 +691,10 @@ export const LearningProgressProvider = ({ children }) => {
 
     return () => {
       window.removeEventListener('progress:updated', handleProgressUpdated);
+      // Clean up pending timer on unmount
+      if (pendingRefreshTimerRef.current) {
+        clearTimeout(pendingRefreshTimerRef.current);
+      }
     };
   }, [loadSnapshot, loadModuleProgress]);
 
