@@ -15,3 +15,8 @@ export { LevelBadge as LevelBadgeComponent } from './LevelBadge';
 export { default as SearchBar } from './SearchBar';
 export { SearchBar as SearchBarComponent } from './SearchBar';
 
+// Diff & changelog utilities
+export { default as DiffViewer } from './DiffViewer';
+export { default as ChangeHistoryPanel } from './ChangeHistoryPanel';
+
+

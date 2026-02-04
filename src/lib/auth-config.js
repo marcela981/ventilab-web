@@ -1,32 +1,34 @@
 /**
  * =============================================================================
- * Authentication Configuration and Utilities for VentyLab
+ * Authentication Configuration for VentyLab
  * =============================================================================
- * Centralized configuration for authentication-related constants, role-based
- * redirects, and helper functions for NextAuth.js
+ * Centralized configuration for authentication-related constants and routes.
+ *
+ * NOTE: Role definitions and permission helpers are in ./roles.js
+ * This file only contains route configuration and auth error handling.
  * =============================================================================
  */
 
+import { ROLES, ROLE_DISPLAY_NAMES, getRoleDisplayName } from './roles';
+
+// Re-export role constants for backwards compatibility
+export { ROLES, ROLE_DISPLAY_NAMES, getRoleDisplayName };
+
 /**
- * User Roles in the VentyLab Platform
- * Must match the UserRole enum in Prisma schema
+ * @deprecated Use ROLES from ./roles.js instead
+ * Kept for backwards compatibility during migration
  */
-export const USER_ROLES = {
-  STUDENT: 'STUDENT',
-  INSTRUCTOR: 'INSTRUCTOR',
-  EXPERT: 'EXPERT',
-  ADMIN: 'ADMIN',
-};
+export const USER_ROLES = ROLES;
 
 /**
  * Role-based Dashboard Routes
  * Maps user roles to their respective dashboard pages
  */
 export const ROLE_DASHBOARDS = {
-  [USER_ROLES.STUDENT]: '/dashboard/student',
-  [USER_ROLES.INSTRUCTOR]: '/dashboard/instructor',
-  [USER_ROLES.EXPERT]: '/dashboard/expert',
-  [USER_ROLES.ADMIN]: '/dashboard/admin',
+  [ROLES.STUDENT]: '/dashboard/student',
+  [ROLES.TEACHER]: '/dashboard/instructor',
+  [ROLES.ADMIN]: '/dashboard/admin',
+  [ROLES.SUPERUSER]: '/dashboard/admin',
 };
 
 /**
@@ -47,10 +49,7 @@ export const PUBLIC_ROUTES = [
 /**
  * Auth Routes (redirect to dashboard if already authenticated)
  */
-export const AUTH_ROUTES = [
-  '/auth/login',
-  '/auth/signup',
-];
+export const AUTH_ROUTES = ['/auth/login', '/auth/signup'];
 
 /**
  * Protected Routes (require authentication)
@@ -61,52 +60,46 @@ export const PROTECTED_ROUTES = [
   '/flashcards',
   '/evaluation',
   '/settings',
+  '/panel',
 ];
 
 /**
  * Admin-only Routes
  */
-export const ADMIN_ROUTES = [
-  '/admin',
-  '/dashboard/admin',
-];
+export const ADMIN_ROUTES = ['/admin', '/dashboard/admin'];
 
 /**
  * Get dashboard URL based on user role
  *
- * @param {string} role - User role (STUDENT, INSTRUCTOR, EXPERT, ADMIN)
+ * @param {string} role - User role
  * @returns {string} Dashboard URL for the role
  *
  * @example
- * const url = getDashboardUrl('STUDENT'); // '/dashboard/student'
+ * const url = getDashboardUrl('student'); // '/dashboard/student'
  */
 export const getDashboardUrl = (role) => {
-  return ROLE_DASHBOARDS[role] || ROLE_DASHBOARDS[USER_ROLES.STUDENT];
+  const normalized = role?.toLowerCase();
+  return ROLE_DASHBOARDS[normalized] || ROLE_DASHBOARDS[ROLES.STUDENT];
 };
 
 /**
- * Check if user has permission to access a specific route
+ * Check if a path is a public route
  *
- * @param {string} path - Route path to check
- * @param {string} userRole - User's role
- * @returns {boolean} True if user can access the route
- *
- * @example
- * const canAccess = canAccessRoute('/admin', 'STUDENT'); // false
+ * @param {string} path - Route path
+ * @returns {boolean}
  */
-export const canAccessRoute = (path, userRole) => {
-  // Public routes are accessible to everyone
-  if (PUBLIC_ROUTES.includes(path)) {
-    return true;
-  }
+export const isPublicRoute = (path) => {
+  return PUBLIC_ROUTES.includes(path);
+};
 
-  // Admin routes require ADMIN role
-  if (ADMIN_ROUTES.some((route) => path.startsWith(route))) {
-    return userRole === USER_ROLES.ADMIN;
-  }
-
-  // All other protected routes are accessible to authenticated users
-  return !!userRole;
+/**
+ * Check if a path is an auth route (login/signup)
+ *
+ * @param {string} path - Route path
+ * @returns {boolean}
+ */
+export const isAuthRoute = (path) => {
+  return AUTH_ROUTES.includes(path);
 };
 
 /**
@@ -115,10 +108,6 @@ export const canAccessRoute = (path, userRole) => {
  * @param {string} role - User role
  * @param {string} callbackUrl - Optional callback URL from login
  * @returns {string} URL to redirect to
- *
- * @example
- * const url = getPostLoginRedirect('STUDENT', '/teaching/module-1');
- * // Returns: '/teaching/module-1'
  */
 export const getPostLoginRedirect = (role, callbackUrl = null) => {
   // If there's a callback URL and it's not an auth page, use it
@@ -146,8 +135,7 @@ export const AUTH_ERROR_MESSAGES = {
   EmailSignin: 'Error al enviar email de inicio de sesión.',
   CredentialsSignin: 'Email o contraseña incorrectos. Verifica tus datos.',
   SessionRequired: 'Debes iniciar sesión para acceder a esta página.',
-  AccountDeactivated:
-    'Tu cuenta ha sido desactivada. Contacta al administrador.',
+  AccountDeactivated: 'Tu cuenta ha sido desactivada. Contacta al administrador.',
   SignInError: 'Error al iniciar sesión. Por favor intenta nuevamente.',
   Default: 'Ocurrió un error. Por favor intenta nuevamente.',
 };
@@ -157,36 +145,9 @@ export const AUTH_ERROR_MESSAGES = {
  *
  * @param {string} error - NextAuth error code
  * @returns {string} User-friendly error message in Spanish
- *
- * @example
- * const message = getAuthErrorMessage('CredentialsSignin');
- * // 'Email o contraseña incorrectos. Verifica tus datos.'
  */
 export const getAuthErrorMessage = (error) => {
   return AUTH_ERROR_MESSAGES[error] || AUTH_ERROR_MESSAGES.Default;
-};
-
-/**
- * Role Display Names (for UI)
- */
-export const ROLE_DISPLAY_NAMES = {
-  [USER_ROLES.STUDENT]: 'Estudiante',
-  [USER_ROLES.INSTRUCTOR]: 'Instructor',
-  [USER_ROLES.EXPERT]: 'Experto Médico',
-  [USER_ROLES.ADMIN]: 'Administrador',
-};
-
-/**
- * Get display name for a role
- *
- * @param {string} role - User role
- * @returns {string} Display name in Spanish
- *
- * @example
- * const name = getRoleDisplayName('STUDENT'); // 'Estudiante'
- */
-export const getRoleDisplayName = (role) => {
-  return ROLE_DISPLAY_NAMES[role] || 'Usuario';
 };
 
 /**
@@ -197,50 +158,20 @@ export const SESSION_CONFIG = {
   updateAge: 24 * 60 * 60, // Update every 24 hours
 };
 
-/**
- * Check if user role is admin
- *
- * @param {string} role - User role
- * @returns {boolean} True if user is admin
- */
-export const isAdmin = (role) => {
-  return role === USER_ROLES.ADMIN;
-};
-
-/**
- * Check if user role is instructor or higher
- *
- * @param {string} role - User role
- * @returns {boolean} True if user is instructor, expert, or admin
- */
-export const isInstructorOrAbove = (role) => {
-  return [USER_ROLES.INSTRUCTOR, USER_ROLES.EXPERT, USER_ROLES.ADMIN].includes(role);
-};
-
-/**
- * Check if user role is expert or admin
- *
- * @param {string} role - User role
- * @returns {boolean} True if user is expert or admin
- */
-export const isExpertOrAdmin = (role) => {
-  return [USER_ROLES.EXPERT, USER_ROLES.ADMIN].includes(role);
-};
-
 export default {
+  ROLES,
   USER_ROLES,
   ROLE_DASHBOARDS,
+  ROLE_DISPLAY_NAMES,
   PUBLIC_ROUTES,
   AUTH_ROUTES,
   PROTECTED_ROUTES,
   ADMIN_ROUTES,
   getDashboardUrl,
-  canAccessRoute,
+  isPublicRoute,
+  isAuthRoute,
   getPostLoginRedirect,
   getAuthErrorMessage,
   getRoleDisplayName,
-  isAdmin,
-  isInstructorOrAbove,
-  isExpertOrAdmin,
   SESSION_CONFIG,
 };

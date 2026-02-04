@@ -2,15 +2,15 @@
  * =============================================================================
  * ProtectedRoute Component for VentyLab
  * =============================================================================
- * Higher-order component that wraps pages/components to protect them based
- * on authentication status and user roles.
+ * Higher-order component that protects pages/components based on
+ * authentication status and user roles.
  *
  * Features:
  * - Authentication-based protection
- * - Role-based access control
+ * - Role-based access control with hierarchy support
+ * - superuser automatically satisfies admin/teacher requirements
  * - Automatic redirects for unauthorized access
- * - Loading states
- * - Query parameter preservation
+ * - Loading states with customizable fallback
  * =============================================================================
  */
 
@@ -19,9 +19,10 @@ import { useRouter } from 'next/router';
 import PropTypes from 'prop-types';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { useAuth } from '@/hooks/useAuth';
+import { ROLES } from '@/lib/roles';
 
 /**
- * Loading fallback component
+ * Default loading fallback component
  */
 const DefaultLoadingFallback = () => (
   <Box
@@ -47,15 +48,15 @@ const DefaultLoadingFallback = () => (
  * Protects routes based on authentication and roles. Automatically redirects
  * unauthorized users to appropriate pages.
  *
- * @param {Object} props - Component props
+ * @param {Object} props
  * @param {React.ReactNode} props.children - Child components to render if authorized
- * @param {string|string[]} props.requiredRole - Required role(s) to access (optional)
+ * @param {string|string[]} props.requiredRole - Required role(s) to access
  * @param {boolean} props.requireAuth - Whether authentication is required (default: true)
- * @param {string} props.redirectTo - URL to redirect if not authenticated (default: '/auth/login')
- * @param {React.ReactNode} props.fallback - Custom loading component (optional)
- * @param {boolean} props.preserveQuery - Preserve query params in redirect (default: true)
- * @param {Function} props.onAccessDenied - Callback when access is denied (optional)
- * @param {Function} props.onAccessGranted - Callback when access is granted (optional)
+ * @param {string} props.redirectTo - URL to redirect if not authenticated
+ * @param {React.ReactNode} props.fallback - Custom loading component
+ * @param {boolean} props.preserveQuery - Preserve query params in redirect
+ * @param {Function} props.onAccessDenied - Callback when access is denied
+ * @param {Function} props.onAccessGranted - Callback when access is granted
  *
  * @example
  * // Require authentication only
@@ -64,25 +65,15 @@ const DefaultLoadingFallback = () => (
  * </ProtectedRoute>
  *
  * @example
- * // Require specific role
- * <ProtectedRoute requiredRole="ADMIN">
+ * // Require admin role (superuser also passes)
+ * <ProtectedRoute requiredRole="admin">
  *   <AdminPanel />
  * </ProtectedRoute>
  *
  * @example
- * // Require one of multiple roles
- * <ProtectedRoute requiredRole={['INSTRUCTOR', 'ADMIN']}>
+ * // Require teacher or admin (superuser also passes)
+ * <ProtectedRoute requiredRole={['teacher', 'admin']}>
  *   <ContentManager />
- * </ProtectedRoute>
- *
- * @example
- * // Custom loading and redirect
- * <ProtectedRoute
- *   fallback={<CustomLoader />}
- *   redirectTo="/login"
- *   preserveQuery={false}
- * >
- *   <Dashboard />
  * </ProtectedRoute>
  */
 export function ProtectedRoute({
@@ -96,41 +87,35 @@ export function ProtectedRoute({
   onAccessGranted = null,
 }) {
   const router = useRouter();
-  const { isAuthenticated, isLoading, hasRole, hasAnyRole, role, user } = useAuth();
+  const { isAuthenticated, isLoading, role, user, canAccess } = useAuth();
 
-  /**
-   * Check if user has required permissions
-   */
   useEffect(() => {
     // Wait for auth to load
     if (isLoading) return;
 
-    // If authentication is required but user is not authenticated
+    // Not authenticated but auth is required
     if (requireAuth && !isAuthenticated) {
       console.warn('[ProtectedRoute] Access denied: User not authenticated');
 
-      // Execute callback
       if (typeof onAccessDenied === 'function') {
         onAccessDenied({ reason: 'not_authenticated' });
       }
 
-      // Build redirect URL
+      // Build redirect URL with callback
       let redirectUrl = redirectTo;
       if (preserveQuery) {
         const callbackUrl = encodeURIComponent(router.asPath);
         redirectUrl = `${redirectTo}?callbackUrl=${callbackUrl}`;
       }
 
-      // Redirect to login
       router.replace(redirectUrl);
       return;
     }
 
-    // If specific role(s) are required
+    // Role check required
     if (requiredRole && isAuthenticated) {
-      const hasPermission = Array.isArray(requiredRole)
-        ? hasAnyRole(requiredRole)
-        : hasRole(requiredRole);
+      // canAccess handles role hierarchy (superuser > admin > teacher > student)
+      const hasPermission = canAccess(requiredRole);
 
       if (!hasPermission) {
         console.warn('[ProtectedRoute] Access denied: Insufficient permissions', {
@@ -138,7 +123,6 @@ export function ProtectedRoute({
           requiredRole,
         });
 
-        // Execute callback
         if (typeof onAccessDenied === 'function') {
           onAccessDenied({
             reason: 'insufficient_permissions',
@@ -147,7 +131,7 @@ export function ProtectedRoute({
           });
         }
 
-        // Redirect to access denied page
+        // Redirect to access denied page with reason
         const reason = Array.isArray(requiredRole)
           ? `Se requiere uno de estos roles: ${requiredRole.join(', ')}`
           : `Se requiere el rol: ${requiredRole}`;
@@ -160,10 +144,9 @@ export function ProtectedRoute({
     if (!isLoading && isAuthenticated) {
       console.log('[ProtectedRoute] Access granted', {
         user: user?.email,
-        role: role,
+        role,
       });
 
-      // Execute callback
       if (typeof onAccessGranted === 'function') {
         onAccessGranted({ user, role });
       }
@@ -176,10 +159,9 @@ export function ProtectedRoute({
     router,
     redirectTo,
     preserveQuery,
-    hasRole,
-    hasAnyRole,
     role,
     user,
+    canAccess,
     onAccessDenied,
     onAccessGranted,
   ]);
@@ -189,23 +171,17 @@ export function ProtectedRoute({
     return fallback || <DefaultLoadingFallback />;
   }
 
-  // If not authenticated and auth is required, don't render (redirect will happen)
+  // Not authenticated - show loading while redirecting
   if (requireAuth && !isAuthenticated) {
     return fallback || <DefaultLoadingFallback />;
   }
 
-  // If role is required and user doesn't have it, don't render (redirect will happen)
-  if (requiredRole && isAuthenticated) {
-    const hasPermission = Array.isArray(requiredRole)
-      ? hasAnyRole(requiredRole)
-      : hasRole(requiredRole);
-
-    if (!hasPermission) {
-      return fallback || <DefaultLoadingFallback />;
-    }
+  // Role required but insufficient - show loading while redirecting
+  if (requiredRole && isAuthenticated && !canAccess(requiredRole)) {
+    return fallback || <DefaultLoadingFallback />;
   }
 
-  // All checks passed, render children
+  // All checks passed
   return <>{children}</>;
 }
 
@@ -232,5 +208,8 @@ ProtectedRoute.defaultProps = {
   onAccessDenied: null,
   onAccessGranted: null,
 };
+
+// Export ROLES for convenience when using ProtectedRoute
+export { ROLES };
 
 export default ProtectedRoute;
