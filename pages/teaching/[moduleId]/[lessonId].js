@@ -3,7 +3,8 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import { LearningProgressProvider } from '../../../src/contexts/LearningProgressContext';
-import LessonViewer from '../../../src/components/teaching/LessonViewer';
+// Use the canonical LessonViewer via adapter (same one used by TeachingModule)
+import LessonViewerRouteAdapter from '../../../src/features/teaching/pages/LessonViewerRouteAdapter';
 
 export default function LessonPage() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function LessonPage() {
 
   return (
     <LearningProgressProvider>
-      <LessonViewer
+      <LessonViewerRouteAdapter
         moduleId={moduleId}
         lessonId={lessonId}
         onClose={handleClose}

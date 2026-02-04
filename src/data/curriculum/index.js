@@ -43,9 +43,9 @@ export function getAllModules() {
   // These modules are kept for backward compatibility but shouldn't be counted in totals
   // Based on curriculum structure analysis:
   // - 'respiratory-anatomy': duplicate/compatibility wrapper (content is in module-01-fundamentals)
-  // - 'respiratory-physiology': duplicate/compatibility (content overlaps with module-01-fundamentals)
   // Keep only unique modules that represent actual distinct content
-  const excludedIds = ['respiratory-anatomy', 'respiratory-physiology']; // Modules to exclude (duplicates/compatibility)
+  // Note: respiratory-physiology is now in prerequisitos level, so it should be included
+  const excludedIds = ['respiratory-anatomy']; // Modules to exclude (duplicates/compatibility)
   
   const uniqueModules = baseModules.filter(module => {
     // Exclude duplicates/compatibility modules
@@ -72,7 +72,7 @@ export function getAllModules() {
   // For data-driven strategy: modules.generated is completely ignored (allModules = normalizedBaseModules)
   
   // Sort by level and order
-  const levelOrder = { beginner: 1, intermediate: 2, advanced: 3 };
+  const levelOrder = { prerequisitos: 0, beginner: 1, intermediate: 2, advanced: 3 };
   allModules.sort((a, b) => {
     const levelDiff = (levelOrder[a.level] || 99) - (levelOrder[b.level] || 99);
     if (levelDiff !== 0) return levelDiff;
@@ -300,30 +300,45 @@ export function getLevelProgress(completedLessons) {
     // Use filtered modules (excludes duplicates)
     const modulesInLevel = getModulesByLevel(level.id);
     
-    // Count completed modules: a module is completed if all its lessons are completed
-    let completedModules = 0;
+    // Calculate level progress as average of module progress values
+    // Formula: sum(moduleProgress) / totalModules
+    // This allows partial module progress to contribute proportionally
+    let moduleProgressSum = 0;
+    let completedModules = 0; // Count for display purposes only
     
     modulesInLevel.forEach(module => {
       if (!module.lessons || module.lessons.length === 0) {
+        // Modules without lessons contribute 0 to progress
+        moduleProgressSum += 0;
         return;
       }
       
-      // Check if all lessons in this module are completed
-      const allLessonsCompleted = module.lessons.every(lesson => 
+      // Calculate module progress: completedLessons / totalLessons
+      const totalLessons = module.lessons.length;
+      const completedLessons = module.lessons.filter(lesson => 
         completedLessonsSet.has(`${module.id}-${lesson.id}`)
-      );
+      ).length;
       
-      if (allLessonsCompleted) {
+      // Module progress value (0-1)
+      const moduleProgressValue = totalLessons > 0 ? (completedLessons / totalLessons) : 0;
+      
+      // Add to sum for level progress calculation
+      moduleProgressSum += moduleProgressValue;
+      
+      // Count completed modules (progress === 1) for display purposes
+      if (moduleProgressValue === 1) {
         completedModules++;
       }
     });
     
+    // Level progress = average of module progress values
+    const totalModules = modulesInLevel.length;
+    const levelProgress = totalModules > 0 ? (moduleProgressSum / totalModules) : 0;
+    
     progress[level.id] = {
-      total: modulesInLevel.length,
+      total: totalModules,
       completed: completedModules,
-      percentage: modulesInLevel.length > 0 
-        ? (completedModules / modulesInLevel.length) * 100 
-        : 0
+      percentage: Math.round(levelProgress * 100)
     };
   });
   

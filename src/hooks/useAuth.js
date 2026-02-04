@@ -3,66 +3,23 @@
  * useAuth Hook for VentyLab
  * =============================================================================
  * Custom React hook that manages authentication state and provides
- * easy-to-use functions for login, logout, registration, and authorization.
+ * authorization helpers. Uses centralized role definitions from lib/roles.js.
  *
- * This hook wraps the authService and provides:
- * - User authentication state management
- * - Automatic token verification on mount
- * - Role-based authorization helpers
- * - Permission-based authorization using the PERMISSIONS matrix
- * - Optimized callbacks with useCallback
- * - Loading and error states
- *
- * Usage Examples:
- * ---------------
+ * Key principles:
+ * - Trusts backend role data (no inference)
+ * - Uses centralized role helpers for consistency
+ * - superuser automatically satisfies admin/teacher checks
  *
  * @example
- * // Basic authentication check
- * const { user, isAuthenticated, isLoading } = useAuth();
+ * const { user, role, isAuthenticated, isTeacher, hasRole } = useAuth();
  *
- * if (isLoading) return <Spinner />;
- * if (!isAuthenticated) return <LoginPrompt />;
- * return <Dashboard user={user} />;
- *
- * @example
- * // Login functionality
- * const { login, error } = useAuth();
- *
- * const handleLogin = async (email, password) => {
- *   const success = await login(email, password);
- *   if (success) {
- *     router.push('/dashboard');
- *   }
- * };
- *
- * @example
- * // Role-based rendering
- * const { isAdmin, isTeacher, isStudent } = useAuth();
- *
- * if (isAdmin) return <AdminPanel />;
- * if (isTeacher) return <TeacherDashboard />;
- * return <StudentView />;
- *
- * @example
- * // Permission-based authorization
- * const { hasPermission } = useAuth();
- *
- * if (hasPermission('create_modules')) {
- *   return <CreateModuleButton />;
+ * if (isTeacher()) {
+ *   return <TeacherDashboard />;
  * }
- *
- * @example
- * // Role checking
- * const { isRole } = useAuth();
- *
- * if (isRole('TEACHER')) {
- *   // Show teacher-specific content
- * }
- *
  * =============================================================================
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import {
   login as authLogin,
@@ -73,30 +30,34 @@ import {
   getUserData,
 } from '@/services/authService';
 
-/**
- * User Roles Constants
- * Matches the backend USER_ROLES enum
- */
-const USER_ROLES = {
-  STUDENT: 'STUDENT',
-  TEACHER: 'TEACHER',
-  ADMIN: 'ADMIN',
-};
+// Import centralized role constants and helpers
+import {
+  ROLES,
+  hasRole as checkHasRole,
+  hasAnyRole as checkHasAnyRole,
+  isStudent as checkIsStudent,
+  isTeacher as checkIsTeacher,
+  isAdmin as checkIsAdmin,
+  isSuperuser as checkIsSuperuser,
+  isTeacherOrAbove,
+  isAdminOrAbove,
+  canAccessWithRoles,
+} from '@/lib/roles';
 
 /**
  * Permissions Matrix
- * Defines what each role can do in the application
- * This should match the backend PERMISSIONS constant
+ * Defines what each role can do in the application.
+ * superuser inherits all permissions.
  */
 const PERMISSIONS = {
-  STUDENT: [
+  [ROLES.STUDENT]: [
     'view_modules',
     'view_lessons',
     'complete_lessons',
     'view_own_progress',
     'update_own_profile',
   ],
-  TEACHER: [
+  [ROLES.TEACHER]: [
     'view_modules',
     'view_lessons',
     'complete_lessons',
@@ -111,7 +72,7 @@ const PERMISSIONS = {
     'view_all_progress',
     'generate_ai_content',
   ],
-  ADMIN: [
+  [ROLES.ADMIN]: [
     'view_modules',
     'view_lessons',
     'complete_lessons',
@@ -132,16 +93,40 @@ const PERMISSIONS = {
     'view_system_stats',
     'manage_system_config',
   ],
+  // superuser has all permissions
+  [ROLES.SUPERUSER]: [
+    'view_modules',
+    'view_lessons',
+    'complete_lessons',
+    'view_own_progress',
+    'update_own_profile',
+    'create_modules',
+    'edit_modules',
+    'delete_own_modules',
+    'create_lessons',
+    'edit_lessons',
+    'delete_own_lessons',
+    'view_all_progress',
+    'generate_ai_content',
+    'manage_users',
+    'change_user_roles',
+    'delete_any_module',
+    'delete_any_lesson',
+    'view_system_stats',
+    'manage_system_config',
+    'manage_superuser_settings',
+  ],
 };
 
 /**
  * Check if a role has a specific permission
  * @param {string} role - User role
  * @param {string} permission - Permission to check
- * @returns {boolean} True if role has permission
+ * @returns {boolean}
  */
 const roleHasPermission = (role, permission) => {
-  const rolePermissions = PERMISSIONS[role];
+  const normalizedRole = role?.toLowerCase();
+  const rolePermissions = PERMISSIONS[normalizedRole];
   if (!rolePermissions) return false;
   return rolePermissions.includes(permission);
 };
@@ -150,72 +135,44 @@ const roleHasPermission = (role, permission) => {
  * Custom hook for authentication and authorization
  *
  * @returns {Object} Authentication state and functions
- * @property {Object|null} user - Current user object with id, name, email, role
- * @property {boolean} isAuthenticated - True if user is logged in
- * @property {boolean} isLoading - True if checking authentication status
- * @property {Object|null} error - Error object if authentication fails
- * @property {boolean} isStudent - True if user role is STUDENT
- * @property {boolean} isTeacher - True if user role is TEACHER
- * @property {boolean} isAdmin - True if user role is ADMIN
- * @property {Function} login - Async function to login user
- * @property {Function} register - Async function to register new user
- * @property {Function} logout - Async function to logout user
- * @property {Function} isRole - Check if user has specific role
- * @property {Function} hasPermission - Check if user has specific permission
- * @property {Function} refreshUser - Manually refresh user data from server
  */
 export function useAuth() {
   // ============================================================================
   // State Management
   // ============================================================================
 
-  // Use NextAuth session
   const { data: session, status } = useSession();
-
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
+  const [localLoading, setLocalLoading] = useState(false);
 
-  // Derive loading state from NextAuth status
-  const isLoading = status === 'loading';
-
-  // Derived authentication state - check both session and user state
-  const isAuthenticated = !!session?.user || !!user;
-
-  // ============================================================================
-  // Role-based Computed Properties
-  // ============================================================================
+  // Derive loading state from NextAuth status + local operations
+  const isLoading = status === 'loading' || localLoading;
 
   // Use session user if available, fallback to local user state
   const currentUser = session?.user || user;
 
-  const isStudent = currentUser?.role === USER_ROLES.STUDENT;
-  const isTeacher = currentUser?.role === USER_ROLES.TEACHER;
-  const isAdmin = currentUser?.role === USER_ROLES.ADMIN;
+  // Derived authentication state
+  const isAuthenticated = !!currentUser;
+
+  // Get normalized role from user object (trust backend data)
+  const role = currentUser?.role?.toLowerCase() || null;
 
   // ============================================================================
   // Sync NextAuth session with local user state
   // ============================================================================
 
-  /**
-   * Sync user state with NextAuth session
-   * When session changes, update local user state
-   */
   useEffect(() => {
-    if (status === 'loading') {
-      // Session is still loading
-      return;
-    }
+    if (status === 'loading') return;
 
     if (status === 'authenticated' && session?.user) {
-      // Session is authenticated, update local user state
-      console.log('🔐 [useAuth] Session authenticated:', session.user);
+      console.log('[useAuth] Session authenticated:', session.user.email);
       setUser(session.user);
       setError(null);
     } else if (status === 'unauthenticated') {
-      // Session is not authenticated
-      console.log('🔓 [useAuth] Session unauthenticated');
-      
-      // Check if we have a custom auth token (for non-OAuth login)
+      console.log('[useAuth] Session unauthenticated');
+
+      // Check for custom auth token (non-OAuth login)
       if (checkAuthenticated()) {
         const cachedUser = getUserData();
         if (cachedUser) {
@@ -231,23 +188,8 @@ export function useAuth() {
   // Authentication Functions
   // ============================================================================
 
-  /**
-   * Login user with email and password
-   *
-   * @param {string} email - User's email
-   * @param {string} password - User's password
-   * @returns {Promise<boolean>} True if login successful, false otherwise
-   *
-   * @example
-   * const success = await login('user@example.com', 'password123');
-   * if (success) {
-   *   router.push('/dashboard');
-   * } else {
-   *   showError('Invalid credentials');
-   * }
-   */
   const login = useCallback(async (email, password) => {
-    setIsLoading(true);
+    setLocalLoading(true);
     setError(null);
 
     try {
@@ -264,34 +206,15 @@ export function useAuth() {
       }
     } catch (err) {
       console.error('[useAuth] Login error:', err);
-      setError({
-        message: 'Login failed',
-        details: [err.message],
-      });
+      setError({ message: 'Login failed', details: [err.message] });
       return false;
     } finally {
-      setIsLoading(false);
+      setLocalLoading(false);
     }
   }, []);
 
-  /**
-   * Register a new user account
-   *
-   * @param {string} name - User's full name
-   * @param {string} email - User's email
-   * @param {string} password - User's password
-   * @returns {Promise<boolean>} True if registration successful, false otherwise
-   *
-   * @example
-   * const success = await register('John Doe', 'john@example.com', 'pass123');
-   * if (success) {
-   *   router.push('/dashboard');
-   * } else {
-   *   showError('Registration failed');
-   * }
-   */
   const register = useCallback(async (name, email, password) => {
-    setIsLoading(true);
+    setLocalLoading(true);
     setError(null);
 
     try {
@@ -308,63 +231,34 @@ export function useAuth() {
       }
     } catch (err) {
       console.error('[useAuth] Registration error:', err);
-      setError({
-        message: 'Registration failed',
-        details: [err.message],
-      });
+      setError({ message: 'Registration failed', details: [err.message] });
       return false;
     } finally {
-      setIsLoading(false);
+      setLocalLoading(false);
     }
   }, []);
 
-  /**
-   * Logout the current user
-   * Clears user state and removes token from storage
-   * Works with both NextAuth sessions and custom auth tokens
-   *
-   * @returns {Promise<boolean>} True if logout successful
-   *
-   * @example
-   * await logout();
-   * router.push('/login');
-   */
   const logout = useCallback(async () => {
     try {
-      // Clear local state immediately
       setUser(null);
       setError(null);
 
-      // If using NextAuth session, sign out
       if (session) {
         await signOut({ redirect: false });
       }
-      
-      // Also clear any custom auth tokens (for non-OAuth login)
+
       await authLogout();
-      
       return true;
     } catch (err) {
       console.error('[useAuth] Logout error:', err);
-      // Even if logout fails, clear local state
       setUser(null);
       setError(null);
       return false;
     }
   }, [session]);
 
-  /**
-   * Manually refresh user data from the server
-   * Useful after profile updates or role changes
-   *
-   * @returns {Promise<boolean>} True if refresh successful
-   *
-   * @example
-   * await updateProfile({ name: 'New Name' });
-   * await refreshUser(); // Fetch updated data
-   */
   const refreshUser = useCallback(async () => {
-    setIsLoading(true);
+    setLocalLoading(true);
     setError(null);
 
     try {
@@ -380,162 +274,179 @@ export function useAuth() {
       }
     } catch (err) {
       console.error('[useAuth] Refresh error:', err);
-      setError({
-        message: 'Failed to refresh user data',
-        details: [err.message],
-      });
+      setError({ message: 'Failed to refresh user data', details: [err.message] });
       return false;
     } finally {
-      setIsLoading(false);
+      setLocalLoading(false);
     }
   }, []);
 
   // ============================================================================
-  // Authorization Helper Functions
+  // Role Helper Functions (use centralized helpers)
   // ============================================================================
 
   /**
    * Check if user has a specific role
-   *
-   * @param {string} role - Role to check (STUDENT, TEACHER, ADMIN)
-   * @returns {boolean} True if user has the specified role
-   *
-   * @example
-   * if (isRole('ADMIN')) {
-   *   // Show admin-only content
-   * }
+   * @param {string} targetRole - Role to check
+   * @returns {boolean}
    */
-  const isRole = useCallback(
-    (role) => {
-      if (!isAuthenticated || !currentUser) return false;
-      return currentUser.role === role;
+  const hasRole = useCallback(
+    (targetRole) => {
+      if (!isAuthenticated) return false;
+      return checkHasRole(role, targetRole);
     },
-    [isAuthenticated, currentUser]
-  );
-
-  /**
-   * Check if user has a specific permission
-   * Consults the PERMISSIONS matrix to determine access
-   *
-   * @param {string} permission - Permission to check (e.g., 'create_modules')
-   * @returns {boolean} True if user's role has the specified permission
-   *
-   * @example
-   * if (hasPermission('create_modules')) {
-   *   return <CreateModuleButton />;
-   * }
-   *
-   * @example
-   * if (hasPermission('manage_users')) {
-   *   return <UserManagementPanel />;
-   * }
-   */
-  const hasPermission = useCallback(
-    (permission) => {
-      if (!isAuthenticated || !currentUser?.role) return false;
-      return roleHasPermission(currentUser.role, permission);
-    },
-    [isAuthenticated, currentUser]
+    [isAuthenticated, role]
   );
 
   /**
    * Check if user has any of the specified roles
-   *
-   * @param {string[]} roles - Array of roles to check
-   * @returns {boolean} True if user has at least one of the specified roles
-   *
-   * @example
-   * if (hasAnyRole(['TEACHER', 'ADMIN'])) {
-   *   return <InstructorContent />;
-   * }
+   * @param {string[]} roles - Roles to check
+   * @returns {boolean}
    */
   const hasAnyRole = useCallback(
     (roles) => {
-      if (!isAuthenticated || !currentUser?.role) return false;
-      if (!Array.isArray(roles)) {
-        console.warn('[useAuth] hasAnyRole expects an array of roles');
-        return false;
-      }
-      return roles.includes(currentUser.role);
+      if (!isAuthenticated) return false;
+      return checkHasAnyRole(role, roles);
     },
-    [isAuthenticated, currentUser]
+    [isAuthenticated, role]
+  );
+
+  /**
+   * Check if user is a student
+   * @returns {boolean}
+   */
+  const isStudent = useCallback(() => {
+    return checkIsStudent(role);
+  }, [role]);
+
+  /**
+   * Check if user is a teacher (or higher: admin, superuser)
+   * @returns {boolean}
+   */
+  const isTeacher = useCallback(() => {
+    return checkIsTeacher(role);
+  }, [role]);
+
+  /**
+   * Check if user is an admin (or superuser)
+   * @returns {boolean}
+   */
+  const isAdmin = useCallback(() => {
+    return checkIsAdmin(role);
+  }, [role]);
+
+  /**
+   * Check if user is a superuser
+   * @returns {boolean}
+   */
+  const isSuperuser = useCallback(() => {
+    return checkIsSuperuser(role);
+  }, [role]);
+
+  /**
+   * Check if user can access a route requiring specific roles
+   * Accounts for role hierarchy (superuser > admin > teacher > student)
+   * @param {string|string[]} requiredRoles - Required roles
+   * @returns {boolean}
+   */
+  const canAccess = useCallback(
+    (requiredRoles) => {
+      if (!isAuthenticated) return false;
+      return canAccessWithRoles(role, requiredRoles);
+    },
+    [isAuthenticated, role]
+  );
+
+  // ============================================================================
+  // Permission Helper Functions
+  // ============================================================================
+
+  /**
+   * Check if user has a specific permission
+   * @param {string} permission - Permission to check
+   * @returns {boolean}
+   */
+  const hasPermission = useCallback(
+    (permission) => {
+      if (!isAuthenticated || !role) return false;
+      return roleHasPermission(role, permission);
+    },
+    [isAuthenticated, role]
   );
 
   /**
    * Check if user has any of the specified permissions
-   *
-   * @param {string[]} permissions - Array of permissions to check
-   * @returns {boolean} True if user has at least one of the specified permissions
-   *
-   * @example
-   * if (hasAnyPermission(['edit_modules', 'delete_own_modules'])) {
-   *   return <ModuleManagementTools />;
-   * }
+   * @param {string[]} permissions - Permissions to check
+   * @returns {boolean}
    */
   const hasAnyPermission = useCallback(
     (permissions) => {
-      if (!isAuthenticated || !currentUser?.role) return false;
-      if (!Array.isArray(permissions)) {
-        console.warn('[useAuth] hasAnyPermission expects an array of permissions');
-        return false;
-      }
-      return permissions.some((permission) =>
-        roleHasPermission(currentUser.role, permission)
-      );
+      if (!isAuthenticated || !role) return false;
+      if (!Array.isArray(permissions)) return false;
+      return permissions.some((p) => roleHasPermission(role, p));
     },
-    [isAuthenticated, currentUser]
+    [isAuthenticated, role]
   );
 
-  /**
-   * Check if user is teacher or admin (privileged roles)
-   *
-   * @returns {boolean} True if user is TEACHER or ADMIN
-   */
-  const isTeacherOrAdmin = useCallback(() => {
-    return hasAnyRole([USER_ROLES.TEACHER, USER_ROLES.ADMIN]);
-  }, [hasAnyRole]);
-
   // ============================================================================
-  // Return Hook API
+  // Memoized Return Value
   // ============================================================================
 
-  return {
-    // User data (use currentUser which combines session and local state)
-    user: currentUser,
+  return useMemo(
+    () => ({
+      // User data - trust backend, expose as-is
+      user: currentUser,
+      role,
 
-    // Authentication state
-    isAuthenticated,
-    isLoading,
-    error,
+      // Authentication state
+      isAuthenticated,
+      isLoading,
+      error,
 
-    // Role-based booleans
-    isStudent,
-    isTeacher,
-    isAdmin,
+      // Authentication functions
+      login,
+      register,
+      logout,
+      refreshUser,
 
-    // Authentication functions
-    login,
-    register,
-    logout,
-    refreshUser,
+      // Role helpers (functions - call them!)
+      hasRole,
+      hasAnyRole,
+      isStudent,
+      isTeacher,
+      isAdmin,
+      isSuperuser,
+      canAccess,
 
-    // Authorization helpers - Role-based
-    isRole,
-    hasAnyRole,
-    isTeacherOrAdmin: isTeacherOrAdmin(),
+      // Permission helpers
+      hasPermission,
+      hasAnyPermission,
 
-    // Authorization helpers - Permission-based
-    hasPermission,
-    hasAnyPermission,
-
-    // Constants
-    USER_ROLES,
-    PERMISSIONS,
-  };
+      // Constants (for reference)
+      ROLES,
+      PERMISSIONS,
+    }),
+    [
+      currentUser,
+      role,
+      isAuthenticated,
+      isLoading,
+      error,
+      login,
+      register,
+      logout,
+      refreshUser,
+      hasRole,
+      hasAnyRole,
+      isStudent,
+      isTeacher,
+      isAdmin,
+      isSuperuser,
+      canAccess,
+      hasPermission,
+      hasAnyPermission,
+    ]
+  );
 }
-
-// ============================================================================
-// Default Export
-// ============================================================================
 
 export default useAuth;

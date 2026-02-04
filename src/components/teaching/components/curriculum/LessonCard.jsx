@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { useTheme, useMediaQuery, Box } from '@mui/material';
+import { useTheme, useMediaQuery, Box, LinearProgress, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useLearningProgress } from '../../../../contexts/LearningProgressContext';
 import LessonCardHeader from './LessonCardHeader';
@@ -61,17 +61,50 @@ const LessonCard = ({
   // Estado para manejar hover de la card
   const [isHovered, setIsHovered] = useState(false);
   
+  // Get lesson progress data from DB via progressByModule
+  const lessonProgressData = useMemo(() => {
+    const moduleData = progressByModule[lesson.moduleId];
+    // Check both lessonsById (new format) and lessonsProgress (legacy format)
+    const lessonData = moduleData?.lessonsById?.[lesson.lessonId] ||
+                       moduleData?.lessonsProgress?.[lesson.lessonId] ||
+                       null;
+
+    if (!lessonData) {
+      return { percentage: 0, currentPage: 0, totalPages: lesson.pages || lesson.sections?.length || 0 };
+    }
+
+    // Calculate percentage from progress (0-1) or completionPercentage (0-100)
+    let percentage = 0;
+    if (lessonData.completionPercentage !== undefined) {
+      percentage = Math.round(lessonData.completionPercentage);
+    } else if (lessonData.progress !== undefined) {
+      percentage = Math.round(lessonData.progress * 100);
+    } else if (lessonData.completed) {
+      percentage = 100;
+    }
+
+    // Calculate current page from progress
+    const totalPages = lesson.pages || lesson.sections?.length || 0;
+    const currentPage = lessonData.currentStep ||
+                        (totalPages > 0 ? Math.round((percentage / 100) * totalPages) : 0);
+
+    return {
+      percentage: Math.max(0, Math.min(100, percentage)),
+      currentPage,
+      totalPages,
+    };
+  }, [progressByModule, lesson.moduleId, lesson.lessonId, lesson.pages, lesson.sections]);
+
   // Determinar estado de la lección
   const status = useMemo(() => {
     if (isCompleted) return 'completed';
     // Verificar si hay progreso en el módulo para esta lección
-    const moduleProgress = progressByModule[lesson.moduleId];
-    if (moduleProgress?.lessonsProgress?.[lesson.lessonId]) {
+    if (lessonProgressData.percentage > 0) {
       return 'in-progress';
     }
     return isAvailable ? 'available' : 'locked';
-  }, [isCompleted, isAvailable, lesson.moduleId, lesson.lessonId, progressByModule]);
-  
+  }, [isCompleted, isAvailable, lessonProgressData.percentage]);
+
   // Determinar color de borde según disponibilidad
   const borderColor = isAvailable ? '#0BBAF4' : '#e0e0e0';
   
@@ -165,6 +198,45 @@ const LessonCard = ({
           isAvailable={isAvailable}
           handleCardBodyInteraction={handleCardBodyInteraction}
         />
+
+        {/* Progress Bar - shows DB progress */}
+        {isAvailable && !allowEmpty && (
+          <Box sx={{ px: 2, py: 1, opacity: status === 'locked' ? 0.5 : 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ flex: 1 }}>
+                <LinearProgress
+                  variant="determinate"
+                  value={lessonProgressData.percentage}
+                  sx={{
+                    height: 6,
+                    borderRadius: 3,
+                    backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                    '& .MuiLinearProgress-bar': {
+                      backgroundColor: status === 'completed'
+                        ? '#4caf50'
+                        : (levelColor || '#0BBAF4'),
+                      borderRadius: 3,
+                    },
+                  }}
+                />
+              </Box>
+              <Typography
+                variant="caption"
+                sx={{
+                  minWidth: 40,
+                  textAlign: 'right',
+                  fontWeight: 500,
+                  color: status === 'completed' ? '#4caf50' : 'text.secondary',
+                  fontSize: '0.7rem',
+                }}
+              >
+                {lessonProgressData.totalPages > 0
+                  ? `${lessonProgressData.currentPage}/${lessonProgressData.totalPages}`
+                  : `${lessonProgressData.percentage}%`}
+              </Typography>
+            </Box>
+          </Box>
+        )}
 
         <LessonCardFooter
           status={status}

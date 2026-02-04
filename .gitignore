@@ -1,6 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# =============================================================================
+# Dependencies
+# =============================================================================
 node_modules/
 /.pnp
 .pnp.*
@@ -10,45 +12,32 @@ node_modules/
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
-
-# next.js (frontend)
-frontend/.next/
-frontend/out/
+# =============================================================================
+# Build outputs
+# =============================================================================
+# Next.js
 .next/
 /out/
+frontend/.next/
+frontend/out/
 
-# production
+# Production build
 /build
+/dist
 
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
+# =============================================================================
+# Environment files
+# =============================================================================
 .env
 .env.local
-.env*.local
-.env.production
+.env.development
 .env.development.local
 .env.test.local
+.env.production
 .env.production.local
+.env*.local
 # Allow .env.example to be committed
 !.env.example
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
 
 # Backend specific
 backend/node_modules/
@@ -56,36 +45,22 @@ backend/dist/
 backend/.env
 !backend/.env.example
 
-.claude/
-.cursor/
-.vscode/
-.idea/
-.github/
-
-# Archivos temporales de scripts
-scripts/*.log
-scripts/*.tmp
-scripts/test-*.js.backup
-
-# Archivos de caché y temporales
-*.cache
-*.tmp
-.temp/
-temp/
-
-# Documentación temporal
-**/MIGRATION*.md
-**/TODO.md
-**/NOTES.md
-
-# Archivos de sistema
-.DS_Store
-Thumbs.db
-desktop.ini
+# =============================================================================
+# Deployment
+# =============================================================================
+.vercel
 
 # =============================================================================
-# Testing y Debugging (temporal)
+# TypeScript
 # =============================================================================
+*.tsbuildinfo
+next-env.d.ts
+
+# =============================================================================
+# Testing
+# =============================================================================
+/coverage/
+.nyc_output/
 **/__tests__/
 *.test.js
 *.test.jsx
@@ -95,11 +70,9 @@ desktop.ini
 *.spec.jsx
 *.spec.ts
 *.spec.tsx
-/coverage/
-.nyc_output/
 
 # =============================================================================
-# IDEs y herramientas de desarrollo
+# IDEs and editors
 # =============================================================================
 .claude/
 .cursor/
@@ -108,10 +81,53 @@ desktop.ini
 *.swp
 *.swo
 
+# Note: .github/ should NOT be ignored - GitHub Actions workflows need to be committed
+
 # =============================================================================
-# Scripts de debugging temporal
+# OS files
 # =============================================================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =============================================================================
+# Debug logs
+# =============================================================================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# =============================================================================
+# Temporary files
+# =============================================================================
+*.cache
+*.tmp
+.temp/
+temp/
+*.pem
+
+# =============================================================================
+# Archives (prevent large files)
+# =============================================================================
+*.zip
+*.tar.gz
+*.rar
+
+# =============================================================================
+# Scripts - temporary/debug files
+# =============================================================================
+scripts/*.log
+scripts/*.tmp
 scripts/test-*.js
 scripts/test-*.mjs
+scripts/test-*.js.backup
 scripts/debug-*.js
 scripts/validate-auth.js
+
+# =============================================================================
+# Temporary documentation (auto-generated)
+# =============================================================================
+**/MIGRATION*.md
+**/TODO.md
+**/NOTES.md

@@ -122,20 +122,34 @@ const ModuleGrid = ({
   
   // Cargar progreso de todos los módulos al montar (con throttling para evitar rate limiting)
   // Solo si mode === 'modules'
+  // CRITICAL: Skip if snapshot has already synced progress data to avoid overwriting
   useEffect(() => {
     if (mode !== 'modules' || modules.length === 0) return;
-    
+
+    // Check if progressByModule already has data from snapshot sync
+    // If so, skip loading to prevent the accordion expansion bug
+    const hasSnapshotData = Object.keys(progressByModule).length > 0;
+    const hasAnyLessonProgress = Object.values(progressByModule).some(
+      moduleData => Object.keys(moduleData?.lessonsById || {}).length > 0
+    );
+
+    if (hasSnapshotData && hasAnyLessonProgress) {
+      console.log('[ModuleGrid] Skipping loadModuleProgress - snapshot data already present with',
+        Object.keys(progressByModule).length, 'modules');
+      return;
+    }
+
     // Cargar progreso de módulos en lotes para evitar rate limiting
     const loadAllProgress = async () => {
       const BATCH_SIZE = 3; // Cargar 3 módulos a la vez
       const DELAY_BETWEEN_BATCHES = 500; // 500ms entre lotes
-      
+
       for (let i = 0; i < modules.length; i += BATCH_SIZE) {
         const batch = modules.slice(i, i + BATCH_SIZE);
-        
-        // Cargar lote en paralelo
-        const loadPromises = batch.map(module => 
-          loadModuleProgress(module.id, { force: false }).catch(error => {
+
+        // Cargar lote en paralelo, with preserveExistingProgress flag
+        const loadPromises = batch.map(module =>
+          loadModuleProgress(module.id, { force: false, preserveExistingProgress: true }).catch(error => {
             // Ignorar errores de rate limiting ya que se manejan en el contexto
             if (error.status !== 429 && !error.message?.includes('Too many requests')) {
               console.warn(`[ModuleGrid] Failed to load progress for module ${module.id}:`, error);
@@ -143,18 +157,18 @@ const ModuleGrid = ({
             return null;
           })
         );
-        
+
         await Promise.allSettled(loadPromises);
-        
+
         // Esperar antes de cargar el siguiente lote (excepto para el último)
         if (i + BATCH_SIZE < modules.length) {
           await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_BATCHES));
         }
       }
     };
-    
+
     loadAllProgress();
-  }, [modules, loadModuleProgress, mode]);
+  }, [modules, loadModuleProgress, mode, progressByModule]);
   
   /**
    * Ordena módulos o lecciones según el campo y orden especificados

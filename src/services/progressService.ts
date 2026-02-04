@@ -1,12 +1,29 @@
 /**
  * Progress Service - TypeScript
  * Simplified service for progress tracking with SWR integration
+ *
+ * BACKEND PAYLOAD CONTRACT (PUT /api/progress/lesson/:lessonId):
+ * ============================================================
+ * REQUIRED (at least ONE):
+ *   - completionPercentage: number (0-100) - preferred format
+ *   OR
+ *   - currentStep + totalSteps: both numbers - legacy format
+ *
+ * OPTIONAL:
+ *   - timeSpent: number (seconds) - defaults to 0
+ *   - scrollPosition: number
+ *   - lastViewedSection: string
+ *   - completed: boolean - explicit completion flag (NEVER auto-inferred from 100%)
+ *
+ * NOT SENT (backend derives):
+ *   - moduleId: Backend extracts from DB lookup or lessonId pattern
  */
 
 import { http } from './http';
 import { mutate } from 'swr';
 import { getAuthToken as getAuthTokenFromService } from './authService';
 import { SWR_KEYS, getProgressInvalidationMatcher } from '@/lib/swrKeys';
+import { curriculumData } from '@/data/curriculumData';
 
 // ============================================
 // Type Definitions
@@ -15,8 +32,75 @@ import { SWR_KEYS, getProgressInvalidationMatcher } from '@/lib/swrKeys';
 export interface UpdateLessonProgressParams {
   completionPercentage: number;
   timeSpent: number; // in seconds
+  moduleId?: string; // Used ONLY for cache invalidation, NOT sent to backend
   scrollPosition?: number;
   lastViewedSection?: string;
+  currentStep?: number; // Step number (1-based), required by backend
+  totalSteps?: number; // Total number of steps, required by backend
+}
+
+/**
+ * Result type for updateLessonProgress
+ * Can be either a successful LessonProgress or a rate-limited result
+ */
+export type UpdateLessonProgressResult = 
+  | { success: true; data: LessonProgress }
+  | { success: false; rateLimited: true; retryAfter?: number };
+
+// ============================================
+// Curriculum Data Lookup (for validation only)
+// ============================================
+
+/**
+ * Lookup moduleId from curriculum data given a lessonId.
+ * Returns null if not found.
+ * This is used ONLY for validation, NOT for sending to backend.
+ */
+function getModuleIdFromCurriculum(lessonId: string): string | null {
+  if (!lessonId || !curriculumData?.modules) return null;
+
+  // Search through all modules and their lessons
+  for (const [moduleId, module] of Object.entries(curriculumData.modules)) {
+    const moduleData = module as any;
+    if (moduleData.lessons && Array.isArray(moduleData.lessons)) {
+      for (const lesson of moduleData.lessons) {
+        if (lesson.id === lessonId) {
+          return moduleId;
+        }
+      }
+    }
+  }
+
+  // If not found in curriculum, try to extract from lessonId pattern
+  // Pattern: "module-XX-*" -> "module-XX-*" (full module ID)
+  // Pattern: anything with "module-" prefix
+  const moduleMatch = lessonId.match(/^(module-\d+(?:-[a-z]+)*)/i);
+  if (moduleMatch && moduleMatch[1]) {
+    return moduleMatch[1];
+  }
+
+  return null;
+}
+
+/**
+ * Validate that a lessonId belongs to the specified moduleId.
+ * Throws an error if validation fails.
+ * This prevents mismatched lessonId/moduleId pairs from being sent.
+ */
+function validateLessonModulePair(lessonId: string, providedModuleId?: string): void {
+  if (!providedModuleId) return; // No moduleId provided, nothing to validate
+
+  const curriculumModuleId = getModuleIdFromCurriculum(lessonId);
+
+  // If we found a moduleId in curriculum and it doesn't match, warn (but don't throw)
+  // The backend will derive the correct moduleId anyway
+  if (curriculumModuleId && curriculumModuleId !== providedModuleId) {
+    console.warn(
+      `[progressService] ⚠️ moduleId mismatch: lessonId "${lessonId}" belongs to ` +
+      `"${curriculumModuleId}" but "${providedModuleId}" was provided. ` +
+      `Backend will derive the correct moduleId.`
+    );
+  }
 }
 
 export interface LessonProgress {
@@ -32,6 +116,8 @@ export interface LessonProgress {
   lastViewedSection: string | null;
   lastAccess: string | null;
   updatedAt: string;
+  currentStep?: number; // Current step number (1-based) from backend
+  totalSteps?: number; // Total number of steps from backend
 }
 
 export interface ModuleProgress {
@@ -102,44 +188,177 @@ function getAuthToken(): string | null {
 /**
  * Update lesson progress
  * PUT /api/progress/lesson/:lessonId
+ *
+ * IMPORTANT: This function sends ONLY the fields expected by the backend.
+ * - moduleId is NOT sent (backend derives it from lessonId or DB lookup)
+ * - undefined values are NEVER sent
+ * - completionPercentage OR currentStep/totalSteps is REQUIRED
+ * 
+ * SPECIAL HANDLING FOR HTTP 429 (Rate Limited):
+ * - Does NOT throw an error for 429 responses
+ * - Returns { success: false, rateLimited: true, retryAfter?: number }
+ * - This allows the caller to handle rate limiting gracefully without showing errors
  */
 export async function updateLessonProgress(
   lessonId: string,
   data: UpdateLessonProgressParams
-): Promise<LessonProgress> {
+): Promise<UpdateLessonProgressResult> {
+  // ==========================================================================
+  // STRICT VALIDATION - Prevent 400 errors from invalid payloads
+  // ==========================================================================
+
+  // 1. Validate lessonId is a non-empty string
+  if (!lessonId || typeof lessonId !== 'string' || lessonId.trim() === '') {
+    console.warn('[progressService] updateLessonProgress ABORTED: lessonId is invalid or empty', { lessonId });
+    throw new Error('lessonId is required and must be a non-empty string');
+  }
+
+  // 2. Validate data object exists
+  if (!data || typeof data !== 'object') {
+    console.warn('[progressService] updateLessonProgress ABORTED: data is invalid', { data });
+    throw new Error('data object is required');
+  }
+
+  // 3. Validate completionPercentage (REQUIRED field)
+  if (data.completionPercentage === undefined || data.completionPercentage === null) {
+    console.warn('[progressService] updateLessonProgress ABORTED: completionPercentage is required', { lessonId });
+    throw new Error('completionPercentage is required');
+  }
+
+  if (typeof data.completionPercentage !== 'number' || isNaN(data.completionPercentage)) {
+    console.warn('[progressService] updateLessonProgress ABORTED: completionPercentage must be a number', { lessonId, completionPercentage: data.completionPercentage });
+    throw new Error('completionPercentage must be a number');
+  }
+
+  // Clamp completionPercentage between 0 and 100
+  const clampedPercentage = Math.max(0, Math.min(100, Math.round(data.completionPercentage)));
+
+  // 4. Validate lessonId/moduleId pair if moduleId was provided (for cache invalidation)
+  validateLessonModulePair(lessonId, data.moduleId);
+
+  // ==========================================================================
+  // BUILD CLEAN PAYLOAD - Only send fields expected by backend
+  // NEVER send undefined values
+  // ==========================================================================
+  const payload: Record<string, any> = {
+    // REQUIRED: completionPercentage (backend format)
+    completionPercentage: clampedPercentage,
+  };
+
+  // REQUIRED: currentStep and totalSteps (backend now requires these)
+  if (typeof data.currentStep === 'number' && data.currentStep > 0 && !isNaN(data.currentStep)) {
+    payload.currentStep = Math.floor(data.currentStep);
+  }
+  if (typeof data.totalSteps === 'number' && data.totalSteps > 0 && !isNaN(data.totalSteps)) {
+    payload.totalSteps = Math.floor(data.totalSteps);
+  }
+
+  // OPTIONAL: timeSpent (only if valid positive number)
+  if (typeof data.timeSpent === 'number' && data.timeSpent > 0 && !isNaN(data.timeSpent)) {
+    payload.timeSpent = Math.floor(data.timeSpent); // Ensure integer seconds
+  }
+
+  // OPTIONAL: scrollPosition (only if valid number)
+  if (typeof data.scrollPosition === 'number' && !isNaN(data.scrollPosition)) {
+    payload.scrollPosition = data.scrollPosition;
+  }
+
+  // OPTIONAL: lastViewedSection (only if non-empty string)
+  if (typeof data.lastViewedSection === 'string' && data.lastViewedSection.trim() !== '') {
+    payload.lastViewedSection = data.lastViewedSection.trim();
+  }
+
+  // NOTE: moduleId is NOT sent - backend derives it from:
+  // 1. DB lookup of the lesson
+  // 2. Pattern extraction from lessonId (e.g., "module-01-..." -> "module-01")
+
+  console.log('[progressService] updateLessonProgress: Sending payload', {
+    lessonId,
+    payload,
+    providedModuleId: data.moduleId, // For cache invalidation only
+  });
+
+  // ==========================================================================
+  // EXECUTE THE UPDATE
+  // ==========================================================================
   const token = getAuthToken();
 
   const { res, data: responseData } = await http(`/progress/lesson/${lessonId}`, {
     method: 'PUT',
-    body: JSON.stringify(data),
-    authToken: token || undefined,
+    body: JSON.stringify(payload),
+    ...(token && { authToken: token }),
   });
+
+  // ==========================================================================
+  // SPECIAL HANDLING FOR HTTP 429 (Rate Limited)
+  // Do NOT treat 429 as a fatal error - return controlled result instead
+  // ==========================================================================
+  if (res.status === 429) {
+    // Extract retry-after header if available (in seconds)
+    const retryAfterHeader = res.headers.get('retry-after');
+    const retryAfter: number | undefined = retryAfterHeader ? parseInt(retryAfterHeader, 10) : undefined;
+    
+    console.warn('[progressService] Rate limited (429):', {
+      lessonId,
+      retryAfter,
+      message: responseData?.message || 'Too many requests',
+    });
+    
+    // Return rate-limited result instead of throwing
+    // Progress is NOT lost - it's saved locally and will retry automatically
+    const result: UpdateLessonProgressResult = retryAfter !== undefined
+      ? { success: false, rateLimited: true, retryAfter }
+      : { success: false, rateLimited: true };
+    return result;
+  }
 
   if (!res.ok) {
     const errorMessage = responseData?.message || responseData?.error || 'Error al actualizar progreso';
+    console.error('[progressService] updateLessonProgress FAILED:', {
+      lessonId,
+      status: res.status,
+      error: errorMessage,
+      payload,
+    });
     throw new Error(errorMessage);
   }
 
-  // Extract moduleId from lessonId (format: "module-XX-lesson-name")
-  const moduleIdMatch = lessonId.match(/^(module-\d+)/);
-  const moduleId = moduleIdMatch ? moduleIdMatch[1] : responseData?.lesson?.moduleId;
+  // ==========================================================================
+  // CACHE INVALIDATION - Use moduleId for cache keys
+  // Determine moduleId: prefer response, then curriculum lookup, then pattern extraction
+  // ==========================================================================
+  const moduleIdFromResponse = responseData?.moduleId || responseData?.lesson?.moduleId;
+  const moduleIdFromCurriculum = getModuleIdFromCurriculum(lessonId);
+  const moduleIdFromPattern = lessonId.match(/^(module-\d+)/)?.[1];
+  const moduleIdForCache = moduleIdFromResponse || data.moduleId || moduleIdFromCurriculum || moduleIdFromPattern;
 
   // Invalidate related cache
-  await invalidateProgressCache(moduleId, lessonId);
+  await invalidateProgressCache(moduleIdForCache, lessonId);
 
   // Emit progress:updated event for UI components to refresh
   if (typeof window !== 'undefined') {
+    console.log('[progressService] Dispatching progress:updated event', {
+      lessonId,
+      moduleId: moduleIdForCache,
+      completionPercentage: clampedPercentage,
+    });
     window.dispatchEvent(new CustomEvent('progress:updated', {
       detail: {
         lessonId,
-        moduleId,
-        completionPercentage: data.completionPercentage,
-        completed: responseData?.completed || data.completionPercentage >= 100,
+        moduleId: moduleIdForCache,
+        completionPercentage: clampedPercentage,
+        // IMPORTANT: Only use explicit completed flag from backend response
+        // NEVER infer completion from completionPercentage
+        completed: responseData?.completed === true,
       }
     }));
   }
 
-  return responseData;
+  // Return successful result
+  return {
+    success: true,
+    data: responseData,
+  };
 }
 
 /**
@@ -152,7 +371,7 @@ export async function getLessonProgress(lessonId: string): Promise<LessonProgres
   try {
     const { res, data } = await http(`/progress/lesson/${lessonId}`, {
       method: 'GET',
-      authToken: token || undefined,
+      ...(token && { authToken: token }),
     });
 
     if (!res.ok) {
@@ -180,36 +399,29 @@ export async function getLessonProgress(lessonId: string): Promise<LessonProgres
         lastViewedSection: data.lastViewedSection || null,
         lastAccess: data.lastAccess ? new Date(data.lastAccess).toISOString() : null,
         updatedAt: data.updatedAt ? new Date(data.updatedAt).toISOString() : new Date().toISOString(),
+        ...(typeof data.currentStep === 'number' && { currentStep: data.currentStep }), // Current step from backend (1-based)
+        ...(typeof data.totalSteps === 'number' && { totalSteps: data.totalSteps }), // Total steps from backend
       };
     }
 
     return null;
   } catch (error) {
     console.error('[progressService] getLessonProgress error:', error);
-    // Return default progress on error
-    return {
-      completed: false,
-      progress: 0,
-      progressPercentage: 0,
-      lastAccessed: null,
-      completedAt: null,
-      scrollPosition: 0,
-      lastViewedSection: null,
-      timeSpent: 0,
-    };
+    // Return null on error - let the caller handle missing progress
+    return null;
   }
 }
 
 /**
  * Get module progress
- * GET /api/progress/modules/:moduleId
+ * GET /api/progress/module/:moduleId (note: singular "module", not "modules")
  */
 export async function getModuleProgress(moduleId: string): Promise<ModuleProgress> {
   const token = getAuthToken();
-  
-  const { res, data } = await http(`/progress/modules/${moduleId}`, {
+
+  const { res, data } = await http(`/progress/module/${moduleId}`, {
     method: 'GET',
-    authToken: token || undefined,
+    ...(token && { authToken: token }),
   });
 
   if (!res.ok) {
@@ -217,28 +429,32 @@ export async function getModuleProgress(moduleId: string): Promise<ModuleProgres
     throw new Error(errorMessage);
   }
 
-  return data?.progress || {
-    moduleId,
-    progress: 0,
-    completedLessons: 0,
-    totalLessons: 0,
-    timeSpent: 0,
-    lastAccessedAt: null,
-    isCompleted: false,
+  // Backend returns moduleProgress directly with these fields:
+  // { moduleId, completionPercentage, completedLessons, totalLessons, totalTimeSpent, lastAccess, lessons }
+  return {
+    moduleId: data?.moduleId || moduleId,
+    progress: data?.completionPercentage || 0,
+    completedLessons: data?.completedLessons || 0,
+    totalLessons: data?.totalLessons || 0,
+    timeSpent: data?.totalTimeSpent || 0,
+    lastAccessedAt: data?.lastAccess || null,
+    // Module is completed ONLY when ALL lessons are completed
+    // Check if completedLessons === totalLessons instead of inferring from completionPercentage
+    isCompleted: (data?.completedLessons || 0) >= (data?.totalLessons || 0) && (data?.totalLessons || 0) > 0,
   };
 }
 
 /**
  * Get module resume point (first incomplete lesson)
- * GET /api/progress/modules/:moduleId/resume
+ * GET /api/modules/:moduleId/resume (note: uses /modules route, not /progress)
  */
 export async function getModuleResumePoint(moduleId: string): Promise<ModuleResumePoint | null> {
   const token = getAuthToken();
-  
+
   try {
-    const { res, data } = await http(`/progress/modules/${moduleId}/resume`, {
+    const { res, data } = await http(`/modules/${moduleId}/resume`, {
       method: 'GET',
-      authToken: token || undefined,
+      ...(token && { authToken: token }),
     });
 
     if (!res.ok) {
@@ -248,7 +464,18 @@ export async function getModuleResumePoint(moduleId: string): Promise<ModuleResu
       throw new Error(data?.message || 'Error al obtener punto de reanudación');
     }
 
-    return data;
+    // Backend returns: { resumeLessonId, resumeLessonTitle, resumeLessonProgress, resumeLessonOrder, moduleProgress, totalLessons, completedLessons, nextLessonOrder }
+    // Map to expected ModuleResumePoint format
+    const resumeData = data?.data || data;
+    return {
+      lessonId: resumeData?.resumeLessonId || '',
+      lessonTitle: resumeData?.resumeLessonTitle || '',
+      lessonOrder: resumeData?.resumeLessonOrder || 0,
+      moduleId: moduleId,
+      completionPercentage: resumeData?.resumeLessonProgress || 0,
+      scrollPosition: null, // Not provided by backend
+      lastViewedSection: null, // Not provided by backend
+    };
   } catch (error) {
     console.error('[progressService] getModuleResumePoint error:', error);
     return null;
@@ -264,7 +491,7 @@ export async function getUserOverview(): Promise<UserOverview> {
   
   const { res, data } = await http('/progress/overview', {
     method: 'GET',
-    authToken: token || undefined,
+    ...(token && { authToken: token }),
   });
 
   if (!res.ok) {
@@ -285,10 +512,10 @@ export async function invalidateProgressCache(moduleId?: string, lessonId?: stri
     await mutate('/progress/overview');
     await mutate(SWR_KEYS.userOverview);
 
-    // Invalidate specific module if provided (legacy and new keys)
+    // Invalidate specific module if provided (using correct paths)
     if (moduleId) {
-      await mutate(`/progress/modules/${moduleId}`);
-      await mutate(`/progress/modules/${moduleId}/resume`);
+      await mutate(`/progress/module/${moduleId}`); // Correct path (singular)
+      await mutate(`/modules/${moduleId}/resume`); // Resume is under /modules
       await mutate(SWR_KEYS.moduleProgress(moduleId));
       await mutate(SWR_KEYS.moduleLessonsProgress(moduleId));
     }
@@ -324,7 +551,7 @@ export async function progressFetcher(path: string): Promise<any> {
   
   const { res, data } = await http(path, {
     method: 'GET',
-    authToken: token || undefined,
+    ...(token && { authToken: token }),
   });
 
   if (!res.ok) {

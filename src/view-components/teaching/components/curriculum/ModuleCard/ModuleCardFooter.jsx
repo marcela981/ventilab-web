@@ -16,6 +16,8 @@ const ModuleCardFooter = ({
   moduleId
 }) => {
   const getButtonText = () => {
+    // Show "Completado" ONLY when status is 'completed', which means progress === 100
+    // This ensures no impossible states like "0% progress but Completed"
     if (status === 'completed') return 'Completado';
     if (status === 'in-progress') return 'Continuar';
     return isAvailable ? 'Comenzar' : 'Bloqueado';

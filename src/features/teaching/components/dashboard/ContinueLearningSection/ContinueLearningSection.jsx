@@ -15,7 +15,7 @@ import {
   Star,
   Person
 } from '@mui/icons-material';
-import ClientOnly from '../../../common/ClientOnly';
+import ClientOnly from '@/components/common/ClientOnly';
 
 /**
  * ContinueLearningSection - Sección destacada para continuar el aprendizaje

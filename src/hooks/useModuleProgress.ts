@@ -36,13 +36,17 @@ interface UseModuleProgressReturn {
 
 /**
  * Determine module state based on progress
+ * Module is completed ONLY when ALL lessons are completed (completedLessons === totalLessons)
  */
 export function getModuleState(progress: ModuleProgress | null): ModuleState {
   if (!progress) {
     return 'not-started';
   }
 
-  if (progress.isCompleted || progress.progress >= 100) {
+  // Module is completed ONLY when ALL lessons are completed
+  // Check both isCompleted flag and completedLessons === totalLessons
+  const allLessonsCompleted = progress.completedLessons >= progress.totalLessons && progress.totalLessons > 0;
+  if (progress.isCompleted || allLessonsCompleted) {
     return 'completed';
   }
 

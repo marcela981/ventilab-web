@@ -91,25 +91,20 @@ const ModuleCard = ({
   // Obtener lecciones completadas del contexto para compatibilidad
   const { completedLessons, syncStatus } = useLearningProgress();
   
-  // Calcular progreso basado en lecciones completadas del módulo desde useProgress
+  // Calcular progreso basado SOLO en valores de progreso (0-1), nunca en flags
+  // IMPORTANT: All completion states are derived ONLY from progress values (0-1).
+  // Never use flags (completed, started, visited) as sources of truth.
   const moduleProgressAggregate = useMemo(() => {
-    // Filtrar progreso de lecciones de este módulo
+    // Filtrar TODAS las lecciones de este módulo que tienen progreso (no solo completadas)
     const moduleLessonsProgress = userProgress.filter(
-      p => p.lessonId && p.moduleId === module.id && p.completed
+      p => p.lessonId && p.moduleId === module.id
     );
-    
-    const completedLessonsCount = moduleLessonsProgress.length;
-    
+
     // Usar conteo real desde BD, o fallback a otros métodos
-    const totalLessons = totalLessonsFromDB > 0 
-      ? totalLessonsFromDB 
+    const totalLessons = totalLessonsFromDB > 0
+      ? totalLessonsFromDB
       : (progress?.totalLessons || precalculatedProgress?.totalLessons || (module?.lessons || []).length || 0);
-    
-    // Calcular porcentaje: lecciones completadas / total lecciones
-    const percentInt = totalLessons > 0 
-      ? Math.round((completedLessonsCount / totalLessons) * 100)
-      : 0;
-    
+
     // Si no hay lecciones, retornar 0%
     if (totalLessons === 0) {
       return {
@@ -123,51 +118,102 @@ const ModuleCard = ({
         totalPages: 0,
       };
     }
+
+    // Calculate module progress using formula: completedLessons / totalLessons
+    // Iterate through lessons and count completed ones (progress === 1)
+    let completedLessonsCount = 0;
+
+    moduleLessonsProgress.forEach(p => {
+      // Get progress value (0-1) - prefer completionPercentage converted to 0-1, then progress
+      let lessonProgressValue = 0;
+      if (typeof p.completionPercentage === 'number') {
+        lessonProgressValue = Math.max(0, Math.min(1, p.completionPercentage / 100));
+      } else if (typeof p.progress === 'number') {
+        lessonProgressValue = Math.max(0, Math.min(1, p.progress));
+      }
+      
+      // A lesson is completed ONLY when its progress === 1 (not based on flags)
+      if (lessonProgressValue === 1) {
+        completedLessonsCount++;
+      }
+    });
+
+    // Module progress = completedLessons / totalLessons (0-1)
+    // Formula: progress = completedLessons / totalLessons
+    // This ensures:
+    // - Partially completed modules show partial progress
+    // - Modules with no completed lessons show 0%
+    // - Fully completed modules show 100%
+    const progressValue = totalLessons > 0 ? (completedLessonsCount / totalLessons) : 0;
     
+    // Normalize to 0-100 for UI display (consistent with level progress bars)
+    // Ensure value is clamped to 0-100 range for LinearProgress component
+    const percentInt = Math.max(0, Math.min(100, Math.round(progressValue * 100)));
+
+    // Module is completed ONLY when all lessons are completed (progress === 1)
+    const isModuleCompleted = progressValue === 1;
+
     // Prioridad: cálculo desde useProgress > progreso del hook > precalculado > legacy prop
-    if (totalLessonsFromDB > 0 || completedLessonsCount > 0) {
+    if (totalLessonsFromDB > 0 || moduleLessonsProgress.length > 0) {
       return {
-        percent: percentInt / 100,
+        percent: progressValue,
         percentInt,
         completedLessons: completedLessonsCount,
         totalLessons,
-        isCompleted: percentInt >= 100,
-        completedAt: moduleLessonsProgress.length > 0 && percentInt >= 100 
-          ? new Date() 
-          : null,
+        isCompleted: isModuleCompleted,
+        completedAt: isModuleCompleted ? new Date() : null,
         completedPages: progress?.completedPages || 0,
         totalPages: progress?.totalPages || 0,
       };
     }
-    
+
     // Fallback a progreso del hook si está disponible
     if (progress && progress.totalLessons > 0) {
-      return progress;
+      // Ensure isCompleted is ONLY true when progress === 1
+      const hookProgressValue = typeof progress.progress === 'number' ? progress.progress : (progress.percentInt / 100);
+      return {
+        ...progress,
+        percent: hookProgressValue,
+        isCompleted: hookProgressValue === 1,
+      };
     }
-    
+
     // Fallback a precalculado
     if (precalculatedProgress) {
-      return precalculatedProgress;
+      const precalcProgressValue = typeof precalculatedProgress.percent === 'number' 
+        ? precalculatedProgress.percent 
+        : (precalculatedProgress.percentInt / 100);
+      // Normalize percentInt to 0-100 for UI display (consistent with level progress bars)
+      const normalizedPercentInt = Math.max(0, Math.min(100, Math.round(precalcProgressValue * 100)));
+      return {
+        ...precalculatedProgress,
+        percent: precalcProgressValue,
+        percentInt: normalizedPercentInt,
+        isCompleted: precalcProgressValue === 1,
+      };
     }
-    
+
     // Fallback final a cálculo legacy
+    const legacyProgressValue = (moduleProgressProp || 0) / 100;
+    // Normalize percentInt to 0-100 for UI display (consistent with level progress bars)
+    const normalizedPercentInt = Math.max(0, Math.min(100, moduleProgressProp || 0));
     return {
-      percent: (moduleProgressProp || 0) / 100,
-      percentInt: moduleProgressProp || 0,
+      percent: legacyProgressValue,
+      percentInt: normalizedPercentInt,
       completedLessons: 0,
       totalLessons: totalLessons || 0,
-      isCompleted: (moduleProgressProp || 0) >= 100,
+      isCompleted: legacyProgressValue === 1,
       completedAt: null,
       completedPages: 0,
       totalPages: 0,
     };
   }, [
-    userProgress, 
-    module.id, 
-    totalLessonsFromDB, 
-    progress, 
-    precalculatedProgress, 
-    moduleProgressProp, 
+    userProgress,
+    module.id,
+    totalLessonsFromDB,
+    progress,
+    precalculatedProgress,
+    moduleProgressProp,
     module?.lessons
   ]);
   

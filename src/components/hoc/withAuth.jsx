@@ -3,81 +3,25 @@
  * withAuth Higher Order Component
  * =============================================================================
  *
- * HOC (Higher Order Component) that protects routes by checking authentication
- * and authorization status. It wraps components and automatically handles
- * redirects for unauthenticated users and unauthorized access.
+ * HOC that protects routes by checking authentication and authorization.
+ * Uses centralized role system with superuser inheritance.
  *
  * Features:
  * - Authentication verification
- * - Role-based authorization
- * - Automatic redirect to login for unauthenticated users
- * - Automatic redirect to forbidden page for unauthorized users
+ * - Role-based authorization with hierarchy (superuser > admin > teacher > student)
+ * - Automatic redirects for unauthorized users
  * - Loading state handling
  * - Preserves callback URL for post-login redirect
- * - Type-safe with PropTypes
- *
- * =============================================================================
- * Usage Examples
- * =============================================================================
  *
  * @example
- * // Basic authentication (any authenticated user)
- * import withAuth from '@/components/hoc/withAuth';
- *
- * function Dashboard() {
- *   return <div>Dashboard Content</div>;
- * }
- *
+ * // Any authenticated user
  * export default withAuth(Dashboard);
  *
- * @example
- * // Single role protection (Admin only)
- * import withAuth from '@/components/hoc/withAuth';
+ * // Admin only (superuser also passes)
+ * export default withAuth(AdminPanel, ['admin']);
  *
- * function AdminPanel() {
- *   return <div>Admin Panel</div>;
- * }
- *
- * export default withAuth(AdminPanel, ['ADMIN']);
- *
- * @example
- * // Multiple roles (Teacher or Admin)
- * import withAuth from '@/components/hoc/withAuth';
- *
- * function CreateModule() {
- *   return <div>Create New Module</div>;
- * }
- *
- * export default withAuth(CreateModule, ['TEACHER', 'ADMIN']);
- *
- * @example
- * // With Next.js getServerSideProps
- * import withAuth from '@/components/hoc/withAuth';
- *
- * function ProfilePage({ userData }) {
- *   return <div>Profile: {userData.name}</div>;
- * }
- *
- * export const getServerSideProps = async (context) => {
- *   return {
- *     props: {
- *       userData: { name: 'John' }
- *     }
- *   };
- * };
- *
- * export default withAuth(ProfilePage);
- *
- * @example
- * // Student-only page
- * import withAuth from '@/components/hoc/withAuth';
- *
- * function LessonViewer() {
- *   return <div>Lesson Content</div>;
- * }
- *
- * export default withAuth(LessonViewer, ['STUDENT', 'TEACHER', 'ADMIN']);
- *
+ * // Teacher or admin (superuser also passes)
+ * export default withAuth(CreateModule, ['teacher', 'admin']);
  * =============================================================================
  */
 
@@ -86,97 +30,58 @@ import { useRouter } from 'next/router';
 import { CircularProgress, Box } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useAuth } from '@/contexts/AuthContext';
+import { ROLES, canAccessWithRoles } from '@/lib/roles';
 
 /**
  * Higher Order Component for route protection
  *
- * Wraps a component and adds authentication/authorization checks.
- * Automatically redirects unauthorized users to appropriate pages.
- *
  * @param {React.Component} WrappedComponent - The component to protect
- * @param {string[]} [allowedRoles] - Array of allowed roles (STUDENT, TEACHER, ADMIN)
- *                                     If not provided, only authentication is checked
+ * @param {string[]} [allowedRoles] - Array of allowed roles. If not provided, only
+ *                                    authentication is checked. superuser automatically
+ *                                    passes all role checks.
  * @returns {React.Component} Protected component with auth checks
  *
  * @example
- * const ProtectedDashboard = withAuth(Dashboard, ['ADMIN']);
+ * const ProtectedDashboard = withAuth(Dashboard, [ROLES.ADMIN]);
  */
 function withAuth(WrappedComponent, allowedRoles = null) {
-  /**
-   * ProtectedComponent - The wrapper component that handles auth checks
-   *
-   * This component:
-   * 1. Checks if user is authenticated
-   * 2. Checks if user has required role (if allowedRoles specified)
-   * 3. Shows loading state while checking
-   * 4. Redirects to login or forbidden page as needed
-   * 5. Renders wrapped component if all checks pass
-   */
   function ProtectedComponent(props) {
-    // ==========================================================================
-    // STEP 1: Get authentication state from AuthContext
-    // ==========================================================================
-    const { user, isAuthenticated, isLoading } = useAuth();
-
-    // ==========================================================================
-    // STEP 2: Get Next.js router for navigation
-    // ==========================================================================
+    const { user, isAuthenticated, isLoading, role, canAccess } = useAuth();
     const router = useRouter();
 
-    // ==========================================================================
-    // STEP 3: Authentication and Authorization checks
-    // ==========================================================================
     useEffect(() => {
-      // Skip checks while loading to avoid false redirects
-      if (isLoading) {
+      // Skip checks while loading
+      if (isLoading) return;
+
+      // Check authentication
+      if (!isAuthenticated) {
+        const returnUrl = router.asPath;
+        router.push({
+          pathname: '/auth/login',
+          query: { returnUrl },
+        });
         return;
       }
 
-      // ========================================================================
-      // Check 1: User must be authenticated
-      // ========================================================================
-      if (!isAuthenticated) {
-        // Save the current URL to redirect back after login
-        const returnUrl = router.asPath;
-
-        // Redirect to login page with return URL as query parameter
-        router.push({
-          pathname: '/login',
-          query: { returnUrl },
-        });
-
-        return; // Exit early to prevent further checks
-      }
-
-      // ========================================================================
-      // Check 2: User must have one of the allowed roles (if specified)
-      // ========================================================================
+      // Check role authorization if roles are specified
       if (allowedRoles && allowedRoles.length > 0) {
-        // Check if user's role is in the allowed roles array
-        const hasRequiredRole = allowedRoles.includes(user.role);
+        // canAccess handles role hierarchy (superuser can access everything)
+        const hasRequiredRole = canAccess(allowedRoles);
 
         if (!hasRequiredRole) {
-          // User is authenticated but doesn't have the required role
-          // Redirect to forbidden/access denied page
           router.push({
-            pathname: '/forbidden',
+            pathname: '/auth/access-denied',
             query: {
               required: allowedRoles.join(', '),
-              current: user.role,
+              current: role,
             },
           });
-
-          return; // Exit early
+          return;
         }
       }
+    }, [isAuthenticated, isLoading, user, router, role, canAccess]);
 
-      // All checks passed - user is authenticated and authorized
-      // Component will render normally
-    }, [isAuthenticated, isLoading, user, router]);
-
-    // ==========================================================================
-    // STEP 4: Show loading state while checking authentication
-    // ==========================================================================
+    // Loading state
     if (isLoading) {
       return (
         <Box
@@ -195,207 +100,99 @@ function withAuth(WrappedComponent, allowedRoles = null) {
       );
     }
 
-    // ==========================================================================
-    // STEP 5: Don't render anything while redirecting
-    // ==========================================================================
-    // If not authenticated or not authorized, useEffect will redirect
-    // Return null to prevent flash of content
+    // Not authenticated - redirecting
     if (!isAuthenticated) {
       return null;
     }
 
-    // Check authorization if roles are specified
+    // Check authorization
     if (allowedRoles && allowedRoles.length > 0) {
-      const hasRequiredRole = allowedRoles.includes(user.role);
+      const hasRequiredRole = canAccess(allowedRoles);
       if (!hasRequiredRole) {
-        return null; // Redirecting, don't show content
+        return null; // Redirecting
       }
     }
 
-    // ==========================================================================
-    // STEP 6: Render the wrapped component with all props
-    // ==========================================================================
-    // All checks passed - render the protected component
-    // Spread all props to maintain prop forwarding
+    // All checks passed
     return <WrappedComponent {...props} />;
   }
 
-  // ============================================================================
   // Set display name for debugging
-  // ============================================================================
-  // This helps identify the component in React DevTools
   const wrappedComponentName =
     WrappedComponent.displayName || WrappedComponent.name || 'Component';
-
   ProtectedComponent.displayName = `withAuth(${wrappedComponentName})`;
 
-  // ============================================================================
-  // Copy static properties from wrapped component
-  // ============================================================================
-  // Preserve static methods like getInitialProps, getServerSideProps, etc.
-  // This is important for Next.js data fetching
+  // Preserve static methods for Next.js
   if (WrappedComponent.getInitialProps) {
     ProtectedComponent.getInitialProps = WrappedComponent.getInitialProps;
   }
-
   if (WrappedComponent.getServerSideProps) {
     ProtectedComponent.getServerSideProps = WrappedComponent.getServerSideProps;
   }
-
   if (WrappedComponent.getStaticProps) {
     ProtectedComponent.getStaticProps = WrappedComponent.getStaticProps;
   }
 
-  // ============================================================================
-  // PropTypes for the HOC
-  // ============================================================================
   ProtectedComponent.propTypes = {
-    // Accept any props that the wrapped component accepts
     ...WrappedComponent.propTypes,
   };
 
   return ProtectedComponent;
 }
 
-// ==============================================================================
-// PropTypes for withAuth function
-// ==============================================================================
 withAuth.propTypes = {
   WrappedComponent: PropTypes.elementType.isRequired,
-  allowedRoles: PropTypes.arrayOf(
-    PropTypes.oneOf(['STUDENT', 'TEACHER', 'ADMIN'])
-  ),
+  allowedRoles: PropTypes.arrayOf(PropTypes.string),
 };
 
-// ==============================================================================
-// Export
-// ==============================================================================
 export default withAuth;
 
-// ==============================================================================
-// Additional Utility HOCs
-// ==============================================================================
+// =============================================================================
+// Convenience HOCs with new role values
+// =============================================================================
 
 /**
  * HOC for Student-only routes
- * Shorthand for withAuth(Component, ['STUDENT'])
- *
- * @param {React.Component} Component - Component to protect
- * @returns {React.Component} Protected component
- *
- * @example
- * export default withStudentAuth(MyStudentPage);
+ * Note: teachers, admins, and superusers can also access
+ * @example export default withStudentAuth(MyStudentPage);
  */
 export function withStudentAuth(Component) {
-  return withAuth(Component, ['STUDENT']);
+  return withAuth(Component, [ROLES.STUDENT, ROLES.TEACHER, ROLES.ADMIN, ROLES.SUPERUSER]);
 }
 
 /**
- * HOC for Teacher-only routes
- * Shorthand for withAuth(Component, ['TEACHER', 'ADMIN'])
- *
- * @param {React.Component} Component - Component to protect
- * @returns {React.Component} Protected component
- *
- * @example
- * export default withTeacherAuth(CreateModulePage);
+ * HOC for Teacher-level routes
+ * Allows: teacher, admin, superuser
+ * @example export default withTeacherAuth(CreateModulePage);
  */
 export function withTeacherAuth(Component) {
-  return withAuth(Component, ['TEACHER', 'ADMIN']);
+  return withAuth(Component, [ROLES.TEACHER, ROLES.ADMIN, ROLES.SUPERUSER]);
 }
 
 /**
- * HOC for Admin-only routes
- * Shorthand for withAuth(Component, ['ADMIN'])
- *
- * @param {React.Component} Component - Component to protect
- * @returns {React.Component} Protected component
- *
- * @example
- * export default withAdminAuth(AdminPanel);
+ * HOC for Admin-level routes
+ * Allows: admin, superuser
+ * @example export default withAdminAuth(AdminPanel);
  */
 export function withAdminAuth(Component) {
-  return withAuth(Component, ['ADMIN']);
+  return withAuth(Component, [ROLES.ADMIN, ROLES.SUPERUSER]);
+}
+
+/**
+ * HOC for Superuser-only routes
+ * @example export default withSuperuserAuth(SystemSettings);
+ */
+export function withSuperuserAuth(Component) {
+  return withAuth(Component, [ROLES.SUPERUSER]);
 }
 
 /**
  * HOC for any authenticated user (all roles)
- * Shorthand for withAuth(Component, ['STUDENT', 'TEACHER', 'ADMIN'])
- *
- * @param {React.Component} Component - Component to protect
- * @returns {React.Component} Protected component
- *
- * @example
- * export default withAnyAuth(ProfilePage);
+ * @example export default withAnyAuth(ProfilePage);
  */
 export function withAnyAuth(Component) {
-  return withAuth(Component, ['STUDENT', 'TEACHER', 'ADMIN']);
+  return withAuth(Component, [ROLES.STUDENT, ROLES.TEACHER, ROLES.ADMIN, ROLES.SUPERUSER]);
 }
 
-// ==============================================================================
-// Usage Notes
-// ==============================================================================
-
-/**
- * IMPORTANT NOTES:
- *
- * 1. Login Page Setup:
- *    Create a login page at /pages/login.js that handles the returnUrl query param:
- *
- *    // pages/login.js
- *    function LoginPage() {
- *      const router = useRouter();
- *      const { returnUrl } = router.query;
- *
- *      const handleLogin = async (credentials) => {
- *        const success = await login(credentials);
- *        if (success) {
- *          router.push(returnUrl || '/dashboard');
- *        }
- *      };
- *      // ... rest of login form
- *    }
- *
- * 2. Forbidden Page Setup:
- *    Create a forbidden page at /pages/forbidden.js:
- *
- *    // pages/forbidden.js
- *    function ForbiddenPage() {
- *      const router = useRouter();
- *      const { required, current } = router.query;
- *
- *      return (
- *        <div>
- *          <h1>Access Denied</h1>
- *          <p>Required role: {required}</p>
- *          <p>Your role: {current}</p>
- *        </div>
- *      );
- *    }
- *
- * 3. Material-UI Setup:
- *    This HOC uses Material-UI for the loading spinner.
- *    Install if not already present:
- *    npm install @mui/material @emotion/react @emotion/styled
- *
- * 4. Combining with getServerSideProps:
- *    The HOC preserves Next.js data fetching methods:
- *
- *    function Dashboard({ data }) {
- *      return <div>{data}</div>;
- *    }
- *
- *    export const getServerSideProps = async () => {
- *      return { props: { data: 'some data' } };
- *    };
- *
- *    export default withAuth(Dashboard, ['ADMIN']);
- *
- * 5. Typescript Support:
- *    For TypeScript, create withAuth.tsx with proper typing:
- *
- *    function withAuth<P extends object>(
- *      WrappedComponent: React.ComponentType<P>,
- *      allowedRoles?: UserRole[]
- *    ): React.FC<P> { ... }
- */
+// Export ROLES for convenience
+export { ROLES };

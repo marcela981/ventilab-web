@@ -4,6 +4,33 @@
  * Progress Service
  * API client for progress tracking endpoints
  * Uses the unified LearningProgress + LessonProgress model
+ *
+ * BACKEND PAYLOAD CONTRACT (PUT /api/progress/lesson/:lessonId):
+ * ============================================================
+ * REQUIRED (ALL THREE):
+ *   - currentStep: number (>= 0) - current step reached
+ *   - totalSteps: number (> 0) - total number of steps
+ *   - completionPercentage: number (0-100) - percentage completed
+ *
+ * VALIDATION RULES:
+ *   - currentStep <= totalSteps (enforced by backend)
+ *   - totalSteps must be > 0
+ *   - All three fields must be numbers
+ *
+ * OPTIONAL:
+ *   - timeSpent: number (seconds) - defaults to 0
+ *   - scrollPosition: number
+ *   - lastViewedSection: string
+ *   - completed: boolean - explicit completion flag
+ *
+ * NOT SENT (backend derives):
+ *   - moduleId: Backend extracts from DB lookup or lessonId pattern
+ *
+ * AUTO-DERIVATION (by this service):
+ *   - If only progress (0-1) is provided:
+ *     - completionPercentage = Math.round(progress * 100)
+ *     - currentStep = completionPercentage
+ *     - totalSteps = 100
  */
 
 import http from './http';
@@ -146,10 +173,47 @@ const maybeRefreshSession = async (error) => {
   }
 };
 
+/**
+ * Execute operation with automatic auth retry
+ * 
+ * IMPORTANT: NEVER retries on HTTP 429 (Rate Limited)
+ * - 429 responses are returned as structured results, not errors
+ * - Retry logic only applies to:
+ *   - Auth errors (401/403) - will attempt token refresh
+ *   - Server errors (5xx) - may be transient
+ * 
+ * @param {Function} operation - Async function to execute
+ * @param {number} attempt - Current retry attempt (default: 0)
+ * @returns {Promise<any>} Operation result or structured rate limit result
+ */
 const executeWithAuthRetry = async (operation, attempt = 0) => {
   try {
-    return await operation();
+    const result = await operation();
+    
+    // Check if result is a rate-limited response (from parseResponse)
+    // NEVER retry on rate limiting - return the result as-is
+    if (result && typeof result === 'object' && result.type === 'RATE_LIMITED') {
+      console.warn('[progressService] Rate limited detected, not retrying');
+      return result;
+    }
+    
+    return result;
   } catch (error) {
+    // NEVER retry on 429 - it should have been caught by parseResponse
+    // But as a safeguard, check error status
+    if (error.status === 429) {
+      console.warn('[progressService] Rate limited (429) in error handler, not retrying');
+      return {
+        ok: false,
+        status: 429,
+        type: 'RATE_LIMITED',
+        retryAfter: error.retryAfter,
+        payload: error.payload,
+      };
+    }
+    
+    // Only retry on auth errors (401/403) or server errors (5xx)
+    // Never retry on 429 or other client errors
     if (attempt === 0 && (await maybeRefreshSession(error))) {
       return executeWithAuthRetry(operation, attempt + 1);
     }
@@ -183,16 +247,66 @@ const getAuthHeaders = () => {
 };
 
 const buildUrl = (path) => {
-  const trimmed = apiBaseUrl.replace(/\/$/, '');
-  const hasApiSegment = /\/api(\/|$)/.test(trimmed);
-  const base = hasApiSegment ? trimmed : `${trimmed}/api`;
-  return `${base}${path}`;
+  // Asegurar que apiBaseUrl termine con /api
+  let trimmed = apiBaseUrl.replace(/\/$/, '');
+  
+  // Si no termina con /api, agregarlo
+  if (!trimmed.endsWith('/api')) {
+    // Si termina con /api/, quitar la barra final
+    if (trimmed.endsWith('/api/')) {
+      trimmed = trimmed.slice(0, -1);
+    } else {
+      // Agregar /api si no está presente
+      trimmed = `${trimmed}/api`;
+    }
+  }
+  
+  // Asegurar que el path empiece con /
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  
+  return `${trimmed}${normalizedPath}`;
 };
 
+/**
+ * Parse HTTP response
+ * 
+ * SPECIAL HANDLING FOR HTTP 429 (Rate Limited):
+ * - Does NOT throw an error for 429 responses
+ * - Returns a structured result: { ok: false, status: 429, type: "RATE_LIMITED", retryAfter?: number }
+ * - This allows callers to handle rate limiting gracefully without triggering error handlers
+ * 
+ * @param {Response} response - Fetch Response object
+ * @returns {Promise<any>} Parsed response data or structured rate limit result
+ */
 const parseResponse = async (response) => {
   const contentType = response.headers.get('content-type') || '';
   const isJson = contentType.includes('application/json');
   const payload = isJson ? await response.json() : await response.text();
+
+  // ==========================================================================
+  // SPECIAL HANDLING FOR HTTP 429 (Rate Limited)
+  // Do NOT treat 429 as a fatal error - return controlled result instead
+  // ==========================================================================
+  if (response.status === 429) {
+    // Extract retry-after header if available (in seconds)
+    const retryAfterHeader = response.headers.get('Retry-After');
+    const retryAfter = retryAfterHeader ? parseInt(retryAfterHeader, 10) : undefined;
+    
+    console.warn('[progressService] Rate limited (429):', {
+      retryAfter,
+      message: typeof payload === 'object' && payload?.message ? payload.message : 'Too many requests',
+    });
+    
+    // Return structured result instead of throwing
+    // This prevents infinite retry loops and allows graceful handling
+    return {
+      ok: false,
+      status: 429,
+      type: 'RATE_LIMITED',
+      retryAfter,
+      payload,
+    };
+  }
 
   if (!response.ok) {
     // Handle backend error format: { success: false, error: { code, message, details } }
@@ -214,17 +328,6 @@ const parseResponse = async (response) => {
     error.status = response.status;
     error.payload = payload;
     error.code = payload?.error?.code;
-    
-    // Extract Retry-After header for rate limiting (429)
-    if (response.status === 429) {
-      const retryAfter = response.headers.get('Retry-After');
-      if (retryAfter) {
-        error.retryAfter = parseInt(retryAfter, 10);
-        if (error.payload && typeof error.payload === 'object') {
-          error.payload.retryAfter = error.retryAfter;
-        }
-      }
-    }
     
     throw error;
   }
@@ -269,7 +372,7 @@ export const getModuleProgress = async (moduleId) => {
         throw new Error('moduleId is required and must be a string');
       }
 
-      const url = buildUrl(`/progress/modules/${encodeURIComponent(moduleId)}`);
+      const url = buildUrl(`/progress/module/${encodeURIComponent(moduleId)}`);
       let response;
 
       try {
@@ -283,6 +386,14 @@ export const getModuleProgress = async (moduleId) => {
       }
 
       const data = await parseResponse(response);
+      
+      // Check if result is a rate-limited response (from parseResponse)
+      // Propagate it upward instead of throwing
+      if (data && typeof data === 'object' && data.type === 'RATE_LIMITED') {
+        console.warn('[progressService] getModuleProgress rate limited');
+        return data; // Return structured rate limit result
+      }
+      
       return data;
     } catch (error) {
       console.error('[progressService] getModuleProgress failed:', error);
@@ -349,24 +460,102 @@ export const updateLessonProgress = async (payload) => {
   console.log('📍 Current URL:', typeof window !== 'undefined' ? window.location.href : 'N/A');
   console.log('📦 payload:', JSON.stringify(payload, null, 2));
   console.log('');
-  
+
+  // ==========================================================================
+  // STRICT VALIDATION - Prevent 400 errors from invalid payloads
+  // ==========================================================================
+
+  // 1. Validate payload object
+  if (!payload || typeof payload !== 'object') {
+    console.warn('[progressService] updateLessonProgress ABORTED: payload is invalid', { payload });
+    throw new Error('Payload inválido para actualizar progreso.');
+  }
+
+  // 2. Validate lessonId is a non-empty string
+  if (!payload.lessonId || typeof payload.lessonId !== 'string' || payload.lessonId.trim() === '') {
+    console.warn('[progressService] updateLessonProgress ABORTED: lessonId is invalid or empty', { lessonId: payload.lessonId });
+    throw new Error('lessonId is required and must be a non-empty string');
+  }
+
+  // 3. Validate progress if provided (must be between 0 and 1)
+  if (payload.progress !== undefined) {
+    if (typeof payload.progress !== 'number' || isNaN(payload.progress) || payload.progress < 0 || payload.progress > 1) {
+      console.warn('[progressService] updateLessonProgress ABORTED: progress must be a number between 0 and 1', { lessonId: payload.lessonId, progress: payload.progress });
+      throw new Error('progress must be a number between 0 and 1');
+    }
+  }
+
+  // 4. Validate completionPercentage if provided (must be between 0 and 100)
+  if (payload.completionPercentage !== undefined) {
+    if (typeof payload.completionPercentage !== 'number' || isNaN(payload.completionPercentage) || payload.completionPercentage < 0 || payload.completionPercentage > 100) {
+      console.warn('[progressService] updateLessonProgress ABORTED: completionPercentage must be a number between 0 and 100', { lessonId: payload.lessonId, completionPercentage: payload.completionPercentage });
+      throw new Error('completionPercentage must be a number between 0 and 100');
+    }
+  }
+
+  console.log('[progressService] ✅ Validation passed:', { lessonId: payload.lessonId, moduleId: payload.moduleId });
+
+  // ==========================================================================
+  // BUILD CLEAN PAYLOAD - Only send fields expected by backend
+  // IMPORTANT: moduleId is NOT sent - backend derives it from lessonId or DB lookup
+  // ==========================================================================
+
   return executeWithAuthRetry(async () => {
     try {
-      if (!payload || typeof payload !== 'object') {
-        throw new Error('Payload inválido para actualizar progreso.');
-      }
-
-      if (!payload.lessonId || typeof payload.lessonId !== 'string') {
-        throw new Error('lessonId is required and must be a string');
-      }
-
       const { lessonId } = payload;
+
+      // ==========================================================================
+      // DERIVE REQUIRED FIELDS - Backend requires: currentStep, totalSteps, completionPercentage
+      // ==========================================================================
+
+      // 1. Calculate completionPercentage from progress (0-1) if not provided
+      let completionPercentage = payload.completionPercentage;
+      if (completionPercentage === undefined && payload.progress !== undefined) {
+        completionPercentage = Math.round(payload.progress * 100);
+      }
+      // Default to 0 if still undefined (prevents 400 error)
+      if (completionPercentage === undefined) {
+        completionPercentage = 0;
+      }
+      // Ensure valid range [0, 100]
+      completionPercentage = Math.max(0, Math.min(100, completionPercentage));
+
+      // 2. Derive currentStep and totalSteps if not provided
+      // Backend REQUIRES these fields - using percentage-based approach:
+      // - totalSteps = 100 (treat progress as percentage points)
+      // - currentStep = completionPercentage (current percentage reached)
+      let currentStep = payload.currentStep;
+      let totalSteps = payload.totalSteps;
+
+      if (typeof currentStep !== 'number' || isNaN(currentStep) || currentStep < 0) {
+        // Derive from completionPercentage
+        currentStep = completionPercentage;
+      }
+      if (typeof totalSteps !== 'number' || isNaN(totalSteps) || totalSteps <= 0) {
+        // Use 100 as standard total (percentage-based)
+        totalSteps = 100;
+      }
+
+      // Ensure currentStep doesn't exceed totalSteps (backend validation)
+      currentStep = Math.min(Math.floor(currentStep), totalSteps);
+
       const body = {
-        ...(payload.progress !== undefined && { progress: payload.progress }),
-        ...(payload.completed !== undefined && { completed: payload.completed }),
-        ...(payload.completionPercentage !== undefined && { completionPercentage: payload.completionPercentage }),
+        // REQUIRED: All three fields (backend validates these)
+        completionPercentage,
+        currentStep,
+        totalSteps,
+        // OPTIONAL fields - only include if defined
         ...(payload.timeSpentDelta !== undefined && { timeSpentDelta: payload.timeSpentDelta }),
+        ...(payload.timeSpent !== undefined && { timeSpent: payload.timeSpent }),
+        ...(typeof payload.scrollPosition === 'number' && { scrollPosition: payload.scrollPosition }),
+        ...(typeof payload.lastViewedSection === 'string' && payload.lastViewedSection.trim() && { lastViewedSection: payload.lastViewedSection.trim() }),
         ...(payload.lastAccessed !== undefined && { lastAccessed: payload.lastAccessed }),
+        // NOTE: moduleId is NOT sent - backend derives it from:
+        // 1. DB lookup of the lesson
+        // 2. Pattern extraction from lessonId (e.g., "module-01-..." -> "module-01")
+        // NOTE: progress (0-1 format) is converted to completionPercentage above
+        // NOTE: completed flag is only sent if explicitly provided as true
+        ...(payload.completed === true && { completed: true }),
       };
 
       const url = buildUrl(`/progress/lesson/${lessonId}`);
@@ -410,6 +599,13 @@ export const updateLessonProgress = async (payload) => {
       }
 
       const data = await parseResponse(response);
+      
+      // Check if result is a rate-limited response (from parseResponse)
+      // Propagate it upward instead of throwing
+      if (data && typeof data === 'object' && data.type === 'RATE_LIMITED') {
+        console.warn('[progressService] updateLessonProgress rate limited');
+        return data; // Return structured rate limit result
+      }
       
       console.log('✅ [FRONTEND] SUCCESS - Response data:');
       console.log(JSON.stringify(data, null, 2));

@@ -166,7 +166,12 @@ function mergeProgress(
         nextLevelXp: 500,
         streakDays: 0,
         calendar: [],
-        completedLessons: localProgress?.lessons.filter(l => l.progress >= 1.0).length || 0,
+        // Count lessons with progress === 1 (not based on flags)
+        // Lesson progress (0-1 float) is the single source of truth
+        completedLessons: localProgress?.lessons.filter(l => {
+          const progressValue = Math.max(0, Math.min(1, l.progress || 0));
+          return progressValue === 1;
+        }).length || 0,
         totalLessons: localProgress?.lessons.length || 0,
         modulesCompleted: 0,
         totalModules: 0
@@ -234,7 +239,12 @@ function mergeProgress(
   });
 
   const mergedLessons = Array.from(mergedLessonsMap.values());
-  const completedLessons = mergedLessons.filter(l => l.progress >= 1.0).length;
+  // Count lessons with progress === 1 (not based on flags)
+  // Lesson progress (0-1 float) is the single source of truth
+  const completedLessons = mergedLessons.filter(l => {
+    const progressValue = Math.max(0, Math.min(1, l.progress || 0));
+    return progressValue === 1;
+  }).length;
 
   // Use DB overview if available, otherwise calculate from merged lessons
   const overview = dbProgress?.overview || {
@@ -266,8 +276,16 @@ function mergeProgress(
   
   // Log divergence if detected
   if (dbProgress && localProgress && dbProgress.lessons) {
-    const dbCompleted = dbProgress.lessons.filter(l => l.progress >= 1.0).length;
-    const localCompleted = localLessons.filter(l => l.progress >= 1.0).length;
+    // Count lessons with progress === 1 (not based on flags)
+    // Lesson progress (0-1 float) is the single source of truth
+    const dbCompleted = dbProgress.lessons.filter(l => {
+      const progressValue = Math.max(0, Math.min(1, l.progress || 0));
+      return progressValue === 1;
+    }).length;
+    const localCompleted = localLessons.filter(l => {
+      const progressValue = Math.max(0, Math.min(1, l.progress || 0));
+      return progressValue === 1;
+    }).length;
     if (Math.abs(dbCompleted - localCompleted) > 0) {
       debug.logDivergence(
         { overview: { completedLessons: localCompleted }, lastSyncAt: localProgress.lastUpdated },
@@ -388,10 +406,49 @@ export const ProgressSource = {
 
   /**
    * Upsert lesson progress (save locally and queue for sync)
+   * @param lessonId - The lesson ID (required, non-empty string)
+   * @param progress - Progress value between 0 and 1
+   * @param moduleId - The module ID (optional but recommended for validation)
    */
-  async upsertLessonProgress(lessonId: string, progress: number): Promise<void> {
+  async upsertLessonProgress(lessonId: string, progress: number, moduleId?: string): Promise<void> {
     const g = debug.group('ProgressSource.upsertLessonProgress');
-    g.info('input', { lessonId, progress });
+    g.info('input', { lessonId, progress, moduleId });
+
+    // ==========================================================================
+    // STRICT VALIDATION - Prevent 400 errors from invalid payloads
+    // ==========================================================================
+
+    // 1. Validate lessonId is a non-empty string
+    if (!lessonId || typeof lessonId !== 'string' || lessonId.trim() === '') {
+      g.warn('ABORTED: lessonId is invalid or empty', { lessonId });
+      g.end();
+      return;
+    }
+
+    // 2. Validate progress is a valid number between 0 and 1
+    if (typeof progress !== 'number' || isNaN(progress) || progress < 0 || progress > 1) {
+      g.warn('ABORTED: progress must be a number between 0 and 1', { lessonId, progress });
+      g.end();
+      return;
+    }
+
+    // 3. Warn if moduleId is missing (but don't block - for backwards compatibility)
+    if (!moduleId) {
+      g.warn('moduleId not provided - request may fail if backend requires it', { lessonId });
+    }
+
+    // 4. Check if lesson is already completed - prevent redundant updates
+    const localSnap = readLocalSnapshot();
+    const existingLesson = localSnap?.lessons?.find(l => l.lessonId === lessonId);
+    if (existingLesson && existingLesson.progress >= 1 && progress <= existingLesson.progress) {
+      g.info('SKIPPED: lesson already completed, no progress increase', { lessonId, currentProgress: existingLesson.progress, requestedProgress: progress });
+      g.end();
+      return;
+    }
+
+    // ==========================================================================
+    // EXECUTE THE UPSERT
+    // ==========================================================================
     const { token } = getAuth();
     if (!token) {
       // cola local modo offline
@@ -403,9 +460,13 @@ export const ProgressSource = {
     // Intento directo a DB
     try {
       const { updateLessonProgress } = await import('../api/progressService');
+      // Calculate completionPercentage to send consistent data
+      const completionPercentage = Math.round(progress * 100);
       await updateLessonProgress({
         lessonId,
+        moduleId, // Include moduleId in the request
         progress,
+        completionPercentage,
         completed: progress >= 1.0
       });
       g.info('synced to DB');
@@ -442,15 +503,19 @@ export const ProgressSource = {
 
       // Migrate all lessons
       await Promise.all(
-        localProgress.lessons.map(lesson =>
-          updateLessonProgress({
+        localProgress.lessons.map(lesson => {
+          // Get progress value (0-1)
+          const progressValue = Math.max(0, Math.min(1, lesson.progress || 0));
+          return updateLessonProgress({
             lessonId: lesson.lessonId,
-            progress: lesson.progress,
-            completed: lesson.progress >= 1.0
+            progress: progressValue,
+            // Only set completed flag if progress === 1 (explicit completion)
+            // The backend may store this flag, but we don't use it for calculations
+            ...(progressValue === 1 && { completed: true })
           }).catch(err => {
             debug.warn(`Failed to migrate lesson ${lesson.lessonId}:`, err);
-          })
-        )
+          });
+        })
       );
 
       // Clear local progress after successful migration

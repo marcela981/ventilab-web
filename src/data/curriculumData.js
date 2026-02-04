@@ -25,6 +25,16 @@ import lesson04SIMV from './lessons/module-02-parameters/lesson-04-simv-destete-
 export const curriculumData = {
   levels: [
     {
+      id: 'prerequisitos',
+      title: 'Prerequisitos',
+      description: 'Optional foundational content',
+      color: '#9E9E9E',
+      emoji: '📚',
+      // totalModules is now computed dynamically via selectors
+      estimatedDuration: 'Variable',
+      mandatory: false
+    },
+    {
       id: 'beginner',
       title: 'Nivel Principiante',
       description: 'Fundamentos fisiológicos y conceptos básicos de ventilación mecánica',
@@ -152,10 +162,10 @@ export const curriculumData = {
     'respiratory-physiology': {
       id: 'respiratory-physiology',
       title: 'Fisiología Respiratoria',
-      level: 'beginner',
-      order: 2,
+      level: 'prerequisitos',
+      order: 1,
       duration: 150,
-      prerequisites: [], // Removed 'respiratory-anatomy' as it doesn't exist
+      prerequisites: [],
       learningObjectives: [
         'Comprender los principios del intercambio gaseoso',
         'Analizar la mecánica de la ventilación',
@@ -164,7 +174,8 @@ export const curriculumData = {
       bloomLevel: 'analizar',
       difficulty: 'básico-intermedio',
       estimatedTime: '2.5 horas',
-      // ✅ Usar lecciones JSON reales
+      mandatory: false,
+      // ✅ Usar lecciones JSON reales (sin quizzes/ejercicios)
       lessons: [
         {
           id: 'module-01-inversion-fisiologica',
@@ -193,35 +204,17 @@ export const curriculumData = {
           order: module03Variables.order || 3,
           lessonData: module03Variables
         }
-      ],
-      quiz: {
-        id: 'physiology-quiz',
-        type: 'formative',
-        questions: [
-          {
-            id: 'q1',
-            type: 'mcq',
-            question: '¿Qué factor NO afecta la difusión de gases?',
-            options: [
-              'Grosor de la membrana alveolar',
-              'Superficie de intercambio',
-              'Velocidad del flujo sanguíneo',
-              'Gradiente de presión parcial'
-            ],
-            correct: 2,
-            explanation: 'La velocidad del flujo sanguíneo afecta la perfusión, no la difusión.'
-          }
-        ]
-      }
+      ]
+      // Quiz removed - prerequisitos level does not include exercises
     },
 
     'ventilation-principles': {
       id: 'ventilation-principles',
       title: 'Principios de Ventilación Mecánica',
-      level: 'beginner',
-      order: 3,
+      level: 'prerequisitos',
+      order: 2,
       duration: 180, // minutos (suma de todas las lecciones)
-      prerequisites: ['respiratory-physiology'],
+      prerequisites: [],
       learningObjectives: [
         'Definir los objetivos de la ventilación mecánica',
         'Identificar las indicaciones y contraindicaciones',
@@ -231,7 +224,9 @@ export const curriculumData = {
       bloomLevel: 'comprender',
       difficulty: 'básico',
       estimatedTime: '3 horas',
+      mandatory: false,
       description: 'Introducción a los principios fundamentales de la ventilación mecánica, incluyendo indicaciones, objetivos y parámetros básicos de configuración.',
+      // No exercises/quizzes in prerequisitos level
       lessons: [
         {
           id: 'vm-indications',
@@ -278,7 +273,7 @@ export const curriculumData = {
       level: 'intermediate',
       order: 1,
       duration: 180, // minutos
-      prerequisites: ['ventilation-principles'],
+      prerequisites: ['module-01-fundamentals'],
       learningObjectives: [
         'Comprender las diferencias entre modalidades controladas por volumen y por presión',
         'Identificar las indicaciones clínicas para cada modalidad ventilatoria',
@@ -446,7 +441,7 @@ export const curriculumData = {
       level: 'intermediate',
       order: 3,
       duration: 200,
-      prerequisites: ['ventilation-principles'],
+      prerequisites: ['module-01-fundamentals'],
       learningObjectives: [
         'Comprender el funcionamiento de VCV',
         'Configurar parámetros en VCV',
@@ -846,6 +841,13 @@ export const getNextModule = (moduleId) => {
   return null;
 };
 
+/**
+ * DEPRECATED: This function uses completedModules array (flag-based).
+ * For correct level progress calculation, use levelProgressAggregated from LearningProgressContext
+ * which uses the formula: sum(moduleProgress) / totalModules
+ * 
+ * This function is kept for backward compatibility but should not be used for level progress display.
+ */
 export const getLevelProgress = (completedModules) => {
   const progress = {};
   
@@ -856,10 +858,14 @@ export const getLevelProgress = (completedModules) => {
       return module && module.level === level.id;
     });
     
+    // NOTE: This uses completedModules count, not average of progress values
+    // For correct calculation, use levelProgressAggregated from LearningProgressContext
     progress[level.id] = {
       total: modulesInLevel.length,
       completed: completedInLevel.length,
-      percentage: (completedInLevel.length / modulesInLevel.length) * 100
+      percentage: modulesInLevel.length > 0 
+        ? (completedInLevel.length / modulesInLevel.length) * 100 
+        : 0
     };
   });
   

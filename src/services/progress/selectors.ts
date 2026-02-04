@@ -35,15 +35,27 @@ export const selectModuleProgress = (
     return lesson.lessonId.includes(moduleId) || lesson.lessonId.startsWith(moduleId);
   });
 
-  const completedLessons = moduleLessons.filter(l => l.progress >= 1.0).length;
+  // Count lessons with progress === 1 (not based on flags)
+  // Lesson progress (0-1 float) is the single source of truth
+  let completedCount = 0;
+  for (const lesson of moduleLessons) {
+    const lessonProgressValue = Math.max(0, Math.min(1, lesson.progress || 0));
+    // A lesson is completed ONLY when progress === 1
+    if (lessonProgressValue === 1) {
+      completedCount++;
+    }
+  }
+
   const totalLessons = moduleLessons.length;
-  const progress = totalLessons > 0 ? completedLessons / totalLessons : 0;
+  // Module progress = completedLessons / totalLessons (0-1)
+  const progress = totalLessons > 0 ? (completedCount / totalLessons) : 0;
 
   return {
-    completedLessons,
+    completedLessons: completedCount,
     totalLessons,
     progress,
-    isCompleted: progress >= 1.0
+    // Module is completed ONLY when all lessons have progress === 1
+    isCompleted: progress === 1
   };
 };
 

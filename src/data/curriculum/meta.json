@@ -1,7 +1,7 @@
 {
   "declaredTotal": 12,
   "strategy": "data-driven",
-  "excludedModules": ["respiratory-physiology"],
-  "note": "Total = 13 módulos - 1 excluido = 12 contados"
+  "excludedModules": [],
+  "note": "respiratory-physiology moved to prerequisitos level"
 }
 

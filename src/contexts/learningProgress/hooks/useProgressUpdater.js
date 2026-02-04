@@ -22,30 +22,49 @@ export const useProgressUpdater = ({
   setProgressByModule,
   setSyncStatus,
   setLastSyncError,
+  setIsRateLimited,
 }) => {
   const pendingUpdatesRef = useRef(new Map()); // Map<updateId, { moduleId, lessonId, optimisticData, retryCount }>
   const updateIdCounterRef = useRef(0);
 
   const updateLessonProgressAction = useCallback(async (update) => {
     const { lessonId, moduleId, ...updateData } = update;
-    
-    if (!lessonId) {
-      throw new Error('lessonId is required');
+
+    // ==========================================================================
+    // STRICT VALIDATION - Prevent 400 errors from invalid payloads
+    // ==========================================================================
+
+    // 1. Validate lessonId is a non-empty string
+    if (!lessonId || typeof lessonId !== 'string' || lessonId.trim() === '') {
+      console.warn('[useProgressUpdater] updateLessonProgressAction ABORTED: lessonId is invalid or empty', { lessonId });
+      return null;
     }
-    
-    // Infer moduleId from current state if not provided
+
+    // 2. Validate moduleId or try to infer it
     let resolvedModuleId = moduleId;
-    if (!resolvedModuleId) {
+    if (!resolvedModuleId || typeof resolvedModuleId !== 'string' || resolvedModuleId.trim() === '') {
       resolvedModuleId = inferModuleIdFromLesson(
         progressByModuleRef.current,
         lessonId,
         currentModuleId
       );
     }
-    
-    if (!resolvedModuleId) {
-      throw new Error('moduleId is required. Cannot infer from context.');
+
+    // 3. Validate that we have a valid moduleId
+    if (!resolvedModuleId || typeof resolvedModuleId !== 'string' || resolvedModuleId.trim() === '') {
+      console.warn('[useProgressUpdater] updateLessonProgressAction ABORTED: moduleId is required but could not be resolved', { lessonId, moduleId });
+      return null;
     }
+
+    // 4. Validate progress value if present
+    if (updateData.progress !== undefined) {
+      if (typeof updateData.progress !== 'number' || isNaN(updateData.progress) || updateData.progress < 0 || updateData.progress > 1) {
+        console.warn('[useProgressUpdater] updateLessonProgressAction ABORTED: progress must be a number between 0 and 1', { lessonId, progress: updateData.progress });
+        return null;
+      }
+    }
+
+    console.log('[useProgressUpdater] Validation passed, proceeding with update', { lessonId, moduleId: resolvedModuleId });
     
     // Generate client event ID for outbox tracking
     const clientEventId = generateClientEventId();
@@ -60,13 +79,16 @@ export const useProgressUpdater = ({
     const optimisticLessonProgress = calculateOptimisticProgress(currentLessonProgress, updateData);
     
     // Optimistic update
+    // Use functional update to ensure we have the latest state
     setProgressByModule(prev => {
       const moduleData = prev[resolvedModuleId] || {
         learningProgress: null,
         lessonsById: {},
       };
       
-      return {
+      // Create new object to ensure React detects the change
+      // This ensures moduleProgressAggregated and levelProgressAggregated recalculate
+      const updated = {
         ...prev,
         [resolvedModuleId]: {
           ...moduleData,
@@ -76,6 +98,8 @@ export const useProgressUpdater = ({
           },
         },
       };
+      
+      return updated;
     });
     
     // Check if offline or API will fail
@@ -122,6 +146,32 @@ export const useProgressUpdater = ({
           ...updateData,
         });
         
+        // Check if result is a rate-limited response
+        if (result && typeof result === 'object' && result.type === 'RATE_LIMITED') {
+          console.warn('[useProgressUpdater] Rate limited when updating lesson progress');
+          setSyncStatus('rate_limited');
+          setLastSyncError(null); // Don't show error, just rate limit state
+          setIsRateLimited?.(true); // Set rate limiting state (defensive call)
+
+          // Add to outbox for later retry (don't lose the update)
+          addToOutbox(outboxEvent);
+
+          // Schedule automatic retry after cooldown (default 5 seconds)
+          const retryAfter = result.retryAfter || 5;
+          setTimeout(() => {
+            console.log('[useProgressUpdater] Retrying after rate limit cooldown...');
+            setIsRateLimited?.(false); // Clear rate limit state before retry (defensive call)
+            performUpdate(0); // Retry the update
+          }, retryAfter * 1000);
+          
+          // Don't remove from pending updates - will retry later
+          // Return optimistic progress to keep UI updated
+          return optimisticLessonProgress;
+        }
+        
+        // Clear rate limit state on successful update
+        setIsRateLimited?.(false);
+        
         // Mark event as confirmed
         markAsConfirmed(clientEventId, result);
         
@@ -129,16 +179,25 @@ export const useProgressUpdater = ({
         removeFromOutbox(clientEventId);
         
         // Reconcile with backend response
+        // Use functional update to ensure we have the latest state
         setProgressByModule(prev => {
           const moduleData = prev[resolvedModuleId] || {
             learningProgress: null,
             lessonsById: {},
           };
           
-          // Update lesson progress
+          // Update lesson progress with backend response
+          // Ensure we preserve the progress value (0-1) from backend
+          const backendLessonProgress = result.lessonProgress || {};
+          const progressValue = backendLessonProgress.progress ?? 
+            (backendLessonProgress.completionPercentage ? backendLessonProgress.completionPercentage / 100 : 0);
+          
           const updatedLessonsById = {
             ...moduleData.lessonsById,
-            [lessonId]: result.lessonProgress,
+            [lessonId]: {
+              ...backendLessonProgress,
+              progress: Math.max(0, Math.min(1, progressValue)),
+            },
           };
           
           // Update learning progress if provided
@@ -152,14 +211,29 @@ export const useProgressUpdater = ({
               }
             : moduleData.learningProgress;
           
-          return {
+          // Create new object to ensure React detects the change
+          const updated = {
             ...prev,
             [resolvedModuleId]: {
               learningProgress: updatedLearningProgress,
               lessonsById: updatedLessonsById,
             },
           };
+          
+          return updated;
         });
+        
+        // Dispatch custom event to notify other parts of the app
+        // This ensures components that listen to progress updates can react immediately
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('progress:updated', {
+            detail: {
+              lessonId,
+              moduleId: resolvedModuleId,
+              progress: result.lessonProgress,
+            },
+          }));
+        }
         
         // Remove from pending updates
         pendingUpdatesRef.current.delete(updateId);
@@ -171,64 +245,92 @@ export const useProgressUpdater = ({
         
         return result;
       } catch (error) {
-        const isNetworkError = error.isNetworkError || 
+        const isNetworkError = error.isNetworkError ||
                               error.name === 'NetworkError' ||
                               (error.message && error.message.includes('conectar'));
-        
+
         // Handle 404 (Lesson not found) - may be temporary or lesson not yet created in backend
-        const isNotFound = error.status === 404 || 
+        const isNotFound = error.status === 404 ||
                           error.code === 'LESSON_NOT_FOUND' ||
                           (error.message && error.message.includes('not found'));
-        
+
+        // Handle 400 (Bad Request) - likely payload validation error
+        const isBadRequest = error.status === 400;
+
         // If network error, add to outbox
         if (isNetworkError) {
           addToOutbox(outboxEvent);
           setSyncStatus('offline-queued');
-          
+
           // Don't retry immediately if offline - will be handled by reconciliation
           if (retryCount < MAX_RETRIES && navigator.onLine) {
             setTimeout(() => {
               performUpdate(retryCount + 1);
             }, RETRY_DELAY_MS * (retryCount + 1));
           }
-          
+
           return null;
         } else if (isNotFound) {
           // Lesson not found - keep optimistic update and add to outbox for later retry
           // This can happen if the lesson hasn't been created in the backend yet
           console.warn(`[useProgressUpdater] Lesson "${lessonId}" not found in backend. Adding to outbox for later sync.`);
-          
+
           addToOutbox(outboxEvent);
           setSyncStatus('offline-queued');
           setLastSyncError(null); // Don't show error to user, just queue for later
-          
+
           // Don't revert optimistic update - keep it in local state
           // Remove from pending updates but keep the optimistic state
           pendingUpdatesRef.current.delete(updateId);
-          
+
           // Don't throw error - allow user to continue working
+          return null;
+        } else if (isBadRequest) {
+          // 400 Bad Request - payload validation failed
+          // Log detailed error for debugging but don't revert optimistic update
+          // This typically means the backend contract wasn't satisfied
+          console.error('[useProgressUpdater] 400 Bad Request - payload validation failed:', {
+            lessonId,
+            moduleId: resolvedModuleId,
+            error: error.message,
+            payload: error.payload,
+            updateData,
+          });
+
+          // Keep optimistic update in local state (user's progress is preserved)
+          // Queue for retry - the progressService should now send correct payload format
+          addToOutbox(outboxEvent);
+          setSyncStatus('offline-queued');
+
+          // Set a non-alarming error message
+          setLastSyncError(null); // Don't show validation errors to user
+
+          pendingUpdatesRef.current.delete(updateId);
+
+          // Don't throw - allow user to continue working
           return null;
         } else {
           // Failed after retries or other error
           console.error('[useProgressUpdater] Failed to update lesson progress:', error);
           setSyncStatus('error');
           setLastSyncError(error.message || 'Error al actualizar progreso');
-          
+
           // Only revert optimistic update for non-recoverable errors
           // For recoverable errors (like temporary server issues), keep the optimistic update
-          const isRecoverableError = error.status >= 500 || 
-                                     error.status === 503 || 
+          const isRecoverableError = error.status >= 500 ||
+                                     error.status === 503 ||
                                      error.status === 502;
-          
+
           if (!isRecoverableError) {
-            // Revert optimistic update for client errors (400, 401, 403, etc.)
+            // Revert optimistic update for client errors (401, 403, etc.)
+            // Note: 400 is now handled above and doesn't revert
             setProgressByModule(prev => {
               const moduleData = prev[resolvedModuleId];
               if (!moduleData) return prev;
-              
+
               const revertedLessonsById = { ...moduleData.lessonsById };
               delete revertedLessonsById[lessonId];
-              
+
               return {
                 ...prev,
                 [resolvedModuleId]: {
@@ -242,14 +344,14 @@ export const useProgressUpdater = ({
             addToOutbox(outboxEvent);
             setSyncStatus('offline-queued');
           }
-          
+
           pendingUpdatesRef.current.delete(updateId);
-          
+
           // Only throw error if it's not recoverable
           if (!isRecoverableError) {
             throw error;
           }
-          
+
           return null;
         }
       }
@@ -261,7 +363,7 @@ export const useProgressUpdater = ({
     });
     
     return optimisticLessonProgress;
-  }, [currentModuleId, progressByModuleRef, setProgressByModule, setSyncStatus, setLastSyncError]);
+  }, [currentModuleId, progressByModuleRef, setProgressByModule, setSyncStatus, setLastSyncError, setIsRateLimited]);
 
   return { updateLessonProgressAction };
 };

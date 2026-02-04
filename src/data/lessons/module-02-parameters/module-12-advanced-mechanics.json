@@ -1,0 +1,141 @@
+{
+    "id": "module-12-advanced-mechanics",
+    "moduleId": "module-01-fundamentals",
+    "title": "Módulo 12: Mecánica Avanzada – Driving Pressure y Mechanical Power",
+    "description": "El pináculo del Nivel Intermedio. Dejamos atrás los objetivos simplistas para adentrarnos en la medicina de precisión. Aprenderás a calcular y optimizar la Driving Pressure (el predictor de mortalidad más robusto) y el Mechanical Power. Entenderás por qué un paciente puede sufrir daño pulmonar (VILI) incluso con 'números normales' y cómo proteger el 'Baby Lung' mediante estrategias avanzadas.",
+    "order": 12,
+    "estimatedTime": 120,
+    "difficulty": "advanced",
+    "bloomLevel": "synthesis",
+    "learningObjectives": [
+      "Calcular la Driving Pressure (Presión de Distensión) y establecer su relación pronóstica con la mortalidad en SDRA (Corte > 15 cmH2O).",
+      "Definir el Mechanical Power como la integral de energía entregada y reconocer el rol de la frecuencia respiratoria en el daño pulmonar (Ergotrauma).",
+      "Diferenciar entre presión en vía aérea y Presión Transpulmonar, aplicando este concepto en pacientes con obesidad mórbida o distensibilidad torácica alterada.",
+      "Integrar todos los conocimientos del nivel intermedio (Modos, Sintonía Fina, PEEP, Mecánica) para resolver casos clínicos complejos de protección pulmonar."
+    ],
+    "prerequisites": [
+      "module-02-ecuacion-movimiento",
+      "module-11-oxygenation"
+    ],
+    "sections": [
+      {
+        "id": "m12-context",
+        "order": 1,
+        "type": "theory",
+        "title": "1. Contexto: Más allá del Volumen Tidal",
+        "content": {
+          "markdown": "## La Revolución de Amato (2015)\nDurante décadas, la meta fue 'Volumen Tidal de 6 ml/kg'. Sin embargo, el estudio de Marcelo Amato en el NEJM cambió todo.\n\nDemostró que podías tener un volumen bajo, pero si tu **Driving Pressure** (Presión de Distensión) era alta, el paciente moría igual. \n\n### El concepto de Strain (Deformación)\nNo importa el tamaño del aire (Vt), importa cuánto se **deforma** el pulmón para acomodarlo. \n* $DP = Vt / Compliance$\n* Si la Compliance es baja (pulmón rígido), incluso un Vt pequeño genera una DP alta y rompe el tejido."
+        }
+      },
+      {
+        "id": "m12-driving-pressure",
+        "order": 2,
+        "type": "theory",
+        "title": "2. Driving Pressure: El Asesino Silencioso",
+        "content": {
+          "markdown": "La métrica más importante que debes monitorizar hoy.\n\n### Cálculo en cama del paciente\n1.  Realiza una **Pausa Inspiratoria** (0.5 - 2 seg).\n2.  Lee la **Presión Meseta (Pplat)**.\n3.  Resta la **PEEP Total**.\n\n$$DP = P_{plat} - PEEP$$\n\n### El Semáforo de Riesgo\n* **Verde:** $< 13$ cmH2O. (Protección Óptima).\n* **Amarillo:** $13 - 15$ cmH2O. (Zona Gris).\n* **Rojo:** $> 15$ cmH2O. **ALTO RIESGO DE MUERTE.** Debes actuar inmediatamente (Bajar Vt, Pronar, Relajar)."
+        }
+      },
+      {
+        "id": "m12-mechanical-power",
+        "order": 3,
+        "type": "theory",
+        "title": "3. Mechanical Power: La Energía Mata",
+        "content": {
+          "markdown": "Gattinoni introdujo la física termodinámica al ventilador.\n\nEl ventilador transfiere **Energía (Joules)** al pulmón. Si esa energía supera la capacidad del pulmón para disiparla, se rompe la matriz de colágeno.\n\n### Los 4 Jinetes del Mechanical Power\n1.  **Volumen:** Estiramiento.\n2.  **Presión (Driving):** Tensión.\n3.  **Flujo:** Velocidad de impacto.\n4.  **Frecuencia Respiratoria:** Repetición del golpe.\n\n> **Dato Crítico:** A veces, para 'proteger' el pulmón, bajamos el volumen pero subimos la frecuencia a 35 rpm para lavar CO2. ¡Cuidado! El aumento de frecuencia sube el Mechanical Power y puede causar tanto daño como un volumen alto (**Ergotrauma**)."
+        }
+      },
+      {
+        "id": "m12-obesity",
+        "order": 4,
+        "type": "theory",
+        "title": "4. Profundización: El Paciente Obeso",
+        "content": {
+          "markdown": "En obesidad mórbida, el peso del tórax aplasta el pulmón.\n\n* **El Engaño:** El ventilador marca presiones altísimas (Pplat 35). Tú piensas '¡Barotrauma!'.\n* **La Realidad:** Gran parte de esa presión se usa solo para levantar la pared torácica. El pulmón adentro está recibiendo presiones normales.\n\n**Concepto Avanzado: Presión Transpulmonar ($P_L$)**\nEs la presión real que siente el alveolo.\n$$P_L = P_{vía\\ aérea} - P_{pleural}$$\nEn obesos, la $P_{pleural}$ es alta. Por tanto, toleramos Pplat más altas para asegurar que la $P_L$ sea suficiente para ventilar."
+        }
+      },
+      {
+        "id": "m12-final-case",
+        "order": 5,
+        "type": "interactive",
+        "title": "Auditoría Final: Integración Clínica",
+        "content": {
+          "markdown": "### El Desafío Final del Nivel Intermedio\n\nPaciente varón, 60 años, SDRA moderado por Pancreatitis.\n**Ventilador (VCV):** Vt 400ml, PEEP 12, FR 24, Flujo 50 L/min.\n**Gases:** pH 7.30, PaCO2 55 (Hipercapnia), PaO2 70.\n**Mecánica:** Pplat 29, PEEP Tot 12.\n\n**Cálculos:**\n1.  $DP = 29 - 12 = 17$ cmH2O.\n\n**Análisis:**\n* La Pplat (29) parece segura (<30).\n* PERO la **DP (17)** está en rango mortal.\n\n**Tu Decisión:**\n¿Qué ajuste haces para proteger este pulmón?\n1.  Aumentar la FR a 30 para lavar el CO2.\n2.  Bajar el Vt a 350ml para reducir la DP, tolerando que el CO2 suba más (Hipercapnia Permisiva).\n3.  Subir la PEEP a 18 para reclutar.\n\n> *La opción 2 es la correcta. La prioridad absoluta es bajar la DP < 15. La hipercapnia se tolera (mientras pH > 7.20), la rotura pulmonar no.*"
+        }
+      },
+      {
+        "id": "m12-quiz",
+        "order": 6,
+        "type": "quiz",
+        "title": "Certificación Nivel Intermedio",
+        "questions": [
+          {
+            "id": "q1",
+            "type": "multiple-choice",
+            "question": "Calcula la Driving Pressure e interpreta el riesgo: Paciente con Pplat 26 cmH2O y PEEP total 8 cmH2O.",
+            "options": [
+              "DP = 18. Riesgo Alto.",
+              "DP = 18. Riesgo Bajo porque Pplat < 30.",
+              "DP = 34. Riesgo Extremo.",
+              "DP = 3.25. Riesgo Bajo."
+            ],
+            "correctAnswer": "DP = 18. Riesgo Alto.",
+            "explanation": "DP = 26 - 8 = 18. Aunque la Pplat es 'normal', una DP de 18 indica sobredistensión cíclica y alta mortalidad.",
+            "difficulty": "advanced"
+          },
+          {
+            "id": "q2",
+            "type": "multiple-choice",
+            "question": "¿Qué componente del 'Mechanical Power' suele ser subestimado como causante de daño pulmonar cuando se intenta compensar un volumen corriente bajo?",
+            "options": [
+              "La PEEP.",
+              "La Frecuencia Respiratoria.",
+              "La FiO2.",
+              "La Humedad Relativa."
+            ],
+            "correctAnswer": "La Frecuencia Respiratoria.",
+            "explanation": "Aumentar la FR aumenta exponencialmente la energía entregada al pulmón (Ergotrauma), pudiendo anular el beneficio protector de usar bajo volumen.",
+            "difficulty": "advanced"
+          },
+          {
+            "id": "q3",
+            "type": "multiple-choice",
+            "question": "En un paciente con obesidad mórbida, ¿por qué puede ser aceptable tener una Presión Meseta (Pplat) de 32 cmH2O?",
+            "options": [
+              "Porque los obesos tienen pulmones más grandes.",
+              "Porque la presión pleural elevada por el peso del tórax reduce la Presión Transpulmonar real, protegiendo al alveolo.",
+              "No es aceptable, siempre se debe bajar a < 30.",
+              "Porque la grasa absorbe el nitrógeno."
+            ],
+            "correctAnswer": "Porque la presión pleural elevada por el peso del tórax reduce la Presión Transpulmonar real, protegiendo al alveolo.",
+            "explanation": "Ptranspulmonar = Pvia_aerea - Ppleural. Si Ppleural es alta (ej. 15), una Pplat de 32 resulta en una Ptranspulmonar de 17, que es segura.",
+            "difficulty": "advanced"
+          }
+        ]
+      }
+    ],
+    "resources": {
+      "references": [
+        {
+          "authors": "Amato MB, Meade MO, Slutsky AS, et al.",
+          "year": 2015,
+          "title": "Driving pressure and survival in the acute respiratory distress syndrome",
+          "source": "N Engl J Med. 2015;372(8):747-755",
+          "doi": "10.1056/NEJMoa1406126"
+        },
+        {
+          "authors": "Gattinoni L, Tonetti T, Cressoni M, et al.",
+          "year": 2016,
+          "title": "Ventilator-related causes of lung injury: the mechanical power",
+          "source": "Intensive Care Med. 2016;42(10):1567-1575",
+          "doi": "10.1007/s00134-016-4505-2"
+        }
+      ]
+    },
+    "metadata": {
+      "language": "es",
+      "version": "1.0.0",
+      "lastUpdated": "2026-01-24",
+      "source": "VentyLab Curated Content"
+    }
+  }

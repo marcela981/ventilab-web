@@ -143,28 +143,34 @@ export function calculateFilteredProgress(progressByModule, levelId = null) {
     totalPages += pages;
     
     if (lessonProgress) {
-      const lessonProgressValue = lessonProgress.completed 
-        ? 1 
-        : Math.max(0, Math.min(1, lessonProgress.progress || 0));
-      
-      // Si la lección está completada, contar como completada
-      if (lessonProgress.completed) {
+      // Get progress value (0-1) - prefer progress field, then completionPercentage
+      // Lesson progress (0-1 float) is the single source of truth
+      let lessonProgressValue = 0;
+      if (typeof lessonProgress.progress === 'number') {
+        lessonProgressValue = Math.max(0, Math.min(1, lessonProgress.progress));
+      } else if (typeof lessonProgress.completionPercentage === 'number') {
+        // DB stores completionPercentage as 0-100, convert to 0-1
+        lessonProgressValue = Math.max(0, Math.min(1, lessonProgress.completionPercentage / 100));
+      }
+
+      // A lesson is completed ONLY when progress === 1 (not based on flags)
+      if (lessonProgressValue === 1) {
         completedLessons++;
       }
-      
+
       // Calcular páginas completadas basado en progress (0-1)
       // progress representa completedPages / totalPages a nivel de lección
       const lessonCompletedPages = Math.round(lessonProgressValue * pages);
       completedPages += lessonCompletedPages;
-      
+
       // Para promedio ponderado: sumar progress * pages
       weightedProgressSum += lessonProgressValue * pages;
     }
   });
-  
+
   // Las lecciones allowEmpty NO se cuentan en ningún cálculo de progreso
   // (ni en completedLessons, ni en totalLessons, ni en páginas)
-  
+
   const totalLessons = completableLessons.length;
   
   // Calcular porcentaje: promedio ponderado por páginas si hay páginas, sino por lecciones
@@ -216,29 +222,36 @@ export function calculateModuleFilteredProgress(progressByModule, moduleId) {
     totalPages += pages;
     
     const lessonProgress = moduleData?.lessonsById?.[lessonId];
-    
+
     if (lessonProgress) {
-      const lessonProgressValue = lessonProgress.completed 
-        ? 1 
-        : Math.max(0, Math.min(1, lessonProgress.progress || 0));
-      
-      if (lessonProgress.completed) {
+      // Get progress value (0-1) - prefer progress field, then completionPercentage
+      // Lesson progress (0-1 float) is the single source of truth
+      let lessonProgressValue = 0;
+      if (typeof lessonProgress.progress === 'number') {
+        lessonProgressValue = Math.max(0, Math.min(1, lessonProgress.progress));
+      } else if (typeof lessonProgress.completionPercentage === 'number') {
+        // DB stores completionPercentage as 0-100, convert to 0-1
+        lessonProgressValue = Math.max(0, Math.min(1, lessonProgress.completionPercentage / 100));
+      }
+
+      // A lesson is completed ONLY when progress === 1 (not based on flags)
+      if (lessonProgressValue === 1) {
         completedLessons++;
       }
-      
+
       // Calcular páginas completadas basado en progress (0-1)
       const lessonCompletedPages = Math.round(lessonProgressValue * pages);
       completedPages += lessonCompletedPages;
-      
+
       // Para promedio ponderado: sumar progress * pages
       weightedProgressSum += lessonProgressValue * pages;
     }
   });
-  
+
   // Las lecciones allowEmpty NO se cuentan en ningún cálculo de progreso
-  
+
   const totalLessons = completableLessons.length;
-  
+
   // Calcular porcentaje: promedio ponderado por páginas si hay páginas
   let percentage = 0;
   if (totalPages > 0) {
@@ -248,7 +261,7 @@ export function calculateModuleFilteredProgress(progressByModule, moduleId) {
     // Fallback: promedio simple por lecciones
     percentage = completedLessons / totalLessons;
   }
-  
+
   return {
     completedLessons,
     totalLessons,

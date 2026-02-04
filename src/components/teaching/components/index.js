@@ -28,4 +28,11 @@ export { default as SimulationControls } from './SimulationControls';
 
 // Lesson viewer and content components
 export { default as LessonViewer } from './LessonViewer';
+export { default as LessonViewerWrapper } from './LessonViewerWrapper';
+export { default as LessonLoadingSkeleton } from './LessonLoadingSkeleton';
+export { default as LessonErrorState } from './LessonErrorState';
+export { default as TeachingLessonView } from './TeachingLessonView';
+export { default as TeachingTabs } from './TeachingTabs';
+export { default as ProgressTabSkeleton } from './ProgressTabSkeleton';
 export * from './content';
+export * from './media';

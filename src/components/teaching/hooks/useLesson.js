@@ -162,7 +162,7 @@ const useLesson = (lessonId, moduleId) => {
    * Enriches lesson data with module metadata from curriculumData.js
    * This function adds navigation, position, and module information to the
    * lesson data loaded by the lessonLoader helper.
-   * 
+   *
    * @param {Object} lessonData - The loaded lesson data (already normalized by lessonLoader)
    * @returns {Object} Enriched lesson data with module info, position, and navigation
    */
@@ -171,15 +171,20 @@ const useLesson = (lessonId, moduleId) => {
       return null;
     }
 
-    // Get module from curriculumData - try both the moduleId from JSON and the passed moduleId
-    // This handles cases where JSON has 'module-01-fundamentals' but curriculumData uses 'respiratory-anatomy'
-    let module = curriculumData?.modules?.[moduleId] || 
-                 curriculumData?.modules?.[lessonData.moduleId];
-    
-    // If not found, try searching by title or other fields
+    // Get module from curriculumData - ONLY use the passed moduleId to avoid cross-module confusion
+    // This is critical because some lesson IDs exist in multiple modules (e.g., respiratory-physiology and module-01-fundamentals)
+    let module = curriculumData?.modules?.[moduleId];
+
+    // Only fall back to lessonData.moduleId if passed moduleId doesn't exist
+    if (!module && lessonData.moduleId && lessonData.moduleId !== moduleId) {
+      console.warn(`[useLesson] Module ${moduleId} not found, falling back to ${lessonData.moduleId}`);
+      module = curriculumData?.modules?.[lessonData.moduleId];
+    }
+
+    // If still not found, try searching by title or other fields (last resort)
     if (!module) {
       module = Object.values(curriculumData?.modules || {}).find(
-        m => m.id === moduleId || 
+        m => m.id === moduleId ||
         m.id === lessonData.moduleId ||
         m.title?.toLowerCase().includes(moduleId.toLowerCase()) ||
                      m.title?.toLowerCase().includes(lessonData.moduleId.toLowerCase())
@@ -190,13 +195,41 @@ const useLesson = (lessonId, moduleId) => {
       console.warn(`[useLesson] Module ${moduleId} or ${lessonData.moduleId} not found in curriculumData, using minimal metadata`);
     }
 
-    // Get lessons array from module
-    const moduleLessons = module?.lessons || [];
-    
-    // Find current lesson position in module
+    // Get lessons array from module and SORT BY ORDER to ensure deterministic navigation
+    // This is critical because array position determines next/previous lesson
+    const rawLessons = module?.lessons || [];
+    const moduleLessons = [...rawLessons].sort((a, b) => {
+      const orderA = a.order ?? a.lessonData?.order ?? 999;
+      const orderB = b.order ?? b.lessonData?.order ?? 999;
+      return orderA - orderB;
+    });
+
+    // Find current lesson position in module using BOTH lessonId variants for robustness
+    const currentLessonId = lessonData.lessonId || lessonId;
     const lessonIndex = moduleLessons.findIndex(
-      l => l.id === lessonData.lessonId || l.id === lessonId
+      l => l.id === currentLessonId || l.id === lessonId || l.id === lessonData.lessonId
     );
+
+    // CRITICAL GUARD: If lesson is not found in module, log detailed error
+    if (lessonIndex === -1) {
+      console.error('[useLesson] ⚠️ LESSON NOT FOUND IN MODULE:', {
+        searchedFor: [currentLessonId, lessonId, lessonData.lessonId],
+        moduleId: moduleId,
+        availableLessons: moduleLessons.map(l => ({ id: l.id, order: l.order })),
+        hint: 'This causes navigation to fail. Check if lessonId matches curriculumData exactly.'
+      });
+    }
+
+    // DEBUG: Log lesson navigation calculation
+    console.log('[useLesson] Navigation calculation:', {
+      currentLessonId: lessonId,
+      lessonDataLessonId: lessonData.lessonId,
+      moduleId: moduleId,
+      lessonIndex: lessonIndex,
+      totalLessons: moduleLessons.length,
+      lessonIds: moduleLessons.map(l => l.id),
+      sortedByOrder: true
+    });
 
     // Build module info object
     const moduleInfo = module ? {
@@ -237,12 +270,49 @@ const useLesson = (lessonId, moduleId) => {
         }
       : null;
 
-    const nextLesson = lessonIndex >= 0 && lessonIndex < moduleLessons.length - 1 && moduleLessons[lessonIndex + 1]
-      ? {
-          id: moduleLessons[lessonIndex + 1].id,
-          title: moduleLessons[lessonIndex + 1].title,
-        }
-      : null;
+    // Calculate next lesson - ensure it's actually different from current
+    // CRITICAL: This logic must handle lessonIndex === -1 explicitly
+    let nextLesson = null;
+    let navigationError = null;
+
+    if (lessonIndex === -1) {
+      // EXPLICIT GUARD: Lesson not found - DO NOT silently fall back to index 0
+      navigationError = 'LESSON_NOT_FOUND';
+      console.error('[useLesson] ⚠️ Cannot calculate nextLesson: current lesson not found in module', {
+        currentLessonId: lessonId,
+        moduleId: moduleId,
+        availableLessonCount: moduleLessons.length,
+      });
+    } else if (lessonIndex < moduleLessons.length - 1) {
+      // Normal case: there's a next lesson
+      const candidateNextLesson = moduleLessons[lessonIndex + 1];
+      if (candidateNextLesson && candidateNextLesson.id !== lessonId && candidateNextLesson.id !== lessonData.lessonId) {
+        nextLesson = {
+          id: candidateNextLesson.id,
+          title: candidateNextLesson.title,
+        };
+      } else if (candidateNextLesson) {
+        // CRITICAL: Log if we detect a potential same-lesson navigation bug
+        navigationError = 'SAME_LESSON_BUG';
+        console.error('[useLesson] ⚠️ NAVIGATION BUG DETECTED: nextLesson would be same as current!', {
+          currentLessonId: lessonId,
+          candidateNextLessonId: candidateNextLesson.id,
+          lessonIndex,
+          hint: 'Check for duplicate lesson IDs or incorrect array sorting',
+        });
+      }
+    }
+    // else: lessonIndex === moduleLessons.length - 1, last lesson, nextLesson stays null
+
+    // DEBUG: Log final navigation result
+    console.log('[useLesson] Navigation result:', {
+      previousLesson: previousLesson?.id || null,
+      nextLesson: nextLesson?.id || null,
+      isLastLesson: nextLesson === null && lessonIndex === moduleLessons.length - 1,
+      lessonIndex: lessonIndex,
+      totalLessons: moduleLessons.length,
+      navigationError: navigationError,
+    });
 
     const navigation = {
       previousLesson,
@@ -250,13 +320,16 @@ const useLesson = (lessonId, moduleId) => {
     };
 
     // Combine all data
+    // CRITICAL: Override lessonData.moduleId with the passed moduleId to ensure
+    // navigation stays within the correct module context (fixes cross-module navigation bug)
     return {
       ...lessonData,
+      moduleId: moduleId, // Override JSON's moduleId with the actual module being viewed
       moduleInfo,
       lessonPosition,
       navigation,
     };
-  }, [lessonId]);
+  }, [lessonId, moduleId]);
 
   // ============================================================================
   // Content Loading Function

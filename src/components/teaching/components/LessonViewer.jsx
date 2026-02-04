@@ -56,11 +56,10 @@ import {
   Paper,
 } from '@mui/material';
 import {
-  OpenInNew as OpenInNewIcon,
   Lock as LockIcon,
-  CheckCircle as CheckCircleIcon,
+  Visibility as VisibilityIcon,
 } from '@mui/icons-material';
-import { ThemeProvider, useTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { teachingModuleTheme } from '../../../theme/teachingModuleTheme';
 
 import useLesson from '../hooks/useLesson';
@@ -69,6 +68,7 @@ import useLessonPages from '../hooks/useLessonPages';
 import { useProgress } from '@/hooks/useProgress';
 import { useLessonProgress } from '@/hooks/useLessonProgress';
 import LessonNavigation from './LessonNavigation';
+import LessonIndexNavigator from './LessonIndexNavigator';
 import TutorAIPopup from './ai/TutorAIPopup';
 import AITopicExpander from './ai/AITopicExpander';
 import { useTopicContext } from '../../../hooks/useTopicContext';
@@ -98,96 +98,12 @@ const LazyVideoPlayer = lazy(() => import('./media/VideoPlayer'));
 const LazyImageGallery = lazy(() => import('./media/ImageGallery'));
 const LazyInteractiveDiagram = lazy(() => import('./media/InteractiveDiagram'));
 
-/**
- * MediaSkeleton - Local skeleton component for media blocks
- */
-const MediaSkeleton = ({ variant = 'video' }) => {
-  if (variant === 'imageGallery') {
-    return (
-      <Grid container spacing={2}>
-        {[1, 2, 3, 4].map((i) => (
-          <Grid item xs={6} sm={4} md={3} key={i}>
-            <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 1 }} />
-          </Grid>
-        ))}
-      </Grid>
-    );
-  }
-  
-  // Default: video/diagram skeleton (16:9 aspect ratio)
-  return (
-    <Skeleton
-      variant="rectangular"
-      sx={{
-        width: '100%',
-        paddingTop: '56.25%', // 16:9 aspect ratio
-        borderRadius: 1,
-      }}
-    />
-  );
-};
+// Media utility components (from content folder)
+import { MediaSkeleton, MediaFallback } from './content';
 
-MediaSkeleton.propTypes = {
-  variant: PropTypes.oneOf(['video', 'diagram', 'imageGallery']),
-};
-
-/**
- * MediaFallback - Componente unificado para estados vacíos y errores
- * Última red de seguridad cuando un bloque multimedia está malformado
- */
-const MediaFallback = memo(({ message, actionUrl, blockIndex, blockType }) => {
-  const handleOpenExternal = useCallback(() => {
-    if (actionUrl) {
-      window.open(actionUrl, '_blank', 'noopener,noreferrer');
-    }
-  }, [actionUrl]);
-
-  // Emitir warning para debug
-  useEffect(() => {
-    if (blockIndex !== undefined && blockType) {
-      console.warn(
-        `[LessonViewer] Fallback activado para bloque multimedia ${blockIndex + 1} (tipo: ${blockType}):`,
-        message
-      );
-    }
-  }, [message, blockIndex, blockType]);
-
-  return (
-    <Alert
-      severity="warning"
-      sx={{ my: 2 }}
-      action={
-        actionUrl ? (
-          <Button
-            color="inherit"
-            size="small"
-            onClick={handleOpenExternal}
-            startIcon={<OpenInNewIcon />}
-          >
-            Abrir en nueva pestaña
-          </Button>
-        ) : null
-      }
-    >
-      {message || 'Contenido no disponible'}
-    </Alert>
-  );
-});
-
-MediaFallback.displayName = 'MediaFallback';
-
-MediaFallback.propTypes = {
-  message: PropTypes.string.isRequired,
-  actionUrl: PropTypes.string,
-  blockIndex: PropTypes.number,
-  blockType: PropTypes.string,
-};
-
-MediaFallback.defaultProps = {
-  actionUrl: null,
-  blockIndex: undefined,
-  blockType: undefined,
-};
+// Extracted loading/error state components
+import LessonLoadingSkeleton from './LessonLoadingSkeleton';
+import LessonErrorState from './LessonErrorState';
 
 /**
  * LessonViewer - Main component for displaying lesson content
@@ -210,7 +126,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   }, [error, onNavigate]);
   
   // Get progress context for marking lessons as complete
-  const { completedLessons, updateLessonProgress, syncStatus } = useLearningProgress();
+  const { completedLessons, updateLessonProgress, syncStatus, getModuleProgressAggregated } = useLearningProgress();
   
   // Get module data to count total lessons
   const module = useMemo(() => {
@@ -225,6 +141,13 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     ).length;
     return Math.round((completedCount / module.lessons.length) * 100);
   }, [moduleId, module, completedLessons]);
+
+  // Check if module is fully completed (100%)
+  const isModuleCompleted = useMemo(() => {
+    if (!moduleId) return false;
+    const moduleProgress = getModuleProgressAggregated(moduleId);
+    return moduleProgress?.isCompleted === true;
+  }, [moduleId, getModuleProgressAggregated]);
   
   const totalLessons = useMemo(() => {
     return module?.lessons?.length || 0;
@@ -255,7 +178,20 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     const score = data?.content?.assessment?.passingScore ?? data?.assessment?.passingScore ?? data?.metadata?.passingScore;
     return typeof score === 'number' ? score : 70;
   }, [data]);
-  
+
+  // Check if this is the first lesson in the module (for TutorAI auto-open logic)
+  const isFirstLesson = useMemo(() => {
+    if (!module?.lessons || module.lessons.length === 0) return false;
+    return module.lessons[0]?.id === lessonId;
+  }, [module, lessonId]);
+
+  // Check if the lesson was already completed before entering this session
+  // This is used to prevent TutorAI from auto-opening on re-entry
+  const wasLessonCompletedOnEntry = useMemo(() => {
+    const lessonKey = `${moduleId}-${lessonId}`;
+    return completedLessons.has(lessonKey);
+  }, [moduleId, lessonId, completedLessons]);
+
   // ============================================================================
   // State Management
   // ============================================================================
@@ -284,9 +220,12 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   
   // Track previous lesson ID to detect changes
   const previousLessonIdRef = useRef(lessonId);
-  
+
   // Confetti state for celebration
   const [showConfetti, setShowConfetti] = useState(false);
+
+  // Guard to prevent TutorAI finalSuggestions from firing multiple times
+  const tutorFinalSuggestionsDispatchedRef = useRef(false);
   
   // ============================================================================
   // Refs
@@ -295,6 +234,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   const contentRef = useRef(null);
   const autoCompletionRef = useRef(false);
   const autoCompletionInFlightRef = useRef(false);
+  const completionNotifiedRef = useRef(false);
 
   const { isScrolledEnough, meetsReadingTime } = useScrollCompletion({
     contentRef,
@@ -309,17 +249,26 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     localProgress,
     isSaving,
     isCompleted,
+    isRateLimited, // Track rate limiting state
     showResumeAlert,
     dismissResumeAlert,
     saveProgress,
+    savePageProgress,
+    backendProgress,
   } = useLessonProgress({
     lessonId,
     moduleId,
     contentRef,
     onComplete: () => {
+      // GUARD: Only trigger completion if lesson was NOT already completed on entry
+      // This prevents re-completion when navigating to already-completed lessons
+      if (wasLessonCompletedOnEntry) {
+        console.log('[LessonViewer] Skipping completion callback - lesson already completed on entry');
+        return;
+      }
       setShowConfetti(true);
       setLessonCompleted(true);
-      console.log('[LessonViewer] Lesson auto-completed via scroll tracking');
+      console.log('[LessonViewer] Lesson auto-completed via page tracking');
     },
     autoSaveThreshold: 5, // Guardar cada 5% de progreso (más frecuente)
     autoCompleteThreshold: 90,
@@ -328,22 +277,86 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   // ============================================================================
   // Scroll to top on mount or lesson change
   // ============================================================================
-  
+
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // Reset to first page when lesson changes
-    setCurrentPage(0);
+    // Reset state when lesson changes
     setLessonCompleted(false);
     autoCompletionRef.current = false;
     autoCompletionInFlightRef.current = false;
-    
-    // Cuando cambia la lección, el hook useAITutor creará una nueva sesión automáticamente
-    // La sesión anterior se conserva en localStorage según la lógica del hook
+    completionNotifiedRef.current = false;
+    tutorFinalSuggestionsDispatchedRef.current = false;
+
+    // CRITICAL FIX: Reset currentPage to 0 when lessonId changes
+    // This ensures the user starts at the beginning of the new lesson,
+    // not at the page index they were at in the previous lesson
     if (previousLessonIdRef.current !== lessonId) {
+      console.log('[LessonViewer] Lesson changed from', previousLessonIdRef.current, 'to', lessonId, '- resetting to page 0');
+      setCurrentPage(0);
       previousLessonIdRef.current = lessonId;
+
+      // Scroll to top when navigating to new lesson
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [lessonId]);
+
+  // Initialize currentPage from backend progress (synchronized with database)
+  useEffect(() => {
+    if (!backendProgress) {
+      // Backend progress not loaded yet, use localStorage as fallback
+      try {
+        const savedProgress = localStorage.getItem(`lesson_progress_${lessonId}`);
+        if (savedProgress) {
+          const { currentPage: savedPage } = JSON.parse(savedProgress);
+          if (typeof savedPage === 'number' && savedPage >= 0) {
+            console.log('[LessonViewer] Using localStorage page (backend not loaded yet):', savedPage + 1);
+            setCurrentPage(savedPage);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error('[LessonViewer] Error reading localStorage:', e);
+      }
+      // Default to page 0 if no data available
+      setCurrentPage(0);
+      return;
+    }
+
+    // Backend progress is available - use it to initialize currentPage
+    if (backendProgress.completed) {
+      // If lesson is completed, always start at page 0
+      console.log('[LessonViewer] Lesson completed, starting at page 0');
+      setCurrentPage(0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (backendProgress.currentStep && backendProgress.currentStep > 0) {
+      // Initialize from backend currentStep (convert from 1-based to 0-based)
+      const initialPage = backendProgress.currentStep - 1;
+      console.log('[LessonViewer] Initializing from backend progress:', {
+        currentStep: backendProgress.currentStep,
+        initialPage: initialPage + 1,
+        completionPercentage: backendProgress.completionPercentage,
+      });
+      setCurrentPage(initialPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // No step data in backend, fallback to localStorage or page 0
+      try {
+        const savedProgress = localStorage.getItem(`lesson_progress_${lessonId}`);
+        if (savedProgress) {
+          const { currentPage: savedPage } = JSON.parse(savedProgress);
+          if (typeof savedPage === 'number' && savedPage >= 0) {
+            console.log('[LessonViewer] Using localStorage page (no step data in backend):', savedPage + 1);
+            setCurrentPage(savedPage);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error('[LessonViewer] Error reading localStorage:', e);
+      }
+      console.log('[LessonViewer] No step data available, starting at page 0');
+      setCurrentPage(0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [lessonId, backendProgress]);
   
   // Progress tracking is now handled by useProgress hook (auto-save every 5 min)
   
@@ -351,8 +364,32 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   // Navigation Handlers
   // ============================================================================
   
-  const handleNavigateToLesson = useCallback((targetLessonId, targetModuleId) => {
-    // Progress is automatically saved via useProgress hook on beforeunload
+  const handleNavigateToLesson = useCallback(async (targetLessonId, targetModuleId) => {
+    // SAFETY CHECK: Prevent navigating to the same lesson (would cause reload loop)
+    if (targetLessonId === lessonId) {
+      console.warn('[LessonViewer] ⚠️ Attempted to navigate to the same lesson:', targetLessonId);
+      console.warn('[LessonViewer] This indicates a bug in nextLesson calculation. Aborting navigation.');
+      return;
+    }
+
+    // Validate required parameters
+    if (!targetLessonId || !targetModuleId) {
+      console.error('[LessonViewer] ❌ Invalid navigation parameters:', { targetLessonId, targetModuleId });
+      return;
+    }
+
+    console.log('[LessonViewer] 🚀 Navigating from', lessonId, 'to', targetLessonId, 'in module', targetModuleId);
+
+    // CRITICAL: Save progress before navigation to ensure persistence
+    try {
+      console.log('[LessonViewer] Saving progress before navigation...');
+      await saveProgress(); // Wait for progress to be saved
+      console.log('[LessonViewer] Progress saved, navigating to:', targetLessonId);
+    } catch (error) {
+      console.error('[LessonViewer] Failed to save progress before navigation:', error);
+      // Continue with navigation even if save fails
+    }
+
     if (onNavigate) {
       onNavigate(targetLessonId, targetModuleId);
     } else {
@@ -362,7 +399,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
         window.location.href = `/teaching/lesson/${targetModuleId}/${targetLessonId}`;
       }
     }
-  }, [lessonId, moduleId, updateLessonProgress, onNavigate]);
+  }, [lessonId, saveProgress, onNavigate]);
   
   // ============================================================================
   // Automatic Completion
@@ -371,7 +408,21 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   // Trigger auto-completion by saving progress at 100%
   // This will automatically mark the lesson as completed via useLessonProgress hook
   const triggerAutoCompletion = useCallback(async () => {
+    // GUARD: Prevent completion if lesson was already completed on entry
+    // or if module is completed (free navigation mode - read-only)
     if (!data || lessonCompleted || autoCompletionRef.current || autoCompletionInFlightRef.current) {
+      return false;
+    }
+
+    // GUARD: Do not trigger completion if lesson was already completed
+    if (wasLessonCompletedOnEntry) {
+      console.log('[LessonViewer] Skipping auto-completion - lesson already completed on entry');
+      return false;
+    }
+
+    // GUARD: Do not trigger completion in free navigation mode (module completed)
+    if (isModuleCompleted) {
+      console.log('[LessonViewer] Skipping auto-completion - module completed, read-only navigation');
       return false;
     }
 
@@ -381,11 +432,15 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
       console.log('[LessonViewer] 🎉 Auto-completing lesson by saving at 100%');
       // Save progress at 100% to complete the lesson
       await saveProgress(true); // forceComplete = true
-      
+
       autoCompletionRef.current = true;
       setLessonCompleted(true);
 
-      if (onComplete) {
+      // CRITICAL: Notify parent exactly once using completionNotifiedRef guard
+      // GUARD: Only notify if lesson was NOT already completed
+      if (!completionNotifiedRef.current && onComplete && !wasLessonCompletedOnEntry) {
+        completionNotifiedRef.current = true;
+        console.log('[LessonViewer] Notifying parent of completion (triggerAutoCompletion)');
         onComplete(data);
       }
 
@@ -398,7 +453,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     } finally {
       autoCompletionInFlightRef.current = false;
     }
-  }, [data, lessonCompleted, saveProgress, onComplete]);
+  }, [data, lessonCompleted, saveProgress, onComplete, wasLessonCompletedOnEntry, isModuleCompleted]);
 
   // ============================================================================
   // Practical Cases Handlers
@@ -449,10 +504,14 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     setAssessmentScore({ correct, total, percentage });
     setShowAssessmentResults(true);
 
-    if (percentage >= passingScore) {
+    // GUARD: Only trigger auto-completion if lesson was NOT already completed
+    // This prevents re-completion when navigating to already-completed lessons
+    if (percentage >= passingScore && !wasLessonCompletedOnEntry) {
       triggerAutoCompletion();
+    } else if (percentage >= passingScore && wasLessonCompletedOnEntry) {
+      console.log('[LessonViewer] Skipping assessment completion - lesson already completed on entry');
     }
-  }, [data, assessmentAnswers, passingScore, triggerAutoCompletion]);
+  }, [data, assessmentAnswers, passingScore, triggerAutoCompletion, wasLessonCompletedOnEntry]);
   
   // ============================================================================
   // Snackbar Handlers
@@ -471,6 +530,14 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   const totalPages = calculatePages.length;
   const currentPageData = calculatePages[currentPage];
   
+  // REMOVED: Auto-navigation based on progress percentage
+  // This was causing completed lessons to auto-navigate to the final screen.
+  // Navigation to the end must ONLY occur after the user explicitly completes the lesson.
+  // 
+  // Users should always start at the first page when entering a lesson,
+  // regardless of completion status. Completed lessons can be reviewed normally
+  // by navigating through pages manually.
+
   // Notificar al padre sobre cambios en el progreso
   useEffect(() => {
     if (onProgressUpdate && totalPages > 0) {
@@ -490,62 +557,143 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     sectionData: currentPageData?.section || currentPageData || null,
   });
   
+  // Calculate totalSteps from lesson sections (backend requires this)
+  const totalSteps = useMemo(() => {
+    if (!data?.sections || !Array.isArray(data.sections)) {
+      return totalPages; // Fallback to totalPages if sections not available
+    }
+    return data.sections.length;
+  }, [data, totalPages]);
+
   const handleNextPage = useCallback(() => {
     if (currentPage < totalPages - 1) {
-      setCurrentPage(prev => prev + 1);
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // CRITICAL: Save progress when page changes
+      // Always send currentStep and totalSteps (required by backend)
+      console.log('[LessonViewer] Next page clicked, saving progress:', newPage + 1, '/', totalPages, 'steps:', totalSteps);
+      savePageProgress(newPage, totalPages, totalSteps);
     }
-  }, [currentPage, totalPages]);
-  
+  }, [currentPage, totalPages, totalSteps, savePageProgress]);
+
   const handlePrevPage = useCallback(() => {
     if (currentPage > 0) {
-      setCurrentPage(prev => prev - 1);
+      const newPage = currentPage - 1;
+      setCurrentPage(newPage);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Save progress when page changes (even going back)
+      // Always send currentStep and totalSteps (required by backend)
+      console.log('[LessonViewer] Prev page clicked, saving progress:', newPage + 1, '/', totalPages, 'steps:', totalSteps);
+      savePageProgress(newPage, totalPages, totalSteps);
     }
-  }, [currentPage]);
+  }, [currentPage, totalPages, totalSteps, savePageProgress]);
+
+  // Handle direct navigation to a specific page (from LessonIndexNavigator)
+  // When module is completed, navigation is read-only and doesn't mark lessons as completed
+  const handleNavigateToPage = useCallback((targetPageIndex) => {
+    if (targetPageIndex >= 0 && targetPageIndex < totalPages) {
+      setCurrentPage(targetPageIndex);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // When module is completed, we still save page position for user convenience
+      // but this is read-only navigation - it won't mark the lesson as completed
+      // because the lesson is already completed (isCompleted check in savePageProgress prevents re-completion)
+      console.log('[LessonViewer] Direct navigation to page:', targetPageIndex + 1, {
+        moduleCompleted: isModuleCompleted,
+        readOnly: isModuleCompleted,
+        wasAlreadyCompleted: wasLessonCompletedOnEntry,
+      });
+      
+      // Save page position for resume - savePageProgress already has guards to prevent
+      // re-completion if lesson is already completed (checks !isCompleted before auto-completing)
+      // This is safe even in free navigation mode because:
+      // 1. savePageProgress checks !isCompleted before auto-completing
+      // 2. wasLessonCompletedOnEntry ensures isCompleted is true for already-completed lessons
+      // 3. We're only saving position, not triggering completion logic
+      savePageProgress(targetPageIndex, totalPages, totalSteps);
+    }
+  }, [totalPages, totalSteps, savePageProgress, isModuleCompleted, wasLessonCompletedOnEntry]);
   
-  // Auto-advance to completion page when reaching the last content page
+  // Handle completion page display and progress marking
+  // IMPORTANT: This effect ONLY marks progress and shows confetti.
+  // It does NOT trigger navigation - that's handled by user clicking buttons on CompletionPage.
   useEffect(() => {
     // Find the completion page index
     const completionPageIndex = calculatePages.findIndex(page => page.type === 'completion');
-    
-    // Mark lesson as complete when reaching the completion page or when progress is completed
-    if ((completionPageIndex >= 0 && currentPage === completionPageIndex || isCompleted) && !lessonCompleted && data) {
-      if (isCompleted) {
+
+    // When user reaches the completion page, notify parent to update global progress state
+    // Use completionNotifiedRef to ensure we only notify once per lesson session
+    if (completionPageIndex >= 0 && currentPage === completionPageIndex && data) {
+      // GUARD: Only show confetti and mark as completed if lesson was NOT already completed
+      if (!lessonCompleted && !wasLessonCompletedOnEntry) {
         setShowConfetti(true);
         setLessonCompleted(true);
-      } else {
-        // Trigger auto-completion if we reach the completion page
-        triggerAutoCompletion().then((completed) => {
-          if (!completed) {
-            return;
-          }
-        });
       }
 
-      // Disparar evento para sugerencias finales del TutorAI
-      const event = new CustomEvent('tutor:finalSuggestions', {
-        detail: {
-          ctx: {
-            moduleId: data?.moduleId || moduleId,
-            lessonId: data?.lessonId || lessonId,
-            pageId: currentPageData?.section?.id || currentPageData?.id,
-            sectionId: currentPageData?.section?.id,
-            moduleTitle: module?.title,
-            lessonTitle: data?.title,
-            pageTitle: currentPageData?.section?.title || currentPageData?.title,
-            sectionTitle: currentPageData?.section?.title,
-          },
-          results: assessmentScore ? {
-            correct: assessmentScore.correct,
-            total: assessmentScore.total,
-            percentage: assessmentScore.percentage,
-          } : null,
-        },
-      });
-      window.dispatchEvent(event);
+      // GUARD: Only notify parent if lesson was NOT already completed on entry
+      // This prevents duplicate completion events when navigating to already-completed lessons
+      if (!completionNotifiedRef.current && onComplete && !wasLessonCompletedOnEntry) {
+        completionNotifiedRef.current = true;
+        console.log('[LessonViewer] User reached completion page, notifying parent');
+        onComplete(data);
+      } else if (wasLessonCompletedOnEntry) {
+        console.log('[LessonViewer] Skipping completion notification - lesson already completed on entry');
+      }
+
+      // GUARD: Only dispatch tutor:finalSuggestions ONCE per lesson session
+      // and ONLY if this is a fresh completion (not re-entering a completed lesson)
+      if (!tutorFinalSuggestionsDispatchedRef.current) {
+        // Check if this lesson was already completed before this session
+        const lessonKey = `${moduleId}-${lessonId}`;
+        const wasAlreadyCompleted = completedLessons.has(lessonKey);
+
+        // Only dispatch if this is NOT a re-entry to an already-completed lesson
+        if (!wasAlreadyCompleted) {
+          tutorFinalSuggestionsDispatchedRef.current = true;
+          console.log('[LessonViewer] Dispatching tutor:finalSuggestions (fresh completion)');
+
+          const event = new CustomEvent('tutor:finalSuggestions', {
+            detail: {
+              ctx: {
+                moduleId: data?.moduleId || moduleId,
+                lessonId: data?.lessonId || lessonId,
+                pageId: currentPageData?.section?.id || currentPageData?.id,
+                sectionId: currentPageData?.section?.id,
+                moduleTitle: module?.title,
+                lessonTitle: data?.title,
+                pageTitle: currentPageData?.section?.title || currentPageData?.title,
+                sectionTitle: currentPageData?.section?.title,
+              },
+              results: assessmentScore ? {
+                correct: assessmentScore.correct,
+                total: assessmentScore.total,
+                percentage: assessmentScore.percentage,
+              } : null,
+            },
+          });
+          window.dispatchEvent(event);
+        } else {
+          console.log('[LessonViewer] Skipping tutor:finalSuggestions - lesson already completed');
+        }
+      }
     }
-  }, [currentPage, calculatePages, lessonCompleted, data, isCompleted, triggerAutoCompletion, moduleId, lessonId, module, currentPageData, assessmentScore]);
+
+    // Show confetti when isCompleted becomes true from progress tracking
+    // (before user reaches completion page). Don't notify parent here -
+    // parent notification only happens when user reaches the completion page.
+    // GUARD: Only trigger if lesson was NOT already completed on entry
+    // This prevents re-completion when navigating to already-completed lessons
+    if (isCompleted && !lessonCompleted && !wasLessonCompletedOnEntry) {
+      setShowConfetti(true);
+      setLessonCompleted(true);
+      console.log('[LessonViewer] Progress completed, showing confetti (no redirect)');
+    } else if (isCompleted && wasLessonCompletedOnEntry) {
+      console.log('[LessonViewer] Skipping completion UI - lesson already completed on entry');
+    }
+  }, [currentPage, calculatePages, lessonCompleted, data, isCompleted, moduleId, lessonId, module, currentPageData, assessmentScore, onComplete, completedLessons, wasLessonCompletedOnEntry]);
   
   // ============================================================================
   // Build lesson context for AI Tutor
@@ -950,47 +1098,19 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   };
   
   // ============================================================================
-  // Loading State
+  // Loading State - Using extracted component
   // ============================================================================
-  
+
   if (isLoading) {
-    return (
-      <ThemeProvider theme={teachingModuleTheme}>
-        <CssBaseline />
-        <Container maxWidth="lg" sx={{ py: 4 }}>
-          <Skeleton variant="rectangular" height={200} sx={{ mb: 3, borderRadius: 1 }} />
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 1 }} />
-            </Grid>
-          </Grid>
-        </Container>
-      </ThemeProvider>
-    );
+    return <LessonLoadingSkeleton />;
   }
-  
+
   // ============================================================================
-  // Error State
+  // Error State - Using extracted component
   // ============================================================================
-  
+
   if (error || !data) {
-    return (
-      <ThemeProvider theme={teachingModuleTheme}>
-        <CssBaseline />
-        <Container maxWidth="lg" sx={{ py: 4 }}>
-          <Alert
-            severity="error"
-            action={
-              <Button color="inherit" size="small" onClick={refetch}>
-                Reintentar
-              </Button>
-            }
-          >
-            {error || 'No se pudo cargar la lección. Por favor, intenta de nuevo.'}
-          </Alert>
-        </Container>
-      </ThemeProvider>
-    );
+    return <LessonErrorState error={error} onRetry={refetch} />;
   }
   
   // ============================================================================
@@ -1016,7 +1136,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
               maxWidth: '500px',
             }}
           >
-            Continuando desde {Math.round(localProgress)}%
+            Continuando desde {Math.round(backendProgress?.completionPercentage || localProgress)}%
           </Alert>
         )}
 
@@ -1046,6 +1166,39 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
             },
             }}
           >
+              {/* Review Mode Indicator - Only visible when module is completed */}
+              {isModuleCompleted && (
+                <Box
+                  sx={{
+                    mb: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Chip
+                    icon={<VisibilityIcon sx={{ fontSize: 16, color: '#e8f4fd' }} />}
+                    label="Modo revisión – el progreso no se verá afectado"
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      fontWeight: 500,
+                      fontSize: '0.75rem',
+                      borderColor: 'rgba(33, 150, 243, 0.4)',
+                      color: '#e8f4fd',
+                      backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                      '&:hover': {
+                        backgroundColor: 'rgba(33, 150, 243, 0.15)',
+                        borderColor: 'rgba(33, 150, 243, 0.6)',
+                      },
+                      '& .MuiChip-icon': {
+                        color: '#e8f4fd',
+                      },
+                    }}
+                  />
+                </Box>
+              )}
+
               <article id="lesson-content" ref={contentRef}>
                 {renderCurrentPage()}
                 
@@ -1065,6 +1218,19 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
               </article>
         </Container>
         
+        {/* Lesson Index Navigator - Only visible when module is completed */}
+        {isModuleCompleted && (
+          <LessonIndexNavigator
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pages={calculatePages}
+            isModuleCompleted={isModuleCompleted}
+            onNavigateToPage={handleNavigateToPage}
+            moduleId={moduleId}
+            lessonId={lessonId}
+          />
+        )}
+
         {/* Global Navigation - Always visible */}
         <LessonNavigation
           currentPage={currentPage}
@@ -1084,6 +1250,32 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
         >
           <Alert onClose={handleCloseSnackbar} severity="success" variant="filled">
             {snackbarMessage}
+          </Alert>
+        </Snackbar>
+        
+        {/* Rate Limit Notification - Friendly message instead of error */}
+        <Snackbar
+          open={isRateLimited}
+          autoHideDuration={null} // Don't auto-hide - user should see it until rate limit expires
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          sx={{ mt: 8 }} // Margin top to avoid overlap with header
+        >
+          <Alert 
+            severity="info" 
+            variant="filled"
+            sx={{ 
+              backgroundColor: '#1976d2', // Blue color for info
+              '& .MuiAlert-icon': {
+                color: 'white',
+              },
+            }}
+          >
+            <Typography variant="body2" sx={{ color: 'white', fontWeight: 500 }}>
+              Estás progresando muy rápido. Por favor continúa un poco más despacio.
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.9)', display: 'block', mt: 0.5 }}>
+              Tu progreso está seguro y se guardará automáticamente en breve.
+            </Typography>
           </Alert>
         </Snackbar>
         
@@ -1140,6 +1332,8 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
                 }}
                 defaultOpen={defaultOpen}
                 defaultTab="suggestions"
+                isFirstLesson={isFirstLesson}
+                isLessonCompleted={wasLessonCompletedOnEntry}
               />
             </Box>
           </Portal>

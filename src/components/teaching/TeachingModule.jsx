@@ -9,130 +9,44 @@ import {
   Typography,
   Box,
   Alert,
-  AlertTitle,
   Snackbar,
-  Tabs,
-  Tab,
   Skeleton,
-  IconButton,
   Fade,
-  Grid,
-  Breadcrumbs,
-  Link,
-  Button,
-  CircularProgress,
-  LinearProgress
+  Divider,
+  CircularProgress
 } from '@mui/material';
-import {
-  Dashboard as DashboardIcon,
-  School as SchoolIcon,
-  TrendingUp as TrendingUpIcon,
-  ArrowBack,
-  Home as HomeIcon,
-  NavigateNext,
-  MedicalServices as MedicalServicesIcon,
-  Shield as ShieldIcon,
-  Build as BuildIcon,
-  ChecklistRtl as ChecklistIcon,
-} from '@mui/icons-material';
 
 // Hooks personalizados
 import { useLearningProgress } from '../../contexts/LearningProgressContext';
 import useModuleProgress from './hooks/useModuleProgress';
 import useModuleAvailability from './hooks/useModuleAvailability';
-import useLesson from './hooks/useLesson';
 import useTeachingModule from '../../hooks/useTeachingModule';
 import useUserProgress from '../../hooks/useUserProgress';
 import { curriculumData } from '../../data/curriculumData';
 import debug from '../../utils/debug';
+import { getModuleResumePoint } from '../../services/progressService';
 
 // Module 03 content and navigation
 import { CurriculumPanel } from '../../view-components/teaching/components/curriculum';
 
 // Componentes hijos
 import {
-  DashboardHeader,
-  ContinueLearningSection,
-  SessionStats,
-  ProgressOverview,
-  ModuleInfoPanel,
-  QuickAccessLessons
+  DashboardHeader
 } from '../../view-components/teaching/components/dashboard';
 import FlashcardSystem from './FlashcardSystem';
 
-// Lazy load LessonViewer and ProgressDashboard for better performance
-const LessonViewer = lazy(() => import('./components/LessonViewer'));
+// Extracted components
+import TeachingLessonView from './components/TeachingLessonView';
+import TeachingTabs from './components/TeachingTabs';
+import ProgressTabSkeleton from './components/ProgressTabSkeleton';
+
+// Lazy load ProgressDashboard for better performance
 const ProgressTab = lazy(() => import('../../features/progress/components/ProgressTab'));
 const Module3ProgressDashboard = lazy(() => import('../../view-components/teaching/components/dashboard/Module3ProgressDashboard'));
 const ReadinessIndicator = lazy(() => import('../../view-components/teaching/components/dashboard/ReadinessIndicator'));
 
 // Importar DashboardTab
 import DashboardTab from '../../features/dashboard/DashboardTab';
-
-/**
- * Wrapper component para LessonViewer que maneja errores
- * Este componente envuelve LessonViewer para capturar errores de carga
- * y mostrarlos de manera amigable al usuario
- */
-const LessonViewerWrapper = ({ lessonId, moduleId, onComplete, onNavigate, onError, onBackToDashboard, onProgressUpdate }) => {
-  const router = useRouter();
-  const { data, isLoading, error, refetch } = useLesson(lessonId, moduleId);
-  
-  // Notify parent of errors
-  useEffect(() => {
-    if (error && onError) {
-      onError(error);
-    }
-  }, [error, onError]);
-  
-  // Show error state if there's an error
-  if (error && !isLoading) {
-    return (
-      <Alert 
-        severity="error"
-        action={
-          <Button color="inherit" size="small" onClick={refetch}>
-            Reintentar
-          </Button>
-        }
-        sx={{ mb: 3 }}
-      >
-        <AlertTitle>Error al cargar la lección</AlertTitle>
-        {error}
-        {onBackToDashboard && (
-          <Box sx={{ mt: 2 }}>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={onBackToDashboard}
-            >
-              Volver al Curriculum
-            </Button>
-          </Box>
-        )}
-      </Alert>
-    );
-  }
-  
-  return (
-        <LessonViewer
-          lessonId={lessonId}
-          moduleId={moduleId}
-          onComplete={onComplete}
-          onNavigate={onNavigate}
-          onProgressUpdate={onProgressUpdate}
-        />
-  );
-};
-
-// PropTypes removed - using JSDoc for type documentation instead
-// LessonViewerWrapper.propTypes = {
-//   lessonId: PropTypes.string.isRequired,
-//   moduleId: PropTypes.string.isRequired,
-//   onComplete: PropTypes.func,
-//   onNavigate: PropTypes.func,
-//   onError: PropTypes.func,
-// };
 
 /**
  * TeachingModule - Componente orquestador del módulo de enseñanza
@@ -177,7 +91,10 @@ const TeachingModule = () => {
     progressByModule,
     snapshot,
     refetchSnapshot,
-    upsertLessonProgressUnified
+    upsertLessonProgressUnified,
+    // Derived progress aggregation from context (SINGLE SOURCE OF TRUTH)
+    moduleProgressAggregated: contextModuleProgress,
+    levelProgressAggregated: contextLevelProgress,
   } = useLearningProgress();
 
   // Teaching module context (for category navigation) - Only use if available
@@ -308,11 +225,11 @@ const TeachingModule = () => {
    * @param {string|null} lessonId - ID de la lección (opcional)
    * @param {string|null} category - ID de la categoría (opcional, para M03)
    */
-  const handleSectionClick = useCallback((moduleId, lessonId = null, category = null) => {
-    // Para módulos con categorías (como module-03-configuration), 
+  const handleSectionClick = useCallback(async (moduleId, lessonId = null, category = null) => {
+    // Para módulos con categorías (como module-03-configuration),
     // no validamos prerequisitos de la misma manera ya que la estructura es diferente
     const isCategoryBasedModule = moduleId === 'module-03-configuration';
-    
+
     if (!isCategoryBasedModule) {
       const module = curriculumData.modules[moduleId];
       if (!module) {
@@ -322,8 +239,26 @@ const TeachingModule = () => {
       }
 
       if (module?.lessons?.length > 0) {
-        // Si se proporciona lessonId específico, usarlo; sino usar el primero
-        const targetLessonId = lessonId || module.lessons[0].id;
+        // Determine target lesson: use provided lessonId, or fetch resume point, or fall back to first lesson
+        let targetLessonId = lessonId;
+
+        if (!targetLessonId) {
+          // Try to get resume point from backend
+          try {
+            const resumePoint = await getModuleResumePoint(moduleId);
+            if (resumePoint?.lessonId) {
+              targetLessonId = resumePoint.lessonId;
+              console.log('[TeachingModule] Resuming from:', targetLessonId);
+            }
+          } catch (error) {
+            console.warn('[TeachingModule] Could not fetch resume point:', error);
+          }
+        }
+
+        // Fall back to first lesson if no resume point
+        if (!targetLessonId) {
+          targetLessonId = module.lessons[0].id;
+        }
         
         // Encontrar la lección en el módulo
         const targetLesson = module.lessons.find(l => l.id === targetLessonId);
@@ -469,24 +404,30 @@ const TeachingModule = () => {
 
   /**
    * Handler cuando se completa una lección
+   *
+   * IMPORTANT: This handler ONLY marks the lesson as complete and shows a success message.
+   * Navigation to the next lesson is handled by the user clicking the "Continue" button
+   * on the CompletionPage component. This ensures completed lessons can be revisited
+   * without being auto-redirected away.
    */
   const handleLessonComplete = useCallback((lessonData) => {
     // Marcar lección como completada en el contexto
     if (lessonIdFromQuery && moduleIdFromQuery) {
       const lessonFullId = `${moduleIdFromQuery}.${lessonIdFromQuery}`;
-      
+
       // Calcular tiempo de estudio (estimado basado en duration del módulo)
       const module = curriculumData.modules[moduleIdFromQuery];
       const estimatedTime = module?.duration || 30;
-      
-      // Use unified progress update
+
+      // Use unified progress update with moduleId for validation
+      // IMPORTANT: moduleId is required to prevent 400 errors
       if (upsertLessonProgressUnified) {
-        upsertLessonProgressUnified(lessonIdFromQuery, 1.0);
+        upsertLessonProgressUnified(lessonIdFromQuery, 1.0, moduleIdFromQuery);
       } else {
         // Fallback to legacy method
         markLessonComplete(lessonFullId, moduleIdFromQuery, estimatedTime);
       }
-      
+
       // Track analytics event
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'lesson_completed', {
@@ -496,33 +437,65 @@ const TeachingModule = () => {
           time_spent: estimatedTime
         });
       }
-      
+
       // Mostrar mensaje de éxito
       setAlertMessage('¡Felicitaciones! Has completado la lección.');
       setAlertOpen(true);
-      
-      // Opcional: navegar a la siguiente lección si existe
-      if (lessonData?.navigation?.nextLesson) {
-        setTimeout(() => {
-          handleSectionClick(moduleIdFromQuery, lessonData.navigation.nextLesson.id);
-        }, 2000);
-      } else {
-        // Si no hay siguiente lección, volver al dashboard después de un delay
-        setTimeout(() => {
-          handleBackToDashboard();
-        }, 3000);
-      }
+
+      // NO AUTO-REDIRECT: Navigation to next lesson is user-controlled via CompletionPage button.
+      // This allows users to review completed lessons without being redirected away.
     }
-  }, [lessonIdFromQuery, moduleIdFromQuery, markLessonComplete, handleBackToDashboard, handleSectionClick]);
+  }, [lessonIdFromQuery, moduleIdFromQuery, markLessonComplete, upsertLessonProgressUnified]);
   
   /**
    * Handler para navegar entre lecciones
+   * CRITICAL: This validates the target lesson exists before navigation
    */
   const handleNavigateLesson = useCallback((targetLessonId, targetModuleId) => {
-    if (targetLessonId && targetModuleId) {
-      handleSectionClick(targetModuleId, targetLessonId);
+    // Guard: Both parameters required
+    if (!targetLessonId || !targetModuleId) {
+      console.error('[TeachingModule] ⚠️ handleNavigateLesson called with missing params:', {
+        targetLessonId,
+        targetModuleId,
+      });
+      return;
     }
-  }, [handleSectionClick]);
+
+    // Guard: Prevent navigating to the same lesson (would cause infinite loop)
+    if (targetLessonId === lessonIdFromQuery && targetModuleId === moduleIdFromQuery) {
+      console.warn('[TeachingModule] ⚠️ Attempted to navigate to the SAME lesson. Aborting to prevent loop.', {
+        currentLessonId: lessonIdFromQuery,
+        targetLessonId,
+      });
+      setAlertMessage('Ya estás en esta lección.');
+      setAlertOpen(true);
+      return;
+    }
+
+    // Validate: Target lesson must exist in the module
+    const targetModule = curriculumData.modules[targetModuleId];
+    if (!targetModule) {
+      console.error('[TeachingModule] ⚠️ Target module not found:', targetModuleId);
+      setAlertMessage(`Módulo "${targetModuleId}" no encontrado.`);
+      setAlertOpen(true);
+      return;
+    }
+
+    const lessonExists = targetModule.lessons?.some(l => l.id === targetLessonId);
+    if (!lessonExists) {
+      console.error('[TeachingModule] ⚠️ Target lesson not found in module:', {
+        targetLessonId,
+        targetModuleId,
+        availableLessons: targetModule.lessons?.map(l => l.id),
+      });
+      setAlertMessage(`Lección "${targetLessonId}" no encontrada en el módulo.`);
+      setAlertOpen(true);
+      return;
+    }
+
+    console.log('[TeachingModule] ✓ Navigating to lesson:', { targetLessonId, targetModuleId });
+    handleSectionClick(targetModuleId, targetLessonId);
+  }, [handleSectionClick, lessonIdFromQuery, moduleIdFromQuery]);
   
   /**
    * Handler para errores de carga de lección
@@ -712,6 +685,8 @@ const TeachingModule = () => {
           progress: (() => {
             const modulesArray = Object.values(curriculumData.modules || {});
             const totalModules = modulesArray.length;
+            // Level progress = completedModules / totalModules
+            // Module is completed ONLY when ALL its lessons are completed (progress === 100)
             const completedModules = modulesArray.filter(module => 
               calculateModuleProgress(module.id) === 100
             ).length;
@@ -721,6 +696,7 @@ const TeachingModule = () => {
             return Object.keys(curriculumData.modules || {}).length;
           })(),
           current: (() => {
+            // Count modules where ALL lessons are completed (progress === 100)
             return Object.values(curriculumData.modules || {}).filter(module => 
               calculateModuleProgress(module.id) === 100
             ).length;
@@ -975,180 +951,20 @@ const TeachingModule = () => {
       <Container maxWidth="xl" sx={{ py: 4, minHeight: '100vh' }}>
         {/* Renderizado condicional: LessonViewer o Dashboard normal */}
         {isViewingLesson ? (
-        /* Vista de Lección Completa */
-        <Fade in timeout={500}>
-          <Box>
-            {/* Breadcrumbs de navegación */}
-            {lessonInfo && (
-              <Breadcrumbs
-                separator={<NavigateNext fontSize="small" />}
-                aria-label="breadcrumb"
-                sx={{ mb: 3 }}
-              >
-                <Link
-                  component="button"
-                  variant="body1"
-                  onClick={() => router.push('/teaching')}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    color: 'text.secondary',
-                    textDecoration: 'none',
-                    '&:hover': { color: 'primary.main' },
-                    cursor: 'pointer'
-                  }}
-                >
-                  <HomeIcon sx={{ mr: 0.5, fontSize: 20 }} />
-                  Inicio
-                </Link>
-                <Link
-                  component="button"
-                  variant="body1"
-                  onClick={handleBackToDashboard}
-                  sx={{
-                    color: 'text.secondary',
-                    textDecoration: 'none',
-                    '&:hover': { color: 'primary.main' },
-                    cursor: 'pointer'
-                  }}
-                >
-                  Módulo de Enseñanza
-                </Link>
-                <Link
-                  component="button"
-                  variant="body1"
-                  onClick={() => {
-                    // Volver al curriculum pero manteniendo el módulo
-                    const { lessonId, category, ...restQuery } = router.query;
-                    router.push(
-                      {
-                        pathname: router.pathname,
-                        query: { ...restQuery, tab: 'curriculum' }
-                      },
-                      undefined,
-                      { shallow: true }
-                    );
-                  }}
-                  sx={{
-                    color: 'text.secondary',
-                    textDecoration: 'none',
-                    '&:hover': { color: 'primary.main' },
-                    cursor: 'pointer'
-                  }}
-                >
-                  {lessonInfo.moduleTitle}
-                </Link>
-                <Typography color="text.primary" sx={{ fontWeight: 600 }}>
-                  {lessonInfo.lessonTitle}
-                </Typography>
-              </Breadcrumbs>
-            )}
-
-            {/* Botón para volver */}
-            <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-              <IconButton
-                onClick={handleBackToDashboard}
-                sx={{
-                  backgroundColor: 'background.paper',
-                  boxShadow: 2,
-                  '&:hover': {
-                    backgroundColor: 'action.hover',
-                  },
-                }}
-                aria-label="Volver"
-              >
-                <ArrowBack />
-              </IconButton>
-              <Typography
-                component="span"
-                sx={{ color: 'text.secondary', fontWeight: 500 }}
-              >
-                Volver
-              </Typography>
-            </Box>
-
-            {/* Barra de progreso de la lección - debajo del botón Volver */}
-            {lessonProgress.totalPages > 0 && (
-              <Box sx={{ mb: 3 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-                    Progreso de la lección
-                  </Typography>
-                  <Typography variant="caption" fontWeight={600} sx={{ color: '#ffffff' }}>
-                    {Math.round(((lessonProgress.currentPage + 1) / lessonProgress.totalPages) * 100)}% ({lessonProgress.currentPage + 1} / {lessonProgress.totalPages})
-                  </Typography>
-                </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={((lessonProgress.currentPage + 1) / lessonProgress.totalPages) * 100}
-                  sx={{
-                    height: 10,
-                    borderRadius: 5,
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                    '& .MuiLinearProgress-bar': {
-                      backgroundColor: ((lessonProgress.currentPage + 1) / lessonProgress.totalPages) * 100 >= 100 ? '#4CAF50' : '#2196f3',
-                      borderRadius: 5,
-                      boxShadow: ((lessonProgress.currentPage + 1) / lessonProgress.totalPages) * 100 >= 100
-                        ? '0 2px 4px rgba(76, 175, 80, 0.4)'
-                        : '0 2px 4px rgba(33, 150, 243, 0.3)',
-                      transition: 'transform 0.3s ease-in-out, background-color 0.3s ease',
-                    },
-                  }}
-                />
-              </Box>
-            )}
-
-            {/* Manejo de errores de prerequisitos */}
-            {lessonError && lessonError.missingPrerequisites && (
-              <Alert severity="warning" sx={{ mb: 3 }}>
-                <AlertTitle>Lección no disponible</AlertTitle>
-                {lessonError.details}
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 600 }}>
-                    Prerequisitos pendientes:
-                  </Typography>
-                  <ul style={{ margin: 0, paddingLeft: 20 }}>
-                    {lessonError.missingPrerequisites.map((prereq, index) => (
-                      <li key={index}>
-                        <Typography variant="body2">{prereq}</Typography>
-                      </li>
-                    ))}
-                  </ul>
-                </Box>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={handleBackToDashboard}
-                  sx={{ mt: 2 }}
-                >
-                  Volver al Curriculum
-                </Button>
-              </Alert>
-            )}
-
-            {/* Componente LessonViewer con Suspense y manejo de errores */}
-            {!lessonError && (
-              <Suspense
-                fallback={
-                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-                    <CircularProgress />
-                  </Box>
-                }
-              >
-                <LessonViewerWrapper
-                  lessonId={lessonIdFromQuery}
-                  moduleId={moduleIdFromQuery}
-                  onComplete={handleLessonComplete}
-                  onNavigate={handleNavigateLesson}
-                  onError={handleLessonError}
-                  onBackToDashboard={handleBackToDashboard}
-                  onProgressUpdate={handleLessonProgressUpdate}
-                />
-              </Suspense>
-            )}
-          </Box>
-        </Fade>
-      ) : (
+          /* Vista de Lección Completa - Using extracted component */
+          <TeachingLessonView
+            lessonId={lessonIdFromQuery}
+            moduleId={moduleIdFromQuery}
+            lessonInfo={lessonInfo}
+            lessonProgress={lessonProgress}
+            lessonError={lessonError}
+            onBackToDashboard={handleBackToDashboard}
+            onLessonComplete={handleLessonComplete}
+            onNavigateLesson={handleNavigateLesson}
+            onLessonError={handleLessonError}
+            onProgressUpdate={handleLessonProgressUpdate}
+          />
+        ) : (
         /* Vista de Dashboard Normal */
         <Fade in timeout={500}>
           <Box>
@@ -1157,132 +973,12 @@ const TeachingModule = () => {
               activeTab={activeTab}
             />
 
-      {/* Tabs Navigation - Diseño Moderno */}
-      <Box
-        sx={{
-          mb: 4,
-          position: 'relative',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '1px',
-            background: 'linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.3), transparent)',
-          },
-        }}
-      >
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          variant={isMobile ? 'fullWidth' : 'standard'}
-          sx={{
-            position: 'relative',
-            '& .MuiTab-root': {
-              minHeight: 72,
-              fontSize: isMobile ? '0.875rem' : '1rem',
-              fontWeight: 600,
-              textTransform: 'none',
-              color: 'rgba(255, 255, 255, 0.6)',
-              padding: '12px 24px',
-              marginRight: { xs: 0, sm: 2 },
-              borderRadius: '12px 12px 0 0',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              position: 'relative',
-              '&:hover': {
-                color: 'rgba(255, 255, 255, 0.9)',
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                transform: 'translateY(-2px)',
-              },
-              '&.Mui-selected': {
-                color: '#ffffff',
-                backgroundColor: 'rgba(33, 150, 243, 0.15)',
-              },
-              '& .MuiTab-iconWrapper': {
-                marginRight: { xs: 0.5, sm: 1.5 },
-                transition: 'transform 0.3s ease',
-                fontSize: { xs: '1.1rem', sm: '1.25rem' },
-              },
-              '&:hover .MuiTab-iconWrapper': {
-                transform: 'scale(1.1)',
-              },
-              '&.Mui-selected .MuiTab-iconWrapper': {
-                transform: 'scale(1.15)',
-                color: '#2196F3',
-              },
-            },
-            '& .MuiTabs-indicator': {
-              height: 4,
-              borderRadius: '4px 4px 0 0',
-              background: 'linear-gradient(90deg, #2196F3, #42A5F5, #2196F3)',
-              boxShadow: '0 2px 8px rgba(33, 150, 243, 0.4)',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            },
-            '& .MuiTabs-flexContainer': {
-              gap: { xs: 0, sm: 1 },
-            },
-          }}
-        >
-          <Tab
-            label={isMobile ? '' : 'Dashboard'}
-            icon={<DashboardIcon />}
-            iconPosition="start"
-            value={0}
-            sx={{
-              '&.Mui-selected': {
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '2px',
-                  background: 'linear-gradient(90deg, transparent, #2196F3, transparent)',
-                },
-              },
-            }}
-          />
-          <Tab
-            label={isMobile ? '' : 'Curriculum'}
-            icon={<SchoolIcon />}
-            iconPosition="start"
-            value={1}
-            sx={{
-              '&.Mui-selected': {
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '2px',
-                  background: 'linear-gradient(90deg, transparent, #2196F3, transparent)',
-                },
-              },
-            }}
-          />
-          <Tab
-            label={isMobile ? '' : 'Mi Progreso'}
-            icon={<TrendingUpIcon />}
-            iconPosition="start"
-            value={2}
-            sx={{
-              '&.Mui-selected': {
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '2px',
-                  background: 'linear-gradient(90deg, transparent, #2196F3, transparent)',
-                },
-              },
-            }}
-          />
-        </Tabs>
-      </Box>
+      {/* Tabs Navigation - Using extracted component */}
+      <TeachingTabs
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        isMobile={isMobile}
+      />
 
       {/* TAB PANEL 0: Dashboard */}
       {activeTab === 0 && (
@@ -1366,48 +1062,9 @@ const TeachingModule = () => {
       {/* TAB PANEL 2: Mi Progreso */}
       {activeTab === 2 && (
         <Box>
-          <Suspense
-            fallback={
-              <Box sx={{ py: 4 }}>
-                {/* Loading skeleton for ProgressDashboard */}
-                <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
-                  <Skeleton variant="text" width="40%" height={40} sx={{ mb: 2 }} />
-                  <Grid container spacing={3}>
-                    {[1, 2, 3, 4].map((item) => (
-                      <Grid item xs={12} sm={6} md={3} key={item}>
-                        <Skeleton variant="rectangular" height={120} sx={{ borderRadius: 2 }} />
-                      </Grid>
-                    ))}
-                  </Grid>
-                </Paper>
-
-                <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
-                  <Skeleton variant="text" width="30%" height={40} sx={{ mb: 2 }} />
-                  <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
-                </Paper>
-
-                <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
-                  <Skeleton variant="text" width="35%" height={40} sx={{ mb: 2 }} />
-                  <Grid container spacing={2}>
-                    {[1, 2, 3].map((item) => (
-                      <Grid item xs={12} md={4} key={item}>
-                        <Skeleton variant="rectangular" height={180} sx={{ borderRadius: 2 }} />
-                      </Grid>
-                    ))}
-                  </Grid>
-                </Paper>
-              </Box>
-            }
-          >
+          <Suspense fallback={<ProgressTabSkeleton />}>
             {isLoadingProgress ? (
-              <Box sx={{ py: 4, textAlign: 'center' }}>
-                <Paper elevation={2} sx={{ p: 4, borderRadius: 2 }}>
-                  <Typography variant="h6" sx={{ mb: 2, color: '#6c757d' }}>
-                    Cargando tu progreso...
-                  </Typography>
-                  <Skeleton variant="rectangular" height={300} sx={{ borderRadius: 2, mt: 2 }} />
-                </Paper>
-              </Box>
+              <ProgressTabSkeleton />
             ) : (
               <ProgressTab />
             )}
