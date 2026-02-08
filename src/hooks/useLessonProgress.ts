@@ -13,6 +13,7 @@ import { useState, useEffect, useRef, useCallback, useMemo, RefObject } from 're
 import {
   getLessonProgress,
   updateLessonProgress,
+  waitForAuthToken,
   type UpdateLessonProgressParams,
   type UpdateLessonProgressResult,
 } from '@/services/progressService';
@@ -38,8 +39,10 @@ interface UseLessonProgressReturn {
   isCompleted: boolean;
   isRateLimited: boolean; // New: tracks if we're currently rate limited
   showResumeAlert: boolean;
-  saveProgress: (forceComplete?: boolean) => Promise<void>;
-  savePageProgress: (currentPage: number, totalPages: number, totalSteps?: number) => Promise<void>;
+  saveProgress: (forceComplete?: boolean) => Promise<void>; // For scroll/time-based progress (may be throttled)
+  saveStepProgress: (currentPage: number, totalPages: number, totalSteps?: number) => Promise<void>; // Always saves on step changes
+  savePageProgress: (currentPage: number, totalPages: number, totalSteps?: number) => Promise<void>; // Backward compatibility wrapper
+  saveTimeProgress: (forceComplete?: boolean) => Promise<void>; // For time-based updates (throttled)
   dismissResumeAlert: () => void;
   backendProgress: {
     completionPercentage: number;
@@ -64,6 +67,7 @@ export function useLessonProgress({
   // State
   const [localProgress, setLocalProgress] = useState(0);
   const [lastSavedProgress, setLastSavedProgress] = useState(0);
+  const [lastSavedStep, setLastSavedStep] = useState<number | null>(null); // Track last saved step for step-based saves
   const [isSaving, setIsSaving] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isRateLimited, setIsRateLimited] = useState(false); // Track rate limiting state
@@ -79,8 +83,8 @@ export function useLessonProgress({
   const startTimeRef = useRef<number>(Date.now());
   const hasInitializedRef = useRef(false);
   const scrollPositionRef = useRef(0);
-  const saveTimeoutRef = useRef<NodeJS.Timeout>();
-  const rateLimitCooldownRef = useRef<NodeJS.Timeout>(); // Track rate limit cooldown timer
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const rateLimitCooldownRef = useRef<NodeJS.Timeout | null>(null); // Track rate limit cooldown timer
 
   /**
    * Calculate scroll percentage based on content position
@@ -142,10 +146,12 @@ export function useLessonProgress({
       console.error('[useLessonProgress] localStorage save failed:', e);
     }
 
-    // Check if token is available before saving to backend
-    const token = getAuthToken();
+    // CRITICAL: Wait for auth token to be available (handles race condition with token bridge)
+    console.log('[useLessonProgress] saveProgress: Waiting for auth token...');
+    const token = await waitForAuthToken(5000); // Wait up to 5 seconds
+
     if (!token) {
-      console.warn('[useLessonProgress] No auth token available, saved to localStorage only. Will sync when token is available.');
+      console.error('[useLessonProgress] ❌ saveProgress BLOCKED: Auth token not available after 5s wait');
       // Mark as failed save so it can be synced later
       try {
         localStorage.setItem(`lesson_progress_${lessonId}_failed`, JSON.stringify({
@@ -161,6 +167,8 @@ export function useLessonProgress({
       }
       return;
     }
+
+    console.log('[useLessonProgress] ✅ saveProgress: Auth token ready');
 
     // CRITICAL: Do not send percentage-only updates - require step data
     if (!currentStep || !totalSteps) {
@@ -280,9 +288,12 @@ export function useLessonProgress({
   }, [lessonId, localProgress, isSaving]);
 
   /**
-   * Debounced save function
+   * Debounced save function for scroll/time-based progress
    * Only saves if progress increased by threshold
    * Automatically skips if rate limited
+   * 
+   * NOTE: This is ONLY for scroll-based tracking, NOT for step navigation.
+   * Step navigation uses saveStepProgress() which always persists immediately.
    */
   const debouncedSave = useMemo(
     () => debounce((progress: number) => {
@@ -294,7 +305,7 @@ export function useLessonProgress({
 
       const progressDiff = progress - lastSavedProgress;
       
-      console.log('[useLessonProgress] Debounced save check:', {
+      console.log('[useLessonProgress] Debounced save check (scroll/time-based):', {
         currentProgress: progress,
         lastSaved: lastSavedProgress,
         diff: progressDiff,
@@ -303,28 +314,32 @@ export function useLessonProgress({
       });
       
       // Only save if progress increased by threshold or reached 100%
+      // This throttling applies ONLY to scroll/time-based updates, NOT step navigation
       if (progressDiff >= autoSaveThreshold || progress >= 100) {
-        console.log('[useLessonProgress] Triggering save...');
+        console.log('[useLessonProgress] Triggering time-based save...');
         saveProgress();
       } else {
-        console.log('[useLessonProgress] Progress change too small, not saving yet');
+        console.log('[useLessonProgress] Scroll progress change too small, throttling save (this is OK for scroll-based tracking)');
       }
-    }, 1000), // Wait 1 second after last scroll (más frecuente)
+    }, 1000), // Wait 1 second after last scroll
     [lastSavedProgress, autoSaveThreshold, saveProgress, isRateLimited]
   );
 
   /**
-   * Save progress based on page number (for paginated content)
+   * Save step progress - ALWAYS persists when currentStep changes
    * This is the PRIMARY way to save progress for step/page-based navigation
+   * 
+   * CRITICAL: This function ALWAYS saves to backend when currentStep changes,
+   * regardless of percentage delta. Step navigation must be persisted immediately.
    * 
    * ALWAYS sends currentStep and totalSteps to backend (required fields)
    * - currentStep = currentPage + 1 (1-based)
    * - totalSteps = totalSteps parameter if provided, otherwise totalPages
    * - completionPercentage is derived from currentStep/totalSteps
    */
-  const savePageProgress = useCallback(async (currentPage: number, totalPages: number, totalSteps?: number) => {
+  const saveStepProgress = useCallback(async (currentPage: number, totalPages: number, totalSteps?: number) => {
     if (totalPages <= 0) {
-      console.warn('[useLessonProgress] savePageProgress ABORTED: totalPages is invalid', { totalPages });
+      console.warn('[useLessonProgress] saveStepProgress ABORTED: totalPages is invalid', { totalPages });
       return;
     }
 
@@ -333,28 +348,34 @@ export function useLessonProgress({
     const stepsTotal = totalSteps || totalPages; // Use provided totalSteps or fallback to totalPages
     
     if (stepsTotal <= 0) {
-      console.warn('[useLessonProgress] savePageProgress ABORTED: totalSteps is invalid', { totalSteps, totalPages });
+      console.warn('[useLessonProgress] saveStepProgress ABORTED: totalSteps is invalid', { totalSteps, totalPages });
       return;
     }
 
     // Calculate percentage from step position (derived from currentStep/totalSteps)
     const pageProgress = Math.round((currentStep / stepsTotal) * 100);
 
-    console.log('[useLessonProgress] 📄 Page progress:', {
+    console.log('[useLessonProgress] 📄 Step progress:', {
       currentPage: currentPage + 1,
       totalPages,
       currentStep,
       totalSteps: stepsTotal,
       percentage: pageProgress,
+      lastSavedStep,
     });
 
     // Update local state immediately
     setLocalProgress(pageProgress);
 
-    // Check if token is available
-    const token = getAuthToken();
+    // CRITICAL: Wait for auth token to be available (handles race condition with token bridge)
+    // This ensures the PUT request ALWAYS includes Authorization header
+    console.log('[useLessonProgress] Waiting for auth token...');
+    const token = await waitForAuthToken(5000); // Wait up to 5 seconds
+
     if (!token) {
-      console.warn('[useLessonProgress] No auth token, saving to localStorage only');
+      // HARD FAILURE: Token not available after waiting - save to localStorage for later sync
+      console.error('[useLessonProgress] ❌ HARD FAILURE: Auth token not available after 5s wait');
+      console.error('[useLessonProgress] Progress NOT sent to backend. Queued for later sync.');
       try {
         localStorage.setItem(`lesson_progress_${lessonId}`, JSON.stringify({
           progress: pageProgress,
@@ -378,15 +399,25 @@ export function useLessonProgress({
       } catch (e) {
         console.error('[useLessonProgress] localStorage save failed:', e);
       }
+      // Throw error to notify caller that save failed
+      throw new Error('Auth token not available - progress queued for later sync');
+    }
+
+    console.log('[useLessonProgress] ✅ Auth token ready, proceeding with backend save');
+
+    // CRITICAL: Always save when currentStep changes, regardless of percentage delta
+    // This ensures step navigation is always persisted to backend
+    const stepChanged = lastSavedStep === null || currentStep !== lastSavedStep;
+    
+    if (!stepChanged) {
+      console.log('[useLessonProgress] Step unchanged, skipping backend save');
       return;
     }
 
-    // Only save to backend if progress increased significantly or reached 100%
-    const progressDiff = pageProgress - lastSavedProgress;
-    if (progressDiff < autoSaveThreshold && pageProgress < 100) {
-      console.log('[useLessonProgress] Progress change too small, skipping backend save');
-      return;
-    }
+    console.log('[useLessonProgress] ✅ Step changed, saving to backend:', {
+      from: lastSavedStep,
+      to: currentStep,
+    });
 
     try {
       setIsSaving(true);
@@ -480,7 +511,27 @@ export function useLessonProgress({
     } finally {
       setIsSaving(false);
     }
-  }, [lessonId, moduleId, lastSavedProgress, autoSaveThreshold, autoCompleteThreshold, isCompleted, onComplete]);
+  }, [lessonId, moduleId, lastSavedStep, autoCompleteThreshold, isCompleted, onComplete]);
+
+  /**
+   * Save progress based on page number (for paginated content)
+   * DEPRECATED: Use saveStepProgress instead for step-based navigation
+   * This wrapper maintains backward compatibility
+   */
+  const savePageProgress = useCallback(async (currentPage: number, totalPages: number, totalSteps?: number) => {
+    // Delegate to saveStepProgress which always saves on step changes
+    return saveStepProgress(currentPage, totalPages, totalSteps);
+  }, [saveStepProgress]);
+
+  /**
+   * Save time-based progress (scroll position, time spent)
+   * This can be throttled based on percentage delta
+   * Use this for scroll-based tracking, NOT for step navigation
+   */
+  const saveTimeProgress = useCallback(async (forceComplete = false) => {
+    // This uses the existing saveProgress function which has throttling for scroll-based updates
+    return saveProgress(forceComplete);
+  }, [saveProgress]);
 
   /**
    * Handle auto-completion
@@ -559,6 +610,10 @@ export function useLessonProgress({
           
           setLocalProgress(progress.completionPercentage);
           setLastSavedProgress(progress.completionPercentage);
+          // Restore last saved step from backend
+          if (progress.currentStep !== undefined) {
+            setLastSavedStep(progress.currentStep);
+          }
           setIsCompleted(progress.completed);
           
           // Restore scroll position
@@ -585,9 +640,14 @@ export function useLessonProgress({
           // Check localStorage fallback
           const cached = localStorage.getItem(`lesson_progress_${lessonId}`);
           if (cached) {
-            const { progress: cachedProgress, scrollPosition } = JSON.parse(cached);
+            const cachedData = JSON.parse(cached);
+            const { progress: cachedProgress, scrollPosition, currentStep } = cachedData;
             setLocalProgress(cachedProgress);
             setLastSavedProgress(cachedProgress);
+            // Restore last saved step from cache
+            if (currentStep !== undefined) {
+              setLastSavedStep(currentStep);
+            }
             
             if (scrollPosition && contentRef.current) {
               setTimeout(() => {
@@ -847,8 +907,10 @@ export function useLessonProgress({
     isCompleted,
     isRateLimited, // Expose rate limit state for UI
     showResumeAlert,
-    saveProgress,
-    savePageProgress,
+    saveProgress, // For scroll/time-based progress (may be throttled)
+    saveStepProgress, // Always saves on step changes
+    savePageProgress, // Backward compatibility wrapper
+    saveTimeProgress, // For time-based updates (throttled)
     dismissResumeAlert,
     backendProgress,
   };
