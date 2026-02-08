@@ -1,8 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import dynamic from 'next/dynamic';
 import { Box, styled } from '@mui/material';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
+// Dynamic import to avoid SSR issues with react-syntax-highlighter
+const SyntaxHighlighter = dynamic(
+  async () => {
+    const mod = await import('react-syntax-highlighter');
+    return mod.Prism;
+  },
+  { ssr: false }
+);
 
 /**
  * Términos médicos comunes para resaltar en bloques de código

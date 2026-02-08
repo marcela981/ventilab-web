@@ -21,11 +21,6 @@ export {
   ReadinessIndicator
 } from '@/view-components/teaching/components/dashboard';
 
-// Individual component exports
-export { default as LessonCard } from './LessonCard';
-export { default as QuizComponent } from './QuizComponent';
-export { default as SimulationControls } from './SimulationControls';
-
 // Lesson viewer and content components
 export { default as LessonViewer } from './LessonViewer';
 export { default as LessonViewerWrapper } from './LessonViewerWrapper';

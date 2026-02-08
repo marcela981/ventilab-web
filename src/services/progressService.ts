@@ -26,6 +26,38 @@ import { SWR_KEYS, getProgressInvalidationMatcher } from '@/lib/swrKeys';
 import { curriculumData } from '@/data/curriculumData';
 
 // ============================================
+// Token Waiting Utility
+// ============================================
+
+/**
+ * Wait for auth token to become available (for race condition handling)
+ * Returns the token if available within timeout, or null if timeout exceeded
+ *
+ * Use this before calling updateLessonProgress to ensure token bridge has completed
+ */
+export async function waitForAuthToken(maxWaitMs = 5000): Promise<string | null> {
+  const startTime = Date.now();
+  const pollInterval = 100;
+
+  // Check immediately
+  let token = getAuthTokenFromService();
+  if (token) return token;
+
+  // Poll until token available or timeout
+  while (Date.now() - startTime < maxWaitMs) {
+    await new Promise(resolve => setTimeout(resolve, pollInterval));
+    token = getAuthTokenFromService();
+    if (token) {
+      console.log('[progressService] Token became available after', Date.now() - startTime, 'ms');
+      return token;
+    }
+  }
+
+  console.warn('[progressService] waitForAuthToken timed out after', maxWaitMs, 'ms');
+  return null;
+}
+
+// ============================================
 // Type Definitions
 // ============================================
 
@@ -279,14 +311,29 @@ export async function updateLessonProgress(
   });
 
   // ==========================================================================
-  // EXECUTE THE UPDATE
+  // EXECUTE THE UPDATE - HARD FAILURE IF NO AUTH TOKEN
   // ==========================================================================
   const token = getAuthToken();
+
+  // HARD FAILURE: Refuse to send progress update without auth token
+  // This ensures PUT request ALWAYS includes Authorization header
+  if (!token) {
+    const error = new Error(
+      '[progressService] HARD FAILURE: Cannot update progress without auth token. ' +
+      'Ensure token bridge completes before calling updateLessonProgress.'
+    );
+    console.error('[progressService] updateLessonProgress BLOCKED:', {
+      lessonId,
+      reason: 'No auth token available',
+      hint: 'Wait for useTokenManager to complete before saving progress',
+    });
+    throw error;
+  }
 
   const { res, data: responseData } = await http(`/progress/lesson/${lessonId}`, {
     method: 'PUT',
     body: JSON.stringify(payload),
-    ...(token && { authToken: token }),
+    authToken: token, // Always included - hard failure above ensures token exists
   });
 
   // ==========================================================================
