@@ -13,7 +13,7 @@
  */
 
 import { getServerSession as nextAuthGetServerSession } from 'next-auth/next';
-import { authOptions } from '@/pages/api/auth/[...nextauth]';
+import { authOptions } from '@/lib/auth';
 import { USER_ROLES } from '@/lib/auth-config';
 
 /**
