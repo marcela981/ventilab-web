@@ -11,8 +11,5 @@
 import NextAuth from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-// Re-export authOptions for backwards compatibility
-export { authOptions };
-
-// Export NextAuth handler
+// Export NextAuth handler only. Import authOptions from @/lib/auth elsewhere.
 export default NextAuth(authOptions);
