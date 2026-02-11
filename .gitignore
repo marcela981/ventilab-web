@@ -133,3 +133,6 @@ scripts/validate-auth.js
 **/MIGRATION*.md
 **/TODO.md
 **/NOTES.md
+
+.vercel
+.env*.local

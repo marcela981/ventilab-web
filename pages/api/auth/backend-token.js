@@ -5,7 +5,7 @@
  */
 
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from './[...nextauth]';
+import { authOptions } from '@/lib/auth';
 
 const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 

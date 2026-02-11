@@ -1,0 +1,49 @@
+# Dependencies (Vercel runs npm install)
+node_modules/
+
+# Build outputs
+.next/
+out/
+build/
+dist/
+
+# Git
+.git/
+.gitignore
+
+# Docs and dev-only (not needed for production build)
+docs/
+.claude/
+.cursor/
+.vscode/
+.idea/
+
+# Tests and coverage
+coverage/
+.nyc_output/
+**/__tests__/
+*.test.js
+*.test.jsx
+*.test.ts
+*.test.tsx
+*.spec.js
+*.spec.jsx
+*.spec.ts
+*.spec.tsx
+
+# Env (use Vercel env vars)
+.env
+.env.*
+!.env.example
+
+# Archives (avoid 100 MB upload limit)
+*.zip
+*.tar.gz
+*.rar
+ventilab-web.zip
+
+# Misc
+*.log
+*.tsbuildinfo
+.DS_Store
+Thumbs.db

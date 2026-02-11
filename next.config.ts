@@ -5,6 +5,15 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Evitar que paquetes server-only se empaqueten y causen ESM/CommonJS en cliente
+  serverExternalPackages: [
+    '@prisma/client',
+    'prisma',
+    '@next-auth/prisma-adapter',
+    'bcryptjs',
+  ],
+  // Transpilación de next-auth para evitar "Unexpected token export" en producción
+  transpilePackages: ['next-auth'],
   // Configuración para archivos estáticos
   trailingSlash: false,
   // Configuración para imágenes
