@@ -3,60 +3,38 @@
  * Lesson Loader - VentyLab
  * =============================================================================
  *
- * Helper module that encapsulates all lesson loading logic from JSON files.
- * This module provides a centralized, cached, and robust solution for loading
- * lesson content with retry logic, validation, and normalization.
+ * Loads lesson content from the database via the Pages API.
  *
- * Features:
- * - LRU cache with configurable size limit
- * - Retry logic for failed loads (max 3 attempts)
- * - Support for multiple module structures
- * - Legacy format normalization
- * - Comprehensive error handling
- * - Pure JavaScript (no React dependencies)
- * - SSR compatible
+ * Data flow:
+ *   1. Check LRU cache
+ *   2. Call GET /api/pages/by-lesson/:lessonId (coexistence resolver)
+ *   3a. If source === "page"  → transform DB data to normalized format (migrated)
+ *   3b. If source === "lesson" → fall back to legacy JSON (non-migrated content)
+ *   4. Cache and return normalized lesson data
+ *
+ * Migrated content (beginner modules 01-06) is served exclusively from the DB.
+ * Non-migrated content (intermediate/advanced) still uses legacy JSON files.
  *
  * @module lessonLoader
  */
+
+import { get as apiGet } from '../../services/api/http';
 
 // =============================================================================
 // Constants
 // =============================================================================
 
-/**
- * Base path prefix for lesson files
- * @constant {string}
- */
+/** @deprecated Only used by legacy JSON fallback path */
 export const LESSON_PATH_PREFIX = 'lessons';
 
-/**
- * Base path prefix for module directories
- * @constant {string}
- */
+/** @deprecated Only used by legacy JSON fallback path */
 export const MODULE_PATH_PREFIX = 'module';
 
-/**
- * Default language for content
- * @constant {string}
- */
 export const DEFAULT_LANGUAGE = 'es';
 
-/**
- * Maximum number of lessons to cache
- * @constant {number}
- */
 export const MAX_CACHE_SIZE = 50;
 
-/**
- * Maximum retry attempts for failed loads
- * @constant {number}
- */
 const MAX_RETRY_ATTEMPTS = 3;
-
-/**
- * Delay between retry attempts in milliseconds
- * @constant {number}
- */
 const RETRY_DELAY_MS = 1000;
 
 // =============================================================================
@@ -64,8 +42,6 @@ const RETRY_DELAY_MS = 1000;
 // =============================================================================
 
 /**
- * LRU (Least Recently Used) Cache for lesson data
- * Uses Map to maintain insertion order and implements size limit
  * @private
  */
 class LRUCache {
@@ -74,98 +50,238 @@ class LRUCache {
     this.cache = new Map();
   }
 
-  /**
-   * Get item from cache and mark as recently used
-   * @param {string} key - Cache key
-   * @returns {*} Cached value or undefined
-   */
   get(key) {
     if (!this.cache.has(key)) return undefined;
-
-    // Move to end (most recently used)
     const value = this.cache.get(key);
     this.cache.delete(key);
     this.cache.set(key, value);
-
     return value;
   }
 
-  /**
-   * Set item in cache, evict LRU if at capacity
-   * @param {string} key - Cache key
-   * @param {*} value - Value to cache
-   */
   set(key, value) {
-    // Delete if exists (to update position)
     if (this.cache.has(key)) {
       this.cache.delete(key);
     }
-
-    // Evict oldest if at capacity
     if (this.cache.size >= this.maxSize) {
       const oldestKey = this.cache.keys().next().value;
       this.cache.delete(oldestKey);
-      console.log(`[lessonLoader] Cache evicted: ${oldestKey}`);
     }
-
     this.cache.set(key, value);
   }
 
-  /**
-   * Check if key exists in cache
-   * @param {string} key - Cache key
-   * @returns {boolean}
-   */
   has(key) {
     return this.cache.has(key);
   }
 
-  /**
-   * Clear all cached items
-   */
   clear() {
     this.cache.clear();
     console.log('[lessonLoader] Cache cleared');
   }
 
-  /**
-   * Get current cache size
-   * @returns {number}
-   */
   get size() {
     return this.cache.size;
   }
 }
 
-/**
- * Singleton cache instance
- * @private
- */
 const lessonCache = new LRUCache(MAX_CACHE_SIZE);
 
 // =============================================================================
-// Mapping Functions
+// Cache Functions
+// =============================================================================
+
+export function getCachedLesson(lessonId) {
+  return lessonCache.get(lessonId);
+}
+
+export function cacheLesson(lessonId, data) {
+  lessonCache.set(lessonId, data);
+}
+
+export function clearCache() {
+  lessonCache.clear();
+}
+
+// =============================================================================
+// API → Normalized Format Transformer
 // =============================================================================
 
 /**
- * Maps lesson and module IDs to the appropriate file path
- * Handles multiple module structures and naming conventions
+ * Transforms a Page object (from the Pages API) into the normalized lesson data
+ * format that LessonViewer and other components expect.
  *
- * @param {string} lessonId - Lesson identifier
- * @param {string} moduleId - Module identifier
- * @returns {string} Relative path to lesson JSON file
+ * Page sections (INTRODUCTION, THEORY, CASE_STUDY, etc.) are mapped to the
+ * content structure: { introduction, theory, visualElements, practicalCases,
+ * keyPoints, assessment, references }.
  *
- * @example
- * getLessonPath('respiratory-anatomy', 'module-01-fundamentals')
- * // Returns: 'lessons/module-01-fundamentals/lesson-01-respiratory-anatomy.json'
+ * @param {Object} page - Page object with sections from GET /api/pages/:id
+ * @returns {Object} Normalized lesson data
  */
-export function getLessonPath(lessonId, moduleId) {
-  // =================================================================
-  // NUEVO: Mapeo directo para módulos de ventilación mecánica (module-XX-*)
-  // Estos archivos usan formato module-XX-name.json en lugar de lesson-XX-name.json
-  // =================================================================
+function transformPageToLessonData(page) {
+  const sections = page.sections || [];
+
+  // --- Introduction ---
+  const introSections = sections.filter(s => s.type === 'INTRODUCTION');
+  const introText = introSections
+    .map(s => s.content?.markdown || s.content?.text || '')
+    .join('\n\n');
+
+  // --- Theory (THEORY + TEXT + EQUATION + CODE + CALLOUT) ---
+  const theorySections = sections
+    .filter(s =>
+      s.type === 'THEORY' ||
+      s.type === 'TEXT' ||
+      s.type === 'EQUATION' ||
+      s.type === 'CODE' ||
+      s.type === 'CALLOUT'
+    )
+    .map(s => ({
+      title: s.title || '',
+      content: s.content?.markdown || s.content?.text || '',
+      media: s.content?.media || null,
+    }));
+
+  // --- Practical cases (CASE_STUDY) ---
+  const practicalCases = sections
+    .filter(s => s.type === 'CASE_STUDY')
+    .map((s, idx) => ({
+      id: s.sectionId || s.id || `case-${idx}`,
+      title: s.title || '',
+      description: s.content?.markdown || s.content?.text || '',
+      patientData: s.content?.patientData || null,
+      questions: s.content?.questions || [],
+    }));
+
+  // --- Key points (SUMMARY) ---
+  const keyPoints = [];
+  sections
+    .filter(s => s.type === 'SUMMARY')
+    .forEach(s => {
+      const md = s.content?.markdown || s.content?.text || '';
+      const bullets = md.match(/^[-*]\s+(.+)$/gm);
+      if (bullets) {
+        keyPoints.push(...bullets.map(b => b.replace(/^[-*]\s+/, '')));
+      } else if (md.trim()) {
+        keyPoints.push(md.trim());
+      }
+    });
+
+  // --- Assessment questions (EXERCISE + QUIZ) ---
+  const assessmentQuestions = [];
+  sections
+    .filter(s => s.type === 'EXERCISE' || s.type === 'QUIZ')
+    .forEach(s => {
+      if (Array.isArray(s.content?.questions)) {
+        assessmentQuestions.push(...s.content.questions);
+      }
+    });
+
+  // --- References ---
+  const references = [];
+  sections
+    .filter(s => s.type === 'REFERENCES')
+    .forEach(s => {
+      if (Array.isArray(s.content?.references)) {
+        references.push(...s.content.references);
+      } else if (s.content?.markdown) {
+        references.push(s.content.markdown);
+      }
+    });
+
+  // --- Visual elements (IMAGE + VIDEO) ---
+  const visualElements = sections
+    .filter(s => s.type === 'IMAGE' || s.type === 'VIDEO')
+    .map(s => ({
+      name: s.title || s.sectionId || 'Media',
+      description: s.content?.caption || s.content?.alt || '',
+      type: s.type.toLowerCase(),
+      url: s.content?.url || s.content?.imageUrl || '',
+    }));
+
+  return {
+    lessonId: page.legacyLessonId || page.id,
+    moduleId: page.module?.id || page.moduleId || '',
+    title: page.title || 'Sin título',
+    description: page.description || '',
+    lastUpdated: page.updatedAt || page.createdAt || new Date().toISOString(),
+    authors: [],
+    reviewers: [],
+    learningObjectives: page.learningObjectives || [],
+    estimatedTime: page.estimatedMinutes || 45,
+    difficulty: (page.difficulty || 'beginner').toLowerCase(),
+    bloomLevel: page.bloomLevel || 'understand',
+    // Raw sections preserved for useLessonPages parameter-table check
+    sections: sections.map(s => ({
+      id: s.sectionId || s.id,
+      order: s.order,
+      type: s.type.toLowerCase(),
+      title: s.title || '',
+      content: s.content || {},
+    })),
+    content: {
+      introduction: {
+        text: introText,
+        objectives: page.learningObjectives || [],
+      },
+      theory: {
+        sections: theorySections,
+        examples: [],
+        analogies: [],
+      },
+      visualElements,
+      practicalCases,
+      keyPoints: keyPoints.length > 0 ? keyPoints : (page.keyTakeaways || []),
+      assessment: {
+        questions: assessmentQuestions,
+      },
+      references,
+    },
+  };
+}
+
+// =============================================================================
+// API Loading (primary path - DB-backed content)
+// =============================================================================
+
+/**
+ * Fetch lesson content from the Pages API (database).
+ * Uses the coexistence resolver endpoint.
+ *
+ * @param {string} lessonId - Lesson identifier (matches Page.legacyLessonId)
+ * @returns {Promise<Object|null>} Normalized lesson data, or null if not migrated
+ * @throws {Error} If the API call fails (network error, 5xx, etc.)
+ */
+async function loadFromApi(lessonId) {
+  // The /backend proxy rewrites to http://localhost:3001/api
+  // So /pages/by-lesson/:id → /backend/pages/by-lesson/:id → backend /api/pages/by-lesson/:id
+  const response = await apiGet(`/pages/by-lesson/${encodeURIComponent(lessonId)}`);
+
+  const result = response?.data;
+  if (!result) return null;
+
+  if (result.source === 'page' && result.data) {
+    console.log(`[lessonLoader] DB hit for: ${lessonId}`);
+    return transformPageToLessonData(result.data);
+  }
+
+  if (result.source === 'lesson') {
+    // Not migrated yet — caller should use legacy JSON
+    console.log(`[lessonLoader] Not migrated: ${lessonId} (will use legacy JSON)`);
+    return null;
+  }
+
+  return null;
+}
+
+// =============================================================================
+// Legacy JSON Loading (fallback for non-migrated content)
+// =============================================================================
+
+/**
+ * @deprecated Legacy JSON loading for non-migrated content (intermediate/advanced).
+ * Will be removed once all content is migrated to the database.
+ */
+function getLessonPath(lessonId, moduleId) {
   const directModuleMapping = {
-    // Módulo 01: Fundamentos - archivos con formato module-XX-*.json
     'module-01-inversion-fisiologica': 'lessons/module-01-fundamentals/module-01-inversion-fisiologica.json',
     'module-02-ecuacion-movimiento': 'lessons/module-01-fundamentals/module-02-ecuacion-movimiento.json',
     'module-03-variables-fase': 'lessons/module-01-fundamentals/module-03-variables-fase.json',
@@ -173,39 +289,29 @@ export function getLessonPath(lessonId, moduleId) {
     'module-05-monitorizacion-grafica': 'lessons/module-01-fundamentals/module-05-monitorizacion-grafica.json',
     'module-06-efectos-sistemicos': 'lessons/module-01-fundamentals/module-06-efectos-sistemicos.json',
   };
-  
-  // Si el lessonId tiene mapeo directo, usarlo
+
   if (directModuleMapping[lessonId]) {
-    console.log(`[lessonLoader] Using direct mapping for: ${lessonId}`);
     return directModuleMapping[lessonId];
   }
-  
-  // Normalize lessonId: Extract name from IDs with format "lesson-XX-name"
-  // Examples: "lesson-02-gas-exchange" -> "gas-exchange", "lesson-01-respiratory-mechanics" -> "respiratory-mechanics"
+
   let normalizedLessonId = lessonId;
   if (lessonId.startsWith('lesson-')) {
-    // Extract the name part after "lesson-XX-"
-    // Pattern: lesson-XX-name -> name
     const parts = lessonId.split('-');
     if (parts.length >= 3 && /^\d+$/.test(parts[1])) {
-      // parts[0] = "lesson", parts[1] = number, parts[2+] = name
       normalizedLessonId = parts.slice(2).join('-');
     }
   }
 
-  // Mapping of lesson IDs to file names (for lessons with different IDs than filenames)
-  // This maps curriculum lesson IDs to actual JSON file names
   const lessonIdToFileName = {
-    'anatomy-overview': 'respiratory-anatomy', // curriculumData uses 'anatomy-overview', file is 'respiratory-anatomy'
-    'airway-structures': 'respiratory-anatomy', // sub-lesson, same file
-    'lung-mechanics': 'respiratory-anatomy', // sub-lesson, same file
-    'respiratory-anatomy': 'respiratory-anatomy', // Direct mapping
-    'respiratory-mechanics': 'respiratory-mechanics', // Direct mapping
-    'gas-exchange': 'gas-exchange', // Direct mapping
-    'arterial-blood-gas': 'arterial-blood-gas', // Direct mapping
+    'anatomy-overview': 'respiratory-anatomy',
+    'airway-structures': 'respiratory-anatomy',
+    'lung-mechanics': 'respiratory-anatomy',
+    'respiratory-anatomy': 'respiratory-anatomy',
+    'respiratory-mechanics': 'respiratory-mechanics',
+    'gas-exchange': 'gas-exchange',
+    'arterial-blood-gas': 'arterial-blood-gas',
   };
 
-  // Mapping of lesson IDs to file numbers
   const lessonIdToNumber = {
     'respiratory-anatomy': '01',
     'anatomy-overview': '01',
@@ -217,157 +323,86 @@ export function getLessonPath(lessonId, moduleId) {
     'arterial-blood-gas': '03',
   };
 
-  // Normalize module folder
-  // Map module IDs to actual folder names
   const moduleIdToFolder = {
     'module-02-modalidades-parametros': 'module-02-parameters',
-    // Add other mappings as needed
   };
-  
+
   let moduleFolder = moduleIdToFolder[moduleId] || moduleId;
   if (!moduleFolder.startsWith('module-')) {
-    moduleFolder = `module-01-fundamentals`; // Default fallback
+    moduleFolder = 'module-01-fundamentals';
   }
 
-  // Determine lesson number and filename using normalized ID
   const lessonNumber = lessonIdToNumber[normalizedLessonId] || '01';
-  
-  // Check if this lessonId maps to a different filename
   const fileName = lessonIdToFileName[normalizedLessonId] || normalizedLessonId;
 
-  // Construct file path
-  // Handle special cases for module-03-configuration with subcategories
   if (moduleFolder === 'module-03-configuration') {
-    // Check if normalizedLessonId suggests a subcategory
+    const exactMatches = {
+      'sdra-protocol': 'pathologies',
+      'copd-protocol': 'pathologies',
+      'asthma-protocol': 'pathologies',
+      'pneumonia-protocol': 'pathologies',
+      'low-tidal-volume': 'protective-strategies',
+      'permissive-hypercapnia': 'protective-strategies',
+      'peep-strategies': 'protective-strategies',
+      'lung-protective-ventilation': 'protective-strategies',
+      'sbt-protocol': 'weaning',
+      'readiness-criteria': 'weaning',
+    };
+
+    if (exactMatches[normalizedLessonId]) {
+      return `${LESSON_PATH_PREFIX}/${moduleFolder}/${exactMatches[normalizedLessonId]}/${normalizedLessonId}.json`;
+    }
+
     const subcategories = ['pathologies', 'protective-strategies', 'weaning'];
     for (const subcat of subcategories) {
       if (normalizedLessonId.includes(subcat.split('-')[0])) {
         return `${LESSON_PATH_PREFIX}/${moduleFolder}/${subcat}/${normalizedLessonId}.json`;
       }
     }
-    // Check for protocol files
-    if (normalizedLessonId.includes('protocol') || normalizedLessonId.includes('criteria') || normalizedLessonId.includes('sbt')) {
-      const categoryMap = {
-        'sdra': 'pathologies',
-        'copd': 'pathologies',
-        'asthma': 'pathologies',
-        'pneumonia': 'pathologies',
-        'low-tidal': 'protective-strategies',
-        'permissive': 'protective-strategies',
-        'peep': 'protective-strategies',
-        'lung-protective': 'protective-strategies',
-        'sbt': 'weaning',
-        'readiness': 'weaning',
-      };
-      
-      // Also check for exact matches first (more specific)
-      const exactMatches = {
-        'sdra-protocol': 'pathologies',
-        'copd-protocol': 'pathologies',
-        'asthma-protocol': 'pathologies',
-        'pneumonia-protocol': 'pathologies',
-        'low-tidal-volume': 'protective-strategies',
-        'permissive-hypercapnia': 'protective-strategies',
-        'peep-strategies': 'protective-strategies',
-        'lung-protective-ventilation': 'protective-strategies',
-        'sbt-protocol': 'weaning',
-        'readiness-criteria': 'weaning',
-      };
-      
-      // Check exact matches first
-      if (exactMatches[normalizedLessonId]) {
-        return `${LESSON_PATH_PREFIX}/${moduleFolder}/${exactMatches[normalizedLessonId]}/${normalizedLessonId}.json`;
-      }
 
-      for (const [keyword, category] of Object.entries(categoryMap)) {
-        if (normalizedLessonId.includes(keyword)) {
-          return `${LESSON_PATH_PREFIX}/${moduleFolder}/${category}/${normalizedLessonId}.json`;
-        }
+    const categoryMap = {
+      'sdra': 'pathologies', 'copd': 'pathologies', 'asthma': 'pathologies', 'pneumonia': 'pathologies',
+      'low-tidal': 'protective-strategies', 'permissive': 'protective-strategies',
+      'peep': 'protective-strategies', 'lung-protective': 'protective-strategies',
+      'sbt': 'weaning', 'readiness': 'weaning',
+    };
+    for (const [keyword, category] of Object.entries(categoryMap)) {
+      if (normalizedLessonId.includes(keyword)) {
+        return `${LESSON_PATH_PREFIX}/${moduleFolder}/${category}/${normalizedLessonId}.json`;
       }
     }
   }
 
-  // Standard path for module-01-fundamentals and others
-  // For module-02-parameters, use the lessonId directly if it already has the format lesson-XX-name
   if (moduleFolder === 'module-02-parameters' && lessonId.startsWith('lesson-')) {
-    // Use lessonId directly as it matches the filename format
     return `${LESSON_PATH_PREFIX}/${moduleFolder}/${lessonId}.json`;
   }
-  
-  // Use fileName instead of lessonId to handle ID mappings
+
   return `${LESSON_PATH_PREFIX}/${moduleFolder}/lesson-${lessonNumber}-${fileName}.json`;
 }
 
-// =============================================================================
-// Validation Functions
-// =============================================================================
-
-/**
- * Validates lesson data structure
- * Checks for required fields and proper formatting
- *
- * @param {Object} lessonData - Lesson data object to validate
- * @returns {boolean} True if valid
- * @throws {Error} If validation fails
- *
- * @example
- * validateLessonData(lessonData);
- * // Returns true or throws Error with descriptive message
- */
+/** @deprecated Used only for non-migrated JSON validation */
 export function validateLessonData(lessonData) {
   if (!lessonData || typeof lessonData !== 'object') {
     throw new Error('Lesson data must be a valid object');
   }
-
-  // Required fields for new format
   if (lessonData.lessonId && lessonData.content) {
-    if (!lessonData.moduleId) {
-      throw new Error("Missing required field 'moduleId'");
-    }
-    if (!lessonData.title) {
-      throw new Error("Missing required field 'title'");
-    }
-    if (typeof lessonData.content !== 'object') {
-      throw new Error("Field 'content' must be an object");
-    }
+    if (!lessonData.moduleId) throw new Error("Missing required field 'moduleId'");
+    if (!lessonData.title) throw new Error("Missing required field 'title'");
+    if (typeof lessonData.content !== 'object') throw new Error("Field 'content' must be an object");
   }
-  // Legacy format - just check it's an object
-  // Normalization will handle the rest
-
   return true;
 }
 
-// =============================================================================
-// Normalization Functions
-// =============================================================================
-
-/**
- * Normalizes lesson data from legacy format to current format
- * Handles Spanish field names and old structures
- *
- * @param {Object} rawData - Raw lesson data (any format)
- * @returns {Object} Normalized lesson data in current format
- *
- * @example
- * const normalized = normalizeLessonData(legacyData);
- * // Returns data with consistent structure
- */
+/** @deprecated Used only for non-migrated JSON normalization */
 export function normalizeLessonData(rawData) {
-  // Already in new format with content.introduction
   if (rawData.lessonId && rawData.content && rawData.content.introduction) {
     return rawData;
   }
-
-  // Check if it's the new format with sections array
   if (rawData.sections && Array.isArray(rawData.sections)) {
-    console.log('[lessonLoader] Normalizing sections format to content structure...');
     return normalizeSectionsFormat(rawData);
   }
 
-  console.log('[lessonLoader] Normalizing legacy format...');
-
-  // Extract or infer basic metadata
-  const normalized = {
+  return {
     lessonId: rawData.id || rawData.lessonId || '',
     moduleId: rawData.moduleId || '',
     title: rawData.title || rawData.titulo || rawData['Título'] || 'Untitled Lesson',
@@ -415,27 +450,17 @@ export function normalizeLessonData(rawData) {
                  rawData.referencias || [],
     },
   };
-
-  return normalized;
 }
 
-/**
- * Normalizes lesson data with sections array to content structure
- * Converts sections array format to the format expected by LessonViewer
- * 
- * @param {Object} rawData - Lesson data with sections array
- * @returns {Object} Normalized lesson data with content structure
- */
+/** @deprecated */
 function normalizeSectionsFormat(rawData) {
   const sections = rawData.sections || [];
-  
-  // Extract introduction section
+
   const introductionSection = sections.find(s => s.type === 'introduction');
-  const introductionText = introductionSection?.content?.markdown || 
-                          introductionSection?.content?.text || 
+  const introductionText = introductionSection?.content?.markdown ||
+                          introductionSection?.content?.text ||
                           introductionSection?.content || '';
-  
-  // Extract theory sections (include both 'theory' and 'procedure' types)
+
   const theorySections = sections
     .filter(s => s.type === 'theory' || s.type === 'procedure')
     .map(s => ({
@@ -444,7 +469,6 @@ function normalizeSectionsFormat(rawData) {
       media: s.content?.media || s.media || null,
     }));
 
-  // Extract visual elements from sections with media
   const visualElements = [];
   sections.forEach(section => {
     if (section.content?.media?.images) {
@@ -459,7 +483,6 @@ function normalizeSectionsFormat(rawData) {
     }
   });
 
-  // Extract practical cases
   const practicalCases = sections
     .filter(s => s.type === 'case' || s.type === 'practical')
     .map(s => ({
@@ -470,19 +493,16 @@ function normalizeSectionsFormat(rawData) {
       questions: s.content?.questions || [],
     }));
 
-  // Extract key points from summary sections or dedicated sections
   const keyPoints = [];
   const summarySection = sections.find(s => s.type === 'summary');
   if (summarySection) {
     const summaryContent = summarySection.content?.markdown || summarySection.content?.text || '';
-    // Try to extract bullet points from markdown
     const bulletPoints = summaryContent.match(/^[-*]\s+(.+)$/gm);
     if (bulletPoints) {
       keyPoints.push(...bulletPoints.map(bp => bp.replace(/^[-*]\s+/, '')));
     }
   }
 
-  // Extract assessment from sections
   const assessmentQuestions = [];
   sections.forEach(section => {
     if (section.content?.questions && Array.isArray(section.content.questions)) {
@@ -494,15 +514,10 @@ function normalizeSectionsFormat(rawData) {
     }
   });
 
-  // Extract references from sections
   const references = [];
   sections.forEach(section => {
-    if (section.content?.references) {
-      references.push(...section.content.references);
-    }
-    if (section.references) {
-      references.push(...section.references);
-    }
+    if (section.content?.references) references.push(...section.content.references);
+    if (section.references) references.push(...section.references);
   });
 
   return {
@@ -538,96 +553,21 @@ function normalizeSectionsFormat(rawData) {
   };
 }
 
-// =============================================================================
-// Cache Functions
-// =============================================================================
-
 /**
- * Retrieves cached lesson data by ID
- *
- * @param {string} lessonId - Lesson identifier
- * @returns {Object|undefined} Cached lesson data or undefined
- *
- * @example
- * const cached = getCachedLesson('respiratory-anatomy');
- * if (cached) {
- *   console.log('Using cached data');
- * }
+ * @deprecated Legacy JSON loading for non-migrated content only.
+ * Will be removed once all content is migrated to the database.
  */
-export function getCachedLesson(lessonId) {
-  return lessonCache.get(lessonId);
-}
-
-/**
- * Caches lesson data by ID
- *
- * @param {string} lessonId - Lesson identifier
- * @param {Object} data - Lesson data to cache
- *
- * @example
- * cacheLesson('respiratory-anatomy', lessonData);
- */
-export function cacheLesson(lessonId, data) {
-  lessonCache.set(lessonId, data);
-  console.log(`[lessonLoader] Cached lesson: ${lessonId}`);
-}
-
-/**
- * Clears all cached lessons
- *
- * @example
- * clearCache();
- */
-export function clearCache() {
-  lessonCache.clear();
-}
-
-// =============================================================================
-// Loading Functions
-// =============================================================================
-
-/**
- * Loads lesson content by ID with retry logic and caching
- *
- * @param {string} lessonId - Lesson identifier
- * @param {string} moduleId - Module identifier
- * @returns {Promise<Object>} Loaded and normalized lesson data
- * @throws {Error} If loading fails after retries
- *
- * @example
- * try {
- *   const lesson = await loadLessonById('respiratory-anatomy', 'module-01-fundamentals');
- *   console.log(lesson.title);
- * } catch (error) {
- *   console.error('Failed to load lesson:', error.message);
- * }
- */
-export async function loadLessonById(lessonId, moduleId) {
-  console.log(`[lessonLoader] Loading lesson: ${lessonId} from module: ${moduleId}`);
-
-  // Check cache first
-  const cached = getCachedLesson(lessonId);
-  if (cached) {
-    console.log(`[lessonLoader] Cache hit for: ${lessonId}`);
-    return cached;
-  }
-
-  // Build file path
+async function loadFromLegacyJson(lessonId, moduleId) {
   const filePath = getLessonPath(lessonId, moduleId);
 
-  // Retry logic
   let lastError;
   for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
     try {
-      console.log(`[lessonLoader] Attempt ${attempt}/${MAX_RETRY_ATTEMPTS} for: ${filePath}`);
-
-      // Try dynamic import first
       let jsonContent;
       try {
         const moduleData = await import(`../${filePath}`);
         jsonContent = moduleData.default || moduleData;
       } catch (importError) {
-        // Fallback to fetch for public files
         const response = await fetch(`/data/${filePath}`);
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -635,69 +575,122 @@ export async function loadLessonById(lessonId, moduleId) {
         jsonContent = await response.json();
       }
 
-      // Validate and normalize
       validateLessonData(jsonContent);
       const normalized = normalizeLessonData(jsonContent);
-
-      // Set IDs - use requested lessonId to handle ID mappings (e.g., anatomy-overview -> respiratory-anatomy)
-      // This ensures the returned lesson has the ID that was requested, not necessarily the file's ID
       normalized.lessonId = lessonId;
       if (!normalized.moduleId) normalized.moduleId = moduleId;
 
-      // Cache the result using the requested lessonId
-      cacheLesson(lessonId, normalized);
-
-      console.log(`[lessonLoader] Successfully loaded: ${lessonId}`);
       return normalized;
-
     } catch (error) {
       lastError = error;
-      console.error(`[lessonLoader] Attempt ${attempt} failed:`, error.message);
-
-      // Wait before retry (except on last attempt)
+      console.error(`[lessonLoader] Legacy attempt ${attempt} failed:`, error.message);
       if (attempt < MAX_RETRY_ATTEMPTS) {
         await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * attempt));
       }
     }
   }
 
-  // All retries failed
   throw new Error(
     `Failed to load lesson ${lessonId} after ${MAX_RETRY_ATTEMPTS} attempts: ${lastError.message}`
   );
 }
 
+// =============================================================================
+// Main Loading Function
+// =============================================================================
+
 /**
- * Loads all lessons from a module (not yet implemented - placeholder)
+ * Loads lesson content by ID.
+ *
+ * Strategy:
+ *   1. Return from LRU cache if available.
+ *   2. Call Pages API coexistence resolver.
+ *   3a. source === "page" → use DB data (no JSON fallback).
+ *   3b. source === "lesson" → fall back to legacy JSON (non-migrated content).
+ *   4. Cache the result.
+ *
+ * For migrated content, API errors propagate — there is no silent JSON fallback.
+ *
+ * @param {string} lessonId - Lesson identifier
+ * @param {string} moduleId - Module identifier
+ * @returns {Promise<Object>} Normalized lesson data
+ */
+export async function loadLessonById(lessonId, moduleId) {
+  console.log(`[lessonLoader] Loading lesson: ${lessonId} (module: ${moduleId})`);
+
+  // 1. Cache check
+  const cached = getCachedLesson(lessonId);
+  if (cached) {
+    console.log(`[lessonLoader] Cache hit: ${lessonId}`);
+    return cached;
+  }
+
+  // 2. Try the Pages API (DB-backed content)
+  try {
+    const apiData = await loadFromApi(lessonId);
+
+    if (apiData) {
+      // Migrated content — served from DB
+      apiData.lessonId = lessonId;
+      if (!apiData.moduleId) apiData.moduleId = moduleId;
+      cacheLesson(lessonId, apiData);
+      console.log(`[lessonLoader] Loaded from DB: ${lessonId}`);
+      return apiData;
+    }
+  } catch (apiError) {
+    // API failed — do NOT silently fall back to JSON for potentially-migrated content.
+    // Log the error and let it propagate unless we can confirm the lesson
+    // is definitely non-migrated (i.e., intermediate/advanced).
+    console.error(`[lessonLoader] API error for ${lessonId}:`, apiError.message || apiError);
+
+    // If we're definitely in SSR or the API is unreachable, try legacy JSON
+    // as a last resort for backward compatibility.
+    if (typeof window === 'undefined') {
+      console.warn(`[lessonLoader] SSR fallback to legacy JSON for: ${lessonId}`);
+    } else {
+      // In the browser, API should be reachable. Propagate the error.
+      throw new Error(
+        `No se pudo cargar la lección "${lessonId}" desde la base de datos. ` +
+        `Error: ${apiError.message || apiError}`
+      );
+    }
+  }
+
+  // 3. Not migrated (source === "lesson") or SSR fallback — use legacy JSON
+  console.log(`[lessonLoader] Falling back to legacy JSON: ${lessonId}`);
+  const legacyData = await loadFromLegacyJson(lessonId, moduleId);
+  cacheLesson(lessonId, legacyData);
+  console.log(`[lessonLoader] Loaded from legacy JSON: ${lessonId}`);
+  return legacyData;
+}
+
+/**
+ * Loads all pages for a module from the database.
  *
  * @param {string} moduleId - Module identifier
- * @returns {Promise<Array<Object>>} Array of lesson data objects
- *
- * @example
- * const lessons = await loadModuleLessons('module-01-fundamentals');
- * console.log(`Loaded ${lessons.length} lessons`);
+ * @returns {Promise<Array<Object>>} Array of page summary objects
  */
 export async function loadModuleLessons(moduleId) {
-  console.log(`[lessonLoader] Loading all lessons for module: ${moduleId}`);
-
-  // This would require a manifest or directory listing
-  // For now, return empty array as placeholder
-  console.warn('[lessonLoader] loadModuleLessons not fully implemented yet');
-  return [];
+  try {
+    const response = await apiGet(`/pages/by-module/${encodeURIComponent(moduleId)}`);
+    return response?.data || [];
+  } catch (error) {
+    console.warn(`[lessonLoader] Failed to load module pages for ${moduleId}:`, error.message);
+    return [];
+  }
 }
 
 // =============================================================================
 // Exports
 // =============================================================================
 
+export { getLessonPath };
+
 export default {
-  // Constants
   LESSON_PATH_PREFIX,
   MODULE_PATH_PREFIX,
   DEFAULT_LANGUAGE,
   MAX_CACHE_SIZE,
-
-  // Functions
   getLessonPath,
   validateLessonData,
   normalizeLessonData,

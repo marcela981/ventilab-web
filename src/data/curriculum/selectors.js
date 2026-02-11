@@ -437,6 +437,9 @@ export const getVisibleLessonsByLevel = (levelId) => {
     }
     
     module.lessons.forEach(lesson => {
+      // DB-migrated lessons have no lessonData (content loaded from API at runtime)
+      const isDbMigrated = !lesson.lessonData && !lesson.sections;
+
       // Get sections from lessonData
       let sections = [];
       if (lesson.lessonData && lesson.lessonData.sections) {
@@ -444,14 +447,14 @@ export const getVisibleLessonsByLevel = (levelId) => {
       } else if (lesson.sections) {
         sections = lesson.sections;
       }
-      
+
       // Get metadata
       const metadata = lesson.lessonData?.metadata || lesson.metadata || {};
       const allowEmpty = metadata.allowEmpty === true;
-      
-      // Filter: only include if sections.length > 0 OR metadata.allowEmpty === true
-      if (sections.length === 0 && !allowEmpty) {
-        return; // Skip empty lessons
+
+      // Filter: include if DB-migrated, has sections, or allowEmpty
+      if (!isDbMigrated && sections.length === 0 && !allowEmpty) {
+        return; // Skip empty lessons (but never skip DB-migrated ones)
       }
       
       visibleLessons.push({

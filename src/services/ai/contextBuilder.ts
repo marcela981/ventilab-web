@@ -183,7 +183,8 @@ const findLessonInModules = (lessonId?: Nullable<string>, moduleId?: Nullable<st
       return {
         module,
         lessonEntry,
-        lessonData: lessonEntry.lessonData || lessonEntry,
+        // lessonData is null for DB-migrated lessons (beginner modules 01-06)
+        lessonData: lessonEntry.lessonData || null,
       };
     }
   }

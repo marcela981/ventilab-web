@@ -184,18 +184,21 @@ export function getCurriculumMetadata() {
       }
       
       module.lessons.forEach(lesson => {
+        // DB-migrated lessons have no lessonData (content loaded from API at runtime)
+        const isDbMigrated = !lesson.lessonData && !lesson.sections;
+
         let sections = [];
         if (lesson.lessonData && lesson.lessonData.sections) {
           sections = lesson.lessonData.sections;
         } else if (lesson.sections) {
           sections = lesson.sections;
         }
-        
+
         const metadata = lesson.lessonData?.metadata || lesson.metadata || {};
         const allowEmpty = metadata.allowEmpty === true;
-        
-        // Only count completable lessons (exclude allowEmpty and empty lessons)
-        if (sections.length > 0 && !allowEmpty) {
+
+        // Count DB-migrated lessons and lessons with sections (exclude allowEmpty and truly empty)
+        if (isDbMigrated || (sections.length > 0 && !allowEmpty)) {
           totalLessons++;
           totalEstimatedTimeMinutes += lesson.estimatedTime || lesson.lessonData?.estimatedTime || 0;
         }

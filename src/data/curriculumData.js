@@ -8,15 +8,12 @@
 // IMPORTAR LECCIONES DESDE ARCHIVOS JSON
 // =============================================================================
 
-// Módulo 01: Fundamentos Fisiológicos y Respiratorios
-import module01Inversion from './lessons/module-01-fundamentals/module-01-inversion-fisiologica.json';
-import module02Ecuacion from './lessons/module-01-fundamentals/module-02-ecuacion-movimiento.json';
-import module03Variables from './lessons/module-01-fundamentals/module-03-variables-fase.json';
-import module04Modos from './lessons/module-01-fundamentals/module-04-modos-ventilatorios.json';
-import module05Monitorizacion from './lessons/module-01-fundamentals/module-05-monitorizacion-grafica.json';
-import module06Efectos from './lessons/module-01-fundamentals/module-06-efectos-sistemicos.json';
+// Módulo 01: Fundamentos - MIGRATED TO DATABASE
+// Beginner lessons (modules 01-06) are now served from the database via
+// GET /api/pages/by-lesson/:lessonId. JSON imports removed.
+// Metadata is hardcoded below; content is fetched at runtime by lessonLoader.
 
-// Módulo 02: Modalidades y Parámetros
+// Módulo 02: Modalidades y Parámetros (intermediate - still uses JSON)
 import lesson01VolumeVentilation from './lessons/module-02-parameters/lesson-01-volume-ventilation.json';
 import lesson02PressureControlled from './lessons/module-02-parameters/lesson-02-pressure-controlled-ventilation.json';
 import lesson03PressureSupport from './lessons/module-02-parameters/lesson-03-pressure-support-ventilation.json';
@@ -81,61 +78,55 @@ export const curriculumData = {
       bloomLevel: 'comprender',
       difficulty: 'básico',
       estimatedTime: '3 horas',
-      // ✅ CONECTAR LECCIONES REALES DESDE JSON
+      // Beginner lessons — content served from DB, metadata hardcoded
       lessons: [
         {
           id: 'module-01-inversion-fisiologica',
-          title: module01Inversion.title || 'La Inversión Fisiológica: De la Presión Negativa a la Positiva',
-          description: module01Inversion.description || '',
-          estimatedTime: module01Inversion.estimatedTime || 45,
-          difficulty: module01Inversion.difficulty || 'intermediate',
-          order: module01Inversion.order || 1,
-          lessonData: module01Inversion
+          title: 'La Inversión Fisiológica: De la Presión Negativa a la Positiva',
+          description: 'Este módulo introduce los fundamentos de la ventilación mecánica desde una perspectiva fisiológica.',
+          estimatedTime: 60,
+          difficulty: 'intermediate',
+          order: 1,
         },
         {
           id: 'module-02-ecuacion-movimiento',
-          title: module02Ecuacion.title || 'El Santo Grial – La Ecuación del Movimiento Respiratorio',
-          description: module02Ecuacion.description || '',
-          estimatedTime: module02Ecuacion.estimatedTime || 50,
-          difficulty: module02Ecuacion.difficulty || 'intermediate',
-          order: module02Ecuacion.order || 2,
-          lessonData: module02Ecuacion
+          title: 'El Santo Grial – La Ecuación del Movimiento Respiratorio',
+          description: 'La ecuación fundamental que rige la mecánica respiratoria durante la ventilación.',
+          estimatedTime: 50,
+          difficulty: 'intermediate',
+          order: 2,
         },
         {
           id: 'module-03-variables-fase',
-          title: module03Variables.title || 'La Lógica de la Máquina: Variables de Fase y el Ciclo Respiratorio',
-          description: module03Variables.description || '',
-          estimatedTime: module03Variables.estimatedTime || 54,
-          difficulty: module03Variables.difficulty || 'intermediate',
-          order: module03Variables.order || 3,
-          lessonData: module03Variables
+          title: 'La Lógica de la Máquina: Variables de Fase y el Ciclo Respiratorio',
+          description: '',
+          estimatedTime: 54,
+          difficulty: 'intermediate',
+          order: 3,
         },
         {
           id: 'module-04-modos-ventilatorios',
-          title: module04Modos.title || 'Taxonomía de los Modos: Volumen vs. Presión (Control y Asistencia)',
-          description: module04Modos.description || '',
-          estimatedTime: module04Modos.estimatedTime || 114,
-          difficulty: module04Modos.difficulty || 'intermediate',
-          order: module04Modos.order || 4,
-          lessonData: module04Modos
+          title: 'Taxonomía de los Modos: Volumen vs. Presión (Control y Asistencia)',
+          description: '',
+          estimatedTime: 114,
+          difficulty: 'intermediate',
+          order: 4,
         },
         {
           id: 'module-05-monitorizacion-grafica',
-          title: module05Monitorizacion.title || 'Monitorización Gráfica I: Escalares, Bucles y Asincronías básicas',
-          description: module05Monitorizacion.description || '',
-          estimatedTime: module05Monitorizacion.estimatedTime || 480,
-          difficulty: module05Monitorizacion.difficulty || 'intermediate',
-          order: module05Monitorizacion.order || 5,
-          lessonData: module05Monitorizacion
+          title: 'Monitorización Gráfica I: Escalares, Bucles y Asincronías básicas',
+          description: 'Interpretación de gráficas ventilatorias y reconocimiento de asincronías.',
+          estimatedTime: 480,
+          difficulty: 'intermediate',
+          order: 5,
         },
         {
           id: 'module-06-efectos-sistemicos',
-          title: module06Efectos.title || 'Efectos Sistémicos y Lesión Inducida por la Ventilación (VILI): El precio de ventilar',
-          description: module06Efectos.description || '',
-          estimatedTime: module06Efectos.estimatedTime || 600,
-          difficulty: module06Efectos.difficulty || 'intermediate',
-          order: module06Efectos.order || 6,
-          lessonData: module06Efectos
+          title: 'Efectos Sistémicos y Lesión Inducida por la Ventilación (VILI): El precio de ventilar',
+          description: 'Consecuencias no deseadas de la ventilación mecánica: VILI y efectos sistémicos.',
+          estimatedTime: 600,
+          difficulty: 'intermediate',
+          order: 6,
         }
       ]
     },
@@ -175,34 +166,31 @@ export const curriculumData = {
       difficulty: 'básico-intermedio',
       estimatedTime: '2.5 horas',
       mandatory: false,
-      // ✅ Usar lecciones JSON reales (sin quizzes/ejercicios)
+      // Beginner lessons — content served from DB, metadata hardcoded
       lessons: [
         {
           id: 'module-01-inversion-fisiologica',
-          title: module01Inversion.title || 'La Inversión Fisiológica: De la Presión Negativa a la Positiva',
-          description: module01Inversion.description || '',
-          estimatedTime: module01Inversion.estimatedTime || 45,
-          difficulty: module01Inversion.difficulty || 'intermediate',
-          order: module01Inversion.order || 1,
-          lessonData: module01Inversion
+          title: 'La Inversión Fisiológica: De la Presión Negativa a la Positiva',
+          description: 'Fundamentos de la ventilación mecánica desde una perspectiva fisiológica.',
+          estimatedTime: 60,
+          difficulty: 'intermediate',
+          order: 1,
         },
         {
           id: 'module-02-ecuacion-movimiento',
-          title: module02Ecuacion.title || 'El Santo Grial – La Ecuación del Movimiento Respiratorio',
-          description: module02Ecuacion.description || '',
-          estimatedTime: module02Ecuacion.estimatedTime || 50,
-          difficulty: module02Ecuacion.difficulty || 'intermediate',
-          order: module02Ecuacion.order || 2,
-          lessonData: module02Ecuacion
+          title: 'El Santo Grial – La Ecuación del Movimiento Respiratorio',
+          description: 'La ecuación fundamental que rige la mecánica respiratoria durante la ventilación.',
+          estimatedTime: 50,
+          difficulty: 'intermediate',
+          order: 2,
         },
         {
           id: 'module-03-variables-fase',
-          title: module03Variables.title || 'La Lógica de la Máquina: Variables de Fase y el Ciclo Respiratorio',
-          description: module03Variables.description || '',
-          estimatedTime: module03Variables.estimatedTime || 54,
-          difficulty: module03Variables.difficulty || 'intermediate',
-          order: module03Variables.order || 3,
-          lessonData: module03Variables
+          title: 'La Lógica de la Máquina: Variables de Fase y el Ciclo Respiratorio',
+          description: '',
+          estimatedTime: 54,
+          difficulty: 'intermediate',
+          order: 3,
         }
       ]
       // Quiz removed - prerequisitos level does not include exercises

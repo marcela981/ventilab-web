@@ -264,18 +264,15 @@ const TeachingModule = () => {
         const targetLesson = module.lessons.find(l => l.id === targetLessonId);
         
         // Verificar si la lección tiene secciones
-        if (targetLesson) {
-          // Obtener secciones de la lección (puede estar en lessonData.sections, sections, o metadata)
-          const lessonSections = targetLesson.lessonData?.sections || 
-                                targetLesson.sections || 
+        // Skip this check for DB-migrated lessons (no lessonData) — content is loaded at runtime
+        if (targetLesson && targetLesson.lessonData) {
+          const lessonSections = targetLesson.lessonData.sections ||
+                                targetLesson.sections ||
                                 [];
-          const metadata = targetLesson.lessonData?.metadata || targetLesson.metadata || {};
+          const metadata = targetLesson.lessonData.metadata || targetLesson.metadata || {};
           const allowEmpty = metadata.allowEmpty === true;
-          
-          // Si no hay secciones y allowEmpty !== true, no navegar
+
           if (lessonSections.length === 0 && allowEmpty !== true) {
-            // La lección no tiene secciones y no está marcada como allowEmpty
-            // El CTA debería estar deshabilitado, pero por seguridad también verificamos aquí
             setAlertMessage(`La lección "${targetLesson.title || targetLessonId}" no tiene contenido disponible todavía.`);
             setAlertOpen(true);
             return;

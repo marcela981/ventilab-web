@@ -2,74 +2,23 @@
  * =============================================================================
  * useLesson Hook for VentyLab
  * =============================================================================
- * 
- * Custom React hook that dynamically loads detailed lesson content from JSON files
- * stored in the lessons directory structure. This hook combines the detailed JSON
- * content with module metadata from curriculumData.js to provide a complete
- * lesson object with enriched information.
- * 
- * This hook uses the lessonLoader helper for all loading, validation, and
- * normalization logic, keeping the hook focused on React state management and
- * data enrichment.
- * 
+ *
+ * Custom React hook that loads lesson content from the database via the Pages API.
+ * Migrated lessons (beginner modules 01-06) are fetched exclusively from the DB.
+ * Non-migrated lessons fall back to legacy JSON files.
+ *
+ * This hook delegates loading to lessonLoader, which calls
+ * GET /api/pages/by-lesson/:lessonId and transforms the response into
+ * the normalized content format used by LessonViewer.
+ *
  * @module useLesson
- * @description Hook for loading and managing lesson content from JSON files
- * 
- * File Structure:
- * ---------------
- * Lessons are stored in:
- * frontend/src/data/lessons/module-{NUMBER}-{NAME}/lesson-{NUMBER}-{NAME}.json
- * 
- * Each JSON file must contain:
- * - lessonId: Must match the lesson ID in curriculumData.js
- * - moduleId: Module identifier
- * - title: Lesson title
- * - lastUpdated: ISO date string
- * - authors: Array of author names
- * - reviewers: Array of reviewer names
- * - content: Complete lesson content object
- * 
- * Usage Examples:
- * ---------------
- * 
+ *
  * @example
- * // Basic usage
  * const { data, isLoading, error, refetch } = useLesson(
- *   'respiratory-anatomy',
+ *   'module-01-inversion-fisiologica',
  *   'module-01-fundamentals'
  * );
- * 
- * if (isLoading) return <LoadingSpinner />;
- * if (error) return <ErrorMessage message={error} />;
- * if (data) {
- *   return (
- *     <div>
- *       <h1>{data.title}</h1>
- *       <LessonContent content={data.content} />
- *       <ModuleInfo info={data.moduleInfo} />
- *     </div>
- *   );
- * }
- * 
- * @example
- * // With manual refetch after content update
- * const { data, isLoading, error, refetch } = useLesson(lessonId, moduleId);
- * 
- * const handleContentUpdate = async () => {
- *   await updateLessonContent(lessonId, moduleId);
- *   refetch(); // Reload the updated content (invalidates cache)
- * };
- * 
- * @example
- * // Accessing navigation between lessons
- * const { data } = useLesson(lessonId, moduleId);
- * 
- * const handleNext = () => {
- *   if (data?.navigation.nextLesson) {
- *     router.push(`/lesson/${data.navigation.nextLesson.id}`);
- *   }
- * };
- * 
+ *
  * =============================================================================
  */
 
