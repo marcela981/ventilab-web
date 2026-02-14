@@ -163,24 +163,37 @@ export const LearningProgressProvider = ({ children }) => {
     progressByModuleRef.current = progressByModule;
   }, [progressByModule]);
 
-  // Load persisted state from localStorage on mount
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    
-    try {
-      const stored = localStorage.getItem('vlab:progress:state');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setProgressByModule(parsed.progressByModule || {});
-        setCurrentModuleId(parsed.currentModuleId || null);
-        setCurrentLessonId(parsed.currentLessonId || null);
-      }
-    } catch (error) {
-      console.warn('[LearningProgressContext] Failed to restore state from localStorage:', error);
-    }
-  }, []);
+  // CRITICAL FIX: DO NOT load from localStorage on mount
+  // The snapshot from the database is the SINGLE SOURCE OF TRUTH
+  // localStorage is ONLY used as a temporary cache, NOT as the primary data source
+  // 
+  // If we load from localStorage here, we risk showing stale data when:
+  // 1. User logs in from a different device
+  // 2. User clears localStorage (expected behavior: reload from DB)
+  // 3. Progress is updated on the server but localStorage has old data
+  //
+  // The correct flow is:
+  // 1. Mount → loadSnapshot() fetches from DB
+  // 2. DB data populates progressByModule via sync effect (line 354)
+  // 3. localStorage is used ONLY for outbox queue (offline changes pending sync)
+  //
+  // useEffect(() => {
+  //   if (typeof window === 'undefined') {
+  //     return;
+  //   }
+  //   
+  //   try {
+  //     const stored = localStorage.getItem('vlab:progress:state');
+  //     if (stored) {
+  //       const parsed = JSON.parse(stored);
+  //       setProgressByModule(parsed.progressByModule || {});
+  //       setCurrentModuleId(parsed.currentModuleId || null);
+  //       setCurrentLessonId(parsed.currentLessonId || null);
+  //     }
+  //   } catch (error) {
+  //     console.warn('[LearningProgressContext] Failed to restore state from localStorage:', error);
+  //   }
+  // }, []);
 
   // Persist state to localStorage (saves automatically when state changes)
   useProgressPersistence(progressByModule, currentModuleId, currentLessonId);
@@ -203,15 +216,22 @@ export const LearningProgressProvider = ({ children }) => {
   const loadingSnapshotRef = useRef(false);
 
   // Load unified snapshot on mount and when session changes
+  // CRITICAL: This is the PRIMARY way progress is loaded from the database
+  // DO NOT rely on localStorage - this function ALWAYS fetches from DB when authenticated
   const loadSnapshot = useCallback(async (label='initial') => {
     // Prevent concurrent calls
     if (loadingSnapshotRef.current) {
       debug.info(`Skipping loadSnapshot(${label}) - already loading`);
+      console.log(`[LearningProgressContext] 🔄 Skipping loadSnapshot(${label}) - already in progress`);
       return;
     }
 
     loadingSnapshotRef.current = true;
     const g = debug.group(`LearningProgressProvider.load (${label})`);
+    console.log('');
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log(`[LearningProgressContext] 🔄 loadSnapshot(${label}) - Starting...`);
+    console.log('═══════════════════════════════════════════════════════════════');
     setIsLoadingSnapshot(true);
     setSnapshotError(null);
     
@@ -219,9 +239,27 @@ export const LearningProgressProvider = ({ children }) => {
       const s = await ProgressSource.getSnapshot();
       setSnapshot(s);
       g.info('loaded', { source: s.source, completed: s.overview.completedLessons, total: s.overview.totalLessons });
+      console.log('✅ Snapshot loaded successfully:', {
+        label,
+        source: s.source,
+        completedLessons: s.overview.completedLessons,
+        totalLessons: s.overview.totalLessons,
+        lessonsCount: s.lessons?.length || 0,
+        userId: s.userId ? `${s.userId.substring(0, 8)}...` : 'null'
+      });
+      console.log('═══════════════════════════════════════════════════════════════');
+      console.log('');
     } catch (error) {
       setSnapshotError(error?.message || 'Error al cargar el progreso');
       g.error('failed', error?.message);
+      console.error('');
+      console.error('═══════════════════════════════════════════════════════════════');
+      console.error(`[LearningProgressContext] ❌ loadSnapshot(${label}) FAILED`);
+      console.error('═══════════════════════════════════════════════════════════════');
+      console.error('Error:', error?.message);
+      console.error('Stack:', error?.stack);
+      console.error('═══════════════════════════════════════════════════════════════');
+      console.error('');
     } finally {
       setIsLoadingSnapshot(false);
       loadingSnapshotRef.current = false;
@@ -350,9 +388,15 @@ export const LearningProgressProvider = ({ children }) => {
   }, [session, snapshot?.source, loadSnapshot]);
 
   // Sync snapshot lessons into progressByModule to ensure data consistency
-  // This ensures that fresh data from the backend is available in progressByModule
+  // CRITICAL: This effect synchronizes DB data (from snapshot) into local state (progressByModule)
+  // This is how database progress becomes visible in the UI
+  //
+  // When user clears localStorage, this effect ensures DB data repopulates progressByModule
   useEffect(() => {
+    console.log('[LearningProgressContext] 🔄 Sync effect triggered - checking snapshot...');
+    
     if (!snapshot?.lessons || !Array.isArray(snapshot.lessons) || snapshot.lessons.length === 0) {
+      console.log('[LearningProgressContext] ⚠️  No snapshot lessons to sync (snapshot empty or not loaded yet)');
       return;
     }
 
@@ -363,10 +407,25 @@ export const LearningProgressProvider = ({ children }) => {
       const progressValue = Math.max(0, Math.min(1, l.progress || 0));
       return progressValue > 0; // Sync any lesson with progress > 0
     });
+    
+    console.log('[LearningProgressContext] 📊 Snapshot analysis:', {
+      totalLessons: snapshot.lessons.length,
+      lessonsWithProgress: lessonsWithProgress.length,
+      source: snapshot.source,
+      completedInOverview: snapshot.overview?.completedLessons || 0
+    });
+    
     if (lessonsWithProgress.length === 0) {
+      console.log('[LearningProgressContext] ⚠️  No lessons with progress > 0, skipping sync');
       return;
     }
 
+    console.log('');
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log(`[LearningProgressContext] 🔄 Syncing ${lessonsWithProgress.length} lessons with progress from snapshot to progressByModule`);
+    console.log('   Source:', snapshot.source);
+    console.log('═══════════════════════════════════════════════════════════════');
+    
     debug.info(`[LearningProgressContext] Syncing ${lessonsWithProgress.length} lessons with progress from snapshot to progressByModule`);
 
     setProgressByModule(prev => {
@@ -374,6 +433,12 @@ export const LearningProgressProvider = ({ children }) => {
       let hasChanges = false;
 
       for (const lesson of snapshot.lessons) {
+        // Defensive check: skip invalid lessons early
+        if (!lesson || typeof lesson !== 'object' || !lesson.lessonId || typeof lesson.lessonId !== 'string') {
+          console.warn('[LearningProgressContext] Skipping invalid lesson in snapshot sync:', lesson);
+          continue;
+        }
+
         // Try to determine moduleId from lessonId
         // Common formats: "module-id/lesson-id", "module-id-lesson-id"
         let moduleId = null;
@@ -490,6 +555,18 @@ export const LearningProgressProvider = ({ children }) => {
         }
       }
 
+      if (hasChanges) {
+        console.log('✅ progressByModule updated with snapshot data');
+        console.log('   Modules with data:', Object.keys(updated).length);
+        console.log('   Sample module:', Object.keys(updated)[0] || 'none');
+        console.log('═══════════════════════════════════════════════════════════════');
+        console.log('');
+      } else {
+        console.log('ℹ️  No changes needed, progressByModule already up to date');
+        console.log('═══════════════════════════════════════════════════════════════');
+        console.log('');
+      }
+      
       return hasChanges ? updated : prev;
     });
   }, [snapshot]);

@@ -18,6 +18,15 @@ import {
 } from '@mui/icons-material';
 import ModuleGrid from '../../../../../components/teaching/components/curriculum/ModuleGrid';
 
+const DEFAULT_LEVEL_COLORS = {
+  prerequisitos: '#9E9E9E',
+  beginner: '#4CAF50',
+  intermediate: '#FF9800',
+  advanced: '#F44336',
+};
+const getLevelColor = (level) =>
+  level?.color ?? DEFAULT_LEVEL_COLORS[level?.id] ?? '#4CAF50';
+
 /**
  * LevelStepper - Componente minimalista de niveles de aprendizaje
  *
@@ -138,7 +147,7 @@ const LevelStepper = ({
             modules={[]} // No se necesitan módulos en modo lessons
             mode="lessons"
             levelId={level.id}
-            levelColor={level.color}
+            levelColor={getLevelColor(level)}
             enableAnimations={true}
             emptyMessage={`No hay lecciones disponibles en ${level.title}`}
             favoriteModules={favoriteModules || new Set()} // Proporcionar Set vacío por defecto
@@ -189,7 +198,7 @@ const LevelStepper = ({
             return 'Comenzar';
           }}
           getButtonIcon={() => null} // ModuleCard maneja sus propios iconos
-          levelColor={level.color}
+          levelColor={getLevelColor(level)}
           enableAnimations={true}
           emptyMessage="No hay módulos disponibles en este nivel"
           mode="modules"
@@ -325,7 +334,7 @@ const LevelStepper = ({
                         <Typography
                           variant="h5"
                           sx={{
-                            color: level.color,
+                            color: getLevelColor(level),
                             fontWeight: 600,
                             mb: 0.5,
                             lineHeight: 1.2
@@ -381,7 +390,7 @@ const LevelStepper = ({
                           borderRadius: 3,
                           backgroundColor: `${theme.palette.grey[400]}10`,
                           '& .MuiLinearProgress-bar': {
-                            backgroundColor: level.color,
+                            backgroundColor: getLevelColor(level),
                             borderRadius: 3,
                             transition: 'transform 0.3s ease'
                           }
@@ -408,7 +417,7 @@ const LevelStepper = ({
                           <Typography
                             variant="body2"
                             sx={{
-                              color: level.color,
+                              color: getLevelColor(level),
                               fontWeight: 700,
                               fontSize: '0.95rem'
                             }}

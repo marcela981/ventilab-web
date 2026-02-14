@@ -422,7 +422,7 @@ const ModuleGrid = ({
               getStatusIcon={getStatusIconFn}
               getButtonText={getButtonTextFn}
               getButtonIcon={getButtonIconFn}
-              levelColor={levelColor}
+              levelColor={levelColor ?? module.levelColor ?? '#4CAF50'}
               completedModules={completedModules}
               precalculatedProgress={precalculatedProgress} // Pasar progreso agregado completo
             />

@@ -1,9 +1,13 @@
 // frontend/src/services/api/http.ts
 
 import axios from 'axios';
+import { BACKEND_API_URL } from '@/config/env';
 
 export const http = axios.create({
-  baseURL: '/backend', // ← aislado del espacio /api de NextAuth
+  // Use absolute backend API URL resolved from env
+  // Example (dev): http://localhost:3001/api
+  // Example (prod): https://ventylab-server.example.com/api
+  baseURL: BACKEND_API_URL,
   timeout: 8000,
   withCredentials: true,
 });

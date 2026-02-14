@@ -49,8 +49,8 @@ const LS_SNAPSHOT = 'progress.last';
 
 function getAuth() {
   // Ajustar si tu AuthContext expone token/userId distinto
-  const token = getAuthToken() || '';
-  const userId = getUserData()?.id || getUserData()?._id || null;
+    const token = getAuthToken() || '';
+    const userId = (getUserData() as any)?.id || (getUserData() as any)?._id || null;
   return { token, userId };
 }
 
@@ -181,7 +181,7 @@ function mergeProgress(
         progress: l.progress,
         updatedAt: l.updatedAt
       })) || [],
-      lastSyncAt: null,
+      lastSyncAt: '',
       source: 'local'
     };
 
@@ -205,35 +205,51 @@ function mergeProgress(
     });
   });
 
-  // Merge local lessons (use if newer or higher progress)
+  // CRITICAL FIX: Merge local lessons ONLY if they have HIGHER progress than DB
+  // Database is the SINGLE SOURCE OF TRUTH - localStorage is only for pending changes
+  // 
+  // Rules:
+  // 1. If lesson exists in DB → use DB progress UNLESS localStorage has higher progress
+  // 2. If lesson only exists in localStorage → add it (pending sync to DB)
+  // 3. NEVER downgrade progress (max of DB and localStorage)
+  // 4. ALWAYS prefer DB timestamp unless localStorage has higher progress
+  //
+  // This ensures that when user clears localStorage, DB data is loaded correctly
   localLessons.forEach(localLesson => {
     const existing = mergedLessonsMap.get(localLesson.lessonId);
 
     if (!existing) {
-      // New lesson, add it
+      // New lesson in localStorage (not yet synced to DB) - add it
       mergedLessonsMap.set(localLesson.lessonId, {
         lessonId: localLesson.lessonId,
         progress: localLesson.progress,
         updatedAt: localLesson.updatedAt
       });
+      debug.info('[ProgressSource] Merging local-only lesson:', localLesson.lessonId);
     } else {
-      // Compare timestamps and progress
-      const localTime = new Date(localLesson.updatedAt).getTime();
-      const dbTime = new Date(existing.updatedAt).getTime();
-
-      // Use the one with higher progress (never decrement)
+      // Lesson exists in both DB and localStorage
+      // CRITICAL: Only override DB if localStorage has HIGHER progress
+      // This prevents localStorage from masking DB updates
       if (localLesson.progress > existing.progress) {
+        debug.info('[ProgressSource] Local progress higher than DB, using local:', {
+          lessonId: localLesson.lessonId,
+          dbProgress: existing.progress,
+          localProgress: localLesson.progress
+        });
         mergedLessonsMap.set(localLesson.lessonId, {
           lessonId: localLesson.lessonId,
           progress: localLesson.progress,
           updatedAt: localLesson.updatedAt
         });
-      } else if (localTime > dbTime && localLesson.progress === existing.progress) {
-        // Same progress but local is newer, update timestamp
-        mergedLessonsMap.set(localLesson.lessonId, {
-          ...existing,
-          updatedAt: localLesson.updatedAt
+      } else {
+        // DB has equal or higher progress - keep DB data
+        // This is the CRITICAL FIX: when localStorage is cleared, DB data is preserved
+        debug.info('[ProgressSource] DB progress equal or higher, using DB:', {
+          lessonId: localLesson.lessonId,
+          dbProgress: existing.progress,
+          localProgress: localLesson.progress
         });
+        // Keep existing (DB data) - no changes needed
       }
     }
   });
@@ -345,39 +361,128 @@ function deriveOverview(db?:Overview, lessons?:LessonItem[], local?:Overview): O
 export const ProgressSource = {
   /**
    * Get progress snapshot (reconciled from DB and local)
+   * 
+   * CRITICAL: This is the SINGLE SOURCE OF TRUTH for progress data.
+   * Database is PRIMARY, localStorage is SECONDARY (only for pending changes).
+   * 
+   * Flow:
+   * 1. Check authentication (userId + token)
+   * 2. Read localStorage queue (pending changes not yet synced)
+   * 3. Fetch from DB (PRIMARY source)
+   * 4. Merge: DB data + localStorage queue (only if localStorage has higher progress)
+   * 5. Save merged snapshot for offline access
+   * 
+   * IMPORTANT: If user clears localStorage, this method will correctly load from DB.
    */
   async getSnapshot(): Promise<ProgressSnapshot> {
     const g = debug.group('ProgressSource.getSnapshot');
+    console.log('');
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('🔄 [ProgressSource] getSnapshot() - Loading progress...');
+    console.log('═══════════════════════════════════════════════════════════════');
+    
     const { token, userId } = getAuth();
     g.info('auth', { userId, hasToken: !!token, tokenPreview: debug.short(token) });
+    console.log('🔐 Auth status:', { 
+      userId: userId ? `${userId.substring(0, 8)}...` : 'null', 
+      hasToken: !!token 
+    });
 
-    // 1) lee local
+    // 1) Read local queue (pending changes NOT yet synced to DB)
+    // DO NOT read full localStorage snapshot here - DB is primary source
     const localSnap = readLocalSnapshot();
     const localQueue = readLocalQueue();
     g.info('local state', { hasLocalSnap: !!localSnap, queueLen: localQueue.length });
+    console.log('📦 localStorage state:', { 
+      hasSnapshot: !!localSnap, 
+      queueLength: localQueue.length,
+      snapshotLessons: localSnap?.lessons?.length || 0
+    });
 
-    // 2) si hay token, intenta DB
+    // 2) If authenticated, fetch from DB (PRIMARY source)
     let dbOverview: Overview|undefined;
     let dbLessons: LessonItem[]|undefined;
 
     if (token) {
       try {
-        const o = await getOverview();
+        console.log('🌐 Fetching progress from DATABASE...');
+        console.log('   Token available:', token ? `${token.substring(0, 20)}...` : 'none');
+        console.log('   Calling getOverview()...');
+        
+        const o: any = await getOverview();
+        
+        // CRITICAL DEBUG: Log the EXACT response from backend
+        console.log('');
+        console.log('═══════════════════════════════════════════════════════════════');
+        console.log('🔍 [DEBUG] Backend Response Analysis:');
+        console.log('═══════════════════════════════════════════════════════════════');
+        console.log('   Response type:', typeof o);
+        console.log('   Response is null?', o === null);
+        console.log('   Response is undefined?', o === undefined);
+        console.log('   Response keys:', o ? Object.keys(o) : 'N/A');
+        console.log('   Has overview property?', o?.hasOwnProperty('overview'));
+        console.log('   Has lessons property?', o?.hasOwnProperty('lessons'));
+        console.log('   Has modules property?', o?.hasOwnProperty('modules'));
+        
+        if (o?.overview) {
+          console.log('   overview.completedLessons:', o.overview.completedLessons);
+          console.log('   overview.totalLessons:', o.overview.totalLessons);
+        }
+        
+        if (o?.lessons) {
+          console.log('   lessons length:', Array.isArray(o.lessons) ? o.lessons.length : 'not an array');
+          if (Array.isArray(o.lessons) && o.lessons.length > 0) {
+            console.log('   First lesson sample:', JSON.stringify(o.lessons[0], null, 2));
+          }
+        }
+        
+        if ((o as any)?.modules) {
+          console.log('   modules length:', Array.isArray((o as any).modules) ? (o as any).modules.length : 'not an array');
+        }
+        
+        console.log('   Full response (stringified):', JSON.stringify(o, null, 2).substring(0, 500) + '...');
+        console.log('═══════════════════════════════════════════════════════════════');
+        console.log('');
+        
         // getOverview returns overview data, extract lessons if available
-        dbOverview = o?.overview || o; // por si la API responde plano
-        dbLessons  = o?.lessons  || []; // lessons might be in overview response
+        dbOverview = (o as any)?.overview || o; // por si la API responde plano
+        dbLessons  = (o as any)?.lessons  || []; // lessons might be in overview response
+        
+        console.log('   Extracted dbOverview:', !!dbOverview ? 'exists' : 'null/undefined');
+        console.log('   Extracted dbLessons:', Array.isArray(dbLessons) ? `array with ${dbLessons.length} items` : 'not an array');
+        
         g.info('db fetched', {
           overviewOk: !!dbOverview,
           lessonsCount: Array.isArray(dbLessons) ? dbLessons.length : 0
         });
+        console.log('✅ DB fetch SUCCESS:', {
+          hasOverview: !!dbOverview,
+          lessonsCount: Array.isArray(dbLessons) ? dbLessons.length : 0,
+          completedLessons: dbOverview?.completedLessons || 0,
+          totalLessons: dbOverview?.totalLessons || 0
+        });
       } catch (err: any) {
         g.warn('db fetch failed', err?.message);
+        console.error('');
+        console.error('═══════════════════════════════════════════════════════════════');
+        console.error('❌ DB fetch FAILED');
+        console.error('═══════════════════════════════════════════════════════════════');
+        console.error('   Error message:', err?.message);
+        console.error('   Error name:', err?.name);
+        console.error('   Error status:', err?.status || err?.response?.status);
+        console.error('   Error response:', err?.response?.data);
+        console.error('   Full error:', err);
+        console.error('═══════════════════════════════════════════════════════════════');
+        console.error('');
+        console.error('   Will fall back to localStorage if available');
       }
     } else {
       g.warn('no token: using local only');
+      console.warn('⚠️  No auth token - will use localStorage only (offline mode)');
     }
 
-    // 3) merge reglas (nunca decrementar)
+    // 3) Merge: DB (primary) + localStorage queue (only if higher progress)
+    // CRITICAL: DB data takes precedence, localStorage only adds pending changes
     const merged = mergeSnapshots(userId, localSnap, localQueue, dbOverview, dbLessons);
     g.info('merged snapshot', {
       source: merged.source,
@@ -386,9 +491,26 @@ export const ProgressSource = {
       modulesCompleted: merged.overview.modulesCompleted,
       totalModules: merged.overview.totalModules
     });
+    console.log('🔀 Merged snapshot:', {
+      source: merged.source,
+      completedLessons: merged.overview.completedLessons,
+      totalLessons: merged.overview.totalLessons,
+      lessonsCount: merged.lessons.length
+    });
+    
+    // Log source breakdown for debugging
+    if (merged.source === 'db') {
+      console.log('   ✅ Source: DATABASE (auth token available, DB fetch successful)');
+    } else if (merged.source === 'merged') {
+      console.log('   ✅ Source: MERGED (DB + localStorage pending changes)');
+    } else if (merged.source === 'local') {
+      console.log('   ⚠️  Source: LOCAL ONLY (no auth token OR DB fetch failed)');
+    }
 
-    // 4) persistir último snapshot para diagnóstico
+    // 4) Save merged snapshot for offline access
     saveLocalSnapshot(merged);
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('');
     g.end();
     return merged;
   },
@@ -481,7 +603,7 @@ export const ProgressSource = {
    * Migrate local progress to DB (called on login)
    */
   async migrateLocalToDB(): Promise<void> {
-    const userId = getUserData()?.id || getUserData()?._id || null;
+    const userId = (getUserData() as any)?.id || (getUserData() as any)?._id || null;
     const hasToken = !!getAuthToken();
 
     if (!userId || !hasToken) {

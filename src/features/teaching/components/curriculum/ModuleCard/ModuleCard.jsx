@@ -245,21 +245,26 @@ const ModuleCard = ({
     completedModules
   });
   
-  // Prioridad: si completedModules tiene datos, usar siempre el cálculo interno (más preciso)
-  // Si no hay completedModules, usar isAvailableProp si está disponible, o el cálculo interno
-  // IMPORTANT: Módulos coming_soon nunca están disponibles
-  const finalIsAvailable = isComingSoon 
-    ? false  // Módulos coming_soon siempre están bloqueados
-    : (completedModules.length > 0
-      ? isAvailable  // Si hay datos de módulos completados, usar cálculo interno basado en prerrequisitos
-      : (isAvailableProp !== undefined ? isAvailableProp : isAvailable));
+  // Determinar disponibilidad final del módulo.
+  // PRIORIDAD:
+  // 1) Módulos coming_soon nunca están disponibles.
+  // 2) Si el padre proporciona isAvailableProp (desde ModuleGrid / LevelStepper),
+  //    usar SIEMPRE ese valor como fuente de verdad para habilitar o bloquear el módulo.
+  // 3) Si no se proporciona isAvailableProp, usar el cálculo interno del hook useModuleAvailability.
+  //
+  // Esto evita que el hook interno "corrija" a bloqueado un módulo que el grid ya marcó como disponible,
+  // lo que hacía que el botón se viera deshabilitado aunque la lógica externa dijera que debía estar activo.
+  const finalIsAvailable = isComingSoon
+    ? false
+    : (isAvailableProp !== undefined ? isAvailableProp : isAvailable);
   
   // Usar progreso para determinar el status
-  // Si no hay lecciones, el módulo no está disponible para continuar
+  // El botón debe mostrarse siempre que el módulo esté disponible (por prerrequisitos)
+  // No bloquear por hasLessons (puede ser false durante carga o si la API no devuelve conteo)
   const moduleProgressPercent = moduleProgressAggregate.percentInt;
-  const effectiveIsAvailable = finalIsAvailable && hasLessons;
+  const effectiveIsAvailable = finalIsAvailable;
   const status = getModuleStatus(moduleProgressPercent, effectiveIsAvailable);
-  
+
   // Handler para prevenir que el click de la card se active cuando se hace scroll en el body
   const handleCardClick = (e) => {
     // Si el módulo no está disponible, bloquear todos los clicks
@@ -269,22 +274,20 @@ const ModuleCard = ({
       return;
     }
     
-    // Si el click viene del cardBody, footer, o botones/interactivos, no activar el onClick de la card
+    // Solo el botón del footer abre el módulo. Clic en título, header o body no navega.
     const target = e.target;
-    const isClickableElement = target.closest('button') || 
-                               target.closest('a') || 
-                               target.closest('[role="tab"]') ||
-                               target.closest(`.${styles.cardBody}`) ||
-                               target.closest(`.${styles.cardFooter}`) ||
-                               target.closest('[data-block-overlay]');
-    
-    if (isClickableElement) {
+    const isClickableArea = target.closest('button') ||
+                            target.closest('a') ||
+                            target.closest('[role="tab"]') ||
+                            target.closest(`.${styles.cardBody}`) ||
+                            target.closest(`.${styles.cardFooter}`) ||
+                            target.closest(`.${styles.cardHeader}`) ||
+                            target.closest('[data-block-overlay]');
+
+    if (isClickableArea) {
       return;
     }
-    
-    if (finalIsAvailable && onModuleClick) {
-      onModuleClick(module.id);
-    }
+    // No navegar al hacer click en la card; únicamente el botón "Comenzar/Continuar/Completado" navega
   };
   
   // Handler para el cardBody para prevenir propagación de eventos
@@ -311,7 +314,7 @@ const ModuleCard = ({
           : (!finalIsAvailable ? 'Módulo bloqueado' : undefined)
         }
         style={{
-          cursor: finalIsAvailable ? 'pointer' : 'not-allowed',
+          cursor: finalIsAvailable ? 'default' : 'not-allowed',
           position: 'relative',
           borderColor: borderColor,
           borderWidth: '1px',

@@ -23,9 +23,6 @@ const ModuleCardFooter = ({
     return isAvailable ? 'Comenzar' : 'Bloqueado';
   };
   
-  // Ocultar botón "Continuar" si el módulo no tiene lecciones
-  const shouldShowButton = isAvailable;
-
   const getButtonIcon = () => {
     if (status === 'completed') return <CheckCircle />;
     if (status === 'in-progress') return <Refresh />;
@@ -38,19 +35,21 @@ const ModuleCardFooter = ({
     return isAvailable ? 'Comenzar módulo' : 'Módulo bloqueado';
   };
 
-  // No mostrar el botón si no está disponible (incluye caso de módulo sin lecciones)
-  if (!shouldShowButton) {
-    return null;
-  }
+  // Verde como CTA principal para Comenzar/Continuar; Completado con borde
+  const isPrimaryAction = (status === 'available' || status === 'in-progress') && isAvailable;
+  const buttonBg = isPrimaryAction ? '#22c55e' : 'transparent';
+  const buttonHoverBg = isPrimaryAction ? '#16a34a' : 'transparent';
 
   return (
-    <footer className={styles.cardFooter}>
+    <footer className={styles.cardFooter} data-card-footer>
       <Button
+        type="button"
         variant={status === 'completed' ? 'outlined' : 'contained'}
         fullWidth
         disabled={!isAvailable}
         aria-disabled={!isAvailable}
         onClick={(e) => {
+          e.preventDefault();
           e.stopPropagation();
           if (isAvailable && onModuleClick) {
             onModuleClick(moduleId);
@@ -64,15 +63,15 @@ const ModuleCardFooter = ({
           textTransform: 'none',
           py: 1,
           borderRadius: 1.5,
-          backgroundColor: status !== 'completed' && isAvailable ? levelColor : 'transparent',
-          borderColor: isAvailable ? levelColor : theme.palette.grey[300],
-          color: status !== 'completed' && isAvailable ? '#fff' : levelColor,
-          boxShadow: 'none',
+          backgroundColor: status !== 'completed' && isAvailable ? buttonBg : 'transparent',
+          borderColor: isAvailable ? (isPrimaryAction ? '#22c55e' : levelColor) : theme.palette.grey[300],
+          color: status !== 'completed' && isAvailable ? '#fff' : (isAvailable ? levelColor : theme.palette.grey[400]),
+          boxShadow: isPrimaryAction ? '0 1px 3px rgba(34, 197, 94, 0.3)' : 'none',
           transition: 'all 0.25s ease-in-out',
           '&:hover': isAvailable ? {
-            backgroundColor: status !== 'completed' ? levelColor : 'transparent',
-            filter: 'brightness(0.92)',
-            boxShadow: 'none',
+            backgroundColor: status !== 'completed' ? buttonHoverBg : 'transparent',
+            borderColor: isPrimaryAction ? '#16a34a' : levelColor,
+            boxShadow: isPrimaryAction ? '0 2px 8px rgba(34, 197, 94, 0.35)' : 'none',
             transform: 'scale(1.02)'
           } : {},
           '&.Mui-disabled': {

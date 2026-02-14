@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Progress Fetch</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #252526;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #0e639c;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1177bb;
+        }
+        pre {
+            background: #1e1e1e;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+        .success { color: #4ec9b0; }
+        .error { color: #f48771; }
+        .warning { color: #dcdcaa; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test: Progress API Fetch</h1>
+    
+    <div class="section">
+        <h2>Paso 1: Verificar Token de Autenticación</h2>
+        <button onclick="checkToken()">🔐 Check Token</button>
+        <pre id="token-result"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>Paso 2: Fetch desde Backend</h2>
+        <button onclick="fetchProgress()">🌐 Fetch /api/progress/overview</button>
+        <pre id="fetch-result"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>Paso 3: Verificar localStorage</h2>
+        <button onclick="checkLocalStorage()">📦 Check localStorage</button>
+        <button onclick="clearLocalStorage()">🗑️ Clear localStorage</button>
+        <pre id="localstorage-result"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>Paso 4: Test Completo (Borrar + Fetch)</h2>
+        <button onclick="fullTest()">🚀 Run Full Test</button>
+        <pre id="full-test-result"></pre>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3001/api';
+        
+        function log(elementId, message, type = 'info') {
+            const el = document.getElementById(elementId);
+            const timestamp = new Date().toISOString();
+            const color = type === 'success' ? 'success' : type === 'error' ? 'error' : type === 'warning' ? 'warning' : '';
+            el.innerHTML += `<span class="${color}">[${timestamp}] ${message}</span>\n`;
+        }
+        
+        function clear(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+        
+        function checkToken() {
+            clear('token-result');
+            
+            const token = localStorage.getItem('ventilab_auth_token');
+            
+            if (!token) {
+                log('token-result', '❌ NO TOKEN FOUND', 'error');
+                log('token-result', 'Debes iniciar sesión primero en la aplicación', 'warning');
+                return null;
+            }
+            
+            log('token-result', '✅ Token encontrado', 'success');
+            log('token-result', `Token: ${token.substring(0, 30)}...`, 'info');
+            log('token-result', `Length: ${token.length} caracteres`, 'info');
+            
+            // Intentar decodificar JWT (sin verificar firma)
+            try {
+                const parts = token.split('.');
+                if (parts.length === 3) {
+                    const payload = JSON.parse(atob(parts[1]));
+                    log('token-result', 'JWT Payload:', 'info');
+                    log('token-result', JSON.stringify(payload, null, 2), 'info');
+                    
+                    // Check expiration
+                    if (payload.exp) {
+                        const expDate = new Date(payload.exp * 1000);
+                        const now = new Date();
+                        const isExpired = now > expDate;
+                        
+                        if (isExpired) {
+                            log('token-result', `❌ TOKEN EXPIRADO (exp: ${expDate.toISOString()})`, 'error');
+                        } else {
+                            log('token-result', `✅ Token válido hasta: ${expDate.toISOString()}`, 'success');
+                        }
+                    }
+                }
+            } catch (e) {
+                log('token-result', '⚠️  No se pudo decodificar JWT (puede no ser un JWT estándar)', 'warning');
+            }
+            
+            return token;
+        }
+        
+        async function fetchProgress() {
+            clear('fetch-result');
+            
+            const token = checkToken();
+            if (!token) {
+                log('fetch-result', '❌ Abortado: No hay token', 'error');
+                return;
+            }
+            
+            log('fetch-result', '🌐 Fetching /api/progress/overview...', 'info');
+            log('fetch-result', `URL: ${API_URL}/progress/overview`, 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/progress/overview`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                });
+                
+                log('fetch-result', `Response status: ${response.status} ${response.statusText}`, 
+                    response.ok ? 'success' : 'error');
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    log('fetch-result', `❌ Error response: ${errorText}`, 'error');
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                log('fetch-result', '✅ Response received successfully', 'success');
+                log('fetch-result', '', 'info');
+                log('fetch-result', '═══════════════════════════════════════', 'info');
+                log('fetch-result', 'Response Structure:', 'info');
+                log('fetch-result', '═══════════════════════════════════════', 'info');
+                log('fetch-result', `Has 'overview' property: ${data?.hasOwnProperty('overview')}`, 'info');
+                log('fetch-result', `Has 'lessons' property: ${data?.hasOwnProperty('lessons')}`, 'info');
+                log('fetch-result', `Has 'modules' property: ${data?.hasOwnProperty('modules')}`, 'info');
+                log('fetch-result', '', 'info');
+                
+                if (data?.overview) {
+                    log('fetch-result', 'Overview:', 'success');
+                    log('fetch-result', `  - completedLessons: ${data.overview.completedLessons}`, 'info');
+                    log('fetch-result', `  - totalLessons: ${data.overview.totalLessons}`, 'info');
+                    log('fetch-result', `  - modulesCompleted: ${data.overview.modulesCompleted}`, 'info');
+                    log('fetch-result', `  - totalModules: ${data.overview.totalModules}`, 'info');
+                }
+                
+                if (data?.lessons) {
+                    log('fetch-result', '', 'info');
+                    log('fetch-result', `Lessons: ${data.lessons.length} items`, 'success');
+                    if (data.lessons.length > 0) {
+                        log('fetch-result', 'First lesson sample:', 'info');
+                        log('fetch-result', JSON.stringify(data.lessons[0], null, 2), 'info');
+                    }
+                }
+                
+                if (data?.modules) {
+                    log('fetch-result', '', 'info');
+                    log('fetch-result', `Modules: ${data.modules.length} items`, 'success');
+                }
+                
+                log('fetch-result', '', 'info');
+                log('fetch-result', '═══════════════════════════════════════', 'info');
+                log('fetch-result', 'Full Response (first 1000 chars):', 'info');
+                log('fetch-result', '═══════════════════════════════════════', 'info');
+                log('fetch-result', JSON.stringify(data, null, 2).substring(0, 1000) + '...', 'info');
+                
+            } catch (error) {
+                log('fetch-result', `❌ Fetch error: ${error.message}`, 'error');
+                log('fetch-result', `Error type: ${error.name}`, 'error');
+                log('fetch-result', '', 'error');
+                log('fetch-result', 'Posibles causas:', 'warning');
+                log('fetch-result', '1. Backend no está corriendo (npm run dev en ventylab-server)', 'warning');
+                log('fetch-result', '2. URL incorrecta (verificar NEXT_PUBLIC_API_URL)', 'warning');
+                log('fetch-result', '3. CORS bloqueado', 'warning');
+                log('fetch-result', '4. Token inválido o expirado', 'warning');
+            }
+        }
+        
+        function checkLocalStorage() {
+            clear('localstorage-result');
+            
+            log('localstorage-result', '📦 Checking localStorage...', 'info');
+            log('localstorage-result', '', 'info');
+            
+            const keys = [
+                'vlab:progress:state',
+                'vlab:progress:local',
+                'progress.last',
+                'progress.queue',
+                'ventilab_auth_token',
+            ];
+            
+            keys.forEach(key => {
+                const value = localStorage.getItem(key);
+                if (value) {
+                    log('localstorage-result', `✅ ${key}: ${value.length} chars`, 'success');
+                    if (key.includes('progress')) {
+                        try {
+                            const parsed = JSON.parse(value);
+                            log('localstorage-result', `   Type: ${typeof parsed}`, 'info');
+                            if (parsed?.lessons) {
+                                log('localstorage-result', `   Lessons: ${parsed.lessons.length} items`, 'info');
+                            }
+                        } catch (e) {
+                            log('localstorage-result', `   (not JSON)`, 'warning');
+                        }
+                    }
+                } else {
+                    log('localstorage-result', `❌ ${key}: not found`, 'error');
+                }
+            });
+        }
+        
+        function clearLocalStorage() {
+            if (!confirm('¿Seguro que quieres borrar TODO el localStorage?')) {
+                return;
+            }
+            
+            clear('localstorage-result');
+            log('localstorage-result', '🗑️  Clearing localStorage...', 'warning');
+            
+            const beforeCount = localStorage.length;
+            localStorage.clear();
+            const afterCount = localStorage.length;
+            
+            log('localstorage-result', `✅ Cleared ${beforeCount} items`, 'success');
+            log('localstorage-result', `Remaining items: ${afterCount}`, 'info');
+        }
+        
+        async function fullTest() {
+            clear('full-test-result');
+            
+            log('full-test-result', '🚀 Starting Full Test...', 'info');
+            log('full-test-result', '', 'info');
+            
+            // Step 1: Check token
+            log('full-test-result', 'Step 1: Checking token...', 'info');
+            const token = checkToken();
+            if (!token) {
+                log('full-test-result', '❌ Test aborted: No token', 'error');
+                return;
+            }
+            log('full-test-result', '✅ Token found', 'success');
+            log('full-test-result', '', 'info');
+            
+            // Step 2: Fetch BEFORE clearing localStorage
+            log('full-test-result', 'Step 2: Fetching progress BEFORE clearing localStorage...', 'info');
+            try {
+                const response1 = await fetch(`${API_URL}/progress/overview`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    credentials: 'include',
+                });
+                const data1 = await response1.json();
+                log('full-test-result', `✅ Fetch success: ${data1?.lessons?.length || 0} lessons`, 'success');
+            } catch (e) {
+                log('full-test-result', `❌ Fetch failed: ${e.message}`, 'error');
+                return;
+            }
+            log('full-test-result', '', 'info');
+            
+            // Step 3: Clear localStorage
+            log('full-test-result', 'Step 3: Clearing localStorage...', 'warning');
+            localStorage.clear();
+            log('full-test-result', '✅ localStorage cleared', 'success');
+            log('full-test-result', '', 'info');
+            
+            // Step 4: Fetch AFTER clearing localStorage
+            log('full-test-result', 'Step 4: Fetching progress AFTER clearing localStorage...', 'info');
+            try {
+                const response2 = await fetch(`${API_URL}/progress/overview`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    credentials: 'include',
+                });
+                const data2 = await response2.json();
+                log('full-test-result', `✅ Fetch success: ${data2?.lessons?.length || 0} lessons`, 'success');
+                log('full-test-result', '', 'info');
+                
+                // Compare
+                if (data2?.lessons?.length > 0) {
+                    log('full-test-result', '═══════════════════════════════════════', 'success');
+                    log('full-test-result', '🎉 SUCCESS: Data fetched from DB even without localStorage!', 'success');
+                    log('full-test-result', '═══════════════════════════════════════', 'success');
+                } else {
+                    log('full-test-result', '❌ PROBLEM: No lessons in response', 'error');
+                    log('full-test-result', 'Possible causes:', 'warning');
+                    log('full-test-result', '1. No progress in database', 'warning');
+                    log('full-test-result', '2. Wrong userId in token', 'warning');
+                }
+            } catch (e) {
+                log('full-test-result', `❌ Fetch failed: ${e.message}`, 'error');
+            }
+            log('full-test-result', '', 'info');
+            log('full-test-result', '✅ Full test completed', 'success');
+        }
+    </script>
+</body>
+</html>

@@ -170,6 +170,11 @@ export interface ModuleResumePoint {
   completionPercentage: number;
   scrollPosition: number | null;
   lastViewedSection: string | null;
+  // NEW: Step-level tracking for precise resume functionality
+  currentStepIndex?: number;        // 0-based step index to resume at
+  totalStepsInLesson?: number;      // Total steps in the lesson
+  isModuleComplete?: boolean;       // Whether all lessons are complete
+  lastAccessedAt?: string | null;   // ISO timestamp of last access
 }
 
 export interface ModuleWithProgress {
@@ -511,7 +516,7 @@ export async function getModuleResumePoint(moduleId: string): Promise<ModuleResu
       throw new Error(data?.message || 'Error al obtener punto de reanudación');
     }
 
-    // Backend returns: { resumeLessonId, resumeLessonTitle, resumeLessonProgress, resumeLessonOrder, moduleProgress, totalLessons, completedLessons, nextLessonOrder }
+    // Backend returns: { resumeLessonId, resumeLessonTitle, resumeLessonProgress, resumeLessonOrder, moduleProgress, totalLessons, completedLessons, nextLessonOrder, currentStepIndex, totalStepsInLesson, isModuleComplete, lastAccessedAt }
     // Map to expected ModuleResumePoint format
     const resumeData = data?.data || data;
     return {
@@ -522,6 +527,11 @@ export async function getModuleResumePoint(moduleId: string): Promise<ModuleResu
       completionPercentage: resumeData?.resumeLessonProgress || 0,
       scrollPosition: null, // Not provided by backend
       lastViewedSection: null, // Not provided by backend
+      // NEW: Step-level tracking
+      currentStepIndex: resumeData?.currentStepIndex,
+      totalStepsInLesson: resumeData?.totalStepsInLesson,
+      isModuleComplete: resumeData?.isModuleComplete,
+      lastAccessedAt: resumeData?.lastAccessedAt,
     };
   } catch (error) {
     console.error('[progressService] getModuleResumePoint error:', error);

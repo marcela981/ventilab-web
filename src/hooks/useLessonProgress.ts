@@ -82,9 +82,18 @@ export function useLessonProgress({
   // Refs for tracking
   const startTimeRef = useRef<number>(Date.now());
   const hasInitializedRef = useRef(false);
+  const prevLessonIdRef = useRef<string>(lessonId); // Track lesson changes
   const scrollPositionRef = useRef(0);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const rateLimitCooldownRef = useRef<NodeJS.Timeout | null>(null); // Track rate limit cooldown timer
+
+  // CRITICAL: Reset initialization flag when lessonId changes
+  // so backend progress is re-fetched for the new lesson
+  if (prevLessonIdRef.current !== lessonId) {
+    prevLessonIdRef.current = lessonId;
+    hasInitializedRef.current = false;
+    // Do NOT reset isCompleted here - the useEffect will set it from backend data
+  }
 
   /**
    * Calculate scroll percentage based on content position
@@ -484,7 +493,10 @@ export function useLessonProgress({
       console.log('[useLessonProgress] ✅ Page progress saved successfully');
 
       // Check for auto-completion
-      if (pageProgress >= autoCompleteThreshold && !isCompleted) {
+      // CRITICAL: Only trigger completion if lesson is NOT already completed.
+      // If backendProgress shows completed=true, the lesson was already finished
+      // and we must NOT re-trigger completion (which would reset UI state).
+      if (pageProgress >= autoCompleteThreshold && !isCompleted && !backendProgress?.completed) {
         setIsCompleted(true);
         if (onComplete) {
           onComplete();
@@ -511,7 +523,7 @@ export function useLessonProgress({
     } finally {
       setIsSaving(false);
     }
-  }, [lessonId, moduleId, lastSavedStep, autoCompleteThreshold, isCompleted, onComplete]);
+  }, [lessonId, moduleId, lastSavedStep, autoCompleteThreshold, isCompleted, onComplete, backendProgress]);
 
   /**
    * Save progress based on page number (for paginated content)
@@ -614,7 +626,14 @@ export function useLessonProgress({
           if (progress.currentStep !== undefined) {
             setLastSavedStep(progress.currentStep);
           }
-          setIsCompleted(progress.completed);
+          // CRITICAL: If backend says lesson is completed, set isCompleted=true
+          // and NEVER downgrade it. This prevents the "completed → in progress" bug.
+          if (progress.completed) {
+            setIsCompleted(true);
+            console.log('[useLessonProgress] Lesson already completed in DB, marking as completed');
+          } else {
+            setIsCompleted(false);
+          }
           
           // Restore scroll position
           if (progress.scrollPosition && contentRef.current) {
@@ -694,7 +713,8 @@ export function useLessonProgress({
         debouncedSave(percentage);
         
         // Check for auto-completion
-        if (percentage >= autoCompleteThreshold && !isCompleted) {
+        // CRITICAL: Do not trigger auto-complete if lesson is already completed
+        if (percentage >= autoCompleteThreshold && !isCompleted && !backendProgress?.completed) {
           console.log('[useLessonProgress] Auto-completion threshold reached:', percentage);
           handleAutoComplete();
         }

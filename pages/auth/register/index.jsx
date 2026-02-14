@@ -330,8 +330,8 @@ export default function RegisterPage() {
     try {
       setLoading(true);
 
-      // Call signup API
-      const response = await fetch('/api/auth/signup', {
+      // Call backend signup API (via proxy configured in next.config.ts)
+      const response = await fetch('/backend/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -340,26 +340,26 @@ export default function RegisterPage() {
           name: formData.name.trim(),
           email: formData.email.toLowerCase().trim(),
           password: formData.password,
-          confirmPassword: formData.confirmPassword,
+          // Backend expects 'role' field (optional, defaults to STUDENT)
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        // Handle error response
+        // Handle error response from backend
         if (data.errors && Array.isArray(data.errors)) {
           setError(data.errors.map(err => err.message).join('. '));
         } else if (data.feedback && Array.isArray(data.feedback)) {
           setError(data.feedback.join('. '));
         } else {
-          setError(data.message || 'Error al crear tu cuenta');
+          setError(data.error || data.message || 'Error al crear tu cuenta');
         }
         return;
       }
 
-      // Success!
-      setSuccess('¡Cuenta creada exitosamente! Iniciando sesión...');
+      // Success! Backend returns: { message, user }
+      setSuccess(data.message || '¡Cuenta creada exitosamente! Iniciando sesión...');
 
       // Auto-login after successful registration
       setTimeout(async () => {

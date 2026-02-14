@@ -39,6 +39,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
+      "@/shared/*": ["./src/shared/*"],
       "@/components/*": ["./src/components/*"],
       "@/view-components/*": ["./src/view-components/*"],
       "@/features/*": ["./src/features/*"],
@@ -50,7 +51,8 @@
       "@/data/*": ["./src/data/*"],
       "@/theme/*": ["./src/theme/*"],
       "@/styles/*": ["./src/styles/*"],
-      "@/types/*": ["./src/types/*"]
+      "@/types/*": ["./src/types/*"],
+      "@/config/*": ["./src/config/*"]
     },
     /* Next.js */
     "plugins": [

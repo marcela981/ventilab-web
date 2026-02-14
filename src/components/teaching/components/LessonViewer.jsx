@@ -42,6 +42,7 @@ import {
   Grid,
   Box,
   Button,
+  Chip,
   Skeleton,
   Alert,
   Snackbar,
@@ -160,6 +161,13 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     ).length;
   }, [module, moduleId, completedLessons]);
 
+  // Current lesson index within the module (0-based) for navigation
+  const currentLessonIndex = useMemo(() => {
+    if (!module?.lessons) return 0;
+    const idx = module.lessons.findIndex(l => l.id === lessonId);
+    return idx >= 0 ? idx : 0;
+  }, [module, lessonId]);
+
   const lessonType = useMemo(() => {
     if (!data) return 'teoria';
     return data.tipoDeLeccion ||
@@ -185,12 +193,8 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     return module.lessons[0]?.id === lessonId;
   }, [module, lessonId]);
 
-  // Check if the lesson was already completed before entering this session
-  // This is used to prevent TutorAI from auto-opening on re-entry
-  const wasLessonCompletedOnEntry = useMemo(() => {
-    const lessonKey = `${moduleId}-${lessonId}`;
-    return completedLessons.has(lessonKey);
-  }, [moduleId, lessonId, completedLessons]);
+  // NOTE: wasLessonCompletedOnEntry is defined AFTER useLessonProgress hook below,
+  // because it depends on backendProgress and isCompleted from that hook.
 
   // ============================================================================
   // State Management
@@ -215,8 +219,16 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   // Global pagination state - toda la lección está dividida en páginas
   const [currentPage, setCurrentPage] = useState(0);
   
-  // Lesson completion state
-  const [lessonCompleted, setLessonCompleted] = useState(false);
+  // SESSION-LEVEL completion tracking (ref, NOT state).
+  // This ref tracks whether completion was triggered during THIS session only.
+  // It is NOT the source of truth for completion — that is `wasLessonCompletedOnEntry`
+  // which is derived from the database via the context's `completedLessons` Set.
+  //
+  // Using a ref (not state) because:
+  // 1. It doesn't need to trigger re-renders
+  // 2. It prevents the "completed → in progress" desync bug that occurred when
+  //    useState(false) was reset on every mount/lesson change
+  const completedThisSessionRef = useRef(false);
   
   // Track previous lesson ID to detect changes
   const previousLessonIdRef = useRef(lessonId);
@@ -260,27 +272,51 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     moduleId,
     contentRef,
     onComplete: () => {
-      // GUARD: Only trigger completion if lesson was NOT already completed on entry
-      // This prevents re-completion when navigating to already-completed lessons
-      if (wasLessonCompletedOnEntry) {
-        console.log('[LessonViewer] Skipping completion callback - lesson already completed on entry');
+      // GUARD: Only trigger completion if lesson was NOT already completed.
+      // Check the DB-backed context Set directly (avoids TDZ with wasLessonCompletedOnEntry
+      // which is declared after this hook call).
+      const lessonKey = `${moduleId}-${lessonId}`;
+      const alreadyCompleted = completedLessons.has(lessonKey);
+      if (alreadyCompleted || completedThisSessionRef.current) {
+        console.log('[LessonViewer] Skipping completion callback - lesson already completed');
         return;
       }
+      completedThisSessionRef.current = true;
       setShowConfetti(true);
-      setLessonCompleted(true);
       console.log('[LessonViewer] Lesson auto-completed via page tracking');
     },
     autoSaveThreshold: 5, // Guardar cada 5% de progreso (más frecuente)
     autoCompleteThreshold: 90,
   });
+
+  // Check if the lesson was already completed before entering this session.
+  // This is used to prevent TutorAI from auto-opening on re-entry AND to prevent
+  // re-completion when revisiting an already-completed lesson.
+  //
+  // CRITICAL: Check BOTH the context's completedLessons Set AND the backend progress.
+  // The context Set may be stale if the snapshot hasn't refreshed yet, so we also
+  // check backendProgress (from useLessonProgress hook) and isCompleted as fallbacks.
+  //
+  // MUST be declared AFTER the useLessonProgress hook (which provides backendProgress
+  // and isCompleted).
+  const wasLessonCompletedOnEntry = useMemo(() => {
+    const lessonKey = `${moduleId}-${lessonId}`;
+    return (
+      completedLessons.has(lessonKey) ||
+      backendProgress?.completed === true ||
+      isCompleted === true
+    );
+  }, [moduleId, lessonId, completedLessons, backendProgress, isCompleted]);
   
   // ============================================================================
   // Scroll to top on mount or lesson change
   // ============================================================================
 
   useEffect(() => {
-    // Reset state when lesson changes
-    setLessonCompleted(false);
+    // Reset session-level guards when lesson changes.
+    // NOTE: completedThisSessionRef resets because this is a NEW lesson session.
+    // The actual completion truth comes from wasLessonCompletedOnEntry (DB-derived).
+    completedThisSessionRef.current = false;
     autoCompletionRef.current = false;
     autoCompletionInFlightRef.current = false;
     completionNotifiedRef.current = false;
@@ -408,15 +444,14 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   // Trigger auto-completion by saving progress at 100%
   // This will automatically mark the lesson as completed via useLessonProgress hook
   const triggerAutoCompletion = useCallback(async () => {
-    // GUARD: Prevent completion if lesson was already completed on entry
-    // or if module is completed (free navigation mode - read-only)
-    if (!data || lessonCompleted || autoCompletionRef.current || autoCompletionInFlightRef.current) {
+    // GUARD: Prevent completion if lesson is already completed (DB or session)
+    if (!data || completedThisSessionRef.current || autoCompletionRef.current || autoCompletionInFlightRef.current) {
       return false;
     }
 
-    // GUARD: Do not trigger completion if lesson was already completed
+    // GUARD: Do not trigger completion if lesson was already completed in DB
     if (wasLessonCompletedOnEntry) {
-      console.log('[LessonViewer] Skipping auto-completion - lesson already completed on entry');
+      console.log('[LessonViewer] Skipping auto-completion - lesson already completed (DB)');
       return false;
     }
 
@@ -434,7 +469,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
       await saveProgress(true); // forceComplete = true
 
       autoCompletionRef.current = true;
-      setLessonCompleted(true);
+      completedThisSessionRef.current = true;
 
       // CRITICAL: Notify parent exactly once using completionNotifiedRef guard
       // GUARD: Only notify if lesson was NOT already completed
@@ -453,7 +488,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     } finally {
       autoCompletionInFlightRef.current = false;
     }
-  }, [data, lessonCompleted, saveProgress, onComplete, wasLessonCompletedOnEntry, isModuleCompleted]);
+  }, [data, saveProgress, onComplete, wasLessonCompletedOnEntry, isModuleCompleted]);
 
   // ============================================================================
   // Practical Cases Handlers
@@ -617,6 +652,30 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     }
   }, [totalPages, totalSteps, savePageProgress, isModuleCompleted, wasLessonCompletedOnEntry]);
   
+  // Handle lesson selection from the numeric lesson pagination
+  // When module is completed → any lesson is clickable (free navigation)
+  // When module is NOT completed → only current or past lessons are accessible
+  const handleSelectLesson = useCallback((index) => {
+    if (!module?.lessons) return;
+
+    // Guard: if module not completed, only allow navigation to current or earlier lessons
+    if (!isModuleCompleted && index > currentLessonIndex) {
+      console.log('[LessonViewer] Blocked navigation to future lesson:', index, '(max:', currentLessonIndex, ')');
+      return;
+    }
+
+    const targetLesson = module.lessons[index];
+    if (!targetLesson) return;
+
+    // If navigating to the same lesson, do nothing
+    if (targetLesson.id === lessonId) return;
+
+    console.log('[LessonViewer] Navigating to lesson via progress bar:', targetLesson.id);
+    if (onNavigate) {
+      onNavigate(targetLesson.id, moduleId);
+    }
+  }, [module, isModuleCompleted, currentLessonIndex, lessonId, moduleId, onNavigate]);
+
   // Handle completion page display and progress marking
   // IMPORTANT: This effect ONLY marks progress and shows confetti.
   // It does NOT trigger navigation - that's handled by user clicking buttons on CompletionPage.
@@ -627,20 +686,21 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     // When user reaches the completion page, notify parent to update global progress state
     // Use completionNotifiedRef to ensure we only notify once per lesson session
     if (completionPageIndex >= 0 && currentPage === completionPageIndex && data) {
-      // GUARD: Only show confetti and mark as completed if lesson was NOT already completed
-      if (!lessonCompleted && !wasLessonCompletedOnEntry) {
+      // GUARD: Only show confetti if this is a FRESH completion (not revisiting)
+      // Completion truth comes from DB (wasLessonCompletedOnEntry), not local state.
+      if (!completedThisSessionRef.current && !wasLessonCompletedOnEntry) {
+        completedThisSessionRef.current = true;
         setShowConfetti(true);
-        setLessonCompleted(true);
       }
 
-      // GUARD: Only notify parent if lesson was NOT already completed on entry
+      // GUARD: Only notify parent if lesson was NOT already completed (DB-derived)
       // This prevents duplicate completion events when navigating to already-completed lessons
       if (!completionNotifiedRef.current && onComplete && !wasLessonCompletedOnEntry) {
         completionNotifiedRef.current = true;
         console.log('[LessonViewer] User reached completion page, notifying parent');
         onComplete(data);
       } else if (wasLessonCompletedOnEntry) {
-        console.log('[LessonViewer] Skipping completion notification - lesson already completed on entry');
+        console.log('[LessonViewer] Skipping completion notification - lesson already completed (DB)');
       }
 
       // GUARD: Only dispatch tutor:finalSuggestions ONCE per lesson session
@@ -684,16 +744,15 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     // Show confetti when isCompleted becomes true from progress tracking
     // (before user reaches completion page). Don't notify parent here -
     // parent notification only happens when user reaches the completion page.
-    // GUARD: Only trigger if lesson was NOT already completed on entry
-    // This prevents re-completion when navigating to already-completed lessons
-    if (isCompleted && !lessonCompleted && !wasLessonCompletedOnEntry) {
+    // GUARD: Only trigger if lesson was NOT already completed (DB-derived)
+    if (isCompleted && !completedThisSessionRef.current && !wasLessonCompletedOnEntry) {
+      completedThisSessionRef.current = true;
       setShowConfetti(true);
-      setLessonCompleted(true);
       console.log('[LessonViewer] Progress completed, showing confetti (no redirect)');
     } else if (isCompleted && wasLessonCompletedOnEntry) {
-      console.log('[LessonViewer] Skipping completion UI - lesson already completed on entry');
+      console.log('[LessonViewer] Skipping completion UI - lesson already completed (DB)');
     }
-  }, [currentPage, calculatePages, lessonCompleted, data, isCompleted, moduleId, lessonId, module, currentPageData, assessmentScore, onComplete, completedLessons, wasLessonCompletedOnEntry]);
+  }, [currentPage, calculatePages, data, isCompleted, moduleId, lessonId, module, currentPageData, assessmentScore, onComplete, completedLessons, wasLessonCompletedOnEntry]);
   
   // ============================================================================
   // Build lesson context for AI Tutor
@@ -1166,6 +1225,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
             },
             }}
           >
+
               {/* Review Mode Indicator - Only visible when module is completed */}
               {isModuleCompleted && (
                 <Box
@@ -1239,6 +1299,10 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
           onPrevPage={handlePrevPage}
           onNextPage={handleNextPage}
           onNavigateToLesson={handleNavigateToLesson}
+          isModuleCompleted={isModuleCompleted}
+          totalLessons={totalLessons}
+          currentLessonIndex={currentLessonIndex}
+          onSelectLesson={handleSelectLesson}
         />
         
         {/* Snackbar */}

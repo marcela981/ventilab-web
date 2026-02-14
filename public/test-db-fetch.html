@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test DB Fetch - VentyLab</title>
+    <style>
+        body { 
+            font-family: 'Courier New', monospace; 
+            background: #1a1a1a; 
+            color: #00ff00; 
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 { color: #00ff00; border-bottom: 2px solid #00ff00; padding-bottom: 10px; }
+        button {
+            background: #00ff00;
+            color: #1a1a1a;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        button:hover { background: #00cc00; }
+        .output { 
+            background: #0a0a0a; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border: 1px solid #00ff00;
+            white-space: pre-wrap;
+            font-size: 12px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .error { color: #ff0000; }
+        .success { color: #00ff00; }
+        .warning { color: #ffff00; }
+        .info { color: #00aaff; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test: Extracción de Progreso desde BD</h1>
+    
+    <div>
+        <button onclick="testFetch()">1️⃣ Test Fetch Completo</button>
+        <button onclick="clearOutput()">🧹 Limpiar</button>
+        <button onclick="testClearAndFetch()">2️⃣ Borrar localStorage + Fetch</button>
+    </div>
+    
+    <div class="output" id="output"></div>
+    
+    <script>
+        const API_URL = 'http://localhost:3001/api';
+        
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+            const className = type;
+            output.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '';
+        }
+        
+        async function testFetch() {
+            clearOutput();
+            log('═══════════════════════════════════════════════════════════════', 'info');
+            log('🔍 TEST: Extracción de Progreso desde Base de Datos', 'success');
+            log('═══════════════════════════════════════════════════════════════', 'info');
+            log('', 'info');
+            
+            // Step 1: Check token
+            log('Step 1: Verificando token...', 'info');
+            const token = localStorage.getItem('ventilab_auth_token');
+            
+            if (!token) {
+                log('❌ ERROR: No hay token de autenticación', 'error');
+                log('   → Solución: Abre la aplicación principal y haz login', 'warning');
+                return;
+            }
+            
+            log(`✅ Token encontrado (${token.length} chars)`, 'success');
+            log(`   Preview: ${token.substring(0, 50)}...`, 'info');
+            
+            // Try to decode JWT
+            try {
+                const parts = token.split('.');
+                if (parts.length === 3) {
+                    const payload = JSON.parse(atob(parts[1]));
+                    log(`   userId: ${payload.userId || payload.sub || payload.id || 'NOT FOUND'}`, 'info');
+                    
+                    if (payload.exp) {
+                        const expDate = new Date(payload.exp * 1000);
+                        const isExpired = Date.now() > payload.exp * 1000;
+                        log(`   expira: ${expDate.toLocaleString()} ${isExpired ? '❌ EXPIRADO' : '✅'}`, isExpired ? 'error' : 'success');
+                    }
+                }
+            } catch (e) {
+                log('   ⚠️  No se pudo decodificar JWT', 'warning');
+            }
+            
+            log('', 'info');
+            
+            // Step 2: Fetch from backend
+            log('Step 2: Haciendo fetch a /api/progress/overview...', 'info');
+            log(`   URL: ${API_URL}/progress/overview`, 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/progress/overview`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                });
+                
+                log(`   Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    log('', 'info');
+                    log('❌ ERROR EN RESPUESTA:', 'error');
+                    log(errorText, 'error');
+                    log('', 'info');
+                    
+                    if (response.status === 401) {
+                        log('→ Solución: Token inválido o expirado. Haz logout/login.', 'warning');
+                    } else if (response.status === 404) {
+                        log('→ Solución: Verifica que el backend esté corriendo en puerto 3001', 'warning');
+                    } else if (response.status === 500) {
+                        log('→ Solución: Error en el servidor. Revisa logs del backend.', 'warning');
+                    }
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                log('', 'info');
+                log('✅ RESPUESTA RECIBIDA EXITOSAMENTE', 'success');
+                log('═══════════════════════════════════════════════════════════════', 'success');
+                log('', 'info');
+                
+                // Analyze structure
+                log('📊 ESTRUCTURA DE LA RESPUESTA:', 'info');
+                log(`   Tipo: ${typeof data}`, 'info');
+                log(`   Es null: ${data === null}`, 'info');
+                log(`   Es undefined: ${data === undefined}`, 'info');
+                log(`   Keys: [${Object.keys(data || {}).join(', ')}]`, 'info');
+                log('', 'info');
+                
+                // Check for expected properties
+                const hasOverview = data?.hasOwnProperty('overview');
+                const hasLessons = data?.hasOwnProperty('lessons');
+                const hasModules = data?.hasOwnProperty('modules');
+                
+                log(`   ✓ Tiene propiedad 'overview': ${hasOverview ? '✅ SÍ' : '❌ NO'}`, hasOverview ? 'success' : 'error');
+                log(`   ✓ Tiene propiedad 'lessons': ${hasLessons ? '✅ SÍ' : '❌ NO'}`, hasLessons ? 'success' : 'error');
+                log(`   ✓ Tiene propiedad 'modules': ${hasModules ? '✅ SÍ' : '❌ NO'}`, hasModules ? 'success' : 'error');
+                log('', 'info');
+                
+                // If has overview
+                if (data?.overview) {
+                    log('📈 OVERVIEW:', 'success');
+                    log(`   completedLessons: ${data.overview.completedLessons}`, 'info');
+                    log(`   totalLessons: ${data.overview.totalLessons}`, 'info');
+                    log(`   modulesCompleted: ${data.overview.modulesCompleted}`, 'info');
+                    log(`   totalModules: ${data.overview.totalModules}`, 'info');
+                    log('', 'info');
+                }
+                
+                // If has lessons
+                if (data?.lessons) {
+                    const lessonsCount = Array.isArray(data.lessons) ? data.lessons.length : 'NO ES ARRAY';
+                    log(`📚 LESSONS: ${lessonsCount}`, lessonsCount > 0 ? 'success' : 'warning');
+                    
+                    if (Array.isArray(data.lessons) && data.lessons.length > 0) {
+                        log('   Primera lección (sample):', 'info');
+                        const firstLesson = data.lessons[0];
+                        log(`   {`, 'info');
+                        Object.entries(firstLesson).forEach(([key, value]) => {
+                            log(`     ${key}: ${JSON.stringify(value)}`, 'info');
+                        });
+                        log(`   }`, 'info');
+                    } else if (lessonsCount === 0) {
+                        log('   ⚠️  Array vacío - no hay lecciones en BD', 'warning');
+                    }
+                    log('', 'info');
+                }
+                
+                // If has modules
+                if (data?.modules) {
+                    const modulesCount = Array.isArray(data.modules) ? data.modules.length : 'NO ES ARRAY';
+                    log(`📦 MODULES: ${modulesCount}`, 'info');
+                    log('', 'info');
+                }
+                
+                // Full response preview
+                log('═══════════════════════════════════════════════════════════════', 'info');
+                log('📄 RESPUESTA COMPLETA (primeros 2000 chars):', 'info');
+                log('═══════════════════════════════════════════════════════════════', 'info');
+                const jsonStr = JSON.stringify(data, null, 2);
+                log(jsonStr.substring(0, 2000) + (jsonStr.length > 2000 ? '\n...(truncado)' : ''), 'info');
+                log('', 'info');
+                
+                // Diagnosis
+                log('═══════════════════════════════════════════════════════════════', 'info');
+                log('🔬 DIAGNÓSTICO:', 'warning');
+                log('═══════════════════════════════════════════════════════════════', 'info');
+                
+                if (hasLessons && Array.isArray(data.lessons) && data.lessons.length > 0) {
+                    log('✅ Backend SÍ devuelve datos de progreso', 'success');
+                    log('✅ El problema NO está en el backend', 'success');
+                    log('⚠️  El problema está en el FRONTEND (sincronización)', 'warning');
+                    log('', 'info');
+                    log('Pasos siguientes:', 'warning');
+                    log('1. Abre DevTools en la app principal', 'info');
+                    log('2. Busca en Console: "[LearningProgressContext] Syncing"', 'info');
+                    log('3. Si NO aparece → problema en el efecto de sincronización', 'info');
+                    log('4. Si SÍ aparece → problema en progressByModule o UI', 'info');
+                } else if (!hasLessons) {
+                    log('❌ Backend NO devuelve propiedad "lessons"', 'error');
+                    log('⚠️  El problema está en el BACKEND (formato de respuesta)', 'warning');
+                    log('', 'info');
+                    log('Solución:', 'warning');
+                    log('Revisar backend/src/controllers/progress.controller.ts', 'info');
+                    log('Endpoint: getUserOverview', 'info');
+                } else if (data.lessons.length === 0) {
+                    log('⚠️  Backend devuelve array vacío de lessons', 'warning');
+                    log('⚠️  Posibles causas:', 'warning');
+                    log('   1. No hay progreso guardado en BD', 'info');
+                    log('   2. userId en token no coincide con userId en BD', 'info');
+                    log('', 'info');
+                    log('Verificar en Prisma Studio:', 'warning');
+                    log('1. Tabla LessonProgress o PageProgress', 'info');
+                    log('2. Filtrar por userId (del token decodificado arriba)', 'info');
+                }
+                
+            } catch (error) {
+                log('', 'info');
+                log('❌ ERROR AL HACER FETCH:', 'error');
+                log(`   Tipo: ${error.name}`, 'error');
+                log(`   Mensaje: ${error.message}`, 'error');
+                log('', 'info');
+                
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    log('→ Solución: Backend no está corriendo o URL incorrecta', 'warning');
+                    log('   Verifica: cd ventylab-server && npm run dev', 'warning');
+                } else if (error.message.includes('CORS')) {
+                    log('→ Solución: Problema de CORS', 'warning');
+                    log('   Verifica configuración de CORS en backend', 'warning');
+                }
+            }
+        }
+        
+        async function testClearAndFetch() {
+            if (!confirm('¿Borrar TODO el localStorage y hacer fetch?')) {
+                return;
+            }
+            
+            clearOutput();
+            log('🗑️  BORRANDO localStorage...', 'warning');
+            localStorage.clear();
+            log('✅ localStorage borrado', 'success');
+            log('', 'info');
+            
+            await testFetch();
+        }
+        
+        // Auto-run on load
+        log('✅ Test cargado. Click en "Test Fetch Completo" para comenzar.', 'success');
+    </script>
+</body>
+</html>
