@@ -40,13 +40,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@/shared/*": ["./src/shared/*"],
-      "@/components/*": ["./src/components/*"],
-      "@/view-components/*": ["./src/view-components/*"],
       "@/features/*": ["./src/features/*"],
-      "@/hooks/*": ["./src/hooks/*"],
-      "@/contexts/*": ["./src/contexts/*"],
-      "@/services/*": ["./src/services/*"],
-      "@/utils/*": ["./src/utils/*"],
       "@/lib/*": ["./lib/*", "./src/lib/*"],
       "@/data/*": ["./src/data/*"],
       "@/theme/*": ["./src/theme/*"],

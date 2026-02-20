@@ -2,7 +2,7 @@
  * Evaluation API Service
  * TODO: Implement in Phase 5
  */
-import { http } from '@/services/api/http';
+import { http } from '@/shared/services/api/http';
 
 export const evaluationApi = {
   getCases: async () => {

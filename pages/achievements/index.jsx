@@ -21,8 +21,14 @@ import Head from 'next/head';
 import { Box, Container, Typography, Breadcrumbs, Link } from '@mui/material';
 import { Home as HomeIcon, Dashboard as DashboardIcon } from '@mui/icons-material';
 import NextLink from 'next/link';
-import Layout from '../../src/components/layout/Layout';
-import AchievementsGallery from '../../src/components/gamification/AchievementsGallery';
+import dynamic from 'next/dynamic';
+import Layout from '@/shared/components/Layout';
+
+// Importar sin SSR para evitar errores de prerendering con contextos de auth
+const AchievementsGallery = dynamic(
+  () => import('@/features/progress/components').then(mod => ({ default: mod.AchievementsGrid })),
+  { ssr: false }
+);
 
 /**
  * Achievements Page Component

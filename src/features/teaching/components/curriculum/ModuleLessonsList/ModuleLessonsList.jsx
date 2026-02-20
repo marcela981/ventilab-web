@@ -34,8 +34,8 @@ import {
   ExpandLess,
   Topic
 } from '@mui/icons-material';
-import { loadLessonById } from '@/data/helpers/lessonLoader';
-import LearningProgressContext from '@/contexts/LearningProgressContext';
+import { loadLessonById } from '@/features/teaching/data/helpers/lessonLoader';
+import LearningProgressContext from '@/features/progress/LearningProgressContext';
 
 /**
  * Componente individual para cada lección en la lista

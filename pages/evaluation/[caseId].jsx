@@ -26,13 +26,13 @@ import {
   Info,
   Assessment,
 } from '@mui/icons-material';
-import evaluationService from '../../src/service/api/evaluationService';
-import { useApiClient } from '../../src/hooks/useApiClient';
+import evaluationService from '@/features/evaluation/services/evaluationService';
+import { useAuth } from '@/shared/hooks/useAuth';
 
 export default function EvaluationCasePage() {
   const router = useRouter();
   const { caseId } = router.query;
-  const { isAuthenticated, isLoading } = useApiClient();
+  const { isAuthenticated, isLoading } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);

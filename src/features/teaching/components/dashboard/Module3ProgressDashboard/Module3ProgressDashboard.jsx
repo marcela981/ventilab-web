@@ -29,7 +29,7 @@ import {
   Schedule as TimeIcon,
   Star as StarIcon
 } from '@mui/icons-material';
-import useUserProgress from '@/hooks/useUserProgress';
+import useUserProgress from '@/features/teaching/hooks/useUserProgress';
 
 /**
  * Module3ProgressDashboard - Dashboard de progreso para Módulo 3

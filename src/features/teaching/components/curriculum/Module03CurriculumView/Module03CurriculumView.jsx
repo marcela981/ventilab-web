@@ -20,10 +20,10 @@ import {
   Build as BuildIcon,
   ChecklistRtl as ChecklistIcon,
 } from '@mui/icons-material';
-import module03Content, { metadata as module03Metadata } from '@/data/lessons/module-03-configuration';
-import ModuleCategoryNav from '../../../../../components/teaching/components/navigation/ModuleCategoryNav';
-import { TeachingModuleProvider } from '../../../../../components/teaching/contexts/TeachingModuleContext';
-import useTeachingModule from '@/hooks/useTeachingModule';
+import module03Content, { metadata as module03Metadata } from '@/features/teaching/data/lessons/module-03-configuration';
+import ModuleCategoryNav from '@/features/teaching/components/navigation/ModuleCategoryNav';
+import { TeachingModuleProvider } from '@/features/teaching/contexts/TeachingModuleContext';
+import useTeachingModule from '@/features/teaching/hooks/useTeachingModule';
 
 /**
  * Module03CurriculumView Component

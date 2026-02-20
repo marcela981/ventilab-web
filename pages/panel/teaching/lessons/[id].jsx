@@ -16,9 +16,9 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import { Container } from '@mui/material';
-import { withTeacherAuth } from '@/components/hoc/withAuth';
-import TeachingEntityEditor from '@/components/panel/teaching/TeachingEntityEditor';
-import teachingContentService from '@/services/api/teachingContentService';
+import { withTeacherAuth } from '@/features/auth/components/withAuth';
+import TeachingEntityEditor from '@/features/admin/components/panel/teaching/TeachingEntityEditor';
+import teachingContentService from '@/features/teaching/services/teachingContentService';
 
 function LessonEditorPage() {
   const router = useRouter();

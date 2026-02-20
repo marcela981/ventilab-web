@@ -36,13 +36,13 @@ import {
   Home as HomeIcon,
   NavigateNext as NavigateNextIcon,
 } from '@mui/icons-material';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/shared/contexts/AuthContext';
 import {
   ProfileInfo,
   EditProfileForm,
   ChangePasswordForm,
   UserStatsPanel,
-} from '@/components/profile';
+} from '@/features/profile/components';
 
 /**
  * Tab Panel Component

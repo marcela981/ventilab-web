@@ -1,14 +1,14 @@
 import React, { useState, createContext, useContext } from 'react';
 import { Box, CssBaseline, ThemeProvider } from '@mui/material';
 import { SessionProvider } from 'next-auth/react';
-import { AuthProvider } from '../src/contexts/AuthContext';
-import { PatientDataProvider } from '../src/contexts/PatientDataContext';
-import { NotificationProvider } from '../src/contexts/NotificationContext';
+import { AuthProvider } from '../src/shared/contexts/AuthContext';
+import { NotificationProvider } from '../src/shared/contexts/NotificationContext';
 import Providers from '../src/providers/Providers';
-import Sidebar from '../src/components/navigation/Sidebar';
-import ErrorBoundary from '../src/components/common/ErrorBoundary';
+import Sidebar from '../src/shared/components/Sidebar';
+import ErrorBoundary from '../src/shared/components/ErrorBoundary';
 import { useRouter } from 'next/router';
 import theme from '../src/theme/theme';
+import { PatientDataProvider } from '../src/features/simulator/context/PatientDataContext';
 import '../src/App.css';
 // Importar y inicializar i18n
 import '../src/i18n/i18n';

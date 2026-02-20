@@ -46,7 +46,7 @@ import {
   validatePasswordStrength,
   getPasswordRequirements,
   validatePasswordMatch,
-} from '@/utils/passwordValidator';
+} from '@/shared/utils/passwordValidator';
 
 /**
  * VentyLab Logo Component

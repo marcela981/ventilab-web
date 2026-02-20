@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tooltip } from '@mui/material';
-import { curriculumData } from '@/data/curriculumData';
+import { curriculumData } from '@/features/teaching/data/curriculumData';
 
 /**
  * PrerequisiteTooltip - Componente accesible para mostrar información sobre prerrequisitos faltantes

@@ -12,12 +12,12 @@
 
 import React, { useMemo, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import ModuleNavigationRouter from '../../../../../components/teaching/components/navigation/ModuleNavigationRouter';
-import { debug } from '@/utils/debug';
-import { useLearningProgress } from '@/contexts/LearningProgressContext';
+import ModuleNavigationRouter from '@/features/teaching/components/navigation/ModuleNavigationRouter';
+import { debug } from '@/shared/utils/debug';
+import { useLearningProgress } from '@/features/progress/LearningProgressContext';
 
 // Static imports for module data (required for Next.js bundler)
-import module03Content, { metadata as module03Metadata } from '@/data/lessons/module-03-configuration';
+import module03Content, { metadata as module03Metadata } from '@/features/teaching/data/lessons/module-03-configuration';
 
 /**
  * Gets module content and metadata based on moduleId

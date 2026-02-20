@@ -2,9 +2,8 @@
 // Route: /teaching/[moduleId]/[lessonId]
 import React from 'react';
 import { useRouter } from 'next/router';
-import { LearningProgressProvider } from '../../../src/contexts/LearningProgressContext';
-// Use the canonical LessonViewer via adapter (same one used by TeachingModule)
-import LessonViewerRouteAdapter from '../../../src/features/teaching/pages/LessonViewerRouteAdapter';
+import { LearningProgressProvider } from '@/features/progress/LearningProgressContext';
+import LessonViewerRouteAdapter from '@/features/teaching/pages/LessonViewerRouteAdapter';
 
 export default function LessonPage() {
   const router = useRouter();

@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useMemo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
@@ -16,7 +14,7 @@ import {
 import {
   ExpandMore
 } from '@mui/icons-material';
-import ModuleGrid from '../../../../../components/teaching/components/curriculum/ModuleGrid';
+import ModuleGrid from '@/features/teaching/components/curriculum/ModuleGrid';
 
 // Fallback cuando level.color no viene (ej. API antigua o niveles sin color)
 const DEFAULT_LEVEL_COLORS = {
@@ -69,6 +67,9 @@ const LevelStepper = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  // Normalizar: el default param solo aplica a `undefined`, no a `null` explícito
+  const safeLevelProgress = levelProgress ?? {};
+
   // Usar onSectionClick si está disponible, sino onModuleClick
   const handleModuleClick = onSectionClick || onModuleClick;
 
@@ -79,14 +80,14 @@ const LevelStepper = ({
    */
   const currentLevelId = useMemo(() => {
     for (const level of levels) {
-      const levelProg = levelProgress[level.id] || { percentage: 0 };
+      const levelProg = safeLevelProgress[level.id] || { percentage: 0 };
       if (levelProg.percentage > 0 && levelProg.percentage < 100) {
         return level.id;
       }
     }
     // Si todos los niveles están completos o no iniciados, devolver el primero sin iniciar
     for (const level of levels) {
-      const levelProg = levelProgress[level.id] || { percentage: 0 };
+      const levelProg = safeLevelProgress[level.id] || { percentage: 0 };
       if (levelProg.percentage === 0) {
         return level.id;
       }
@@ -246,7 +247,7 @@ const LevelStepper = ({
           }
           
           // levelProgress ahora puede tener estructura nueva (levelProgressAggregated) o legacy
-          const levelProgRaw = levelProgress[level.id] || {};
+          const levelProgRaw = safeLevelProgress[level.id] || {};
           // Detectar si es la estructura nueva (tiene completedLessons y totalLessons) o legacy (tiene completed y total)
           const isNewStructure = 'completedLessons' in levelProgRaw || 'totalLessons' in levelProgRaw;
           const levelProg = isNewStructure ? {

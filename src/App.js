@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
-import Sidebar from './components/navigation/Sidebar';
-import VentilatorDashboard from './components/VentilatorDashboard';
-import TeachingModule from './components/teaching/TeachingModule';
-import { LearningProgressProvider } from './contexts/LearningProgressContext';
+import Sidebar from '@/shared/components/Sidebar';
+import VentilatorDashboard from '@/features/simulator/components/VentilatorDashboard';
+import TeachingModule from '@/features/teaching/TeachingModule';
+import { LearningProgressProvider } from '@/features/progress/LearningProgressContext';
 
 // Admin Panel Components
 import {
@@ -16,7 +16,7 @@ import {
   PanelStudentDetail,
   PanelStatistics,
   PanelSettings,
-} from './components/panel';
+} from '@/features/admin/components/panel';
 
 import './App.css';
 

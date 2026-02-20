@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { Box, Alert, Fade, Chip } from '@mui/material';
@@ -8,19 +6,19 @@ import {
   getSkills,
   getMilestones,
   getAchievements
-} from '@/services/api/progressService';
-import { useLearningProgress } from '@/contexts/LearningProgressContext';
-import { selectCompletedLessonsCount } from '@/services/progress/selectors';
+} from '@/features/progress/services/progressService.js';
+import { useLearningProgress } from '@/features/progress/LearningProgressContext';
+import { selectCompletedLessonsCount } from '@/features/progress/services/selectors';
 import { ProgressSkeleton } from './Skeletons';
 import { EmptyState } from './EmptyState';
 import { XpLevelCard } from './XpLevelCard';
 import { StreakCard } from './StreakCard';
 import { CalendarCard } from './CalendarCard';
-import SkillTree from './SkillTreeRefactored';
-import Milestones from './MilestonesRefactored';
-import Achievements from './AchievementsRefactored';
+import SkillTree from './SkillTree';
+import Milestones from './Milestones';
+import Achievements from './Achievements';
 import { trackEvent } from '../utils/analytics';
-import { debug } from '@/utils/debug';
+import { debug } from '@/shared/utils/debug';
 
 /**
  * ProgressTab - Componente principal del tab "Mi Progreso"

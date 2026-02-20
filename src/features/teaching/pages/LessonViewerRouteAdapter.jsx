@@ -13,7 +13,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 // Import canonical LessonViewer (same one used by TeachingModule)
-import { LessonViewer } from '../../../components/teaching/components';
+import { LessonViewer } from '@/features/teaching/components';
 
 const LessonViewerRouteAdapter = ({ 
   moduleId, 

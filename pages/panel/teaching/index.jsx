@@ -29,7 +29,7 @@ import {
   MenuBook as LessonIcon,
   Style as CardIcon,
 } from '@mui/icons-material';
-import { withTeacherAuth } from '@/components/hoc/withAuth';
+import { withTeacherAuth } from '@/features/auth/components/withAuth';
 
 function PanelTeachingPage() {
   const router = useRouter();

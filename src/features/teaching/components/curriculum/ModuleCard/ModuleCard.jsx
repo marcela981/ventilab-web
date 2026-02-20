@@ -1,18 +1,19 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useTheme, useMediaQuery, Skeleton, Snackbar, Alert, Box } from '@mui/material';
-import { useLearningProgress } from '@/contexts/LearningProgressContext';
-import useModuleAvailability from '@/hooks/useModuleAvailability';
-import { useModuleProgress } from '@/hooks/useModuleProgress';
-import { useProgress } from '@/hooks/useProgress';
-import { useModuleLessonsCount } from '@/hooks/useModuleLessonsCount';
+import { useLearningProgress } from '@/features/progress/LearningProgressContext';
+import useModuleAvailability from '@/features/teaching/hooks/useModuleAvailability';
+import { useModuleProgress } from '@/features/teaching/hooks/useModuleProgress';
+import { useProgress } from '@/features/teaching/hooks/useProgress';
+import { useModuleLessonsCount } from '@/features/teaching/hooks/useModuleLessonsCount';
 import { getModuleStatus } from './moduleCardHelpers';
 import ModuleCardHeader from './ModuleCardHeader';
 import ModuleCardMeta from './ModuleCardMeta';
 import ModuleCardBody from './ModuleCardBody';
 import ModuleCardFooter from './ModuleCardFooter';
 import ComingSoonBadge from './ComingSoonBadge';
-import { isModuleComingSoon } from '@/data/curriculum/selectors.js';
+import { isModuleComingSoon } from '@/features/teaching/data/curriculum/selectors.js';
+import { useModuleProgressDirect } from '@/hooks/useModuleProgressDirect';
 import styles from '@/styles/curriculum.module.css';
 import CurriculumProgressBar from './CurriculumProgressBar';
 
@@ -89,31 +90,87 @@ const ModuleCard = ({
   );
   
   // Obtener lecciones completadas y progreso agregado del contexto
-  const { completedLessons, syncStatus, moduleProgressAggregated, getModuleProgressAggregated } = useLearningProgress();
+  const { completedLessons, syncStatus, moduleProgressAggregated, getModuleProgressAggregated, snapshot } = useLearningProgress();
 
-  /**
-   * Get module progress from the SINGLE SOURCE OF TRUTH (context).
-   * This replaces the complex local calculation with fallbacks.
-   * The moduleProgressAggregated in context is computed whenever:
-   * - Lesson progress is updated
-   * - Lesson is completed
-   * - Module progress is loaded from backend
-   * 
-   * IMPORTANT: All completion states are derived ONLY from progress values (0-1).
-   * Never use flags (completed, started, visited) as sources of truth.
-   */
+  // Progreso directo desde el backend - fuente de verdad para el progress bar
+  // Incluye retry de token para casos donde el auth es asíncrono
+  const { data: directProgress, loading: loadingDirectProgress } = useModuleProgressDirect(module?.id);
+
   const moduleProgressAggregate = useMemo(() => {
-    // PRIMARY SOURCE: Get from context's aggregated progress (SINGLE SOURCE OF TRUTH)
-    const contextProgress = moduleProgressAggregated?.[module.id];
+    // SOURCE 0: Dato directo del backend (MÁS CONFIABLE)
+    if (directProgress) {
+      return {
+        percent: directProgress.percentInt / 100,
+        percentInt: directProgress.percentInt,
+        completedLessons: directProgress.completedLessons,
+        totalLessons: directProgress.totalLessons,
+        isCompleted: directProgress.isCompleted,
+        completedAt: directProgress.isCompleted ? new Date() : null,
+        completedPages: 0,
+        totalPages: directProgress.totalLessons,
+      };
+    }
 
-    if (contextProgress) {
-      // Ensure isCompleted is ONLY true when progress === 1 (not based on flags)
+    // SOURCE 1: Calcular directo desde snapshot.lessons (más confiable)
+    // El snapshot tiene los lessonIds reales tal como están guardados en DB
+    // Las lecciones del módulo están en module.lessons[i].id (curriculum local)
+    if (snapshot?.lessons && Array.isArray(snapshot.lessons) && snapshot.lessons.length > 0) {
+      const moduleLessonIds = new Set(
+        (module?.lessons || []).map(l => l.id)
+      );
+
+      if (moduleLessonIds.size > 0) {
+        let completedCount = 0;
+        let totalWithProgress = 0;
+
+        for (const snapshotLesson of snapshot.lessons) {
+          const sId = snapshotLesson.lessonId || '';
+          const progressValue = Math.max(0, Math.min(1, snapshotLesson.progress || 0));
+
+          // Estrategia A: match exacto con lesson.id del curriculum
+          const directMatch = moduleLessonIds.has(sId);
+
+          // Estrategia B: el snapshotLesson.lessonId contiene el module.id como prefijo
+          const prefixMatch = sId.startsWith(module.id + '-') || sId.startsWith(module.id + '/');
+
+          // Estrategia C: algún lesson.id del curriculum está contenido en el snapshotId
+          const reverseMatch = !directMatch && !prefixMatch &&
+            Array.from(moduleLessonIds).some(lid => sId.includes(lid) || lid.includes(sId));
+
+          if (directMatch || prefixMatch || reverseMatch) {
+            totalWithProgress++;
+            if (progressValue >= 0.99) completedCount++;
+          }
+        }
+
+        const totalLessons = module?.lessons?.length || 0;
+        const effectiveTotal = totalLessons > 0 ? totalLessons : totalWithProgress;
+
+        if (effectiveTotal > 0 && totalWithProgress > 0) {
+          const percentInt = Math.round((completedCount / effectiveTotal) * 100);
+          const progressVal = completedCount / effectiveTotal;
+          return {
+            percent: progressVal,
+            percentInt,
+            completedLessons: completedCount,
+            totalLessons: effectiveTotal,
+            isCompleted: completedCount === effectiveTotal && effectiveTotal > 0,
+            completedAt: completedCount === effectiveTotal ? new Date() : null,
+            completedPages: 0,
+            totalPages: effectiveTotal,
+          };
+        }
+      }
+    }
+
+    // SOURCE 2: Fallback a moduleProgressAggregated del context
+    const contextProgress = moduleProgressAggregated?.[module.id];
+    if (contextProgress && (contextProgress.progressPercent > 0 || contextProgress.completedLessons > 0)) {
       const progressValue = contextProgress.progress ?? 0;
       const isCompleted = progressValue === 1;
-      
-      // Normalize percentInt to 0-100 for UI display (consistent with level progress bars)
-      const normalizedPercentInt = Math.max(0, Math.min(100, contextProgress.progressPercent ?? Math.round(progressValue * 100)));
-      
+      const normalizedPercentInt = Math.max(0, Math.min(100,
+        contextProgress.progressPercent ?? Math.round(progressValue * 100)
+      ));
       return {
         percent: progressValue,
         percentInt: normalizedPercentInt,
@@ -121,87 +178,23 @@ const ModuleCard = ({
         totalLessons: contextProgress.totalLessons ?? 0,
         isCompleted,
         completedAt: isCompleted ? new Date() : null,
-        completedPages: progress?.completedPages || 0,
-        totalPages: progress?.totalPages || 0,
-      };
-    }
-
-    // FALLBACK: If context not ready yet, compute locally from progress values ONLY
-    // This ensures the UI doesn't break while context is loading
-    const totalLessons = totalLessonsFromDB > 0
-      ? totalLessonsFromDB
-      : (progress?.totalLessons || precalculatedProgress?.totalLessons || (module?.lessons || []).length || 0);
-
-    if (totalLessons === 0) {
-      return {
-        percent: 0,
-        percentInt: 0,
-        completedLessons: 0,
-        totalLessons: 0,
-        isCompleted: false,
-        completedAt: null,
         completedPages: 0,
-        totalPages: 0,
+        totalPages: contextProgress.totalLessons ?? 0,
       };
     }
 
-    // Calculate module progress using formula: completedLessons / totalLessons
-    // Iterate through lessons and count completed ones (progress === 1)
-    const moduleLessonsProgress = userProgress.filter(
-      p => p.lessonId && p.moduleId === module.id
-    );
-
-    let completedLessonsCount = 0;
-
-    for (const lessonProgress of moduleLessonsProgress) {
-      // Get progress value (0-1) - prefer completionPercentage converted to 0-1, then progress
-      let lessonProgressValue = 0;
-      if (typeof lessonProgress.completionPercentage === 'number') {
-        lessonProgressValue = Math.max(0, Math.min(1, lessonProgress.completionPercentage / 100));
-      } else if (typeof lessonProgress.progress === 'number') {
-        lessonProgressValue = Math.max(0, Math.min(1, lessonProgress.progress));
-      }
-      
-      // A lesson is completed ONLY when its progress === 1
-      if (lessonProgressValue === 1) {
-        completedLessonsCount++;
-      }
-    }
-
-    // Module progress = completedLessons / totalLessons (0-1)
-    // Formula: progress = completedLessons / totalLessons
-    // This ensures:
-    // - Partially completed modules show partial progress
-    // - Modules with no completed lessons show 0%
-    // - Fully completed modules show 100%
-    const progressValue = totalLessons > 0 ? (completedLessonsCount / totalLessons) : 0;
-    
-    // Normalize to 0-100 for UI display (consistent with level progress bars)
-    // Ensure value is clamped to 0-100 range for LinearProgress component
-    const percentInt = Math.max(0, Math.min(100, Math.round(progressValue * 100)));
-    
-    // Module is completed ONLY when all lessons are completed (progress === 1)
-    const isModuleCompleted = progressValue === 1;
-
+    // SOURCE 3: Último fallback - todo en 0
     return {
-      percent: progressValue,
-      percentInt,
-      completedLessons: completedLessonsCount,
-      totalLessons,
-      isCompleted: isModuleCompleted,
-      completedAt: isModuleCompleted ? new Date() : null,
-      completedPages: progress?.completedPages || 0,
-      totalPages: progress?.totalPages || 0,
+      percent: 0,
+      percentInt: 0,
+      completedLessons: 0,
+      totalLessons: module?.lessons?.length || 0,
+      isCompleted: false,
+      completedAt: null,
+      completedPages: 0,
+      totalPages: module?.lessons?.length || 0,
     };
-  }, [
-    moduleProgressAggregated,
-    module.id,
-    userProgress,
-    totalLessonsFromDB,
-    progress,
-    precalculatedProgress,
-    module?.lessons
-  ]);
+  }, [directProgress, snapshot, module, moduleProgressAggregated]);
   
   // Determinar si el módulo tiene lecciones
   const hasLessons = moduleProgressAggregate.totalLessons > 0;
@@ -338,7 +331,7 @@ const ModuleCard = ({
         >
           {/* Barra de progreso del módulo - encima de los títulos */}
           <div style={{ padding: '8px 16px 0', opacity: effectiveIsAvailable ? 1 : 0.6 }}>
-            {(isLoadingProgress || isLoadingLessonsCount) ? (
+            {(isLoadingProgress || isLoadingLessonsCount || loadingDirectProgress) ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Skeleton variant="rectangular" width="100%" height={8} sx={{ borderRadius: 4, flex: 1 }} />
                 <Skeleton variant="text" width={36} />

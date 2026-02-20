@@ -4,7 +4,7 @@
  */
 
 import useSWR, { SWRConfiguration } from 'swr';
-import { http } from '@/services/api/http';
+import { http } from '@/shared/services/api/http';
 
 const fetcher = (url: string) => http.get(url).then(res => res.data);
 

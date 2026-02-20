@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -6,323 +6,367 @@ import {
   Box,
   Tooltip,
   CircularProgress,
-  useTheme
+  Drawer,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Button
 } from '@mui/material';
-import { SkillNode } from '../types';
+import { Close, School } from '@mui/icons-material';
+import { EmptyState } from './EmptyState';
+
+interface SkillNode {
+  id: string;
+  label: string;
+  description: string;
+  category: string;
+  dependsOn: string[];
+  mastery: number; // 0-1
+  relatedLessons: string[];
+}
 
 interface SkillTreeProps {
   skills: SkillNode[];
-  onOpenSkill?: (id: string) => void;
+  unlockedSkillIds: string[];
+  onSkillClick?: (skillId: string) => void;
+  onNavigateToLesson?: (moduleId: string, lessonId: string) => void;
 }
 
 /**
- * SkillTree - Grid/constelación simple de habilidades
- * 
- * Muestra habilidades como nodos clicables en un grid con:
- * - Colores según mastery (verde/ámbar/rojo)
- * - Conectores visuales para dependencias
- * - Tooltip informativo en hover
- * - Indicador de progreso
+ * SkillTree - Árbol de habilidades refactorizado
+ * Renderiza vista tipo grafo simple basada en filas, agrupado por categoría
  */
 const SkillTree: React.FC<SkillTreeProps> = ({
   skills,
-  onOpenSkill
+  unlockedSkillIds,
+  onSkillClick,
+  onNavigateToLesson
 }) => {
-  const theme = useTheme();
+  const [selectedSkill, setSelectedSkill] = useState<SkillNode | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Calcular progressPct basado en masteryLevel si no está definido
-  const getProgressPct = (skill: SkillNode): number => {
-    if (skill.progressPct !== undefined) {
-      return skill.progressPct;
+  const unlockedSet = useMemo(() => new Set(unlockedSkillIds), [unlockedSkillIds]);
+
+  // Group skills by category
+  const skillsByCategory = useMemo(() => {
+    const grouped: Record<string, SkillNode[]> = {};
+    skills.forEach(skill => {
+      if (!grouped[skill.category]) {
+        grouped[skill.category] = [];
+      }
+      grouped[skill.category].push(skill);
+    });
+    return grouped;
+  }, [skills]);
+
+  // Get skill state
+  const getSkillState = (skill: SkillNode): 'locked' | 'unlocked' | 'progress' => {
+    if (unlockedSet.has(skill.id)) {
+      return 'unlocked';
     }
-    // Valores por defecto basados en masteryLevel
-    switch (skill.masteryLevel) {
-      case 'master': return 100;
-      case 'advanced': return 75;
-      case 'intermediate': return 50;
-      case 'beginner': return 25;
-      case 'locked': return 0;
-      default: return 0;
+    // Check if dependencies are met
+    const depsMet = skill.dependsOn.every(depId => unlockedSet.has(depId));
+    if (depsMet && skill.mastery > 0) {
+      return 'progress';
     }
+    return 'locked';
   };
 
-  // Obtener color según masteryLevel (verde/ámbar/rojo)
-  const getMasteryColor = (mastery: SkillNode['masteryLevel']): string => {
-    switch (mastery) {
-      case 'master':
-      case 'advanced':
-        return '#F44336'; // Rojo - Avanzado/Maestro
-      case 'intermediate':
-        return '#FF9800'; // Ámbar/Naranja - Intermedio
-      case 'beginner':
-        return '#4CAF50'; // Verde - Principiante
+  // Get skill color
+  const getSkillColor = (skill: SkillNode): string => {
+    const state = getSkillState(skill);
+    switch (state) {
+      case 'unlocked':
+        return skill.mastery >= 0.8 ? '#4CAF50' : '#2196F3';
+      case 'progress':
+        return '#FF9800';
       case 'locked':
-        return '#9e9e9e'; // Gris - Bloqueado
       default:
         return '#9e9e9e';
     }
   };
 
-  // Crear mapa de skills por ID para acceso rápido
-  const skillsMap = useMemo(() => {
-    const map = new Map<string, SkillNode>();
-    skills.forEach(skill => map.set(skill.id, skill));
-    return map;
-  }, [skills]);
-
-  // Función helper para obtener referencias de dependencias
-  const getDependencySkills = (skill: SkillNode): SkillNode[] => {
-    return skill.dependencies
-      .map(depId => skillsMap.get(depId))
-      .filter((dep): dep is SkillNode => dep !== undefined);
-  };
-
-  const handleNodeClick = (skill: SkillNode) => {
-    if (skill.masteryLevel !== 'locked' && onOpenSkill) {
-      onOpenSkill(skill.id);
+  // Handle skill click
+  const handleSkillClick = (skill: SkillNode) => {
+    if (getSkillState(skill) === 'locked') {
+      return;
+    }
+    setSelectedSkill(skill);
+    setDrawerOpen(true);
+    if (onSkillClick) {
+      onSkillClick(skill.id);
     }
   };
 
+  // Get recommended skills (≥60% mastery, not unlocked)
+  const recommendedSkills = useMemo(() => {
+    return skills
+      .filter(skill => {
+        const state = getSkillState(skill);
+        return state === 'progress' && skill.mastery >= 0.6;
+      })
+      .sort((a, b) => b.mastery - a.mastery)
+      .slice(0, 3);
+  }, [skills, unlockedSet]);
+
+  // Empty state
+  if (skills.length === 0) {
+    return (
+      <Card
+        sx={{
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: 2,
+          backgroundColor: 'rgba(255, 255, 255, 0.05)'
+        }}
+      >
+        <CardContent>
+          <EmptyState
+            title="Aún no has desbloqueado habilidades"
+            description="Empieza por completar lecciones para desbloquear habilidades."
+            suggestions={recommendedSkills.length > 0 ? recommendedSkills.map(skill => ({
+              label: skill.label,
+              onClick: () => handleSkillClick(skill)
+            })) : undefined}
+          />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card
-      sx={{
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        borderRadius: 2,
-        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-        transition: 'all 0.3s ease'
-      }}
-    >
-      <CardContent sx={{ p: 3, position: 'relative', minHeight: '400px' }}>
-        {/* Grid container */}
-        <Box
-          sx={{
-            position: 'relative',
-            width: '100%',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-            gap: 3,
-            justifyContent: 'center',
-            alignItems: 'center',
-            py: 2,
-            minHeight: '400px',
-            maxWidth: '100%'
-          }}
-        >
-          {/* Nodos de habilidades */}
-          {skills.map((skill) => {
-            const dependencies = getDependencySkills(skill);
-            const color = getMasteryColor(skill.masteryLevel);
-            const progressPct = getProgressPct(skill);
-            const isLocked = skill.masteryLevel === 'locked';
+    <>
+      <Card
+        sx={{
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: 2,
+          backgroundColor: 'rgba(255, 255, 255, 0.05)'
+        }}
+      >
+        <CardContent sx={{ p: 3 }}>
+          <Typography variant="h6" sx={{ color: '#ffffff', fontWeight: 600, mb: 3 }}>
+            Árbol de Habilidades
+          </Typography>
 
-            return (
-              <Tooltip
-                key={skill.id}
-                title={
-                  <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
-                      {skill.title}
-                    </Typography>
-                    <Typography variant="body2" sx={{ mb: 0.5 }}>
-                      Ya deberías entender: {skill.description}
-                    </Typography>
-                    <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
-                      Progreso: {progressPct}%
-                    </Typography>
-                    {skill.xpReward > 0 && (
-                      <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
-                        Recompensa: {skill.xpReward} XP
-                      </Typography>
-                    )}
-                    {skill.dependencies.length > 0 && (
-                      <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.8 }}>
-                        Requiere {skill.dependencies.length} habilidad(es) previa(s)
-                      </Typography>
-                    )}
-                  </Box>
-                }
-                arrow
-                placement="top"
-              >
-                <Box
-                  onClick={() => handleNodeClick(skill)}
+          {/* Skills grouped by category */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {Object.entries(skillsByCategory).map(([category, categorySkills]) => (
+              <Box key={category}>
+                <Typography
+                  variant="subtitle2"
                   sx={{
-                    position: 'relative',
-                    width: 100,
-                    height: 100,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 0.75,
-                    p: 1.5,
-                    border: `2px solid ${color}`,
-                    borderRadius: '50%',
-                    backgroundColor: isLocked
-                      ? 'rgba(158, 158, 158, 0.1)'
-                      : `${color}20`,
-                    cursor: isLocked ? 'not-allowed' : 'pointer',
-                    opacity: isLocked ? 0.5 : 1,
-                    transition: 'all 0.2s ease',
-                    zIndex: 1,
-                    margin: '0 auto',
-                    '&:hover': !isLocked ? {
-                      transform: 'scale(1.1)',
-                      backgroundColor: `${color}30`,
-                      boxShadow: `0 4px 12px ${color}40`,
-                      borderColor: color,
-                      borderWidth: '3px'
-                    } : {},
-                    // Conectores visuales para dependencias (usando pseudo-elementos)
-                    ...(dependencies.length > 0 && {
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        top: -8,
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        width: '2px',
-                        height: '20px',
-                        backgroundColor: dependencies[0] 
-                          ? getMasteryColor(dependencies[0].masteryLevel)
-                          : color,
-                        opacity: 0.4,
-                        zIndex: 0
-                      }
-                    })
+                    color: '#e8f4fd',
+                    fontWeight: 600,
+                    mb: 2,
+                    textTransform: 'uppercase',
+                    fontSize: '0.75rem',
+                    letterSpacing: 1
                   }}
-                  aria-label={`Habilidad: ${skill.title}, ${skill.masteryLevel}, ${progressPct}% completado`}
                 >
-                  {/* Indicador de progreso circular */}
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    <CircularProgress
-                      variant="determinate"
-                      value={progressPct}
-                      size={96}
-                      thickness={3}
-                      sx={{
-                        color: color,
-                        position: 'absolute',
-                        '& .MuiCircularProgress-circle': {
-                          strokeLinecap: 'round'
+                  {category}
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+                    gap: 2
+                  }}
+                >
+                  {categorySkills.map(skill => {
+                    const state = getSkillState(skill);
+                    const color = getSkillColor(skill);
+                    const isLocked = state === 'locked';
+
+                    return (
+                      <Tooltip
+                        key={skill.id}
+                        title={
+                          <Box>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                              {skill.label}
+                            </Typography>
+                            <Typography variant="body2" sx={{ mb: 0.5 }}>
+                              {skill.description}
+                            </Typography>
+                            <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
+                              Maestría: {Math.round(skill.mastery * 100)}%
+                            </Typography>
+                          </Box>
                         }
-                      }}
-                    />
-                  </Box>
+                        arrow
+                        placement="top"
+                      >
+                        <Box
+                          onClick={() => handleSkillClick(skill)}
+                          sx={{
+                            position: 'relative',
+                            width: 100,
+                            height: 100,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: `2px solid ${color}`,
+                            borderRadius: '50%',
+                            backgroundColor: isLocked ? 'rgba(158, 158, 158, 0.1)' : `${color}20`,
+                            cursor: isLocked ? 'not-allowed' : 'pointer',
+                            opacity: isLocked ? 0.5 : 1,
+                            transition: 'all 0.2s ease',
+                            '&:hover': !isLocked ? {
+                              transform: 'scale(1.1)',
+                              backgroundColor: `${color}30`,
+                              boxShadow: `0 4px 12px ${color}40`
+                            } : {}
+                          }}
+                          aria-label={`Habilidad: ${skill.label}, ${state}`}
+                        >
+                          <CircularProgress
+                            variant="determinate"
+                            value={skill.mastery * 100}
+                            size={96}
+                            thickness={3}
+                            sx={{
+                              color: color,
+                              position: 'absolute',
+                              '& .MuiCircularProgress-circle': {
+                                strokeLinecap: 'round'
+                              }
+                            }}
+                          />
+                          <Box sx={{ position: 'relative', zIndex: 2, textAlign: 'center' }}>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: isLocked ? '#9e9e9e' : '#ffffff',
+                                fontWeight: 700,
+                                fontSize: '0.7rem',
+                                lineHeight: 1.2,
+                                display: 'block'
+                              }}
+                            >
+                              {skill.label.split(' ')[0]}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                fontSize: '0.65rem',
+                                color: color,
+                                fontWeight: 600
+                              }}
+                            >
+                              {Math.round(skill.mastery * 100)}%
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Tooltip>
+                    );
+                  })}
+                </Box>
+              </Box>
+            ))}
+          </Box>
 
-                  {/* Contenido del nodo */}
-                  <Box
+          {/* Recommendations */}
+          {recommendedSkills.length > 0 && (
+            <Box sx={{ mt: 4, pt: 3, borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF9800', fontWeight: 600, mb: 2 }}>
+                Siguiente paso
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {recommendedSkills.map(skill => (
+                  <Button
+                    key={skill.id}
+                    variant="outlined"
+                    size="small"
+                    onClick={() => handleSkillClick(skill)}
                     sx={{
-                      position: 'relative',
-                      zIndex: 2,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 0.5
+                      borderColor: '#FF9800',
+                      color: '#FF9800',
+                      justifyContent: 'flex-start',
+                      textTransform: 'none'
                     }}
                   >
-                    {/* Título truncado */}
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: isLocked ? '#9e9e9e' : '#ffffff',
-                        fontWeight: 700,
-                        textAlign: 'center',
-                        fontSize: '0.7rem',
-                        lineHeight: 1.2,
-                        maxWidth: '80px',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical'
-                      }}
-                    >
-                      {skill.title}
-                    </Typography>
+                    {skill.label} ({Math.round(skill.mastery * 100)}%)
+                  </Button>
+                ))}
+              </Box>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
 
-                    {/* Badge de mastery */}
-                    <Box
-                      sx={{
-                        px: 0.75,
-                        py: 0.25,
-                        borderRadius: 1,
-                        backgroundColor: `${color}40`,
-                        border: `1px solid ${color}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 0.25
-                      }}
-                    >
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          fontSize: '0.6rem',
-                          fontWeight: 700,
-                          color: color,
-                          textTransform: 'uppercase',
-                          letterSpacing: 0.5
-                        }}
-                      >
-                        {skill.masteryLevel === 'master' ? 'Maestro' :
-                         skill.masteryLevel === 'advanced' ? 'Avanzado' :
-                         skill.masteryLevel === 'intermediate' ? 'Intermedio' :
-                         skill.masteryLevel === 'beginner' ? 'Principiante' :
-                         'Bloqueado'}
-                      </Typography>
-                    </Box>
+      {/* Skill Detail Drawer */}
+      <Drawer
+        anchor="right"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        PaperProps={{
+          sx: {
+            width: { xs: '100%', sm: 400 },
+            backgroundColor: 'rgba(30, 30, 30, 0.95)',
+            color: '#ffffff'
+          }
+        }}
+      >
+        {selectedSkill && (
+          <Box sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                {selectedSkill.label}
+              </Typography>
+              <IconButton onClick={() => setDrawerOpen(false)} sx={{ color: '#ffffff' }}>
+                <Close />
+              </IconButton>
+            </Box>
 
-                    {/* Porcentaje de progreso */}
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        fontSize: '0.65rem',
-                        fontWeight: 600,
-                        color: color,
-                        opacity: 0.9
-                      }}
-                    >
-                      {progressPct}%
-                    </Typography>
-                  </Box>
-                </Box>
-              </Tooltip>
-            );
-          })}
-        </Box>
-
-        {/* Mensaje si no hay habilidades */}
-        {skills.length === 0 && (
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              py: 4,
-              textAlign: 'center'
-            }}
-          >
-            <Typography variant="body2" sx={{ color: '#e8f4fd', opacity: 0.7 }}>
-              No hay habilidades disponibles
+            <Typography variant="body2" sx={{ mb: 3, color: '#e8f4fd', opacity: 0.9 }}>
+              {selectedSkill.description}
             </Typography>
+
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                Maestría: {Math.round(selectedSkill.mastery * 100)}%
+              </Typography>
+              <CircularProgress
+                variant="determinate"
+                value={selectedSkill.mastery * 100}
+                size={80}
+                sx={{ color: getSkillColor(selectedSkill) }}
+              />
+            </Box>
+
+            {selectedSkill.relatedLessons.length > 0 && (
+              <Box>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                  Lecciones relacionadas
+                </Typography>
+                <List>
+                  {selectedSkill.relatedLessons.map((lessonId, index) => (
+                    <ListItem
+                      key={index}
+                      button
+                      onClick={() => {
+                        // Extract moduleId from lessonId or use default
+                        const moduleId = 'module-01-fundamentals'; // TODO: Map lessonId to moduleId
+                        if (onNavigateToLesson) {
+                          onNavigateToLesson(moduleId, lessonId);
+                        }
+                        setDrawerOpen(false);
+                      }}
+                    >
+                      <School sx={{ mr: 2, fontSize: 20 }} />
+                      <ListItemText primary={lessonId} />
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+            )}
           </Box>
         )}
-      </CardContent>
-    </Card>
+      </Drawer>
+    </>
   );
 };
 
 export default SkillTree;
+

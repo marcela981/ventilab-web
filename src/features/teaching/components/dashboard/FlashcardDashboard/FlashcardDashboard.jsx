@@ -63,8 +63,8 @@ import {
   NotificationsActive,
   CheckCircle
 } from '@mui/icons-material';
-import { useLearningProgress } from '@/contexts/LearningProgressContext';
-import FlashcardSystem from '@/components/teaching/FlashcardSystem';
+import { useLearningProgress } from '@/features/progress/LearningProgressContext';
+import FlashcardSystem from '@/features/teaching/FlashcardSystem';
 
 /**
  * FlashcardDashboard - Widget de sistema de repetición espaciada

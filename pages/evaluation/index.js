@@ -20,12 +20,12 @@ import {
   ArrowForward,
   CheckCircle,
 } from '@mui/icons-material';
-import evaluationService from '../../src/service/api/evaluationService';
-import { useApiClient } from '../../src/hooks/useApiClient';
+import evaluationService from '@/features/evaluation/services/evaluationService';
+import { useAuth } from '@/shared/hooks/useAuth';
 
 export default function Evaluation() {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useApiClient();
+  const { isAuthenticated, isLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [cases, setCases] = useState([]);

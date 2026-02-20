@@ -2,7 +2,7 @@
  * AI API Service
  * TODO: Consolidate AI API calls
  */
-import { http } from '@/services/api/http';
+import { http } from '@/shared/services/api/http';
 
 export const aiApi = {
   askQuestion: async (question: string, context?: string) => {

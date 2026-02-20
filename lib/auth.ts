@@ -14,7 +14,7 @@ import GoogleProvider from 'next-auth/providers/google';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
-import { getRedirectPath, isSafeRedirectUrl } from '@/utils/redirectByRole';
+import { getRedirectPath, isSafeRedirectUrl } from '@/shared/utils/redirectByRole';
 
 /**
  * NextAuth.js Configuration Object
@@ -170,9 +170,8 @@ export const authOptions: NextAuthOptions = {
   // PAGES: Custom authentication pages
   // =============================================================================
   pages: {
-    signIn: '/auth/login', // Custom login page
-    signOut: '/auth/logout', // Custom logout page
-    error: '/auth/error', // Error page for auth errors
+    signIn: '/auth/login',
+    error: '/auth/error',
   },
 
   // =============================================================================

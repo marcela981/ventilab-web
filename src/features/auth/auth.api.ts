@@ -2,7 +2,7 @@
  * Auth API Service
  * Handles authentication API calls
  */
-import { http } from '@/services/api/http';
+import { http } from '@/shared/services/api/http';
 
 export const authApi = {
   login: async (email: string, password: string) => {

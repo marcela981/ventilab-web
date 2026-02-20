@@ -13,6 +13,7 @@
       "@/utils/*": ["src/utils/*"],
       "@/lib/*": ["lib/*", "src/lib/*"],
       "@/data/*": ["src/data/*"],
+      "@/teaching/data/*": ["src/features/teaching/data/*"],
       "@/theme/*": ["src/theme/*"],
       "@/styles/*": ["src/styles/*"],
       "@/types/*": ["src/types/*"],

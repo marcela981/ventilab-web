@@ -1,6 +1,6 @@
-import { useLearningProgress } from '@/contexts/LearningProgressContext';
-import { debug } from '@/utils/debug';
-import { getAuthToken } from '@/services/authService';
+import { useLearningProgress } from '@/features/progress/LearningProgressContext';
+import { debug } from '@/shared/utils/debug';
+import { getAuthToken } from '@/shared/services/authService';
 
 // Get debug flag from environment
 function isDebugEnabled(): boolean {
