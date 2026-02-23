@@ -60,17 +60,17 @@ export const useParameterValidation = () => {
   const validateSingleParameter = useCallback((parameter, value, ventilatorData, ventilationMode) => {
     // Crear datos temporales con el nuevo valor
     const tempData = { ...ventilatorData, [parameter]: value };
-    
+
     // Validar el parámetro específico sin actualizar el estado
     const validation = validateParameters(tempData, ventilationMode);
-    
+
     // Filtrar errores relacionados con este parámetro
-    const parameterErrors = validation.criticalErrors.filter(error => 
+    const parameterErrors = validation.criticalErrors.filter(error =>
       error.toLowerCase().includes(parameter.toLowerCase()) ||
       error.toLowerCase().includes(getParameterDisplayName(parameter).toLowerCase())
     );
-    
-    const parameterWarnings = validation.warnings.filter(warning => 
+
+    const parameterWarnings = validation.warnings.filter(warning =>
       warning.toLowerCase().includes(parameter.toLowerCase()) ||
       warning.toLowerCase().includes(getParameterDisplayName(parameter).toLowerCase())
     );
@@ -123,12 +123,26 @@ export const useParameterValidation = () => {
 
   const updateValidationState = useCallback((ventilatorData, ventilationMode) => {
     const validation = validateParameters(ventilatorData, ventilationMode);
-    setValidationState({
-      isValid: validation.valid,
-      criticalErrors: validation.criticalErrors,
-      warnings: validation.warnings,
-      severity: validation.severity,
-      patientType: validation.patientType
+
+    setValidationState(prev => {
+      // Comparación profunda o chequeo rápido
+      if (
+        prev.isValid === validation.valid &&
+        prev.severity === validation.severity &&
+        prev.patientType === validation.patientType &&
+        JSON.stringify(prev.criticalErrors) === JSON.stringify(validation.criticalErrors) &&
+        JSON.stringify(prev.warnings) === JSON.stringify(validation.warnings)
+      ) {
+        return prev; // Salir sin actualizar el estado si es igual
+      }
+
+      return {
+        isValid: validation.valid,
+        criticalErrors: validation.criticalErrors,
+        warnings: validation.warnings,
+        severity: validation.severity,
+        patientType: validation.patientType
+      };
     });
     return validation;
   }, [validateParameters]);

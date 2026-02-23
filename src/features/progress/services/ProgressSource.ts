@@ -17,12 +17,12 @@ import { debug } from '@/shared/utils/debug';
 // TYPES
 // =============================================================================
 
-export type LessonItem = { lessonId:string; progress:number; updatedAt?:string };
+export type LessonItem = { lessonId: string; progress: number; updatedAt?: string };
 
 export type Overview = {
-  xpTotal:number; level:number; nextLevelXp:number; streakDays:number;
-  calendar:Array<{date:string;hasActivity:boolean;lessonsCompleted:number}>;
-  completedLessons:number; totalLessons:number; modulesCompleted:number; totalModules:number;
+  xpTotal: number; level: number; nextLevelXp: number; streakDays: number;
+  calendar: Array<{ date: string; hasActivity: boolean; lessonsCompleted: number }>;
+  completedLessons: number; totalLessons: number; modulesCompleted: number; totalModules: number;
 };
 
 export type ProgressSnapshot = {
@@ -134,7 +134,7 @@ function enqueueLocal(it: LessonItem) {
   localStorage.setItem(LS_QUEUE, JSON.stringify(q));
 }
 
-function readLocalSnapshot(): ProgressSnapshot|null {
+function readLocalSnapshot(): ProgressSnapshot | null {
   try { return JSON.parse(localStorage.getItem(LS_SNAPSHOT) || 'null'); } catch { return null; }
 }
 
@@ -294,7 +294,7 @@ function mergeProgress(
   };
 
   debug.logSnapshot(mergedSnapshot, 'merged');
-  
+
   // Log divergence if detected
   if (dbProgress && localProgress && dbProgress.lessons) {
     // Count lessons with progress === 1 (not based on flags)
@@ -318,8 +318,8 @@ function mergeProgress(
   return mergedSnapshot;
 }
 
-function mergeSnapshots(userId:string|null, localSnap:any, localQueue:LessonItem[], dbOverview?:Overview, dbLessons?:LessonItem[]): ProgressSnapshot {
-  let source: 'db'|'local'|'merged' = 'local';
+function mergeSnapshots(userId: string | null, localSnap: any, localQueue: LessonItem[], dbOverview?: Overview, dbLessons?: LessonItem[]): ProgressSnapshot {
+  let source: 'db' | 'local' | 'merged' = 'local';
   let lessons: LessonItem[] = localSnap?.lessons || [];
   if (dbLessons) {
     source = 'db';
@@ -341,10 +341,10 @@ function mergeLessons(local: LessonItem[], db: LessonItem[]): LessonItem[] {
 }
 
 // Si no hay overview del backend, la derivamos con catálogo local (fallback)
-function deriveOverview(db?:Overview, lessons?:LessonItem[], local?:Overview): Overview {
+function deriveOverview(db?: Overview, lessons?: LessonItem[], local?: Overview): Overview {
   if (db) return db;
   const totalLessons = local?.totalLessons ?? (Array.isArray(lessons) ? Math.max(lessons.length, 1) : 1);
-  const completedLessons = (lessons||[]).filter(x => x.progress >= 0.99).length;
+  const completedLessons = (lessons || []).filter(x => x.progress >= 0.99).length;
   // Valores aproximados para no dejar vacío
   return {
     xpTotal: local?.xpTotal ?? 0,
@@ -385,12 +385,12 @@ export const ProgressSource = {
     console.log('═══════════════════════════════════════════════════════════════');
     console.log('🔄 [ProgressSource] getSnapshot() - Loading progress...');
     console.log('═══════════════════════════════════════════════════════════════');
-    
+
     const { token, userId } = getAuth();
     g.info('auth', { userId, hasToken: !!token, tokenPreview: debug.short(token) });
-    console.log('🔐 Auth status:', { 
-      userId: userId ? `${userId.substring(0, 8)}...` : 'null', 
-      hasToken: !!token 
+    console.log('🔐 Auth status:', {
+      userId: userId ? `${userId.substring(0, 8)}...` : 'null',
+      hasToken: !!token
     });
 
     // 1) Read local queue (pending changes NOT yet synced to DB)
@@ -398,24 +398,24 @@ export const ProgressSource = {
     const localSnap = readLocalSnapshot();
     const localQueue = readLocalQueue();
     g.info('local state', { hasLocalSnap: !!localSnap, queueLen: localQueue.length });
-    console.log('📦 localStorage state:', { 
-      hasSnapshot: !!localSnap, 
+    console.log('📦 localStorage state:', {
+      hasSnapshot: !!localSnap,
       queueLength: localQueue.length,
       snapshotLessons: localSnap?.lessons?.length || 0
     });
 
     // 2) If authenticated, fetch from DB (PRIMARY source)
-    let dbOverview: Overview|undefined;
-    let dbLessons: LessonItem[]|undefined;
+    let dbOverview: Overview | undefined;
+    let dbLessons: LessonItem[] | undefined;
 
     if (token) {
       try {
         console.log('🌐 Fetching progress from DATABASE...');
         console.log('   Token available:', token ? `${token.substring(0, 20)}...` : 'none');
         console.log('   Calling getOverview()...');
-        
+
         const o: any = await getOverview();
-        
+
         // CRITICAL DEBUG: Log the EXACT response from backend
         console.log('');
         console.log('═══════════════════════════════════════════════════════════════');
@@ -428,53 +428,66 @@ export const ProgressSource = {
         console.log('   Has overview property?', o?.hasOwnProperty('overview'));
         console.log('   Has lessons property?', o?.hasOwnProperty('lessons'));
         console.log('   Has modules property?', o?.hasOwnProperty('modules'));
-        
+
         if (o?.overview) {
           console.log('   overview.completedLessons:', o.overview.completedLessons);
           console.log('   overview.totalLessons:', o.overview.totalLessons);
         }
-        
+
         if (o?.lessons) {
           console.log('   lessons length:', Array.isArray(o.lessons) ? o.lessons.length : 'not an array');
           if (Array.isArray(o.lessons) && o.lessons.length > 0) {
             console.log('   First lesson sample:', JSON.stringify(o.lessons[0], null, 2));
           }
         }
-        
+
         if ((o as any)?.modules) {
           console.log('   modules length:', Array.isArray((o as any).modules) ? (o as any).modules.length : 'not an array');
         }
-        
+
         console.log('   Full response (stringified):', JSON.stringify(o, null, 2).substring(0, 500) + '...');
         console.log('═══════════════════════════════════════════════════════════════');
         console.log('');
-        
+
         // getOverview returns overview data, extract lessons if available
         dbOverview = (o as any)?.overview || o; // por si la API responde plano
-        dbLessons  = (o as any)?.lessons  || []; // lessons might be in overview response
 
-        // La API retorna modules[], no lessons[]
-        // Construir dbLessons desde modules para compatibilidad con el pipeline
+        // Map lessons array: backend may use 'pageId' or 'lessonId', normalize to 'lessonId'
+        const rawLessons = (o as any)?.lessons || [];
+        dbLessons = rawLessons.map((l: any) => ({
+          lessonId: l.lessonId || l.pageId || l.id || '',
+          progress: typeof l.progress === 'number' ? l.progress : (l.completed ? 1 : 0),
+          updatedAt: l.updatedAt || l.lastVisitedAt || new Date().toISOString(),
+        })).filter((l: LessonItem) => l.lessonId !== '');
+
+        // La API retorna modules[], construir dbLessons adicionales si lessons estaba vacío
         const oModules = (o as any)?.modules;
         if (dbLessons.length === 0 && Array.isArray(oModules) && oModules.length) {
           dbLessons = oModules
-            .filter((mod: any) => mod.progress > 0 || mod.completedLessons > 0)
+            .filter((mod: any) => (mod.progress || mod.percentComplete || 0) > 0 || (mod.completedLessons || mod.completedPages || 0) > 0)
             .map((mod: any) => ({
-              lessonId: `__module__${mod.id}`,
-              progress: mod.progress / 100,
+              lessonId: `__module__${mod.id || mod.moduleId}`,
+              progress: ((mod.progress || mod.percentComplete || 0)) / 100,
               updatedAt: new Date().toISOString(),
             }));
         }
-        // También guardar los modules directamente en dbOverview para acceso posterior
+        // Normalize modules data and store on dbOverview for moduleProgressAggregated fallback
         if (dbOverview && oModules) {
-          (dbOverview as any)._modules = oModules;
+          (dbOverview as any)._modules = oModules.map((mod: any) => ({
+            id: mod.id || mod.moduleId,
+            moduleId: mod.id || mod.moduleId,
+            progress: mod.progress ?? mod.percentComplete ?? 0,
+            completedLessons: mod.completedLessons ?? mod.completedPages ?? 0,
+            totalLessons: mod.totalLessons ?? mod.totalPages ?? 0,
+            completed: mod.completed ?? false,
+          }));
         }
         console.log('[ProgressSource] modules from overview:', oModules?.length,
           'dbLessons construidos:', dbLessons.length);
 
         console.log('   Extracted dbOverview:', !!dbOverview ? 'exists' : 'null/undefined');
         console.log('   Extracted dbLessons:', Array.isArray(dbLessons) ? `array with ${dbLessons.length} items` : 'not an array');
-        
+
         g.info('db fetched', {
           overviewOk: !!dbOverview,
           lessonsCount: Array.isArray(dbLessons) ? dbLessons.length : 0
@@ -521,7 +534,7 @@ export const ProgressSource = {
       totalLessons: merged.overview.totalLessons,
       lessonsCount: merged.lessons.length
     });
-    
+
     // Log source breakdown for debugging
     if (merged.source === 'db') {
       console.log('   ✅ Source: DATABASE (auth token available, DB fetch successful)');

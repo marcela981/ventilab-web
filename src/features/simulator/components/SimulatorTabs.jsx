@@ -17,6 +17,7 @@ import PatientSimulatorTab from '@/shared/components/PatientSimulatorTab';
 import GraphsTab from '@/shared/components/GraphsTab';
 import MonitoringTab from '@/shared/components/MonitoringTab';
 import ConnectionTabContent from '@/shared/components/ConnectionTabContent';
+import { ConnectionPanel } from '@/features/simulator/components/ConnectionPanel';
 
 /**
  * SimulatorTabs.jsx (formerly DashboardTabs.jsx)
@@ -91,6 +92,9 @@ const SimulatorTabs = ({
   maxMinData,
   dataRecording,
   setNotification,
+
+  // Hook unificador local/remoto
+  ventilatorConnection,
 }) => {
 
   // Función para renderizar el contenido según la pestaña activa
@@ -154,20 +158,38 @@ const SimulatorTabs = ({
 
       case 3: // Conexión
         return (
-          <ConnectionTabContent
-            serialConnection={serialConnection}
-            systemStatus={systemStatus}
-            handleConnection={handleConnection}
-            handleDisconnection={handleDisconnection}
-            handleSendConfiguration={handleSendConfiguration}
-            getValueColor={getValueColor}
-            ventilatorData={ventilatorData}
-            maxMinData={maxMinData}
-            dataRecording={dataRecording}
-            setNotification={setNotification}
-            patientData={patientData}
-            ventilationMode={ventilationMode}
-          />
+          <Box>
+            {/* Mode selector + remote reservation */}
+            {ventilatorConnection && (
+              <ConnectionPanel
+                connectionState={ventilatorConnection.connectionState}
+                reservation={ventilatorConnection.reservation}
+                onSwitchToLocal={ventilatorConnection.actions.switchToLocal}
+                onSwitchToRemote={ventilatorConnection.actions.switchToRemote}
+                onDisconnect={ventilatorConnection.actions.disconnect}
+                onRequestReservation={ventilatorConnection.actions.requestReservation}
+                onReleaseReservation={ventilatorConnection.actions.releaseReservation}
+              />
+            )}
+
+            {/* Serial controls — only shown when not in remote mode */}
+            {(!ventilatorConnection || ventilatorConnection.connectionState.mode !== 'remote') && (
+              <ConnectionTabContent
+                serialConnection={serialConnection}
+                systemStatus={systemStatus}
+                handleConnection={handleConnection}
+                handleDisconnection={handleDisconnection}
+                handleSendConfiguration={handleSendConfiguration}
+                getValueColor={getValueColor}
+                ventilatorData={ventilatorData}
+                maxMinData={maxMinData}
+                dataRecording={dataRecording}
+                setNotification={setNotification}
+                patientData={patientData}
+                ventilationMode={ventilationMode}
+              />
+            )}
+          </Box>
         );
 
       default:

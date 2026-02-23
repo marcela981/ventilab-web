@@ -91,19 +91,17 @@ export const getCompletedLessons = (progressByModule, snapshot = null) => {
   // A lesson is completed ONLY when progress === 1 (not based on flags)
   if (snapshot?.lessons && Array.isArray(snapshot.lessons)) {
     for (const lesson of snapshot.lessons) {
-      // Get progress value (0-1)
+      if (!lesson || typeof lesson.lessonId !== 'string' || lesson.lessonId.length === 0) {
+        continue;
+      }
+
       const lessonProgressValue = Math.max(0, Math.min(1, lesson.progress || 0));
       
-      // A lesson is completed ONLY when progress === 1
       if (lessonProgressValue === 1) {
-        // Add the lessonId directly (format from backend)
         set.add(lesson.lessonId);
 
-        // Try to extract moduleId from lessonId if it follows a pattern
-        // Common patterns: "moduleId-lessonId" or "moduleId/lessonId"
         const parts = lesson.lessonId.split(/[-\/]/);
         if (parts.length >= 2) {
-          // If lessonId contains module info, also add the compound key
           const possibleModuleId = parts.slice(0, -1).join('-');
           const possibleLessonId = parts[parts.length - 1];
           set.add(`${possibleModuleId}-${possibleLessonId}`);

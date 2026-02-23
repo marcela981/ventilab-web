@@ -6,7 +6,9 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
-const StyledEditableCard = styled(Paper)(({ theme, isEditing, isVisible, isDragging, isExpanded }) => ({
+const StyledEditableCard = styled(Paper, {
+  shouldForwardProp: (prop) => !['isEditing', 'isVisible', 'isDragging', 'isExpanded'].includes(prop),
+})(({ theme, isEditing, isVisible, isDragging, isExpanded }) => ({
   width: '340px',
   height: isExpanded ? 'auto' : '110px',
   minHeight: isExpanded ? '250px' : '110px',
@@ -24,11 +26,11 @@ const StyledEditableCard = styled(Paper)(({ theme, isEditing, isVisible, isDragg
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   overflow: isExpanded ? 'auto' : 'hidden',
   borderRadius: 0,
-  border: isEditing 
+  border: isEditing
     ? (isVisible ? '2px dashed rgba(218, 0, 22, 0.5)' : '2px dashed rgba(255, 255, 255, 0.2)')
     : (isVisible ? '1px solid transparent' : '1px solid rgba(255, 255, 255, 0.1)'),
   '&:hover': {
-    backgroundColor: isEditing 
+    backgroundColor: isEditing
       ? (isVisible ? 'rgba(31, 31, 31, 0.4)' : 'rgba(31, 31, 31, 0.1)')
       : (isVisible ? 'rgba(31, 31, 31, 0.2)' : 'rgba(31, 31, 31, 0.05)'),
     transform: isEditing ? 'scale(1.02)' : 'scale(1)',

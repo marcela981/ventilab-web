@@ -9,7 +9,6 @@ const nextConfig: NextConfig = {
   serverExternalPackages: [
     '@prisma/client',
     'prisma',
-    '@next-auth/prisma-adapter',
     'bcryptjs',
   ],
   // Transpilación de next-auth para evitar "Unexpected token export" en producción

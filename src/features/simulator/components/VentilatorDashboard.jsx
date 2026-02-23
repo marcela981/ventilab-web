@@ -44,6 +44,7 @@ import { useParameterValidation } from '@/features/simulator/hooks/useParameterV
 import { usePatientData } from '@/features/simulator/hooks/usePatientData'; // Importar hook de paciente
 import { useQRBridge } from '@/features/simulator/hooks/useQRBridge';
 import { useAIAnalysis } from '@/features/simulator/hooks/useAIAnalysis';
+import { useVentilatorConnection } from '@/features/simulator/hooks/useVentilatorConnection';
 import useDashboardState from '@/features/simulator/hooks/useDashboardState';
 import AIAnalysisPanel from '@/features/simulator/components/AIAnalysisPanel';
 import { useSidebar } from '../../../../pages/_app';
@@ -133,6 +134,12 @@ const VentilatorDashboard = () => {
   // Hook para códigos QR y compartir
   const qrBridge = useQRBridge();
 
+  // Hook unificador: abstrae serial (local) vs WebSocket (remote)
+  const ventilatorConnection = useVentilatorConnection({
+    serialConnection,
+    localData: { ventilatorData, realTimeData, systemStatus },
+  });
+
   // Validación defensiva para asegurar que los hooks estén inicializados
   if (!parameterValidation || !parameterValidation.validationState) {
     return (
@@ -145,29 +152,28 @@ const VentilatorDashboard = () => {
     );
   }
 
-  // Efecto para ejecutar cálculos automáticos cuando cambien parámetros relevantes
-  useEffect(() => {
-    // Usar setTimeout para evitar actualizaciones síncronas que causen bucles
-    const timeoutId = setTimeout(() => {
-      if (state.ventilationMode === 'volume') {
-        actions.calculateVolumeControlParameters();
-      } else if (state.ventilationMode === 'pressure') {
-        actions.calculatePressureControlParameters();
-      }
-    }, 0);
+  // Efecto: cálculos automáticos SOLO cuando cambien INPUTS (no outputs).
+  const mode = state.ventilationMode;
+  const ie = ventilatorData.inspiracionEspiracion;
+  const freq = ventilatorData.frecuencia;
+  const pi = ventilatorData.pausaInspiratoria;
+  const pe = ventilatorData.pausaEspiratoria;
+  const vol = ventilatorData.volumen;
+  const peep = ventilatorData.peep;
+  const pmax = ventilatorData.presionMax;
+  const compliance = state.complianceData.compliance;
 
+  const calcVol = actions.calculateVolumeControlParameters;
+  const calcPress = actions.calculatePressureControlParameters;
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (mode === 'volume') calcVol();
+      else if (mode === 'pressure') calcPress();
+    }, 0);
     return () => clearTimeout(timeoutId);
-  }, [
-    state.ventilationMode,
-    ventilatorData.inspiracionEspiracion,
-    ventilatorData.frecuencia,
-    ventilatorData.pausaInspiratoria,
-    ventilatorData.pausaEspiratoria,
-    ventilatorData.volumen,
-    ventilatorData.peep,
-    ventilatorData.presionMax,
-    state.complianceData.compliance
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- calcVol/calcPress son estables; deps primitivas evitan bucle
+  }, [mode, ie, freq, pi, pe, vol, peep, pmax, compliance]);
 
 
 
@@ -506,6 +512,9 @@ const VentilatorDashboard = () => {
         isAnalyzing={state.isAnalyzing}
         handleAIAnalysis={actions.handleAIAnalysis}
         
+        // Hook unificador local/remoto
+        ventilatorConnection={ventilatorConnection}
+
         // Props para ConnectionTabContent
         systemStatus={systemStatus}
         handleConnection={actions.handleConnection}

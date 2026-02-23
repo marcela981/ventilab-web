@@ -2,6 +2,36 @@ import { useMemo, useCallback } from 'react';
 import { curriculumData, getModulesByLevel } from '@/features/teaching/data/curriculumData';
 import { useLearningProgress } from '@/features/progress/LearningProgressContext';
 
+// ---------------------------------------------------------------------------
+// Defensive helpers – centralised validation for data from backend/snapshot
+// ---------------------------------------------------------------------------
+
+/**
+ * Safely checks if a string includes another string.
+ * Returns false instead of throwing when either value is not a string.
+ */
+const safeIncludes = (source, target) => {
+  return typeof source === 'string' && typeof target === 'string' && source.includes(target);
+};
+
+/**
+ * Validates that a lesson object from the snapshot has the minimum required fields.
+ */
+const isValidLesson = (lesson) => {
+  return lesson != null && typeof lesson.lessonId === 'string' && lesson.lessonId.length > 0;
+};
+
+/**
+ * Validates that a curriculum module has the expected structure.
+ */
+const isValidModule = (module) => {
+  return module != null && Array.isArray(module.lessons);
+};
+
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
+
 /**
  * Hook para determinar si una lección específica está desbloqueada
  * 
@@ -23,15 +53,13 @@ export const useLessonAvailability = () => {
   const calculateModuleProgress = useCallback((moduleId) => {
     const module = curriculumData?.modules?.[moduleId];
     
-    // Si el módulo no existe, retornar 0
-    if (!module) {
+    if (!isValidModule(module)) {
+      if (!module) return 0;
+      console.warn(`[calculateModuleProgress] Invalid module structure: ${moduleId}`);
       return 0;
     }
 
-    // Si el módulo no tiene lecciones definidas, considerarlo como completo (100%)
-    // Esto evita que módulos sin lecciones bloqueen el progreso del nivel
-    if (!module.lessons || module.lessons.length === 0) {
-      console.log(`[calculateModuleProgress] Module ${moduleId} has no lessons, considering complete (100%)`);
+    if (module.lessons.length === 0) {
       return 100;
     }
 
@@ -40,70 +68,61 @@ export const useLessonAvailability = () => {
       const moduleProgress = progressByModule[moduleId];
       const lessonsById = moduleProgress.lessonsById || {};
       
-      // Contar lecciones completadas - ONLY count if progress === 1 (not based on flags)
       const completedCount = module.lessons.filter((lesson) => {
         const lessonProgress = lessonsById[lesson.id];
         if (!lessonProgress) return false;
-        
-        // Get progress value (0-1) - use progress field, never flags
         const lessonProgressValue = Math.max(0, Math.min(1, lessonProgress.progress || 0));
-        // A lesson is completed ONLY when progress === 1
         return lessonProgressValue === 1;
       }).length;
 
-      // Module progress = completedLessons / totalLessons (0-1, then convert to 0-100)
-      const progress = Math.round((completedCount / module.lessons.length) * 100);
-      return progress;
+      return Math.round((completedCount / module.lessons.length) * 100);
     }
 
-    // Try unified snapshot if available
-    if (snapshot && snapshot.lessons) {
-      const moduleLessons = snapshot.lessons.filter(l => {
-        // Match lesson by ID (adjust logic based on your lessonId format)
-        return module.lessons.some(ml => ml.id === l.lessonId || l.lessonId.includes(ml.id));
-      });
-      // Count lessons with progress === 1 (not based on flags)
+    // Try unified snapshot if available – filter invalid entries first
+    if (snapshot && Array.isArray(snapshot.lessons)) {
+      const validSnapshotLessons = snapshot.lessons.filter(isValidLesson);
+
+      const moduleLessons = validSnapshotLessons.filter(l =>
+        module.lessons.some(ml =>
+          ml.id === l.lessonId || safeIncludes(l.lessonId, ml.id)
+        )
+      );
+
       const completedCount = moduleLessons.filter(l => {
         const lessonProgressValue = Math.max(0, Math.min(1, l.progress || 0));
         return lessonProgressValue === 1;
       }).length;
-      // Module progress = completedLessons / totalLessons (0-1, then convert to 0-100)
-      const progress = Math.round((completedCount / module.lessons.length) * 100);
-      return progress;
+
+      return Math.round((completedCount / module.lessons.length) * 100);
     }
 
-    // Fallback: usar completedLessons Set (DEPRECATED: should use progress values instead)
-    // This fallback is kept for backward compatibility but should be replaced with progress-based calculation
+    // Fallback: usar completedLessons Set (legacy)
     const completedCount = module.lessons.filter((lesson) => {
       const lessonKey1 = `${moduleId}-${lesson.id}`;
-      const lessonKey2 = lesson.id; // Formato legacy
+      const lessonKey2 = lesson.id;
       return completedLessons.has(lessonKey1) || completedLessons.has(lessonKey2);
     }).length;
 
-    // Module progress = completedLessons / totalLessons
-    const progress = Math.round((completedCount / module.lessons.length) * 100);
-    return progress;
+    return Math.round((completedCount / module.lessons.length) * 100);
   }, [completedLessons, progressByModule, snapshot]);
 
   /**
    * Verifica si todos los módulos de un nivel están completados al 100%
    */
   const isLevelCompleted = useCallback((levelId) => {
-    if (!levelId || !curriculumData?.modules) {
+    if (!levelId || typeof levelId !== 'string' || !curriculumData?.modules) {
       console.warn(`[isLevelCompleted] Invalid levelId or curriculumData:`, { levelId, hasModules: !!curriculumData?.modules });
       return false;
     }
 
     const modulesInLevel = getModulesByLevel(levelId);
     
-    if (modulesInLevel.length === 0) {
+    if (!Array.isArray(modulesInLevel) || modulesInLevel.length === 0) {
       return true;
     }
 
-    // Verificar progreso de cada módulo
-    // Solo considerar módulos que tienen lecciones Y tienen datos de progreso
     const modulesWithLessons = modulesInLevel.filter((mod) => {
-      return mod.lessons && mod.lessons.length > 0;
+      return isValidModule(mod) && mod.lessons.length > 0;
     });
 
     // Si no hay módulos con lecciones en el nivel, considerarlo completo
@@ -187,19 +206,24 @@ export const useLessonAvailability = () => {
    * A lesson is completed ONLY when progress === 1 (not based on flags).
    */
   const isLessonCompleted = useCallback((moduleId, lessonId) => {
+    if (!lessonId || typeof lessonId !== 'string') {
+      return false;
+    }
+
     // 1. Check unified snapshot first (most accurate, fresh from backend)
     if (snapshot?.lessons && Array.isArray(snapshot.lessons)) {
-      // Check for exact match
-      const snapshotLesson = snapshot.lessons.find(l => l.lessonId === lessonId);
+      const validLessons = snapshot.lessons.filter(isValidLesson);
+
+      const snapshotLesson = validLessons.find(l => l.lessonId === lessonId);
       if (snapshotLesson) {
         const progressValue = Math.max(0, Math.min(1, snapshotLesson.progress || 0));
         if (progressValue === 1) {
           return true;
         }
       }
-      // Also check with moduleId-lessonId format
+
       const compoundKey = `${moduleId}-${lessonId}`;
-      const snapshotLessonCompound = snapshot.lessons.find(l => l.lessonId === compoundKey);
+      const snapshotLessonCompound = validLessons.find(l => l.lessonId === compoundKey);
       if (snapshotLessonCompound) {
         const progressValue = Math.max(0, Math.min(1, snapshotLessonCompound.progress || 0));
         if (progressValue === 1) {
@@ -247,14 +271,12 @@ export const useLessonAvailability = () => {
    * @returns {boolean} True si la lección está desbloqueada
    */
   const isLessonAvailable = useCallback((lesson, allLessonsInLevel) => {
-    if (!lesson) {
+    if (!lesson || !lesson.moduleId || typeof lesson.moduleId !== 'string') {
       return false;
     }
 
-    // Obtener información del módulo
     const module = curriculumData?.modules?.[lesson.moduleId];
-    if (!module) {
-      // Si no encontramos el módulo en curriculumData, no está disponible
+    if (!isValidModule(module)) {
       return false;
     }
 

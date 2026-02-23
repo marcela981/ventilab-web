@@ -177,17 +177,18 @@ const useDashboardState = ({
 
   // Validate parameters on change (primitive deps)
   useEffect(() => {
-    if (ventilatorData && Object.keys(ventilatorData).length > 0) {
-      const timeoutId = setTimeout(() => {
-        const validation = parameterValidation.updateValidationState(ventilatorData, ventilationMode);
-        setShowCompactValidationAlerts(validation.criticalErrors.length > 0);
-      }, 100);
-      return () => clearTimeout(timeoutId);
-    }
+    if (!ventilatorData || Object.keys(ventilatorData).length === 0) return;
+
+    const timeoutId = setTimeout(() => {
+      const validation = parameterValidation.updateValidationState(ventilatorDataRef.current, ventilationMode);
+      setShowCompactValidationAlerts(validation.criticalErrors.length > 0);
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   }, [
     ventilatorData.frecuencia, ventilatorData.volumen, ventilatorData.presionMax,
     ventilatorData.peep, ventilatorData.fio2, ventilationMode,
-    parameterValidation, ventilatorData,
+    // Removing ventilatorData and parameterValidation objects to avoid infinite loops
   ]);
 
   // ==================== CALCULATION FUNCTIONS ====================

@@ -234,3 +234,102 @@ export type VentilationMode = 'volume' | 'pressure';
 // --- Data Source ---
 
 export type DataSource = 'real' | 'simulated';
+
+// =============================================================================
+// Re-exports from @/contracts/simulator.contracts
+// NOTE: VentilationMode is intentionally excluded — the legacy definition above
+// ('volume' | 'pressure') is used by existing JS hooks. The clinical protocol
+// type ('VCV' | 'PCV' | 'SIMV' | 'PSV') lives in simulator.contracts.ts.
+// =============================================================================
+
+export type {
+  VentilatorReading,
+  VentilatorCommand,
+  VentilatorAlarm,
+  VentilatorStatus,
+  AlarmType,
+  AlarmSeverity,
+} from '@/contracts/simulator.contracts';
+
+// =============================================================================
+// Chart configuration
+// =============================================================================
+
+/** Visual configuration for a single waveform chart. */
+export interface ChartConfig {
+  title: string;
+  yAxisLabel: string;
+  yMin?: number;
+  yMax?: number;
+  color: string;
+  unit: string;
+}
+
+/** Predefined chart configs keyed by signal name. */
+export const CHART_CONFIGS: Record<string, ChartConfig> = {
+  pressure: {
+    title: 'Presión',
+    yAxisLabel: 'cmH₂O',
+    yMin: -5,
+    yMax: 50,
+    color: '#2196F3',
+    unit: 'cmH₂O',
+  },
+  flow: {
+    title: 'Flujo',
+    yAxisLabel: 'L/min',
+    yMin: -60,
+    yMax: 60,
+    color: '#4CAF50',
+    unit: 'L/min',
+  },
+  volume: {
+    title: 'Volumen',
+    yAxisLabel: 'mL',
+    yMin: 0,
+    yMax: 800,
+    color: '#FF9800',
+    unit: 'mL',
+  },
+  pco2: {
+    title: 'CO₂',
+    yAxisLabel: 'mmHg',
+    yMin: 0,
+    yMax: 60,
+    color: '#9C27B0',
+    unit: 'mmHg',
+  },
+};
+
+// =============================================================================
+// Control panel
+// =============================================================================
+
+/**
+ * State of the ventilator control panel.
+ * Uses clinical VentilationMode ('VCV' | 'PCV' | 'SIMV' | 'PSV') from contracts,
+ * not the legacy 'volume' | 'pressure' UI mode.
+ */
+export interface ControlPanelState {
+  /** Clinical ventilation protocol sent to the backend */
+  mode: 'VCV' | 'PCV' | 'SIMV' | 'PSV';
+  tidalVolume: number;
+  respiratoryRate: number;
+  peep: number;
+  fio2: number;
+  pressureLimit: number;
+  inspiratoryTime: number;
+}
+
+// =============================================================================
+// Safe parameter ranges (UI validation)
+// =============================================================================
+
+export const SAFE_RANGES = {
+  tidalVolume:     { min: 200,  max: 800,  step: 10,  unit: 'mL'    },
+  respiratoryRate: { min: 5,    max: 40,   step: 1,   unit: 'rpm'   },
+  peep:            { min: 0,    max: 20,   step: 1,   unit: 'cmH₂O' },
+  fio2:            { min: 21,   max: 100,  step: 1,   unit: '%'     },
+  pressureLimit:   { min: 10,   max: 50,   step: 1,   unit: 'cmH₂O' },
+  inspiratoryTime: { min: 0.5,  max: 3.0,  step: 0.1, unit: 's'     },
+} as const;

@@ -9,6 +9,7 @@ import ErrorBoundary from '../src/shared/components/ErrorBoundary';
 import { useRouter } from 'next/router';
 import theme from '../src/theme/theme';
 import { PatientDataProvider } from '../src/features/simulator/context/PatientDataContext';
+import { SocketProvider } from '../src/shared/contexts/SocketContext';
 import '../src/App.css';
 // Importar y inicializar i18n
 import '../src/i18n/i18n';
@@ -93,44 +94,44 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
           refetchOnWindowFocus={false} // Desactivado para evitar revalidaciones agresivas
         >
           <AuthProvider>
-            <ThemeProvider theme={theme}>
-              <NotificationProvider>
-                <PatientDataProvider>
-                  <CssBaseline />
-                {/* Auth pages: render without sidebar */}
-                {isAuthPage ? (
-                  <ErrorBoundary>
-                    <Component {...pageProps} />
-                  </ErrorBoundary>
-                ) : (
-                  /* Regular pages: render with sidebar */
-                  <SidebarContext.Provider value={{ sidebarOpen, handleSidebarToggle }}>
-                    <Box sx={{ display: 'flex' }}>
-                      <Sidebar open={sidebarOpen} onToggle={handleSidebarToggle} />
-                      <Box
-                        component="main"
-                        sx={{
-                          flexGrow: 1,
-                          p: 3,
-                          width: { sm: `calc(100% - ${sidebarOpen ? 240 : 64}px)` },
-                          ml: { sm: `${sidebarOpen ? 240 : 64}px` },
-                          transition: (theme) =>
-                            theme.transitions.create(['margin', 'width'], {
-                              easing: theme.transitions.easing.sharp,
-                              duration: theme.transitions.duration.leavingScreen,
-                            }),
-                        }}
-                      >
-                        <ErrorBoundary>
-                          <Component {...pageProps} />
-                        </ErrorBoundary>
-                      </Box>
-                    </Box>
-                  </SidebarContext.Provider>
-                )}
-                </PatientDataProvider>
-              </NotificationProvider>
-            </ThemeProvider>
+            <SocketProvider>
+              <ThemeProvider theme={theme}>
+                <NotificationProvider>
+                  <PatientDataProvider>
+                    <CssBaseline />
+                    {/* Auth pages: render without sidebar */}
+                    {isAuthPage ? (
+                      <ErrorBoundary>
+                        <Component {...pageProps} />
+                      </ErrorBoundary>
+                    ) : (
+                      /* Regular pages: render with sidebar */
+                      <SidebarContext.Provider value={{ sidebarOpen, handleSidebarToggle }}>
+                        <Box sx={{ display: 'flex' }}>
+                          <Sidebar open={sidebarOpen} onToggle={handleSidebarToggle} />
+                          <Box
+                            component="main"
+                            sx={{
+                              flexGrow: 1,
+                              p: 3,
+                              transition: (theme) =>
+                                theme.transitions.create(['margin', 'width'], {
+                                  easing: theme.transitions.easing.sharp,
+                                  duration: theme.transitions.duration.leavingScreen,
+                                }),
+                            }}
+                          >
+                            <ErrorBoundary>
+                              <Component {...pageProps} />
+                            </ErrorBoundary>
+                          </Box>
+                        </Box>
+                      </SidebarContext.Provider>
+                    )}
+                  </PatientDataProvider>
+                </NotificationProvider>
+              </ThemeProvider>
+            </SocketProvider>
           </AuthProvider>
         </SessionProvider>
       </Providers>

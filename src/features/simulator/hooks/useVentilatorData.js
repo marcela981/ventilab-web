@@ -47,7 +47,19 @@ export const useVentilatorData = (serialConnection) => {
   const pressureBuffer = useRef([]);
   const flowBuffer = useRef([]);
   const volumeBuffer = useRef([]);
-  const sampleCounter = useRef(0); 
+  const sampleCounter = useRef(0);
+
+  // Buffers para gráficos: acumulación en ref (evita 60 re-renders/seg)
+  const chartBufferRef = useRef({
+    pressure: [],
+    flow: [],
+    volume: [],
+    time: [],
+    integratedVolume: [],
+  });
+  const integratedVolumeRef = useRef(0);
+  const lastThrottleRef = useRef(0);
+  const THROTTLE_MS = 333; // ~3 actualizaciones UI/seg
 
   // Referencias para filtros (equivalente a self.filtradoP, etc.)
   const filteredPressure = useRef(0);
@@ -72,17 +84,19 @@ export const useVentilatorData = (serialConnection) => {
 
   // Función para resetear el volumen integrado
   const resetIntegratedVolume = useCallback(() => {
+    integratedVolumeRef.current = 0;
     setIntegratedVolume(0);
+    chartBufferRef.current.integratedVolume = [];
     setRealTimeData(prev => ({
       ...prev,
-      integratedVolume: []
+      integratedVolume: [],
     }));
   }, []);
 
-  // Función para obtener el volumen integrado actual
+  // Función para obtener el volumen integrado actual (valor en vivo desde ref)
   const getCurrentIntegratedVolume = useCallback(() => {
-    return integratedVolume;
-  }, [integratedVolume]);
+    return integratedVolumeRef.current;
+  }, []);
 
   // Callback para procesar datos de sensores
   const processSensorData = useCallback((decodedFrame) => {
@@ -127,10 +141,9 @@ export const useVentilatorData = (serialConnection) => {
         flowMax: parseFloat(flowMax.toFixed(0)),
         flowMin: parseFloat(flowMin.toFixed(0)),
         volumeMax: parseFloat(volumeMax.toFixed(0)),
-        pressureAvg: parseFloat(pressureAvg.toFixed(1))
+        pressureAvg: parseFloat(pressureAvg.toFixed(1)),
       });
 
-      // Limpiar buffers y resetear contador
       pressureBuffer.current = [];
       flowBuffer.current = [];
       volumeBuffer.current = [];
@@ -139,46 +152,43 @@ export const useVentilatorData = (serialConnection) => {
       console.log(`100 muestras completadas - PMax: ${pressureMax.toFixed(1)}, PMin: ${pressureMin.toFixed(1)}, FMax: ${flowMax.toFixed(0)}, FMin: ${flowMin.toFixed(0)}, VMax: ${volumeMax.toFixed(0)}`);
     }
 
-    // Actualizar datos en tiempo real
-    setRealTimeData(prev => {
-      const now = Date.now();
-      return {
-        pressure: [...prev.pressure.slice(-699), p], 
-        flow: [...prev.flow.slice(-699), f],
-        volume: [...prev.volume.slice(-699), v],
-        integratedVolume: [...prev.integratedVolume.slice(-699)], // Se actualizará después
-        time: [...prev.time.slice(-699), now],
-      };
-    });
+    // Volumen integrado en ref (NUNCA setState dentro de otro setState)
+    let newIntegratedVol = integratedVolumeRef.current + f;
+    if (newIntegratedVol < 0 || v === 0) newIntegratedVol = 0;
+    integratedVolumeRef.current = newIntegratedVol;
 
-    setIntegratedVolume(prevIntegratedVol => {
-      let newIntegratedVol = prevIntegratedVol + f;
-      
-      // Reset del volumen integrado si es negativo o si el volumen del sensor es 0
-      if (newIntegratedVol < 0 || v === 0) {
-        newIntegratedVol = 0;
-      }
+    const now = Date.now();
+    const buf = chartBufferRef.current;
+    const cap = 699;
+    buf.pressure = [...buf.pressure.slice(-cap), p];
+    buf.flow = [...buf.flow.slice(-cap), f];
+    buf.volume = [...buf.volume.slice(-cap), v];
+    buf.time = [...buf.time.slice(-cap), now];
+    buf.integratedVolume = [...buf.integratedVolume.slice(-cap), newIntegratedVol];
 
-      // Actualizar el array de volumen integrado en realTimeData
-      setRealTimeData(prev => ({
-        ...prev,
-        integratedVolume: [...prev.integratedVolume.slice(-699), newIntegratedVol]
-      }));
-
-      return newIntegratedVol;
-    });
-
-    // Agregar datos al hook de grabación si está disponible
-    if (dataRecordingRef.current && dataRecordingRef.current.addSensorData) {
+    if (dataRecordingRef.current?.addSensorData) {
       dataRecordingRef.current.addSensorData(p, f, v);
     }
 
-    setVentilatorData(prev => ({
-      ...prev,
-      pressure: p,
-      flow: f,
-      volume: v,
-    }));
+    // Throttle: actualizar UI solo ~3 veces/seg (evita ciclo infinito y colapso)
+    const nowTs = Date.now();
+    if (nowTs - lastThrottleRef.current >= THROTTLE_MS) {
+      lastThrottleRef.current = nowTs;
+      setRealTimeData({
+        pressure: [...buf.pressure],
+        flow: [...buf.flow],
+        volume: [...buf.volume],
+        time: [...buf.time],
+        integratedVolume: [...buf.integratedVolume],
+      });
+      setIntegratedVolume(newIntegratedVol);
+      setVentilatorData((prev) => ({
+        ...prev,
+        pressure: p,
+        flow: f,
+        volume: v,
+      }));
+    }
   }, []);
 
   // Callback para procesar mensajes de estado

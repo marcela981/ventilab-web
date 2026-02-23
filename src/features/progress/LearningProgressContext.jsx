@@ -86,18 +86,18 @@ const LearningProgressContext = createContext({
   isRateLimited: false, // Rate limiting state
 
   // Unified progress actions
-  refetchSnapshot: async () => {},
-  upsertLessonProgressUnified: async () => {},
+  refetchSnapshot: async () => { },
+  upsertLessonProgressUnified: async () => { },
 
   // Actions
-  loadModuleProgress: async () => {},
-  updateLessonProgress: async () => {},
+  loadModuleProgress: async () => { },
+  updateLessonProgress: async () => { },
   getLessonProgress: () => null,
   getModuleProgressData: () => null,
-  getProgressSummary: async () => {},
-  setCurrentModule: () => {},
-  setCurrentLesson: () => {},
-  reconcileOutbox: async () => {},
+  getProgressSummary: async () => { },
+  setCurrentModule: () => { },
+  setCurrentLesson: () => { },
+  reconcileOutbox: async () => { },
   getOutboxStats: () => ({}),
 
   // Derived progress aggregation (SINGLE SOURCE OF TRUTH for UI)
@@ -108,22 +108,22 @@ const LearningProgressContext = createContext({
 
   // Legacy compatibility
   progressMap: {},
-  updateProgress: () => {},
+  updateProgress: () => { },
   completedLessons: new Set(),
-  markLessonComplete: async () => {},
+  markLessonComplete: async () => { },
   getModuleProgress: () => ({ percent: 0, percentInt: 0, completedLessons: 0, totalLessons: 0 }),
   getCurriculumProgress: () => ({}),
-  
+
   // Other features
   quizScores: {},
-  saveQuizScore: () => {},
+  saveQuizScore: () => { },
   timeSpent: 0,
-  updateTimeSpent: () => {},
+  updateTimeSpent: () => { },
   flashcards: [],
-  addFlashcard: () => {},
-  updateFlashcard: () => {},
+  addFlashcard: () => { },
+  updateFlashcard: () => { },
   flashcardReviews: {},
-  markFlashcardReviewed: () => {},
+  markFlashcardReviewed: () => { },
   getFlashcardsDue: () => [],
   getFlashcardStats: {
     total: 0,
@@ -132,7 +132,7 @@ const LearningProgressContext = createContext({
     reviewed: 0,
     completionRate: 0,
   },
-  dismissError: () => {},
+  dismissError: () => { },
 });
 
 export const LearningProgressProvider = ({ children }) => {
@@ -149,7 +149,7 @@ export const LearningProgressProvider = ({ children }) => {
   const [snapshot, setSnapshot] = useState(null);
   const [isLoadingSnapshot, setIsLoadingSnapshot] = useState(false);
   const [snapshotError, setSnapshotError] = useState(null);
-  
+
   // Normalized state by module
   const [progressByModule, setProgressByModule] = useState({});
   const [currentModuleId, setCurrentModuleId] = useState(null);
@@ -158,10 +158,10 @@ export const LearningProgressProvider = ({ children }) => {
   const [syncStatus, setSyncStatus] = useState('idle');
   const [lastSyncError, setLastSyncError] = useState(null);
   const [loadingModules, setLoadingModules] = useState(new Set());
-  
+
   // Refs for optimistic updates
   const progressByModuleRef = useRef(progressByModule);
-  
+
   // Update refs when state changes
   useEffect(() => {
     progressByModuleRef.current = progressByModule;
@@ -222,7 +222,7 @@ export const LearningProgressProvider = ({ children }) => {
   // Load unified snapshot on mount and when session changes
   // CRITICAL: This is the PRIMARY way progress is loaded from the database
   // DO NOT rely on localStorage - this function ALWAYS fetches from DB when authenticated
-  const loadSnapshot = useCallback(async (label='initial') => {
+  const loadSnapshot = useCallback(async (label = 'initial') => {
     // Prevent concurrent calls
     if (loadingSnapshotRef.current) {
       debug.info(`Skipping loadSnapshot(${label}) - already loading`);
@@ -410,27 +410,29 @@ export const LearningProgressProvider = ({ children }) => {
   // When user clears localStorage, this effect ensures DB data repopulates progressByModule
   useEffect(() => {
     console.log('[LearningProgressContext] 🔄 Sync effect triggered - checking snapshot...');
-    
+
     if (!snapshot?.lessons || !Array.isArray(snapshot.lessons) || snapshot.lessons.length === 0) {
       console.log('[LearningProgressContext] ⚠️  No snapshot lessons to sync (snapshot empty or not loaded yet)');
       return;
     }
 
     // Only sync if we have meaningful data to sync
-    // Count lessons with progress === 1 (not based on flags)
-    // Lesson progress (0-1 float) is the single source of truth
+    // Filter out invalid lesson objects first, then check progress
     const lessonsWithProgress = snapshot.lessons.filter(l => {
+      if (!l || typeof l !== 'object' || typeof l.lessonId !== 'string' || l.lessonId.length === 0) {
+        return false;
+      }
       const progressValue = Math.max(0, Math.min(1, l.progress || 0));
-      return progressValue > 0; // Sync any lesson with progress > 0
+      return progressValue > 0;
     });
-    
+
     console.log('[LearningProgressContext] 📊 Snapshot analysis:', {
       totalLessons: snapshot.lessons.length,
       lessonsWithProgress: lessonsWithProgress.length,
       source: snapshot.source,
       completedInOverview: snapshot.overview?.completedLessons || 0
     });
-    
+
     if (lessonsWithProgress.length === 0) {
       console.log('[LearningProgressContext] ⚠️  No lessons with progress > 0, skipping sync');
       return;
@@ -441,7 +443,7 @@ export const LearningProgressProvider = ({ children }) => {
     console.log(`[LearningProgressContext] 🔄 Syncing ${lessonsWithProgress.length} lessons with progress from snapshot to progressByModule`);
     console.log('   Source:', snapshot.source);
     console.log('═══════════════════════════════════════════════════════════════');
-    
+
     debug.info(`[LearningProgressContext] Syncing ${lessonsWithProgress.length} lessons with progress from snapshot to progressByModule`);
 
     setProgressByModule(prev => {
@@ -481,7 +483,7 @@ export const LearningProgressProvider = ({ children }) => {
         if (!moduleId) {
           for (const existingModuleId of Object.keys(prev)) {
             if (lesson.lessonId.startsWith(existingModuleId + '-') ||
-                lesson.lessonId.startsWith(existingModuleId + '/')) {
+              lesson.lessonId.startsWith(existingModuleId + '/')) {
               moduleId = existingModuleId;
               lessonIdOnly = lesson.lessonId.substring(existingModuleId.length + 1);
               break;
@@ -518,9 +520,9 @@ export const LearningProgressProvider = ({ children }) => {
           console.warn('[LearningProgressContext] Invalid lesson data in snapshot sync:', lesson);
           continue;
         }
-        
+
         const existingProgress = updated[moduleId].lessonsById[lessonIdOnly];
-        
+
         // Defensive: calculate snapshot progress value safely
         let snapshotProgressValue = 0;
         if (typeof lesson.progress === 'number' && !isNaN(lesson.progress)) {
@@ -551,7 +553,7 @@ export const LearningProgressProvider = ({ children }) => {
 
         if (!existingProgress || snapshotProgressValue > existingProgressValue) {
           const finalProgressValue = Math.max(existingProgressValue, snapshotProgressValue);
-          
+
           // Defensive: never set completed flag if progress < 1
           // Only set completed if progress is exactly 1 OR if backend explicitly set it
           // But log warning if backend says completed but progress < 1
@@ -567,7 +569,7 @@ export const LearningProgressProvider = ({ children }) => {
             });
             completedFlag = false; // Don't trust the flag if progress doesn't match
           }
-          
+
           updated[moduleId].lessonsById[lessonIdOnly] = {
             ...(existingProgress || {}),
             lessonId: lessonIdOnly,
@@ -592,7 +594,7 @@ export const LearningProgressProvider = ({ children }) => {
         console.log('═══════════════════════════════════════════════════════════════');
         console.log('');
       }
-      
+
       return hasChanges ? updated : prev;
     });
   }, [snapshot]);
@@ -659,7 +661,7 @@ export const LearningProgressProvider = ({ children }) => {
       // This ensures UI updates without waiting for backend refetch
       // Defensive: validate inputs before processing
       if (lessonId && moduleId && typeof lessonId === 'string' && typeof moduleId === 'string' &&
-          (progress !== undefined || completionPercentage !== undefined)) {
+        (progress !== undefined || completionPercentage !== undefined)) {
         try {
           // Defensive: validate and normalize progress value
           let progressValue = 0;
@@ -808,19 +810,19 @@ export const LearningProgressProvider = ({ children }) => {
     if (!lessonId) {
       return null;
     }
-    
+
     // Try specified module first
     if (moduleId && progressByModuleRef.current[moduleId]) {
       return progressByModuleRef.current[moduleId].lessonsById[lessonId] || null;
     }
-    
+
     // Search all modules
     for (const moduleData of Object.values(progressByModuleRef.current)) {
       if (moduleData.lessonsById[lessonId]) {
         return moduleData.lessonsById[lessonId];
       }
     }
-    
+
     return null;
   }, []);
 
@@ -831,7 +833,7 @@ export const LearningProgressProvider = ({ children }) => {
     if (!moduleId) {
       return null;
     }
-    
+
     return progressByModuleRef.current[moduleId] || null;
   }, []);
 
@@ -840,7 +842,7 @@ export const LearningProgressProvider = ({ children }) => {
    */
   const setCurrentLesson = useCallback((lessonId, moduleId = null) => {
     setCurrentLessonId(lessonId);
-    
+
     // Auto-set module if provided
     if (moduleId) {
       setCurrentModuleId(moduleId);
@@ -852,7 +854,7 @@ export const LearningProgressProvider = ({ children }) => {
    */
   const setCurrentModule = useCallback(async (moduleId, options = {}) => {
     setCurrentModuleId(moduleId);
-    
+
     if (moduleId && options.loadProgress !== false) {
       try {
         await loadModuleProgress(moduleId, { force: options.force });
@@ -888,9 +890,9 @@ export const LearningProgressProvider = ({ children }) => {
     if (!lessonId) {
       return;
     }
-    
+
     let resolvedModuleId = moduleId;
-    
+
     if (!resolvedModuleId) {
       resolvedModuleId = inferModuleIdFromLesson(
         progressByModuleRef.current,
@@ -898,15 +900,15 @@ export const LearningProgressProvider = ({ children }) => {
         currentModuleId
       );
     }
-    
+
     if (!resolvedModuleId) {
       console.warn('[LearningProgressContext] markLessonComplete: moduleId is required');
       return;
     }
-    
+
     try {
       setCurrentLesson(lessonId, resolvedModuleId);
-      
+
       const updateData = {
         lessonId,
         moduleId: resolvedModuleId,
@@ -914,12 +916,12 @@ export const LearningProgressProvider = ({ children }) => {
         completed: true,
         completionPercentage: 100,
       };
-      
+
       // Add timeSpentDelta if provided (already in minutes)
       if (timeSpentMinutes !== null && typeof timeSpentMinutes === 'number' && timeSpentMinutes > 0) {
         updateData.timeSpentDelta = timeSpentMinutes;
       }
-      
+
       await updateLessonProgressAction(updateData);
     } catch (error) {
       console.error('[LearningProgressContext] Failed to mark lesson complete:', error);
@@ -961,16 +963,23 @@ export const LearningProgressProvider = ({ children }) => {
 
       // SOURCE 0: Datos directos de modules[] del overview (más confiable, viene de DB)
       // snapshot._modules contiene los datos agregados por módulo del endpoint /overview
+      // Fields may be: id/moduleId, progress/percentComplete, completedLessons/completedPages, totalLessons/totalPages
       const moduleDataFromOverview = {};
       if (snapshot?._modules && Array.isArray(snapshot._modules)) {
         for (const mod of snapshot._modules) {
-          if (mod.id && (mod.progress > 0 || mod.completedLessons > 0)) {
-            moduleDataFromOverview[mod.id] = {
-              completedLessons: mod.completedLessons || 0,
-              totalLessons: mod.totalLessons || 0,
-              progress: (mod.progress || 0) / 100,
-              progressPercent: mod.progress || 0,
-              isCompleted: mod.completed || false,
+          const modId = mod.id || mod.moduleId;
+          const modProgress = mod.progress ?? mod.percentComplete ?? 0;
+          const modCompletedLessons = mod.completedLessons ?? mod.completedPages ?? 0;
+          const modTotalLessons = mod.totalLessons ?? mod.totalPages ?? 0;
+          const modCompleted = mod.completed ?? false;
+
+          if (modId && (modProgress > 0 || modCompletedLessons > 0)) {
+            moduleDataFromOverview[modId] = {
+              completedLessons: modCompletedLessons,
+              totalLessons: modTotalLessons,
+              progress: modProgress / 100,
+              progressPercent: modProgress,
+              isCompleted: modCompleted,
             };
           }
         }
@@ -990,18 +999,18 @@ export const LearningProgressProvider = ({ children }) => {
           console.warn('[LearningProgressContext] Invalid moduleData for moduleId:', moduleId, moduleData);
           continue;
         }
-        
+
         if (!moduleData?.lessonsById) continue;
-        
+
         for (const [lessonId, lessonProgress] of Object.entries(moduleData.lessonsById)) {
           // Defensive check: ensure lessonProgress is valid
           if (!lessonProgress || typeof lessonProgress !== 'object') {
             console.warn('[LearningProgressContext] Invalid lessonProgress for lessonId:', lessonId, 'in module:', moduleId, lessonProgress);
             continue;
           }
-          
+
           const key = `${moduleId}-${lessonId}`;
-          
+
           // Get progress value (0-1) - prefer progress field, then completionPercentage
           // Defensive: default to 0 if data is missing or invalid
           let progressValue = 0;
@@ -1022,10 +1031,10 @@ export const LearningProgressProvider = ({ children }) => {
             }
             progressValue = 0; // Default to 0 for missing/invalid data
           }
-          
+
           // Normalize to 0-1 range
           progressValue = Math.max(0, Math.min(1, progressValue));
-          
+
           lessonProgressMap.set(key, {
             progress: progressValue,
           });
@@ -1039,12 +1048,10 @@ export const LearningProgressProvider = ({ children }) => {
       // Then, merge snapshot data (only if we don't already have better data)
       if (snapshot?.lessons && Array.isArray(snapshot.lessons)) {
         for (const lesson of snapshot.lessons) {
-          // Defensive check: ensure lesson data is valid
-          if (!lesson || typeof lesson !== 'object' || !lesson.lessonId) {
-            console.warn('[LearningProgressContext] Invalid lesson data in snapshot:', lesson);
+          if (!lesson || typeof lesson !== 'object' || typeof lesson.lessonId !== 'string' || lesson.lessonId.length === 0) {
             continue;
           }
-          
+
           if (!lessonProgressMap.has(lesson.lessonId)) {
             // Defensive: default to 0 if progress is missing or invalid
             let progressValue = 0;
@@ -1061,7 +1068,7 @@ export const LearningProgressProvider = ({ children }) => {
               }
               progressValue = 0; // Default to 0 for missing/invalid data
             }
-            
+
             lessonProgressMap.set(lesson.lessonId, {
               progress: progressValue,
             });
@@ -1201,7 +1208,7 @@ export const LearningProgressProvider = ({ children }) => {
           // Get module progress value (0-1) - use progress field, never flags
           // If no progress data exists, the module contributes 0 (not skipped)
           let moduleProgressValue = 0;
-          
+
           if (moduleProgress) {
             // Defensive: ensure moduleProgress is valid object
             if (typeof moduleProgress !== 'object') {
@@ -1223,14 +1230,14 @@ export const LearningProgressProvider = ({ children }) => {
                 }
                 moduleProgressValue = 0; // Default to 0 for missing/invalid data
               }
-              
+
               // Aggregate lesson counts for display
               // Defensive: ensure counts are valid numbers
               const completedLessons = typeof moduleProgress.completedLessons === 'number' && !isNaN(moduleProgress.completedLessons)
                 ? moduleProgress.completedLessons : 0;
               const totalLessons = typeof moduleProgress.totalLessons === 'number' && !isNaN(moduleProgress.totalLessons)
                 ? moduleProgress.totalLessons : 0;
-              
+
               completedLessonsTotal += completedLessons;
               totalLessonsInLevel += totalLessons;
             }
@@ -1240,7 +1247,7 @@ export const LearningProgressProvider = ({ children }) => {
             const moduleLessonsCount = Array.isArray(module.lessons) ? module.lessons.length : 0;
             totalLessonsInLevel += moduleLessonsCount;
           }
-          
+
           // ALWAYS add to sum (even if 0) - ensures all modules are counted in average
           // This ensures modules with 0 progress contribute 0, not skipped
           // Defensive: ensure value is valid before adding
@@ -1253,7 +1260,7 @@ export const LearningProgressProvider = ({ children }) => {
             });
             moduleProgressSum += 0; // Default to 0
           }
-          
+
           // Count completed modules - a module is completed ONLY when progress === 1
           // Defensive: use strict check to prevent false positives
           // Never mark as completed if progress < 1
@@ -1289,7 +1296,7 @@ export const LearningProgressProvider = ({ children }) => {
           }
           progress = 0; // Default to 0
         }
-        
+
         // Normalize to 0-100 for UI display (consistent with module progress bars)
         // Ensure value is clamped to 0-100 range for LinearProgress component
         // This ensures consistency between level progress bar and module card progress bars
@@ -1342,12 +1349,12 @@ export const LearningProgressProvider = ({ children }) => {
   // Legacy compatibility: updateProgress
   const updateProgress = useCallback((partial) => {
     const updateData = convertLegacyUpdate(partial, currentLessonId, currentModuleId);
-    
+
     if (!updateData.lessonId) {
       console.warn('[LearningProgressContext] updateProgress: lessonId is required');
       return;
     }
-    
+
     updateLessonProgressAction(updateData).catch(error => {
       console.error('[LearningProgressContext] updateProgress failed:', error);
     });
@@ -1363,12 +1370,12 @@ export const LearningProgressProvider = ({ children }) => {
     if (!currentLessonId || syncStatus === 'saving') {
       return;
     }
-    
+
     const interval = setInterval(() => {
       // Auto-save is handled by updateLessonProgressAction
       // This is just a periodic check
     }, AUTOSAVE_INTERVAL_MS);
-    
+
     return () => clearInterval(interval);
   }, [currentLessonId, syncStatus]);
 
@@ -1420,7 +1427,7 @@ export const LearningProgressProvider = ({ children }) => {
     markLessonComplete,
     getModuleProgress: (moduleId, lessonIds) => getModuleProgressLegacy(progressByModule, moduleId, lessonIds),
     getCurriculumProgress: (modules) => getCurriculumProgress(progressByModule, modules),
-    
+
     // Other features
     quizScores,
     saveQuizScore,
@@ -1475,7 +1482,7 @@ export const LearningProgressProvider = ({ children }) => {
     getFlashcardStats,
     dismissError,
   ]);
-  
+
   return (
     <LearningProgressContext.Provider value={contextValue}>
       {children}
