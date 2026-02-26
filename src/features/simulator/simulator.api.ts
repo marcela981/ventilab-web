@@ -7,7 +7,9 @@ import type {
   SaveSimulatorSessionRequest,
   SaveSimulatorSessionResponse,
   SimulatorSession,
+  VentilatorCommand,
 } from '@/contracts/simulator.contracts';
+import type { PatientModel } from '@/contracts/patient.contracts';
 
 // =============================================================================
 // Internal fetch helper
@@ -110,5 +112,57 @@ export const simulatorApi = {
       count: number;
     }>(`/simulation/sessions${qs}`);
     return { sessions: envelope.data, total: envelope.count };
+  },
+
+  // ---------------------------------------------------------------------------
+  // Patient simulation endpoints
+  // ---------------------------------------------------------------------------
+
+  /**
+   * POST /api/simulation/patient/configure
+   * Configures the patient model on the backend and returns the full PatientModel
+   * (with auto-calculated IBW, mechanics, etc.).
+   */
+  configurePatient: async (
+    body: Record<string, unknown>
+  ): Promise<{ success: boolean; patient: PatientModel }> => {
+    return fetchApi('/simulation/patient/configure', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+
+  /**
+   * POST /api/simulation/patient/start
+   * Starts the 20 Hz signal generation loop. Backend will broadcast
+   * 'ventilator:data' events via WebSocket.
+   */
+  startSimulation: async (
+    command: VentilatorCommand
+  ): Promise<{ success: boolean; message: string }> => {
+    return fetchApi('/simulation/patient/start', {
+      method: 'POST',
+      body: JSON.stringify({ command }),
+    });
+  },
+
+  /**
+   * POST /api/simulation/patient/stop
+   * Stops the signal generation loop.
+   */
+  stopSimulation: async (): Promise<{ success: boolean; message: string }> => {
+    return fetchApi('/simulation/patient/stop', { method: 'POST' });
+  },
+
+  /**
+   * GET /api/simulation/patient
+   * Returns the active PatientModel and simulation status for the current user.
+   */
+  getActivePatient: async (): Promise<{
+    success: boolean;
+    patient: PatientModel | null;
+    isSimulating: boolean;
+  }> => {
+    return fetchApi('/simulation/patient');
   },
 };
