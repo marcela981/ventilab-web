@@ -223,7 +223,7 @@ export const config = {
      * - public files (images, etc.)
      * - auth routes (already public)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|auth).*)',
+    '/((?!api|backend|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|auth).*)',
 
     // Explicitly protect these routes
     '/',

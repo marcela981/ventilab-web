@@ -105,7 +105,8 @@ const AITopicExpander = ({
         console.warn('[AITopicExpander] Error changing language:', err);
       });
     }
-  }, [locale, i18n]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale, i18n.changeLanguage]);
   
   // Estados
   const [open, setOpen] = useState(false);
