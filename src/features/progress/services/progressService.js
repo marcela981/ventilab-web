@@ -36,11 +36,13 @@
 import http from '@/shared/services/api/http';
 import { setAuthToken, removeAuthToken } from '@/shared/services/authService';
 
-const DEFAULT_API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+// Use the same resolved base URL as the shared axios instance for consistency
+const DEFAULT_API_BASE_URL = http.defaults.baseURL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 // Debug: Print API base URL once on module load
 if (typeof window !== 'undefined') {
   console.debug('[progressService] API Base URL:', DEFAULT_API_BASE_URL);
+  console.debug('[progressService] axios baseURL:', http.defaults.baseURL);
   console.debug('[progressService] NEXT_PUBLIC_API_URL env:', process.env.NEXT_PUBLIC_API_URL);
 }
 
@@ -71,16 +73,30 @@ const shouldAttemptSessionRefresh = (error) => {
     return false;
   }
 
+  // Only attempt refresh for 401 errors
   if (error.status !== 401) {
     return false;
   }
 
+  // Explicit token expired code
   if (error.code === 'TOKEN_EXPIRED') {
     return true;
   }
 
+  // Match both English and Spanish expiration messages from the backend
   const message = (error.message || '').toLowerCase();
-  return SESSION_EXPIRED_REGEX.test(message);
+  if (
+    SESSION_EXPIRED_REGEX.test(message) ||
+    /token.*expir/i.test(message) ||       // "Token expirado", "token expired"
+    /sesión.*expir/i.test(message) ||       // "Sesión expirada"
+    /autenticación.*expir/i.test(message)   // "autenticación ha expirado"
+  ) {
+    return true;
+  }
+
+  // Any 401 should attempt refresh — the token might simply be invalid/expired
+  // even if the message doesn't match a known pattern
+  return true;
 };
 
 const notifySessionExpired = (reason) => {
@@ -309,15 +325,21 @@ const parseResponse = async (response) => {
   }
 
   if (!response.ok) {
-    // Handle backend error format: { success: false, error: { code, message, details } }
+    // Handle backend error format: { error: string | { code, message, details }, message?: string }
     let message = `Request failed with status ${response.status}`;
+    let code;
     
     if (typeof payload === 'object' && payload !== null) {
-      if (payload.error) {
-        // Backend error format
+      if (typeof payload.error === 'string') {
+        // Backend format: { error: 'Token expirado', message: '...' }
+        message = payload.message || payload.error;
+        code = payload.error.toUpperCase().replace(/\s+/g, '_'); // 'TOKEN_EXPIRADO'
+      } else if (typeof payload.error === 'object' && payload.error !== null) {
+        // Backend format: { error: { code, message, details } }
         message = payload.error.message || payload.error.code || message;
+        code = payload.error.code;
       } else if (payload.message) {
-        // Alternative error format
+        // Alternative error format: { message: '...' }
         message = payload.message;
       }
     } else if (typeof payload === 'string') {
@@ -327,7 +349,7 @@ const parseResponse = async (response) => {
     const error = new Error(message);
     error.status = response.status;
     error.payload = payload;
-    error.code = payload?.error?.code;
+    error.code = code;
     
     throw error;
   }
@@ -811,8 +833,48 @@ export const bulkSyncProgress = async (items) => {
  * @returns {Promise<Object>} Overview data
  */
 export const getOverview = async (signal) => {
-  const { data } = await http.get('/progress/overview', { signal });
-  return data;
+  return executeWithAuthRetry(async () => {
+    try {
+      const url = buildUrl('/progress/overview');
+      let response;
+
+      try {
+        response = await fetch(url, {
+          method: 'GET',
+          headers: getAuthHeaders(),
+          credentials: 'include',
+          signal,
+        });
+      } catch (fetchError) {
+        handleNetworkError(fetchError, apiBaseUrl);
+      }
+
+      const data = await parseResponse(response);
+      
+      // Check if result is a rate-limited response
+      if (data && typeof data === 'object' && data.type === 'RATE_LIMITED') {
+        console.warn('[progressService] getOverview rate limited');
+        return data;
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('[progressService] getOverview failed:', error);
+      
+      if (error.isNetworkError || error.name === 'NetworkError') {
+        throw error;
+      }
+      
+      if (error instanceof Error) {
+        if (!error.message) {
+          error.message = 'No se pudo obtener el overview de progreso.';
+        }
+        throw error;
+      }
+
+      throw new Error('No se pudo obtener el overview de progreso.');
+    }
+  });
 };
 
 /**
@@ -822,8 +884,41 @@ export const getOverview = async (signal) => {
  * @returns {Promise<Object>} Skills data: { skills, unlockedSkillIds }
  */
 export const getSkills = async (signal) => {
-  const { data } = await http.get('/progress/skills', { signal });
-  return data;
+  return executeWithAuthRetry(async () => {
+    try {
+      const url = buildUrl('/progress/skills');
+      let response;
+
+      try {
+        response = await fetch(url, {
+          method: 'GET',
+          headers: getAuthHeaders(),
+          credentials: 'include',
+          signal,
+        });
+      } catch (fetchError) {
+        handleNetworkError(fetchError, apiBaseUrl);
+      }
+
+      const data = await parseResponse(response);
+      return data;
+    } catch (error) {
+      console.error('[progressService] getSkills failed:', error);
+      
+      if (error.isNetworkError || error.name === 'NetworkError') {
+        throw error;
+      }
+      
+      if (error instanceof Error) {
+        if (!error.message) {
+          error.message = 'No se pudieron obtener las habilidades.';
+        }
+        throw error;
+      }
+
+      throw new Error('No se pudieron obtener las habilidades.');
+    }
+  });
 };
 
 /**

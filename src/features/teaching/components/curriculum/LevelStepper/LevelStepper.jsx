@@ -135,44 +135,38 @@ const LevelStepper = ({
   };
 
 
-  // Renderizar módulos o lecciones usando ModuleGrid si no se proporciona moduleGrid custom
-  const renderModuleGrid = (levelModules, level) => {
+  // Renderizar módulos usando ModuleGrid con datos del backend.
+  // dbProgressFn: función de progreso por módulo respaldada por API (se genera por nivel en el map).
+  const renderModuleGrid = (levelModules, level, dbProgressFn) => {
     if (moduleGrid) {
       return moduleGrid;
     }
 
-    // Si renderMode === 'lessons', ModuleGrid construirá las lecciones automáticamente
+    // Modo 'lessons' (legacy) — mantener por si se necesita en otros contextos
     if (renderMode === 'lessons') {
       return (
         <Box sx={{ mt: 1 }}>
           <ModuleGrid
-            modules={[]} // No se necesitan módulos en modo lessons
+            modules={[]}
             mode="lessons"
             levelId={level.id}
             levelColor={getLevelColor(level)}
             enableAnimations={true}
             emptyMessage={`No hay lecciones disponibles en ${level.title}`}
-            favoriteModules={favoriteModules || new Set()} // Proporcionar Set vacío por defecto
-            onToggleFavorite={onToggleFavorite || (() => {})} // Función vacía por defecto
-            isModuleAvailable={isModuleAvailable || (() => true)} // Verificar disponibilidad basada en prerequisitos
-            calculateModuleProgress={calculateModuleProgress || (() => 0)} // Función por defecto
-            onModuleClick={handleModuleClick} // Pasar handleModuleClick (que es onSectionClick || onModuleClick)
+            favoriteModules={favoriteModules || new Set()}
+            onToggleFavorite={onToggleFavorite || (() => {})}
+            isModuleAvailable={isModuleAvailable || (() => true)}
+            calculateModuleProgress={dbProgressFn}
+            onModuleClick={handleModuleClick}
           />
         </Box>
       );
     }
 
-    // Modo 'modules' (comportamiento original)
-    // Filtrar módulos bloqueados (no mostrar los que están bloqueados)
-    const visibleModules = levelModules.filter((module) => {
-      if (!calculateModuleProgress || !getModuleStatus) return true;
-      const moduleProgress = calculateModuleProgress(module.id);
-      const moduleStatus = getModuleStatus(module, moduleProgress);
-      // No mostrar módulos bloqueados
-      return moduleStatus !== 'locked';
-    });
-
-    if (!visibleModules || visibleModules.length === 0) {
+    // Modo 'modules': mostrar TODOS los módulos del nivel (totalCards = level.modules.length).
+    // No se filtran módulos bloqueados aquí porque el contador del header debe coincidir
+    // con el totalModules devuelto por el backend.
+    if (!levelModules || levelModules.length === 0) {
       return (
         <Box sx={{ textAlign: 'center', py: 4 }}>
           <Typography variant="body2" sx={{ color: '#e8f4fd' }}>
@@ -182,24 +176,23 @@ const LevelStepper = ({
       );
     }
 
-    // Usar ModuleGrid estandarizado con CSS Grid
     return (
       <Box sx={{ mt: 1 }}>
         <ModuleGrid
-          modules={visibleModules}
-          calculateModuleProgress={calculateModuleProgress}
+          modules={levelModules}
+          calculateModuleProgress={dbProgressFn}
           isModuleAvailable={isModuleAvailable}
           onModuleClick={handleModuleClick}
           onToggleFavorite={onToggleFavorite}
           favoriteModules={favoriteModules}
-          getStatusIcon={() => null} // ModuleCard maneja sus propios iconos
+          getStatusIcon={() => null}
           getButtonText={(module, progress, available) => {
             if (!available) return 'Bloqueado';
             if (progress === 100) return 'Completado';
             if (progress > 0) return 'Continuar';
             return 'Comenzar';
           }}
-          getButtonIcon={() => null} // ModuleCard maneja sus propios iconos
+          getButtonIcon={() => null}
           levelColor={getLevelColor(level)}
           enableAnimations={true}
           emptyMessage="No hay módulos disponibles en este nivel"
@@ -228,40 +221,33 @@ const LevelStepper = ({
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {levels.map((level, levelIndex) => {
           const levelModules = getModulesByLevel ? getModulesByLevel(level.id) : [];
-          
-          // Calcular módulos visibles (no bloqueados) para mostrar el conteo preciso de cards
-          // Nota: No usar useMemo dentro de map, calcular directamente
-          let visibleModulesCount = 0;
-          if (renderMode === 'modules') {
-            // Filtrar módulos bloqueados (igual que en renderModuleGrid)
-            if (calculateModuleProgress && getModuleStatus) {
-              const visibleModules = levelModules.filter((module) => {
-                const moduleProgress = calculateModuleProgress(module.id);
-                const moduleStatus = getModuleStatus(module, moduleProgress);
-                return moduleStatus !== 'locked';
-              });
-              visibleModulesCount = visibleModules.length;
-            } else {
-              visibleModulesCount = levelModules.length;
-            }
-          }
-          
-          // levelProgress ahora puede tener estructura nueva (levelProgressAggregated) o legacy
+
+          // Función de progreso respaldada por datos del backend (LevelCurriculumModule.progressPercentage).
+          // Usa directamente el campo que devuelve GET /api/levels/curriculum para cada módulo del nivel.
+          // Fallback al prop calculateModuleProgress si el módulo no viene en levelModules.
+          const dbProgressFn = (moduleId) => {
+            const dbMod = levelModules.find(m => m.id === moduleId);
+            if (dbMod !== undefined) return dbMod.progressPercentage ?? 0;
+            return calculateModuleProgress ? calculateModuleProgress(moduleId) : 0;
+          };
+
+          // totalCards = totalModules del backend (fuente única de verdad).
+          // No usamos levelModules.length como fallback secundario para evitar desfase con lo que devuelve la API.
           const levelProgRaw = safeLevelProgress[level.id] || {};
-          // Detectar si es la estructura nueva (tiene completedLessons y totalLessons) o legacy (tiene completed y total)
+          const totalCardsFromBackend = levelProgRaw.totalModules ?? levelProgRaw.total ?? levelModules.length;
+
+          // Detectar si es la estructura nueva (tiene completedLessons y totalLessons) o legacy
           const isNewStructure = 'completedLessons' in levelProgRaw || 'totalLessons' in levelProgRaw;
           const levelProg = isNewStructure ? {
-            // Estructura nueva: basada en lecciones completadas
             completedLessons: levelProgRaw.completedLessons || 0,
             totalLessons: levelProgRaw.totalLessons || 0,
             percentage: levelProgRaw.percentage || 0,
-            totalModules: visibleModulesCount > 0 ? visibleModulesCount : (levelProgRaw.totalModules || levelModules.length), // Usar conteo preciso de cards visibles
+            totalModules: totalCardsFromBackend,
           } : {
-            // Estructura legacy: basada en módulos completados
             completed: levelProgRaw.completed || 0,
-            total: levelProgRaw.total || levelModules.length,
+            total: totalCardsFromBackend,
             percentage: levelProgRaw.percentage || 0,
-            totalModules: visibleModulesCount > 0 ? visibleModulesCount : levelModules.length,
+            totalModules: totalCardsFromBackend,
           };
           const status = getLevelStatus(levelProg.percentage);
           const isCurrentLevel = level.id === currentLevelId;
@@ -426,7 +412,7 @@ const LevelStepper = ({
                           >
                             {levelProg.percentage.toFixed(0)}%
                           </Typography>
-                          {/* Mostrar lecciones completadas / total lecciones */}
+                          {/* Contador de tarjetas completadas / total — fuente: backend totalModules */}
                           <Typography
                             variant="caption"
                             sx={{
@@ -434,22 +420,12 @@ const LevelStepper = ({
                               fontSize: '0.7rem'
                             }}
                           >
-                            ({isNewStructure ? levelProg.completedLessons : levelProg.completed}/{isNewStructure ? levelProg.totalLessons : levelProg.total} lecciones)
+                            {isNewStructure
+                              ? `(${levelProg.completedLessons}/${levelProg.totalLessons} lecciones)`
+                              : `(${levelProg.completed}/${levelProg.totalModules} tarjetas)`
+                            }
                           </Typography>
                         </Box>
-                        {/* Mostrar cantidad de cards (módulos) - solo en modo modules */}
-                        {renderMode === 'modules' && levelProg.totalModules > 0 && (
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: '#b0bec5',
-                              fontSize: '0.65rem',
-                              fontStyle: 'italic'
-                            }}
-                          >
-                            {levelProg.totalModules} {levelProg.totalModules === 1 ? 'tarjeta' : 'tarjetas'}
-                          </Typography>
-                        )}
                       </Box>
                     </Box>
                   </Box>
@@ -457,8 +433,7 @@ const LevelStepper = ({
               </AccordionSummary>
 
               <AccordionDetails sx={{ px: 3, pb: 3 }}>
-                {/* Grid de módulos responsive */}
-                {renderModuleGrid(levelModules, level)}
+                {renderModuleGrid(levelModules, level, dbProgressFn)}
               </AccordionDetails>
             </Accordion>
           );

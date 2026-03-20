@@ -27,7 +27,6 @@ import ModuleCategoryNav from './ModuleCategoryNav';
 import { TeachingModuleProvider } from '@/features/teaching/contexts/TeachingModuleContext';
 import { LevelStepper } from '@/features/teaching/components/curriculum';
 import { ModuleInfoPanel } from '@/features/teaching/components/dashboard';
-import { getModulesByLevel } from '@/features/teaching/data/curriculum/index.js';
 
 // Category icon mapping
 const CATEGORY_ICONS = {
@@ -141,6 +140,7 @@ const ModuleNavigationRouter = ({
   setLesson,
   handleSectionClick,
   levelProgress,
+  getModulesByLevel,
   calculateModuleProgress,
   isModuleAvailable,
   getModuleStatus,
@@ -225,7 +225,7 @@ const ModuleNavigationRouter = ({
         onSectionClick={handleSectionClick}
         favoriteModules={favoriteModules}
         onToggleFavorite={toggleFavorite}
-        renderMode="lessons" // Usar modo 'lessons' para mostrar cards por lección en niveles 1, 2, 3
+        renderMode="modules"
       />
       <ModuleInfoPanel />
     </Box>
@@ -247,6 +247,7 @@ ModuleNavigationRouter.propTypes = {
   setLesson: PropTypes.func.isRequired,
   handleSectionClick: PropTypes.func.isRequired,
   levelProgress: PropTypes.object.isRequired,
+  getModulesByLevel: PropTypes.func.isRequired,
   calculateModuleProgress: PropTypes.func.isRequired,
   isModuleAvailable: PropTypes.func.isRequired,
   getModuleStatus: PropTypes.func.isRequired,

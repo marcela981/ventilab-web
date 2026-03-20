@@ -77,6 +77,7 @@ const MonitoringTab = ({
   setShowValidationAlerts,
   isAnalyzing,
   handleAIAnalysis,
+  handleModeChange,
 }) => {
   return (
     <Box display="flex" flexDirection="row" alignItems="flex-start" mb={2} ml={2} pb={6}>
@@ -390,7 +391,7 @@ const MonitoringTab = ({
         <Box display="flex" flexDirection="column" alignItems="center" mt={4}>
           <ModeToggle
             ventilationMode={ventilationMode}
-            onChange={() => {}}
+            onChange={handleModeChange}
             AnalysisButton={
               <Tooltip title="Analizar datos con Inteligencia Artificial" placement="bottom" arrow>
                 <AIAnalysisButton isAnalyzing={isAnalyzing} onClick={handleAIAnalysis} />

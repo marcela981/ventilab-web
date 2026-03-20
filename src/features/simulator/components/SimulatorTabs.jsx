@@ -70,6 +70,7 @@ const SimulatorTabs = ({
 
   // valores/funciones cálculo
   ventilationMode,
+  handleModeChange,
   getValueColor,
   getTrend,
   displayData,
@@ -136,6 +137,7 @@ const SimulatorTabs = ({
 
             // valores/funciones cálculo
             ventilationMode={ventilationMode}
+            handleModeChange={handleModeChange}
             getValueColor={getValueColor}
             getTrend={getTrend}
             displayData={displayData}

@@ -600,29 +600,31 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     return data.sections.length;
   }, [data, totalPages]);
 
-  const handleNextPage = useCallback(() => {
+  const handleNextPage = useCallback(async () => {
     if (currentPage < totalPages - 1) {
       const newPage = currentPage + 1;
       setCurrentPage(newPage);
       window.scrollTo({ top: 0, behavior: 'smooth' });
-
-      // CRITICAL: Save progress when page changes
-      // Always send currentStep and totalSteps (required by backend)
-      console.log('[LessonViewer] Next page clicked, saving progress:', newPage + 1, '/', totalPages, 'steps:', totalSteps);
-      savePageProgress(newPage, totalPages, totalSteps);
+      console.log('[LessonViewer] Next page clicked, saving step:', newPage + 1, '/', totalPages, 'totalSteps:', totalSteps);
+      try {
+        await savePageProgress(newPage, totalPages, totalSteps);
+      } catch (e) {
+        console.warn('[LessonViewer] savePageProgress (next) failed:', e?.message);
+      }
     }
   }, [currentPage, totalPages, totalSteps, savePageProgress]);
 
-  const handlePrevPage = useCallback(() => {
+  const handlePrevPage = useCallback(async () => {
     if (currentPage > 0) {
       const newPage = currentPage - 1;
       setCurrentPage(newPage);
       window.scrollTo({ top: 0, behavior: 'smooth' });
-
-      // Save progress when page changes (even going back)
-      // Always send currentStep and totalSteps (required by backend)
-      console.log('[LessonViewer] Prev page clicked, saving progress:', newPage + 1, '/', totalPages, 'steps:', totalSteps);
-      savePageProgress(newPage, totalPages, totalSteps);
+      console.log('[LessonViewer] Prev page clicked, saving step:', newPage + 1, '/', totalPages, 'totalSteps:', totalSteps);
+      try {
+        await savePageProgress(newPage, totalPages, totalSteps);
+      } catch (e) {
+        console.warn('[LessonViewer] savePageProgress (prev) failed:', e?.message);
+      }
     }
   }, [currentPage, totalPages, totalSteps, savePageProgress]);
 

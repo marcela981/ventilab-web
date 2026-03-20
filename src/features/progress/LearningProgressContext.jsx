@@ -461,6 +461,13 @@ export const LearningProgressProvider = ({ children }) => {
         let moduleId = null;
         let lessonIdOnly = lesson.lessonId;
 
+        // STRATEGY 0: Use moduleId directly from the LessonItem (set by ProgressSource
+        // when mapping the backend /api/progress/overview response, which includes moduleId
+        // per lesson). This is the fastest and most reliable path.
+        if (lesson.moduleId && typeof lesson.moduleId === 'string' && lesson.moduleId.length > 0) {
+          moduleId = lesson.moduleId;
+        }
+
         // STRATEGY 1: Look in curriculumData (source of truth for lesson→module mapping)
         try {
           const { curriculumData } = require('@/features/teaching/data/curriculumData');
@@ -1322,12 +1329,48 @@ export const LearningProgressProvider = ({ children }) => {
           percentage,
         };
       }
+
+      // Override with authoritative backend values from GET /api/progress/overview levels[].
+      // Backend is the single source of truth for module counts and level progress:
+      //   - totalModules / completedModules: derived from DB Module.levelId grouping
+      //   - progressPercentage: strict average of UserProgress.progressPercentage per level
+      //     (e.g. 4 modules, 1st at 100% → 25%)
+      //   - totalLessons / completedLessons: sums from LessonCompletion records
+      const backendLevels = snapshot?._levels;
+      if (Array.isArray(backendLevels)) {
+        for (const lvl of backendLevels) {
+          // Use slug (frontend-compatible key like 'beginner') so the key matches
+          // curriculumData.levels[].id. Fall back to stripping the 'level-' prefix.
+          const lvlId = lvl.slug || (lvl.levelId ? lvl.levelId.replace(/^level-/, '') : null);
+          if (!lvlId) continue;
+          if (!aggregated[lvlId]) {
+            aggregated[lvlId] = { completedModules: 0, totalModules: 0, completedLessons: 0, totalLessons: 0, progress: 0, percentage: 0 };
+          }
+          if (typeof lvl.totalModules === 'number') {
+            aggregated[lvlId].totalModules = lvl.totalModules;
+          }
+          if (typeof lvl.completedModules === 'number') {
+            aggregated[lvlId].completedModules = lvl.completedModules;
+          }
+          if (typeof lvl.totalLessons === 'number') {
+            aggregated[lvlId].totalLessons = lvl.totalLessons;
+          }
+          if (typeof lvl.completedLessons === 'number') {
+            aggregated[lvlId].completedLessons = lvl.completedLessons;
+          }
+          // Use backend's strict average as the authoritative level percentage.
+          if (typeof lvl.progressPercentage === 'number') {
+            aggregated[lvlId].percentage = lvl.progressPercentage;
+            aggregated[lvlId].progress = lvl.progressPercentage / 100;
+          }
+        }
+      }
     } catch (error) {
       console.warn('[LearningProgressContext] Error calculating levelProgressAggregated:', error);
     }
 
     return aggregated;
-  }, [moduleProgressAggregated]);
+  }, [moduleProgressAggregated, snapshot]);
 
   /**
    * Helper function to get module progress from the aggregated data.

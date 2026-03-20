@@ -7,7 +7,7 @@ export const isServer = typeof window === 'undefined';
 // Priority:
 // 1. BACKEND_URL / NEXT_PUBLIC_BACKEND_URL (new recommended)
 // 2. NEXT_PUBLIC_API_URL (legacy, may already include /api)
-// 3. Fallback to http://localhost:3001
+// 3. Fallback to http://localhost:4000
 function resolveBackendBaseUrl(): string {
   const serverEnv = process.env.BACKEND_URL;
   const clientEnv = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -17,7 +17,7 @@ function resolveBackendBaseUrl(): string {
     (isServer ? serverEnv : clientEnv) ||
     // If only legacy API URL is defined, strip trailing /api if present
     (legacyApiUrl ? legacyApiUrl.replace(/\/api\/?$/, '') : '') ||
-    'http://localhost:3001';
+    'http://localhost:4000';
 
   // Normalize: no trailing slash
   raw = raw.replace(/\/+$/, '');

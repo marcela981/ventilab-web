@@ -21,6 +21,7 @@ import useModuleAvailability from './hooks/useModuleAvailability';
 import useTeachingModule from '@/features/teaching/hooks/useTeachingModule';
 import useUserProgress from '@/features/teaching/hooks/useUserProgress';
 import { curriculumData } from '@/features/teaching/data/curriculumData';
+import useLevelsCurriculum from '@/features/teaching/hooks/useLevelsCurriculum';
 import debug from '@/shared/utils/debug';
 import { getModuleResumePoint } from '@/features/progress/services/progressService';
 
@@ -61,6 +62,16 @@ const TeachingModule = () => {
   const router = useRouter();
   const routerRef = useRef(router);
   useEffect(() => { routerRef.current = router; }, [router]);
+
+  // Niveles desde la base de datos (reemplaza curriculumData.levels)
+  const {
+    levels: dbLevels,
+    getModulesByLevel: dbGetModulesByLevel,
+    levelProgress: dbLevelProgress,
+    isLoading: isLoadingLevels,
+  } = useLevelsCurriculum();
+  // Usar los datos del backend cuando estén disponibles; curriculumData.levels como fallback durante carga.
+  const levelsForUI = dbLevels.length > 0 ? dbLevels : curriculumData.levels;
 
   // Estado para responsive
   const [isMobile, setIsMobile] = useState(false);
@@ -232,7 +243,21 @@ const TeachingModule = () => {
     const isCategoryBasedModule = moduleId === 'module-03-configuration';
 
     if (!isCategoryBasedModule) {
-      const module = curriculumData.modules[moduleId];
+      let module = curriculumData.modules[moduleId];
+
+      // Fallback: DB module IDs for beginner level are lesson IDs in the static curriculum
+      // (e.g. 'module-01-inversion-fisiologica' is a lesson inside 'module-01-fundamentals').
+      // If the moduleId is not a module key, search for it as a lesson ID.
+      if (!module && !lessonId) {
+        for (const [frontendModuleId, frontendModule] of Object.entries(curriculumData.modules)) {
+          const matchedLesson = frontendModule.lessons?.find(l => l.id === moduleId);
+          if (matchedLesson) {
+            // Re-invoke with the resolved frontend module + lesson IDs
+            return handleSectionClick(frontendModuleId, moduleId, category);
+          }
+        }
+      }
+
       if (!module) {
         setAlertMessage(`Módulo "${moduleId}" no encontrado.`);
         setAlertOpen(true);
@@ -996,14 +1021,15 @@ const TeachingModule = () => {
             setCategory={setCategory}
             setLesson={setLesson}
             handleSectionClick={handleSectionClick}
-            levelProgress={levelProgressAggregated || levelProgress}
+            levelProgress={dbLevelProgress}
+            getModulesByLevel={dbGetModulesByLevel}
             calculateModuleProgress={calculateModuleProgress}
             isModuleAvailable={isModuleAvailable}
             getModuleStatus={getModuleStatus}
             getTooltipMessage={getTooltipMessage}
             favoriteModules={favoriteModules}
             toggleFavorite={toggleFavorite}
-            levels={curriculumData.levels}
+            levels={levelsForUI}
           />
 
           {/* Module 3 Progress Dashboard - Mostrado cuando se está en el módulo 3 */}

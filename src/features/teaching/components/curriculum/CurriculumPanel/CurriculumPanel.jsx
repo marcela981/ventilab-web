@@ -57,6 +57,7 @@ const CurriculumPanel = ({
   setLesson,
   handleSectionClick,
   levelProgress,
+  getModulesByLevel,
   calculateModuleProgress,
   isModuleAvailable,
   getModuleStatus,
@@ -96,6 +97,7 @@ const CurriculumPanel = ({
       setLesson={setLesson}
       handleSectionClick={handleSectionClick}
       levelProgress={levelProgress}
+      getModulesByLevel={getModulesByLevel}
       calculateModuleProgress={calculateModuleProgress}
       isModuleAvailable={isModuleAvailable}
       getModuleStatus={getModuleStatus}
@@ -120,6 +122,7 @@ CurriculumPanel.propTypes = {
   setLesson: PropTypes.func.isRequired,
   handleSectionClick: PropTypes.func.isRequired,
   levelProgress: PropTypes.object.isRequired,
+  getModulesByLevel: PropTypes.func.isRequired,
   calculateModuleProgress: PropTypes.func.isRequired,
   isModuleAvailable: PropTypes.func.isRequired,
   getModuleStatus: PropTypes.func.isRequired,

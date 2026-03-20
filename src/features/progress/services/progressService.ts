@@ -413,6 +413,67 @@ export async function updateLessonProgress(
   };
 }
 
+// ============================================
+// Step-level progress (POST /api/progress/step/update)
+// ============================================
+
+export interface StepUpdateResult {
+  success: boolean;
+  lessonId: string;
+  currentStepIndex: number; // 0-based
+  totalSteps: number;
+  completed: boolean;
+  progressPercentage: number;
+  error?: string;
+}
+
+/**
+ * POST /api/progress/step/update
+ *
+ * Single-purpose endpoint for step navigation.
+ * Sends 0-based currentStepIndex (no conversion needed from caller).
+ * Returns null when rate-limited (not a fatal error).
+ */
+export async function callStepUpdate(
+  lessonId: string,
+  moduleId: string,
+  currentStepIndex: number, // 0-based
+  totalSteps: number,
+  timeSpentDelta = 0,
+): Promise<StepUpdateResult | null> {
+  const token = getAuthToken();
+  if (!token) {
+    console.error('[progressService] callStepUpdate: no auth token');
+    return null;
+  }
+
+  const { res, data } = await http('/progress/step/update', {
+    method: 'POST',
+    body: JSON.stringify({
+      moduleId,
+      lessonId,
+      currentStepIndex: Math.floor(Number(currentStepIndex)),
+      totalSteps: Math.floor(Number(totalSteps)),
+      timeSpentDelta: Math.floor(Number(timeSpentDelta)) || 0,
+    }),
+    authToken: token,
+  });
+
+  if (res.status === 429) {
+    console.warn('[progressService] callStepUpdate: rate limited (429)');
+    return null;
+  }
+
+  if (!res.ok) {
+    throw new Error(data?.error || `Step update failed (${res.status})`);
+  }
+
+  // Invalidate SWR caches so overview/module cards reflect the new step
+  invalidateProgressCache(moduleId, lessonId).catch(() => {});
+
+  return data as StepUpdateResult;
+}
+
 /**
  * Get lesson progress
  * GET /api/progress/lesson/:lessonId

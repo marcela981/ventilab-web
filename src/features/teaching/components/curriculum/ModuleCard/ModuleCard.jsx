@@ -4,7 +4,7 @@ import { useTheme, useMediaQuery, Skeleton, Snackbar, Alert, Box } from '@mui/ma
 import { useLearningProgress } from '@/features/progress/LearningProgressContext';
 import useModuleAvailability from '@/features/teaching/hooks/useModuleAvailability';
 import { useModuleProgress } from '@/features/teaching/hooks/useModuleProgress';
-import { useProgress } from '@/features/teaching/hooks/useProgress';
+
 import { useModuleLessonsCount } from '@/features/teaching/hooks/useModuleLessonsCount';
 import { getModuleStatus } from './moduleCardHelpers';
 import ModuleCardHeader from './ModuleCardHeader';
@@ -77,8 +77,7 @@ const ModuleCard = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
-  // Obtener progreso global del usuario usando useProgress
-  const { progress: userProgress, stats, refetch: refetchProgress } = useProgress();
+
   
   // Obtener conteo real de lecciones del módulo desde la BD
   const { count: totalLessonsFromDB, loading: isLoadingLessonsCount } = useModuleLessonsCount(module.id);

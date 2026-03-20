@@ -6,6 +6,7 @@ import type {
   VentilatorAlarm,
   VentilatorStatus,
   UseVentilatorDataReturn,
+  AlarmType,
 } from '@/contracts/simulator.contracts';
 
 const BUFFER_SIZE = 300;
@@ -30,14 +31,15 @@ export function useVentilatorData(): UseVentilatorDataReturn {
     if (!socket) return;
 
     const handleData = (reading: VentilatorReading) => {
-      bufferRef.current = [
-        ...bufferRef.current.slice(-(BUFFER_SIZE - 1)),
-        reading,
-      ];
+      // Mutación in-place: evita crear un array nuevo por cada lectura a 60 Hz
+      const buf = bufferRef.current;
+      buf.push(reading);
+      if (buf.length > BUFFER_SIZE) buf.splice(0, buf.length - BUFFER_SIZE);
+
       const now = Date.now();
       if (now - lastThrottleRef.current >= UI_THROTTLE_MS) {
         lastThrottleRef.current = now;
-        setData([...bufferRef.current]);
+        setData([...buf]);
       }
     };
 
@@ -67,6 +69,10 @@ export function useVentilatorData(): UseVentilatorDataReturn {
     socket.on('connect_error', handleConnectError);
 
     return () => {
+      // Flush final: publicar el último batch antes de desmontar
+      if (bufferRef.current.length > 0) {
+        setData([...bufferRef.current]);
+      }
       socket.off('ventilator:data', handleData);
       socket.off('ventilator:alarm', handleAlarm);
       socket.off('ventilator:status', handleStatus);
@@ -98,7 +104,7 @@ export function useVentilatorData(): UseVentilatorDataReturn {
   }, [socket]);
 
   const acknowledgeAlarm = useCallback(
-    (alarmId: string) => {
+    (alarmId: AlarmType) => {
       socket?.emit('alarm:acknowledge', { alarmId });
       setActiveAlarms((prev) =>
         prev.map((a) =>

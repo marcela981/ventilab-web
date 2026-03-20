@@ -45,6 +45,7 @@ import { usePatientData } from '@/features/simulator/hooks/usePatientData'; // I
 import { useQRBridge } from '@/features/simulator/hooks/useQRBridge';
 import { useAIAnalysis } from '@/features/simulator/hooks/useAIAnalysis';
 import { useVentilatorConnection } from '@/features/simulator/hooks/useVentilatorConnection';
+import { useVentilatorControls } from '@/features/simulator/hooks/useVentilatorControls';
 import useDashboardState from '@/features/simulator/hooks/useDashboardState';
 import AIAnalysisPanel from '@/features/simulator/components/AIAnalysisPanel';
 import { useSidebar } from '../../../../pages/_app';
@@ -131,6 +132,40 @@ const VentilatorDashboard = () => {
   // Extraer estado y acciones del hook
   const { state, actions } = dashboardState;
 
+  // ─── Ventilator controls (REST → backend simulation) ───────────────────────
+  const { sendCommand } = useVentilatorControls();
+
+  // Stable ref so handleModeChange doesn't stale-close over ventilatorData
+  const _ventilatorDataRef = useRef(ventilatorData);
+  useEffect(() => { _ventilatorDataRef.current = ventilatorData; }, [ventilatorData]);
+
+  /**
+   * Composed mode-change handler:
+   *   1. Updates local dashboard state (ventilationMode + card visibility)
+   *   2. Sends a VentilatorCommand to the backend simulation endpoint
+   *
+   * sendCommand is a stable useCallback (no deps), so this callback is
+   * created once and never re-created, preventing unnecessary child re-renders.
+   */
+  const handleModeChange = useCallback((newMode) => {
+    actions.handleModeChange(newMode);
+    const d = _ventilatorDataRef.current;
+    sendCommand({
+      mode: newMode === 'volume' ? 'VCV' : 'PCV',
+      tidalVolume: d.volumen || 500,
+      respiratoryRate: d.frecuencia || 12,
+      peep: d.peep || 5,
+      fio2: (d.fio2 || 21) / 100, // contract: fraction 0.21–1.0
+      ...(d.presionMax ? { pressureLimit: d.presionMax } : {}),
+      ...(d.tiempoInspiratorio ? { inspiratoryTime: d.tiempoInspiratorio } : {}),
+      ...(d.tiempoInspiratorio && d.tiempoEspiratorio
+        ? { ieRatio: `${d.relacionIE1 ?? 1}:${d.relacionIE2 ?? 1}` }
+        : {}),
+    }).catch(() => {
+      // Mode switch is local-first; backend errors are non-blocking.
+    });
+  }, [actions.handleModeChange, sendCommand]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Hook para códigos QR y compartir
   const qrBridge = useQRBridge();
 
@@ -152,7 +187,18 @@ const VentilatorDashboard = () => {
     );
   }
 
-  // Efecto: cálculos automáticos SOLO cuando cambien INPUTS (no outputs).
+  // ─── Auto-recalculate derived parameters when user inputs change ────────────
+  // IMPORTANT: Two separate effects (one per mode) prevent the infinite loop.
+  //
+  // Root cause of the old loop (single effect):
+  //   In PCV mode, calcPress() writes ventilatorData.volumen (derived output).
+  //   Having `vol` in the dep array caused: calcPress → volumen updates → vol
+  //   dep changes → effect re-fires → calcPress → … (infinite).
+  //
+  // Fix: VCV effect includes `vol` (user input). PCV effect does NOT include
+  // `vol` (it is an output) or `compliance` (read from complianceDataRef
+  // inside calcPress, never reactive).
+
   const mode = state.ventilationMode;
   const ie = ventilatorData.inspiracionEspiracion;
   const freq = ventilatorData.frecuencia;
@@ -161,19 +207,27 @@ const VentilatorDashboard = () => {
   const vol = ventilatorData.volumen;
   const peep = ventilatorData.peep;
   const pmax = ventilatorData.presionMax;
-  const compliance = state.complianceData.compliance;
 
   const calcVol = actions.calculateVolumeControlParameters;
   const calcPress = actions.calculatePressureControlParameters;
 
+  // VCV: tidal volume (vol) is a USER INPUT → safe to include in deps.
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (mode === 'volume') calcVol();
-      else if (mode === 'pressure') calcPress();
-    }, 0);
-    return () => clearTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- calcVol/calcPress son estables; deps primitivas evitan bucle
-  }, [mode, ie, freq, pi, pe, vol, peep, pmax, compliance]);
+    if (mode !== 'volume') return;
+    const id = setTimeout(() => calcVol(), 0);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- calcVol is a stable useCallback
+  }, [mode, ie, freq, pi, pe, vol, peep]);
+
+  // PCV: tidal volume (vol) is a DERIVED OUTPUT of calcPress → must NOT be
+  // in deps or the effect will re-trigger itself. compliance is also read
+  // from an internal ref inside calcPress, so it is intentionally omitted.
+  useEffect(() => {
+    if (mode !== 'pressure') return;
+    const id = setTimeout(() => calcPress(), 0);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- calcPress is a stable useCallback
+  }, [mode, ie, freq, pi, pe, peep, pmax]);
 
 
 
@@ -497,6 +551,7 @@ const VentilatorDashboard = () => {
         complianceCardExpanded={state.complianceCardExpanded}
         setComplianceCardExpanded={actions.setComplianceCardExpanded}
         ventilationMode={state.ventilationMode}
+        handleModeChange={handleModeChange}
         getValueColor={getValueColor}
         getTrend={getTrend}
         displayData={state.displayData}

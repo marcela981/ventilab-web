@@ -13,6 +13,7 @@ import { useState, useEffect, useRef, useCallback, useMemo, RefObject } from 're
 import {
   getLessonProgress,
   updateLessonProgress,
+  callStepUpdate,
   waitForAuthToken,
   type UpdateLessonProgressParams,
   type UpdateLessonProgressResult,
@@ -433,75 +434,77 @@ export function useLessonProgress({
       setIsSaving(true);
 
       const timeSpent = Math.floor((Date.now() - startTimeRef.current) / 1000);
-      
-      // ALWAYS send currentStep, totalSteps, and derived completionPercentage
-      // Do not send percentage-only updates
-      const data: UpdateLessonProgressParams = {
-        completionPercentage: pageProgress, // Derived from currentStep/totalSteps
-        currentStep, // REQUIRED by backend
-        totalSteps: stepsTotal, // REQUIRED by backend
-        timeSpent,
-        moduleId,
-        scrollPosition: 0,
-      };
 
-      console.log('[useLessonProgress] 🚀 Saving page progress to backend:', {
+      console.log('[useLessonProgress] 🚀 POST /api/progress/step/update:', {
         lessonId,
-        progress: pageProgress,
         page: `${currentPage + 1}/${totalPages}`,
-        step: `${currentStep}/${stepsTotal}`,
+        currentStepIndex: currentPage, // 0-based
+        totalSteps: stepsTotal,
       });
 
-      await updateLessonProgress(lessonId, data);
+      // Use the dedicated step endpoint (POST /api/progress/step/update).
+      // Sends currentStepIndex 0-based — no conversion needed.
+      const stepResult = await callStepUpdate(
+        lessonId,
+        moduleId,
+        currentPage,       // 0-based
+        stepsTotal,
+        timeSpent,
+      );
 
-      setLastSavedProgress(pageProgress);
-      
-      // Update backendProgress state to reflect the saved progress
-      setBackendProgress({
-        completionPercentage: pageProgress,
-        currentStep,
-        totalSteps: stepsTotal,
-        completed: pageProgress >= 100,
-      });
-      
-      // Dispatch custom event to notify context and other components
-      // This ensures module and level progress update immediately
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('progress:updated', {
-          detail: {
-            lessonId,
-            moduleId,
-            progress: pageProgress / 100, // Convert to 0-1
-            completionPercentage: pageProgress,
-          },
-        }));
-      }
+      if (stepResult !== null) {
+        // Success: update state from authoritative backend response
+        setLastSavedStep(currentStep); // Prevent duplicate saves for the same step
+        setLastSavedProgress(pageProgress);
 
-      // Save to localStorage as backup
-      localStorage.setItem(`lesson_progress_${lessonId}`, JSON.stringify({
-        progress: pageProgress,
-        currentPage,
-        totalPages,
-        currentStep,
-        totalSteps: stepsTotal,
-        scrollPosition: 0,
-        timestamp: Date.now(),
-      }));
+        // backendProgress.currentStep is kept 1-based for the existing resume logic
+        setBackendProgress({
+          completionPercentage: stepResult.progressPercentage,
+          currentStep: stepResult.currentStepIndex + 1, // 0-based → 1-based
+          totalSteps: stepResult.totalSteps,
+          completed: stepResult.completed,
+        });
 
-      // Clear any failed save markers
-      localStorage.removeItem(`lesson_progress_${lessonId}_failed`);
-
-      console.log('[useLessonProgress] ✅ Page progress saved successfully');
-
-      // Check for auto-completion
-      // CRITICAL: Only trigger completion if lesson is NOT already completed.
-      // If backendProgress shows completed=true, the lesson was already finished
-      // and we must NOT re-trigger completion (which would reset UI state).
-      if (pageProgress >= autoCompleteThreshold && !isCompleted && !backendProgress?.completed) {
-        setIsCompleted(true);
-        if (onComplete) {
-          onComplete();
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('progress:updated', {
+            detail: {
+              lessonId,
+              moduleId,
+              progress: stepResult.progressPercentage / 100,
+              completionPercentage: stepResult.progressPercentage,
+            },
+          }));
         }
+
+        localStorage.setItem(`lesson_progress_${lessonId}`, JSON.stringify({
+          progress: stepResult.progressPercentage,
+          currentPage,
+          totalPages,
+          currentStep: stepResult.currentStepIndex + 1,
+          totalSteps: stepResult.totalSteps,
+          scrollPosition: 0,
+          timestamp: Date.now(),
+        }));
+        localStorage.removeItem(`lesson_progress_${lessonId}_failed`);
+
+        console.log('[useLessonProgress] ✅ Step progress saved:', stepResult);
+
+        if (stepResult.progressPercentage >= autoCompleteThreshold && !isCompleted && !stepResult.completed) {
+          setIsCompleted(true);
+          if (onComplete) onComplete();
+        }
+      } else {
+        // Rate-limited or no token — keep a localStorage record for later sync
+        console.warn('[useLessonProgress] ⚠️ callStepUpdate returned null (rate-limited). Saved locally.');
+        localStorage.setItem(`lesson_progress_${lessonId}`, JSON.stringify({
+          progress: pageProgress,
+          currentPage,
+          totalPages,
+          currentStep,
+          totalSteps: stepsTotal,
+          scrollPosition: 0,
+          timestamp: Date.now(),
+        }));
       }
     } catch (error: any) {
       console.error('[useLessonProgress] ❌ Save page progress error:', error);

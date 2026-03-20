@@ -17,7 +17,7 @@ import { debug } from '@/shared/utils/debug';
 // TYPES
 // =============================================================================
 
-export type LessonItem = { lessonId: string; progress: number; updatedAt?: string };
+export type LessonItem = { lessonId: string; progress: number; updatedAt?: string; moduleId?: string };
 
 export type Overview = {
   xpTotal: number; level: number; nextLevelXp: number; streakDays: number;
@@ -32,6 +32,8 @@ export type ProgressSnapshot = {
   lastSyncAt?: string;
   source: 'db' | 'local' | 'merged';
   _modules?: any[];
+  /** Level-aggregated data from GET /api/progress/overview (levels[]). */
+  _levels?: any[];
 };
 
 interface LocalProgress {
@@ -327,7 +329,12 @@ function mergeSnapshots(userId: string | null, localSnap: any, localQueue: Lesso
     if (localQueue.length) source = 'merged';
   }
   const overview = deriveOverview(dbOverview, lessons, localSnap?.overview);
-  return { userId, source, overview, lessons, lastSyncAt: new Date().toISOString(), _modules: (dbOverview as any)?._modules || [] };
+  return {
+    userId, source, overview, lessons,
+    lastSyncAt: new Date().toISOString(),
+    _modules: (dbOverview as any)?._modules || [],
+    _levels: (dbOverview as any)?._levels || [],
+  };
 }
 
 function mergeLessons(local: LessonItem[], db: LessonItem[]): LessonItem[] {
@@ -458,6 +465,9 @@ export const ProgressSource = {
           lessonId: l.lessonId || l.pageId || l.id || '',
           progress: typeof l.progress === 'number' ? l.progress : (l.completed ? 1 : 0),
           updatedAt: l.updatedAt || l.lastVisitedAt || new Date().toISOString(),
+          // Preserve moduleId from backend so the sync effect in LearningProgressContext
+          // can place each lesson in the correct module bucket without guessing.
+          moduleId: l.moduleId || '',
         })).filter((l: LessonItem) => l.lessonId !== '');
 
         // La API retorna modules[], construir dbLessons adicionales si lessons estaba vacío
@@ -481,6 +491,12 @@ export const ProgressSource = {
             totalLessons: mod.totalLessons ?? mod.totalPages ?? 0,
             completed: mod.completed ?? false,
           }));
+        }
+
+        // Store level-aggregated data (totalLessons, completedLessons, progressPercentage per level)
+        const rawLevels = (o as any)?.levels;
+        if (dbOverview && Array.isArray(rawLevels) && rawLevels.length > 0) {
+          (dbOverview as any)._levels = rawLevels;
         }
         console.log('[ProgressSource] modules from overview:', oModules?.length,
           'dbLessons construidos:', dbLessons.length);

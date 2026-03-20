@@ -30,6 +30,24 @@ const TheorySection = ({
   // Por defecto habilitado, pero se puede deshabilitar con metadata
   const aiExpanderEnabled = section.metadata?.aiExpanderEnabled !== false;
   const aiExpanderMode = section.metadata?.aiExpanderMode || 'button'; // 'button' | 'accordion'
+
+  // Construir el objeto context requerido por AITopicExpander.
+  // Incluye los datos de sección/lección disponibles para que la IA tenga contexto.
+  const sectionTextContent = typeof section?.content === 'string'
+    ? section.content
+    : section?.content?.markdown || section?.content?.text || '';
+  const aiContext = {
+    moduleId: moduleId || '',
+    lessonId: lessonId || '',
+    sectionId: section?.id || section?.sectionId || '',
+    lessonTitle: lessonData?.title || lessonData?.metadata?.title || '',
+    sectionTitle: section?.title || '',
+    pageType: currentPageType || 'theory',
+    sectionType: section?.type || 'THEORY',
+    sectionContent: sectionTextContent,
+    visibleText: sectionTextContent,
+    contentLength: sectionTextContent.length,
+  };
   
   return (
     <Box>
@@ -75,12 +93,8 @@ const TheorySection = ({
             <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
               <Suspense fallback={null}>
                 <AITopicExpander
-                  moduleId={moduleId}
-                  lessonId={lessonId}
-                  lessonData={lessonData}
-                  currentSection={section}
-                  currentPageType={currentPageType}
-                  mode="button"
+                  context={aiContext}
+                  variant="button"
                   enabled={aiExpanderEnabled}
                 />
               </Suspense>
@@ -94,12 +108,8 @@ const TheorySection = ({
         <Box sx={{ mb: 3 }}>
           <Suspense fallback={null}>
             <AITopicExpander
-              moduleId={moduleId}
-              lessonId={lessonId}
-              lessonData={lessonData}
-              currentSection={section}
-              currentPageType={currentPageType}
-              mode="accordion"
+              context={aiContext}
+              variant="accordion"
               enabled={aiExpanderEnabled}
             />
           </Suspense>
