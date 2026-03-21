@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { VentilationMode } from '@/contracts/simulator.contracts';
 import {
   Box,
   Container,
@@ -83,10 +84,23 @@ const PatientSimulator: React.FC = () => {
       return;
     }
 
-    // 2. Update legacy PatientDataContext for other components that depend on it
+    // 2. Kick off the synthetic 30 Hz signal loop with safe initial parameters.
+    // The user can adjust from the control panel; each change routes through
+    // POST /command → backend updates the math without restarting the loop.
+    const initialCommand = {
+      mode: VentilationMode.VCV,
+      tidalVolume: Math.round(patientModel.calculated.predictedTidalVolume.min),
+      respiratoryRate: patientModel.vitalSigns.respiratoryRate,
+      peep: 5,
+      fio2: 0.4,
+      timestamp: Date.now(),
+    };
+    await simulation.actions.startSimulation(initialCommand);
+
+    // 3. Update legacy PatientDataContext for other components that depend on it
     receivePatientData(payload);
 
-    setSuccessMsg('✅ Paciente configurado y enviado al monitoreo. Las señales fisiológicas se generarán al aplicar parámetros de ventilación.');
+    setSuccessMsg('✅ Paciente configurado. Las señales fisiológicas se están generando en tiempo real.');
     setTimeout(() => setSuccessMsg(''), 7000);
   }, [buildPayload, receivePatientData, simulation.actions, formState, calculated]);
 

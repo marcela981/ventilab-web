@@ -59,7 +59,12 @@ const ventilatorTheme = muiTheme;
 
 // AIAnalysisButton moved to common component
 
-const VentilatorDashboard = () => {
+const VentilatorDashboard = ({
+  externalVentilatorData,
+  externalRealTimeData,
+  externalSystemStatus,
+  isRemoteConnection,
+} = {}) => {
   const { sidebarOpen } = useSidebar();
   
   // Calcular valores para la barra de navegación
@@ -69,9 +74,9 @@ const VentilatorDashboard = () => {
 
   // Hooks principales
   const serialConnection = useSerialConnection();
-  const { 
-    ventilatorData, 
-    realTimeData, 
+  const {
+    ventilatorData: _ventilatorData,
+    realTimeData: _realTimeData,
     setVentilatorData, // Necesitamos el setter
     calculations,
     integratedVolume,
@@ -81,7 +86,16 @@ const VentilatorDashboard = () => {
     registerDataRecording, // Función para registrar el hook de grabación
     systemStatus // Estado del sistema
   } = useVentilatorData(serialConnection);
-  
+
+  // Remote/WebSocket mode: merge external data over local serial data.
+  // User-configured params (PEEP, FiO2, mode…) come from local state (control panel).
+  // Real-time measured values (pressure, flow, volume) come from the WebSocket stream.
+  // realTimeData arrays are fully replaced so Chart.js paints the simulated curves.
+  const ventilatorData = externalVentilatorData
+    ? { ..._ventilatorData, ...externalVentilatorData }
+    : _ventilatorData;
+  const realTimeData = externalRealTimeData ?? _realTimeData;
+
   // Hook para datos del paciente simulado
   const { 
     patientData, 
