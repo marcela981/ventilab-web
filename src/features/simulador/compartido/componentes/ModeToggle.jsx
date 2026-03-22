@@ -9,7 +9,9 @@ const ModeToggleRoot = styled(Box)(({ theme }) => ({
   position: 'relative',
 }));
 
-const CircularModeButton = styled(Box)(({ theme, active }) => ({
+const CircularModeButton = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'active',
+})(({ theme, active }) => ({
   width: 50,
   height: 50,
   borderRadius: '50%',

@@ -4,6 +4,8 @@ import type {
   GetVentilatorStatusResponse,
   ReserveVentilatorRequest,
   ReserveVentilatorResponse,
+  CreateSimulatorSessionRequest,
+  CreateSimulatorSessionResponse,
   SaveSimulatorSessionRequest,
   SaveSimulatorSessionResponse,
   SimulatorSession,
@@ -119,6 +121,22 @@ export const simulatorApi = {
   // ---------------------------------------------------------------------------
 
   /**
+   * POST /api/simulation/session
+   * Opens a new SimulatorSession record in the DB.
+   * When isRealVentilator=false, also initialises the PatientSimulationService
+   * on the backend (no MQTT connection is made).
+   * Returns 201 with { success, sessionId, message, timestamp }.
+   */
+  createSession: async (
+    request: CreateSimulatorSessionRequest
+  ): Promise<CreateSimulatorSessionResponse> => {
+    return fetchApi<CreateSimulatorSessionResponse>('/simulation/session', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  },
+
+  /**
    * POST /api/simulation/patient/configure
    * Configures the patient model on the backend and returns the full PatientModel
    * (with auto-calculated IBW, mechanics, etc.).
@@ -134,8 +152,8 @@ export const simulatorApi = {
 
   /**
    * POST /api/simulation/patient/start
-   * Starts the 20 Hz signal generation loop. Backend will broadcast
-   * 'ventilator:data' events via WebSocket.
+   * Starts the ~30 Hz signal generation loop. Backend will broadcast
+   * 'ventilator:data' events via WebSocket (TICK_MS = 33 ms).
    */
   startSimulation: async (
     command: VentilatorCommand

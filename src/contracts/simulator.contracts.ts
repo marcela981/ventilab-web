@@ -90,6 +90,11 @@ export interface VentilatorCommand {
   ieRatio?: string;
   sensitivity?: number;
   flowRate?: number;
+  /**
+   * Creation timestamp (ms). Optional on the client — the backend sets it
+   * when persisting sessions. Do not rely on this field for display logic.
+   */
+  timestamp?: number;
 }
 
 /** Response from POST /api/simulation/command */
@@ -134,6 +139,34 @@ export interface ReserveVentilatorResponse {
   startTime?: number;
   endTime?: number;
   currentUser?: string;
+}
+
+/**
+ * POST /api/simulation/session body — opens a new session record.
+ * For simulated patients (isRealVentilator=false), patientData is required.
+ * userId is omitted — the backend extracts it from the JWT.
+ */
+export interface CreateSimulatorSessionRequest {
+  isRealVentilator: boolean;
+  /** Required when isRealVentilator is false */
+  patientData?: {
+    demographics?: { age: number; gender: 'M' | 'F'; weight: number; height: number; name?: string };
+    condition?: string;
+    vitalSigns?: Record<string, number>;
+    [key: string]: unknown;
+  };
+  parametersLog?: VentilatorCommand[];
+  ventilatorData?: VentilatorReading[];
+  notes?: string;
+  clinicalCaseId?: string;
+}
+
+/** POST /api/simulation/session response */
+export interface CreateSimulatorSessionResponse {
+  success: boolean;
+  sessionId: string;
+  message: string;
+  timestamp: number;
 }
 
 /**

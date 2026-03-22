@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import ValidatedInput from '@/shared/components/ValidatedInput';
+import ValidatedInput from '@/features/simulador/compartido/componentes/ValidatedInput';
 import ComplianceStatus from '@/features/simulador/simuladorVentilador/panelControl/componentes/ComplianceStatus';
 import ValidationAlerts from '@/features/simulador/simuladorVentilador/panelControl/componentes/ValidationAlerts';
 

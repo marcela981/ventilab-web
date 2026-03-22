@@ -10,7 +10,7 @@ import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import WifiIcon from '@mui/icons-material/Wifi';
 
-// Tab 2: Gráficas — importado directamente desde su propio submódulo
+// Tab 2: Gráficas — fallback placeholder si no se inyecta chartsContent
 import GraficasTab from '@/features/simulador/graficas/GraficasTab';
 
 // Tab 0: Simular Paciente — lazy-loaded desde su propio submódulo
@@ -42,6 +42,8 @@ const SimuladorTabs = ({
   navigationWidth,
   monitoringContent,
   connectionContent,
+  /** JSX pre-construido para la tab Gráficas (tab 2). Si no se pasa, usa el placeholder. */
+  chartsContent,
   defaultTab = 1,
   onTabChange,
 }) => {
@@ -64,7 +66,7 @@ const SimuladorTabs = ({
                 </Box>
               }
             >
-              <FormularioPaciente />
+              <FormularioPaciente onPatientConfigured={() => setActiveTab(1)} />
             </Suspense>
           </Box>
         );
@@ -73,7 +75,7 @@ const SimuladorTabs = ({
         return monitoringContent ?? null;
 
       case 2:
-        return <GraficasTab />;
+        return chartsContent ?? <GraficasTab />;
 
       case 3:
         return connectionContent ?? null;

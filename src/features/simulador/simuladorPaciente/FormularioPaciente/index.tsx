@@ -33,7 +33,11 @@ type CaseKey = keyof typeof predefinedClinicalCases;
 // Component
 // =============================================================================
 
-const PatientSimulator: React.FC = () => {
+interface PatientSimulatorProps {
+  onPatientConfigured?: () => void;
+}
+
+const PatientSimulator: React.FC<PatientSimulatorProps> = ({ onPatientConfigured }) => {
   const { receivePatientData } = usePatientData();
   const { formState, calculated, errors, updateField, reset, loadClinicalCase, buildPayload } = usePatientForm();
   const simulation = useSimulation();
@@ -102,7 +106,10 @@ const PatientSimulator: React.FC = () => {
 
     setSuccessMsg('Paciente configurado. Las señales fisiológicas se están generando en tiempo real.');
     setTimeout(() => setSuccessMsg(''), 7000);
-  }, [buildPayload, receivePatientData, simulation.actions, formState, calculated]);
+
+    // Redirect to Monitoreo tab automatically
+    onPatientConfigured?.();
+  }, [buildPayload, receivePatientData, simulation.actions, formState, calculated, onPatientConfigured]);
 
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>

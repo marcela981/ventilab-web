@@ -12,10 +12,17 @@ import {
   Grid,
 } from '@mui/material';
 import { ventilatorCalculations } from '@/features/simulador/compartido/utils/ventilatorCalculations';
+import type { VentilatorCommand } from '@/contracts/simulator.contracts';
 
 interface ControlPanelProps {
   data: Record<string, number>;
   onParameterChange: (param: string, value: number) => void;
+  /**
+   * Called when the user clicks "Enviar Configuración".
+   * Receives a fully-formed VentilatorCommand built from the current panel state.
+   * In simulation mode this updates the synthetic signal math on the backend.
+   */
+  onSendCommand?: (command: VentilatorCommand) => void;
 }
 
 /**
@@ -23,7 +30,7 @@ interface ControlPanelProps {
  * with useMemo for derived calculations. The effect was updating state that
  * included its own deps → infinite loop.
  */
-const ControlPanel: React.FC<ControlPanelProps> = ({ data, onParameterChange }) => {
+const ControlPanel: React.FC<ControlPanelProps> = ({ data, onParameterChange, onSendCommand }) => {
   const [mode, setMode] = useState<'volume' | 'pressure'>('volume');
   const [ieRatioSlider, setIeRatioSlider] = useState(0);
 
@@ -273,7 +280,27 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ data, onParameterChange }) 
       </Box>
 
       <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-        <Button variant="contained" color="primary" fullWidth onClick={() => {}}>
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          onClick={() => {
+            if (!onSendCommand) return;
+            const command: VentilatorCommand = {
+              mode: mode === 'volume' ? 'VCV' : 'PCV',
+              tidalVolume: calculatedValues.tidalVolume,
+              respiratoryRate: parameters.frequency,
+              peep: parameters.peep,
+              fio2: parameters.fio2 / 100,
+              pressureLimit: mode === 'pressure' ? parameters.peakPressure : undefined,
+              inspiratoryTime: calculatedValues.inspiratoryTime,
+              ieRatio: `1:${calculatedValues.expiratoryTime > 0
+                ? (calculatedValues.expiratoryTime / calculatedValues.inspiratoryTime).toFixed(1)
+                : '2'}`,
+            };
+            onSendCommand(command);
+          }}
+        >
           Enviar Configuración
         </Button>
         <Button variant="outlined" color="secondary" onClick={() => {}}>

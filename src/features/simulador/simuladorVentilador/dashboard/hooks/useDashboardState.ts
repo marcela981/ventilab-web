@@ -365,7 +365,7 @@ const useDashboardState = ({
   const handleModeChange = useCallback((newMode: VentilationMode) => {
     setVentilationMode(newMode);
     cardConfig.updateCardVisibilityForMode(newMode);
-  }, [cardConfig]);
+  }, [cardConfig.updateCardVisibilityForMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // AI handlers
   const handleAIAnalysis = useCallback(() => {

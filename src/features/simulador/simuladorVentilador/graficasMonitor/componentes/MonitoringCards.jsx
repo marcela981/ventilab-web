@@ -13,8 +13,8 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 
 import { EditableCard } from '@/features/simulador/simuladorVentilador/dashboard/componentes/estilos/SimulatorStyles';
-import { EditControls } from '@/shared/components/EditableCard';
-import AIAnalysisButton from '@/shared/components/AIAnalysisButton';
+import { EditControls } from '@/features/simulador/simuladorVentilador/dashboard/componentes/EditableCard';
+import AIAnalysisButton from '@/features/simulador/compartido/componentes/AIAnalysisButton';
 
 /**
  * MonitoringCards.jsx

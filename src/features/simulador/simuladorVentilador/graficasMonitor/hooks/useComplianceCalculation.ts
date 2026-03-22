@@ -44,18 +44,27 @@ export const useComplianceCalculation = (
   const volumeArrayRef = useRef<number[]>([]);
   const callbackRef = useRef<ComplianceUpdateCallback | null>(null);
 
+  // Stable ref so processCycle can always read the latest data without
+  // being recreated every time the array reference changes (every 333ms).
+  const realTimeDataRef = useRef(realTimeData);
+  realTimeDataRef.current = realTimeData;
+
   const registerUpdateCallback = useCallback((callback: ComplianceUpdateCallback) => {
     callbackRef.current = callback;
   }, []);
 
-  // Process a complete respiratory cycle from the last SAMPLES_PER_CYCLE readings
+  // Process a complete respiratory cycle from the last SAMPLES_PER_CYCLE readings.
+  // Reads data from realTimeDataRef (updated every render) so this callback
+  // never needs to be recreated — eliminates the dep-array churn that caused
+  // the sampleCountRef to increment twice per data update.
   const processCycle = useCallback(() => {
+    const rtd = realTimeDataRef.current;
     if (
-      realTimeData.pressure.length >= SAMPLES_PER_CYCLE &&
-      realTimeData.volume.length >= SAMPLES_PER_CYCLE
+      rtd.pressure.length >= SAMPLES_PER_CYCLE &&
+      rtd.volume.length >= SAMPLES_PER_CYCLE
     ) {
-      const recentPressure = realTimeData.pressure.slice(-SAMPLES_PER_CYCLE);
-      const recentVolume = realTimeData.volume.slice(-SAMPLES_PER_CYCLE);
+      const recentPressure = rtd.pressure.slice(-SAMPLES_PER_CYCLE);
+      const recentVolume = rtd.volume.slice(-SAMPLES_PER_CYCLE);
 
       const maxPressure = Math.max(...recentPressure);
       const minPressure = Math.min(...recentPressure);
@@ -73,7 +82,7 @@ export const useComplianceCalculation = (
         isCalculating: true,
       }));
     }
-  }, [realTimeData.pressure, realTimeData.volume]);
+  }, []); // stable — reads latest data through realTimeDataRef
 
   // Calculate new compliance after CYCLES_FOR_COMPLIANCE cycles
   const calculateNewCompliance = useCallback(

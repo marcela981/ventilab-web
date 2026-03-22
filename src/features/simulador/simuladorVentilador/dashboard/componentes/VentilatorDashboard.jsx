@@ -18,9 +18,10 @@ import { getValueColor, getTrend } from '@/features/simulador/compartido/constan
 
 // Componentes del simulador
 import SimuladorTabs from '@/features/simulador/compartido/navegacion/SimuladorTabs';
-import MonitoringTab from '@/shared/components/MonitoringTab';
-import ConnectionTabContent from '@/shared/components/ConnectionTabContent';
+import MonitoringTab from '@/features/simulador/simuladorVentilador/dashboard/componentes/MonitoringTab';
+import ConnectionTabContent from '@/features/simulador/conexion/serial/componentes/ConnectionTabContent';
 import { ConnectionPanel } from '@/features/simulador/compartido/componentes/ConnectionPanel';
+import { buildCardData } from '../utils/cardDataBuilder';
 
 // Hooks
 import { useSerialConnection } from '@/features/simulador/conexion/serial/hooks/useSerialConnection';
@@ -37,6 +38,7 @@ import { useVentilatorConnection } from '@/features/simulador/conexion/websocket
 import { useVentilatorControls } from '@/features/simulador/simuladorVentilador/panelControl/hooks/useVentilatorControls';
 import useDashboardState from '@/features/simulador/simuladorVentilador/dashboard/hooks/useDashboardState';
 import AIAnalysisPanel from '@/features/simulador/simuladorVentilador/IAMonitor/componentes/AIAnalysisPanel';
+import VentilatorCharts from '@/features/simulador/simuladorVentilador/dashboard/componentes/VentilatorCharts';
 import { useSidebar } from '@/shared/contexts/SidebarContext';
 
 // Usar el tema centralizado desde mui-overrides.js
@@ -163,6 +165,35 @@ const VentilatorDashboard = ({
     });
   }, [actions.handleModeChange, sendCommand]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /**
+   * Wrapped configuration sender.
+   *
+   * 1. Executes the original serial/validation flow from useDashboardState.
+   * 2. ALSO sends a VentilatorCommand via REST to the backend simulation endpoint.
+   *    - If a synthetic patient is running  → `patientSim.updateCommand()` is called server-side.
+   *    - If no patient configured           → backend falls through to MQTT (physical mode).
+   *    Either way the call is non-blocking and non-critical from the UI's perspective.
+   */
+  const handleSendConfigWrapped = useCallback(async () => {
+    await actions.handleSendConfiguration();
+
+    const d = _ventilatorDataRef.current;
+    sendCommand({
+      mode: state.ventilationMode === 'volume' ? 'VCV' : 'PCV',
+      tidalVolume: d.volumen || 500,
+      respiratoryRate: d.frecuencia || 12,
+      peep: d.peep || 5,
+      fio2: (d.fio2 || 21) / 100,
+      ...(d.presionMax ? { pressureLimit: d.presionMax } : {}),
+      ...(d.tiempoInspiratorio ? { inspiratoryTime: d.tiempoInspiratorio } : {}),
+      ...(d.tiempoInspiratorio && d.tiempoEspiratorio
+        ? { ieRatio: `${d.relacionIE1 ?? 1}:${d.relacionIE2 ?? 1}` }
+        : {}),
+    }).catch(() => {
+      // Non-blocking: serial flow already notified the user if there was a validation error.
+    });
+  }, [actions, sendCommand, state.ventilationMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Hook para códigos QR y compartir
   const qrBridge = useQRBridge();
 
@@ -228,143 +259,8 @@ const VentilatorDashboard = ({
 
 
 
-  // Funciones para calcular valores en tiempo real usando datos filtrados
-  const getMax = arr => arr.length ? Math.max(...arr).toFixed(1) : '--';
-  const getMin = arr => arr.length ? Math.min(...arr).toFixed(1) : '--';
-  const getAvg = arr => arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : '--';
-  const getLast = arr => arr.length ? arr[arr.length - 1].toFixed(1) : '--';
-
-  // Mapeo de datos de tarjetas mostrando valores reales de configuración y mediciones
-  const cardDataMap = {
-    presionPico: {
-      label: 'Presión Pico',
-      // En modo presión: mostrar valor configurado (PIP), en modo volumen: mostrar valor medido
-      value: state.ventilationMode === 'pressure'
-        ? (ventilatorData.presionMax || 20).toFixed(1)
-        : (state.filteredData.pressure.max > 0 ? state.filteredData.pressure.max.toFixed(1) : getMax(state.displayData.pressure)),
-      unit: 'cmH₂O',
-      rawValue: state.ventilationMode === 'pressure'
-        ? (ventilatorData.presionMax || 20)
-        : (state.filteredData.pressure.max || parseFloat(getMax(state.displayData.pressure)) || 0),
-      isConfigured: state.ventilationMode === 'pressure'
-    },
-    presionMedia: {
-      label: 'Presión Media',
-      // Siempre mostrar valor medido
-      value: state.filteredData.pressure.avg > 0 ? state.filteredData.pressure.avg.toFixed(1) : getAvg(state.displayData.pressure),
-      unit: 'cmH₂O',
-      rawValue: state.filteredData.pressure.avg || parseFloat(getAvg(state.displayData.pressure)) || 0,
-      isConfigured: false
-    },
-    peep: {
-      label: 'PEEP',
-      // Siempre mostrar valor configurado
-      value: (ventilatorData.peep || 5).toFixed(1),
-      unit: 'cmH₂O',
-      rawValue: ventilatorData.peep || 5,
-      isConfigured: true
-    },
-    flujoMax: {
-      label: 'Flujo Max',
-      // Mostrar Q Max calculado si está disponible, sino valor medido
-      value: ventilatorData.qMax ? ventilatorData.qMax.toFixed(1) : (state.filteredData.flow.max > 0 ? state.filteredData.flow.max.toFixed(1) : getMax(state.displayData.flow)),
-      unit: 'L/min',
-      rawValue: ventilatorData.qMax || state.filteredData.flow.max || parseFloat(getMax(state.displayData.flow)) || 0,
-      isConfigured: !!ventilatorData.qMax
-    },
-    flujo: {
-      label: 'Flujo',
-      // Siempre mostrar valor medido en tiempo real
-      value: state.filteredData.flow.filtered > 0 ? state.filteredData.flow.filtered.toFixed(1) : getLast(state.displayData.flow),
-      unit: 'L/min',
-      rawValue: state.filteredData.flow.filtered || parseFloat(getLast(state.displayData.flow)) || 0,
-      isConfigured: false
-    },
-    flujoMin: {
-      label: 'Flujo Min',
-      // Siempre mostrar valor medido
-      value: state.filteredData.flow.min > 0 ? state.filteredData.flow.min.toFixed(1) : getMin(state.displayData.flow),
-      unit: 'L/min',
-      rawValue: state.filteredData.flow.min || parseFloat(getMin(state.displayData.flow)) || 0,
-      isConfigured: false
-    },
-    volMax: {
-      label: 'Vol Max',
-      // Siempre mostrar valor medido
-      value: state.filteredData.volume.max > 0 ? state.filteredData.volume.max.toFixed(1) : getMax(state.displayData.volume),
-      unit: 'mL',
-      rawValue: state.filteredData.volume.max || parseFloat(getMax(state.displayData.volume)) || 0,
-      isConfigured: false
-    },
-    volumen: {
-      label: 'Volumen',
-      // En modo volumen: mostrar valor configurado, en modo presión: mostrar valor medido/calculado
-      value: state.ventilationMode === 'volume'
-        ? (ventilatorData.volumen || 500).toFixed(0)
-        : (state.filteredData.volume.filtered > 0 ? state.filteredData.volume.filtered.toFixed(1) : getLast(state.displayData.volume)),
-      unit: 'mL',
-      rawValue: state.ventilationMode === 'volume'
-        ? (ventilatorData.volumen || 500)
-        : (state.filteredData.volume.filtered || parseFloat(getLast(state.displayData.volume)) || 0),
-      isConfigured: state.ventilationMode === 'volume'
-    },
-    volumenIntegrado: {
-      label: 'Vol Integrado',
-      // Mostrar volumen integrado calculado
-      value: integratedVolume.toFixed(1),
-      unit: 'mL',
-      rawValue: integratedVolume,
-      onReset: resetIntegratedVolume,
-      isConfigured: false
-    },
-    compliance: {
-      label: 'Compliance',
-      // Mostrar compliance calculada
-      value: state.complianceData.compliance.toFixed(5),
-      unit: 'L/cmH₂O',
-      rawValue: state.complianceData.compliance,
-      status: state.complianceData.calculationStatus,
-      errors: state.errorDetection.errors,
-      isConfigured: false
-    },
-    presionMeseta: {
-      label: 'Presión Meseta',
-      // Mostrar presión de plateau calculada o medida
-      value: ventilatorData.presionTanque ? ventilatorData.presionTanque.toFixed(1) : '--',
-      unit: 'cmH₂O',
-      rawValue: ventilatorData.presionTanque || 0,
-      isConfigured: !!ventilatorData.presionTanque
-    },
-    presionPlaton: {
-      label: 'Presión Platón',
-      // Placeholder para presión plateau cuando esté implementado
-      value: '--',
-      unit: 'cmH₂O',
-      rawValue: 0,
-      isConfigured: false
-    },
-  };
-
-  // Generar datos de tarjetas basados en la configuración
-  const cardData = state.cardConfig
-    .filter(card => {
-      // En modo ajuste, mostrar todas las tarjetas
-      if (state.isAdjustMode) return true;
-
-      // En modo normal, mostrar solo las visibles
-      if (!card.visible) return false;
-
-      // Para compliance, solo mostrar en modo presión control
-      if (card.id === 'compliance' && state.ventilationMode !== 'pressure') return false;
-
-      return true;
-    })
-    .sort((a, b) => a.order - b.order)
-    .map(card => ({
-      ...cardDataMap[card.id],
-      id: card.id,
-      config: card,
-    }));
+  // Generar datos de tarjetas basados en la configuración utilizando la nueva función helper
+  const cardData = buildCardData(state, ventilatorData, integratedVolume, resetIntegratedVolume);
 
   // getValueColor and getTrend are now imported from constants/ventilator-limits.ts
 
@@ -525,6 +421,13 @@ const VentilatorDashboard = ({
         navigationWidth={navigationWidth}
         defaultTab={1}
 
+        chartsContent={
+          <VentilatorCharts
+            realTimeData={realTimeData?.pressure?.length ? realTimeData : undefined}
+            isRealVentilator={isRemoteConnection === false && serialConnection?.isConnected}
+          />
+        }
+
         monitoringContent={
           <MonitoringTab
             patientData={patientData}
@@ -532,7 +435,7 @@ const VentilatorDashboard = ({
             dataSource={state.dataSource}
             setDataSource={actions.setDataSource}
             serialConnection={serialConnection}
-            handleSendConfiguration={actions.handleSendConfiguration}
+            handleSendConfiguration={handleSendConfigWrapped}
             handleStopVentilator={actions.handleStopVentilator}
             configSent={state.configSent}
             isAdjustMode={state.isAdjustMode}
@@ -585,7 +488,7 @@ const VentilatorDashboard = ({
                 systemStatus={systemStatus}
                 handleConnection={actions.handleConnection}
                 handleDisconnection={actions.handleDisconnection}
-                handleSendConfiguration={actions.handleSendConfiguration}
+                handleSendConfiguration={handleSendConfigWrapped}
                 getValueColor={getValueColor}
                 ventilatorData={ventilatorData}
                 maxMinData={maxMinData}
