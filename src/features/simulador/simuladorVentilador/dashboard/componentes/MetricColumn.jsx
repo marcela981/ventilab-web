@@ -17,6 +17,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import PsychologyIcon from '@mui/icons-material/Psychology';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
 
 import EditableCard, { EditControls } from './EditableCard';
 import AIAnalysisButton from '@/features/simulador/compartido/componentes/AIAnalysisButton';
@@ -26,6 +27,8 @@ const MetricColumn = ({
   isDataPersisted,
   dataSource,
   setDataSource,
+  chartsEnabled,
+  setChartsEnabled,
   serialConnection,
   handleSendConfiguration,
   handleStopVentilator,
@@ -47,7 +50,7 @@ const MetricColumn = ({
   getTrend,
 }) => {
   return (
-    <Box sx={{ width: { xs: '100%', sm: '300px' }, flexShrink: 0, minWidth: '280px', overflow: 'hidden', mt: 0, pl: { sm: 1 } }}>
+    <Box sx={{ width: { xs: '100%', sm: '260px' }, flexShrink: 0, minWidth: '240px', overflow: 'hidden', mt: 0, pl: { sm: 1 } }}>
       <Box display="flex" flexDirection="column" alignItems="flex-start" gap={1}>
         {/* Logos */}
         <Box>
@@ -106,6 +109,37 @@ const MetricColumn = ({
             }}
           />
         </Tooltip>
+
+        {/* Simular gráficas toggle */}
+        {dataSource === 'simulated' && (
+          <Tooltip title="Activar/desactivar gráficas de la simulación" placement="bottom" arrow>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={chartsEnabled}
+                  onChange={(e) => setChartsEnabled(e.target.checked)}
+                  size="small"
+                />
+              }
+              label={
+                <Box display="flex" alignItems="center" gap={0.5}>
+                  <ShowChartIcon fontSize="inherit" />
+                  <Typography variant="caption" sx={{ fontSize: '10px', fontWeight: 600 }}>
+                    Simular Gráficas
+                  </Typography>
+                </Box>
+              }
+              sx={{
+                backgroundColor: chartsEnabled ? 'rgba(33, 150, 243, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+                borderRadius: 1,
+                padding: '2px 8px',
+                border: chartsEnabled ? '1px solid #2196f3' : '1px solid transparent',
+                transition: 'all 0.3s',
+                mx: 0,
+              }}
+            />
+          </Tooltip>
+        )}
 
         {/* Patient indicator */}
         {isDataPersisted && patientData && (

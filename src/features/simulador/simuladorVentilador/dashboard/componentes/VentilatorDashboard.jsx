@@ -421,12 +421,7 @@ const VentilatorDashboard = ({
         navigationWidth={navigationWidth}
         defaultTab={1}
 
-        chartsContent={
-          <VentilatorCharts
-            realTimeData={realTimeData?.pressure?.length ? realTimeData : undefined}
-            isRealVentilator={isRemoteConnection === false && serialConnection?.isConnected}
-          />
-        }
+        chartsContent={undefined} // Force fallback to GraficasTab
 
         monitoringContent={
           <MonitoringTab

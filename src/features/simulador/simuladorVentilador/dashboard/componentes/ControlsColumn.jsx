@@ -9,7 +9,11 @@ import {
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
+import Tooltip from '@mui/material/Tooltip';
+
 import ValidatedInput from '@/features/simulador/compartido/componentes/ValidatedInput';
+import ModeToggle from '@/features/simulador/compartido/componentes/ModeToggle';
+import AIAnalysisButton from '@/features/simulador/compartido/componentes/AIAnalysisButton';
 import ComplianceStatus from '@/features/simulador/simuladorVentilador/panelControl/componentes/ComplianceStatus';
 import ValidationAlerts from '@/features/simulador/simuladorVentilador/panelControl/componentes/ValidationAlerts';
 
@@ -24,12 +28,31 @@ const ControlsColumn = ({
   lastAutoAdjustment,
   showValidationAlerts,
   setShowValidationAlerts,
+  handleModeChange,
+  isAnalyzing,
+  handleAIAnalysis,
 }) => {
   return (
-    <Box sx={{ width: { xs: '100%', sm: '290px' }, flexShrink: 0, minWidth: '270px', pl: { sm: 1 }, pt: { sm: '185px' } }}>
+    <Box sx={{ width: { xs: '100%', sm: '250px' }, flexShrink: 0, minWidth: '230px', pl: { sm: 1 }, pt: 1 }}>
       <Box display="flex" flexDirection="column" gap={1.5}>
 
-        {/* I:E slider */}
+        {/* Botonera de Modos */}
+        <Box display="flex" justifyContent="flex-end" mb={1} pr={0.5}>
+          <ModeToggle
+            ventilationMode={ventilationMode}
+            onChange={handleModeChange}
+            AnalysisButton={
+              <Tooltip title="Analizar datos con Inteligencia Artificial" placement="bottom" arrow>
+                <Box>
+                  <AIAnalysisButton isAnalyzing={isAnalyzing} onClick={handleAIAnalysis} />
+                </Box>
+              </Tooltip>
+            }
+          />
+        </Box>
+
+        <Box display="flex" flexDirection="column" gap={1.5} mt={{ sm: '120px' }}>
+          {/* I:E slider */}
         <Box>
           <Box display="flex" flexDirection="row" justifyContent="space-between" mb={-1}>
             <Typography variant="subtitle1" sx={{ fontSize: '13px', fontWeight: 200 }}>Insp</Typography>
@@ -172,6 +195,7 @@ const ControlsColumn = ({
           </Box>
         )}
 
+        </Box>
       </Box>
     </Box>
   );

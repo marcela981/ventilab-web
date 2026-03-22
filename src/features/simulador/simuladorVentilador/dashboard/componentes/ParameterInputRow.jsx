@@ -7,17 +7,12 @@ import {
 } from '@mui/material';
 
 import ValidatedInput from '@/features/simulador/compartido/componentes/ValidatedInput';
-import ModeToggle from '@/features/simulador/compartido/componentes/ModeToggle';
-import AIAnalysisButton from '@/features/simulador/compartido/componentes/AIAnalysisButton';
 
 const ParameterInputRow = ({
   ventilationMode,
   ventilatorData,
   parameterValidation,
   handleParameterChange,
-  handleModeChange,
-  isAnalyzing,
-  handleAIAnalysis,
 }) => {
   return (
     <Box
@@ -27,21 +22,22 @@ const ParameterInputRow = ({
       mb={1}
       mt="2px"
       gap={0}
+      sx={{ position: 'relative', zIndex: 10 }}
     >
       {/* Inputs centrados */}
       <Box
         display="flex"
         flexDirection="row"
         flexWrap="nowrap"
-        gap={0.75}
+        gap={2}
         alignItems="flex-start"
-        justifyContent="center"
+        justifyContent="space-evenly"
         flex={1}
         minWidth={0}
-        overflow="hidden"
+        sx={{ overflow: 'visible', pb: 1, px: 0.5 }}
       >
         {/* FIO2 */}
-        <Box display="flex" flexDirection="column" alignItems="center">
+        <Box display="flex" flexDirection="column" alignItems="center" flex={1}>
           <Typography variant="subtitle2" sx={{ fontSize: '11px', fontWeight: 200 }}>
             % FIO2
           </Typography>
@@ -58,14 +54,14 @@ const ParameterInputRow = ({
               ventilationMode,
             )}
             ranges={parameterValidation.getParameterRanges('fio2')}
-            sx={{ width: '90px' }}
+            sx={{ minWidth: '130px' }}
             inputProps={{ min: 21, max: 100 }}
           />
         </Box>
 
         {ventilationMode === 'volume' && (
           <>
-            <Box display="flex" flexDirection="column" alignItems="center">
+            <Box display="flex" flexDirection="column" alignItems="center" flex={1}>
               <Typography variant="subtitle2" sx={{ fontSize: '11px', fontWeight: 300 }}>
                 Volumen
               </Typography>
@@ -82,11 +78,11 @@ const ParameterInputRow = ({
                   ventilationMode,
                 )}
                 ranges={parameterValidation.getParameterRanges('volumen')}
-                sx={{ width: '90px' }}
+                sx={{ minWidth: '130px' }}
                 inputProps={{ min: 50, max: 2000 }}
               />
             </Box>
-            <Box display="flex" flexDirection="column" alignItems="center">
+            <Box display="flex" flexDirection="column" alignItems="center" flex={1}>
               <Typography variant="subtitle2" sx={{ fontSize: '11px', fontWeight: 300 }}>
                 Q Max
               </Typography>
@@ -95,7 +91,7 @@ const ParameterInputRow = ({
                 variant="outlined"
                 size="small"
                 inputProps={{ min: 0, step: 0.1 }}
-                sx={{ width: '90px' }}
+                sx={{ minWidth: '130px' }}
                 value={ventilatorData.qMax || ''}
                 onChange={(e) => handleParameterChange('qMax', Number(e.target.value))}
                 helperText={
@@ -110,7 +106,7 @@ const ParameterInputRow = ({
         )}
 
         {ventilationMode === 'pressure' && (
-          <Box display="flex" flexDirection="column" alignItems="center">
+          <Box display="flex" flexDirection="column" alignItems="center" flex={1}>
             <Typography variant="subtitle2" sx={{ fontSize: '11px', fontWeight: 300 }}>
               PIP [cmH2O]
             </Typography>
@@ -127,13 +123,13 @@ const ParameterInputRow = ({
                 ventilationMode,
               )}
               ranges={parameterValidation.getParameterRanges('presionMax')}
-              sx={{ width: '90px' }}
+              sx={{ minWidth: '130px' }}
               inputProps={{ min: 5, max: 60 }}
             />
           </Box>
         )}
 
-        <Box display="flex" flexDirection="column" alignItems="center">
+        <Box display="flex" flexDirection="column" alignItems="center" flex={1}>
           <Typography variant="subtitle2" sx={{ fontSize: '11px', fontWeight: 300 }}>
             PEEP
           </Typography>
@@ -150,27 +146,10 @@ const ParameterInputRow = ({
               ventilationMode,
             )}
             ranges={parameterValidation.getParameterRanges('peep')}
-            sx={{ width: '90px' }}
+            sx={{ minWidth: '130px' }}
             inputProps={{ min: 0, max: 20 }}
           />
         </Box>
-      </Box>
-
-      {/* ModeToggle a la DERECHA */}
-      <Box flexShrink={0} display="flex" alignItems="center" pt={1} pl={1}>
-        <ModeToggle
-          ventilationMode={ventilationMode}
-          onChange={handleModeChange}
-          AnalysisButton={
-            <Tooltip
-              title="Analizar datos con Inteligencia Artificial"
-              placement="bottom"
-              arrow
-            >
-              <AIAnalysisButton isAnalyzing={isAnalyzing} onClick={handleAIAnalysis} />
-            </Tooltip>
-          }
-        />
       </Box>
     </Box>
   );
