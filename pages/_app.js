@@ -103,7 +103,9 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
                             component="main"
                             sx={{
                               flexGrow: 1,
-                              p: 3,
+                              minWidth: 0,
+                              overflow: 'hidden',
+                              p: 0,
                               transition: (theme) =>
                                 theme.transitions.create(['margin', 'width'], {
                                   easing: theme.transitions.easing.sharp,
