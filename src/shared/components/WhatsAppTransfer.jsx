@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import { useQRBridge } from '@/features/simulator/hooks/useQRBridge';
+import { useQRBridge } from '@/features/simulador/compartido/hooks/useQRBridge';
 
 const Wrapper = styled('div')(({ theme }) => ({
   display: 'flex',

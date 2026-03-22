@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Box } from '@mui/material';
 // Chart.js registration — ensures scales are available
-import '@/features/simulator/charts/ChartRegistry';
+import '@/features/simulador/conexion/websocket/registro/ChartRegistry';
 import { Line } from 'react-chartjs-2';
 
 const LoopChart = ({ data, type, isConnected }) => {

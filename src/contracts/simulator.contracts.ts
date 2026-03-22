@@ -65,7 +65,14 @@ export interface VentilatorAlarm {
 // Commands (REST POST /api/simulation/command)
 // =============================================================================
 
-export type VentilationMode = 'VCV' | 'PCV' | 'SIMV' | 'PSV';
+export const VentilationModeValues = {
+  VCV: 'VCV',
+  PCV: 'PCV',
+  SIMV: 'SIMV',
+  PSV: 'PSV',
+} as const;
+
+export type VentilationMode = (typeof VentilationModeValues)[keyof typeof VentilationModeValues];
 
 /** Command sent to the ventilator via REST. */
 export interface VentilatorCommand {

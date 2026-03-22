@@ -26,8 +26,8 @@ import PsychologyIcon from '@mui/icons-material/Psychology';
 import RealTimeCharts from './RealTimeCharts';
 // import LoopChart from './LoopChart'; // TODO: re-enable when loop charts are re-added
 import ValidatedInput from './ValidatedInput';
-import ComplianceStatus from '@/features/simulator/components/ComplianceStatus';
-import ValidationAlerts from '@/features/simulator/components/ValidationAlerts';
+import ComplianceStatus from '@/features/simulador/simuladorVentilador/panelControl/componentes/ComplianceStatus';
+import ValidationAlerts from '@/features/simulador/simuladorVentilador/panelControl/componentes/ValidationAlerts';
 import EditableCard, { EditControls } from './EditableCard';
 import AIAnalysisButton from './AIAnalysisButton';
 import ModeToggle from './ModeToggle';

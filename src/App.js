@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import Sidebar from '@/shared/components/Sidebar';
-import VentilatorDashboard from '@/features/simulator/components/VentilatorDashboard';
+import VentilatorDashboard from '@/features/simulador/simuladorVentilador/dashboard/componentes/VentilatorDashboard';
 import TeachingModule from '@/features/teaching/TeachingModule';
 import { LearningProgressProvider } from '@/features/progress/LearningProgressContext';
 

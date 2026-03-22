@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import { Box, Typography } from '@mui/material';
 
-const PatientSimulator = React.lazy(() => import('@/features/simulator/components/PatientSimulator'));
+const PatientSimulator = React.lazy(() => import('@/features/simulador/simuladorPaciente/FormularioPaciente'));
 
 const PatientSimulatorTab = () => {
   return (

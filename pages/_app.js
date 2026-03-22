@@ -1,4 +1,4 @@
-import React, { useState, createContext, useContext } from 'react';
+import React, { useState } from 'react';
 import { Box, CssBaseline, ThemeProvider } from '@mui/material';
 import { SessionProvider } from 'next-auth/react';
 import { AuthProvider } from '../src/shared/contexts/AuthContext';
@@ -8,22 +8,12 @@ import Sidebar from '../src/shared/components/Sidebar';
 import ErrorBoundary from '../src/shared/components/ErrorBoundary';
 import { useRouter } from 'next/router';
 import theme from '../src/theme/theme';
-import { PatientDataProvider } from '../src/features/simulator/context/PatientDataContext';
+import { PatientDataProvider } from '../src/features/simulador/simuladorPaciente/contexto/PatientDataContext';
 import { SocketProvider } from '../src/shared/contexts/SocketContext';
+import { SidebarContext } from '../src/shared/contexts/SidebarContext';
 import '../src/App.css';
 // Importar y inicializar i18n
 import '../src/i18n/i18n';
-
-// Context para el estado del sidebar
-const SidebarContext = createContext();
-
-export const useSidebar = () => {
-  const context = useContext(SidebarContext);
-  if (!context) {
-    throw new Error('useSidebar must be used within a SidebarProvider');
-  }
-  return context;
-};
 
 function MyApp({ Component, pageProps: { session, ...pageProps } }) {
   const router = useRouter();
