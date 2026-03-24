@@ -1,0 +1,44 @@
+{
+  "curriculum": {
+    "heading": "Learning Levels",
+    "sections": {
+      "ventylab": "Ventylab Learning",
+      "prerequisites": "Prerequisites",
+      "respiratory": "Respiratory Mechanics Learning"
+    },
+    "badges": {
+      "comingSoon": "Coming Soon",
+      "optional": "Optional"
+    },
+    "ventylabPlaceholder": {
+      "heading": "Coming Soon",
+      "description": "Modules to learn how to use the Ventylab platform and get the most out of the simulator."
+    },
+    "empty": {
+      "noPrerequisites": "No prerequisite modules available.",
+      "noModulesInLevel": "No modules available in this level",
+      "noLessonsInLevel": "No lessons available in this level"
+    }
+  },
+  "status": {
+    "completed": "Completed",
+    "inProgress": "In Progress",
+    "notStarted": "Not Started",
+    "locked": "Locked"
+  },
+  "actions": {
+    "start": "Start",
+    "continue": "Continue",
+    "review": "Review",
+    "locked": "Locked",
+    "startModule": "Start module",
+    "continueModule": "Continue module",
+    "moduleCompleted": "Module completed",
+    "moduleLocked": "Module locked"
+  },
+  "tabs": {
+    "dashboard": "Dashboard",
+    "curriculum": "Curriculum",
+    "progress": "My Progress"
+  }
+}

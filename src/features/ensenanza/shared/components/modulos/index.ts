@@ -6,6 +6,7 @@
  */
 
 export { default as CurriculumPanel } from './CurriculumPanel/CurriculumPanel';
+export { default as CurriculumSections } from './CurriculumSections/CurriculumSections';
 export { default as LevelStepper } from './LevelStepper/LevelStepper';
 export { default as ModuleLessonsList } from './ModuleLessonsList/ModuleLessonsList';
 export { default as ModuleCard } from './ModuleCard/ModuleCard';

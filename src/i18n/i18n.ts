@@ -15,20 +15,24 @@ import { initReactI18next } from 'react-i18next';
 // Importar traducciones estáticas
 import aiEs from './locales/es/ai.json';
 import aiEn from './locales/en/ai.json';
+import teachingEs from '../features/ensenanza/config/locales/es/teaching.json';
+import teachingEn from '../features/ensenanza/config/locales/en/teaching.json';
 
 i18n
   .use(initReactI18next)
   .init({
     lng: 'es',
     fallbackLng: 'es',
-    ns: ['ai'],
+    ns: ['ai', 'teaching'],
     defaultNS: 'ai',
     resources: {
       es: {
         ai: aiEs,
+        teaching: teachingEs,
       },
       en: {
         ai: aiEn,
+        teaching: teachingEn,
       },
     },
     interpolation: {

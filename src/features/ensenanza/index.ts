@@ -1,25 +1,20 @@
 /**
- * Teaching Feature - Main Export File
+ * Teaching Feature - Canonical Barrel Export
  *
- * This is the canonical location for teaching-related components.
- * Import from '@/features/ensenanza' for all teaching functionality.
- *
- * Structure:
- * - components/curriculum: Curriculum navigation and module cards
- * - components/dashboard: Dashboard widgets and stats
- * - pages: Route adapter components
+ * Import all teaching-related components from '@/features/ensenanza'.
  */
 
-// Curriculum components
+// Curriculum / module UI components
 export {
   CurriculumPanel,
+  CurriculumSections,
   LevelStepper,
   ModuleLessonsList,
   ModuleCard,
   Module03CurriculumView,
-} from './components/curriculum';
+} from './shared/components/modulos';
 
-// Dashboard components
+// Dashboard widgets
 export {
   DashboardHeader,
   ProgressOverview,
@@ -31,7 +26,10 @@ export {
   Module3ProgressDashboard,
   ReadinessIndicator,
   FlashcardDashboard,
-} from './components/dashboard';
+} from './shared/dashboard/components';
 
-// Pages / Route adapters
-export { default as LessonViewerRouteAdapter } from '@/features/ensenanza/shared/components/pages/LessonViewerRouteAdapter';
+// Page-level / route components
+export { default as TeachingModule } from './shared/components/pages/TeachingModule';
+export { default as LessonViewer } from './shared/components/leccion/LessonViewer';
+export { default as ProgressTracker } from './shared/progreso/ProgressTracker';
+export { default as LessonViewerRouteAdapter } from './shared/components/pages/LessonViewerRouteAdapter';

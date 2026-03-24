@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Typography,
@@ -64,6 +65,7 @@ const LevelStepper = ({
   moduleGrid,
   renderMode = 'modules' // 'modules' o 'lessons'
 }) => {
+  const { t } = useTranslation('teaching');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -129,9 +131,9 @@ const LevelStepper = ({
    * @returns {Object} Objeto con label y color del estado
    */
   const getLevelStatus = (percentage) => {
-    if (percentage === 100) return { label: 'Completado', color: 'success' };
-    if (percentage > 0) return { label: 'En progreso', color: 'primary' };
-    return { label: 'Sin iniciar', color: 'default' };
+    if (percentage === 100) return { label: t('status.completed'), color: 'success' };
+    if (percentage > 0) return { label: t('status.inProgress'), color: 'primary' };
+    return { label: t('status.notStarted'), color: 'default' };
   };
 
 
@@ -152,7 +154,7 @@ const LevelStepper = ({
             levelId={level.id}
             levelColor={getLevelColor(level)}
             enableAnimations={true}
-            emptyMessage={`No hay lecciones disponibles en ${level.title}`}
+            emptyMessage={t('curriculum.empty.noLessonsInLevel')}
             favoriteModules={favoriteModules || new Set()}
             onToggleFavorite={onToggleFavorite || (() => {})}
             isModuleAvailable={isModuleAvailable || (() => true)}
@@ -170,7 +172,7 @@ const LevelStepper = ({
       return (
         <Box sx={{ textAlign: 'center', py: 4 }}>
           <Typography variant="body2" sx={{ color: '#e8f4fd' }}>
-            No hay módulos disponibles en este nivel aún
+            {t('curriculum.empty.noModulesInLevel')}
           </Typography>
         </Box>
       );
@@ -187,15 +189,15 @@ const LevelStepper = ({
           favoriteModules={favoriteModules}
           getStatusIcon={() => null}
           getButtonText={(module, progress, available) => {
-            if (!available) return 'Bloqueado';
-            if (progress === 100) return 'Completado';
-            if (progress > 0) return 'Continuar';
-            return 'Comenzar';
+            if (!available) return t('actions.locked');
+            if (progress === 100) return t('status.completed');
+            if (progress > 0) return t('actions.continue');
+            return t('actions.start');
           }}
           getButtonIcon={() => null}
           levelColor={getLevelColor(level)}
           enableAnimations={true}
-          emptyMessage="No hay módulos disponibles en este nivel"
+          emptyMessage={t('curriculum.empty.noModulesInLevel')}
           mode="modules"
         />
       </Box>
@@ -214,7 +216,7 @@ const LevelStepper = ({
           letterSpacing: '-0.5px'
         }}
       >
-        Niveles de Aprendizaje
+        {t('curriculum.heading')}
       </Typography>
 
       {/* Container de niveles */}

@@ -13,6 +13,7 @@
 import React, { useMemo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import ModuleNavigationRouter from '@/features/ensenanza/shared/components/navigation/ModuleNavigationRouter';
+import CurriculumSections from '../CurriculumSections/CurriculumSections';
 import { debug } from '@/shared/utils/debug';
 import { useLearningProgress } from '@/features/progress/LearningProgressContext';
 
@@ -85,9 +86,30 @@ const CurriculumPanel = ({
     [moduleIdFromQuery, router.query.module]
   );
 
+  const effectiveModuleId = moduleIdFromQuery || router.query.module;
+
+  // Overview: no module selected → show three-accordion curriculum sections
+  if (!effectiveModuleId) {
+    return (
+      <CurriculumSections
+        levels={levels}
+        levelProgress={levelProgress}
+        getModulesByLevel={getModulesByLevel}
+        calculateModuleProgress={calculateModuleProgress}
+        isModuleAvailable={isModuleAvailable}
+        getModuleStatus={getModuleStatus}
+        getTooltipMessage={getTooltipMessage}
+        handleSectionClick={handleSectionClick}
+        favoriteModules={favoriteModules}
+        toggleFavorite={toggleFavorite}
+      />
+    );
+  }
+
+  // Module selected → delegate to existing navigation router
   return (
     <ModuleNavigationRouter
-      moduleIdFromQuery={moduleIdFromQuery || router.query.module}
+      moduleIdFromQuery={effectiveModuleId}
       lessonIdFromQuery={lessonIdFromQuery}
       router={router}
       activeCategoryId={activeCategoryId}

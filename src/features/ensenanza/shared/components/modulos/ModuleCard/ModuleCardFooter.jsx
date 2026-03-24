@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@mui/material';
 import { CheckCircle, Refresh, PlayArrow } from '@mui/icons-material';
 import styles from '@/styles/curriculum.module.css';
@@ -15,16 +16,17 @@ const ModuleCardFooter = ({
   onModuleClick,
   moduleId
 }) => {
+  const { t } = useTranslation('teaching');
   const isPrimaryAction = (status === 'available' || status === 'in-progress') && isAvailable;
   const buttonBg = isPrimaryAction ? '#22c55e' : 'transparent';
   const buttonHoverBg = isPrimaryAction ? '#16a34a' : 'transparent';
 
   const getButtonText = () => {
-    if (status === 'completed') return 'Completado';
-    if (status === 'in-progress') return 'Continuar';
-    return isAvailable ? 'Comenzar' : 'Bloqueado';
+    if (status === 'completed') return t('status.completed');
+    if (status === 'in-progress') return t('actions.continue');
+    return isAvailable ? t('actions.start') : t('actions.locked');
   };
-  
+
   const getButtonIcon = () => {
     if (status === 'completed') return <CheckCircle />;
     if (status === 'in-progress') return <Refresh />;
@@ -32,9 +34,9 @@ const ModuleCardFooter = ({
   };
 
   const getAriaLabel = () => {
-    if (status === 'completed') return 'Módulo completado';
-    if (status === 'in-progress') return 'Continuar módulo';
-    return isAvailable ? 'Comenzar módulo' : 'Módulo bloqueado';
+    if (status === 'completed') return t('actions.moduleCompleted');
+    if (status === 'in-progress') return t('actions.continueModule');
+    return isAvailable ? t('actions.startModule') : t('actions.moduleLocked');
   };
 
   return (
