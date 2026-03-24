@@ -47,7 +47,7 @@ import { getAuthToken, getUserData } from '@/shared/services/authService';
 import { getOutboxStats } from '@/shared/utils/progressOutbox';
 import { ProgressSource } from '@/features/progress/services/ProgressSource';
 import { debug } from '@/shared/utils/debug';
-import { computeModuleProgress } from '@/features/teaching/utils/computeModuleProgress';
+import { computeModuleProgress } from '@/features/ensenanza/shared/utils/computeModuleProgress';
 
 // Hooks
 import { useTokenManager } from './hooks/useTokenManager';
@@ -296,7 +296,7 @@ export const LearningProgressProvider = ({ children }) => {
   const validateLessonBelongsToModule = useCallback((lessonId, moduleId) => {
     // Import curriculum data lazily to avoid circular dependencies
     try {
-      const { curriculumData } = require('@/features/teaching/data/curriculumData');
+      const { curriculumData } = require('@/features/ensenanza/shared/data/curriculumData');
       const module = curriculumData?.modules?.[moduleId];
 
       if (!module || !Array.isArray(module.lessons)) {
@@ -470,7 +470,7 @@ export const LearningProgressProvider = ({ children }) => {
 
         // STRATEGY 1: Look in curriculumData (source of truth for lesson→module mapping)
         try {
-          const { curriculumData } = require('@/features/teaching/data/curriculumData');
+          const { curriculumData } = require('@/features/ensenanza/shared/data/curriculumData');
           if (typeof curriculumData?.modules === 'object') {
             for (const [modId, modData] of Object.entries(curriculumData.modules)) {
               const lessons = modData?.lessons || [];
@@ -965,7 +965,7 @@ export const LearningProgressProvider = ({ children }) => {
     const aggregated = {};
 
     try {
-      const { curriculumData } = require('@/features/teaching/data/curriculumData');
+      const { curriculumData } = require('@/features/ensenanza/shared/data/curriculumData');
       if (!curriculumData?.modules) return aggregated;
 
       // SOURCE 0: Datos directos de modules[] del overview (más confiable, viene de DB)
@@ -1177,7 +1177,7 @@ export const LearningProgressProvider = ({ children }) => {
     const aggregated = {};
 
     try {
-      const { curriculumData } = require('@/features/teaching/data/curriculumData');
+      const { curriculumData } = require('@/features/ensenanza/shared/data/curriculumData');
       if (!curriculumData?.levels || !curriculumData?.modules) return aggregated;
 
       for (const level of curriculumData.levels) {

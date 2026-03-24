@@ -23,7 +23,7 @@ import { http } from './http';
 import { mutate } from 'swr';
 import { getAuthToken as getAuthTokenFromService } from '@/shared/services/authService';
 import { SWR_KEYS, getProgressInvalidationMatcher } from '@/lib/swrKeys';
-import { curriculumData } from '@/features/teaching/data/curriculumData';
+import { curriculumData } from '@/features/ensenanza/shared/data/curriculumData';
 
 // ============================================
 // Token Waiting Utility

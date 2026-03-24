@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import Sidebar from '@/shared/components/Sidebar';
 import VentilatorDashboard from '@/features/simulador/simuladorVentilador/dashboard/componentes/VentilatorDashboard';
-import TeachingModule from '@/features/teaching/TeachingModule';
+import TeachingModule from '@/features/ensenanza/curriculum/shared/pages/TeachingModule';
 import { LearningProgressProvider } from '@/features/progress/LearningProgressContext';
 
 // Admin Panel Components

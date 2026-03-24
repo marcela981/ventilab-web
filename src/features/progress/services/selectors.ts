@@ -134,3 +134,16 @@ export const selectStreakDays = (snapshot: ProgressSnapshot | null): number => {
   return snapshot.overview.streakDays || 0;
 };
 
+/**
+ * Select whether user has any recorded progress.
+ */
+export const selectHasAnyProgress = (snapshot: ProgressSnapshot | null): boolean => {
+  if (!snapshot) return false;
+
+  return (
+    selectCompletedLessonsCount(snapshot) > 0 ||
+    (snapshot.overview?.modulesCompleted ?? 0) > 0 ||
+    (snapshot.overview?.streakDays ?? 0) > 0
+  );
+};
+

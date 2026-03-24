@@ -18,11 +18,11 @@
  * @module contextBuilder
  */
 
-import { curriculumData } from '@/features/teaching/data/curriculumData';
+import { curriculumData } from '@/features/ensenanza/shared/data/curriculumData';
 import {
   loadLessonById,
   getCachedLesson,
-} from '@/features/teaching/data/helpers/lessonLoader';
+} from '@/features/ensenanza/shared/data/helpers/lessonLoader';
 
 type Nullable<T> = T | null | undefined;
 

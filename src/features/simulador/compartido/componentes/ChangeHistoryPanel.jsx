@@ -39,7 +39,7 @@ import {
   ExpandMore as ExpandMoreIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
-import teachingContentService from '@/features/teaching/services/teachingContentService';
+import teachingContentService from '@/features/ensenanza/curriculum/shared/conexion/services/teachingContentService';
 import DiffViewer from './DiffViewer';
 
 function formatDate(value) {
