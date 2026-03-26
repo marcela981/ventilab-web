@@ -1,0 +1,267 @@
+{
+  "id": "module-02-ventilador-componentes",
+  "moduleId": "module-01-principiante",
+  "title": "El Ventilador y sus Componentes: Aprendizaje autodirigido con SDL/TBL",
+  "description": "Este módulo usa la metáfora del 'Ventilador y sus Componentes' para integrar autonomía (panel de control), lectura activa y memoria (flujo/ingreso), recuperación espaciada (motor) y soporte colaborativo con datos estructurados (TBL/JSON).",
+  "order": 2,
+  "estimatedTime": 70,
+  "difficulty": "intermediate",
+  "bloomLevel": "apply",
+  "learningObjectives": [
+    "Explicar cómo el aprendizaje autodirigido funciona como un panel de control para el diagnóstico de necesidades y la formulación de objetivos.",
+    "Describir la arquitectura de memoria (sensoria, trabajo, reciente y a largo plazo) y su relación con la consolidación.",
+    "Aplicar el método de las tres pasadas (5 Cs, comprensión de contenido y comprensión profunda) para leer sin saturación.",
+    "Implementar principios de recuperación activa y práctica espaciada usando herramientas tipo Anki/leitner.",
+    "Reconocer el ciclo del TBL y su rol en el aprendizaje con accountability, clarificación y aplicación en casos.",
+    "Entender por qué la estructura JSON facilita la interoperabilidad semántica y el filtrado de información."
+  ],
+  "prerequisites": [
+    "Conceptos básicos de aprendizaje activo (recuperación, espaciado) a nivel introductorio.",
+    "Lectura comprensiva de textos académicos en español."
+  ],
+  "sections": [
+    {
+      "id": "v-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción y mapa del módulo",
+      "content": {
+        "markdown": "Este módulo establece la infraestructura para el aprendizaje autodirigido usando la metáfora de 'El Ventilador y sus Componentes'. En un ecosistema de salud con entropía informativa constante, el profesional actúa como el motor que refresca competencias para evitar la obsolescencia clínica.\n\nConectarás cuatro capas:\n1) Panel de Control (Autonomía).\n2) Flujo (Lectura Activa hacia memoria).\n3) Motor (Recuperación espaciada y active recall).\n4) Soporte (TBL y datos estructurados en JSON)."
+      },
+      "estimatedTime": 6
+    },
+    {
+      "id": "v-theory-1",
+      "order": 2,
+      "type": "theory",
+      "title": "Panel de Control: aprendizaje autodirigido",
+      "content": {
+        "markdown": "El aprendizaje autodirigido funciona como el panel de control del sistema:\n\n- Autonomía para diagnosticar necesidades.\n- Formulación de objetivos específicos.\n- Identificación de recursos críticos.\n\nEn este marco, el docente se reconfigura como mentor o guía, facilitando el Cognitive Load Management (gestión de la carga cognitiva).\n\nDimensión estratégica: regular autónomamente el aprendizaje para mantenerse vigente en procedimientos y tecnologías emergentes sin supervisión constante.\n\nCapa 'So What?': la responsabilidad personal reduce el riesgo de error diagnóstico; al internalizar resolución basada en evidencia se incrementa resiliencia y seguridad asistencial.\n\nTransición metafórica: una vez configurado el panel (autonomía), el sistema debe gestionar el flujo de aire (información entrante)."
+      },
+      "estimatedTime": 12
+    },
+    {
+      "id": "v-theory-2",
+      "order": 3,
+      "type": "theory",
+      "title": "Flujo y memoria: lectura activa como entrada",
+      "content": {
+        "markdown": "Arquitectura de la memoria (resumen):\n\n- Memoria sensorial: filtro perceptual con latencia ~2 s.\n- Memoria de trabajo (WM): corteza prefrontal dorsolateral; 5-7 elementos y duración ~12 s.\n- Memoria reciente (RM): hipocampo; estabilidad ~5 días antes de consolidar.\n- Memoria a largo plazo (LTM): corteza de asociación; consolidación por LTP y plasticidad sináptica.\n\nTransición metafórica: el flujo de información debe sincronizarse por el motor para evitar desvanecimiento de redes sinápticas.\n\nCapa 'So What?': el enfoque selectivo combate la obediencia sin propósito; al traducir, interpretar y extrapolar se generan rastros de memoria sólidos, optimizando tiempo cognitivo y previniendo olvido sistemático en entornos de alta presión."
+      },
+      "estimatedTime": 18
+    },
+    {
+      "id": "v-theory-3",
+      "order": 4,
+      "type": "theory",
+      "title": "Método de filtrado: tres pasadas",
+      "content": {
+        "markdown": "El método de tres pasadas reduce saturación y mejora comprensión.\n\n1) Primera Pasada (Visión General) — 5-10 min.\n   Objetivo: responder las 5 Cs.\n   - Categoría: tipo de estudio.\n   - Contexto: relación con otros documentos.\n   - Corrección: validez de suposiciones.\n   - Contribuciones: hallazgos principales.\n   - Claridad: comprensibilidad.\n\n2) Segunda Pasada (Comprensión del Contenido) — 1 h.\n   Objetivo: analizar figuras y diagramas para captar la esencia sin saturación técnica.\n\n3) Tercera Pasada (Comprensión Profunda) — 1-5 h.\n   Objetivo: re-implementación mental del estudio, desafiando suposiciones y detectando fallas lógicas."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "v-theory-4",
+      "order": 5,
+      "type": "theory",
+      "title": "Motor de sincronización: recuperación espaciada",
+      "content": {
+        "markdown": "Recuerdo activo (active recall): mecanismo reconstructivo que fortalece esquemas neuronales al forzar recuperación desde LTM en lugar de relectura pasiva.\n\nDificultades deseables: esfuerzos mentales estratégicos justo cuando el olvido comienza, generando retención más resistente y flexible.\n\nEvidencia y algoritmos:\n- Práctica espaciada: retención 41% superior vs cramming (Dobson, 2013).\n- Herramientas tipo Anki/leitner: automatizan repetición espaciada.\n- Meta-análisis (Maye & Hurley, 2026) reportan SMD = 0.78 a favor.\n- Encapsulamiento: integración de ciencias básicas en marcos clínicos para convertir conocimiento en intuición diagnóstica.\n\nCapa 'So What?': el efecto de prueba convierte evaluación formativa en aprendizaje duradero y transferible.\n\nTransición metafórica: la potencia del motor se estabiliza mediante el chasis (estructura operativa)."
+      },
+      "estimatedTime": 12
+    },
+    {
+      "id": "v-theory-5",
+      "order": 6,
+      "type": "theory",
+      "title": "Chasis y soporte: TBL + datos estructurados (JSON)",
+      "content": {
+        "markdown": "Framework colaborativo TBL (fases):\n\n1. Pre-work: adquisición independiente de datos.\n2. IRAT: prueba individual con accountability.\n3. TRAT: consenso en equipo con retroalimentación inmediata.\n4. Clarificación: intervención del mentor para cerrar brechas cognitivas.\n5. Aplicación: resolución de casos clínicos reales con decisiones simultáneas.\n6. Peer evaluation: valoración de la competencia colaborativa.\n\nArquitectura de datos estructurados:\n- Formato JSON: pares clave-valor para interoperabilidad semántica; lógica análoga a protocolos clínicos estructurados.\n- Herramientas:\n  - docling (IBM): transforma documentos no estructurados (PDF/DOCX) en JSON/Markdown sin regex complejas.\n  - jq: filtro avanzado para extraer campos críticos de grandes volúmenes (manejo de infoxicación).\n\nCapa 'So What?': convergencia entre estructura pedagógica (TBL) y técnica (JSON) reduce errores lógicos, facilita manejar crecimiento del conocimiento y potencia decisiones colectivas.\n\nTransición metafórica: el sistema está completo; el ventilador funciona con eficiencia, estructura y propósito."
+      },
+      "estimatedTime": 16
+    },
+    {
+      "id": "v-summary",
+      "order": 7,
+      "type": "summary",
+      "title": "Cierre: síntesis del sistema y checklist",
+      "content": {
+        "markdown": "Síntesis del sistema:\n- Panel de Control (Autonomía).\n- Flujo (Lectura Activa).\n- Motor (Anki/Recuperación).\n- Soporte (TBL/JSON).\n\nChecklist:\n- Puedo explicar el rol del aprendizaje autodirigido como panel de control.\n- Conozco la arquitectura de memoria y cómo guía la consolidación.\n- Puedo aplicar tres pasadas para leer con propósito.\n- Puedo usar recuperación activa y espaciado para aumentar retención.\n- Identifico el ciclo TBL y el valor de datos estructurados en JSON.\n\nGuía de lectura/validación:\nPara validar la integridad del JSON, utilice JSONLint y confirme comillas dobles, manejo correcto de saltos de línea y ausencia de comas finales."
+      },
+      "estimatedTime": 3
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Qué funciones cumple el panel de control en el aprendizaje autodirigido?",
+        "¿Cómo se relaciona la arquitectura de memoria con una lectura efectiva?",
+        "¿Cómo aplicarías las tres pasadas en un artículo real?",
+        "¿Qué diferencia active recall de relectura pasiva?",
+        "¿Por qué el TBL y JSON ayudan a reducir errores lógicos?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "aiexpandnotes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": [
+          "intermediate",
+          "advanced"
+        ],
+        "question_types": [
+          "conceptual",
+          "application",
+          "clinical_case"
+        ],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [],
+  "quiz": {
+    "id": "quiz-v-ventilador-componentes",
+    "passingScore": 4,
+    "questions": [
+      {
+        "id": "v-q1",
+        "type": "multiple-choice",
+        "question": "¿Cuál es el objetivo principal de la primera pasada del método de tres pasadas?",
+        "options": [
+          "Memorizar palabra por palabra el contenido completo",
+          "Responder las 5 Cs para establecer categoría, contexto, corrección, contribuciones y claridad",
+          "Resolver casos clínicos con decisiones finales",
+          "Realizar solo lectura de figuras sin revisar el resumen"
+        ],
+        "correctAnswer": "Responder las 5 Cs para establecer categoría, contexto, corrección, contribuciones y claridad",
+        "explanation": "El texto indica que la primera pasada (5-10 min) busca responder las 5 Cs.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "v-q2",
+        "type": "multiple-choice",
+        "question": "Según el módulo, la Memoria de Trabajo (WM) se describe como:",
+        "options": [
+          "Ubicada en el hipocampo, con estabilidad ~5 días",
+          "Ubicada en corteza prefrontal dorsolateral, con 5-7 elementos y ~12 segundos",
+          "Almacenamiento ilimitado en LTM sin consolidación",
+          "Un filtro sensorial de ~2 segundos"
+        ],
+        "correctAnswer": "Ubicada en corteza prefrontal dorsolateral, con 5-7 elementos y ~12 segundos",
+        "explanation": "El módulo menciona explícitamente la localización dorsolateral y los rangos temporales de WM.",
+        "difficulty": "intermediate",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "v-q3",
+        "type": "multiple-choice",
+        "question": "¿Qué define mejor el active recall (recuerdo activo) frente a la relectura pasiva?",
+        "options": [
+          "Forzar recuperación desde la LTM en lugar de volver a leer para reconocer",
+          "Evitar el esfuerzo mental para reducir la carga cognitiva",
+          "Reemplazar la memoria de trabajo por relectura secuencial",
+          "Sustituir el aprendizaje por discusión sin estudio previo"
+        ],
+        "correctAnswer": "Forzar recuperación desde la LTM en lugar de volver a leer para reconocer",
+        "explanation": "El módulo define active recall como recuperación reconstructiva desde LTM en vez de relectura pasiva.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "v-q4",
+        "type": "multiple-choice",
+        "question": "En el TBL, ¿qué fase se asocia a la prueba individual de preparación (accountability)?",
+        "options": [
+          "TRAT",
+          "IRAT",
+          "Clarificación",
+          "Peer evaluation"
+        ],
+        "correctAnswer": "IRAT",
+        "explanation": "El módulo indica IRAT como prueba individual para asegurar accountability.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "v-q5",
+        "type": "multiple-choice",
+        "question": "¿Qué describe mejor la función de JSON en el soporte del módulo?",
+        "options": [
+          "Una interfaz gráfica para dibujar diagramas",
+          "Estructura clave-valor para interoperabilidad semántica y filtrado de datos críticos",
+          "Un algoritmo de ventilación mecánica para controlar PEEP",
+          "Un método para medir compliance estática"
+        ],
+        "correctAnswer": "Estructura clave-valor para interoperabilidad semántica y filtrado de datos críticos",
+        "explanation": "El módulo dice que JSON garantiza interoperabilidad semántica y permite extraer campos críticos.",
+        "difficulty": "intermediate",
+        "bloomLevel": "remember",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [
+      {
+        "authors": "Dobson",
+        "year": "2013",
+        "title": "Referencia para práctica espaciada (según el módulo)",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Maye & Hurley",
+        "year": "2026",
+        "title": "Meta-análisis para repetición espaciada (según el módulo)",
+        "source": "",
+        "doi": "",
+        "url": ""
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-25",
+    "source": "VentyLab (JSON unificado)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel principiante/profesional en formación e integra SDL/TBL con lectura activa y recuperación espaciada."
+  }
+}

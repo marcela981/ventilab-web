@@ -1,0 +1,291 @@
+{
+  "id": "module-01-historia-fisiologia-aplicada",
+  "moduleId": "module-01-principiante",
+  "title": "Historia y fisiología aplicada: SDL/TBL y estrategias de recuperación",
+  "description": "Este módulo integra contexto histórico de la educación médica y principios de fisiología del aprendizaje (arquitectura jerárquica de memoria) con estrategias basadas en la recuperación (retrieval practice, práctica espaciada, entrelazado) y metodologías activas (SDL y TBL). Incluye además un enfoque práctico para optimizar la lectura y el uso de herramientas digitales de repetición espaciada.",
+  "order": 1,
+  "estimatedTime": 75,
+  "difficulty": "intermediate",
+  "bloomLevel": "apply",
+  "learningObjectives": [
+    "Explicar la transición desde la recepción pasiva hacia el Aprendizaje Autodirigido (SDL) y su impacto en la resiliencia profesional.",
+    "Describir una arquitectura jerárquica de memoria (memoria sensorial, de trabajo, reciente y a largo plazo) y su rol en la consolidación.",
+    "Aplicar estrategias de recuperación (retrieval practice) para interrumpir el olvido y fortalecer el rastro mnémico.",
+    "Diferenciar y usar prácticas de estudio como práctica espaciada, entrelazado y efecto de prueba en el marco de aprendizaje activo.",
+    "Reconocer las fases principales del Aprendizaje Basado en Equipos (TBL) y el rol complementario del SDL.",
+    "Optimizar la lectura científica con el método de tres pasadas y usar herramientas como Anki/SuperMemo 2.0 para automatizar el repaso espaciado."
+  ],
+  "prerequisites": [
+    "Conceptos básicos de aprendizaje activo y neurociencia/psicología cognitiva a nivel introductorio.",
+    "Capacidad de lectura comprensiva de textos académicos en español."
+  ],
+  "sections": [
+    {
+      "id": "hfa-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción y mapa del módulo",
+      "content": {
+        "markdown": "Qué vas a aprender en este módulo\n\nTema: Historia de la educación médica y fisiología aplicada al aprendizaje (SDL/TBL) con estrategias basadas en la recuperación.\n\nA lo largo del módulo conectarás:\n- Evolución educativa (pasar de recibir información a dirigir el propio aprendizaje).\n- Arquitectura de memoria (memoria sensorial, trabajo, reciente y a largo plazo).\n- Estrategias de recuperación (retrieval practice y “dificultades deseables”).\n- Metodologías activas (SDL y TBL) y su ciclo de implementación.\n- Optimización de lectura y herramientas digitales (Anki/SuperMemo).\n"
+      },
+      "estimatedTime": 6
+    },
+    {
+      "id": "hfa-theory-1",
+      "order": 2,
+      "type": "theory",
+      "title": "Contexto histórico y evolución educativa",
+      "content": {
+        "markdown": "La educación médica contemporánea atraviesa una transición de fase crítica, alejándose del modelo de 'recepción pasiva' —donde el conocimiento se trataba como una entidad estática transmitida por el docente— hacia el paradigma del Aprendizaje Autodirigido (SDL). En la arquitectura de datos pedagógicos, el SDL se define como un proceso proactivo donde el profesional asume la responsabilidad de diagnosticar sus necesidades de aprendizaje, formular metas y localizar recursos estratégicos. Esta evolución es imperativa debido a la obsolescencia acelerada de la evidencia clínica y la carga abrumadora de información científica actual; el profesional no puede depender de una base de datos estática, sino que debe desarrollar algoritmos cognitivos de actualización continua. \n\nEl análisis 'So What?' de esta transición revela que el estudiante deja de ser un consumidor de información para convertirse en el 'arquitecto de su propia formación'. La autonomía funcional no es simplemente una libertad metodológica, sino un requisito para la resiliencia profesional. Al participar en el SDL, el estudiante desarrolla habilidades de reflexión crítica y toma de decisiones basada en evidencia que son vitales para la seguridad del paciente. Este empoderamiento transforma la búsqueda activa en un proceso de codificación más profundo, donde la relevancia clínica dicta la estructura del almacenamiento. En última instancia, esta necesidad de autonomía profesional encuentra su correlato neurobiológico en la plasticidad del cerebro, cuya arquitectura está diseñada para optimizar la retención cuando el procesamiento implica un esfuerzo volitivo y una búsqueda de significado."
+      },
+      "estimatedTime": 12
+    },
+    {
+      "id": "hfa-theory-2",
+      "order": 3,
+      "type": "theory",
+      "title": "Fisiología aplicada: arquitectura de la memoria",
+      "content": {
+        "markdown": "Para alcanzar la maestría clínica, es fundamental que el profesional comprenda la infraestructura biológica del aprendizaje. El procesamiento de información no es lineal, sino que depende de una arquitectura jerárquica de memoria: \n\n1. **Memoria Sensorial:** Ubicada en las cortezas visual y auditiva, actúa como el búfer de entrada con una duración de ~2 segundos y una capacidad perceptual alta pero volátil.\n2. **Memoria de Trabajo (WM):** Localizada primordialmente en la **corteza prefrontal dorsolateral**, es el entorno de ejecución donde la información es 'lábil'. Tiene una capacidad de 5 a 7 elementos y una duración de ~12 segundos.\n3. **Memoria Reciente (RM):** Mediada por el **hipocampo**, funciona como un nodo de consolidación transitorio con una duración estimada de 5 días.\n4. **Memoria a Largo Plazo (LTM):** Reside en la **corteza de asociación**, con capacidad virtualmente ilimitada y duración indefinida.\n\nLa consolidación de estos datos ocurre mediante la **Potenciación a Largo Plazo (LTP)**, que fortalece las conexiones sinápticas a través del procesamiento repetido. Un análisis profundo de este proceso revela el fenómeno del **'conocimiento encapsulado'**: en el experto, las ciencias básicas no desaparecen, sino que se integran en marcos conceptuales clínicos amplios. Esta integración reduce significativamente la carga cognitiva durante el diagnóstico, permitiendo un razonamiento clínico ágil y eficiente. El acceso a estos esquemas integrados es lo que diferencia al experto del novato, quien aún lucha con hechos aislados. Esta infraestructura fisiológica, donde la recuperación es un acto reconstructivo y no un acceso pasivo, constituye el cimiento de las estrategias de estudio activo que aprovechan el esfuerzo mental para solidificar el rastro mnémico."
+      },
+      "estimatedTime": 16
+    },
+    {
+      "id": "hfa-theory-3",
+      "order": 4,
+      "type": "theory",
+      "title": "Estrategias de aprendizaje basadas en la recuperación",
+      "content": {
+        "markdown": "La 'Práctica de Recuperación' (*Retrieval Practice*) se fundamenta en interrumpir sistemáticamente el patrón natural del olvido descrito por Ebbinghaus. A diferencia de la relectura pasiva, que genera una falsa 'ilusión de conocimiento', el recuerdo activo fuerza al sistema cognitivo a rescatar información de la LTM, fortaleciendo las redes neuronales asociadas. Este método introduce 'dificultades deseables': retos que, aunque aumentan el esfuerzo y la frustración inicial, resultan en una memoria más resistente y flexible. \n\nDesde una perspectiva técnica, las metodologías clave son:\n- **Práctica Espaciada:** Al distribuir el estudio en intervalos crecientes, se evita el estudio masivo (*cramming*). La evidencia en educación médica demuestra una retención un **41% superior** frente a métodos tradicionales.\n- **Entrelazado (*Interleaving*):** Mezclar temas relacionados o diagnósticos diferenciales en una sesión mejora la capacidad de discriminación diagnóstica, evitando la automatización superficial.\n- **Efecto de Prueba:** El uso de exámenes de baja complejidad como herramientas de aprendizaje, no solo de evaluación. Las preguntas de respuesta corta son superiores a las de opción múltiple, siempre que incluyan retroalimentación inmediata.\n\nEs crucial distinguir entre la recuperación **'Encubierta'** (traer el dato a la mente) y la **'Evidente'** (escribir o verbalizar). Aunque ambas superan al re-estudio, la recuperación evidente suele ser superior para la retención a largo plazo. Estas estrategias de recuperación individual son el motor de preparación necesario para el éxito en entornos de colaboración compleja."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "hfa-theory-4",
+      "order": 5,
+      "type": "theory",
+      "title": "Metodologías activas: SDL y TBL",
+      "content": {
+        "markdown": "El **Aprendizaje Basado en Equipos (TBL)** y el **Aprendizaje Autodirigido (SDL)** representan la aplicación práctica de la psicología cognitiva en el aula. El TBL es una estrategia pedagógica que utiliza un ciclo de seis fases diseñado para asegurar la rendición de cuentas (*accountability*) y la aplicación del conocimiento:\n\n1. **Pre-work:** Estudio independiente fuera del aula para dominar objetivos básicos.\n2. **IRAT (Individual Readiness Assurance Test):** Prueba individual de opción múltiple para asegurar que cada estudiante ha cumplido con el Pre-work.\n3. **TRAT (Team Readiness Assurance Test):** La misma prueba realizada en equipo; el debate para alcanzar un consenso genera aprendizaje entre pares y retroalimentación inmediata.\n4. **Clarificación:** El docente interviene específicamente para cerrar brechas conceptuales identificadas durante los tests.\n5. **Aplicación:** Resolución de casos clínicos reales mediante el marco de las '4S' (Problema Significativo, Misma Pregunta, Opción Específica y Reporte Simultáneo), forzando la toma de decisiones complejas.\n6. **Evaluación de Pares:** Evaluación mutua de contribuciones y profesionalismo, cerrando el ciclo de rendición de cuentas.\n\nEste modelo transforma el rol docente de 'transmisor' a 'facilitador y mentor', enfocándose en guiar la reflexión crítica. Este cambio pedagógico aumenta la motivación intrínseca y la resiliencia del estudiante ante la incertidumbre clínica. Para escalar esta efectividad, es esencial integrar estas metodologías con herramientas digitales que sistematicen el seguimiento del progreso."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "hfa-theory-5",
+      "order": 6,
+      "type": "theory",
+      "title": "Optimización de lectura y herramientas digitales",
+      "content": {
+        "markdown": "La lectura activa de literatura científica debe entenderse como una 'búsqueda con propósito' que rompe la ineficiencia de la lectura secuencial. Para optimizar el procesamiento de información técnica, se recomienda el **Método de las Tres Pasadas**:\n\n1. **Primera Pasada (Visión General):** En 5-10 minutos, se analizan título, resumen y conclusiones. El resultado debe ser la respuesta a las **'5 Cs'**: Categoría, Contexto, Corrección, Contribuciones y Claridad.\n2. **Segunda Pasada (Comprensión):** Con una duración de hasta 1 hora, se examinan figuras, diagramas y referencias clave para captar la esencia del contenido.\n3. **Tercera Pasada (Comprensión Profunda):** Toma de 1 a 5 horas. El lector intenta 're-implementar' mentalmente el estudio, desafiando suposiciones e identificando limitaciones.\n\nEn el ecosistema digital, aplicaciones de repetición espaciada como **Anki**, basadas en algoritmos como **SuperMemo 2.0**, automatizan la recuperación en el punto óptimo del olvido. Meta-análisis recientes en educación médica muestran un tamaño del efecto de **SMD = 0.78** a favor de estas herramientas comparado con el estudio convencional. Esta sinergia entre fisiología de la memoria, metodologías activas y arquitectura de datos prepara al profesional de la salud para ser un aprendiz perpetuo, capaz de integrar la innovación tecnológica con una práctica clínica de alta precisión."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "hfa-summary",
+      "order": 7,
+      "type": "summary",
+      "title": "Cierre: resumen y checklist",
+      "content": {
+        "markdown": "Resumen y checklist\n\n- Explico la transición hacia el Aprendizaje Autodirigido (SDL) y su valor para la toma de decisiones basada en evidencia.\n- Describo la arquitectura jerárquica de memoria y la consolidación mediante Potenciación a Largo Plazo (LTP).\n- Aplico estrategias de recuperación (retrieval practice) y distingo recuperación encubierta vs evidente.\n- Reconozco y ubico las fases clave del TBL (pre-work, IRAT/TRAT, clarificación, aplicación, evaluación de pares).\n- Uso el método de tres pasadas para lectura científica y herramientas de repetición espaciada (Anki/SuperMemo).\n\nGuía de validación JSON\nPara validar la integridad de este documento JSON, utilice JSONLint. Asegúrese de que: 1) Todas las claves y cadenas de texto utilicen comillas dobles. 2) Se utilicen caracteres de escape '\\n' para saltos de línea dentro de los valores. 3) No existan comas finales en el último elemento de los objetos. 4) La codificación se mantenga en UTF-8 para preservar la diacrítica del español."
+      },
+      "estimatedTime": 2
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Qué implica el Aprendizaje Autodirigido (SDL) en educación médica?",
+        "¿Cómo se relaciona la arquitectura de memoria con el aprendizaje clínico?",
+        "¿Por qué la práctica de recuperación mejora la retención?",
+        "¿Cuáles son las fases principales del TBL?",
+        "¿Cómo aplicar el método de las tres pasadas para leer artículos?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "aiexpandnotes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": [
+          "intermediate",
+          "advanced"
+        ],
+        "question_types": [
+          "conceptual",
+          "application",
+          "clinical_case"
+        ],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [],
+  "quiz": {
+    "id": "quiz-hfa-sdl-tbl",
+    "passingScore": 4,
+    "questions": [
+      {
+        "id": "hfa-q1",
+        "type": "multiple-choice",
+        "question": "¿Qué estructura se describe como mediadora de la Memoria Reciente (RM)?",
+        "options": [
+          "Corteza prefrontal dorsolateral",
+          "Hipocampo",
+          "Corteza de asociación",
+          "Amígdala"
+        ],
+        "correctAnswer": "Hipocampo",
+        "explanation": "En el texto, la Memoria Reciente (RM) se indica como mediada por el hipocampo, con un rol transitorio de consolidación.",
+        "difficulty": "intermediate",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "hfa-q2",
+        "type": "multiple-choice",
+        "question": "La práctica espaciada se caracteriza principalmente por:",
+        "options": [
+          "Estudiar todo junto en una sola sesión",
+          "Repetir el estudio en intervalos crecientes",
+          "Cambiar completamente de tema sin relación",
+          "Evitar la recuperación activa para reducir frustración"
+        ],
+        "correctAnswer": "Repetir el estudio en intervalos crecientes",
+        "explanation": "La práctica espaciada distribuye el estudio para evitar el estudio masivo (cramming) y favorecer una retención más resistente al olvido.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "hfa-q3",
+        "type": "multiple-choice",
+        "question": "¿Qué idea resume mejor el efecto de la práctica de recuperación (retrieval practice)?",
+        "options": [
+          "Fuerza al sistema a rescatar información de la LTM, fortaleciendo redes neuronales asociadas",
+          "Reduce el esfuerzo cognitivo hasta que la memoria deja de consolidarse",
+          "Sustituye la recuperación activa por relectura pasiva",
+          "Solo funciona cuando hay retroalimentación escrita inmediata"
+        ],
+        "correctAnswer": "Fuerza al sistema a rescatar información de la LTM, fortaleciendo redes neuronales asociadas",
+        "explanation": "El texto describe retrieval practice como un recuerdo activo que interrumpe el patrón de olvido y consolida conexiones al recuperar información desde la LTM.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "hfa-q4",
+        "type": "multiple-choice",
+        "question": "En el ciclo del TBL, ¿qué etapa se asocia al debate en equipo para llegar a consenso?",
+        "options": [
+          "Pre-work",
+          "IRAT (Individual Readiness Assurance Test)",
+          "TRAT (Team Readiness Assurance Test)",
+          "Evaluación de Pares"
+        ],
+        "correctAnswer": "TRAT (Team Readiness Assurance Test)",
+        "explanation": "TRAT corresponde a la prueba en equipo y, según el texto, el debate para alcanzar consenso genera aprendizaje entre pares y retroalimentación inmediata.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "hfa-q5",
+        "type": "multiple-choice",
+        "question": "¿Qué herramienta se menciona como ejemplo de repetición espaciada en el ecosistema digital?",
+        "options": [
+          "Anki",
+          "Excel",
+          "PowerPoint",
+          "Spotify"
+        ],
+        "correctAnswer": "Anki",
+        "explanation": "El texto menciona Anki como aplicación de repetición espaciada basada en algoritmos como SuperMemo 2.0.",
+        "difficulty": "intermediate",
+        "bloomLevel": "remember",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [
+      {
+        "authors": "Brown, P. C.; Roediger, H. L.; & McDaniel, M. A.",
+        "year": "2014",
+        "title": "Make It Stick: The Science of Successful Learning.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Karpicke, J. D.",
+        "year": "2016",
+        "title": "A powerful way to improve learning and memory.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Bjork, R. A.; & Bjork, E. L.",
+        "year": "2020",
+        "title": "Desirable Difficulties in Theory and Practice.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Ebbinghaus, H.",
+        "year": "1885",
+        "title": "Über das Gedächtnis.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Michaelsen, L. K.",
+        "year": "2002",
+        "title": "Team-Based Learning: A Transformative Use of Small Groups.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-25",
+    "source": "VentyLab (JSON unificado)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel principiante/intermedio. Integra conceptos de educación médica y estrategias basadas en recuperación."
+  }
+}

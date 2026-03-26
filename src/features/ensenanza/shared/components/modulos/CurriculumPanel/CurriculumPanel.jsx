@@ -18,7 +18,7 @@ import { debug } from '@/shared/utils/debug';
 import { useLearningProgress } from '@/features/progress/LearningProgressContext';
 
 // Static imports for module data (required for Next.js bundler)
-import module03Content, { metadata as module03Metadata } from '@/features/ensenanza/shared/data/lessons/module-03-configuration';
+import module03Content, { metadata as module03Metadata } from '@/features/ensenanza/shared/data/lessons/mecanica/level03-avanzado';
 
 /**
  * Gets module content and metadata based on moduleId

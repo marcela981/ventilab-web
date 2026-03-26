@@ -36,6 +36,13 @@ const SECTION_META = {
   mecanica:      { icon: MenuBookIcon, color: '#1565C0' },
 };
 
+/** Keys under curriculum.sections in teaching.json (ids here are API / filter keys). */
+const SECTION_I18N_KEY = {
+  ventylab: 'ventylab',
+  prerequisitos: 'prerequisites',
+  mecanica: 'respiratory',
+};
+
 /**
  * CurriculumSections
  *
@@ -59,13 +66,18 @@ const CurriculumSections = ({
   // Last accordion open by default (main learning path is the existing content)
   const [expanded, setExpanded] = useState('mecanica');
 
+  const ventylabLevels = useMemo(
+    () => levels.filter((l) => l.track === 'ventylab'),
+    [levels]
+  );
+
   const prerequisitosLevels = useMemo(
     () => levels.filter((l) => l.id === 'prerequisitos'),
     [levels]
   );
 
   const mainLevels = useMemo(
-    () => levels.filter((l) => l.id !== 'prerequisitos'),
+    () => levels.filter((l) => l.track === 'mecanica' && l.id !== 'prerequisitos'),
     [levels]
   );
 
@@ -90,7 +102,7 @@ const CurriculumSections = ({
     <Box>
       {SECTION_IDS.map((id) => {
         const { icon: Icon, color } = SECTION_META[id];
-        const title = t(`curriculum.sections.${id}`);
+        const title = t(`curriculum.sections.${SECTION_I18N_KEY[id]}`);
 
         return (
           <Accordion
@@ -125,9 +137,6 @@ const CurriculumSections = ({
               <Typography variant="subtitle1" fontWeight={600} sx={{ color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
                 {title}
               </Typography>
-              {id === 'ventylab' && (
-                <Chip label={t('curriculum.badges.comingSoon')} size="small" sx={{ ml: 1, fontSize: 11 }} />
-              )}
               {id === 'prerequisitos' && (
                 <Chip label={t('curriculum.badges.optional')} size="small" variant="outlined" sx={{ ml: 1, fontSize: 11, color: 'white', borderColor: '#BDBDBD' }} />
               )}
@@ -135,15 +144,13 @@ const CurriculumSections = ({
 
             <AccordionDetails sx={{ px: 2, pb: 2 }}>
               {id === 'ventylab' && (
-                <Box sx={{ py: 5, textAlign: 'center' }}>
-                  <DevicesIcon sx={{ fontSize: 48, color: '#CE93D8', mb: 1.5 }} />
-                  <Typography variant="h6" gutterBottom color="white">
-                    {t('curriculum.ventylabPlaceholder.heading')}
+                ventylabLevels.length > 0 ? (
+                  <LevelStepper levels={ventylabLevels} {...levelStepperProps} />
+                ) : (
+                  <Typography color="text.secondary" sx={{ py: 2 }}>
+                    {t('curriculum.empty.noModules', 'No hay módulos disponibles aún.')}
                   </Typography>
-                  <Typography variant="body2" color="text.disabled" maxWidth={420} mx="auto">
-                    {t('curriculum.ventylabPlaceholder.description')}
-                  </Typography>
-                </Box>
+                )
               )}
 
               {id === 'prerequisitos' && (

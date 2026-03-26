@@ -9,7 +9,7 @@
 
 import curriculumModules from './index.js';
 import { curriculumData } from '@/features/ensenanza/shared/data/curriculumData';
-import module03Content from '@/features/ensenanza/shared/data/lessons/module-03-configuration';
+import module03Content from '@/features/ensenanza/shared/data/lessons/mecanica/level03-avanzado/index.js';
 
 /**
  * Get total count of modules

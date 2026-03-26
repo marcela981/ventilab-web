@@ -341,6 +341,13 @@ function getLessonPath(lessonId, moduleId) {
     'module-04-modos-ventilatorios': 'lessons/module-01-fundamentals/module-04-modos-ventilatorios.json',
     'module-05-monitorizacion-grafica': 'lessons/module-01-fundamentals/module-05-monitorizacion-grafica.json',
     'module-06-efectos-sistemicos': 'lessons/module-01-fundamentals/module-06-efectos-sistemicos.json',
+    // VentyLab track lessons
+    'vl-historia-fisiologia-aplicada':    'lessons/ventylab/level01-principiante/historia_fisiolog\u00EDa_aplicada.json',
+    'vl-ventilador-componentes':          'lessons/ventylab/level01-principiante/ventilador_compontentes.json',
+    'vl-programacion-modos-clasicos':     'lessons/ventylab/level02-intermedio/programaci\u00F3n_modo_clasicos.json',
+    'vl-vni-destete':                     'lessons/ventylab/level02-intermedio/ventilaci\u00F3nnoinvasiva_destete.json',
+    'vl-raciocinio-clinico-patologias':   'lessons/ventylab/level03-avanzado/raciocinocl\u00EDnico_patolog\u00EDascr\u00EDticas.json',
+    'vl-innovacion-tecnologia-gestion':   'lessons/ventylab/level03-avanzado/innovaci\u00F3n_tecnolog\u00EDa_gesti\u00F3n.json',
   };
   
   // Si el lessonId tiene mapeo directo, usarlo

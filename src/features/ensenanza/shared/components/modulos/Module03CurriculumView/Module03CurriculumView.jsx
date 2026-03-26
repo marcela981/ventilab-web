@@ -20,7 +20,7 @@ import {
   Build as BuildIcon,
   ChecklistRtl as ChecklistIcon,
 } from '@mui/icons-material';
-import module03Content, { metadata as module03Metadata } from '@/features/ensenanza/shared/data/lessons/module-03-configuration';
+import module03Content, { metadata as module03Metadata } from '@/features/ensenanza/shared/data/lessons/mecanica/level03-avanzado';
 import ModuleCategoryNav from '@/features/ensenanza/shared/components/navigation/ModuleCategoryNav';
 import { TeachingModuleProvider } from '@/features/ensenanza/shared/contexts/TeachingModuleContext';
 import useTeachingModule from '@/features/ensenanza/shared/hooks/useTeachingModule';

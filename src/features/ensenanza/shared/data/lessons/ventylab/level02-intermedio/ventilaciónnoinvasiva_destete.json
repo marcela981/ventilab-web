@@ -1,0 +1,317 @@
+{
+  "id": "module-04-ventilacion-no-invasiva-destete",
+  "moduleId": "module-02-intermedio",
+  "title": "Guía maestra de estrategias de aprendizaje para ventilación no invasiva y destete",
+  "description": "Este módulo reorganiza el aprendizaje de VNI y destete desde una lógica de aprendizaje autodirigido, neurobiología de la memoria, lectura activa, recuperación espaciada, TBL/simulación e implementación técnica con datos estructurados.",
+  "order": 4,
+  "estimatedTime": 68,
+  "difficulty": "intermediate",
+  "bloomLevel": "apply",
+  "learningObjectives": [
+    "Explicar por qué el aprendizaje autodirigido es crítico para dominar protocolos de VNI y destete.",
+    "Describir la arquitectura de memoria y el conocimiento encapsulado aplicado al razonamiento clínico en destete.",
+    "Aplicar el método de las tres pasadas a literatura sobre VNI, asincronía y weaning.",
+    "Usar principios de práctica espaciada, interleaving y recuperación evidente para retener criterios clínicos.",
+    "Reconocer el rol del TBL y la simulación como entornos seguros de práctica y debriefing.",
+    "Entender cómo JSON, Python, Docling y jq aportan interoperabilidad y escalabilidad al currículo clínico."
+  ],
+  "prerequisites": [
+    "Conceptos básicos de ventilación mecánica y fisiología respiratoria.",
+    "Lectura comprensiva de textos clínicos en español."
+  ],
+  "sections": [
+    {
+      "id": "vni-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción y mapa del módulo",
+      "content": {
+        "markdown": "Esta guía transforma la formación en Ventilación No Invasiva (VNI) y Destete (Weaning) desde una recepción pasiva de protocolos hacia una gestión autodirigida y técnica de la competencia clínica.\n\nEl enfoque integra:\n- Aprendizaje autodirigido (SDL).\n- Neurobiología de la memoria y consolidación.\n- Lectura activa con tres pasadas.\n- Recuperación espaciada y active recall.\n- TBL y simulación.\n- Estructuración técnica con JSON y herramientas de procesamiento."
+      },
+      "estimatedTime": 6
+    },
+    {
+      "id": "vni-theory-1",
+      "order": 2,
+      "type": "theory",
+      "title": "Aprendizaje autodirigido en VNI y destete",
+      "content": {
+        "markdown": "En VNI y destete, el Aprendizaje Autodirigido (SDL) no es opcional. La capacidad del clínico para diagnosticar sus propias brechas de conocimiento influye directamente en reducir días de ventilación mecánica y fallas de extubación.\n\nDimensiones clave:\n- **Diagnóstico de necesidades:** detectar debilidades, por ejemplo en curvas flujo-tiempo.\n- **Formulación de metas:** definir objetivos específicos como dominar criterios ATS/CHEST.\n- **Evaluación de resultados:** reflexionar críticamente sobre efectividad terapéutica y actualización basada en evidencia.\n\nEn este ecosistema, el docente actúa como **mentor de datos**, no solo como transmisor de información estática.\n\nConectividad neurobiológica: la autonomía requiere una arquitectura mental que evite la ilusión de saber."
+      },
+      "estimatedTime": 12
+    },
+    {
+      "id": "vni-theory-2",
+      "order": 3,
+      "type": "theory",
+      "title": "Neurobiología de memoria y conocimiento encapsulado",
+      "content": {
+        "markdown": "Para una práctica segura en el retiro ventilatorio, la información debe pasar de estados lábiles a consolidación permanente.\n\nEl **Conocimiento Encapsulado** permite integrar fisiología respiratoria básica (distensibilidad, resistencia) en cápsulas conceptuales que aceleran el razonamiento clínico.\n\n| Etapa de la Memoria | Ubicación Anatómica Principal | Duración Estimada | Capacidad |\n| :--- | :--- | :--- | :--- |\n| **Sensorial** | Cortezas visual y auditiva | ~2 segundos | Alta (perceptual) |\n| **Trabajo (WM)** | Corteza prefrontal dorsolateral | ~12 segundos | 5-7 elementos |\n| **Reciente (RM)** | Hipocampo | ~5 días | Variable |\n| **Largo Plazo (LTM)** | Corteza de asociación | Indefinida | Prácticamente ilimitada |\n\nMecanismos clave:\n- **LTP:** incremento de fuerza sináptica por procesamiento repetido de conceptos como PS y PEEP.\n- **Consolidación:** traslado del rastro mnémico del hipocampo al neocórtex.\n- **Importancia del destete:** comprender falla de destete permite diagnosticar rápido una disfunción diafragmática sin reconstruir cada detalle bioquímico."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "vni-theory-3",
+      "order": 4,
+      "type": "theory",
+      "title": "Lectura activa y tres pasadas",
+      "content": {
+        "markdown": "La lectura en este módulo no debe ser obediencia sin propósito. Ante el volumen de literatura en ventilación mecánica, el clínico debe transformar texto en competencia.\n\nMétodo de las tres pasadas:\n1. **Primera Pasada (5 a 10 min):** responder a las 5 Cs.\n   - Categoría.\n   - Contexto.\n   - Corrección.\n   - Contribuciones.\n   - Claridad.\n2. **Segunda Pasada (1 hora):** revisar figuras, diagramas de flujo de destete y gráficos de asincronías sin detenerse en demostraciones excesivamente técnicas.\n3. **Tercera Pasada (1 a 5 horas):** re-implementación virtual del estudio para detectar fallas ocultas en selección de pacientes para VNI.\n\nNiveles semánticos (Romeu):\n- **Traducción:** parafrasear criterios de extubación.\n- **Interpretación:** emitir juicio crítico.\n- **Extrapolación:** aplicar hallazgos a un paciente concreto en UCI.\n\nLa lectura activa es el input; la recuperación espaciada evita que ese input se pierda."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "vni-theory-4",
+      "order": 5,
+      "type": "theory",
+      "title": "Práctica de recuperación y retención clínica",
+      "content": {
+        "markdown": "El cerebro olvida por diseño homeostático. Para frenar la curva del olvido en temas como CPAP o el índice de Tobin, se requieren **dificultades deseables**.\n\nEstrategias con evidencia:\n- **Práctica espaciada:** mejora del **41% en retención** frente a cramming.\n- **Interleaving:** mezclar fallo de weaning cardíaco vs respiratorio mejora discriminación diagnóstica.\n- **Anki / SuperMemo 2.0:** automatizan repaso justo antes del olvido; meta-análisis reportan **SMD = 0.78**.\n- **Recuperación overt (evidente):** escribir o verbalizar los pasos de una SBT es más potente que recordar mentalmente.\n\nLa robustez cognitiva individual luego se traslada al equipo mediante metodologías colaborativas."
+      },
+      "estimatedTime": 12
+    },
+    {
+      "id": "vni-theory-5",
+      "order": 6,
+      "type": "theory",
+      "title": "TBL, simulación y debriefing",
+      "content": {
+        "markdown": "El TBL y la simulación son puentes entre teoría de VNI y práctica. La simulación ha mostrado reducción de errores clínicos críticos de **30.9% a 4.4%**.\n\nFases clave:\n1. **Preparación Independiente:** estudio previo sobre interfaces de VNI.\n2. **Aseguramiento (RAT):** IRAT y TRAT garantizan datos compartidos.\n3. **Aplicación:** resolución en equipo de casos complejos de asincronías.\n\nEn simulación, el ciclo de Kolb permite ir de experiencia concreta a concepto abstracto. El **debriefing** es el punto más importante: corrige errores de fijación, guía reflexión y transforma error en aprendizaje significativo."
+      },
+      "estimatedTime": 11
+    },
+    {
+      "id": "vni-theory-6",
+      "order": 7,
+      "type": "theory",
+      "title": "Implementación técnica e interoperabilidad",
+      "content": {
+        "markdown": "Desde una arquitectura de educación médica, formatos estructurados como **JSON** son fundamentales para interoperabilidad y escalabilidad curricular.\n\nHerramientas de procesamiento:\n- **Python + json:** `load` y `loads` permiten transformar bases de casos clínicos en estructuras manejables.\n- **IBM Docling:** extrae guías clínicas en PDF directamente a JSON/Markdown, evitando parseo manual frágil.\n- **Bash + jq:** filtra información específica rápidamente, por ejemplo `.colors[]` o `.parametros_vni | select(.valor > 5)`.\n\nIntegrar pedagogía y tecnología estructurada convierte el conocimiento clínico en un activo digital duradero."
+      },
+      "estimatedTime": 11
+    },
+    {
+      "id": "vni-summary",
+      "order": 8,
+      "type": "summary",
+      "title": "Cierre: síntesis y checklist",
+      "content": {
+        "markdown": "Síntesis:\nLa convergencia de aprendizaje autodirigido, recuperación, TBL y datos estructurados define un nuevo estándar de formación médica. No prepara solo para exámenes: prepara para decidir en VNI y destete reduciendo errores.\n\nChecklist:\n- Entiendo por qué el SDL es crítico en VNI y weaning.\n- Reconozco la arquitectura de memoria y el valor del conocimiento encapsulado.\n- Puedo aplicar tres pasadas a un artículo sobre destete.\n- Puedo usar espaciado, interleaving y recuperación evidente para retener criterios clínicos.\n- Identifico el valor del TBL, simulación y debriefing.\n- Comprendo cómo JSON, Python, Docling y jq escalan el currículo clínico."
+      },
+      "estimatedTime": 3
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Por qué el aprendizaje autodirigido es tan importante en VNI y destete?",
+        "¿Qué es el conocimiento encapsulado en este contexto clínico?",
+        "¿Cómo aplicar las tres pasadas a un artículo de destete?",
+        "¿Qué significa que Anki tenga un SMD de 0.78 en educación médica?",
+        "¿Cómo se integran TBL, simulación y debriefing en el aprendizaje de VNI?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "aiexpandnotes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": [
+          "intermediate",
+          "advanced"
+        ],
+        "question_types": [
+          "conceptual",
+          "application",
+          "clinical_case"
+        ],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [],
+  "quiz": {
+    "id": "quiz-vni-destete",
+    "passingScore": 4,
+    "questions": [
+      {
+        "id": "vni-q1",
+        "type": "multiple-choice",
+        "question": "¿Qué tamaño del efecto (SMD) se menciona para Anki en educación médica?",
+        "options": [
+          "0.41",
+          "0.78",
+          "0.30",
+          "1.02"
+        ],
+        "correctAnswer": "0.78",
+        "explanation": "El módulo menciona un tamaño del efecto de SMD = 0.78 en meta-análisis sobre Anki.",
+        "difficulty": "intermediate",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "vni-q2",
+        "type": "multiple-choice",
+        "question": "En la primera pasada de lectura activa, ¿qué se busca responder?",
+        "options": [
+          "La re-implementación completa del estudio",
+          "Las 5 Cs: categoría, contexto, corrección, contribuciones y claridad",
+          "Solo el análisis de asincronías en detalle",
+          "La construcción inmediata de mapas conceptuales"
+        ],
+        "correctAnswer": "Las 5 Cs: categoría, contexto, corrección, contribuciones y claridad",
+        "explanation": "La primera pasada busca una visión general respondiendo a las 5 Cs.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "vni-q3",
+        "type": "multiple-choice",
+        "question": "Según Romeu, ¿qué nivel implica aplicar hallazgos a un paciente concreto?",
+        "options": [
+          "Traducción",
+          "Interpretación",
+          "Extrapolación",
+          "Consolidación"
+        ],
+        "correctAnswer": "Extrapolación",
+        "explanation": "La extrapolación corresponde a usar lo aprendido en un contexto clínico nuevo y concreto.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "vni-q4",
+        "type": "multiple-choice",
+        "question": "¿Qué estrategia se describe como más eficaz que el simple recuerdo mental para una SBT?",
+        "options": [
+          "Relectura pasiva",
+          "Recuperación covert",
+          "Recuperación overt (escribir o verbalizar)",
+          "Memorización sin espaciado"
+        ],
+        "correctAnswer": "Recuperación overt (escribir o verbalizar)",
+        "explanation": "El texto resalta que escribir o verbalizar los pasos de la SBT supera al simple recuerdo mental.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "vni-q5",
+        "type": "multiple-choice",
+        "question": "¿Cuál es el momento más vital de la simulación según el módulo?",
+        "options": [
+          "La preparación independiente",
+          "El debriefing",
+          "El IRAT",
+          "La lectura de la guía"
+        ],
+        "correctAnswer": "El debriefing",
+        "explanation": "El módulo indica que el debriefing es el momento más vital porque transforma error en aprendizaje significativo.",
+        "difficulty": "intermediate",
+        "bloomLevel": "remember",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [
+      {
+        "authors": "Álvarez-Debbie, Sáez-Fabiola y López-Yaranay",
+        "year": "2020",
+        "title": "Revisión sistemática del aprendizaje autorregulado en ciencias de la salud",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Blanco-García, C. E.",
+        "year": "2021",
+        "title": "El staff de prácticas profesionales: fomento del aprendizaje autodirigido",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Brown, P. C.",
+        "year": "2014",
+        "title": "Make It Stick: the science of successful learning",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Fasce, E. y Ligeti, P. A.",
+        "year": "2018",
+        "title": "Aprendizaje autodirigido y motivación académica",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Karpicke, J. D.",
+        "year": "2016",
+        "title": "A powerful way to improve learning and memory",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Maye, J. A. & Hurley, F.",
+        "year": "2026",
+        "title": "The Effectiveness of Spaced Repetition in Medical Education: A Systematic Review and Meta-Analysis",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Muñoz, F., et al.",
+        "year": "2020",
+        "title": "Blended learning y predisposición al aprendizaje autodirigido",
+        "source": "",
+        "doi": "",
+        "url": ""
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-25",
+    "source": "VentyLab (JSON unificado)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel intermedio y reorganiza estrategias de aprendizaje para VNI y destete con un esquema uniforme."
+  }
+}

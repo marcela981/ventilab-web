@@ -17,7 +17,7 @@ import { curriculumData } from '@/features/ensenanza/shared/data/curriculumData.
 import curriculumMeta from './meta.js';
 
 // Import module03Content to count virtual lessons (legacy, now handled by getVisibleLessonsByLevel)
-import module03Content from '@/features/ensenanza/shared/data/lessons/module-03-configuration/index.js';
+import module03Content from '@/features/ensenanza/shared/data/lessons/mecanica/level03-avanzado/index.js';
 
 const metadata = curriculumMeta || { strategy: 'data-driven', declaredTotal: null };
 

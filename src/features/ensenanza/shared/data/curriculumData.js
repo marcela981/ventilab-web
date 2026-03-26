@@ -6,6 +6,7 @@
 
 import { respiratoriaModules } from '@/features/ensenanza/curriculum/ensenanzaRespiratoria/modules';
 import { preRequisitosModules } from '@/features/ensenanza/curriculum/preRequisitos/modules';
+import { ventylabModules } from '@/features/ensenanza/curriculum/ensenanzaVentylab/modules';
 
 export const curriculumData = {
   levels: [
@@ -46,7 +47,8 @@ export const curriculumData = {
 
   modules: {
     ...respiratoriaModules,
-    ...preRequisitosModules
+    ...preRequisitosModules,
+    ...ventylabModules,
   },
 
   metadata: {
