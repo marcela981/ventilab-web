@@ -13,7 +13,9 @@ import {
   AccordionDetails
 } from '@mui/material';
 import {
-  ExpandMore
+  ExpandMore,
+  LocalHospital as PathologyIcon,
+  Lock as LockIcon,
 } from '@mui/icons-material';
 import ModuleGrid from '@/features/ensenanza/shared/components/modulos/ModuleGrid';
 
@@ -101,6 +103,9 @@ const LevelStepper = ({
   // Estado para controlar qué niveles están expandidos
   const [expandedLevels, setExpandedLevels] = useState(new Set());
 
+  // Estado para el sub-acordeón de patologías dentro del nivel avanzado
+  const [expandedPathologies, setExpandedPathologies] = useState(new Set());
+
   // Inicializar con el nivel actual expandido cuando cambie
   useEffect(() => {
     if (currentLevelId) {
@@ -111,6 +116,14 @@ const LevelStepper = ({
       });
     }
   }, [currentLevelId]);
+
+  const handlePathologyAccordionChange = (levelId) => (_, isExpanded) => {
+    setExpandedPathologies((prev) => {
+      const next = new Set(prev);
+      isExpanded ? next.add(levelId) : next.delete(levelId);
+      return next;
+    });
+  };
 
   // Manejar cambio de expansión de niveles
   const handleAccordionChange = (levelId) => (event, isExpanded) => {
@@ -178,28 +191,85 @@ const LevelStepper = ({
       );
     }
 
+    // Props comunes para ModuleGrid (evita repetición)
+    const sharedGridProps = {
+      calculateModuleProgress: dbProgressFn,
+      isModuleAvailable,
+      onModuleClick: handleModuleClick,
+      onToggleFavorite,
+      favoriteModules,
+      getStatusIcon: () => null,
+      getButtonText: (module, progress, available) => {
+        if (!available) return t('actions.locked');
+        if (progress === 100) return t('status.completed');
+        if (progress > 0) return t('actions.continue');
+        return t('actions.start');
+      },
+      getButtonIcon: () => null,
+      levelColor: getLevelColor(level),
+      enableAnimations: true,
+      mode: 'modules',
+      emptyMessage: t('curriculum.empty.noModulesInLevel'),
+    };
+
+    // Separar módulos de patologías del resto (category === 'pathologies')
+    const coreModules = levelModules.filter(m => m.category !== 'pathologies');
+    const pathologyModules = levelModules.filter(m => m.category === 'pathologies');
+
+    if (pathologyModules.length === 0) {
+      // Sin patologías: renderizado plano estándar
+      return (
+        <Box sx={{ mt: 1 }}>
+          <ModuleGrid modules={levelModules} {...sharedGridProps} />
+        </Box>
+      );
+    }
+
+    // Con patologías: módulos core primero, luego sub-acordeón de patologías
     return (
       <Box sx={{ mt: 1 }}>
-        <ModuleGrid
-          modules={levelModules}
-          calculateModuleProgress={dbProgressFn}
-          isModuleAvailable={isModuleAvailable}
-          onModuleClick={handleModuleClick}
-          onToggleFavorite={onToggleFavorite}
-          favoriteModules={favoriteModules}
-          getStatusIcon={() => null}
-          getButtonText={(module, progress, available) => {
-            if (!available) return t('actions.locked');
-            if (progress === 100) return t('status.completed');
-            if (progress > 0) return t('actions.continue');
-            return t('actions.start');
+        {coreModules.length > 0 && (
+          <ModuleGrid modules={coreModules} {...sharedGridProps} />
+        )}
+
+        <Accordion
+          expanded={expandedPathologies.has(level.id)}
+          onChange={handlePathologyAccordionChange(level.id)}
+          sx={{
+            mt: 2,
+            backgroundColor: 'rgba(229, 57, 53, 0.06)',
+            border: '1px solid rgba(229, 57, 53, 0.25)',
+            borderRadius: 2,
+            boxShadow: 'none',
+            '&:before': { display: 'none' },
+            '&.Mui-expanded': { margin: 0, mt: 2 },
           }}
-          getButtonIcon={() => null}
-          levelColor={getLevelColor(level)}
-          enableAnimations={true}
-          emptyMessage={t('curriculum.empty.noModulesInLevel')}
-          mode="modules"
-        />
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMore sx={{ color: '#ef9a9a' }} />}
+            sx={{
+              px: 2.5,
+              py: 1,
+              '& .MuiAccordionSummary-content': { alignItems: 'center', gap: 1.5, margin: '10px 0' },
+              '&.Mui-expanded': { borderBottom: '1px solid rgba(229, 57, 53, 0.2)' },
+            }}
+          >
+            <PathologyIcon sx={{ color: '#ef9a9a', fontSize: 20 }} />
+            <Typography
+              variant="subtitle2"
+              sx={{ color: '#ef9a9a', fontWeight: 600, letterSpacing: '0.3px' }}
+            >
+              Enseñanza especial avanzada — Patologías
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'rgba(239,154,154,0.7)', ml: 0.5 }}>
+              ({pathologyModules.length})
+            </Typography>
+          </AccordionSummary>
+
+          <AccordionDetails sx={{ px: 2, pb: 2, pt: 1.5 }}>
+            <ModuleGrid modules={pathologyModules} {...sharedGridProps} />
+          </AccordionDetails>
+        </Accordion>
       </Box>
     );
   };
@@ -253,19 +323,25 @@ const LevelStepper = ({
           };
           const status = getLevelStatus(levelProg.percentage);
           const isCurrentLevel = level.id === currentLevelId;
-          const isExpanded = expandedLevels.has(level.id);
+          // isUnlocked: true by default (no lock = always accessible, e.g. beginner & prerequisitos)
+          const isUnlocked = levelProgRaw.isUnlocked !== false;
+          const isExpanded = expandedLevels.has(level.id) && isUnlocked;
 
           return (
             <Accordion
               key={level.id}
               expanded={isExpanded}
-              onChange={handleAccordionChange(level.id)}
+              onChange={isUnlocked ? handleAccordionChange(level.id) : undefined}
               sx={{
-                backgroundColor: 'transparent',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                backgroundColor: isUnlocked ? 'transparent' : 'rgba(0,0,0,0.25)',
+                border: isUnlocked
+                  ? '1px solid rgba(255, 255, 255, 0.1)'
+                  : '1px solid rgba(255, 255, 255, 0.06)',
                 borderRadius: 2,
                 mb: 2,
                 boxShadow: 'none',
+                opacity: isUnlocked ? 1 : 0.55,
+                cursor: isUnlocked ? 'default' : 'not-allowed',
                 '&:before': {
                   display: 'none'
                 },
@@ -276,10 +352,15 @@ const LevelStepper = ({
               }}
             >
               <AccordionSummary
-                expandIcon={<ExpandMore sx={{ color: '#ffffff' }} />}
+                expandIcon={
+                  isUnlocked
+                    ? <ExpandMore sx={{ color: '#ffffff' }} />
+                    : <LockIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }} />
+                }
                 sx={{
                   px: 3,
                   py: 2,
+                  cursor: isUnlocked ? 'pointer' : 'not-allowed !important',
                   '&.Mui-expanded': {
                     minHeight: 64,
                     borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
@@ -324,7 +405,7 @@ const LevelStepper = ({
                         <Typography
                           variant="h5"
                           sx={{
-                            color: getLevelColor(level),
+                            color: isUnlocked ? getLevelColor(level) : 'rgba(255,255,255,0.4)',
                             fontWeight: 600,
                             mb: 0.5,
                             lineHeight: 1.2
@@ -336,28 +417,62 @@ const LevelStepper = ({
                         <Typography
                           variant="body2"
                           sx={{
-                            color: '#e8f4fd',
+                            color: isUnlocked ? '#e8f4fd' : 'rgba(255,255,255,0.3)',
                             lineHeight: 1.6,
                             maxWidth: '600px'
                           }}
                         >
                           {level.description}
                         </Typography>
+
+                        {!isUnlocked && (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: 'rgba(255,180,0,0.75)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 0.5,
+                              mt: 0.5,
+                              fontStyle: 'italic'
+                            }}
+                          >
+                            <LockIcon sx={{ fontSize: 12 }} />
+                            {t('status.levelLocked', 'Completa el nivel anterior para desbloquear')}
+                          </Typography>
+                        )}
                       </Box>
                     </Box>
 
                     {/* Chip de estado minimalista */}
-                    <Chip
-                      label={status.label}
-                      color={status.color}
-                      size="small"
-                      sx={{
-                        fontWeight: 500,
-                        fontSize: '0.75rem',
-                        height: '24px',
-                        transition: 'all 0.3s ease'
-                      }}
-                    />
+                    {isUnlocked ? (
+                      <Chip
+                        label={status.label}
+                        color={status.color}
+                        size="small"
+                        sx={{
+                          fontWeight: 500,
+                          fontSize: '0.75rem',
+                          height: '24px',
+                          transition: 'all 0.3s ease'
+                        }}
+                      />
+                    ) : (
+                      <Chip
+                        icon={<LockIcon sx={{ fontSize: '14px !important' }} />}
+                        label={t('status.locked', 'Bloqueado')}
+                        size="small"
+                        sx={{
+                          fontWeight: 500,
+                          fontSize: '0.75rem',
+                          height: '24px',
+                          backgroundColor: 'rgba(255,255,255,0.08)',
+                          color: 'rgba(255,255,255,0.5)',
+                          border: '1px solid rgba(255,255,255,0.15)',
+                          '& .MuiChip-icon': { color: 'rgba(255,255,255,0.4)' }
+                        }}
+                      />
+                    )}
                   </Box>
 
                   {/* Barra de progreso minimalista */}

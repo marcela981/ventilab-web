@@ -334,13 +334,20 @@ async function loadFromApi(lessonId) {
  */
 function getLessonPath(lessonId, moduleId) {
   const directModuleMapping = {
-    // Módulo 01: Fundamentos - archivos con formato module-XX-*.json
-    'module-01-inversion-fisiologica': 'lessons/module-01-fundamentals/module-01-inversion-fisiologica.json',
-    'module-02-ecuacion-movimiento': 'lessons/module-01-fundamentals/module-02-ecuacion-movimiento.json',
-    'module-03-variables-fase': 'lessons/module-01-fundamentals/module-03-variables-fase.json',
-    'module-04-modos-ventilatorios': 'lessons/module-01-fundamentals/module-04-modos-ventilatorios.json',
-    'module-05-monitorizacion-grafica': 'lessons/module-01-fundamentals/module-05-monitorizacion-grafica.json',
-    'module-06-efectos-sistemicos': 'lessons/module-01-fundamentals/module-06-efectos-sistemicos.json',
+    // Mecánica - Nivel Principiante (level01) — IDs de curriculum (modules.js)
+    'module-01-inversion-fisiologica': 'lessons/mecanica/level01-principiante/module-01-inversion-fisiologica.json',
+    'module-02-ecuacion-movimiento':   'lessons/mecanica/level01-principiante/module-02-ecuacion-movimiento.json',
+    'module-03-variables-fase':        'lessons/mecanica/level01-principiante/module-03-variables-fase.json',
+    'module-04-modos-ventilatorios':   'lessons/mecanica/level01-principiante/module-04-modos-ventilatorios.json',
+    'module-05-monitorizacion-grafica':'lessons/mecanica/level01-principiante/module-05-monitorizacion-grafica.json',
+    'module-06-efectos-sistemicos':    'lessons/mecanica/level01-principiante/module-06-efectos-sistemicos.json',
+    // Mecánica - Nivel Principiante (level01) — IDs de BD (seed.ts)
+    'lesson-inversion-fisiologica':    'lessons/mecanica/level01-principiante/module-01-inversion-fisiologica.json',
+    'lesson-ecuacion-movimiento':      'lessons/mecanica/level01-principiante/module-02-ecuacion-movimiento.json',
+    'lesson-variables-fase':           'lessons/mecanica/level01-principiante/module-03-variables-fase.json',
+    'lesson-modos-ventilatorios':      'lessons/mecanica/level01-principiante/module-04-modos-ventilatorios.json',
+    'lesson-monitorizacion-grafica':   'lessons/mecanica/level01-principiante/module-05-monitorizacion-grafica.json',
+    'lesson-efectos-sistemicos':       'lessons/mecanica/level01-principiante/module-06-efectos-sistemicos.json',
     // VentyLab track lessons
     'vl-historia-fisiologia-aplicada':    'lessons/ventylab/level01-principiante/historia_fisiolog\u00EDa_aplicada.json',
     'vl-ventilador-componentes':          'lessons/ventylab/level01-principiante/ventilador_compontentes.json',
@@ -348,6 +355,23 @@ function getLessonPath(lessonId, moduleId) {
     'vl-vni-destete':                     'lessons/ventylab/level02-intermedio/ventilaci\u00F3nnoinvasiva_destete.json',
     'vl-raciocinio-clinico-patologias':   'lessons/ventylab/level03-avanzado/raciocinocl\u00EDnico_patolog\u00EDascr\u00EDticas.json',
     'vl-innovacion-tecnologia-gestion':   'lessons/ventylab/level03-avanzado/innovaci\u00F3n_tecnolog\u00EDa_gesti\u00F3n.json',
+    // Mecánica - Nivel Intermedio (level02)
+    'lesson-vcv-vs-pcv':                      'lessons/mecanica/level02-intermedio/module-01-Ventilacion-vcv-vs-pcv.json',
+    'lesson-peep-optimizar-oxigenacion':      'lessons/mecanica/level02-intermedio/module-02-peep-optimizar-oxigenacion.json',
+    'lesson-soporte-psv-cpap':                'lessons/mecanica/level02-intermedio/module-03-soporte-PSV-CPAP.json',
+    'lesson-duales-simv':                     'lessons/mecanica/level02-intermedio/module-04-duales-simv.json',
+    'lesson-graficas-fine-tuning':            'lessons/mecanica/level02-intermedio/module-05-graficas-fine-tuning.json',
+    'lesson-avanzado-evaluacion-destete':     'lessons/mecanica/level02-intermedio/module-06-avanzado-evaluacion-destete.json',
+    // Mecánica - Nivel Avanzado (level03) — módulos core
+    'lesson-vili-ventilacion-protectora':     'lessons/mecanica/level03-avanzado/module-01-da\u00F1o-pulmonar-vili-ventilacion-protectora.json',
+    'lesson-monitorizacion-alto-nivel':       'lessons/mecanica/level03-avanzado/module-02-monitorizacion-alto-nivel.json',
+    'lesson-advertencias-asincronias':        'lessons/mecanica/level03-avanzado/module-03-advertencias-asincronias-situaciones-complejas.json',
+    'lesson-destete-complejo-vmni':           'lessons/mecanica/level03-avanzado/module-04-destete-complejo-vmni.json',
+    // Mecánica - Nivel Avanzado (level03) — módulos de patologías
+    'lesson-obesidad-sedentarismo':           'lessons/mecanica/level03-avanzado/pathologies/module-05-obesidad-sedentarismo.json',
+    'lesson-epoc-asma-fumadores':             'lessons/mecanica/level03-avanzado/pathologies/module-06-epoc-asma-fumadores.json',
+    'lesson-sdra':                            'lessons/mecanica/level03-avanzado/pathologies/module-07-sdra.json',
+    'lesson-recuperacion-proteccion':         'lessons/mecanica/level03-avanzado/pathologies/module-08-recuperacion-proteccion.json',
   };
   
   // Si el lessonId tiene mapeo directo, usarlo

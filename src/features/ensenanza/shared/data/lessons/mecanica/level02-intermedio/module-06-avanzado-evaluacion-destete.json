@@ -1,0 +1,294 @@
+{
+  "id": "module-06-avanzado-evaluacion-destete",
+  "moduleId": "module-06-intermedio-mecanica",
+  "title": "Mecánicas avanzadas y evaluación para el destete en el paciente obeso",
+  "description": "Este módulo integra la fisiopatología restrictiva extrapulmonar avanzada (efecto Pendelluft, delta de presión transdiafragmática, PEEPi) con estrategias de protección alveolar basadas en evidencia (PROBESE, IMPROVE, LOV-ED), las maniobras de reclutamiento 'en escalera' con control hemodinámico, la evaluación para el destete considerando masa cervical y rebote REM de AOS, y el uso profiláctico de VNI post-extubación, culminando con estrategias de aprendizaje avanzadas (Cognitive Offloading, Adaptive Chunking, Spaced Repetition).",
+  "order": 6,
+  "estimatedTime": 85,
+  "difficulty": "intermediate",
+  "bloomLevel": "analyze",
+  "learningObjectives": [
+    "Explicar el efecto Pendelluft, las fluctuaciones de presión transdiafragmática y la PEEPi como mecanismos avanzados de lesión en el pulmón obeso.",
+    "Calcular el Vt por Peso Ideal e interpretar la Driving Pressure como predictor de supervivencia, integrando la evidencia de PROBESE e IMPROVE.",
+    "Describir la técnica de Maniobra de Reclutamiento 'en escalera' manteniendo el delta de presión constante y anticipar las implicaciones hemodinámicas.",
+    "Aplicar la estrategia LOV-ED para titular la PEEP según IMC e identificar la necesidad de soporte vasopresor durante las maniobras.",
+    "Evaluar la preparación para el destete considerando la masa cervical, la posición de 45° y el riesgo de rebote REM en la tercera noche postoperatoria.",
+    "Implementar el Cognitive Offloading, el Adaptive Chunking y la Spaced Repetition para consolidar la autonomía clínica en ventilación avanzada."
+  ],
+  "prerequisites": [
+    "Módulo 1: VCV vs. PCV — Vt, IBW, PBW y ventajas del modo VCV.",
+    "Módulo 2: PEEP, PEEPi y Driving Pressure.",
+    "Módulo 3: PSV, CPAP y AOS postoperatoria.",
+    "Módulo 4: Andamiaje pedagógico, Fading y Retrieval Practice.",
+    "Módulo 5: Fine Tuning, 'pulmón chico' y Scaffolding en curvas flujo-volumen."
+  ],
+  "sections": [
+    {
+      "id": "destete-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción y mapa del módulo",
+      "content": {
+        "markdown": "## ¿Qué vas a aprender en este módulo?\n\nTema: Mecánicas avanzadas del pulmón obeso, estrategias protectoras basadas en evidencia multicéntrica y evaluación integral para el destete ventilatorio seguro.\n\nA lo largo del módulo conectarás:\n- **Fisiopatología avanzada:** efecto Pendelluft, delta de presión transdiafragmática y PEEPi basada en evidencia de Steier y Pankow.\n- **Estrategia ventilatoria:** Vt por Peso Ideal, Driving Pressure < 13-15 cmH₂O y comparativa VCV vs. PCV con PROBESE e IMPROVE.\n- **Reclutamiento 'en escalera':** delta de presión constante, presiones 50-55 cmH₂O y manejo hemodinámico (vasopresores).\n- **PEEP titulada:** estrategia LOV-ED por IMC y concepto de 'pulmón abierto'.\n- **Destete:** masa cervical, extubación a 45°, rebote REM de AOS y VNI post-extubación profiláctica.\n- **Metodología avanzada:** Cognitive Offloading, Adaptive Chunking (Ren/Siddique) y Spaced Repetition."
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "destete-theory-1",
+      "order": 2,
+      "type": "theory",
+      "title": "Fisiopatología toracoabdominal avanzada: Pendelluft, presión transdiafragmática y PEEPi",
+      "content": {
+        "markdown": "Antes de aproximarse al ventilador, el clínico debe comprender que la obesidad no es solo 'más masa', sino un estado de **alteración mecánica activa** que redefine las presiones del sistema respiratorio.\n\n### Mecánica toraco-abdominal: la PIA como fuerza vectorial\n\nEl exceso de tejido adiposo en cuello, tórax y abdomen genera una carga mecánica externa que incrementa la presión pleural y reduce la distensibilidad del sistema. La **Presión Intraabdominal (PIA)**, que en el obeso oscila entre **6 y 10 cmH₂O**, actúa como una fuerza vectorial que:\n- Desplaza el diafragma cefálicamente, limitando su excursión.\n- Reduce el volumen intratorácico disponible.\n- Exacerba su efecto con la inducción anestésica y la parálisis neuromuscular, reduciendo la CRF hasta un **50 %**.\n\n### Efecto Pendelluft y tensiones locales peligrosas\n\nDebido a la inflación no homogénea de pulmones heterogéneamente comprimidos por la grasa, el aire se desplaza entre regiones pulmonares durante el ciclo respiratorio: el **efecto Pendelluft**. Este fenómeno genera tensiones locales peligrosas incluso con volúmenes tidales aparentemente bajos. Además, las fluctuaciones en el **delta de presión transdiafragmática** aumentan el estrés del tejido pulmonar, incrementando el riesgo de lesión biológica (biotrauma).\n\n### PEEPi: evidencia de Steier y Pankow\n\nEl cierre temprano de las vías aéreas pequeñas genera atrapamiento de aire y **PEEPi**. La evidencia demuestra que en posición supina la PEEPi aumenta **0.2 cmH₂O por cada unidad de IMC**, alcanzando niveles basales de hasta **5.3 cmH₂O** sin soporte asistido.\n\n> **'So What?':** La posición supina es el escenario de mayor riesgo; el volumen pulmonar cae un 50 % adicional respecto a la bipedestación. Ignorar estas presiones basales predispone al paciente a desaturación crítica inmediata y desajuste severo V/Q."
+      },
+      "estimatedTime": 16
+    },
+    {
+      "id": "destete-theory-2",
+      "order": 3,
+      "type": "theory",
+      "title": "Estrategia ventilatoria: Vt por Peso Ideal, Driving Pressure y VCV vs. PCV",
+      "content": {
+        "markdown": "La protección pulmonar en la obesidad requiere **disociar el peso real del paciente de su capacidad pulmonar real**, utilizando fórmulas antropométricas precisas para evitar el volutrauma.\n\n### Cálculo de Vt y fórmulas antropométricas\n\nEs un error clínico grave programar el ventilador basándose en el peso real. Los pulmones no crecen con el tejido adiposo. Se debe utilizar el **Peso Ideal (PI)**:\n\n- Hombres: Talla(m)² × 23\n- Mujeres: Talla(m)² × 21.5\n\nVT objetivo: **6-8 ml/kg de PI**. Iniciar con 10-12 ml/kg en un obeso equivale a ventilar un pulmón sano con niveles de trauma masivo, dado el espacio alveolar funcionalmente reducido ('pulmón chico').\n\n### Driving Pressure: el predictor de supervivencia más robusto\n\nLa **Driving Pressure (ΔP = Presión Meseta − PEEP)** debe mantenerse **< 13-15 cmH₂O**. Un ΔP elevado en el obeso señala un pulmón 'pequeño' que recibe una carga de energía excesiva; reducirlo es sinónimo de reclutar parénquima funcional.\n\n### VCV vs. PCV: evidencia de PROBESE e IMPROVE\n\nEstudios como **PROBESE** e **IMPROVE** sugieren la superioridad del **Modo Controlado por Volumen (VCV)** para:\n- Asegurar el cumplimiento del VT ante cambios en la distensibilidad abdominal durante la cirugía.\n- Facilitar la monitorización de la mecánica respiratoria.\n- Prevenir complicaciones postoperatorias de forma más eficaz que el PCV, que puede entregar volúmenes erráticos ante variaciones de PIA.\n\n### Gestión de la oxigenación\n\nSe deben evitar FiO₂ excesivas. Objetivo: **SpO₂ 94-98 %**. La hiperoxemia favorece las atelectasias de reabsorción (al lavar el nitrógeno alveolar) y enmascara fallos ventilatorios subyacentes."
+      },
+      "estimatedTime": 16
+    },
+    {
+      "id": "destete-theory-3",
+      "order": 4,
+      "type": "theory",
+      "title": "Reclutamiento 'en escalera', titulación LOV-ED de PEEP y consideraciones hemodinámicas",
+      "content": {
+        "markdown": "El concepto de **'pulmón abierto'** busca estabilizar la CRF y evitar el atelectrauma producido por el cierre y apertura cíclica de los alvéolos.\n\n### Maniobra de Reclutamiento Progresiva 'en escalera'\n\nSe desaconseja el reclutamiento manual con bolsa por la falta de control presurométrico y la pérdida inevitable de PEEP al reconectar. La técnica recomendada es la **MR progresiva o 'en escalera'** controlada por el ventilador:\n\n1. Se aumenta la PEEP y la Presión Inspiratoria de forma escalonada.\n2. El **delta de presión (Pinsp − PEEP) debe mantenerse constante** durante toda la maniobra para evitar el estiramiento excesivo de los alvéolos ya abiertos mientras se reclutan los colapsados.\n3. En obesidad severa se pueden requerir presiones de apertura de **50-55 cmH₂O**.\n\n> **Realizarla MR sin fijar una PEEP de 'no colapso' posterior es un esfuerzo fútil:** el pulmón se recolapsará en minutos, induciendo daño por cizallamiento alveolar (atelectrauma).\n\n### Titulación de PEEP: estrategia LOV-ED por IMC\n\n| IMC (kg/m²) | PEEP recomendada (cmH₂O) |\n| :--- | :--- |\n| < 29.9 | 5 |\n| 30 - 39.9 | 8 |\n| 40 - 49.9 | 10 |\n| > 50 | 12 |\n\n### Consideraciones hemodinámicas: vasopresores y precarga\n\nEl aumento de la presión intratorácica por la PEEP y las MR **reduce el retorno venoso** y puede comprometer el gasto cardíaco. Es mandatorio:\n- Optimizar la precarga antes de la maniobra.\n- Considerar el uso de **vasopresores** durante la MR para mantener la perfusión coronaria y cerebral.\n- Monitorizar el gasto cardíaco de forma continua durante el rampeo."
+      },
+      "estimatedTime": 16
+    },
+    {
+      "id": "destete-theory-4",
+      "order": 5,
+      "type": "theory",
+      "title": "Evaluación para el destete: vía aérea, AOS, rebote REM y VNI profiláctica",
+      "content": {
+        "markdown": "El destete no es el final del proceso, sino la **fase de mayor vulnerabilidad**, donde la carga de trabajo respiratorio retorna abruptamente a un sistema debilitado por la anestesia.\n\n### Criterios específicos del obeso: masa cervical y posición\n\nAdemás de los criterios estándar de preparación (estabilidad hemodinámica, resolución de la causa, capacidad de esfuerzo respiratorio), en el obeso se debe evaluar la **masa cervical**: tras la extubación, el tejido graso del cuello puede colapsar la vía aérea superior de forma inmediata.\n\n- **Extubación siempre en posición de tronco elevado (45°):** reduce la presión abdominal sobre el diafragma y aumenta la CRF postextubación.\n\n### Apnea Obstructiva del Sueño (AOS) y el rebote REM\n\nLa prevalencia de AOS en obesos mórbidos alcanza el **50 %**. Los opioides suprimen la fase REM del sueño, generando una **falsa sensación de seguridad** en la URPA/UCI:\n- El paciente parece estable porque no accede al sueño profundo donde los eventos obstructivos son más severos.\n- En la **tercera noche postoperatoria** ocurre el rebote de la fase REM al descender los niveles de opioides.\n- Este rebote exacerba los eventos obstructivos y las apneas centrales en el piso de hospitalización, donde la vigilancia es menor.\n\n### CPAP / VNI post-extubación: medida profiláctica, no reactiva\n\nEl uso de **CPAP o VNI inmediata** tras la extubación:\n- Mantiene la CRF ganada durante la ventilación mecánica.\n- Previene el colapso alveolar recurrente.\n- Es el estándar de cuidado para evitar la reintubación.\n\n> **'So What?':** El fracaso del destete suele ser un fallo de posicionamiento y manejo de la vía aérea superior, no necesariamente un fallo de la bomba muscular."
+      },
+      "estimatedTime": 15
+    },
+    {
+      "id": "destete-theory-5",
+      "order": 6,
+      "type": "theory",
+      "title": "Metodología de aprendizaje avanzada: Cognitive Offloading, Adaptive Chunking y Spaced Repetition",
+      "content": {
+        "markdown": "Dominar la ventilación mecánica avanzada requiere gestionar la carga cognitiva para transformar la teoría en una **respuesta clínica automática y segura**.\n\n### Tipos de carga cognitiva y Cognitive Offloading\n\n- **Carga Intrínseca:** complejidad de las fórmulas y la fisiopatología (PIA, ΔP, PEEPi simultáneos). Se gestiona mediante **Scaffolding** ('Yo hago, Nosotros hacemos, Tú haces').\n- **Carga Extrínseca:** ruido visual y desorden informativo en la pantalla del ventilador. Se reduce con interfaces claras y protocolos estandarizados.\n- **Cognitive Offloading:** utilizar el ventilador correctamente programado como una **'ayuda cognitiva'**. Un ventilador bien configurado libera memoria de trabajo del clínico para enfocarse en la hemodinámica y la seguridad global del paciente.\n\n### Adaptive Chunking: la investigación de Ren y Siddique\n\nLa información debe presentarse en bloques de **7 a 15 palabras por unidad de atención** para optimizar la retención. La secuencia de estudio recomendada:\n1. Fisiología (mecanismos de lesión).\n2. Programación (Vt, PEEP, ΔP).\n3. Destete (criterios, posición, VNI).\n\n### Espaciamiento, Recuperación Activa y Spaced Repetition\n\n- **Flashcards** sobre las metas de presión (Pplat < 30, ΔP < 13) y autoevaluación con preguntas como '¿Por qué el rebote REM ocurre en la 3.ª noche?' fortalecen la memoria a largo plazo.\n- **Spaced Repetition:** revisar estos conceptos en intervalos crecientes evita el olvido tras la fase de aprendizaje inicial y automatiza la respuesta en situaciones de alta presión clínica.\n\n> **Sin una estructura pedagógica, el clínico sufre saturación cognitiva**, lo que conduce a errores de programación y omisiones críticas en la seguridad del paciente."
+      },
+      "estimatedTime": 12
+    },
+    {
+      "id": "destete-summary",
+      "order": 7,
+      "type": "summary",
+      "title": "Cierre: síntesis y checklist",
+      "content": {
+        "markdown": "## Resumen\n\n- La PIA (6-10 cmH₂O) actúa como fuerza vectorial que genera cefalización del diafragma, reduce la CRF hasta un 50 % en inducción y favorece el efecto Pendelluft; la PEEPi alcanza 5.3 cmH₂O (Steier/Pankow) con incremento de 0.2 cmH₂O por unidad de IMC en supino.\n- El Vt se calcula por Peso Ideal (6-8 ml/kg); la Driving Pressure (< 13-15 cmH₂O) es el predictor de supervivencia más robusto. PROBESE e IMPROVE avalan la superioridad del VCV.\n- La MR 'en escalera' mantiene el delta de presión constante para evitar sobredistensión; requiere optimización de precarga y disponibilidad de vasopresores.\n- La PEEP se titula por IMC con la estrategia LOV-ED (5-12 cmH₂O); no fijar PEEP de 'no colapso' tras la MR equivale a desperdiciar el reclutamiento.\n- La extubación siempre a 45°; el rebote REM de AOS ocurre en la 3.ª noche postoperatoria; la CPAP/VNI post-extubación es profiláctica, no reactiva.\n- El Cognitive Offloading, el Adaptive Chunking (7-15 palabras/bloque) y la Spaced Repetition son las estrategias para automatizar la toma de decisiones en ventilación avanzada.\n\n## Checklist de validación\n\n- Explico el efecto Pendelluft y la PEEPi posicional como mecanismos de lesión en el pulmón obeso.\n- Calculo el Vt por Peso Ideal y verifico la Driving Pressure con referencia a PROBESE e IMPROVE.\n- Describo por qué el delta de presión debe mantenerse constante durante la MR 'en escalera' y cómo anticipar el riesgo hemodinámico.\n- Selecciono la PEEP inicial por IMC con la estrategia LOV-ED.\n- Planifico el destete considerando la masa cervical, la posición de 45° y el riesgo de rebote REM en la 3.ª noche.\n- Identifico el Cognitive Offloading como estrategia para liberar memoria de trabajo y estructuro el estudio con Adaptive Chunking."
+      },
+      "estimatedTime": 5
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Qué diferencia al efecto Pendelluft del simple desajuste V/Q en el paciente obeso?",
+        "¿Por qué el delta de presión debe mantenerse constante durante la maniobra de reclutamiento 'en escalera'?",
+        "¿Qué es el Cognitive Offloading y cómo el ventilador actúa como ayuda cognitiva?",
+        "¿Por qué la VNI post-extubación se considera profiláctica y no reactiva?",
+        "¿Cuál es la diferencia entre PROBESE e IMPROVE en la evidencia sobre VCV?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "aiexpandnotes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": [
+          "intermediate",
+          "advanced"
+        ],
+        "question_types": [
+          "conceptual",
+          "application",
+          "clinical_case"
+        ],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [],
+  "quiz": {
+    "id": "quiz-avanzado-destete-obeso",
+    "passingScore": 4,
+    "questions": [
+      {
+        "id": "destete-q1",
+        "type": "multiple-choice",
+        "question": "¿Por qué el efecto Pendelluft genera tensiones locales peligrosas incluso con volúmenes tidales bajos?",
+        "options": [
+          "Porque aumenta la FiO₂ en las zonas dependientes por encima del umbral de toxicidad",
+          "Porque el flujo de aire interregional entre zonas con distintas constantes de tiempo genera estrés mecánico desigual en el parénquima",
+          "Porque desplaza el diafragma cefálicamente, reduciendo la excursión inspiratoria",
+          "Porque produce atrapamiento de aire que eleva la PEEPi por encima de la PEEP programada"
+        ],
+        "correctAnswer": "Porque el flujo de aire interregional entre zonas con distintas constantes de tiempo genera estrés mecánico desigual en el parénquima",
+        "explanation": "El efecto Pendelluft es un flujo de gas interregional que ocurre debido a la inflación no homogénea del pulmón obeso. El aire se desplaza desde alvéolos con menor constante de tiempo hacia los de mayor constante, generando tensiones locales y biotrauma incluso cuando el Vt global parece protector.",
+        "difficulty": "advanced",
+        "bloomLevel": "analyze",
+        "points": 2
+      },
+      {
+        "id": "destete-q2",
+        "type": "multiple-choice",
+        "question": "¿Por qué debe mantenerse el delta de presión (Pinsp − PEEP) constante durante la MR 'en escalera'?",
+        "options": [
+          "Para garantizar que la Driving Pressure no supere los 15 cmH₂O durante el rampeo",
+          "Para evitar el estiramiento excesivo de los alvéolos ya reclutados mientras se abren los colapsados",
+          "Para mantener estable el Volumen Minuto durante el incremento escalonado de PEEP",
+          "Para impedir que la FiO₂ suba automáticamente al detectar desaturación durante la maniobra"
+        ],
+        "correctAnswer": "Para evitar el estiramiento excesivo de los alvéolos ya reclutados mientras se abren los colapsados",
+        "explanation": "Al mantener constante el delta de presión durante la MR 'en escalera', se asegura que la presión de distensión aplicada a los alvéolos ya abiertos no aumente al elevar la PEEP. Esto permite reclutar los alvéolos colapsados sin sobredistender el tejido ya ventilado, minimizando el volutrauma durante la maniobra.",
+        "difficulty": "advanced",
+        "bloomLevel": "analyze",
+        "points": 2
+      },
+      {
+        "id": "destete-q3",
+        "type": "multiple-choice",
+        "question": "¿Qué es el Cognitive Offloading en el contexto de la ventilación mecánica del paciente obeso?",
+        "options": [
+          "La delegación de decisiones clínicas al equipo de enfermería para reducir la carga del intensivista",
+          "El uso del ventilador correctamente programado como 'ayuda cognitiva' que libera memoria de trabajo para la hemodinámica",
+          "La eliminación de alarmas no críticas para reducir la carga extrínseca del clínico",
+          "El uso de flashcards para automatizar el cálculo del Peso Ideal sin calculadora"
+        ],
+        "correctAnswer": "El uso del ventilador correctamente programado como 'ayuda cognitiva' que libera memoria de trabajo para la hemodinámica",
+        "explanation": "El Cognitive Offloading consiste en utilizar el ventilador bien programado como una herramienta que asume parte del procesamiento de información (vigilancia de Vt, DP, alarmas), liberando la memoria de trabajo del clínico para enfocarse en aspectos de mayor complejidad como la hemodinámica y la seguridad global del paciente.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "destete-q4",
+        "type": "multiple-choice",
+        "question": "¿Por qué el uso de CPAP/VNI tras la extubación del paciente obeso se considera una medida profiláctica y no reactiva?",
+        "options": [
+          "Porque el paciente obeso siempre requiere reintubación dentro de las primeras 2 horas",
+          "Porque mantiene la CRF ganada durante la ventilación mecánica y previene el colapso alveolar recurrente antes de que ocurra",
+          "Porque compensa la supresión de los opioides sobre el centro respiratorio durante la primera noche",
+          "Porque la CPAP reemplaza completamente el soporte vasopresor necesario tras la MR"
+        ],
+        "correctAnswer": "Porque mantiene la CRF ganada durante la ventilación mecánica y previene el colapso alveolar recurrente antes de que ocurra",
+        "explanation": "La CPAP/VNI post-extubación es profiláctica porque actúa sobre el mecanismo de colapso antes de que este ocurra: preserva la CRF obtenida con la MR y la PEEP intraoperatoria. Aplicarla solo ante signos de insuficiencia respiratoria es tardío; para entonces el pulmón ya se ha recolapsado y el riesgo de reintubación es alto.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "destete-q5",
+        "type": "multiple-choice",
+        "question": "Según Ren y Siddique, ¿cuál es el tamaño de bloque recomendado en el Adaptive Chunking para optimizar la retención en educación médica?",
+        "options": [
+          "3 a 5 palabras por unidad de atención",
+          "7 a 15 palabras por unidad de atención",
+          "20 a 30 palabras por unidad de atención",
+          "Un párrafo completo por ciclo de estudio"
+        ],
+        "correctAnswer": "7 a 15 palabras por unidad de atención",
+        "explanation": "El módulo cita a Ren y Siddique indicando que el Adaptive Chunking debe presentar la información en bloques de 7 a 15 palabras por unidad de atención para optimizar la retención. Este tamaño respeta el número de Miller (7 ± 2 elementos en la memoria de trabajo) y se ajusta dinámicamente a la capacidad atencional del sujeto.",
+        "difficulty": "intermediate",
+        "bloomLevel": "remember",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [
+      {
+        "authors": "Bluth, T.; et al. (PROBESE Collaborative Group)",
+        "year": "2019",
+        "title": "Effect of intraoperative high PEEP with recruitment maneuvers vs low PEEP on postoperative pulmonary complications in obese patients.",
+        "source": "JAMA",
+        "doi": "10.1001/jama.2019.7505",
+        "url": ""
+      },
+      {
+        "authors": "Futier, E.; et al. (IMPROVE Study Group)",
+        "year": "2013",
+        "title": "A trial of intraoperative low-tidal-volume ventilation in abdominal surgery.",
+        "source": "New England Journal of Medicine",
+        "doi": "10.1056/NEJMoa1301082",
+        "url": ""
+      },
+      {
+        "authors": "Steier, J.; Pankow, W.; et al.",
+        "year": "",
+        "title": "Predictors of intrinsic PEEP in obese patients during mechanical ventilation.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Ren, X.; Siddique, A.",
+        "year": "2025",
+        "title": "Adaptive lesson chunking and retention in medical education.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Sweller, J.",
+        "year": "1988",
+        "title": "Cognitive load during problem solving: Effects on learning.",
+        "source": "Cognitive Science",
+        "doi": "",
+        "url": ""
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-29",
+    "source": "VentyLab (JSON unificado)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel intermedio-avanzado. Integra fisiopatología avanzada (Pendelluft, presión transdiafragmática, PEEPi de Steier/Pankow), estrategia ventilatoria con evidencia PROBESE e IMPROVE, MR 'en escalera' con delta constante, titulación LOV-ED, evaluación de destete (masa cervical, rebote REM, VNI profiláctica) y Cognitive Offloading con Adaptive Chunking."
+  }
+}

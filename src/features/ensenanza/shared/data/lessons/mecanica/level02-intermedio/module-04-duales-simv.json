@@ -1,0 +1,293 @@
+{
+  "id": "module-04-duales-simv",
+  "moduleId": "module-04-intermedio-mecanica",
+  "title": "Modos duales y SIMV: fisiopatología avanzada, ventilación protectora y andamiaje pedagógico",
+  "description": "Este módulo integra los fundamentos fisiopatológicos del paciente crítico obeso con las estrategias de ventilación protectora (Vt, Driving Pressure, PEEP y maniobras de reclutamiento), la Teoría de la Carga Cognitiva aplicada a la toma de decisiones en entornos críticos y los marcos pedagógicos de andamiaje (Scaffolding, Fading, Spacing y Retrieval Practice) para construir competencia clínica autónoma en la programación del ventilador.",
+  "order": 4,
+  "estimatedTime": 80,
+  "difficulty": "intermediate",
+  "bloomLevel": "analyze",
+  "learningObjectives": [
+    "Describir el impacto de la obesidad sobre la mecánica toracoabdominal, la CRF y la PEEPi, integrando datos epidemiológicos globales.",
+    "Diferenciar los tres tipos de carga cognitiva (intrínseca, extrínseca y germinal) y aplicar el Principio de Modalidad al diseño instruccional en ventilación.",
+    "Calcular el Vt protector a partir del PBW y monitorizar la Driving Pressure considerando el concepto de 'Heavy Lung' en el paciente obeso.",
+    "Seleccionar la PEEP adecuada por clase de obesidad y justificar la preferencia del reclutamiento progresivo controlado por ventilador.",
+    "Argumentar la superioridad del modo VCV sobre PCV en el paciente obeso con fluctuaciones de presión intraabdominal.",
+    "Aplicar el modelo de Scaffolding con atenuación progresiva (Fading) junto con estrategias de Spacing y Retrieval Practice para consolidar la autonomía clínica."
+  ],
+  "prerequisites": [
+    "Módulo 1: VCV vs. PCV en el paciente obeso.",
+    "Módulo 2: PEEP, PEEPi y maniobras de reclutamiento.",
+    "Módulo 3: PSV, CPAP y AOS postoperatoria.",
+    "Nociones de Teoría de la Carga Cognitiva (Sweller) y estrategias de recuperación activa."
+  ],
+  "sections": [
+    {
+      "id": "simv-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción y mapa del módulo",
+      "content": {
+        "markdown": "## ¿Qué vas a aprender en este módulo?\n\nTema: Gestión avanzada del paciente crítico obeso bajo soporte ventilatorio, integrando mecánica respiratoria compleja, ventilación protectora y marcos pedagógicos para optimizar la toma de decisiones clínicas bajo alta carga cognitiva.\n\nA lo largo del módulo conectarás:\n- **Fisiopatología avanzada:** cefalización del diafragma, CRF, PEEPi posicional y epidemiología global de la obesidad.\n- **Teoría de la Carga Cognitiva:** tipos de carga, Principio de Modalidad y Chunking adaptativo para el clínico en UCI.\n- **Ventilación protectora:** 'Heavy Lung', Driving Pressure, titulación de PEEP por clase de obesidad y maniobras de reclutamiento.\n- **VCV vs. PCV:** estabilidad del volumen minuto ante cambios de PIA en laparoscopia y Trendelenburg.\n- **Andamiaje pedagógico:** ZDP, modelo 'I Do, We Do, You Do', Fading, Spacing y Retrieval Practice."
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "simv-theory-1",
+      "order": 2,
+      "type": "theory",
+      "title": "Fundamentos fisiopatológicos del paciente crítico obeso: mecánica y epidemiología",
+      "content": {
+        "markdown": "La obesidad debe interpretarse analíticamente como una entidad que transforma la dinámica toracoabdominal, imponiendo **cargas resistivas y elásticas** que redefinen los paradigmas convencionales de la ventilación mecánica.\n\n### Mecánica respiratoria y reducción de la CRF\n\nEl exceso de tejido adiposo mediastínico y parietal, sumado al incremento de la **presión intraabdominal (PIA)**, genera una cefalización del diafragma que reduce drásticamente el volumen pulmonar en reposo:\n- La **CRF disminuye entre el 5 % y el 15 %** en pacientes con IMC > 30 kg/m².\n- Tras la inducción anestésica en obesidad mórbida, el colapso puede alcanzar el **50 %**.\n- La presión abdominal elevada desplaza sangre al tórax, exacerbando el desajuste V/Q y alterando la precarga cardíaca.\n\n### PEEPi y su dependencia posicional\n\nEstudios de **Steier et al.** identifican al IMC como el único factor predictivo independiente para la PEEPi:\n- En **posición supina:** PEEPi media de **5.3 cmH₂O**, con incremento lineal de **0.2 cmH₂O por unidad de IMC** adicional.\n- En **bipedestación:** PEEPi media de apenas **1.4 cmH₂O**.\n\nEste fenómeno posicional exige una estrategia de presión positiva teleespiratoria proactiva desde el inicio de la anestesia.\n\n### Epidemiología global: contexto de práctica clínica\n\nLos datos de la OMS sitúan la obesidad como un estándar en la práctica clínica global:\n- Más de **650 millones de adultos** son obesos; **1.900 millones** tienen sobrepeso.\n- Extensión a la pediatría: **41 millones de niños < 5 años** y **340 millones entre 5-19 años** afectados.\n- Prevalencia en países de alta renta: EE. UU. 32-34 %, Reino Unido 25 %, Alemania 21 %.\n\n> **Implicación:** Las complicaciones por atelectasias por compresión afectan al **90 % de los pacientes anestesiados** con obesidad; el manejo ventilatorio protector no es una excepción, es el estándar."
+      },
+      "estimatedTime": 15
+    },
+    {
+      "id": "simv-theory-2",
+      "order": 3,
+      "type": "theory",
+      "title": "Optimización del aprendizaje clínico: Teoría de la Carga Cognitiva y Chunking",
+      "content": {
+        "markdown": "La arquitectura de la información en la formación médica es el **blindaje principal contra el error clínico** derivado de la fatiga mental y la desatención selectiva en unidades críticas.\n\n### Los tres tipos de carga cognitiva en ventilación mecánica\n\nBasándonos en la **Teoría de la Carga Cognitiva de Sweller**:\n\n1. **Carga Intrínseca:** complejidad inherente de la interacción paciente-ventilador (múltiples parámetros simultáneos, hemodinámica, mecánica pulmonar del obeso).\n2. **Carga Extrínseca:** impuesta por interfaces de ventilador deficientes, alarmas irrelevantes o información desorganizada. **Debe minimizarse.**\n3. **Carga Germinal (o Esencial):** destinada a la automatización de esquemas mentales de protección pulmonar. **Debe maximizarse.**\n\n### Principio de Modalidad\n\nLa integración de canales **auditivos** (explicación del especialista) y **visuales** (monitorización de curvas en tiempo real) es superior a la instrucción unimodal, facilitando una codificación dual que reduce la saturación de la memoria de trabajo.\n\n### Chunking adaptativo: evidencia cuantitativa\n\nEl 'Adaptive Lesson Chunking' desglosa la complejidad en unidades de información dosificables, respetando el **número de Miller (7 ± 2)** para la memoria de trabajo. Ren y Siddique demostraron que el aprendizaje adaptativo que ajusta el tamaño del bloque informativo (7-15 palabras) según la capacidad atencional logra:\n- **Retención del 78 % ± 15** con métodos adaptativos.\n- **Retención del 63 % ± 20** con métodos estáticos convencionales.\n\nEsta dosificación libera recursos ejecutivos para el enfoque primordial: la seguridad y estabilidad del paciente."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "simv-theory-3",
+      "order": 4,
+      "type": "theory",
+      "title": "Ventilación protectora: 'Heavy Lung', Driving Pressure y Vt basado en PBW",
+      "content": {
+        "markdown": "La ventilación protectora trasciende al SDRA para consolidarse como el **estándar perioperatorio indispensable** en la mitigación de la Lesión Pulmonar Inducida por el Ventilador (VILI).\n\n### Volumen Tidal basado en Peso Predicho (PBW)\n\nSe prescribe un Vt de **6-8 ml/kg de PBW**, dado que el parénquima pulmonar no escala con la adiposidad. Usar el peso real genera volutrauma por sobredistensión.\n\n### El concepto de 'Heavy Lung' (pulmón pesado)\n\nEn el paciente obeso, el peso de la pared torácica **consume gran parte de la presión aplicada** por el ventilador. Esto implica que:\n- La presión de vía aérea medida sobreestima la presión que efectivamente distiende los alvéolos.\n- La **presión transpulmonar real** es el único indicador fidedigno para prevenir el barotrauma y el volutrauma.\n- Niveles aparentemente 'normales' de presión meseta pueden encubrir una sobredistensión real en las zonas no dependientes.\n\n### Driving Pressure: el límite de seguridad\n\nLa **Driving Pressure = Presión Meseta − PEEP** debe mantenerse **< 13-15 cmH₂O**. Este parámetro tiene la mayor correlación con supervivencia porque refleja el estrés al que se somete el tejido pulmonar funcionalmente reclutable, independientemente del volumen programado."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "simv-theory-4",
+      "order": 5,
+      "type": "theory",
+      "title": "Titulación de PEEP, maniobras de reclutamiento y VCV vs. PCV en la práctica",
+      "content": {
+        "markdown": "### PEEP titulada por clase de obesidad\n\nLa PEEP debe ajustarse al IMC como mínimo fisiológico para contrarrestar la PIA y la PEEPi basal:\n\n| Clase de obesidad | IMC (kg/m²) | PEEP recomendada (cmH₂O) |\n| :--- | :--- | :--- |\n| Clase I | 30 - 34.9 | 8 |\n| Clase II | 35 - 39.9 | 10 |\n| Clase III (mórbida) | ≥ 40 | 12 |\n\nEn escenarios de colapso severo o SDRA asociado, el rango terapéutico se amplía de **10 a 26 cmH₂O**.\n\n### Maniobras de reclutamiento: progresiva vs. manual\n\nSe desaconseja el reclutamiento manual por su imprecisión hemodinámica. La **Maniobra Progresiva Controlada por Ventilador** alcanzando **50-55 cmH₂O** en obesos:\n- Permite una apertura alveolar gradual.\n- Facilita la adaptación cardiovascular a la presión intratorácica creciente.\n- Minimiza el impacto sobre el gasto cardíaco frente a la insuflación súbita.\n\n### VCV vs. PCV: estabilidad del Volumen Minuto ante fluctuaciones de PIA\n\nLa evidencia actual favorece el **modo VCV** para la prevención de CPP. Su ventaja clave es la **estabilidad del Volumen Minuto (VM)** ante fluctuaciones drásticas de la presión intraabdominal, frecuentes en:\n- **Laparoscopia:** insuflación de CO₂ que eleva la PIA de forma aguda.\n- **Posición de Trendelenburg:** desplazamiento adicional del contenido abdominal hacia el tórax.\n\nEn PCV, estos cambios de PIA reducen silenciosamente el Vt sin alarma inmediata, requiriendo intervenciones constantes del operador para mantener la ventilación adecuada."
+      },
+      "estimatedTime": 15
+    },
+    {
+      "id": "simv-theory-5",
+      "order": 6,
+      "type": "theory",
+      "title": "Andamiaje pedagógico: ZDP, Fading, Spacing y Retrieval Practice",
+      "content": {
+        "markdown": "El **Scaffolding** (andamiaje) constituye la infraestructura pedagógica que permite al médico transitar de la teoría a la **competencia bedside autónoma**.\n\n### Zona de Desarrollo Próximo (ZDP) y modelo 'I Do, We Do, You Do'\n\nLa ZDP define el umbral de aprendizaje óptimo donde el interno actúa bajo supervisión. El modelo se aplica directamente a la titulación de PEEP y las MR:\n1. **I Do (Modelo):** el especialista realiza la titulación completa explicando cada decisión en tiempo real.\n2. **We Do (Guía):** el interno ejecuta bajo supervisión activa con corrección inmediata.\n3. **You Do (Independencia):** el interno actúa de forma autónoma en simulación o caso real supervisado.\n\n### Fading: atenuación progresiva del andamiaje\n\nEl modelo 'I Do, We Do, You Do' debe evolucionar hacia la **atenuación progresiva (Fading)**: el especialista retira deliberadamente el soporte a medida que el aprendiz demuestra automatización de esquemas, evitando la **dependencia crónica de la supervisión**. Sin Fading, el interno mejora el desempeño con apoyo pero no desarrolla autonomía real bajo presión clínica.\n\n### Spacing y Retrieval Practice: consolidación en Memoria a Largo Plazo\n\n- **Spacing (espaciamiento):** distribuir las revisiones de protocolo en intervalos crecientes interrumpe la curva de olvido de Ebbinghaus y fortalece el rastro mnémico.\n- **Retrieval Practice (práctica de recuperación):** cuestionarios de bajo riesgo y revisiones espaciadas fuerzan el esfuerzo de recuperación, generando rutas neuronales más robustas para el manejo de crisis ventilatorias.\n\n### Hábitos de soporte complementario\n\nSegún las directrices de APEPOC, la recuperación pulmonar se potencia con:\n- **Actividad física:** optimiza la eliminación de CO₂ y mejora la función diafragmática.\n- **Vitamina D:** modulación inmune e inflamatoria.\n- **Vitamina E (tocoferol):** mitiga la hiperreactividad bronquial."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "simv-summary",
+      "order": 7,
+      "type": "summary",
+      "title": "Cierre: síntesis y checklist",
+      "content": {
+        "markdown": "## Resumen\n\n- La obesidad genera una carga elástica extrínseca que reduce la CRF hasta un 50 % en inducción; la PEEPi en supino alcanza 5.3 cmH₂O (Steier) con incremento de 0.2 cmH₂O por unidad de IMC.\n- El Principio de Modalidad y el Chunking adaptativo (retención 78 % vs. 63 %) son herramientas clave para gestionar la carga cognitiva en UCI.\n- El Vt se calcula por PBW (6-8 ml/kg); el concepto de 'Heavy Lung' exige monitorizar la Driving Pressure (< 13-15 cmH₂O) como indicador real de estrés alveolar.\n- La PEEP se titula por clase de obesidad (8-12 cmH₂O base, hasta 26 cmH₂O en SDRA); la MRP controlada por ventilador (50-55 cmH₂O) es superior al reclutamiento manual.\n- El modo VCV garantiza la estabilidad del Volumen Minuto ante cambios bruscos de PIA en laparoscopia y Trendelenburg, donde PCV falla silenciosamente.\n- El andamiaje pedagógico (ZDP + Fading + Spacing + Retrieval Practice) construye la autonomía clínica real; sin Fading no hay independencia bajo presión.\n\n## Checklist de validación\n\n- Explico la diferencia de PEEPi en supino vs. bipedestación y su origen posicional.\n- Identifico los tres tipos de carga cognitiva y aplico el Principio de Modalidad al diseño de una sesión de ventilación.\n- Calculo el Vt por PBW y verifico la Driving Pressure usando el concepto de 'Heavy Lung'.\n- Selecciono la PEEP por clase de obesidad y describo las fases de la MRP controlada.\n- Justifico por qué VCV es preferible a PCV en laparoscopia y Trendelenburg.\n- Diseño una secuencia de enseñanza con las tres fases del modelo 'I Do, We Do, You Do' incorporando Fading explícito."
+      },
+      "estimatedTime": 5
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Por qué la PEEPi es tan diferente en posición supina frente a bipedestación en el paciente obeso?",
+        "¿Qué significa el concepto de 'Heavy Lung' y por qué la Driving Pressure es más relevante que la presión meseta?",
+        "¿Cuál es la diferencia entre el Scaffolding y el Fading en la enseñanza de titulación de PEEP?",
+        "¿Por qué el modo VCV es superior al PCV durante la laparoscopia en el paciente obeso?",
+        "¿Qué es el Principio de Modalidad y cómo reduce la carga cognitiva en UCI?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "aiexpandnotes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": [
+          "intermediate",
+          "advanced"
+        ],
+        "question_types": [
+          "conceptual",
+          "application",
+          "clinical_case"
+        ],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [],
+  "quiz": {
+    "id": "quiz-duales-simv-obeso",
+    "passingScore": 4,
+    "questions": [
+      {
+        "id": "simv-q1",
+        "type": "multiple-choice",
+        "question": "Según Steier et al., ¿cuál es la PEEPi media en posición supina en el paciente obeso y cuánto aumenta por unidad de IMC?",
+        "options": [
+          "3.0 cmH₂O basal; incremento de 0.5 cmH₂O por unidad de IMC",
+          "5.3 cmH₂O basal; incremento de 0.2 cmH₂O por unidad de IMC",
+          "1.4 cmH₂O basal; incremento de 0.1 cmH₂O por unidad de IMC",
+          "8.0 cmH₂O basal; incremento de 0.4 cmH₂O por unidad de IMC"
+        ],
+        "correctAnswer": "5.3 cmH₂O basal; incremento de 0.2 cmH₂O por unidad de IMC",
+        "explanation": "Steier et al. documentan una PEEPi media de 5.3 cmH₂O en posición supina, con incremento lineal de 0.2 cmH₂O por unidad de IMC en decúbito supino. En bipedestación, la PEEPi cae a solo 1.4 cmH₂O, evidenciando la naturaleza posicional del fenómeno.",
+        "difficulty": "intermediate",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "simv-q2",
+        "type": "multiple-choice",
+        "question": "¿Qué establece el Principio de Modalidad (Modality Principle) aplicado a la enseñanza en UCI?",
+        "options": [
+          "La instrucción exclusivamente visual es superior a cualquier otro formato",
+          "La integración de canales auditivos y visuales simultáneos reduce la saturación de la memoria de trabajo",
+          "El texto escrito genera mayor retención que la explicación oral en entornos de cuidados críticos",
+          "Los canales sensoriales deben usarse de forma secuencial para evitar la interferencia cognitiva"
+        ],
+        "correctAnswer": "La integración de canales auditivos y visuales simultáneos reduce la saturación de la memoria de trabajo",
+        "explanation": "El Principio de Modalidad establece que combinar la explicación del especialista (canal auditivo) con la monitorización de curvas en tiempo real (canal visual) facilita una codificación dual que es superior a la instrucción unimodal y reduce la saturación de la memoria de trabajo.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "simv-q3",
+        "type": "multiple-choice",
+        "question": "¿Qué implica el concepto de 'Heavy Lung' para la interpretación de la presión meseta en el paciente obeso?",
+        "options": [
+          "La presión meseta subestima la presión alveolar real porque parte se disipa en el circuito del ventilador",
+          "La presión meseta sobrestima la distensión alveolar porque parte se disipa venciendo la rigidez de la pared torácica",
+          "La presión meseta es equivalente a la presión transpulmonar en el paciente obeso",
+          "La presión meseta debe aumentarse en el obeso para compensar la mayor resistencia de las vías aéreas"
+        ],
+        "correctAnswer": "La presión meseta sobrestima la distensión alveolar porque parte se disipa venciendo la rigidez de la pared torácica",
+        "explanation": "El 'Heavy Lung' implica que el peso de la pared torácica consume gran parte de la presión aplicada, por lo que la presión meseta medida sobreestima la presión transpulmonar real que distiende los alvéolos. Esto hace que la Driving Pressure sea el indicador más fiable de estrés alveolar.",
+        "difficulty": "intermediate",
+        "bloomLevel": "analyze",
+        "points": 2
+      },
+      {
+        "id": "simv-q4",
+        "type": "multiple-choice",
+        "question": "¿Por qué el modo VCV es superior al PCV específicamente durante la laparoscopia en el paciente obeso?",
+        "options": [
+          "Porque genera un flujo desacelerado que vence mejor la resistencia de la pared torácica",
+          "Porque garantiza la estabilidad del Volumen Minuto ante aumentos bruscos de PIA por la insuflación de CO₂",
+          "Porque elimina la necesidad de monitorizar la Driving Pressure durante el procedimiento",
+          "Porque reduce automáticamente la PEEP cuando la PIA supera los 15 cmH₂O"
+        ],
+        "correctAnswer": "Porque garantiza la estabilidad del Volumen Minuto ante aumentos bruscos de PIA por la insuflación de CO₂",
+        "explanation": "Durante la laparoscopia, la insuflación de CO₂ eleva bruscamente la PIA. En PCV, este incremento reduce silenciosamente el Vt sin alarma inmediata, produciendo hipoventilación. El VCV mantiene el Volumen Minuto estable independientemente de las fluctuaciones de PIA, sin requerir intervenciones constantes del operador.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "simv-q5",
+        "type": "multiple-choice",
+        "question": "¿Qué es el 'Fading' en el modelo de Scaffolding y por qué es imprescindible?",
+        "options": [
+          "El aumento progresivo de la dificultad de los casos clínicos propuestos al interno",
+          "La retirada deliberada y progresiva del soporte docente a medida que el aprendiz automatiza sus esquemas",
+          "La reducción gradual del tiempo disponible para completar una titulación de PEEP",
+          "La eliminación del modelo 'I Do' una vez que el interno supera la fase de TRAT"
+        ],
+        "correctAnswer": "La retirada deliberada y progresiva del soporte docente a medida que el aprendiz automatiza sus esquemas",
+        "explanation": "El Fading es la atenuación progresiva del andamiaje: el especialista retira deliberadamente su soporte conforme el interno demuestra automatización de esquemas. Sin Fading, el modelo 'I Do, We Do, You Do' no genera autonomía real bajo presión clínica; el interno mejora con apoyo pero no desarrolla competencia independiente.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [
+      {
+        "authors": "Steier, J.; et al.",
+        "year": "",
+        "title": "Predictors of intrinsic PEEP in obese patients during mechanical ventilation in the supine position.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Ren, X.; Siddique, A.",
+        "year": "2025",
+        "title": "Adaptive lesson chunking and retention in medical education.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Sweller, J.",
+        "year": "1988",
+        "title": "Cognitive load during problem solving: Effects on learning.",
+        "source": "Cognitive Science",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Organización Mundial de la Salud (OMS)",
+        "year": "2022",
+        "title": "Obesity and overweight: global data and epidemiology.",
+        "source": "WHO Fact Sheet",
+        "doi": "",
+        "url": "https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight"
+      },
+      {
+        "authors": "APEPOC",
+        "year": "",
+        "title": "Directrices de soporte complementario para la recuperación pulmonar: actividad física, Vitamina D y Vitamina E.",
+        "source": "APEPOC Guidelines",
+        "doi": "",
+        "url": ""
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-29",
+    "source": "VentyLab (JSON unificado)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel intermedio-avanzado. Integra fisiopatología avanzada del obeso crítico (PEEPi posicional, Heavy Lung), ventilación protectora (Vt/PBW, Driving Pressure, PEEP por clase de obesidad, MRP), VCV vs. PCV en laparoscopia/Trendelenburg y marcos pedagógicos de Scaffolding con Fading, Spacing y Retrieval Practice."
+  }
+}

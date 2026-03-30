@@ -15,10 +15,7 @@ import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
 import {
   MedicalServices as MedicalServicesIcon,
-  Shield as ShieldIcon,
-  TrendingUp as TrendingUpIcon,
-  Build as BuildIcon,
-  ChecklistRtl as ChecklistIcon,
+  School as SchoolIcon,
 } from '@mui/icons-material';
 import module03Content, { metadata as module03Metadata } from '@/features/ensenanza/shared/data/lessons/mecanica/level03-avanzado';
 import ModuleCategoryNav from '@/features/ensenanza/shared/components/navigation/ModuleCategoryNav';
@@ -45,78 +42,39 @@ const Module03CurriculumView = ({
            (!moduleIdFromQuery && router.query.module === 'module-03-configuration');
   }, [moduleIdFromQuery, router.query.module]);
 
-  // Prepare categories for Module 03
+  // Prepare categories for Module 03 (avanzado — nueva estructura)
   const module03Categories = useMemo(() => {
-    if (!isModule03 || !module03Metadata?.categories) return null;
-    
+    if (!isModule03) return null;
+
     const categoryConfig = {
-      pathologyProtocols: {
-        id: 'pathologyProtocols',
-        title: 'Protocolos por Patología',
-        description: 'Protocolos específicos de ventilación mecánica para diferentes patologías',
-        icon: MedicalServicesIcon,
-        color: '#e53935',
-        lessons: Object.entries(module03Content.pathologyProtocols || {}).map(([key, lesson]) => ({
-          id: key,
-          title: lesson.title || key,
-          estimatedTime: lesson.estimatedTime || 0,
-          type: 'protocol',
-        })),
-      },
-      protectiveStrategies: {
-        id: 'protectiveStrategies',
-        title: 'Estrategias de Protección Pulmonar',
-        description: 'Estrategias de protección pulmonar para prevenir VILI',
-        icon: ShieldIcon,
+      coreModules: {
+        id: 'coreModules',
+        title: 'Módulos Avanzados',
+        description: 'Ventilación protectora, monitorización, asincronías y destete complejo',
+        icon: SchoolIcon,
         color: '#1976d2',
-        lessons: Object.entries(module03Content.protectiveStrategies || {}).map(([key, lesson]) => ({
-          id: key,
+        lessons: Object.entries(module03Content.coreModules || {}).map(([key, lesson]) => ({
+          id: lesson.id || key,
           title: lesson.title || key,
           estimatedTime: lesson.estimatedTime || 0,
           type: 'theory',
         })),
       },
-      weaningContent: {
-        id: 'weaningContent',
-        title: 'Destete Ventilatorio',
-        description: 'Protocolos y guías para destete ventilatorio',
-        icon: TrendingUpIcon,
-        color: '#2e7d32',
-        lessons: Object.entries(module03Content.weaningContent || {}).map(([key, lesson]) => ({
-          id: key,
+      pathologyModules: {
+        id: 'pathologyModules',
+        title: 'Enseñanza especial — Patologías',
+        description: 'Protocolos por patología: obesidad, EPOC/asma, SDRA y recuperación',
+        icon: MedicalServicesIcon,
+        color: '#e53935',
+        lessons: Object.entries(module03Content.pathologyModules || {}).map(([key, lesson]) => ({
+          id: lesson.id || key,
           title: lesson.title || key,
           estimatedTime: lesson.estimatedTime || 0,
           type: 'protocol',
         })),
       },
-      troubleshootingGuides: {
-        id: 'troubleshootingGuides',
-        title: 'Troubleshooting',
-        description: 'Guías prácticas para resolver problemas comunes',
-        icon: BuildIcon,
-        color: '#f57c00',
-        lessons: Object.entries(module03Content.troubleshootingGuides || {}).map(([key, lesson]) => ({
-          id: key,
-          title: lesson.title || key,
-          estimatedTime: lesson.estimatedTime || 0,
-          type: 'case',
-        })),
-      },
-      checklistProtocols: {
-        id: 'checklistProtocols',
-        title: 'Checklists Clínicos',
-        description: 'Checklists y protocolos rápidos de referencia',
-        icon: ChecklistIcon,
-        color: '#7b1fa2',
-        lessons: Object.entries(module03Content.checklistProtocols || {}).map(([key, lesson]) => ({
-          id: key,
-          title: lesson.title || key,
-          estimatedTime: lesson.estimatedTime || 0,
-          type: 'checklist',
-        })),
-      },
     };
-    
+
     return Object.values(categoryConfig).filter(cat => cat.lessons.length > 0);
   }, [isModule03]);
 

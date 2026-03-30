@@ -1,92 +1,44 @@
 /**
- * Module 03: Configuration and Management - Content Exports
- * 
- * This module contains all educational content related to mechanical ventilator
- * configuration and management, including:
- * - Pathology-specific protocols
- * - Protective ventilation strategies
- * - Weaning protocols
- * - Troubleshooting guides
- * - Clinical checklists
- * 
- * All content is organized by category for easy import and use.
+ * Level 03: Avanzado - Content Exports
+ *
+ * Módulos organizados en dos grupos:
+ *   - coreModules:      contenido principal avanzado (módulos 01-04)
+ *   - pathologyModules: patologías específicas (módulos 05-08)
+ *
+ * La información canónica proviene de la BD; estos JSON son la fuente
+ * de contenido detallado que el lessonLoader consume como fallback/legacy.
  */
 
 // ============================================================================
-// PATHOLOGY PROTOCOLS
+// CORE MODULES (01-04)
 // ============================================================================
-// Protocolos específicos para diferentes patologías que requieren ventilación mecánica
 
-import sdraProtocol from './pathologies/sdra-protocol.json';
-import copdProtocol from './pathologies/copd-protocol.json';
-import asthmaProtocol from './pathologies/asthma-protocol.json';
-import pneumoniaProtocol from './pathologies/pneumonia-protocol.json';
+import module01 from './module-01-daño-pulmonar-vili-ventilacion-protectora.json';
+import module02 from './module-02-monitorizacion-alto-nivel.json';
+import module03 from './module-03-advertencias-asincronias-situaciones-complejas.json';
+import module04 from './module-04-destete-complejo-vmni.json';
 
-export const pathologyProtocols = {
-  sdra: sdraProtocol,
-  copd: copdProtocol,
-  asthma: asthmaProtocol,
-  pneumonia: pneumoniaProtocol,
+export const coreModules = {
+  module01,
+  module02,
+  module03,
+  module04,
 };
 
 // ============================================================================
-// PROTECTIVE STRATEGIES
+// PATHOLOGY MODULES (05-08)
 // ============================================================================
-// Estrategias de protección pulmonar para prevenir VILI (Ventilator-Induced Lung Injury)
 
-import lowTidalVolume from './protective-strategies/low-tidal-volume.json';
-import permissiveHypercapnia from './protective-strategies/permissive-hypercapnia.json';
-import peepStrategies from './protective-strategies/peep-strategies.json';
-import lungProtectiveVentilation from './protective-strategies/lung-protective-ventilation.json';
+import module05 from './pathologies/module-05-obesidad-sedentarismo.json';
+import module06 from './pathologies/module-06-epoc-asma-fumadores.json';
+import module07 from './pathologies/module-07-sdra.json';
+import module08 from './pathologies/module-08-recuperacion-proteccion.json';
 
-export const protectiveStrategies = {
-  lowTidalVolume,
-  permissiveHypercapnia,
-  peepStrategies,
-  lungProtectiveVentilation,
-};
-
-// ============================================================================
-// WEANING CONTENT
-// ============================================================================
-// Contenido relacionado con destete ventilatorio
-
-import readinessCriteria from './weaning/readiness-criteria.json';
-import sbtProtocol from './weaning/sbt-protocol.json';
-
-// Note: weaning-methods.json and difficult-weaning.json will be added when created
-export const weaningContent = {
-  readinessCriteria,
-  sbtProtocol,
-  // weaningMethods: will be added
-  // difficultWeaning: will be added
-};
-
-// ============================================================================
-// TROUBLESHOOTING GUIDES
-// ============================================================================
-// Guías prácticas para resolver problemas comunes durante la ventilación mecánica
-
-// Note: All troubleshooting guides will be imported when created
-export const troubleshootingGuides = {
-  // highPressureAlarm: will be added
-  // lowTidalVolumeAlarm: will be added
-  // patientVentilatorAsynchrony: will be added
-  // hypoxemiaManagement: will be added
-  // hypercapniaManagement: will be added
-  // hemodynamicInstability: will be added
-};
-
-// ============================================================================
-// CHECKLIST PROTOCOLS
-// ============================================================================
-// Protocolos rápidos de referencia en formato de checklist interactivo
-
-// Note: All checklist protocols will be imported when created
-export const checklistProtocols = {
-  // initialSetupChecklist: will be added
-  // dailyAssessmentChecklist: will be added
-  // preExtubationChecklist: will be added
+export const pathologyModules = {
+  module05,
+  module06,
+  module07,
+  module08,
 };
 
 // ============================================================================
@@ -100,14 +52,10 @@ export { metadata };
 // ============================================================================
 // DEFAULT EXPORT
 // ============================================================================
-// Export all content organized by category
 
 export default {
-  pathologyProtocols,
-  protectiveStrategies,
-  weaningContent,
-  troubleshootingGuides,
-  checklistProtocols,
+  coreModules,
+  pathologyModules,
   metadata,
 };
 
@@ -116,43 +64,31 @@ export default {
 // ============================================================================
 
 /**
- * Get all lessons in this module
- * @returns {Array} Array of all lesson objects
+ * Devuelve todas las lecciones del nivel avanzado (core + patologías).
+ * @returns {Array} Array de todos los objetos de lección
  */
 export function getAllLessons() {
   return [
-    ...Object.values(pathologyProtocols),
-    ...Object.values(protectiveStrategies),
-    ...Object.values(weaningContent),
-    ...Object.values(troubleshootingGuides),
-    ...Object.values(checklistProtocols),
+    ...Object.values(coreModules),
+    ...Object.values(pathologyModules),
   ];
 }
 
 /**
- * Get lesson by title
- * @param {string} title - Lesson title to search for
- * @returns {Object|null} Lesson object or null if not found
+ * Busca una lección por título.
+ * @param {string} title
+ * @returns {Object|null}
  */
 export function getLessonByTitle(title) {
-  const allLessons = getAllLessons();
-  return allLessons.find(lesson => lesson.title === title) || null;
+  return getAllLessons().find(lesson => lesson.title === title) ?? null;
 }
 
 /**
- * Get lessons by category
- * @param {string} category - Category name (pathologyProtocols, protectiveStrategies, etc.)
- * @returns {Object} Object containing lessons in that category
+ * Devuelve las lecciones de una categoría ('coreModules' | 'pathologyModules').
+ * @param {string} category
+ * @returns {Object}
  */
 export function getLessonsByCategory(category) {
-  const categories = {
-    pathologyProtocols,
-    protectiveStrategies,
-    weaningContent,
-    troubleshootingGuides,
-    checklistProtocols,
-  };
-  
-  return categories[category] || {};
+  const categories = { coreModules, pathologyModules };
+  return categories[category] ?? {};
 }
-

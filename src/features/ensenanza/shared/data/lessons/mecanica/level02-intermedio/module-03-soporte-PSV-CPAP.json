@@ -1,0 +1,292 @@
+{
+  "id": "module-03-soporte-psv-cpap",
+  "moduleId": "module-03-intermedio-mecanica",
+  "title": "Soporte ventilatorio en el paciente obeso: PSV, CPAP y estrategias de protección pulmonar",
+  "description": "Este módulo sintetiza la gestión ventilatoria del paciente con obesidad integrando fisiopatología mecánica, programación inicial basada en peso ideal, titulación de PEEP con maniobras de reclutamiento progresivas, soporte no invasivo con CPAP en el postoperatorio y estrategias de gestión de la carga cognitiva para consolidar el aprendizaje de protocolos de ventilación protectora.",
+  "order": 3,
+  "estimatedTime": 75,
+  "difficulty": "intermediate",
+  "bloomLevel": "apply",
+  "learningObjectives": [
+    "Explicar la cefalización del diafragma, la reducción de la CRF y el efecto pendelluft como consecuencias fisiopatológicas de la obesidad sobre la mecánica respiratoria.",
+    "Calcular el Volumen Tidal protector basado en el Peso Ideal y justificar la superioridad del modo VCV para su control estricto.",
+    "Titular la PEEP según el IMC integrando la PEEPi basal del paciente obeso como referencia de mínimo fisiológico.",
+    "Describir las fases de la Maniobra de Reclutamiento Progresiva controlada por ventilador y explicar por qué se abandona la bolsa manual.",
+    "Reconocer el fenómeno de rebote de apnea (AOS) en la tercera noche postoperatoria y planificar el uso precoz de CPAP tras la extubación.",
+    "Aplicar los principios de Chunking y Scaffolding para reducir la carga cognitiva extrínseca en el aprendizaje de protocolos ventilatorios complejos."
+  ],
+  "prerequisites": [
+    "Anatomía y fisiología básica del aparato respiratorio.",
+    "Módulo 1: VCV vs. PCV en el paciente obeso (cálculo de IBW y PBW, ventajas del modo VCV).",
+    "Módulo 2: PEEP, PEEPi y maniobras de reclutamiento (Driving Pressure, tabla PEEP por IMC)."
+  ],
+  "sections": [
+    {
+      "id": "psv-cpap-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción y mapa del módulo",
+      "content": {
+        "markdown": "## ¿Qué vas a aprender en este módulo?\n\nTema: Gestión ventilatoria integral del paciente obeso: desde la fisiopatología mecánica hasta el soporte no invasivo postoperatorio y las estrategias para consolidar el aprendizaje bajo alta carga cognitiva.\n\nA lo largo del módulo conectarás:\n- **Fisiopatología de la obesidad:** cefalización del diafragma, reducción de la CRF, efecto pendelluft y desajuste V/Q.\n- **Programación inicial protectora:** Vt basado en Peso Ideal, modo VCV y evidencia del estudio PROBESE.\n- **Titulación de PEEP:** PEEPi basal por IMC y Maniobra de Reclutamiento Progresiva (MRP) vs. bolsa manual.\n- **CPAP y AOS postoperatoria:** rebote de apnea en la tercera noche y estrategia de extubación segura.\n- **Carga cognitiva:** Chunking, Scaffolding y modelo 'I do, We do, You do' aplicados a protocolos ventilatorios."
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "psv-cpap-theory-1",
+      "order": 2,
+      "type": "theory",
+      "title": "Fisiopatología respiratoria en la obesidad: restricción, colapso y heterogeneidad",
+      "content": {
+        "markdown": "El paciente obeso no es una variante del paciente estándar: representa un **desafío mecánico y sistémico único**. Entender sus cambios anatómicos es una prioridad estratégica, ya que dictan la mecánica torácica durante todo el perioperatorio.\n\n### Carga elástica extrínseca y cefalización del diafragma\n\nEl exceso de tejido adiposo abdominal incrementa la **presión intraabdominal (PIA)**, que oscila entre 6 y 10 cmH₂O, y desplaza el diafragma cranealmente. Este fenómeno reduce drásticamente el volumen pulmonar en reposo:\n- La **CRF disminuye entre el 5 % y el 15 %** por cada incremento de 5 kg/m² de IMC por encima de 30 kg/m².\n- Tras la inducción anestésica en posición supina, la CRF puede caer hasta un **50 %**.\n- La presión abdominal elevada desplaza sangre hacia el tórax, exacerbando el desajuste ventilación/perfusión **(V/Q)** y alterando la precarga cardíaca.\n\n### Efecto pendelluft y atelectrauma\n\nLa heterogeneidad en la distensibilidad del parénquima propicia el **efecto pendelluft**: un flujo de aire interregional anómalo entre alvéolos con diferentes constantes de tiempo. Esta ineficiencia dinámica:\n- Aumenta el riesgo de atelectasias por compresión en zonas dependientes.\n- Predispone a inflamación local y falla respiratoria aguda.\n- Genera diferencias de presión dinámicas que el ventilador no puede corregir sin una PEEP adecuada.\n\n> **Implicación clínica:** La programación del ventilador debe estar fundamentada en la protección del tejido funcional remanente, no en valores estándar para el paciente delgado."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "psv-cpap-theory-2",
+      "order": 3,
+      "type": "theory",
+      "title": "Programación inicial y metas de protección pulmonar",
+      "content": {
+        "markdown": "El cálculo erróneo del Volumen Tidal (Vt) basado en el peso real es uno de los riesgos más críticos en esta población. El tejido adiposo no incrementa la capacidad pulmonar ni participa en el intercambio gaseoso; ventilar por peso real conduce inevitablemente a **volutrauma y biotrauma por sobredistensión**.\n\n### Parámetros iniciales recomendados\n\n| Parámetro | Recomendación clínica | Meta / Fórmula |\n| :--- | :--- | :--- |\n| **Volumen Tidal (Vt)** | 6-8 ml/kg de **Peso Ideal** | Hombres: Talla²(m) × 23 / Mujeres: Talla²(m) × 21.5 |\n| **Frecuencia Respiratoria** | Ajustada según IMC | 12-20 rpm; superior si IMC > 40 |\n| **Saturación (SpO₂)** | Evitar hiperoxemia | 94-98 % con FiO₂ mínima necesaria |\n| **Modo ventilatorio** | Controlado por Volumen | VCV: superioridad demostrada en protección pulmonar |\n\n### Superioridad del modo VCV: evidencia PROBESE (2017)\n\nEl modo **VCV** garantiza un control estricto del Vt y facilita el monitoreo de la **Driving Pressure** (factor determinante en la prevención de Complicaciones Pulmonares Postoperatorias, CPP). Aunque históricamente se creía que la presión vencía mejor la resistencia de la pared torácica, el VCV es el modo que asegura que el volumen programado llegue efectivamente a los alvéolos a pesar de la baja distensibilidad del tórax obeso.\n\n> Para que estos volúmenes logren un intercambio efectivo, es imperativo integrar una PEEP adecuada que mantenga el pulmón abierto y evite el atelectrauma cíclico."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "psv-cpap-theory-3",
+      "order": 4,
+      "type": "theory",
+      "title": "Titulación de PEEP y maniobras de reclutamiento (MRP)",
+      "content": {
+        "markdown": "La PEEP en el paciente obeso actúa como una **contramedida mecánica esencial** frente a la PIA. Ignorar la necesidad de una PEEP elevada condena al paciente al cierre de las vías aéreas pequeñas y al colapso alveolar.\n\n### PEEPi basal: el mínimo fisiológico de referencia\n\nEstudios de **Steier et al.** reportan una PEEPi media de **5.3 cmH₂O** en posición supina, con un incremento de **0.2 cmH₂O por cada unidad de IMC** adicional. Por lo tanto, iniciar con niveles de PEEP de 8 o 10 cmH₂O representa el mínimo fisiológico para evitar el colapso en este grupo.\n\n### PEEP recomendada según IMC\n\n| IMC (kg/m²) | PEEP recomendada (cmH₂O) |\n| :--- | :--- |\n| 30 - 39.9 | 8 |\n| 40 - 49.9 | 10 |\n| > 50 | 12 |\n\n### Maniobra de Reclutamiento Progresiva (MRP): por qué se abandona la bolsa manual\n\nLa bolsa manual genera presiones erráticas e impredecibles y conlleva la pérdida de PEEP al reconectar al paciente. La **MRP controlada por ventilador** en cambio:\n1. **Fase de rampeo:** incremento escalonado de PEEP manteniendo Driving Pressure constante, alcanzando presiones de apertura de **50-55 cmH₂O**.\n2. **Fase de titulación:** reducción progresiva hasta identificar la PEEP de máxima compliancia (PEEP de 'no colapso').\n\nEl reclutamiento por etapas permite que el sistema cardiovascular se adapte gradualmente al aumento de la presión intratorácica, disminuyendo el daño endotelial y alveolar frente a los métodos de insuflación súbita."
+      },
+      "estimatedTime": 15
+    },
+    {
+      "id": "psv-cpap-theory-4",
+      "order": 5,
+      "type": "theory",
+      "title": "CPAP y Apnea Obstructiva del Sueño (AOS) en el postoperatorio",
+      "content": {
+        "markdown": "La **Apnea Obstructiva del Sueño (AOS)** tiene una prevalencia del **50 % en pacientes con IMC > 40**, a menudo no diagnosticada antes de la cirugía.\n\n### Mecanismo del rebote de apnea\n\nTras la cirugía, los opioides alteran profundamente la arquitectura del sueño suprimiendo las fases **REM**. Esto genera una **falsa sensación de seguridad** en la URPA/PACU: el paciente parece estable porque no accede al sueño profundo donde los eventos obstructivos son más severos.\n\nEl fenómeno de **'rebote de apnea'** ocurre típicamente en la **tercera noche postoperatoria**, cuando:\n- Los niveles de opioides descienden suficientemente para permitir el rebote de sueño REM.\n- El paciente ya se encuentra en planta, fuera de la monitorización continua.\n- La frecuencia y gravedad de los eventos obstructivos aumenta exponencialmente.\n\n> **Error clínico frecuente:** confiar únicamente en la estabilidad observada en cuidados críticos durante las primeras 24-48 horas como indicador de seguridad respiratoria postoperatoria.\n\n### Estrategia de transición segura\n\n1. **Extubación en posición sentada** o con tronco elevado para reducir la carga abdominal sobre el diafragma.\n2. **CPAP inmediato tras la extubación** para mantener la vía aérea superior permeable y preservar el reclutamiento logrado intraoperatoriamente.\n3. **Monitoreo telemétrico en salas generales** para detectar eventos obstructivos tardíos.\n4. **Minimizar opioides** o sustituirlos por analgésicos de acción corta para no comprometer el control central de la respiración."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "psv-cpap-theory-5",
+      "order": 6,
+      "type": "theory",
+      "title": "Estrategias de aprendizaje y gestión de la carga cognitiva",
+      "content": {
+        "markdown": "Dominar la ventilación en la obesidad requiere gestionar la **Teoría de la Carga Cognitiva (CLT)** de Sweller. La complejidad de integrar la hemodinámica con la PEEP titulada y las maniobras de reclutamiento constituye una carga intrínseca alta que demanda estrategias instruccionales específicas.\n\n### Los tres tipos de carga en este contexto\n\n- **Carga Intrínseca:** integrar hemodinámica, PEEP titulada y fisiopatología del obeso simultáneamente.\n- **Carga Extrínseca:** interfaces de ventilador confusas, alarmas irrelevantes y datos no priorizados. **Debe minimizarse.**\n- **Carga Germana (Esencial):** creación de esquemas mentales sólidos sobre protección pulmonar. **Debe maximizarse.**\n\n### Chunking: eficacia demostrada\n\nLa fragmentación de lecciones en unidades manejables tiene respaldo empírico: investigaciones de **Ren & Siddique (2025)** demuestran que los estudiantes que utilizan métodos adaptativos de chunking logran una **retención del 78 % ± 15** frente al **63 % ± 20** del grupo control.\n\n### Scaffolding: el modelo 'I do, We do, You do'\n\nEl andamiaje progresivo se aplica directamente a la titulación de PEEP y la MRP:\n1. **I do (Modelo):** el docente realiza la titulación completa explicando cada decisión.\n2. **We do (Guía):** el interno la ejecuta con supervisión activa y corrección en tiempo real.\n3. **You do (Independencia):** el interno la realiza de forma autónoma en simulación o caso real supervisado.\n\n> **Síntesis de los cuatro pilares de protección pulmonar en el obeso:**\n> 1. Vt de 6-8 ml/kg de Peso Ideal.\n> 2. PEEP titulada según IMC considerando la PEEPi basal.\n> 3. MRP progresiva controlada por ventilador.\n> 4. CPAP precoz postextubación para mitigar el rebote de apnea."
+      },
+      "estimatedTime": 12
+    },
+    {
+      "id": "psv-cpap-summary",
+      "order": 7,
+      "type": "summary",
+      "title": "Cierre: resumen y checklist",
+      "content": {
+        "markdown": "## Resumen\n\n- La obesidad genera una carga elástica extrínseca (PIA 6-10 cmH₂O) que reduce la CRF hasta un 50 % durante la inducción anestésica y produce el efecto pendelluft por heterogeneidad de distensibilidad.\n- El Vt debe calcularse por Peso Ideal (6-8 ml/kg); el modo VCV garantiza el control estricto del volumen a pesar de la baja distensibilidad torácica.\n- La PEEPi basal en el obeso alcanza ~5.3 cmH₂O (incremento de 0.2 cmH₂O por unidad de IMC): la PEEP extrínseca inicial de 8-12 cmH₂O según IMC es el mínimo fisiológico.\n- La MRP controlada por ventilador (rampeo hasta 50-55 cmH₂O + titulación por compliancia) supera a la bolsa manual en precisión y estabilidad hemodinámica.\n- El rebote de AOS ocurre en la tercera noche postoperatoria al recuperarse el sueño REM; CPAP precoz y monitoreo telemétrico son las contramedidas clave.\n- Chunking y Scaffolding ('I do, We do, You do') son las estrategias pedagógicas para consolidar protocolos de ventilación bajo alta carga cognitiva.\n\n## Checklist de validación\n\n- Explico por qué la PIA elevada produce cefalización del diafragma, reduce la CRF y favorece el efecto pendelluft.\n- Calculo el Peso Ideal y derivo el Vt protector para un paciente dado.\n- Justifico por qué el modo VCV es preferible al PCV para el control del Vt en el obeso.\n- Titulo la PEEP inicial según el IMC usando la PEEPi basal como referencia de mínimo fisiológico.\n- Describo las dos fases de la MRP y argumento el abandono de la bolsa manual.\n- Identifico el momento de máximo riesgo de rebote de AOS y planifico la transición segura a respiración espontánea.\n- Aplico el modelo 'I do, We do, You do' a la enseñanza de titulación de PEEP en simulación."
+      },
+      "estimatedTime": 5
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Por qué la inducción anestésica puede reducir la CRF hasta un 50 % en el paciente obeso?",
+        "¿Qué diferencia hay entre la PEEP extrínseca y la PEEPi, y cómo se cuantifica esta última en el obeso?",
+        "¿Por qué no se usa la bolsa manual para las maniobras de reclutamiento en el paciente obeso?",
+        "¿En qué noche postoperatoria ocurre el rebote de apnea y por qué es peligroso?",
+        "¿Qué es el Chunking y qué mejora de retención demostró en los estudios citados?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "aiexpandnotes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": [
+          "intermediate",
+          "advanced"
+        ],
+        "question_types": [
+          "conceptual",
+          "application",
+          "clinical_case"
+        ],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [],
+  "quiz": {
+    "id": "quiz-psv-cpap-obeso",
+    "passingScore": 4,
+    "questions": [
+      {
+        "id": "psv-cpap-q1",
+        "type": "multiple-choice",
+        "question": "¿Cuánto puede reducirse la CRF durante la inducción anestésica en posición supina en un paciente con obesidad mórbida?",
+        "options": [
+          "Hasta un 10 %",
+          "Hasta un 25 %",
+          "Hasta un 50 %",
+          "Hasta un 75 %"
+        ],
+        "correctAnswer": "Hasta un 50 %",
+        "explanation": "El módulo indica que tras la inducción anestésica en posición supina, la CRF puede caer hasta un 50 % en pacientes con obesidad mórbida, debido a la cefalización del diafragma por la PIA elevada y el peso del mediastino y abdomen.",
+        "difficulty": "intermediate",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "psv-cpap-q2",
+        "type": "multiple-choice",
+        "question": "Según los estudios de Steier et al. citados en el módulo, ¿cuál es la PEEPi media reportada en posición supina en el paciente obeso?",
+        "options": [
+          "1.2 cmH₂O",
+          "3.0 cmH₂O",
+          "5.3 cmH₂O",
+          "8.0 cmH₂O"
+        ],
+        "correctAnswer": "5.3 cmH₂O",
+        "explanation": "Steier et al. reportan una PEEPi media de 5.3 cmH₂O en posición supina, con un incremento de 0.2 cmH₂O por cada unidad de IMC adicional. Esto establece el mínimo fisiológico que debe superar la PEEP extrínseca programada.",
+        "difficulty": "intermediate",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "psv-cpap-q3",
+        "type": "multiple-choice",
+        "question": "¿Cuál es la principal razón por la que se abandona la bolsa manual para las maniobras de reclutamiento en el paciente obeso?",
+        "options": [
+          "Genera flujo inspiratorio excesivamente lento para vencer la resistencia torácica",
+          "No permite ajustar la FiO₂ durante la maniobra",
+          "Genera presiones erráticas e impredecibles y produce pérdida de PEEP al reconectar",
+          "Solo puede utilizarse en pacientes con IMC menor de 40"
+        ],
+        "correctAnswer": "Genera presiones erráticas e impredecibles y produce pérdida de PEEP al reconectar",
+        "explanation": "El módulo subraya que la bolsa manual carece de control barométrico preciso, genera picos de presión impredecibles y produce pérdida inmediata del reclutamiento al desconectar el circuito para retornar a la ventilación mecánica. La MRP controlada por ventilador evita estos problemas.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "psv-cpap-q4",
+        "type": "multiple-choice",
+        "question": "¿Por qué el riesgo de rebote de AOS es máximo en la tercera noche postoperatoria y no en la primera?",
+        "options": [
+          "Porque el efecto de los anestésicos inhalatorios alcanza su máximo en ese momento",
+          "Porque los opioides suprimen el sueño REM las primeras noches y el rebote ocurre al descender sus niveles",
+          "Porque la extubación habitualmente se realiza el tercer día postoperatorio",
+          "Porque la CPAP solo puede iniciarse después de 48 horas postextubación"
+        ],
+        "correctAnswer": "Porque los opioides suprimen el sueño REM las primeras noches y el rebote ocurre al descender sus niveles",
+        "explanation": "Los opioides suprimen las fases REM durante las primeras noches, generando una falsa sensación de seguridad. Al descender los niveles de opioides, se produce el rebote de sueño REM en la tercera noche, cuando el paciente ya está en planta sin monitorización continua y los eventos obstructivos son más severos.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "psv-cpap-q5",
+        "type": "multiple-choice",
+        "question": "Según Ren & Siddique (2025), ¿qué tasa de retención lograron los estudiantes que utilizaron métodos adaptativos de Chunking frente al grupo control?",
+        "options": [
+          "78 % ± 15 vs. 63 % ± 20",
+          "65 % ± 10 vs. 55 % ± 10",
+          "90 % ± 5 vs. 80 % ± 5",
+          "70 % ± 20 vs. 70 % ± 20"
+        ],
+        "correctAnswer": "78 % ± 15 vs. 63 % ± 20",
+        "explanation": "El módulo cita que Ren & Siddique (2025) demostraron una retención del 78 % ± 15 en el grupo con métodos adaptativos de chunking frente al 63 % ± 20 del grupo control, evidenciando la eficacia de la fragmentación estructurada del contenido.",
+        "difficulty": "intermediate",
+        "bloomLevel": "remember",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [
+      {
+        "authors": "Steier, J.; et al.",
+        "year": "",
+        "title": "Predictors of intrinsic PEEP and work of breathing in obese patients during mechanical ventilation.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Bluth, T.; et al. (PROBESE Collaborative Group)",
+        "year": "2017",
+        "title": "Effect of intraoperative high PEEP with recruitment maneuvers vs low PEEP on postoperative pulmonary complications in obese patients (PROBESE).",
+        "source": "JAMA",
+        "doi": "10.1001/jama.2019.7505",
+        "url": ""
+      },
+      {
+        "authors": "Ren, X.; Siddique, A.",
+        "year": "2025",
+        "title": "Adaptive chunking methods and retention in medical education.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Sweller, J.",
+        "year": "1988",
+        "title": "Cognitive load during problem solving: Effects on learning.",
+        "source": "Cognitive Science",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Pelosi, P.; Gregoretti, C.",
+        "year": "",
+        "title": "Perioperative management of obese patients.",
+        "source": "Best Practice & Research Clinical Anaesthesiology",
+        "doi": "",
+        "url": ""
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-29",
+    "source": "VentyLab (JSON unificado)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel intermedio. Integra fisiopatología del obeso, programación con Peso Ideal, titulación de PEEP por IMC con MRP, soporte CPAP postoperatorio y estrategias pedagógicas de Chunking y Scaffolding aplicadas a ventilación protectora."
+  }
+}

@@ -1,0 +1,301 @@
+{
+  "id": "module-02-monitorizacion-alto-nivel",
+  "moduleId": "module-02-avanzado-mecanica",
+  "title": "Monitorización de alto nivel: Driving Pressure y Poder Mecánico",
+  "description": "Este módulo de nivel avanzado integra la arquitectura cognitiva del especialista (CLT, Efecto Google, Baby Lung) con la monitorización dinámica de la Driving Pressure como predictor de protección pulmonar, la titulación granular de PEEP por grado de obesidad, la Maniobra de Reclutamiento Progresiva con comprensión fisiopatológica profunda del soporte hemodinámico, el concepto de Poder Mecánico como suma de vectores de lesión y un decálogo de protección pulmonar en el obeso para consolidar la práctica clínica de precisión.",
+  "order": 2,
+  "estimatedTime": 90,
+  "difficulty": "advanced",
+  "bloomLevel": "synthesize",
+  "learningObjectives": [
+    "Distinguir los tres tipos de carga cognitiva en el contexto de la monitorización avanzada e identificar el riesgo del Efecto Google ('Amnesia Digital') en el manejo del 'Baby Lung'.",
+    "Explicar la reducción de CRF en el obeso (supino y post-inducción), la cefalización del diafragma y el rol de la ZPD en la transición a monitorización avanzada.",
+    "Interpretar la Driving Pressure como indicador dinámico de distensibilidad y decidir cuándo el pulmón es 'reclutable' versus cuándo simplemente reducir el VT.",
+    "Titular la PEEP con la guía granular por grado de obesidad (preobesidad a clase III) integrando el rango avanzado post-reclutamiento (10-26 cmH₂O).",
+    "Justificar el soporte hemodinámico durante la MR Progresiva como conocimiento germano, no como tarea procedimental aislada.",
+    "Calcular y vigilar el Poder Mecánico identificando sus cuatro componentes (Presión, Volumen, Flujo y Frecuencia Respiratoria) y aplicar el decálogo de protección pulmonar en el obeso."
+  ],
+  "prerequisites": [
+    "Módulo 1 avanzado: VILI, ventilación protectora, PBW, segunda MR de fijación y Adaptive Chunking.",
+    "Módulos intermedios 1-6: VCV, PEEP por IMC, MR, PSV, Fine Tuning y destete.",
+    "Teoría de la Carga Cognitiva y concepto de Zona de Desarrollo Próximo (ZPD)."
+  ],
+  "sections": [
+    {
+      "id": "alto-nivel-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción y mapa del módulo",
+      "content": {
+        "markdown": "## ¿Qué vas a aprender en este módulo?\n\nTema: Monitorización de alto nivel en el paciente obeso ventilado — Driving Pressure, Poder Mecánico y el decálogo de protección pulmonar de precisión.\n\nA lo largo del módulo conectarás:\n- **Arquitectura cognitiva avanzada:** CLT, Efecto Google, riesgo del offloading cognitivo sin comprensión del 'Baby Lung'.\n- **Fisiopatología del obeso en monitorización:** CRF −50 % en inducción, −20 % en supino previo, PIA 6-10 cmH₂O, 90 % atelectasias y ZPD instrumental.\n- **Driving Pressure dinámica:** umbral < 13-15 cmH₂O, relación con distensibilidad y criterio de 'pulmón reclutable'.\n- **Titulación granular de PEEP:** tabla de preobesidad a clase III con rango avanzado post-reclutamiento (10-26 cmH₂O).\n- **MR Progresiva y conocimiento germano:** por qué el soporte hemodinámico es fisiopatología, no procedimiento.\n- **Poder Mecánico:** P + V + Flujo + FR, VILI, AOS/rebote REM y decálogo de protección pulmonar."
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "alto-nivel-theory-1",
+      "order": 2,
+      "type": "theory",
+      "title": "Arquitectura cognitiva avanzada: CLT, Efecto Google y el riesgo del 'Baby Lung'",
+      "content": {
+        "markdown": "La adquisición de competencias en áreas de alta complejidad no depende únicamente de la exposición a la información, sino de la **optimización del procesamiento en la memoria de trabajo**. La Teoría de la Carga Cognitiva (CLT) postula que nuestra capacidad de procesamiento es finita.\n\n### Los tres tipos de carga en monitorización avanzada\n\n- **Carga Intrínseca:** el esfuerzo inherente a la complejidad de la interacción entre la PIA, la mecánica pulmonar y la hemodinámica simultáneos.\n- **Carga Extrínseca:** el esfuerzo innecesario provocado por diseños instruccionales deficientes (interfaces de ventilador saturadas, alarmas irrelevantes). **Debe minimizarse.**\n- **Carga Germana:** el esfuerzo dedicado a la construcción de esquemas mentales sólidos. Al automatizar algoritmos básicos —como el cálculo del peso ideal—, se liberan recursos para tareas de alta complejidad como la interpretación de la estabilidad hemodinámica durante una MR.\n\n### El Efecto Google y la 'Amnesia Digital'\n\nConfiar excesivamente en los preajustes del ventilador sin comprender el concepto de **'Baby Lung'** es una forma de offloading cognitivo que **incrementa el riesgo de VILI**:\n- El especialista ajusta parámetros sin entender el tamaño funcional real del pulmón disponible.\n- Ante un cambio súbito de mecánica (laparoscopia, posición, cirugía), no dispone de los esquemas para reinterpretar las señales del monitor.\n- La dependencia de apps o tablas sin interiorización fisiológica es exactamente el Efecto Google aplicado a la práctica clínica crítica.\n\n> La fragmentación adaptativa (**Chunking**) en este módulo está diseñada para construir carga germana, no para sustituir el razonamiento clínico."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "alto-nivel-theory-2",
+      "order": 3,
+      "type": "theory",
+      "title": "Fisiopatología del obeso en el contexto de la monitorización avanzada",
+      "content": {
+        "markdown": "La obesidad transforma el sistema respiratorio en una **estructura restrictiva de baja distensibilidad** que exige monitorización activa, no estática.\n\n### Impacto progresivo sobre la CRF\n\n- En **posición supina**, el volumen pulmonar ya es un **20 % inferior** al esperado antes de iniciar la anestesia.\n- Tras la **inducción anestésica**, la CRF cae un **50 %** adicional en el obeso mórbido.\n- Esta reducción escalonada convierte la monitorización estándar en insuficiente: los valores de Vt y presión que parecen 'normales' se aplican sobre un parénquima funcionalmente mínimo.\n\n### Mecanismos concurrentes\n\n- **PIA 6-10 cmH₂O:** desplaza el diafragma cefálicamente, aumentando el trabajo respiratorio y la presión transdiafragmática.\n- **Atelectasias por compresión:** presentes en el **90 % de los pacientes** bajo anestesia general, por transmisión de presión abdominal a la pleura.\n- **Posicionamiento estratégico:** mantener la posición de **Trendelenburg invertido** (tronco elevado) desde la inducción hasta inmediatamente después de la extubación para mitigar la caída de CRF.\n\n### Zona de Desarrollo Próximo (ZPD) instrumental\n\nEstas alteraciones obligan a transitar de una ventilación convencional a una **monitorización avanzada basada en presiones de distensión**. En términos pedagógicos, esto sitúa al clínico en la ZPD: el soporte instrumental del ventilador (DP, Poder Mecánico, curvas de compliancia) es la herramienta que permite alcanzar la competencia experta que aún no es posible de forma autónoma."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "alto-nivel-theory-3",
+      "order": 4,
+      "type": "theory",
+      "title": "Driving Pressure: el predictor dinámico de protección pulmonar",
+      "content": {
+        "markdown": "La **Driving Pressure (DP)** es el predictor de mayor peso en la protección pulmonar perioperatoria. No es un parámetro estático, sino un **indicador dinámico de la distensibilidad del parénquima funcional disponible**.\n\n### Umbral de seguridad y señal de alarma\n\n- Meta estratégica: **DP < 13-15 cmH₂O**.\n- Valores superiores actúan como marcador de 'pulmón rígido' o presencia de atelectasias extensas.\n\n### Interpretación clínica: ¿bajar el VT o reclutar?\n\nEste es el punto donde el especialista avanzado diverge del operador convencional:\n\n> Una DP elevada indica que el VT está distendiendo una **superficie alveolar reducida**. La respuesta correcta **no es simplemente bajar el VT** (que empeora la hipoventilación), sino reconocer que el pulmón es **'reclutable'** y ejecutar una MR para distribuir ese VT en una mayor superficie alveolar, reduciendo el estrés mecánico.\n\n### DP como primer vector del Poder Mecánico\n\nEl control de la DP es el primer vector para mitigar el Poder Mecánico total, evitando que la energía transferida por ciclo respiratorio dañe el tejido pulmonar sano. Una DP controlada no solo protege el parénquima: es el prerequisito para que los demás parámetros del Poder Mecánico (flujo, frecuencia, volumen) estén dentro de rangos seguros."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "alto-nivel-theory-4",
+      "order": 5,
+      "type": "theory",
+      "title": "Titulación granular de PEEP y VT por grado de obesidad",
+      "content": {
+        "markdown": "Para reducir la carga extrínseca durante la toma de decisiones, el clínico debe utilizar algoritmos basados en el **Peso Ideal (PBW)** y el **IMC**, con una granularidad que incluye el rango de preobesidad.\n\n### VT base y algoritmo de PEEP por grado de obesidad\n\n- **VT:** 6-8 ml/kg de PBW para todos los grados.\n- **Oxigenación:** SpO₂ 94-98 % con la FiO₂ mínima necesaria.\n\n| Grado de obesidad | IMC (kg/m²) | PEEP inicial (cmH₂O) |\n| :--- | :--- | :--- |\n| Preobesidad | 25.0 - 29.9 | 5 |\n| Clase I | 30.0 - 34.9 | 8 |\n| Clase II | 35.0 - 39.9 | 8 - 10 |\n| Clase III | > 40 (hasta > 50) | 10 - 12 |\n\n> **Diferencia con módulos previos:** esta tabla incluye el rango de **preobesidad (IMC 25-29.9)** con PEEP inicial de 5 cmH₂O, relevante en cirugía abdominal y laparoscopia donde la mecánica se deteriora aun sin obesidad franca.\n\n### Rango avanzado post-reclutamiento\n\nEstos valores son **puntos de partida** para minimizar la carga cognitiva inicial. La titulación avanzada post-reclutamiento puede requerir niveles de PEEP significativamente más altos: **10 a 26 cmH₂O** para mantener el pulmón abierto y evitar el colapso cíclico. Este rango refleja la estrategia de 'pulmón abierto' y solo es seguro con monitorización hemodinámica continua."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "alto-nivel-theory-5",
+      "order": 6,
+      "type": "theory",
+      "title": "MR progresiva y el conocimiento germano del 'por qué' hemodinámico",
+      "content": {
+        "markdown": "Se debe abandonar el uso de la bolsa manual —impredecible y con riesgo de pérdida de PEEP— a favor de las **MR controladas por el ventilador**, que permiten un manejo preciso de la presión de meseta.\n\n### Procedimiento de la MR Progresiva en escalones\n\n1. **Fase de Aumento:** incremento gradual de la presión para superar la **presión de apertura alveolar**, alcanzando los **50-55 cmH₂O** en el paciente obeso.\n2. **Fase de Reducción:** identificación del punto de **'no colapso'** analizando la distensibilidad dinámica para fijar la PEEP óptima.\n\n### El conocimiento germano del soporte hemodinámico\n\nEl aumento de la presión intratorácica **reduce el retorno venoso**, lo que puede provocar inestabilidad hemodinámica. Este es el punto donde la técnica se convierte en conocimiento germano profundo:\n\n> Entender **por qué** el retorno venoso cae (aumento de presión pericárdica → compresión auricular derecha → reducción del gradiente de presión venosa central) transforma una tarea procedimental ('dar vasopresores durante la MR') en un esquema mental integrado sobre la fisiología cardiorrespiratoria.\n\nEl especialista debe anticipar:\n- Necesidad de **vasopresores** para mantener la perfusión coronaria y cerebral.\n- **Gestión hídrica juiciosa**: optimizar la precarga antes de la maniobra, no en respuesta a la caída hemodinámica."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "alto-nivel-theory-6",
+      "order": 7,
+      "type": "theory",
+      "title": "Poder Mecánico y prevención de complicaciones postoperatorias",
+      "content": {
+        "markdown": "El **Poder Mecánico (Mechanical Power)** es la suma de vectores de lesión: la **energía total transferida al pulmón por unidad de tiempo**. Se define por la interacción de cuatro variables críticas:\n\n> **Poder Mecánico = f(Presión, Volumen, Flujo, Frecuencia Respiratoria)**\n\nCada uno de estos cuatro factores, en exceso o en combinación desfavorable, contribuye al VILI aunque los valores individuales parezcan dentro del rango protector.\n\n### Complicaciones asociadas al Poder Mecánico elevado\n\n- **VILI y SDRA:** la ventilación no protectora (VT excesivo o PEEP insuficiente) en el obeso acelera la inflamación pulmonar y puede precipitar un SDRA postoperatorio.\n- **AOS y el fenómeno de la tercera noche:** los opioides suprimen las fases REM, ocultando la AOS en la URPA/UCI. El **rebote de fase REM en la tercera noche postoperatoria** restablece los episodios obstructivos con mayor frecuencia e intensidad en planta, donde la vigilancia es menor.\n- **Estrategia de cierre:** CPAP postoperatorio **inmediato** tras la extubación para mantener el reclutamiento y mitigar el riesgo de AOS recurrente.\n\n### Decálogo de protección pulmonar en el obeso\n\n1. **VT por PBW:** 6-8 ml/kg; los pulmones no crecen con la grasa.\n2. **Posicionamiento:** Trendelenburg invertido desde la inducción hasta la extubación.\n3. **PEEP inicial por grado de obesidad:** escalar de preobesidad a clase III.\n4. **Meta de Driving Pressure:** < 13-15 cmH₂O en todo momento.\n5. **Reclutamiento Progresivo:** presiones de apertura de 50-55 cmH₂O mediante el ventilador.\n6. **Soporte hemodinámico:** anticipar caída del retorno venoso con vasopresores durante la MR.\n7. **Titulación avanzada:** considerar PEEP de hasta 26 cmH₂O si la mecánica lo requiere.\n8. **Vigilar el Poder Mecánico:** controlar la energía total (P + V + Flujo + FR).\n9. **Gestión de opioides:** utilizar agentes de acción corta para evitar la exacerbación de la AOS.\n10. **Prevención del rebote REM:** mantener CPAP post-extubación, especialmente ante la vulnerabilidad de la tercera noche."
+      },
+      "estimatedTime": 15
+    },
+    {
+      "id": "alto-nivel-summary",
+      "order": 8,
+      "type": "summary",
+      "title": "Cierre: síntesis y checklist",
+      "content": {
+        "markdown": "## Resumen\n\n- El Efecto Google aplicado al 'Baby Lung' genera VILI por offloading cognitivo sin comprensión fisiológica; la CLT y el Chunking construyen carga germana para prevenir este riesgo.\n- La CRF cae un 20 % en supino y un 50 % adicional en la inducción; la ZPD instrumental justifica la transición a monitorización de DP y Poder Mecánico.\n- DP > 13-15 cmH₂O no implica bajar el VT: implica reclutar. El pulmón es 'reclutable' y distribuir el VT en más alvéolos reduce el estrés mecánico.\n- La tabla granular (preobesidad 5 → clase III 10-12 cmH₂O) incluye el rango de preobesidad ausente en protocolos básicos; la titulación avanzada puede alcanzar 10-26 cmH₂O.\n- El soporte vasopresor durante la MR es conocimiento germano: comprender la fisiología del retorno venoso transforma el procedimiento en un esquema integrado.\n- El Poder Mecánico (P + V + Flujo + FR) es la suma de vectores de lesión; el decálogo de 10 puntos es la síntesis operacional de toda la monitorización de alto nivel.\n\n## Checklist de validación\n\n- Explico el Efecto Google y por qué la automatización sin comprensión del 'Baby Lung' incrementa el VILI.\n- Cuantifico la caída de CRF en supino (−20 %) y post-inducción (−50 %) y justifico el Trendelenburg invertido como intervención primaria.\n- Distingo cuándo una DP elevada indica 'bajar VT' de cuándo indica 'reclutar', con la fisiopatología que respalda cada decisión.\n- Titulo la PEEP usando la tabla granular (preobesidad a clase III) e indico cuándo escalar al rango avanzado de 10-26 cmH₂O.\n- Anticipo la caída del retorno venoso durante la MR y la manejo como conocimiento germano, no como tarea aislada.\n- Enumero los 4 componentes del Poder Mecánico y puedo recitar los 10 puntos del decálogo de protección pulmonar."
+      },
+      "estimatedTime": 5
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Por qué confiar en los preajustes del ventilador sin entender el 'Baby Lung' es una forma de Efecto Google peligrosa?",
+        "¿Cuándo una Driving Pressure elevada indica que debo reclutar en lugar de simplemente bajar el VT?",
+        "¿Cuáles son los 4 componentes del Poder Mecánico y cómo interactúan para generar VILI?",
+        "¿Qué diferencia la tabla granular de PEEP de este módulo respecto a los protocolos básicos?",
+        "¿Cómo transforma la comprensión fisiopatológica del retorno venoso el soporte vasopresor de una tarea procedimental en conocimiento germano?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "aiexpandnotes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": [
+          "advanced"
+        ],
+        "question_types": [
+          "conceptual",
+          "application",
+          "clinical_case"
+        ],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [],
+  "quiz": {
+    "id": "quiz-monitorizacion-alto-nivel",
+    "passingScore": 4,
+    "questions": [
+      {
+        "id": "alto-nivel-q1",
+        "type": "multiple-choice",
+        "question": "¿Por qué confiar en los preajustes del ventilador sin comprender el concepto de 'Baby Lung' representa el Efecto Google en la práctica clínica crítica?",
+        "options": [
+          "Porque los preajustes del ventilador no consideran el peso del paciente en sus algoritmos automáticos",
+          "Porque ante un cambio súbito de mecánica, el especialista sin esquemas internalizados no puede reinterpretar las señales del monitor y tomar decisiones autónomas",
+          "Porque el 'Baby Lung' solo aplica en SDRA y los preajustes están diseñados para pulmones sanos",
+          "Porque los preajustes generan automáticamente carga germana que interfiere con la memoria de trabajo"
+        ],
+        "correctAnswer": "Porque ante un cambio súbito de mecánica, el especialista sin esquemas internalizados no puede reinterpretar las señales del monitor y tomar decisiones autónomas",
+        "explanation": "El módulo advierte que el Efecto Google o Amnesia Digital consiste en delegar el razonamiento a herramientas sin comprender el concepto subyacente. Sin internalizar el 'Baby Lung', el especialista ajusta parámetros rutinariamente pero no puede responder ante un cambio brusco de mecánica (laparoscopia, posición, cirugía), incrementando el riesgo de VILI por omisión de ajuste.",
+        "difficulty": "advanced",
+        "bloomLevel": "analyze",
+        "points": 2
+      },
+      {
+        "id": "alto-nivel-q2",
+        "type": "multiple-choice",
+        "question": "¿Qué PEEP inicial recomienda la tabla granular del módulo para un paciente con preobesidad (IMC 25-29.9)?",
+        "options": [
+          "0 cmH₂O (no requiere PEEP adicional por no ser obeso)",
+          "3 cmH₂O",
+          "5 cmH₂O",
+          "8 cmH₂O"
+        ],
+        "correctAnswer": "5 cmH₂O",
+        "explanation": "La tabla granular de este módulo incluye el rango de preobesidad (IMC 25-29.9) con una PEEP inicial recomendada de 5 cmH₂O. Este nivel es relevante en cirugía abdominal y laparoscopia, donde la mecánica respiratoria se deteriora incluso sin obesidad franca. Esta granularidad distingue a este protocolo de las tablas básicas que solo inician en IMC ≥ 30.",
+        "difficulty": "advanced",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "alto-nivel-q3",
+        "type": "multiple-choice",
+        "question": "Ante una Driving Pressure de 18 cmH₂O en un paciente obeso con VT de 7 ml/kg de PBW, ¿cuál es la intervención correcta según el módulo?",
+        "options": [
+          "Reducir el VT a 5 ml/kg de PBW para bajar la DP por debajo del umbral",
+          "Aumentar la FiO₂ al 100 % para compensar la hipoxemia secundaria a la baja distensibilidad",
+          "Ejecutar una Maniobra de Reclutamiento para aumentar la superficie alveolar funcional disponible y redistribuir el VT",
+          "Reducir la PEEP para disminuir la presión total del sistema y bajar la DP"
+        ],
+        "correctAnswer": "Ejecutar una Maniobra de Reclutamiento para aumentar la superficie alveolar funcional disponible y redistribuir el VT",
+        "explanation": "El módulo establece explícitamente que una DP elevada no implica simplemente bajar el VT, sino reconocer que el pulmón es 'reclutable'. La DP alta indica que el VT se distribuye en una superficie alveolar reducida (pulmón colapsado). La MR aumenta esa superficie y permite que el mismo VT protector genere una DP menor, reduciendo el estrés mecánico.",
+        "difficulty": "advanced",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "alto-nivel-q4",
+        "type": "multiple-choice",
+        "question": "¿Cuáles son los cuatro componentes del Poder Mecánico (Mechanical Power) según el módulo?",
+        "options": [
+          "PEEP, Presión Meseta, Driving Pressure y Frecuencia Respiratoria",
+          "Presión, Volumen, Flujo y Frecuencia Respiratoria",
+          "VT, PEEP, FiO₂ y Tiempo Inspiratorio",
+          "Compliance, Resistencia, Flujo y Presión Intratorácica"
+        ],
+        "correctAnswer": "Presión, Volumen, Flujo y Frecuencia Respiratoria",
+        "explanation": "El módulo define el Poder Mecánico como la energía total transferida al pulmón por unidad de tiempo, determinada por la interacción de cuatro variables críticas: Presión, Volumen, Flujo y Frecuencia Respiratoria. Cada uno de estos factores en exceso o en combinación desfavorable contribuye al VILI aunque los valores individuales parezcan seguros.",
+        "difficulty": "advanced",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "alto-nivel-q5",
+        "type": "multiple-choice",
+        "question": "¿Qué transforma la comprensión fisiopatológica del retorno venoso durante la MR en 'conocimiento germano' según el módulo?",
+        "options": [
+          "Convierte la indicación de vasopresores en un esquema integrado sobre fisiología cardiorrespiratoria, en lugar de una tarea procedimental aislada",
+          "Elimina la necesidad de monitorización hemodinámica continua al predecir la caída del gasto cardíaco",
+          "Permite reducir la dosis de vasopresores al entender que la caída hemodinámica es transitoria",
+          "Transforma la MR en una técnica que no requiere supervisión especializada una vez internalizada"
+        ],
+        "correctAnswer": "Convierte la indicación de vasopresores en un esquema integrado sobre fisiología cardiorrespiratoria, en lugar de una tarea procedimental aislada",
+        "explanation": "El módulo explica que entender por qué el retorno venoso cae durante la MR (aumento de presión pericárdica → compresión auricular derecha → reducción del gradiente venoso central) transforma 'dar vasopresores durante la MR' de una tarea procedimental en conocimiento germano profundo. Esto es la carga germana de Sweller aplicada a la práctica clínica avanzada.",
+        "difficulty": "advanced",
+        "bloomLevel": "analyze",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [
+      {
+        "authors": "Gattinoni, L.; et al.",
+        "year": "2016",
+        "title": "Ventilator-related causes of lung injury: the mechanical power.",
+        "source": "Intensive Care Medicine",
+        "doi": "10.1007/s00134-016-4505-2",
+        "url": ""
+      },
+      {
+        "authors": "Amato, M. B. P.; et al.",
+        "year": "2015",
+        "title": "Driving pressure and survival in the acute respiratory distress syndrome.",
+        "source": "New England Journal of Medicine",
+        "doi": "10.1056/NEJMsa1410639",
+        "url": ""
+      },
+      {
+        "authors": "Steier, J.; Pankow, W.; et al.",
+        "year": "",
+        "title": "Predictors of intrinsic PEEP in obese patients during mechanical ventilation in the supine position.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Sweller, J.",
+        "year": "1988",
+        "title": "Cognitive load during problem solving: Effects on learning.",
+        "source": "Cognitive Science",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Vygotsky, L. S.",
+        "year": "1978",
+        "title": "Mind in Society: The Development of Higher Psychological Processes.",
+        "source": "Harvard University Press",
+        "doi": "",
+        "url": ""
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-29",
+    "source": "VentyLab (JSON unificado)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel avanzado. Integra CLT con Efecto Google/Baby Lung, monitorización dinámica de Driving Pressure (intervención reclutamiento vs. reducción de VT), tabla granular de PEEP (preobesidad a clase III + rango avanzado 10-26 cmH₂O), MR progresiva con conocimiento germano del soporte hemodinámico, Poder Mecánico (P+V+Flujo+FR) y decálogo de 10 puntos de protección pulmonar."
+  }
+}

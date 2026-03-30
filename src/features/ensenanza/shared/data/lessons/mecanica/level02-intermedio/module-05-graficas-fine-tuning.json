@@ -1,0 +1,285 @@
+{
+  "id": "module-05-graficas-fine-tuning",
+  "moduleId": "module-05-intermedio-mecanica",
+  "title": "Monitorización gráfica y Fine Tuning en el paciente con obesidad",
+  "description": "Este módulo aborda la monitorización gráfica de precisión y el ajuste fino ('Fine Tuning') del ventilador en el paciente obeso, integrando el fenómeno de 'pulmón chico' y PEEPi, el cálculo de Vt por peso teórico, la Driving Pressure como indicador de VILI, las maniobras de reclutamiento progresivas y la titulación de PEEP decremental, con estrategias de integración cognitiva (Scaffolding en curvas flujo-volumen, Retrieval Practice) y guía de hábitos postoperatorios para la recuperación pulmonar.",
+  "order": 5,
+  "estimatedTime": 80,
+  "difficulty": "intermediate",
+  "bloomLevel": "analyze",
+  "learningObjectives": [
+    "Describir el concepto de 'pulmón chico' (baby lung) y explicar cómo la PEEPi posicional eleva la presión de distensión en el paciente obeso.",
+    "Seleccionar la fórmula correcta de Peso Ideal o Peso Predicho según la situación clínica y calcular el Vt protector.",
+    "Monitorizar la Driving Pressure como indicador de VILI e interpretar su elevación como señal de pulmón rígido o atelectásico.",
+    "Ejecutar la Maniobra de Reclutamiento Progresiva e identificar la PEEP de 'no colapso' en la fase decremental.",
+    "Justificar por qué no se debe reducir la FiO₂ durante la inducción anestésica en el paciente obeso.",
+    "Aplicar el Scaffolding en la interpretación de curvas flujo-volumen y Retrieval Practice mediante perlas clínicas para consolidar la retención."
+  ],
+  "prerequisites": [
+    "Módulo 1: VCV vs. PCV — cálculo de IBW y PBW, ventajas del modo VCV.",
+    "Módulo 2: PEEP, PEEPi y Driving Pressure.",
+    "Módulo 3: PSV, CPAP y AOS postoperatoria.",
+    "Módulo 4: Scaffolding, Fading y Retrieval Practice en ventilación mecánica."
+  ],
+  "sections": [
+    {
+      "id": "fine-tuning-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción y mapa del módulo",
+      "content": {
+        "markdown": "## ¿Qué vas a aprender en este módulo?\n\nTema: Monitorización gráfica de precisión y ajuste fino ('Fine Tuning') del ventilador en el paciente obeso, desde la fisiopatología del 'pulmón chico' hasta la recuperación pulmonar postoperatoria.\n\nA lo largo del módulo conectarás:\n- **Fisiopatología del 'pulmón chico':** PEEPi posicional, cierre de vías aéreas pequeñas y atrapamiento de aire como causas del incremento de presión de distensión.\n- **Monitorización gráfica:** Driving Pressure como ventana al strain alveolar, tabla de cálculo de Vt por Peso Ideal/Predicho y preferencia del modo VCV.\n- **Fine Tuning:** Maniobra de Reclutamiento Progresiva (MR), titulación decremental de PEEP y manejo de FiO₂ durante la inducción.\n- **Integración cognitiva:** Chunking, Scaffolding aplicado a curvas flujo-volumen y perlas clínicas de Retrieval Practice.\n- **Hábitos postoperatorios:** prevención de factores de riesgo pulmonar y rol de la nutrición (Vitamina D y E) en la recuperación."
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "fine-tuning-theory-1",
+      "order": 2,
+      "type": "theory",
+      "title": "Marco fisiopatológico: el binomio obesidad-ventilación y el fenómeno de 'pulmón chico'",
+      "content": {
+        "markdown": "La obesidad no es simplemente una acumulación de tejido adiposo; es una **patología sistémica** que impone una carga mecánica restrictiva sobre el sistema respiratorio. Con una prevalencia global del 20 % —y hasta el 40 % en poblaciones específicas—, el manejo ventilatorio convencional suele fracasar al no considerar que estos pacientes operan con **reserva respiratoria mínima**.\n\n### Impacto anatómico sobre la mecánica respiratoria\n\nEl exceso de masa torácica y abdominal eleva la **PIA a rangos de 6-10 cmH₂O**, desplaza el diafragma cefálicamente y aumenta la rigidez de la pared torácica:\n\n- **Reducción de la CRF:** caída del 5-15 % por cada 5 kg/m² de IMC adicional sobre 30; tras la inducción puede desplomarse hasta el **50 %**.\n- **Atelectasias por compresión:** presentes en el **90 %** de los pacientes bajo anestesia general, generando desajuste V/Q.\n- **Estrategia posicional obligatoria:** tronco elevado o Trendelenburg Invertido en pacientes con IMC > 40 kg/m² para aliviar la presión transdiafragmática desde la inducción hasta la extubación.\n\n### El fenómeno de 'pulmón chico' (baby lung) y PEEPi\n\nEl cierre prematuro de las vías aéreas pequeñas durante la espiración genera **atrapamiento de aire y PEEPi**. En posición supina, la PEEPi aumenta aproximadamente **0.2 cmH₂O por cada unidad de IMC**. Este fenómeno convierte el pulmón en un 'pulmón chico' funcional:\n- El volumen tidal programado se distribuye en un espacio alveolar mucho menor.\n- Las presiones de distensión aumentan desproporcionadamente.\n- El estrés tisular se multiplica, incrementando el riesgo de VILI.\n\n> **'So What?':** La clave del Fine Tuning no es solo ajustar un Vt bajo, sino reclutar el parénquima colapsado para aumentar el 'tamaño funcional' del pulmón y distribuir ese Vt en más alvéolos."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "fine-tuning-theory-2",
+      "order": 3,
+      "type": "theory",
+      "title": "Monitorización gráfica: Driving Pressure, cálculo de Vt y modo ventilatorio",
+      "content": {
+        "markdown": "La monitorización gráfica es la **única ventana** que permite al clínico visualizar el strain (deformación) del tejido pulmonar. Abandonar las fórmulas fijas en favor de una ventilación protectora personalizada es esencial para prevenir el Daño Inducido por el Ventilador (VILI).\n\n### Driving Pressure: la alarma del pulmón rígido\n\nMeta: **Driving Pressure (DP) < 13-15 cmH₂O** (DP = Presión Meseta − PEEP).\n\nEn el obeso, una DP elevada señala un pulmón rígido o atelectásico. Al haber menos alvéolos disponibles ('pulmón chico'), la presión necesaria para movilizar el Vt aumenta. Reducir la DP es sinónimo de reclutar parénquima funcional.\n\n### Cálculo de Volumen Tidal: Peso Ideal vs. Peso Predicho\n\nEl Vt debe basarse en el **peso teórico**, nunca en el real, para evitar el volutrauma:\n\n| Parámetro | Fórmula | Aplicación clínica |\n| :--- | :--- | :--- |\n| Peso Ideal (hombre) | Talla(m)² × 23 | Sin patología pulmonar previa |\n| Peso Ideal (mujer) | Talla(m)² × 21.5 | Prevenir sobreventilación en baja estatura |\n| Peso Predicho (hombre) | 50 + 0.91 × [altura(cm) − 152.4] | Obligatorio en SDRA/ARDS |\n| Peso Predicho (mujer) | 45.5 + 0.91 × [altura(cm) − 152.4] | Obligatorio en SDRA/ARDS |\n| Volumen Tidal | 6-8 ml/kg (Peso Ideal o Predicho) | Meta de protección estándar |\n\n> **Riesgo específico:** mujeres de baja estatura con sobrepeso presentan el mayor riesgo estadístico de sobreventilación por la tendencia a subestimar visualmente el peso.\n\n### Modo ventilatorio: preferencia del VCV\n\nSe prefiere el **Modo Controlado por Volumen (VCV)** sobre el de Presión (PCV). El VCV permite un control estricto del volumen entregado y ha demostrado ser superior en la consecución de metas de protección y en la reducción de Complicaciones Pulmonares Postoperatorias (CPP)."
+      },
+      "estimatedTime": 15
+    },
+    {
+      "id": "fine-tuning-theory-3",
+      "order": 4,
+      "type": "theory",
+      "title": "Fine Tuning: maniobras de reclutamiento, titulación decremental de PEEP y FiO₂",
+      "content": {
+        "markdown": "Las MR son herramientas de **rescate para abrir el pulmón**, pero solo una PEEP individualizada mantendrá ese pulmón abierto.\n\n### Maniobra de Reclutamiento Progresiva (MRP): metodología stepwise\n\nSe desaconseja el reclutamiento manual con bolsa por ser incontrolado y generar pérdida de PEEP al reconectar. La **MRP controlada por ventilador** es el estándar:\n- Se aumentan las presiones gradualmente hasta **50-55 cmH₂O** en el paciente obeso.\n- El ascenso por etapas permite la adaptación hemodinámica, minimizando el colapso circulatorio.\n\n### Punto crítico: la PEEP de 'no colapso'\n\nLa PEEP ideal se identifica durante la **fase descendente (decremental)** de la maniobra, observando dónde se alcanza la mejor distensibilidad antes de que comience a caer. Este es el nivel mínimo para mantener el pulmón abierto sin generar sobredistensión.\n\n### Titulación de PEEP según IMC y patología\n\n| Situación clínica | PEEP recomendada (cmH₂O) |\n| :--- | :--- |\n| IMC < 29.9 | 5 |\n| IMC 30 - 39.9 | 8 |\n| IMC 40 - 49.9 | 10 |\n| IMC > 50 | 12 |\n| SDRA (según gravedad) | 10 - 26 |\n\n### FiO₂ durante la inducción: advertencia crítica\n\nAunque una FiO₂ del 80 % ayuda a prevenir atelectasias de reabsorción durante el mantenimiento, **no se debe reducir la FiO₂ durante la inducción anestésica**. El paciente obeso desatura rápidamente; una FiO₂ alta proporciona el 'tiempo de reserva' necesario para asegurar la vía aérea antes de que ocurra hipoxemia crítica."
+      },
+      "estimatedTime": 15
+    },
+    {
+      "id": "fine-tuning-theory-4",
+      "order": 5,
+      "type": "theory",
+      "title": "Integración cognitiva: Scaffolding en curvas flujo-volumen y Retrieval Practice",
+      "content": {
+        "markdown": "La ventilación en obesidad impone una carga cognitiva masiva. El diseño instruccional estratégico es la herramienta para que el residente transite del conocimiento teórico a la autonomía clínica.\n\n### Gestión de la Carga Cognitiva (Sweller) con Chunking\n\n- **Carga Intrínseca:** complejidad de la interacción PEEP-PIA-DP en tiempo real.\n- **Carga Extrínseca:** forma en que se presentan los datos en la pantalla del ventilador. Minimizarla es obligatorio.\n- **Chunking secuencial:** primero dominar el ajuste de Vt → luego la estabilidad de la PEEP → finalmente la ejecución de la MRP.\n\n### Scaffolding aplicado a la interpretación de curvas flujo-volumen\n\n1. **Yo hago (Modelado):** el especialista interpreta la gráfica en voz alta ('thinking aloud'), señalando el punto de atrapamiento aéreo o la caída de distensibilidad en la curva.\n2. **Nosotros hacemos (Práctica guiada):** ajustan juntos el ventilador, validando cada cambio en la DP frente al cambio de posición del paciente.\n3. **Tú haces (Práctica independiente):** el residente ejecuta el ajuste fino bajo supervisión, internalizando el proceso de toma de decisiones.\n\n### Perlas clínicas de Retrieval Practice\n\nEjercicio de recuperación activa — responde sin mirar:\n\n- ¿Cuál es la meta de SpO₂ perioperatoria? → **94-98 %**\n- ¿Cuál es el límite superior de la Driving Pressure? → **< 13-15 cmH₂O**\n- ¿En qué fase de la MR se titula la PEEP óptima? → **Fase descendente (decremental)**\n- ¿Por qué no se reduce la FiO₂ en la inducción del obeso? → **El obeso desatura rápidamente; la FiO₂ alta es el 'tiempo de reserva'**"
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "fine-tuning-theory-5",
+      "order": 6,
+      "type": "theory",
+      "title": "Guía de hábitos y prevención en salud pulmonar postoperatoria",
+      "content": {
+        "markdown": "La intervención en quirófano es solo el inicio. La recuperación del paciente obeso depende de hábitos que optimicen la eficiencia del transporte de oxígeno y reduzcan la inflamación sistémica.\n\n### Factores de riesgo postoperatorio a abordar\n\n1. **Tabaquismo:** el riesgo de muerte por cáncer de pulmón se reduce al 50 % tras 10 años de abandono; también mejora la función mucociliar y la capacidad de reclutamiento.\n2. **Sedentarismo:** el ejercicio post-extubación fortalece los músculos respiratorios y optimiza el flujo sanguíneo pulmonar.\n3. **Entorno contaminado:** evitar polvo y moho previene crisis de asma e infecciones fúngicas oportunistas.\n4. **Ejercicios respiratorios:** la respiración consciente y pausada reduce la fatiga muscular acumulada y favorece la reexpansión progresiva.\n5. **Exposición a frío extremo:** aumenta la susceptibilidad viral y la broncoconstricción refleja.\n6. **Nutrición deficiente:** perpetúa la inflamación pulmonar y retrasa la cicatrización del epitelio alveolar.\n\n### El rol de la nutrición en la recuperación pulmonar\n\n- **Vitamina D** (leche fortificada, huevos): fortalece el sistema inmune y actúa como potente antiinflamatorio pulmonar; su déficit se asocia a mayor incidencia de atelectasias postoperatorias.\n- **Vitamina E (tocoferol)** (frutos secos, brócoli): su consumo está directamente vinculado a la disminución de la tos y los sibilancias al respirar, facilitando una transición exitosa hacia la respiración espontánea."
+      },
+      "estimatedTime": 10
+    },
+    {
+      "id": "fine-tuning-summary",
+      "order": 7,
+      "type": "summary",
+      "title": "Cierre: síntesis y checklist",
+      "content": {
+        "markdown": "## Resumen\n\n- El 'pulmón chico' resulta del colapso alveolar y la PEEPi posicional (+0.2 cmH₂O/unidad de IMC en supino); el Fine Tuning apunta a reclutar parénquima para distribuir mejor el Vt.\n- La Driving Pressure (< 13-15 cmH₂O) es la alarma gráfica del pulmón rígido o atelectásico; su reducción es sinónimo de reclutamiento exitoso.\n- El Vt se calcula por Peso Ideal (sin SDRA) o Peso Predicho (con SDRA), con meta de 6-8 ml/kg.\n- La MRP controlada por ventilador (50-55 cmH₂O) supera a la bolsa manual; la PEEP de 'no colapso' se identifica en la fase decremental.\n- No reducir la FiO₂ en la inducción del obeso: la desaturación es rápida y la FiO₂ alta es el margen de seguridad para asegurar la vía aérea.\n- El Scaffolding sobre curvas flujo-volumen ('thinking aloud' → guía → independencia) y las perlas de Retrieval Practice consolidan la autonomía clínica.\n- La recuperación postoperatoria depende de hábitos: ejercicio, nutrición (Vitamina D y E), control del entorno y abandono del tabaco.\n\n## Checklist de validación\n\n- Explico por qué el 'pulmón chico' eleva la DP y qué medida reduce ese riesgo.\n- Elijo entre Peso Ideal y Peso Predicho según el contexto clínico y calculo el Vt protector.\n- Interpreto una DP elevada como señal de pulmón atelectásico y sé qué acción correctora tomar.\n- Describo las fases de la MRP y la posición correcta para identificar la PEEP de 'no colapso'.\n- Justifico por qué mantener FiO₂ alta durante la inducción en el paciente obeso.\n- Aplico el 'thinking aloud' para modelar la interpretación de curvas flujo-volumen ante un residente."
+      },
+      "estimatedTime": 5
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Qué es el fenómeno de 'pulmón chico' y cómo eleva la Driving Pressure en el obeso?",
+        "¿Cuándo uso Peso Ideal vs. Peso Predicho para calcular el Vt?",
+        "¿Por qué no debo reducir la FiO₂ durante la inducción anestésica en el paciente obeso?",
+        "¿Cómo identifico la PEEP de 'no colapso' durante una maniobra de reclutamiento?",
+        "¿Cómo se aplica el 'thinking aloud' al Scaffolding de curvas flujo-volumen?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "aiexpandnotes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": [
+          "intermediate",
+          "advanced"
+        ],
+        "question_types": [
+          "conceptual",
+          "application",
+          "clinical_case"
+        ],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [],
+  "quiz": {
+    "id": "quiz-graficas-fine-tuning",
+    "passingScore": 4,
+    "questions": [
+      {
+        "id": "fine-tuning-q1",
+        "type": "multiple-choice",
+        "question": "¿Qué describe el fenómeno de 'pulmón chico' (baby lung) en el paciente obeso ventilado?",
+        "options": [
+          "Una disminución del tamaño anatómico del pulmón causada por la adiposidad mediastínica",
+          "La distribución del Vt programado en un espacio alveolar funcionalmente reducido por el colapso, que eleva la presión de distensión",
+          "Una reducción del número de lóbulos pulmonares activos durante la anestesia general",
+          "El efecto pendelluft en los segmentos dependientes bajo posición de Trendelenburg"
+        ],
+        "correctAnswer": "La distribución del Vt programado en un espacio alveolar funcionalmente reducido por el colapso, que eleva la presión de distensión",
+        "explanation": "El 'pulmón chico' no es anatómico sino funcional: el cierre prematuro de vías aéreas pequeñas y el atrapamiento de aire reducen los alvéolos disponibles para la ventilación. El mismo Vt se concentra en un espacio menor, disparando la Driving Pressure y el estrés tisular.",
+        "difficulty": "intermediate",
+        "bloomLevel": "understand",
+        "points": 2
+      },
+      {
+        "id": "fine-tuning-q2",
+        "type": "multiple-choice",
+        "question": "¿En qué situación clínica se usa el Peso Predicho (PBW) de forma obligatoria para calcular el Vt?",
+        "options": [
+          "En cualquier paciente con IMC > 30 kg/m² sin importar la patología pulmonar",
+          "En pacientes con SDRA/ARDS, donde la reducción del pulmón ventilable es más severa",
+          "Solo en mujeres de baja estatura con sobrepeso para prevenir sobreventilación",
+          "En pacientes con Peso Ideal < 50 kg, independientemente del diagnóstico"
+        ],
+        "correctAnswer": "En pacientes con SDRA/ARDS, donde la reducción del pulmón ventilable es más severa",
+        "explanation": "La tabla del módulo indica que el Peso Predicho (PBW) es de uso obligatorio en pacientes con SDRA/ARDS. En otros pacientes obesos sin esta patología se puede usar el Peso Ideal. Ambos son siempre superiores al peso real para evitar el volutrauma.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "fine-tuning-q3",
+        "type": "multiple-choice",
+        "question": "¿En qué fase de la Maniobra de Reclutamiento Progresiva se identifica la PEEP de 'no colapso'?",
+        "options": [
+          "Durante la fase ascendente (rampeo), al alcanzar 50-55 cmH₂O",
+          "Durante la fase estable, cuando la Driving Pressure se mantiene constante por más de 5 minutos",
+          "Durante la fase descendente (decremental), donde la distensibilidad es máxima antes de caer",
+          "Inmediatamente después de reconectar el circuito al finalizar la maniobra"
+        ],
+        "correctAnswer": "Durante la fase descendente (decremental), donde la distensibilidad es máxima antes de caer",
+        "explanation": "El módulo establece que la PEEP ideal o de 'no colapso' se identifica en la fase decremental de la maniobra, observando el punto donde la distensibilidad (compliancia) es máxima antes de comenzar a descender. Este nivel representa el mínimo para mantener el pulmón abierto sin sobredistensión.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "fine-tuning-q4",
+        "type": "multiple-choice",
+        "question": "¿Por qué no se debe reducir la FiO₂ durante la inducción anestésica en el paciente obeso?",
+        "options": [
+          "Porque una FiO₂ baja genera broncoconstricción refleja que dificulta la intubación",
+          "Porque el obeso desatura rápidamente y la FiO₂ alta provee el tiempo de reserva necesario para asegurar la vía aérea",
+          "Porque la FiO₂ baja durante la inducción incrementa directamente la PEEPi",
+          "Porque el estudio PROBESE demostró que la FiO₂ alta reduce las CPP en la inducción"
+        ],
+        "correctAnswer": "Porque el obeso desatura rápidamente y la FiO₂ alta provee el tiempo de reserva necesario para asegurar la vía aérea",
+        "explanation": "El módulo advierte que aunque una FiO₂ del 80 % previene atelectasias de reabsorción durante el mantenimiento, no debe reducirse en la inducción porque el paciente obeso desatura muy rápidamente debido a su CRF reducida. La FiO₂ alta actúa como 'tiempo de reserva' hasta asegurar la vía aérea.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "fine-tuning-q5",
+        "type": "multiple-choice",
+        "question": "¿Cuál es el beneficio específico de la Vitamina E (tocoferol) en la recuperación pulmonar postoperatoria según el módulo?",
+        "options": [
+          "Fortalece el sistema inmune y actúa como antiinflamatorio pulmonar sistémico",
+          "Reduce la producción de moco y previene la formación de atelectasias de reabsorción",
+          "Disminuye la tos y los sibilancias al respirar, facilitando la transición a la respiración espontánea",
+          "Mejora la contractilidad del diafragma y acelera el destete ventilatorio"
+        ],
+        "correctAnswer": "Disminuye la tos y los sibilancias al respirar, facilitando la transición a la respiración espontánea",
+        "explanation": "El módulo señala que el consumo de Vitamina E (tocoferol) está directamente vinculado a la disminución de la tos y los sibilancias al respirar, facilitando así una transición exitosa hacia la respiración espontánea. El rol antiinflamatorio sistémico y de fortalecimiento inmune corresponde a la Vitamina D.",
+        "difficulty": "intermediate",
+        "bloomLevel": "remember",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [
+      {
+        "authors": "Pelosi, P.; Gregoretti, C.",
+        "year": "",
+        "title": "Perioperative management of obese patients.",
+        "source": "Best Practice & Research Clinical Anaesthesiology",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Steier, J.; et al.",
+        "year": "",
+        "title": "Predictors of intrinsic PEEP in obese patients during mechanical ventilation in the supine position.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Bluth, T.; et al. (PROBESE Collaborative Group)",
+        "year": "2019",
+        "title": "Effect of intraoperative high PEEP with recruitment maneuvers vs low PEEP on postoperative pulmonary complications in obese patients.",
+        "source": "JAMA",
+        "doi": "10.1001/jama.2019.7505",
+        "url": ""
+      },
+      {
+        "authors": "Sweller, J.",
+        "year": "1988",
+        "title": "Cognitive load during problem solving: Effects on learning.",
+        "source": "Cognitive Science",
+        "doi": "",
+        "url": ""
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-29",
+    "source": "VentyLab (JSON unificado)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel intermedio. Abarca el Fine Tuning del ventilador en el obeso: fenómeno de 'pulmón chico', Driving Pressure, cálculo de Vt por peso teórico, MRP decremental, advertencia de FiO2 en inducción, Scaffolding en curvas y hábitos postoperatorios (Vitamina D y E)."
+  }
+}

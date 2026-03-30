@@ -1,0 +1,284 @@
+{
+  "id": "module-01-vcv-vs-pcv",
+  "moduleId": "module-01-intermedio-mecanica",
+  "title": "Ventilación por Control de Volumen (VCV) vs. Control de Presión (PCV) en el Paciente de Alta Complejidad",
+  "description": "Este módulo aborda la selección estratégica del modo ventilatorio en el paciente crítico obeso, integrando fisiopatología respiratoria, carga cognitiva clínica, análisis comparativo VCV/PCV, programación inicial basada en peso predicho y optimización de PEEP y maniobras de reclutamiento bajo principios de protección pulmonar.",
+  "order": 1,
+  "estimatedTime": 75,
+  "difficulty": "intermediate",
+  "bloomLevel": "apply",
+  "learningObjectives": [
+    "Explicar el impacto de la obesidad sobre la mecánica pulmonar (CRF, PIA, PEEPi) y su relación con la Teoría de la Carga Cognitiva.",
+    "Diferenciar VCV y PCV en términos de variable controlada, estabilidad del volumen tidal y prevención de Complicaciones Pulmonares Postoperatorias (CPP).",
+    "Calcular el Peso Ideal (IBW) y el Peso Predicho (PBW) para programar un volumen tidal protector de 6-8 ml/kg de PBW.",
+    "Seleccionar la PEEP inicial adecuada según rango de IMC y reconocer la Driving Pressure como indicador crítico de seguridad.",
+    "Distinguir la Maniobra de Reclutamiento Progresiva (MRP) asistida por ventilador de la técnica manual y justificar su preferencia.",
+    "Aplicar estrategias de andamiaje y chunking para retener protocolos de ventilación mecánica en condiciones de alta carga cognitiva."
+  ],
+  "prerequisites": [
+    "Anatomía y fisiología básica del aparato respiratorio.",
+    "Conceptos introductorios de ventilación mecánica (ciclo ventilatorio, PEEP, presión meseta).",
+    "Nociones de índice de masa corporal (IMC) y antropometría clínica."
+  ],
+  "sections": [
+    {
+      "id": "vcv-pcv-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción y mapa del módulo",
+      "content": {
+        "markdown": "## ¿Qué vas a aprender en este módulo?\n\nTema: Selección estratégica del modo ventilatorio (VCV vs. PCV) en el paciente crítico obeso, con énfasis en protección pulmonar y reducción de carga cognitiva.\n\nA lo largo del módulo conectarás:\n- **Fisiopatología de la obesidad** y su impacto en la mecánica pulmonar (CRF, PIA, PEEPi, efecto pendelluft).\n- **Análisis comparativo VCV vs. PCV** basado en evidencia (109.360 pacientes) y su impacto en Complicaciones Pulmonares Postoperatorias (CPP).\n- **Programación inicial** con cálculo de Peso Predicho (PBW) y metas de protección pulmonar mediante la estrategia 'Chunking'.\n- **Optimización de PEEP** según IMC y uso de la Driving Pressure como techo de seguridad.\n- **Maniobras de Reclutamiento** controladas por ventilador versus técnica manual.\n- **Estrategias de retención** (andamiaje, espaciado y recuperación activa) aplicadas a protocolos ventilatorios."
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "vcv-pcv-theory-1",
+      "order": 2,
+      "type": "theory",
+      "title": "Fundamentos fisiopatológicos y carga cognitiva en el paciente crítico",
+      "content": {
+        "markdown": "La gestión ventilatoria del paciente crítico con obesidad mórbida representa un desafío de alta densidad para la memoria de trabajo del clínico. La interacción entre la mecánica pulmonar del paciente y la capacidad del profesional para procesar datos en tiempo real está mediada por la **Teoría de la Carga Cognitiva de Sweller**. Para optimizar el aprendizaje y la seguridad clínica, debemos distinguir tres tipos de carga:\n\n1. **Carga Intrínseca:** dificultad inherente a la complejidad de la fisiología respiratoria.\n2. **Carga Extrínseca:** generada por un diseño instruccional deficiente o interfaces de ventilador saturadas.\n3. **Carga Germana (o Esencial):** recursos mentales dedicados a la construcción de esquemas y la automatización del conocimiento.\n\nIdentificar estas cargas permite que el médico no sature sus recursos cognitivos finitos y se enfoque en la toma de decisiones críticas.\n\n### Impacto de la obesidad en la mecánica pulmonar\n\nDesde una perspectiva anatómica y fisiológica, la obesidad induce cambios drásticos:\n- El exceso de tejido adiposo incrementa la **presión intraabdominal (PIA)**, habitualmente entre 6 y 10 cmH₂O.\n- Este fenómeno provoca una cefalización del diafragma, rigidez de la pared torácica y una reducción de la **Capacidad Residual Funcional (CRF)** de entre un 5 % y un 15 % por cada incremento de IMC por encima de 30 kg/m².\n- En posición supina, el **volumen pulmonar al final de la espiración (EELV)** cae drásticamente, fomentando atelectasias por compresión en el 90 % de los pacientes anestesiados.\n\n### PEEPi y efecto pendelluft\n\nEn este escenario, el atrapamiento de aire y la **PEEP intrínseca (PEEPi)** actúan como factores de complejidad intrínseca. La compresión de las vías aéreas pequeñas estimula su cierre prematuro, generando una presión invisible que el clínico debe sospechar. Ignorar la PEEPi favorece el **efecto pendelluft**: una inflación no homogénea donde el aire se desplaza entre regiones pulmonares debido a diferencias de presión dinámicas, aumentando el riesgo de daño tisular. La identificación de estas limitaciones es el paso previo obligatorio para seleccionar el modo ventilatorio adecuado."
+      },
+      "estimatedTime": 15
+    },
+    {
+      "id": "vcv-pcv-theory-2",
+      "order": 3,
+      "type": "theory",
+      "title": "Análisis comparativo: VCV vs. PCV en el paciente de alta complejidad",
+      "content": {
+        "markdown": "La selección del modo ventilatorio no debe ser una cuestión de preferencia del operador, sino una **decisión estratégica basada en la evidencia de resultados clínicos**, específicamente en la reducción de Complicaciones Pulmonares Postoperatorias (CPP).\n\n> **Mito del siglo XX:** Tradicionalmente se creía que el flujo desacelerado de la PCV era superior para el paciente obeso. Sin embargo, en este paciente la rigidez de la pared torácica y las fluctuaciones de la presión abdominal hacen que el **volumen sea el único anclaje de seguridad confiable**. En PCV, si la presión intraabdominal aumenta súbitamente, el volumen tidal (Vt) caerá silenciosamente, produciendo hipoventilación inadvertida.\n\n### Tabla comparativa (basada en estudio de 109.360 pacientes)\n\n| Criterio | VCV (Control de Volumen) | PCV (Control de Presión) |\n| :--- | :--- | :--- |\n| Variable controlada | Volumen Tidal (Vt) y Flujo | Presión Inspiratoria |\n| Prevención de CPP | Superior; menor incidencia de complicaciones | Sin ventaja demostrada sobre VCV |\n| Estabilidad del Vt | Garantizada como anclaje de seguridad | Variable; riesgo de caída ante cambios de mecánica |\n| Metas de protección | Control estricto de Vt (6-8 ml/kg de PBW) | Requiere vigilancia constante del Vt exhalado |\n\nEl modo **VCV se prefiere actualmente** para alcanzar metas de protección pulmonar, ya que asegura que el volumen programado llegue efectivamente a los alvéolos a pesar de la baja distensibilidad del tórax obeso. Esta estabilidad volumétrica es el pilar para realizar la transición hacia una programación práctica basada en 'Chunking'."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "vcv-pcv-theory-3",
+      "order": 4,
+      "type": "theory",
+      "title": "Programación inicial y metas de protección pulmonar (estrategia 'Chunking')",
+      "content": {
+        "markdown": "Para reducir la carga cognitiva extrínseca, aplicamos el **'Chunking'** o fragmentación de la programación en unidades de información manejables. Esto permite al clínico internalizar parámetros de seguridad sin abrumarse durante la inducción.\n\n> **'So What?':** Los pulmones no crecen con el tejido adiposo. Ventilar por peso real es garantizar el daño pulmonar.\n\n### Fórmulas de referencia\n\n**Peso Ideal (IBW):**\n- Hombres: Talla(m)² × 23\n- Mujeres: Talla(m)² × 21.5\n\n**Peso Predicho (PBW):**\n- Hombres: 50 + 0.91 × [altura(cm) − 152.4]\n- Mujeres: 45.5 + 0.91 × [altura(cm) − 152.4]\n\n### Parámetros iniciales recomendados\n\n- **Volumen Tidal (Vt):** 6-8 ml/kg de PBW o IBW.\n- **Frecuencia Respiratoria (FR):**\n  - IMC 30-39.9 kg/m²: 12-20 rpm.\n  - IMC > 40 kg/m²: frecuencias superiores para compensar la producción de CO₂ y la restricción.\n- **Saturación de O₂ (SpO₂):** Meta 94-98 % con FiO₂ mínima. Evitar la hiperoxemia para prevenir atelectasias de reabsorción.\n\n### Ejemplo resuelto (andamiaje pedagógico)\n\nPaciente femenina: 160 cm de altura, 120 kg de peso real (IMC 46.8).\n\n1. **Cálculo de IBW:** 1.6² × 21.5 = **55 kg**.\n2. **Cálculo de PBW:** 45.5 + 0.91 × (160 − 152.4) ≈ **52.4 kg**.\n3. **Vt meta (6 ml/kg de PBW):** 52.4 × 6 = **314 ml**.\n\nSi programáramos por peso real (120 kg), el Vt sería de **720 ml**, causando sobredistensión alveolar masiva y volutrauma."
+      },
+      "estimatedTime": 16
+    },
+    {
+      "id": "vcv-pcv-theory-4",
+      "order": 5,
+      "type": "theory",
+      "title": "Optimización de la PEEP y maniobras de reclutamiento (MR)",
+      "content": {
+        "markdown": "La **PEEP** es una herramienta dinámica para combatir el colapso alveolar. En el paciente obeso, niveles convencionales (5 cmH₂O) son insuficientes para contrarrestar la carga abdominal.\n\n### Tabla de PEEP por IMC\n\n| Rango de IMC (kg/m²) | PEEP Recomendada (cmH₂O) |\n| :--- | :--- |\n| < 29.9 | 5 |\n| 30.0 - 39.9 | 8 |\n| 40.0 - 49.9 | 10 |\n| > 50.0 | 12 |\n\n> **Nota técnica:** En casos de SDRA, los informes Dräger sugieren que la PEEP puede requerir niveles de 10-26 cmH₂O para mantener el pulmón abierto.\n\n### Driving Pressure: el techo de seguridad\n\nEl indicador crítico para decidir el reclutamiento es la **Driving Pressure (Presión de Distensión)**:\n- Valor **> 13 cmH₂O** = techo de seguridad superado; la distensibilidad es deficiente y el riesgo de VILI (Lesión Pulmonar Inducida por el Ventilador) es inminente.\n- Por debajo de ese umbral, la programación actual es segura.\n\n### Maniobra de Reclutamiento Progresiva (MRP)\n\nSe prefiere la MRP **controlada por el ventilador** sobre la bolsa manual:\n- La MRP aumenta gradualmente la presión de meseta sin perder la PEEP.\n- Mitiga el efecto pendelluft al asegurar una distribución de presión más homogénea y controlada.\n- Reduce el estrés hemodinámico y la necesidad de vasopresores en comparación con la técnica errática de la bolsa manual."
+      },
+      "estimatedTime": 15
+    },
+    {
+      "id": "vcv-pcv-theory-5",
+      "order": 6,
+      "type": "theory",
+      "title": "Protocolo de aprendizaje y retención para el especialista",
+      "content": {
+        "markdown": "Para asegurar que el conocimiento pase a la memoria a largo plazo, el especialista debe emplear el **'Andamiaje' (Scaffolding)**, moviéndose desde la instrucción guiada hacia la independencia en la Zona de Desarrollo Próximo.\n\n### Estrategias de retención\n\n1. **Espaciamiento y Recuperación (Spacing & Retrieval):** Separar las sesiones de estudio y realizar ejercicios de recuperación activa (casos clínicos) para permitir que los recursos cognitivos se repongan y las conexiones de memoria se fortalezcan.\n2. **Modelo de Andamiaje:** Aplicar el esquema 'Yo hago (Modelo) → Nosotros hacemos (Guía) → Tú haces (Independencia)' en simulaciones ventilatorias.\n3. **Reducción de Carga en Pantalla:** Aplicar los principios de Coherencia (eliminar alarmas y datos irrelevantes) y Modalidad (integrar la lectura de gráficos con la narración clínica).\n\n### Capa de valor final: interpretar curvas, no solo números\n\nEl especialista debe combatir el **'Efecto Google'** o amnesia digital. Depender de aplicaciones para calcular el Vt o la PEEP debilita los esquemas mentales. La verdadera maestría reside en la interpretación de **bucles y curvas** (gráficos del ventilador) por encima de los valores numéricos digitales. La capacidad de diagnosticar una PEEPi o un reclutamiento fallido mirando la morfología de la curva de flujo es lo que diferencia al experto del usuario de aplicaciones."
+      },
+      "estimatedTime": 7
+    },
+    {
+      "id": "vcv-pcv-summary",
+      "order": 7,
+      "type": "summary",
+      "title": "Cierre: resumen y checklist",
+      "content": {
+        "markdown": "## Resumen\n\n- La obesidad reduce la CRF, eleva la PIA y genera PEEPi e hipoventilación inadvertida si el modo ventilatorio no asegura el Vt.\n- La VCV es el modo preferido en el paciente obeso porque garantiza el volumen tidal a pesar de la baja distensibilidad torácica; la PCV no ha demostrado ventaja y expone al riesgo de hipoventilación silenciosa.\n- El Vt debe calcularse con el Peso Predicho (PBW), no con el peso real; ventilar por peso real causa volutrauma.\n- La PEEP se titula por rango de IMC (5-12 cmH₂O) y la Driving Pressure > 13 cmH₂O es la señal de alarma para reevaluar la programación.\n- La MRP controlada por ventilador es superior a la bolsa manual en homogeneidad de distribución y estabilidad hemodinámica.\n- El chunking, el andamiaje y la recuperación activa son las estrategias clave para consolidar protocolos de ventilación mecánica.\n\n## Checklist de validación\n\n- Puedo explicar por qué la PIA elevada produce PEEPi y favorece el efecto pendelluft.\n- Justifico la preferencia de VCV sobre PCV con el argumento del 'anclaje de seguridad volumétrico'.\n- Calculo IBW y PBW y derivo el Vt protector para un paciente dado.\n- Selecciono la PEEP inicial según IMC y reconozco el umbral de Driving Pressure de 13 cmH₂O.\n- Diferencio la MRP asistida por ventilador de la bolsa manual y fundamento la preferencia.\n- Identifico el 'Efecto Google' como riesgo para la autonomía clínica del especialista."
+      },
+      "estimatedTime": 3
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Por qué la PCV puede generar hipoventilación inadvertida en el paciente obeso?",
+        "¿Cómo se calcula el Peso Predicho (PBW) y por qué es diferente del peso real?",
+        "¿Qué es la Driving Pressure y cuál es su umbral de seguridad?",
+        "¿Qué ventaja tiene la Maniobra de Reclutamiento Progresiva sobre la bolsa manual?",
+        "¿Qué es el efecto pendelluft y cómo se relaciona con la PEEPi?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "aiexpandnotes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": [
+          "intermediate",
+          "advanced"
+        ],
+        "question_types": [
+          "conceptual",
+          "application",
+          "clinical_case"
+        ],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [],
+  "quiz": {
+    "id": "quiz-vcv-pcv-obeso",
+    "passingScore": 4,
+    "questions": [
+      {
+        "id": "vcv-pcv-q1",
+        "type": "multiple-choice",
+        "question": "¿Cuál es el principal riesgo de usar PCV en el paciente obeso con fluctuaciones de presión intraabdominal?",
+        "options": [
+          "Hiperventilación por flujo desacelerado excesivo",
+          "Hipoventilación inadvertida al caer el Vt silenciosamente",
+          "Aumento automático de la PEEP intrínseca",
+          "Reducción de la frecuencia respiratoria programada"
+        ],
+        "correctAnswer": "Hipoventilación inadvertida al caer el Vt silenciosamente",
+        "explanation": "En PCV, si la presión intraabdominal aumenta (por posición o cirugía), el volumen tidal cae sin alarma visual inmediata, produciendo hipoventilación inadvertida. Por eso, en el paciente obeso el volumen es el único anclaje de seguridad confiable.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "vcv-pcv-q2",
+        "type": "multiple-choice",
+        "question": "Una paciente femenina mide 160 cm. ¿Cuál es su Peso Predicho (PBW) usando la fórmula del módulo?",
+        "options": [
+          "45.5 kg",
+          "52.4 kg",
+          "55.0 kg",
+          "60.2 kg"
+        ],
+        "correctAnswer": "52.4 kg",
+        "explanation": "Fórmula PBW mujeres: 45.5 + 0.91 × (160 − 152.4) = 45.5 + 0.91 × 7.6 ≈ 45.5 + 6.9 = 52.4 kg. Este valor, no el peso real, es el que debe usarse para calcular el Vt protector.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "vcv-pcv-q3",
+        "type": "multiple-choice",
+        "question": "Según la tabla de PEEP por IMC del módulo, ¿qué nivel de PEEP se recomienda para un paciente con IMC de 44 kg/m²?",
+        "options": [
+          "5 cmH₂O",
+          "8 cmH₂O",
+          "10 cmH₂O",
+          "12 cmH₂O"
+        ],
+        "correctAnswer": "10 cmH₂O",
+        "explanation": "El rango IMC 40.0-49.9 kg/m² corresponde a una PEEP recomendada de 10 cmH₂O según la tabla del módulo. Los niveles convencionales de 5 cmH₂O son insuficientes para contrarrestar la carga abdominal en este rango.",
+        "difficulty": "intermediate",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "vcv-pcv-q4",
+        "type": "multiple-choice",
+        "question": "¿Qué valor de Driving Pressure indica que la distensibilidad es deficiente y el riesgo de VILI es inminente?",
+        "options": [
+          "> 5 cmH₂O",
+          "> 8 cmH₂O",
+          "> 13 cmH₂O",
+          "> 20 cmH₂O"
+        ],
+        "correctAnswer": "> 13 cmH₂O",
+        "explanation": "El módulo establece que una Driving Pressure > 13 cmH₂O es el techo de seguridad; por encima de este valor la distensibilidad pulmonar es deficiente y el riesgo de Lesión Pulmonar Inducida por el Ventilador (VILI) es inminente.",
+        "difficulty": "intermediate",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "vcv-pcv-q5",
+        "type": "multiple-choice",
+        "question": "¿Cuál es la ventaja principal de la Maniobra de Reclutamiento Progresiva (MRP) controlada por ventilador frente a la técnica de bolsa manual?",
+        "options": [
+          "Permite aumentar la FiO₂ de forma más rápida",
+          "Asegura distribución de presión más homogénea y reduce el estrés hemodinámico",
+          "Elimina la necesidad de monitorizar la Driving Pressure",
+          "Aumenta el flujo espiratorio para eliminar la PEEPi"
+        ],
+        "correctAnswer": "Asegura distribución de presión más homogénea y reduce el estrés hemodinámico",
+        "explanation": "La MRP controlada por ventilador aumenta gradualmente la presión de meseta sin perder la PEEP, mitiga el efecto pendelluft y reduce el estrés hemodinámico y la necesidad de vasopresores en comparación con la técnica errática de la bolsa manual.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [
+      {
+        "authors": "Revista Chilena de Anestesia",
+        "year": "",
+        "title": "Datos sobre presión intraabdominal y mecánica pulmonar en paciente obeso anestesiado.",
+        "source": "Revista Chilena de Anestesia",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Dräger Medical",
+        "year": "",
+        "title": "Informes técnicos sobre ventilación protectora, PEEP y maniobras de reclutamiento en paciente crítico.",
+        "source": "Dräger Medical GmbH",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Sweller, J.",
+        "year": "1988",
+        "title": "Cognitive load during problem solving: Effects on learning.",
+        "source": "Cognitive Science",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Estudio multicéntrico (109.360 pacientes)",
+        "year": "",
+        "title": "Comparación de resultados clínicos VCV vs. PCV: incidencia de Complicaciones Pulmonares Postoperatorias.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-29",
+    "source": "VentyLab (JSON unificado)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel intermedio. Integra fisiopatología del paciente obeso, selección de modo ventilatorio basada en evidencia, programación con peso predicho y optimización de PEEP y maniobras de reclutamiento."
+  }
+}

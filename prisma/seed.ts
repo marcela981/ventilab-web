@@ -13,7 +13,7 @@
  * =============================================================================
  */
 
-import { PrismaClient, UserRole, ModuleCategory, ModuleDifficulty } from '@prisma/client';
+import { PrismaClient, UserRole } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -384,8 +384,8 @@ async function main() {
       title: 'Fundamentos',
       description: 'Módulo introductorio sobre los fundamentos de la ventilación mecánica',
       order: 1,
-      category: ModuleCategory.FUNDAMENTALS,
-      difficulty: ModuleDifficulty.BEGINNER,
+      category: 'fundamentals',
+      difficulty: 'beginner',
       estimatedTime: 120,
       isActive: true,
     },
@@ -396,14 +396,98 @@ async function main() {
       title: 'Modos Clásicos',
       description: 'Módulo sobre los modos clásicos de ventilación mecánica (VCV, PCV)',
       order: 2,
-      category: ModuleCategory.VENTILATION_PRINCIPLES,
-      difficulty: ModuleDifficulty.INTERMEDIATE,
+      category: 'ventilation_principles',
+      difficulty: 'intermediate',
       estimatedTime: 150,
       isActive: true,
     },
   });
 
-  console.log(`✅ Módulos creados: ${moduleFundamentos.title}, ${moduleModosClasicos.title}\n`);
+  // Módulos del nivel avanzado — 1 módulo por JSON (8 en total)
+  // category:'advanced'    → aparecen en el grid principal del nivel avanzado
+  // category:'pathologies' → aparecen en el sub-acordeón "Enseñanza especial — Patologías"
+  const advancedModulesInput = [
+    // ── Core (01-04) ──────────────────────────────────────────────────────────
+    {
+      legacyId: 'module-01-vili-ventilacion-protectora',
+      title: 'VILI y Ventilación Protectora en el Paciente con Obesidad',
+      description: 'Sintetiza la interacción entre la obesidad y la mecánica ventilatoria para mitigar el VILI mediante estrategias de ventilación protectora adaptadas.',
+      order: 3,
+      category: 'advanced',
+      estimatedTime: 85,
+    },
+    {
+      legacyId: 'module-02-monitorizacion-alto-nivel',
+      title: 'Monitorización de Alto Nivel: Driving Pressure y Poder Mecánico',
+      description: 'Integra la arquitectura cognitiva del especialista con la monitorización dinámica de la Driving Pressure y el concepto de Poder Mecánico.',
+      order: 4,
+      category: 'advanced',
+      estimatedTime: 90,
+    },
+    {
+      legacyId: 'module-03-advertencias-asincronias-situaciones-complejas',
+      title: 'Advertencias, Asincronías y Resolución de Situaciones Complejas',
+      description: 'Detección y manejo de asincronías paciente-ventilador y resolución de situaciones complejas en el obeso crítico.',
+      order: 5,
+      category: 'advanced',
+      estimatedTime: 85,
+    },
+    {
+      legacyId: 'module-04-destete-complejo-vmni',
+      title: 'Destete Ventilatorio Complejo y VMNI en Obesidad',
+      description: 'Destete ventilatorio complejo del paciente obeso crítico con uso profiláctico de VMNI/CPAP post-extubación.',
+      order: 6,
+      category: 'advanced',
+      estimatedTime: 90,
+    },
+    // ── Patologías (05-08) ────────────────────────────────────────────────────
+    {
+      legacyId: 'module-05-obesidad-sedentarismo',
+      title: 'Ventilación en el Paciente con Obesidad y Sedentarismo',
+      description: 'Abordaje integral de la ventilación en el paciente obeso y sedentario desde la perspectiva de patologías complejas.',
+      order: 7,
+      category: 'pathologies',
+      estimatedTime: 90,
+    },
+    {
+      legacyId: 'module-06-epoc-asma-fumadores',
+      title: 'Estrategias en Enfermedades Obstructivas: EPOC, Asma y Fumadores',
+      description: 'Estrategias ventilatorias en enfermedades obstructivas con obesidad concomitante.',
+      order: 8,
+      category: 'pathologies',
+      estimatedTime: 90,
+    },
+    {
+      legacyId: 'module-07-sdra',
+      title: 'SDRA en el Paciente Obeso: Ventilación Protectora Avanzada',
+      description: 'SDRA sobreañadido al paciente obeso con monitoreo de alta precisión y ventilación protectora.',
+      order: 9,
+      category: 'pathologies',
+      estimatedTime: 95,
+    },
+    {
+      legacyId: 'module-08-recuperacion-proteccion',
+      title: 'Protección Extrema: Sinergia entre Fisiología Respiratoria y Arquitectura Cognitiva',
+      description: 'Paradigma de personalización absoluta: gestión del colapso cognitivo del residente y el colapso alveolar del obeso.',
+      order: 10,
+      category: 'pathologies',
+      estimatedTime: 90,
+    },
+  ] as const;
+
+  const advancedModules = await Promise.all(
+    advancedModulesInput.map(({ legacyId: _legacyId, ...data }) =>
+      prisma.module.create({
+        data: {
+          ...data,
+          difficulty: 'advanced',
+          isActive: true,
+        },
+      })
+    )
+  );
+
+  console.log(`✅ Módulos creados: ${moduleFundamentos.title}, ${moduleModosClasicos.title}, y ${advancedModules.length} módulos avanzados\n`);
 
   // 3. Crear lecciones para cada módulo
   console.log('📖 Creando lecciones...');
@@ -437,6 +521,20 @@ async function main() {
       },
     });
     lessons.push({ lesson, moduleId: moduleModosClasicos.id });
+  }
+
+  // Lecciones avanzadas — 1 lección por módulo (la lección es el propio módulo)
+  for (const mod of advancedModules) {
+    const lesson = await prisma.lesson.create({
+      data: {
+        moduleId: mod.id,
+        title: mod.title,
+        order: 1,
+        estimatedTime: mod.estimatedTime ?? 0,
+        aiGenerated: false,
+      },
+    });
+    lessons.push({ lesson, moduleId: mod.id });
   }
 
   console.log(`✅ ${lessons.length} lecciones creadas\n`);
@@ -509,7 +607,7 @@ async function main() {
   console.log('✨ Seed completado exitosamente!\n');
   console.log('📋 Resumen:');
   console.log(`   - ${3} usuarios creados`);
-  console.log(`   - ${2} módulos creados`);
+  console.log(`   - ${2 + advancedModules.length} módulos creados (2 base + ${advancedModules.length} avanzados)`);
   console.log(`   - ${lessons.length} lecciones creadas`);
   console.log(`   - ${3} registros de progreso creados`);
   console.log('\n🔑 Credenciales de acceso:');

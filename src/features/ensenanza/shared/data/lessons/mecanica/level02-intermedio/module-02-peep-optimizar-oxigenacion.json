@@ -1,0 +1,302 @@
+{
+  "id": "module-02-peep-optimizar-oxigenacion",
+  "moduleId": "module-02-intermedio-mecanica",
+  "title": "PEEP: fisiopatología y optimización de la oxigenación en el paciente obeso",
+  "description": "Este módulo explica la fisiopatología de la PEEP extrínseca e intrínseca en el paciente con obesidad, las estrategias de optimización del intercambio gaseoso basadas en peso predicho y Driving Pressure, las técnicas de maniobras de reclutamiento alveolar controladas por ventilador y la titulación de PEEP por IMC, integrando principios de ventilación protectora y manejo postoperatorio del riesgo de AOS.",
+  "order": 2,
+  "estimatedTime": 80,
+  "difficulty": "intermediate",
+  "bloomLevel": "apply",
+  "learningObjectives": [
+    "Explicar cómo la obesidad altera la configuración toracoabdominal, reduce la CRF y predispone al efecto Pendelluft y al colapso alveolar.",
+    "Diferenciar la PEEP extrínseca de la PEEP intrínseca (PEEPi) y cuantificar el incremento de PEEPi asociado al IMC.",
+    "Calcular el Volumen Tidal protector a partir del Peso Predicho (PBW) y mantener la Driving Pressure en el rango de seguridad (13-15 cmH₂O).",
+    "Describir las dos fases de la Maniobra de Reclutamiento Progresiva controlada por ventilador y justificar el abandono de la bolsa manual.",
+    "Seleccionar el nivel de PEEP inicial adecuado según el rango de IMC e integrar los hallazgos del ensayo PROBESE.",
+    "Reconocer el riesgo de AOS postoperatoria y planificar la transición segura a la respiración espontánea."
+  ],
+  "prerequisites": [
+    "Anatomía y fisiología básica del aparato respiratorio.",
+    "Conceptos de ventilación mecánica: PEEP, presión meseta, volumen tidal y ciclo ventilatorio.",
+    "Módulo 1: VCV vs. PCV en el paciente obeso (cálculo de IBW y PBW)."
+  ],
+  "sections": [
+    {
+      "id": "peep-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción y mapa del módulo",
+      "content": {
+        "markdown": "## ¿Qué vas a aprender en este módulo?\n\nTema: Fisiopatología de la PEEP y estrategias de optimización de la oxigenación en el paciente obeso bajo ventilación mecánica.\n\nA lo largo del módulo conectarás:\n- **Fisiopatología de la obesidad:** cómo la carga elástica extrínseca genera PEEPi, efecto Pendelluft y desajuste V/Q.\n- **PEEP extrínseca vs. PEEPi:** mecanismos, cuantificación y consecuencias clínicas del atrapamiento aéreo.\n- **Optimización de la oxigenación:** Vt basado en PBW, Driving Pressure y meta de FiO₂ mínima efectiva.\n- **Maniobras de Reclutamiento Progresivas (MRP):** fases de rampeo y titulación; por qué se abandona la bolsa manual.\n- **Titulación de PEEP por IMC:** escala práctica y matices del ensayo PROBESE.\n- **Monitoreo postoperatorio:** riesgo de AOS y estrategia segura de extubación."
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "peep-theory-1",
+      "order": 2,
+      "type": "theory",
+      "title": "Fisiopatología de la obesidad y la mecánica pulmonar",
+      "content": {
+        "markdown": "La obesidad no debe entenderse simplemente como un exceso de masa corporal, sino como una **carga elástica extrínseca** que altera radicalmente la configuración toracoabdominal.\n\n### Mecanismo de reducción de la CRF\n\nEl tejido adiposo excesivo incrementa la **presión intraabdominal (PIA)**, generando una cefalización mecánica del diafragma. Este desplazamiento craneal reduce el volumen pulmonar en reposo, manifestándose en una caída de la **Capacidad Residual Funcional (CRF)** que oscila entre el **5 % y el 15 % por cada 5 kg/m² de IMC por encima de 30 kg/m²**. Esta pérdida de volumen reduce el reservorio de oxígeno disponible durante los periodos de apnea o hipoventilación, acelerando la desaturación arterial.\n\n### Efecto Pendelluft y atelectasias\n\nDesde una perspectiva de mecánica regional, la obesidad induce una inflación no homogénea de los pulmones. Esto da lugar al **efecto Pendelluft**: un flujo de aire interregional debido a las diferencias de presión dinámica entre áreas con distintas constantes de tiempo. Mientras las zonas no dependientes pueden estar sobredistendidas, las zonas dependientes sufren atelectasias por compresión, especialmente en posición supina donde el peso del mediastino y el abdomen colapsan el parénquima.\n\nEn pacientes con obesidad mórbida, la inducción anestésica puede reducir la CRF hasta en un **50 %**, exacerbando el desajuste ventilación/perfusión (V/Q) y aumentando el cortocircuito intrapulmonar.\n\n### Clasificación del riesgo por IMC\n\n| Diagnóstico | IMC (kg/m²) | Riesgo clínico |\n| :--- | :--- | :--- |\n| Bajo peso | < 18.5 | Bajo (otras comorbilidades) |\n| Normopeso | 18.5 - 24.9 | Promedio |\n| Sobrepeso | 25 - 29.9 | Incrementado |\n| Obesidad Clase I | 30 - 34.9 | Alto |\n| Obesidad Clase II | 35 - 39.9 | Muy alto |\n| Obesidad Clase III | > 40 | Extremadamente alto |"
+      },
+      "estimatedTime": 15
+    },
+    {
+      "id": "peep-theory-2",
+      "order": 3,
+      "type": "theory",
+      "title": "PEEP extrínseca vs. PEEP intrínseca (PEEPi): mecanismos y consecuencias",
+      "content": {
+        "markdown": "La **Presión Positiva al Final de la Espiración (PEEP)** es la piedra angular para estabilizar el alvéolo y prevenir el 'atelectrauma' o lesión por apertura y cierre cíclico.\n\n### Diferenciación esencial\n\n- **PEEP extrínseca:** valor ajustado en el ventilador por el clínico.\n- **PEEP intrínseca (PEEPi) o auto-PEEP:** presión residual alveolar generada por el atrapamiento aéreo. Surge porque las vías aéreas pequeñas cierran prematuramente antes de que los pulmones alcancen su punto de equilibrio elástico, impidiendo un vaciado completo.\n\n### Cuantificación en el paciente obeso\n\nEstudios de Steier y Pankow han validado que existe un **incremento medio de 0.2 cmH₂O de PEEPi por cada unidad de IMC adicional** en posición supina. Esto implica que un paciente con obesidad mórbida puede presentar niveles basales de PEEPi cercanos a **5-6 cmH₂O** simplemente por su anatomía, incrementando el trabajo respiratorio y la presión transdiaframática necesaria para iniciar un ciclo ventilatorio.\n\n> **Consecuencia clínica clave:** Un tiempo espiratorio excesivamente corto agrava el atrapamiento, desplazando la curva de compliancia hacia zonas menos eficientes y comprometiendo el retorno venoso.\n\n### Objetivo de la titulación\n\nEl reto para el clínico radica en titular una PEEP extrínseca que:\n1. Sea suficiente para compensar la carga elástica de la pared torácica y la PIA.\n2. No añada sobredistensión innecesaria ni comprometa el gasto cardíaco.\n\nEl objetivo es mantener un **'pulmón abierto'** que mitigue la cefalización del diafragma y optimice la relación V/Q."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "peep-theory-3",
+      "order": 4,
+      "type": "theory",
+      "title": "Estrategias de optimización de la oxigenación",
+      "content": {
+        "markdown": "### Volumen Tidal basado en Peso Predicho (PBW)\n\nEl dogma fundamental es calcular el Vt a partir del **PBW**, nunca del peso real. El parénquima pulmonar no aumenta con el tejido adiposo; ventilar por peso real conlleva volutrauma. Meta estricta: **6-8 ml/kg de PBW**.\n\n> **Grupo de mayor riesgo:** mujeres de estatura baja con sobrepeso, por la tendencia a subestimar visualmente el peso e infravalorar el PBW.\n\n**Fórmulas PBW de referencia:**\n- Hombres: 50 + 0.91 × [altura(cm) − 152.4]\n- Mujeres: 45.5 + 0.91 × [altura(cm) − 152.4]\n\n### Driving Pressure: el parámetro más relevante para la supervivencia\n\nLa **Driving Pressure (DP) = Presión Meseta − PEEP** tiene la mayor correlación con la supervivencia en el paciente ventilado. Meta: **13-15 cmH₂O**.\n\nLograr un Vt protector con DP baja solo es posible si el pulmón está reclutado. Un pulmón atelectásico es un pulmón 'pequeño' y rígido que requiere presiones excesivas para movilizar volúmenes mínimos.\n\n### FiO₂ mínima efectiva\n\n- Meta de **SpO₂ 94-98 %** con la FiO₂ más baja posible.\n- **Evitar la hiperoxemia sostenida (FiO₂ 100 %):** desplaza el nitrógeno (andamiaje alveolar), produciendo atelectasias de reabsorción cuando el oxígeno se difunde rápidamente al capilar.\n- La oxigenación debe depender de la superficie de intercambio abierta (PEEP + MR), no de concentraciones tóxicas de gas inspirado."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "peep-theory-4",
+      "order": 5,
+      "type": "theory",
+      "title": "Maniobras de reclutamiento alveolar (MR): técnica y abandono de la bolsa manual",
+      "content": {
+        "markdown": "Las **Maniobras de Reclutamiento (MR)** son intervenciones estratégicas para reabrir alvéolos colapsados y normalizar la distensibilidad pulmonar. En el paciente obeso no son opcionales: son necesarias para 'abrir' el pulmón antes de fijar la PEEP de mantenimiento.\n\n### Por qué se abandona la bolsa manual\n\nEl Prof. Wrigge demostró que la bolsa manual:\n- Carece de control barométrico preciso.\n- Genera picos de presión impredecibles.\n- Causa pérdida inmediata del reclutamiento al desconectar el circuito para retornar al ventilador.\n\n### Maniobra Progresiva Controlada por Ventilador: dos fases\n\n**Fase 1 — Rampeo (Apertura):**\n- Se incrementa la PEEP de forma escalonada (ej. de 5 en 5 cmH₂O) manteniendo una Driving Pressure constante.\n- En obesos se requieren presiones de apertura alveolar de **50-55 cmH₂O** para vencer la resistencia de la pared torácica.\n- El aumento gradual permite que el ventrículo derecho se adapte a la postcarga creciente.\n\n**Fase 2 — Titulación (Reducción):**\n- Tras alcanzar el punto de apertura, se reduce la PEEP en pasos decrecientes mientras se monitoriza la compliancia dinámica o estática.\n- La PEEP donde la compliancia es máxima antes de comenzar a descender se define como la **PEEP de 'no colapso'**.\n\n> **Alerta hemodinámica:** Las presiones de 50 cmH₂O reducen significativamente el retorno venoso. Estas maniobras deben realizarse bajo monitorización estrecha, con disponibilidad de bolos de fluidos o soporte vasopresor transitorio."
+      },
+      "estimatedTime": 15
+    },
+    {
+      "id": "peep-theory-5",
+      "order": 6,
+      "type": "theory",
+      "title": "Titulación de PEEP por IMC: escala práctica y evidencia (PROBESE)",
+      "content": {
+        "markdown": "La personalización de la PEEP es el desafío definitivo en la ventilación del paciente obeso. La evidencia clínica (LOV-ED y aportaciones de Pelosi) sugiere una escala ascendente basada en el IMC.\n\n### Guía práctica de PEEP por IMC\n\n| IMC (kg/m²) | PEEP recomendada (cmH₂O) |\n| :--- | :--- |\n| < 29.9 | 5 |\n| 30 - 39.9 | 8 |\n| 40 - 49.9 | 10 |\n| > 50 | 12 |\n\n### Matices del ensayo PROBESE\n\nEste estudio multicéntrico comparó PEEP 4 cmH₂O frente a 12 cmH₂O con MR y **no encontró diferencias significativas** en la incidencia de Complicaciones Pulmonares Postoperatorias en pacientes con riesgo moderado.\n\nImplicación: la PEEP alta mejora la oxigenación intraoperatoria, pero su beneficio clínico a largo plazo debe balancearse con el riesgo de efectos secundarios hemodinámicos.\n\n### Estrategia de 'Pulmón Abierto' (Wrigge y Pelosi)\n\nEn esta estrategia, los niveles de PEEP pueden escalar hasta **18-26 cmH₂O** tras una MR progresiva, siempre que la hemodinámica lo permita.\n\n> **Concepto clave:** Niveles de PEEP elevados en el paciente obeso son fisiológicamente equivalentes a niveles mucho más bajos en pacientes delgados, porque una gran parte de la presión se disipa venciendo la rigidez de la pared torácica y la PIA elevada."
+      },
+      "estimatedTime": 12
+    },
+    {
+      "id": "peep-theory-6",
+      "order": 7,
+      "type": "theory",
+      "title": "Monitoreo postoperatorio y transición segura a la respiración espontánea",
+      "content": {
+        "markdown": "La transición del paciente ventilado a la respiración espontánea es una fase de alto riesgo, especialmente en presencia de **Apnea Obstructiva del Sueño (AOS)**.\n\n### Epidemiología y patrón de riesgo\n\n- Se estima que hasta el **50 % de los pacientes con IMC > 40** padecen AOS, a menudo no diagnosticada.\n- Los opioides suprimen las fases de **sueño REM** (donde la hipotonía muscular es máxima y los eventos obstructivos son más severos), enmascarando la patología en UCI.\n- La AOS reaparece con mayor intensidad a partir de la **tercera noche postoperatoria**, cuando ocurre el rebote de sueño REM en planta, fuera de la monitorización continua.\n\n### Estrategia de extubación segura\n\n1. Extubación preferentemente en **posición sentada o con tronco elevado** para reducir la carga abdominal sobre el diafragma.\n2. Inicio inmediato de **CPAP** para mantener el reclutamiento logrado intraoperatoriamente.\n3. Minimizar o sustituir opioides por analgésicos de acción corta para no comprometer el control central de la respiración.\n\n### Carga cognitiva y diseño instruccional\n\nDesde la perspectiva de la Educación Médica Avanzada, estructurar información técnica compleja mediante **chunking** en un formato JSON jerárquico reduce la carga cognitiva extrínseca. Esto permite al clínico en formación centrar sus recursos mentales en la carga 'germana': integrar la fisiopatología mecánica con la toma de decisiones clínicas, construyendo esquemas mentales robustos capaces de manejar conceptos de alta densidad como el efecto Pendelluft o la titulación de PEEP."
+      },
+      "estimatedTime": 10
+    },
+    {
+      "id": "peep-summary",
+      "order": 8,
+      "type": "summary",
+      "title": "Cierre: resumen y checklist",
+      "content": {
+        "markdown": "## Resumen\n\n- La obesidad genera una carga elástica extrínseca que reduce la CRF (5-15 % por cada 5 kg/m² sobre IMC 30), produce PEEPi (~0.2 cmH₂O por unidad de IMC) y predispone al efecto Pendelluft y al cortocircuito intrapulmonar.\n- El Vt debe calcularse con el PBW (6-8 ml/kg); ventilar por peso real causa volutrauma.\n- La Driving Pressure (Presión Meseta − PEEP) debe mantenerse entre 13-15 cmH₂O; es el parámetro de mayor correlación con supervivencia.\n- La FiO₂ mínima efectiva (SpO₂ 94-98 %) previene atelectasias de reabsorción por hiperoxemia.\n- La MRP controlada por ventilador (rampeo hasta 50-55 cmH₂O + titulación) supera a la bolsa manual en precisión, homogeneidad y estabilidad hemodinámica.\n- La PEEP se titula por IMC (5-12 cmH₂O de base); en estrategia de 'pulmón abierto' puede alcanzar 18-26 cmH₂O.\n- El riesgo de AOS postoperatoria es máximo en la 3.ª noche; la extubación en posición sentada con CPAP precoz es la estrategia recomendada.\n\n## Checklist de validación\n\n- Explico cómo la PIA elevada genera cefalización diafragmática y reduce la CRF.\n- Cuantifico el incremento de PEEPi por unidad de IMC en posición supina.\n- Calculo el Vt protector con PBW y verifico la Driving Pressure para el caso dado.\n- Describo las dos fases de la MRP y justifico el abandono de la bolsa manual.\n- Selecciono la PEEP inicial según IMC e interpreto los matices del ensayo PROBESE.\n- Identifico el momento de mayor riesgo de AOS postoperatoria y la estrategia de extubación segura."
+      },
+      "estimatedTime": 5
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Por qué la obesidad reduce la CRF y cómo afecta esto a la oxigenación?",
+        "¿Qué es la PEEPi y cuánto incrementa por cada unidad de IMC?",
+        "¿Cuál es la diferencia entre la fase de rampeo y la fase de titulación en la MRP?",
+        "¿Por qué es peligrosa la hiperoxemia sostenida en el paciente obeso ventilado?",
+        "¿Cuándo y por qué reaparece la AOS con mayor intensidad en el postoperatorio?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "aiexpandnotes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": [
+          "intermediate",
+          "advanced"
+        ],
+        "question_types": [
+          "conceptual",
+          "application",
+          "clinical_case"
+        ],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [],
+  "quiz": {
+    "id": "quiz-peep-oxigenacion-obeso",
+    "passingScore": 4,
+    "questions": [
+      {
+        "id": "peep-q1",
+        "type": "multiple-choice",
+        "question": "Según el módulo, ¿en cuánto se estima el incremento de PEEPi por cada unidad de IMC adicional en posición supina?",
+        "options": [
+          "0.5 cmH₂O",
+          "0.2 cmH₂O",
+          "1.0 cmH₂O",
+          "0.05 cmH₂O"
+        ],
+        "correctAnswer": "0.2 cmH₂O",
+        "explanation": "Los estudios de Steier y Pankow validaron un incremento medio de 0.2 cmH₂O de PEEPi por cada unidad de IMC adicional en posición supina, lo que puede generar PEEPi basal de 5-6 cmH₂O en obesidad mórbida.",
+        "difficulty": "intermediate",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "peep-q2",
+        "type": "multiple-choice",
+        "question": "¿Por qué la hiperoxemia sostenida (FiO₂ 100 %) es perjudicial en el paciente obeso ventilado?",
+        "options": [
+          "Aumenta la presión intraabdominal al elevar el volumen pulmonar",
+          "Desplaza el nitrógeno alveolar, precipitando atelectasias de reabsorción",
+          "Reduce la frecuencia respiratoria y genera apneas centrales",
+          "Incrementa la Driving Pressure por encima del umbral de seguridad"
+        ],
+        "correctAnswer": "Desplaza el nitrógeno alveolar, precipitando atelectasias de reabsorción",
+        "explanation": "El nitrógeno actúa como andamiaje alveolar; al desplazarlo, el oxígeno se difunde rápidamente al capilar y el alvéolo colapsa si no hay una PEEP estabilizadora. Por eso se busca la FiO₂ mínima efectiva con SpO₂ 94-98 %.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "peep-q3",
+        "type": "multiple-choice",
+        "question": "En la Maniobra de Reclutamiento Progresiva, ¿qué define la 'PEEP de no colapso' durante la fase de titulación?",
+        "options": [
+          "El nivel de PEEP donde la Driving Pressure cae a cero",
+          "El nivel de PEEP donde la compliancia es máxima antes de comenzar a descender",
+          "El nivel de PEEP donde la SpO₂ supera el 99 %",
+          "El nivel de PEEP equivalente a la PEEPi medida en reposo"
+        ],
+        "correctAnswer": "El nivel de PEEP donde la compliancia es máxima antes de comenzar a descender",
+        "explanation": "Durante la fase de reducción escalonada de PEEP, el punto donde la compliancia dinámica o estática alcanza su máximo y luego comienza a descender corresponde a la PEEP de 'no colapso', es decir, el nivel mínimo para mantener el pulmón abierto.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "peep-q4",
+        "type": "multiple-choice",
+        "question": "¿Cuál es la principal conclusión del ensayo PROBESE respecto a la PEEP alta en el paciente obeso?",
+        "options": [
+          "La PEEP alta (12 cmH₂O) redujo significativamente las complicaciones pulmonares postoperatorias",
+          "La PEEP baja (4 cmH₂O) fue superior en todos los desenlaces clínicos",
+          "No se encontraron diferencias significativas en CPP entre PEEP 4 y PEEP 12 cmH₂O con MR",
+          "La PEEP alta eliminó por completo la necesidad de maniobras de reclutamiento"
+        ],
+        "correctAnswer": "No se encontraron diferencias significativas en CPP entre PEEP 4 y PEEP 12 cmH₂O con MR",
+        "explanation": "El ensayo PROBESE comparó PEEP 4 vs. 12 cmH₂O con MR y no detectó diferencias significativas en Complicaciones Pulmonares Postoperatorias en pacientes de riesgo moderado. Esto obliga a balancear el beneficio oxigenatorio de la PEEP alta con sus efectos hemodinámicos adversos.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "peep-q5",
+        "type": "multiple-choice",
+        "question": "¿En qué momento postoperatorio reaparece la AOS con mayor intensidad y por qué?",
+        "options": [
+          "Primera noche, por efecto directo de los anestésicos inhalatorios",
+          "Segunda noche, por acumulación de opioides en el sistema nervioso central",
+          "Tercera noche, por rebote de sueño REM al salir de la monitorización continua",
+          "Cuarta noche, por recuperación del tono muscular completo"
+        ],
+        "correctAnswer": "Tercera noche, por rebote de sueño REM al salir de la monitorización continua",
+        "explanation": "Los opioides suprimen el sueño REM durante las primeras noches en UCI. Al reducirse el efecto opiáceo, ocurre un rebote de sueño REM en planta (tercera noche), donde la hipotonía muscular es máxima y los eventos obstructivos son más severos, fuera ya de monitorización continua.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [
+      {
+        "authors": "Pelosi, P.; Gregoretti, C.",
+        "year": "",
+        "title": "Perioperative management of obese patients.",
+        "source": "Best Practice & Research Clinical Anaesthesiology",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Steier, J.; et al.",
+        "year": "",
+        "title": "Predictors of intrinsic PEEP in obese patients during mechanical ventilation.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Wrigge, H.; et al.",
+        "year": "",
+        "title": "Alveolar recruitment maneuvers during general anesthesia: evidence and technique.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Bluth, T.; et al. (PROBESE Collaborative Group)",
+        "year": "2019",
+        "title": "Effect of intraoperative high PEEP with recruitment maneuvers vs low PEEP on postoperative pulmonary complications in obese patients.",
+        "source": "JAMA",
+        "doi": "10.1001/jama.2019.7505",
+        "url": ""
+      },
+      {
+        "authors": "Dräger Medical",
+        "year": "",
+        "title": "Informes técnicos sobre ventilación protectora y maniobras de reclutamiento en paciente obeso.",
+        "source": "Dräger Medical GmbH",
+        "doi": "",
+        "url": ""
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-29",
+    "source": "VentyLab (JSON unificado)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel intermedio. Abarca la fisiopatología de PEEP y PEEPi en el obeso, estrategias de optimización de oxigenación, maniobras de reclutamiento progresivas y titulación de PEEP por IMC, integrando evidencia del ensayo PROBESE."
+  }
+}

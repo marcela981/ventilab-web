@@ -36,7 +36,8 @@ const beginnerModules = {
         estimatedTime: 45,
         difficulty: "intermediate",
         order: 1,
-        type: "reading"
+        type: "reading",
+        metadata: { allowEmpty: true }
       },
       {
         id: "module-02-ecuacion-movimiento",
@@ -45,7 +46,8 @@ const beginnerModules = {
         estimatedTime: 50,
         difficulty: "intermediate",
         order: 2,
-        type: "reading"
+        type: "reading",
+        metadata: { allowEmpty: true }
       },
       {
         id: "module-03-variables-fase",
@@ -54,7 +56,8 @@ const beginnerModules = {
         estimatedTime: 54,
         difficulty: "intermediate",
         order: 3,
-        type: "reading"
+        type: "reading",
+        metadata: { allowEmpty: true }
       },
       {
         id: "module-04-modos-ventilatorios",
@@ -63,7 +66,8 @@ const beginnerModules = {
         estimatedTime: 114,
         difficulty: "intermediate",
         order: 4,
-        type: "reading"
+        type: "reading",
+        metadata: { allowEmpty: true }
       },
       {
         id: "module-05-monitorizacion-grafica",
@@ -72,7 +76,8 @@ const beginnerModules = {
         estimatedTime: 480,
         difficulty: "intermediate",
         order: 5,
-        type: "reading"
+        type: "reading",
+        metadata: { allowEmpty: true }
       },
       {
         id: "module-06-efectos-sistemicos",
@@ -81,318 +86,430 @@ const beginnerModules = {
         estimatedTime: 600,
         difficulty: "intermediate",
         order: 6,
-        type: "reading"
+        type: "reading",
+        metadata: { allowEmpty: true }
       }
     ]
   }
 };
 
 // ─── NIVEL INTERMEDIO ─────────────────────────────────────────────────────────
+// IDs de módulo y lección coinciden con los definidos en ventylab-server/prisma/seed.ts.
+// metadata.allowEmpty = true → permite navegar aunque el objeto de lección
+// no tenga secciones embebidas (el contenido se carga desde el JSON).
 
 const intermediateModules = {
-  "module-02-modalidades-parametros": {
-    id: "module-02-modalidades-parametros",
-    title: "Modalidades Ventilatorias y Parámetros",
+  "module-01-vcv-vs-pcv": {
+    id: "module-01-vcv-vs-pcv",
+    title: "VCV vs PCV en el Paciente de Alta Complejidad",
     level: "intermediate",
     order: 1,
-    duration: 240,
-    prerequisites: ["module-01-fundamentals"],
+    duration: 75,
+    prerequisites: [],
     learningObjectives: [
-      "Comprender las modalidades ventilatorias controladas por volumen y presión",
-      "Dominar la configuración de parámetros ventilatorios",
-      "Interpretar curvas ventilatorias y resolver asincronías",
-      "Aplicar estrategias de ventilación protectora"
+      "Seleccionar estratégicamente el modo ventilatorio en el paciente crítico obeso",
+      "Comparar fisiopatología de VCV y PCV en el contexto clínico",
+      "Programar ventilación por peso predicho y optimización de PEEP"
     ],
     bloomLevel: "aplicar",
     difficulty: "intermedio",
-    estimatedTime: "4 horas",
-    description: "Modalidades ventilatorias y manejo de parámetros críticos en ventilación mecánica",
+    estimatedTime: "1.25 horas",
+    description: "Selección estratégica del modo ventilatorio en el paciente crítico obeso: fisiopatología, análisis comparativo VCV/PCV y optimización de PEEP.",
     lessons: [
       {
-        id: "lesson-01-volume-ventilation",
-        title: "Ventilación Controlada por Volumen (VCV)",
+        id: "lesson-vcv-vs-pcv",
+        title: "Ventilación por Control de Volumen (VCV) vs. Control de Presión (PCV) en el Paciente de Alta Complejidad",
         description: "",
-        estimatedTime: 60,
+        estimatedTime: 75,
         difficulty: "intermediate",
         order: 1,
-        type: "reading"
-      },
-      {
-        id: "lesson-02-pressure-controlled-ventilation",
-        title: "Ventilación Controlada por Presión (PCV)",
-        description: "",
-        estimatedTime: 60,
-        difficulty: "intermediate",
-        order: 2,
-        type: "reading"
-      },
-      {
-        id: "lesson-03-pressure-support-ventilation",
-        title: "Ventilación con Soporte de Presión (PSV)",
-        description: "",
-        estimatedTime: 60,
-        difficulty: "intermediate",
-        order: 3,
-        type: "reading"
-      },
-      {
-        id: "lesson-04-simv-destete-evidencia",
-        title: "SIMV y Destete – Evidencia Clínica",
-        description: "",
-        estimatedTime: 60,
-        difficulty: "intermediate",
-        order: 4,
-        type: "reading"
+        type: "reading",
+        metadata: { allowEmpty: true }
       }
     ]
   },
-  "module-03-configuracion-avanzada": {
-    id: "module-03-configuracion-avanzada",
-    title: "Configuración Avanzada y Estrategias de Protección",
+  "module-02-peep-optimizar-oxigenacion": {
+    id: "module-02-peep-optimizar-oxigenacion",
+    title: "PEEP: Fisiopatología y Optimización de la Oxigenación",
     level: "intermediate",
     order: 2,
-    duration: 200,
-    prerequisites: ["module-02-modalidades-parametros"],
+    duration: 80,
+    prerequisites: ["module-01-vcv-vs-pcv"],
     learningObjectives: [
-      "Aplicar estrategias de protección pulmonar en SDRA",
-      "Configurar parámetros para patologías específicas (EPOC, asma, neumonía)",
-      "Implementar criterios y protocolos de destete ventilatorio",
-      "Evaluar hipercapnia permisiva y bajo volumen tidal"
+      "Distinguir PEEP extrínseca e intrínseca en el paciente obeso",
+      "Aplicar estrategias de optimización del intercambio gaseoso",
+      "Ejecutar maniobras de reclutamiento alveolar"
     ],
     bloomLevel: "aplicar",
     difficulty: "intermedio",
-    estimatedTime: "3.5 horas",
-    description: "Estrategias de configuración avanzada, protocolos por patología y criterios de destete",
+    estimatedTime: "1.3 horas",
+    description: "Fisiopatología de PEEP extrínseca e intrínseca en el paciente obeso, estrategias de optimización del intercambio gaseoso y maniobras de reclutamiento alveolar.",
     lessons: [
       {
-        id: "lung-protective-ventilation",
-        title: "Ventilación Protectora Pulmonar",
+        id: "lesson-peep-optimizar-oxigenacion",
+        title: "PEEP: fisiopatología y optimización de la oxigenación en el paciente obeso",
         description: "",
-        estimatedTime: 40,
+        estimatedTime: 80,
         difficulty: "intermediate",
         order: 1,
-        type: "reading"
-      },
+        type: "reading",
+        metadata: { allowEmpty: true }
+      }
+    ]
+  },
+  "module-03-soporte-psv-cpap": {
+    id: "module-03-soporte-psv-cpap",
+    title: "Soporte Ventilatorio: PSV, CPAP y Protección Pulmonar",
+    level: "intermediate",
+    order: 3,
+    duration: 75,
+    prerequisites: ["module-02-peep-optimizar-oxigenacion"],
+    learningObjectives: [
+      "Integrar PSV y CPAP en la gestión ventilatoria del obeso",
+      "Aplicar protección pulmonar con titulación de PEEP",
+      "Ejecutar maniobras de reclutamiento en el postoperatorio"
+    ],
+    bloomLevel: "aplicar",
+    difficulty: "intermedio",
+    estimatedTime: "1.25 horas",
+    description: "Gestión ventilatoria del paciente obeso integrando PSV, CPAP postoperatorio y estrategias de protección pulmonar.",
+    lessons: [
       {
-        id: "low-tidal-volume",
-        title: "Bajo Volumen Tidal: Evidencia y Aplicación",
+        id: "lesson-soporte-psv-cpap",
+        title: "Soporte ventilatorio en el paciente obeso: PSV, CPAP y estrategias de protección pulmonar",
         description: "",
-        estimatedTime: 35,
+        estimatedTime: 75,
         difficulty: "intermediate",
-        order: 2,
-        type: "reading"
-      },
+        order: 1,
+        type: "reading",
+        metadata: { allowEmpty: true }
+      }
+    ]
+  },
+  "module-04-duales-simv": {
+    id: "module-04-duales-simv",
+    title: "Modos Duales y SIMV: Fisiopatología Avanzada",
+    level: "intermediate",
+    order: 4,
+    duration: 80,
+    prerequisites: ["module-03-soporte-psv-cpap"],
+    learningObjectives: [
+      "Comprender fisiopatología avanzada del paciente crítico obeso",
+      "Aplicar ventilación protectora con modos duales y SIMV",
+      "Usar marcos pedagógicos de andamiaje para competencia autónoma"
+    ],
+    bloomLevel: "aplicar",
+    difficulty: "intermedio",
+    estimatedTime: "1.3 horas",
+    description: "Fundamentos fisiopatológicos del paciente crítico obeso con estrategias de ventilación protectora y modos duales/SIMV.",
+    lessons: [
       {
-        id: "peep-strategies",
-        title: "Estrategias de PEEP",
+        id: "lesson-duales-simv",
+        title: "Modos duales y SIMV: fisiopatología avanzada, ventilación protectora y andamiaje pedagógico",
         description: "",
-        estimatedTime: 35,
+        estimatedTime: 80,
         difficulty: "intermediate",
-        order: 3,
-        type: "interactive"
-      },
+        order: 1,
+        type: "reading",
+        metadata: { allowEmpty: true }
+      }
+    ]
+  },
+  "module-05-graficas-fine-tuning": {
+    id: "module-05-graficas-fine-tuning",
+    title: "Monitorización Gráfica y Fine Tuning",
+    level: "intermediate",
+    order: 5,
+    duration: 80,
+    prerequisites: ["module-04-duales-simv"],
+    learningObjectives: [
+      "Interpretar monitorización gráfica de precisión en el obeso",
+      "Calcular y optimizar Driving Pressure",
+      "Ejecutar titulación de PEEP decremental con maniobras de reclutamiento"
+    ],
+    bloomLevel: "aplicar",
+    difficulty: "intermedio",
+    estimatedTime: "1.3 horas",
+    description: "Monitorización gráfica de precisión y ajuste fino del ventilador en el paciente obeso: Driving Pressure, maniobras de reclutamiento y titulación de PEEP decremental.",
+    lessons: [
       {
-        id: "permissive-hypercapnia",
-        title: "Hipercapnia Permisiva",
+        id: "lesson-graficas-fine-tuning",
+        title: "Monitorización gráfica y Fine Tuning en el paciente con obesidad",
         description: "",
-        estimatedTime: 30,
+        estimatedTime: 80,
         difficulty: "intermediate",
-        order: 4,
-        type: "reading"
-      },
+        order: 1,
+        type: "reading",
+        metadata: { allowEmpty: true }
+      }
+    ]
+  },
+  "module-06-avanzado-evaluacion-destete": {
+    id: "module-06-avanzado-evaluacion-destete",
+    title: "Mecánicas Avanzadas y Evaluación para el Destete",
+    level: "intermediate",
+    order: 6,
+    duration: 85,
+    prerequisites: ["module-05-graficas-fine-tuning"],
+    learningObjectives: [
+      "Analizar fisiopatología restrictiva extrapulmonar avanzada",
+      "Aplicar estrategias de protección alveolar basadas en evidencia (PROBESE, IMPROVE, LOV-ED)",
+      "Evaluar criterios clínicos para el inicio del destete ventilatorio"
+    ],
+    bloomLevel: "aplicar",
+    difficulty: "intermedio",
+    estimatedTime: "1.4 horas",
+    description: "Fisiopatología restrictiva extrapulmonar avanzada con estrategias de protección alveolar basadas en evidencia y evaluación para el destete.",
+    lessons: [
       {
-        id: "readiness-criteria",
-        title: "Criterios de Preparación para el Destete",
+        id: "lesson-avanzado-evaluacion-destete",
+        title: "Mecánicas avanzadas y evaluación para el destete en el paciente obeso",
         description: "",
-        estimatedTime: 30,
+        estimatedTime: 85,
         difficulty: "intermediate",
-        order: 5,
-        type: "reading"
-      },
-      {
-        id: "sbt-protocol",
-        title: "Protocolo de Prueba de Respiración Espontánea (SBT)",
-        description: "",
-        estimatedTime: 30,
-        difficulty: "intermediate",
-        order: 6,
-        type: "interactive"
+        order: 1,
+        type: "reading",
+        metadata: { allowEmpty: true }
       }
     ]
   }
 };
 
 // ─── NIVEL AVANZADO ───────────────────────────────────────────────────────────
+// IDs de módulo y lección coinciden con los definidos en ventylab-server/prisma/seed.ts.
+// metadata.allowEmpty = true → permite navegar aunque el objeto de lección
+// no tenga secciones embebidas (el contenido se carga desde el JSON).
 
 const advancedModules = {
-  "ards-management": {
-    id: "ards-management",
-    title: "Manejo de ARDS y Estrategias de Protección Pulmonar",
+  "module-01-vili-ventilacion-protectora": {
+    id: "module-01-vili-ventilacion-protectora",
+    title: "VILI y Ventilación Protectora en el Paciente con Obesidad",
     level: "advanced",
     order: 1,
-    duration: 240,
-    prerequisites: ["module-03-configuracion-avanzada"],
+    duration: 85,
+    prerequisites: [],
     learningObjectives: [
-      "Aplicar protocolo ARDSnet",
-      "Implementar estrategias de protección pulmonar",
-      "Manejar complicaciones del ARDS"
+      "Sintetizar la interacción entre obesidad y mecánica ventilatoria para mitigar el VILI",
+      "Aplicar estrategias de ventilación protectora adaptadas al paciente obeso",
+      "Programar titulación LOV-ED y gestión postoperatoria"
     ],
     bloomLevel: "sintetizar",
     difficulty: "avanzado",
-    estimatedTime: "4 horas",
+    estimatedTime: "1.4 horas",
+    description: "Síntesis de la interacción entre obesidad y mecánica ventilatoria para mitigar VILI mediante estrategias de ventilación protectora adaptadas.",
     lessons: [
       {
-        id: "ardsnet-protocol",
-        title: "Protocolo ARDSnet",
+        id: "lesson-vili-ventilacion-protectora",
+        title: "VILI y ventilación protectora en el paciente con obesidad",
         description: "",
-        estimatedTime: 45,
+        estimatedTime: 85,
         difficulty: "advanced",
         order: 1,
-        type: "reading"
-      },
-      {
-        id: "sdra-protocol",
-        title: "Manejo Clínico del SDRA: Caso Integrado",
-        description: "",
-        estimatedTime: 60,
-        difficulty: "advanced",
-        order: 2,
-        type: "case-study"
-      },
-      {
-        id: "lung-protection-simulation",
-        title: "Simulación de Protección Pulmonar",
-        description: "",
-        estimatedTime: 60,
-        difficulty: "advanced",
-        order: 3,
-        type: "simulation"
+        type: "reading",
+        metadata: { allowEmpty: true }
       }
     ]
   },
-  "copd-management": {
-    id: "copd-management",
-    title: "Manejo Ventilatorio en EPOC",
+  "module-02-monitorizacion-alto-nivel": {
+    id: "module-02-monitorizacion-alto-nivel",
+    title: "Monitorización de Alto Nivel: Driving Pressure y Poder Mecánico",
     level: "advanced",
     order: 2,
-    duration: 200,
-    prerequisites: ["ards-management"],
+    duration: 90,
+    prerequisites: ["module-01-vili-ventilacion-protectora"],
     learningObjectives: [
-      "Comprender las particularidades fisiopatológicas del EPOC",
-      "Aplicar estrategias ventilatorias específicas para EPOC",
-      "Manejar auto-PEEP e hiperinsuflación dinámica"
+      "Integrar la monitorización dinámica de Driving Pressure",
+      "Aplicar el concepto de Poder Mecánico como suma de vectores de lesión",
+      "Ejecutar titulación granular de PEEP en el paciente obeso"
     ],
     bloomLevel: "sintetizar",
     difficulty: "avanzado",
-    estimatedTime: "3.5 horas",
+    estimatedTime: "1.5 horas",
+    description: "Monitorización dinámica de Driving Pressure como predictor de protección pulmonar, titulación granular de PEEP y concepto de Poder Mecánico.",
     lessons: [
       {
-        id: "copd-physiology",
-        title: "Fisiopatología del EPOC en Ventilación Mecánica",
+        id: "lesson-monitorizacion-alto-nivel",
+        title: "Monitorización de alto nivel: Driving Pressure y Poder Mecánico",
         description: "",
-        estimatedTime: 40,
+        estimatedTime: 90,
         difficulty: "advanced",
         order: 1,
-        type: "reading"
-      },
-      {
-        id: "copd-protocol",
-        title: "Protocolo Ventilatorio EPOC",
-        description: "",
-        estimatedTime: 40,
-        difficulty: "advanced",
-        order: 2,
-        type: "reading"
-      },
-      {
-        id: "copd-simulation",
-        title: "Simulación EPOC: Auto-PEEP y Ajuste de Parámetros",
-        description: "",
-        estimatedTime: 60,
-        difficulty: "advanced",
-        order: 3,
-        type: "simulation"
+        type: "reading",
+        metadata: { allowEmpty: true }
       }
     ]
   },
-  "asthma-crisis": {
-    id: "asthma-crisis",
-    title: "Manejo de Crisis Asmática",
+  "module-03-advertencias-asincronias": {
+    id: "module-03-advertencias-asincronias",
+    title: "Advertencias, Asincronías y Situaciones Complejas",
     level: "advanced",
     order: 3,
-    duration: 180,
-    prerequisites: ["copd-management"],
+    duration: 90,
+    prerequisites: ["module-02-monitorizacion-alto-nivel"],
     learningObjectives: [
-      "Identificar crisis asmática severa con indicación de intubación",
-      "Aplicar ventilación permisiva en el paciente asmático",
-      "Manejar complicaciones ventilatorias (hiperinsuflación, barotrauma)"
+      "Detectar asincronías por PEEPi en el paciente obeso",
+      "Resolver situaciones complejas con programación avanzada",
+      "Ejecutar maniobras de reclutamiento progresivas en escalera"
     ],
     bloomLevel: "sintetizar",
     difficulty: "avanzado",
-    estimatedTime: "3 horas",
+    estimatedTime: "1.5 horas",
+    description: "Resolución de situaciones complejas: detección de asincronías por PEEPi, programación avanzada y optimización cognitiva avanzada.",
     lessons: [
       {
-        id: "asthma-protocol",
-        title: "Protocolo de Crisis Asmática",
+        id: "lesson-advertencias-asincronias",
+        title: "Advertencias, asincronías y resolución de situaciones complejas",
         description: "",
-        estimatedTime: 40,
+        estimatedTime: 90,
         difficulty: "advanced",
         order: 1,
-        type: "reading"
-      },
-      {
-        id: "asthma-crisis-case",
-        title: "Caso Clínico: Crisis Asmática Severa",
-        description: "",
-        estimatedTime: 60,
-        difficulty: "advanced",
-        order: 2,
-        type: "case-study"
+        type: "reading",
+        metadata: { allowEmpty: true }
       }
     ]
   },
-  "clinical-cases": {
-    id: "clinical-cases",
-    title: "Casos Clínicos Complejos",
+  "module-04-destete-complejo-vmni": {
+    id: "module-04-destete-complejo-vmni",
+    title: "Destete Ventilatorio Complejo y VMNI en el Paciente con Obesidad",
     level: "advanced",
     order: 4,
-    duration: 300,
-    prerequisites: ["asthma-crisis"],
+    duration: 90,
+    prerequisites: ["module-03-advertencias-asincronias"],
     learningObjectives: [
-      "Integrar conocimientos en escenarios clínicos complejos",
-      "Tomar decisiones ventilatorias fundamentadas en evidencia",
-      "Manejar múltiples patologías simultáneas en el paciente crítico"
+      "Aplicar evidencia PROBESE/PROVHILO/IMPROVE en el destete del obeso",
+      "Gestionar rebote REM de AOS y VMNI/CPAP profiláctica",
+      "Detectar SDRA postoperatorio en el paciente obeso crítico"
+    ],
+    bloomLevel: "sintetizar",
+    difficulty: "avanzado",
+    estimatedTime: "1.5 horas",
+    description: "Destete complejo del paciente obeso crítico: fisiopatología restrictiva, evidencia PROBESE/PROVHILO/IMPROVE, VMNI/CPAP profiláctica y detección de SDRA.",
+    lessons: [
+      {
+        id: "lesson-destete-complejo-vmni",
+        title: "Destete ventilatorio complejo y uso de VMNI en el paciente con obesidad",
+        description: "",
+        estimatedTime: 90,
+        difficulty: "advanced",
+        order: 1,
+        type: "reading",
+        metadata: { allowEmpty: true }
+      }
+    ]
+  },
+  "module-05-obesidad-sedentarismo": {
+    id: "module-05-obesidad-sedentarismo",
+    title: "Ventilación en Obesidad y Sedentarismo: Patologías Avanzadas",
+    level: "advanced",
+    order: 5,
+    duration: 90,
+    prerequisites: ["module-04-destete-complejo-vmni"],
+    learningObjectives: [
+      "Analizar epidemiología crítica de la obesidad y mecánica vertical vs. supino",
+      "Aplicar programación con PBW y gestión avanzada de PEEP",
+      "Manejar comorbilidades AOS/SDRA con las 5 Recomendaciones de Oro"
+    ],
+    bloomLevel: "sintetizar",
+    difficulty: "avanzado",
+    estimatedTime: "1.5 horas",
+    description: "Epidemiología crítica de la obesidad, mecánica vertical vs. supino, programación con PBW, gestión avanzada de PEEP y comorbilidades AOS/SDRA.",
+    lessons: [
+      {
+        id: "lesson-obesidad-sedentarismo",
+        title: "Ventilación en el paciente con obesidad y sedentarismo: perspectiva de patologías avanzadas",
+        description: "",
+        estimatedTime: 90,
+        difficulty: "advanced",
+        order: 1,
+        type: "reading",
+        metadata: { allowEmpty: true }
+      }
+    ]
+  },
+  "module-06-epoc-asma-fumadores": {
+    id: "module-06-epoc-asma-fumadores",
+    title: "Estrategias en Enfermedades Obstructivas: EPOC, Asma y Fumadores",
+    level: "advanced",
+    order: 6,
+    duration: 90,
+    prerequisites: ["module-05-obesidad-sedentarismo"],
+    learningObjectives: [
+      "Analizar epidemiología OCDE y 5 impactos críticos sobre mecánica pulmonar",
+      "Aplicar tabla LOV-ED en enfermedades obstructivas con obesidad",
+      "Implementar prevención nutricional APEPOC"
+    ],
+    bloomLevel: "sintetizar",
+    difficulty: "avanzado",
+    estimatedTime: "1.5 horas",
+    description: "Estrategias ventilatorias en enfermedades obstructivas con obesidad: epidemiología OCDE, 5 impactos críticos, tabla LOV-ED y prevención nutricional APEPOC.",
+    lessons: [
+      {
+        id: "lesson-epoc-asma-fumadores",
+        title: "Estrategias en enfermedades obstructivas: EPOC, asma y fumadores",
+        description: "",
+        estimatedTime: 90,
+        difficulty: "advanced",
+        order: 1,
+        type: "reading",
+        metadata: { allowEmpty: true }
+      }
+    ]
+  },
+  "module-07-sdra": {
+    id: "module-07-sdra",
+    title: "SDRA en el Paciente Obeso: Ventilación Protectora Avanzada",
+    level: "advanced",
+    order: 7,
+    duration: 95,
+    prerequisites: ["module-06-epoc-asma-fumadores"],
+    learningObjectives: [
+      "Analizar SDRA sobreañadido al obeso con epidemiología OMS/ENSANUT",
+      "Aplicar PEEPi posicional (Pankow et al.) y debate PROBESE",
+      "Manejar controversia FiO₂ >80% y segunda maniobra de reapertura"
+    ],
+    bloomLevel: "sintetizar",
+    difficulty: "avanzado",
+    estimatedTime: "1.6 horas",
+    description: "SDRA sobreañadido al paciente obeso: epidemiología OMS/ENSANUT, PEEPi posicional, debate PROBESE, controversia FiO₂ y segunda maniobra de reapertura.",
+    lessons: [
+      {
+        id: "lesson-sdra",
+        title: "SDRA en el paciente obeso: ventilación protectora avanzada y monitoreo de alta precisión",
+        description: "",
+        estimatedTime: 95,
+        difficulty: "advanced",
+        order: 1,
+        type: "reading",
+        metadata: { allowEmpty: true }
+      }
+    ]
+  },
+  "module-08-recuperacion-proteccion": {
+    id: "module-08-recuperacion-proteccion",
+    title: "Protección Extrema: Sinergia entre Fisiología Respiratoria y Arquitectura Cognitiva",
+    level: "advanced",
+    order: 8,
+    duration: 95,
+    prerequisites: ["module-07-sdra"],
+    learningObjectives: [
+      "Integrar paradigma de protección extrema como personalización absoluta",
+      "Aplicar tabla dual de PEEP LOV-ED vs. Extreme Protection",
+      "Reconocer alerta para mujeres de baja estatura y hábitos APEPOC"
     ],
     bloomLevel: "evaluar",
     difficulty: "avanzado",
-    estimatedTime: "5 horas",
+    estimatedTime: "1.6 horas",
+    description: "Paradigma de protección extrema: tabla dual PEEP LOV-ED vs. Extreme Protection, alerta para mujeres de baja estatura y hábitos APEPOC.",
     lessons: [
       {
-        id: "complex-case-1",
-        title: "Paciente con ARDS + Sepsis",
+        id: "lesson-recuperacion-proteccion",
+        title: "Protección extrema: sinergia entre fisiología respiratoria y arquitectura cognitiva",
         description: "",
-        estimatedTime: 60,
+        estimatedTime: 95,
         difficulty: "advanced",
         order: 1,
-        type: "case-study"
-      },
-      {
-        id: "complex-case-2",
-        title: "Paciente Post-Quirúrgico con Complicaciones",
-        description: "",
-        estimatedTime: 60,
-        difficulty: "advanced",
-        order: 2,
-        type: "case-study"
-      },
-      {
-        id: "pneumonia-protocol",
-        title: "Neumonía Grave: Optimización Ventilatoria",
-        description: "",
-        estimatedTime: 50,
-        difficulty: "advanced",
-        order: 3,
-        type: "case-study"
+        type: "reading",
+        metadata: { allowEmpty: true }
       }
     ]
   }
