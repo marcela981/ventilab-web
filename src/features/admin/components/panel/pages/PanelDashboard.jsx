@@ -12,8 +12,6 @@ import {
   School as SchoolIcon,
   Assignment as AssignmentIcon,
   TrendingUp as TrendingUpIcon,
-  Group as GroupIcon,
-  MonitorHeart as SimulatorIcon,
   AdminPanelSettings as AdminIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/shared/contexts/AuthContext';
@@ -77,7 +75,7 @@ export default function PanelDashboard() {
       title: 'Módulos Publicados',
       value: stats?.totalModules ?? stats?.publishedModules,
       accent: 'green',
-      onClick: () => navigate('/panel/teaching'),
+      onClick: () => navigate('/teaching'),
     },
     {
       icon: <AssignmentIcon />,
@@ -95,10 +93,8 @@ export default function PanelDashboard() {
 
   // ── Acciones rápidas ───────────────────────────────────────────────────────
   const quickActions = [
-    { icon: <PeopleIcon />,   title: 'Ver Estudiantes',      description: 'Listado y progreso individual',   path: '/panel/students' },
-    { icon: <GroupIcon />,    title: 'Gestionar Grupos',     description: 'Crear grupos y asignar líderes',  path: '/panel/groups' },
-    { icon: <SchoolIcon />,   title: 'Editar Contenido',     description: 'Niveles, módulos y lecciones',    path: '/panel/teaching' },
-    { icon: <SimulatorIcon />, title: 'Reservar Simulador',  description: 'Gestión del ventilador físico',   path: '/panel/simulator' },
+    { icon: <PeopleIcon />, title: 'Ver Estudiantes',  description: 'Listado y progreso individual',  path: '/panel/students' },
+    { icon: <SchoolIcon />, title: 'Editar Contenido', description: 'Niveles, módulos y lecciones',   path: '/teaching' },
     ...(canSeeAdmin
       ? [{ icon: <AdminIcon />, title: 'Gestión de Profesores', description: 'Ver profesores y permisos', path: '/panel/admin' }]
       : []),

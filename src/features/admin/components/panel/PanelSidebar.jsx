@@ -34,15 +34,11 @@ import {
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
-  School as TeachingIcon,
   People as StudentsIcon,
-  BarChart as StatisticsIcon,
   Settings as SettingsIcon,
   Menu as MenuIcon,
   ChevronLeft as ChevronLeftIcon,
   AdminPanelSettings as AdminIcon,
-  Group as GroupIcon,
-  MonitorHeart as SimulatorIcon,
   SupervisorAccount as SupervisorIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/shared/contexts/AuthContext';
@@ -62,13 +58,7 @@ const getNavigationItems = (userRole) => {
       path: '/panel',
       // All panel users can see dashboard
     },
-    {
-      id: 'teaching',
-      text: 'Contenido',
-      icon: <TeachingIcon />,
-      path: '/panel/teaching',
-      // All panel users can manage teaching content
-    },
+    // Contenido se edita in-place en el LMS (/teaching) — ver Fase 2 del editor Notion
     {
       id: 'students',
       text: 'Estudiantes',
@@ -76,25 +66,7 @@ const getNavigationItems = (userRole) => {
       path: '/panel/students',
       // All panel users can view students
     },
-    {
-      id: 'statistics',
-      text: 'Estadísticas',
-      icon: <StatisticsIcon />,
-      path: '/panel/statistics',
-      // All panel users can view statistics
-    },
-    {
-      id: 'groups',
-      text: 'Grupos',
-      icon: <GroupIcon />,
-      path: '/panel/groups',
-    },
-    {
-      id: 'simulator',
-      text: 'Simulador',
-      icon: <SimulatorIcon />,
-      path: '/panel/simulator',
-    },
+    // Estadísticas y Grupos ahora viven en las pestañas de /panel/students (Fase 2)
   ];
 
   // Admin-only items (admin and superuser)

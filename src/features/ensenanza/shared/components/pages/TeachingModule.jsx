@@ -47,6 +47,11 @@ const ReadinessIndicator = lazy(() => import('@/features/ensenanza/shared/dashbo
 // Importar DashboardTab
 import DashboardTab from '@/features/dashboard/DashboardTab';
 
+// Edit Mode (Fase 2 — Editor in-place estilo Notion)
+import { EditModeProvider } from '../edit/EditModeContext';
+import EditModeToggle from '../edit/EditModeToggle';
+import NotionCurriculumEditor from '../edit/NotionCurriculumEditor';
+
 /**
  * TeachingModule - Componente orquestador del módulo de enseñanza
  *
@@ -941,7 +946,10 @@ const TeachingModule = () => {
   }, [isViewingLesson, moduleIdFromQuery, lessonIdFromQuery]);
 
   return (
-    <>
+    <EditModeProvider>
+      {/* FAB de Modo Edición — solo visible para teacher/admin/superuser */}
+      <EditModeToggle />
+
       {/* SEO Head */}
       {isViewingLesson && lessonInfo && (
         <Head>
@@ -1032,6 +1040,12 @@ const TeachingModule = () => {
             levels={levelsForUI}
           />
 
+          {/* Editor in-place Notion — visible solo cuando Modo Edición está activo */}
+          <NotionCurriculumEditor
+            levels={levelsForUI}
+            getModulesByLevel={dbGetModulesByLevel}
+          />
+
           {/* Module 3 Progress Dashboard - Mostrado cuando se está en el módulo 3 */}
           {showModule3Dashboard && (
             <Box sx={{ mt: 4 }}>
@@ -1112,7 +1126,7 @@ const TeachingModule = () => {
         </Fade>
       )}
       </Container>
-    </>
+    </EditModeProvider>
   );
 };
 
