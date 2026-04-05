@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/router';
 import {
   Box, Typography, Paper, Avatar, Chip, LinearProgress, Grid,
   Card, CardContent, List, ListItem, ListItemText, Button, Alert,
@@ -110,8 +110,9 @@ function ScoreDialog({ open, onClose, onSave, studentId, initialScore }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function PanelStudentDetail() {
-  const { id: studentId } = useParams();
-  const navigate = useNavigate();
+  const router = useRouter();
+  const { id: studentId } = router.query;
+  const navigate = (path) => router.push(path);
   const { user } = useAuth();
 
   const [data, setData] = useState(null);

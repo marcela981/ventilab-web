@@ -11,7 +11,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/router';
 import {
   Card,
   CardContent,
@@ -85,7 +85,8 @@ const getProgressColor = (percentage) => {
  * StudentCard Component
  */
 const StudentCard = ({ student, onViewDetails }) => {
-  const navigate = useNavigate();
+  const router = useRouter();
+  const navigate = (path) => router.push(path);
   const { stats = {} } = student;
 
   const progressPercentage = stats.progressPercentage || 0;

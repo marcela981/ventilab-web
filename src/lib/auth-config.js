@@ -55,7 +55,7 @@ export const AUTH_ROUTES = ['/auth/login', '/auth/signup'];
  * Protected Routes (require authentication)
  */
 export const PROTECTED_ROUTES = [
-  '/dashboard',
+  '/simulador',
   '/teaching',
   '/flashcards',
   '/evaluation',

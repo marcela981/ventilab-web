@@ -11,7 +11,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/router';
 import {
   TableRow,
   TableCell,
@@ -91,7 +91,8 @@ const getProgressColor = (percentage) => {
  * StudentRow Component
  */
 const StudentRow = ({ student, onViewDetails }) => {
-  const navigate = useNavigate();
+  const router = useRouter();
+  const navigate = (path) => router.push(path);
   const { stats = {} } = student;
 
   const progressPercentage = stats.progressPercentage || 0;

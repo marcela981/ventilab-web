@@ -1,13 +1,11 @@
-// Next.js Dashboard Page - VentyLab
-import React from 'react';
-import { LearningProgressProvider } from '@/features/progress/LearningProgressContext';
-import VentilatorDashboard from '@/features/simulador/simuladorVentilador/dashboard/componentes/VentilatorDashboard';
+// Redirección permanente: /dashboard → /simulador
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
 
-export default function Dashboard() {
-  return (
-    <LearningProgressProvider>
-      <VentilatorDashboard />
-    </LearningProgressProvider>
-  );
+export default function DashboardRedirect() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace('/simulador');
+  }, [router]);
+  return null;
 }
-

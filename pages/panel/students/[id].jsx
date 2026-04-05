@@ -1,14 +1,14 @@
 import React from 'react';
 import PanelLayout from '@/features/admin/components/panel/PanelLayout';
-import PanelTeaching from '@/features/admin/components/panel/pages/PanelTeaching';
+import PanelStudentDetail from '@/features/admin/components/panel/pages/PanelStudentDetail';
 import { withTeacherAuth } from '@/features/auth/components/withAuth';
 
-function PanelTeachingPage() {
+function PanelStudentDetailPage() {
   return (
     <PanelLayout>
-      <PanelTeaching />
+      <PanelStudentDetail />
     </PanelLayout>
   );
 }
 
-export default withTeacherAuth(PanelTeachingPage);
+export default withTeacherAuth(PanelStudentDetailPage);

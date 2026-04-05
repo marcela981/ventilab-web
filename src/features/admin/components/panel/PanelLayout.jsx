@@ -57,13 +57,12 @@ export default function PanelLayout({ children }) {
         component="main"
         sx={{
           flexGrow: 1,
+          minWidth: 0,
           p: 3,
-          width: { sm: `calc(100% - ${currentDrawerWidth}px)` },
-          ml: { sm: `${currentDrawerWidth}px` },
-          backgroundColor: 'grey.50',
+          background: 'linear-gradient(160deg, #080d1a 0%, #0f1c35 55%, #0a1220 100%)',
           minHeight: '100vh',
           transition: (theme) =>
-            theme.transitions.create(['margin', 'width'], {
+            theme.transitions.create(['width'], {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.leavingScreen,
             }),

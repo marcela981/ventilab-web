@@ -16,7 +16,8 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 import {
   Drawer,
   List,
@@ -42,6 +43,7 @@ import {
   AdminPanelSettings as AdminIcon,
   Group as GroupIcon,
   MonitorHeart as SimulatorIcon,
+  SupervisorAccount as SupervisorIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { ROLES, getRoleDisplayName, isAdminOrAbove, isSuperuser } from '@/lib/roles';
@@ -98,8 +100,13 @@ const getNavigationItems = (userRole) => {
   // Admin-only items (admin and superuser)
   const adminItems = [];
 
-  // Settings is only visible to admin and superuser
   if (isAdminOrAbove(userRole)) {
+    adminItems.push({
+      id: 'admin',
+      text: 'Profesores',
+      icon: <SupervisorIcon />,
+      path: '/panel/admin',
+    });
     adminItems.push({
       id: 'settings',
       text: 'Configuración',
@@ -135,7 +142,7 @@ const getRoleBadgeColor = (role) => {
  * @component
  */
 export default function PanelSidebar({ open, onToggle, drawerWidth }) {
-  const location = useLocation();
+  const router = useRouter();
   const { user, role } = useAuth();
 
   // Generate navigation items based on user role
@@ -147,9 +154,9 @@ export default function PanelSidebar({ open, onToggle, drawerWidth }) {
    */
   const isActivePath = (path) => {
     if (path === '/panel') {
-      return location.pathname === '/panel' || location.pathname === '/panel/';
+      return router.pathname === '/panel' || router.pathname === '/panel/';
     }
-    return location.pathname.startsWith(path);
+    return router.pathname.startsWith(path);
   };
 
   return (
@@ -234,7 +241,7 @@ export default function PanelSidebar({ open, onToggle, drawerWidth }) {
         {navigationItems.map((item) => (
           <ListItem key={item.id} disablePadding sx={{ display: 'block', mb: 0.5 }}>
             <Link
-              to={item.path}
+              href={item.path}
               style={{ textDecoration: 'none', color: 'inherit' }}
             >
               <ListItemButton
@@ -287,7 +294,7 @@ export default function PanelSidebar({ open, onToggle, drawerWidth }) {
       <Divider sx={{ backgroundColor: 'rgba(255, 255, 255, 0.12)' }} />
       <Box sx={{ p: 2 }}>
         <Link
-          to="/dashboard"
+          href="/simulador"
           style={{ textDecoration: 'none', color: 'inherit' }}
         >
           <ListItemButton

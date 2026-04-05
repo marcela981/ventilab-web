@@ -1,144 +1,155 @@
 /**
- * =============================================================================
  * PanelDashboard - Admin Panel Home Page
- * =============================================================================
- * Main dashboard for the administrative panel.
- * Placeholder page to be extended with overview widgets and statistics.
- *
- * Accessible to: teacher, admin, superuser
- * =============================================================================
+ * Inyector de datos: fetches stats y estudiantes, pasa todo a componentes ui/.
+ * Layout responsivo que se adapta correctamente al abrir/cerrar el sidebar.
  */
 
-import React from 'react';
-import { Box, Typography, Paper, Grid } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { Box, Alert } from '@mui/material';
 import {
   People as PeopleIcon,
   School as SchoolIcon,
-  TrendingUp as TrendingUpIcon,
   Assignment as AssignmentIcon,
+  TrendingUp as TrendingUpIcon,
+  Group as GroupIcon,
+  MonitorHeart as SimulatorIcon,
+  AdminPanelSettings as AdminIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/shared/contexts/AuthContext';
-import { getRoleDisplayName } from '@/lib/roles';
+import adminService from '@/features/admin/services/adminService';
 
-/**
- * Placeholder stat card component
- */
-function StatCard({ icon, title, value, color }) {
-  return (
-    <Paper
-      elevation={0}
-      sx={{
-        p: 3,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 2,
-        border: '1px solid',
-        borderColor: 'grey.200',
-        borderRadius: 2,
-      }}
-    >
-      <Box
-        sx={{
-          width: 56,
-          height: 56,
-          borderRadius: 2,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: `${color}.50`,
-          color: `${color}.main`,
-        }}
-      >
-        {icon}
-      </Box>
-      <Box>
-        <Typography variant="h4" fontWeight="bold" color="text.primary">
-          {value}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {title}
-        </Typography>
-      </Box>
-    </Paper>
-  );
-}
+import DashboardHero from '../ui/DashboardHero';
+import GlassStatCard from '../ui/GlassStatCard';
+import QuickActionsGrid from '../ui/QuickActionsGrid';
+import RecentActivityFeed from '../ui/RecentActivityFeed';
 
-/**
- * PanelDashboard Component
- *
- * Main entry point for the admin panel.
- */
 export default function PanelDashboard() {
-  const { user, role } = useAuth();
+  const router = useRouter();
+  const navigate = (path) => router.push(path);
+  const { user, role, isAdmin, isSuperuser } = useAuth();
+
+  const [stats, setStats] = useState(null);
+  const [recentStudents, setRecentStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      setError(null);
+      const [statsRes, studentsRes] = await Promise.all([
+        adminService.getPlatformStatistics(),
+        adminService.getStudents({ page: 1, limit: 5, sortBy: 'lastActivity', sortOrder: 'desc' }),
+      ]);
+
+      if (statsRes.success) setStats(statsRes.data);
+      if (studentsRes.success) {
+        setRecentStudents(
+          (studentsRes.data.students || []).map((s) => ({
+            id: s.id,
+            name: s.name,
+            email: s.email,
+            stats: { progressPercentage: s.progress?.overallProgress ?? 0 },
+          }))
+        );
+      }
+      if (!statsRes.success && !studentsRes.success) {
+        setError(statsRes.error?.message || 'Error al cargar estadísticas');
+      }
+      setLoading(false);
+    })();
+  }, []);
+
+  const canSeeAdmin = isAdmin?.() || isSuperuser?.();
+
+  // ── Datos para las tarjetas de stats ──────────────────────────────────────
+  const statCards = [
+    {
+      icon: <PeopleIcon />,
+      title: 'Estudiantes Activos',
+      value: stats?.totalStudents ?? stats?.activeStudents,
+      accent: 'cyan',
+      onClick: () => navigate('/panel/students'),
+    },
+    {
+      icon: <SchoolIcon />,
+      title: 'Módulos Publicados',
+      value: stats?.totalModules ?? stats?.publishedModules,
+      accent: 'green',
+      onClick: () => navigate('/panel/teaching'),
+    },
+    {
+      icon: <AssignmentIcon />,
+      title: 'Lecciones Totales',
+      value: stats?.totalLessons,
+      accent: 'purple',
+    },
+    {
+      icon: <TrendingUpIcon />,
+      title: 'Completados Hoy',
+      value: stats?.completionsToday ?? stats?.todayCompletions,
+      accent: 'orange',
+    },
+  ];
+
+  // ── Acciones rápidas ───────────────────────────────────────────────────────
+  const quickActions = [
+    { icon: <PeopleIcon />,   title: 'Ver Estudiantes',      description: 'Listado y progreso individual',   path: '/panel/students' },
+    { icon: <GroupIcon />,    title: 'Gestionar Grupos',     description: 'Crear grupos y asignar líderes',  path: '/panel/groups' },
+    { icon: <SchoolIcon />,   title: 'Editar Contenido',     description: 'Niveles, módulos y lecciones',    path: '/panel/teaching' },
+    { icon: <SimulatorIcon />, title: 'Reservar Simulador',  description: 'Gestión del ventilador físico',   path: '/panel/simulator' },
+    ...(canSeeAdmin
+      ? [{ icon: <AdminIcon />, title: 'Gestión de Profesores', description: 'Ver profesores y permisos', path: '/panel/admin' }]
+      : []),
+  ];
 
   return (
     <Box>
-      {/* Page Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
-          Panel de Administración
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Bienvenido, {user?.name || 'Usuario'}. Estás conectado como{' '}
-          <strong>{getRoleDisplayName(role)}</strong>.
-        </Typography>
-      </Box>
+      {/* Banner de bienvenida */}
+      <DashboardHero user={user} role={role} />
 
-      {/* Placeholder Stats Grid */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            icon={<PeopleIcon />}
-            title="Estudiantes Activos"
-            value="--"
-            color="primary"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            icon={<SchoolIcon />}
-            title="Módulos Publicados"
-            value="--"
-            color="success"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            icon={<AssignmentIcon />}
-            title="Lecciones Totales"
-            value="--"
-            color="info"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            icon={<TrendingUpIcon />}
-            title="Completados Hoy"
-            value="--"
-            color="warning"
-          />
-        </Grid>
-      </Grid>
+      {error && (
+        <Alert
+          severity="warning"
+          sx={{ mb: 3, bgcolor: 'rgba(255,152,0,0.12)', color: '#fcd34d', border: '1px solid rgba(255,152,0,0.3)' }}
+        >
+          {error}
+        </Alert>
+      )}
 
-      {/* Placeholder Content Area */}
-      <Paper
-        elevation={0}
+      {/* Tarjetas de estadísticas — auto-fill: no se comprimen con el sidebar */}
+      <Box
         sx={{
-          p: 4,
-          border: '1px solid',
-          borderColor: 'grey.200',
-          borderRadius: 2,
-          textAlign: 'center',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: 2,
+          mb: 3,
         }}
       >
-        <Typography variant="h6" color="text.secondary" gutterBottom>
-          Dashboard en construcción
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Esta sección mostrará métricas, gráficos y accesos rápidos a las
-          funciones más utilizadas.
-        </Typography>
-      </Paper>
+        {statCards.map((card) => (
+          <GlassStatCard key={card.title} loading={loading} {...card} />
+        ))}
+      </Box>
+
+      {/* Sección inferior: feed de actividad + accesos rápidos */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: '1fr auto' },
+          gap: 2,
+          alignItems: 'start',
+        }}
+      >
+        <RecentActivityFeed
+          students={recentStudents}
+          navigate={navigate}
+          loading={loading}
+        />
+        <Box sx={{ width: { xs: '100%', md: 280 } }}>
+          <QuickActionsGrid actions={quickActions} navigate={navigate} />
+        </Box>
+      </Box>
     </Box>
   );
 }

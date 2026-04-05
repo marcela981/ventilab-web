@@ -24,3 +24,4 @@ export { default as PanelStatistics } from './pages/PanelStatistics';
 export { default as PanelSettings } from './pages/PanelSettings';
 export { default as PanelGroups } from './pages/PanelGroups';
 export { default as PanelSimulator } from './pages/PanelSimulator';
+export { default as PanelAdmin } from './pages/PanelAdmin';

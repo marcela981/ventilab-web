@@ -22,15 +22,15 @@ export const USER_ROLES = {
  * TODO: Create role-specific dashboard views if needed
  */
 const ROLE_DASHBOARD_MAP = {
-  [USER_ROLES.STUDENT]: '/dashboard',
-  [USER_ROLES.TEACHER]: '/dashboard',
-  [USER_ROLES.ADMIN]: '/dashboard',
+  [USER_ROLES.STUDENT]: '/simulador',
+  [USER_ROLES.TEACHER]: '/simulador',
+  [USER_ROLES.ADMIN]: '/simulador',
 };
 
 /**
  * Default dashboard route for unknown/unassigned roles
  */
-const DEFAULT_DASHBOARD = '/dashboard';
+const DEFAULT_DASHBOARD = '/simulador';
 
 /**
  * Get the appropriate redirect path based on user role

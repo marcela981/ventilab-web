@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/router';
 import {
   Box, Typography, Paper, TextField, InputAdornment,
   Alert, Chip, ToggleButton, ToggleButtonGroup, Skeleton,
@@ -27,7 +27,8 @@ const useDebounce = (value, delay) => {
 };
 
 export default function PanelStudents() {
-  const navigate = useNavigate();
+  const router = useRouter();
+  const navigate = (path) => router.push(path);
   const { user, isAdmin, isSuperuser } = useAuth();
 
   const [students, setStudents] = useState([]);

@@ -21,6 +21,8 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
 
   // Check if current page is an auth page (no sidebar)
   const isAuthPage = router.pathname.startsWith('/auth');
+  // Panel pages use their own PanelLayout with PanelSidebar
+  const isPanelPage = router.pathname.startsWith('/panel');
 
   const handleSidebarToggle = () => {
     setSidebarOpen(!sidebarOpen);
@@ -90,7 +92,8 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
                   <PatientDataProvider>
                     <CssBaseline />
                     {/* Auth pages: render without sidebar */}
-                    {isAuthPage ? (
+                    {/* Panel pages: render without student sidebar (PanelLayout provides its own) */}
+                    {isAuthPage || isPanelPage ? (
                       <ErrorBoundary>
                         <Component {...pageProps} />
                       </ErrorBoundary>
