@@ -22,3 +22,5 @@ export { default as PanelStudents } from './pages/PanelStudents';
 export { default as PanelStudentDetail } from './pages/PanelStudentDetail';
 export { default as PanelStatistics } from './pages/PanelStatistics';
 export { default as PanelSettings } from './pages/PanelSettings';
+export { default as PanelGroups } from './pages/PanelGroups';
+export { default as PanelSimulator } from './pages/PanelSimulator';

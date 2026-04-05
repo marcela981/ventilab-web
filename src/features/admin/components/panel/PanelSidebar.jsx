@@ -40,6 +40,8 @@ import {
   Menu as MenuIcon,
   ChevronLeft as ChevronLeftIcon,
   AdminPanelSettings as AdminIcon,
+  Group as GroupIcon,
+  MonitorHeart as SimulatorIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { ROLES, getRoleDisplayName, isAdminOrAbove, isSuperuser } from '@/lib/roles';
@@ -78,6 +80,18 @@ const getNavigationItems = (userRole) => {
       icon: <StatisticsIcon />,
       path: '/panel/statistics',
       // All panel users can view statistics
+    },
+    {
+      id: 'groups',
+      text: 'Grupos',
+      icon: <GroupIcon />,
+      path: '/panel/groups',
+    },
+    {
+      id: 'simulator',
+      text: 'Simulador',
+      icon: <SimulatorIcon />,
+      path: '/panel/simulator',
     },
   ];
 

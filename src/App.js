@@ -16,6 +16,8 @@ import {
   PanelStudentDetail,
   PanelStatistics,
   PanelSettings,
+  PanelGroups,
+  PanelSimulator,
 } from '@/features/admin/components/panel';
 
 import './App.css';
@@ -121,6 +123,26 @@ function App() {
                 <ProtectedPanelRoute>
                   <PanelLayout>
                     <PanelStatistics />
+                  </PanelLayout>
+                </ProtectedPanelRoute>
+              }
+            />
+            <Route
+              path="/panel/groups"
+              element={
+                <ProtectedPanelRoute>
+                  <PanelLayout>
+                    <PanelGroups />
+                  </PanelLayout>
+                </ProtectedPanelRoute>
+              }
+            />
+            <Route
+              path="/panel/simulator"
+              element={
+                <ProtectedPanelRoute>
+                  <PanelLayout>
+                    <PanelSimulator />
                   </PanelLayout>
                 </ProtectedPanelRoute>
               }
