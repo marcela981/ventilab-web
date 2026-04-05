@@ -72,8 +72,28 @@
       "estimatedTime": 16
     },
     {
+      "id": "m-vili-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Ventilación protectora — cálculo de parámetros",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Ventilación protectora y prevención de VILI\n\n> Calcula parámetros seguros y aplica criterios de VILI. No bloquea avance.\n\n---\n\n### Actividad 1 — Los 5 mecanismos de VILI\n\nRelaciona cada mecanismo con su definición y el parámetro que lo previene:\n\n| Mecanismo VILI | Causa | Parámetro protector |\n|---|---|---|\n| Volutrauma | Sobredistensión por Vt excesivo | Vt ≤ 6 mL/kg peso predicho |\n| Barotrauma | Presiones excesivas → ruptura | P_meseta < 28–30 cmH₂O |\n| Atelectrauma | Apertura/cierre cíclico de alvéolos | PEEP adecuado (> LIP) |\n| Biotrauma | Mediadores inflamatorios sistémicos | Todas las medidas anteriores |\n| Stress relajación | Tensión en tejido pulmonar no homogéneo | Driving pressure < 15 cmH₂O |\n\n---\n\n### Actividad 2 — Cálculo de parámetros protectores\n\nPaciente con SDRA severo: Mujer, 55 años, talla 165 cm.\n\n**Peso predicho (mujer):** = 45,5 + 0,91 × (165 − 152,4) = 45,5 + 0,91 × 12,6 = **56,95 kg ≈ 57 kg**\n\n| Parámetro | Cálculo | Valor objetivo |\n|---|---|---|\n| Vt protector | 6 mL/kg × 57 kg | 342 mL (usar 340–360 mL) |\n| Vt mínimo (4 mL/kg) | 4 × 57 | 228 mL (límite inferior) |\n| Driving pressure objetivo | P_meseta − PEEP | < 15 cmH₂O (meta < 12 ideal) |\n| P_meseta máxima | — | < 28–30 cmH₂O |\n\n---\n\n### Actividad 3 — Simulación clínica\n\nCon los parámetros calculados y Cst = 22 mL/cmH₂O, PEEP = 10 cmH₂O:\n\n- P_meseta = Vt/Cst + PEEP = 0,35/0,022 + 10 = 15,9 + 10 = **25,9 cmH₂O** ✓\n- Driving pressure = P_meseta − PEEP = 25,9 − 10 = **15,9 cmH₂O** → en el límite, considerar reducir Vt a 5 mL/kg.\n- Con Vt 285 mL: P_meseta = 0,285/0,022 + 10 = **22,95 cmH₂O**, ΔP = **12,95** → mejor.\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 30 pts | Actividad 2 → 35 pts | Actividad 3 → 35 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 6
+    },
+    {
+      "id": "m-vili-case",
+      "type": "case_study",
+      "title": "Caso clínico: SDRA moderado — aplicar ventilación protectora",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: SDRA moderado — optimizar ventilación protectora\n\n---\n\n### Presentación\n\n**Paciente:** Hombre, 42 años, talla 175 cm, peso real 90 kg (obeso).\n**Diagnóstico:** SDRA moderado (P/F = 148) por aspiración gástrica.\n**Estado:** Sedado profundo + bloqueo neuromuscular (fase aguda, 72 h de intubación).\n**Parámetros actuales:** VCV, Vt = 540 mL (aplicado antes de calcular peso predicho), Fr = 20/min, PEEP = 10, FiO₂ = 0,70.\n**Mecánica:** Cst = 26 mL/cmH₂O, P_meseta = 34 cmH₂O → **¡ALERTA! > 30 cmH₂O**\n\n---\n\n### Análisis guiado\n\n**1. Identifica el error**\nEl Vt fue calculado sobre peso real (90 kg) → 6 × 90 = 540 mL. En SDRA, el Vt debe calcularse sobre **peso predicho.**\n\n**Peso predicho (hombre):** = 50 + 0,91 × (175 − 152,4) = 50 + 20,6 = **70,6 kg**\n**Vt correcto:** 6 mL/kg × 70,6 = **424 mL** (usar 420–430 mL).\n\n**2. Recalcula la situación con Vt 420 mL**\n- P_meseta = 0,42/0,026 + 10 = 16,15 + 10 = **26,15 cmH₂O** ✓ (< 30)\n- Driving pressure = 26,15 − 10 = **16,15 cmH₂O** → ligeramente > 15. Considerar PEEP optimización.\n- Con PEEP 12: P_meseta = 0,42/0,026 + 12 = **28,15**, ΔP = **16,15** → igual ΔP pero mejor reclutamiento.\n\n**3. PEEP y prono**\nP/F 148 con FiO₂ 0,70 → SDRA moderado/severo. Indicación de decúbito prono si P/F < 150 con PEEP ≥ 5 y FiO₂ ≥ 0,60. → **Indicado.**\n\n---\n\n### Plan definitivo\n\nVCV: Vt 420 mL, Fr 22/min (ajustar para compensar ↓ Vt), PEEP 12, FiO₂ 0,65.\n→ Decúbito prono 16 h + bloqueo neuromuscular × 48 h.\n→ Re-evaluar gasometría + mecánica a las 4 h de prono.\n\n---\n\n### Puntos clave\n\n1. En obesidad, el Vt SIEMPRE se calcula sobre peso predicho (basado en talla), nunca peso real.\n2. La P_meseta > 30 cmH₂O es una emergencia; reducir Vt inmediatamente.\n3. La driving pressure < 15 cmH₂O es el objetivo con mayor correlación con supervivencia.\n"
+      },
+      "order": 7
+    },
+    {
       "id": "vili-summary",
-      "order": 6,
+      "order": 8,
       "type": "summary",
       "title": "Cierre: síntesis y checklist",
       "content": {

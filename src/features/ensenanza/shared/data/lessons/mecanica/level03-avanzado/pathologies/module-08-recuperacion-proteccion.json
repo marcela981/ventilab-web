@@ -82,8 +82,28 @@
       "estimatedTime": 13
     },
     {
+      "id": "m-recuperacion-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Planificación del cuidado post-extubación",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Recuperación y protección post-UCI\n\n> Diseña el plan de cuidados post-extubación. No bloquea avance.\n\n---\n\n### Actividad 1 — Síndrome Post-UCI (PICS)\n\nIdentifica los dominios del PICS y una intervención para cada uno:\n\n| Dominio | Manifestación | Intervención |\n|---|---|---|\n| Físico (neuromuscular) | Debilidad muscular, dificultad para deambular | Fisioterapia precoz, movilización progresiva en UCI |\n| Cognitivo | Memoria reducida, dificultad de concentración | Reorientación frecuente, protocolo ABCDEF, estimulación cognitiva |\n| Psicológico | PTSD, depresión, ansiedad | Diario de UCI, seguimiento psicológico, apoyo familiar |\n| Nutricional | Caquexia, sarcopenia | Nutrición hipercalórica-hiperproteica, suplementos |\n\n---\n\n### Actividad 2 — Checklist de alta de UCI\n\nMarca los ítems que deben evaluarse antes del traslado a planta:\n\n| Ítem | ¿Evaluado? | Responsable |\n|---|---|---|\n| Vía aérea estable, reflejo tusígeno presente | ✓ | Médico UCI |\n| Oxigenación adecuada con O₂ suplementario ≤ 4 L/min | ✓ | Médico UCI |\n| Movilidad: al menos capaz de girar en cama | ✓ | Fisioterapia |\n| Plan de rehabilitación documentado | ✓ | Fisio + médico |\n| Interconsulta a psicología programada | ✓ | Enfermería + trabajo social |\n| Nutrición oral o enteral establecida | ✓ | Nutrición clínica |\n| Educación al paciente/familia sobre PICS | ✓ | Equipo multidisciplinar |\n\n---\n\n### Actividad 3 — Predictor de ingreso prolongado en planta\n\nIndica cómo la miopatía del paciente crítico afecta el alta hospitalaria:\n\nLa miopatía del paciente crítico (CIMP/CINM) ocurre en el 25–50% de los pacientes en ventilación mecánica > 7 días. Sus consecuencias:\n- Retraso en la deambulación → hospitalización prolongada.\n- Mayor riesgo de neumonía por aspiración (debilidad faríngea).\n- Necesidad de rehabilitación domiciliaria o en centro de media estancia.\n- Asociada con ↑ mortalidad a 1 año post-UCI.\n\n**Factores de riesgo a documentar:** duración de VMI, uso de BNM, corticoides, hiperglucemia, inmovilización.\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 30 pts | Actividad 2 → 35 pts | Actividad 3 → 35 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 7
+    },
+    {
+      "id": "m-recuperacion-case",
+      "type": "case_study",
+      "title": "Caso clínico: Planificación del alta de UCI",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: Planificación integral del alta de UCI tras VM prolongada\n\n---\n\n### Presentación\n\n**Paciente:** Hombre, 55 años, 72 kg, técnico industrial.\n**Diagnóstico:** SDRA moderado post-cirugía abdominal complicada. Ventilación mecánica 14 días.\n**Estado actual (día 18 de UCI):** Extubado hace 4 días. SaO₂ 95% con cánula nasal 3 L/min. Febril 38,1°C (UTI de catéter en resolución).\n**Funcional:** No deambula de forma independiente. Se sienta al borde de la cama 10 min/día. Debilidad de MMII (MRC suma 36/60 → debilidad moderada).\n**Cognitivo:** Desorientado en tiempo, confusión fluctuante (posible delirio post-UCI).\n**Emocional:** Referido por enfermería como ansioso, pesadillas nocturnas, pregunta repetidamente \"¿cuándo salgo?\".\n\n---\n\n### Análisis y plan multidisciplinar\n\n**1. Evaluación neuromotora**\nMRC < 48/60 → criterio de debilidad adquirida en UCI (ICUAW).\nPlan fisioterapia: progresión diaria: sedestación → bipedestación → marcha asistida → marcha independiente.\nMeta para el alta: marcha 10 m con apoyo.\n\n**2. Evaluación cognitiva**\nMini-Cog o Montreal Cognitive Assessment (MoCA) al alta.\nProtocolo de delirio: orientación horaria, luz natural, ciclo sueño-vigilia, participación familiar.\nSeguimiento neuropsicológico ambulatorio al mes del alta hospitalaria.\n\n**3. Evaluación emocional (PTSD precoz)**\nDiario de UCI: se entrega al paciente para que reconstruya su historia durante la hospitalización.\nDerivación a psicología clínica.\nGrupo de apoyo de supervivientes de UCI (disponible en algunos centros).\n\n**4. Plan nutricional**\nObjetivo: recuperar masa muscular perdida (estimado: −3–5 kg de masa magra).\nDieta hipercalórica-hiperproteica (proteína 1,5–2 g/kg/día).\nSuplementos orales de alta densidad calórica.\nSeguimiento con nutricionista al alta.\n\n---\n\n### Indicadores de alta a planta\n\n- ✓ SaO₂ ≥ 95% con ≤ 3 L/min O₂\n- ✓ Sin vasopresores ni ventilación mecánica invasiva\n- ✓ Tolera vía oral o nutrición enteral\n- ✓ Fisioterapia planificada y iniciada\n- ✓ Documentación del PICS y plan de seguimiento a 1 y 3 meses\n\n---\n\n### Puntos clave\n\n1. El PICS afecta al 50–70% de los sobrevivientes de UCI con VM > 7 días.\n2. La rehabilitación precoz (desde el día 2–3 en UCI) reduce la incidencia y severidad del PICS.\n3. El seguimiento ambulatorio estructurado a los 3 meses post-UCI mejora la calidad de vida y reduce las readmisiones.\n"
+      },
+      "order": 8
+    },
+    {
       "id": "rec-protec-summary",
-      "order": 7,
+      "order": 9,
       "type": "summary",
       "title": "Cierre: el 'So What? Layer' definitivo — la personalización como estándar absoluto",
       "content": {

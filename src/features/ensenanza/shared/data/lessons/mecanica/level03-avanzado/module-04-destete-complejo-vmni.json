@@ -93,8 +93,28 @@
       "estimatedTime": 13
     },
     {
+      "id": "m-destete-vmni-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Protocolo de destete difícil y VMNI",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Destete difícil y uso de VMNI\n\n> Aplica criterios de destete complejo y estrategias de VMNI. No bloquea avance.\n\n---\n\n### Actividad 1 — Clasificación del destete\n\nClasifica el destete según número de SBT fallidas:\n\n| Categoría | Criterio | Estrategia |\n|---|---|---|\n| Destete simple | 1 SBT exitosa desde el primer intento | Extubación directa |\n| Destete difícil | Requiere hasta 3 SBT o hasta 7 días | Reducción progresiva de soporte |\n| Destete prolongado | > 3 SBT fallidas o > 7 días en intento de destete | VMNI post-extubación, traqueotomía electiva |\n\n---\n\n### Actividad 2 — VMNI en destete: indicaciones\n\nIndica si VMNI está indicada o contraindicada en cada situación:\n\n| Situación | VMNI indicada | Justificación |\n|---|---|---|\n| Post-extubación en paciente con EPOC y hx de retención de CO₂ | ✓ Sí | Reduce riesgo de re-intubación; evidencia clase A |\n| Post-extubación en paciente sin factores de riesgo | En discusión | Puede usarse de forma preventiva en pacientes de alto riesgo |\n| Fallo de extubación establecido (FR 40, SaO₂ 86%) | Solo si no hay contraindicaciones | Si la vía aérea está comprometida o hay secreciones → IOT |\n| Alteración del nivel de conciencia severa | ✗ No | No puede proteger la vía aérea → riesgo de aspiración |\n| Cirugía facial reciente con heridas en el territorio de la mascarilla | ✗ No | No hay sellado posible |\n\n---\n\n### Actividad 3 — Titulación de PSV hacia extubación\n\nEsquema de reducción para destete difícil:\n\n```\nDía 1:  PSV 16 → 14  (si IRRS < 80, Fr < 28, SaO₂ > 93%)\nDía 2:  PSV 14 → 12 → 10\nDía 3:  PSV 10 → 8   + SBT a los 2 días\nDía 4:  SBT exitosa → extubación + VMNI preventiva 2 h/turno × 24 h\n```\n\nSeñales de alarma que detienen el descenso:\n- FR > 30/min sostenida\n- IRRS > 105\n- SaO₂ < 90%\n- Uso de musculatura accesoria o paradoja toracoabdominal\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 25 pts | Actividad 2 → 40 pts | Actividad 3 → 35 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 8
+    },
+    {
+      "id": "m-destete-vmni-case",
+      "type": "case_study",
+      "title": "Caso clínico: Destete prolongado con VMNI",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: Destete prolongado — estrategia con VMNI\n\n---\n\n### Presentación\n\n**Paciente:** Mujer, 74 años, 60 kg, EPOC moderado-severo (GOLD III), ICC diastólica.\n**Diagnóstico:** SDRA leve por neumonía bacteriana, intubada hace 12 días.\n**Destete:** 4 intentos de SBT fallidos en los últimos 5 días.\n**Causa del fallo:** cada vez presenta fatiga muscular a los 30–45 min + deterioro hemodinámico.\n**Estado actual:** RASS 0, cooperadora, capaz de toser, T 37°C, sin vasopresores.\n**Función pulmonar de base:** FEV1 48% (EPOC moderado-severo) → pulmón de reserva limitada.\n**Gasometría pre-SBT:** pH 7,39, PaCO₂ 50 mmHg (basal ~53), PaO₂ 78 mmHg (FiO₂ 0,35, PEEP 5).\n\n---\n\n### Análisis y plan\n\n**1. ¿Por qué falla el SBT repetidamente?**\n- Debilidad muscular respiratoria severa (12 días de ventilación, posible miopatía del crítico).\n- Reserva pulmonar limitada por EPOC + secuelas de SDRA.\n- Cada SBT agota los músculos → acumula fatiga → siguiente SBT peor.\n- ICC diastólica → aumento de postcarga al respirar espontáneamente.\n\n**2. ¿Se justifica traqueotomía?**\nSí. Criterios: > 7 días en intento de destete, fallo repetido, pronóstico de ventilación prolongada → traqueotomía percutánea electiva a las 24 h.\n\n**3. Manejo post-traqueotomía**\n- VMNI nocturna con mascarilla nasal (menor carga muscular nocturna).\n- Ventilación espontánea gradual diurna con incremento progresivo de tiempo libre.\n- Protocolo de rehabilitación: fisioterapia 2×/día, movilización precoz.\n- Nutrición optimizada (hipercalórica con suplementos proteicos para recuperar masa muscular).\n\n---\n\n### Evolución\n\nSemana 1 post-traqueotomía: 6 h/día sin ventilación.\nSemana 2: 12 h/día libre.\nSemana 3: 20 h/día → intento de decanulación.\nSemana 4: Decanulación exitosa con O₂ por cánula nasal.\n\n---\n\n### Puntos clave\n\n1. El destete prolongado requiere un abordaje multidisciplinario (UCI, fisioterapia, nutrición).\n2. La traqueotomía precoz (< 14 días en criterios apropiados) mejora el confort y facilita el destete.\n3. La VMNI nocturna en traqueotomizados en destete reduce la fatiga muscular acumulada.\n"
+      },
+      "order": 9
+    },
+    {
       "id": "destete-vmni-summary",
-      "order": 8,
+      "order": 10,
       "type": "summary",
       "title": "Cierre: síntesis y checklist",
       "content": {

@@ -121,7 +121,12 @@ export function useLessonProgress({
    * NOTE: This function is used for scroll-based tracking and may not have step data.
    * If step data is not available, we skip the backend call to avoid percentage-only updates.
    */
-  const saveProgress = useCallback(async (forceComplete = false) => {
+  const saveProgress = useCallback(async (forceComplete = false, scores?: { quizScore?: number; caseScore?: number }) => {
+    if (!lessonId) {
+      console.warn('[useLessonProgress] Cannot save progress: lessonId is missing');
+      return;
+    }
+
     if (isSaving) {
       console.log('[useLessonProgress] Already saving, skipping...');
       return;
@@ -204,6 +209,7 @@ export function useLessonProgress({
         timeSpent,
         moduleId, // Include moduleId if available
         scrollPosition: scrollPositionRef.current,
+        ...(scores || {}),
       };
 
       console.log('[useLessonProgress] Saving to backend:', {
@@ -348,7 +354,7 @@ export function useLessonProgress({
    * - totalSteps = totalSteps parameter if provided, otherwise totalPages
    * - completionPercentage is derived from currentStep/totalSteps
    */
-  const saveStepProgress = useCallback(async (currentPage: number, totalPages: number, totalSteps?: number) => {
+  const saveStepProgress = useCallback(async (currentPage: number, totalPages: number, totalSteps?: number, scores?: { quizScore?: number; caseScore?: number }) => {
     if (totalPages <= 0) {
       console.warn('[useLessonProgress] saveStepProgress ABORTED: totalPages is invalid', { totalPages });
       return;
@@ -450,6 +456,8 @@ export function useLessonProgress({
         currentPage,       // 0-based
         stepsTotal,
         timeSpent,
+        scores?.quizScore,
+        scores?.caseScore
       );
 
       if (stepResult !== null) {
@@ -505,6 +513,29 @@ export function useLessonProgress({
           scrollPosition: 0,
           timestamp: Date.now(),
         }));
+
+        // Still update local UI state and dispatch optimistic event so the
+        // progress bar reflects the current position even when the backend
+        // call is unavailable or rate-limited.
+        setLastSavedStep(currentStep);
+        setLastSavedProgress(pageProgress);
+        setBackendProgress({
+          completionPercentage: pageProgress,
+          currentStep,
+          totalSteps: stepsTotal,
+          completed: false,
+        });
+
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('progress:updated', {
+            detail: {
+              lessonId,
+              moduleId,
+              progress: pageProgress / 100,
+              completionPercentage: pageProgress,
+            },
+          }));
+        }
       }
     } catch (error: any) {
       console.error('[useLessonProgress] ❌ Save page progress error:', error);

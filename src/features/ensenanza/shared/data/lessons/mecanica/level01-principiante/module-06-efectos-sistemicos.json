@@ -847,8 +847,18 @@
       }
     },
     {
+      "id": "m6-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Efectos sistémicos de la ventilación mecánica",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Efectos sistémicos de la ventilación mecánica\n\n> Conecta los efectos pulmonares con las repercusiones sistémicas. No bloquea avance.\n\n---\n\n### Actividad 1 — Sistema por sistema\n\nPara cada sistema, enumera el efecto más relevante de la presión positiva intratorácica y una medida de monitorización:\n\n| Sistema | Efecto principal | Monitorización clave |\n|---|---|---|\n| Cardiovascular | Reducción del retorno venoso → ↓ gasto cardíaco | PAM, FC, PVC, PICCO/Swan-Ganz |\n| Renal | Oliguria por ↓ flujo renal y activación SRAA | Diuresis horaria, creatinina |\n| Hepático/esplácnico | Congestión venosa hepática por ↑ PVC | Bilirrubina, función hepática |\n| Cerebral | ↑ PIC si PEEP alta en TEC | PIC, pupilometría, escala Glasgow |\n| Pulmonar propio | Lesión por volutrauma/barotrauma | Presiones, Vt, Driving pressure |\n\n---\n\n### Actividad 2 — Caso clínico breve\n\n**Escenario:** Paciente con SDRA severo, PEEP = 16 cmH₂O, PAM = 58 mmHg, FC = 115 lpm, diuresis = 15 mL/h.\n\nPreguntas:\n1. ¿El cuadro es consistente con efecto sistémico de la PEEP alta? ¿Por qué?\n   *Sí — la PEEP alta reduce el retorno venoso, generando hipotensión y oliguria.*\n\n2. ¿Qué ajustes inmediatos considerarías?\n   *Opciones: expansión de volumen cuidadosa, vasopresores (noradrenalina), y evaluar si se puede reducir PEEP sin comprometer oxigenación.*\n\n---\n\n### Actividad 3 — Interacción corazón-pulmón\n\nCompleta las flechas:\n\nPEEP ↑ → Presión intratorácica ↑ → Retorno venoso \\_\\_\\_ → Precarga VD \\_\\_\\_ → GC \\_\\_\\_ → PAM \\_\\_\\_\n\n*Respuesta:* ↓ / ↓ / ↓ / ↓\n\n¿Qué mecanismo compensador puede amortiguar este efecto?\n*El reflejo barorreflejos y la vasoconstricción periférica compensan parcialmente. La volemia adecuada es el factor más protector.*\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 35 pts | Actividad 2 → 40 pts | Actividad 3 → 25 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 83
+    },
+    {
       "id": "m6-summary",
-      "order": 83,
+      "order": 84,
       "type": "summary",
       "title": "Cierre: resumen y checklist",
       "content": {

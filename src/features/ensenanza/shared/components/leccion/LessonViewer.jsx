@@ -72,7 +72,6 @@ import { useLessonProgress } from '@/features/ensenanza/shared/hooks/useLessonPr
 import LessonNavigation from './LessonNavigation';
 import LessonIndexNavigator from './LessonIndexNavigator';
 import TutorAIPopup from '@/features/ensenanza/shared/components/ai/TutorAIPopup';
-import AITopicExpander from '@/features/ensenanza/shared/components/ai/AITopicExpander';
 import { useTopicContext } from '@/features/ensenanza/shared/hooks/useTopicContext';
 import useScrollCompletion from '@/shared/hooks/useScrollCompletion';
 import CompletionConfetti from '@/features/ensenanza/shared/components/leccion/CompletionConfetti';
@@ -95,13 +94,8 @@ import {
   CompletionPage,
 } from './sections';
 
-// Lazy load multimedia components
-const LazyVideoPlayer = lazy(() => import('../media/VideoPlayer'));
-const LazyImageGallery = lazy(() => import('../media/ImageGallery'));
-const LazyInteractiveDiagram = lazy(() => import('../media/InteractiveDiagram'));
-
-// Media utility components (from content folder)
-import { MediaSkeleton, MediaFallback } from './content';
+import LessonPageRenderer from './LessonPageRenderer';
+import MediaBlocksContainer from './MediaBlocksContainer';
 
 // Extracted loading/error state components
 import LessonLoadingSkeleton from '@/features/ensenanza/shared/components/leccion/LessonLoadingSkeleton';
@@ -130,365 +124,9 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
 
   const handleCloseSnackbar = useCallback(() => setSnackbarOpen(false), [setSnackbarOpen]);
 
-  const renderMediaBlock = useCallback((block, index) => {
-    // Validación inicial: bloque malformado
-    if (!block || !block.type || !block.data) {
-      console.warn(
-        `[LessonViewer] Bloque multimedia ${index + 1} malformado:`,
-        'Falta type o data',
-        block
-      );
-      return (
-        <MediaFallback
-          message="Contenido no disponible: estructura de datos inválida"
-          blockIndex={index}
-          blockType="unknown"
-        />
-      );
-    }
-
-    const { type, data } = block;
-    const ariaLabelBase = `Bloque multimedia ${index + 1}`;
-
-    switch (type) {
-      case 'video': {
-        // Validación: video sin URL
-        if (!data.url || typeof data.url !== 'string') {
-          console.warn(
-            `[LessonViewer] Bloque video ${index + 1} inválido:`,
-            'URL no proporcionada o inválida',
-            data
-          );
-          return (
-            <MediaFallback
-              message="Video: URL no proporcionada o inválida"
-              actionUrl={data.url} // Por si acaso hay una URL pero está mal formada
-              blockIndex={index}
-              blockType="video"
-            />
-          );
-        }
-
-        const ariaLabel = data.title 
-          ? `Video: ${data.title}` 
-          : `${ariaLabelBase} - Video`;
-
-        return (
-          <Suspense fallback={<MediaSkeleton variant="video" />}>
-            <Box sx={{ my: 2 }} aria-label={ariaLabel}>
-              <LazyVideoPlayer
-                url={data.url}
-                title={data.title}
-                provider={data.provider || 'auto'}
-                start={data.start}
-                poster={data.poster}
-                onError={(error, url) => {
-                  console.warn(
-                    `[LessonViewer] Error en video ${index + 1}:`,
-                    error,
-                    { url, blockIndex: index }
-                  );
-                }}
-              />
-            </Box>
-          </Suspense>
-        );
-      }
-
-      case 'imageGallery': {
-        // Validación: galería sin imágenes o array vacío
-        if (!data.images || !Array.isArray(data.images) || data.images.length === 0) {
-          console.warn(
-            `[LessonViewer] Bloque imageGallery ${index + 1} inválido:`,
-            'No hay imágenes o array inválido',
-            data
-          );
-          return (
-            <MediaFallback
-              message="Galería: No hay imágenes disponibles"
-              blockIndex={index}
-              blockType="imageGallery"
-            />
-          );
-        }
-
-        const ariaLabel = `${ariaLabelBase} - Galería de imágenes`;
-
-        return (
-          <Suspense fallback={<MediaSkeleton variant="imageGallery" />}>
-            <Box sx={{ my: 2 }} aria-label={ariaLabel}>
-              <LazyImageGallery
-                images={data.images}
-                columns={data.columns}
-                onImageError={(imgIndex, src) => {
-                  console.warn(
-                    `[LessonViewer] Error en imagen ${imgIndex + 1} de galería ${index + 1}:`,
-                    { src, imageIndex: imgIndex, galleryIndex: index }
-                  );
-                }}
-              />
-            </Box>
-          </Suspense>
-        );
-      }
-
-      case 'diagram': {
-        // Validación: diagrama sin svgSrc ni svgString
-        if (!data.svgSrc && !data.svgString) {
-          console.warn(
-            `[LessonViewer] Bloque diagram ${index + 1} inválido:`,
-            'No se proporcionó svgSrc ni svgString',
-            data
-          );
-          return (
-            <MediaFallback
-              message="Diagrama: No se proporcionó svgSrc ni svgString"
-              actionUrl={data.svgSrc} // Por si hay svgSrc pero está mal formado
-              blockIndex={index}
-              blockType="diagram"
-            />
-          );
-        }
-
-        const ariaLabel = data.ariaLabel || `${ariaLabelBase} - Diagrama interactivo`;
-
-        return (
-          <Suspense fallback={<MediaSkeleton variant="diagram" />}>
-            <Box sx={{ my: 2 }} aria-label={ariaLabel}>
-              <LazyInteractiveDiagram
-                svgSrc={data.svgSrc}
-                svgString={data.svgString}
-                height={data.height || 500}
-                width={data.width || '100%'}
-                initialScale={data.initialScale || 1}
-                onLoad={() => {
-                  console.log(
-                    `[LessonViewer] Diagrama ${index + 1} cargado exitosamente`,
-                    { blockIndex: index }
-                  );
-                }}
-                onError={(error) => {
-                  console.warn(
-                    `[LessonViewer] Error en diagrama ${index + 1}:`,
-                    error,
-                    { blockIndex: index, svgSrc: data.svgSrc }
-                  );
-                }}
-                aria-label={ariaLabel}
-              />
-            </Box>
-          </Suspense>
-        );
-      }
-
-      default:
-        console.warn(
-          `[LessonViewer] Tipo de bloque multimedia no soportado:`,
-          type,
-          { blockIndex: index, block }
-        );
-        return (
-          <MediaFallback
-            message={`Tipo de contenido multimedia no soportado: ${type}`}
-            blockIndex={index}
-            blockType={type}
-          />
-        );
-    }
-  }, []);
-
-  /**
-   * Renders all media blocks from lesson.media array
-   * @returns {React.Element|null} Stack of media blocks or null if no media
-   */
-  const renderMediaBlocks = useCallback(() => {
-    if (!data?.media || !Array.isArray(data.media) || data.media.length === 0) {
-      return null;
-    }
-
-    return (
-      <Stack spacing={2} sx={{ my: 3 }}>
-        {data.media.map((block, index) => (
-          <Box key={`media-block-${index}`}>
-            {renderMediaBlock(block, index)}
-          </Box>
-        ))}
-      </Stack>
-    );
-  }, [data, renderMediaBlock]);
-
   // ============================================================================
-  // Render Functions
+  // Rendering extracted to LessonPageRenderer and MediaBlocksContainer
   // ============================================================================
-  
-  /**
-   * Render current page based on page type
-   */
-  const renderCurrentPage = () => {
-    if (!currentPageData || !data) return null;
-    
-    switch (currentPageData.type) {
-      case 'header-intro':
-    return (
-          <Box>
-            <LessonHeader data={data} currentPage={currentPage} totalPages={totalPages} />
-            <IntroductionSection introduction={data.content?.introduction} />
-      </Box>
-    );
-      case 'theory':
-    return (
-          <TheorySection
-            section={currentPageData.section}
-            sectionIndex={currentPageData.sectionIndex}
-            theory={data.content?.theory}
-            moduleId={moduleId}
-            lessonId={lessonId}
-            lessonData={data}
-            currentPageType={currentPageData.type}
-          />
-        );
-      case 'analogies':
-    return (
-          <AnalogiesSection analogies={data.content?.theory?.analogies} />
-        );
-      case 'analogy':
-    return (
-          <AnalogiesSection singleAnalogy={currentPageData.analogy} />
-        );
-      case 'visual-elements':
-          return (
-          <VisualElementsSection visualElements={data.content?.visualElements} />
-        );
-      case 'waveforms':
-    return (
-          <WaveformsSection data={data} />
-        );
-      case 'parameter-tables':
-    return (
-          <ParameterTablesSection data={data} />
-        );
-      case 'practical-case':
-    return (
-          <PracticalCaseSection
-            practicalCase={data.content?.practicalCases?.[currentPageData.caseIndex]}
-            caseIndex={currentPageData.caseIndex}
-            caseAnswers={caseAnswers}
-            showAnswers={showCaseAnswers[currentPageData.case?.caseId || `case-${currentPageData.caseIndex}`]}
-            onAnswerChange={handleCaseAnswerChange}
-            onToggleAnswers={handleShowCaseAnswers}
-          />
-        );
-      case 'key-points':
-    return (
-          <KeyPointsSection keyPoints={data.content?.keyPoints} />
-        );
-      case 'assessment':
-        return (
-          <AssessmentSection
-            questions={data.content?.assessment?.questions}
-            assessmentAnswers={assessmentAnswers}
-            showAssessmentResults={showAssessmentResults}
-            assessmentScore={assessmentScore}
-            onAnswerChange={handleAssessmentAnswerChange}
-            onSubmit={handleSubmitAssessment}
-            onReset={() => {
-                setShowAssessmentResults(false);
-                setAssessmentAnswers({});
-              }}
-            onCloseResults={() => setShowAssessmentResults(false)}
-          />
-        );
-      case 'references':
-    return (
-          <ReferencesSection references={data.content?.references} />
-        );
-      case 'completion':
-    return (
-          <CompletionPage
-            data={data}
-            totalPages={totalPages}
-            onNavigateToLesson={handleNavigateToLesson}
-            startTime={Date.now()}
-          />
-        );
-      case 'clinical-case':
-        return (
-          <Box id="clinical-case-section">
-            {moduleCompletion === 100 ? (
-              <Suspense fallback={
-                <Paper sx={{ p: 4, textAlign: 'center' }}>
-                  <Skeleton variant="rectangular" width="100%" height={200} sx={{ mb: 2 }} />
-                  <Skeleton variant="text" width="60%" sx={{ mx: 'auto' }} />
-                </Paper>
-              }>
-                <ClinicalCaseViewer
-                  moduleId={moduleId}
-                  onCompleted={triggerAutoCompletion}
-                  onBack={() => {
-                    // Navegar a la página anterior (completion)
-                    const completionPageIndex = calculatePages.findIndex(page => page.type === 'completion');
-                    if (completionPageIndex >= 0) {
-                      setCurrentPage(completionPageIndex);
-                    }
-                  }}
-                />
-              </Suspense>
-            ) : (
-              <Paper
-                sx={{
-                  p: 4,
-                  textAlign: 'center',
-                  backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  position: 'relative',
-                }}
-              >
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: 16,
-                    right: 16,
-                  }}
-                >
-                  <PrerequisiteTooltip
-                    missing={[]}
-                    side="top"
-                  >
-                    <LockIcon
-                      sx={{
-                        fontSize: 40,
-                        color: 'text.disabled',
-                      }}
-                      aria-label="Caso clínico bloqueado"
-                    />
-                  </PrerequisiteTooltip>
-                </Box>
-
-                <Box sx={{ mt: 4, mb: 2 }}>
-                  <LockIcon
-                    sx={{
-                      fontSize: 64,
-                      color: 'text.disabled',
-                      mb: 2,
-                    }}
-                  />
-                </Box>
-
-                <Typography variant="h6" fontWeight={600} gutterBottom>
-                  Caso Clínico Bloqueado
-                </Typography>
-
-                <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 500, mx: 'auto', mt: 2 }}>
-                  Debes completar {completedLessonsCount}/{totalLessons} lecciones antes de iniciar el caso clínico
-                </Typography>
-              </Paper>
-            )}
-          </Box>
-        );
-      default:
-        return null;
-    }
-  };
   
   // ============================================================================
   // Loading State - Using extracted component
@@ -594,21 +232,35 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
               )}
 
               <article id="lesson-content" ref={contentRef}>
-                {renderCurrentPage()}
+                <LessonPageRenderer
+                  data={data}
+                  currentPageData={currentPageData}
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  moduleId={moduleId}
+                  lessonId={lessonId}
+                  caseAnswers={caseAnswers}
+                  showCaseAnswers={showCaseAnswers}
+                  handleCaseAnswerChange={handleCaseAnswerChange}
+                  handleShowCaseAnswers={handleShowCaseAnswers}
+                  assessmentAnswers={assessmentAnswers}
+                  showAssessmentResults={showAssessmentResults}
+                  assessmentScore={assessmentScore}
+                  handleAssessmentAnswerChange={handleAssessmentAnswerChange}
+                  handleSubmitAssessment={handleSubmitAssessment}
+                  setShowAssessmentResults={setShowAssessmentResults}
+                  setAssessmentAnswers={setAssessmentAnswers}
+                  handleNavigateToLesson={handleNavigateToLesson}
+                  moduleCompletion={moduleCompletion}
+                  triggerAutoCompletion={triggerAutoCompletion}
+                  calculatePages={calculatePages}
+                  setCurrentPage={setCurrentPage}
+                  completedLessonsCount={completedLessonsCount}
+                  totalLessons={totalLessons}
+                />
                 
                 {/* Media Blocks Section - Rendered after main content */}
-                {renderMediaBlocks()}
-                
-                {/* AI Topic Expander - Renderizado al final del contenido */}
-                {data && (
-                  <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-                    <AITopicExpander
-                      context={topicContext}
-                      variant={data.metadata?.aiExpanderVariant || 'button'}
-                      enabled={data.metadata?.aiExpander !== false}
-                    />
-                  </Box>
-                )}
+                <MediaBlocksContainer media={data?.media} />
               </article>
         </Container>
         
@@ -692,7 +344,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
                 variant="contained"
                 onClick={() => {
                   setCompletionDialogOpen(false);
-                  handleNavigateToLesson(data.navigation.nextLesson.id, data.moduleId);
+                  handleNavigateToLesson(data.navigation.nextLesson.id, data.navigation.nextLesson.moduleId || data.moduleId);
                 }}
               >
                 Continuar a la Siguiente Lección

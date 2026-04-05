@@ -82,8 +82,28 @@
       "estimatedTime": 7
     },
     {
+      "id": "m-vcv-pcv-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: VCV vs. PCV — elige el modo correcto",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: VCV vs. PCV en el paciente crítico\n\n> Aplica los criterios de selección modal en escenarios reales. No bloquea avance; genera puntaje de participación.\n\n---\n\n### Actividad 1 — Ventajas y limitaciones\n\nCompleta la tabla con una ventaja y una limitación de cada modo:\n\n| Modo | Ventaja principal | Limitación principal |\n|---|---|---|\n| VCV (Control de Volumen) | Vt garantizado en todo momento | Presión variable → riesgo de barotrauma si compliance ↓ |\n| PCV (Control de Presión) | Presión de vía aérea limitada | Vt variable → riesgo de hipercapnia o volutrauma silente |\n\n---\n\n### Actividad 2 — Escenarios de selección\n\nElige el modo más adecuado y justifica en una oración:\n\n**A.** Paciente con SDRA moderado, Cst = 28 mL/cmH₂O, sin esfuerzo espontáneo.\n*VCV* — permite calcular driving pressure con precisión y aplicar ventilación protectora con Vt fijo.\n\n**B.** Paciente postoperatorio de cirugía torácica, mecánica variable, inicio de destete.\n*PCV o PRVC* — la presión limitada protege el parénquima con mecánica inestable; PRVC ajusta automáticamente.\n\n**C.** Paciente obeso (IMC 45), cirugía abdominal laparoscópica, posición Trendelenburg.\n*VCV* — garantiza Vt a pesar de la gran carga sobre el tórax; monitorizar presión de cerca.\n\n---\n\n### Actividad 3 — Cálculo comparativo\n\nDado: Vt objetivo = 480 mL, Cst = 35 mL/cmH₂O, R = 12 cmH₂O/L/s, flujo = 0,8 L/s, PEEP = 6.\n\n- **En VCV:** Ppico = Vt/Cst + R×flujo + PEEP = 480/35 + 12×0,8 + 6 = 13,7 + 9,6 + 6 = **~29 cmH₂O**\n- **En PCV:** fijarías P_ins = Pmeseta objetivo (≈22 cmH₂O). Si Cst cambia a 25 mL/cmH₂O → Vt = (Pins − PEEP) × Cst = (22−6)×25 = **400 mL** → ¡Vt cae 80 mL sin alarma de volumen!\n\nConclusión: En VCV el Vt es estable; en PCV el Vt cae si la mecánica empeora.\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 25 pts | Actividad 2 → 45 pts | Actividad 3 → 30 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 7
+    },
+    {
+      "id": "m-vcv-pcv-case",
+      "type": "case_study",
+      "title": "Caso clínico: Selección modal en SDRA leve",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: Selección modal en SDRA leve\n\n---\n\n### Presentación\n\n**Paciente:** Mujer, 58 años, 60 kg de peso predicho.\n**Diagnóstico:** SDRA leve (P/F = 240) secundario a neumonía bilateral por influenza.\n**Estado:** Sedada y analgesiada, sin esfuerzo respiratorio espontáneo.\n**Mecánica actual:** Cst = 38 mL/cmH₂O, R = 9 cmH₂O/L/s.\n**Parámetros previos:** VCV, Vt = 500 mL, Fr = 18/min, PEEP = 8 cmH₂O, FiO₂ = 0,50.\n**Gasometría:** pH 7,36, PaCO₂ 42 mmHg, PaO₂ 88 mmHg, SaO₂ 96%.\n**Presiones:** Ppico = 26 cmH₂O, Pmeseta = 19 cmH₂O.\n\n---\n\n### Análisis guiado\n\n**1. ¿Está dentro de ventilación protectora?**\n- Vt/kg peso predicho = 500/60 = 8,3 mL/kg → **por encima del límite** (objetivo ≤6 mL/kg en SDRA).\n- Driving pressure = Pmeseta − PEEP = 19 − 8 = 11 cmH₂O → aceptable (< 15 cmH₂O).\n- Pmeseta = 19 cmH₂O → dentro de límite (< 28–30 cmH₂O).\n\n**2. ¿Cambiarías el Vt?**\nSí. Reducir a 6 mL/kg = 360 mL. Aceptar leve hipercapnia permisiva si pH ≥7,25.\n\n**3. ¿VCV o PCV en este caso?**\nVCV es apropiado para garantizar el Vt protector fijo. Si se prefiere PCV, calcular P_ins = (Vt_obj/Cst) + PEEP = (0,36/0,038) + 8 ≈ 17,5 cmH₂O → fijar presión ins = 12 cmH₂O (por encima de PEEP).\n\n---\n\n### Decisión y seguimiento\n\n- **Ajuste:** VCV, Vt 360 mL, Fr 20/min (compensar ↓ ventilación), PEEP 8, FiO₂ 0,50.\n- **Monitorizar:** Ppico, Pmeseta, driving pressure, gasometría a los 30 min.\n- **Meta:** P/F > 200, pH ≥ 7,28, driving pressure < 15 cmH₂O.\n\n---\n\n### Puntos clave\n\n1. En SDRA, el Vt se basa en peso predicho, no en peso actual.\n2. La driving pressure (ΔP) es el parámetro con mayor correlación con mortalidad.\n3. VCV y PCV pueden usarse; la clave es monitorizar el parámetro no controlado.\n"
+      },
+      "order": 8
+    },
+    {
       "id": "vcv-pcv-summary",
-      "order": 7,
+      "order": 9,
       "type": "summary",
       "title": "Cierre: resumen y checklist",
       "content": {

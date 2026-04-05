@@ -82,8 +82,28 @@
       "estimatedTime": 13
     },
     {
+      "id": "m-asinc-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Identifica y clasifica asincronías",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Identificación y clasificación de asincronías paciente-ventilador\n\n> Entrena el reconocimiento de asincronías en curvas y clinica. No bloquea avance.\n\n---\n\n### Actividad 1 — Tipos de asincronías\n\nClasifica cada asincronía según la fase del ciclo donde ocurre:\n\n| Asincronía | Fase | Descripción breve |\n|---|---|---|\n| Trigger delay | Trigger (inicio) | Retraso entre el esfuerzo del paciente y el disparo del ventilador |\n| Esfuerzo inefectivo | Trigger | El paciente hace esfuerzo pero el ventilador no dispara |\n| Disparo doble | Ciclado | El ventilador da dos ciclos por un solo esfuerzo del paciente |\n| Asincronía de flujo | Meseta | El flujo entregado no coincide con la demanda del paciente |\n| Ciclado prematuro | Ciclado | La inspiración del ventilador termina antes de que el paciente quiera |\n| Ciclado tardío | Ciclado | La inspiración del ventilador continúa después de que el paciente quiere espirar |\n\n---\n\n### Actividad 2 — Diagnóstico por gráficas\n\nPara cada hallazgo gráfico, identifica la asincronía más probable:\n\n1. Deflexión negativa de presión sin disparo del ventilador → **Esfuerzo inefectivo** (auto-PEEP, trigger insensible).\n\n2. Dos ciclos de volumen por cada ciclo de presión → **Disparo doble** (Ti muy largo, el paciente inicia un nuevo esfuerzo al final del ciclo anterior).\n\n3. Curva de presión \"cuadrada\" muestra una \"muesca\" o depresión durante la meseta → **Asincronía de flujo** (demanda del paciente supera el flujo entregado en VCV).\n\n4. La curva de flujo espiratorio no llega a cero antes del siguiente disparo → **Auto-PEEP** (atrapamiento aéreo) → riesgo de esfuerzo inefectivo.\n\n---\n\n### Actividad 3 — Manejo clínico\n\nPara cada asincronía, indica un ajuste de primer paso:\n\n| Asincronía | Ajuste de primer paso |\n|---|---|\n| Trigger insensible | Aumentar sensibilidad del trigger (reducir umbral de disparo) |\n| Auto-PEEP | Aumentar tiempo espiratorio (↓ Fr, ↓ Ti, PEEP extrínseca) |\n| Asincronía de flujo en VCV | Aumentar flujo pico o cambiar a PCV/PSV |\n| Ciclado tardío en PSV | Aumentar criterio de ciclado (% flujo pico) |\n| Disparo doble | Acortar Ti, ajustar criterio de ciclado |\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 30 pts | Actividad 2 → 40 pts | Actividad 3 → 30 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 7
+    },
+    {
+      "id": "m-asinc-case",
+      "type": "case_study",
+      "title": "Caso clínico: Paciente agitado con asincronías graves",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: Agitación y asincronías graves en SDRA\n\n---\n\n### Presentación\n\n**Paciente:** Hombre, 52 años, 78 kg, diagnosticado de SDRA severo (P/F = 85).\n**Estado:** RASS +2 (agitado, resistente), CPOT 6 (dolor significativo).\n**Parámetros:** VCV, Vt 468 mL (6 mL/kg), Fr 22/min, PEEP 14, FiO₂ 0,80.\n**Alarmas activas:** Ve ↑ (minuto ventilación = 18 L/min), P_pico ↑ episódica (42 cmH₂O).\n**Gráficas:** Se observan disparos dobles frecuentes, muescas en curva de presión durante meseta, y FR real = 35/min.\n\n---\n\n### Análisis clínico\n\n**1. ¿Qué está causando las asincronías?**\n- El paciente está muy activo (RASS +2) → drive respiratorio extremo.\n- La sedoanalgesia es insuficiente para el nivel de esfuerzo espontáneo.\n- Disparos dobles: Ti programado (Ti = 60/Fr × 0,33 = ~0,9 s) es demasiado largo para la frecuencia natural del paciente agitado.\n- Muesca en meseta: demanda de flujo muy alta (VCV con flujo fijo = asincronía de flujo).\n\n**2. Consecuencias de esta situación**\n- P-SILI (lesión autoprovocada): las grandes oscilaciones de presión transpulmonar en cada esfuerzo espontáneo pueden inducir lesión pulmonar independientemente del ventilador.\n- P_pico episódica 42 cmH₂O → supera umbral de barotrauma.\n- Gasto metabólico elevado → hipercapnia y acidosis respiratoria.\n\n**3. Plan de manejo**\n**Paso 1:** Analgesia adecuada → fentanilo en infusión → evaluar CPOT (objetivo < 3).\n**Paso 2:** Sedación profunda → midazolam o propofol → RASS objetivo −3.\n**Paso 3:** Si persiste asincronía grave → bloqueo neuromuscular (cisatracurio × 48 h) + decúbito prono.\n**Paso 4:** Ajustar ventilador: cambiar a PCV para limitar presión, reducir Ti, aumentar flujo.\n\n---\n\n### Resultado\n\nCon cisatracurio + prono: P/F 124 a las 8 h, disparos dobles desaparecen, P_pico máx 32 cmH₂O, ΔP = 15 cmH₂O.\n\n---\n\n### Puntos clave\n\n1. La agitación no tratada es la mayor causa de asincronías graves.\n2. P-SILI puede ser tan dañina como el VILI inducido por el ventilador.\n3. El bloqueo neuromuscular en SDRA severo (primeras 48 h) mejora la supervivencia al eliminar esfuerzos espontáneos dañinos.\n"
+      },
+      "order": 8
+    },
+    {
       "id": "asincronias-summary",
-      "order": 7,
+      "order": 9,
       "type": "summary",
       "title": "Cierre: síntesis y checklist",
       "content": {

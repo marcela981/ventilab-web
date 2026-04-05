@@ -92,8 +92,28 @@
       "estimatedTime": 11
     },
     {
+      "id": "m-epoc-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Estrategia ventilatoria en obstrucción",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Ventilación mecánica en EPOC y asma\n\n> Aplica estrategias específicas para la obstrucción al flujo. No bloquea avance.\n\n---\n\n### Actividad 1 — Diferencias entre EPOC y asma en el ventilador\n\n| Aspecto | EPOC | Asma aguda grave |\n|---|---|---|\n| Auto-PEEP | Frecuente y significativo | Puede ser muy elevado |\n| Resistencia vía aérea | Moderada-alta, fija | Alta, variable (broncoespasmo) |\n| Compliance | Aumentada (enfisema) o normal | Normal o levemente ↓ |\n| Estrategia de tiempo espiratorio | Alargar Te (↓ Fr, ↓ Ti) | Alargar Te agresivamente |\n| PEEP extrínseca | 70-80% del auto-PEEP medido | Mínima o 0 (no se opone al broncoespasmo) |\n| Meta de CO₂ | CO₂ basal del paciente (puede ser alta) | Hipercapnia permisiva en asma severa |\n\n---\n\n### Actividad 2 — Medición de auto-PEEP\n\n¿Cómo mides el auto-PEEP en el ventilador?\n1. Realiza una pausa espiratoria al final de la espiración (tecla \"hold\" espiratoria) durante 3–5 s.\n2. La presión que se lee al final de la pausa es la **presión end-expiratory = PEEP + auto-PEEP**.\n3. Auto-PEEP = Presión pausa espiratoria − PEEP programada.\n\n**Ejemplo:** PEEP programada = 5 cmH₂O. Pausa espiratoria → presión = 13 cmH₂O. Auto-PEEP = **8 cmH₂O**.\nAcción: PEEP extrínseca = 0,75 × 8 = **6 cmH₂O** (para reducir trabajo de trigger sin agravar atrapamiento).\n\n---\n\n### Actividad 3 — Hipercapnia permisiva en asma\n\nUn paciente con estado asmático grave tiene:\n- PaCO₂ = 72 mmHg con pH 7,20.\n- No hay otra causa de acidosis.\n- SaO₂ 92% con FiO₂ 0,40.\n\n¿Está indicada la hipercapnia permisiva? ¿Cuál es el límite?\n\n**Sí.** En asma grave con atrapamiento severo, aumentar la Fr para corregir CO₂ empeora el atrapamiento → mayor auto-PEEP → mayor riesgo de neumotórax y colapso hemodinámico.\n**Límite aceptado:** pH ≥ 7,15–7,20. Con pH 7,20 está en el límite → bicarbonato IV si tiende a bajar más; tratar el broncoespasmo agresivamente (β₂ agonistas IV, magnesio IV, heliox).\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 30 pts | Actividad 2 → 35 pts | Actividad 3 → 35 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 8
+    },
+    {
+      "id": "m-epoc-case",
+      "type": "case_study",
+      "title": "Caso clínico: EPOC exacerbado intubado",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: EPOC exacerbado con insuficiencia respiratoria global\n\n---\n\n### Presentación\n\n**Paciente:** Hombre, 68 años, fumador 50 paquetes-año, EPOC GOLD IV (FEV1 28% previo).\n**Motivo:** Exacerbación infecciosa (Haemophilus influenzae en esputo). Llegó con SaO₂ 78%, uso máximo de músculos accesorios, GLASGOW 10.\n**VMNI fracasada** a los 45 min (no toleró mascara, empeoramiento progresivo). → Intubación orotraqueal.\n**Gasometría pre-intubación:** pH 7,12, PaCO₂ 92 mmHg, PaO₂ 44 mmHg.\n\n---\n\n### Configuración inicial del ventilador\n\n**Principio EPOC:** el objetivo NO es normalizar el CO₂; es devolver al paciente a su estado basal (PaCO₂ ~60–65 mmHg en este caso).\n\n**Parámetros seleccionados:**\n- Modo: VCV (control garantiza Vt con mecánica variable)\n- Vt: 6 mL/kg PP. Peso predicho = 50 + 0,91×(172−152,4) = **67,8 kg** → Vt = **407 mL**\n- Fr: 12/min (baja → alarga Te → reduce auto-PEEP)\n- Ti: 0,8 s → Te = 60/12 − 0,8 = 4,2 s → relación I:E = 1:5,25 ✓\n- PEEP: 0 inicialmente → medir auto-PEEP a los 15 min.\n- FiO₂: 0,50 (ajustar por SaO₂)\n\n---\n\n### Seguimiento a 30 min\n\nAuto-PEEP medido (pausa espiratoria): 11 cmH₂O.\nPEEP extrínseca ajustada: 0,75 × 11 = **8 cmH₂O**.\nGasometría: pH 7,22, PaCO₂ 78 mmHg (descendió 14 en 30 min → bien).\n\n**¡Alerta!** No corregir demasiado rápido → riesgo de alcalosis metabólica post-hipercápnica (el riñón ha retenido bicarbonato como compensación). Meta: pH 7,28–7,35.\n\n---\n\n### Plan de destete\n\n1. Tratar la infección agresivamente (antibiótico, broncodilatadores, corticoides IV).\n2. VMNI post-extubación como puente para este paciente (evidencia fuerte en EPOC).\n3. Criterios de extubación adaptados: PaCO₂ basal recuperada, IRRS < 80 (en EPOC se usa umbral menor).\n4. Educación y plan de seguimiento (VMNI domiciliaria, vacunación, rehabilitación pulmonar).\n\n---\n\n### Puntos clave\n\n1. En EPOC, normalizar el CO₂ rápidamente puede generar alcalosis severa → taquicardia, convulsiones.\n2. El auto-PEEP es el principal enemigo en la fase aguda; el manejo del Te es la solución.\n3. La VMNI post-extubación es el estándar de cuidado en EPOC con hx de retención.\n"
+      },
+      "order": 9
+    },
+    {
       "id": "epoc-asma-summary",
-      "order": 8,
+      "order": 10,
       "type": "summary",
       "title": "Cierre: integración clínica, pedagógica y preventiva del paciente obstructivo-obeso",
       "content": {

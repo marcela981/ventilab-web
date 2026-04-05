@@ -112,7 +112,7 @@ const CompletionPage = ({ data, totalPages, onNavigateToLesson, startTime }) => 
           variant="contained"
           size="large"
           endIcon={<RocketIcon />}
-          onClick={() => onNavigateToLesson(nextLesson.id, data.moduleId)}
+          onClick={() => onNavigateToLesson(nextLesson.id, nextLesson.moduleId || data.moduleId)}
           sx={{
             py: 1.5,
             px: 4,

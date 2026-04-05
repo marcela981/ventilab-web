@@ -92,8 +92,28 @@
       "estimatedTime": 10
     },
     {
+      "id": "m-peep-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Titulación de PEEP",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Titulación de PEEP y optimización de oxigenación\n\n> Práctica de ajuste de PEEP en distintos escenarios. No bloquea avance.\n\n---\n\n### Actividad 1 — Efectos del PEEP: completa la tabla\n\n| PEEP | Efecto en oxigenación | Efecto hemodinámico | Efecto en compliance |\n|---|---|---|---|\n| Muy bajo (< 5 cmH₂O) | Atelectasias, ↓ CRF | Mínimo | Puede ser subóptima |\n| Óptimo (5–12 cmH₂O) | ↑ CRF, ↑ reclutamiento | Moderado, bien tolerado | Máxima (zona de complianza óptima) |\n| Muy alto (> 15 cmH₂O) | Hiperinsuflación de alvéolos sanos | ↓ GC, hipotensión | ↓ (zona de sobredistensión) |\n\n---\n\n### Actividad 2 — Método de titulación\n\nDescribe en 3 pasos el método de PEEP escalado (PEEP table ARDSnet):\n\n1. Ajustar FiO₂ y PEEP según tabla (baja FiO₂ → bajo PEEP; alta FiO₂ → alto PEEP).\n2. Titular el par FiO₂/PEEP buscando SaO₂ 88–95% con la menor FiO₂ posible.\n3. Vigilar hemodinámica y compliance con cada cambio; si la compliance mejora → PEEP reclutante; si empeora → sobredistensión.\n\n---\n\n### Actividad 3 — Caso numérico\n\nPaciente con SDRA severo. Secuencia de titulación:\n\n| PEEP (cmH₂O) | FiO₂ | SaO₂ | PaO₂/FiO₂ | Cst (mL/cmH₂O) | PAM (mmHg) |\n|---|---|---|---|---|---|\n| 8 | 0,70 | 88% | 126 | 28 | 72 |\n| 10 | 0,65 | 91% | 168 | 34 | 70 |\n| 12 | 0,60 | 93% | 186 | 37 | 68 |\n| 14 | 0,55 | 94% | 196 | 35 | 62 |\n| 16 | 0,50 | 94% | 200 | 29 | 55 |\n\n**Pregunta:** ¿Qué PEEP es el óptimo y por qué?\n\n*Respuesta:* PEEP 12 cmH₂O. Tiene la mayor compliance (37 mL/cmH₂O = punto inflexión), buena oxigenación (P/F 186) y hemodinámica aceptable (PAM 68). Con PEEP 14–16 la compliance cae (sobredistensión) y la PAM baja significativamente.\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 25 pts | Actividad 2 → 30 pts | Actividad 3 → 45 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 8
+    },
+    {
+      "id": "m-peep-case",
+      "type": "case_study",
+      "title": "Caso clínico: Hipoxemia refractaria y ajuste de PEEP",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: Hipoxemia refractaria — optimización de PEEP\n\n---\n\n### Presentación\n\n**Paciente:** Hombre, 45 años, 70 kg.\n**Diagnóstico:** SDRA moderado post-sepsis abdominal (peritonitis fecaloidea).\n**Estado:** Sedado y bloqueado neuromuscularmente (fase aguda).\n**Parámetros iniciales:** VCV, Vt 420 mL (6 mL/kg), Fr 22/min, PEEP 8 cmH₂O, FiO₂ 0,80.\n**Gasometría:** pH 7,31, PaCO₂ 48 mmHg, PaO₂ 62 mmHg → P/F = 77 → SDRA severo.\n\n---\n\n### Análisis guiado\n\n**1. ¿La situación cumple criterios para estrategias de rescate?**\nP/F < 100 con PEEP ≥ 5 → considerar: PEEP alto con maniobra de reclutamiento, decúbito prono, bloqueo neuromuscular (ya activo).\n\n**2. Maniobra de reclutamiento + PEEP escalado**\nSe realizó maniobra de reclutamiento (CPAP 40 cmH₂O × 40 s) y se escaló PEEP:\n- PEEP 12 → Cst 28, P/F 104\n- PEEP 14 → Cst 32, P/F 142\n- PEEP 16 → Cst 33, P/F 158, PAM 64\n- PEEP 18 → Cst 29, P/F 160, PAM 58 ← compliance cae\n\n*PEEP óptimo seleccionado: 16 cmH₂O (mejor compliance antes del punto de inflexión descendente).*\n\n**3. Decisión sobre decúbito prono**\nP/F < 150 con FiO₂ ≥ 0,60 → indicación de decúbito prono ≥ 16 horas. Se inicia posicionamiento.\n\n---\n\n### Resultado y seguimiento\n\nTras 18 h en decúbito prono + PEEP 16 + FiO₂ 0,60:\n- PaO₂ 88 mmHg → P/F = 147 (mejoría relativa pero aún severo).\n- FiO₂ reducida a 0,55.\n- Se planifica segunda sesión de prono.\n\n---\n\n### Puntos clave\n\n1. El PEEP óptimo es el que maximiza la compliance sin comprometer hemodinámica.\n2. La maniobra de reclutamiento tiene sentido solo en SDRA difuso y homogéneo (no en SDRA focal).\n3. El decúbito prono es la intervención con mayor evidencia de reducción de mortalidad en SDRA severo.\n"
+      },
+      "order": 9
+    },
+    {
       "id": "peep-summary",
-      "order": 8,
+      "order": 10,
       "type": "summary",
       "title": "Cierre: resumen y checklist",
       "content": {

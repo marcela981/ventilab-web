@@ -80,6 +80,8 @@ export const getCompletedLessons = (progressByModule, snapshot = null) => {
       if (lessonProgressValue === 1) {
         // Use format: "moduleId-lessonId" for consistency
         set.add(`${moduleId}-${lessonId}`);
+        // Also add dot-separated format used by checkLessonPrerequisites
+        set.add(`${moduleId}.${lessonId}`);
         // Also add just lessonId for backward compatibility
         set.add(lessonId);
       }
@@ -99,6 +101,11 @@ export const getCompletedLessons = (progressByModule, snapshot = null) => {
       
       if (lessonProgressValue === 1) {
         set.add(lesson.lessonId);
+
+        // Add dot-separated format used by checkLessonPrerequisites: "moduleId.lessonId"
+        if (lesson.moduleId) {
+          set.add(`${lesson.moduleId}.${lesson.lessonId}`);
+        }
 
         const parts = lesson.lessonId.split(/[-\/]/);
         if (parts.length >= 2) {

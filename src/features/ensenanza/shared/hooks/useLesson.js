@@ -302,7 +302,27 @@ const useLesson = (lessonId, moduleId) => {
         });
       }
     }
-    // else: lessonIndex === moduleLessons.length - 1, last lesson, nextLesson stays null
+    // If last lesson in current module, look for first lesson in the NEXT module (same level)
+    // This enables seamless cross-module navigation when each module has a single lesson.
+    if (nextLesson === null && lessonIndex === moduleLessons.length - 1 && module) {
+      const currentLevel = module.level;
+      const currentOrder = module.order ?? 0;
+      const nextModuleData = Object.values(curriculumData?.modules || {})
+        .filter(m => m.level === currentLevel && (m.order ?? 0) > currentOrder)
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))[0];
+
+      if (nextModuleData?.lessons?.length > 0) {
+        const sortedNextLessons = [...nextModuleData.lessons].sort(
+          (a, b) => (a.order ?? 0) - (b.order ?? 0)
+        );
+        const firstLesson = sortedNextLessons[0];
+        nextLesson = {
+          id: firstLesson.id,
+          title: firstLesson.title,
+          moduleId: nextModuleData.id,
+        };
+      }
+    }
 
     // DEBUG: Log final navigation result
     console.log('[useLesson] Navigation result:', {

@@ -9,83 +9,180 @@
  */
 
 // ─── NIVEL PRINCIPIANTE ──────────────────────────────────────────────────────
+// Each beginner topic is its own module (1 module = 1 lesson).
+// Module IDs and lesson IDs are kept equal so the progress API can resolve them
+// directly via the Lesson table (lessonId === moduleId for single-lesson modules).
 
 const beginnerModules = {
-  "module-01-fundamentals": {
-    id: "module-01-fundamentals",
-    title: "Fundamentos Fisiológicos y Respiratorios",
+  "module-01-inversion-fisiologica": {
+    id: "module-01-inversion-fisiologica",
+    title: "La Inversión Fisiológica: De la Presión Negativa a la Positiva",
     level: "beginner",
     order: 1,
-    duration: 180,
+    duration: 211,
     prerequisites: [],
     learningObjectives: [
-      "Comprender la mecánica respiratoria y la relación presión-volumen",
-      "Analizar el intercambio gaseoso y los factores que lo afectan",
-      "Interpretar gasometrías arteriales en el contexto de ventilación mecánica",
-      "Identificar las variables de fase del ciclo respiratorio",
-      "Reconocer los efectos sistémicos de la ventilación mecánica"
+      "Comprender la diferencia entre respiración espontánea y ventilación por presión positiva",
+      "Identificar los efectos hemodinámicos de la presión intratorácica positiva",
+      "Reconocer las indicaciones y contraindicaciones básicas de la VMI y VMNI"
     ],
     bloomLevel: "comprender",
     difficulty: "básico",
-    estimatedTime: "3 horas",
+    estimatedTime: "3.5 horas",
+    description: "Fundamentos del paso de la respiración espontánea a la ventilación mecánica con presión positiva.",
     lessons: [
       {
         id: "module-01-inversion-fisiologica",
         title: "La Inversión Fisiológica: De la Presión Negativa a la Positiva",
         description: "",
-        estimatedTime: 45,
-        difficulty: "intermediate",
+        estimatedTime: 211,
+        difficulty: "básico",
         order: 1,
         type: "reading",
         metadata: { allowEmpty: true }
-      },
+      }
+    ]
+  },
+  "module-02-ecuacion-movimiento": {
+    id: "module-02-ecuacion-movimiento",
+    title: "El Santo Grial – La Ecuación del Movimiento Respiratorio",
+    level: "beginner",
+    order: 2,
+    duration: 50,
+    prerequisites: ["module-01-inversion-fisiologica"],
+    learningObjectives: [
+      "Aplicar la ecuación de movimiento respiratorio: P = (V/C) + (R × Flow)",
+      "Interpretar cómo compliance y resistencia determinan el trabajo ventilatorio",
+      "Relacionar la ecuación con los modos de control de volumen y presión"
+    ],
+    bloomLevel: "aplicar",
+    difficulty: "básico",
+    estimatedTime: "50 min",
+    description: "La ecuación fundamental que gobierna la interacción ventilador-pulmón.",
+    lessons: [
       {
         id: "module-02-ecuacion-movimiento",
         title: "El Santo Grial – La Ecuación del Movimiento Respiratorio",
         description: "",
         estimatedTime: 50,
-        difficulty: "intermediate",
-        order: 2,
+        difficulty: "básico",
+        order: 1,
         type: "reading",
         metadata: { allowEmpty: true }
-      },
+      }
+    ]
+  },
+  "module-03-variables-fase": {
+    id: "module-03-variables-fase",
+    title: "Variables de Fase y el Ciclo Respiratorio",
+    level: "beginner",
+    order: 3,
+    duration: 54,
+    prerequisites: ["module-02-ecuacion-movimiento"],
+    learningObjectives: [
+      "Identificar las variables de disparo, límite, ciclado y basal",
+      "Describir cómo cada variable define un modo ventilatorio",
+      "Reconocer patrones normales y anormales en el ciclo respiratorio mecánico"
+    ],
+    bloomLevel: "aplicar",
+    difficulty: "básico",
+    estimatedTime: "54 min",
+    description: "La lógica del ventilador: cómo las variables de fase determinan el ciclo respiratorio.",
+    lessons: [
       {
         id: "module-03-variables-fase",
         title: "La Lógica de la Máquina: Variables de Fase y el Ciclo Respiratorio",
         description: "",
         estimatedTime: 54,
-        difficulty: "intermediate",
-        order: 3,
+        difficulty: "básico",
+        order: 1,
         type: "reading",
         metadata: { allowEmpty: true }
-      },
+      }
+    ]
+  },
+  "module-04-modos-ventilatorios": {
+    id: "module-04-modos-ventilatorios",
+    title: "Taxonomía de los Modos Ventilatorios",
+    level: "beginner",
+    order: 4,
+    duration: 114,
+    prerequisites: ["module-03-variables-fase"],
+    learningObjectives: [
+      "Clasificar los modos ventilatorios según variable controlada y tipo de asistencia",
+      "Comparar ventilación controlada por volumen vs. por presión",
+      "Seleccionar el modo apropiado según el estado clínico del paciente"
+    ],
+    bloomLevel: "aplicar",
+    difficulty: "básico",
+    estimatedTime: "1.9 horas",
+    description: "Clasificación y selección de modos ventilatorios: volumen vs. presión, control vs. asistencia.",
+    lessons: [
       {
         id: "module-04-modos-ventilatorios",
         title: "Taxonomía de los Modos: Volumen vs. Presión (Control y Asistencia)",
         description: "",
         estimatedTime: 114,
-        difficulty: "intermediate",
-        order: 4,
+        difficulty: "básico",
+        order: 1,
         type: "reading",
         metadata: { allowEmpty: true }
-      },
+      }
+    ]
+  },
+  "module-05-monitorizacion-grafica": {
+    id: "module-05-monitorizacion-grafica",
+    title: "Monitorización Gráfica I: Escalares y Bucles",
+    level: "beginner",
+    order: 5,
+    duration: 480,
+    prerequisites: ["module-04-modos-ventilatorios"],
+    learningObjectives: [
+      "Interpretar curvas escalares de presión, flujo y volumen",
+      "Identificar asincronías básicas paciente-ventilador en las curvas",
+      "Analizar bucles presión-volumen y flujo-volumen para evaluar la mecánica pulmonar"
+    ],
+    bloomLevel: "analizar",
+    difficulty: "básico",
+    estimatedTime: "8 horas",
+    description: "Interpretación de curvas gráficas del ventilador e identificación de asincronías básicas.",
+    lessons: [
       {
         id: "module-05-monitorizacion-grafica",
         title: "Monitorización Gráfica I: Escalares, Bucles y Asincronías básicas",
         description: "",
         estimatedTime: 480,
-        difficulty: "intermediate",
-        order: 5,
+        difficulty: "básico",
+        order: 1,
         type: "reading",
         metadata: { allowEmpty: true }
-      },
+      }
+    ]
+  },
+  "module-06-efectos-sistemicos": {
+    id: "module-06-efectos-sistemicos",
+    title: "Efectos Sistémicos y VILI",
+    level: "beginner",
+    order: 6,
+    duration: 600,
+    prerequisites: ["module-05-monitorizacion-grafica"],
+    learningObjectives: [
+      "Describir los efectos cardiovasculares de la ventilación con presión positiva",
+      "Identificar los mecanismos de lesión pulmonar inducida por el ventilador (VILI)",
+      "Aplicar estrategias de ventilación protectora para minimizar el VILI"
+    ],
+    bloomLevel: "aplicar",
+    difficulty: "básico",
+    estimatedTime: "10 horas",
+    description: "Efectos sistémicos de la presión positiva y estrategias para prevenir la lesión pulmonar por ventilación (VILI).",
+    lessons: [
       {
         id: "module-06-efectos-sistemicos",
         title: "Efectos Sistémicos y Lesión Inducida por la Ventilación (VILI): El precio de ventilar",
         description: "",
         estimatedTime: 600,
-        difficulty: "intermediate",
-        order: 6,
+        difficulty: "básico",
+        order: 1,
         type: "reading",
         metadata: { allowEmpty: true }
       }

@@ -83,8 +83,28 @@
       "estimatedTime": 13
     },
     {
+      "id": "m-duales-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Modos duales y SIMV",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Modos duales y SIMV\n\n> Consolida el manejo de modos mixtos. No bloquea avance.\n\n---\n\n### Actividad 1 — Identifica el modo\n\nPara cada descripción clínica/gráfica, escribe el modo que se describe:\n\n1. El ventilador garantiza un Vt mínimo ajustando la presión inspiratoria ciclo a ciclo. Si el paciente respira más, el ventilador no interviene. → **PRVC / Volume Support (modo dual)**\n\n2. El ventilador alterna ciclos mandatorios a frecuencia fija con respiraciones espontáneas del paciente entre ellos. → **SIMV (Synchronized Intermittent Mandatory Ventilation)**\n\n3. El modo responde a la mecánica del paciente latido a latido usando un algoritmo de retroalimentación para ajustar la presión y alcanzar el Vt objetivo. → **PRVC / ASV (Adaptive Support Ventilation)**\n\n---\n\n### Actividad 2 — SIMV: análisis de la estrategia\n\nVentajas e inconvenientes de SIMV:\n\n| Aspecto | Comentario |\n|---|---|\n| ¿Facilita el destete? | Controvertido. Estudios muestran que PSV + SBT puede ser más eficiente que SIMV gradual |\n| ¿Mantiene el drive respiratorio? | Sí, los ciclos espontáneos preservan el esfuerzo del paciente |\n| ¿Riesgo de fatiga? | Si la FR mandatoria es baja y el soporte espontáneo es insuficiente |\n| ¿Sincronía? | Mejor que IMV clásico (no sincronizado), pero puede haber asincronías en el ciclo espontáneo |\n\n---\n\n### Actividad 3 — Caso de ajuste\n\nPaciente en SIMV: Fr mandatoria 8/min, PS espontánea 12 cmH₂O, PEEP 6 cmH₂O, FiO₂ 0,35.\n- FR total observada: 22/min (8 mandatorias + 14 espontáneas)\n- Vt mandatorio: 450 mL | Vt espontáneo promedio: 380 mL\n- IRRS (espontáneo): 14/0,38 = **36,8** → bien tolerado\n\n¿Cuál sería el siguiente paso de destete?\n*Reducir Fr mandatoria a 6/min y/o reducir PS de 12 a 10 cmH₂O. Monitorizar tolerancia. Meta: Fr mandatoria = 0 + PSV puro, luego SBT.*\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 30 pts | Actividad 2 → 35 pts | Actividad 3 → 35 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 7
+    },
+    {
+      "id": "m-duales-case",
+      "type": "case_study",
+      "title": "Caso clínico: Transición a ventilación espontánea",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: Transición progresiva con SIMV + PSV\n\n---\n\n### Presentación\n\n**Paciente:** Hombre, 55 años, 75 kg, EPOC de base (FEV1/FVC = 62% previo).\n**Diagnóstico:** Exacerbación de EPOC + neumonía. Intubado hace 4 días.\n**Estado:** Parcialmente despierto, sigue órdenes simples, sedación ligera (RASS −1).\n**Parámetros actuales:** SIMV Fr 12/min, Vt 450 mL, PS 10 cmH₂O, PEEP 6 cmH₂O, FiO₂ 0,40.\n**Gasometría:** pH 7,38, PaCO₂ 52 mmHg (hipercapnia crónica compensada), PaO₂ 82 mmHg.\n**Nota:** PaCO₂ basal del paciente ~55 mmHg (retenedor crónico).\n\n---\n\n### Análisis guiado\n\n**1. ¿Es adecuada la hipercapnia actual?**\nSí. En EPOC retenedor, la meta de PaCO₂ es el valor basal del paciente (~55 mmHg), no la normalidad. Hiperventilar reduce la bicarbonatura compensatoria y dificulta la extubación.\n\n**2. ¿Cómo afecta el EPOC al destete?**\n- Auto-PEEP por atrapamiento aéreo → aumenta el umbral de trigger → asincronías.\n- Contramedidas: PEEP extrínseca para compensar auto-PEEP (medir con pausa espiratoria), broncodilatadores, fisioterapia.\n\n**3. Plan de descenso**\nDía 1: SIMV 12 → 8, PS 10 mantenida.\nDía 2: SIMV 8 → 4 si tolerado (FR total < 28, IRRS espontáneo < 105).\nDía 3: SIMV 4 → 0 + PSV puro 10 cmH₂O.\nDía 4: SBT si cumple criterios.\n\n---\n\n### Complicación encontrada\n\nAl reducir SIMV a 4, el paciente desarrolla asincronía por auto-PEEP (PEEP intrínseco medido: 8 cmH₂O). Se ajusta PEEP extrínseca a 6 cmH₂O (75% del auto-PEEP medido). Mejora el trigger y la sincronía.\n\n---\n\n### Puntos clave\n\n1. En EPOC, el objetivo gasométrico es el basal, no la normalidad.\n2. El auto-PEEP es la causa más frecuente de asincronía en EPOC en destete.\n3. La PEEP extrínseca al 70–80% del auto-PEEP reduce el trabajo de trigger sin agravar el atrapamiento.\n"
+      },
+      "order": 8
+    },
+    {
       "id": "simv-summary",
-      "order": 7,
+      "order": 9,
       "type": "summary",
       "title": "Cierre: síntesis y checklist",
       "content": {

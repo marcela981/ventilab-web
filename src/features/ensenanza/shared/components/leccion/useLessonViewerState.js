@@ -79,6 +79,9 @@ export function useLessonViewerState({ lessonId, moduleId, onComplete, onNavigat
   const autoCompletionRef = useRef(false);
   const autoCompletionInFlightRef = useRef(false);
   const completionNotifiedRef = useRef(false);
+  // Tracks whether the initial page position has been restored from backendProgress.
+  // Once initialized for the current lessonId we never overwrite the user's manual navigation.
+  const pageInitializedForLessonRef = useRef(null);
 
   const { isScrolledEnough, meetsReadingTime } = useScrollCompletion({ contentRef, estimatedTimeMinutes });
 
@@ -107,11 +110,19 @@ export function useLessonViewerState({ lessonId, moduleId, onComplete, onNavigat
     if (previousLessonIdRef.current !== lessonId) {
       setCurrentPage(0);
       previousLessonIdRef.current = lessonId;
+      // Reset the initialisation guard so backendProgress can set the correct
+      // starting page for the new lesson.
+      pageInitializedForLessonRef.current = null;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [lessonId]);
 
   useEffect(() => {
+    // Only restore the initial page ONCE per lessonId.
+    // If the user is manually navigating (including repeating a completed lesson)
+    // we must not reset their position on every backendProgress update.
+    if (pageInitializedForLessonRef.current === lessonId) return;
+
     if (!backendProgress) {
       try {
         const savedProgress = localStorage.getItem(`lesson_progress_${lessonId}`);
@@ -119,6 +130,7 @@ export function useLessonViewerState({ lessonId, moduleId, onComplete, onNavigat
           const { currentPage: savedPage } = JSON.parse(savedProgress);
           if (typeof savedPage === 'number' && savedPage >= 0) {
             setCurrentPage(savedPage);
+            pageInitializedForLessonRef.current = lessonId;
             return;
           }
         }
@@ -126,18 +138,20 @@ export function useLessonViewerState({ lessonId, moduleId, onComplete, onNavigat
         console.error('[LessonViewer] Error reading localStorage:', e);
       }
       setCurrentPage(0);
+      pageInitializedForLessonRef.current = lessonId;
       return;
     }
+    // Completed lesson: start from the beginning so the user can freely navigate.
+    // In-progress lesson: resume from the last saved step.
     if (backendProgress.completed) {
       setCurrentPage(0);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (backendProgress.currentStep && backendProgress.currentStep > 0) {
       setCurrentPage(backendProgress.currentStep - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       setCurrentPage(0);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    pageInitializedForLessonRef.current = lessonId;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [lessonId, backendProgress]);
 
   const handleNavigateToLesson = useCallback(async (targetLessonId, targetModuleId) => {
@@ -151,12 +165,12 @@ export function useLessonViewerState({ lessonId, moduleId, onComplete, onNavigat
     }
   }, [lessonId, saveProgress, onNavigate]);
 
-  const triggerAutoCompletion = useCallback(async () => {
+  const triggerAutoCompletion = useCallback(async (scores = {}) => {
     if (!data || completedThisSessionRef.current || autoCompletionRef.current || autoCompletionInFlightRef.current) return false;
     if (wasLessonCompletedOnEntry || isModuleCompleted) return false;
     autoCompletionInFlightRef.current = true;
     try {
-      await saveProgress(true);
+      await saveProgress(true, scores);
       autoCompletionRef.current = true;
       completedThisSessionRef.current = true;
       if (!completionNotifiedRef.current && onComplete && !wasLessonCompletedOnEntry) {
@@ -180,17 +194,27 @@ export function useLessonViewerState({ lessonId, moduleId, onComplete, onNavigat
   const handleAssessmentAnswerChange = useCallback((questionId, answer) => setAssessmentAnswers(prev => ({ ...prev, [questionId]: answer })), []);
 
   const handleSubmitAssessment = useCallback(() => {
-    if (!data?.content?.assessment?.questions) return;
-    const questions = data.content.assessment.questions;
+    // Support both legacy (data.content.assessment.questions) and new JSON format (data.quiz.questions)
+    const questions = data?.quiz?.questions || data?.content?.assessment?.questions;
+    if (!questions || questions.length === 0) return;
     let correct = 0;
     let total = questions.length;
     questions.forEach((question) => {
-      if (assessmentAnswers[question.questionId] !== undefined && String(assessmentAnswers[question.questionId]) === String(question.correctAnswer)) correct++;
+      const qId = question.questionId || question.id || '';
+      const userAnswer = assessmentAnswers[qId];
+      if (userAnswer === undefined) return;
+      // New JSON format: correctAnswer is the full text; compare by finding its index in options
+      let expectedAnswer = String(question.correctAnswer);
+      if (question.options && question.options.indexOf) {
+        const idx = question.options.indexOf(question.correctAnswer);
+        if (idx >= 0) expectedAnswer = String(idx);
+      }
+      if (String(userAnswer) === expectedAnswer) correct++;
     });
     const percentage = Math.round((correct / total) * 100);
     setAssessmentScore({ correct, total, percentage });
     setShowAssessmentResults(true);
-    if (percentage >= passingScore && !wasLessonCompletedOnEntry) triggerAutoCompletion();
+    if (percentage >= passingScore && !wasLessonCompletedOnEntry) triggerAutoCompletion({ quizScore: percentage });
   }, [data, assessmentAnswers, passingScore, triggerAutoCompletion, wasLessonCompletedOnEntry]);
 
   const calculatePages = useLessonPages(data, moduleId, moduleCompletion);

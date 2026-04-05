@@ -91,8 +91,18 @@
       "estimatedTime": 11
     },
     {
+      "id": "vl2-vmni-exercise",
+      "type": "exercise",
+      "title": "Taller: Estrategias de aprendizaje para VMNI y destete",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller: Organiza tu aprendizaje sobre VMNI y destete\n\n> Aplica las estrategias del módulo para consolidar el conocimiento de VMNI. No bloquea avance.\n\n---\n\n### Actividad 1 — Mapa conceptual: indicaciones de VMNI\n\nClasifica las siguientes indicaciones en la categoría correcta:\n\n| Indicación | VMNI de primera elección | VMNI como puente | VMNI contraindicada |\n|---|---|---|---|\n| EPOC exacerbado (pH 7,28–7,35) | ✓ | — | — |\n| Edema pulmonar cardiogénico agudo | ✓ | — | — |\n| Post-extubación en paciente EPOC | ✓ | — | — |\n| Fallo de extubación sin vía aérea comprometida | — | ✓ | — |\n| Obstrucción severa de vía aérea superior | — | — | ✓ |\n| Paciente no colaborador / agitado | — | — | ✓ |\n| Parada respiratoria inminente | — | — | ✓ (IOT de urgencia) |\n\n---\n\n### Actividad 2 — Interfaz de VMNI: selección\n\nPara cada contexto, elige la interfaz más adecuada:\n\n| Contexto | Interfaz preferida | Razón |\n|---|---|---|\n| EPOC crónico, destete nocturno | Nasal o nasobucal | Menor claustrofobia, tolerancia diurna |\n| Edema pulmonar agudo, estado agitado | Oronasal (full face) | Mayor sellado, menor fuga |\n| Paciente con claustrofobia severa | Casco/Helmet | Sin contacto facial |\n| Largo plazo en casa (>10 h/noche) | Nasal | Menor presión facial, mayor comodidad |\n\n---\n\n### Actividad 3 — Retrieval: preguntas sobre destete y VMNI\n\nResponde sin consultar el material (práctica de recuperación):\n\n1. ¿Qué es el IRRS y cuál es el umbral predictivo de éxito de extubación?\n   *IRRS = FR/Vt (litros). < 105/min/L predice éxito.*\n\n2. ¿Cuánto tiempo debe durar una SBT estándar?\n   *30 minutos a 2 horas. Si tolera, extubación.*\n\n3. ¿Cuál es la diferencia entre fallo de SBT y fallo de extubación?\n   *Fallo de SBT: no tolera respiración espontánea → re-intubación no siempre necesaria, retorna a soporte. Fallo de extubación: tolera SBT pero falla tras extubación → requiere VMNI o re-intubación.*\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 30 pts | Actividad 2 → 30 pts | Actividad 3 → 40 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 8
+    },
+    {
       "id": "vni-summary",
-      "order": 8,
+      "order": 9,
       "type": "summary",
       "title": "Cierre: síntesis y checklist",
       "content": {

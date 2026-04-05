@@ -91,8 +91,18 @@
       "estimatedTime": 16
     },
     {
+      "id": "vl2-prog-exercise",
+      "type": "exercise",
+      "title": "Taller: Configura un modo clásico paso a paso",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller: Configuración de modos clásicos en el ventilador\n\n> Practica la programación de VCV y PCV en un escenario simulado. No bloquea avance.\n\n---\n\n### Actividad 1 — Parámetros necesarios para VCV\n\nIndica qué parámetros son obligatorios y cuáles son opcionales al configurar VCV:\n\n| Parámetro | Obligatorio | Opcional | Valor de referencia |\n|---|---|---|---|\n| Volumen corriente (Vt) | ✓ | — | 6–8 mL/kg PP |\n| Frecuencia respiratoria (Fr) | ✓ | — | 12–20/min |\n| FiO₂ | ✓ | — | Mínimo para SaO₂ ≥ 95% |\n| PEEP | ✓ | — | ≥ 5 cmH₂O |\n| Flujo pico (o Ti) | ✓ | — | 40–60 L/min |\n| Pausa inspiratoria | — | ✓ | 0–0,2 s |\n| Trigger | ✓ | — | Flujo −2 L/min o presión −2 cmH₂O |\n| Alarmas de presión | ✓ | — | Ppico + 10 cmH₂O |\n\n---\n\n### Actividad 2 — Ejercicio de configuración\n\n**Caso:** Paciente varón, talla 170 cm (PP = 66 kg), sin SDRA, postoperatorio cardíaco.\n\nRellena los parámetros recomendados:\n\n| Parámetro | Tu valor | Justificación |\n|---|---|---|\n| Modo | VCV | Control garantizado en fase aguda |\n| Vt | 396 mL (6 mL/kg) | Protector incluso sin SDRA |\n| Fr | 14/min | Fisiológico, minuto ventilación adecuado |\n| FiO₂ | 0,40 | Titular por SaO₂; evitar hiperóxia |\n| PEEP | 5 cmH₂O | Basal, evitar atelectasias |\n| Flujo pico | 45 L/min | Ti ≈ 0,53 s → I:E ≈ 1:2 |\n\n---\n\n### Actividad 3 — Diferencias en la pantalla: VCV vs PCV\n\nDescribe qué curvas verías en cada modo (flujo-tiempo, presión-tiempo, volumen-tiempo):\n\n**En VCV con flujo constante:**\n- Flujo-tiempo: rectangular (constante en inspiración)\n- Presión-tiempo: rampa ascendente + plateau en pausa\n- Volumen-tiempo: ascenso lineal durante inspiración\n\n**En PCV:**\n- Flujo-tiempo: deceleración rápida al inicio, luego curva exponencial\n- Presión-tiempo: ascenso rápido → plateau rectangular → descenso en espiración\n- Volumen-tiempo: curva sigmoide suave\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 25 pts | Actividad 2 → 45 pts | Actividad 3 → 30 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 8
+    },
+    {
       "id": "pmc-summary",
-      "order": 8,
+      "order": 9,
       "type": "summary",
       "title": "Cierre: síntesis del módulo y checklist",
       "content": {

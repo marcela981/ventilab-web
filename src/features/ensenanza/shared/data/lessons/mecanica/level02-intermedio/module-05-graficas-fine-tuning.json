@@ -83,8 +83,28 @@
       "estimatedTime": 10
     },
     {
+      "id": "m-graficas-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Ajuste fino de parámetros por gráficas",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Fine tuning de parámetros a través de gráficas\n\n> Mejora tu lectura de curvas para optimización de parámetros. No bloquea avance.\n\n---\n\n### Actividad 1 — La curva P-V estática (lazo presión-volumen)\n\nRelaciona cada zona del lazo P-V con su interpretación:\n\n| Zona del lazo P-V | Interpretación | Acción recomendada |\n|---|---|---|\n| Punto de inflexión inferior (LIP) | Umbral de cierre alveolar / zona de colapso | PEEP debe estar por encima del LIP |\n| Zona de compliance máxima (pendiente mayor) | Zona de reclutamiento activo sin sobredistensión | Ventilación en esta ventana = ventilación protectora |\n| Punto de inflexión superior (UIP) | Inicio de sobredistensión | Presión meseta debe estar por debajo del UIP |\n\n---\n\n### Actividad 2 — Detecta el problema en la gráfica\n\nDescribe el hallazgo esperado en la curva de flujo-tiempo para cada situación:\n\n1. **Auto-PEEP presente:** La curva de flujo espiratorio NO regresa a cero antes del siguiente ciclo. El ventilador comienza la inspiración con flujo espiratorio positivo residual.\n\n2. **Trigger insensible:** Hay una pequeña deflexión negativa en la curva de presión ANTES del disparo del ventilador (esfuerzo del paciente no detectado = esfuerzo inefectivo).\n\n3. **Rise time demasiado lento:** La curva de presión asciende lentamente al inicio de la inspiración; el paciente \"lucha\" contra el ventilador en los primeros 100–200 ms.\n\n---\n\n### Actividad 3 — Ajuste de rise time\n\nPaciente en PCV con los siguientes hallazgos:\n- Curva de flujo muestra un pico muy abrupto al inicio de la inspiración (↑↑ flujo inicial).\n- El paciente presenta \"hambre de aire\" (sensación de inspiración incompleta).\n- Presión meseta alcanzada muy rápido → riesgo de pico de presión.\n\n**Ajuste:** Aumentar el rise time (tiempo de ascenso de presión de 0 a la presión objetivo). Un rise time más largo suaviza el perfil de flujo y mejora la sincronía. En PSV, el criterio de ciclado también se puede ajustar.\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 35 pts | Actividad 2 → 35 pts | Actividad 3 → 30 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 7
+    },
+    {
+      "id": "m-graficas-case",
+      "type": "case_study",
+      "title": "Caso clínico: Asincronía detectada por gráficas",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: Asincronía paciente-ventilador detectada en pantalla\n\n---\n\n### Presentación\n\n**Paciente:** Hombre, 49 años, 68 kg.\n**Diagnóstico:** Neumonía grave bilateral, sedado con propofol RASS −2.\n**Parámetros:** VCV, Vt 408 mL, Fr 16/min, flujo pico 50 L/min, PEEP 8 cmH₂O, FiO₂ 0,55.\n**Alarma activa:** Volumen minuto aumentado (Ve > 12 L/min).\n**Observación en pantalla:** Se detectan 28 ciclos/min a pesar de Fr programada = 16/min.\n\n---\n\n### Análisis guiado\n\n**1. ¿Qué está pasando?**\nEl paciente está disparando ciclos adicionales no programados (12 ciclos espontáneos/min sobre los 16 mandatorios). El trigger está respondiendo a esfuerzos espontáneos del paciente → asincronía de frecuencia.\n\n**2. Lectura de la curva de presión**\nEn los ciclos espontáneos se observa una pequeña deflexión negativa previa al disparo → el paciente está haciendo esfuerzo. El nivel de sedación puede ser insuficiente, o el drive respiratorio central está muy activo (hipercapnia, hipoxemia, ansiedad).\n\n**3. Ajustes posibles**\n- Verificar gasometría: ¿hay hipercapnia o hipoxemia que esté activando el centro respiratorio?\n- Revisar nivel de sedación: RASS −2 puede ser insuficiente en la fase aguda de SDRA con esfuerzo activo.\n- Considerar modo PSV si el paciente tiene drive activo y la sincronía es el objetivo.\n- Si el drive es excesivo y genera P-SILI (lesión por esfuerzo espontáneo), puede valorarse bloqueo neuromuscular transitorio.\n\n---\n\n### Resolución\n\nGasometría: PaCO₂ 35 mmHg (hipocapnia leve). FiO₂ reducida a 0,45 y ajuste de Vt a 380 mL para elevar PaCO₂ leve y reducir el drive. Se aumenta propofol. A los 30 min: Fr total 20/min, mejor sincronía.\n\n---\n\n### Puntos clave\n\n1. El Ve (volumen minuto) > programado = el paciente está disparando ciclos extras → investigar.\n2. La hipocapnia es un potente estímulo para aumentar la FR espontánea.\n3. La P-SILI (Patient Self-Inflicted Lung Injury) ocurre cuando el esfuerzo espontáneo excesivo genera grandes variaciones de presión transpulmonar.\n"
+      },
+      "order": 8
+    },
+    {
       "id": "fine-tuning-summary",
-      "order": 7,
+      "order": 9,
       "type": "summary",
       "title": "Cierre: síntesis y checklist",
       "content": {

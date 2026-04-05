@@ -82,8 +82,28 @@
       "estimatedTime": 13
     },
     {
+      "id": "m-sdra-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Manejo integral del SDRA",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Manejo integral del SDRA — guía paso a paso\n\n> Aplica el protocolo completo de manejo del SDRA según evidencia 2024. No bloquea avance.\n\n---\n\n### Actividad 1 — Clasificación de Berlin\n\nClasifica el SDRA según los criterios de Berlin 2012 y 2023:\n\n| Criterio | Leve | Moderado | Severo |\n|---|---|---|---|\n| P/F (mmHg) con PEEP ≥ 5 | 200–300 | 100–200 | < 100 |\n| Mortalidad estimada | ~27% | ~32% | ~45% |\n| Intervenciones adicionales | Opcional prono | Considerar prono | Prono + BNM indicados |\n\n*(Definición revisada 2023 incluye VNI con PEEP ≥ 10 para leve/moderado)*\n\n---\n\n### Actividad 2 — \"Paquete\" de ventilación protectora\n\nEnumera los 5 componentes del paquete de ventilación protectora del SDRA:\n\n1. **Vt ≤ 6 mL/kg** peso predicho (rango 4–8 mL/kg según mecánica)\n2. **Pmeseta ≤ 28–30 cmH₂O** (límite absoluto)\n3. **Driving pressure < 15 cmH₂O** (meta ideal < 12)\n4. **PEEP adecuado** para la mecánica individual (tabla ARDSnet, compliance o EIT)\n5. **Decúbito prono ≥ 16 h/día** en SDRA moderado-severo (P/F < 150)\n\n---\n\n### Actividad 3 — Maniobra de reclutamiento: cuándo y cómo\n\n**¿Cuándo aplicar maniobra de reclutamiento?**\n- SDRA difuso/bilateral con colapso alveolar generalizado.\n- Antes de titular PEEP con método de compliance.\n- Tras desconexión accidental del circuito.\n\n**¿Cómo?**\n- CPAP 40 cmH₂O × 40 s (técnica clásica).\n- PEEP escalonado: 15→20→25→30 cmH₂O con descenso posterior.\n- PCV con PEEP 25 + P_insp 15 cmH₂O = Ppico 40 × 2 min.\n\n**¿Cuándo NO aplicar?**\n- SDRA focal (neumonía lobar): el pulmón sano se sobredistiende → peor resultado.\n- Hipotensión severa → riesgo de colapso circulatorio.\n- Neumotórax no drenado.\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 25 pts | Actividad 2 → 40 pts | Actividad 3 → 35 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 7
+    },
+    {
+      "id": "m-sdra-case",
+      "type": "case_study",
+      "title": "Caso clínico: SDRA severo — estrategia completa",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: SDRA severo — protocolo completo\n\n---\n\n### Presentación\n\n**Paciente:** Mujer, 38 años, talla 162 cm, 58 kg, previamente sana.\n**Diagnóstico:** SDRA severo post-influenza A H1N1, infiltrados bilaterales en Rx y TC.\n**Gasometría (intubación):** pH 7,18, PaCO₂ 62 mmHg, PaO₂ 48 mmHg, FiO₂ 0,80 → P/F = 60.\n**Fecha de ingreso a UCI:** día 1.\n\n---\n\n### Plan por días\n\n**Día 1 — Fase aguda, SDRA severo**\n- Bloqueo neuromuscular (cisatracurio × 48 h) → eliminar esfuerzo espontáneo peligroso.\n- VCV: Vt = 6×PP = 6 × [45,5 + 0,91×(162−152,4)] = 6 × 54,2 = **325 mL**\n- Fr 22/min, PEEP 14 (tabla ARDSnet FiO₂ 0,80), FiO₂ 0,80.\n- Pmeseta 26, ΔP = 12 cmH₂O ✓.\n- **Decúbito prono** iniciado a las 2 h post-intubación.\n\n**Día 2 (tras 18 h de prono)**\n- P/F en prono: 118 → mejoría. Supino: P/F 78 → profundo efecto del prono.\n- 2ª sesión de prono. FiO₂ reducida a 0,70.\n\n**Día 4**\n- P/F 142 (moderado). FiO₂ 0,60. Cisatracurio suspendido. RASS objetivo −2.\n- PEEP reducida a 12 (compliance 28 mL/cmH₂O).\n\n**Día 7**\n- P/F 198 (leve). PEEP 8. FiO₂ 0,45. Inicio destete de sedación.\n- No más sesiones de prono (P/F > 150 en supino).\n\n**Día 10**\n- PSV 10 cmH₂O, PEEP 6, FiO₂ 0,35. IRRS 48. SBT exitosa 90 min.\n- **Extubación.** CNAF preventiva 30 min/turno × 12 h.\n\n---\n\n### Resultados\n\nAlta UCI día 14. Sin complicaciones mayores.\n\n---\n\n### Puntos clave\n\n1. El bloqueo neuromuscular precoz en SDRA severo (P/F < 150) en las primeras 48 h mejora la supervivencia.\n2. El prono es el tratamiento con mayor NNT favorable en medicina intensiva: ~6 pacientes tratados para salvar 1 vida.\n3. La recuperación de SDRA es posible incluso en casos severos si el soporte es adecuado y se minimizan las complicaciones iatrogénicas.\n"
+      },
+      "order": 8
+    },
+    {
       "id": "sdra-summary",
-      "order": 7,
+      "order": 9,
       "type": "summary",
       "title": "Cierre: el protocolo integrado de protección pulmonar en el SDRA del paciente obeso",
       "content": {

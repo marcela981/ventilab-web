@@ -84,8 +84,28 @@
       "estimatedTime": 12
     },
     {
+      "id": "m-destete-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Protocolo de evaluación para destete",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Evaluación sistemática para el destete ventilatorio\n\n> Practica la aplicación del protocolo de destete paso a paso. No bloquea avance.\n\n---\n\n### Actividad 1 — Checklist de criterios para iniciar SBT\n\nMarca qué criterios deben cumplirse (✓) antes de intentar la SBT (Spontaneous Breathing Trial):\n\n| Criterio | ¿Obligatorio? | ¿Cómo se evalúa? |\n|---|---|---|\n| Causa del fallo resuelto o controlada | ✓ Obligatorio | Historia clínica + imagen |\n| SaO₂ ≥ 90% con FiO₂ ≤ 0,40 y PEEP ≤ 8 | ✓ Obligatorio | Gasometría o SaO₂ continua |\n| Hemodinámicamente estable (sin vasopresores o dosis baja estable) | ✓ Obligatorio | FC, PAM, vasopresores activos |\n| Capaz de toser y expectorar | ✓ Importante | Evaluación clínica, test de secreciones |\n| Sin sedación profunda (RASS ≥ −1) o capaz de obedecer órdenes simples | ✓ Obligatorio | Escala de sedación |\n| Balance hídrico neutro o negativo | ✓ Importante | Balance acumulado últimas 24 h |\n| Electrolitos normales (K⁺, P, Mg²⁺) | ✓ Importante | Laboratorios |\n\n---\n\n### Actividad 2 — Criterios de fallo durante la SBT\n\nIdentifica qué observación indica fallo de la SBT y justifica brevemente:\n\n1. FR = 38/min a los 15 min del SBT → **Fallo.** Taquipnea > 35/min indica sobrecarga del trabajo respiratorio.\n2. SaO₂ 88% (basal era 97%) a los 20 min → **Fallo.** Deterioro significativo de la oxigenación.\n3. Diaforesis, uso de músculos accesorios, agitación → **Fallo.** Signos clínicos de distrés respiratorio.\n4. IRRS (FR/Vt) = 98 a los 30 min → **Tolerando.** IRRS < 105 es aceptable; observar evolución hasta 120 min.\n\n---\n\n### Actividad 3 — Causa de fallo de extubación\n\nDiferencia los tipos de fallo:\n\n| Tipo | Descripción | Manejo |\n|---|---|---|\n| Fallo de SBT | No tolera el SBT → ventilación aún necesaria | Retomar soporte, investigar causa |\n| Fallo de extubación sin estridor | Insuficiencia resp. post-extubación (carga, secreciones) | CNAF o VMNI |\n| Estridor post-extubación | Edema laríngeo / subglótico | Adrenalina nebulizada, corticoides, cánula si progresa |\n| Reintubación | Fallo de todas las medidas | Vía aérea segura prioritaria |\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 30 pts | Actividad 2 → 40 pts | Actividad 3 → 30 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 7
+    },
+    {
+      "id": "m-destete-case",
+      "type": "case_study",
+      "title": "Caso clínico: Destete fallido — análisis y plan",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: Destete fallido — causas y estrategia\n\n---\n\n### Presentación\n\n**Paciente:** Mujer, 71 años, 58 kg, antecedentes de ICC (FE 40%) y EPOC leve.\n**Diagnóstico:** Sepsis pulmonar (streptococcus), intubada hace 8 días, en mejoría.\n**Estado:** Despierta, RASS 0, T 37,6°C, sin vasopresores.\n**Pre-SBT:** FiO₂ 0,35, PEEP 6, PSV 8 cmH₂O. SaO₂ 96%, FR 18/min.\n**SBT en T-pieza (30 min):** a los 25 min → FR 36/min, Vt 280 mL, diaforesis, SaO₂ 91% → **SBT fallido.**\n\n---\n\n### Análisis de causas del fallo\n\n**1. ¿Por qué falló el SBT?**\nPosibles causas a investigar sistemáticamente:\n- **Carga respiratoria:** Secreciones abundantes, broncoespasmo residual, atelectasias basales (ICC + inmovilización).\n- **Debilidad muscular:** 8 días de ventilación, probable miopatía del paciente crítico.\n- **Fallo cardíaco:** El paso a respiración espontánea aumenta el trabajo cardíaco → descompensación aguda de ICC.\n- **Anemia:** Hb 7,2 g/dL → reducción de transporte de O₂.\n\n**2. Evaluación dirigida**\n- Rx tórax: infiltrados bilaterales (edema + atelectasias basales) → balance hídrico negativo 500 mL.\n- Ecocardiograma: llenado ventricular izquierdo alterado durante el SBT → ↑ presión de enclavamiento.\n- Test de cuff-leak: positivo (sin fuga) → riesgo de estridor post-extubación bajo pero edema laríngeo posible.\n\n**3. Plan de acción**\n- Diuresis con furosemida + corrección de Hb (transfusión).\n- Fisioterapia respiratoria intensiva + broncoscopio para limpiar secreciones.\n- Esperar 48 h antes de repetir SBT.\n- Al repetir, usar T-pieza con FiO₂ 0,40 y monitorización ECG.\n\n---\n\n### Resultado\n\n48 h después: balance −1,2 L, Hb 9,5 g/dL, Rx mejorada. Nuevo SBT exitoso a los 45 min. Extubación con CNAF preventiva. Alta de UCI a los 2 días.\n\n---\n\n### Puntos clave\n\n1. El fallo de SBT no es un fracaso; es información diagnóstica.\n2. La ICC es la causa más frecuente de fallo de extubación en ancianos.\n3. La VMNI post-extubación en pacientes con ICC mejora los resultados de extubación.\n"
+      },
+      "order": 8
+    },
+    {
       "id": "destete-summary",
-      "order": 7,
+      "order": 9,
       "type": "summary",
       "title": "Cierre: síntesis y checklist",
       "content": {

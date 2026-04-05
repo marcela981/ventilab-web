@@ -107,8 +107,18 @@
       }
     },
     {
+      "id": "m3-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Variables de fase ventilatoria",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Taller práctico: Identifica las variables de fase\n\n> Practica el reconocimiento de variables de control, límite, ciclo y línea de base. No bloquea avance.\n\n---\n\n### Actividad 1 — Clasificación de variables\n\nPara cada parámetro, indica su rol en el ciclo ventilatorio:\n\n| Parámetro | Variable de control | Variable de límite | Variable de ciclo | Variable de línea de base |\n|---|---|---|---|---|\n| Volumen corriente fijo (VCV) | ✓ | — | — | — |\n| Presión inspiratoria fija (PCV) | — | — | — | — |\n| Tiempo inspiratorio como límite | — | — | — | — |\n| PEEP | — | — | — | — |\n| Flujo pico como límite | — | — | — | — |\n\n*Completa la tabla y luego verifica:*\n- PCV: variable de control es la presión\n- Tiempo inspiratorio como límite → variable de límite (flow-limited si flujo alcanza máximo)\n- PEEP → variable de línea de base\n- Flujo pico como límite → variable de límite en VCV\n\n---\n\n### Actividad 2 — Identificación en curvas\n\nDescribe lo que observarías en la curva de presión-tiempo para:\n\n1. **Modo VCV con flujo constante:** Curva de presión \\_\\_\\_ (triangular/cuadrada/rampa), flujo \\_\\_\\_ (constante/decelerante), volumen \\_\\_\\_ (lineal/curvo).\n\n2. **Modo PCV:** Curva de presión \\_\\_\\_ (rectangular), flujo \\_\\_\\_ (decelerante), volumen \\_\\_\\_ (curvo ascendente).\n\n---\n\n### Actividad 3 — Caso breve\n\nUn ventilador está programado en VCV con: Vt = 450 mL, Fr = 16/min, Ti = 1 s, flujo pico = 45 L/min, PEEP = 5 cmH₂O.\n\nIdentifica:\n- Variable de control: **volumen**\n- Variable de ciclo: **tiempo** (Ti fijo) o **volumen** (al alcanzar Vt)\n- Variable de línea de base: **PEEP = 5 cmH₂O**\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1: clasificación completa → 40 pts\n- Actividades 2–3 → 60 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 10
+    },
+    {
       "id": "m3-summary",
-      "order": 10,
+      "order": 11,
       "type": "summary",
       "title": "Cierre: resumen y checklist",
       "content": {

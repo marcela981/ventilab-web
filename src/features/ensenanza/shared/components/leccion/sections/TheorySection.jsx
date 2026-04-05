@@ -31,11 +31,20 @@ const TheorySection = ({
   const aiExpanderEnabled = section.metadata?.aiExpanderEnabled !== false;
   const aiExpanderMode = section.metadata?.aiExpanderMode || 'button'; // 'button' | 'accordion'
 
-  // Construir el objeto context requerido por AITopicExpander.
-  // Incluye los datos de sección/lección disponibles para que la IA tenga contexto.
-  const sectionTextContent = typeof section?.content === 'string'
+  // Build raw markdown content for this section.
+  const rawMarkdown = typeof section?.content === 'string'
     ? section.content
     : section?.content?.markdown || section?.content?.text || '';
+
+  // If the markdown starts with a heading that matches the section title, strip it
+  // to avoid rendering the title twice (Typography above + heading in markdown).
+  const sectionTextContent = rawMarkdown.replace(
+    /^#{1,6} [^\n]*\n?/,
+    (match) => {
+      const headingText = match.replace(/^#{1,6} /, '').trim();
+      return headingText === section?.title?.trim() ? '' : match;
+    }
+  );
   const aiContext = {
     moduleId: moduleId || '',
     lessonId: lessonId || '',
@@ -81,11 +90,7 @@ const TheorySection = ({
           }}
         >
           <Box sx={{ lineHeight: 1.8, color: '#ffffff' }}>
-            <MarkdownRenderer content={
-              typeof section.content === 'string' 
-                ? section.content 
-                : section.content.markdown || section.content.text || ''
-            } />
+            <MarkdownRenderer content={sectionTextContent} />
           </Box>
           
           {/* AI Topic Expander - Modo botón (no intrusivo) */}

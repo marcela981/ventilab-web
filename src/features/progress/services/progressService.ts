@@ -69,6 +69,8 @@ export interface UpdateLessonProgressParams {
   lastViewedSection?: string;
   currentStep?: number; // Step number (1-based), required by backend
   totalSteps?: number; // Total number of steps, required by backend
+  quizScore?: number;
+  caseScore?: number;
 }
 
 /**
@@ -282,6 +284,13 @@ export async function updateLessonProgress(
     completionPercentage: clampedPercentage,
   };
 
+  if (typeof data.quizScore === 'number') {
+    payload.quizScore = data.quizScore;
+  }
+  if (typeof data.caseScore === 'number') {
+    payload.caseScore = data.caseScore;
+  }
+
   // REQUIRED: currentStep and totalSteps (backend now requires these)
   if (typeof data.currentStep === 'number' && data.currentStep > 0 && !isNaN(data.currentStep)) {
     payload.currentStep = Math.floor(data.currentStep);
@@ -440,6 +449,8 @@ export async function callStepUpdate(
   currentStepIndex: number, // 0-based
   totalSteps: number,
   timeSpentDelta = 0,
+  quizScore?: number,
+  caseScore?: number,
 ): Promise<StepUpdateResult | null> {
   const token = getAuthToken();
   if (!token) {
@@ -455,6 +466,8 @@ export async function callStepUpdate(
       currentStepIndex: Math.floor(Number(currentStepIndex)),
       totalSteps: Math.floor(Number(totalSteps)),
       timeSpentDelta: Math.floor(Number(timeSpentDelta)) || 0,
+      quizScore,
+      caseScore,
     }),
     authToken: token,
   });

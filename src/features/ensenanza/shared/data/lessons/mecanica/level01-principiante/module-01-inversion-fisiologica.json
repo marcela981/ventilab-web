@@ -422,8 +422,18 @@
       }
     },
     {
+      "id": "m1-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Inversión fisiológica",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Inversión fisiológica\n\n> Aplica lo aprendido. Este taller no bloquea tu avance; genera un puntaje de participación que queda en tu registro del módulo.\n\n---\n\n### Actividad 1 — Tabla comparativa\n\nCompleta mentalmente (o en papel) la siguiente tabla antes de leer las respuestas:\n\n| Parámetro | Respiración espontánea | Ventilación mecánica |\n|---|---|---|\n| Presión pleural en inspiración | ¿Negativa o positiva? | ¿Negativa o positiva? |\n| Motor del movimiento de aire | ¿Diafragma o ventilador? | ¿Diafragma o ventilador? |\n| Gradiente de presión | ¿Interior → exterior o exterior → interior? | ¿Interior → exterior o exterior → interior? |\n| Efecto sobre retorno venoso | ¿Lo favorece o lo reduce? | ¿Lo favorece o lo reduce? |\n\n**Respuestas:**\n- Respiración espontánea: negativa / diafragma / exterior→interior / lo favorece (presión intratorácica ↓).\n- Ventilación mecánica: positiva / ventilador / ventilador→pulmón / puede reducirlo (comprime grandes vasos).\n\n---\n\n### Actividad 2 — Preguntas de razonamiento\n\n1. ¿Por qué la presión positiva puede reducir el gasto cardíaco? Explica el mecanismo en 2–3 oraciones.\n\n   *Guía:* La presión intratorácica positiva comprime las venas cavas y reduce la precarga del ventrículo derecho. Además, aumenta la postcarga del VD al elevar la presión vascular pulmonar. El resultado neto puede ser caída del gasto cardíaco, especialmente en pacientes hipovolémicos.\n\n2. El \"pulmón de acero\" usaba presión negativa. ¿En qué escenario actual tiene sentido retornar a ese principio?\n\n   *Guía:* La ventilación con presión negativa (cuiraza) se investiga en pacientes con falla respiratoria crónica o en soporte extrahospitalario donde se busca preservar la mecánica diafragmática y minimizar los efectos hemodinámicos adversos.\n\n---\n\n### Actividad 3 — Identifica el error\n\nLee y detecta el error en este enunciado:\n> *\"Durante la ventilación mecánica estándar, el diafragma genera la presión negativa que succiona el gas del ventilador hacia los pulmones.\"*\n\n**Error:** En ventilación controlada de presión positiva, el ventilador genera presión positiva en la vía aérea que *empuja* el gas hacia los pulmones; el diafragma puede estar pasivo o activo según el modo, pero no es el motor principal.\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 completa → 30 pts\n- Actividades 2 y 3 reflexionadas → 70 pts\n- Puntaje total: **100 pts** (informativo, no bloquea avance)\n"
+      },
+      "order": 41
+    },
+    {
       "id": "m1-summary",
-      "order": 41,
+      "order": 42,
       "type": "summary",
       "title": "Cierre: resumen y checklist",
       "content": {

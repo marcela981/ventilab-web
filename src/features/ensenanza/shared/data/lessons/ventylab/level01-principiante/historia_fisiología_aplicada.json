@@ -81,8 +81,18 @@
       "estimatedTime": 13
     },
     {
+      "id": "vl1-hfa-exercise",
+      "type": "exercise",
+      "title": "Taller: Diseña tu plan de estudio con SDL y retrieval practice",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller: Diseña tu plan de estudio personalizado\n\n> Este taller te ayuda a aplicar SDL y retrieval practice en tu propio aprendizaje de ventilación mecánica. No bloquea avance.\n\n---\n\n### Actividad 1 — Diagnóstico de tus necesidades de aprendizaje (SDL)\n\nResponde honestamente las siguientes preguntas para identificar tu punto de partida:\n\n1. ¿Cuánto tiempo disponible tienes por semana para estudiar ventilación mecánica? _____ h/semana.\n\n2. ¿Cuál es tu mayor dificultad actual con el tema?\n   □ Fundamentos fisiológicos (presiones, volúmenes)\n   □ Interpretación de gráficas del ventilador\n   □ Selección de modos ventilatorios\n   □ Manejo de casos clínicos complejos\n   □ Destete del paciente\n\n3. ¿Qué recurso de aprendizaje activo usas actualmente?\n   □ Anki o similar (repetición espaciada)\n   □ Preguntas de autoexamen\n   □ Presentación de casos con colegas (TBL informal)\n   □ Ninguno todavía\n\n---\n\n### Actividad 2 — Diseña tu semana de estudio con práctica espaciada\n\nCompleta la siguiente plantilla de sesiones de estudio:\n\n| Día | Tema | Duración | Actividad de recuperación |\n|---|---|---|---|\n| Lunes | Ecuación del movimiento | 30 min | Preguntas de autoexamen (5 preguntas) |\n| Miércoles | Revisión: ecuación + variables de fase | 20 min | Flashcards Anki |\n| Viernes | Modos ventilatorios | 30 min | Caso clínico breve |\n| Domingo | Repaso libre de la semana | 15 min | Cuestionario de recuerdo sin notas |\n\n*Adapta este esquema a tus disponibilidad real.*\n\n---\n\n### Actividad 3 — Reflexión sobre tu estrategia de retrieval\n\nCompara en tu experiencia personal:\n\n| Estrategia | ¿La usas? | Resultado percibido |\n|---|---|---|\n| Releer los apuntes varias veces | Sí/No | ¿Sientes que retienes? |\n| Responder preguntas de examen | Sí/No | ¿Más difícil pero efectivo? |\n| Explicar el tema a un colega | Sí/No | ¿Notas los vacíos de conocimiento? |\n\nSegún la evidencia del módulo, el **efecto de prueba** (responder preguntas) supera a la relectura en retención a largo plazo. Elige al menos 1 estrategia de recuperación para implementar esta semana.\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 (diagnóstico) → 30 pts\n- Actividad 2 (diseño del plan) → 40 pts\n- Actividad 3 (reflexión) → 30 pts\n- **Total: 100 pts** (informativo — tu plan es tu resultado)\n"
+      },
+      "order": 7
+    },
+    {
       "id": "hfa-summary",
-      "order": 7,
+      "order": 8,
       "type": "summary",
       "title": "Cierre: resumen y checklist",
       "content": {

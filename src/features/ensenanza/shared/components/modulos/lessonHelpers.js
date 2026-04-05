@@ -13,10 +13,9 @@ import { getVisibleLessonsByLevel } from '@/features/ensenanza/shared/data/curri
  * 
  * useLessonPages agrega siempre:
  * - 1 página de completación
- * - 1 página de caso clínico (si hay moduleId)
- * 
- * Las secciones del JSON se mapean a páginas en useLessonPages, pero siempre
- * se agregan estas 2 páginas adicionales al final.
+ *
+ * Las secciones del JSON se mapean a páginas en useLessonPages, más
+ * esta página adicional al final.
  * 
  * @param {Object} lesson - Objeto de lección con sectionsCount y moduleId
  * @returns {number} Número real de páginas que se mostrarán
@@ -32,13 +31,7 @@ function calculateRealPages(lesson) {
   // Páginas adicionales que siempre se agregan en useLessonPages:
   // 1. Página de completación (siempre se agrega)
   pages += 1;
-  
-  // 2. Página de caso clínico (siempre se agrega si hay moduleId)
-  // Todas las lecciones tienen moduleId, así que siempre se agrega
-  if (lesson.moduleId) {
-    pages += 1;
-  }
-  
+
   return pages;
 }
 
@@ -49,7 +42,6 @@ function calculateRealPages(lesson) {
  * El número de páginas se calcula usando calculateRealPages, que incluye:
  * - sectionsCount (número de secciones en el JSON)
  * - 1 página de completación (siempre)
- * - 1 página de caso clínico (si hay moduleId, que es siempre)
  * 
  * This function now uses getVisibleLessonsByLevel from selectors.js which:
  * 1. Flattens M03 to virtual lessons

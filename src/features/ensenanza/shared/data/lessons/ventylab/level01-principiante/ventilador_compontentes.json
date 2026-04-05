@@ -81,8 +81,18 @@
       "estimatedTime": 16
     },
     {
+      "id": "vl1-vent-exercise",
+      "type": "exercise",
+      "title": "Taller: Identifica y relaciona los componentes del ventilador",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller: Componentes del ventilador y su función\n\n> Relaciona los componentes con su función clínica. No bloquea avance.\n\n---\n\n### Actividad 1 — Bloques funcionales del ventilador\n\nConecta cada bloque con su función principal:\n\n| Bloque | Función |\n|---|---|\n| Fuente de gas (O₂/aire) | Suministra el gas mezclado al paciente a la concentración de FiO₂ seleccionada |\n| Unidad de mezcla (blender) | Ajusta la proporción O₂/aire para lograr la FiO₂ programada |\n| Sensor de flujo inspiratorio | Detecta el esfuerzo del paciente para el trigger del ventilador |\n| Válvula espiratoria (PEEP) | Mantiene la presión positiva al final de la espiración |\n| Circuito del paciente | Conduce el gas entre el ventilador y la vía aérea del paciente |\n| Pantalla/interfaz | Muestra parámetros, curvas y alarmas en tiempo real |\n\n---\n\n### Actividad 2 — Alarmas básicas: interpreta y actúa\n\nPara cada alarma, indica la causa más frecuente y la primera acción:\n\n| Alarma | Causa frecuente | Primera acción |\n|---|---|---|\n| Presión alta (High Pressure) | Tos, secreciones, broncoespasmo, sonda doblada | Aspirar, auscultación, revisar circuito |\n| Presión baja (Low Pressure / Desconexión) | Fuga en el circuito, extubación accidental | Verificar conexión circuito-TET, reconectar |\n| Apnea (Apnea Alarm) | Paciente en modo espontáneo sin esfuerzo | Cambiar a modo controlado, evaluar nivel de conciencia |\n| FiO₂ baja | Fallo en suministro de O₂ o mezcla | Verificar fuente de O₂, alarma de central |\n| Volumen minuto bajo | Vt insuficiente o fuga de aire | Revisar ajuste de Vt, buscar fuga |\n\n---\n\n### Actividad 3 — Verificación pre-uso (check list simplificado)\n\nOrdena estos pasos en la secuencia correcta para verificar el ventilador antes de conectar al paciente:\n\nA. Conectar al simulador pulmonar y verificar Vt entregado.\nB. Encender el ventilador y verificar autotest.\nC. Configurar los parámetros iniciales para el paciente.\nD. Conectar fuentes de gas (O₂ y aire comprimido).\nE. Verificar integridad del circuito (sin fugas).\nF. Programar alarmas según el paciente.\n\n**Orden correcto:** D → B → E → A → C → F\n\n*D (fuentes) → B (encender/test) → E (circuito sin fugas) → A (test con simulador) → C (parámetros) → F (alarmas)*\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 30 pts | Actividad 2 → 40 pts | Actividad 3 → 30 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 7
+    },
+    {
       "id": "v-summary",
-      "order": 7,
+      "order": 8,
       "type": "summary",
       "title": "Cierre: síntesis del sistema y checklist",
       "content": {

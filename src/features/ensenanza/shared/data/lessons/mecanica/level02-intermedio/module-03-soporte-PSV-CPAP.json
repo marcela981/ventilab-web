@@ -82,8 +82,28 @@
       "estimatedTime": 12
     },
     {
+      "id": "m-psv-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Ajuste del soporte en PSV",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Ajuste del soporte en PSV y CPAP\n\n> Práctica de titulación de soporte ventilatorio espontáneo. No bloquea avance.\n\n---\n\n### Actividad 1 — Parámetros de PSV que debes conocer\n\nRelaciona cada parámetro con su función:\n\n| Parámetro | Función |\n|---|---|\n| Nivel de soporte (PS) | Determina el volumen corriente asistido |\n| Trigger de flujo/presión | Define la sensibilidad del disparo del ventilador |\n| Criterio de ciclado (% flujo pico) | Termina la inspiración cuando el flujo cae a ese % |\n| Rise time | Controla la velocidad de ascenso de presión |\n| PEEP en PSV | Mantiene la CRF y facilita el trigger |\n\n---\n\n### Actividad 2 — Signos de mal ajuste de PSV\n\nPara cada signo clínico/gráfico, identifica el problema:\n\n| Observación | Problema probable |\n|---|---|\n| Vt > 10 mL/kg | PS demasiado alta → sobresoporte |\n| FR > 30/min con Vt < 5 mL/kg | PS insuficiente → subsoporte |\n| Doble disparo o forcejeo al final de la inspiración | Criterio de ciclado inadecuado (demasiado bajo → Ti largo) |\n| Esfuerzo inefectivo (no dispara) | Trigger demasiado sensible o auto-PEEP no compensado |\n| Abdomen en movimiento paradójico | Asincronía grave, PS muy alta o muy baja |\n\n---\n\n### Actividad 3 — Titulación guiada\n\nPaciente iniciando destete: PSV inicial = 18 cmH₂O, Vt = 620 mL, FR = 14/min, RVA (índice) = 48.\n\nProtocolo de reducción:\n1. Reducir PS en pasos de 2–4 cmH₂O si: FR < 25/min, Vt > 6 mL/kg, SaO₂ > 95%, sin signos de fatiga.\n2. Monitorizar Índice de Respiración Rápida Superficial (IRRS = FR/Vt en litros).\n   - IRRS < 105 → tolera reducción.\n   - IRRS calculado = 14 / 0,62 = **22,6** → muy bien tolerado.\n3. Continuar reducción hasta PS = 5–8 cmH₂O → evaluar SBT (prueba en T o CPAP).\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 25 pts | Actividad 2 → 40 pts | Actividad 3 → 35 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 7
+    },
+    {
+      "id": "m-psv-case",
+      "type": "case_study",
+      "title": "Caso clínico: Destete con PSV",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: Paciente en destete — titulación de PSV\n\n---\n\n### Presentación\n\n**Paciente:** Mujer, 62 años, 55 kg, peso predicho 52 kg.\n**Diagnóstico:** Neumonía lobar derecha resuelta, ventilada 6 días.\n**Estado:** Despierta, cooperadora, sin sedación, temperatura 37,2°C.\n**Parámetros actuales:** PSV 14 cmH₂O, PEEP 6 cmH₂O, FiO₂ 0,35.\n**Gasometría:** pH 7,40, PaCO₂ 40 mmHg, PaO₂ 88 mmHg (SaO₂ 97%).\n**Vt espontáneo:** 420 mL | FR: 18/min | IRRS = 18/0,42 = **42,8** (excelente).\n\n---\n\n### Análisis guiado\n\n**1. ¿Está lista para SBT (prueba de respiración espontánea)?**\nCriterios para iniciar SBT:\n- ✓ Causa del fallo resuelto (neumonía resuelta)\n- ✓ Hemodinámicamente estable (sin vasopresores)\n- ✓ Oxigenación adecuada (P/F = 88/0,35 = 251 > 200)\n- ✓ Capaz de toser y proteger vía aérea\n- ✓ IRRS < 105\n→ **Sí, procede el SBT.**\n\n**2. Protocolo de SBT**\nModalidad: T-pieza o CPAP 5 cmH₂O (sin soporte PS), duración 30–120 min.\nCriterios de fallo del SBT: FR > 35/min, SaO₂ < 90%, FR/Vt > 105, distrés, diaforesis, cambios hemodinámicos.\n\n**3. Resultado del SBT en este caso**\nA los 45 min: FR 20/min, Vt 410 mL, SaO₂ 96%, sin distrés → **SBT exitoso → extubación.**\n\n---\n\n### Seguimiento post-extubación\n\n- Oxigenoterapia con cánula nasal de alto flujo (CNAF) preventiva 30 min.\n- Monitorización clínica y SpO₂ continua 6 h.\n- Fisioterapia respiratoria para expansión del lóbulo derecho.\n\n---\n\n### Puntos clave\n\n1. El IRRS < 105 es el predictor con mejor sensibilidad/especificidad para éxito de extubación.\n2. El SBT en T-pieza o CPAP sin PS es equivalente en evidencia.\n3. La CNAF post-extubación reduce el riesgo de re-intubación en pacientes de riesgo.\n"
+      },
+      "order": 8
+    },
+    {
       "id": "psv-cpap-summary",
-      "order": 7,
+      "order": 9,
       "type": "summary",
       "title": "Cierre: resumen y checklist",
       "content": {

@@ -92,8 +92,28 @@
       "estimatedTime": 15
     },
     {
+      "id": "m-monit-adv-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Métricas avanzadas de monitorización ventilatoria",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Métricas avanzadas de monitorización ventilatoria\n\n> Calcula e interpreta driving pressure, stress index, RSBI y otras métricas avanzadas. No bloquea avance.\n\n---\n\n### Actividad 1 — Driving pressure y su importancia\n\n**Cálculo:**\nΔP (Driving Pressure) = Pmeseta − PEEP\n\n**Interpretación:**\n| Driving Pressure | Significado | Acción |\n|---|---|---|\n| < 12 cmH₂O | Óptimo | Mantener parámetros |\n| 12–15 cmH₂O | Aceptable | Vigilancia estrecha |\n| > 15 cmH₂O | Riesgo aumentado de VILI | Reducir Vt o incrementar PEEP |\n\n**Ejercicio:** Paciente: Pmeseta = 24 cmH₂O, PEEP = 8. ΔP = \\_\\_\\_ cmH₂O.\n*Respuesta:* 24 − 8 = **16 cmH₂O** → riesgo → reducir Vt de 6 a 5 mL/kg.\n\n---\n\n### Actividad 2 — Stress Index (índice de estrés)\n\nEl stress index se mide en la pendiente de la curva presión-tiempo durante VCV con flujo constante:\n- SI < 1 → pendiente cóncava → compliance mejora durante el ciclo → pulmón en zona de reclutamiento → PEEP puede estar baja.\n- SI = 1 → pendiente lineal → mecánica estable durante el ciclo → PEEP óptimo.\n- SI > 1 → pendiente convexa → compliance empeora durante el ciclo → pulmón se sobredistiende → reducir PEEP o Vt.\n\n**Ejercicio:** La curva de presión durante VCV con flujo constante muestra una forma cóncava (pendiente inicial lenta que acelera). ¿Qué indica y qué harías?\n*SI < 1 → PEEP puede estar baja → aumentar PEEP gradualmente y re-evaluar.*\n\n---\n\n### Actividad 3 — Oclusión para medir P0.1\n\nP0.1 (presión de oclusión a 100 ms) es la presión generada durante los primeros 100 ms de una oclusión inspiratoria. Es un índice del drive respiratorio central:\n- P0.1 < 1,5 cmH₂O → drive bajo (riesgo de apnea en destete)\n- P0.1 1,5–3,5 cmH₂O → drive normal → buenas condiciones de destete\n- P0.1 > 3,5 cmH₂O → drive elevado (esfuerzo excesivo, riesgo de P-SILI)\n\n**Interpretación práctica:** Si P0.1 = 4,2 cmH₂O en un paciente que intenta destete, ¿qué implica?\n*Drive respiratorio muy activo → investigar causa (hipercapnia, hipoxemia, dolor, agitación). Riesgo de P-SILI y fracaso del destete.*\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 30 pts | Actividad 2 → 35 pts | Actividad 3 → 35 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 8
+    },
+    {
+      "id": "m-monit-adv-case",
+      "type": "case_study",
+      "title": "Caso clínico: Deterioro de mecánica — análisis avanzado",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: Deterioro agudo de mecánica pulmonar\n\n---\n\n### Presentación\n\n**Paciente:** Mujer, 66 años, 62 kg (peso predicho 57 kg).\n**Diagnóstico:** SDRA moderado, día 5 de intubación, previamente estabilizada.\n**Parámetros previos (ayer):** VCV 342 mL, PEEP 10, FiO₂ 0,50. Pmeseta 22, P_pico 28. ΔP 12.\n**Hoy al turno:** Alerta de presión pico → P_pico 38 cmH₂O, Pmeseta 34 cmH₂O.\n**Mecánica:** Cst cayó de 32 a 21 mL/cmH₂O. Stress index = 1,3 (convexo).\n\n---\n\n### Análisis diferencial\n\n**1. El pico subió, la meseta también → problema de compliance (no de resistencia)**\nSi P_pico sube pero P_meseta no → aumento de R (secreciones, broncoespasmo).\nSi ambas suben proporcionalmente → caída de Cst → evaluar causas:\n- Neumotórax (agudo, unilateral, ausencia de murmullo vesicular)\n- Atelectasia masiva (puede verse en Rx tórax)\n- Edema pulmonar agudo (por fluidos o cardíaco)\n- Progresión del SDRA (nuevo infiltrado bilateral)\n- Derrame pleural a tensión\n\n**2. Evaluación inmediata**\n- Auscultación bilateral → murmullo vesicular simétrico (descarta neumotórax)\n- Rx tórax urgente → nuevo infiltrado lobar izquierdo: atelectasia por tapón de moco.\n- Stress index > 1 → posible sobredistensión en el pulmón sano (pulmón derecho solo).\n\n**3. Acciones**\n- Fisioterapia respiratoria urgente + aspiración de secreciones.\n- Broncoscopio terapéutico para eliminar tapón mucoso.\n- Reducir temporalmente PEEP a 8 para no sobredistender el parénquima sano.\n- Posicionamiento lateral (pulmón sano abajo) hasta resolver atelectasia.\n\n---\n\n### Evolución\n\nBroncoscopio: tapón mucoso lobulo inferior izquierdo resuelto. A las 2 h: P_pico 29, Pmeseta 22, Cst 30 mL/cmH₂O. Recuperación gradual.\n\n---\n\n### Puntos clave\n\n1. La separación P_pico/P_meseta indica el origen del problema (R vs Cst).\n2. El stress index > 1 indica sobredistensión, no siempre global: puede ser asimétrica.\n3. La broncoscofia terapéutica es la intervención más rápida para tapones de moco.\n"
+      },
+      "order": 9
+    },
+    {
       "id": "alto-nivel-summary",
-      "order": 8,
+      "order": 10,
       "type": "summary",
       "title": "Cierre: síntesis y checklist",
       "content": {

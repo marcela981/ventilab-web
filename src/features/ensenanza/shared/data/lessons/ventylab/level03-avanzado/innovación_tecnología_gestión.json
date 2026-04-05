@@ -91,8 +91,18 @@
       "estimatedTime": 14
     },
     {
+      "id": "vl3-innov-exercise",
+      "type": "exercise",
+      "title": "Taller: Análisis crítico de tecnología ventilatoria",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller: Evaluación crítica de tecnología ventilatoria emergente\n\n> Aplica pensamiento crítico al evaluar nuevas tecnologías. No bloquea avance.\n\n---\n\n### Actividad 1 — Marco de evaluación tecnológica\n\nUsa el siguiente marco para evaluar cualquier tecnología ventilatoria nueva:\n\n| Dimensión | Pregunta clave | Ejemplo: IA para ajuste automático de PEEP |\n|---|---|---|\n| Evidencia clínica | ¿Hay ECA con outcomes relevantes (mortalidad, días de UCI)? | ECA fase II/III en marcha; datos observacionales prometedores |\n| Seguridad | ¿Tiene alarmas de seguridad independientes de la IA? | Sí — el ventilador mantiene límites de presión hardcoded |\n| Implementación | ¿Requiere formación especializada? | Sí — curva de aprendizaje para el equipo de UCI |\n| Costo-efectividad | ¿El beneficio justifica el costo vs. alternativas actuales? | Por determinar — datos de costo-utilidad pendientes |\n| Equidad | ¿Está disponible en contextos de recursos limitados? | No actualmente — solo hospitales terciarios |\n\n---\n\n### Actividad 2 — Ventiladores inteligentes: fortalezas y limitaciones\n\nLista 3 fortalezas y 3 limitaciones del uso de IA en la gestión del ventilador:\n\n**Fortalezas:**\n1. Reducción de asincronías por adaptación continua al paciente.\n2. Detección temprana de deterioro (cambios sutiles en compliance o resistencia).\n3. Descarga cognitiva del equipo en entornos de alta carga de trabajo.\n\n**Limitaciones:**\n1. \"Caja negra\": difícil interpretar por qué el sistema tomó una decisión.\n2. Riesgo de sobredependencia — el clínico puede perder habilidades manuales.\n3. Sesgos en los datos de entrenamiento: si los datos de entrenamiento no incluyen poblaciones diversas, el rendimiento puede ser inferior en ciertos grupos.\n\n---\n\n### Actividad 3 — Gestión del aprendizaje clínico continuo\n\nDiseña una estrategia de actualización continua en tecnología ventilatoria:\n\n| Recurso | Frecuencia | Meta |\n|---|---|---|\n| Revisión de guías (ESICM, ATS, SCCM) | Anual | Actualizar protocolos institucionales |\n| Journal club en UCI | Quincenal | Discutir papers relevantes del mes |\n| Simulación clínica con casos complejos | Mensual | Mantener habilidades en situaciones de baja frecuencia |\n| Certificaciones (FCCS, EDIC) | Según carrera | Validar competencias formalmente |\n| Seguimiento de Cochrane + PubMed | Semanal (alertas) | Detectar nueva evidencia en tiempo real |\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 30 pts | Actividad 2 → 35 pts | Actividad 3 → 35 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 8
+    },
+    {
       "id": "itg-summary",
-      "order": 8,
+      "order": 9,
       "type": "summary",
       "title": "Cierre: resumen y checklist",
       "content": {

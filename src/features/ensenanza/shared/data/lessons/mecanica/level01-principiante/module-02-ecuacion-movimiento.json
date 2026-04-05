@@ -336,8 +336,18 @@
       }
     },
     {
+      "id": "m2-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Ecuación del movimiento",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: La ecuación del movimiento en la práctica\n\n> Este taller es de práctica reflexiva. No bloquea tu avance; el puntaje queda registrado en tu progreso.\n\n---\n\n### Recordatorio de la ecuación\n\n**P_total = (Vt / C) + (R × V̇) + PEEP**\n\n- Vt = volumen corriente; C = compliance; R = resistencia; V̇ = flujo\n\n---\n\n### Actividad 1 — Cálculo guiado\n\nUn paciente ventilado tiene los siguientes datos:\n- Vt = 500 mL = 0,5 L\n- Compliance estática (Cst) = 50 mL/cmH₂O = 0,05 L/cmH₂O\n- Resistencia (R) = 10 cmH₂O/L/s\n- Flujo inspiratorio (V̇) = 0,5 L/s\n- PEEP = 5 cmH₂O\n\n**Calcula la presión pico estimada:**\n- P_elástica = 0,5 / 0,05 = **10 cmH₂O**\n- P_resistiva = 10 × 0,5 = **5 cmH₂O**\n- P_total = 10 + 5 + 5 = **20 cmH₂O** ✓ (dentro de rango seguro)\n\n---\n\n### Actividad 2 — Diagnóstico diferencial\n\nDado el siguiente escenario, ¿cuál es la causa más probable del aumento de presión?\n\n**Escenario A:** Presión pico ↑, presión meseta normal → \\_\\_\\_\n**Escenario B:** Presión pico ↑, presión meseta ↑ → \\_\\_\\_\n\n*Respuestas:*\n- A: Resistencia aumentada (broncoespasmo, secreciones, sonda doblada)\n- B: Compliance reducida (atelectasia, neumotórax, SDRA, edema)\n\n---\n\n### Actividad 3 — Ajuste clínico\n\nUn paciente con SDRA tiene Cst = 25 mL/cmH₂O. Si mantienes Vt = 500 mL:\n- P_elástica = 0,5 / 0,025 = **20 cmH₂O** (solo la componente elástica)\n\n¿Qué ajuste harías para mantener P_meseta ≤ 28–30 cmH₂O?\n\n*Respuesta guiada:* Reducir Vt a 6 mL/kg peso predicho (p. ej., 350–420 mL en adulto promedio), aceptar hipercapnia permisiva si es necesario, y revisar PEEP óptimo.\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1: cálculo correcto → 40 pts\n- Actividades 2–3: razonamiento aplicado → 60 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 32
+    },
+    {
       "id": "m2-summary",
-      "order": 32,
+      "order": 33,
       "type": "summary",
       "title": "Cierre: resumen y checklist",
       "content": {

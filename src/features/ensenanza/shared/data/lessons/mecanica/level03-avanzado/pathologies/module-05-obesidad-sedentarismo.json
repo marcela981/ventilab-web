@@ -82,8 +82,28 @@
       "estimatedTime": 13
     },
     {
+      "id": "m-obesidad-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Ajuste de parámetros en obesidad",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Ventilación mecánica en el paciente obeso\n\n> Aplica los ajustes específicos para obesidad mórbida. No bloquea avance.\n\n---\n\n### Actividad 1 — Impacto de la obesidad en la mecánica\n\nIndica si cada afirmación es verdadera (V) o falsa (F) y justifica:\n\n1. \"En obesidad, el Vt se calcula sobre peso real.\"\n   **F** — Se usa peso predicho basado en talla para evitar volutrauma.\n\n2. \"La FRC (capacidad residual funcional) está aumentada en decúbito supino en obesos.\"\n   **F** — La FRC está disminuida por la presión del abdomen sobre el diafragma → atelectasias basales.\n\n3. \"El PEEP recomendado en obesos suele ser mayor que en pacientes de peso normal.\"\n   **V** — Se necesita más PEEP para contrarrestar la presión abdominal y mantener los alvéolos abiertos (8–12 cmH₂O frecuente).\n\n4. \"La posición 30–45° (semi-Fowler) mejora la mecánica ventilatoria en obesos.\"\n   **V** — Reduce la presión diafragmática por el peso visceral.\n\n---\n\n### Actividad 2 — Cálculo en caso obeso\n\nPaciente obeso: sexo masculino, talla 170 cm, peso real 130 kg, IMC 45.\n- Peso predicho = 50 + 0,91 × (170 − 152,4) = 50 + 16 = **66 kg**\n- Vt protector = 6 × 66 = **396 mL** (usar 390–400 mL)\n- Diferencia vs. peso real: 6 × 130 = 780 mL → **casi el doble** → barotrauma garantizado si se usa peso real.\n\nPEEP recomendado en obeso postquirúrgico sin SDRA: **8–10 cmH₂O**\nPEEP en SDRA + obesidad: **10–14 cmH₂O** (individualizar con compliance y hemodinámica).\n\n---\n\n### Actividad 3 — Maniobra de reclutamiento perioperatoria\n\n¿Cuándo y cómo se aplica una maniobra de reclutamiento en el obeso?\n\n- **Indicación:** inicio de ventilación mecánica, cambios de posición, desconexiones del circuito.\n- **Técnica:** CPAP 40 cmH₂O × 8 respiraciones lentas o PEEP escalado hasta 20 cmH₂O y descenso.\n- **Monitorización:** SaO₂, compliance (Cst mejora con reclutamiento), hemodinámica.\n- **Contraindicación relativa:** hipotensión, neumotórax previo, bulla enfisematosa.\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 30 pts | Actividad 2 → 35 pts | Actividad 3 → 35 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 7
+    },
+    {
+      "id": "m-obesidad-case",
+      "type": "case_study",
+      "title": "Caso clínico: Paciente obeso con insuficiencia respiratoria",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: Obeso mórbido en fallo respiratorio agudo\n\n---\n\n### Presentación\n\n**Paciente:** Hombre, 58 años, talla 168 cm, peso 148 kg (IMC 52,5). Sedentario severo, HTA, DM2, SAHOS conocido (no tratado).\n**Motivo de ingreso:** Insuficiencia respiratoria hipoxémica (SaO₂ 74% al ingreso) tras cirugía de bypass gástrico laparoscópico (4 h, posición Trendelenburg 30°).\n**Gasometría en urgencias (FiO₂ 0,60 con MR):** pH 7,28, PaCO₂ 58 mmHg, PaO₂ 52 mmHg → PaFi = 87 → SDRA severo.\n**Intubación:** secuencia rápida con crico presión, 2 intentos (vía aérea difícil).\n\n---\n\n### Análisis guiado\n\n**1. Peso predicho**\n= 50 + 0,91 × (168 − 152,4) = 50 + 14,2 = **64,2 kg**\nVt protector = 6 × 64,2 = **385 mL**\n\n**2. Parámetros iniciales recomendados**\n- VCV: Vt 385 mL, Fr 22/min, PEEP 12 cmH₂O, FiO₂ 0,80.\n- Semi-Fowler 30°.\n- Sedación profunda + bloqueo neuromuscular (SDRA severo + IMC > 40).\n\n**3. Evaluación de mecánica a 30 min**\nPmeseta = 30 cmH₂O, Cst = 0,385/(30−12) = **21,4 mL/cmH₂O** (muy baja).\nΔP = 30 − 12 = **18 cmH₂O** → peligroso. Reducir Vt a 5 mL/kg = 321 mL.\n\n**4. PEEP y prono**\nP/F = 52/0,80 = 65 → SDRA severo → decúbito prono indicado.\nProno en obeso: requiere equipo especializado (mínimo 5 personas), almohadas específicas, monitorización de presión abdominal.\n\n---\n\n### Evolución a 24 h\n\nPost-prono (16 h): P/F 135. PEEP reducida a 10. FiO₂ a 0,65.\nΔP = Pmeseta − PEEP = 28 − 10 = 18 → reducir Vt a 4 mL/kg = 257 mL + hipercapnia permisiva.\nDía 3: P/F 172 → SDRA moderado. Pronación × 2ª sesión.\n\n---\n\n### Puntos clave\n\n1. SAHOS + cirugía abdominal + Trendelenburg = tormenta perfecta para atelectasias y SDRA postoperatorio.\n2. En obesos, la PEEP debe contrarrestar la presión de la pared torácica/abdominal (más alta que en normopeso).\n3. La posición prono es técnicamente compleja en obesos pero factible y eficaz.\n"
+      },
+      "order": 8
+    },
+    {
       "id": "obesidad-sed-summary",
-      "order": 7,
+      "order": 9,
       "type": "summary",
       "title": "Cierre: las 5 Recomendaciones de Oro y transición a cirugía laparoscópica",
       "content": {

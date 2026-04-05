@@ -20,6 +20,9 @@ const PracticalCaseSection = ({
   onToggleAnswers,
 }) => {
   const theme = useTheme();
+
+  if (!practicalCase) return null;
+
   const caseId = practicalCase.caseId || `case-${caseIndex}`;
   
   return (
@@ -70,13 +73,13 @@ const PracticalCaseSection = ({
         </Box>
       )}
       
-      {(practicalCase.clinicalScenario || practicalCase.caso) && (
+      {(practicalCase.clinicalScenario || practicalCase.caso || practicalCase.description) && (
         <Box sx={{ mb: 3 }}>
           <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2, color: '#0BBAF4' }}>
             Escenario Clínico:
           </Typography>
           <Typography variant="body1" paragraph sx={{ lineHeight: 1.8, color: '#ffffff' }}>
-            {practicalCase.clinicalScenario || practicalCase.caso || practicalCase.escenario}
+            {practicalCase.clinicalScenario || practicalCase.caso || practicalCase.escenario || practicalCase.description}
           </Typography>
         </Box>
       )}
@@ -143,13 +146,18 @@ const PracticalCaseSection = ({
         </Box>
       )}
       
-      <Button
-        variant="outlined"
-        onClick={() => onToggleAnswers(caseId)}
-        sx={{ mt: 2 }}
-      >
-        {showAnswers ? 'Ocultar Respuestas' : 'Mostrar Respuestas Esperadas'}
-      </Button>
+      {practicalCase.questions && practicalCase.questions.length > 0 &&
+        practicalCase.questions.some(q =>
+          typeof q === 'object' && (q.expectedAnswer || q.respuestaEsperada || q.explanation || q.explicacion)
+        ) && (
+        <Button
+          variant="outlined"
+          onClick={() => onToggleAnswers(caseId)}
+          sx={{ mt: 2 }}
+        >
+          {showAnswers ? 'Ocultar Respuestas' : 'Mostrar Respuestas Esperadas'}
+        </Button>
+      )}
       </Paper>
     </Box>
   );

@@ -967,8 +967,18 @@
       }
     },
     {
+      "id": "m5-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Interpretación de curvas ventilatorias",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Interpretación de curvas ventilatorias\n\n> Entrena tu ojo clínico para leer gráficas P-V-F. Este taller es de práctica; no bloquea avance.\n\n---\n\n### Actividad 1 — Identifica la curva\n\nPara cada descripción, indica qué tipo de curva es (Presión / Volumen / Flujo) y el modo ventilatorio más probable:\n\n1. Curva cuadrada (plataforma) en inspiración → ¿P o V o F? ¿VCV o PCV?\n   *Respuesta:* Curva de **presión** cuadrada → **PCV**\n\n2. Curva de flujo constante (rectangular) en inspiración → ¿qué modo?\n   *Respuesta:* Flujo constante → **VCV** con patrón de flujo cuadrado\n\n3. Curva de volumen con forma de \"S\" suave en inspiración → ¿modo?\n   *Respuesta:* **PCV** (el flujo es decelerante → el volumen sube con curva suave)\n\n---\n\n### Actividad 2 — Detecta la anomalía\n\nDescribe qué anomalía esperarías ver en la gráfica de presión-tiempo en cada situación:\n\n| Situación clínica | Cambio esperado en la curva |\n|---|---|\n| Broncoespasmo súbito | Pico de presión ↑, presión meseta sin cambio (↑ R) |\n| Condensación bilateral (↓ Cst) | Presión meseta ↑, pico también ↑ |\n| Asincronía por disparo doble | Dos picos de volumen en un mismo ciclo |\n| Auto-PEEP | La curva de flujo espiratorio no regresa a cero antes del siguiente ciclo |\n\n---\n\n### Actividad 3 — Cálculo desde la gráfica\n\nCon los siguientes datos leídos de la pantalla del ventilador:\n- Presión pico (Ppico) = 30 cmH₂O\n- Presión meseta (Pmeseta) = 22 cmH₂O\n- PEEP = 5 cmH₂O\n- Vt = 500 mL = 0,5 L\n- Flujo inspiratorio al momento de la pausa = 0 L/s\n\nCalcula:\n- **Resistencia:** R = (Ppico − Pmeseta) / V̇ → necesitas el flujo *antes* de la pausa, no en pausa. Si flujo pico = 60 L/min = 1 L/s → R = (30−22)/1 = **8 cmH₂O/L/s**\n- **Compliance estática:** Cst = Vt / (Pmeseta − PEEP) = 0,5 / (22−5) = 0,5 / 17 = **29,4 mL/cmH₂O**\n- **Driving pressure:** ΔP = Pmeseta − PEEP = 22 − 5 = **17 cmH₂O** (rango aceptable <15 idealmente)\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 25 pts | Actividad 2 → 40 pts | Actividad 3 → 35 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 95
+    },
+    {
       "id": "m5-summary",
-      "order": 95,
+      "order": 96,
       "type": "summary",
       "title": "Cierre: resumen y checklist",
       "content": {

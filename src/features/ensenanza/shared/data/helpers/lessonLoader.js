@@ -717,6 +717,14 @@ function normalizeSectionsFormat(rawData) {
     estimatedTime: rawData.estimatedTime || 45,
     difficulty: rawData.difficulty || 'beginner',
     bloomLevel: rawData.bloomLevel || 'understand',
+    // Preserve original sections array so useLessonPages uses the unified path.
+    // Without this, useLessonPages falls back to the legacy path which misinterprets
+    // "case" type sections as practicalCases and renders empty pages.
+    sections: rawData.sections || [],
+    // Preserve top-level quiz and resources so useLessonPages can add the
+    // assessment and references pages from the unified-format branches.
+    quiz: rawData.quiz || null,
+    resources: rawData.resources || null,
     content: {
       introduction: {
         text: introductionText,

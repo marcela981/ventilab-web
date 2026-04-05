@@ -81,8 +81,18 @@
       "estimatedTime": 14
     },
     {
+      "id": "vl3-racion-exercise",
+      "type": "exercise",
+      "title": "Taller: Raciocinio clínico estructurado",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller: Raciocinio clínico estructurado en ventilación mecánica\n\n> Entrena el pensamiento clínico sistemático en escenarios de alta complejidad. No bloquea avance.\n\n---\n\n### Actividad 1 — Modelo de raciocinio dual (Sistema 1 / Sistema 2)\n\nEl raciocinio diagnóstico involucra dos sistemas (Kahneman):\n- **Sistema 1:** Rápido, automático, basado en reconocimiento de patrones (\"este paciente con SDRA tiene auto-PEEP\" — reconocido de inmediato).\n- **Sistema 2:** Lento, analítico, deliberativo (\"¿por qué el P/F no mejora con PEEP 16? → análisis paso a paso\").\n\nPara cada situación clínica, indica qué sistema debes activar predominantemente y por qué:\n\n| Situación | Sistema predominante | Justificación |\n|---|---|---|\n| Alarma de presión alta súbita, SaO₂ cayendo | S1 (rápido) | Requiere acción inmediata; patrón reconocible (neumotórax, sonda doblada) |\n| Paciente que no mejora tras 72 h de ventilación protectora | S2 (analítico) | Situación compleja, sin respuesta típica → revisión sistemática |\n| Selección de FiO₂ de mantenimiento | S1 | Regla simple: menor FiO₂ con SaO₂ ≥ 95% |\n| Evaluar criterios de extubación en paciente con comorbilidades | S2 | Múltiples factores a ponderar; error costoso |\n\n---\n\n### Actividad 2 — Sesgos cognitivos en UCI\n\nIdentifica el sesgo cognitivo presente en cada escenario:\n\n1. El médico asume que la taquicardia del paciente intubado es por dolor/ansiedad sin descartar neumotórax porque \"siempre es eso\". → **Sesgo de anclaje** (anclar en diagnóstico previo frecuente).\n\n2. Ante un paciente con SDRA, el médico usa el mismo protocolo que usó con éxito la semana anterior sin evaluar las diferencias. → **Sesgo de disponibilidad** (lo que recuerdo mejor influye mi decisión).\n\n3. El médico de guardia no cuestiona el manejo del turno anterior porque \"fue una decisión del especialista\". → **Efecto de autoridad** / **Sesgo de confirmación** (no buscar información que contradiga la decisión existente).\n\n---\n\n### Actividad 3 — Caso de raciocinio integrado (ejercicio final)\n\n**Escenario:** Mujer, 61 años, SDRA moderado día 8. Parámetros: VCV 360 mL, PEEP 12, FiO₂ 0,55. Hoy P/F bajó de 165 a 102 sin causa aparente. Nuevo infiltrado en Rx basal derecha.\n\n**Genera tu lista de hipótesis diagnósticas ordenada por probabilidad:**\n\n1. Neumonía asociada a ventilación mecánica (NAVM) — lo más frecuente en día 8 con nuevo infiltrado.\n2. Atelectasia lobar por tapón mucoso — causa tratable con fisio/broncoscopio.\n3. Derrame pleural significativo — evaluar con eco a la cabecera.\n4. Progresión del SDRA — si las anteriores se descartan.\n5. Tromboembolismo pulmonar — menos frecuente pero mortal si se omite.\n\n**Pasos inmediatos:**\n- Auscultación + eco pulmonar rápido (B-lines, derrame).\n- Rx o TC tórax urgente.\n- Hemocultivos + aspirado traqueal para cultivo.\n- Ajuste de FiO₂ mientras se investiga.\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 30 pts | Actividad 2 → 35 pts | Actividad 3 → 35 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 7
+    },
+    {
       "id": "rcpc-summary",
-      "order": 7,
+      "order": 8,
       "type": "summary",
       "title": "Cierre: resumen y checklist",
       "content": {

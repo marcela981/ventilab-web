@@ -36,6 +36,7 @@ import {
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
   CheckCircle as CheckCircleIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material';
 
 /**
@@ -51,23 +52,49 @@ const LessonIndexNavigator = ({
   lessonId,
 }) => {
   const [expanded, setExpanded] = React.useState(false);
+  const [panelVisible, setPanelVisible] = React.useState(true);
 
   // Don't render if module is not completed
   if (!isModuleCompleted) {
     return null;
   }
 
-  const handleToggle = () => {
-    setExpanded(!expanded);
-  };
+  const handleToggle = () => setExpanded(!expanded);
+  const handleHide = (e) => { e.stopPropagation(); setPanelVisible(false); };
+  const handleShow = () => { setPanelVisible(true); };
 
   const handlePageClick = (pageIndex) => {
     if (onNavigateToPage && pageIndex >= 0 && pageIndex < totalPages) {
       onNavigateToPage(pageIndex);
-      // Optionally collapse after navigation
-      // setExpanded(false);
     }
   };
+
+  // When panel is hidden, show a small floating icon to bring it back
+  if (!panelVisible) {
+    return (
+      <Tooltip title="Mostrar índice de lección" placement="left">
+        <IconButton
+          onClick={handleShow}
+          sx={{
+            position: 'fixed',
+            top: 80,
+            right: 16,
+            zIndex: 1200,
+            backgroundColor: 'rgba(18, 18, 18, 0.95)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            color: 'rgba(255, 255, 255, 0.8)',
+            '&:hover': {
+              backgroundColor: 'rgba(33, 150, 243, 0.2)',
+              borderColor: '#2196F3',
+              color: '#2196F3',
+            },
+          }}
+        >
+          <MenuBookIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+    );
+  }
 
   // Get page type label for display
   const getPageLabel = (page, index) => {
@@ -127,26 +154,28 @@ const LessonIndexNavigator = ({
           <MenuBookIcon sx={{ fontSize: 20, color: 'rgba(255, 255, 255, 0.8)' }} />
           <Typography
             variant="subtitle2"
-            sx={{
-              fontWeight: 600,
-              color: '#ffffff',
-              fontSize: '0.875rem',
-            }}
+            sx={{ fontWeight: 600, color: '#ffffff', fontSize: '0.875rem' }}
           >
             Índice de Lección
           </Typography>
         </Box>
-        <IconButton
-          size="small"
-          sx={{
-            color: 'rgba(255, 255, 255, 0.7)',
-            '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            },
-          }}
-        >
-          {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-        </IconButton>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <IconButton
+            size="small"
+            sx={{ color: 'rgba(255, 255, 255, 0.7)', '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+          >
+            {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </IconButton>
+          <Tooltip title="Ocultar índice" placement="left">
+            <IconButton
+              size="small"
+              onClick={handleHide}
+              sx={{ color: 'rgba(255, 255, 255, 0.5)', '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)', color: 'rgba(255,255,255,0.9)' } }}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Box>
 
       {/* Content - Collapsible */}

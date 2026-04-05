@@ -206,8 +206,18 @@
       }
     },
     {
+      "id": "m4-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Selección del modo ventilatorio",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Selección del modo ventilatorio\n\n> Ejercita tu criterio clínico para elegir el modo más adecuado en cada escenario. No bloquea avance.\n\n---\n\n### Actividad 1 — Mapa de modos\n\nUbica cada modo en la categoría correcta:\n\n| Modo | Control por volumen | Control por presión | Modo mixto/dual |\n|---|---|---|---|\n| VCV | ✓ | | |\n| PCV | | ✓ | |\n| PRVC (Pressure-Regulated Volume Control) | | | ✓ |\n| PSV | | ✓ | |\n| SIMV | | | ✓ |\n| APRV | | ✓ | |\n\n---\n\n### Actividad 2 — Escenarios clínicos\n\nPara cada paciente, justifica brevemente el modo que elegirías:\n\n**Paciente A:** SDRA severo, sedoanalgesia profunda, sin esfuerzo respiratorio espontáneo.\n*Sugerencia:* VCV o PCV con parámetros fijos, ventilación protectora (Vt 4–6 mL/kg, P_meseta ≤ 28–30 cmH₂O).\n\n**Paciente B:** Post-extubación fallida, respiración espontánea parcial, hipercapnia moderada.\n*Sugerencia:* PSV o BiPAP (VMNI), soporte suficiente para reducir trabajo respiratorio pero preservando drive espontáneo.\n\n**Paciente C:** Neumonía unilateral, paciente cooperador, iniciando destete.\n*Sugerencia:* PSV con reducción progresiva del soporte (titulación diaria), o SIMV con PSV de respaldo.\n\n---\n\n### Actividad 3 — Ventaja/desventaja\n\nCompleta la tabla:\n\n| Modo | Principal ventaja | Principal riesgo |\n|---|---|---|\n| VCV | Vt garantizado | Barotrauma si compliance ↓ |\n| PCV | Presión limitada | Vt variable si mecánica cambia |\n| PSV | Sincronía con el paciente | Apnea si drive respiratorio ↓ |\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1: mapa correcto → 30 pts\n- Actividad 2: justificación de escenarios → 50 pts\n- Actividad 3: tabla ventaja/riesgo → 20 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 20
+    },
+    {
       "id": "m4-summary",
-      "order": 20,
+      "order": 21,
       "type": "summary",
       "title": "Cierre: resumen y checklist",
       "content": {
