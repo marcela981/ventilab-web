@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import {
@@ -18,6 +18,11 @@ import {
   Lock as LockIcon,
 } from '@mui/icons-material';
 import ModuleGrid from '@/features/ensenanza/shared/components/modulos/ModuleGrid';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { useEditMode } from '@/features/ensenanza/shared/components/edit/EditModeContext';
+import DragHandle from '@/features/ensenanza/shared/components/edit/DragHandle/DragHandle';
+import GhostAccordion from '@/features/ensenanza/shared/components/edit/GhostAccordion/GhostAccordion';
+import { formatTime } from '@/features/ensenanza/shared/components/edit/EstimatedTime/EstimatedTime';
 
 // Fallback cuando level.color no viene (ej. API antigua o niveles sin color)
 const DEFAULT_LEVEL_COLORS = {
@@ -105,6 +110,24 @@ const LevelStepper = ({
 
   // Estado para el sub-acordeón de patologías dentro del nivel avanzado
   const [expandedPathologies, setExpandedPathologies] = useState(new Set());
+
+  // ── Modo Edición: DnD de niveles ──────────────────────────────────────────
+  const { isEditMode } = useEditMode();
+  const [localLevels, setLocalLevels] = useState(levels);
+  useEffect(() => { setLocalLevels(levels); }, [levels]);
+  const handleDragEnd = useCallback(({ source, destination, type }) => {
+    if (!destination) return;
+    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
+    if (type === 'LEVEL') {
+      setLocalLevels(prev => {
+        const result = [...prev];
+        const [removed] = result.splice(source.index, 1);
+        result.splice(destination.index, 0, removed);
+        return result;
+      });
+      // TODO Fase 3: dispatch API → PATCH /api/levels/reorder
+    }
+  }, []);
 
   // Inicializar con el nivel actual expandido cuando cambie
   useEffect(() => {
@@ -290,8 +313,16 @@ const LevelStepper = ({
       </Typography>
 
       {/* Container de niveles */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {levels.map((level, levelIndex) => {
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Droppable droppableId="curriculum-levels" type="LEVEL">
+            {(dropProvided) => (
+              <div
+                ref={dropProvided.innerRef}
+                {...dropProvided.droppableProps}
+                style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
+              >
+                {localLevels.map((level, levelIndex) => {
           const levelModules = getModulesByLevel ? getModulesByLevel(level.id) : [];
 
           // Función de progreso respaldada por datos del backend (LevelCurriculumModule.progressPercentage).
@@ -305,6 +336,10 @@ const LevelStepper = ({
 
           // totalCards = totalModules del backend (fuente única de verdad).
           // No usamos levelModules.length como fallback secundario para evitar desfase con lo que devuelve la API.
+          // Sumar duración total de los módulos del nivel para el lift-up de tiempo
+          const totalLevelMinutes = levelModules.reduce((acc, m) => acc + (m.duration || 0), 0);
+          const totalLevelTime = formatTime(totalLevelMinutes);
+
           const levelProgRaw = safeLevelProgress[level.id] || {};
           const totalCardsFromBackend = levelProgRaw.totalModules ?? levelProgRaw.total ?? levelModules.length;
 
@@ -328,29 +363,42 @@ const LevelStepper = ({
           const isExpanded = expandedLevels.has(level.id) && isUnlocked;
 
           return (
-            <Accordion
+            <Draggable
               key={level.id}
-              expanded={isExpanded}
-              onChange={isUnlocked ? handleAccordionChange(level.id) : undefined}
-              sx={{
-                backgroundColor: isUnlocked ? 'transparent' : 'rgba(0,0,0,0.25)',
-                border: isUnlocked
-                  ? '1px solid rgba(255, 255, 255, 0.1)'
-                  : '1px solid rgba(255, 255, 255, 0.06)',
-                borderRadius: 2,
-                mb: 2,
-                boxShadow: 'none',
-                opacity: isUnlocked ? 1 : 0.55,
-                cursor: isUnlocked ? 'default' : 'not-allowed',
-                '&:before': {
-                  display: 'none'
-                },
-                '&.Mui-expanded': {
-                  margin: 0,
-                  marginBottom: 2
-                }
-              }}
+              draggableId={`level-${level.id}`}
+              index={levelIndex}
+              isDragDisabled={!isEditMode}
             >
+              {(dragProvided, dragSnapshot) => (
+                <div
+                  ref={dragProvided.innerRef}
+                  {...dragProvided.draggableProps}
+                  style={dragProvided.draggableProps.style}
+                >
+                  <Accordion
+                    expanded={isExpanded}
+                    onChange={isUnlocked ? handleAccordionChange(level.id) : undefined}
+                    sx={{
+                      backgroundColor: isUnlocked ? 'transparent' : 'rgba(0,0,0,0.25)',
+                      border: isUnlocked
+                        ? dragSnapshot.isDragging
+                          ? '1px solid rgba(11,186,244,0.6)'
+                          : '1px solid rgba(255, 255, 255, 0.1)'
+                        : '1px solid rgba(255, 255, 255, 0.06)',
+                      borderRadius: 2,
+                      mb: 2,
+                      boxShadow: dragSnapshot.isDragging ? '0 8px 32px rgba(0,0,0,0.5)' : 'none',
+                      opacity: isUnlocked ? 1 : 0.55,
+                      cursor: isUnlocked ? 'default' : 'not-allowed',
+                      '&:before': {
+                        display: 'none'
+                      },
+                      '&.Mui-expanded': {
+                        margin: 0,
+                        marginBottom: 2
+                      }
+                    }}
+                  >
               <AccordionSummary
                 expandIcon={
                   isUnlocked
@@ -373,6 +421,13 @@ const LevelStepper = ({
                   }
                 }}
               >
+                {/* DragHandle: stopPropagation evita toggle del acordeón al agarrar */}
+                <span onClick={(e) => e.stopPropagation()}>
+                  <DragHandle
+                    dragHandleProps={dragProvided.dragHandleProps}
+                    isDragging={dragSnapshot.isDragging}
+                  />
+                </span>
                 {/* Header del nivel */}
                 <Box sx={{ width: '100%', mr: 2 }}>
                   <Box
@@ -516,7 +571,8 @@ const LevelStepper = ({
                           sx={{
                             display: 'flex',
                             alignItems: 'baseline',
-                            gap: 0.5
+                            gap: 0.5,
+                            flexWrap: 'wrap',
                           }}
                         >
                           <Typography
@@ -542,6 +598,23 @@ const LevelStepper = ({
                               : `(${levelProg.completed}/${levelProg.totalModules} tarjetas)`
                             }
                           </Typography>
+                          {/* Lift-up de tiempo total del nivel */}
+                          {totalLevelTime && (
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: 'rgba(255, 255, 255, 0.4)',
+                                fontSize: '0.68rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '3px',
+                              }}
+                            >
+                              ·
+                              <span aria-hidden="true">⏱</span>
+                              {totalLevelTime}
+                            </Typography>
+                          )}
                         </Box>
                       </Box>
                     </Box>
@@ -549,13 +622,22 @@ const LevelStepper = ({
                 </Box>
               </AccordionSummary>
 
-              <AccordionDetails sx={{ px: 3, pb: 3 }}>
-                {renderModuleGrid(levelModules, level, dbProgressFn)}
-              </AccordionDetails>
-            </Accordion>
+                  <AccordionDetails sx={{ px: 3, pb: 3 }}>
+                    {renderModuleGrid(levelModules, level, dbProgressFn)}
+                  </AccordionDetails>
+                </Accordion>
+                </div>
+              )}
+            </Draggable>
           );
         })}
-      </Box>
+        {dropProvided.placeholder}
+              </div>
+            )}
+          </Droppable>
+          {isEditMode && <GhostAccordion label="Agregar nivel" depth={0} />}
+        </Box>
+      </DragDropContext>
     </Box>
   );
 };

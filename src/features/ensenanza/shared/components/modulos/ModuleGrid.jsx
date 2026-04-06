@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useEffect } from 'react';
+import React, { useMemo, useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -14,6 +14,10 @@ import { useLearningProgress } from '@/features/progress/LearningProgressContext
 import { buildLessonsArray } from './lessonHelpers';
 import { useLessonAvailability } from '@/features/ensenanza/shared/hooks/useLessonAvailability';
 import { curriculumData } from '@/features/ensenanza/shared/data/curriculumData';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { useEditMode } from '@/features/ensenanza/shared/components/edit/EditModeContext';
+import DragHandle from '@/features/ensenanza/shared/components/edit/DragHandle/DragHandle';
+import GhostCard from '@/features/ensenanza/shared/components/edit/GhostCard/GhostCard';
 
 /**
  * ModuleGrid - Componente unificado y optimizado para renderizar grid de módulos
@@ -74,6 +78,22 @@ const ModuleGrid = ({
 }) => {
   const { loadModuleProgress, progressByModule } = useLearningProgress();
   const { isLessonAvailable } = useLessonAvailability();
+
+  // ── Modo Edición: DnD de módulos ─────────────────────────────────────────
+  const { isEditMode } = useEditMode();
+  const [localModules, setLocalModules] = useState(modules);
+  useEffect(() => { setLocalModules(modules); }, [modules]);
+  const handleModuleDragEnd = useCallback(({ source, destination }) => {
+    if (!destination) return;
+    if (source.index === destination.index) return;
+    setLocalModules(prev => {
+      const result = [...prev];
+      const [removed] = result.splice(source.index, 1);
+      result.splice(destination.index, 0, removed);
+      return result;
+    });
+    // TODO Fase 3: dispatch API → PATCH /api/modules/reorder
+  }, []);
   
   // Si mode === 'lessons', construir arreglo plano de lecciones
   const lessons = useMemo(() => {
@@ -173,10 +193,11 @@ const ModuleGrid = ({
    * @returns {Array} Array ordenado
    */
   const sortedItems = useMemo(() => {
-    // Para lecciones, usar las lecciones ya ordenadas por nivel
-    const itemsToSort = mode === 'lessons' 
+    // Para lecciones, usar las lecciones ya ordenadas por nivel.
+    // Para módulos, usar localModules (estado local que permite reorden DnD).
+    const itemsToSort = mode === 'lessons'
       ? (sortedLessonsInLevel.length > 0 ? sortedLessonsInLevel : lessons)
-      : modules;
+      : localModules;
     
     if (!sortBy || itemsToSort.length === 0) return itemsToSort;
 
@@ -322,40 +343,20 @@ const ModuleGrid = ({
     );
   }
 
-  // Componente de card a usar según el modo
-  const CardComponent = mode === 'lessons' 
-    ? LessonCard 
-    : (CustomModuleCard || ModuleCard);
-
-  // Calcular módulos completados (progreso = 100%) - solo para modo modules
-  const completedModules = useMemo(() => {
-    if (mode !== 'modules') return [];
-    return modules
-      .filter(module => {
-        const progress = progressByModuleFromHook[module.id];
-        return progress?.percentInt === 100;
-      })
-      .map(module => module.id);
-  }, [modules, progressByModuleFromHook, mode]);
-
-  return (
-    <div
-      className={styles.grid}
-      role="list"
-      aria-label={mode === 'lessons' ? 'Lista de lecciones de aprendizaje' : 'Lista de módulos de aprendizaje'}
-    >
-      {sortedItems.map((item, index) => {
-        if (mode === 'lessons') {
-          // Renderizar LessonCard
+  // Render para modo lecciones (sin DnD — lecciones no son reordenables manualmente)
+  if (mode === 'lessons') {
+    return (
+      <div
+        className={styles.grid}
+        role="list"
+        aria-label="Lista de lecciones de aprendizaje"
+      >
+        {sortedItems.map((item, index) => {
           const lesson = item;
-          // Verificar disponibilidad usando la lógica de desbloqueo secuencial
           const available = isLessonAvailable(lesson, sortedLessonsInLevel);
-          
-          // Obtener allowEmpty del lesson
           const allowEmpty = lesson.allowEmpty === true;
-          
           const cardContent = (
-            <CardComponent
+            <LessonCard
               lesson={lesson}
               isAvailable={available && !allowEmpty}
               allowEmpty={allowEmpty}
@@ -363,97 +364,113 @@ const ModuleGrid = ({
               onLessonClick={handleLessonClick}
             />
           );
-
-          // Renderizar con o sin animación
-          const wrappedContent = enableAnimations ? (
-            <Fade
-              in={true}
-              timeout={300 + index * 50}
-              style={{ transitionDelay: `${index * 50}ms` }}
-            >
-              <div>
-                {cardContent}
-              </div>
-            </Fade>
-          ) : (
-            cardContent
-          );
-
           return (
             <div
               key={`${lesson.moduleId}-${lesson.lessonId}`}
               role="listitem"
               aria-label={`Lección: ${lesson.title}`}
             >
-              {wrappedContent}
+              {enableAnimations ? (
+                <Fade in timeout={300 + index * 50} style={{ transitionDelay: `${index * 50}ms` }}>
+                  <div>{cardContent}</div>
+                </Fade>
+              ) : cardContent}
             </div>
           );
-        } else {
-          // Renderizar ModuleCard (código original)
+        })}
+      </div>
+    );
+  }
+
+  // Render para modo módulos con DnD e integración de Modo Edición
+  const CardComponent = CustomModuleCard || ModuleCard;
+  const completedModuleIds = sortedItems
+    .filter(m => progressByModuleFromHook[m.id]?.percentInt === 100)
+    .map(m => m.id);
+
+  return (
+    <DragDropContext onDragEnd={handleModuleDragEnd}>
+      <div>
+        <Droppable droppableId="module-grid" type="MODULE" direction="horizontal">
+          {(dropProvided) => (
+            <div
+              ref={dropProvided.innerRef}
+              {...dropProvided.droppableProps}
+              className={styles.grid}
+              role="list"
+              aria-label="Lista de módulos de aprendizaje"
+            >
+              {sortedItems.map((item, index) => {
+          // Renderizar ModuleCard con Draggable + DragHandle overlay
           const module = item;
-          // Usar progreso precalculado del hook
           const precalculatedProgress = progressByModuleFromHook[module.id];
-          
-          // Mantener compatibilidad con función legacy si no hay progreso del hook
           const moduleProgress = precalculatedProgress?.percentInt ?? (
-            calculateModuleProgress
-              ? calculateModuleProgress(module.id)
-              : 0
+            calculateModuleProgress ? calculateModuleProgress(module.id) : 0
           );
-          
-          const available = isModuleAvailable
-            ? isModuleAvailable(module.id)
-            : true;
-          const isFavorite = favoriteModules && typeof favoriteModules.has === 'function' 
-            ? favoriteModules.has(module.id) 
+          const available = isModuleAvailable ? isModuleAvailable(module.id) : true;
+          const isFavorite = favoriteModules && typeof favoriteModules.has === 'function'
+            ? favoriteModules.has(module.id)
             : false;
 
           const cardContent = (
             <CardComponent
               module={module}
-              moduleProgress={moduleProgress} // DEPRECATED: mantener por compatibilidad
+              moduleProgress={moduleProgress}
               isAvailable={available}
               isFavorite={isFavorite}
               onModuleClick={handleModuleClick}
               onToggleFavorite={handleToggleFavorite}
-              onLessonClick={onModuleClick} // Reutilizar handleModuleClick para lecciones
+              onLessonClick={onModuleClick}
               getStatusIcon={getStatusIconFn}
               getButtonText={getButtonTextFn}
               getButtonIcon={getButtonIconFn}
               levelColor={levelColor ?? module.levelColor ?? '#4CAF50'}
-              completedModules={completedModules}
-              precalculatedProgress={precalculatedProgress} // Pasar progreso agregado completo
+              completedModules={completedModuleIds}
+              precalculatedProgress={precalculatedProgress}
             />
           );
 
-          // Renderizar con o sin animación
-          // Nota: Fade necesita un wrapper, pero lo mantenemos mínimo para no romper el grid
-          const wrappedContent = enableAnimations ? (
-            <Fade
-              in={true}
-              timeout={300 + index * 50}
-              style={{ transitionDelay: `${index * 50}ms` }}
-            >
-              <div>
-                {cardContent}
-              </div>
-            </Fade>
-          ) : (
-            cardContent
-          );
-
           return (
-            <div
+            <Draggable
               key={module.id}
-              role="listitem"
-              aria-label={`Módulo: ${module.title}`}
+              draggableId={`module-${module.id}`}
+              index={index}
+              isDragDisabled={!isEditMode}
             >
-              {wrappedContent}
-            </div>
+              {(dragProvided, dragSnapshot) => (
+                <div
+                  ref={dragProvided.innerRef}
+                  {...dragProvided.draggableProps}
+                  style={dragProvided.draggableProps.style}
+                  role="listitem"
+                  aria-label={`Módulo: ${module.title}`}
+                  className="card-edit-wrapper"
+                >
+                  {/* Posición relativa para el DragHandle overlay */}
+                  <div style={{ position: 'relative' }}>
+                    <DragHandle
+                      dragHandleProps={dragProvided.dragHandleProps}
+                      isDragging={dragSnapshot.isDragging}
+                      isCardOverlay
+                    />
+                    {enableAnimations && !dragSnapshot.isDragging ? (
+                      <Fade in timeout={300 + index * 50} style={{ transitionDelay: `${index * 50}ms` }}>
+                        <div>{cardContent}</div>
+                      </Fade>
+                    ) : cardContent}
+                  </div>
+                </div>
+              )}
+            </Draggable>
           );
-        }
-      })}
-    </div>
+        })}
+        {dropProvided.placeholder}
+      </div>
+    )}
+  </Droppable>
+  {isEditMode && <GhostCard label="Agregar módulo" />}
+      </div>
+    </DragDropContext>
   );
 };
 

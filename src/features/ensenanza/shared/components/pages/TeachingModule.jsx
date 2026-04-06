@@ -19,6 +19,7 @@ import { useLearningProgress } from '@/features/progress/LearningProgressContext
 import useModuleProgress from '@/features/ensenanza/shared/hooks/useModuleProgress';
 import useModuleAvailability from '@/features/ensenanza/shared/hooks/useModuleAvailability';
 import useTeachingModule from '@/features/ensenanza/shared/hooks/useTeachingModule';
+import { useAuth } from '@/shared/hooks/useAuth';
 import useUserProgress from '@/features/ensenanza/shared/hooks/useUserProgress';
 import { curriculumData } from '@/features/ensenanza/shared/data/curriculumData';
 import useLevelsCurriculum from '@/features/ensenanza/shared/hooks/useLevelsCurriculum';
@@ -50,7 +51,6 @@ import DashboardTab from '@/features/dashboard/DashboardTab';
 // Edit Mode (Fase 2 — Editor in-place estilo Notion)
 import { EditModeProvider } from '../edit/EditModeContext';
 import EditModeToggle from '../edit/EditModeToggle';
-import NotionCurriculumEditor from '../edit/NotionCurriculumEditor';
 
 /**
  * TeachingModule - Componente orquestador del módulo de enseñanza
@@ -156,6 +156,10 @@ const TeachingModule = () => {
     getModuleStatus
   } = useModuleAvailability(calculateModuleProgress);
 
+  // Teacher / Admin mode: oculta tabs innecesarios y desbloquea todo el curriculum
+  const { isTeacher } = useAuth();
+  const isTeacherMode = useMemo(() => isTeacher(), [isTeacher]);
+
   // Estados locales mínimos
   const [favoriteModules, setFavoriteModules] = useState(new Set());
 
@@ -201,6 +205,11 @@ const TeachingModule = () => {
    * @returns {Object} { canAccess: boolean, missingPrerequisites: Array }
    */
   const checkLessonPrerequisites = useCallback((moduleId, lessonId) => {
+    // TEACHER / ADMIN / SUPERUSER: acceso irrestricto a todo el contenido
+    if (isTeacherMode) {
+      return { canAccess: true, missingPrerequisites: [] };
+    }
+
     const module = curriculumData.modules[moduleId];
     if (!module) {
       return { canAccess: false, missingPrerequisites: [], error: 'Módulo no encontrado' };
@@ -840,6 +849,11 @@ const TeachingModule = () => {
     }
   }, [moduleIdFromQuery, activeModuleId, initializeModuleThree]);
 
+  // Teacher mode: forzar tab Curriculum (index 1), ignorar Dashboard y Mi Progreso
+  useEffect(() => {
+    if (isTeacherMode) setActiveTab(1);
+  }, [isTeacherMode]);
+
   // Effect: inicialización y responsive
   useEffect(() => {
     setCurrentModule('teaching', { loadProgress: false });
@@ -856,6 +870,12 @@ const TeachingModule = () => {
 
   // Effect: leer query parameter para tab inicial y verificar prerequisitos
   useEffect(() => {
+    // Teachers always stay on Curriculum — URL tab param is ignored for them
+    if (isTeacherMode) {
+      setActiveTab(1);
+      return;
+    }
+
     const tabParam = router.query.tab;
 
     if (tabParam === 'dashboard') {
@@ -993,15 +1013,17 @@ const TeachingModule = () => {
               activeTab={activeTab}
             />
 
-      {/* Tabs Navigation - Using extracted component */}
-      <TeachingTabs
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        isMobile={isMobile}
-      />
+      {/* Tabs Navigation - Hidden for TEACHER/ADMIN (they only see Curriculum) */}
+      {!isTeacherMode && (
+        <TeachingTabs
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          isMobile={isMobile}
+        />
+      )}
 
-      {/* TAB PANEL 0: Dashboard */}
-      {activeTab === 0 && (
+      {/* TAB PANEL 0: Dashboard — solo estudiantes */}
+      {!isTeacherMode && activeTab === 0 && (
         dashboardDataForTab ? (
           <DashboardTab
             data={dashboardDataForTab}
@@ -1016,8 +1038,8 @@ const TeachingModule = () => {
         )
       )}
 
-      {/* TAB PANEL 1: Curriculum */}
-      {activeTab === 1 && (
+      {/* TAB PANEL 1: Curriculum — siempre visible para TEACHER/ADMIN */}
+      {(isTeacherMode || activeTab === 1) && (
         <Box>
           <CurriculumPanel
             moduleIdFromQuery={moduleIdFromQuery}
@@ -1040,11 +1062,8 @@ const TeachingModule = () => {
             levels={levelsForUI}
           />
 
-          {/* Editor in-place Notion — visible solo cuando Modo Edición está activo */}
-          <NotionCurriculumEditor
-            levels={levelsForUI}
-            getModulesByLevel={dbGetModulesByLevel}
-          />
+          {/* Modo Edición: los controles (DragHandle, GhostCard, GhostAccordion)
+               se inyectan directamente en LevelStepper y ModuleGrid */}
 
           {/* Module 3 Progress Dashboard - Mostrado cuando se está en el módulo 3 */}
           {showModule3Dashboard && (
@@ -1081,8 +1100,8 @@ const TeachingModule = () => {
         </Box>
       )}
 
-      {/* TAB PANEL 2: Mi Progreso */}
-      {activeTab === 2 && (
+      {/* TAB PANEL 2: Mi Progreso — solo estudiantes */}
+      {!isTeacherMode && activeTab === 2 && (
         <Box>
           <Suspense fallback={<ProgressTabSkeleton />}>
             {isLoadingProgress ? (

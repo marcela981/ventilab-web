@@ -1,9 +1,15 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useTheme, useMediaQuery, Skeleton, Snackbar, Alert, Box } from '@mui/material';
+import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import { useLearningProgress } from '@/features/progress/LearningProgressContext';
 import useModuleAvailability from '@/features/ensenanza/shared/hooks/useModuleAvailability';
+import { useAuth } from '@/shared/hooks/useAuth';
 import { useModuleProgress } from '@/features/ensenanza/shared/hooks/useModuleProgress';
+import { useEditMode } from '@/features/ensenanza/shared/components/edit/EditModeContext';
+import DependencyModal from '@/features/ensenanza/shared/components/edit/DependencyModal/DependencyModal';
+import { curriculumData } from '@/features/ensenanza/shared/data/curriculumData';
+import depStyles from '@/features/ensenanza/shared/components/edit/DependencyModal/ui/DependencyModal.module.css';
 
 import { useModuleLessonsCount } from '@/features/ensenanza/shared/hooks/useModuleLessonsCount';
 import { getModuleStatus } from './moduleCardHelpers';
@@ -76,6 +82,10 @@ const ModuleCard = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { isTeacher } = useAuth();
+  const isTeacherPlus = isTeacher();
+  const { isEditMode } = useEditMode();
+  const [depModalOpen, setDepModalOpen] = useState(false);
   
 
   
@@ -239,16 +249,13 @@ const ModuleCard = ({
   
   // Determinar disponibilidad final del módulo.
   // PRIORIDAD:
-  // 1) Módulos coming_soon nunca están disponibles.
-  // 2) Si el padre proporciona isAvailableProp (desde ModuleGrid / LevelStepper),
-  //    usar SIEMPRE ese valor como fuente de verdad para habilitar o bloquear el módulo.
+  // 0) TEACHER / ADMIN / SUPERUSER: acceso irrestricto — ignora isAvailableProp y coming_soon.
+  // 1) Módulos coming_soon nunca están disponibles para estudiantes.
+  // 2) Si el padre proporciona isAvailableProp, usar ese valor como fuente de verdad.
   // 3) Si no se proporciona isAvailableProp, usar el cálculo interno del hook useModuleAvailability.
-  //
-  // Esto evita que el hook interno "corrija" a bloqueado un módulo que el grid ya marcó como disponible,
-  // lo que hacía que el botón se viera deshabilitado aunque la lógica externa dijera que debía estar activo.
-  const finalIsAvailable = isComingSoon
-    ? false
-    : (isAvailableProp !== undefined ? isAvailableProp : isAvailable);
+  const finalIsAvailable = isTeacherPlus
+    ? true
+    : (isComingSoon ? false : (isAvailableProp !== undefined ? isAvailableProp : isAvailable));
   
   // Usar progreso para determinar el status
   // El botón debe mostrarse siempre que el módulo esté disponible (por prerrequisitos)
@@ -365,6 +372,24 @@ const ModuleCard = ({
             </Box>
           )}
   
+          {/* Switch de dependencias — solo visible en modo edición para teacher+ */}
+          {isEditMode && isTeacherPlus && (
+            <div style={{ padding: '2px 16px 4px' }}>
+              <button
+                type="button"
+                className={`${depStyles['dep-switch']} ${(module.prerequisites?.length > 0) ? depStyles['dep-switch--active'] : ''}`}
+                onClick={(e) => { e.stopPropagation(); setDepModalOpen(true); }}
+                aria-label="Editar prerequisitos del módulo"
+              >
+                <AccountTreeOutlinedIcon className={depStyles['dep-switch__icon']} style={{ fontSize: 12 }} />
+                Prerequisitos
+                {module.prerequisites?.length > 0 && (
+                  <span className={depStyles['dep-switch__badge']} data-count={module.prerequisites.length} />
+                )}
+              </button>
+            </div>
+          )}
+
           <ModuleCardMeta
             module={module}
             isAvailable={finalIsAvailable}
@@ -391,6 +416,21 @@ const ModuleCard = ({
         </div>
       </article>
       
+      {/* Modal de prerequisitos — solo accesible en modo edición */}
+      {isEditMode && isTeacherPlus && (
+        <DependencyModal
+          open={depModalOpen}
+          onClose={() => setDepModalOpen(false)}
+          onSave={(selectedIds) => {
+            // TODO Fase 3: PATCH /api/modules/{module.id}/prerequisites
+            console.log('[DependencyModal] prerequisites updated:', selectedIds);
+          }}
+          module={module}
+          allModules={curriculumData.modules}
+          levels={curriculumData.levels}
+        />
+      )}
+
       {/* Snackbar para errores de sincronización */}
       <Snackbar
         open={snackbarOpen}

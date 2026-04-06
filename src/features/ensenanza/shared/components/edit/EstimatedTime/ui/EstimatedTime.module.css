@@ -1,0 +1,101 @@
+/*
+ * EstimatedTime.module.css
+ * BEM root: est-time
+ *
+ * Tokens de diseño heredados de edit-mode.css (:root)
+ */
+
+/* ─── Display (modo lectura) ─────────────────────────────────────────────── */
+
+.est-time__display {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--edit-border-radius-badge, 12px);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.7rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ─── Trigger (botón editable) ───────────────────────────────────────────── */
+
+.est-time__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: var(--edit-border-radius-badge, 12px);
+  border: 1px dashed rgba(11, 186, 244, 0.42);
+  background: transparent;
+  color: rgba(11, 186, 244, 0.65);
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--edit-transition, 0.2s ease-in-out);
+  white-space: nowrap;
+}
+
+.est-time__trigger:hover {
+  background: rgba(11, 186, 244, 0.1);
+  border-color: rgba(11, 186, 244, 0.7);
+  color: #0bbaf4;
+}
+
+.est-time__trigger--empty {
+  opacity: 0.45;
+}
+
+.est-time__trigger--empty:hover {
+  opacity: 1;
+}
+
+/* ─── Modo edición inline ────────────────────────────────────────────────── */
+
+.est-time__edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: var(--edit-border-radius-badge, 12px);
+  border: 1px solid rgba(11, 186, 244, 0.6);
+  background: rgba(11, 186, 244, 0.08);
+  font-size: 0.7rem;
+}
+
+.est-time__input {
+  width: 44px;
+  border: none;
+  background: transparent;
+  color: #0bbaf4;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-align: center;
+  outline: none;
+  padding: 0;
+  /* Ocultar flechas de number input */
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.est-time__input::-webkit-inner-spin-button,
+.est-time__input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ─── Elementos comunes ──────────────────────────────────────────────────── */
+
+.est-time__icon {
+  font-size: 0.75rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.est-time__unit {
+  color: rgba(11, 186, 244, 0.55);
+  font-size: 0.65rem;
+  flex-shrink: 0;
+}

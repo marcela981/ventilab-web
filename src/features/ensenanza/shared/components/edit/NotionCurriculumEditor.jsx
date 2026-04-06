@@ -1,12 +1,23 @@
 /**
  * NotionCurriculumEditor - Panel de edición in-place estilo Notion.
- * Aparece sobre/debajo del CurriculumPanel cuando isEditMode === true.
- * Muestra la jerarquía real (Nivel → Módulo → Lección) con BlockPills para agregar.
+ * Aparece cuando isEditMode === true.
  *
- * MAQUETACIÓN FRONTEND: los botones (+) son visuales. El backend se conectará en Fase 3.
+ * Drag & Drop (@hello-pangea/dnd):
+ *  - Un único DragDropContext maneja 3 tipos: LEVEL, MODULE, LESSON.
+ *  - El reordenamiento actualiza estado local inmediatamente (optimistic UI).
+ *  - TODO Fase 3: despachar llamada API para persistir el nuevo orden.
+ *
+ * Ghost UI:
+ *  - GhostCard    → último ítem en lista de módulos y de lecciones
+ *  - GhostAccordion → último ítem en lista de niveles
+ *
+ * DragHandle:
+ *  - Grip de 6 puntos, solo visible con isEditMode activo.
+ *  - Se aplica a niveles, módulos y lecciones.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {
   Box, Typography, Accordion, AccordionSummary, AccordionDetails,
   Chip, Divider, Collapse, Alert,
@@ -19,27 +30,44 @@ import {
   Construction as ConstructionIcon,
 } from '@mui/icons-material';
 import { useEditMode } from './EditModeContext';
-import BlockPill from './BlockPill';
+import GhostCard from './GhostCard/GhostCard';
+import GhostAccordion from './GhostAccordion/GhostAccordion';
+import DragHandle from './DragHandle/DragHandle';
 
-// Colores por nivel (coincide con el tema del LMS)
+// ─── Utilidades ──────────────────────────────────────────────────────────────
+
+/** Reordena un array moviendo el ítem de startIndex a endIndex */
+function reorder(list, startIndex, endIndex) {
+  const result = [...list];
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
+  return result;
+}
+
+// ─── Colores por nivel ────────────────────────────────────────────────────────
 const LEVEL_COLORS = {
   0: { bg: 'rgba(76,175,80,0.12)',  border: 'rgba(76,175,80,0.35)',  text: '#81c784' },
   1: { bg: 'rgba(255,152,0,0.12)', border: 'rgba(255,152,0,0.35)', text: '#ffb74d' },
   2: { bg: 'rgba(244,67,54,0.12)', border: 'rgba(244,67,54,0.35)', text: '#e57373' },
 };
 
-function LessonRow({ lesson }) {
+// ─── LessonRow ────────────────────────────────────────────────────────────────
+
+function LessonRow({ lesson, dragHandleProps, isDragging }) {
   return (
     <Box
       sx={{
         display: 'flex', alignItems: 'center', gap: 1,
         py: 0.75, px: 1.5,
         borderRadius: 1,
-        border: '1px solid rgba(255,255,255,0.06)',
-        bgcolor: 'rgba(255,255,255,0.03)',
+        border: '1px solid',
+        borderColor: isDragging ? 'rgba(11,186,244,0.4)' : 'rgba(255,255,255,0.06)',
+        bgcolor: isDragging ? 'rgba(11,186,244,0.06)' : 'rgba(255,255,255,0.03)',
+        transition: 'background 0.15s ease, border-color 0.15s ease',
         '&:hover': { bgcolor: 'rgba(255,255,255,0.06)' },
       }}
     >
+      <DragHandle dragHandleProps={dragHandleProps} isDragging={isDragging} />
       <LessonIcon sx={{ fontSize: 14, color: 'rgba(255,255,255,0.35)', flexShrink: 0 }} />
       <Typography
         variant="caption"
@@ -64,23 +92,38 @@ function LessonRow({ lesson }) {
   );
 }
 
-function ModuleSection({ mod, colorScheme }) {
+LessonRow.propTypes = {
+  lesson: PropTypes.object.isRequired,
+  dragHandleProps: PropTypes.object,
+  isDragging: PropTypes.bool,
+};
+
+// ─── ModuleSection ────────────────────────────────────────────────────────────
+
+function ModuleSection({ mod, colorScheme, dragHandleProps, isDragging, lessons }) {
   const [expanded, setExpanded] = useState(false);
-  const lessons = mod.lessons || [];
 
   return (
-    <Box sx={{ mb: 0.75 }}>
+    <Box
+      sx={{
+        mb: 0.75,
+        borderRadius: 1.5,
+        outline: isDragging ? '1.5px dashed rgba(11,186,244,0.5)' : 'none',
+      }}
+    >
+      {/* Cabecera del módulo */}
       <Box
         onClick={() => setExpanded((v) => !v)}
         sx={{
           display: 'flex', alignItems: 'center', gap: 1,
           px: 1.5, py: 1, borderRadius: 1.5, cursor: 'pointer',
-          bgcolor: 'rgba(255,255,255,0.04)',
+          bgcolor: isDragging ? 'rgba(11,186,244,0.06)' : 'rgba(255,255,255,0.04)',
           border: '1px solid rgba(255,255,255,0.08)',
           transition: 'background 0.15s ease',
           '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' },
         }}
       >
+        <DragHandle dragHandleProps={dragHandleProps} isDragging={isDragging} />
         <ModuleIcon sx={{ fontSize: 16, color: colorScheme.text, flexShrink: 0 }} />
         <Typography
           variant="body2"
@@ -109,22 +152,118 @@ function ModuleSection({ mod, colorScheme }) {
         />
       </Box>
 
+      {/* Lista de lecciones con DnD */}
       <Collapse in={expanded}>
         <Box sx={{ pl: 2.5, pt: 0.5, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          {lessons.map((lesson) => (
-            <LessonRow key={lesson.id} lesson={lesson} />
-          ))}
-          <Box sx={{ pt: 0.5 }}>
-            <BlockPill label="Agregar lección" size="small" indent={0} />
-          </Box>
+          <Droppable droppableId={`lessons-${mod.id}`} type="LESSON">
+            {(dropProvided) => (
+              <div ref={dropProvided.innerRef} {...dropProvided.droppableProps}>
+                {lessons.map((lesson, lessonIdx) => (
+                  <Draggable
+                    key={lesson.id}
+                    draggableId={`lesson-${lesson.id}`}
+                    index={lessonIdx}
+                  >
+                    {(dragProvided, dragSnapshot) => (
+                      <div
+                        ref={dragProvided.innerRef}
+                        {...dragProvided.draggableProps}
+                        style={{
+                          ...dragProvided.draggableProps.style,
+                          marginBottom: '4px',
+                        }}
+                      >
+                        <LessonRow
+                          lesson={lesson}
+                          dragHandleProps={dragProvided.dragHandleProps}
+                          isDragging={dragSnapshot.isDragging}
+                        />
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {dropProvided.placeholder}
+              </div>
+            )}
+          </Droppable>
+          {/* GhostCard como último ítem del mismo flex column */}
+          <GhostCard label="Agregar lección" />
         </Box>
       </Collapse>
     </Box>
   );
 }
 
+ModuleSection.propTypes = {
+  mod: PropTypes.object.isRequired,
+  colorScheme: PropTypes.object.isRequired,
+  dragHandleProps: PropTypes.object,
+  isDragging: PropTypes.bool,
+  lessons: PropTypes.array.isRequired,
+};
+
+// ─── NotionCurriculumEditor ───────────────────────────────────────────────────
+
 export default function NotionCurriculumEditor({ levels = [], getModulesByLevel }) {
   const { isEditMode } = useEditMode();
+
+  // ── Estado local para reordenamiento optimista ──
+  const [localLevels, setLocalLevels] = useState(levels);
+
+  const buildModulesMap = useCallback((lvls) =>
+    Object.fromEntries(lvls.map(level => [
+      level.id,
+      getModulesByLevel ? getModulesByLevel(level.id) : (level.modules || []),
+    ])), [getModulesByLevel]);
+
+  const [localModulesMap, setLocalModulesMap] = useState(() => buildModulesMap(levels));
+
+  const buildLessonsMap = useCallback((modsMap) => {
+    const map = {};
+    Object.values(modsMap).flat().forEach(mod => {
+      map[mod.id] = mod.lessons || [];
+    });
+    return map;
+  }, []);
+
+  const [localLessonsMap, setLocalLessonsMap] = useState(() =>
+    buildLessonsMap(buildModulesMap(levels)));
+
+  // Sincronizar cuando cambian los props (carga inicial desde DB)
+  useEffect(() => {
+    setLocalLevels(levels);
+    const modsMap = buildModulesMap(levels);
+    setLocalModulesMap(modsMap);
+    setLocalLessonsMap(buildLessonsMap(modsMap));
+  }, [levels, buildModulesMap, buildLessonsMap]);
+
+  // ── Handler único de DnD ──
+  const handleDragEnd = useCallback(({ source, destination, type }) => {
+    if (!destination) return;
+    if (
+      source.droppableId === destination.droppableId &&
+      source.index === destination.index
+    ) return;
+
+    if (type === 'LEVEL') {
+      setLocalLevels(prev => reorder(prev, source.index, destination.index));
+      // TODO Fase 3: dispatch API → PATCH /api/levels/reorder
+    } else if (type === 'MODULE') {
+      const levelId = source.droppableId.replace('modules-', '');
+      setLocalModulesMap(prev => ({
+        ...prev,
+        [levelId]: reorder(prev[levelId] || [], source.index, destination.index),
+      }));
+      // TODO Fase 3: dispatch API → PATCH /api/modules/reorder
+    } else if (type === 'LESSON') {
+      const modId = source.droppableId.replace('lessons-', '');
+      setLocalLessonsMap(prev => ({
+        ...prev,
+        [modId]: reorder(prev[modId] || [], source.index, destination.index),
+      }));
+      // TODO Fase 3: dispatch API → PATCH /api/lessons/reorder
+    }
+  }, []);
 
   if (!isEditMode) return null;
 
@@ -158,72 +297,141 @@ export default function NotionCurriculumEditor({ levels = [], getModulesByLevel 
         </Alert>
       </Box>
 
-      {/* Árbol de contenidos editables */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-        {levels.map((level, idx) => {
-          const colors = LEVEL_COLORS[idx % 3];
-          const modules = getModulesByLevel
-            ? getModulesByLevel(level.id)
-            : (level.modules || []);
+      {/* Árbol curricular con DnD */}
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
 
-          return (
-            <Accordion
-              key={level.id}
-              disableGutters
-              defaultExpanded={idx === 0}
-              sx={{
-                bgcolor: 'rgba(255,255,255,0.03)',
-                border: `1px solid ${colors.border}`,
-                borderRadius: '10px !important',
-                '&:before': { display: 'none' },
-                boxShadow: 'none',
-              }}
-            >
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon sx={{ color: colors.text }} />}
-                sx={{ px: 2, minHeight: 48 }}
+          {/* Droppable de niveles */}
+          <Droppable droppableId="curriculum-levels" type="LEVEL">
+            {(dropProvided) => (
+              <div
+                ref={dropProvided.innerRef}
+                {...dropProvided.droppableProps}
+                style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <LevelIcon sx={{ fontSize: 18, color: colors.text }} />
-                  <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#fff' }}>
-                    {level.title || level.name || level.id}
-                  </Typography>
-                  <Chip
-                    label={`${modules.length} módulos`}
-                    size="small"
-                    sx={{
-                      height: 20, fontSize: '0.65rem',
-                      bgcolor: colors.bg,
-                      color: colors.text,
-                      border: `1px solid ${colors.border}`,
-                      '& .MuiChip-label': { px: 1 },
-                    }}
-                  />
-                </Box>
-              </AccordionSummary>
+                {localLevels.map((level, idx) => {
+                  const colors = LEVEL_COLORS[idx % 3];
+                  const modules = localModulesMap[level.id] || [];
 
-              <AccordionDetails sx={{ px: 2, pt: 0, pb: 2 }}>
-                <Divider sx={{ bgcolor: 'rgba(255,255,255,0.07)', mb: 1.5 }} />
+                  return (
+                    <Draggable
+                      key={level.id}
+                      draggableId={`level-${level.id}`}
+                      index={idx}
+                    >
+                      {(dragProvided, dragSnapshot) => (
+                        <div
+                          ref={dragProvided.innerRef}
+                          {...dragProvided.draggableProps}
+                          style={dragProvided.draggableProps.style}
+                        >
+                          <Accordion
+                            disableGutters
+                            defaultExpanded={idx === 0}
+                            sx={{
+                              bgcolor: dragSnapshot.isDragging
+                                ? 'rgba(11,186,244,0.05)'
+                                : 'rgba(255,255,255,0.03)',
+                              border: `1px solid ${dragSnapshot.isDragging
+                                ? 'rgba(11,186,244,0.5)'
+                                : colors.border}`,
+                              borderRadius: '10px !important',
+                              '&:before': { display: 'none' },
+                              boxShadow: dragSnapshot.isDragging
+                                ? '0 8px 24px rgba(0,0,0,0.4)'
+                                : 'none',
+                              transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
+                            }}
+                          >
+                            <AccordionSummary
+                              expandIcon={<ExpandMoreIcon sx={{ color: colors.text }} />}
+                              sx={{ px: 2, minHeight: 48 }}
+                            >
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, width: '100%' }}>
+                                {/* DragHandle para el nivel — stopPropagation evita toggle */}
+                                <span onClick={(e) => e.stopPropagation()}>
+                                  <DragHandle
+                                    dragHandleProps={dragProvided.dragHandleProps}
+                                    isDragging={dragSnapshot.isDragging}
+                                  />
+                                </span>
+                                <LevelIcon sx={{ fontSize: 18, color: colors.text }} />
+                                <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#fff' }}>
+                                  {level.title || level.name || level.id}
+                                </Typography>
+                                <Chip
+                                  label={`${modules.length} módulos`}
+                                  size="small"
+                                  sx={{
+                                    height: 20, fontSize: '0.65rem',
+                                    bgcolor: colors.bg,
+                                    color: colors.text,
+                                    border: `1px solid ${colors.border}`,
+                                    '& .MuiChip-label': { px: 1 },
+                                  }}
+                                />
+                              </Box>
+                            </AccordionSummary>
 
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                  {modules.map((mod) => (
-                    <ModuleSection key={mod.id} mod={mod} colorScheme={colors} />
-                  ))}
-                </Box>
+                            <AccordionDetails sx={{ px: 2, pt: 0, pb: 2 }}>
+                              <Divider sx={{ bgcolor: 'rgba(255,255,255,0.07)', mb: 1.5 }} />
 
-                <Box sx={{ mt: 1.5, display: 'flex', gap: 1 }}>
-                  <BlockPill label="Agregar módulo" />
-                </Box>
-              </AccordionDetails>
-            </Accordion>
-          );
-        })}
-      </Box>
+                              {/* Lista de módulos con DnD */}
+                              <Droppable droppableId={`modules-${level.id}`} type="MODULE">
+                                {(modDropProvided) => (
+                                  <div
+                                    ref={modDropProvided.innerRef}
+                                    {...modDropProvided.droppableProps}
+                                    style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}
+                                  >
+                                    {modules.map((mod, modIdx) => (
+                                      <Draggable
+                                        key={mod.id}
+                                        draggableId={`module-${mod.id}`}
+                                        index={modIdx}
+                                      >
+                                        {(modDragProvided, modDragSnapshot) => (
+                                          <div
+                                            ref={modDragProvided.innerRef}
+                                            {...modDragProvided.draggableProps}
+                                            style={modDragProvided.draggableProps.style}
+                                          >
+                                            <ModuleSection
+                                              mod={mod}
+                                              colorScheme={colors}
+                                              dragHandleProps={modDragProvided.dragHandleProps}
+                                              isDragging={modDragSnapshot.isDragging}
+                                              lessons={localLessonsMap[mod.id] || mod.lessons || []}
+                                            />
+                                          </div>
+                                        )}
+                                      </Draggable>
+                                    ))}
+                                    {modDropProvided.placeholder}
+                                  </div>
+                                )}
+                              </Droppable>
 
-      {/* Acción de nivel */}
-      <Box sx={{ mt: 2 }}>
-        <BlockPill label="Agregar nivel" />
-      </Box>
+                              {/* GhostCard módulo: último ítem del mismo contenedor */}
+                              <Box sx={{ mt: 0.5 }}>
+                                <GhostCard label="Agregar módulo" />
+                              </Box>
+                            </AccordionDetails>
+                          </Accordion>
+                        </div>
+                      )}
+                    </Draggable>
+                  );
+                })}
+                {dropProvided.placeholder}
+              </div>
+            )}
+          </Droppable>
+
+          {/* GhostAccordion nivel: último ítem del mismo flex column que los Accordion */}
+          <GhostAccordion label="Agregar nivel" depth={0} />
+        </Box>
+      </DragDropContext>
     </Box>
   );
 }
@@ -236,8 +444,13 @@ NotionCurriculumEditor.propTypes = {
 ModuleSection.propTypes = {
   mod: PropTypes.object.isRequired,
   colorScheme: PropTypes.object.isRequired,
+  dragHandleProps: PropTypes.object,
+  isDragging: PropTypes.bool,
+  lessons: PropTypes.array.isRequired,
 };
 
 LessonRow.propTypes = {
   lesson: PropTypes.object.isRequired,
+  dragHandleProps: PropTypes.object,
+  isDragging: PropTypes.bool,
 };

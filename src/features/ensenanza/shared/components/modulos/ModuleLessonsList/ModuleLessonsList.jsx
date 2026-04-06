@@ -11,6 +11,7 @@
 
 import React, { useState, useContext } from 'react';
 import PropTypes from 'prop-types';
+import { useAuth } from '@/shared/hooks/useAuth';
 import {
   Box,
   Typography,
@@ -326,10 +327,13 @@ const ModuleLessonsList = ({
   onLessonClick,
   isModuleAvailable = true,
   maxLessonsToShow = 3,
-  showTitle = true, // Nueva prop para controlar si se muestra el título
+  showTitle = true,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { isTeacher } = useAuth();
+  // TEACHER / ADMIN / SUPERUSER: nunca ven lecciones bloqueadas
+  const isTeacherPlus = isTeacher();
 
   if (!lessons || lessons.length === 0) {
     return (
@@ -409,7 +413,7 @@ const ModuleLessonsList = ({
           const lessonProgressPercent = Math.round(lessonProgressValue * 100);
           // Lesson is completed ONLY when progress === 1 (100%)
           const isCompleted = lessonProgressValue === 1;
-          const isLocked = !isModuleAvailable; // Por ahora, todas las lecciones comparten el estado del módulo
+          const isLocked = !isTeacherPlus && !isModuleAvailable;
           
           return (
             <Box key={lesson.id}>

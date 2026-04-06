@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+import { useAuth } from '@/shared/hooks/useAuth';
+import { isTeacherOrAbove } from '@/lib/roles';
 
 /**
  * Hook para determinar la disponibilidad de un módulo del currículo
@@ -40,7 +42,18 @@ import { useMemo } from 'react';
  * // Resultado: { isAvailable: true, missingPrerequisites: [], status: 'available' }
  */
 const useModuleAvailability = ({ moduleId, prerequisites = [], completedModules = [] } = {}) => {
+  const { role } = useAuth();
+
   return useMemo(() => {
+    // TEACHER / ADMIN / SUPERUSER: bypass all prerequisite checks
+    if (isTeacherOrAbove(role)) {
+      return {
+        isAvailable: true,
+        missingPrerequisites: [],
+        status: 'available',
+      };
+    }
+
     // Convertir completedModules a Set para búsquedas O(1)
     const completedSet = new Set(completedModules);
     
@@ -58,7 +71,7 @@ const useModuleAvailability = ({ moduleId, prerequisites = [], completedModules 
       missingPrerequisites,
       status
     };
-  }, [moduleId, prerequisites, completedModules]);
+  }, [moduleId, prerequisites, completedModules, role]);
 };
 
 export default useModuleAvailability;

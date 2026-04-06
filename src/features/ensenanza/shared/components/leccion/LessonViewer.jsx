@@ -65,6 +65,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { teachingModuleTheme } from '@/theme/teachingModuleTheme';
 
 import useLesson from '@/features/ensenanza/shared/hooks/useLesson';
+import { useEditMode } from '@/features/ensenanza/shared/components/edit/EditModeContext';
 import { useLearningProgress } from '@/features/progress/LearningProgressContext';
 import useLessonPages from '@/features/ensenanza/shared/hooks/useLessonPages';
 import { useProgress } from '@/features/ensenanza/shared/hooks/useProgress';
@@ -72,6 +73,11 @@ import { useLessonProgress } from '@/features/ensenanza/shared/hooks/useLessonPr
 import LessonNavigation from './LessonNavigation';
 import LessonIndexNavigator from './LessonIndexNavigator';
 import TutorAIPopup from '@/features/ensenanza/shared/components/ai/TutorAIPopup';
+import BlockInjector from '@/features/ensenanza/shared/components/edit/BlockInjector/BlockInjector';
+import LessonEditBanner from '@/features/ensenanza/shared/components/edit/LessonEditBanner/LessonEditBanner';
+import EditableSectionWrapper from '@/features/ensenanza/shared/components/edit/EditableSectionWrapper/EditableSectionWrapper';
+import UnsavedChangesAlert from '@/features/ensenanza/shared/components/edit/UnsavedChangesAlert/UnsavedChangesAlert';
+import SaveProgressButton from './SaveProgressButton/SaveProgressButton';
 import { useTopicContext } from '@/features/ensenanza/shared/hooks/useTopicContext';
 import useScrollCompletion from '@/shared/hooks/useScrollCompletion';
 import CompletionConfetti from '@/features/ensenanza/shared/components/leccion/CompletionConfetti';
@@ -101,10 +107,87 @@ import MediaBlocksContainer from './MediaBlocksContainer';
 import LessonLoadingSkeleton from '@/features/ensenanza/shared/components/leccion/LessonLoadingSkeleton';
 import LessonErrorState from '@/features/ensenanza/shared/components/leccion/LessonErrorState';
 
+/* ─── Utilidad: convierte datos de una página a HTML inicial para el editor ── */
+function getPageInitialHtml(pageData, data) {
+  if (!pageData || !data) return '';
+  const t = pageData.type;
+  const LABELS = {
+    'header-intro': 'Introducción', 'theory': 'Teoría', 'analogies': 'Analogías',
+    'visual-elements': 'Elementos Visuales', 'waveforms': 'Curvas',
+    'parameter-tables': 'Parámetros', 'practical-case': 'Caso Práctico',
+    'key-points': 'Puntos Clave', 'assessment': 'Evaluación',
+    'references': 'Referencias', 'completion': 'Completado',
+    'clinical-case': 'Caso Clínico',
+  };
+
+  if (t === 'header-intro') {
+    const intro = data.content?.introduction;
+    return [
+      `<h1>${data.title || 'Lección'}</h1>`,
+      intro?.overview ? `<p>${intro.overview}</p>` : data.description ? `<p>${data.description}</p>` : '',
+      intro?.objectives?.length
+        ? `<h2>Objetivos</h2><ul>${intro.objectives.map(o => `<li>${o}</li>`).join('')}</ul>`
+        : '',
+    ].join('');
+  }
+
+  if (t === 'theory' && pageData.section) {
+    const s = pageData.section;
+    let html = `<h2>${s.title || ''}</h2>`;
+    const processContent = (c) => {
+      if (!c) return '';
+      if (typeof c === 'string') return `<p>${c}</p>`;
+      if (Array.isArray(c)) {
+        return c.map(block => {
+          if (typeof block === 'string') return `<p>${block}</p>`;
+          if (block.type === 'list') return `<ul>${(block.items || []).map(i => `<li>${i}</li>`).join('')}</ul>`;
+          return `<p>${block.text || block.content || ''}</p>`;
+        }).join('');
+      }
+      return '';
+    };
+    html += processContent(s.content);
+    (s.subsections || []).forEach(sub => {
+      html += `<h3>${sub.title || ''}</h3>${processContent(sub.content || sub.text)}`;
+    });
+    return html;
+  }
+
+  if (t === 'key-points') {
+    const kp = data.content?.keyPoints;
+    if (!kp?.length) return '<h2>Puntos Clave</h2>';
+    return `<h2>Puntos Clave</h2><ul>${kp.map(k =>
+      `<li><strong>${k.title || k}</strong>${k.description ? ': ' + k.description : ''}</li>`
+    ).join('')}</ul>`;
+  }
+
+  if (t === 'references') {
+    const refs = data.content?.references || data.resources?.references;
+    if (!refs?.length) return '<h2>Referencias</h2>';
+    return `<h2>Referencias</h2><ol>${refs.map(r =>
+      `<li>${r.authors ? `<strong>${r.authors}</strong>. ` : ''}${r.title || r}${r.year ? ` (${r.year})` : ''}.</li>`
+    ).join('')}</ol>`;
+  }
+
+  if (t === 'analogies') {
+    const analogies = data.content?.theory?.analogies || [];
+    if (!analogies.length) return '<h2>Analogías</h2>';
+    return `<h2>Analogías</h2>${analogies.map(a =>
+      `<h3>${a.title || ''}</h3><blockquote>${a.description || a.content || ''}</blockquote>`
+    ).join('')}`;
+  }
+
+  return `<h2>${LABELS[t] ?? t ?? 'Sección'}</h2><p>Contenido de esta sección.</p>`;
+}
+
 /**
  * LessonViewer - Main component for displaying lesson content
  */
 const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, defaultOpen = false, onProgressUpdate }) => {
+  // Scroll continuo SOLO cuando el profesor activa "Modo Edición" — en modo normal ve el mismo stepper que el alumno
+  const { isEditMode } = useEditMode();
+  const isScrollMode = isEditMode;
+
   const state = useLessonViewerState({ lessonId, moduleId, onComplete, onNavigate, onProgressUpdate });
   const {
     data, isLoading, error, refetch, module, moduleCompletion, isModuleCompleted,
@@ -123,6 +206,106 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   } = state;
 
   const handleCloseSnackbar = useCallback(() => setSnackbarOpen(false), [setSnackbarOpen]);
+
+  // ── Estado local de secciones para reordenamiento optimista en scroll mode ──
+  const [localPages, setLocalPages] = useState([]);
+  useEffect(() => {
+    if (calculatePages?.length) setLocalPages(calculatePages);
+  }, [calculatePages]);
+
+  const handleMoveSection = useCallback((fromIdx, toIdx) => {
+    setLocalPages(prev => {
+      const result = [...prev];
+      const [removed] = result.splice(fromIdx, 1);
+      result.splice(toIdx, 0, removed);
+      return result;
+    });
+    // TODO Fase 3: PATCH /api/lessons/{lessonId}/sections/reorder
+    console.log('[EditableSectionWrapper] move section:', { from: fromIdx, to: toIdx });
+  }, []);
+
+  const handleDeleteSection = useCallback((idx) => {
+    setLocalPages(prev => prev.filter((_, i) => i !== idx));
+    // TODO Fase 3: DELETE /api/lessons/{lessonId}/sections/{idx}
+    console.log('[EditableSectionWrapper] delete section at index:', idx);
+  }, []);
+
+  const handleAddSection = useCallback(() => {
+    // Scroll al último BlockInjector visible
+    const injectors = document.querySelectorAll('[data-block-injector]');
+    if (injectors.length) {
+      injectors[injectors.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, []);
+
+  const handleLessonTitleChange = useCallback((newTitle) => {
+    // TODO Fase 3: PATCH /api/lessons/{lessonId} { title: newTitle }
+    console.log('[LessonEditBanner] lesson title updated:', newTitle);
+  }, []);
+
+  // ── Dirty state: rastrear cambios sin guardar en el editor ──
+  const [dirtyMap, setDirtyMap] = useState({});     // { [sectionIdx]: htmlContent }
+  const [unsavedAlertOpen, setUnsavedAlertOpen] = useState(false);
+  const pendingNavRef = useRef(null);                // navegación pendiente mientras hay cambios
+  const hasDirtyChanges = Object.keys(dirtyMap).length > 0;
+
+  const handleSectionContentChange = useCallback((html, idx) => {
+    setDirtyMap(prev => ({ ...prev, [idx]: html }));
+  }, []);
+
+  // Interceptar navegación si hay cambios pendientes
+  const guardedNavigate = useCallback((navigateFn) => {
+    if (hasDirtyChanges) {
+      pendingNavRef.current = navigateFn;
+      setUnsavedAlertOpen(true);
+    } else {
+      navigateFn();
+    }
+  }, [hasDirtyChanges]);
+
+  // Guardar todos los cambios (console.log TODO hasta Fase 3)
+  const saveAllChanges = useCallback(() => {
+    Object.entries(dirtyMap).forEach(([idx, html]) => {
+      console.log('[LessonViewer] save section content:', { sectionIndex: idx, html });
+      // TODO Fase 3: PATCH /api/lessons/{lessonId}/sections/{idx} { content: html }
+    });
+    setDirtyMap({});
+  }, [dirtyMap]);
+
+  // Alert: guardar y continuar
+  const handleAlertSave = useCallback(() => {
+    saveAllChanges();
+    setUnsavedAlertOpen(false);
+    pendingNavRef.current?.();
+    pendingNavRef.current = null;
+  }, [saveAllChanges]);
+
+  // Alert: descartar y continuar
+  const handleAlertDiscard = useCallback(() => {
+    setDirtyMap({});
+    setUnsavedAlertOpen(false);
+    pendingNavRef.current?.();
+    pendingNavRef.current = null;
+  }, []);
+
+  // Alert: cancelar (volver a editar)
+  const handleAlertCancel = useCallback(() => {
+    setUnsavedAlertOpen(false);
+    pendingNavRef.current = null;
+  }, []);
+
+  // Advertencia del navegador al intentar cerrar pestaña
+  useEffect(() => {
+    if (!hasDirtyChanges) return;
+    const handler = (e) => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [hasDirtyChanges]);
+
+  // Páginas a renderizar en scroll mode: usar estado local (permite reorden optimista)
+  const scrollPages = isScrollMode
+    ? (localPages.length ? localPages : (calculatePages ?? []))
+    : [];
 
   // ============================================================================
   // Rendering extracted to LessonPageRenderer and MediaBlocksContainer
@@ -152,6 +335,14 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     <ThemeProvider theme={teachingModuleTheme}>
       <CssBaseline />
       <Box sx={{ minHeight: '100vh' }}>
+        {/* ─ Alerta de cambios sin guardar en modo edición ─ */}
+        <UnsavedChangesAlert
+          open={unsavedAlertOpen}
+          onSave={handleAlertSave}
+          onDiscard={handleAlertDiscard}
+          onCancel={handleAlertCancel}
+        />
+
         {/* Resume Alert */}
         {showResumeAlert && (
           <Alert
@@ -232,40 +423,124 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
               )}
 
               <article id="lesson-content" ref={contentRef}>
-                <LessonPageRenderer
-                  data={data}
-                  currentPageData={currentPageData}
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  moduleId={moduleId}
-                  lessonId={lessonId}
-                  caseAnswers={caseAnswers}
-                  showCaseAnswers={showCaseAnswers}
-                  handleCaseAnswerChange={handleCaseAnswerChange}
-                  handleShowCaseAnswers={handleShowCaseAnswers}
-                  assessmentAnswers={assessmentAnswers}
-                  showAssessmentResults={showAssessmentResults}
-                  assessmentScore={assessmentScore}
-                  handleAssessmentAnswerChange={handleAssessmentAnswerChange}
-                  handleSubmitAssessment={handleSubmitAssessment}
-                  setShowAssessmentResults={setShowAssessmentResults}
-                  setAssessmentAnswers={setAssessmentAnswers}
-                  handleNavigateToLesson={handleNavigateToLesson}
-                  moduleCompletion={moduleCompletion}
-                  triggerAutoCompletion={triggerAutoCompletion}
-                  calculatePages={calculatePages}
-                  setCurrentPage={setCurrentPage}
-                  completedLessonsCount={completedLessonsCount}
-                  totalLessons={totalLessons}
-                />
+                {isScrollMode && scrollPages.length > 0 ? (
+                  /* ── Modo Scroll Continuo (TEACHER / ADMIN) ─────────────────
+                     Todas las páginas apiladas verticalmente; sin Anterior/Siguiente.
+                     LessonEditBanner sticky + EditableSectionWrapper por sección
+                     + BlockInjector entre cada bloque. */
+                  <>
+                    {/* Barra de edición sticky con título editable */}
+                    <LessonEditBanner
+                      lessonTitle={data?.title}
+                      lessonType={data?.type ?? lessonType}
+                      totalSections={scrollPages.length}
+                      onTitleChange={handleLessonTitleChange}
+                      onAddSection={handleAddSection}
+                    />
+
+                    {scrollPages.map((pageData, idx) => (
+                      <React.Fragment key={`${pageData.type ?? 'page'}-${idx}`}>
+                        {/* Wrapper con overlay de controles por sección */}
+                        <EditableSectionWrapper
+                          pageType={pageData.type}
+                          sectionIndex={idx}
+                          totalSections={scrollPages.length}
+                          initialContent={getPageInitialHtml(pageData, data)}
+                          onContentChange={handleSectionContentChange}
+                          onMoveUp={idx > 0 ? () => handleMoveSection(idx, idx - 1) : undefined}
+                          onMoveDown={idx < scrollPages.length - 1 ? () => handleMoveSection(idx, idx + 1) : undefined}
+                          onDelete={() => handleDeleteSection(idx)}
+                        >
+                          <Box
+                            sx={{
+                              pb: 4,
+                              ...(idx < scrollPages.length - 1 && {
+                                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                              }),
+                            }}
+                          >
+                            <LessonPageRenderer
+                              data={data}
+                              currentPageData={pageData}
+                              currentPage={idx}
+                              totalPages={scrollPages.length}
+                              moduleId={moduleId}
+                              lessonId={lessonId}
+                              caseAnswers={caseAnswers}
+                              showCaseAnswers={showCaseAnswers}
+                              handleCaseAnswerChange={handleCaseAnswerChange}
+                              handleShowCaseAnswers={handleShowCaseAnswers}
+                              assessmentAnswers={assessmentAnswers}
+                              showAssessmentResults={showAssessmentResults}
+                              assessmentScore={assessmentScore}
+                              handleAssessmentAnswerChange={handleAssessmentAnswerChange}
+                              handleSubmitAssessment={handleSubmitAssessment}
+                              setShowAssessmentResults={setShowAssessmentResults}
+                              setAssessmentAnswers={setAssessmentAnswers}
+                              handleNavigateToLesson={handleNavigateToLesson}
+                              moduleCompletion={moduleCompletion}
+                              triggerAutoCompletion={triggerAutoCompletion}
+                              calculatePages={scrollPages}
+                              setCurrentPage={setCurrentPage}
+                              completedLessonsCount={completedLessonsCount}
+                              totalLessons={totalLessons}
+                            />
+                          </Box>
+                        </EditableSectionWrapper>
+
+                        {/* BlockInjector: separador + entre secciones */}
+                        <div data-block-injector="true">
+                          <BlockInjector afterPageIndex={idx} />
+                        </div>
+                      </React.Fragment>
+                    ))}
+                  </>
+                ) : (
+                  /* ── Modo Paginado (STUDENT) ─────────────────────────────── */
+                  <>
+                    <LessonPageRenderer
+                      data={data}
+                      currentPageData={currentPageData}
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      moduleId={moduleId}
+                      lessonId={lessonId}
+                      caseAnswers={caseAnswers}
+                      showCaseAnswers={showCaseAnswers}
+                      handleCaseAnswerChange={handleCaseAnswerChange}
+                      handleShowCaseAnswers={handleShowCaseAnswers}
+                      assessmentAnswers={assessmentAnswers}
+                      showAssessmentResults={showAssessmentResults}
+                      assessmentScore={assessmentScore}
+                      handleAssessmentAnswerChange={handleAssessmentAnswerChange}
+                      handleSubmitAssessment={handleSubmitAssessment}
+                      setShowAssessmentResults={setShowAssessmentResults}
+                      setAssessmentAnswers={setAssessmentAnswers}
+                      handleNavigateToLesson={handleNavigateToLesson}
+                      moduleCompletion={moduleCompletion}
+                      triggerAutoCompletion={triggerAutoCompletion}
+                      calculatePages={calculatePages}
+                      setCurrentPage={setCurrentPage}
+                      completedLessonsCount={completedLessonsCount}
+                      totalLessons={totalLessons}
+                    />
+                    {/* SaveProgressButton: al pie del contenido interactivo del estudiante */}
+                    {currentPageData && ['assessment', 'practical-case', 'clinical-case'].includes(currentPageData.type) && (
+                      <SaveProgressButton
+                        onSave={triggerAutoCompletion}
+                        isAlreadySaved={wasLessonCompletedOnEntry}
+                      />
+                    )}
+                  </>
+                )}
                 
                 {/* Media Blocks Section - Rendered after main content */}
                 <MediaBlocksContainer media={data?.media} />
               </article>
         </Container>
         
-        {/* Lesson Index Navigator - Only visible when module is completed */}
-        {isModuleCompleted && (
+        {/* Lesson Index Navigator - Hidden in scroll mode */}
+        {!isScrollMode && isModuleCompleted && (
           <LessonIndexNavigator
             currentPage={currentPage}
             totalPages={totalPages}
@@ -277,19 +552,21 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
           />
         )}
 
-        {/* Global Navigation - Always visible */}
-        <LessonNavigation
-          currentPage={currentPage}
-          totalPages={totalPages}
-          data={data}
-          onPrevPage={handlePrevPage}
-          onNextPage={handleNextPage}
-          onNavigateToLesson={handleNavigateToLesson}
-          isModuleCompleted={isModuleCompleted}
-          totalLessons={totalLessons}
-          currentLessonIndex={currentLessonIndex}
-          onSelectLesson={handleSelectLesson}
-        />
+        {/* Global Navigation - Hidden in scroll mode (teachers scroll, students paginate) */}
+        {!isScrollMode && (
+          <LessonNavigation
+            currentPage={currentPage}
+            totalPages={totalPages}
+            data={data}
+            onPrevPage={handlePrevPage}
+            onNextPage={handleNextPage}
+            onNavigateToLesson={handleNavigateToLesson}
+            isModuleCompleted={isModuleCompleted}
+            totalLessons={totalLessons}
+            currentLessonIndex={currentLessonIndex}
+            onSelectLesson={handleSelectLesson}
+          />
+        )}
         
         {/* Snackbar */}
         <Snackbar

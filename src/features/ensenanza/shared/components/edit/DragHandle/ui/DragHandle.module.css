@@ -1,0 +1,52 @@
+/*
+ * DragHandle.module.css
+ * BEM: .drag-handle  /  .drag-handle--dragging
+ *
+ * Solo se muestra cuando el Modo Edición está activo.
+ * El icono de 6 puntos indica al docente que puede reordenar el elemento.
+ */
+
+.drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 100%;
+  min-height: 20px;
+  padding: 0 2px;
+  color: var(--edit-handle-color, rgba(255, 255, 255, 0.25));
+  cursor: grab;
+  border-radius: 3px;
+  transition: color var(--edit-transition, 0.2s ease-in-out),
+              background-color var(--edit-transition, 0.2s ease-in-out);
+}
+
+.drag-handle:hover {
+  color: var(--edit-handle-hover-color, rgba(255, 255, 255, 0.65));
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.drag-handle--dragging {
+  cursor: grabbing;
+  color: rgba(11, 186, 244, 0.8);
+  background-color: rgba(11, 186, 244, 0.08);
+}
+
+/* Overlay absoluto sobre las ModuleCards en el grid */
+.drag-handle--card-overlay {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 10;
+  background-color: rgba(0, 0, 0, 0.45);
+  border-radius: 4px;
+  padding: 3px 2px;
+  opacity: 0;
+  transition: opacity var(--edit-transition, 0.2s ease-in-out);
+}
+
+/* Mostrar overlay al hacer hover sobre el wrapper de la card */
+.card-edit-wrapper:hover .drag-handle--card-overlay {
+  opacity: 1;
+}

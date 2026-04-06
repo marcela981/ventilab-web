@@ -1,0 +1,231 @@
+/*
+ * DependencyModal.module.css
+ * BEM root: dep-modal  /  dep-switch
+ *
+ * Tokens de diseño heredados de edit-mode.css (:root)
+ */
+
+/* ─── Layout de dos columnas ─────────────────────────────────────────────── */
+
+.dep-modal__columns {
+  display: flex;
+  gap: 0;
+  min-height: 320px;
+}
+
+.dep-modal__col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 20px 8px 0;
+}
+
+.dep-modal__col--depends {
+  border-left: 1px solid var(--edit-modal-divider, #e0e0e0);
+  padding: 0 0 8px 24px;
+}
+
+/* ─── Encabezados de columna ─────────────────────────────────────────────── */
+
+.dep-modal__col-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.45);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dep-modal__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #0BBAF4;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+/* ─── Columna izquierda — Contenido fijado ───────────────────────────────── */
+
+.dep-modal__module-card {
+  padding: 14px 16px;
+  border-radius: var(--edit-border-radius-card, 8px);
+  background: var(--edit-modal-source-bg, #f5f5f5);
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dep-modal__module-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  line-height: 1.4;
+}
+
+.dep-modal__module-badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: var(--edit-border-radius-badge, 12px);
+  background: rgba(11, 186, 244, 0.1);
+  color: #0BBAF4;
+}
+
+.dep-modal__hint {
+  font-size: 0.72rem;
+  color: rgba(0, 0, 0, 0.4);
+  line-height: 1.55;
+  margin: 0;
+  font-style: italic;
+}
+
+/* ─── Columna derecha — Checklist ────────────────────────────────────────── */
+
+.dep-modal__checklist {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 4px;
+}
+
+.dep-modal__checklist::-webkit-scrollbar { width: 4px; }
+.dep-modal__checklist::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 2px; }
+.dep-modal__checklist::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); border-radius: 2px; }
+
+.dep-modal__level-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.35);
+  margin: 10px 0 4px;
+  padding-left: 10px;
+}
+
+.dep-modal__check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    background var(--edit-transition, 0.2s ease-in-out),
+    border-color var(--edit-transition, 0.2s ease-in-out);
+  user-select: none;
+}
+
+.dep-modal__check-item:hover {
+  background: rgba(11, 186, 244, 0.05);
+  border-color: rgba(11, 186, 244, 0.2);
+}
+
+.dep-modal__check-item--checked {
+  background: rgba(11, 186, 244, 0.08);
+  border-color: rgba(11, 186, 244, 0.35);
+}
+
+.dep-modal__checkbox {
+  width: 15px;
+  height: 15px;
+  margin-top: 2px;
+  accent-color: #0BBAF4;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.dep-modal__check-label {
+  font-size: 0.78rem;
+  color: #1a1a2e;
+  line-height: 1.35;
+  flex: 1;
+}
+
+.dep-modal__empty {
+  font-size: 0.78rem;
+  color: rgba(0, 0, 0, 0.38);
+  font-style: italic;
+  text-align: center;
+  padding: 32px 0;
+  margin: 0;
+}
+
+/* ─── Switch de dependencias en ModuleCard ───────────────────────────────── */
+
+.dep-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px 3px 7px;
+  border-radius: var(--edit-border-radius-badge, 12px);
+  border: 1px dashed var(--edit-ghost-border-color, rgba(11, 186, 244, 0.45));
+  background: var(--edit-ghost-bg, rgba(11, 186, 244, 0.04));
+  color: var(--edit-ghost-icon-color, rgba(11, 186, 244, 0.7));
+  font-size: 0.67rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition:
+    background var(--edit-transition, 0.2s ease-in-out),
+    border-color var(--edit-transition, 0.2s ease-in-out),
+    color var(--edit-transition, 0.2s ease-in-out);
+}
+
+.dep-switch:hover {
+  background: var(--edit-ghost-hover-bg, rgba(11, 186, 244, 0.1));
+  border-color: rgba(11, 186, 244, 0.8);
+  color: rgba(11, 186, 244, 1);
+}
+
+.dep-switch--active {
+  background: rgba(11, 186, 244, 0.14);
+  border-style: solid;
+  border-color: rgba(11, 186, 244, 0.55);
+  color: #0BBAF4;
+}
+
+.dep-switch__icon {
+  font-size: 12px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.dep-switch__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 4px;
+  border-radius: 7px;
+  background: currentColor;
+  font-size: 0.6rem;
+  font-weight: 700;
+  /* Texto en contraste sobre el badge de color */
+  color: transparent; /* el color heredado va al background */
+}
+
+/* Truco: mostrar número blanco sobre fondo de color */
+.dep-switch__badge::before {
+  content: attr(data-count);
+  color: #fff;
+}

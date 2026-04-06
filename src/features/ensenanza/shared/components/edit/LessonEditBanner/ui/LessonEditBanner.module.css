@@ -1,0 +1,201 @@
+/*
+ * LessonEditBanner.module.css
+ * BEM root: lesson-banner
+ *
+ * Barra sticky de edición para el Canvas de lección en Modo Edición.
+ * Tokens de diseño heredados de edit-mode.css (:root)
+ */
+
+/* ─── Contenedor principal ───────────────────────────────────────────────── */
+
+.lesson-banner {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px 14px;
+  margin-bottom: 24px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(11, 186, 244, 0.1) 0%, rgba(11, 186, 244, 0.04) 100%);
+  border: 1px solid rgba(11, 186, 244, 0.35);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(11, 186, 244, 0.1);
+}
+
+/* ─── Barra superior ─────────────────────────────────────────────────────── */
+
+.lesson-banner__topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ─── Badge "Modo Edición Activo" ────────────────────────────────────────── */
+
+.lesson-banner__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(11, 186, 244, 0.15);
+  border: 1px solid rgba(11, 186, 244, 0.4);
+  color: #0bbaf4;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.lesson-banner__dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #0bbaf4;
+  box-shadow: 0 0 6px rgba(11, 186, 244, 0.8);
+  animation: dot-pulse 2s ease-in-out infinite;
+}
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+/* ─── Meta: tipo + contador de secciones ────────────────────────────────── */
+
+.lesson-banner__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.lesson-banner__type {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.45);
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lesson-banner__count {
+  font-size: 0.66rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* ─── Botón "+ Sección" ──────────────────────────────────────────────────── */
+
+.lesson-banner__add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: 1px dashed rgba(11, 186, 244, 0.5);
+  background: transparent;
+  color: rgba(11, 186, 244, 0.8);
+  font-size: 0.73rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--edit-transition, 0.2s ease-in-out);
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.lesson-banner__add-btn:hover {
+  background: rgba(11, 186, 244, 0.12);
+  border-color: rgba(11, 186, 244, 0.85);
+  color: #0bbaf4;
+  border-style: solid;
+}
+
+/* ─── Área de título editable ────────────────────────────────────────────── */
+
+.lesson-banner__title-area {
+  width: 100%;
+}
+
+.lesson-banner__title-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+
+.lesson-banner__title-btn:hover .lesson-banner__edit-icon {
+  opacity: 1;
+}
+
+.lesson-banner__title-text {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.3;
+  flex: 1;
+  letter-spacing: -0.02em;
+}
+
+.lesson-banner__edit-icon {
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
+}
+
+.lesson-banner__title-input {
+  width: 100%;
+  background: rgba(11, 186, 244, 0.07);
+  border: 1px solid rgba(11, 186, 244, 0.5);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: #ffffff;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.lesson-banner__title-input:focus {
+  border-color: rgba(11, 186, 244, 0.9);
+  background: rgba(11, 186, 244, 0.1);
+}
+
+/* ─── Hint inferior ──────────────────────────────────────────────────────── */
+
+.lesson-banner__hint {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.35);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  line-height: 1.5;
+}
+
+.lesson-banner__kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(11, 186, 244, 0.4);
+  background: rgba(11, 186, 244, 0.1);
+  font-family: 'Courier New', monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #0bbaf4;
+}

@@ -1,0 +1,216 @@
+/*
+ * EditableSectionWrapper.module.css
+ * BEM root: editable-section
+ *
+ * Overlay de edición por sección en el Canvas de lección (Modo Edición scroll).
+ * Tokens de diseño heredados de edit-mode.css (:root)
+ */
+
+/* ─── Contenedor ─────────────────────────────────────────────────────────── */
+
+.editable-section {
+  position: relative;
+  border-radius: 8px;
+  border: 1.5px solid transparent;
+  transition:
+    border-color var(--edit-transition, 0.2s ease-in-out),
+    background var(--edit-transition, 0.2s ease-in-out);
+}
+
+.editable-section--hovered {
+  border-color: rgba(11, 186, 244, 0.35);
+  background: rgba(11, 186, 244, 0.025);
+}
+
+/* ─── Barra de controles (top) ───────────────────────────────────────────── */
+
+.editable-section__controls {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  height: 28px;
+  border-radius: 7px 7px 0 0;
+  background: rgba(11, 186, 244, 0.12);
+  border-bottom: 1px solid rgba(11, 186, 244, 0.2);
+  backdrop-filter: blur(4px);
+  z-index: 10;
+  pointer-events: none; /* La barra no intercepta eventos, solo los hijos */
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity var(--edit-transition, 0.2s ease-in-out),
+    transform var(--edit-transition, 0.2s ease-in-out);
+}
+
+.editable-section--hovered .editable-section__controls {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* ─── Badge tipo de sección ──────────────────────────────────────────────── */
+
+.editable-section__type {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(11, 186, 244, 0.9);
+}
+
+/* ─── Acciones ───────────────────────────────────────────────────────────── */
+
+.editable-section__actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.editable-section__action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.editable-section__action-btn:hover {
+  background: rgba(11, 186, 244, 0.2);
+  border-color: rgba(11, 186, 244, 0.5);
+  color: #0bbaf4;
+}
+
+.editable-section__action-btn--delete:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #f87171;
+}
+
+/* ─── Estado modo edición activo ─────────────────────────────────────────── */
+
+.editable-section--editing {
+  border-color: rgba(11, 186, 244, 0.6);
+  background: rgba(11, 186, 244, 0.04);
+  box-shadow: 0 0 0 3px rgba(11, 186, 244, 0.1);
+}
+
+/* ─── Contenido (modo VISTA) ─────────────────────────────────────────────── */
+
+.editable-section__content {
+  padding-top: 30px;
+  min-height: 20px;
+}
+
+/* ─── Panel de editor (modo EDITOR) ─────────────────────────────────────── */
+
+.editable-section__editor-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.editable-section__editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(11, 186, 244, 0.1);
+  border-bottom: 1px solid rgba(11, 186, 244, 0.2);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.editable-section__editor-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0bbaf4;
+}
+
+.editable-section__editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.editable-section__ctrl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.editable-section__ctrl-btn--save {
+  background: rgba(11, 186, 244, 0.15);
+  border-color: rgba(11, 186, 244, 0.5);
+  color: #0bbaf4;
+}
+
+.editable-section__ctrl-btn--save:hover:not(.editable-section__ctrl-btn--disabled) {
+  background: rgba(11, 186, 244, 0.25);
+  border-color: rgba(11, 186, 244, 0.85);
+}
+
+.editable-section__ctrl-btn--disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.editable-section__ctrl-btn--cancel {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.editable-section__ctrl-btn--cancel:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ─── Botón "Editar" en la barra de controles ────────────────────────────── */
+
+.editable-section__action-btn--edit {
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(11, 186, 244, 0.4) !important;
+  background: rgba(11, 186, 244, 0.08) !important;
+  color: #0bbaf4 !important;
+  min-width: auto;
+  gap: 3px;
+}
+
+.editable-section__action-btn--edit:hover {
+  background: rgba(11, 186, 244, 0.2) !important;
+  border-color: rgba(11, 186, 244, 0.7) !important;
+}

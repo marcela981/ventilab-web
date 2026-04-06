@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Box, IconButton, Typography } from '@mui/material';
 import { BookmarkBorder, Bookmark, CheckCircle, TrendingUp } from '@mui/icons-material';
 import ModuleStatusIcons from './ModuleStatusIcons';
 import PrerequisiteTooltip from './PrerequisiteTooltip';
+import EmojiPicker from '@/features/ensenanza/shared/components/edit/EmojiPicker/EmojiPicker';
 import styles from '@/styles/curriculum.module.css';
 
 /**
@@ -21,6 +22,14 @@ const ModuleCardHeader = ({
   completedAt,
   missingPrerequisites = []
 }) => {
+  const [emoji, setEmoji] = useState(module.emoji || '');
+
+  const handleEmojiChange = (newEmoji) => {
+    setEmoji(newEmoji);
+    // TODO Fase 3: PATCH /api/modules/{module.id} { emoji: newEmoji }
+    console.log('[EmojiPicker] emoji updated:', { moduleId: module.id, emoji: newEmoji });
+  };
+
   return (
     <>
       {/* Icono de estado para módulos completados o en progreso */}
@@ -151,32 +160,36 @@ const ModuleCardHeader = ({
         </IconButton>
       </Box>
 
-      {/* Header - Título del módulo */}
+      {/* Header - Título del módulo con EmojiPicker en modo edición */}
       <header className={styles.cardHeader} style={{ paddingTop: '48px' }}>
-        <Typography
-          variant="h6"
-          component="h3"
-          style={{
-            fontWeight: 700,
-            fontSize: '1.05rem',
-            lineHeight: 1.35,
-            color: isAvailable ? '#ffffff' : '#9e9e9e',
-            textShadow: isAvailable ? '0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3)' : 'none',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            wordBreak: 'break-word',
-            overflowWrap: 'break-word',
-            margin: 0,
-          }}
-        >
-          {module.title}
-          <span className="sr-only" style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', borderWidth: 0 }}>
-            Módulo {availabilityStatus === 'blocked' ? 'bloqueado' : 'disponible'}
-          </span>
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
+          <EmojiPicker value={emoji} onChange={handleEmojiChange} />
+          <Typography
+            variant="h6"
+            component="h3"
+            style={{
+              fontWeight: 700,
+              fontSize: '1.05rem',
+              lineHeight: 1.35,
+              color: isAvailable ? '#ffffff' : '#9e9e9e',
+              textShadow: isAvailable ? '0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3)' : 'none',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+              margin: 0,
+              flex: 1,
+            }}
+          >
+            {module.title}
+            <span className="sr-only" style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', borderWidth: 0 }}>
+              Módulo {availabilityStatus === 'blocked' ? 'bloqueado' : 'disponible'}
+            </span>
+          </Typography>
+        </Box>
       </header>
     </>
   );
