@@ -3,7 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import { LearningProgressProvider } from '@/features/progress/LearningProgressContext';
-import LessonViewerRouteAdapter from '@/features/teaching/pages/LessonViewerRouteAdapter';
+import LessonViewerRouteAdapter from '@/features/ensenanza/shared/components/pages/LessonViewerRouteAdapter';
 
 export default function LessonPage() {
   const router = useRouter();

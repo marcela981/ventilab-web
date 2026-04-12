@@ -1,7 +1,7 @@
 import React from 'react';
 import Head from 'next/head';
 import { LearningProgressProvider } from '@/features/progress/LearningProgressContext';
-import FlashcardDashboardPage from '@/features/teaching/FlashcardDashboardPage';
+import FlashcardDashboardPage from '@/features/ensenanza/shared/dashboard/FlashcardDashboardPage';
 
 const FlashcardsPage = () => {
   return (
