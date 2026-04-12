@@ -53,7 +53,7 @@ const PUBLIC_ROUTES = [
  * Simple Edge Middleware - Only checks for session token
  * NO role validation, NO Prisma, NO server imports
  */
-export function middleware(req) {
+export function proxy(req) {
   const pathname = req.nextUrl.pathname;
 
   // Allow public routes
