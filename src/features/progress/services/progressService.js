@@ -1047,6 +1047,45 @@ export const getUserState = async () => {
   });
 };
 
+/**
+ * Get module resume point (first incomplete lesson)
+ * GET /modules/:moduleId/resume
+ */
+export const getModuleResumePoint = async (moduleId) => {
+  try {
+    const url = buildUrl(`/modules/${encodeURIComponent(moduleId)}/resume`);
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) return null;
+      throw new Error('Error al obtener punto de reanudación');
+    }
+
+    const data = await parseResponse(response);
+    const resumeData = data?.data || data;
+    return {
+      lessonId: resumeData?.resumeLessonId || '',
+      lessonTitle: resumeData?.resumeLessonTitle || '',
+      lessonOrder: resumeData?.resumeLessonOrder || 0,
+      moduleId,
+      completionPercentage: resumeData?.resumeLessonProgress || 0,
+      scrollPosition: null,
+      lastViewedSection: null,
+      currentStepIndex: resumeData?.currentStepIndex,
+      totalStepsInLesson: resumeData?.totalStepsInLesson,
+      isModuleComplete: resumeData?.isModuleComplete,
+      lastAccessedAt: resumeData?.lastAccessedAt,
+    };
+  } catch (error) {
+    console.error('[progressService] getModuleResumePoint error:', error);
+    return null;
+  }
+};
+
 export default {
   configureProgressService,
   getModuleProgress,
@@ -1057,6 +1096,7 @@ export default {
   getMilestones,
   getAchievements,
   getUserState,
+  getModuleResumePoint,
   // Legacy exports
   fetchProgress,
   upsertProgress,

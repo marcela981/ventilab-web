@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import dynamic from 'next/dynamic';
 import { Box, styled } from '@mui/material';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import vscDarkPlus from 'react-syntax-highlighter/dist/esm/styles/prism/vsc-dark-plus';
 
 // Dynamic import to avoid SSR issues with react-syntax-highlighter
 const SyntaxHighlighter = dynamic(
