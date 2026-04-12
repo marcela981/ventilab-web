@@ -30,4 +30,5 @@ export { default as TeachingLessonView } from '@/features/ensenanza/shared/compo
 export { default as TeachingTabs } from '@/features/ensenanza/shared/components/pages/TeachingTabs';
 export { default as ProgressTabSkeleton } from '@/features/ensenanza/shared/dashboard/components/ProgressTabSkeleton';
 export * from './content';
-export * from '@/features/ensenanza/shared/components/media';
+// Explicit imports from media to avoid conflicting star exports for VideoPlayer, MediaSkeleton, MediaFallback
+export { ImageGallery, InteractiveDiagram } from '@/features/ensenanza/shared/components/media';

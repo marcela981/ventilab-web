@@ -1,6 +1,8 @@
-import type { NextConfig } from "next";
+// next.config.mjs
+// Configuración optimizada para deployment en Vercel
 
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   // Configuración optimizada para deployment en Vercel
   typescript: {
     ignoreBuildErrors: true,
