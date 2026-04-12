@@ -324,6 +324,7 @@ model Module {
   id            String   @id @default(cuid())
   levelId       String? // Optional: Module can belong to a Level
   title         String
+  slug          String?  @unique // JSON module ID (e.g. "module-01-fundamentals")
   description   String?  @db.Text
   category      String?
   difficulty    String?  @default("beginner") // beginner, intermediate, advanced
@@ -434,22 +435,20 @@ model Lesson {
 // - Add `feedback` (JSON) for step completion feedback
 // - Add `version` Int for content versioning
 model Step {
-  id          String   @id @default(cuid())
-  lessonId    String
-  title       String? // Optional title for the step
-  content     String   @db.Text // Step content (can be JSON or HTML)
-  contentType String   @default("text") // text, image, video, quiz, simulation, code
-  order       Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(cuid())
+  lessonId        String
+  title           String? // Optional title for the step
+  content         String   @db.Text // Step content (HTML from RichTextEditor)
+  contentType     String   @default("rich-text") // rich-text, image, video, quiz, simulation
+  sectionSourceId String? // JSON section ID (e.g. "m1-p1-2-1-a") — links back to JSON file
+  order           Int      @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Audit trail fields
   lastModifiedBy String? // User ID who last modified this step
   lastModifiedAt DateTime? // Timestamp of last modification
-
-  // FUTURE EXTENSIONS:
-  // - Add `duration` Int for estimated reading/viewing time
 
   lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
@@ -457,6 +456,7 @@ model Step {
   @@index([order])
   @@index([isActive])
   @@index([lastModifiedBy])
+  @@index([sectionSourceId])
   @@map("steps")
 }
 

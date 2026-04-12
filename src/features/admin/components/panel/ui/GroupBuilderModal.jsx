@@ -2,15 +2,17 @@
  * GroupBuilderModal - Modal para conformar grupos de estudiantes.
  * Recibe la lista de estudiantes seleccionados y muestra un formulario
  * con nombre del grupo + chips de los alumnos elegidos.
- * FRONTEND: la acción de guardar es visual (backend en Fase 3).
+ * Crea el grupo en BD y agrega a cada estudiante como miembro.
  */
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Box, Typography, Chip, Button, Avatar, Divider, Alert,
+  CircularProgress,
 } from '@mui/material';
 import { Group as GroupIcon, Check as CheckIcon } from '@mui/icons-material';
+import groupsService from '@/features/admin/services/groupsService';
 
 const GLASS = {
   background: 'rgba(15, 28, 53, 0.92)',
@@ -19,18 +21,52 @@ const GLASS = {
   color: '#e8eaf6',
 };
 
-export default function GroupBuilderModal({ open, onClose, selectedStudents = [] }) {
+export default function GroupBuilderModal({ open, onClose, onCreated, selectedStudents = [] }) {
   const [groupName, setGroupName] = useState('');
+  const [semester, setSemester] = useState('');
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!groupName.trim()) return;
-    // Frontend mock — aquí irá la llamada al API en Fase 3
+    setSaving(true);
+    setError('');
+
+    // 1. Crear el grupo
+    const createRes = await groupsService.createGroup({
+      name: groupName.trim(),
+      ...(semester.trim() && { semester: semester.trim() }),
+    });
+
+    if (!createRes.success) {
+      setError(createRes.error?.message || 'Error al crear el grupo');
+      setSaving(false);
+      return;
+    }
+
+    const groupId = createRes.data.group.id;
+
+    // 2. Agregar cada estudiante seleccionado como miembro
+    const addResults = await Promise.allSettled(
+      selectedStudents.map(s => groupsService.addMember(groupId, s.id, 'STUDENT'))
+    );
+
+    const failed = addResults.filter(r => r.status === 'rejected' || !r.value?.success);
+    if (failed.length) {
+      setError(`Grupo creado, pero ${failed.length} estudiante(s) no pudieron agregarse.`);
+    }
+
+    setSaving(false);
     setSaved(true);
-    setTimeout(() => { setSaved(false); setGroupName(''); onClose(); }, 1500);
+    onCreated?.();
+    setTimeout(() => { setSaved(false); setGroupName(''); setSemester(''); onClose(); }, 1800);
   };
 
-  const handleClose = () => { setGroupName(''); setSaved(false); onClose(); };
+  const handleClose = () => {
+    if (saving) return;
+    setGroupName(''); setSemester(''); setSaved(false); setError(''); onClose();
+  };
 
   return (
     <Dialog
@@ -72,6 +108,15 @@ export default function GroupBuilderModal({ open, onClose, selectedStudents = []
           </Alert>
         )}
 
+        {error && (
+          <Alert
+            severity="warning"
+            sx={{ bgcolor: 'rgba(255,152,0,0.12)', color: '#fcd34d', border: '1px solid rgba(255,152,0,0.3)' }}
+          >
+            {error}
+          </Alert>
+        )}
+
         {/* Nombre del grupo */}
         <TextField
           label="Nombre del grupo"
@@ -80,6 +125,20 @@ export default function GroupBuilderModal({ open, onClose, selectedStudents = []
           size="small"
           value={groupName}
           onChange={(e) => setGroupName(e.target.value)}
+          disabled={saving || saved}
+          InputLabelProps={{ sx: { color: 'rgba(255,255,255,0.5)' } }}
+          InputProps={{ sx: { color: '#fff', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(16,174,222,0.5)' }, '&.Mui-focused fieldset': { borderColor: '#10aede' } } }}
+        />
+
+        {/* Semestre (opcional) */}
+        <TextField
+          label="Semestre (opcional)"
+          placeholder="Ej: 2026-1"
+          fullWidth
+          size="small"
+          value={semester}
+          onChange={(e) => setSemester(e.target.value)}
+          disabled={saving || saved}
           InputLabelProps={{ sx: { color: 'rgba(255,255,255,0.5)' } }}
           InputProps={{ sx: { color: '#fff', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(16,174,222,0.5)' }, '&.Mui-focused fieldset': { borderColor: '#10aede' } } }}
         />
@@ -129,15 +188,16 @@ export default function GroupBuilderModal({ open, onClose, selectedStudents = []
         </Button>
         <Button
           variant="contained"
-          disabled={!groupName.trim() || saved}
+          disabled={!groupName.trim() || saving || saved}
           onClick={handleSave}
           sx={{
             bgcolor: '#10aede', color: '#fff',
             '&:hover': { bgcolor: '#0d9bc8' },
             '&:disabled': { bgcolor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.3)' },
+            minWidth: 120,
           }}
         >
-          Crear Grupo
+          {saving ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : 'Crear Grupo'}
         </Button>
       </DialogActions>
     </Dialog>
@@ -147,6 +207,7 @@ export default function GroupBuilderModal({ open, onClose, selectedStudents = []
 GroupBuilderModal.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
+  onCreated: PropTypes.func,   // callback después de crear exitosamente
   selectedStudents: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     name: PropTypes.string,

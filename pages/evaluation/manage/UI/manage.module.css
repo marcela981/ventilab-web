@@ -1,0 +1,50 @@
+/*
+ * Funcionalidad: Estilos del módulo de Gestión de Evaluaciones
+ * Descripción: Clases CSS para las páginas de gestión (index, new, edit) del módulo de evaluación
+ * Versión: 1.0
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
+ */
+
+.page {
+  padding: 24px;
+}
+
+.pageHeader {
+  margin-bottom: 16px;
+}
+
+.title {
+  font-weight: 700 !important;
+}
+
+.activityItem {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.activityTitle {
+  font-weight: 600 !important;
+}
+
+.activityMeta {
+  opacity: 0.8;
+}
+
+.errorText {
+  margin-bottom: 16px;
+}
+
+.emptyText {
+  opacity: 0.8;
+}
+
+.loadingBox {
+  display: flex;
+  justify-content: center;
+  padding: 64px 0;
+}

@@ -13,6 +13,7 @@ import {
   Assignment as AssignmentIcon,
   TrendingUp as TrendingUpIcon,
   AdminPanelSettings as AdminIcon,
+  Assessment as AssessmentIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import adminService from '@/features/admin/services/adminService';
@@ -95,6 +96,7 @@ export default function PanelDashboard() {
   const quickActions = [
     { icon: <PeopleIcon />, title: 'Ver Estudiantes',  description: 'Listado y progreso individual',  path: '/panel/students' },
     { icon: <SchoolIcon />, title: 'Editar Contenido', description: 'Niveles, módulos y lecciones',   path: '/teaching' },
+    { icon: <AssessmentIcon />, title: 'Evaluaciones', description: 'Crear, asignar y calificar',     path: '/evaluation/manage' },
     ...(canSeeAdmin
       ? [{ icon: <AdminIcon />, title: 'Gestión de Profesores', description: 'Ver profesores y permisos', path: '/panel/admin' }]
       : []),

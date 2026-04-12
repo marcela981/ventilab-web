@@ -30,6 +30,10 @@ const ROUTE_PERMISSIONS = {
   '/instructor': ['INSTRUCTOR', 'EXPERT', 'ADMIN'],
   '/teaching/create': ['INSTRUCTOR', 'EXPERT', 'ADMIN'],
   '/analytics': ['INSTRUCTOR', 'EXPERT', 'ADMIN'],
+
+  // Evaluations management (teacher/admin only)
+  '/evaluation/manage': ['TEACHER', 'ADMIN', 'SUPERUSER'],
+  '/evaluation/grade': ['TEACHER', 'ADMIN', 'SUPERUSER'],
 };
 
 /**

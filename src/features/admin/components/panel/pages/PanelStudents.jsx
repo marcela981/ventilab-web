@@ -420,6 +420,7 @@ export default function PanelStudents() {
       <GroupBuilderModal
         open={groupModalOpen}
         onClose={() => setGroupModalOpen(false)}
+        onCreated={() => { setSelectedIds(new Set()); fetchStudents(); }}
         selectedStudents={selectedStudents}
       />
     </Box>

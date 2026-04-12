@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
+import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import TaskList from '@tiptap/extension-task-list';
@@ -58,6 +58,7 @@ const RichTextEditor = ({ content = '', onChange, placeholder = 'Escribe aquí�
   const wrapperRef = useRef(null);
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
@@ -202,37 +203,6 @@ const RichTextEditor = ({ content = '', onChange, placeholder = 'Escribe aquí�
         <Btn onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()} title="Rehacer (Ctrl+Y)">↪</Btn>
       </div>
-
-      {/* ── BubbleMenu: aparece sobre la selección ── */}
-      <BubbleMenu editor={editor} tippyOptions={{ duration: 120 }}>
-        <div className={styles['rte__bubble']}>
-          <Btn onClick={() => editor.chain().focus().toggleBold().run()}
-            active={editor.isActive('bold')} title="Negrita"><b>B</b></Btn>
-          <Btn onClick={() => editor.chain().focus().toggleItalic().run()}
-            active={editor.isActive('italic')} title="Cursiva"><i>I</i></Btn>
-          <Btn onClick={() => editor.chain().focus().toggleUnderline().run()}
-            active={editor.isActive('underline')} title="Subrayado"><u>U</u></Btn>
-          <Btn onClick={() => editor.chain().focus().toggleStrike().run()}
-            active={editor.isActive('strike')} title="Tachado"><s>S</s></Btn>
-          <Btn onClick={() => editor.chain().focus().toggleHighlight().run()}
-            active={editor.isActive('highlight')} title="Resaltar">🖊</Btn>
-          <Btn onClick={() => editor.chain().focus().toggleCode().run()}
-            active={editor.isActive('code')} title="Código">{`</>`}</Btn>
-          <Btn
-            onClick={() => {
-              const prev = editor.getAttributes('link').href ?? '';
-              const url = window.prompt('URL del enlace:', prev);
-              if (url === null) return;
-              if (url === '') {
-                editor.chain().focus().extendMarkRange('link').unsetLink().run();
-              } else {
-                editor.chain().focus().extendMarkRange('link')
-                  .setLink({ href: url, target: '_blank' }).run();
-              }
-            }}
-            active={editor.isActive('link')} title="Enlace">🔗</Btn>
-        </div>
-      </BubbleMenu>
 
       {/* ── SlashMenu emergente ── */}
       {slashMenuOpen && (

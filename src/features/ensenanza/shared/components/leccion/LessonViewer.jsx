@@ -120,7 +120,39 @@ function getPageInitialHtml(pageData, data) {
     'clinical-case': 'Caso Clínico',
   };
 
+  // Convierte cualquier formato de contenido a HTML
+  const processContent = (c) => {
+    if (!c) return '';
+    // Formato { markdown: "..." } — el más común en los JSONs de lecciones
+    if (typeof c === 'object' && !Array.isArray(c) && typeof c.markdown === 'string') {
+      return c.markdown
+        .split(/\n{2,}/)
+        .filter(para => para.trim())
+        .map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`)
+        .join('');
+    }
+    if (typeof c === 'string') return `<p>${c}</p>`;
+    if (Array.isArray(c)) {
+      return c.map(block => {
+        if (typeof block === 'string') return `<p>${block}</p>`;
+        if (block.type === 'list') return `<ul>${(block.items || []).map(i => `<li>${i}</li>`).join('')}</ul>`;
+        return `<p>${block.text || block.content || ''}</p>`;
+      }).join('');
+    }
+    return '';
+  };
+
   if (t === 'header-intro') {
+    // Formato unificado: la sección está en pageData.section
+    if (pageData.section) {
+      const s = pageData.section;
+      return [
+        `<h1>${data.title || s.title || 'Lección'}</h1>`,
+        data.description ? `<p>${data.description}</p>` : '',
+        processContent(s.content),
+      ].join('');
+    }
+    // Formato legacy
     const intro = data.content?.introduction;
     return [
       `<h1>${data.title || 'Lección'}</h1>`,
@@ -134,18 +166,6 @@ function getPageInitialHtml(pageData, data) {
   if (t === 'theory' && pageData.section) {
     const s = pageData.section;
     let html = `<h2>${s.title || ''}</h2>`;
-    const processContent = (c) => {
-      if (!c) return '';
-      if (typeof c === 'string') return `<p>${c}</p>`;
-      if (Array.isArray(c)) {
-        return c.map(block => {
-          if (typeof block === 'string') return `<p>${block}</p>`;
-          if (block.type === 'list') return `<ul>${(block.items || []).map(i => `<li>${i}</li>`).join('')}</ul>`;
-          return `<p>${block.text || block.content || ''}</p>`;
-        }).join('');
-      }
-      return '';
-    };
     html += processContent(s.content);
     (s.subsections || []).forEach(sub => {
       html += `<h3>${sub.title || ''}</h3>${processContent(sub.content || sub.text)}`;
@@ -207,11 +227,117 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
 
   const handleCloseSnackbar = useCallback(() => setSnackbarOpen(false), [setSnackbarOpen]);
 
-  // ── Estado local de secciones para reordenamiento optimista en scroll mode ──
+  // ── Estado local de secciones para reordenamiento/eliminación optimista ──
   const [localPages, setLocalPages] = useState([]);
+
+  // dbSteps: estado de los Steps en BD { sectionSourceId?, order, isActive, content?, title? }[]
+  // Se carga desde la BD al montar y se refresca después de cada operación de edición.
+  const [dbSteps, setDbSteps] = useState(null); // null = no cargado aún
+
+  const fetchDbSteps = useCallback(async () => {
+    if (!lessonId || !moduleId) return;
+    try {
+      const res = await fetch(
+        `/api/curriculum/lessons/${lessonId}/sections?moduleId=${encodeURIComponent(moduleId)}`
+      );
+      if (res.ok) {
+        const json = await res.json();
+        setDbSteps(json.steps ?? []);
+      }
+    } catch {
+      // Silencioso: si falla la carga de BD se usa JSON como fallback
+    }
+  }, [lessonId, moduleId]);
+
+  // Cargar estado de BD al montar (modo edición) y cuando cambia la lección
   useEffect(() => {
-    if (calculatePages?.length) setLocalPages(calculatePages);
-  }, [calculatePages]);
+    if (isEditMode) fetchDbSteps();
+  }, [isEditMode, fetchDbSteps]);
+
+  // Filtra calculatePages respetando el estado de BD (isActive=false = eliminado)
+  const filteredCalculatePages = useMemo(() => {
+    if (!calculatePages?.length) return calculatePages ?? [];
+    if (!dbSteps?.length) return calculatePages;
+    // Construir mapa de overrides por sectionSourceId y por order
+    const deletedBySourceId = new Set();
+    const deletedByOrder = new Set();
+    dbSteps.forEach(s => {
+      if (!s.isActive) {
+        if (s.sectionSourceId) deletedBySourceId.add(s.sectionSourceId);
+        else deletedByOrder.add(s.order);
+      }
+    });
+    if (!deletedBySourceId.size && !deletedByOrder.size) return calculatePages;
+    return calculatePages.filter((p) => {
+      if (p.section?.id && deletedBySourceId.has(p.section.id)) return false;
+      if (deletedByOrder.has(p.sectionIndex)) return false;
+      return true;
+    });
+  }, [calculatePages, dbSteps]);
+
+  useEffect(() => {
+    if (filteredCalculatePages?.length) setLocalPages(filteredCalculatePages);
+  }, [filteredCalculatePages]);
+
+  // Páginas a renderizar en scroll mode (declarado aquí para usarlo en los callbacks)
+  const scrollPages = isScrollMode
+    ? (localPages.length ? localPages : (filteredCalculatePages ?? []))
+    : [];
+
+  // ── Helpers para llamadas a la API de curriculum ──────────────────────────
+  const apiPatch = useCallback(async (path, body) => {
+    try {
+      const res = await fetch(path, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.error(`[LessonViewer] API error ${path}:`, err);
+      }
+      return res.ok;
+    } catch (e) {
+      console.error(`[LessonViewer] fetch error ${path}:`, e);
+      return false;
+    }
+  }, []);
+
+  const apiPost = useCallback(async (path, body) => {
+    try {
+      const res = await fetch(path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.error(`[LessonViewer] API error ${path}:`, err);
+      }
+      return res.ok;
+    } catch (e) {
+      console.error(`[LessonViewer] fetch error ${path}:`, e);
+      return false;
+    }
+  }, []);
+
+  const apiDelete = useCallback(async (path, body) => {
+    try {
+      const res = await fetch(path, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.error(`[LessonViewer] API error ${path}:`, err);
+      }
+      return res.ok;
+    } catch (e) {
+      console.error(`[LessonViewer] fetch error ${path}:`, e);
+      return false;
+    }
+  }, []);
 
   const handleMoveSection = useCallback((fromIdx, toIdx) => {
     setLocalPages(prev => {
@@ -220,18 +346,24 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
       result.splice(toIdx, 0, removed);
       return result;
     });
-    // TODO Fase 3: PATCH /api/lessons/{lessonId}/sections/reorder
-    console.log('[EditableSectionWrapper] move section:', { from: fromIdx, to: toIdx });
-  }, []);
+    apiPost(`/api/curriculum/lessons/${lessonId}/sections/reorder`, {
+      moduleId: data?.moduleId || moduleId,
+      from: fromIdx,
+      to: toIdx,
+    });
+  }, [lessonId, moduleId, data, apiPost]);
 
-  const handleDeleteSection = useCallback((idx) => {
+  const handleDeleteSection = useCallback(async (idx) => {
+    // Optimistic: quitar del estado local inmediatamente
     setLocalPages(prev => prev.filter((_, i) => i !== idx));
-    // TODO Fase 3: DELETE /api/lessons/{lessonId}/sections/{idx}
-    console.log('[EditableSectionWrapper] delete section at index:', idx);
-  }, []);
+    const ok = await apiDelete(`/api/curriculum/lessons/${lessonId}/sections/${idx}`, {
+      moduleId: data?.moduleId || moduleId,
+    });
+    // Refrescar estado de BD para sincronizar filteredCalculatePages
+    if (ok) fetchDbSteps();
+  }, [lessonId, moduleId, data, apiDelete, fetchDbSteps]);
 
   const handleAddSection = useCallback(() => {
-    // Scroll al último BlockInjector visible
     const injectors = document.querySelectorAll('[data-block-injector]');
     if (injectors.length) {
       injectors[injectors.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -239,19 +371,30 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
   }, []);
 
   const handleLessonTitleChange = useCallback((newTitle) => {
-    // TODO Fase 3: PATCH /api/lessons/{lessonId} { title: newTitle }
-    console.log('[LessonEditBanner] lesson title updated:', newTitle);
-  }, []);
+    apiPatch(`/api/curriculum/lessons/${lessonId}`, {
+      moduleId: data?.moduleId || moduleId,
+      title: newTitle,
+    });
+  }, [lessonId, moduleId, data, apiPatch]);
 
   // ── Dirty state: rastrear cambios sin guardar en el editor ──
   const [dirtyMap, setDirtyMap] = useState({});     // { [sectionIdx]: htmlContent }
   const [unsavedAlertOpen, setUnsavedAlertOpen] = useState(false);
-  const pendingNavRef = useRef(null);                // navegación pendiente mientras hay cambios
+  const pendingNavRef = useRef(null);
   const hasDirtyChanges = Object.keys(dirtyMap).length > 0;
 
+  // Llamado cuando el usuario hace click en "Guardar sección"
   const handleSectionContentChange = useCallback((html, idx) => {
     setDirtyMap(prev => ({ ...prev, [idx]: html }));
-  }, []);
+    // Guardar inmediatamente en BD
+    const pageData = localPages[idx] ?? scrollPages[idx];
+    apiPatch(`/api/curriculum/lessons/${lessonId}/sections/${idx}`, {
+      moduleId:        data?.moduleId || moduleId,
+      htmlContent:     html,
+      title:           pageData?.section?.title ?? null,
+      sectionSourceId: pageData?.section?.id ?? null,
+    });
+  }, [lessonId, moduleId, data, localPages, scrollPages, apiPatch]);
 
   // Interceptar navegación si hay cambios pendientes
   const guardedNavigate = useCallback((navigateFn) => {
@@ -263,14 +406,19 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     }
   }, [hasDirtyChanges]);
 
-  // Guardar todos los cambios (console.log TODO hasta Fase 3)
+  // Guardar todos los cambios pendientes (navegación con cambios sin guardar)
   const saveAllChanges = useCallback(() => {
     Object.entries(dirtyMap).forEach(([idx, html]) => {
-      console.log('[LessonViewer] save section content:', { sectionIndex: idx, html });
-      // TODO Fase 3: PATCH /api/lessons/{lessonId}/sections/{idx} { content: html }
+      const pageData = localPages[idx] ?? scrollPages[idx];
+      apiPatch(`/api/curriculum/lessons/${lessonId}/sections/${idx}`, {
+        moduleId:        data?.moduleId || moduleId,
+        htmlContent:     html,
+        title:           pageData?.section?.title ?? null,
+        sectionSourceId: pageData?.section?.id ?? null,
+      });
     });
     setDirtyMap({});
-  }, [dirtyMap]);
+  }, [dirtyMap, lessonId, moduleId, data, localPages, scrollPages, apiPatch]);
 
   // Alert: guardar y continuar
   const handleAlertSave = useCallback(() => {
@@ -301,11 +449,6 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
   }, [hasDirtyChanges]);
-
-  // Páginas a renderizar en scroll mode: usar estado local (permite reorden optimista)
-  const scrollPages = isScrollMode
-    ? (localPages.length ? localPages : (calculatePages ?? []))
-    : [];
 
   // ============================================================================
   // Rendering extracted to LessonPageRenderer and MediaBlocksContainer
@@ -519,7 +662,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
                       handleNavigateToLesson={handleNavigateToLesson}
                       moduleCompletion={moduleCompletion}
                       triggerAutoCompletion={triggerAutoCompletion}
-                      calculatePages={calculatePages}
+                      calculatePages={filteredCalculatePages}
                       setCurrentPage={setCurrentPage}
                       completedLessonsCount={completedLessonsCount}
                       totalLessons={totalLessons}
@@ -544,7 +687,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
           <LessonIndexNavigator
             currentPage={currentPage}
             totalPages={totalPages}
-            pages={calculatePages}
+            pages={filteredCalculatePages}
             isModuleCompleted={isModuleCompleted}
             onNavigateToPage={handleNavigateToPage}
             moduleId={moduleId}
