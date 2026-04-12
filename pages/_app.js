@@ -1,28 +1,19 @@
-import React, { useState, createContext, useContext } from 'react';
+import React, { useState } from 'react';
 import { Box, CssBaseline, ThemeProvider } from '@mui/material';
 import { SessionProvider } from 'next-auth/react';
-import { AuthProvider } from '../src/contexts/AuthContext';
-import { PatientDataProvider } from '../src/contexts/PatientDataContext';
-import { NotificationProvider } from '../src/contexts/NotificationContext';
+import { AuthProvider } from '../src/shared/contexts/AuthContext';
+import { NotificationProvider } from '../src/shared/contexts/NotificationContext';
 import Providers from '../src/providers/Providers';
-import Sidebar from '../src/components/navigation/Sidebar';
-import ErrorBoundary from '../src/components/common/ErrorBoundary';
+import Sidebar from '../src/shared/components/Sidebar';
+import ErrorBoundary from '../src/shared/components/ErrorBoundary';
 import { useRouter } from 'next/router';
 import theme from '../src/theme/theme';
+import { PatientDataProvider } from '../src/features/simulador/simuladorPaciente/contexto/PatientDataContext';
+import { SocketProvider } from '../src/shared/contexts/SocketContext';
+import { SidebarContext } from '../src/shared/contexts/SidebarContext';
 import '../src/App.css';
 // Importar y inicializar i18n
 import '../src/i18n/i18n';
-
-// Context para el estado del sidebar
-const SidebarContext = createContext();
-
-export const useSidebar = () => {
-  const context = useContext(SidebarContext);
-  if (!context) {
-    throw new Error('useSidebar must be used within a SidebarProvider');
-  }
-  return context;
-};
 
 function MyApp({ Component, pageProps: { session, ...pageProps } }) {
   const router = useRouter();
@@ -30,6 +21,8 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
 
   // Check if current page is an auth page (no sidebar)
   const isAuthPage = router.pathname.startsWith('/auth');
+  // Panel pages use their own PanelLayout with PanelSidebar
+  const isPanelPage = router.pathname.startsWith('/panel');
 
   const handleSidebarToggle = () => {
     setSidebarOpen(!sidebarOpen);
@@ -93,44 +86,47 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
           refetchOnWindowFocus={false} // Desactivado para evitar revalidaciones agresivas
         >
           <AuthProvider>
-            <ThemeProvider theme={theme}>
-              <NotificationProvider>
-                <PatientDataProvider>
-                  <CssBaseline />
-                {/* Auth pages: render without sidebar */}
-                {isAuthPage ? (
-                  <ErrorBoundary>
-                    <Component {...pageProps} />
-                  </ErrorBoundary>
-                ) : (
-                  /* Regular pages: render with sidebar */
-                  <SidebarContext.Provider value={{ sidebarOpen, handleSidebarToggle }}>
-                    <Box sx={{ display: 'flex' }}>
-                      <Sidebar open={sidebarOpen} onToggle={handleSidebarToggle} />
-                      <Box
-                        component="main"
-                        sx={{
-                          flexGrow: 1,
-                          p: 3,
-                          width: { sm: `calc(100% - ${sidebarOpen ? 240 : 64}px)` },
-                          ml: { sm: `${sidebarOpen ? 240 : 64}px` },
-                          transition: (theme) =>
-                            theme.transitions.create(['margin', 'width'], {
-                              easing: theme.transitions.easing.sharp,
-                              duration: theme.transitions.duration.leavingScreen,
-                            }),
-                        }}
-                      >
-                        <ErrorBoundary>
-                          <Component {...pageProps} />
-                        </ErrorBoundary>
-                      </Box>
-                    </Box>
-                  </SidebarContext.Provider>
-                )}
-                </PatientDataProvider>
-              </NotificationProvider>
-            </ThemeProvider>
+            <SocketProvider>
+              <ThemeProvider theme={theme}>
+                <NotificationProvider>
+                  <PatientDataProvider>
+                    <CssBaseline />
+                    {/* Auth pages: render without sidebar */}
+                    {/* Panel pages: render without student sidebar (PanelLayout provides its own) */}
+                    {isAuthPage || isPanelPage ? (
+                      <ErrorBoundary>
+                        <Component {...pageProps} />
+                      </ErrorBoundary>
+                    ) : (
+                      /* Regular pages: render with sidebar */
+                      <SidebarContext.Provider value={{ sidebarOpen, handleSidebarToggle }}>
+                        <Box sx={{ display: 'flex' }}>
+                          <Sidebar open={sidebarOpen} onToggle={handleSidebarToggle} />
+                          <Box
+                            component="main"
+                            sx={{
+                              flexGrow: 1,
+                              minWidth: 0,
+                              overflow: 'hidden',
+                              p: 0,
+                              transition: (theme) =>
+                                theme.transitions.create(['margin', 'width'], {
+                                  easing: theme.transitions.easing.sharp,
+                                  duration: theme.transitions.duration.leavingScreen,
+                                }),
+                            }}
+                          >
+                            <ErrorBoundary>
+                              <Component {...pageProps} />
+                            </ErrorBoundary>
+                          </Box>
+                        </Box>
+                      </SidebarContext.Provider>
+                    )}
+                  </PatientDataProvider>
+                </NotificationProvider>
+              </ThemeProvider>
+            </SocketProvider>
           </AuthProvider>
         </SessionProvider>
       </Providers>

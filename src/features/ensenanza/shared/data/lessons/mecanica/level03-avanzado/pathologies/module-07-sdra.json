@@ -1,0 +1,311 @@
+{
+  "id": "module-07-sdra",
+  "moduleId": "module-07-avanzado-patologias",
+  "title": "SDRA en el paciente obeso: ventilación protectora avanzada y monitoreo de alta precisión",
+  "description": "Este módulo de nivel avanzado aborda el SDRA (Síndrome de Distrés Respiratorio Agudo) sobreañadido al paciente obeso, la comorbilidad más devastadora en esta población. Integra los datos epidemiológicos globales de la OMS 2016 (>650M con obesidad, 340M niños 5-19 años) y ENSANUT 2022 México, la cuantificación precisa de PEEPi posicional (Pankow et al.: 1.4→4.1 cmH₂O vertical a supino), el posicionamiento óptimo (Prof. Dr. Hermann Wrigge), el debate PROBESE (4 vs 12 cmH₂O sin diferencias mayores), la controversia de la FiO₂ >80%, la segunda maniobra breve de reapertura, la integridad del circuito tras el 'pulmón abierto', y la arquitectura CLT con Ren y Siddique (78% vs 63% retención), el Número de Miller (7±2) y la Práctica de Recuperación Espaciada.",
+  "order": 7,
+  "estimatedTime": 95,
+  "difficulty": "advanced",
+  "bloomLevel": "synthesize",
+  "learningObjectives": [
+    "Contextualizar la magnitud epidemiológica global (OMS 2016, ENSANUT 2022 México) y estimar que uno de cada tres pacientes quirúrgicos o críticos presenta obesidad como determinante de la competencia ventilatoria imperativa del especialista.",
+    "Cuantificar la PEEPi posicional con los datos de Pankow et al. (1.4→4.1 cmH₂O de vertical a supino) y explicar por qué el IMC es el único predictor independiente del atrapamiento de aire.",
+    "Reconocer los riesgos perioperatorios específicos del obeso con SDRA: atelectasias en el 90% post-inducción, AOS en el 50% de los pacientes con IMC>40, e 'ilusión de seguridad' por opioides con rebote REM en la 3.ª noche.",
+    "Programar la ventilación protectora con PBW (De Jong y Pelosi: VCV preferente), interpretar el debate PROBESE sobre niveles de PEEP y gestionar la controversia de la FiO₂ >80% (atelectasias de reabsorción vs. desaturación rápida).",
+    "Ejecutar la MR controlada por ventilador (50-55 cmH₂O), identificar la 'PEEP de no colapso' mediante titulación decremental, realizar la segunda maniobra breve de reapertura y preservar la integridad del circuito para evitar repetir el ciclo de colapso.",
+    "Aplicar la CLT de Sweller con los datos de Ren y Siddique (78% vs 63% retención), el Número Mágico de Miller (7±2) y la Práctica de Recuperación Espaciada para automatizar el protocolo ventilatorio del SDRA bajo estrés clínico."
+  ],
+  "prerequisites": [
+    "Módulos 5-6 de patologías: fisiopatología de la obesidad, MR con costo hemodinámico, estrategias obstructivas y CLT avanzada.",
+    "Módulos avanzados 1-4: VILI, monitorización de alto nivel, asincronías y destete complejo.",
+    "Definición de Berlín del SDRA y estadios leve/moderado/severo; conocimiento básico de Driving Pressure y Mechanical Power."
+  ],
+  "sections": [
+    {
+      "id": "sdra-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción: la obesidad como el desafío fisiológico sistémico más crítico en medicina intensiva",
+      "content": {
+        "markdown": "## ¿Qué vas a aprender en este módulo?\n\nTema: SDRA en el paciente obeso — la comorbilidad más devastadora en la combinación obesidad + cirugía/UCI, donde la mecánica ya comprometida colapsa ante la lesión pulmonar aguda.\n\n### La magnitud epidemiológica: cifras que redefinen el estándar de cuidado\n\nSegún la **OMS (2016)**, la carga global de obesidad ha alcanzado dimensiones sin precedentes:\n- Adultos con **sobrepeso:** > 1.900 millones\n- Adultos con **obesidad franca:** > 650 millones\n- **Niños <5 años** afectados: 41 millones\n- **Niños y adolescentes 5-19 años** afectados: **340 millones**\n\nEn México, la **ENSANUT 2022** revela que casi el **40 % de la población adulta** padece obesidad, una de las prevalencias más altas de América Latina.\n\nEn naciones desarrolladas (OCDE):\n- **EE. UU.:** 32 % hombres / 34 % mujeres\n- **Reino Unido:** 25 %\n- **Alemania:** 21 %\n\n### La implicación imperativa para el especialista\n\nEstadísticamente, **uno de cada tres pacientes** que ingresa a una unidad quirúrgica o crítica presentará algún grado de obesidad. Los anestesiólogos e intensivistas —quienes realizan la mayor cantidad de intubaciones y programaciones de ventiladores a nivel global— tienen una **obligación de competencia imperativa** en ventilación mecánica de este fenotipo. Ignorar las particularidades del obeso convierte cirugías técnicamente exitosas en desenlaces mortales.\n\n### Hoja de ruta del módulo\n\n- **Fisiopatología:** PEEPi posicional cuantificada (Pankow et al.), posicionamiento de Wrigge, Pendelluft.\n- **Complicaciones:** 90% atelectasias post-inducción, AOS 50% IMC>40, ilusión URPA + rebote REM noche 3.\n- **Programación:** PBW De Jong/Pelosi, debate PROBESE, controversia FiO₂ >80%.\n- **MR de precisión:** 50-55 cmH₂O, segunda MR breve, integridad del circuito.\n- **CLT:** Ren y Siddique (78% vs 63%), Miller 7±2, Práctica de Recuperación Espaciada."
+      },
+      "estimatedTime": 8
+    },
+    {
+      "id": "sdra-theory-1",
+      "order": 2,
+      "type": "theory",
+      "title": "Fisiopatología respiratoria: PEEPi posicional cuantificada, Pendelluft y posicionamiento de Wrigge",
+      "content": {
+        "markdown": "La arquitectura toracoabdominal del paciente obeso impone **restricciones mecánicas severas** incluso en ausencia de SDRA. Cuando el SDRA se superpone, estas restricciones se multiplican.\n\n### PIA y cascada mecánica\n\nLa PIA típica del paciente obeso es de **6-10 cmH₂O**, forzando la cefalización del diafragma. Consecuencias directas:\n- CRF ↓ entre **5 % y 15 %** por cada 5 kg/m² de IMC sobre 30.\n- Heterogeneidad de distensibilidad → **efecto Pendelluft**: gas ineficiente entre regiones con diferentes constantes de tiempo, agravando el V/Q mismatch.\n- Post-inducción + relajación neuromuscular: la CRF puede desplomarse hasta un **50 % adicional** respecto al basal.\n\n### PEEPi posicional: Pankow et al. (1998) y Steier — datos precisos\n\nEstos estudios demostraron que la **PEEPi causada por colapso de vía aérea pequeña** no es homogénea ni independiente de la posición:\n\n| Posición | PEEPi media (cmH₂O) |\n| :--- | :--- |\n| Vertical | 1.4 |\n| Supina | 4.1 |\n\nEl **IMC es el único predictor independiente** de la PEEPi, con un incremento medio de **+0.2 cmH₂O por unidad de IMC** en posición supina.\n\n> **Implicación práctica:** un paciente con IMC 45 en supino tendrá una PEEPi estimada de ~4.1 + 0.2×(45-30) = ~7.1 cmH₂O sin ventilación mecánica. La PEEP extrínseca debe superar este valor para evitar la ineficacia del trigger.\n\n### Posicionamiento óptimo: recomendación del Prof. Dr. Hermann Wrigge\n\nEl Prof. Dr. **Hermann Wrigge** recomienda mantener al paciente en **posición de Trendelenburg invertida o con el tronco elevado** el mayor tiempo posible, desde la inducción hasta la recuperación. El beneficio es dual:\n1. Reduce la presión del tejido adiposo abdominal sobre el diafragma.\n2. Mantiene la CRF activa del paciente durante las fases de manipulación quirúrgica.\n\nIgnorar el posicionamiento óptimo es **garantizar el colapso alveolar y la desaturación rápida**, especialmente al cambiar de decúbito supino a Trendelenburg."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "sdra-theory-2",
+      "order": 3,
+      "type": "theory",
+      "title": "Complicaciones clínicas específicas: atelectasias, AOS y la 'ilusión de seguridad' en URPA",
+      "content": {
+        "markdown": "Bajo anestesia general, el paciente obeso entra en una **'ventana de vulnerabilidad' extrema** donde las complicaciones son la regla, no la excepción.\n\n### Atelectasias por compresión: 90% confirmado por TC\n\nLas atelectasias se detectan en casi el **90 % de los pacientes obesos** mediante tomografía computarizada tras la inducción anestésica. Persisten frecuentemente en el postoperatorio si no se implementa una estrategia de apertura activa:\n- La posición supina reduce el volumen pulmonar un **50 % adicional** comparado con la bipedestación.\n- El tejido pulmonar se vuelve rígido no por daño estructural inicial, sino por **pérdida de volumen aireado** → 'pulmón chico' funcional.\n\n### AOS: 50% de los pacientes con IMC > 40\n\nLa Apnea Obstructiva del Sueño (AOS) está presente en la **mitad de los pacientes con IMC > 40**. En el perioperatorio su comportamiento es particularmente traicionero:\n\n### La 'ilusión de seguridad' y el rebote REM en la 3.ª noche\n\nLos opioides perioperatorios suprimen las fases REM y el sueño de ondas lentas, lo que **paradójicamente reduce la frecuencia de episodios obstructivos visibles** en la URPA inmediatamente después de la cirugía — creando una falsa sensación de seguridad.\n\nEl peligro real reaparece con intensidad redoblada en la **3.ª noche postoperatoria**:\n- Ocurre el **rebote de fase REM**: la incidencia y severidad de las apneas se disparan.\n- El paciente ya está en planta, con monitorización reducida y lejos de la vigilancia del anestesiólogo.\n- Riesgo de **insuficiencia respiratoria aguda o eventos cardíacos nocturnos** en este momento.\n\n### Medidas preventivas no opcionales\n\n- **Vigilancia telemétrica** extendida hasta la 3.ª noche postoperatoria.\n- **CPAP inmediata post-extubación**: medida profiláctica, no de rescate.\n- La ventilación no protectora durante la cirugía puede desencadenar **SDRA postoperatorio** — complicación devastadora en este grupo dada su ya precaria mecánica respiratoria.\n\n### 'So What?': la 'ventana de vulnerabilidad' requiere vigilancia estratégica activa\n\nLa lección clínica no es solo programar el ventilador correctamente en quirófano: es diseñar un **plan de vigilancia perioperatorio de 72 horas** que anticipe el rebote REM, el potencial colapso alveolar y la evolución a SDRA como escenarios probables, no remotos."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "sdra-theory-3",
+      "order": 4,
+      "type": "theory",
+      "title": "Programación protectora: PBW, debate PROBESE y la controversia de la FiO₂ >80%",
+      "content": {
+        "markdown": "### PBW como único estándar válido (De Jong y Pelosi)\n\nLa evidencia de **De Jong y Pelosi** establece una **preferencia clara por VCV** sobre PCV, ya que garantiza la entrega del Vt programado ante cambios de distensibilidad. Fórmulas de PBW:\n\n- **Hombres:** 50 + 0.91 × [Altura(cm) − 152.4]\n- **Mujeres:** 45.5 + 0.91 × [Altura(cm) − 152.4]\n\nMeta de Vt: **6-8 ml/kg PBW**. Usar el peso real garantiza el VILI.\n\nDriving Pressure (DP = Plateau − PEEP): meta < **13-15 cmH₂O** para minimizar el estrés tisular en el obeso con SDRA.\n\n### El debate PROBESE: ¿cuánta PEEP es suficiente?\n\nEl estudio **PROBESE** (2019) comparó PEEP alta (12 cmH₂O + MR) vs. PEEP baja (4 cmH₂O) en pacientes obesos sometidos a cirugía:\n- **Resultado:** no se hallaron diferencias drásticas en desenlaces mayores (complicaciones pulmonares postoperatorias) entre los dos grupos.\n- **Interpretación del módulo:** la PEEP debe ser la **mínima necesaria para mantener el 'pulmón abierto'** tras la maniobra de reclutamiento, sin comprometer la hemodinámica. No existe un nivel universal óptimo.\n\nLa tabla LOV-ED sigue siendo la guía de inicio:\n\n| IMC (kg/m²) | PEEP objetivo |\n| :--- | :--- |\n| < 29.9 | 5 cmH₂O |\n| 30.0 - 39.9 | 8 cmH₂O |\n| 40.0 - 49.9 | 10 cmH₂O |\n| > 50.0 | 12 cmH₂O |\n\nEn SDRA sobreañadido: PEEP titulada hasta **26 cmH₂O** con vigilancia hemodinámica estricta.\n\n### La controversia de la FiO₂ >80%: balance riesgo-beneficio\n\nMeta de oxigenación: SpO₂ **94-98 %** con la **FiO₂ mínima indispensable**.\n\nEl uso de FiO₂ elevadas (>80 %) es controvertido en el obeso:\n\n| Argumento a favor | Argumento en contra |\n| :--- | :--- |\n| Previene desaturaciones rápidas por la reducida reserva de O₂ del obeso | Fomenta **atelectasias de reabsorción** (O₂ reemplaza N₂ que se absorbe más rápido → colapso) |\n| Margen de seguridad durante la inducción | Genera **daño oxidativo directo** por ROS sobre el epitelio alveolar |\n\nLa clave es el **balance cuidadoso durante la inducción y el mantenimiento**: se puede usar FiO₂ alta transitoriamente durante la pre-oxigenación, pero debe reducirse lo antes posible una vez establecida la ventilación mecánica estable."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "sdra-theory-4",
+      "order": 5,
+      "type": "theory",
+      "title": "MR de alta precisión: la segunda maniobra breve, titulación decremental e integridad del circuito",
+      "content": {
+        "markdown": "El reclutamiento alveolar es un **procedimiento dinámico de alta precisión** que requiere técnica controlada por el ventilador. No existe sustituto para el control computarizado de presiones durante la MR.\n\n### Prohibición del reclutamiento manual con bolsa: razones técnicas\n\nEl uso de la bolsa manual se proscribe por:\n1. **Picos de presión erráticos e incontrolados:** la fuerza manual no es reproducible ni monitorizable.\n2. **Pérdida de PEEP al alternar con el ventilador:** cada transición bolsa-ventilador anula el reclutamiento previo.\n3. **Sin métricas de compliance en tiempo real:** el clínico no puede identificar la PEEP de no colapso sin datos de distensibilidad.\n\n### La MR progresiva controlada: secuencia técnica\n\n1. **Fase escalonada (aumento):** incrementar gradualmente la presión de meseta (Plateau) hasta **50-55 cmH₂O**, permitiendo la apertura alveolar homogénea sin picos traumáticos.\n2. **Fase decremental (reducción):** reducir la PEEP en pasos de 2 cmH₂O, identificando el punto de **máxima distensibilidad dinámica** → esta es la **'PEEP de no colapso'**.\n3. **Segunda maniobra breve de reapertura:** tras identificar la PEEP de no colapso, se realiza una **segunda MR corta** para reabrir cualquier alvéolo que pueda haberse colapsado durante la fase decremental, y luego se fija la PEEP definitiva a 2 cmH₂O sobre el punto de inflexión.\n\n### Impacto hemodinámico: precarga y vasopresores como parte del protocolo\n\nPresiones de 50-55 cmH₂O no son inocuas hemodinámicamente:\n- Aumentan la **presión intratorácica** → disminuyen el retorno venoso → comprometen el ventrículo derecho.\n- Pueden reducir la **presión de perfusión coronaria** de forma aguda.\n\n**Medidas obligatorias antes de iniciar la MR:**\n- Asegurar precarga adecuada mediante fluidos.\n- Tener **vasopresores (catecolaminas) preparados** para mantener la PA media durante la maniobra.\n\n### La regla de la integridad del circuito\n\nUna vez alcanzado el estado de **'pulmón abierto'**, cualquier:\n- Desconexión del circuito ventilatorio\n- Caída accidental de la PEEP por debajo del umbral de no colapso\n- Interrupción no planificada\n\n...obliga a **repetir la MR completa** desde el inicio, re-exponiendo el pulmón a fuerzas de cizallamiento (atelectrauma) que generan nuevas lesiones. La **integridad del circuito debe preservarse celosamente** como parte del protocolo de protección pulmonar."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "sdra-theory-5",
+      "order": 6,
+      "type": "theory",
+      "title": "CLT avanzada: Ren y Siddique, el Número Mágico de Miller y la Práctica de Recuperación Espaciada",
+      "content": {
+        "markdown": "El dominio de la ventilación mecánica en el SDRA y la obesidad representa una **carga cognitiva intrínseca masiva** para el personal en formación. Para optimizar la retención, este módulo aplica la **Teoría de la Carga Cognitiva de Sweller**.\n\n### Los tres tipos de carga y el objetivo del diseño instruccional\n\n| Tipo | Descripción | Estrategia de optimización |\n| :--- | :--- | :--- |\n| **Intrínseca** | Dificultad del contenido (ej. entender Pendelluft + SDRA) | Secuenciación lógica: fisio → programación → maniobras |\n| **Extrínseca** | Ruido pedagógico o diseño ineficiente | Chunking (7-15 unidades), tablas, 'So What?' explícito |\n| **Germana** | Esfuerzo para construir schemas permanentes | Práctica de Recuperación Espaciada, casos clínicos |\n\n### Evidencia de Ren y Siddique: 78% vs. 63% retención\n\nEl estudio de **Ren y Siddique** demuestra que los aprendices que reciben información adaptada y segmentada (Chunking) logran una **retención inmediata del 78 %** frente al **63 %** de los grupos control. La ganancia de 15 puntos porcentuales no es trivial en un contexto clínico donde el olvido de un umbral de presión puede causar lesión pulmonar irreversible.\n\n### El Número Mágico de Miller: 7 ± 2 unidades\n\nRespetando el **'Número Mágico' de Miller (7 ± 2 unidades de información)** en cada chunk pedagógico:\n- Se **minimiza la carga extrínseca** (ruido visual e información irrelevante).\n- La memoria de trabajo del residente puede enfocarse exclusivamente en la **carga germana**, donde se construyen los schemas mentales para la toma de decisiones críticas.\n- Cada sección de este módulo está diseñada con no más de 7-9 conceptos operacionales por bloque.\n\n### Scaffolding (Vygotsky) y Fading progresivo\n\nEl andamiaje progresivo basado en la **ZPD de Vygotsky** opera en fases:\n1. **Apoyo total:** fórmulas y tablas de PEEP predefinidas → el residente puede ejecutar sin schema propio.\n2. **Fading gradual:** se retiran las tablas de apoyo conforme el residente adquiere maestría.\n3. **Expertise Reversal Effect (precaución):** el exceso de guías para el experto se vuelve **contraproducente** — interfiere con sus schemas automatizados. El diseño instruccional debe eliminar andamiaje cuando ya no es necesario.\n\n### Práctica de Recuperación Espaciada\n\nLa **'práctica de recuperación espacial'** (Spaced Retrieval Practice) consolida el conocimiento en la memoria a largo plazo:\n- Exposición inicial → revisión a las 24h → revisión a los 7 días → revisión al mes.\n- Cada ciclo de recuperación refuerza la traza mnémica y aumenta la durabilidad del schema.\n- El objetivo final es que la aplicación del protocolo de ventilación protectora en el SDRA obeso se convierta en una **respuesta automática, técnica y éticamente fundamentada** bajo estrés clínico."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "m-sdra-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Manejo integral del SDRA",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Manejo integral del SDRA — guía paso a paso\n\n> Aplica el protocolo completo de manejo del SDRA según evidencia 2024. No bloquea avance.\n\n---\n\n### Actividad 1 — Clasificación de Berlin\n\nClasifica el SDRA según los criterios de Berlin 2012 y 2023:\n\n| Criterio | Leve | Moderado | Severo |\n|---|---|---|---|\n| P/F (mmHg) con PEEP ≥ 5 | 200–300 | 100–200 | < 100 |\n| Mortalidad estimada | ~27% | ~32% | ~45% |\n| Intervenciones adicionales | Opcional prono | Considerar prono | Prono + BNM indicados |\n\n*(Definición revisada 2023 incluye VNI con PEEP ≥ 10 para leve/moderado)*\n\n---\n\n### Actividad 2 — \"Paquete\" de ventilación protectora\n\nEnumera los 5 componentes del paquete de ventilación protectora del SDRA:\n\n1. **Vt ≤ 6 mL/kg** peso predicho (rango 4–8 mL/kg según mecánica)\n2. **Pmeseta ≤ 28–30 cmH₂O** (límite absoluto)\n3. **Driving pressure < 15 cmH₂O** (meta ideal < 12)\n4. **PEEP adecuado** para la mecánica individual (tabla ARDSnet, compliance o EIT)\n5. **Decúbito prono ≥ 16 h/día** en SDRA moderado-severo (P/F < 150)\n\n---\n\n### Actividad 3 — Maniobra de reclutamiento: cuándo y cómo\n\n**¿Cuándo aplicar maniobra de reclutamiento?**\n- SDRA difuso/bilateral con colapso alveolar generalizado.\n- Antes de titular PEEP con método de compliance.\n- Tras desconexión accidental del circuito.\n\n**¿Cómo?**\n- CPAP 40 cmH₂O × 40 s (técnica clásica).\n- PEEP escalonado: 15→20→25→30 cmH₂O con descenso posterior.\n- PCV con PEEP 25 + P_insp 15 cmH₂O = Ppico 40 × 2 min.\n\n**¿Cuándo NO aplicar?**\n- SDRA focal (neumonía lobar): el pulmón sano se sobredistiende → peor resultado.\n- Hipotensión severa → riesgo de colapso circulatorio.\n- Neumotórax no drenado.\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 25 pts | Actividad 2 → 40 pts | Actividad 3 → 35 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 7
+    },
+    {
+      "id": "m-sdra-case",
+      "type": "case_study",
+      "title": "Caso clínico: SDRA severo — estrategia completa",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: SDRA severo — protocolo completo\n\n---\n\n### Presentación\n\n**Paciente:** Mujer, 38 años, talla 162 cm, 58 kg, previamente sana.\n**Diagnóstico:** SDRA severo post-influenza A H1N1, infiltrados bilaterales en Rx y TC.\n**Gasometría (intubación):** pH 7,18, PaCO₂ 62 mmHg, PaO₂ 48 mmHg, FiO₂ 0,80 → P/F = 60.\n**Fecha de ingreso a UCI:** día 1.\n\n---\n\n### Plan por días\n\n**Día 1 — Fase aguda, SDRA severo**\n- Bloqueo neuromuscular (cisatracurio × 48 h) → eliminar esfuerzo espontáneo peligroso.\n- VCV: Vt = 6×PP = 6 × [45,5 + 0,91×(162−152,4)] = 6 × 54,2 = **325 mL**\n- Fr 22/min, PEEP 14 (tabla ARDSnet FiO₂ 0,80), FiO₂ 0,80.\n- Pmeseta 26, ΔP = 12 cmH₂O ✓.\n- **Decúbito prono** iniciado a las 2 h post-intubación.\n\n**Día 2 (tras 18 h de prono)**\n- P/F en prono: 118 → mejoría. Supino: P/F 78 → profundo efecto del prono.\n- 2ª sesión de prono. FiO₂ reducida a 0,70.\n\n**Día 4**\n- P/F 142 (moderado). FiO₂ 0,60. Cisatracurio suspendido. RASS objetivo −2.\n- PEEP reducida a 12 (compliance 28 mL/cmH₂O).\n\n**Día 7**\n- P/F 198 (leve). PEEP 8. FiO₂ 0,45. Inicio destete de sedación.\n- No más sesiones de prono (P/F > 150 en supino).\n\n**Día 10**\n- PSV 10 cmH₂O, PEEP 6, FiO₂ 0,35. IRRS 48. SBT exitosa 90 min.\n- **Extubación.** CNAF preventiva 30 min/turno × 12 h.\n\n---\n\n### Resultados\n\nAlta UCI día 14. Sin complicaciones mayores.\n\n---\n\n### Puntos clave\n\n1. El bloqueo neuromuscular precoz en SDRA severo (P/F < 150) en las primeras 48 h mejora la supervivencia.\n2. El prono es el tratamiento con mayor NNT favorable en medicina intensiva: ~6 pacientes tratados para salvar 1 vida.\n3. La recuperación de SDRA es posible incluso en casos severos si el soporte es adecuado y se minimizan las complicaciones iatrogénicas.\n"
+      },
+      "order": 8
+    },
+    {
+      "id": "sdra-summary",
+      "order": 9,
+      "type": "summary",
+      "title": "Cierre: el protocolo integrado de protección pulmonar en el SDRA del paciente obeso",
+      "content": {
+        "markdown": "## Síntesis operacional: de la epidemiología a la automatización del protocolo\n\n### Los 6 principios del protocolo integrado\n\n1. **Epidemiología como imperativo:** 1 de cada 3 pacientes quirúrgicos/críticos tiene obesidad (OMS 2016, ENSANUT 2022 México 40%). La competencia ventilatoria avanzada no es opcional para el especialista.\n2. **PEEPi posicional cuantificada:** Pankow et al. → 1.4 cmH₂O (vertical) a 4.1 cmH₂O (supino); +0.2 cmH₂O/unidad IMC. Posicionamiento de Wrigge (Trendelenburg invertida) desde la inducción.\n3. **Programación por PBW + interpretación del debate PROBESE:** VCV preferente (De Jong/Pelosi); PEEP mínima para pulmón abierto tras MR, no un número universal; FiO₂ >80% solo transitoriamente durante inducción.\n4. **MR de precisión en 3 fases:** aumento escalonado (50-55 cmH₂O) → decremental (PEEP de no colapso) → segunda MR breve de reapertura + PEEP fija 2 cmH₂O sobre inflexión. Vasopresores obligatorios.\n5. **Integridad del circuito como regla inquebrantable:** cualquier desconexión o caída de PEEP = repetir MR completa.\n6. **CLT + Práctica Espaciada:** Ren y Siddique (78% vs 63%), Miller 7±2, Fading gradual del andamiaje y Expertise Reversal Effect para diseño instruccional diferenciado.\n\n## Resumen integrador\n\n- La OMS 2016 reporta >650M adultos con obesidad y 340M niños 5-19 afectados; ENSANUT 2022 México alcanza el 40% de adultos. El especialista debe asumir que 1 de cada 3 de sus pacientes críticos estará en este fenotipo.\n- La PEEPi sube de 1.4 a 4.1 cmH₂O al pasar de vertical a supino (Pankow et al.); el IMC es su único predictor independiente. La posición del tronco (Wrigge) es una intervención terapéutica, no un detalle logístico.\n- El 90% de los obesos desarrolla atelectasias confirmadas por TC post-inducción. La AOS afecta al 50% de los IMC>40; la 'ilusión de seguridad' opioide crea falsa calma en URPA y el rebote REM en la 3.ª noche es el momento de máximo riesgo.\n- PROBESE: la PEEP alta no demostró superioridad universal → la titulación decremental tras MR es el único método para identificar la PEEP óptima individual. FiO₂>80%: balance transitorio durante inducción, reducir lo antes posible.\n- La segunda MR breve de reapertura es inseparable de la titulación decremental. Cualquier pérdida de PEEP posterior obliga a repetir el ciclo completo.\n- Ren y Siddique: Chunking mejora retención del 63% al 78%. Miller 7±2: límite de chunks por sección. Expertise Reversal Effect: eliminar andamiaje cuando ya no es útil.\n\n## Checklist de validación\n\n- Cito los datos precisos de Pankow et al. (1.4→4.1 cmH₂O) y calculo la PEEPi estimada de un paciente dado por IMC.\n- Explico por qué PROBESE no eliminó la titulación individual y qué significa 'mínima PEEP para pulmón abierto'.\n- Describo los dos riesgos de la FiO₂>80% y el contexto clínico en que puede justificarse transitoriamente.\n- Ejecuto las 3 fases de la MR, realizo la segunda MR breve y argumento por qué la integridad del circuito es una regla inquebrantable.\n- Identifico la 3.ª noche como el momento de máximo riesgo de rebote REM y prescribo la vigilancia adecuada.\n- Diseño un chunk pedagógico respetando el límite de Miller (7±2) y propongo un esquema de Práctica de Recuperación Espaciada para el protocolo de SDRA."
+      },
+      "estimatedTime": 8
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Qué diferencia cuantitativa exacta muestra Pankow et al. entre la PEEPi en posición vertical y supina, y cómo se calcula para un IMC específico?",
+        "¿Por qué el estudio PROBESE no resolvió el debate sobre la PEEP óptima y cuál es la única forma de identificarla en la práctica?",
+        "¿En qué escenario clínico puede justificarse el uso transitorio de FiO₂>80% y cuándo debe abandonarse?",
+        "¿Por qué la segunda maniobra breve de reapertura es parte inseparable de la titulación decremental?",
+        "¿Qué diferencia hay entre la evidencia de Ren y Siddique y la de Shaoheng Ren del módulo anterior, y qué tienen en común?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "aiexpandnotes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": [
+          "advanced"
+        ],
+        "question_types": [
+          "conceptual",
+          "application",
+          "clinical_case"
+        ],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [],
+  "quiz": {
+    "id": "quiz-sdra-obeso",
+    "passingScore": 4,
+    "questions": [
+      {
+        "id": "sdra-q1",
+        "type": "multiple-choice",
+        "question": "Según los datos de Pankow et al. (1998) citados en el módulo, ¿qué le ocurre a la PEEPi al pasar de posición vertical a supina en el paciente obeso?",
+        "options": [
+          "Disminuye de 4.1 a 1.4 cmH₂O por efecto de la presión gravitacional positiva en supino.",
+          "Se mantiene estable en 2.7 cmH₂O independientemente de la posición, variando solo con la FiO₂.",
+          "Aumenta de 1.4 a 4.1 cmH₂O por el colapso de vía aérea pequeña inducido por la cefalización diafragmática.",
+          "Aumenta de 2.0 a 6.0 cmH₂O exclusivamente en pacientes con SDRA establecido, no en el obeso sin SDRA."
+        ],
+        "correctAnswer": "Aumenta de 1.4 a 4.1 cmH₂O por el colapso de vía aérea pequeña inducido por la cefalización diafragmática.",
+        "explanation": "Pankow et al. (1998) y Steier demostraron que la PEEPi causada por atrapamiento de aire aumenta de 1.4 cmH₂O en posición vertical a 4.1 cmH₂O en posición supina. El mecanismo es la cefalización diafragmática inducida por la PIA, que colapsa la vía aérea pequeña en las zonas dependientes. El IMC es el único predictor independiente, con +0.2 cmH₂O por unidad de IMC en supino.",
+        "difficulty": "advanced",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "sdra-q2",
+        "type": "multiple-choice",
+        "question": "¿Cuál fue el hallazgo principal del estudio PROBESE y qué implicación tiene para la estrategia de PEEP en el obeso?",
+        "options": [
+          "PROBESE demostró superioridad de la PEEP alta (12 cmH₂O) sobre la baja (4 cmH₂O) en reducción de complicaciones pulmonares postoperatorias.",
+          "PROBESE no halló diferencias drásticas en desenlaces mayores entre 4 y 12 cmH₂O, lo que implica que la PEEP debe ser la mínima necesaria para mantener el pulmón abierto tras la MR.",
+          "PROBESE identificó que la PEEP óptima en el obeso es siempre 8 cmH₂O, independientemente del IMC o la posición quirúrgica.",
+          "PROBESE demostró que la MR es innecesaria si se aplica PEEP alta (12 cmH₂O) desde el inicio de la ventilación."
+        ],
+        "correctAnswer": "PROBESE no halló diferencias drásticas en desenlaces mayores entre 4 y 12 cmH₂O, lo que implica que la PEEP debe ser la mínima necesaria para mantener el pulmón abierto tras la MR.",
+        "explanation": "El estudio PROBESE comparó PEEP alta (12 cmH₂O + MR) vs. PEEP baja (4 cmH₂O) en obesos y no encontró diferencias significativas en complicaciones pulmonares postoperatorias mayores. La interpretación del módulo es que no existe un nivel universal de PEEP óptimo: la titulación decremental individualizada tras la MR es la única forma de identificar la 'PEEP de no colapso' específica de cada paciente, que es la mínima que mantiene el pulmón abierto sin comprometer la hemodinámica.",
+        "difficulty": "advanced",
+        "bloomLevel": "analyze",
+        "points": 2
+      },
+      {
+        "id": "sdra-q3",
+        "type": "multiple-choice",
+        "question": "Según el módulo, ¿en qué momento postoperatorio se produce el mayor riesgo de rebote REM en el paciente obeso con AOS y por qué?",
+        "options": [
+          "En las primeras 6 horas tras la extubación, cuando los opioides alcanzan su concentración máxima en el SNC.",
+          "En la 3.ª noche postoperatoria, cuando el rebote de fase REM suprimida por opioides reinstala la AOS con intensidad crítica y la monitorización ya se ha reducido.",
+          "A las 48 horas exactas post-cirugía, cuando el efecto sedante residual de los hipnóticos se ha eliminado completamente.",
+          "Solo en pacientes con diagnóstico previo de AOS documentado mediante polisomnografía preoperatoria."
+        ],
+        "correctAnswer": "En la 3.ª noche postoperatoria, cuando el rebote de fase REM suprimida por opioides reinstala la AOS con intensidad crítica y la monitorización ya se ha reducido.",
+        "explanation": "El módulo describe que los opioides perioperatorios suprimen las fases REM y el sueño de ondas lentas, creando una 'ilusión de seguridad' en la URPA donde los episodios de AOS son escasos. En la 3.ª noche postoperatoria ocurre el rebote de fase REM: la incidencia y severidad de las apneas se disparan justo cuando el paciente ya está en planta con monitorización reducida y lejos del anestesiólogo, elevando el riesgo de insuficiencia respiratoria aguda o eventos cardíacos nocturnos.",
+        "difficulty": "advanced",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "sdra-q4",
+        "type": "multiple-choice",
+        "question": "¿Por qué cualquier desconexión del circuito ventilatorio tras alcanzar el estado de 'pulmón abierto' obliga a repetir la maniobra de reclutamiento completa?",
+        "options": [
+          "Porque la desconexión contamina el circuito con gérmenes que requieren lavado broncoalveolar antes de reconectar.",
+          "Porque la pérdida de PEEP al desconectar provoca el re-colapso alveolar inmediato por atelectrauma (cizallamiento), y el pulmón regresa a su estado pre-MR requiriendo reapertura total.",
+          "Porque el ventilador pierde la configuración de PEEP programada al interrumpirse la alimentación eléctrica durante la desconexión.",
+          "Solo debe repetirse si la desconexión dura más de 30 segundos; desconexiones breves no afectan el estado de pulmón abierto."
+        ],
+        "correctAnswer": "Porque la pérdida de PEEP al desconectar provoca el re-colapso alveolar inmediato por atelectrauma (cizallamiento), y el pulmón regresa a su estado pre-MR requiriendo reapertura total.",
+        "explanation": "El módulo establece que una vez alcanzado el 'pulmón abierto', la integridad del circuito es una regla inquebrantable. Cualquier desconexión o caída accidental de la PEEP provoca re-colapso alveolar mediante atelectrauma (fuerzas de cizallamiento por apertura/cierre cíclica de alvéolos), que es en sí misma una fuente de lesión pulmonar. El pulmón vuelve a su estado colapso-pre-MR y requiere repetir la maniobra completa (incluyendo la segunda MR breve de reapertura y la refijación de la PEEP de no colapso).",
+        "difficulty": "advanced",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "sdra-q5",
+        "type": "multiple-choice",
+        "question": "¿Qué establece el Número Mágico de Miller (7±2) en el contexto del diseño instruccional de este módulo?",
+        "options": [
+          "Que los residentes deben memorizar no más de 7 fórmulas matemáticas por módulo para no saturar la memoria episódica.",
+          "Que cada chunk pedagógico debe contener entre 5 y 9 unidades de información para respetar la capacidad de la memoria de trabajo y minimizar la carga extrínseca.",
+          "Que el número ideal de preguntas de quiz por módulo es 7, distribuidas en 2 niveles de dificultad.",
+          "Que la duración óptima de una sesión docente es de 7 minutos antes de introducir una pausa de consolidación de 2 minutos."
+        ],
+        "correctAnswer": "Que cada chunk pedagógico debe contener entre 5 y 9 unidades de información para respetar la capacidad de la memoria de trabajo y minimizar la carga extrínseca.",
+        "explanation": "El Número Mágico de Miller (7±2) establece el límite de la memoria de trabajo: puede mantener activas entre 5 y 9 unidades de información simultáneamente. Respetar este límite en cada chunk pedagógico minimiza la carga extrínseca (ruido cognitivo) y permite que la memoria de trabajo del residente destine su capacidad a la carga germana (construcción de schemas para toma de decisiones). El módulo está diseñado con no más de 7-9 conceptos operacionales por sección, aplicando este principio directamente.",
+        "difficulty": "advanced",
+        "bloomLevel": "analyze",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [
+      {
+        "authors": "Pankow, W.; Hijjeh, N.; Schüttler, F.; et al.",
+        "year": "1998",
+        "title": "Influence of noninvasive positive pressure ventilation on inspiratory muscle activity in obese subjects.",
+        "source": "European Respiratory Journal",
+        "doi": "10.1183/09031936.98.11010129",
+        "url": ""
+      },
+      {
+        "authors": "Bluth, T.; et al. (PROBESE Collaborative Group)",
+        "year": "2019",
+        "title": "Effect of intraoperative high PEEP with recruitment maneuvers vs low PEEP on postoperative pulmonary complications in obese patients.",
+        "source": "JAMA",
+        "doi": "10.1001/jama.2019.7505",
+        "url": ""
+      },
+      {
+        "authors": "De Jong, A.; Pelosi, P.; et al.",
+        "year": "2017",
+        "title": "Protective ventilation for intubation of the critically ill patient: a systematic review and meta-analysis.",
+        "source": "Critical Care Medicine",
+        "doi": "10.1097/CCM.0000000000002250",
+        "url": ""
+      },
+      {
+        "authors": "Sweller, J.; Ayres, P.; Kalyuga, S.",
+        "year": "2011",
+        "title": "Cognitive Load Theory.",
+        "source": "Springer New York",
+        "doi": "10.1007/978-1-4419-8126-4",
+        "url": ""
+      },
+      {
+        "authors": "Miller, G. A.",
+        "year": "1956",
+        "title": "The magical number seven, plus or minus two: some limits on our capacity for processing information.",
+        "source": "Psychological Review",
+        "doi": "10.1037/h0043158",
+        "url": ""
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-29",
+    "source": "VentyLab (JSON unificado)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel avanzado - sección patologías. Integra datos OMS 2016 (>650M adultos, 340M niños 5-19) y ENSANUT 2022 México (~40%), PEEPi posicional de Pankow et al. (1.4→4.1 cmH₂O), posicionamiento de Prof. Dr. Hermann Wrigge (Trendelenburg invertida), AOS 50% IMC>40 con ilusión URPA + rebote REM 3.ª noche, debate PROBESE (4 vs 12 cmH₂O sin diferencias → PEEP mínima individual), controversia FiO₂>80% (atelectasias reabsorción + ROS vs. desaturación), VCV de De Jong y Pelosi, MR en 3 fases con segunda MR breve, integridad del circuito como regla, CLT de Sweller con Ren y Siddique (78% vs 63%), Número Mágico de Miller (7±2), Scaffolding Vygotsky, Expertise Reversal Effect y Práctica de Recuperación Espaciada."
+  }
+}

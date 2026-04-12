@@ -1,0 +1,322 @@
+{
+  "id": "module-04-destete-complejo-vmni",
+  "moduleId": "module-04-avanzado-mecanica",
+  "title": "Destete ventilatorio complejo y uso de VMNI en el paciente con obesidad",
+  "description": "Este módulo de nivel avanzado aborda el destete ventilatorio complejo del paciente obeso crítico, integrando la fisiopatología de la restricción extrapulmonar, la programación protectora con evidencia de PROBESE/PROVHILO/IMPROVE, la MR progresiva con trade-off hemodinámico, el fenómeno de rebote REM de AOS en la tercera noche, el uso profiláctico de VMNI/CPAP como 'stent neumático' post-extubación, la detección de SDRA postoperatorio y la interiorización cognitiva avanzada mediante Adaptive Chunking con Fracción de Enfoque Sostenido, Scaffolding y Spacing & Retrieval semanal.",
+  "order": 4,
+  "estimatedTime": 90,
+  "difficulty": "advanced",
+  "bloomLevel": "synthesize",
+  "learningObjectives": [
+    "Describir la restricción extrapulmonar del obeso (Pendelluft, PEEPi, cefalización del diafragma) como determinante de la vulnerabilidad en el destete.",
+    "Aplicar la programación protectora con PBW, modo VCV y metas de oxigenación respaldadas por PROBESE, PROVHILO e IMPROVE.",
+    "Ejecutar la MR progresiva con titulación LOV-ED de PEEP y gestionar el trade-off hemodinámico (vasopresores/fluidos) ante la caída del retorno venoso.",
+    "Anticipar el fenómeno de 'rebote REM' en la tercera noche postoperatoria y planificar la vigilancia en planta para el paciente con AOS.",
+    "Implementar la CPAP/VMNI profiláctica como 'stent neumático' post-extubación, identificar signos de SDRA postoperatorio y aplicar balance hídrico estricto.",
+    "Optimizar la interiorización cognitiva mediante deconstrucción en sub-esquemas, Adaptive Chunking con Fracción de Enfoque Sostenido y Spacing & Retrieval semanal."
+  ],
+  "prerequisites": [
+    "Módulo 1 avanzado: VILI, ventilación protectora y segunda MR de fijación.",
+    "Módulo 2 avanzado: Driving Pressure, Poder Mecánico y decálogo de protección.",
+    "Módulo 3 avanzado: Asincronías, PEEPi, bolsa manual y Expertise Reversal Effect.",
+    "Módulo 3 intermedio: PSV, CPAP y AOS postoperatoria."
+  ],
+  "sections": [
+    {
+      "id": "destete-vmni-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción y mapa del módulo",
+      "content": {
+        "markdown": "## ¿Qué vas a aprender en este módulo?\n\nTema: Destete ventilatorio complejo y uso de VMNI en el paciente obeso crítico — desde la fisiopatología de la restricción extrapulmonar hasta la interiorización cognitiva avanzada del protocolo completo.\n\nA lo largo del módulo conectarás:\n- **Fisiopatología del destete complejo:** CRF −50 % en inducción, efecto Pendelluft, PEEPi +0.2 cmH₂O/IMC y cinética diafragmática alterada.\n- **Programación protectora:** VT por PBW con fórmulas de Talla² × 23/21.5, evidencia PROBESE/PROVHILO/IMPROVE, VCV y SpO₂ 94-98 %.\n- **MR progresiva y trade-off hemodinámico:** titulación LOV-ED, Driving Pressure < 13-15 cmH₂O y soporte vasopresor/fluidos ante la caída del retorno venoso.\n- **Destete y rebote REM:** opioides, AOS (50 % en IMC > 40) y vulnerabilidad específica en la tercera noche postoperatoria.\n- **VMNI/CPAP como 'stent neumático':** inicio profiláctico desde URPA, detección de SDRA postoperatorio y balance hídrico estricto.\n- **Interiorización cognitiva avanzada:** deconstrucción en sub-esquemas, Fracción de Enfoque Sostenido y Spacing & Retrieval semanal."
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "destete-vmni-theory-1",
+      "order": 2,
+      "type": "theory",
+      "title": "Fisiopatología del destete complejo: restricción extrapulmonar, Pendelluft y PEEPi",
+      "content": {
+        "markdown": "La obesidad no debe abordarse como un simple exceso ponderal, sino como una **restricción extrapulmonar** que transmuta la mecánica respiratoria, convirtiendo un proceso fisiológico pasivo en un desafío crítico de ingeniería biológica.\n\n### Colapso progresivo de la CRF\n\nEl tejido adiposo en la pared torácica y el abdomen genera una alteración profunda de la distensibilidad:\n- **Reducción basal:** 5-15 % por cada 5 kg/m² de IMC adicional sobre 30 kg/m².\n- **Post-inducción anestésica:** la CRF puede desplomarse hasta un **50 %**, exacerbando la inestabilidad alveolar en el momento de mayor vulnerabilidad.\n\n### Efecto Pendelluft\n\nLa inflación no homogénea del parénquima genera diferencias de presión dinámica entre regiones pulmonares, provocando **flujos de aire interregionales (Pendelluft)** que:\n- Aumentan el riesgo de lesión tisular local en zonas de alta tensión.\n- Contribuyen al agotamiento del trabajo respiratorio durante el destete.\n\n### Cinética diafragmática y PEEPi\n\n- La **PIA elevada (6-10 cmH₂O)** fomenta la cefalización del diafragma y atelectasias por compresión en segmentos basales.\n- El cierre prematuro de la pequeña vía aérea genera **PEEPi**: en decúbito supino, **+0.2 cmH₂O por cada unidad de IMC adicional**.\n- La PEEPi residual en el postoperatorio aumenta el trabajo respiratorio y predispone al agotamiento muscular durante la respiración espontánea.\n\n> **Implicación para el destete:** esta arquitectura fisiopatológica alterada hace que la extubación sin soporte sea una estrategia de alto riesgo en el paciente obeso. El destete debe planificarse como una transición asistida, no como una desconexión."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "destete-vmni-theory-2",
+      "order": 3,
+      "type": "theory",
+      "title": "Parámetros de protección pulmonar: PBW, VCV y evidencia PROBESE/PROVHILO/IMPROVE",
+      "content": {
+        "markdown": "La ventilación protectora en el paciente complejo no es solo soporte: es una **intervención terapéutica preventiva** para mitigar el VILI y reducir las CPP.\n\n### Cálculo del Vt: fórmulas de Talla²\n\nLa programación debe alejarse de estimaciones empíricas y basarse en datos biométricos precisos:\n\n- **Hombres:** Talla(m)² × 23\n- **Mujeres:** Talla(m)² × 21.5\n\nVt prescrito: **6-8 ml/kg de PBW**.\n\n> **Respaldo en triple evidencia:** los estudios **PROBESE**, **PROVHILO** e **IMPROVE** convergen en demostrar que el VT bajo por PBW minimiza el riesgo de CPP independientemente del modo ventilatorio y del escenario quirúrgico.\n\n### Modo ventilatorio: VCV sobre PCV\n\nSe prefiere la **Ventilación Controlada por Volumen (VCV)** sobre la controlada por presión (PCV) para garantizar:\n- Estabilidad de las metas de protección ante fluctuaciones de la distensibilidad toracopulmonar.\n- Control del Volumen Minuto (VM) frente a cambios bruscos de PIA (laparoscopia, Trendelenburg).\n\n### Metas de oxigenación\n\n- **SpO₂ meta: 94-98 %** con FiO₂ mínima necesaria.\n- La **hiperoxemia** debe evitarse estrictamente: desplaza el nitrógeno alveolar (andamiaje del alvéolo), precipitando atelectasias de reabsorción y deteriorando la mecánica en el postoperatorio.\n- Optimizar el consumo metabólico de oxígeno evitando hiperoxemia también reduce la producción de radicales libres de oxígeno sobre el epitelio alveolar ya comprometido."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "destete-vmni-theory-3",
+      "order": 4,
+      "type": "theory",
+      "title": "MR progresiva, titulación LOV-ED de PEEP y trade-off hemodinámico",
+      "content": {
+        "markdown": "Bajo el concepto de **'Pulmón Abierto' (Open Lung Concept)**, la MR se define como una intervención dinámica para normalizar la distensibilidad. En el obeso, donde la inestabilidad alveolar es la norma, el reclutamiento es mandatorio para alcanzar presiones de distensión seguras.\n\n### Técnica: MR Progresiva controlada por ventilador\n\nSe evita la bolsa manual por su imprecisión y riesgo de pérdida de PEEP. La MR progresiva alcanza presiones de **50-55 cmH₂O** en el paciente obeso para vencer la carga de la pared toraco-abdominal.\n\n### Titulación de PEEP: estrategia LOV-ED\n\n| IMC (kg/m²) | PEEP inicial (cmH₂O) |\n| :--- | :--- |\n| < 29.9 | 5 |\n| 30 - 39.9 | 8 |\n| 40 - 49.9 | 10 |\n| > 50 | 12 |\n\n### Monitoreo durante y después de la MR\n\n- La **Driving Pressure debe mantenerse < 13-15 cmH₂O** en todo momento.\n- Vigilar las fluctuaciones de la presión transdiafragmática en posición supina, que aumentan la tensión tisular y el riesgo de VILI.\n\n### Trade-off hemodinámico: soporte preventivo\n\nEl reclutamiento a 50-55 cmH₂O **aumenta la presión intratorácica** y compromete el retorno venoso. La gestión es preventiva, no reactiva:\n- **Bolos de fluidos** para optimizar la precarga antes de la maniobra.\n- **Vasopresores** para mantener la presión de perfusión coronaria y cerebral durante el rampeo.\n- Monitorización continua de la tensión arterial media como condición sine qua non de la seguridad del procedimiento."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "destete-vmni-theory-4",
+      "order": 5,
+      "type": "theory",
+      "title": "Destete ventilatorio: opioides, AOS y el fenómeno de rebote REM",
+      "content": {
+        "markdown": "La transición a la respiración espontánea es una **fase de extrema vulnerabilidad**. El obeso enfrenta un riesgo elevado de falla respiratoria aguda postoperatoria por la interacción entre factores obstructivos y la depresión farmacológica del centro respiratorio.\n\n### Impacto de los opioides sobre la arquitectura del sueño\n\nLa administración de opiáceos altera profundamente la arquitectura del sueño:\n- Profundiza la depresión respiratoria.\n- Exacerba la incidencia de apneas centrales y obstructivas.\n- Suprime las fases REM, enmascarando la AOS y generando **falsa sensación de seguridad** en la URPA.\n\n### El fenómeno de 'rebote REM': riesgo en la tercera noche\n\nLa **Apnea Obstructiva del Sueño (AOS)** está presente en el **50 % de pacientes con IMC > 40**. El patrón de riesgo es:\n\n1. **Primeras 48 h:** el paciente parece estable porque los opioides suprimen el sueño REM donde los eventos obstructivos son más severos.\n2. **Tercera noche postoperatoria:** al descender los niveles de opioides, ocurre el **rebote de fase REM** con episodios obstructivos de intensidad y frecuencia peligrosamente aumentadas.\n3. **Entorno de mayor riesgo:** este rebote ocurre habitualmente cuando el paciente ya está en planta, sin vigilancia continua.\n\n### Vulnerabilidad post-extubación adicional\n\nMás allá de la AOS, la PEEPi residual y la persistencia de atelectasias aumentan significativamente el trabajo respiratorio, predisponiendo al agotamiento muscular y a la falla ventilatoria tardía.\n\n> **Implicación clínica:** el destete no termina con la extubación. La vigilancia activa y el soporte no invasivo deben planificarse como parte del protocolo, no como respuesta a complicaciones."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "destete-vmni-theory-5",
+      "order": 6,
+      "type": "theory",
+      "title": "VMNI y CPAP post-extubación: el 'stent neumático' y detección de SDRA postoperatorio",
+      "content": {
+        "markdown": "La implementación de **VMNI o CPAP inmediata** tras la extubación es una maniobra estratégica para contrarrestar el aumento del trabajo respiratorio y prevenir el colapso alveolar recurrente. Actúa como un **'stent neumático'** de la vía aérea superior y del parénquima.\n\n### CPAP profiláctica: inicio desde la URPA\n\nEl soporte postoperatorio debe ser **proactivo, no reactivo**:\n- Inicio inmediato en la **Unidad de Recuperación Post-anestésica (URPA)** y continuación en planta.\n- Mantener el volumen pulmonar al final de la espiración (EELV) ganado durante la ventilación mecánica.\n- Reducir la frecuencia de apneas nocturnas durante el período de mayor riesgo.\n\n### Beneficios fisiológicos de la presión positiva no invasiva\n\n- Reduce el **desajuste ventilación-perfusión (V/Q)** al mantener los alvéolos abiertos.\n- Optimiza el consumo de oxígeno al disminuir el trabajo respiratorio muscular.\n- Mitiga la carga de los **músculos inspiratorios**, previniendo el agotamiento tardío.\n\n### Detección temprana de SDRA postoperatorio\n\nAunque infrecuente, el SDRA postoperatorio tiene mayor incidencia en obesos con atelectasias pronunciadas y mala mecánica respiratoria previa. El monitoreo debe incluir:\n- Identificar signos tempranos: desaturación progresiva, deterioro de la compliancia, aumento de la FiO₂ requerida.\n- **Balance hídrico estricto** ante el uso de presiones positivas elevadas: la retención hídrica agrava el edema intersticial y deteriora la mecánica ya comprometida."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "destete-vmni-theory-6",
+      "order": 7,
+      "type": "theory",
+      "title": "Interiorización cognitiva avanzada: sub-esquemas, Fracción de Enfoque Sostenido y Spacing & Retrieval",
+      "content": {
+        "markdown": "La formación en ventilación de alta complejidad exige la **optimización del esfuerzo mental**. Aplicando la Teoría de la Carga Cognitiva (CLT), estructuramos el aprendizaje para transformar la densidad técnica en competencia clínica autónoma.\n\n### Modelo de Andamiaje (Scaffolding) aplicado al destete complejo\n\n- **Yo hago:** el especialista senior modela la MR progresiva y la titulación de PEEP, verbalizando cada decisión.\n- **Nosotros hacemos:** práctica guiada en entorno clínico o simulado con retroalimentación inmediata sobre cada ajuste.\n- **Tú haces:** ejecución independiente del protocolo de destete bajo supervisión indirecta.\n\n### Adaptive Lesson Chunking: Fracción de Enfoque Sostenido\n\nLa información se fragmenta en unidades de **7 a 15 palabras o conceptos clave**, ajustándose a la capacidad atencional del residente para maximizar la **Fracción de Enfoque Sostenido (Sustained-Focus Fraction)**:\n- Esta métrica cuantifica el porcentaje de tiempo en que el aprendiz mantiene el foco atencional de alta calidad durante una sesión de aprendizaje.\n- Al ajustar el tamaño del bloque, se evita que la curva de atención caiga antes de que el concepto sea consolidado.\n\n### Gestión específica de las tres cargas en el destete\n\n- **Carga Intrínseca:** gestionada mediante **deconstrucción en sub-esquemas** (ej: cálculo de Vt separado de la titulación de PEEP, separado del protocolo de destete, separado del manejo de AOS) en lugar de abordar el protocolo completo simultáneamente.\n- **Carga Extrínseca:** minimizada mediante el diseño de interfaces de aprendizaje claras y la eliminación de redundancias visuales en los protocolos.\n- **Carga Esencial (Germana):** maximizada mediante **Spacing & Retrieval**: cuestionarios de baja presión semanales para fortalecer la construcción de esquemas mentales y la retención a largo plazo de los puntos críticos del destete ventilatorio."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "m-destete-vmni-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Protocolo de destete difícil y VMNI",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Destete difícil y uso de VMNI\n\n> Aplica criterios de destete complejo y estrategias de VMNI. No bloquea avance.\n\n---\n\n### Actividad 1 — Clasificación del destete\n\nClasifica el destete según número de SBT fallidas:\n\n| Categoría | Criterio | Estrategia |\n|---|---|---|\n| Destete simple | 1 SBT exitosa desde el primer intento | Extubación directa |\n| Destete difícil | Requiere hasta 3 SBT o hasta 7 días | Reducción progresiva de soporte |\n| Destete prolongado | > 3 SBT fallidas o > 7 días en intento de destete | VMNI post-extubación, traqueotomía electiva |\n\n---\n\n### Actividad 2 — VMNI en destete: indicaciones\n\nIndica si VMNI está indicada o contraindicada en cada situación:\n\n| Situación | VMNI indicada | Justificación |\n|---|---|---|\n| Post-extubación en paciente con EPOC y hx de retención de CO₂ | ✓ Sí | Reduce riesgo de re-intubación; evidencia clase A |\n| Post-extubación en paciente sin factores de riesgo | En discusión | Puede usarse de forma preventiva en pacientes de alto riesgo |\n| Fallo de extubación establecido (FR 40, SaO₂ 86%) | Solo si no hay contraindicaciones | Si la vía aérea está comprometida o hay secreciones → IOT |\n| Alteración del nivel de conciencia severa | ✗ No | No puede proteger la vía aérea → riesgo de aspiración |\n| Cirugía facial reciente con heridas en el territorio de la mascarilla | ✗ No | No hay sellado posible |\n\n---\n\n### Actividad 3 — Titulación de PSV hacia extubación\n\nEsquema de reducción para destete difícil:\n\n```\nDía 1:  PSV 16 → 14  (si IRRS < 80, Fr < 28, SaO₂ > 93%)\nDía 2:  PSV 14 → 12 → 10\nDía 3:  PSV 10 → 8   + SBT a los 2 días\nDía 4:  SBT exitosa → extubación + VMNI preventiva 2 h/turno × 24 h\n```\n\nSeñales de alarma que detienen el descenso:\n- FR > 30/min sostenida\n- IRRS > 105\n- SaO₂ < 90%\n- Uso de musculatura accesoria o paradoja toracoabdominal\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 25 pts | Actividad 2 → 40 pts | Actividad 3 → 35 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 8
+    },
+    {
+      "id": "m-destete-vmni-case",
+      "type": "case_study",
+      "title": "Caso clínico: Destete prolongado con VMNI",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: Destete prolongado — estrategia con VMNI\n\n---\n\n### Presentación\n\n**Paciente:** Mujer, 74 años, 60 kg, EPOC moderado-severo (GOLD III), ICC diastólica.\n**Diagnóstico:** SDRA leve por neumonía bacteriana, intubada hace 12 días.\n**Destete:** 4 intentos de SBT fallidos en los últimos 5 días.\n**Causa del fallo:** cada vez presenta fatiga muscular a los 30–45 min + deterioro hemodinámico.\n**Estado actual:** RASS 0, cooperadora, capaz de toser, T 37°C, sin vasopresores.\n**Función pulmonar de base:** FEV1 48% (EPOC moderado-severo) → pulmón de reserva limitada.\n**Gasometría pre-SBT:** pH 7,39, PaCO₂ 50 mmHg (basal ~53), PaO₂ 78 mmHg (FiO₂ 0,35, PEEP 5).\n\n---\n\n### Análisis y plan\n\n**1. ¿Por qué falla el SBT repetidamente?**\n- Debilidad muscular respiratoria severa (12 días de ventilación, posible miopatía del crítico).\n- Reserva pulmonar limitada por EPOC + secuelas de SDRA.\n- Cada SBT agota los músculos → acumula fatiga → siguiente SBT peor.\n- ICC diastólica → aumento de postcarga al respirar espontáneamente.\n\n**2. ¿Se justifica traqueotomía?**\nSí. Criterios: > 7 días en intento de destete, fallo repetido, pronóstico de ventilación prolongada → traqueotomía percutánea electiva a las 24 h.\n\n**3. Manejo post-traqueotomía**\n- VMNI nocturna con mascarilla nasal (menor carga muscular nocturna).\n- Ventilación espontánea gradual diurna con incremento progresivo de tiempo libre.\n- Protocolo de rehabilitación: fisioterapia 2×/día, movilización precoz.\n- Nutrición optimizada (hipercalórica con suplementos proteicos para recuperar masa muscular).\n\n---\n\n### Evolución\n\nSemana 1 post-traqueotomía: 6 h/día sin ventilación.\nSemana 2: 12 h/día libre.\nSemana 3: 20 h/día → intento de decanulación.\nSemana 4: Decanulación exitosa con O₂ por cánula nasal.\n\n---\n\n### Puntos clave\n\n1. El destete prolongado requiere un abordaje multidisciplinario (UCI, fisioterapia, nutrición).\n2. La traqueotomía precoz (< 14 días en criterios apropiados) mejora el confort y facilita el destete.\n3. La VMNI nocturna en traqueotomizados en destete reduce la fatiga muscular acumulada.\n"
+      },
+      "order": 9
+    },
+    {
+      "id": "destete-vmni-summary",
+      "order": 10,
+      "type": "summary",
+      "title": "Cierre: síntesis y checklist",
+      "content": {
+        "markdown": "## Resumen\n\n- La restricción extrapulmonar (PIA 6-10 cmH₂O, CRF −50 % en inducción, Pendelluft, PEEPi +0.2 cmH₂O/IMC) convierte el destete en una transición de alto riesgo que debe planificarse como proceso asistido.\n- PROBESE, PROVHILO e IMPROVE avalan el VT 6-8 ml/kg por PBW (Talla² × 23/21.5) con VCV; SpO₂ 94-98 % evita la hiperoxemia y las atelectasias de reabsorción.\n- La MR progresiva (50-55 cmH₂O) + LOV-ED + Driving Pressure < 13-15 cmH₂O requiere soporte preventivo con fluidos y vasopresores; el balance hídrico estricto es obligatorio también con VMNI.\n- El rebote REM de AOS ocurre en la tercera noche postoperatoria cuando el paciente ya está en planta; la CPAP profiláctica desde la URPA es el 'stent neumático' que previene este colapso.\n- El SDRA postoperatorio tiene mayor incidencia en obesos con mala mecánica previa; la detección temprana (desaturación progresiva + deterioro de compliancia) y el balance hídrico estricto son las contramedidas.\n- La deconstrucción en sub-esquemas, la Fracción de Enfoque Sostenido y el Spacing & Retrieval semanal son las estrategias para transformar la densidad técnica en autonomía clínica.\n\n## Checklist de validación\n\n- Explico la PEEPi residual post-extubación como factor de agotamiento muscular en el contexto del Pendelluft.\n- Calculo el VT por PBW con las fórmulas de Talla² y cito los tres estudios que respaldan la estrategia.\n- Ejecuto el trade-off hemodinámico de la MR (fluidos + vasopresores) de forma preventiva, no reactiva.\n- Anticipo el rebote REM en la tercera noche e indico quién está en mayor riesgo y por qué.\n- Diferencio la CPAP profiláctica de la CPAP reactiva y describo sus tres beneficios fisiológicos.\n- Identifico los signos tempranos de SDRA postoperatorio y aplico balance hídrico estricto con PEEP elevadas.\n- Aplico la deconstrucción en sub-esquemas y maximizo la Fracción de Enfoque Sostenido con Adaptive Chunking."
+      },
+      "estimatedTime": 5
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Qué diferencia al estudio PROVHILO de PROBESE e IMPROVE en el contexto de la ventilación protectora?",
+        "¿Por qué la CPAP actúa como un 'stent neumático' y qué la diferencia de una intervención reactiva?",
+        "¿Cómo la PEEPi residual contribuye al agotamiento muscular durante la respiración espontánea post-extubación?",
+        "¿Qué es la Fracción de Enfoque Sostenido y cómo se diferencia de la retención simple del Chunking?",
+        "¿Por qué el balance hídrico estricto es crítico con PEEP elevadas en el obeso con SDRA postoperatorio?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "aiexpandnotes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": [
+          "advanced"
+        ],
+        "question_types": [
+          "conceptual",
+          "application",
+          "clinical_case"
+        ],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [],
+  "quiz": {
+    "id": "quiz-destete-complejo-vmni",
+    "passingScore": 4,
+    "questions": [
+      {
+        "id": "destete-vmni-q1",
+        "type": "multiple-choice",
+        "question": "¿Qué distingue al estudio PROVHILO de PROBESE e IMPROVE en el respaldo de la ventilación protectora con VT bajo por PBW?",
+        "options": [
+          "PROVHILO evaluó específicamente la ventilación en pacientes con SDRA severo, no en cirugía abdominal",
+          "PROVHILO es uno de los tres estudios citados en el módulo que respaldan el VT 6-8 ml/kg por PBW para minimizar el riesgo de CPP en distintos escenarios quirúrgicos",
+          "PROVHILO comparó CPAP postoperatoria vs. VNI en el destete complejo del paciente obeso",
+          "PROVHILO evaluó la superioridad del PCV sobre el VCV en pacientes con IMC > 50 kg/m²"
+        ],
+        "correctAnswer": "PROVHILO es uno de los tres estudios citados en el módulo que respaldan el VT 6-8 ml/kg por PBW para minimizar el riesgo de CPP en distintos escenarios quirúrgicos",
+        "explanation": "El módulo cita PROBESE, PROVHILO e IMPROVE como triple evidencia que converge en demostrar que el VT bajo calculado por PBW minimiza el riesgo de CPP. Este es el único módulo del nivel avanzado que menciona específicamente PROVHILO junto a los otros dos estudios multicéntricos como soporte de la programación protectora.",
+        "difficulty": "advanced",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "destete-vmni-q2",
+        "type": "multiple-choice",
+        "question": "¿Por qué el módulo describe la CPAP/VMNI post-extubación como un 'stent neumático' y no como soporte respiratorio convencional?",
+        "options": [
+          "Porque la CPAP genera una presión equivalente a la PEEP intraoperatoria, sustituyendo completamente el ventilador",
+          "Porque actúa estructuralmente manteniendo la vía aérea superior permeable y los alvéolos abiertos, previniendo el colapso antes de que ocurra",
+          "Porque la CPAP aplica presión negativa inspiratoria que apoya la función del diafragma debilitado",
+          "Porque elimina la necesidad de monitorización continua de la SpO₂ en planta al estabilizar la oxigenación"
+        ],
+        "correctAnswer": "Porque actúa estructuralmente manteniendo la vía aérea superior permeable y los alvéolos abiertos, previniendo el colapso antes de que ocurra",
+        "explanation": "El módulo usa la metáfora de 'stent neumático' para enfatizar que la CPAP/VMNI actúa de forma estructural y preventiva: mantiene la vía aérea superior permeable (previniendo la obstrucción por AOS) y preserva el EELV ganado durante la ventilación mecánica, actuando como una estructura de soporte antes del colapso, no en respuesta a él.",
+        "difficulty": "advanced",
+        "bloomLevel": "analyze",
+        "points": 2
+      },
+      {
+        "id": "destete-vmni-q3",
+        "type": "multiple-choice",
+        "question": "¿Por qué el balance hídrico estricto es una medida crítica específicamente cuando se usan presiones positivas elevadas en el obeso con riesgo de SDRA postoperatorio?",
+        "options": [
+          "Porque la hipervolemia aumenta la PIA y revierte el efecto de la PEEP sobre la distensibilidad",
+          "Porque la retención hídrica agrava el edema intersticial y deteriora la mecánica pulmonar ya comprometida por las atelectasias",
+          "Porque el exceso de fluidos diluciona los vasopresores necesarios para mantener la perfusión durante la MR",
+          "Porque la hipervolemia aumenta el riesgo de atelectasias de reabsorción al elevar la FiO₂ mínima necesaria"
+        ],
+        "correctAnswer": "Porque la retención hídrica agrava el edema intersticial y deteriora la mecánica pulmonar ya comprometida por las atelectasias",
+        "explanation": "El módulo establece que en el contexto de SDRA postoperatorio con PEEP elevadas, el balance hídrico estricto es obligatorio porque la retención hídrica genera edema intersticial que agrava la mecánica pulmonar ya comprometida por las atelectasias y la baja distensibilidad del obeso. La sobrecarga hídrica y la PEEP alta crean un círculo vicioso de deterioro de la compliancia.",
+        "difficulty": "advanced",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "destete-vmni-q4",
+        "type": "multiple-choice",
+        "question": "¿Qué es la Fracción de Enfoque Sostenido (Sustained-Focus Fraction) en el contexto del Adaptive Chunking?",
+        "options": [
+          "El porcentaje de retención del contenido clínico medido en comparación con el grupo control (78 % vs 63 %)",
+          "El porcentaje de tiempo en que el aprendiz mantiene foco atencional de alta calidad durante una sesión, que se maximiza ajustando el tamaño del bloque",
+          "La fracción del contenido del módulo que se cubre en cada sesión de Spacing & Retrieval semanal",
+          "La proporción de la carga germana respecto a la carga intrínseca en una sesión de práctica guiada"
+        ],
+        "correctAnswer": "El porcentaje de tiempo en que el aprendiz mantiene foco atencional de alta calidad durante una sesión, que se maximiza ajustando el tamaño del bloque",
+        "explanation": "El módulo define la Fracción de Enfoque Sostenido (Sustained-Focus Fraction) como la métrica que cuantifica el porcentaje de tiempo de foco atencional de alta calidad durante el aprendizaje. Al ajustar el tamaño del bloque de información (7-15 elementos), se evita que la curva de atención caiga antes de que el concepto sea consolidado, maximizando esta fracción.",
+        "difficulty": "advanced",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "destete-vmni-q5",
+        "type": "multiple-choice",
+        "question": "¿Cómo gestiona la 'deconstrucción en sub-esquemas' la Carga Intrínseca del protocolo de destete complejo?",
+        "options": [
+          "Eliminando los componentes más complejos del protocolo para reducir la dificultad inherente del tema",
+          "Abordando el protocolo completo en una sola sesión para maximizar la exposición al material de alta complejidad",
+          "Separando el cálculo de Vt, la titulación de PEEP, el protocolo de destete y el manejo de AOS en sub-esquemas independientes en lugar de abordarlos simultáneamente",
+          "Delegando la memorización de fórmulas a herramientas digitales para liberar la memoria de trabajo para decisiones complejas"
+        ],
+        "correctAnswer": "Separando el cálculo de Vt, la titulación de PEEP, el protocolo de destete y el manejo de AOS en sub-esquemas independientes en lugar de abordarlos simultáneamente",
+        "explanation": "El módulo describe la deconstrucción en sub-esquemas como la estrategia específica para gestionar la Carga Intrínseca: dividir el protocolo en componentes independientes (cálculo de Vt, titulación de PEEP, destete, AOS) y abordar cada uno por separado antes de integrarlos. Esto respeta los límites de la memoria de trabajo y construye esquemas parciales sólidos que luego se integran de forma fluida.",
+        "difficulty": "advanced",
+        "bloomLevel": "apply",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [
+      {
+        "authors": "Bluth, T.; et al. (PROBESE Collaborative Group)",
+        "year": "2019",
+        "title": "Effect of intraoperative high PEEP with recruitment maneuvers vs low PEEP on postoperative pulmonary complications in obese patients.",
+        "source": "JAMA",
+        "doi": "10.1001/jama.2019.7505",
+        "url": ""
+      },
+      {
+        "authors": "Futier, E.; et al. (IMPROVE Study Group)",
+        "year": "2013",
+        "title": "A trial of intraoperative low-tidal-volume ventilation in abdominal surgery.",
+        "source": "New England Journal of Medicine",
+        "doi": "10.1056/NEJMoa1301082",
+        "url": ""
+      },
+      {
+        "authors": "Hemmes, S. N. T.; et al. (PROVHILO Trial Investigators)",
+        "year": "2014",
+        "title": "High versus low positive end-expiratory pressure during general anaesthesia for open abdominal surgery (PROVHILO trial).",
+        "source": "The Lancet",
+        "doi": "10.1016/S0140-6736(14)60416-5",
+        "url": ""
+      },
+      {
+        "authors": "Sweller, J.",
+        "year": "1988",
+        "title": "Cognitive load during problem solving: Effects on learning.",
+        "source": "Cognitive Science",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Ren, X.; Siddique, A.",
+        "year": "2025",
+        "title": "Adaptive lesson chunking and retention in medical education.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-29",
+    "source": "VentyLab (JSON unificado)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel avanzado. Integra fisiopatología del destete complejo (PEEPi, Pendelluft, CRF), programación protectora con triple evidencia PROBESE/PROVHILO/IMPROVE, MR progresiva con trade-off hemodinámico, rebote REM de AOS en 3ª noche, VMNI/CPAP como 'stent neumático' profiláctico, detección de SDRA postoperatorio con balance hídrico estricto, y pedagogía avanzada con deconstrucción en sub-esquemas, Fracción de Enfoque Sostenido y Spacing & Retrieval semanal."
+  }
+}

@@ -1,0 +1,123 @@
+/*
+ * SlashMenu.module.css
+ * BEM root: slash-menu
+ * Menú emergente de comandos "/" estilo Notion.
+ */
+
+.slash-menu {
+  position: absolute;
+  z-index: 1500;
+  background: #1a2535;
+  border: 1px solid rgba(11, 186, 244, 0.3);
+  border-radius: 10px;
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.6);
+  width: 260px;
+  max-height: 320px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slash-appear 0.12s ease-out;
+}
+
+@keyframes slash-appear {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* ─── Hint de teclado ──────────────────────────────────────────────────────── */
+
+.slash-menu__hint {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  padding: 6px 10px 5px;
+  margin: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.slash-menu__kbd {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  font-family: 'Courier New', monospace;
+  font-size: 0.6rem;
+  color: rgba(11, 186, 244, 0.8);
+}
+
+/* ─── Lista de comandos ────────────────────────────────────────────────────── */
+
+.slash-menu__list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 4px;
+}
+
+.slash-menu__list::-webkit-scrollbar { width: 4px; }
+.slash-menu__list::-webkit-scrollbar-track { background: transparent; }
+.slash-menu__list::-webkit-scrollbar-thumb { background: rgba(11, 186, 244, 0.3); border-radius: 2px; }
+
+/* ─── Ítem ─────────────────────────────────────────────────────────────────── */
+
+.slash-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s ease;
+}
+
+.slash-menu__item--active {
+  background: rgba(11, 186, 244, 0.12);
+  border-color: rgba(11, 186, 244, 0.25);
+}
+
+.slash-menu__item:hover {
+  background: rgba(11, 186, 244, 0.08);
+}
+
+.slash-menu__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgba(11, 186, 244, 0.9);
+  flex-shrink: 0;
+  font-family: 'Courier New', monospace;
+}
+
+.slash-menu__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.slash-menu__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.2;
+}
+
+.slash-menu__desc {
+  font-size: 0.67rem;
+  color: rgba(255, 255, 255, 0.38);
+  line-height: 1.3;
+}

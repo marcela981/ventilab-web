@@ -1,0 +1,270 @@
+{
+  "id": "module-02-programacion-modo-clasicos",
+  "moduleId": "module-02-intermedio",
+  "title": "Arquitectura del Aprendizaje Activo y Estructuración con JSON (Programación de modos clásicos)",
+  "description": "Este módulo organiza el aprendizaje activo como un sistema: recuperación (retrieval practice), memoria (LTP y buffers biológicos) y estandarización con JSON para que el conocimiento sea interoperable con herramientas como Anki y flujos tipo TBL.",
+  "order": 2,
+  "estimatedTime": 65,
+  "difficulty": "intermediate",
+  "bloomLevel": "apply",
+  "learningObjectives": [
+    "Sintetizar la transición de datos crudos a conocimiento consolidado mediante LTP.",
+    "Estandarizar la gestión de información educativa con JSON para garantizar interoperabilidad.",
+    "Implementar el algoritmo de las tres pasadas como protocolo de ingesta de alta fidelidad.",
+    "Aplicar principios de memoria y buffers biológicos para comprender límites del procesamiento.",
+    "Reconocer el ciclo del TBL (accountability, clarificación y aplicación) como entorno seguro de práctica.",
+    "Entender por qué parsear y validar JSON habilita automatización y escalabilidad del aprendizaje."
+  ],
+  "prerequisites": [
+    "Conceptos básicos de aprendizaje activo (espaciado, intercalado y testing effect).",
+    "Lectura comprensiva de textos técnicos en español."
+  ],
+  "sections": [
+    {
+      "id": "pmc-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción y mapa del módulo",
+      "content": {
+        "markdown": "En la ingeniería del conocimiento médico, pasar de modelos pasivos a activos no es solo una preferencia pedagógica: es el algoritmo crítico para la supervivencia intelectual del clínico.\n\nEste módulo usa `JSON` como esquema de validación y estructura jerárquica para organizar información clínica 'lábil' en modelos listos para ser procesados por el 'hardware biológico' (hipocampo y memoria multinivel).\n\nConectarás:\n- Recuperación activa (retrieval practice) y LTP.\n- Estructuración con JSON y validación (JSONLint).\n- Aprendizaje colaborativo (TBL) como entorno seguro.\n- Automatización (Python/json, jq) para escalabilidad."
+      },
+      "estimatedTime": 6
+    },
+    {
+      "id": "pmc-theory-1",
+      "order": 2,
+      "type": "theory",
+      "title": "De datos crudos a conocimiento consolidado (LTP + aprendizaje activo)",
+      "content": {
+        "markdown": "La latencia del estudio pasivo puede ser baja, pero la tasa de pérdida de datos es alta: aparece una 'ilusión de competencia' que no sobrevive a la presión asistencial.\n\nEl aprendizaje activo, mediante 'dificultad deseable', fuerza reconstrucción sináptica y fortalece el rastro mnémico.\n\nEn este marco:\n- LTP (Potenciación a Largo Plazo) funciona como un protocolo biológico de consolidación.\n- JSON funciona como un estándar de validación para que la estructura del conocimiento sea consistente y procesable."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "pmc-theory-2",
+      "order": 3,
+      "type": "theory",
+      "title": "Especificación técnica: JSON como arquitectura pedagógica",
+      "content": {
+        "markdown": "JSON actúa como tejido conectivo entre informática médica y diseño instruccional.\n\nReglas de sintaxis con analogías clínicas:\n1) Pares clave-valor: claves mapean de forma unívoca (evitar colisiones de datos).\n2) Encapsulamiento en `{}` y `[]`: objetos complejos y arrays ordenadas (agrupación cognitiva).\n3) Escape con backslash `\\`: evita que comillas/saltos rompan el parser (equivale a filtrar ruido distractor).\n\nValidación e integridad:\n- Usar JSONLint previene errores de foco y errores de parseo.\n- Un error de sintaxis invalida el objeto completo: análogo a sesgos o recolección incompleta de signos."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "pmc-theory-3",
+      "order": 4,
+      "type": "theory",
+      "title": "Buffers biológicos y encapsulamiento del conocimiento",
+      "content": {
+        "markdown": "El cerebro procesa información en niveles con restricciones.\n\n| Etapa de la Memoria | Ubicación Anatómica Principal | Duración Estimada | Capacidad / System Constraints |\n| :--- | :--- | :--- | :--- |\n| Sensorial | Cortezas visual y auditiva | ~2 segundos | Alta (perceptual/cruda) |\n| Trabajo (WM) | Corteza prefrontal dorsolateral | ~12 segundos | 5-7 elementos (cuello de botella) |\n| Reciente (RM) | Hipocampo | ~5 días | Variable (fase de consolidación) |\n| Largo Plazo (LTM) | Corteza de asociación | Indefinida | Prácticamente ilimitada |\n\nAnalogía OOP:\n- 'Conocimiento encapsulado' = ciencias básicas como métodos privados integrados en una clase pública de razonamiento clínico.\n- El experto no 'llama' explícitamente a cada función bioquímica: aplica un marco consolidado y maneja incertidumbre con eficiencia."
+      },
+      "estimatedTime": 12
+    },
+    {
+      "id": "pmc-theory-4",
+      "order": 5,
+      "type": "theory",
+      "title": "Algoritmos de optimización: recuperación, espaciado y tres pasadas",
+      "content": {
+        "markdown": "Recuperación activa (Retrieval Practice): reconstruye el rastro mnémico al intentar rescatar desde LTM, haciéndolo más resistente a la interferencia.\n\nComparativas:\n- Espaciado: interrumpe la curva del olvido; mejora reportada del 41% en retención a largo plazo.\n- Entrelazado: alternar temas mejora discriminación y evita automatización superficial.\n- Testing effect: evaluación formativa como herramienta de codificación; preguntas de respuesta corta fuerzan recuperación evidente.\n\nIngesta de literatura: Método de las Tres Pasadas\n1) Visión general (5-10 min): 5 Cs (categoría, contexto, corrección, contribuciones, claridad).\n2) Comprensión del contenido (1 h): analiza figuras/diagramas/referencias y resume esencia.\n3) Comprensión profunda (1-5 h): re-implementación virtual, desafiar suposiciones y detectar fallas ocultas.\n\nAutomatización:\n- Anki y SuperMemo 2.0 programan repaso antes del 'borrado' biológico."
+      },
+      "estimatedTime": 15
+    },
+    {
+      "id": "pmc-theory-5",
+      "order": 6,
+      "type": "theory",
+      "title": "TBL y simulación: entornos seguros para aprendizaje a través del error",
+      "content": {
+        "markdown": "TBL y simulación operan como sandboxes controlados: experimentación activa sin riesgo para el paciente.\n\nFases del TBL:\n1) Pre-work: objetivos básicos autodirigidos con recursos digitales.\n2) IRAT: accountability y medición de preparación.\n3) TRAT: defensa de argumentos y feedback inmediato.\n4) Apelación (appeals): desafío basado en evidencia.\n5) Clarificación: resolución de 'bugs' conceptuales persistentes.\n6) Casos de aplicación (4S): Significant, Same, Specific, Simultaneous.\n\nSeguridad y fidelidad:\n- Fidelidad proporcional a pericia (novatos: tareas; expertos: crisis y debriefing).\n- El entrenamiento en entorno de aprendizaje a través del error busca reducir error clínico y mejorar seguridad del paciente."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "pmc-theory-6",
+      "order": 7,
+      "type": "theory",
+      "title": "Automatización con datos: Python/json, Docling y jq",
+      "content": {
+        "markdown": "Estrategia de automatización:\n- Parsear datos no estructurados a JSON habilita investigación y educación personalizada.\n\nRequisitos/idea técnica (en lenguaje humano):\n- Python 3.11+ para funciones de deserialización (`load` para archivos y `loads` para strings).\n- IBM Docling: transforma PDFs/documentos a JSON estructurado usando IA y Pydantic, evitando regex frágiles.\n- jq como filtro para navegar, iterar, transformar y extraer.\n\nOperadores (analogía):\n- `.` acceso a jerarquía.\n- `[]` iteración sobre listas.\n- `map` transformación masiva.\n- `keys` extracción de dimensiones del dataset.\n\nSo What:\nDominar el procesamiento de JSON permite indexar, buscar y anonimizar información clínica de forma escalable, alimentando el 'currículo paralelo'."
+      },
+      "estimatedTime": 16
+    },
+    {
+      "id": "vl2-prog-exercise",
+      "type": "exercise",
+      "title": "Taller: Configura un modo clásico paso a paso",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller: Configuración de modos clásicos en el ventilador\n\n> Practica la programación de VCV y PCV en un escenario simulado. No bloquea avance.\n\n---\n\n### Actividad 1 — Parámetros necesarios para VCV\n\nIndica qué parámetros son obligatorios y cuáles son opcionales al configurar VCV:\n\n| Parámetro | Obligatorio | Opcional | Valor de referencia |\n|---|---|---|---|\n| Volumen corriente (Vt) | ✓ | — | 6–8 mL/kg PP |\n| Frecuencia respiratoria (Fr) | ✓ | — | 12–20/min |\n| FiO₂ | ✓ | — | Mínimo para SaO₂ ≥ 95% |\n| PEEP | ✓ | — | ≥ 5 cmH₂O |\n| Flujo pico (o Ti) | ✓ | — | 40–60 L/min |\n| Pausa inspiratoria | — | ✓ | 0–0,2 s |\n| Trigger | ✓ | — | Flujo −2 L/min o presión −2 cmH₂O |\n| Alarmas de presión | ✓ | — | Ppico + 10 cmH₂O |\n\n---\n\n### Actividad 2 — Ejercicio de configuración\n\n**Caso:** Paciente varón, talla 170 cm (PP = 66 kg), sin SDRA, postoperatorio cardíaco.\n\nRellena los parámetros recomendados:\n\n| Parámetro | Tu valor | Justificación |\n|---|---|---|\n| Modo | VCV | Control garantizado en fase aguda |\n| Vt | 396 mL (6 mL/kg) | Protector incluso sin SDRA |\n| Fr | 14/min | Fisiológico, minuto ventilación adecuado |\n| FiO₂ | 0,40 | Titular por SaO₂; evitar hiperóxia |\n| PEEP | 5 cmH₂O | Basal, evitar atelectasias |\n| Flujo pico | 45 L/min | Ti ≈ 0,53 s → I:E ≈ 1:2 |\n\n---\n\n### Actividad 3 — Diferencias en la pantalla: VCV vs PCV\n\nDescribe qué curvas verías en cada modo (flujo-tiempo, presión-tiempo, volumen-tiempo):\n\n**En VCV con flujo constante:**\n- Flujo-tiempo: rectangular (constante en inspiración)\n- Presión-tiempo: rampa ascendente + plateau en pausa\n- Volumen-tiempo: ascenso lineal durante inspiración\n\n**En PCV:**\n- Flujo-tiempo: deceleración rápida al inicio, luego curva exponencial\n- Presión-tiempo: ascenso rápido → plateau rectangular → descenso en espiración\n- Volumen-tiempo: curva sigmoide suave\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 25 pts | Actividad 2 → 45 pts | Actividad 3 → 30 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 8
+    },
+    {
+      "id": "pmc-summary",
+      "order": 9,
+      "type": "summary",
+      "title": "Cierre: síntesis del módulo y checklist",
+      "content": {
+        "markdown": "Síntesis:\n- Ciencia cognitiva + JSON/Python + aprendizaje activo definen la frontera de la competencia clínica.\n\nChecklist:\n- Entiendo por qué el aprendizaje activo supera al pasivo (ilusión de competencia y reconstrucción sináptica).\n- Reconozco reglas clave de JSON y la importancia de validación (JSONLint).\n- Puedo describir buffers biológicos y la analogía de encapsulamiento.\n- Puedo aplicar tres pasadas y seleccionar estrategias de espaciado/entrelazado.\n- Identifico fases de TBL y su rol en seguridad.\n- Comprendo por qué la automatización con JSON habilita escalabilidad y gobernanza del aprendizaje.\n\nValidación:\nPara validar la integridad del JSON, usa JSONLint y confirma comillas dobles y saltos de línea escapados cuando aplique."
+      },
+      "estimatedTime": 3
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Por qué el aprendizaje activo supera al pasivo en términos de consolidación?",
+        "¿Qué papel juega JSON como estándar pedagógico?",
+        "¿Qué significa validar con JSONLint y por qué invalida el objeto completo?",
+        "¿Cómo se aplican las tres pasadas (5 Cs) en una lectura real?",
+        "¿Cuáles son las fases del TBL y qué produce cada una?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "aiexpandnotes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": [
+          "intermediate",
+          "advanced"
+        ],
+        "question_types": [
+          "conceptual",
+          "application",
+          "clinical_case"
+        ],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [],
+  "quiz": {
+    "id": "quiz-pmc-json-tbl",
+    "passingScore": 4,
+    "questions": [
+      {
+        "id": "pmc-q1",
+        "type": "multiple-choice",
+        "question": "En el módulo, ¿qué describe mejor el aprendizaje activo frente al pasivo?",
+        "options": [
+          "El pasivo siempre consolida LTP sin esfuerzo adicional",
+          "El activo fuerza reconstrucción sináptica mediante dificultad deseable",
+          "El activo evita la consolidación y solo mejora la velocidad de lectura",
+          "El pasivo reduce la tasa de pérdida de datos a niveles nulos"
+        ],
+        "correctAnswer": "El activo fuerza reconstrucción sináptica mediante dificultad deseable",
+        "explanation": "El texto afirma que el aprendizaje activo, mediante dificultad deseable, fuerza reconstrucción sináptica que trasciende almacenamiento volátil.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "pmc-q2",
+        "type": "multiple-choice",
+        "question": "¿Cuál es el propósito principal del formato JSON en el módulo?",
+        "options": [
+          "Ser un método de ventilación mecánica",
+          "Estandarizar información educativa y permitir interoperabilidad entre herramientas",
+          "Reemplazar el hipocampo como nodo de consolidación",
+          "Eliminar la necesidad de validación sintáctica"
+        ],
+        "correctAnswer": "Estandarizar información educativa y permitir interoperabilidad entre herramientas",
+        "explanation": "El módulo describe JSON como estándar de validación e interoperabilidad (p.ej., con Anki y TBL).",
+        "difficulty": "intermediate",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "pmc-q3",
+        "type": "multiple-choice",
+        "question": "¿Para qué se usa JSONLint según el módulo?",
+        "options": [
+          "Para calcular compliance pulmonar",
+          "Para evitar errores de parseo y validar integridad sintáctica del objeto",
+          "Para entrenar automáticamente Anki sin contenido",
+          "Para medir memoria sensorial en segundos"
+        ],
+        "correctAnswer": "Para evitar errores de parseo y validar integridad sintáctica del objeto",
+        "explanation": "El texto indica que validadores como JSONLint previenen errores de foco/atención y evitan invalidez por sintaxis.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "pmc-q4",
+        "type": "multiple-choice",
+        "question": "En el TBL, ¿qué fase se asocia a la prueba individual de preparación con accountability?",
+        "options": [
+          "TRAT (Team Readiness Assurance Test)",
+          "IRAT (Individual Readiness Assurance Test)",
+          "Clarificación",
+          "Casos de aplicación (4S)"
+        ],
+        "correctAnswer": "IRAT (Individual Readiness Assurance Test)",
+        "explanation": "El módulo especifica IRAT como prueba individual para accountability y preparación inicial.",
+        "difficulty": "intermediate",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "pmc-q5",
+        "type": "multiple-choice",
+        "question": "En jq, ¿qué operador se describe como iteración sobre listas?",
+        "options": [
+          "keys",
+          ".",
+          "[]",
+          "map"
+        ],
+        "correctAnswer": "[]",
+        "explanation": "El módulo indica `[]` para procesar listas de pacientes o conceptos.",
+        "difficulty": "intermediate",
+        "bloomLevel": "remember",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-25",
+    "source": "VentyLab (JSON unificado)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel intermedio. Estructura el aprendizaje activo con JSON, memoria (LTP) y TBL, e incluye automatización con Python/jq."
+  }
+}

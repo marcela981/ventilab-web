@@ -367,7 +367,7 @@ function semanticLinter(lessons) {
  */
 async function main() {
   // Load schema
-  const schemaPath = join(__dirname, '..', 'src', 'data', 'schemas', 'lessonSchema.json');
+  const schemaPath = join(__dirname, '..', 'src', 'features', 'teaching', 'data', 'schemas', 'lessonSchema.json');
   let schema;
   try {
     schema = loadJsonFile(schemaPath);
@@ -388,7 +388,7 @@ async function main() {
   
   // Find all lesson files
   const projectRoot = join(__dirname, '..');
-  const lessonsPattern = 'src/data/lessons/**/*.json';
+  const lessonsPattern = 'src/features/teaching/data/lessons/**/*.json';
   const lessonFiles = await fg(lessonsPattern, {
     cwd: projectRoot,
     ignore: ['**/node_modules/**', '**/schemas/**', '**/metadata.json', '**/index.js'],

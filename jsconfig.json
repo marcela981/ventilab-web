@@ -3,6 +3,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
+      "@/shared/*": ["src/shared/*"],
       "@/components/*": ["src/components/*"],
       "@/view-components/*": ["src/view-components/*"],
       "@/features/*": ["src/features/*"],
@@ -12,9 +13,11 @@
       "@/utils/*": ["src/utils/*"],
       "@/lib/*": ["lib/*", "src/lib/*"],
       "@/data/*": ["src/data/*"],
+      "@/teaching/data/*": ["src/features/teaching/data/*"],
       "@/theme/*": ["src/theme/*"],
       "@/styles/*": ["src/styles/*"],
-      "@/types/*": ["src/types/*"]
+      "@/types/*": ["src/types/*"],
+      "@/config/*": ["src/config/*"]
     }
   },
   "exclude": ["node_modules", ".next", "out", "dist"]

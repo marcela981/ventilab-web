@@ -106,9 +106,11 @@ const assertContrastDev = (textHex, bgHex, context) => {
 const teachingTokens = {
   paperBg: alpha('#BBECFC', 0.05),
   chipPrimaryBg: '#BBECFC',
-  chipPrimaryLabel: '#0288d1',
+  // #005b99 sobre #BBECFC → contraste WCAG 5.65:1 (cumple AA normal ≥4.5:1)
+  chipPrimaryLabel: '#005b99',
   chipSecondaryBg: '#0BBAF4',
-  chipSecondaryLabel: '#FFFFFF',
+  // #000000 sobre #0BBAF4 → contraste WCAG 9.44:1 (cumple AA normal ≥4.5:1)
+  chipSecondaryLabel: '#000000',
 };
 
 // ==================== VALIDACIÓN DE CONTRASTE EN DESARROLLO ====================
@@ -116,37 +118,15 @@ const teachingTokens = {
 if (process.env.NODE_ENV !== 'production') {
   /**
    * Validación de contraste WCAG AA para chips del módulo de enseñanza
-   * 
-   * CHIP PRIMARIO (#0288d1 sobre #BBECFC):
-   * - El contraste base está por debajo de AA normal (4.5:1) pero cumple AA large (3.0:1)
-   * - Estrategia de cumplimiento: fontSize grande (1.2rem) y fontWeight 700 (bold)
-   * - Esto eleva el cumplimiento a AA-large según WCAG 2.1 (texto grande = 18pt+ o 14pt+ bold)
-   * 
-   * CHIP SECUNDARIO (#FFFFFF sobre #0BBAF4):
-   * - El contraste base no cumple AA normal ni large
-   * - Estrategia de cumplimiento: overlay local con rgba(0,0,0,0.22) detrás del texto (::before en label)
-   * - El overlay oscurece solo el fondo inmediato del texto, elevando el contraste efectivo
-   * - El color visible del chip se mantiene (#0BBAF4) cumpliendo el diseño requerido
-   * - Nota: Esta validación mide el contraste base; el overlay mejora el contraste en renderizado
+   *
+   * CHIP PRIMARIO (#005b99 sobre #BBECFC):
+   * - Contraste calculado: 5.65:1 → cumple AA normal (≥4.5:1) ✓
+   *
+   * CHIP SECUNDARIO (#000000 sobre #0BBAF4):
+   * - Contraste calculado: 9.44:1 → cumple AA normal (≥4.5:1) ✓
    */
-  
-  // Validar contraste para Chip primario
-  // text=#0288d1 sobre bg=#BBECFC
-  assertContrastDev(
-    teachingTokens.chipPrimaryLabel,
-    teachingTokens.chipPrimaryBg,
-    'Chip primary'
-  );
-
-  // Validar contraste para Chip secundario
-  // text=#FFFFFF sobre bg=#0BBAF4
-  // Nota: El overlay en el label (rgba(0,0,0,0.22)) eleva el contraste efectivo
-  // donde se renderiza el texto, cumpliendo el espíritu de AA sin cambiar el color del chip
-  assertContrastDev(
-    teachingTokens.chipSecondaryLabel,
-    teachingTokens.chipSecondaryBg,
-    'Chip secondary'
-  );
+  assertContrastDev(teachingTokens.chipPrimaryLabel, teachingTokens.chipPrimaryBg, 'Chip primary');
+  assertContrastDev(teachingTokens.chipSecondaryLabel, teachingTokens.chipSecondaryBg, 'Chip secondary');
 }
 
 // ==================== CONFIGURACIÓN DEL TEMA ====================
@@ -174,7 +154,7 @@ export const teachingModuleTheme = createTheme({
     // Variantes personalizadas para chips primarios y secundarios
     MuiChip: {
       variants: [
-        // Variante Primaria
+        // Variante Primaria — #005b99 sobre #BBECFC (5.65:1, WCAG AA normal ✓)
         {
           props: { color: 'primary', variant: 'filled' },
           style: {
@@ -182,31 +162,17 @@ export const teachingModuleTheme = createTheme({
             color: teachingTokens.chipPrimaryLabel,
             '& .MuiChip-label': {
               fontWeight: 700,
-              fontSize: '1.2rem',
-              lineHeight: 1.25,
             },
           },
         },
-        // Variante Secundaria
+        // Variante Secundaria — #000000 sobre #0BBAF4 (9.44:1, WCAG AA normal ✓)
         {
           props: { color: 'secondary', variant: 'filled' },
           style: {
             backgroundColor: teachingTokens.chipSecondaryBg,
             color: teachingTokens.chipSecondaryLabel,
             '& .MuiChip-label': {
-              position: 'relative',
-              padding: '0 6px',
               fontWeight: 700,
-              fontSize: '1.2rem',
-              lineHeight: 1.25,
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                inset: 0,
-                borderRadius: '999px',
-                backgroundColor: 'rgba(0,0,0,0.22)',
-                zIndex: -1,
-              },
             },
           },
         },

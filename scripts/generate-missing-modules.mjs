@@ -51,7 +51,7 @@ function logInfo(message) {
  * Load schema
  */
 function loadSchema() {
-  const schemaPath = resolve(__dirname, '../src/data/schemas/moduleSchema.json');
+  const schemaPath = resolve(__dirname, '../src/features/teaching/data/schemas/moduleSchema.json');
   const schemaContent = readFileSync(schemaPath, 'utf-8');
   return JSON.parse(schemaContent);
 }
@@ -60,7 +60,7 @@ function loadSchema() {
  * Extract current modules from curriculumData.js
  */
 function getCurrentModules() {
-  const curriculumDataPath = resolve(__dirname, '../src/data/curriculumData.js');
+  const curriculumDataPath = resolve(__dirname, '../src/features/teaching/data/curriculumData.js');
   const fileContent = readFileSync(curriculumDataPath, 'utf-8');
   
   // Find modules section
@@ -238,7 +238,7 @@ function validateModules(modules, schema) {
  * Save generated modules to JSON and JS files
  */
 function saveGeneratedModules(modules) {
-  const outputDir = resolve(__dirname, '../src/data/curriculum');
+  const outputDir = resolve(__dirname, '../src/features/teaching/data/curriculum');
   
   // Create directory if it doesn't exist
   if (!existsSync(outputDir)) {
@@ -328,8 +328,8 @@ function main() {
     logInfo(`Total modules: ${currentModules.length} (current) + ${placeholderModules.length} (generated) = ${currentModules.length + placeholderModules.length}`);
     logInfo(`Output file: ${outputPath}`);
     logInfo('\nNext steps:');
-    logInfo('1. Review the generated modules in src/data/curriculum/modules.generated.json');
-    logInfo('2. Update src/data/curriculum/index.js to merge base and generated modules');
+    logInfo('1. Review the generated modules in src/features/teaching/data/curriculum/modules.generated.json');
+    logInfo('2. Update src/features/teaching/data/curriculum/index.js to merge base and generated modules');
     logInfo('3. Update curriculumData.js to use the merged modules');
     logInfo('4. Run validation: npm run validate:curriculum');
     

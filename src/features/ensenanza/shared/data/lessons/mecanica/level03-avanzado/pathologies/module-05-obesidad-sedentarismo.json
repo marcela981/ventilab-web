@@ -1,0 +1,311 @@
+{
+  "id": "module-05-obesidad-sedentarismo",
+  "moduleId": "module-05-avanzado-patologias",
+  "title": "Ventilación en el paciente con obesidad y sedentarismo: perspectiva de patologías avanzadas",
+  "description": "Este módulo de nivel avanzado aborda la ventilación en el paciente obeso y sedentario desde una perspectiva integral de patologías complejas, integrando la epidemiología crítica de la obesidad (OMS/OCDE), la tabla comparativa de mecánica vertical vs. supino (Steier et al.), la programación con PBW incluyendo la hipercapnia permisiva moderada, la gestión avanzada de PEEP y MR con su costo hemodinámico obligatorio, las comorbilidades de AOS ('ventana de silencio') y SDRA con metas precisas de Driving Pressure, y la arquitectura pedagógica avanzada con Signposting, ZPD del residente y schemas automáticos bajo estrés quirúrgico. Incluye las 5 Recomendaciones de Oro de síntesis.",
+  "order": 5,
+  "estimatedTime": 90,
+  "difficulty": "advanced",
+  "bloomLevel": "synthesize",
+  "learningObjectives": [
+    "Contextualizar la crisis epidemiológica de la obesidad (OMS/OCDE) como transformación absoluta de los límites de seguridad fisiológica en ventilación mecánica.",
+    "Interpretar la tabla comparativa de mecánica vertical vs. supino (Steier et al.) para predecir el riesgo de colapso de vía aérea y PEEPi en la inducción.",
+    "Programar la ventilación protectora con PBW, incluyendo la hipercapnia permisiva moderada como estrategia específica del obeso con mecanismos compensatorios previos.",
+    "Ejecutar la MR progresiva con soporte hemodinámico obligatorio (vasopresores proactivos) como parte inseparable del protocolo de apertura pulmonar.",
+    "Reconocer la 'ventana de silencio' de la AOS en la URPA y gestionar el SDRA postoperatorio con Driving Pressure < 13-15 cmH₂O y PEEP hasta 26 cmH₂O.",
+    "Aplicar el Signposting como herramienta pedagógica, definir la ZPD del residente en ventilación avanzada y automatizar schemas bajo estrés quirúrgico mediante Chunking."
+  ],
+  "prerequisites": [
+    "Módulos 1-4 avanzados: VILI, monitorización de alto nivel, asincronías y destete complejo.",
+    "Módulos intermedios 1-6: VCV, PEEP, MR, PSV, Fine Tuning y destete.",
+    "Epidemiología básica de la obesidad y sus comorbilidades respiratorias."
+  ],
+  "sections": [
+    {
+      "id": "obesidad-sed-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción: la obesidad como crisis epidemiológica y redefinición de los límites de seguridad",
+      "content": {
+        "markdown": "## ¿Qué vas a aprender en este módulo?\n\nTema: Ventilación en el paciente con obesidad y sedentarismo desde la perspectiva de patologías avanzadas — integrando epidemiología, fisiopatología comparativa, programación protectora con matices específicos y arquitectura pedagógica para la automatización bajo estrés.\n\n### Contexto epidemiológico: la normalización de la obesidad en UCI\n\nSegún datos de la **OMS y la OCDE**, la prevalencia de obesidad en adultos ha alcanzado niveles críticos:\n- **EE. UU.:** 32-34 %\n- **Reino Unido:** 25 %\n- **Alemania:** 21 %\n\nEn este escenario, la competencia del neumólogo no reside solo en ventilar, sino en dominar la **ventilación protectora como herramienta de supervivencia perioperatoria**.\n\n### 'So What?': la redefinición absoluta de los límites de seguridad\n\nLa transición de un paciente normopeso a uno con obesidad grado III no es una mera cuestión de volumen adicional: representa una **redefinición absoluta de los límites de seguridad fisiológica**. El tejido adiposo no es solo peso muerto — es una **carga elástica externa** que colapsa la arquitectura alveolar en cuestión de segundos tras la inducción. El enfoque ventilatorio estándar está destinado al fracaso en esta población.\n\nA lo largo del módulo conectarás:\n- **Fisiopatología comparativa:** tabla vertical vs. supino (Steier et al.), colapso de vía aérea y PEEPi posicional.\n- **Programación protectora:** PBW con fórmulas exactas, hipercapnia permisiva moderada y VCV en cohortes masivas (n > 100.000).\n- **PEEP avanzada y MR:** costo hemodinámico obligatorio, vasopresores proactivos.\n- **AOS y SDRA:** 'ventana de silencio', rebote REM y metas de DP en SDRA.\n- **Pedagogía:** Signposting, ZPD del residente, schemas automáticos y las **5 Recomendaciones de Oro**."
+      },
+      "estimatedTime": 8
+    },
+    {
+      "id": "obesidad-sed-theory-1",
+      "order": 2,
+      "type": "theory",
+      "title": "Fisiopatología restrictiva: PIA, Pendelluft y tabla comparativa vertical vs. supino",
+      "content": {
+        "markdown": "El exceso de tejido graso abdominal y torácico genera una **cadena causal de deterioro mecánico**. La PIA elevada (6-10 cmH₂O) actúa como el motor primario que transmite presión directamente hacia la pleura y el parénquima, forzando la cefalización del diafragma.\n\n### Impacto sobre la CRF y el efecto Pendelluft\n\n- La CRF se reduce entre un **5 % y 15 %** por cada 5 kg/m² de IMC adicional sobre 30.\n- La **ventilación no homogénea (efecto Pendelluft)** provoca flujos interregionales por diferencias de presión dinámica, exacerbando el riesgo de sobredistensión local en áreas no colapsadas.\n\n### Tabla comparativa: posición vertical vs. supino post-inducción (Steier et al.)\n\n| Parámetro clínico | Posición vertical | Posición supina (post-inducción) |\n| :--- | :--- | :--- |\n| Volumen pulmonar | ~20 % inferior al predicho | Reducción adicional del 50 % |\n| Colapso de vía aérea pequeña | 2 de cada 8 pacientes | **7 de cada 8 pacientes** |\n| PEEPi media | 1.4 cmH₂O | +0.2 cmH₂O por unidad de IMC |\n| Dinámica diafragmática | Compensada por tono muscular | Cefalización masiva y pérdida de reserva |\n\nLa PEEPi alcanza **5.3 cmH₂O en decúbito supino** incluso sin ventilación mecánica. El IMC es el **único factor predictivo independiente** de este fenómeno.\n\n### 'So What?': el atelectrauma como certeza, no posibilidad\n\nEl colapso alveolar tras la inducción no es una posibilidad: es una **certeza en el 90 % de estos pacientes**. Si el clínico no compensa la presión pleural aumentada mediante PEEP extrínseca titulada, el paciente entra en un ciclo de hipoxemia refractaria y atelectrauma (lesión por cierre/apertura cíclica de alvéolos)."
+      },
+      "estimatedTime": 15
+    },
+    {
+      "id": "obesidad-sed-theory-2",
+      "order": 3,
+      "type": "theory",
+      "title": "Programación protectora: PBW, hipercapnia permisiva moderada y VCV en cohortes masivas",
+      "content": {
+        "markdown": "Habiendo establecido las restricciones mecánicas, transitamos hacia la lógica de programación sustentada en **IMPROVE, PROVHILO y PROBESE**.\n\n### Vt por PBW: fórmulas exactas\n\nEl parénquima pulmonar no aumenta con la adiposidad; usar el peso real **garantiza el VILI**:\n\n- **Hombres:** 50 + 0.91 × [altura(cm) − 152.4]\n- **Mujeres:** 45.5 + 0.91 × [altura(cm) − 152.4]\n\nMeta: **6-8 ml/kg de PBW**.\n\n### Frecuencia respiratoria y metas gaseosas\n\n- **FR:** 12-20 rpm.\n- **SpO₂ meta:** 94-98 %.\n- **Hipercapnia permisiva moderada:** se debe respetar la hipercapnia leve en estos pacientes, dado que muchos manejan mecanismos compensatorios previos que **no deben normalizarse de forma súbita**. Una corrección agresiva del CO₂ puede desestabilizar el equilibrio ácido-base compensado.\n\n### VCV en cohortes masivas (n > 100.000)\n\nEl **Modo Controlado por Volumen (VCV)** ha demostrado reducción superior de CPP en estudios de cohortes masivas (n > 100.000 pacientes). A diferencia del PCV:\n- Asegura la entrega del Vt calculado ante fluctuaciones de distensibilidad.\n- Mantiene el Volumen Minuto estable ante cambios de PIA (laparoscopia, Trendelenburg).\n\n### 'So What?': la trampa de la normo-oxemia aparente\n\nUn paciente puede mostrar SpO₂ del 96 % mientras presenta un **desajuste V/Q masivo con shunts silentes** por el colapso de las zonas dependientes. La normo-oxemia aparente enmascara la hipoxia tisular real y el colapso alveolar subyacente. Ignorar el PBW no solo causa sobredistensión (volutrauma), sino que perpetúa un espacio muerto alveolar que compromete la estabilidad hemodinámica transoperatoria."
+      },
+      "estimatedTime": 15
+    },
+    {
+      "id": "obesidad-sed-theory-3",
+      "order": 4,
+      "type": "theory",
+      "title": "Gestión avanzada de PEEP y MR: el costo hemodinámico obligatorio",
+      "content": {
+        "markdown": "El mantenimiento del **'pulmón abierto'** requiere una estrategia de titulación de PEEP que supere la presión de cierre impuesta por la PIA y el peso de la pared torácica.\n\n### Niveles de PEEP por IMC (estrategia de seguridad)\n\n| IMC (kg/m²) | PEEP recomendada (cmH₂O) |\n| :--- | :--- |\n| 30 - 39.9 | 8 |\n| 40 - 49.9 | 10 |\n| > 50 | 12 |\n\n### Maniobra de Reclutamiento Progresiva: técnica y secuencia\n\nSe prohíbe el reclutamiento manual con bolsa (falta de control tensional, pérdida de PEEP al reconectar). La MR controlada por ventilador alcanza **presiones de apertura de 50-55 cmH₂O** mediante:\n1. **Fase escalonada (aumento):** vencer la resistencia elástica de la pared toraco-abdominal gradualmente.\n2. **Fase decremental (reducción):** identificar la **'PEEP de no colapso'** — el punto de mejor distensibilidad dinámica.\n\n### 'So What?': el costo hemodinámico es obligatorio, no opcional\n\nEl reclutamiento alveolar no es gratuito. Alcanzar 55 cmH₂O compromete el retorno venoso y la perfusión coronaria de forma aguda:\n- El clínico debe anticipar la administración **proactiva de vasopresores o fluidos** como parte inseparable del protocolo de apertura pulmonar.\n- La omisión del soporte hemodinámico convierte la MR en un procedimiento peligroso.\n- Su ejecución correcta — con soporte preventivo — es la **única forma de normalizar la distensibilidad** en el obeso mórbido."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "obesidad-sed-theory-4",
+      "order": 5,
+      "type": "theory",
+      "title": "Comorbilidades críticas: AOS ('ventana de silencio') y SDRA con metas de Driving Pressure",
+      "content": {
+        "markdown": "### AOS: la 'ventana de silencio' en la URPA\n\nLa AOS presenta un **desafío de vigilancia único**. Los opioides perioperatorios suprimen las fases REM y el sueño de ondas lentas, creando una **'ventana de silencio'** o falsa sensación de seguridad en la URPA/UCI:\n- Los eventos obstructivos parecen inexistentes bajo el efecto opioide.\n- El riesgo real emerge en la **3.ª noche postoperatoria**: el rebote de fase REM reinstala la AOS con intensidad crítica, frecuentemente cuando la monitorización ya se ha reducido en planta.\n\n### Implicación clínica inmediata\n\nLa **CPAP inmediata tras la extubación** es una medida **profiláctica, no de rescate**:\n- Evita el re-colapso alveolar.\n- Mitiga la apnea central inducida por opioides.\n- El fallo en reconocer la 'ventana de silencio' en las primeras 48 h es un error de juicio que **eleva drásticamente la mortalidad súbita en planta**.\n\n### SDRA postoperatorio: metas precisas de Driving Pressure y PEEP\n\nEn caso de evolución a SDRA, las metas se vuelven más estrictas que en el perioperatorio estándar:\n\n| Escenario | Driving Pressure meta | PEEP máxima |\n| :--- | :--- | :--- |\n| Obeso 'sano' intraoperatorio | < 13 cmH₂O | 12 cmH₂O (por IMC) |\n| SDRA establecido | < 15 cmH₂O | Hasta 26 cmH₂O |\n\nLa PEEP puede escalarse hasta **26 cmH₂O** según la severidad y la respuesta al reclutamiento personalizado, con monitorización hemodinámica continua."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "obesidad-sed-theory-5",
+      "order": 6,
+      "type": "theory",
+      "title": "Arquitectura del aprendizaje: Signposting, ZPD del residente y schemas automáticos",
+      "content": {
+        "markdown": "Este módulo aplica la **Teoría de la Carga Cognitiva (CLT)** para optimizar la transferencia de conocimiento técnico de alta densidad.\n\n### Signposting (Señalización pedagógica)\n\nCada sección transita lógicamente desde la restricción fisiológica hasta la intervención clínica, asegurando un **flujo de pensamiento coherente**. El Signposting explícito:\n- Reduce la carga extrínseca al anticipar el próximo concepto antes de introducirlo.\n- Permite que el aprendiz construya expectativas precisas que facilitan la codificación.\n- Estructura el aprendizaje como una narrativa causal (causa → mecanismo → intervención), no como una lista de datos.\n\n### ZPD definida para el residente en ventilación avanzada\n\nLa Zona de Desarrollo Próximo (ZPD) en este módulo es específica y operacionalizable:\n- **Nivel base (autónomo):** el residente ya puede calcular el Vt por PBW de forma independiente.\n- **Nivel asistido (ZPD):** la ejecución de la MR progresiva a 55 cmH₂O sin causar colapso hemodinámico **requiere el andamiaje** de guía clínica estructurada.\n- **Meta de la ZPD:** que la MR con soporte vasopresor pase de tarea asistida a schema automatizado.\n\n### Chunking y Andamiaje: la secuencia óptima de complejidad creciente\n\nLa fragmentación del contenido respeta la capacidad finita de la memoria de trabajo:\n\n1. **Fisiología** (carga intrínseca menor): mecanismos de colapso y PEEPi.\n2. **Programación** (carga intrínseca media): PBW, FR, modo, oxigenación.\n3. **Gestión avanzada** (carga germana mayor): PEEP personalizada, MR y soporte hemodinámico.\n\n### Schemas automáticos bajo estrés quirúrgico\n\nEl diseño instruccional es tan crítico como el contenido clínico. Un médico bajo estrés en el quirófano no puede procesar información desestructurada. La organización por schemas asegura que las maniobras complejas se vuelvan **automáticas**, reduciendo el error humano y mejorando la seguridad del paciente al pie de cama."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "m-obesidad-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Ajuste de parámetros en obesidad",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Ventilación mecánica en el paciente obeso\n\n> Aplica los ajustes específicos para obesidad mórbida. No bloquea avance.\n\n---\n\n### Actividad 1 — Impacto de la obesidad en la mecánica\n\nIndica si cada afirmación es verdadera (V) o falsa (F) y justifica:\n\n1. \"En obesidad, el Vt se calcula sobre peso real.\"\n   **F** — Se usa peso predicho basado en talla para evitar volutrauma.\n\n2. \"La FRC (capacidad residual funcional) está aumentada en decúbito supino en obesos.\"\n   **F** — La FRC está disminuida por la presión del abdomen sobre el diafragma → atelectasias basales.\n\n3. \"El PEEP recomendado en obesos suele ser mayor que en pacientes de peso normal.\"\n   **V** — Se necesita más PEEP para contrarrestar la presión abdominal y mantener los alvéolos abiertos (8–12 cmH₂O frecuente).\n\n4. \"La posición 30–45° (semi-Fowler) mejora la mecánica ventilatoria en obesos.\"\n   **V** — Reduce la presión diafragmática por el peso visceral.\n\n---\n\n### Actividad 2 — Cálculo en caso obeso\n\nPaciente obeso: sexo masculino, talla 170 cm, peso real 130 kg, IMC 45.\n- Peso predicho = 50 + 0,91 × (170 − 152,4) = 50 + 16 = **66 kg**\n- Vt protector = 6 × 66 = **396 mL** (usar 390–400 mL)\n- Diferencia vs. peso real: 6 × 130 = 780 mL → **casi el doble** → barotrauma garantizado si se usa peso real.\n\nPEEP recomendado en obeso postquirúrgico sin SDRA: **8–10 cmH₂O**\nPEEP en SDRA + obesidad: **10–14 cmH₂O** (individualizar con compliance y hemodinámica).\n\n---\n\n### Actividad 3 — Maniobra de reclutamiento perioperatoria\n\n¿Cuándo y cómo se aplica una maniobra de reclutamiento en el obeso?\n\n- **Indicación:** inicio de ventilación mecánica, cambios de posición, desconexiones del circuito.\n- **Técnica:** CPAP 40 cmH₂O × 8 respiraciones lentas o PEEP escalado hasta 20 cmH₂O y descenso.\n- **Monitorización:** SaO₂, compliance (Cst mejora con reclutamiento), hemodinámica.\n- **Contraindicación relativa:** hipotensión, neumotórax previo, bulla enfisematosa.\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 30 pts | Actividad 2 → 35 pts | Actividad 3 → 35 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 7
+    },
+    {
+      "id": "m-obesidad-case",
+      "type": "case_study",
+      "title": "Caso clínico: Paciente obeso con insuficiencia respiratoria",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: Obeso mórbido en fallo respiratorio agudo\n\n---\n\n### Presentación\n\n**Paciente:** Hombre, 58 años, talla 168 cm, peso 148 kg (IMC 52,5). Sedentario severo, HTA, DM2, SAHOS conocido (no tratado).\n**Motivo de ingreso:** Insuficiencia respiratoria hipoxémica (SaO₂ 74% al ingreso) tras cirugía de bypass gástrico laparoscópico (4 h, posición Trendelenburg 30°).\n**Gasometría en urgencias (FiO₂ 0,60 con MR):** pH 7,28, PaCO₂ 58 mmHg, PaO₂ 52 mmHg → PaFi = 87 → SDRA severo.\n**Intubación:** secuencia rápida con crico presión, 2 intentos (vía aérea difícil).\n\n---\n\n### Análisis guiado\n\n**1. Peso predicho**\n= 50 + 0,91 × (168 − 152,4) = 50 + 14,2 = **64,2 kg**\nVt protector = 6 × 64,2 = **385 mL**\n\n**2. Parámetros iniciales recomendados**\n- VCV: Vt 385 mL, Fr 22/min, PEEP 12 cmH₂O, FiO₂ 0,80.\n- Semi-Fowler 30°.\n- Sedación profunda + bloqueo neuromuscular (SDRA severo + IMC > 40).\n\n**3. Evaluación de mecánica a 30 min**\nPmeseta = 30 cmH₂O, Cst = 0,385/(30−12) = **21,4 mL/cmH₂O** (muy baja).\nΔP = 30 − 12 = **18 cmH₂O** → peligroso. Reducir Vt a 5 mL/kg = 321 mL.\n\n**4. PEEP y prono**\nP/F = 52/0,80 = 65 → SDRA severo → decúbito prono indicado.\nProno en obeso: requiere equipo especializado (mínimo 5 personas), almohadas específicas, monitorización de presión abdominal.\n\n---\n\n### Evolución a 24 h\n\nPost-prono (16 h): P/F 135. PEEP reducida a 10. FiO₂ a 0,65.\nΔP = Pmeseta − PEEP = 28 − 10 = 18 → reducir Vt a 4 mL/kg = 257 mL + hipercapnia permisiva.\nDía 3: P/F 172 → SDRA moderado. Pronación × 2ª sesión.\n\n---\n\n### Puntos clave\n\n1. SAHOS + cirugía abdominal + Trendelenburg = tormenta perfecta para atelectasias y SDRA postoperatorio.\n2. En obesos, la PEEP debe contrarrestar la presión de la pared torácica/abdominal (más alta que en normopeso).\n3. La posición prono es técnicamente compleja en obesos pero factible y eficaz.\n"
+      },
+      "order": 8
+    },
+    {
+      "id": "obesidad-sed-summary",
+      "order": 9,
+      "type": "summary",
+      "title": "Cierre: las 5 Recomendaciones de Oro y transición a cirugía laparoscópica",
+      "content": {
+        "markdown": "## Las 5 Recomendaciones de Oro para el paciente obeso ventilado\n\n1. **Cálculo estricto por PBW:** nunca usar el peso real; Vt de 6-8 ml/kg basado en la altura.\n2. **Protección de presión:** Driving Pressure < 13 cmH₂O en pulmón sano; < 15 cmH₂O en SDRA establecido.\n3. **PEEP proactiva:** titular según IMC (mínimo 8-12 cmH₂O) para contrarrestar la transmisión de PIA a la pleura.\n4. **MR controlada por ventilador:** presiones de 50-55 cmH₂O con soporte vasopresor obligatorio para revertir atelectasias.\n5. **Vigilancia postoperatoria:** CPAP inmediata post-extubación y alerta máxima en la 3.ª noche por el rebote de AOS en fase REM.\n\n## Resumen integrador\n\n- La obesidad redefine los límites de seguridad fisiológica: 7 de cada 8 obesos colapsan la vía aérea pequeña en supino (Steier) y el 90 % desarrolla atelectasias tras la inducción.\n- La hipercapnia permisiva moderada es una estrategia específica del obeso; la normo-oxemia aparente puede enmascarar shunts silentes con V/Q mismatch activo.\n- El costo hemodinámico de la MR es obligatorio e inseparable del protocolo: sin vasopresores proactivos, la MR es peligrosa.\n- La 'ventana de silencio' de la AOS (opioides suprimiendo REM) crea falsa seguridad en URPA; el rebote en la 3.ª noche es el momento de mayor riesgo en planta.\n- El Signposting, la ZPD operacional del residente y la secuencia Chunking (fisiología → programación → gestión avanzada) son la arquitectura para automatizar la respuesta clínica bajo estrés.\n\n## Checklist de validación\n\n- Interpreto la tabla vertical vs. supino (Steier) y predigo el riesgo específico de colapso para un paciente dado.\n- Calculo el PBW con las fórmulas exactas y justifico la hipercapnia permisiva en el obeso con compensación previa.\n- Describo por qué la normo-oxemia aparente no garantiza una ventilación protectora adecuada.\n- Ejecuto el protocolo de MR con vasopresores proactivos como parte inseparable del procedimiento.\n- Identifico la 'ventana de silencio' de la AOS e indico cuándo activar la vigilancia intensificada.\n- Aplico las 5 Recomendaciones de Oro como síntesis operacional y conecto este módulo con la cirugía laparoscópica."
+      },
+      "estimatedTime": 7
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Qué diferencia cuantitativa muestra la tabla de Steier entre la posición vertical y supina para el colapso de vía aérea pequeña?",
+        "¿Por qué la hipercapnia permisiva moderada es una estrategia específica del paciente obeso y no del paciente general?",
+        "¿Cómo puede un paciente mostrar SpO₂ del 96 % y tener V/Q mismatch masivo con shunts silentes?",
+        "¿Qué es la 'ventana de silencio' de la AOS y por qué crea falsa sensación de seguridad en la URPA?",
+        "¿Cómo define el módulo la ZPD del residente en ventilación avanzada y qué la diferencia del nivel base autónomo?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "aiexpandnotes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": [
+          "advanced"
+        ],
+        "question_types": [
+          "conceptual",
+          "application",
+          "clinical_case"
+        ],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [],
+  "quiz": {
+    "id": "quiz-obesidad-sedentarismo-patologias",
+    "passingScore": 4,
+    "questions": [
+      {
+        "id": "obs-sed-q1",
+        "type": "multiple-choice",
+        "question": "Según la tabla de Steier et al. citada en el módulo, ¿cuántos de cada 8 pacientes obesos presentan colapso de vía aérea pequeña en posición supina post-inducción?",
+        "options": [
+          "2 de cada 8",
+          "4 de cada 8",
+          "6 de cada 8",
+          "7 de cada 8"
+        ],
+        "correctAnswer": "7 de cada 8",
+        "explanation": "La tabla comparativa del módulo (Steier et al.) muestra que en posición vertical solo 2 de cada 8 pacientes obesos presentan colapso de vía aérea pequeña, mientras que en posición supina post-inducción este número sube a 7 de cada 8. Este dato cuantifica de forma precisa la certeza del colapso alveolar tras la inducción anestésica en el obeso.",
+        "difficulty": "advanced",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "obs-sed-q2",
+        "type": "multiple-choice",
+        "question": "¿Por qué el módulo recomienda respetar la hipercapnia permisiva moderada en el paciente obeso y no normalizarla de forma súbita?",
+        "options": [
+          "Porque la hipercapnia aumenta la distensibilidad pulmonar al dilatar las vías aéreas pequeñas en el obeso",
+          "Porque muchos obesos manejan mecanismos compensatorios previos de retención de CO₂ que no deben desestabilizarse abruptamente",
+          "Porque el aumento de CO₂ estimula la MR al incrementar la respuesta vasomotora pulmonar",
+          "Porque la hipercapnia reduce la necesidad de PEEP extrínseca al aumentar el tono del diafragma"
+        ],
+        "correctAnswer": "Porque muchos obesos manejan mecanismos compensatorios previos de retención de CO₂ que no deben desestabilizarse abruptamente",
+        "explanation": "El módulo establece que el paciente obeso suele manejar mecanismos compensatorios previos de hipercapnia crónica. Una corrección agresiva del CO₂ puede desestabilizar el equilibrio ácido-base compensado, generando alcalosis respiratoria iatrogénica con consecuencias hemodinámicas y neurológicas. La hipercapnia permisiva moderada es una estrategia específica para este perfil.",
+        "difficulty": "advanced",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "obs-sed-q3",
+        "type": "multiple-choice",
+        "question": "¿Cómo explica el módulo que un paciente obeso pueda mostrar SpO₂ del 96 % y tener simultáneamente un desajuste V/Q masivo?",
+        "options": [
+          "Porque el sensor de oximetría es menos preciso en pacientes con alta concentración de hemoglobina",
+          "Porque los shunts silentes en zonas dependientes colapsadas no reducen la SpO₂ si el resto del pulmón hiperventila para compensar",
+          "Porque el colapso de las zonas dependientes aumenta la perfusión de las zonas no dependientes, normalizando la SpO₂",
+          "Porque en el obeso la curva de disociación de la oxihemoglobina está desplazada a la izquierda por la hipercapnia crónica"
+        ],
+        "correctAnswer": "Porque los shunts silentes en zonas dependientes colapsadas no reducen la SpO₂ si el resto del pulmón hiperventila para compensar",
+        "explanation": "El módulo advierte sobre la 'trampa de la normo-oxemia aparente': los shunts intrapulmonares silentes en las zonas dependientes colapsadas no siempre reducen la SpO₂ perceptiblemente porque las zonas no dependientes compensan con hiperventilación. Sin embargo, este V/Q mismatch masivo perpetúa el espacio muerto alveolar y compromete la estabilidad hemodinámica, aunque la saturación parezca adecuada.",
+        "difficulty": "advanced",
+        "bloomLevel": "analyze",
+        "points": 2
+      },
+      {
+        "id": "obs-sed-q4",
+        "type": "multiple-choice",
+        "question": "¿Qué describe la 'ventana de silencio' de la AOS en el contexto postoperatorio del paciente obeso?",
+        "options": [
+          "El período de 6-12 horas tras la extubación donde la CPAP no debe iniciarse para no interferir con la recuperación anestésica",
+          "La falsa sensación de seguridad en la URPA generada por la supresión de la fase REM por opioides, que oculta los eventos obstructivos reales",
+          "El período de silencio monitor entre la extubación y el inicio del monitoreo nocturno en planta",
+          "La ausencia de ronquidos en el obeso intubado que dificulta el diagnóstico de AOS en el preoperatorio"
+        ],
+        "correctAnswer": "La falsa sensación de seguridad en la URPA generada por la supresión de la fase REM por opioides, que oculta los eventos obstructivos reales",
+        "explanation": "El módulo describe la 'ventana de silencio' como la falsa seguridad creada en la URPA cuando los opioides perioperatorios suprimen las fases REM y el sueño de ondas lentas, haciendo que los eventos obstructivos de la AOS sean inexistentes en apariencia. El peligro real emerge en la 3.ª noche al producirse el rebote REM, cuando la monitorización ya se ha reducido.",
+        "difficulty": "advanced",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "obs-sed-q5",
+        "type": "multiple-choice",
+        "question": "¿Cómo define el módulo la ZPD del residente en el contexto de la ventilación avanzada del obeso?",
+        "options": [
+          "El espacio donde el residente puede calcular el PBW de forma autónoma sin necesidad de supervisión",
+          "El nivel donde el residente ya domina la fisiología del colapso pero aún necesita andamiaje para ejecutar la MR a 55 cmH₂O sin causar colapso hemodinámico",
+          "El umbral de complejidad donde el residente puede gestionar el rebote REM de la AOS de forma independiente",
+          "La capacidad del residente para interpretar la tabla de Steier sin guía del especialista"
+        ],
+        "correctAnswer": "El nivel donde el residente ya domina la fisiología del colapso pero aún necesita andamiaje para ejecutar la MR a 55 cmH₂O sin causar colapso hemodinámico",
+        "explanation": "El módulo operacionaliza la ZPD del residente de forma específica: el nivel base (autónomo) es el cálculo del Vt por PBW de forma independiente. La ZPD es la ejecución de la MR progresiva a 55 cmH₂O sin causar colapso hemodinámico, que requiere el andamiaje de la guía clínica estructurada hasta que se automatice como schema.",
+        "difficulty": "advanced",
+        "bloomLevel": "analyze",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [
+      {
+        "authors": "Steier, J.; Pankow, W.; et al.",
+        "year": "",
+        "title": "Predictors of intrinsic PEEP and small airway closure in obese patients: vertical vs. supine position.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Bluth, T.; et al. (PROBESE Collaborative Group)",
+        "year": "2019",
+        "title": "Effect of intraoperative high PEEP with recruitment maneuvers vs low PEEP on postoperative pulmonary complications in obese patients.",
+        "source": "JAMA",
+        "doi": "10.1001/jama.2019.7505",
+        "url": ""
+      },
+      {
+        "authors": "Futier, E.; et al. (IMPROVE Study Group)",
+        "year": "2013",
+        "title": "A trial of intraoperative low-tidal-volume ventilation in abdominal surgery.",
+        "source": "New England Journal of Medicine",
+        "doi": "10.1056/NEJMoa1301082",
+        "url": ""
+      },
+      {
+        "authors": "Hemmes, S. N. T.; et al. (PROVHILO Trial Investigators)",
+        "year": "2014",
+        "title": "High versus low positive end-expiratory pressure during general anaesthesia for open abdominal surgery (PROVHILO trial).",
+        "source": "The Lancet",
+        "doi": "10.1016/S0140-6736(14)60416-5",
+        "url": ""
+      },
+      {
+        "authors": "Organización Mundial de la Salud (OMS) / OCDE",
+        "year": "2022",
+        "title": "Obesity and overweight: global and regional prevalence data.",
+        "source": "WHO/OECD Health Statistics",
+        "doi": "",
+        "url": "https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight"
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-29",
+    "source": "VentyLab (JSON unificado)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel avanzado - sección patologías. Integra epidemiología OMS/OCDE, tabla comparativa de Steier (2/8 vs 7/8), hipercapnia permisiva moderada, normo-oxemia aparente y V/Q mismatch silente, PEEP por IMC y MR con costo hemodinámico obligatorio, 'ventana de silencio' de AOS, SDRA con DP < 13/15 y PEEP hasta 26 cmH₂O, Signposting, ZPD operacional del residente, schemas automáticos y las 5 Recomendaciones de Oro."
+  }
+}

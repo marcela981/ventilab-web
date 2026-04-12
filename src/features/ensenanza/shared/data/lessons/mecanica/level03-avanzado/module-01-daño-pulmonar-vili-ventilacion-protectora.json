@@ -1,0 +1,301 @@
+{
+  "id": "module-01-vili-ventilacion-protectora",
+  "moduleId": "module-01-avanzado-mecanica",
+  "title": "VILI y ventilación protectora en el paciente con obesidad",
+  "description": "Este módulo de nivel avanzado sintetiza la interacción entre la obesidad y la mecánica ventilatoria para mitigar el Daño Pulmonar Inducido por el Ventilador (VILI) mediante estrategias de ventilación protectora adaptadas. Integra fisiopatología restrictiva extrapulmonar, programación por PBW, titulación de PEEP con protocolo LOV-ED, técnica de doble MR para fijar la PEEP óptima, gestión del postoperatorio (AOS, paradoja del 80 %, VNI profiláctica) y segmentación cognitiva mediante Adaptive Chunking.",
+  "order": 1,
+  "estimatedTime": 85,
+  "difficulty": "advanced",
+  "bloomLevel": "synthesize",
+  "learningObjectives": [
+    "Explicar los mecanismos fisiopatológicos por los que la obesidad genera riesgo de VILI: PIA, cefalización del diafragma, atelectasias por compresión y PEEPi posicional.",
+    "Calcular el VT protector con el PBW e identificar el grupo de mayor riesgo de sobreventilación inadvertida.",
+    "Aplicar las metas de protección pulmonar (VT, Driving Pressure, modo VCV) con respaldo del análisis de 109.360 pacientes.",
+    "Ejecutar la Maniobra de Reclutamiento Progresiva y la 'segunda MR breve' de fijación para consolidar la PEEP óptima sin colapso inmediato.",
+    "Gestionar el postoperatorio del obeso: rebote REM de AOS en la tercera noche, la paradoja del 80 % de FiO₂ y el uso profiláctico de CPAP/BiPAP.",
+    "Aplicar el Adaptive Chunking en cuatro micro-unidades para optimizar la retención de protocolos complejos de ventilación."
+  ],
+  "prerequisites": [
+    "Módulos 1-6 del nivel intermedio de mecánica (VCV, PEEP, MR, PSV, CPAP, Fine Tuning, destete).",
+    "Conceptos de Teoría de la Carga Cognitiva: carga intrínseca, extrínseca y germinal.",
+    "Nociones de SDRA y de fisiología del sueño (fases REM, AOS)."
+  ],
+  "sections": [
+    {
+      "id": "vili-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción y mapa del módulo",
+      "content": {
+        "markdown": "## ¿Qué vas a aprender en este módulo?\n\nTema: Daño Pulmonar Inducido por el Ventilador (VILI) en el paciente obeso y estrategias avanzadas de ventilación protectora, organizadas bajo el modelo de andamiaje 'I Do → We Do → You Do'.\n\nA lo largo del módulo conectarás:\n- **Fisiopatología del VILI en obesidad:** PIA 6-10 cmH₂O, cefalización del diafragma, atelectasias en el 90 %, CRF −50 % en inducción y PEEPi posicional.\n- **Fase I — 'I DO':** programación inicial por PBW, tabla de metas (VT, DP, VCV) y evidencia del estudio de 109.360 pacientes.\n- **Fase II — 'WE DO':** titulación de PEEP por IMC (LOV-ED), MR progresiva 50-55 cmH₂O y 'segunda MR breve' de fijación.\n- **Fase III — 'YOU DO':** gestión del postoperatorio — AOS/rebote REM, paradoja del 80 % de FiO₂ y CPAP/BiPAP profiláctico.\n- **Síntesis cognitiva:** Adaptive Chunking en 4 micro-unidades para consolidar la autonomía clínica."
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "vili-theory-1",
+      "order": 2,
+      "type": "theory",
+      "title": "Fisiopatología de la obesidad y riesgo de VILI",
+      "content": {
+        "markdown": "La obesidad representa un desafío anatómico-fisiológico crítico que altera la mecánica ventilatoria tradicional, exigiendo un **cambio de paradigma** en el manejo del ventilador.\n\n### Carga mecánica extrínseca: PIA y cefalización del diafragma\n\nEl exceso de tejido adiposo incrementa la **Presión Intraabdominal (PIA) a rangos de 6-10 cmH₂O**, provocando cefalización del diafragma y un patrón restrictivo severo. Esto genera:\n\n- **Rigidez de la pared:** el peso torácico y abdominal reduce la distensibilidad del sistema respiratorio.\n- **Atelectasias por compresión:** presentes en el **90 % de los pacientes bajo anestesia** cuando la presión pleural supera la alveolar.\n- **Colapso de CRF:** en decúbito supino, la CRF se desploma un **50 % en pacientes con obesidad mórbida** tras la inducción anestésica.\n- **PEEPi posicional:** existe una correlación lineal donde la PEEPi aumenta **0.2 cmH₂O por cada unidad de IMC** en posición supina, por cierre prematuro de la vía aérea pequeña.\n\n### Intervenciones de posicionamiento estratégico\n\nEl posicionamiento no es secundario: es una intervención terapéutica primaria.\n- Pacientes con **IMC > 40 kg/m²** deben ventilarse con el **tronco elevado**.\n- Mantener la posición de **Trendelenburg invertido** desde la inducción hasta la extubación para aliviar la carga visceral sobre el diafragma.\n\n> Estas alteraciones mecánicas dictan la necesidad inmediata de una programación ventilatoria protectora personalizada; el ventilador estándar agrava el daño si no se adapta a esta fisiología."
+      },
+      "estimatedTime": 16
+    },
+    {
+      "id": "vili-theory-2",
+      "order": 3,
+      "type": "theory",
+      "title": "Programación inicial: el binomio Volumen-Presión (Fase I: 'I Do')",
+      "content": {
+        "markdown": "En esta fase de instrucción explícita, el especialista establece las **reglas de oro** para evitar el volutrauma y el barotrauma en pulmones no lesionados. La ventilación protectora no es opcional: es la base para prevenir Complicaciones Pulmonares Postoperatorias (CPP).\n\n### Cálculo del VT: PBW vs. peso real\n\nLos pulmones no crecen con el tejido adiposo. Se debe usar estrictamente el **Peso Predicho (PBW)**:\n\n- Hombres: 50 + 0.91 × [altura(cm) − 152.4]\n- Mujeres: 45.5 + 0.91 × [altura(cm) − 152.4]\n\n> **Riesgo de género y estatura:** las **mujeres de estatura baja con sobrepeso** presentan el mayor riesgo de ser ventiladas con VT excesivos debido a una mala estimación visual del peso ideal.\n\n### Metas de protección pulmonar\n\n| Parámetro | Meta clínica |\n| :--- | :--- |\n| Volumen Tidal (VT) | 6-8 ml/kg de PBW |\n| Driving Pressure (DP) — pulmón sano | < 13 cmH₂O |\n| Driving Pressure (DP) — SDRA/lesión | < 13-15 cmH₂O |\n| Modo ventilatorio | Modo Controlado por Volumen (VCV) |\n\n### Superioridad del VCV: evidencia de 109.360 pacientes\n\nEl análisis de **109.360 pacientes** demuestra que el **Modo Controlado por Volumen (VCV)** es superior al de presión para prevenir CPP, asegurando un VT constante frente a los cambios de distensibilidad intraoperatorios (laparoscopia, posición de Trendelenburg).\n\n> Este volumen solo es protector si se garantiza un 'pulmón abierto' mediante la titulación de PEEP: un VT bajo en un pulmón colapsado concentra la energía en muy pocos alvéolos, generando VILI."
+      },
+      "estimatedTime": 16
+    },
+    {
+      "id": "vili-theory-3",
+      "order": 4,
+      "type": "theory",
+      "title": "Estrategias de PEEP y maniobras de reclutamiento (Fase II: 'We Do')",
+      "content": {
+        "markdown": "En esta fase de práctica guiada, ajustamos el soporte para contrarrestar la pérdida de CRF. La PEEP debe titularse según la gravedad de la obesidad para evitar el atelectrauma.\n\n### Recomendaciones de PEEP por IMC: protocolo LOV-ED adaptado\n\n| Clase de obesidad | IMC (kg/m²) | PEEP recomendada (cmH₂O) |\n| :--- | :--- | :--- |\n| Clase I | 30 - 39.9 | 8 |\n| Clase II | 40 - 49.9 | 10 |\n| Clase III | > 50 | 12 |\n| SDRA (según gravedad) | — | 10 - 26 |\n\n### Técnica de MR Progresiva y la 'segunda MR breve' de fijación\n\nLa MR controlada por ventilador es **superior al método de bolsa manual** (que genera picos incontrolados y pérdida de PEEP al alternar):\n\n1. **Ejecución:** aumento gradual de la presión de meseta hasta **50-55 cmH₂O**, permitiendo la adaptación cardiovascular.\n2. **Identificación de PEEP ideal:** se determina en la **fase de reducción (decremental)** de la maniobra, buscando el punto de máxima distensibilidad dinámica.\n3. **'Segunda MR breve' de fijación:** una vez identificada la PEEP ideal, es imperativo realizar una **segunda MR breve** para 'fijar' el pulmón en ese nivel óptimo y evitar el colapso inmediato tras la titulación.\n\n> **Omitir la segunda MR de fijación** equivale a identificar la PEEP perfecta y luego dejar que el pulmón se recolapse antes de poder aprovecharla.\n\n### Advertencia hemodinámica\n\nLas presiones elevadas reducen el retorno venoso. Es fundamental:\n- Uso preventivo de **vasopresores** durante la maniobra.\n- **Gestión hídrica juiciosa** para mantener la perfusión coronaria y cerebral."
+      },
+      "estimatedTime": 16
+    },
+    {
+      "id": "vili-theory-4",
+      "order": 5,
+      "type": "theory",
+      "title": "Gestión de complicaciones y postoperatorio (Fase III: 'You Do')",
+      "content": {
+        "markdown": "El clínico aplica ahora el **juicio independiente** para gestionar la transición postoperatoria y las patologías crónicas subyacentes.\n\n### AOS y el fenómeno del rebote REM\n\nLos opioides suprimen la fase REM del sueño, ocultando los eventos obstructivos en la URPA:\n- El paciente parece estable en las primeras 24-48 horas bajo efecto anestésico.\n- El **rebote de fase REM ocurre en la tercera noche postoperatoria**, cuando los opioides descienden y el paciente ya está en planta, menos monitorizado.\n- Manejo: evitar opioides de larga acción y priorizar **CPAP inmediato tras la extubación**.\n\n### La paradoja del 80 % de FiO₂\n\nAunque la hiperoxemia prolongada es nociva, el contexto quirúrgico del paciente obeso es específico:\n- Una **FiO₂ del 80 % durante la inducción** previene las atelectasias de reabsorción al mantener una reserva de oxígeno que permite asegurar la vía aérea antes de la desaturación crítica.\n- Meta postoperatoria de SpO₂: **94-98 %** con FiO₂ mínima efectiva.\n- La hiperoxemia sostenida (> 24 h) sí genera atelectasias de reabsorción al desplazar el nitrógeno alveolar.\n\n### Prevención del SDRA postoperatorio: CPAP/BiPAP profiláctico\n\nEl SDRA postoperatorio deriva directamente de la persistencia de atelectasias. El uso de **ventilación no invasiva (CPAP/BiPAP) en el postoperatorio inmediato** es vital para:\n- Mantener el reclutamiento alveolar logrado en quirófano.\n- Prevenir el colapso progresivo durante las primeras horas en planta.\n- Reducir la necesidad de reintubación.\n\n### Síntesis cognitiva: Adaptive Chunking en 4 micro-unidades\n\nPara maximizar la retención según la Teoría de la Carga Cognitiva, el manejo se segmenta en 4 micro-unidades:\n1. **Protección basada en PBW** → VT 6-8 ml/kg, Driving Pressure < 13 cmH₂O.\n2. **Reclutamiento progresivo controlado** → 50-55 cmH₂O, fase decremental.\n3. **PEEP titulada con segunda MR de fijación** → asegurar el nivel óptimo sin recolapso.\n4. **Vigilancia post-REM al tercer día** → CPAP nocturno, evitar opioides de larga acción."
+      },
+      "estimatedTime": 16
+    },
+    {
+      "id": "m-vili-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Ventilación protectora — cálculo de parámetros",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Ventilación protectora y prevención de VILI\n\n> Calcula parámetros seguros y aplica criterios de VILI. No bloquea avance.\n\n---\n\n### Actividad 1 — Los 5 mecanismos de VILI\n\nRelaciona cada mecanismo con su definición y el parámetro que lo previene:\n\n| Mecanismo VILI | Causa | Parámetro protector |\n|---|---|---|\n| Volutrauma | Sobredistensión por Vt excesivo | Vt ≤ 6 mL/kg peso predicho |\n| Barotrauma | Presiones excesivas → ruptura | P_meseta < 28–30 cmH₂O |\n| Atelectrauma | Apertura/cierre cíclico de alvéolos | PEEP adecuado (> LIP) |\n| Biotrauma | Mediadores inflamatorios sistémicos | Todas las medidas anteriores |\n| Stress relajación | Tensión en tejido pulmonar no homogéneo | Driving pressure < 15 cmH₂O |\n\n---\n\n### Actividad 2 — Cálculo de parámetros protectores\n\nPaciente con SDRA severo: Mujer, 55 años, talla 165 cm.\n\n**Peso predicho (mujer):** = 45,5 + 0,91 × (165 − 152,4) = 45,5 + 0,91 × 12,6 = **56,95 kg ≈ 57 kg**\n\n| Parámetro | Cálculo | Valor objetivo |\n|---|---|---|\n| Vt protector | 6 mL/kg × 57 kg | 342 mL (usar 340–360 mL) |\n| Vt mínimo (4 mL/kg) | 4 × 57 | 228 mL (límite inferior) |\n| Driving pressure objetivo | P_meseta − PEEP | < 15 cmH₂O (meta < 12 ideal) |\n| P_meseta máxima | — | < 28–30 cmH₂O |\n\n---\n\n### Actividad 3 — Simulación clínica\n\nCon los parámetros calculados y Cst = 22 mL/cmH₂O, PEEP = 10 cmH₂O:\n\n- P_meseta = Vt/Cst + PEEP = 0,35/0,022 + 10 = 15,9 + 10 = **25,9 cmH₂O** ✓\n- Driving pressure = P_meseta − PEEP = 25,9 − 10 = **15,9 cmH₂O** → en el límite, considerar reducir Vt a 5 mL/kg.\n- Con Vt 285 mL: P_meseta = 0,285/0,022 + 10 = **22,95 cmH₂O**, ΔP = **12,95** → mejor.\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 30 pts | Actividad 2 → 35 pts | Actividad 3 → 35 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 6
+    },
+    {
+      "id": "m-vili-case",
+      "type": "case_study",
+      "title": "Caso clínico: SDRA moderado — aplicar ventilación protectora",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: SDRA moderado — optimizar ventilación protectora\n\n---\n\n### Presentación\n\n**Paciente:** Hombre, 42 años, talla 175 cm, peso real 90 kg (obeso).\n**Diagnóstico:** SDRA moderado (P/F = 148) por aspiración gástrica.\n**Estado:** Sedado profundo + bloqueo neuromuscular (fase aguda, 72 h de intubación).\n**Parámetros actuales:** VCV, Vt = 540 mL (aplicado antes de calcular peso predicho), Fr = 20/min, PEEP = 10, FiO₂ = 0,70.\n**Mecánica:** Cst = 26 mL/cmH₂O, P_meseta = 34 cmH₂O → **¡ALERTA! > 30 cmH₂O**\n\n---\n\n### Análisis guiado\n\n**1. Identifica el error**\nEl Vt fue calculado sobre peso real (90 kg) → 6 × 90 = 540 mL. En SDRA, el Vt debe calcularse sobre **peso predicho.**\n\n**Peso predicho (hombre):** = 50 + 0,91 × (175 − 152,4) = 50 + 20,6 = **70,6 kg**\n**Vt correcto:** 6 mL/kg × 70,6 = **424 mL** (usar 420–430 mL).\n\n**2. Recalcula la situación con Vt 420 mL**\n- P_meseta = 0,42/0,026 + 10 = 16,15 + 10 = **26,15 cmH₂O** ✓ (< 30)\n- Driving pressure = 26,15 − 10 = **16,15 cmH₂O** → ligeramente > 15. Considerar PEEP optimización.\n- Con PEEP 12: P_meseta = 0,42/0,026 + 12 = **28,15**, ΔP = **16,15** → igual ΔP pero mejor reclutamiento.\n\n**3. PEEP y prono**\nP/F 148 con FiO₂ 0,70 → SDRA moderado/severo. Indicación de decúbito prono si P/F < 150 con PEEP ≥ 5 y FiO₂ ≥ 0,60. → **Indicado.**\n\n---\n\n### Plan definitivo\n\nVCV: Vt 420 mL, Fr 22/min (ajustar para compensar ↓ Vt), PEEP 12, FiO₂ 0,65.\n→ Decúbito prono 16 h + bloqueo neuromuscular × 48 h.\n→ Re-evaluar gasometría + mecánica a las 4 h de prono.\n\n---\n\n### Puntos clave\n\n1. En obesidad, el Vt SIEMPRE se calcula sobre peso predicho (basado en talla), nunca peso real.\n2. La P_meseta > 30 cmH₂O es una emergencia; reducir Vt inmediatamente.\n3. La driving pressure < 15 cmH₂O es el objetivo con mayor correlación con supervivencia.\n"
+      },
+      "order": 7
+    },
+    {
+      "id": "vili-summary",
+      "order": 8,
+      "type": "summary",
+      "title": "Cierre: síntesis y checklist",
+      "content": {
+        "markdown": "## Resumen\n\n- La PIA (6-10 cmH₂O) genera cefalización del diafragma, atelectasias en el 90 % de los anestesiados, caída de CRF hasta un 50 % y PEEPi de +0.2 cmH₂O/unidad de IMC en supino; el tronco elevado y el Trendelenburg invertido son intervenciones primarias.\n- El VT se calcula por PBW (6-8 ml/kg); las mujeres de baja estatura con sobrepeso son el grupo de mayor riesgo de sobreventilación inadvertida.\n- La Driving Pressure (< 13 cmH₂O en pulmón sano, < 13-15 en SDRA) y el modo VCV (evidencia de 109.360 pacientes) son los pilares de la protección intraoperatoria.\n- La MR progresiva (50-55 cmH₂O) + PEEP por IMC (LOV-ED) + **segunda MR breve de fijación** es la secuencia completa para consolidar el 'pulmón abierto'.\n- El rebote REM de AOS ocurre en la 3.ª noche; la FiO₂ al 80 % es protectora en la inducción pero la meta postoperatoria es SpO₂ 94-98 %; CPAP/BiPAP profiláctico es el estándar post-extubación.\n- El Adaptive Chunking en 4 micro-unidades (PBW → MR → PEEP fijada → vigilancia REM) es la arquitectura cognitiva para consolidar la autonomía clínica avanzada.\n\n## Checklist de validación\n\n- Explico por qué la PIA genera PEEPi y cuantifiquo su incremento por unidad de IMC en supino.\n- Calculo el VT por PBW e identifico el grupo de mayor riesgo de sobreventilación.\n- Interpreto la Driving Pressure como predictor de VILI y selecciono el modo VCV con respaldo del estudio de 109.360 pacientes.\n- Ejecuto la MR progresiva decremental e identifico por qué la segunda MR de fijación es imprescindible.\n- Anticipo el rebote REM en la 3.ª noche postoperatoria y diferencio el rol de la FiO₂ al 80 % en inducción vs. en el postoperatorio.\n- Organizo el manejo en las 4 micro-unidades del Adaptive Chunking y puedo enseñarlo bajo el modelo 'I Do → We Do → You Do'."
+      },
+      "estimatedTime": 5
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Por qué el tronco elevado y el Trendelenburg invertido son intervenciones terapéuticas primarias en el obeso y no solo medidas de comodidad?",
+        "¿Qué evidencia respalda la superioridad del VCV sobre el PCV en el paciente obeso?",
+        "¿Qué es la 'segunda MR breve' de fijación y por qué es imprescindible después de identificar la PEEP óptima?",
+        "¿Cómo se diferencia el rol de la FiO₂ al 80 % durante la inducción del rol de la FiO₂ en el postoperatorio?",
+        "¿Cómo se aplican las 4 micro-unidades del Adaptive Chunking a la enseñanza de ventilación protectora?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "aiexpandnotes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": [
+          "advanced"
+        ],
+        "question_types": [
+          "conceptual",
+          "application",
+          "clinical_case"
+        ],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [],
+  "quiz": {
+    "id": "quiz-vili-ventilacion-protectora",
+    "passingScore": 4,
+    "questions": [
+      {
+        "id": "vili-q1",
+        "type": "multiple-choice",
+        "question": "¿Por qué el posicionamiento con tronco elevado y Trendelenburg invertido se considera una intervención terapéutica primaria en el paciente obeso ventilado?",
+        "options": [
+          "Porque mejora el acceso quirúrgico al campo operatorio abdominal",
+          "Porque alivia la carga visceral sobre el diafragma, aumentando la CRF y reduciendo la PEEPi desde la inducción",
+          "Porque reduce la presión de meseta sin necesidad de ajustar la PEEP extrínseca",
+          "Porque previene el rebote REM al mantener la vía aérea superior permeable durante el sueño"
+        ],
+        "correctAnswer": "Porque alivia la carga visceral sobre el diafragma, aumentando la CRF y reduciendo la PEEPi desde la inducción",
+        "explanation": "El módulo establece que el tronco elevado y el Trendelenburg invertido son obligatorios en pacientes con IMC > 40 kg/m² desde la inducción hasta la extubación. Al reducir la presión visceral sobre el diafragma, aumentan la CRF, disminuyen la PEEPi y reducen el riesgo de atelectasias por compresión, actuando como intervención mecánica activa y no solo de posición.",
+        "difficulty": "advanced",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "vili-q2",
+        "type": "multiple-choice",
+        "question": "¿Qué evidencia respalda directamente la superioridad del modo VCV sobre el PCV para prevenir CPP en el paciente obeso?",
+        "options": [
+          "El ensayo PROBESE, que comparó PEEP 4 vs. 12 cmH₂O con MR",
+          "El estudio IMPROVE, que evaluó VT bajo en cirugía abdominal",
+          "El análisis de 109.360 pacientes citado en el módulo, que demostró superioridad del VCV en la prevención de CPP",
+          "Los estudios de Steier y Pankow sobre PEEPi posicional en obesos"
+        ],
+        "correctAnswer": "El análisis de 109.360 pacientes citado en el módulo, que demostró superioridad del VCV en la prevención de CPP",
+        "explanation": "El módulo cita específicamente el análisis de 109.360 pacientes como respaldo directo de la superioridad del Modo Controlado por Volumen (VCV) para prevenir Complicaciones Pulmonares Postoperatorias. El VCV garantiza un VT constante ante cambios de distensibilidad intraoperatorios, algo que el PCV no puede asegurar ante variaciones de PIA.",
+        "difficulty": "advanced",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "vili-q3",
+        "type": "multiple-choice",
+        "question": "¿Por qué es imprescindible realizar una 'segunda MR breve' después de identificar la PEEP óptima en la fase decremental?",
+        "options": [
+          "Para verificar que la Driving Pressure se mantiene por debajo de 13 cmH₂O con la nueva PEEP",
+          "Para 'fijar' el pulmón en el nivel óptimo identificado y evitar el recolapso inmediato antes de poder consolidar ese nivel",
+          "Para comprobar que el gasto cardíaco se ha recuperado tras el impacto hemodinámico de la maniobra principal",
+          "Para confirmar que la PEEPi ha sido eliminada completamente tras el reclutamiento"
+        ],
+        "correctAnswer": "Para 'fijar' el pulmón en el nivel óptimo identificado y evitar el recolapso inmediato antes de poder consolidar ese nivel",
+        "explanation": "El módulo explica que una vez identificada la PEEP ideal en la fase decremental, es imperativo realizar una segunda MR breve para 'fijar' el pulmón en ese nivel óptimo. Sin este paso, el pulmón se recolapsará en minutos, haciendo inútil el esfuerzo de titulación y restableciendo el atelectrauma.",
+        "difficulty": "advanced",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "vili-q4",
+        "type": "multiple-choice",
+        "question": "¿Cómo se reconcilia la 'paradoja del 80 % de FiO₂' con la recomendación de evitar la hiperoxemia en el obeso?",
+        "options": [
+          "El 80 % de FiO₂ es seguro de forma indefinida en el obeso porque su mayor volumen sanguíneo protege contra la toxicidad del oxígeno",
+          "La FiO₂ al 80 % es protectora durante la inducción para proveer tiempo de reserva ante la desaturación rápida, pero la meta postoperatoria es SpO₂ 94-98 % con FiO₂ mínima",
+          "La paradoja se resuelve usando FiO₂ al 80 % solo en pacientes con IMC > 50 kg/m², no en obesidad clase I",
+          "La FiO₂ alta previene atelectasias de reabsorción permanentemente porque el obeso tiene mayor consumo de O₂ basal"
+        ],
+        "correctAnswer": "La FiO₂ al 80 % es protectora durante la inducción para proveer tiempo de reserva ante la desaturación rápida, pero la meta postoperatoria es SpO₂ 94-98 % con FiO₂ mínima",
+        "explanation": "El módulo explica que en el contexto quirúrgico del obeso, una FiO₂ al 80 % durante la inducción previene las atelectasias de reabsorción y da el tiempo de reserva para asegurar la vía aérea. Sin embargo, en el postoperatorio la meta es SpO₂ 94-98 % con FiO₂ mínima efectiva, ya que la hiperoxemia sostenida desplaza el nitrógeno alveolar y genera atelectasias de reabsorción.",
+        "difficulty": "advanced",
+        "bloomLevel": "analyze",
+        "points": 2
+      },
+      {
+        "id": "vili-q5",
+        "type": "multiple-choice",
+        "question": "¿Cuáles son las 4 micro-unidades del Adaptive Chunking propuesto en el módulo para organizar el manejo del obeso ventilado?",
+        "options": [
+          "Peso real → FiO₂ → PEEP → extubación",
+          "Protección por PBW → reclutamiento progresivo → PEEP fijada con segunda MR → vigilancia post-REM al tercer día",
+          "Posicionamiento → Driving Pressure → VNI → alta hospitalaria",
+          "VCV → PCV → SIMV → PSV"
+        ],
+        "correctAnswer": "Protección por PBW → reclutamiento progresivo → PEEP fijada con segunda MR → vigilancia post-REM al tercer día",
+        "explanation": "El módulo propone cuatro micro-unidades de Adaptive Chunking: 1) Protección basada en PBW (VT 6-8 ml/kg, DP < 13 cmH₂O). 2) Reclutamiento progresivo controlado (50-55 cmH₂O, fase decremental). 3) PEEP titulada con segunda MR de fijación. 4) Vigilancia post-REM al tercer día (CPAP nocturno, evitar opioides de larga acción).",
+        "difficulty": "advanced",
+        "bloomLevel": "remember",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [
+      {
+        "authors": "Steier, J.; Pankow, W.; et al.",
+        "year": "",
+        "title": "Predictors of intrinsic PEEP in obese patients during mechanical ventilation in the supine position.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Bluth, T.; et al. (PROBESE Collaborative Group)",
+        "year": "2019",
+        "title": "Effect of intraoperative high PEEP with recruitment maneuvers vs low PEEP on postoperative pulmonary complications in obese patients.",
+        "source": "JAMA",
+        "doi": "10.1001/jama.2019.7505",
+        "url": ""
+      },
+      {
+        "authors": "Futier, E.; et al. (IMPROVE Study Group)",
+        "year": "2013",
+        "title": "A trial of intraoperative low-tidal-volume ventilation in abdominal surgery.",
+        "source": "New England Journal of Medicine",
+        "doi": "10.1056/NEJMoa1301082",
+        "url": ""
+      },
+      {
+        "authors": "Análisis multicéntrico (109.360 pacientes)",
+        "year": "",
+        "title": "Comparación de resultados clínicos VCV vs. PCV: incidencia de Complicaciones Pulmonares Postoperatorias.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Sweller, J.",
+        "year": "1988",
+        "title": "Cognitive load during problem solving: Effects on learning.",
+        "source": "Cognitive Science",
+        "doi": "",
+        "url": ""
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-29",
+    "source": "VentyLab (JSON unificado)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel avanzado. Integra VILI, fisiopatología restrictiva del obeso, programación por PBW con evidencia de 109.360 pacientes, técnica de doble MR (progresiva + fijación), titulación LOV-ED, paradoja del 80 % de FiO₂, gestión del rebote REM de AOS y Adaptive Chunking en 4 micro-unidades bajo el modelo 'I Do → We Do → You Do'."
+  }
+}

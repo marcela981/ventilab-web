@@ -9,7 +9,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Layout } from '@/components/layout';
+import { Layout } from '@/shared/components';
 import {
   Box,
   Typography,
@@ -33,7 +33,7 @@ import {
   Person as PersonIcon,
   Check as CheckIcon,
 } from '@mui/icons-material';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/shared/contexts/AuthContext';
 
 /**
  * Role visibility map
@@ -321,7 +321,7 @@ export default function NavbarDemoPage() {
                           fontSize: '0.875rem',
                         }}
                       >
-                        {`import { Layout } from '@/components/layout';
+                        {`import { Layout } from '@/shared/components';
 
 export default function MyPage() {
   return (
@@ -349,7 +349,7 @@ export default function MyPage() {
                           fontSize: '0.875rem',
                         }}
                       >
-                        {`import { Navbar } from '@/components/layout';
+                        {`import { Navbar } from '@/shared/components';
 
 export default function MyPage() {
   return (

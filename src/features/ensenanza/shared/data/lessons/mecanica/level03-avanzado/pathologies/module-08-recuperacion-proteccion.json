@@ -1,0 +1,311 @@
+{
+  "id": "module-08-recuperacion-proteccion",
+  "moduleId": "module-08-avanzado-patologias",
+  "title": "Protección extrema: sinergia entre fisiología respiratoria y arquitectura cognitiva",
+  "description": "Este módulo de nivel avanzado establece la 'protección extrema' como paradigma de personalización absoluta: el colapso cognitivo del residente por sobrecarga y el colapso alveolar del obeso por PEEP insuficiente comparten la misma raíz — la gestión inadecuada de las capacidades de reserva. Integra la CLT de Sweller con el Adaptive Lesson Chunking de Ren & Siddique 2025 (DI ponderado: 2-back + PVT + atención por diapositivas), el Resource Replenishment (Do-now, low-stakes quizzes, exit tickets), la tabla dual de PEEP (LOV-ED estándar vs. Extreme Protection Dräger/Wrigge: 10-26 cmH₂O), la alerta específica para mujeres de baja estatura con obesidad, y los 6 hábitos APEPOC con inmunomodulación nutricional para la recuperación pulmonar.",
+  "order": 8,
+  "estimatedTime": 95,
+  "difficulty": "advanced",
+  "bloomLevel": "synthesize",
+  "learningObjectives": [
+    "Articular el paradigma de 'protección extrema' como sinergia entre la CLT (arquitectura cognitiva) y la ventilación protectora (arquitectura pulmonar), estableciendo que ambas responden a la misma lógica de personalización y gestión de reservas.",
+    "Aplicar el Adaptive Lesson Chunking de Ren & Siddique 2025 con su Índice de Dificultad (DI) ponderado que combina 2-back, PVT y atención por diapositivas, justificando por qué supera al Chunking estático.",
+    "Diseñar una secuencia instruccional de alto rendimiento usando Resource Replenishment (Do-now, low-stakes quizzes, exit tickets), Scaffolding en ZPD y el Expertise Reversal Effect para la formación del intensivista.",
+    "Identificar la alerta de sobre-ventilación específica para mujeres de baja estatura con obesidad y calcular el Vt por PBW/IBW correctamente en este perfil de alto riesgo.",
+    "Comparar la tabla LOV-ED estándar con el objetivo de 'Extreme Protection' (Dräger/Wrigge: 10-26 cmH₂O) y justificar cuándo escalar a niveles de PEEP superiores a los estándares LOV-ED.",
+    "Prescribir un plan de recuperación pulmonar postoperatoria (posicionamiento de Wrigge, CPAP profiláctico) integrado con los 6 hábitos APEPOC y la inmunomodulación nutricional (Vitaminas D y E)."
+  ],
+  "prerequisites": [
+    "Módulos 5-7 de patologías: obesidad, enfermedades obstructivas y SDRA avanzado.",
+    "Módulos avanzados 1-4: VILI, monitorización, asincronías y destete complejo.",
+    "Conocimiento consolidado de CLT básica, Scaffolding y MR progresiva controlada por ventilador."
+  ],
+  "sections": [
+    {
+      "id": "rec-protec-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción: el paradigma de la 'protección extrema' — el cerebro y el pulmón bajo la misma lógica",
+      "content": {
+        "markdown": "## ¿Qué vas a aprender en este módulo?\n\nTema: Protección extrema como paradigma de personalización absoluta — la sinergia entre la arquitectura cognitiva del especialista y la protección pulmonar del paciente obeso.\n\n### El axioma central del módulo\n\n> *Así como una PEEP insuficiente conduce al cierre alveolar y al desajuste ventilación-perfusión, un diseño instruccional que ignore los límites de la memoria de trabajo provoca un **'colapso cognitivo'** que compromete la seguridad del paciente.*\n\nEste módulo establece que el **colapso mental por sobrecarga** y el **colapso físico por atelectasias** comparten la misma raíz: la **gestión inadecuada de las capacidades de reserva**. El éxito del especialista reside en su habilidad para titular el 'andamiaje' educativo mediante el Chunking adaptativo del mismo modo que titula la PEEP ventilatoria mediante la mecánica pulmonar individualizada.\n\n### El 'So What?' Layer\n\nNo existe un 'talle único' para el aprendizaje ni para la ventilación. La protección extrema es el paradigma de la **personalización absoluta**:\n\n- En el aula: el Índice de Dificultad (DI) dinámico ajusta el tamaño del chunk al rendimiento cognitivo en tiempo real.\n- En el ventilador: la titulación decremental individualizada ajusta la PEEP a la mecánica pulmonar de cada paciente.\n\n### Hoja de ruta del módulo\n\n- **Pilar 1 — Arquitectura cognitiva:** CLT, Ren & Siddique 2025 (DI ponderado), Resource Replenishment, actividades de aula.\n- **Pilar 2 — Protección pulmonar extrema:** alerta para mujeres de baja estatura, tabla dual LOV-ED vs. Extreme Protection (Dräger/Wrigge).\n- **Pilar 3 — Recuperación y prevención:** posicionamiento de Wrigge, CPAP profiláctico, 6 hábitos APEPOC, inmunomodulación nutricional."
+      },
+      "estimatedTime": 7
+    },
+    {
+      "id": "rec-protec-theory-1",
+      "order": 2,
+      "type": "theory",
+      "title": "CLT avanzada: Adaptive Lesson Chunking de Ren & Siddique 2025 y el Índice de Dificultad ponderado",
+      "content": {
+        "markdown": "La **Teoría de la Carga Cognitiva (CLT) de Sweller** postula que el aprendizaje ocurre cuando la información es procesada en una **memoria de trabajo limitada** para almacenarse en una **memoria a largo plazo ilimitada** mediante schemas. El diseño instruccional debe minimizar la carga extrínseca para liberar recursos hacia la carga germana.\n\n### Los tres tipos de carga: definiciones operativas para el entorno clínico\n\n| Tipo | Naturaleza | Ejemplo ventilatorio |\n| :--- | :--- | :--- |\n| **Intrínseca** | Dificultad inherente del tema | Fisiología del Pendelluft vs. espirometría básica |\n| **Extrínseca** | Ruido por diseño instruccional deficiente o distracciones digitales | Tabla de PEEP sin estructura visual + notificaciones del móvil |\n| **Germana (esencial)** | Esfuerzo productivo para construir y automatizar schemas | Practicar la MR hasta que sea una respuesta automática bajo estrés |\n\n### Adaptive Lesson Chunking: Ren & Siddique 2025\n\nLa investigación de **Ren & Siddique (2025)** introduce el concepto de **Adaptive Lesson Chunking** — una evolución crítica sobre el Chunking estático:\n\n- A diferencia de los bloques de tamaño fijo, este modelo utiliza un **Índice de Dificultad (DI) ponderado dinámicamente** que combina tres métricas simultáneas:\n  1. **2-back:** rendimiento en memoria de trabajo (identificar si el estímulo actual coincide con el presentado dos posiciones atrás).\n  2. **PVT (Psychomotor Vigilance Test):** tiempos de reacción a estímulos visuales como indicador de vigilancia psicomotora y estado de alerta.\n  3. **Métricas de atención por diapositivas:** tiempo de fijación visual y patrones de navegación entre slides.\n\n- El DI ajusta el **tamaño del chunk en tiempo real**: si el residente muestra fatiga cognitiva (2-back deteriorado + PVT enlentecido), el chunk se reduce automáticamente.\n- Los **fragmentos óptimos de 7-15 palabras** determinados por el DI maximizan la retención: **78 % en grupos adaptativos vs. 63 % en controles estáticos** (ganancia de 15 puntos porcentuales).\n\n### La metáfora del 'álveolo cognitivo'\n\nEsta personalización asegura que la 'miga' de información sea:\n- **Lo suficientemente pequeña** para no saturar los 'alvéolos cognitivos' (la memoria de trabajo).\n- **Lo suficientemente densa** para promover la integración esquemática (carga germana activa).\n\nEl paralelismo con la PEEP es exacto: demasiado chunk = sobredistensión; muy poco chunk = atelectasia cognitiva (contenido que no llega a procesarse)."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "rec-protec-theory-2",
+      "order": 3,
+      "type": "theory",
+      "title": "Andamiaje, Resource Replenishment y actividades de aula para el alto rendimiento clínico",
+      "content": {
+        "markdown": "### Scaffolding en la ZPD: la progresión técnica del intensivista\n\nEl modelo de **Scaffolding (Andamiaje) de Vygotsky** opera dentro de la **Zona de Desarrollo Próximo (ZPD)** — el espacio crítico entre la competencia independiente y la frustración por incapacidad. En la formación del intensivista:\n\n1. **I Do (Yo hago):** el especialista modela el procedimiento completo, verbalizando cada decisión (ej. la MR progresiva a 55 cmH₂O).\n2. **We Do (Nosotros hacemos):** práctica supervisada con retroalimentación en tiempo real; el residente ejecuta con guía directa.\n3. **You Do (Tú haces):** autonomía del residente bajo vigilancia remota; el andamiaje se retira progresivamente.\n\n> Ignorar la ZPD en la formación del intensivista garantiza el **agotamiento de sus baterías metabólicas** y el error clínico bajo estrés.\n\n### Resource Replenishment: las 'baterías metabólicas' del cerebro\n\nEl espaciado (spacing) entre sesiones de aprendizaje permite que las **'baterías metabólicas' del cerebro se recarguen**, evitando el fracaso del 'cramming' (estudio masivo concentrado). La **recuperación activa (retrieval)** fortalece las rutas neuronales mediante el esfuerzo de búsqueda en memoria — cada acto de recordar consolida la traza mnémica.\n\n### Actividades de aula de alto rendimiento\n\nTres formatos de actividad que maximizan el Resource Replenishment al inicio, durante y al final del turno clínico:\n\n| Actividad | Momento | Función cognitiva |\n| :--- | :--- | :--- |\n| **Do-now** | Inicio de la guardia | Recuperación activa de conceptos clave; activa schemas pre-existentes antes de exponerse a nuevo contenido |\n| **Low-stakes quizzes** | Durante la sesión | Evaluaciones de baja presión que fuerzan la activación de schemas sin el estrés de una evaluación sumativa |\n| **Exit tickets** | Al finalizar el turno | Síntesis escrita de la perla clínica aprendida; consolida la carga germana y facilita la transferencia a la siguiente sesión |\n\n### Expertise Reversal Effect: cuándo retirar el andamiaje\n\nEl andamiaje excesivo en el experto **interfiere con sus schemas automatizados** (carga redundante = carga extrínseca para el experto). El Fading progresivo del scaffolding no es opcional: debe planificarse explícitamente según el nivel de maestría del residente, alineándose con el DI del Adaptive Chunking de Ren & Siddique."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "rec-protec-theory-3",
+      "order": 4,
+      "type": "theory",
+      "title": "Fisiopatología de la obesidad: la cadena restrictiva y la alerta para mujeres de baja estatura",
+      "content": {
+        "markdown": "La obesidad impone una **carga restrictiva severa** que no es simplemente un desafío de resistencia — es una reconfiguración radical de la homeostasis respiratoria.\n\n### La cadena causal de deterioro mecánico\n\n- **PIA elevada (6-10 cmH₂O):** desplaza el diafragma cefálicamente → cefalización mecánica.\n- **Reducción de la CRF:** disminuye entre **5 % y 15 %** por cada 5 kg/m² de IMC sobre 30. Tras la inducción anestésica, la CRF puede caer hasta un **50 % adicional** del basal.\n- **PEEPi:** aumenta **+0.2 cmH₂O por unidad de IMC** en posición supina — obstáculo al trigger e indicador de atrapamiento de aire.\n- **Efecto Pendelluft:** la inflación no homogénea genera flujos de gas interregionales perjudiciales que exacerban las atelectasias por compresión y el desajuste V/Q.\n\n### Alerta específica: mujeres de baja estatura con obesidad — mayor riesgo de sobre-ventilación\n\nEste perfil constituye el **escenario de mayor riesgo de VILI** por error de programación:\n\n- Las mujeres de baja estatura tienen un PBW/IBW notablemente menor que el estimado visualmente.\n- En presencia de obesidad, la discrepancia entre peso real (elevado) y PBW (bajo) es **máxima**.\n- Un error en la estimación del IBW en este perfil lleva directamente a un Vt de **12-14 ml/kg real**, cuando la meta es 6-8 ml/kg PBW.\n- El riesgo de volutrauma y barotrauma es, por tanto, **desproporcionadamente mayor** en este subgrupo.\n\n### 'So What?': el pulmón no crece con la grasa\n\nEl tejido pulmonar no aumenta con la adiposidad. La lógica de 'a mayor peso, mayor volumen' es el error más común y más peligroso en la ventilación del obeso. El Vt debe calcularse siempre con las fórmulas de PBW y **verificarse explícitamente** en mujeres de baja estatura antes de iniciar la ventilación mecánica."
+      },
+      "estimatedTime": 12
+    },
+    {
+      "id": "rec-protec-theory-4",
+      "order": 5,
+      "type": "theory",
+      "title": "Tabla dual de PEEP: LOV-ED estándar vs. Extreme Protection (Dräger/Wrigge) y programación protectora",
+      "content": {
+        "markdown": "Este módulo introduce una **tabla de doble nivel** que distingue entre el punto de partida basado en evidencia (LOV-ED) y el objetivo de protección extrema validado por la estrategia Dräger/Wrigge para pulmones ya comprometidos.\n\n### Tabla dual: estándar vs. Extreme Protection\n\n| IMC (kg/m²) | PEEP estándar LOV-ED (cmH₂O) | Objetivo 'Extreme Protection' Dräger/Wrigge (cmH₂O) |\n| :--- | :--- | :--- |\n| < 29.9 | 5 | Según mecánica individual |\n| 30.0 - 39.9 | 8 | 10 - 26 |\n| 40.0 - 49.9 | 10 | 10 - 26 |\n| > 50.0 | 12 | 10 - 26 |\n\nEl rango **10-26 cmH₂O** del objetivo de protección extrema aplica cuando:\n1. La MR progresiva ha confirmado que el pulmón puede reclutarse.\n2. La titulación decremental ha identificado la PEEP de no colapso específica del paciente.\n3. El soporte hemodinámico (vasopresores + precarga) está garantizado.\n\n### Programación protectora estricta (Guerrero Gutiérrez et al. 2024)\n\n- **Vt:** 6-8 ml/kg por **PBW o IBW** — nunca peso real.\n- **Driving Pressure:** < 13-15 cmH₂O como límite de estrés cíclico tisular.\n- **Modo:** VCV preferente (PROBESE / IMPROVE) — garantiza el Vt ante la distensibilidad reducida de la pared torácica.\n\n### MR progresiva: la norma de control absoluto del ventilador\n\n- **Contraindicado:** reclutamiento con bolsa manual (picos de presión erráticos + pérdida inmediata de PEEP al alternar con el ventilador).\n- **Técnica:** MR controlada por ventilador hasta **50-55 cmH₂O** con fases escalonadas de aumento y decrementales para identificar la PEEP de no colapso."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "rec-protec-theory-5",
+      "order": 6,
+      "type": "theory",
+      "title": "Recuperación postoperatoria y prevención: posicionamiento de Wrigge, CPAP profiláctico y 6 hábitos APEPOC",
+      "content": {
+        "markdown": "La protección extrema no termina con el cierre quirúrgico. La estabilidad alveolar conseguida en el quirófano debe **sostenerse activamente** en el postoperatorio y reforzarse mediante la educación del paciente.\n\n### Posicionamiento estratégico: Prof. Dr. Hermann Wrigge\n\nMantener la **posición de Trendelenburg Invertida** (tronco elevado) desde la inducción anestésica hasta después de la extubación para:\n- Aliviar la presión del tejido adiposo sobre el diafragma.\n- Conservar la CRF activa durante las manipulaciones quirúrgicas y la recuperación.\n\n### CPAP inmediato post-extubación: medida profiláctica, no de rescate\n\nLa AOS está presente en el **50 % de los pacientes con IMC > 40**. El CPAP inmediato post-extubación es **obligatorio** para:\n1. Contrarrestar la reaparición de atelectasias por la pérdida del soporte de presión del ventilador.\n2. Mitigar la AOS especialmente durante las **fases REM**, donde la obstrucción se intensifica (rebote 3.ª noche).\n\n### Los 6 hábitos APEPOC para la recuperación pulmonar\n\n1. **Actividad física:** mejora la eficiencia del transporte de O₂ y fortalece la musculatura inspiratoria.\n2. **Higiene ambiental:** evitar el moho y el polvo acumulado — sus esporas causan irritación y lesiones microcelulares crónicas en el epitelio respiratorio.\n3. **Cesación tabáquica:** factor crítico para la reversión del riesgo de EPOC y cáncer de pulmón.\n4. **Ejercicios de respiración consciente:** fortalecimiento de la musculatura accesoria e incremento de la reserva respiratoria.\n5. **Protección climática:** reducción de la exposición a virus estacionales que agravan la inflamación bronquial.\n6. **Inmunomodulación nutricional:**\n\n| Nutriente | Fuentes | Efecto específico en el pulmón |\n| :--- | :--- | :--- |\n| **Vitamina D** | Salmón, huevo, exposición solar | Reducción de la inflamación sistémica |\n| **Vitamina E (Tocoferol)** | Almendras, brócoli, aceite de girasol | Disminución de hiperreactividad bronquial, tos y silbidos en el paciente asmático |\n\n### 'So What?': la prevención como última línea de la protección extrema\n\nLa medicina preventiva es la **fase final del ciclo de protección**: el empoderamiento del paciente mediante la educación reduce la carga inflamatoria sistémica, previene el reingreso hospitalario por complicaciones evitables y cierra el ciclo iniciado en el aula y continuado en el ventilador."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "m-recuperacion-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Planificación del cuidado post-extubación",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Recuperación y protección post-UCI\n\n> Diseña el plan de cuidados post-extubación. No bloquea avance.\n\n---\n\n### Actividad 1 — Síndrome Post-UCI (PICS)\n\nIdentifica los dominios del PICS y una intervención para cada uno:\n\n| Dominio | Manifestación | Intervención |\n|---|---|---|\n| Físico (neuromuscular) | Debilidad muscular, dificultad para deambular | Fisioterapia precoz, movilización progresiva en UCI |\n| Cognitivo | Memoria reducida, dificultad de concentración | Reorientación frecuente, protocolo ABCDEF, estimulación cognitiva |\n| Psicológico | PTSD, depresión, ansiedad | Diario de UCI, seguimiento psicológico, apoyo familiar |\n| Nutricional | Caquexia, sarcopenia | Nutrición hipercalórica-hiperproteica, suplementos |\n\n---\n\n### Actividad 2 — Checklist de alta de UCI\n\nMarca los ítems que deben evaluarse antes del traslado a planta:\n\n| Ítem | ¿Evaluado? | Responsable |\n|---|---|---|\n| Vía aérea estable, reflejo tusígeno presente | ✓ | Médico UCI |\n| Oxigenación adecuada con O₂ suplementario ≤ 4 L/min | ✓ | Médico UCI |\n| Movilidad: al menos capaz de girar en cama | ✓ | Fisioterapia |\n| Plan de rehabilitación documentado | ✓ | Fisio + médico |\n| Interconsulta a psicología programada | ✓ | Enfermería + trabajo social |\n| Nutrición oral o enteral establecida | ✓ | Nutrición clínica |\n| Educación al paciente/familia sobre PICS | ✓ | Equipo multidisciplinar |\n\n---\n\n### Actividad 3 — Predictor de ingreso prolongado en planta\n\nIndica cómo la miopatía del paciente crítico afecta el alta hospitalaria:\n\nLa miopatía del paciente crítico (CIMP/CINM) ocurre en el 25–50% de los pacientes en ventilación mecánica > 7 días. Sus consecuencias:\n- Retraso en la deambulación → hospitalización prolongada.\n- Mayor riesgo de neumonía por aspiración (debilidad faríngea).\n- Necesidad de rehabilitación domiciliaria o en centro de media estancia.\n- Asociada con ↑ mortalidad a 1 año post-UCI.\n\n**Factores de riesgo a documentar:** duración de VMI, uso de BNM, corticoides, hiperglucemia, inmovilización.\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 30 pts | Actividad 2 → 35 pts | Actividad 3 → 35 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 7
+    },
+    {
+      "id": "m-recuperacion-case",
+      "type": "case_study",
+      "title": "Caso clínico: Planificación del alta de UCI",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: Planificación integral del alta de UCI tras VM prolongada\n\n---\n\n### Presentación\n\n**Paciente:** Hombre, 55 años, 72 kg, técnico industrial.\n**Diagnóstico:** SDRA moderado post-cirugía abdominal complicada. Ventilación mecánica 14 días.\n**Estado actual (día 18 de UCI):** Extubado hace 4 días. SaO₂ 95% con cánula nasal 3 L/min. Febril 38,1°C (UTI de catéter en resolución).\n**Funcional:** No deambula de forma independiente. Se sienta al borde de la cama 10 min/día. Debilidad de MMII (MRC suma 36/60 → debilidad moderada).\n**Cognitivo:** Desorientado en tiempo, confusión fluctuante (posible delirio post-UCI).\n**Emocional:** Referido por enfermería como ansioso, pesadillas nocturnas, pregunta repetidamente \"¿cuándo salgo?\".\n\n---\n\n### Análisis y plan multidisciplinar\n\n**1. Evaluación neuromotora**\nMRC < 48/60 → criterio de debilidad adquirida en UCI (ICUAW).\nPlan fisioterapia: progresión diaria: sedestación → bipedestación → marcha asistida → marcha independiente.\nMeta para el alta: marcha 10 m con apoyo.\n\n**2. Evaluación cognitiva**\nMini-Cog o Montreal Cognitive Assessment (MoCA) al alta.\nProtocolo de delirio: orientación horaria, luz natural, ciclo sueño-vigilia, participación familiar.\nSeguimiento neuropsicológico ambulatorio al mes del alta hospitalaria.\n\n**3. Evaluación emocional (PTSD precoz)**\nDiario de UCI: se entrega al paciente para que reconstruya su historia durante la hospitalización.\nDerivación a psicología clínica.\nGrupo de apoyo de supervivientes de UCI (disponible en algunos centros).\n\n**4. Plan nutricional**\nObjetivo: recuperar masa muscular perdida (estimado: −3–5 kg de masa magra).\nDieta hipercalórica-hiperproteica (proteína 1,5–2 g/kg/día).\nSuplementos orales de alta densidad calórica.\nSeguimiento con nutricionista al alta.\n\n---\n\n### Indicadores de alta a planta\n\n- ✓ SaO₂ ≥ 95% con ≤ 3 L/min O₂\n- ✓ Sin vasopresores ni ventilación mecánica invasiva\n- ✓ Tolera vía oral o nutrición enteral\n- ✓ Fisioterapia planificada y iniciada\n- ✓ Documentación del PICS y plan de seguimiento a 1 y 3 meses\n\n---\n\n### Puntos clave\n\n1. El PICS afecta al 50–70% de los sobrevivientes de UCI con VM > 7 días.\n2. La rehabilitación precoz (desde el día 2–3 en UCI) reduce la incidencia y severidad del PICS.\n3. El seguimiento ambulatorio estructurado a los 3 meses post-UCI mejora la calidad de vida y reduce las readmisiones.\n"
+      },
+      "order": 8
+    },
+    {
+      "id": "rec-protec-summary",
+      "order": 9,
+      "type": "summary",
+      "title": "Cierre: el 'So What? Layer' definitivo — la personalización como estándar absoluto",
+      "content": {
+        "markdown": "## El axioma final de la protección extrema\n\n> *El colapso mental por sobrecarga cognitiva y el colapso físico por atelectasias en el obeso comparten la misma raíz: la gestión inadecuada de las capacidades de reserva. El especialista de excelencia titula el 'andamiaje' educativo del mismo modo que titula la 'PEEP' ventilatoria: con datos individuales, en tiempo real, sin valores universales.*\n\n## Resumen integrador: los tres pilares de la protección extrema\n\n**Pilar 1 — Arquitectura cognitiva:**\n- Ren & Siddique 2025: DI ponderado (2-back + PVT + atención por diapositivas) → 78 % vs. 63 % retención.\n- Scaffolding ZPD (I Do / We Do / You Do) + Resource Replenishment (Do-now → Low-stakes quizzes → Exit tickets).\n- Expertise Reversal Effect: retirar andamiaje cuando ya no es productivo.\n\n**Pilar 2 — Protección pulmonar extrema:**\n- Alerta mujeres de baja estatura con obesidad: máximo riesgo de sobre-ventilación por error en IBW.\n- Tabla dual: LOV-ED (inicio) → Extreme Protection Dräger/Wrigge (10-26 cmH₂O) tras MR exitosa.\n- VCV (PROBESE/IMPROVE), DP <13-15 cmH₂O, MR controlada 50-55 cmH₂O.\n\n**Pilar 3 — Recuperación y prevención:**\n- Trendelenburg Invertida (Wrigge) desde inducción hasta post-extubación.\n- CPAP profiláctico obligatorio en AOS (50% IMC>40), especialmente para el rebote REM noche 3.\n- 6 hábitos APEPOC + Vitamina D (inflamación) + Vitamina E Tocoferol (hiperreactividad bronquial/asmático).\n\n## Checklist de validación\n\n- Explico por qué el Adaptive Lesson Chunking de Ren & Siddique 2025 supera al Chunking estático y qué tres métricas componen el DI ponderado.\n- Identifico a la mujer de baja estatura con obesidad como el perfil de mayor riesgo de sobre-ventilación y calculo su PBW correctamente.\n- Distingo cuándo aplica la PEEP estándar LOV-ED y cuándo escalar al rango Extreme Protection (10-26 cmH₂O) de Dräger/Wrigge.\n- Diseño una sesión docente de alto rendimiento con Do-now, low-stakes quiz y exit ticket para un turno de guardia de UCI.\n- Prescribo el plan de recuperación postoperatoria completo: posicionamiento Wrigge + CPAP profiláctico + 6 hábitos APEPOC + inmunomodulación nutricional.\n- Articulo el 'So What? Layer': la analogía exacta entre el chunking adaptativo y la titulación decremental de PEEP como expresiones de la misma lógica de personalización."
+      },
+      "estimatedTime": 9
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Qué diferencia hay entre el Chunking estático y el Adaptive Lesson Chunking de Ren & Siddique 2025, y por qué el DI ponderado es superior?",
+        "¿Por qué las mujeres de baja estatura con obesidad tienen el mayor riesgo de sobre-ventilación y cómo se calcula el PBW para este perfil?",
+        "¿En qué escenario clínico debe escalarse de la PEEP LOV-ED estándar al rango Extreme Protection de Dräger/Wrigge (10-26 cmH₂O)?",
+        "¿Qué son el Do-now, el low-stakes quiz y el exit ticket, y cómo contribuyen al Resource Replenishment del residente en guardia?",
+        "¿Por qué el módulo establece que el colapso cognitivo y el colapso alveolar comparten la misma raíz?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "aiexpandnotes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": [
+          "advanced"
+        ],
+        "question_types": [
+          "conceptual",
+          "application",
+          "clinical_case"
+        ],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [],
+  "quiz": {
+    "id": "quiz-recuperacion-proteccion",
+    "passingScore": 4,
+    "questions": [
+      {
+        "id": "rec-protec-q1",
+        "type": "multiple-choice",
+        "question": "¿Qué tres métricas componen el Índice de Dificultad (DI) ponderado del Adaptive Lesson Chunking de Ren & Siddique 2025?",
+        "options": [
+          "Tasa de errores en quiz, tiempo de lectura por párrafo y número de pausas durante la sesión.",
+          "2-back (memoria de trabajo), PVT (vigilancia psicomotora) y métricas de atención por diapositivas (tiempo de fijación visual y navegación).",
+          "Frecuencia cardíaca, nivel de cortisol salival y tiempo de respuesta en simulación clínica.",
+          "Puntuación en examen sumativo, número de preguntas formuladas al docente y tiempo de estudio fuera del aula."
+        ],
+        "correctAnswer": "2-back (memoria de trabajo), PVT (vigilancia psicomotora) y métricas de atención por diapositivas (tiempo de fijación visual y navegación).",
+        "explanation": "El módulo describe que el Adaptive Lesson Chunking de Ren & Siddique 2025 introduce un Índice de Dificultad (DI) ponderado dinámicamente que combina tres métricas simultáneas: (1) 2-back, que mide el rendimiento de la memoria de trabajo; (2) PVT (Psychomotor Vigilance Test), que mide tiempos de reacción como indicador de vigilancia y alerta; y (3) métricas de atención por diapositivas (tiempo de fijación visual y patrones de navegación). Este DI ajusta el tamaño del chunk en tiempo real según el estado cognitivo del aprendiz, logrando 78% vs. 63% de retención en grupos adaptativos vs. controles estáticos.",
+        "difficulty": "advanced",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "rec-protec-q2",
+        "type": "multiple-choice",
+        "question": "¿Por qué las mujeres de baja estatura con obesidad son identificadas como el perfil de mayor riesgo de sobre-ventilación según este módulo?",
+        "options": [
+          "Porque tienen una menor tolerancia a las presiones elevadas de la MR por su menor masa muscular torácica.",
+          "Porque la discrepancia entre peso real (elevado) y PBW (muy bajo por la baja estatura) es máxima, llevando a Vt de 12-14 ml/kg real cuando la meta es 6-8 ml/kg PBW.",
+          "Porque las mujeres tienen una PEEPi más alta que los hombres con el mismo IMC por diferencias en la distribución del tejido adiposo abdominal.",
+          "Porque el modo VCV no puede ajustarse con precisión suficiente en pacientes con talla inferior a 155 cm."
+        ],
+        "correctAnswer": "Porque la discrepancia entre peso real (elevado) y PBW (muy bajo por la baja estatura) es máxima, llevando a Vt de 12-14 ml/kg real cuando la meta es 6-8 ml/kg PBW.",
+        "explanation": "El módulo establece que las mujeres de baja estatura con obesidad representan el escenario de mayor riesgo de VILI por error de programación. Su PBW/IBW es notablemente bajo (calculado por su estatura real), mientras que su peso real es elevado. Esta discrepancia máxima hace que un Vt calculado erróneamente por peso real resulte en 12-14 ml/kg PBW, el doble o más de la meta protectora de 6-8 ml/kg. El riesgo de volutrauma y barotrauma es desproporcionadamente mayor en este subgrupo específico.",
+        "difficulty": "advanced",
+        "bloomLevel": "analyze",
+        "points": 2
+      },
+      {
+        "id": "rec-protec-q3",
+        "type": "multiple-choice",
+        "question": "Según la tabla dual del módulo, ¿cuándo debe escalarse de la PEEP estándar LOV-ED al rango de 'Extreme Protection' Dräger/Wrigge (10-26 cmH₂O)?",
+        "options": [
+          "Siempre que el IMC sea > 30, independientemente de la respuesta a la MR o del estado hemodinámico del paciente.",
+          "Solo en pacientes con SDRA establecido en la definición de Berlín severo (PaO₂/FiO₂ < 100).",
+          "Cuando la MR ha confirmado reclutabilidad, la titulación decremental ha identificado la PEEP de no colapso individual, y el soporte hemodinámico (vasopresores + precarga) está garantizado.",
+          "Exclusivamente en el contexto de cirugía bariátrica laparoscópica con Trendelenburg mayor de 30 grados."
+        ],
+        "correctAnswer": "Cuando la MR ha confirmado reclutabilidad, la titulación decremental ha identificado la PEEP de no colapso individual, y el soporte hemodinámico (vasopresores + precarga) está garantizado.",
+        "explanation": "El módulo establece tres condiciones para escalar al rango Extreme Protection (10-26 cmH₂O) de Dräger/Wrigge: (1) la MR progresiva ha confirmado que el pulmón puede reclutarse; (2) la titulación decremental ha identificado la PEEP de no colapso específica del paciente; y (3) el soporte hemodinámico con vasopresores y precarga adecuada está garantizado. Sin estas tres condiciones, aplicar PEEP en el rango 10-26 cmH₂O sin base fisiológica individual puede comprometer la hemodinámica sin beneficio pulmonar.",
+        "difficulty": "advanced",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "rec-protec-q4",
+        "type": "multiple-choice",
+        "question": "¿Qué describe el concepto de 'Resource Replenishment' en el contexto del aprendizaje médico avanzado según este módulo?",
+        "options": [
+          "La reposición de materiales educativos digitales en la plataforma del residente después de cada evaluación sumativa.",
+          "La recarga de las 'baterías metabólicas' del cerebro mediante el espaciado entre sesiones y la recuperación activa, evitando el colapso cognitivo del cramming.",
+          "El proceso de actualización de los protocolos ventilatorios de UCI con la evidencia más reciente de la literatura.",
+          "La redistribución de la carga de guardia entre residentes para prevenir el agotamiento físico durante la semana."
+        ],
+        "correctAnswer": "La recarga de las 'baterías metabólicas' del cerebro mediante el espaciado entre sesiones y la recuperación activa, evitando el colapso cognitivo del cramming.",
+        "explanation": "El módulo describe el Resource Replenishment como el proceso por el cual el espaciado (spacing) entre sesiones de aprendizaje permite que las 'baterías metabólicas' del cerebro se recarguen, evitando el fracaso del cramming (estudio masivo concentrado). La recuperación activa (retrieval) complementa este proceso fortaleciendo las rutas neuronales. Las tres actividades de aula (Do-now al inicio, low-stakes quizzes durante la sesión, exit tickets al finalizar) son los mecanismos concretos que implementan el Resource Replenishment en el entorno de la guardia clínica.",
+        "difficulty": "advanced",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "rec-protec-q5",
+        "type": "multiple-choice",
+        "question": "¿Cuál es la analogía exacta que establece el módulo entre el Adaptive Lesson Chunking y la titulación decremental de PEEP?",
+        "options": [
+          "Ambos utilizan el mismo software de monitoreo: el ventilador registra la distensibilidad y la plataforma educativa registra el DI de forma paralela.",
+          "Ambos representan estrategias de personalización absoluta basadas en datos individuales en tiempo real: el DI ajusta el chunk al estado cognitivo del residente del mismo modo que la titulación decremental ajusta la PEEP a la mecánica pulmonar individual del paciente.",
+          "Ambos requieren la intervención del especialista sénior: el chunking adapta el contenido por el docente y la PEEP la ajusta el anestesiólogo senior.",
+          "La analogía es solo metafórica y no tiene implicaciones prácticas para el diseño instruccional ni para el protocolo ventilatorio."
+        ],
+        "correctAnswer": "Ambos representan estrategias de personalización absoluta basadas en datos individuales en tiempo real: el DI ajusta el chunk al estado cognitivo del residente del mismo modo que la titulación decremental ajusta la PEEP a la mecánica pulmonar individual del paciente.",
+        "explanation": "El 'So What? Layer' del módulo establece que el Adaptive Lesson Chunking y la titulación decremental de PEEP son expresiones de la misma lógica de personalización absoluta: no existen valores universales ni para el tamaño óptimo de un chunk pedagógico ni para la PEEP óptima ventilatoria. El DI de Ren & Siddique ajusta el chunk basándose en los datos cognitivos individuales del residente (2-back + PVT + atención) del mismo modo exacto que la titulación decremental identifica la PEEP de no colapso basándose en los datos de distensibilidad dinámica individual del pulmón de cada paciente.",
+        "difficulty": "advanced",
+        "bloomLevel": "synthesize",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [
+      {
+        "authors": "Ren, S.; Siddique, A.",
+        "year": "2025",
+        "title": "Adaptive Lesson Chunking Mitigates Cognitive Load and Improves Retention.",
+        "source": "Biomedical Journal of Scientific & Technical Research",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Sweller, J.",
+        "year": "1988",
+        "title": "Cognitive load during problem solving: effects on learning.",
+        "source": "Cognitive Science",
+        "doi": "10.1207/s15516709cog1202_4",
+        "url": ""
+      },
+      {
+        "authors": "Guerrero Gutiérrez, M. A.; et al.",
+        "year": "2024",
+        "title": "Ventilación mecánica en el paciente con obesidad.",
+        "source": "Revista Chilena de Anestesia, Vol. 53",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Dräger Medical / Wrigge, H.",
+        "year": "",
+        "title": "Ventilación intraoperatoria en pacientes con obesidad: protección pulmonar perioperatoria (Extreme Protection protocol).",
+        "source": "Dräger Clinical Education",
+        "doi": "",
+        "url": "https://www.draeger.com"
+      },
+      {
+        "authors": "APEPOC (Asociación de Pacientes con EPOC)",
+        "year": "2021",
+        "title": "Algunos hábitos que pueden dañar la salud pulmonar.",
+        "source": "APEPOC",
+        "doi": "",
+        "url": "https://www.apepoc.org"
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-29",
+    "source": "VentyLab (JSON unificado)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel avanzado - sección patologías. Es el módulo de cierre de la serie. Integra el paradigma de 'protección extrema' como sinergia entre CLT y ventilación protectora, Ren & Siddique 2025 con DI ponderado (2-back + PVT + atención diapositivas) → 78% vs 63% retención, Resource Replenishment (Do-now/low-stakes quizzes/exit tickets), alerta específica mujeres baja estatura + obesidad (mayor riesgo sobre-ventilación), tabla dual LOV-ED estándar vs. Extreme Protection Dräger/Wrigge (10-26 cmH₂O con 3 condiciones), posicionamiento Wrigge (Trendelenburg Invertida), CPAP profiláctico obligatorio AOS 50% IMC>40 + rebote REM, 6 hábitos APEPOC con tabla Vitamina D (inflamación) / Vitamina E-Tocoferol (hiperreactividad bronquial asmático), y 'So What? Layer' como analogía exacta chunking adaptativo = titulación decremental PEEP."
+  }
+}

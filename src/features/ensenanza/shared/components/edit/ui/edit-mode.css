@@ -1,0 +1,43 @@
+/*
+ * edit-mode.css
+ * ============================================================
+ * Design tokens compartidos para todos los componentes del
+ * Modo Edición (Ghost UI, DragHandle, DependencyModal, TagBadge).
+ *
+ * Convención BEM:  .edit-[block]__[element]--[modifier]
+ * Ningún componente JSX usará sx props; solo clases de este sistema.
+ * ============================================================
+ */
+
+/* ─── Paleta de Modo Edición ─────────────────────────────── */
+:root {
+  /* Ghost UI */
+  --edit-ghost-border-color: rgba(11, 186, 244, 0.45);
+  --edit-ghost-bg: rgba(11, 186, 244, 0.04);
+  --edit-ghost-hover-bg: rgba(11, 186, 244, 0.1);
+  --edit-ghost-icon-color: rgba(11, 186, 244, 0.7);
+  --edit-ghost-border-dash: 6px;
+  --edit-ghost-border-gap: 4px;
+
+  /* Drag Handle */
+  --edit-handle-color: rgba(0, 0, 0, 0.3);
+  --edit-handle-hover-color: rgba(0, 0, 0, 0.65);
+
+  /* Tag Badges */
+  --edit-badge-easy-bg: #e8f5e9;
+  --edit-badge-easy-color: #2e7d32;
+  --edit-badge-medium-bg: #fff8e1;
+  --edit-badge-medium-color: #f57f17;
+  --edit-badge-hard-bg: #fce4ec;
+  --edit-badge-hard-color: #c62828;
+
+  /* Dependency Modal */
+  --edit-modal-divider: #e0e0e0;
+  --edit-modal-source-bg: #f5f5f5;
+  --edit-modal-depends-bg: #fafafa;
+
+  /* Animaciones */
+  --edit-transition: 0.2s ease-in-out;
+  --edit-border-radius-card: 8px;
+  --edit-border-radius-badge: 12px;
+}

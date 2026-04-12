@@ -62,9 +62,9 @@ import {
   TrendingUp as TrendingUpIcon,
   LightbulbOutlined as LightbulbIcon,
 } from '@mui/icons-material';
-import { useSearch } from '@/hooks/useSearch';
-import SearchFilters, { ActiveFiltersChips } from '@/components/search/SearchFilters';
-import { highlightMarkedText } from '@/utils/highlightText';
+import { useSearch } from '@/shared/hooks/useSearch';
+import SearchFilters, { ActiveFiltersChips } from '@/shared/components/SearchFilters';
+import { highlightMarkedText } from '@/shared/utils/highlightText';
 
 /**
  * Get difficulty color and label

@@ -6,8 +6,7 @@
 
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-
-const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+import { BACKEND_API_URL, isServer, logEnvDiagnostics } from '@/config/env';
 
 export default async function handler(req, res) {
   // Prevent 304 Not Modified responses
@@ -21,6 +20,20 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Environment diagnostics (server-side only)
+    logEnvDiagnostics('pages/api/auth/backend-token');
+
+    // Hard failure in production if BACKEND_URL is missing
+    if (process.env.NODE_ENV === 'production' && !process.env.BACKEND_URL) {
+      console.error('[backend-token] BACKEND_URL missing in production');
+      return res.status(500).json({ error: 'Server misconfiguration: BACKEND_URL is not defined' });
+    }
+
+    if (!isServer) {
+      // This route should never execute on the client
+      console.error('[backend-token] Unexpected non-server runtime');
+    }
+
     // Get NextAuth session
     const session = await getServerSession(req, res, authOptions);
 

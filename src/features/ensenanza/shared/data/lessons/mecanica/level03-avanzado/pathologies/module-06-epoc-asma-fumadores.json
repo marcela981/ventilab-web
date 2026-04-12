@@ -1,0 +1,321 @@
+{
+  "id": "module-06-epoc-asma-fumadores",
+  "moduleId": "module-06-avanzado-patologias",
+  "title": "Estrategias en enfermedades obstructivas: EPOC, asma y fumadores",
+  "description": "Este módulo de nivel avanzado aborda las estrategias ventilatorias en el paciente con enfermedades obstructivas (EPOC, asma, fumadores) con obesidad concomitante. Integra la epidemiología longitudinal OCDE 2000-2013 con su alerta pediátrica estratégica, los 5 impactos críticos de la obesidad sobre la mecánica pulmonar, la distinción entre peso ideal (PI) y peso predicho (PP) con sus fórmulas específicas para SDRA vs. no-SDRA, la tabla LOV-ED con preobesidad incluida, el riesgo de hiperoxemia, la arquitectura pedagógica CLT con datos de Shaoheng Ren (63%→78% retención), el modelo 'I Do / We Do / You Do', el Expertise Reversal Effect y la prevención nutricional APEPOC.",
+  "order": 6,
+  "estimatedTime": 90,
+  "difficulty": "advanced",
+  "bloomLevel": "synthesize",
+  "learningObjectives": [
+    "Interpretar la tabla epidemiológica OCDE 2000-2013 y la alerta pediátrica estratégica (41 millones de niños <5 años) para proyectar la demanda asistencial en neumología.",
+    "Distinguir los 5 impactos críticos de la obesidad sobre la mecánica pulmonar (atelectasias por compresión, Pendelluft, V/Q mismatch, trabajo respiratorio, PEEPi) y cuantificar la PEEPi posicional.",
+    "Seleccionar la fórmula de peso corporal correcta (PI vs. PP) según el escenario clínico (sin SDRA vs. SDRA establecido) y justificar por qué el uso del peso real garantiza el VILI.",
+    "Ejecutar la estrategia de PEEP y MR según LOV-ED (tabla completa incluyendo preobesidad) y gestionar el SDRA obeso con PEEP 10-26 cmH₂O bajo vigilancia hemodinámica estricta.",
+    "Aplicar la Teoría de la Carga Cognitiva (intrínseca, extrínseca, germana) con los datos de Chunking de Shaoheng Ren (63%→78% retención) y el Expertise Reversal Effect al diseño de instrucción clínica avanzada.",
+    "Integrar la evidencia APEPOC sobre cesación tabáquica, riesgo de moho micótico y nutrición especializada (Vitaminas D, E, C) como herramientas de prevención activa del daño pulmonar crónico."
+  ],
+  "prerequisites": [
+    "Módulo 5 de patologías: fisiopatología de la obesidad con tabla de Steier, hipercapnia permisiva, MR con costo hemodinámico.",
+    "Módulos avanzados 1-4: VILI, monitorización, asincronías y destete complejo.",
+    "Conocimiento básico de EPOC y asma: obstrucción al flujo, hiperinsuflación dinámica y atrapamiento de aire."
+  ],
+  "sections": [
+    {
+      "id": "epoc-asma-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción: la convergencia de obesidad pandémica y tabaquismo crónico",
+      "content": {
+        "markdown": "## ¿Qué vas a aprender en este módulo?\n\nTema: Estrategias en enfermedades obstructivas (EPOC, asma, fumadores) con obesidad concomitante — la doble carga mecánica y pedagógica del neumólogo.\n\n### La convergencia como problema estratégico\n\nLa convergencia de la **obesidad pandémica** y el **tabaquismo crónico** ha reconfigurado la demanda asistencial en neumología. No actúan en forma independiente:\n- La obesidad altera la **mecánica estática** (carga extrínseca sobre el tórax).\n- El tabaquismo actúa **sinérgicamente**, exacerbando la inflamación y reduciendo la reserva funcional.\n\nPara el clínico, comprender esta epidemiología es el primer paso para **anticipar la vía aérea difícil y la falla respiratoria postoperatoria**.\n\n### Hoja de ruta del módulo\n\nA lo largo de estas secciones integrarás:\n- **Epidemiología OCDE 2000-2013:** tabla longitudinal de 4 países y alerta pediátrica estratégica.\n- **5 impactos críticos de la obesidad** sobre la mecánica pulmonar con cuantificación de la PEEPi posicional.\n- **Dos fórmulas distintas** de peso corporal (PI para no-SDRA, PP para SDRA) y el riesgo de la hiperoxemia.\n- **LOV-ED completo** con preobesidad, MR con delta constante y SDRA obeso 10-26 cmH₂O.\n- **CLT avanzada:** Chunking de Shaoheng Ren (63→78% retención), 2-back/PVT, 'I Do / We Do / You Do' y Expertise Reversal Effect.\n- **Prevención APEPOC:** cesación tabáquica, moho micótico y nutrición especializada (Vitaminas D, E, C)."
+      },
+      "estimatedTime": 7
+    },
+    {
+      "id": "epoc-asma-theory-1",
+      "order": 2,
+      "type": "theory",
+      "title": "Epidemiología OCDE 2000-2013 y alerta pediátrica estratégica",
+      "content": {
+        "markdown": "### Tabla epidemiológica longitudinal: obesidad en adultos (OCDE / OMS, 2000-2013)\n\n| País | Prevalencia 2000 | Prevalencia 2013 | Tendencia |\n| :--- | :--- | :--- | :--- |\n| EE. UU. | 31 % | 35 % | Creciente |\n| Australia | 20 % | 28 % | Creciente acelerada |\n| Reino Unido | 21 % | 25 % | Creciente |\n| Alemania | 20 % | 24 % | Creciente |\n\nEn 13 años, **todos los países analizados** muestran una tendencia creciente sin inflexión. Australia presenta la **aceleración más pronunciada** (+8 puntos porcentuales), lo que sugiere que los factores ambientales y de estilo de vida superan las intervenciones de salud pública vigentes.\n\n### Alerta pediátrica estratégica: la cohorte generacional del futuro\n\nUn dato de impacto transversal: **41 millones de niños menores de 5 años** ya presentan sobrepeso u obesidad a nivel global (OMS).\n\nEste no es un dato de interés histórico — es un **determinante estratégico fundamental** que predice:\n- Una cohorte generacional de pacientes con mecánica respiratoria comprometida desde la infancia.\n- Una demanda **sin precedentes** de servicios de neumología y cuidados críticos en las próximas décadas.\n- La necesidad de incorporar la intervención preventiva temprana como competencia del neumólogo.\n\n### 'So What?': de la estadística a la cabecera del paciente\n\nEl neumólogo que lee la tabla como un dato histórico comete un error estratégico. El especialista avanzado lee cada porcentaje como una estimación del **porcentaje futuro de pacientes con vía aérea difícil y reserva funcional comprometida** en su consulta y UCI. La transición de la estadística a la programación ventilatoria requiere el análisis de los cambios estructurales que la grasa impone al tórax."
+      },
+      "estimatedTime": 12
+    },
+    {
+      "id": "epoc-asma-theory-2",
+      "order": 3,
+      "type": "theory",
+      "title": "Fisiopatología: los 5 impactos críticos de la obesidad sobre la mecánica pulmonar",
+      "content": {
+        "markdown": "La obesidad genera un **patrón restrictivo extrínseco** único. El exceso de tejido adiposo eleva la PIA (6-10 cmH₂O), que fuerza la cefalización diafragmática y reduce la CRF entre un **5 % y 15 %** por cada 5 kg/m² de IMC sobre 30.\n\n### Los 5 impactos críticos (clasificación por mecanismo)\n\n| N.° | Efecto | Mecanismo |\n| :--- | :--- | :--- |\n| 1 | **Atelectasias por compresión** | Presión pleural supera la presión alveolar → colapso en zonas dependientes |\n| 2 | **Efecto Pendelluft** | Inflación/desinflación no homogénea → flujos de aire interregionales perjudiciales |\n| 3 | **Desajuste V/Q** | Cierre prematuro de vías aéreas pequeñas → zonas de shunt y deterioro del intercambio gaseoso |\n| 4 | **Aumento del trabajo respiratorio** | Baja distensibilidad + alta resistencia de pared torácica → consumo metabólico elevado de O₂ |\n| 5 | **PEEPi aumentada** | Atrapamiento de aire por colapso de vías aéreas → +0.2 cmH₂O por unidad de IMC en supino |\n\n### Cuantificación de la PEEPi posicional\n\nLa PEEPi no es un fenómeno cualitativo abstracto: es **mensurable y predecible** por IMC en posición supina. Un obeso con IMC 40 en decúbito supino tendrá aproximadamente:\n\n- Valor basal en posición vertical: 1.4 cmH₂O\n- Incremento posicional: +0.2 × (40 - 30) = **+2.0 cmH₂O**\n- PEEPi estimada en supino: **~3.4 cmH₂O** (antes de iniciar ventilación mecánica)\n\n### 'So What?': la PEEPi como obstáculo al trigger y determinante de PEEP extrínseca\n\nUna PEEPi no compensada es un **obstáculo al trigger inspiratorio**: el paciente debe superar la PEEPi más la sensibilidad del ventilador antes de generar flujo. Si la PEEP extrínseca programada es inferior a la PEEPi, se produce ineficacia del trigger con asincronía doble ciclo o esfuerzo inútil. La programación de PEEP debe, por tanto, **superar la PEEPi estimada** para compensar la carga obstructiva impuesta por la obesidad."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "epoc-asma-theory-3",
+      "order": 4,
+      "type": "theory",
+      "title": "Ventilación protectora: PI vs. PP, hiperoxemia y VCV con respaldo multicéntrico",
+      "content": {
+        "markdown": "La ventilación protectora es **profiláctica contra el SDRA postoperatorio**. Errores en la programación inicial pueden inducir biotrauma y barotrauma en pulmones ya predispuestos al colapso.\n\n### Dos fórmulas distintas según el escenario clínico\n\nEste módulo introduce una distinción crítica que los módulos previos no siempre explicitan: el **Peso Ideal (PI)** y el **Peso Predicho (PP)** son fórmulas distintas con indicaciones distintas.\n\n**Peso Ideal (PI) — para pacientes sin patología pulmonar aguda previa:**\n- Hombres: Talla(m)² × 23\n- Mujeres: Talla(m)² × 21.5\n\n**Peso Predicho (PP) — estándar de oro para SDRA (ARDS):**\n- Hombres: 50 + 0.91 × [Altura(cm) − 152.4]\n- Mujeres: 45.5 + 0.91 × [Altura(cm) − 152.4]\n\n> **Regla práctica:** en el contexto del SDRA, el PP (basado en la altura) es el estándar de oro validado por el protocolo ARDS Network. El PI puede subestimar el Vt seguro en pacientes de talla alta con SDRA.\n\nMeta de Vt: **6-8 ml/kg** usando la fórmula adecuada al escenario.\n\n### El riesgo de la hiperoxemia: atelectasias de reabsorción y toxicidad por radicales libres\n\nMeta de SpO₂: **94-98 %**. La hiperoxemia agresiva no es inofensiva:\n1. **Atelectasias de reabsorción:** el O₂ al 100 % desplaza el N₂ de los alvéolos → el O₂ es absorbido más rápidamente que el N₂ → colapso alveolar progresivo.\n2. **Toxicidad por radicales libres:** la hiperoxemia sostenida genera especies reactivas de oxígeno (ROS) que dañan el epitelio alveolar de forma directa.\n\n### VCV con respaldo en IMPROVE y PROVHILO\n\nSe prefiere el **Modo Controlado por Volumen (VCV)** sobre el PCV. Los estudios IMPROVE y PROVHILO demuestran que VCV facilita alcanzar metas de protección y reduce complicaciones pulmonares postoperatorias. Además, el VCV garantiza el Volumen Minuto ante fluctuaciones de distensibilidad (cambios de posición quirúrgica, neumoperitoneo en laparoscopia)."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "epoc-asma-theory-4",
+      "order": 5,
+      "type": "theory",
+      "title": "PEEP y MR: tabla LOV-ED completa (con preobesidad) y SDRA obeso 10-26 cmH₂O",
+      "content": {
+        "markdown": "El objetivo estratégico es la **estrategia de 'pulmón abierto'**: normalizar la distensibilidad mediante el reclutamiento y mantener la Driving Pressure < 13-15 cmH₂O.\n\n### Tabla LOV-ED: PEEP objetivo por IMC (incluyendo preobesidad)\n\n| IMC (kg/m²) | PEEP objetivo |\n| :--- | :--- |\n| < 29.9 (preobesidad) | 5 cmH₂O |\n| 30.0 - 39.9 | 8 cmH₂O |\n| 40.0 - 49.9 | 10 cmH₂O |\n| > 50.0 | 12 cmH₂O |\n\nLa inclusión del rango de preobesidad (< 29.9) es relevante porque **incluso los pacientes con sobrepeso** presentan mayor PIA que el normopeso y justifican una PEEP mínimamente aumentada respecto al estándar.\n\n### Maniobra de Reclutamiento Progresiva (MR): técnica con delta de presión constante\n\n- Se rechaza el **reclutamiento manual con bolsa** por falta de control tensional y pérdida de PEEP al reconectar.\n- Se emplea el ventilador en **fases escalonadas** (aumento gradual) y **decrementales** (reducción gradual), manteniendo una **delta de presión constante** a lo largo de todo el procedimiento.\n- Durante la fase decremental, se identifica el punto de **máxima distensibilidad dinámica** para fijar la 'PEEP de no colapso'.\n\n### PEEP en SDRA obeso: titulación agresiva 10-26 cmH₂O\n\nEn presencia de SDRA establecido, la PEEP debe ser titulada agresivamente:\n- **Rango:** 10-26 cmH₂O según severidad y respuesta al reclutamiento personalizado.\n- **Requisito inseparable:** soporte con vasopresores y vigilancia hemodinámica continua.\n- **Indicador de éxito:** reducción de la Driving Pressure (PP − PEEP) por debajo de 15 cmH₂O.\n\n### 'So What?': Driving Pressure como árbitro de la estrategia\n\nNo toda reducción de la DP indica reclutamiento exitoso. Si la DP disminuye porque se añadió PEEP pero la Presión Plateau no cambió (o aumentó), el pulmón está sobredistendido, no reclutado. La DP es el árbitro: **solo la reducción de DP con Plateau estable o reducida confirma la apertura pulmonar real**."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "epoc-asma-theory-5",
+      "order": 6,
+      "type": "theory",
+      "title": "Arquitectura pedagógica: CLT avanzada, Chunking de Shaoheng Ren y Expertise Reversal Effect",
+      "content": {
+        "markdown": "El aprendizaje neumológico avanzado requiere optimizar la memoria de trabajo. La **Teoría de la Carga Cognitiva (CLT)** busca equilibrar el esfuerzo mental del residente para maximizar la retención y transferencia clínica.\n\n### Los tres tipos de carga cognitiva (definiciones operativas)\n\n| Tipo | Definición | Ejemplo en ventilación |\n| :--- | :--- | :--- |\n| **Intrínseca** | Dificultad inherente al contenido | Entender el efecto Pendelluft y su relación con el VILI |\n| **Extrínseca** | Ruido pedagógico o diseño ineficiente | Presentar la tabla de PEEP sin estructura visual clara |\n| **Germana** | Esfuerzo para construir schemas permanentes | Integrar la tabla LOV-ED como automatismo bajo estrés quirúrgico |\n\n### Chunking: datos de Shaoheng Ren (63 %→78 % retención)\n\nLa segmentación de lecciones en **'mordiscos' de 7-15 unidades** es la estrategia de reducción de carga extrínseca más robusta en educación médica:\n- La investigación de **Shaoheng Ren** demuestra que el Chunking mejora la retención del **63 % al 78 %** al liberar la memoria de trabajo de la carga extrínseca del formato.\n- Las métricas atencionales que validan la efectividad del Chunking incluyen:\n  - **2-back:** tarea de memoria de trabajo donde el sujeto identifica si el estímulo actual coincide con el presentado dos posiciones atrás.\n  - **PVT (Psychomotor Vigilance Test):** mide la atención sostenida y el estado de alerta mediante tiempos de reacción a estímulos visuales.\n\n### Modelo instruccional 'I Do / We Do / You Do'\n\nEsta estrategia de andamiaje (Scaffolding) para procedimientos complejos como la MR tiene tres fases:\n1. **I Do (Modelado):** el docente ejecuta la MR completa verbalizando cada decisión.\n2. **We Do (Práctica guiada):** el residente ejecuta con supervisión directa y corrección en tiempo real.\n3. **You Do (Ejecución independiente):** el residente ejecuta de forma autónoma con supervisión diferida.\n\n### Expertise Reversal Effect: el peligro del andamiaje excesivo en expertos\n\nLo que ayuda a un novato puede **entorpecer a un experto**. El andamiaje pesado (instrucciones detalladas, guías paso a paso) reduce la carga extrínseca del novato, pero para el experto crea **redundancia** que interfiere con sus schemas automatizados. El diseño instruccional del módulo ha sido segmentado para maximizar la **carga germana**, asegurando que el residente no solo aprenda la técnica, sino que desarrolle el **juicio clínico** para aplicarla sin guía."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "epoc-asma-theory-6",
+      "order": 7,
+      "type": "theory",
+      "title": "Prevención activa: APEPOC, cesación tabáquica y nutrición especializada para el pulmón",
+      "content": {
+        "markdown": "La prevención es el **pilar de la neumología moderna** y una competencia inseparable del manejo ventilatorio avanzado.\n\n### Cesación tabáquica y riesgo ambiental (APEPOC)\n\n- La **cesación tabáquica** reduce el riesgo de mortalidad por cáncer de pulmón a la **mitad tras 10 años** (APEPOC).\n- Las **gripes 'mal curadas'** y la falta de protección frente a cambios climáticos predisponen al daño inflamatorio crónico de la mucosa bronquial.\n- El **moho acumulado en el entorno doméstico** no es solo un irritante: es un **vector de infecciones micóticas** y un desencadenante de crisis asmáticas graves. La convivencia prolongada con moho induce lesiones tisulares a largo plazo que aceleran el deterioro de la reserva funcional.\n\n### Nutrición especializada para la salud pulmonar\n\n| Nutriente | Fuentes principales | Rol en la salud pulmonar |\n| :--- | :--- | :--- |\n| **Vitamina D** | Salmón, huevo, exposición solar | Reduce la inflamación sistémica y mejora la función del epitelio respiratorio |\n| **Vitamina E (Tocoferol)** | Almendras, brócoli, aceite de girasol | Disminuye tos y sibilancias en EPOC y asma; efecto antioxidante |\n| **Vitamina C** | Cítricos, kiwi, pimiento rojo | Protección contra virus y fortalecimiento de la barrera mucosa |\n\n### 'So What?': la intervención preventiva como maniobra de mayor impacto en longevidad\n\nEl moho no produce síntomas evidentes hasta que el daño acumulado es significativo. El tabaquismo tiene un período de latencia de décadas antes de manifestar EPOC clínico. La intervención preventiva —cesación, control ambiental, nutrición antiinflamatoria— es la maniobra con **mayor impacto en la longevidad del parénquima** por unidad de esfuerzo clínico, superando cualquier protocolo ventilatorio en términos de años de vida ganados."
+      },
+      "estimatedTime": 11
+    },
+    {
+      "id": "m-epoc-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Estrategia ventilatoria en obstrucción",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Ventilación mecánica en EPOC y asma\n\n> Aplica estrategias específicas para la obstrucción al flujo. No bloquea avance.\n\n---\n\n### Actividad 1 — Diferencias entre EPOC y asma en el ventilador\n\n| Aspecto | EPOC | Asma aguda grave |\n|---|---|---|\n| Auto-PEEP | Frecuente y significativo | Puede ser muy elevado |\n| Resistencia vía aérea | Moderada-alta, fija | Alta, variable (broncoespasmo) |\n| Compliance | Aumentada (enfisema) o normal | Normal o levemente ↓ |\n| Estrategia de tiempo espiratorio | Alargar Te (↓ Fr, ↓ Ti) | Alargar Te agresivamente |\n| PEEP extrínseca | 70-80% del auto-PEEP medido | Mínima o 0 (no se opone al broncoespasmo) |\n| Meta de CO₂ | CO₂ basal del paciente (puede ser alta) | Hipercapnia permisiva en asma severa |\n\n---\n\n### Actividad 2 — Medición de auto-PEEP\n\n¿Cómo mides el auto-PEEP en el ventilador?\n1. Realiza una pausa espiratoria al final de la espiración (tecla \"hold\" espiratoria) durante 3–5 s.\n2. La presión que se lee al final de la pausa es la **presión end-expiratory = PEEP + auto-PEEP**.\n3. Auto-PEEP = Presión pausa espiratoria − PEEP programada.\n\n**Ejemplo:** PEEP programada = 5 cmH₂O. Pausa espiratoria → presión = 13 cmH₂O. Auto-PEEP = **8 cmH₂O**.\nAcción: PEEP extrínseca = 0,75 × 8 = **6 cmH₂O** (para reducir trabajo de trigger sin agravar atrapamiento).\n\n---\n\n### Actividad 3 — Hipercapnia permisiva en asma\n\nUn paciente con estado asmático grave tiene:\n- PaCO₂ = 72 mmHg con pH 7,20.\n- No hay otra causa de acidosis.\n- SaO₂ 92% con FiO₂ 0,40.\n\n¿Está indicada la hipercapnia permisiva? ¿Cuál es el límite?\n\n**Sí.** En asma grave con atrapamiento severo, aumentar la Fr para corregir CO₂ empeora el atrapamiento → mayor auto-PEEP → mayor riesgo de neumotórax y colapso hemodinámico.\n**Límite aceptado:** pH ≥ 7,15–7,20. Con pH 7,20 está en el límite → bicarbonato IV si tiende a bajar más; tratar el broncoespasmo agresivamente (β₂ agonistas IV, magnesio IV, heliox).\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 30 pts | Actividad 2 → 35 pts | Actividad 3 → 35 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 8
+    },
+    {
+      "id": "m-epoc-case",
+      "type": "case_study",
+      "title": "Caso clínico: EPOC exacerbado intubado",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: EPOC exacerbado con insuficiencia respiratoria global\n\n---\n\n### Presentación\n\n**Paciente:** Hombre, 68 años, fumador 50 paquetes-año, EPOC GOLD IV (FEV1 28% previo).\n**Motivo:** Exacerbación infecciosa (Haemophilus influenzae en esputo). Llegó con SaO₂ 78%, uso máximo de músculos accesorios, GLASGOW 10.\n**VMNI fracasada** a los 45 min (no toleró mascara, empeoramiento progresivo). → Intubación orotraqueal.\n**Gasometría pre-intubación:** pH 7,12, PaCO₂ 92 mmHg, PaO₂ 44 mmHg.\n\n---\n\n### Configuración inicial del ventilador\n\n**Principio EPOC:** el objetivo NO es normalizar el CO₂; es devolver al paciente a su estado basal (PaCO₂ ~60–65 mmHg en este caso).\n\n**Parámetros seleccionados:**\n- Modo: VCV (control garantiza Vt con mecánica variable)\n- Vt: 6 mL/kg PP. Peso predicho = 50 + 0,91×(172−152,4) = **67,8 kg** → Vt = **407 mL**\n- Fr: 12/min (baja → alarga Te → reduce auto-PEEP)\n- Ti: 0,8 s → Te = 60/12 − 0,8 = 4,2 s → relación I:E = 1:5,25 ✓\n- PEEP: 0 inicialmente → medir auto-PEEP a los 15 min.\n- FiO₂: 0,50 (ajustar por SaO₂)\n\n---\n\n### Seguimiento a 30 min\n\nAuto-PEEP medido (pausa espiratoria): 11 cmH₂O.\nPEEP extrínseca ajustada: 0,75 × 11 = **8 cmH₂O**.\nGasometría: pH 7,22, PaCO₂ 78 mmHg (descendió 14 en 30 min → bien).\n\n**¡Alerta!** No corregir demasiado rápido → riesgo de alcalosis metabólica post-hipercápnica (el riñón ha retenido bicarbonato como compensación). Meta: pH 7,28–7,35.\n\n---\n\n### Plan de destete\n\n1. Tratar la infección agresivamente (antibiótico, broncodilatadores, corticoides IV).\n2. VMNI post-extubación como puente para este paciente (evidencia fuerte en EPOC).\n3. Criterios de extubación adaptados: PaCO₂ basal recuperada, IRRS < 80 (en EPOC se usa umbral menor).\n4. Educación y plan de seguimiento (VMNI domiciliaria, vacunación, rehabilitación pulmonar).\n\n---\n\n### Puntos clave\n\n1. En EPOC, normalizar el CO₂ rápidamente puede generar alcalosis severa → taquicardia, convulsiones.\n2. El auto-PEEP es el principal enemigo en la fase aguda; el manejo del Te es la solución.\n3. La VMNI post-extubación es el estándar de cuidado en EPOC con hx de retención.\n"
+      },
+      "order": 9
+    },
+    {
+      "id": "epoc-asma-summary",
+      "order": 10,
+      "type": "summary",
+      "title": "Cierre: integración clínica, pedagógica y preventiva del paciente obstructivo-obeso",
+      "content": {
+        "markdown": "## Síntesis operacional: el triple dominio del especialista\n\nLa maestría en el manejo del paciente obstructivo-obeso requiere tres dominios integrados:\n\n1. **Dominio clínico:** precisión hemodinámica y ventilatoria (PI vs. PP, LOV-ED, MR con delta constante, DP como árbitro).\n2. **Dominio pedagógico:** CLT aplicada (carga germana máxima, Expertise Reversal Effect, Chunking Shaoheng Ren, 'I Do / We Do / You Do').\n3. **Dominio preventivo:** cesación tabáquica (APEPOC -50 % mortalidad), control ambiental del moho y nutrición especializada (Vitaminas D, E, C).\n\n## Resumen integrador\n\n- La tabla OCDE 2000-2013 muestra crecimiento en los 4 países analizados; los 41 millones de niños <5 años con sobrepeso son el determinante estratégico de la demanda futura en UCI.\n- Los 5 impactos críticos de la obesidad convergen en la PEEPi posicional cuantificable (+0.2 cmH₂O/unidad IMC) como el principal obstáculo al trigger en el paciente obstructivo-obeso.\n- **PI (Talla²×23/21.5)** es para no-SDRA; **PP (50/45.5 + 0.91×[Altura-152.4])** es el estándar de oro para SDRA. Confundirlas es un error de juicio que compromete la seguridad del paciente.\n- La hiperoxemia produce atelectasias de reabsorción y toxicidad directa por ROS: mantener SpO₂ 94-98 %.\n- LOV-ED incluye preobesidad (<29.9: 5 cmH₂O); el SDRA obeso requiere PEEP 10-26 cmH₂O con vasopresores proactivos.\n- Chunking de Shaoheng Ren: 63→78 % retención. El Expertise Reversal Effect exige eliminar el andamiaje en expertos para no interferir con sus schemas.\n- La cesación tabáquica (APEPOC) reduce la mortalidad por cáncer de pulmón a la mitad tras 10 años; el moho es vector micótico, no solo irritante.\n\n## Checklist de validación\n\n- Leo la tabla OCDE e identifico qué país tiene la aceleración más pronunciada y por qué eso modifica la planificación asistencial.\n- Selecciono PI vs. PP según el escenario clínico y justifico la diferencia ante un colega.\n- Explico por qué la SpO₂ del 98% no garantiza una ventilación segura en el obeso.\n- Ejecuto la MR con delta de presión constante, identifico la 'PEEP de no colapso' y uso la DP como árbitro de éxito.\n- Diseño una lección para residentes aplicando Chunking y Expertise Reversal Effect de forma diferenciada.\n- Prescribo una intervención preventiva completa (tabaco, ambiente, nutrición) integrada al plan de alta del paciente."
+      },
+      "estimatedTime": 6
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Por qué Australia presenta la aceleración epidemiológica más pronunciada en la tabla OCDE 2000-2013 y qué implica para la UCI?",
+        "¿Cuándo debo usar el Peso Ideal (PI) y cuándo el Peso Predicho (PP), y cuál es el riesgo de confundirlos?",
+        "¿Cómo produce la hiperoxemia atelectasias de reabsorción, y por qué es esto especialmente peligroso en el paciente obeso?",
+        "¿Qué significa que el Expertise Reversal Effect haga que el andamiaje sea perjudicial para el experto?",
+        "¿Por qué el moho doméstico es un 'vector micótico' y no solo un irritante, según la evidencia APEPOC?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "aiexpandnotes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": [
+          "advanced"
+        ],
+        "question_types": [
+          "conceptual",
+          "application",
+          "clinical_case"
+        ],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [],
+  "quiz": {
+    "id": "quiz-epoc-asma-fumadores",
+    "passingScore": 4,
+    "questions": [
+      {
+        "id": "epoc-asma-q1",
+        "type": "multiple-choice",
+        "question": "Según la tabla epidemiológica OCDE 2000-2013 del módulo, ¿qué país presenta la mayor aceleración en la prevalencia de obesidad en adultos?",
+        "options": [
+          "EE. UU. (+4 puntos porcentuales)",
+          "Australia (+8 puntos porcentuales)",
+          "Reino Unido (+4 puntos porcentuales)",
+          "Alemania (+4 puntos porcentuales)"
+        ],
+        "correctAnswer": "Australia (+8 puntos porcentuales)",
+        "explanation": "La tabla OCDE 2000-2013 del módulo muestra que Australia pasó del 20% al 28%, un incremento de 8 puntos porcentuales, la mayor aceleración de los 4 países analizados. EE. UU., UK y Alemania presentan incrementos de 4 puntos porcentuales cada uno. Australia se usa como el caso de referencia para ilustrar que la aceleración epidemiológica puede superar las proyecciones basadas en tendencias lineales.",
+        "difficulty": "advanced",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "epoc-asma-q2",
+        "type": "multiple-choice",
+        "question": "¿Cuál es la diferencia clínica determinante entre el Peso Ideal (PI) y el Peso Predicho (PP) según este módulo?",
+        "options": [
+          "PI usa la altura en metros, PP usa el peso real; PI es siempre más conservador.",
+          "PI (Talla²×23/21.5) se usa en pacientes sin patología aguda; PP (50/45.5+0.91×[Altura-152.4]) es el estándar de oro para SDRA establecido.",
+          "PI y PP son equivalentes porque ambos evitan el uso del peso real; la diferencia es solo histórica.",
+          "PP es exclusivo para pacientes con IMC > 40; PI se aplica a todos los demás pacientes obesos."
+        ],
+        "correctAnswer": "PI (Talla²×23/21.5) se usa en pacientes sin patología aguda; PP (50/45.5+0.91×[Altura-152.4]) es el estándar de oro para SDRA establecido.",
+        "explanation": "El módulo establece que PI (Peso Ideal) con fórmulas Talla²×23 (hombres) y Talla²×21.5 (mujeres) es recomendado para pacientes sin patología pulmonar aguda previa. El PP (Peso Predicho), con las fórmulas del protocolo ARDS Network (50/45.5 + 0.91×[Altura-152.4]), es el estándar de oro para el manejo de SDRA. Confundirlos puede generar sobredistensión o subventilación según el contexto clínico.",
+        "difficulty": "advanced",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "epoc-asma-q3",
+        "type": "multiple-choice",
+        "question": "¿Cuáles son los dos mecanismos por los que la hiperoxemia agresiva produce daño pulmonar según este módulo?",
+        "options": [
+          "Sobredistensión alveolar por aumento del O₂ disuelto y activación del complemento por hiperpresión parcial.",
+          "Atelectasias de reabsorción (el O₂ reemplaza el N₂ que se absorbe más rápido) y toxicidad directa por radicales libres (ROS) sobre el epitelio alveolar.",
+          "Aumento de la PEEPi por broncoconstricción inducida por O₂ y deterioro del surfactante por desnaturalización oxidativa.",
+          "Hiperoxemia refleja la corrección excesiva del V/Q mismatch y genera un rebote vasomotor con vasoconstricción pulmonar."
+        ],
+        "correctAnswer": "Atelectasias de reabsorción (el O₂ reemplaza el N₂ que se absorbe más rápido) y toxicidad directa por radicales libres (ROS) sobre el epitelio alveolar.",
+        "explanation": "El módulo describe dos mecanismos diferenciados de daño por hiperoxemia: (1) Atelectasias de reabsorción: al administrar O₂ al 100%, el N₂ es desplazado de los alvéolos; como el O₂ es absorbido mucho más rápidamente que el N₂, el alveolo colapsa progresivamente por déficit de gas inerte. (2) Toxicidad por radicales libres: la hiperoxemia sostenida genera especies reactivas de oxígeno (ROS) que dañan directamente el epitelio alveolar. Por esto la meta de SpO₂ es 94-98%, no '100%'.",
+        "difficulty": "advanced",
+        "bloomLevel": "analyze",
+        "points": 2
+      },
+      {
+        "id": "epoc-asma-q4",
+        "type": "multiple-choice",
+        "question": "La investigación de Shaoheng Ren citada en este módulo demuestra que el Chunking mejora la retención del:",
+        "options": [
+          "45 % al 60 %",
+          "55 % al 70 %",
+          "63 % al 78 %",
+          "70 % al 90 %"
+        ],
+        "correctAnswer": "63 % al 78 %",
+        "explanation": "El módulo cita específicamente los datos de Shaoheng Ren: la segmentación de lecciones en 'mordiscos' de 7-15 unidades (Chunking) mejora la retención del 63% al 78% al reducir la carga extrínseca y liberar la memoria de trabajo para la carga germana (construcción de schemas). Este incremento de 15 puntos porcentuales representa la ganancia educativa específica que justifica el Chunking como estrategia instruccional en neumología avanzada.",
+        "difficulty": "advanced",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "epoc-asma-q5",
+        "type": "multiple-choice",
+        "question": "¿Qué describe el Expertise Reversal Effect y cuál es su implicación para el diseño de materiales educativos en neumología?",
+        "options": [
+          "Los expertos aprenden mejor con casos clínicos complejos que con explicaciones detalladas, por lo que se deben usar exclusivamente casos sin andamiaje.",
+          "El andamiaje pesado (instrucciones detalladas, guías paso a paso) que ayuda al novato puede interferir con los schemas automatizados del experto, creando redundancia que entorpece su rendimiento.",
+          "Los expertos revierten su rendimiento al nivel del novato cuando se les expone a material de nivel introductorio, lo que exige materiales exclusivos para cada nivel sin transición.",
+          "El efecto describe cómo el experto evita conscientemente los errores cometidos en la etapa de novato, generando un sesgo de confirmación en su toma de decisiones clínicas."
+        ],
+        "correctAnswer": "El andamiaje pesado (instrucciones detalladas, guías paso a paso) que ayuda al novato puede interferir con los schemas automatizados del experto, creando redundancia que entorpece su rendimiento.",
+        "explanation": "El Expertise Reversal Effect, citado en las conclusiones del módulo, establece que el andamiaje (scaffolding) excesivo diseñado para novatos genera redundancia cognitiva en expertos: les obliga a procesar información que ya tienen automatizada como schema, lo que consume recursos de memoria de trabajo innecesariamente y puede entorpecer su rendimiento. El diseño instruccional avanzado debe reducir el andamiaje progresivamente (Fading) conforme el residente adquiere competencia, maximizando la carga germana en lugar de la extrínseca.",
+        "difficulty": "advanced",
+        "bloomLevel": "analyze",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [
+      {
+        "authors": "OCDE / OMS",
+        "year": "2014",
+        "title": "Obesity Update 2014: prevalence trends in OECD countries (2000-2013).",
+        "source": "OECD Health Statistics",
+        "doi": "",
+        "url": "https://www.oecd.org/health/obesity-update.htm"
+      },
+      {
+        "authors": "Futier, E.; et al. (IMPROVE Study Group)",
+        "year": "2013",
+        "title": "A trial of intraoperative low-tidal-volume ventilation in abdominal surgery.",
+        "source": "New England Journal of Medicine",
+        "doi": "10.1056/NEJMoa1301082",
+        "url": ""
+      },
+      {
+        "authors": "Hemmes, S. N. T.; et al. (PROVHILO Trial Investigators)",
+        "year": "2014",
+        "title": "High versus low positive end-expiratory pressure during general anaesthesia for open abdominal surgery (PROVHILO trial).",
+        "source": "The Lancet",
+        "doi": "10.1016/S0140-6736(14)60416-5",
+        "url": ""
+      },
+      {
+        "authors": "Sweller, J.; Ayres, P.; Kalyuga, S.",
+        "year": "2011",
+        "title": "Cognitive Load Theory.",
+        "source": "Springer New York",
+        "doi": "10.1007/978-1-4419-8126-4",
+        "url": ""
+      },
+      {
+        "authors": "APEPOC (Asociación de Pacientes con EPOC)",
+        "year": "",
+        "title": "Guía de prevención, cesación tabáquica y salud pulmonar para pacientes con enfermedades obstructivas.",
+        "source": "APEPOC",
+        "doi": "",
+        "url": "https://www.apepoc.org"
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-29",
+    "source": "VentyLab (JSON unificado)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel avanzado - sección patologías. Integra tabla OCDE 2000-2013 (4 países), alerta pediátrica 41M niños <5 años, 5 impactos críticos de la obesidad con PEEPi cuantificable, distinción PI vs PP con indicaciones clínicas específicas, riesgo de hiperoxemia (atelectasias reabsorción + ROS), LOV-ED con preobesidad, SDRA obeso 10-26 cmH₂O, DP como árbitro, CLT (intrínseca/extrínseca/germana), Chunking Shaoheng Ren 63%→78%, 2-back/PVT, 'I Do/We Do/You Do', Expertise Reversal Effect, y APEPOC (tabaquismo, moho micótico, Vitaminas D/E/C con fuentes específicas)."
+  }
+}

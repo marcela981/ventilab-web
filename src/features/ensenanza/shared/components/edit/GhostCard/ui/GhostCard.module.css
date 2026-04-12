@@ -1,0 +1,47 @@
+/*
+ * GhostCard.module.css
+ * BEM: .ghost-card  /  .ghost-card__icon  /  .ghost-card__label
+ *
+ * Tokens de diseño heredados de edit-mode.css (:root)
+ */
+
+.ghost-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: var(--edit-border-radius-card, 8px);
+  border: 1.5px dashed var(--edit-ghost-border-color, rgba(11, 186, 244, 0.45));
+  background-color: var(--edit-ghost-bg, rgba(11, 186, 244, 0.04));
+  color: var(--edit-ghost-icon-color, rgba(11, 186, 244, 0.7));
+  cursor: pointer;
+  user-select: none;
+  box-sizing: border-box;
+  transition:
+    background-color var(--edit-transition, 0.2s ease-in-out),
+    border-color     var(--edit-transition, 0.2s ease-in-out),
+    color            var(--edit-transition, 0.2s ease-in-out);
+}
+
+.ghost-card:hover {
+  background-color: var(--edit-ghost-hover-bg, rgba(11, 186, 244, 0.1));
+  border-color: rgba(11, 186, 244, 0.85);
+  color: rgba(11, 186, 244, 1);
+}
+
+.ghost-card:focus-visible {
+  outline: 2px solid rgba(11, 186, 244, 0.7);
+  outline-offset: 2px;
+}
+
+.ghost-card__icon {
+  flex-shrink: 0;
+  /* MUI fontSize="small" = 20px; aquí solo aplicamos flex */
+}
+
+.ghost-card__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+}

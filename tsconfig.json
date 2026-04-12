@@ -39,18 +39,14 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@/components/*": ["./src/components/*"],
-      "@/view-components/*": ["./src/view-components/*"],
+      "@/shared/*": ["./src/shared/*"],
       "@/features/*": ["./src/features/*"],
-      "@/hooks/*": ["./src/hooks/*"],
-      "@/contexts/*": ["./src/contexts/*"],
-      "@/services/*": ["./src/services/*"],
-      "@/utils/*": ["./src/utils/*"],
       "@/lib/*": ["./lib/*", "./src/lib/*"],
       "@/data/*": ["./src/data/*"],
       "@/theme/*": ["./src/theme/*"],
       "@/styles/*": ["./src/styles/*"],
-      "@/types/*": ["./src/types/*"]
+      "@/types/*": ["./src/types/*"],
+      "@/config/*": ["./src/config/*"]
     },
     /* Next.js */
     "plugins": [

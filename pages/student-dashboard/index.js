@@ -12,13 +12,12 @@
  */
 
 import React from 'react';
-import { StudentDashboard } from '@/components/dashboard';
 
 /**
  * Página del Dashboard de Estudiante
- * El componente StudentDashboard ya incluye la protección withAuth(['STUDENT'])
+ * TODO: StudentDashboard en migración - dependencias pendientes de actualizar
  */
 export default function StudentDashboardPage() {
-  return <StudentDashboard />;
+  return <div>Student Dashboard (en construcción)</div>;
 }
 

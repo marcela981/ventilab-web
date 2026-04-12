@@ -1,0 +1,139 @@
+/*
+ * TagBadge.module.css
+ * BEM root: tag-badge
+ *
+ * Tokens de diseño heredados de edit-mode.css (:root)
+ */
+
+/* ─── Contenedor principal ───────────────────────────────────────────────── */
+
+.tag-badge {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+/* ─── Lista de píldoras activas ──────────────────────────────────────────── */
+
+.tag-badge__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+/* ─── Píldora individual ─────────────────────────────────────────────────── */
+
+.tag-badge__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: var(--edit-border-radius-badge, 12px);
+  background: var(--tag-bg);
+  color: var(--tag-color);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  transition: all var(--edit-transition, 0.2s ease-in-out);
+}
+
+/* ─── Botón quitar etiqueta ──────────────────────────────────────────────── */
+
+.tag-badge__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.55;
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 0;
+  margin: 0;
+  width: 13px;
+  height: 13px;
+  transition: opacity 0.15s ease;
+}
+
+.tag-badge__remove:hover {
+  opacity: 1;
+}
+
+/* ─── Botón añadir etiqueta ──────────────────────────────────────────────── */
+
+.tag-badge__add {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--edit-border-radius-badge, 12px);
+  border: 1px dashed rgba(11, 186, 244, 0.5);
+  background: transparent;
+  color: rgba(11, 186, 244, 0.7);
+  font-size: 0.65rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--edit-transition, 0.2s ease-in-out);
+  white-space: nowrap;
+}
+
+.tag-badge__add:hover {
+  background: rgba(11, 186, 244, 0.1);
+  border-color: rgba(11, 186, 244, 0.8);
+  color: #0bbaf4;
+}
+
+/* ─── Dropdown selector de etiquetas ────────────────────────────────────── */
+
+.tag-badge__dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 1400;
+  background: #1a2535;
+  border: 1px solid rgba(11, 186, 244, 0.25);
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+  padding: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 200px;
+  max-width: 260px;
+}
+
+/* ─── Opción en el dropdown ──────────────────────────────────────────────── */
+
+.tag-badge__option {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--edit-border-radius-badge, 12px);
+  border: 1px solid transparent;
+  background: var(--tag-bg);
+  color: var(--tag-color);
+  font-size: 0.65rem;
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 0.65;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+.tag-badge__option:hover {
+  opacity: 1;
+  transform: scale(1.04);
+}
+
+.tag-badge__option--selected {
+  opacity: 1;
+  border-color: var(--tag-color);
+}
+
+.tag-badge__check {
+  font-size: 0.7rem;
+  font-weight: 700;
+}

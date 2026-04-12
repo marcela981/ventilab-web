@@ -1,0 +1,63 @@
+/*
+ * GhostAccordion.module.css
+ * BEM: .ghost-accordion  /  .ghost-accordion__icon  /  .ghost-accordion__label  /  .ghost-accordion__depth-hint
+ *
+ * Tokens de diseño heredados de edit-mode.css (:root)
+ */
+
+.ghost-accordion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: var(--edit-border-radius-card, 8px);
+  border: 1.5px dashed var(--edit-ghost-border-color, rgba(11, 186, 244, 0.45));
+  background-color: var(--edit-ghost-bg, rgba(11, 186, 244, 0.04));
+  color: var(--edit-ghost-icon-color, rgba(11, 186, 244, 0.7));
+  cursor: pointer;
+  user-select: none;
+  box-sizing: border-box;
+  transition:
+    background-color var(--edit-transition, 0.2s ease-in-out),
+    border-color     var(--edit-transition, 0.2s ease-in-out),
+    color            var(--edit-transition, 0.2s ease-in-out);
+}
+
+.ghost-accordion:hover {
+  background-color: var(--edit-ghost-hover-bg, rgba(11, 186, 244, 0.1));
+  border-color: rgba(11, 186, 244, 0.85);
+  color: rgba(11, 186, 244, 1);
+}
+
+.ghost-accordion:focus-visible {
+  outline: 2px solid rgba(11, 186, 244, 0.7);
+  outline-offset: 2px;
+}
+
+/* Sangría visual por profundidad (depth 0 = sin sangría) */
+.ghost-accordion--depth-1 {
+  margin-left: 20px;
+}
+
+.ghost-accordion--depth-2 {
+  margin-left: 40px;
+}
+
+.ghost-accordion__icon {
+  flex-shrink: 0;
+}
+
+.ghost-accordion__label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  flex: 1;
+}
+
+/* Indicador textual de nivel máximo (oculto por defecto, reservado) */
+.ghost-accordion__depth-hint {
+  font-size: 0.65rem;
+  opacity: 0.55;
+  font-style: italic;
+}

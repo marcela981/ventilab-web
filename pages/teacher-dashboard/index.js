@@ -13,13 +13,12 @@
  */
 
 import React from 'react';
-import { TeacherDashboard } from '@/components/dashboard';
 
 /**
  * Página del Dashboard de Profesor
- * El componente TeacherDashboard ya incluye la protección withAuth(['TEACHER', 'ADMIN'])
+ * TODO: TeacherDashboard en migración - dependencias pendientes de actualizar
  */
 export default function TeacherDashboardPage() {
-  return <TeacherDashboard />;
+  return <div>Teacher Dashboard (en construcción)</div>;
 }
 

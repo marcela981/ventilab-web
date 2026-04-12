@@ -10,7 +10,7 @@
  * into individual virtual lessons.
  */
 
-import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'fs';
 import { join, dirname, relative } from 'path';
 import { fileURLToPath } from 'url';
 import fg from 'fast-glob';
@@ -20,8 +20,8 @@ const __dirname = dirname(__filename);
 
 // Paths
 const ROOT_DIR = join(__dirname, '..');
-const LESSONS_DIR = join(ROOT_DIR, 'src', 'data', 'lessons');
-const MANIFEST_PATH = join(ROOT_DIR, 'src', 'data', 'lessons.manifest.json');
+const LESSONS_DIR = join(ROOT_DIR, 'src', 'features', 'teaching', 'data', 'lessons');
+const MANIFEST_PATH = join(ROOT_DIR, 'src', 'features', 'teaching', 'data', 'lessons.manifest.json');
 
 // Module to level mapping (from curriculumData.js structure)
 // This will be populated by reading curriculumData or can be extended
@@ -43,7 +43,7 @@ function getLevelFromModuleId(moduleId) {
   
   // Fallback: try to read from curriculumData (if available)
   try {
-    const curriculumDataPath = join(ROOT_DIR, 'src', 'data', 'curriculumData.js');
+    const curriculumDataPath = join(ROOT_DIR, 'src', 'features', 'teaching', 'data', 'curriculumData.js');
     // For now, use the static map. If needed, we can dynamically import curriculumData
     // but that's more complex due to ES modules.
   } catch (error) {
@@ -257,6 +257,9 @@ function buildManifest() {
     })),
   };
   
+  // Ensure output directory exists before writing
+  mkdirSync(dirname(MANIFEST_PATH), { recursive: true });
+
   // Write manifest file
   writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2), 'utf-8');
   

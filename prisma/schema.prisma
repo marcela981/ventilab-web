@@ -1,9 +1,5 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
-// =============================================================================
-// IMPORTANT: This schema MUST match the backend schema (ventylab-server)
-// Both projects connect to the same database
-// =============================================================================
 
 generator client {
   provider = "prisma-client-js"
@@ -19,7 +15,7 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   name          String?
-  password      String?   // Nullable for OAuth-only users
+  password      String? // Nullable for OAuth-only users
   role          UserRole  @default(STUDENT)
   image         String?
   createdAt     DateTime  @default(now())
@@ -27,12 +23,176 @@ model User {
 
   accounts           Account[]
   sessions           Session[]
-  progress           Progress[]
+  // progress           Progress[]           // DEPRECATED - DISABLED to prevent phantom table errors
+  // learningProgress LearningProgress[] -- REMOVED in FASE 3 migration
   quizAttempts       QuizAttempt[]
   achievements       Achievement[]
   evaluationAttempts EvaluationAttempt[]
 
+  // Teacher-Student relationships
+  // When user is a teacher: their assigned students
+  studentsAsTeacher TeacherStudent[] @relation("TeacherToStudents")
+  // When user is a student: their assigned teachers
+  teachersAsStudent TeacherStudent[] @relation("StudentToTeachers")
+
+  // Audit trail relations
+  changeLogs ChangeLog[]
+
+  // Content override relations
+  // When user is a student: their personalized content overrides
+  contentOverrides ContentOverride[] @relation("StudentOverrides")
+  // When user is a teacher/admin: overrides they created for students
+  createdOverrides ContentOverride[] @relation("CreatedOverrides")
+
+  // Teaching progression (UserProgress + LessonCompletion)
+  // LearningProgress/LessonProgress removed after FASE 3 migration
+  userProgress      UserProgress[]
+  lessonCompletions LessonCompletion[]
+
+  // Page content authoring (Phase 1 - Content Hierarchy Refactoring)
+  createdPages  Page[]         @relation("PageCreator")
+  updatedPages  Page[]         @relation("PageUpdater")
+  pageRevisions PageRevision[] @relation("PageRevisionChanger")
+
+  // Page-level progress tracking (Phase 1 - replaces LessonProgress for overview)
+  pageProgress PageProgress[]
+
+  // Simulation module
+  ventilatorReservations VentilatorReservation[]
+  simulatorSessions      SimulatorSession[]
+
+  // Groups
+  groupMembers   GroupMember[]
+  ledGroups      Group[]       @relation("GroupLeader")
+  scoresReceived Score[]       @relation("StudentScores")
+  scoresGiven    Score[]       @relation("GraderScores")
+
   @@map("users")
+}
+
+// ============================================
+// ChangeLog Model - Audit trail for content changes
+// ============================================
+// Tracks all create, update, delete, and reorder operations
+// on teaching content (Level, Module, Lesson, Step).
+//
+// DESIGN DECISIONS:
+// - Uses JSON for diff to allow flexible schema changes
+// - Stores entityType as string for extensibility
+// - Does NOT use cascade delete to preserve audit history
+//
+// FUTURE EXTENSIONS:
+// - Add rollback capability (revert to previous state using diff.before)
+// - Add visual diff UI in admin panel
+// - Add per-student content overrides tracking (add studentId field)
+// - Add metadata for IP address, user agent for security auditing
+model ChangeLog {
+  id         String   @id @default(cuid())
+  entityType String // "Level" | "Module" | "Lesson" | "Step"
+  entityId   String // ID of the changed entity
+  action     String // "create" | "update" | "delete" | "reorder"
+  changedBy  String // User ID who made the change
+  changedAt  DateTime @default(now())
+  diff       Json? // { "field": { "before": old, "after": new } } - only for updates
+  metadata   Json? // Additional context (IP, userAgent, etc.)
+
+  // Relation to User (onDelete: SetNull to preserve audit history if user deleted)
+  user User @relation(fields: [changedBy], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([changedBy])
+  @@index([changedAt])
+  @@index([action])
+  @@map("change_logs")
+}
+
+// ============================================
+// Teacher-Student Relationship (Many-to-Many)
+// ============================================
+// Represents the assignment of students to teachers.
+// - A teacher (TEACHER/ADMIN/SUPERUSER) can have multiple students
+// - A student (STUDENT) can have multiple teachers
+//
+// ACCESS RULES:
+// - Teachers can view ONLY their assigned students
+// - Admin & Superuser can assign/remove any relationship
+// - Students cannot access or modify this relationship
+//
+// FUTURE EXTENSIONS:
+// - Add courseId/groupId for course-specific assignments
+// - Add assignedBy field to track who created the relationship
+// - Add status field (active, paused, completed) for relationship lifecycle
+model TeacherStudent {
+  id        String   @id @default(cuid())
+  teacherId String
+  studentId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations with explicit names for bi-directional access
+  teacher User @relation("TeacherToStudents", fields: [teacherId], references: [id], onDelete: Cascade)
+  student User @relation("StudentToTeachers", fields: [studentId], references: [id], onDelete: Cascade)
+
+  // Prevent duplicate teacher-student pairs
+  @@unique([teacherId, studentId])
+  // Indexes for efficient queries
+  @@index([teacherId])
+  @@index([studentId])
+  @@map("teacher_students")
+}
+
+// ============================================
+// ContentOverride Model - Per-student content customization
+// ============================================
+// Allows teachers/admins to customize global content for individual students.
+// Overrides are additive and non-destructive - global content is preserved.
+//
+// OVERRIDE DATA STRUCTURE (overrideData JSON):
+// {
+//   "fieldOverrides": { "title": "...", "content": "...", "order": N, "isActive": bool },
+//   "extraCards": [{ "id": "...", "title": "...", "content": "...", "contentType": "...", "insertAfterOrder": N }],
+//   "hiddenCardIds": ["stepId1", "stepId2"]  // Only for LESSON entityType
+// }
+//
+// ACCESS RULES:
+// - Teachers: Can create overrides ONLY for their assigned students
+// - Admin & Superuser: Can create overrides for any student
+// - Students: Cannot see or modify overrides (they just see resolved content)
+//
+// PROGRESS SAFETY:
+// - Hidden cards are marked as "skipped", NOT deleted from progress
+// - Extra cards are included in totalSteps calculation
+//
+// FUTURE EXTENSIONS:
+// - Add groupId/cohortId for group-based overrides (Phase 2)
+// - Add validFrom/validUntil for time-limited overrides (Phase 2)
+// - Add variantId for A/B testing support (Phase 3)
+// - Add priority field for override precedence when multiple apply
+model ContentOverride {
+  id           String             @id @default(cuid())
+  studentId    String
+  entityType   OverrideEntityType
+  entityId     String // ID of the Level, Lesson, or Step being overridden
+  overrideData Json // { fieldOverrides?, extraCards?, hiddenCardIds? }
+
+  // Audit fields
+  createdBy String // Teacher/Admin who created the override
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isActive  Boolean  @default(true)
+
+  // Relations
+  student User @relation("StudentOverrides", fields: [studentId], references: [id], onDelete: Cascade)
+  creator User @relation("CreatedOverrides", fields: [createdBy], references: [id], onDelete: SetNull)
+
+  // Each student can have only one active override per entity
+  @@unique([studentId, entityType, entityId], name: "override_student_entity_unique")
+  // Indexes for efficient queries
+  @@index([studentId])
+  @@index([entityType, entityId])
+  @@index([createdBy])
+  @@index([isActive])
+  @@map("content_overrides")
 }
 
 model Account {
@@ -74,9 +234,97 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
+// ============================================
+// Level Model - Top-level content organization
+// ============================================
+// Represents curriculum levels (e.g., Beginner, Intermediate, Advanced)
+// Modules belong to a Level, enabling structured curriculum progression.
+//
+// PREREQUISITE SYSTEM:
+// - Level unlocked if ALL prerequisite levels are completed (AND logic)
+// - No prerequisites = unlocked by default
+// - NEVER lock levels already completed by a student (progress safety)
+//
+// FUTURE EXTENSIONS:
+// - Add `unlockCondition` (JSON) for custom unlock rules
+// - Add `metadata` (JSON) for badges, rewards, etc.
+model Level {
+  id          String   @id @default(cuid())
+  title       String   @unique
+  /// Currículo: mecanica (ruta principal) | ventylab (aprendizaje de plataforma)
+  track       String   @default("mecanica")
+  description String?  @db.Text
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Audit trail fields
+  lastModifiedBy String? // User ID who last modified this level
+  lastModifiedAt DateTime? // Timestamp of last modification
+
+  modules Module[]
+
+  // Level prerequisite relations (same pattern as ModulePrerequisite)
+  // prerequisites: Levels that must be completed before accessing THIS level
+  // dependentLevels: Levels that depend on THIS level being completed
+  prerequisites   LevelPrerequisite[] @relation("LevelPrerequisites")
+  dependentLevels LevelPrerequisite[] @relation("DependentLevels")
+
+  @@index([order])
+  @@index([isActive])
+  @@index([track])
+  @@index([lastModifiedBy])
+  @@map("levels")
+}
+
+// ============================================
+// LevelPrerequisite Model - Level-to-Level Prerequisites
+// ============================================
+// Defines prerequisite relationships between curriculum levels.
+// Uses AND logic: ALL prerequisites must be completed to unlock a level.
+//
+// PREREQUISITE RULES:
+// - Level unlocked if ALL prerequisite levels are completed (AND logic)
+// - No prerequisites = unlocked by default
+// - NEVER lock levels already completed by student (progress safety)
+//
+// VALIDATION RULES:
+// - Circular dependencies are detected and rejected (DFS algorithm)
+// - Cannot add itself as prerequisite
+// - Cannot delete levels that are prerequisites for other active levels
+//
+// FUTURE EXTENSIONS:
+// - isOptional Boolean @default(false) // Optional levels that don't block progression
+// - unlockType String @default("AND")   // "AND" vs "OR" logic for branching paths
+// - roleRequirement String?             // Role-specific roadmaps (e.g., "TEACHER_TRAINEE")
+// - experimentGroup String?             // A/B testing support for experimental curricula
+// - minimumScore Float?                 // Require minimum completion score
+// - validFrom DateTime?                 // Time-based unlock windows
+// - validUntil DateTime?                // Expiration for time-limited paths
+model LevelPrerequisite {
+  id                  String   @id @default(cuid())
+  levelId             String // Level that requires the prerequisite
+  prerequisiteLevelId String // Level that must be completed first
+  createdAt           DateTime @default(now())
+
+  // Self-referencing relations (like ModulePrerequisite pattern)
+  level             Level @relation("LevelPrerequisites", fields: [levelId], references: [id], onDelete: Cascade)
+  prerequisiteLevel Level @relation("DependentLevels", fields: [prerequisiteLevelId], references: [id], onDelete: Cascade)
+
+  // Prevent duplicate prerequisite relationships
+  @@unique([levelId, prerequisiteLevelId], name: "level_prerequisite_unique")
+  // Indexes for efficient queries
+  @@index([levelId])
+  @@index([prerequisiteLevelId])
+  @@map("level_prerequisites")
+}
+
 model Module {
   id            String   @id @default(cuid())
+  levelId       String? // Optional: Module can belong to a Level
   title         String
+  slug          String?  @unique // JSON module ID (e.g. "module-01-fundamentals")
   description   String?  @db.Text
   category      String?
   difficulty    String?  @default("beginner") // beginner, intermediate, advanced
@@ -87,12 +335,32 @@ model Module {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  lessons          Lesson[]
-  
+  // Audit trail fields
+  lastModifiedBy String? // User ID who last modified this module
+  lastModifiedAt DateTime? // Timestamp of last modification
+
+  // FUTURE EXTENSIONS:
+  // - Add `version` Int for content versioning
+  // - Add `publishedAt` DateTime for draft/publish workflow
+
+  level   Level?   @relation(fields: [levelId], references: [id], onDelete: SetNull)
+  lessons Lesson[]
+  // learningProgress LearningProgress[] -- REMOVED in FASE 3 migration
+
   // Relaciones de prerequisitos
   prerequisites    ModulePrerequisite[] @relation("ModulePrerequisites")
   dependentModules ModulePrerequisite[] @relation("DependentModules")
 
+  // Teaching progression
+  userProgress UserProgress[]
+
+  // Phase 1: Pages belong to Module directly (will migrate to Book in Phase 2)
+  pages Page[]
+
+  @@index([levelId])
+  @@index([order])
+  @@index([isActive])
+  @@index([lastModifiedBy])
   @@map("modules")
 }
 
@@ -114,7 +382,8 @@ model Lesson {
   id            String   @id @default(cuid())
   moduleId      String
   title         String
-  content       String?  @db.Text
+  slug          String? // Human-readable identifier for URL mapping
+  content       String?  @db.Text // Legacy: JSON content, kept for backwards compatibility
   order         Int      @default(0)
   estimatedTime Int?     @default(0) // en minutos
   aiGenerated   Boolean  @default(false)
@@ -123,66 +392,122 @@ model Lesson {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  module         Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  quizzes        Quiz[]
+  // Audit trail fields
+  lastModifiedBy String? // User ID who last modified this lesson
+  lastModifiedAt DateTime? // Timestamp of last modification
 
+  module  Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  quizzes Quiz[]
+  steps   Step[] // New: Structured lesson steps (cards)
+  // lessonProgress LessonProgress[] -- REMOVED in FASE 3 migration
+
+  // Teaching progression validation
+  hasRequiredQuiz Boolean            @default(false)
+  hasRequiredCase Boolean            @default(false)
+  completions     LessonCompletion[]
+  lastAccessedBy  UserProgress[]     @relation("LastAccessedLesson")
+
+  @@unique([moduleId, slug])
+  @@index([moduleId])
+  @@index([order])
+  @@index([isActive])
+  @@index([lastModifiedBy])
   @@map("lessons")
 }
 
-model Progress {
-  id                   String    @id @default(cuid())
-  userId               String
-  lessonId             String    // ID del JSON, ej: "module-01-inversion-fisiologica"
-  currentStep          Int       @default(0)
-  totalSteps           Int       @default(1)
-  completed            Boolean   @default(false)
-  completionPercentage Float     @default(0)
-  timeSpent            Int       @default(0) // en segundos
-  lastAccess           DateTime?
-  completedAt          DateTime?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+// ============================================
+// Step Model (Cards) - Atomic content units within lessons
+// ============================================
+// Represents individual learning steps/cards within a lesson.
+// Each step is a discrete content unit that can be navigated independently.
+//
+// CONTENT TYPES:
+// - text: Rich text content
+// - image: Image with optional caption
+// - video: Embedded video
+// - quiz: Inline quiz question
+// - simulation: Interactive simulation
+// - code: Code snippet with optional execution
+//
+// FUTURE EXTENSIONS:
+// - Add `metadata` (JSON) for step-specific settings
+// - Add `conditions` (JSON) for conditional display logic
+// - Add `feedback` (JSON) for step completion feedback
+// - Add `version` Int for content versioning
+model Step {
+  id              String   @id @default(cuid())
+  lessonId        String
+  title           String? // Optional title for the step
+  content         String   @db.Text // Step content (HTML from RichTextEditor)
+  contentType     String   @default("rich-text") // rich-text, image, video, quiz, simulation
+  sectionSourceId String? // JSON section ID (e.g. "m1-p1-2-1-a") — links back to JSON file
+  order           Int      @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Audit trail fields
+  lastModifiedBy String? // User ID who last modified this step
+  lastModifiedAt DateTime? // Timestamp of last modification
 
-  @@unique([userId, lessonId])
-  @@index([userId])
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
   @@index([lessonId])
-  @@map("progress")
+  @@index([order])
+  @@index([isActive])
+  @@index([lastModifiedBy])
+  @@index([sectionSourceId])
+  @@map("steps")
 }
 
-model Quiz {
-  id          String   @id @default(cuid())
-  title       String
-  description String?  @db.Text
-  moduleId    String?
-  lessonId    String?
-  questions   Json     // Array of questions stored as JSON
-  passingScore Float   @default(70.0)
-  timeLimit   Int?     // Time limit in minutes
-  order       Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+// ============================================
+// ⚠️ REMOVED: Progress model deleted in FASE 3 migration
+// The "progress" table in the DB can be dropped via:
+//   DROP TABLE IF EXISTS progress;
+// ============================================
 
-  lesson      Lesson?  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  attempts    QuizAttempt[]
+// ============================================
+// REMOVED: LearningProgress + LessonProgress (FASE 3 migration)
+// ============================================
+// These models were replaced by:
+//   - UserProgress (module-level progress)
+//   - LessonCompletion (lesson-level progress with step tracking)
+// DB tables learning_progress and lesson_progress can be dropped after
+// verifying data was fully migrated via prisma/migrations/migrate-progress-data.ts
+// ============================================
+
+model Quiz {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?  @db.Text
+  moduleId     String?
+  lessonId     String?
+  questions    Json // Array of questions stored as JSON
+  passingScore Float    @default(70.0)
+  timeLimit    Int? // Time limit in minutes
+  order        Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  lesson   Lesson?       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  attempts QuizAttempt[]
 
   @@map("quizzes")
 }
 
 model QuizAttempt {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   userId      String
   quizId      String
   score       Float
   passed      Boolean
-  answers     Json     // User's answers stored as JSON
-  startedAt   DateTime @default(now())
+  answers     Json // User's answers stored as JSON
+  startedAt   DateTime  @default(now())
   completedAt DateTime?
 
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
   @@map("quiz_attempts")
 }
@@ -195,15 +520,23 @@ model Achievement {
   icon        String?
   unlockedAt  DateTime @default(now())
 
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("achievements")
 }
 
 enum UserRole {
   STUDENT
-  INSTRUCTOR
+  TEACHER // Renamed from INSTRUCTOR - migration maps existing users
   ADMIN
+  SUPERUSER // Full access to all routes (implicit in middleware)
+}
+
+// Entity types that support per-student overrides
+enum OverrideEntityType {
+  LEVEL
+  LESSON
+  CARD // Step/Card content
 }
 
 enum CaseDifficulty {
@@ -232,24 +565,33 @@ enum ParameterPriority {
   OPCIONAL
 }
 
+// Status of a ventilator reservation
+enum ReservationStatus {
+  ACTIVE // Reserva actualmente vigente
+  COMPLETED // Reserva terminada normalmente (usuario liberó)
+  CANCELLED // Reserva cancelada manualmente
+  EXPIRED // Reserva expirada por tiempo
+}
+
 model ClinicalCase {
-  id                String            @id @default(cuid())
-  title             String
-  description       String            @db.Text
-  patientAge        Int
-  patientWeight     Float             // En kg
-  mainDiagnosis     String
-  comorbidities     String[]          // Array de strings
-  labData           Json?             // Datos de laboratorio (gasometría, etc)
-  difficulty        CaseDifficulty
-  pathology         Pathology
-  educationalGoal   String            @db.Text
-  isActive          Boolean           @default(true)
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  id              String         @id @default(cuid())
+  title           String
+  description     String         @db.Text
+  patientAge      Int
+  patientWeight   Float // En kg
+  mainDiagnosis   String
+  comorbidities   String[] // Array de strings
+  labData         Json? // Datos de laboratorio (gasometría, etc)
+  difficulty      CaseDifficulty
+  pathology       Pathology
+  educationalGoal String         @db.Text
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 
   expertConfiguration ExpertConfiguration?
-  evaluationAttempts EvaluationAttempt[]
+  evaluationAttempts  EvaluationAttempt[]
+  simulatorSessions   SimulatorSession[]
 
   @@index([difficulty])
   @@index([pathology])
@@ -258,41 +600,98 @@ model ClinicalCase {
 }
 
 model ExpertConfiguration {
-  id                    String          @id @default(cuid())
-  clinicalCaseId        String          @unique
-  ventilationMode       String          // volume, pressure, etc
-  tidalVolume           Float?          // Vt en ml
-  respiratoryRate       Int?            // FR en resp/min
-  peep                  Float?          // PEEP en cmH2O
-  fio2                  Float?          // FiO2 en porcentaje (0-100)
-  maxPressure           Float?          // Presión máxima en cmH2O
-  iERatio               String?         // Relación I:E (ej: "1:2")
-  justification         String          @db.Text // Justificación de cada parámetro
-  acceptableRanges      Json?           // Rangos aceptables {param: {min, max}}
-  parameterPriorities    Json?           // Prioridades {param: CRITICO|IMPORTANTE|OPCIONAL}
-  createdAt             DateTime        @default(now())
-  updatedAt             DateTime        @updatedAt
+  id                  String   @id @default(cuid())
+  clinicalCaseId      String   @unique
+  ventilationMode     String // volume, pressure, etc
+  tidalVolume         Float? // Vt en ml
+  respiratoryRate     Int? // FR en resp/min
+  peep                Float? // PEEP en cmH2O
+  fio2                Float? // FiO2 en porcentaje (0-100)
+  maxPressure         Float? // Presión máxima en cmH2O
+  iERatio             String? // Relación I:E (ej: "1:2")
+  justification       String   @db.Text // Justificación de cada parámetro
+  acceptableRanges    Json? // Rangos aceptables {param: {min, max}}
+  parameterPriorities Json? // Prioridades {param: CRITICO|IMPORTANTE|OPCIONAL}
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
-  clinicalCase          ClinicalCase    @relation(fields: [clinicalCaseId], references: [id], onDelete: Cascade)
+  clinicalCase ClinicalCase @relation(fields: [clinicalCaseId], references: [id], onDelete: Cascade)
 
   @@map("expert_configurations")
 }
 
-model EvaluationAttempt {
-  id                    String          @id @default(cuid())
-  userId                String
-  clinicalCaseId        String
-  userConfiguration     Json            // Configuración ingresada por el usuario
-  score                 Float            // Score calculado (0-100)
-  differences           Json?           // Diferencias detectadas con la configuración experta
-  aiFeedback            String?         @db.Text // Retroalimentación generada por IA
-  completionTime        Int?            // Tiempo en segundos
-  isSuccessful          Boolean         @default(false)
-  startedAt             DateTime        @default(now())
-  completedAt           DateTime?
+// ============================================
+// SIMULATION MODULE
+// ============================================
+// VentilatorReservation: tracks which user has the physical ventilator reserved.
+// Only one active reservation allowed at a time (enforced at service level).
+//
+// SimulatorSession: persists one simulation run including all parameters and
+// telemetry readings collected during the session.
+// ============================================
 
-  user                  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  clinicalCase          ClinicalCase    @relation(fields: [clinicalCaseId], references: [id], onDelete: Cascade)
+model VentilatorReservation {
+  id              String            @id @default(cuid())
+  userId          String
+  userRole        UserRole // Snapshot del rol del usuario al momento de reservar
+  deviceId        String            @default("ventilab-device-001")
+  groupId         String? // Grupo para el cual se reservó
+  status          ReservationStatus @default(ACTIVE)
+  durationMinutes Int // Duración solicitada en minutos
+  startTime       DateTime          @default(now())
+  endTime         DateTime // Hora programada de finalización
+  releasedAt      DateTime? // Cuándo se liberó o canceló (null si aún activa)
+  purpose         String? // Motivo de uso (práctica, evaluación, etc.)
+  cancelReason    String? // Razón de cancelación (si aplica)
+
+  // Audit fields
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([userId])
+  @@index([deviceId, status])
+  @@map("ventilator_reservations")
+}
+
+model SimulatorSession {
+  id               String    @id @default(cuid())
+  userId           String
+  clinicalCaseId   String?
+  isRealVentilator Boolean   @default(false)
+  parametersLog    Json // VentilatorCommand[]
+  ventilatorData   Json // VentilatorReading[]
+  notes            String?   @db.Text
+  startedAt        DateTime  @default(now())
+  completedAt      DateTime?
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clinicalCase ClinicalCase? @relation(fields: [clinicalCaseId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([clinicalCaseId])
+  @@index([startedAt])
+  @@map("simulator_sessions")
+}
+
+model EvaluationAttempt {
+  id                String    @id @default(cuid())
+  userId            String
+  clinicalCaseId    String
+  userConfiguration Json // Configuración ingresada por el usuario
+  score             Float // Score calculado (0-100)
+  differences       Json? // Diferencias detectadas con la configuración experta
+  aiFeedback        String?   @db.Text // Retroalimentación generada por IA
+  completionTime    Int? // Tiempo en segundos
+  isSuccessful      Boolean   @default(false)
+  startedAt         DateTime  @default(now())
+  completedAt       DateTime?
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clinicalCase ClinicalCase @relation(fields: [clinicalCaseId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([clinicalCaseId])
@@ -300,4 +699,366 @@ model EvaluationAttempt {
   @@index([isSuccessful])
   @@index([startedAt])
   @@map("evaluation_attempts")
+}
+
+// ============================================
+// TEACHING PROGRESSION SYSTEM
+// ============================================
+// UserProgress: Module-level progress with denormalized counters
+// LessonCompletion: Lesson-level completion with quiz/case scores
+//
+// These tables are the SINGLE SOURCE OF TRUTH for:
+// - Module unlock logic (via ModuleUnlockService)
+// - Lesson sequential access (via LessonProgressService)
+// - Module completion percentage
+//
+// Coexists with LearningProgress + LessonProgress which
+// handle step-level tracking within lessons.
+// ============================================
+
+enum ProgressStatus {
+  NOT_STARTED // Module not yet started
+  IN_PROGRESS // At least one lesson completed
+  COMPLETED // All lessons completed (100%)
+}
+
+model UserProgress {
+  id       String @id @default(cuid())
+  userId   String
+  moduleId String
+
+  // Module status
+  status            ProgressStatus @default(NOT_STARTED)
+  isModuleCompleted Boolean        @default(false) // Denormalized flag for quick lookups
+
+  // Denormalized counters (recalculated on each lesson completion)
+  completedLessonsCount Int   @default(0)
+  totalLessons          Int   @default(0)
+  progressPercentage    Float @default(0) // 0-100
+
+  // Time tracking (migrated from LearningProgress)
+  timeSpent Int @default(0) // Total time in seconds
+
+  // Navigation
+  lastAccessedLessonId String?
+  lastAccessedAt       DateTime @default(now())
+
+  // Lifecycle
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  // Relations
+  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module             Module  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  lastAccessedLesson Lesson? @relation("LastAccessedLesson", fields: [lastAccessedLessonId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, moduleId])
+  @@index([userId])
+  @@index([moduleId])
+  @@index([status])
+  @@index([isModuleCompleted])
+  @@map("user_progress")
+}
+
+model LessonCompletion {
+  id       String @id @default(cuid())
+  userId   String
+  lessonId String
+
+  // Step-level tracking (migrated from LessonProgress — for resume)
+  currentStepIndex Int       @default(0) // 0-based last viewed step
+  totalSteps       Int       @default(1) // Total steps in lesson (cached)
+  timeSpent        Int       @default(0) // Time spent in seconds
+  lastAccessed     DateTime? // Last access time
+
+  // Explicit completion flag (null completedAt = in-progress)
+  isCompleted Boolean @default(false)
+
+  // Quiz tracking (if lesson.hasRequiredQuiz = true)
+  quizAttempts  Int    @default(0)
+  bestQuizScore Float? // 0-100
+  lastQuizScore Float?
+
+  // Case study tracking (if lesson.hasRequiredCase = true)
+  caseAttempts  Int    @default(0)
+  bestCaseScore Float? // 0-100
+  lastCaseScore Float?
+
+  // Timestamps — nullable: null = in-progress, set = completed
+  completedAt DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
+  @@index([isCompleted])
+  @@index([lastAccessed])
+  @@map("lesson_completions")
+}
+
+// ============================================
+// CONTENT HIERARCHY REFACTORING - Phase 1
+// ============================================
+// New content tables that coexist with existing Lesson/Step tables.
+// Goal: Render lessons from the database instead of frontend JSON files.
+//
+// Phase 1: Page → Module (temporarily)
+// Phase 2: Page → Book (when Book model is introduced)
+// ============================================
+
+enum PageType {
+  THEORY
+  EXERCISE
+  CASE_STUDY
+  SIMULATION
+  VIDEO
+}
+
+enum ContentDifficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum SectionType {
+  // Semantic types (from JSON lesson sections)
+  INTRODUCTION
+  THEORY
+  CASE_STUDY
+  SUMMARY
+  EXERCISE
+  QUIZ
+  REFERENCES
+
+  // Block/format types (for future content editor)
+  TEXT
+  IMAGE
+  VIDEO
+  EQUATION
+  CALLOUT
+  CODE
+  DIVIDER
+}
+
+// ============================================
+// Page Model - Atomic learning unit (replaces Lesson conceptually)
+// ============================================
+// Phase 1: References Module directly via moduleId.
+// Phase 2: FK migrates to Book when Book model is introduced.
+//
+// MIGRATION TRACEABILITY:
+// - legacyLessonId: links to existing Lesson record (if one exists)
+// - legacyJsonId: original JSON file id (e.g. "module-01-inversion-fisiologica")
+model Page {
+  id String @id @default(cuid())
+
+  // Hierarchy FK (Phase 1: Module, Phase 2: Book)
+  moduleId String
+
+  // Identity
+  title String
+  slug  String
+  order Int
+  type  PageType @default(THEORY)
+
+  // Metadata
+  description      String?           @db.Text
+  difficulty       ContentDifficulty @default(INTERMEDIATE)
+  bloomLevel       String?
+  estimatedMinutes Int?
+
+  // Learning metadata
+  learningObjectives String[]
+  prerequisites      String[]
+  keyTakeaways       String[]
+  tags               String[]
+
+  // Completion requirements
+  hasRequiredQuiz Boolean @default(false)
+  minQuizScore    Float?
+
+  // Rich JSON fields (from original JSON)
+  aiConfig  Json?
+  resources Json?
+
+  // Content versioning
+  version Int @default(1)
+
+  // Editorial state
+  isActive    Boolean @default(true)
+  isPublished Boolean @default(false)
+
+  // Migration traceability
+  legacyLessonId String? @unique
+  legacyJsonId   String? @unique
+
+  // Audit
+  createdBy   String
+  updatedBy   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+
+  // Relations
+  module    Module         @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  sections  PageSection[]
+  revisions PageRevision[]
+  progress  PageProgress[]
+
+  creator User  @relation("PageCreator", fields: [createdBy], references: [id])
+  updater User? @relation("PageUpdater", fields: [updatedBy], references: [id])
+
+  @@unique([moduleId, slug])
+  @@unique([moduleId, order])
+  @@index([moduleId])
+  @@index([type])
+  @@index([isActive, isPublished])
+  @@index([legacyLessonId])
+  @@map("pages")
+}
+
+// ============================================
+// PageSection Model - Block-based content within a Page
+// ============================================
+// Each section represents one content block.
+// In Phase 1, content is always { "markdown": "..." } from JSON.
+// Future editor can produce { "imageUrl": "...", "caption": "..." } etc.
+model PageSection {
+  id     String @id @default(cuid())
+  pageId String
+
+  order   Int
+  type    SectionType
+  title   String?
+  content Json
+
+  // Legacy traceability
+  sectionId     String? // Original JSON section id (e.g. "m1-intro-a")
+  estimatedTime Int? // Minutes
+
+  isActive Boolean @default(true)
+
+  // Audit
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@unique([pageId, order])
+  @@index([pageId])
+  @@index([type])
+  @@map("page_sections")
+}
+
+// ============================================
+// PageRevision Model - Content version snapshots
+// ============================================
+// Created on each publish. Stores full snapshot for rollback.
+model PageRevision {
+  id      String @id @default(cuid())
+  pageId  String
+  version Int
+
+  title            String
+  type             PageType
+  sectionsSnapshot Json
+
+  changeLog String?  @db.Text
+  changedBy String
+  changedAt DateTime @default(now())
+
+  page    Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  changer User @relation("PageRevisionChanger", fields: [changedBy], references: [id])
+
+  @@unique([pageId, version])
+  @@index([pageId])
+  @@map("page_revisions")
+}
+
+// ============================================
+// PageProgress Model - Per-Page progress tracking
+// ============================================
+// Tracks completion and XP per page per user.
+// This is the SINGLE SOURCE OF TRUTH for the progress overview.
+//
+// Replaces the old LessonProgress-based overview which required
+// the Lesson model and produced empty results for new users.
+model PageProgress {
+  id     String @id @default(cuid())
+  userId String
+  pageId String
+
+  completed     Boolean   @default(false)
+  xpEarned      Int       @default(0)
+  lastVisitedAt DateTime?
+  completedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pageId])
+  @@index([userId])
+  @@index([pageId])
+  @@index([completed])
+  @@map("page_progress")
+}
+
+model Group {
+  id                String   @id @default(cuid())
+  name              String
+  description       String?  @db.Text
+  parentGroupId     String?
+  simulatorLeaderId String? // ID del estudiante asignado como líder
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  parentGroup  Group?                  @relation("SubGroups", fields: [parentGroupId], references: [id])
+  subGroups    Group[]                 @relation("SubGroups")
+  leader       User?                   @relation("GroupLeader", fields: [simulatorLeaderId], references: [id])
+  members      GroupMember[]
+  reservations VentilatorReservation[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id       String   @id @default(cuid())
+  groupId  String
+  userId   String
+  role     UserRole @default(STUDENT) // Puede ser STUDENT o TEACHER
+  joinedAt DateTime @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@map("group_members")
+}
+
+model Score {
+  id        String   @id @default(cuid())
+  userId    String // Estudiante evaluado
+  graderId  String // Profesor que califica
+  lessonId  String?
+  quizId    String?
+  points    Float
+  comments  String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User @relation("StudentScores", fields: [userId], references: [id], onDelete: Cascade)
+  grader User @relation("GraderScores", fields: [graderId], references: [id], onDelete: Cascade)
+
+  @@map("scores")
 }

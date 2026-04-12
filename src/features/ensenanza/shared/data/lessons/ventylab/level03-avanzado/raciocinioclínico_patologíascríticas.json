@@ -1,0 +1,268 @@
+{
+  "id": "module-05-raciocinio-clinico-patologias-criticas",
+  "moduleId": "module-03-avanzado",
+  "title": "Raciocinio clínico en patologías críticas: neurobiología, recuperación y arquitectura de datos",
+  "description": "Este módulo avanzado integra fundamentos neurobiológicos del juicio clínico, lectura activa, recuperación espaciada, TBL/simulación y gestión de protocolos con JSON para fortalecer el razonamiento en patologías críticas y entornos de alta presión.",
+  "order": 5,
+  "estimatedTime": 72,
+  "difficulty": "advanced",
+  "bloomLevel": "apply",
+  "learningObjectives": [
+    "Explicar cómo la limitación de la memoria de trabajo condiciona el juicio clínico bajo estrés en UCI.",
+    "Relacionar LTP y conocimiento encapsulado con razonamiento clínico fluido en presentaciones atípicas.",
+    "Aplicar el método de las tres pasadas a literatura de medicina crítica para extraer valor clínico real.",
+    "Usar práctica espaciada, recuperación encubierta y entrelazado para fortalecer diagnósticos diferenciales complejos.",
+    "Reconocer el rol de TBL, simulación y debriefing en la disminución del error clínico.",
+    "Entender por qué JSON, docling y jq permiten convertir protocolos extensos en soporte clínico consultable."
+  ],
+  "prerequisites": [
+    "Fisiología respiratoria y hemodinámica a nivel intermedio-avanzado.",
+    "Experiencia previa con lectura crítica de literatura clínica o módulos previos de aprendizaje activo."
+  ],
+  "sections": [
+    {
+      "id": "rcpc-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción y mapa del módulo",
+      "content": {
+        "markdown": "Este módulo parte de una idea central: en patologías críticas, el razonamiento clínico no depende solo del conocimiento teórico, sino de cómo ese conocimiento ha sido consolidado, recuperado y estructurado para resistir la presión extrema.\n\nConectarás cinco capas:\n- Neurobiología del juicio clínico.\n- Lectura activa y procesamiento crítico.\n- Estrategias de retención y discriminación diagnóstica.\n- TBL y simulación con debriefing.\n- Arquitectura de datos clínicos en JSON para consulta rápida."
+      },
+      "estimatedTime": 6
+    },
+    {
+      "id": "rcpc-theory-1",
+      "order": 2,
+      "type": "theory",
+      "title": "Fundamentos neurobiológicos del juicio clínico",
+      "content": {
+        "markdown": "La neurobiología del juicio clínico no es un apéndice de ciencia básica: es un pilar estratégico para mitigar negligencia y error en escenarios de alta complejidad. En una parada cardiorrespiratoria o en choque séptico, el clínico opera con una arquitectura mental vulnerable.\n\nLa memoria de trabajo, ubicada en la corteza prefrontal dorsolateral, dispone de solo **5-7 elementos** durante un buffer aproximado de **12 segundos**. Bajo estrés extremo, esta carga puede saturarse, precipitando el fallo del procesamiento y errores fatales.\n\nPara superar esta limitación, el experto debe favorecer la **Potenciación a Largo Plazo (LTP)**, permitiendo que la información pase del hipocampo a la corteza de asociación para consolidarse. La meta es lograr **conocimiento encapsulado**, donde las ciencias básicas se integran en marcos conceptuales amplios.\n\nEsta arquitectura reduce carga cognitiva, agiliza diagnóstico en condiciones tiempo-dependientes y permite procesar presentaciones atípicas mediante recuperación de esquemas consolidados."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "rcpc-theory-2",
+      "order": 3,
+      "type": "theory",
+      "title": "Métodos de lectura activa en medicina crítica",
+      "content": {
+        "markdown": "Ante la infoxicación científica, el clínico debe asumir la lectura activa como una maniobra defensiva. La lectura secuencial tradicional es una forma de obediencia sin propósito: consume tiempo y produce poco rendimiento clínico.\n\nEl **Método de las Tres Pasadas** transforma textos en herramientas de resolución de problemas:\n\n- **Primera pasada (5 a 10 min):** revisar título, resumen y conclusiones para categorizar el estudio y decidir si merece atención.\n- **Segunda pasada (hasta 1 hora):** analizar figuras, diagramas y resultados clave, omitiendo detalles técnicos obstructivos para captar la esencia.\n- **Tercera pasada (1 a 5 horas):** re-implementar mentalmente el estudio, desafiar supuestos e identificar fallas ocultas.\n\nEste proceso exige tres niveles de operación intelectual:\n- **Traducción:** codificar conceptos en lenguaje propio.\n- **Interpretación:** emitir juicios críticos sobre la evidencia.\n- **Extrapolación:** aplicar el hallazgo al paciente crítico real.\n\nLa lectura es el cimiento; la retención duradera depende de interrumpir el olvido."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "rcpc-theory-3",
+      "order": 4,
+      "type": "theory",
+      "title": "Estrategias de retención y memoria flexible",
+      "content": {
+        "markdown": "El olvido es un patrón biológico predecible que debe ser interrumpido mediante **Retrieval Practice**. Este enfoque se basa en las **dificultades deseables**: retos cognitivos arduos que producen una memoria más flexible y resistente.\n\nHallazgos clave:\n- **Práctica espaciada:** incrementa la retención a largo plazo en **41%** frente a cramming (Dobson, 2013).\n- **Recuperación encubierta:** traer información mentalmente entre pacientes es una estrategia de bajo roce y alto impacto.\n- **Entrelazado (interleaving):** mezclar temas similares, por ejemplo tipos de choque o insuficiencia cardíaca, mejora discriminación diagnóstica y evita automatización superficial.\n\nEl objetivo no es solo recordar, sino mejorar la identificación de matices sutiles durante inestabilidad hemodinámica y otros escenarios críticos."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "rcpc-theory-4",
+      "order": 5,
+      "type": "theory",
+      "title": "Metodologías colaborativas y simulación",
+      "content": {
+        "markdown": "La brecha entre teoría y ejecución clínica bajo presión se cierra con aprendizaje en equipo y simulación.\n\nEn **Team-Based Learning (TBL)**, la rendición de cuentas se fortalece con:\n- **Pre-work**.\n- **IRAT / TRAT**, donde la defensa de argumentos consolida aprendizaje.\n- **Aplicación de casos reales**.\n\nLa simulación clínica puede leerse desde el **Ciclo de Aprendizaje Experiencial de Kolb**:\n- experiencia concreta,\n- observación reflexiva,\n- conceptualización abstracta,\n- experimentación activa.\n\nEn este circuito, el facilitador y el **debriefing** son los elementos críticos: la retroalimentación reflexiva convierte el aprendizaje a través del error en un rastro de memoria duradero.\n\nEl entrenamiento de este tipo ha mostrado reducción de error clínico desde **30.9% hasta 4.4%**. Para que el conocimiento colectivo sea operativo, debe además codificarse en estructuras digitales consultables en el punto de atención."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "rcpc-theory-5",
+      "order": 6,
+      "type": "theory",
+      "title": "Arquitectura de datos y gestión clínica con JSON",
+      "content": {
+        "markdown": "En un entorno hospitalario tecnificado, los protocolos no pueden depender solo de PDFs estáticos. Es necesario migrar hacia estructuras interoperables como **JSON (JavaScript Object Notation)**.\n\nEsta arquitectura permite transformar guías extensas en objetos legibles por máquinas y habilitar **Clinical Decision Support Systems (CDSS)**.\n\nHerramientas clave:\n- **docling (IBM):** extracción automatizada y precisa desde documentos médicos complejos.\n- **jq:** filtrado instantáneo de dosis, algoritmos y componentes específicos durante una emergencia.\n\nEjemplo conceptual:\nConvertir un protocolo de sepsis de 50 páginas en una estructura JSON consultable por una app móvil o una IA permite una toma de decisiones más rápida y basada en evidencia.\n\nLa integración entre aprendizaje autodirigido e infraestructura de datos eficiente es presentada aquí como una vía directa hacia excelencia asistencial y seguridad del paciente."
+      },
+      "estimatedTime": 14
+    },
+    {
+      "id": "vl3-racion-exercise",
+      "type": "exercise",
+      "title": "Taller: Raciocinio clínico estructurado",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller: Raciocinio clínico estructurado en ventilación mecánica\n\n> Entrena el pensamiento clínico sistemático en escenarios de alta complejidad. No bloquea avance.\n\n---\n\n### Actividad 1 — Modelo de raciocinio dual (Sistema 1 / Sistema 2)\n\nEl raciocinio diagnóstico involucra dos sistemas (Kahneman):\n- **Sistema 1:** Rápido, automático, basado en reconocimiento de patrones (\"este paciente con SDRA tiene auto-PEEP\" — reconocido de inmediato).\n- **Sistema 2:** Lento, analítico, deliberativo (\"¿por qué el P/F no mejora con PEEP 16? → análisis paso a paso\").\n\nPara cada situación clínica, indica qué sistema debes activar predominantemente y por qué:\n\n| Situación | Sistema predominante | Justificación |\n|---|---|---|\n| Alarma de presión alta súbita, SaO₂ cayendo | S1 (rápido) | Requiere acción inmediata; patrón reconocible (neumotórax, sonda doblada) |\n| Paciente que no mejora tras 72 h de ventilación protectora | S2 (analítico) | Situación compleja, sin respuesta típica → revisión sistemática |\n| Selección de FiO₂ de mantenimiento | S1 | Regla simple: menor FiO₂ con SaO₂ ≥ 95% |\n| Evaluar criterios de extubación en paciente con comorbilidades | S2 | Múltiples factores a ponderar; error costoso |\n\n---\n\n### Actividad 2 — Sesgos cognitivos en UCI\n\nIdentifica el sesgo cognitivo presente en cada escenario:\n\n1. El médico asume que la taquicardia del paciente intubado es por dolor/ansiedad sin descartar neumotórax porque \"siempre es eso\". → **Sesgo de anclaje** (anclar en diagnóstico previo frecuente).\n\n2. Ante un paciente con SDRA, el médico usa el mismo protocolo que usó con éxito la semana anterior sin evaluar las diferencias. → **Sesgo de disponibilidad** (lo que recuerdo mejor influye mi decisión).\n\n3. El médico de guardia no cuestiona el manejo del turno anterior porque \"fue una decisión del especialista\". → **Efecto de autoridad** / **Sesgo de confirmación** (no buscar información que contradiga la decisión existente).\n\n---\n\n### Actividad 3 — Caso de raciocinio integrado (ejercicio final)\n\n**Escenario:** Mujer, 61 años, SDRA moderado día 8. Parámetros: VCV 360 mL, PEEP 12, FiO₂ 0,55. Hoy P/F bajó de 165 a 102 sin causa aparente. Nuevo infiltrado en Rx basal derecha.\n\n**Genera tu lista de hipótesis diagnósticas ordenada por probabilidad:**\n\n1. Neumonía asociada a ventilación mecánica (NAVM) — lo más frecuente en día 8 con nuevo infiltrado.\n2. Atelectasia lobar por tapón mucoso — causa tratable con fisio/broncoscopio.\n3. Derrame pleural significativo — evaluar con eco a la cabecera.\n4. Progresión del SDRA — si las anteriores se descartan.\n5. Tromboembolismo pulmonar — menos frecuente pero mortal si se omite.\n\n**Pasos inmediatos:**\n- Auscultación + eco pulmonar rápido (B-lines, derrame).\n- Rx o TC tórax urgente.\n- Hemocultivos + aspirado traqueal para cultivo.\n- Ajuste de FiO₂ mientras se investiga.\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 30 pts | Actividad 2 → 35 pts | Actividad 3 → 35 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 7
+    },
+    {
+      "id": "rcpc-summary",
+      "order": 8,
+      "type": "summary",
+      "title": "Cierre: resumen y checklist",
+      "content": {
+        "markdown": "Resumen:\n- El juicio clínico en patologías críticas depende de memoria consolidada, lectura activa y recuperación eficaz.\n- La simulación y el TBL convierten teoría en desempeño bajo presión.\n- JSON permite que el conocimiento crítico deje de ser solo texto y se transforme en soporte operativo.\n\nChecklist:\n- Puedo explicar por qué la memoria de trabajo limita el juicio clínico bajo estrés.\n- Entiendo cómo LTP y conocimiento encapsulado reducen carga cognitiva.\n- Puedo aplicar tres pasadas y distinguir traducción, interpretación y extrapolación.\n- Puedo usar espaciado, recuperación y entrelazado para mejorar discriminación diagnóstica.\n- Reconozco el valor del debriefing en simulación.\n- Comprendo por qué JSON, docling y jq mejoran acceso a protocolos críticos."
+      },
+      "estimatedTime": 3
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Por qué la memoria de trabajo falla con tanta facilidad en escenarios críticos?",
+        "¿Qué significa conocimiento encapsulado en razonamiento clínico?",
+        "¿Cómo aplicar el método de las tres pasadas a un artículo sobre sepsis?",
+        "¿Cómo ayuda el entrelazado a diferenciar tipos de choque?",
+        "¿Por qué JSON mejora el acceso a protocolos en emergencias?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "aiexpandnotes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": [
+          "advanced"
+        ],
+        "question_types": [
+          "conceptual",
+          "application",
+          "clinical_case"
+        ],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [],
+  "quiz": {
+    "id": "quiz-rcpc",
+    "passingScore": 4,
+    "questions": [
+      {
+        "id": "rcpc-q1",
+        "type": "multiple-choice",
+        "question": "¿Cuál es la capacidad crítica aproximada de la memoria de trabajo descrita en el módulo?",
+        "options": [
+          "1-2 elementos",
+          "5-7 elementos",
+          "10-12 elementos",
+          "Capacidad ilimitada"
+        ],
+        "correctAnswer": "5-7 elementos",
+        "explanation": "El módulo menciona la limitación clásica de la memoria de trabajo en la corteza prefrontal dorsolateral.",
+        "difficulty": "advanced",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "rcpc-q2",
+        "type": "multiple-choice",
+        "question": "En la tercera pasada de lectura activa, el clínico debe principalmente:",
+        "options": [
+          "Memorizar el resumen",
+          "Re-implementar mentalmente el estudio y desafiar sus supuestos",
+          "Leer solo tablas y figuras sin contexto",
+          "Evitar emitir juicios críticos"
+        ],
+        "correctAnswer": "Re-implementar mentalmente el estudio y desafiar sus supuestos",
+        "explanation": "La tercera pasada busca comprensión profunda, identificación de fallas ocultas y apropiación crítica del contenido.",
+        "difficulty": "advanced",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "rcpc-q3",
+        "type": "multiple-choice",
+        "question": "¿Qué técnica mejora la discriminación diagnóstica al mezclar temas similares en una sesión?",
+        "options": [
+          "Cramming",
+          "Interleaving",
+          "Solo relectura pasiva",
+          "Resumen lineal"
+        ],
+        "correctAnswer": "Interleaving",
+        "explanation": "El entrelazado obliga a distinguir matices y evita la automatización superficial.",
+        "difficulty": "advanced",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "rcpc-q4",
+        "type": "multiple-choice",
+        "question": "¿Qué componente de la simulación se señala como crítico para transformar error en aprendizaje duradero?",
+        "options": [
+          "El pre-work",
+          "La observación pasiva",
+          "El debriefing",
+          "La lectura del manual"
+        ],
+        "correctAnswer": "El debriefing",
+        "explanation": "El debriefing es descrito como el punto clave donde la retroalimentación reflexiva consolida el aprendizaje.",
+        "difficulty": "advanced",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "rcpc-q5",
+        "type": "multiple-choice",
+        "question": "¿Para qué se propone JSON en el entorno de protocolos clínicos críticos?",
+        "options": [
+          "Solo para almacenamiento decorativo",
+          "Para convertir protocolos extensos en objetos legibles por máquinas y consultables",
+          "Para sustituir el razonamiento clínico humano",
+          "Para evitar toda necesidad de validación"
+        ],
+        "correctAnswer": "Para convertir protocolos extensos en objetos legibles por máquinas y consultables",
+        "explanation": "El módulo presenta JSON como base para CDSS y consulta rápida en el punto de atención.",
+        "difficulty": "advanced",
+        "bloomLevel": "apply",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [
+      {
+        "authors": "Dobson",
+        "year": "2013",
+        "title": "Referencia citada para práctica espaciada",
+        "source": "",
+        "doi": "",
+        "url": ""
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-25",
+    "source": "VentyLab (JSON unificado)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel avanzado y organiza razonamiento clínico en patologías críticas con un esquema uniforme."
+  }
+}

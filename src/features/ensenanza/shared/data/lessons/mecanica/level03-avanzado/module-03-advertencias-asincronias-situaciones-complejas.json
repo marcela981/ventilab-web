@@ -1,0 +1,311 @@
+{
+  "id": "module-03-advertencias-asincronias-situaciones-complejas",
+  "moduleId": "module-03-avanzado-mecanica",
+  "title": "Advertencias, asincronías y resolución de situaciones complejas",
+  "description": "Este módulo de nivel avanzado aborda la resolución de situaciones complejas en la ventilación mecánica del paciente obeso crítico: detección y manejo de asincronías paciente-ventilador derivadas de PEEPi (autodisparo, esfuerzos ineficaces), programación avanzada con alertas de hiperoxemia y riesgo en mujeres de baja estatura, la MR progresiva 'en escalera' con sus tres contraindicaciones de bolsa manual, la PEEP de 'no colapso' a 2 cmH₂O del punto de inflexión y la optimización cognitiva avanzada incluyendo el Adaptive Chunking con métricas 2-back/PVT, la Amnesia Digital y el expertise reversal effect.",
+  "order": 3,
+  "estimatedTime": 90,
+  "difficulty": "advanced",
+  "bloomLevel": "synthesize",
+  "learningObjectives": [
+    "Detectar asincronías paciente-ventilador (autodisparo, esfuerzos ineficaces) originadas por PEEPi no detectada y resolver mediante ajuste de trigger y PEEP externa.",
+    "Programar la ventilación avanzada con PBW, identificar el riesgo específico de sobreestimación en mujeres de baja estatura y gestionar la hiperoxemia como amenaza silente.",
+    "Justificar con tres argumentos fisiopatológicos la prohibición de la bolsa manual para la MR y ejecutar la MR progresiva 'en escalera' con soporte hemodinámico preventivo.",
+    "Determinar el nivel de PEEP post-reclutamiento (2 cmH₂O sobre el punto de inflexión) e identificar los criterios de interrupción de la MR (colapso hemodinámico, > 60 cmH₂O).",
+    "Aplicar el Adaptive Chunking con métricas de capacidad atencional (2-back y PVT) y contrarrestar la Amnesia Digital mediante estrategias de retención interna.",
+    "Diferenciar el andamiaje estándar del aula invertida y reconocer el expertise reversal effect para adaptar la instrucción al nivel del aprendiz."
+  ],
+  "prerequisites": [
+    "Módulo 1 avanzado: VILI, ventilación protectora y segunda MR de fijación.",
+    "Módulo 2 avanzado: Driving Pressure dinámica, Poder Mecánico y decálogo de protección.",
+    "Módulos intermedios 1-6: VCV, PEEP por IMC, MR, PSV, Fine Tuning y destete."
+  ],
+  "sections": [
+    {
+      "id": "asincronias-intro",
+      "order": 1,
+      "type": "introduction",
+      "title": "Introducción y mapa del módulo",
+      "content": {
+        "markdown": "## ¿Qué vas a aprender en este módulo?\n\nTema: Detección y resolución de advertencias, asincronías y situaciones complejas en la ventilación mecánica del paciente obeso crítico, integrando fisiopatología avanzada con optimización cognitiva del especialista.\n\nA lo largo del módulo conectarás:\n- **Fisiopatología y asincronías:** PEEPi como obstáculo para la sincronía, autodisparo y esfuerzos ineficaces, monitorización del flujo espiratorio.\n- **Programación avanzada con advertencias:** riesgo específico en mujeres de baja estatura, hiperoxemia y atelectasias de reabsorción por lavado de nitrógeno.\n- **MR progresiva 'en escalera':** las tres razones fisiopatológicas que prohíben la bolsa manual, PEEP post-reclutamiento a 2 cmH₂O del punto de inflexión, criterios de interrupción (> 60 cmH₂O).\n- **Optimización cognitiva avanzada:** Adaptive Chunking con métricas 2-back/PVT (Ren & Siddique 2025), Amnesia Digital y estrategias de retención interna.\n- **Scaffolding, aula invertida y expertise reversal effect:** instrucción dinámica adaptada al nivel del aprendiz."
+      },
+      "estimatedTime": 5
+    },
+    {
+      "id": "asincronias-theory-1",
+      "order": 2,
+      "type": "theory",
+      "title": "Fisiopatología avanzada: PEEPi, Pendelluft y asincronías paciente-ventilador",
+      "content": {
+        "markdown": "El abordaje del paciente obeso en estado crítico representa uno de los mayores desafíos en la **arquitectura de la información clínica**. Más allá de la mecánica sistémica ya conocida, este módulo profundiza en los fenómenos que generan directamente las asincronías.\n\n### PEEPi: el obstáculo invisible para la sincronía\n\nEl cierre temprano de las vías respiratorias pequeñas impide que el pulmón alcance su punto de equilibrio elástico antes del siguiente ciclo, generando atrapamiento aéreo y **PEEPi**. El **IMC es el único factor predictivo independiente** para la aparición de PEEPi en ventilación mecánica. En posición supina: **+0.2 cmH₂O por cada unidad de IMC adicional**.\n\nLa PEEPi actúa como umbral de presión que el paciente debe vencer antes de iniciar el flujo inspiratorio, sin que el ventilador lo registre como intento. Sin compensación:\n- Incrementa el trabajo elástico → fatiga muscular → falla ventilatoria.\n- Altera la sensibilidad del trigger: el ventilador no detecta el esfuerzo del paciente.\n\n### Asincronías derivadas de PEEPi no detectada\n\n- **Autodisparo:** el ventilador cicla sin esfuerzo real del paciente, por artefactos de presión generados por la PEEPi o por la transmisión de presiones abdominales.\n- **Esfuerzos ineficaces:** el paciente realiza esfuerzo inspiratorio pero no alcanza el umbral del trigger, por lo que el ventilador no responde.\n\n### Diagnóstico en la curva de flujo espiratorio\n\nSi el **flujo espiratorio no llega a cero** antes de la siguiente inspiración en la curva del ventilador, existe atrapamiento aéreo y PEEPi activa.\n\n**Resolución:**\n1. Ajustar la sensibilidad del trigger (preferiblemente por **flujo**, no por presión).\n2. Titular la **PEEP externa para 'equilibrar' la PEEPi**, reduciendo el umbral que el paciente debe vencer para disparar el ciclo.\n\n### Efecto Pendelluft y desaturación acelerada\n\nLa heterogeneidad en la distensibilidad genera **flujos interregionales (Pendelluft)** entre zonas con distintas constantes de tiempo, exacerbando la inestabilidad alveolar. La masa cervical excesiva y el tejido graso pericárdico aumentan el VO₂ respiratorio y aceleran la desaturación, especialmente en Trendelenburg extremo donde la cefalización diafragmática convierte la vía aérea en una carrera contra el tiempo metabólico."
+      },
+      "estimatedTime": 16
+    },
+    {
+      "id": "asincronias-theory-2",
+      "order": 3,
+      "type": "theory",
+      "title": "Programación avanzada: PBW, riesgos específicos e hiperoxemia silente",
+      "content": {
+        "markdown": "La ventilación protectora es el estándar de oro perioperatorio. En el obeso, la precisión en el cálculo de metas no es opcional: es la diferencia entre la recuperación exitosa y la progresión hacia el SDRA.\n\n### Parámetros avanzados de programación\n\n- **Volumen Tidal:** 6-8 ml/kg de Peso Predicho (PBW). Usar 10-12 ml/kg incrementa el riesgo de volutrauma y biotrauma por sobredistensión de las zonas menos dependientes.\n- **Oxigenación:** SpO₂ meta 94-98 %. Concentraciones basales de 88 % pueden existir, pero el objetivo terapéutico es evitar hipoxia sin caer en hiperoxemia.\n- **Frecuencia Respiratoria:** 12-20 rpm para IMC < 40. En obesidad mórbida extrema (IMC > 40), se requiere FR superior para compensar la mayor producción de CO₂ y el espacio muerto fisiológico aumentado.\n\n### Fórmulas de PBW\n\n| Sexo | Fórmula de Peso Predicho (PBW) |\n| :--- | :--- |\n| Hombre | 50 + 0.91 × [altura(cm) − 152.4] |\n| Mujer | 45.5 + 0.91 × [altura(cm) − 152.4] |\n\n> **Riesgo crítico de género y estatura:** las **mujeres de estatura corta** con sobrepeso presentan el mayor riesgo estadístico de sobreestimación del VT por errores en la apreciación visual del peso. El cálculo matemático mediante fórmulas es imperativo, nunca la estimación visual.\n\n### Pausa inspiratoria: herramienta de diagnóstico\n\nLa pausa inspiratoria es esencial para medir la **presión meseta (Pplat)** y la distensibilidad estática, asegurando que la presión alveolar no exceda los límites de seguridad. Sin ella, la Pplat es una estimación, no una medición.\n\n### La hiperoxemia como amenaza silente\n\nEl exceso de O₂ alveolar desplaza al nitrógeno (**efecto de lavado**): en un pulmón con CRF reducida, esto acelera el colapso mediante **atelectasias de reabsorción**.\n- El nitrógeno actúa como andamiaje alveolar que previene el colapso completo.\n- Al desplazarlo con FiO₂ alta sostenida, el O₂ difunde rápidamente al capilar y el alvéolo colapsa sin PEEP estabilizadora.\n- Usar la **FiO₂ mínima necesaria** para mantener SpO₂ meta. Evitar FiO₂ al 100 % tras la fase de inducción/intubación."
+      },
+      "estimatedTime": 15
+    },
+    {
+      "id": "asincronias-theory-3",
+      "order": 4,
+      "type": "theory",
+      "title": "MR progresiva 'en escalera': técnica, advertencias y PEEP de no colapso",
+      "content": {
+        "markdown": "La PEEP no es un parámetro estático: es una **herramienta dinámica** para contrarrestar la pérdida de mecanismos de defensa fisiológicos. La MR es el prerequisito para que la PEEP sea efectiva.\n\n### Las tres razones que prohíben la bolsa manual\n\nLa bolsa manual está contraindicada para la MR por tres razones fisiopatológicas precisas:\n1. **Falta de control barométrico:** genera picos de presión impredecibles con riesgo de barotrauma.\n2. **Inestabilidad hemodinámica impredecible:** las presiones erráticas comprometen el retorno venoso de forma no anticipada.\n3. **Pérdida instantánea de PEEP al reconectar:** anula el beneficio del reclutamiento en el momento de la transición al ventilador.\n\n### Tabla de PEEP inicial por IMC (LOV-ED)\n\n| IMC (kg/m²) | PEEP inicial (cmH₂O) |\n| :--- | :--- |\n| < 29.9 | 5 |\n| 30.0 - 39.9 | 8 |\n| 40.0 - 49.9 | 10 |\n| > 50.0 | 12 |\n\n### Técnica de la MR Progresiva en escalones\n\n1. **Fase de aumento incremental:** apertura lenta hasta **50-55 cmH₂O** para vencer la carga de la pared abdominal y torácica. El abordaje escalonado permite la adaptación cardiovascular gradual.\n2. **Soporte preventivo:** vasopresores y fluidos para mantener la presión de perfusión ante el aumento de presión intratorácica que reduce el retorno venoso.\n3. **Fase de reducción:** identificación de la **PEEP de 'no colapso'** (Open Lung PEEP) — el punto donde se observa la mejor distensibilidad dinámica.\n\n### PEEP post-reclutamiento: el punto preciso\n\nLa PEEP post-MR debe fijarse **2 cmH₂O por encima del punto de inflexión** (donde la distensibilidad comenzó a caer durante la reducción), asegurando que el esfuerzo del reclutamiento no se pierda por un desinflado prematuro.\n\n### Criterios de interrupción: límites de seguridad\n\n- **Interrumpir inmediatamente** si hay colapso hemodinámico o si se alcanza la SpO₂ meta antes de los niveles máximos.\n- Presiones superiores a **60 cmH₂O** se asocian con complicaciones barotraumáticas mortales y daño endotelial grave.\n- La **vigilancia continua de la tensión arterial media** es el requisito sine qua non para la seguridad del procedimiento."
+      },
+      "estimatedTime": 16
+    },
+    {
+      "id": "asincronias-theory-4",
+      "order": 5,
+      "type": "theory",
+      "title": "Optimización cognitiva avanzada: Adaptive Chunking, métricas de atención y Amnesia Digital",
+      "content": {
+        "markdown": "La enseñanza de la ventilación mecánica en escenarios de alta complejidad requiere una **arquitectura de la información** que respete los límites de la memoria de trabajo y transforme el reconocimiento de patrones en resolución autónoma de asincronías.\n\n### CLT en ventilación avanzada: tres dimensiones\n\nLa CLT de **John Sweller** clasifica el esfuerzo mental en:\n- **Carga Intrínseca:** complejidad inherente del tema (fisiología de la PEEPi, Pendelluft, interacción PIA-mecánica).\n- **Carga Extrínseca:** esfuerzo generado por el diseño del entorno o interfaz (alarmas irrelevantes, manuales confusos, protocolos desorganizados). Debe minimizarse.\n- **Carga Esencial (Germana):** esfuerzo dedicado a la construcción de esquemas mentales permanentes. Debe maximizarse.\n\n### Adaptive Lesson Chunking: métricas de capacidad atencional\n\nLa técnica de **Ren & Siddique (2025)** fragmenta la información en unidades de **7 a 15 elementos**, ajustándose a la capacidad atencional del alumno medida mediante:\n- **2-back (memoria de trabajo):** tarea de actualización continua que evalúa la capacidad de la memoria de trabajo en tiempo real.\n- **PVT (Psychomotor Vigilance Test):** mide el tiempo de reacción y la atención sostenida, detectando fatiga cognitiva antes de que el clínico la perciba conscientemente.\n\nEvidencia: **retención del 78 % ± 15** con aprendizaje adaptativo frente al **63 % ± 20** del grupo control.\n\n### La Amnesia Digital (Efecto Google) en residentes\n\nLa tendencia a no codificar información profundamente cuando se considera fácilmente recuperable en línea genera:\n- Respuesta lenta o incorrecta en crisis ventilatorias que no permiten consulta.\n- Dependencia de apps y tablas que no sustituyen el esquema integrado.\n\n**Estrategia:** el instructor debe fomentar la **retención interna sobre la recuperación externa**, usando ejercicios de Retrieval Practice (flashcards, preguntas de respuesta libre sin soporte) para fortalecer el rastro mnémico en ventilación de emergencia."
+      },
+      "estimatedTime": 15
+    },
+    {
+      "id": "asincronias-theory-5",
+      "order": 6,
+      "type": "theory",
+      "title": "Scaffolding avanzado, aula invertida y expertise reversal effect",
+      "content": {
+        "markdown": "El **Scaffolding (andamiaje)** permite navegar la **Zona de Desarrollo Próximo (ZPD)** hacia la autonomía clínica. En este módulo avanzado, se distinguen dos modalidades y una advertencia crítica para su aplicación.\n\n### Modelo estándar vs. aula invertida (flipped classroom)\n\n**Entorno estándar:**\n1. 'Yo hago' (modelado): el instructor ejecuta la MR o interpreta la curva de flujo en voz alta.\n2. 'Nosotros hacemos' (práctica guiada): instructor y residente ajustan el ventilador juntos.\n3. 'Tú haces' (autonomía): el residente ejecuta de forma independiente bajo supervisión.\n\n**Aula invertida:**\n1. El alumno revisa el contenido de forma autónoma previamente ('Yo hago' invertido).\n2. Realiza una comprobación previa demostrando lo aprendido ('Tú haces' primero).\n3. Interactúa con el experto únicamente para resolver dudas complejas ('Nosotros hacemos' al final).\n\nEl andamiaje debe **retirarse gradualmente (Fading)** para evitar la dependencia, transformando el conocimiento explícito en competencia automática ante el ventilador.\n\n### El Expertise Reversal Effect: instrucción dinámica\n\nLo que ayuda a un novato sobrecarga a un experto:\n- Las guías paso a paso, los recordatorios de cada parámetro y los checklists detallados son **carga extrínseca distractora** para un especialista con esquemas ya automatizados.\n- La instrucción **no puede ser uniforme**: enseñar a un residente de tercer año con las mismas herramientas que a un interno genera regresión en el experto y sobrecarga en el novato.\n\n**Implicación práctica:** el instructor debe evaluar el nivel del aprendiz antes de cada sesión y ajustar el nivel de guía. El mismo contenido — la MR progresiva, por ejemplo — se enseña como procedimiento explícito al interno y como caso de decisión compleja al especialista senior."
+      },
+      "estimatedTime": 13
+    },
+    {
+      "id": "m-asinc-exercise",
+      "type": "exercise",
+      "title": "Taller práctico: Identifica y clasifica asincronías",
+      "estimatedTime": 15,
+      "content": {
+        "markdown": "## Taller práctico: Identificación y clasificación de asincronías paciente-ventilador\n\n> Entrena el reconocimiento de asincronías en curvas y clinica. No bloquea avance.\n\n---\n\n### Actividad 1 — Tipos de asincronías\n\nClasifica cada asincronía según la fase del ciclo donde ocurre:\n\n| Asincronía | Fase | Descripción breve |\n|---|---|---|\n| Trigger delay | Trigger (inicio) | Retraso entre el esfuerzo del paciente y el disparo del ventilador |\n| Esfuerzo inefectivo | Trigger | El paciente hace esfuerzo pero el ventilador no dispara |\n| Disparo doble | Ciclado | El ventilador da dos ciclos por un solo esfuerzo del paciente |\n| Asincronía de flujo | Meseta | El flujo entregado no coincide con la demanda del paciente |\n| Ciclado prematuro | Ciclado | La inspiración del ventilador termina antes de que el paciente quiera |\n| Ciclado tardío | Ciclado | La inspiración del ventilador continúa después de que el paciente quiere espirar |\n\n---\n\n### Actividad 2 — Diagnóstico por gráficas\n\nPara cada hallazgo gráfico, identifica la asincronía más probable:\n\n1. Deflexión negativa de presión sin disparo del ventilador → **Esfuerzo inefectivo** (auto-PEEP, trigger insensible).\n\n2. Dos ciclos de volumen por cada ciclo de presión → **Disparo doble** (Ti muy largo, el paciente inicia un nuevo esfuerzo al final del ciclo anterior).\n\n3. Curva de presión \"cuadrada\" muestra una \"muesca\" o depresión durante la meseta → **Asincronía de flujo** (demanda del paciente supera el flujo entregado en VCV).\n\n4. La curva de flujo espiratorio no llega a cero antes del siguiente disparo → **Auto-PEEP** (atrapamiento aéreo) → riesgo de esfuerzo inefectivo.\n\n---\n\n### Actividad 3 — Manejo clínico\n\nPara cada asincronía, indica un ajuste de primer paso:\n\n| Asincronía | Ajuste de primer paso |\n|---|---|\n| Trigger insensible | Aumentar sensibilidad del trigger (reducir umbral de disparo) |\n| Auto-PEEP | Aumentar tiempo espiratorio (↓ Fr, ↓ Ti, PEEP extrínseca) |\n| Asincronía de flujo en VCV | Aumentar flujo pico o cambiar a PCV/PSV |\n| Ciclado tardío en PSV | Aumentar criterio de ciclado (% flujo pico) |\n| Disparo doble | Acortar Ti, ajustar criterio de ciclado |\n\n---\n\n### ¿Cómo se califica?\n\n- Actividad 1 → 30 pts | Actividad 2 → 40 pts | Actividad 3 → 30 pts\n- **Total: 100 pts** (informativo)\n"
+      },
+      "order": 7
+    },
+    {
+      "id": "m-asinc-case",
+      "type": "case_study",
+      "title": "Caso clínico: Paciente agitado con asincronías graves",
+      "estimatedTime": 12,
+      "content": {
+        "markdown": "## Caso clínico: Agitación y asincronías graves en SDRA\n\n---\n\n### Presentación\n\n**Paciente:** Hombre, 52 años, 78 kg, diagnosticado de SDRA severo (P/F = 85).\n**Estado:** RASS +2 (agitado, resistente), CPOT 6 (dolor significativo).\n**Parámetros:** VCV, Vt 468 mL (6 mL/kg), Fr 22/min, PEEP 14, FiO₂ 0,80.\n**Alarmas activas:** Ve ↑ (minuto ventilación = 18 L/min), P_pico ↑ episódica (42 cmH₂O).\n**Gráficas:** Se observan disparos dobles frecuentes, muescas en curva de presión durante meseta, y FR real = 35/min.\n\n---\n\n### Análisis clínico\n\n**1. ¿Qué está causando las asincronías?**\n- El paciente está muy activo (RASS +2) → drive respiratorio extremo.\n- La sedoanalgesia es insuficiente para el nivel de esfuerzo espontáneo.\n- Disparos dobles: Ti programado (Ti = 60/Fr × 0,33 = ~0,9 s) es demasiado largo para la frecuencia natural del paciente agitado.\n- Muesca en meseta: demanda de flujo muy alta (VCV con flujo fijo = asincronía de flujo).\n\n**2. Consecuencias de esta situación**\n- P-SILI (lesión autoprovocada): las grandes oscilaciones de presión transpulmonar en cada esfuerzo espontáneo pueden inducir lesión pulmonar independientemente del ventilador.\n- P_pico episódica 42 cmH₂O → supera umbral de barotrauma.\n- Gasto metabólico elevado → hipercapnia y acidosis respiratoria.\n\n**3. Plan de manejo**\n**Paso 1:** Analgesia adecuada → fentanilo en infusión → evaluar CPOT (objetivo < 3).\n**Paso 2:** Sedación profunda → midazolam o propofol → RASS objetivo −3.\n**Paso 3:** Si persiste asincronía grave → bloqueo neuromuscular (cisatracurio × 48 h) + decúbito prono.\n**Paso 4:** Ajustar ventilador: cambiar a PCV para limitar presión, reducir Ti, aumentar flujo.\n\n---\n\n### Resultado\n\nCon cisatracurio + prono: P/F 124 a las 8 h, disparos dobles desaparecen, P_pico máx 32 cmH₂O, ΔP = 15 cmH₂O.\n\n---\n\n### Puntos clave\n\n1. La agitación no tratada es la mayor causa de asincronías graves.\n2. P-SILI puede ser tan dañina como el VILI inducido por el ventilador.\n3. El bloqueo neuromuscular en SDRA severo (primeras 48 h) mejora la supervivencia al eliminar esfuerzos espontáneos dañinos.\n"
+      },
+      "order": 8
+    },
+    {
+      "id": "asincronias-summary",
+      "order": 9,
+      "type": "summary",
+      "title": "Cierre: síntesis y checklist",
+      "content": {
+        "markdown": "## Resumen\n\n- La PEEPi (IMC único predictor independiente, +0.2 cmH₂O/unidad IMC en supino) genera autodisparo y esfuerzos ineficaces; se detecta en la curva de flujo espiratorio y se resuelve con trigger por flujo y PEEP externa equilibradora.\n- Las mujeres de baja estatura con sobrepeso son el grupo de mayor riesgo de sobreestimación de VT; el PBW matemático es obligatorio. La FiO₂ alta sostenida genera atelectasias de reabsorción por lavado de nitrógeno.\n- La bolsa manual está contraindicada por tres razones: picos incontrolados, inestabilidad hemodinámica impredecible y pérdida de PEEP al reconectar. La MR progresiva llega a 50-55 cmH₂O; la PEEP post-MR se fija a 2 cmH₂O sobre el punto de inflexión. Se interrumpe si hay colapso hemodinámico o se supera 60 cmH₂O.\n- El Adaptive Chunking usa métricas 2-back y PVT para ajustar el tamaño del bloque (7-15 elementos); logra retención del 78 % vs 63 %. La Amnesia Digital se combate con Retrieval Practice activo.\n- El aula invertida invierte el orden del Scaffolding; el Expertise Reversal Effect obliga a adaptar la instrucción al nivel del aprendiz: las guías paso a paso sobrecargan al experto.\n\n## Checklist de validación\n\n- Identifico autodisparo y esfuerzos ineficaces en la curva de flujo y aplico el ajuste de trigger + PEEP externa para resolverlos.\n- Calculo el PBW con fórmula e identifico el grupo de mayor riesgo de sobreestimación de VT.\n- Explico con tres argumentos fisiopatológicos por qué está prohibida la bolsa manual para la MR.\n- Determino la PEEP post-reclutamiento (2 cmH₂O sobre el punto de inflexión) y reconozco los criterios de interrupción de la MR.\n- Describo cómo las métricas 2-back y PVT permiten adaptar el tamaño de bloque del Chunking.\n- Diferencio el modelo estándar de andamiaje del aula invertida y explico el Expertise Reversal Effect con un ejemplo clínico."
+      },
+      "estimatedTime": 5
+    }
+  ],
+  "ai_integration": {
+    "chatbot": {
+      "enabled": true,
+      "context_type": "module_content",
+      "suggested_questions": [
+        "¿Cómo identifico en la curva de flujo espiratorio si hay PEEPi activa y asincronías por esfuerzos ineficaces?",
+        "¿Por qué la bolsa manual está contraindicada para la MR desde tres perspectivas fisiopatológicas distintas?",
+        "¿Cómo determino exactamente el nivel de PEEP post-reclutamiento tras identificar el punto de inflexión?",
+        "¿Qué mide el 2-back y el PVT, y cómo se usan para personalizar el tamaño de bloque del Adaptive Chunking?",
+        "¿Cómo adapto el andamiaje a un especialista senior para evitar el Expertise Reversal Effect?"
+      ],
+      "behavior_guidelines": {
+        "tone": "educational",
+        "response_style": "detailed_explanations",
+        "use_analogies": true,
+        "reference_module_content": true,
+        "language": "es",
+        "avoid_medical_advice_disclaimer": "Este es un entorno educativo. La información no sustituye el juicio clínico profesional."
+      }
+    },
+    "tutorAI": {
+      "features_enabled": [
+        "note_taking",
+        "aiexpandnotes",
+        "generate_questions",
+        "connection_mapper"
+      ],
+      "note_taking": {
+        "auto_suggest_key_points": true,
+        "allow_annotations": true,
+        "max_notes_per_section": 10
+      },
+      "ai_expand_notes": {
+        "expansion_style": "detailed",
+        "add_examples": true,
+        "add_analogies": true
+      },
+      "generate_questions": {
+        "difficulty_levels": [
+          "advanced"
+        ],
+        "question_types": [
+          "conceptual",
+          "application",
+          "clinical_case"
+        ],
+        "questions_per_request": 5
+      },
+      "connection_mapper": {
+        "show_prerequisites": true,
+        "show_related_modules": true,
+        "show_clinical_applications": true
+      }
+    }
+  },
+  "exercises": [],
+  "quiz": {
+    "id": "quiz-asincronias-situaciones-complejas",
+    "passingScore": 4,
+    "questions": [
+      {
+        "id": "asincronias-q1",
+        "type": "multiple-choice",
+        "question": "¿Cuál de las siguientes es una de las tres razones fisiopatológicas que prohíben el uso de la bolsa manual para la MR en el paciente obeso?",
+        "options": [
+          "La bolsa manual no permite ajustar la FiO₂ durante la maniobra",
+          "La pérdida instantánea de PEEP al reconectar al ventilador anula el beneficio del reclutamiento",
+          "La bolsa manual solo genera presiones de hasta 20 cmH₂O, insuficientes para el obeso",
+          "La bolsa manual no dispone de sensor de Driving Pressure en tiempo real"
+        ],
+        "correctAnswer": "La pérdida instantánea de PEEP al reconectar al ventilador anula el beneficio del reclutamiento",
+        "explanation": "El módulo establece tres razones precisas para prohibir la bolsa manual: 1) picos de presión incontrolados con riesgo de barotrauma, 2) inestabilidad hemodinámica impredecible, y 3) pérdida instantánea de PEEP al reconectar al paciente al ventilador, que anula el beneficio del reclutamiento en el momento de la transición.",
+        "difficulty": "advanced",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "asincronias-q2",
+        "type": "multiple-choice",
+        "question": "Tras ejecutar la fase de reducción de la MR progresiva, ¿a qué nivel debe fijarse la PEEP post-reclutamiento según el módulo?",
+        "options": [
+          "En el nivel más alto alcanzado durante la fase de apertura (50-55 cmH₂O)",
+          "En el nivel equivalente a la PEEPi medida en reposo más 2 cmH₂O",
+          "2 cmH₂O por encima del punto de inflexión donde la distensibilidad comenzó a caer",
+          "En el nivel donde la Driving Pressure se iguala con la presión meseta"
+        ],
+        "correctAnswer": "2 cmH₂O por encima del punto de inflexión donde la distensibilidad comenzó a caer",
+        "explanation": "El módulo especifica que la PEEP post-reclutamiento debe fijarse 2 cmH₂O por encima del punto de inflexión durante la fase de reducción — el nivel donde la distensibilidad dinámica comenzó a caer. Este margen asegura que el esfuerzo del reclutamiento no se pierda por un desinflado prematuro del pulmón recién abierto.",
+        "difficulty": "advanced",
+        "bloomLevel": "apply",
+        "points": 2
+      },
+      {
+        "id": "asincronias-q3",
+        "type": "multiple-choice",
+        "question": "¿Cuál es el criterio de seguridad de presión para interrumpir una MR progresiva en el paciente obeso según el módulo?",
+        "options": [
+          "Presiones superiores a 45 cmH₂O generan barotrauma en el paciente obeso",
+          "Presiones superiores a 55 cmH₂O superan el límite fisiológico de apertura alveolar",
+          "Presiones superiores a 60 cmH₂O se asocian con barotrauma mortal y daño endotelial grave",
+          "Presiones superiores a 30 cmH₂O comprometen el retorno venoso de forma irreversible"
+        ],
+        "correctAnswer": "Presiones superiores a 60 cmH₂O se asocian con barotrauma mortal y daño endotelial grave",
+        "explanation": "El módulo establece que presiones superiores a 60 cmH₂O se asocian con complicaciones barotraumáticas mortales y daño endotelial grave. Este límite es adicional al criterio de interrupción por colapso hemodinámico. Aunque la MR puede alcanzar 50-55 cmH₂O en obesos, superar 60 cmH₂O representa el umbral de riesgo inaceptable.",
+        "difficulty": "advanced",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "asincronias-q4",
+        "type": "multiple-choice",
+        "question": "¿Qué mide el PVT (Psychomotor Vigilance Test) en el contexto del Adaptive Chunking de Ren & Siddique?",
+        "options": [
+          "La capacidad de la memoria de trabajo para retener 7 ± 2 elementos simultáneamente",
+          "El tiempo de reacción y la atención sostenida, detectando fatiga cognitiva antes de que el clínico la perciba conscientemente",
+          "El nivel de retención de contenido clínico en comparación con el grupo control",
+          "La velocidad de automatización de esquemas mentales durante la práctica guiada"
+        ],
+        "correctAnswer": "El tiempo de reacción y la atención sostenida, detectando fatiga cognitiva antes de que el clínico la perciba conscientemente",
+        "explanation": "El módulo describe el PVT como una medida de tiempo de reacción y atención sostenida que detecta fatiga cognitiva antes de que el propio clínico la perciba. Junto con el 2-back (que evalúa la capacidad de la memoria de trabajo), el PVT permite al sistema adaptativo ajustar el tamaño de bloque de información en tiempo real según la capacidad atencional del alumno.",
+        "difficulty": "advanced",
+        "bloomLevel": "remember",
+        "points": 2
+      },
+      {
+        "id": "asincronias-q5",
+        "type": "multiple-choice",
+        "question": "¿Por qué el Expertise Reversal Effect obliga a usar instrucción diferenciada según el nivel del aprendiz?",
+        "options": [
+          "Porque los expertos prefieren instrucción visual mientras los novatos prefieren instrucción auditiva",
+          "Porque las guías paso a paso y los checklists detallados, que ayudan al novato, se convierten en carga extrínseca distractora para el experto con esquemas ya automatizados",
+          "Porque los expertos requieren más tiempo de práctica independiente que los novatos para consolidar nuevas habilidades",
+          "Porque el experto tiene mayor resistencia a la Amnesia Digital y no necesita Retrieval Practice"
+        ],
+        "correctAnswer": "Porque las guías paso a paso y los checklists detallados, que ayudan al novato, se convierten en carga extrínseca distractora para el experto con esquemas ya automatizados",
+        "explanation": "El Expertise Reversal Effect establece que lo que ayuda a un novato sobrecarga a un experto. Las guías paso a paso y los checklists detallados son necesarios para el interno sin esquemas previos, pero para el especialista con esquemas ya automatizados representan carga extrínseca distractora que reduce su eficiencia. La instrucción debe adaptarse al nivel del aprendiz en cada sesión.",
+        "difficulty": "advanced",
+        "bloomLevel": "analyze",
+        "points": 2
+      }
+    ]
+  },
+  "resources": {
+    "externalLinks": [],
+    "references": [
+      {
+        "authors": "Ren, X.; Siddique, A.",
+        "year": "2025",
+        "title": "Adaptive lesson chunking and retention in medical education.",
+        "source": "",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Sweller, J.",
+        "year": "1988",
+        "title": "Cognitive load during problem solving: Effects on learning.",
+        "source": "Cognitive Science",
+        "doi": "",
+        "url": ""
+      },
+      {
+        "authors": "Kalyuga, S.; et al.",
+        "year": "2003",
+        "title": "The expertise reversal effect.",
+        "source": "Educational Psychologist",
+        "doi": "10.1207/S15326985EP3801_4",
+        "url": ""
+      },
+      {
+        "authors": "Bluth, T.; et al. (PROBESE / IMPROVE)",
+        "year": "2019",
+        "title": "Effect of intraoperative high PEEP with recruitment maneuvers vs low PEEP on postoperative pulmonary complications in obese patients.",
+        "source": "JAMA",
+        "doi": "10.1001/jama.2019.7505",
+        "url": ""
+      },
+      {
+        "authors": "Vygotsky, L. S.",
+        "year": "1978",
+        "title": "Mind in Society: The Development of Higher Psychological Processes.",
+        "source": "Harvard University Press",
+        "doi": "",
+        "url": ""
+      }
+    ],
+    "downloadables": []
+  },
+  "metadata": {
+    "language": "es",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-29",
+    "source": "VentyLab (JSON unificado)",
+    "contentLicense": "internal",
+    "notes": "Este módulo está diseñado para nivel avanzado. Integra asincronías paciente-ventilador por PEEPi (autodisparo/esfuerzos ineficaces, curva de flujo), programación avanzada con alertas de hiperoxemia (lavado de N₂) y riesgo en mujeres de baja estatura, MR progresiva con las 3 razones de prohibición de bolsa manual, PEEP post-MR a 2 cmH₂O del punto de inflexión, criterio de interrupción > 60 cmH₂O, Adaptive Chunking con métricas 2-back/PVT, Amnesia Digital y Expertise Reversal Effect."
+  }
+}

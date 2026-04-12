@@ -249,7 +249,7 @@ async function main() {
   // Find all lesson files
   const projectRoot = join(__dirname, '..');
   const lessonsRoot = join(projectRoot, 'src', 'data', 'lessons');
-  const lessonsPattern = 'src/data/lessons/**/*.json';
+  const lessonsPattern = 'src/features/teaching/data/lessons/**/*.json';
   const lessonFiles = await fg(lessonsPattern, {
     cwd: projectRoot,
     ignore: ['**/node_modules/**', '**/schemas/**', '**/metadata.json'],

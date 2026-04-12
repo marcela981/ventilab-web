@@ -12,13 +12,12 @@
  */
 
 import React from 'react';
-import { AdminDashboard } from '@/components/dashboard';
 
 /**
  * Página del Dashboard de Administrador
- * El componente AdminDashboard ya incluye la protección withAuth(['ADMIN'])
+ * TODO: AdminDashboard en migración - dependencias pendientes de actualizar
  */
 export default function AdminDashboardPage() {
-  return <AdminDashboard />;
+  return <div>Admin Dashboard (en construcción)</div>;
 }
 
