@@ -10,7 +10,7 @@
  * into individual virtual lessons.
  */
 
-import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'fs';
 import { join, dirname, relative } from 'path';
 import { fileURLToPath } from 'url';
 import fg from 'fast-glob';
@@ -257,6 +257,9 @@ function buildManifest() {
     })),
   };
   
+  // Ensure output directory exists before writing
+  mkdirSync(dirname(MANIFEST_PATH), { recursive: true });
+
   // Write manifest file
   writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2), 'utf-8');
   
