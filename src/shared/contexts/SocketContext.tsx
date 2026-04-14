@@ -1,18 +1,28 @@
-'use client';
+/*
+ * Funcionalidad: SocketContext
+ * Descripción: Contexto React para la conexión WebSocket con el backend.
+ *   Maneja la autenticación via JWT con WSGateway. Depende de next-auth session
+ *   y socket.io-client.
+ * Versión: 1.0
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica
+ *   ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
+ */
 
 import {
   createContext,
   useContext,
   useEffect,
   useState,
-  useCallback,
   useRef,
   type ReactNode,
 } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import { useSession } from 'next-auth/react';
 import { getAuthToken } from '@/shared/services/authService';
-import { BACKEND_URL } from '@/config/env';
 
 // =============================================================================
 // Types
@@ -21,9 +31,7 @@ import { BACKEND_URL } from '@/config/env';
 export interface SocketContextValue {
   socket: Socket | null;
   isConnected: boolean;
-  connectionError: Error | null;
-  connect: () => void;
-  disconnect: () => void;
+  isAuthenticated: boolean;
 }
 
 // =============================================================================
@@ -37,15 +45,18 @@ SocketContext.displayName = 'SocketContext';
 // Provider
 // =============================================================================
 
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+
 export function SocketProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
   const [isConnected, setIsConnected] = useState(false);
-  const [connectionError, setConnectionError] = useState<Error | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const socketRef = useRef<Socket | null>(null);
-  // Force re-render to expose socket reference to context consumers
+  // Trigger re-render when socketRef is populated so consumers receive the instance.
   const [, setTick] = useState(0);
 
-  // Create socket once (on mount)
+  // Create the socket once on mount; clean up on unmount.
   useEffect(() => {
     const socket = io(BACKEND_URL, {
       autoConnect: false,
@@ -56,92 +67,92 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     socketRef.current = socket;
     setTick((t) => t + 1);
 
-    const onConnect = () => {
-      setIsConnected(true);
-      setConnectionError(null);
+    const onConnect = () => setIsConnected(true);
+    const onDisconnect = () => {
+      setIsConnected(false);
+      setIsAuthenticated(false);
     };
-    const onDisconnect = () => setIsConnected(false);
-    const onConnectError = (err: Error) => setConnectionError(err);
-    const onAuthenticated = () => console.log('[Socket] WebSocket authenticated');
+    const onAuthenticated = ({ userId }: { userId: string }) => {
+      console.log('[Socket] Authenticated as', userId);
+      setIsAuthenticated(true);
+    };
     const onAuthError = () => {
       console.warn('[Socket] Authentication failed — disconnecting');
+      setIsAuthenticated(false);
       socket.disconnect();
-      setConnectionError(new Error('WebSocket auth failed'));
     };
 
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
-    socket.on('connect_error', onConnectError);
     socket.on('authenticated', onAuthenticated);
     socket.on('auth_error', onAuthError);
 
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
-      socket.off('connect_error', onConnectError);
       socket.off('authenticated', onAuthenticated);
       socket.off('auth_error', onAuthError);
-      socket.close();
+      socket.disconnect();
       socketRef.current = null;
     };
   }, []);
 
-  // Connect / disconnect based on auth state
+  // Connect/disconnect based on session state; emit 'authenticate' after connect.
   useEffect(() => {
     if (status === 'loading') return;
 
     const socket = socketRef.current;
     if (!socket) return;
 
-    // Resolve token: NextAuth session users get token from localStorage
-    // (set by the custom authService after login), or directly from getAuthToken.
-    const token = getAuthToken();
-    const isAuthenticated = status === 'authenticated' || !!token;
+    // Resolve the JWT: prefer the NextAuth accessToken (if exposed by the
+    // auth config), otherwise fall back to the backend JWT stored in localStorage
+    // by the custom authService after credential login.
+    const token =
+      (session as any)?.accessToken ?? getAuthToken();
 
-    if (isAuthenticated) {
+    const hasSession = status === 'authenticated' || !!token;
+
+    if (hasSession && token) {
+      const sendAuth = () => socket.emit('authenticate', token);
+
       if (!socket.connected) {
         socket.connect();
-      }
-      // Send auth token once connected (or immediately if already connected)
-      const sendAuth = () => {
-        const t = getAuthToken();
-        if (t) socket.emit('authenticate', t);
-      };
-
-      if (socket.connected) {
-        sendAuth();
-      } else {
         socket.once('connect', sendAuth);
+      } else {
+        sendAuth();
       }
 
       return () => {
         socket.off('connect', sendAuth);
       };
     } else {
-      // No session and no token — disconnect
+      // No session — disconnect cleanly.
       if (socket.connected) socket.disconnect();
+      setIsAuthenticated(false);
     }
   }, [status, session]);
-
-  const connect = useCallback(() => {
-    socketRef.current?.connect();
-  }, []);
-
-  const disconnect = useCallback(() => {
-    socketRef.current?.disconnect();
-  }, []);
 
   return (
     <SocketContext.Provider
       value={{
         socket: socketRef.current,
         isConnected,
-        connectionError,
-        connect,
-        disconnect,
+        isAuthenticated,
       }}
     >
       {children}
     </SocketContext.Provider>
   );
+}
+
+// =============================================================================
+// Hook
+// =============================================================================
+
+export function useSocket(): SocketContextValue {
+  const context = useContext(SocketContext);
+  if (!context) {
+    throw new Error('useSocket must be used within a <SocketProvider>');
+  }
+  return context;
 }

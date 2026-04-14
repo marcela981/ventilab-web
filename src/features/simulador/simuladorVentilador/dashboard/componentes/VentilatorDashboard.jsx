@@ -19,9 +19,8 @@ import { getValueColor, getTrend } from '@/features/simulador/compartido/constan
 // Componentes del simulador
 import SimuladorTabs from '@/features/simulador/compartido/navegacion/SimuladorTabs';
 import MonitoringTab from '@/features/simulador/simuladorVentilador/dashboard/componentes/MonitoringTab';
-import ConnectionTabContent from '@/features/simulador/conexion/serial/componentes/ConnectionTabContent';
-import { ConnectionPanel } from '@/features/simulador/compartido/componentes/ConnectionPanel';
 import { buildCardData } from '../utils/cardDataBuilder';
+import { RealVentilatorPanel } from '@/features/simulador/components/RealVentilatorPanel';
 
 // Hooks
 import { useSerialConnection } from '@/features/simulador/conexion/serial/hooks/useSerialConnection';
@@ -34,9 +33,9 @@ import { useParameterValidation } from '@/features/simulador/simuladorVentilador
 import { usePatientData } from '@/features/simulador/simuladorPaciente/hooks/usePatientData';
 import { useQRBridge } from '@/features/simulador/compartido/hooks/useQRBridge';
 import { useAIAnalysis } from '@/features/simulador/simuladorVentilador/IAMonitor/hooks/useAIAnalysis';
-import { useVentilatorConnection } from '@/features/simulador/conexion/websocket/hooks/useVentilatorConnection';
 import { useVentilatorControls } from '@/features/simulador/simuladorVentilador/panelControl/hooks/useVentilatorControls';
 import useDashboardState from '@/features/simulador/simuladorVentilador/dashboard/hooks/useDashboardState';
+// useVentilatorConnection removed — physical ventilator UI is now RealVentilatorPanel
 import AIAnalysisPanel from '@/features/simulador/simuladorVentilador/IAMonitor/componentes/AIAnalysisPanel';
 import VentilatorCharts from '@/features/simulador/simuladorVentilador/dashboard/componentes/VentilatorCharts';
 import { useSidebar } from '@/shared/contexts/SidebarContext';
@@ -196,12 +195,6 @@ const VentilatorDashboard = ({
 
   // Hook para códigos QR y compartir
   const qrBridge = useQRBridge();
-
-  // Hook unificador: abstrae serial (local) vs WebSocket (remote)
-  const ventilatorConnection = useVentilatorConnection({
-    serialConnection,
-    localData: { ventilatorData, realTimeData, systemStatus },
-  });
 
   // Validación defensiva para asegurar que los hooks estén inicializados
   if (!parameterValidation || !parameterValidation.validationState) {
@@ -464,37 +457,7 @@ const VentilatorDashboard = ({
           />
         }
 
-        connectionContent={
-          <Box>
-            {ventilatorConnection && (
-              <ConnectionPanel
-                connectionState={ventilatorConnection.connectionState}
-                reservation={ventilatorConnection.reservation}
-                onSwitchToLocal={ventilatorConnection.actions.switchToLocal}
-                onSwitchToRemote={ventilatorConnection.actions.switchToRemote}
-                onDisconnect={ventilatorConnection.actions.disconnect}
-                onRequestReservation={ventilatorConnection.actions.requestReservation}
-                onReleaseReservation={ventilatorConnection.actions.releaseReservation}
-              />
-            )}
-            {(!ventilatorConnection || ventilatorConnection.connectionState.mode !== 'remote') && (
-              <ConnectionTabContent
-                serialConnection={serialConnection}
-                systemStatus={systemStatus}
-                handleConnection={actions.handleConnection}
-                handleDisconnection={actions.handleDisconnection}
-                handleSendConfiguration={handleSendConfigWrapped}
-                getValueColor={getValueColor}
-                ventilatorData={ventilatorData}
-                maxMinData={maxMinData}
-                dataRecording={dataRecording}
-                setNotification={actions.setNotification}
-                patientData={patientData}
-                ventilationMode={state.ventilationMode}
-              />
-            )}
-          </Box>
-        }
+        connectionContent={<RealVentilatorPanel />}
       />
 
       {/* Panel de análisis de IA */}

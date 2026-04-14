@@ -2,12 +2,61 @@
  * Curriculum Data Structure for Mechanical Ventilation Learning Platform
  * Separated from visual components - pure data structure
  * Based on detailed research curriculum for mechanical ventilation
+ *
+ * MIGRATION STATUS:
+ *   - Synchronous export (`curriculumData`) keeps the static data as a fallback.
+ *   - `loadCurriculumData()` fetches from the backend API (DB is source of truth).
+ *   - Components should prefer `loadCurriculumData()` and fall back to this export
+ *     only if the API call fails or has not completed yet.
+ *
+ * Autor   : Marcela Mazo Castro
+ * Proyecto: VentyLab
  */
 
 import { respiratoriaModules } from '@/features/ensenanza/curriculum/ensenanzaRespiratoria/modules';
 import { preRequisitosModules } from '@/features/ensenanza/curriculum/preRequisitos/modules';
 import { ventylabModules } from '@/features/ensenanza/curriculum/ensenanzaVentylab/modules';
 
+// ─── Async loader (DB-backed, replaces static imports) ───────────────────────
+// Import lazily to avoid circular deps and to allow tree-shaking in static paths.
+let _curriculumServiceImport = null;
+
+/**
+ * Fetch the full curriculum from the backend API.
+ * Returns the same shape as `curriculumData` so callers can swap seamlessly.
+ * On error, logs a warning and returns the static fallback.
+ *
+ * @returns {Promise<typeof curriculumData>}
+ */
+export async function loadCurriculumData() {
+  try {
+    if (!_curriculumServiceImport) {
+      _curriculumServiceImport = await import(
+        '@/features/ensenanza/shared/services/curriculumService'
+      );
+    }
+    const { fetchCurriculum } = _curriculumServiceImport;
+    const apiData = await fetchCurriculum();
+
+    return {
+      levels: apiData.levels,
+      modules: apiData.modules,
+      metadata: apiData.metadata,
+    };
+  } catch (err) {
+    console.warn(
+      '[VentyLab] loadCurriculumData: API fetch failed, falling back to static data.',
+      err
+    );
+    return curriculumData;
+  }
+}
+
+// ─── Synchronous static export (kept for backward compatibility) ──────────────
+// Components that still use the synchronous import will continue to work.
+// When the API is not yet loaded, they see the static data.
+// Set this to empty arrays/objects AFTER the API is verified working and
+// all components have been migrated to loadCurriculumData().
 export const curriculumData = {
   levels: [
     {

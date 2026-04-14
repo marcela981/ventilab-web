@@ -1,0 +1,277 @@
+/*
+ * Funcionalidad: RealVentilatorPanel
+ * Descripción: Panel del ventilador físico con tabs Conexión y Monitoreo.
+ *   Tab Conexión: verifica estado vía REST /backend/api/simulation/status.
+ *   Tab Monitoreo: gráficas en tiempo real con useVentilatorData (throttle 100ms).
+ *   Depende de: useVentilatorData, SocketContext, Chart.js, MUI Tabs.
+ * Versión: 1.0
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
+ */
+
+/* ── Panel shell ───────────────────────────────────────────────────────────── */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding-bottom: 72px; /* clearance above fixed bottom navigation */
+}
+
+.tabBar {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #1a1a2e; /* matches the dark simulator theme */
+}
+
+.tabContent {
+  padding: 20px 16px;
+}
+
+/* ── Connection tab ────────────────────────────────────────────────────────── */
+
+.connectionWrap {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.connectionCard {
+  width: 100%;
+  max-width: 540px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 28px 24px;
+}
+
+.cardTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 8px;
+}
+
+.cardDescription {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+/* Status row (chip + label) */
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.statusLabel {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* Chip variants */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.6;
+  user-select: none;
+}
+
+.chipIdle {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.chipConnecting {
+  background: rgba(30, 136, 229, 0.22);
+  color: #90caf9;
+}
+
+.chipConnected {
+  background: rgba(67, 160, 71, 0.22);
+  color: #a5d6a7;
+}
+
+.chipError {
+  background: rgba(229, 57, 53, 0.22);
+  color: #ef9a9a;
+}
+
+/* Status message (secondary text below chip) */
+.statusMessage {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0 0 20px;
+  min-height: 1.2em;
+}
+
+/* Button row */
+.buttonRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ── Monitoring tab – no-connection guard ──────────────────────────────────── */
+
+.noConnectionWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 38vh;
+  gap: 16px;
+  text-align: center;
+}
+
+.noConnectionText {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.5);
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+/* ── Status bar ────────────────────────────────────────────────────────────── */
+
+.statusBar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+}
+
+.signalWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+
+.dotActive {
+  background: #43a047;
+  box-shadow: 0 0 7px #43a047;
+}
+
+.dotInactive {
+  background: #e53935;
+}
+
+.signalLabel {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Badges */
+.badgeRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  padding: 5px 14px;
+  min-width: 76px;
+}
+
+.badgeValue {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.badgeUnit {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.badgeName {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 1px;
+}
+
+/* ── Charts grid ───────────────────────────────────────────────────────────── */
+
+.chartsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 960px) {
+  .chartsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.chartCard {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.chartTitle {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Fixed-height wrapper so Chart.js uses the exact canvas height */
+.chartWrapper {
+  position: relative;
+  height: 220px;
+}
+
+/* ── Alarm placeholder ─────────────────────────────────────────────────────── */
+
+.alarmCard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 18px;
+}
+
+.alarmText {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.35);
+}
