@@ -1,0 +1,69 @@
+{
+    "id": "quiz-mecanica-l1-m3-variables-fase",
+    "type": "quiz",
+    "title": "Quiz: Variables de Fase del Ventilador",
+    "description": "Repasa los conceptos clave sobre cómo un ventilador mecánico inicia, mantiene, finaliza y reposa durante un ciclo respiratorio.",
+    "moduleId": "module-03-variables-fase",
+    "level": "level01-principiante",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "La variable que determina qué inicia la fase inspiratoria (ya sea el tiempo del equipo o el esfuerzo del paciente) se llama:",
+        "options": [
+          { "id": "a", "text": "Variable de Límite", "isCorrect": false },
+          { "id": "b", "text": "Variable de Disparo o Trigger", "isCorrect": true },
+          { "id": "c", "text": "Variable de Ciclado", "isCorrect": false },
+          { "id": "d", "text": "Variable de Base", "isCorrect": false }
+        ],
+        "explanation": "El Trigger (Disparo) es la señal que inicia el ciclo ventilatorio. Puede ser por tiempo (el ventilador manda la orden) o por el esfuerzo del paciente detectado mediante caídas de presión o de flujo."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "¿Cuál es la función de la Variable de Límite durante la fase inspiratoria?",
+        "options": [
+          { "id": "a", "text": "Terminar la inspiración y abrir la válvula de exhalación.", "isCorrect": false },
+          { "id": "b", "text": "Definir un valor máximo (de presión, volumen o flujo) que no puede sobrepasarse durante la inspiración, aunque ésta aún no termine.", "isCorrect": true },
+          { "id": "c", "text": "Avisar con una alarma que el paciente se desconectó.", "isCorrect": false },
+          { "id": "d", "text": "Mantener los alvéolos abiertos durante la espiración.", "isCorrect": false }
+        ],
+        "explanation": "La variable de Límite es un parámetro que se alcanza y se mantiene pero que NO finaliza la inspiración (por ejemplo, en PCV la presión se limita a 20 cmH2O durante toda la inspiración, pero el ciclo finaliza por tiempo)."
+      },
+      {
+        "id": "q3",
+        "type": "multiple_choice",
+        "text": "En el modo Ventilación Controlada por Presión (PCV), ¿cuál es comúnmente la variable de ciclado (la que finaliza la inspiración)?",
+        "options": [
+          { "id": "a", "text": "El Tiempo", "isCorrect": true },
+          { "id": "b", "text": "El Flujo", "isCorrect": false },
+          { "id": "c", "text": "El Volumen", "isCorrect": false },
+          { "id": "d", "text": "La Presión", "isCorrect": false }
+        ],
+        "explanation": "En la PCV clásica, la inspiración finaliza una vez que ha transcurrido un tiempo inspiratorio (Ti) previamente programado por el médico. Es decir, cicla por tiempo."
+      },
+      {
+        "id": "q4",
+        "type": "true_false",
+        "text": "En la Presión de Soporte (PSV), la inspiración termina (cicla) generalmente cuando el flujo inspiratorio cae a un porcentaje específico del flujo pico.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": true },
+          { "id": "false", "text": "Falso", "isCorrect": false }
+        ],
+        "explanation": "Verdadero. La Presión Soporte cicla predominantemente por flujo. Cuando los pulmones del paciente se llenan, la demanda de flujo cae. Al llegar a un umbral (por ej. 25% del pico inspiratorio), el ventilador abre la válvula espiratoria."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "La variable de Base se refiere a lo que ocurre durante la fase espiratoria. ¿Qué parámetro representa comúnmente esta variable?",
+        "options": [
+          { "id": "a", "text": "Volumen Tidal", "isCorrect": false },
+          { "id": "b", "text": "FiO2", "isCorrect": false },
+          { "id": "c", "text": "Sensibilidad (Trigger)", "isCorrect": false },
+          { "id": "d", "text": "PEEP (Presión Positiva al Final de la Espiración)", "isCorrect": true }
+        ],
+        "explanation": "La variable de base dicta sobre qué nivel descansa el sistema respiratorio durante la espiración. Habitualmente este nivel es superior a la presión atmosférica debido a la PEEP programada."
+      }
+    ]
+  }

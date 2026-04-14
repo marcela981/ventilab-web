@@ -1,0 +1,53 @@
+{
+    "id": "taller-ventylab-l2-programacion",
+    "type": "taller",
+    "title": "Taller ABP: Programación en el Simulador VentyLab",
+    "description": "Utiliza tu raciocinio para ingresar los parámetros de ventilación adecuados y configurar los límites de alarma en la interfaz.",
+    "moduleId": "level02-talleres",
+    "level": "level02-intermedio",
+    "passingScore": 80,
+    "caseStudy": {
+      "patient": "Masculino, 1.75 m de estatura, sin patología pulmonar previa. Ingresa por intoxicación severa.",
+      "scenario": "El paciente está profundamente sedado y requiere intubación para proteger la vía aérea. Tienes el simulador VentyLab encendido frente a ti en la pantalla de 'Nuevo Paciente'.",
+      "objective": "Programar los parámetros iniciales de Volumen Control (VCV) y establecer márgenes de seguridad efectivos."
+    },
+    "questions": [
+      {
+        "id": "tl2q1",
+        "type": "scenario_choice",
+        "text": "La estatura del paciente es 1.75 m, lo que da un Peso Corporal Ideal (Predicho) de aproximadamente 71 kg. Si deseas ventilar a 7 ml/kg, ¿qué Volumen Tidal ingresas en el simulador?",
+        "options": [
+          { "id": "a", "text": "350 ml.", "isCorrect": false, "feedback": "Incorrecto. 350 ml equivalen a menos de 5 ml/kg, lo cual podría causar hipoventilación si no se aumenta la frecuencia compensatoriamente." },
+          { "id": "b", "text": "500 ml.", "isCorrect": true, "feedback": "Correcto. 71 kg x 7 ml/kg = 497 ml. Programar 500 ml es seguro, está dentro del rango protector (6-8 ml/kg) y garantiza una expansión alveolar adecuada." },
+          { "id": "c", "text": "800 ml.", "isCorrect": false, "feedback": "Incorrecto. Esto sería más de 11 ml/kg, lo cual sobrepasa la zona de protección pulmonar y predispone a volutrauma." }
+        ]
+      },
+      {
+        "id": "tl2q2",
+        "type": "scenario_choice",
+        "text": "En el apartado de PEEP y FiO2 del simulador, el paciente satura al 98% pero acaba de ser intubado. ¿Cuáles serían unos valores de inicio prudentes?",
+        "options": [
+          { "id": "a", "text": "PEEP de 0 cmH2O y FiO2 al 100%.", "isCorrect": false, "feedback": "Incorrecto. El PEEP de cero (ZEEP) favorece las atelectasias al final de la espiración, y la FiO2 al 100% de manera prolongada produce atelectasias por reabsorción y toxicidad por oxígeno." },
+          { "id": "b", "text": "PEEP de 5 a 8 cmH2O y FiO2 al 40-50% (o la necesaria para SpO2 >92%).", "isCorrect": true, "feedback": "Correcto. Un PEEP fisiológico o ligeramente superior evita el colapso alveolar. Se debe titular la FiO2 a la baja rápidamente para evitar toxicidad." }
+        ]
+      },
+      {
+        "id": "tl2q3",
+        "type": "scenario_choice",
+        "text": "Vas a la pestaña de 'Alarmas' en el simulador. Has programado tu ventilación. ¿A qué valor ajustarás la alarma de Presión Máxima (Límite Superior de Presión)?",
+        "options": [
+          { "id": "a", "text": "En 20 cmH2O.", "isCorrect": false, "feedback": "Incorrecto. Si fijas la alarma en 20, el ventilador cortará la inspiración tempranamente (ciclará por presión), y el paciente no recibirá los 500 ml completos casi en ningún ciclo." },
+          { "id": "b", "text": "Entre 35 y 40 cmH2O.", "isCorrect": true, "feedback": "Correcto. Este límite de seguridad permite al ventilador tener el rango necesario para empujar el volumen corriente, pero abortará la insuflación si detecta presiones peligrosamente altas para el pulmón." }
+        ]
+      },
+      {
+        "id": "tl2q4",
+        "type": "scenario_choice",
+        "text": "Al visualizar las curvas en la interfaz, notas que el tiempo inspiratorio es de casi 1.8 segundos y el tiempo espiratorio es muy corto. Quieres que el aire entre más rápido. ¿Qué parámetro de VCV debes modificar en el panel?",
+        "options": [
+          { "id": "a", "text": "Aumentar el Flujo Inspiratorio (Pico de Flujo).", "isCorrect": true, "feedback": "Correcto. A mayor flujo (L/min), el volumen se entrega más rápido. Esto acortará el tiempo inspiratorio y alargará el tiempo espiratorio, mejorando la relación I:E." },
+          { "id": "b", "text": "Disminuir la sensibilidad (Trigger).", "isCorrect": false, "feedback": "Incorrecto. El Trigger solo determina cuánto esfuerzo debe hacer el paciente para iniciar el ciclo, no altera la velocidad con la que entra el aire (flujo)." }
+        ]
+      }
+    ]
+  }

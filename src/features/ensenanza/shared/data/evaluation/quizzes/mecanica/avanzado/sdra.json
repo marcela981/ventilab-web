@@ -1,0 +1,69 @@
+{
+    "id": "quiz-mecanica-l3-m7-sdra",
+    "type": "quiz",
+    "title": "Quiz: Manejo del SDRA (Síndrome de Distrés Respiratorio Agudo)",
+    "description": "Comprueba tu pericia en las estrategias avanzadas para el rescate y protección del paciente con SDRA.",
+    "moduleId": "module-07-sdra",
+    "level": "level03-avanzado",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "Según la Definición de Berlín, ¿cuál de los siguientes NO es un criterio para diagnosticar SDRA?",
+        "options": [
+          { "id": "a", "text": "Instauración aguda (dentro de 1 semana).", "isCorrect": false },
+          { "id": "b", "text": "Opacidades bilaterales en radiografía o TAC.", "isCorrect": false },
+          { "id": "c", "text": "Falla respiratoria no explicada totalmente por falla cardíaca o sobrecarga de líquidos.", "isCorrect": false },
+          { "id": "d", "text": "Presión de enclavamiento capilar pulmonar (Wedge) mayor a 18 mmHg como requisito indispensable.", "isCorrect": true }
+        ],
+        "explanation": "La nueva definición de Berlín eliminó el requerimiento estricto del catéter de Swan-Ganz (Wedge < 18 mmHg). En su lugar, pide que se evalúe ecográficamente o clínicamente que el edema no sea primariamente de origen cardiogénico."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "El concepto de 'Pulmón Pequeño' (Baby Lung) acuñado por el Prof. Gattinoni en el SDRA indica que:",
+        "options": [
+          { "id": "a", "text": "El pulmón involuciona a un estadio de desarrollo embrionario.", "isCorrect": false },
+          { "id": "b", "text": "La porción de parénquima pulmonar aireado y disponible para la ventilación es anatómicamente similar al tamaño del pulmón de un niño.", "isCorrect": true },
+          { "id": "c", "text": "La distensibilidad de todo el tejido pulmonar es dura como una piedra.", "isCorrect": false },
+          { "id": "d", "text": "El volumen tidal debe calcularse siempre basado en parámetros pediátricos.", "isCorrect": false }
+        ],
+        "explanation": "En el SDRA las zonas dependientes (inferiores/dorsales) están consolidadas o colapsadas. El aire solo entra en la porción no dependiente (sana), que tiene el tamaño del pulmón de un niño pequeño. Administrar un volumen adulto en ese pequeño espacio genera un daño por sobredistensión catastrófico."
+      },
+      {
+        "id": "q3",
+        "type": "multiple_choice",
+        "text": "¿Cuál es el beneficio fisiológico primario de la ventilación en Posición Prono para pacientes con SDRA grave (PaO2/FiO2 < 150)?",
+        "options": [
+          { "id": "a", "text": "Cura la infección subyacente más rápido.", "isCorrect": false },
+          { "id": "b", "text": "Alivia la compresión del corazón sobre los pulmones y homogeniza la distribución de las presiones pleurales, mejorando la relación Ventilación/Perfusión (V/Q).", "isCorrect": true },
+          { "id": "c", "text": "Induce vasoconstricción masiva en todo el cuerpo.", "isCorrect": false },
+          { "id": "d", "text": "Disminuye la PEEP requerida a cero.", "isCorrect": false }
+        ],
+        "explanation": "Al girar al paciente, el peso del corazón ya no comprime las zonas dorsales (que en supino son las más amplias). Las presiones pleurales se vuelven más homogéneas, abriendo las zonas previamente colapsadas e igualando el flujo de aire y sangre."
+      },
+      {
+        "id": "q4",
+        "type": "true_false",
+        "text": "En las maniobras de reclutamiento alveolar (aplicar altas presiones sostenidas) un efecto adverso grave muy frecuente que obliga a suspender la maniobra es la hipotensión severa.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": true },
+          { "id": "false", "text": "Falso", "isCorrect": false }
+        ],
+        "explanation": "Verdadero. Al subir bruscamente la presión intratorácica (ej. a 40 cmH2O por 40 segundos) el retorno venoso y el gasto cardíaco caen de forma dramática, provocando hipotensión profunda y, ocasionalmente, arritmias."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "Para asegurar un control riguroso de la presión y volumen en SDRA severo, frecuentemente es necesario anular los esfuerzos asincrónicos del paciente. ¿Cuál es el manejo indicado por guías recientes si falla la sedación profunda inicial?",
+        "options": [
+          { "id": "a", "text": "Infusión corta (48 hrs) de bloqueadores neuromusculares (ej. cisatracurio).", "isCorrect": true },
+          { "id": "b", "text": "Cambiar a ventilación con Presión Soporte de inmediato.", "isCorrect": false },
+          { "id": "c", "text": "Hiperventilar hasta PCO2 de 20 para anular su drive neurológico.", "isCorrect": false },
+          { "id": "d", "text": "Revertir el paciente a Tubo en T.", "isCorrect": false }
+        ],
+        "explanation": "Las asincronías severas, el doble disparo y el excesivo esfuerzo del paciente causan 'Self-Inflicted Lung Injury' (P-SILI). En SDRA muy grave, la parálisis neuromuscular corta previene estos daños y reduce el consumo de oxígeno."
+      }
+    ]
+  }

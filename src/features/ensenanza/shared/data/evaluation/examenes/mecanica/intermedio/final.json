@@ -1,0 +1,127 @@
+{
+    "id": "examen-mecanica-l2-final",
+    "type": "examen",
+    "title": "Examen Final: Ventilación Mecánica Intermedia",
+    "description": "Evaluación sumativa del Nivel 2. Valida tu capacidad de análisis en modos ventilatorios, programación fina, interpretación de curvas y criterios de destete.",
+    "moduleId": "level02-examen",
+    "level": "level02-intermedio",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "ex2q1",
+        "type": "multiple_choice",
+        "text": "En la Ventilación Controlada por Volumen (VCV), si se produce un empeoramiento de la distensibilidad pulmonar (compliance), ¿qué observaremos en el ventilador?",
+        "options": [
+          { "id": "a", "text": "El volumen tidal entregado disminuirá.", "isCorrect": false },
+          { "id": "b", "text": "Tanto la Presión Pico como la Presión Meseta aumentarán.", "isCorrect": true },
+          { "id": "c", "text": "La Presión Pico aumentará, pero la Presión Meseta se mantendrá igual.", "isCorrect": false },
+          { "id": "d", "text": "El flujo cambiará a un patrón desacelerante.", "isCorrect": false }
+        ],
+        "explanation": "Al ser un modo controlado por volumen, el ventilador entregará el mismo volumen. Si los pulmones están más rígidos (menor compliance), requerirá mayor presión alveolar (Meseta) para expandirlos, lo que a su vez eleva la Presión Pico total."
+      },
+      {
+        "id": "ex2q2",
+        "type": "multiple_choice",
+        "text": "Durante la ventilación en modo Presión Soporte (PSV), ¿cuál es el mecanismo principal por el que el ventilador sabe cuándo terminar la inspiración (Ciclado)?",
+        "options": [
+          { "id": "a", "text": "Cuando se alcanza el volumen prefijado.", "isCorrect": false },
+          { "id": "b", "text": "Cuando se alcanza el límite de presión.", "isCorrect": false },
+          { "id": "c", "text": "Cuando el flujo inspiratorio cae por debajo de un porcentaje establecido del flujo inspiratorio máximo.", "isCorrect": true },
+          { "id": "d", "text": "Exclusivamente por tiempo.", "isCorrect": false }
+        ],
+        "explanation": "La PSV es un modo que cicla por flujo. Cuando la demanda del paciente se satisface y sus pulmones se llenan, el flujo cae; al llegar al umbral (ej. 25% del pico de flujo), se corta la inspiración."
+      },
+      {
+        "id": "ex2q3",
+        "type": "true_false",
+        "text": "En el modo PRVC (Volumen Control Regulado por Presión), el ventilador ajusta automáticamente la presión inspiratoria latido a latido basándose en el volumen tidal alcanzado en las respiraciones anteriores.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": true },
+          { "id": "false", "text": "Falso", "isCorrect": false }
+        ],
+        "explanation": "Verdadero. El PRVC es un modo dual que garantiza un volumen meta mediante entregas de presión. El equipo calcula la compliance y ajusta la presión necesaria en la siguiente respiración para no sobrepasarse ni quedarse corto del volumen objetivo."
+      },
+      {
+        "id": "ex2q4",
+        "type": "multiple_choice",
+        "text": "Al observar la curva de Flujo-Tiempo, notas que el flujo espiratorio no regresa a la línea base (cero) antes de que comience el siguiente ciclo inspiratorio. Esto es indicativo de:",
+        "options": [
+          { "id": "a", "text": "Fugas en el circuito.", "isCorrect": false },
+          { "id": "b", "text": "Atrapamiento aéreo (Auto-PEEP).", "isCorrect": true },
+          { "id": "c", "text": "Ciclado prematuro.", "isCorrect": false },
+          { "id": "d", "text": "Secreciones en la vía aérea.", "isCorrect": false }
+        ],
+        "explanation": "Si la curva de flujo no vuelve a cero, significa que el paciente no ha terminado de exhalar todo el volumen y el ventilador ya inició una nueva insuflación, acumulando aire dentro del pulmón."
+      },
+      {
+        "id": "ex2q5",
+        "type": "multiple_choice",
+        "text": "En el bucle Presión-Volumen, la presencia de un 'pico de pato' (beak) en el extremo superior derecho de la curva inspiratoria es indicativo de:",
+        "options": [
+          { "id": "a", "text": "Broncoespasmo.", "isCorrect": false },
+          { "id": "b", "text": "Sobredistensión alveolar.", "isCorrect": true },
+          { "id": "c", "text": "Fuga en el tubo.", "isCorrect": false },
+          { "id": "d", "text": "Reclutamiento alveolar adecuado.", "isCorrect": false }
+        ],
+        "explanation": "El 'pico de pato' aparece cuando la presión sigue aumentando pero el volumen ya no se incrementa proporcionalmente, lo que significa que el pulmón alcanzó su máxima distensibilidad y se está sobredistendiendo."
+      },
+      {
+        "id": "ex2q6",
+        "type": "multiple_choice",
+        "text": "¿Cómo se calcula el Índice de Respiración Rápida y Superficial (RSBI o Índice de Tobin) utilizado como predictor de destete?",
+        "options": [
+          { "id": "a", "text": "Frecuencia Respiratoria / Volumen Tidal en Litros.", "isCorrect": true },
+          { "id": "b", "text": "Volumen Tidal en mL / Presión Meseta.", "isCorrect": false },
+          { "id": "c", "text": "Frecuencia Respiratoria x Volumen Tidal en Litros.", "isCorrect": false },
+          { "id": "d", "text": "Presión Pico / Frecuencia Respiratoria.", "isCorrect": false }
+        ],
+        "explanation": "El RSBI divide la frecuencia respiratoria (en rpm) por el volumen tidal (en litros). Valores menores a 105 indican que el paciente respira profundo y pausado, sugiriendo éxito en el destete."
+      },
+      {
+        "id": "ex2q7",
+        "type": "multiple_choice",
+        "text": "Un paciente en SBT (Prueba de Respiración Espontánea) comienza a presentar taquicardia (>140 lpm), diaforesis, uso excesivo de musculatura accesoria y caída de SpO2 al 85%. Tu conducta debe ser:",
+        "options": [
+          { "id": "a", "text": "Animarlo a completar los 30 minutos de prueba.", "isCorrect": false },
+          { "id": "b", "text": "Suspender la prueba, colocarlo en un modo de descanso (ej. A/C) e investigar la causa del fallo.", "isCorrect": true },
+          { "id": "c", "text": "Extubar de urgencia y colocar VMNI.", "isCorrect": false },
+          { "id": "d", "text": "Administrar sedación en bolo.", "isCorrect": false }
+        ],
+        "explanation": "Estos son signos clásicos de fracaso y fatiga respiratoria. Prolongar el esfuerzo muscular en este estado empeora el pronóstico y el daño cardíaco. Se debe proveer descanso inmediato."
+      },
+      {
+        "id": "ex2q8",
+        "type": "multiple_choice",
+        "text": "En el modo SIMV, ¿qué propósito principal cumple la configuración de una 'ventana de tiempo' o sincronización?",
+        "options": [
+          { "id": "a", "text": "Garantizar que todas las respiraciones sean controladas.", "isCorrect": false },
+          { "id": "b", "text": "Asegurar que la máquina apague el PEEP si el paciente no respira.", "isCorrect": false },
+          { "id": "c", "text": "Esperar el esfuerzo del paciente para coordinar y entregar la respiración mandatoria, evitando insuflar cuando el paciente está exhalando.", "isCorrect": true },
+          { "id": "d", "text": "Calcular la compliance dinámica en cada ciclo.", "isCorrect": false }
+        ],
+        "explanation": "El término 'Sincronizada' en SIMV significa que el ventilador abre una ventana de tiempo antes de entregar su respiración obligatoria, esperando el esfuerzo del paciente para entregarla de forma armónica."
+      },
+      {
+        "id": "ex2q9",
+        "type": "true_false",
+        "text": "En la curva Flujo-Volumen, la presencia de irregularidades ('dientes de sierra') en la rama espiratoria es altamente sugestiva de agua en el circuito o secreciones en la vía aérea.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": true },
+          { "id": "false", "text": "Falso", "isCorrect": false }
+        ],
+        "explanation": "Verdadero. Las secreciones o líquido crean un flujo turbulento, lo que hace que el sensor registre pequeñas vibraciones (oscilaciones u ondas aserradas) durante la exhalación."
+      },
+      {
+        "id": "ex2q10",
+        "type": "multiple_choice",
+        "text": "¿Qué asincronía sospechas si en la curva de presión observas una caída (esfuerzo del paciente) hacia el final de la fase espiratoria, pero el ventilador no inicia la inspiración?",
+        "options": [
+          { "id": "a", "text": "Doble disparo.", "isCorrect": false },
+          { "id": "b", "text": "Ciclado prematuro.", "isCorrect": false },
+          { "id": "c", "text": "Trigger o esfuerzo inefectivo.", "isCorrect": true },
+          { "id": "d", "text": "Asincronía de flujo.", "isCorrect": false }
+        ],
+        "explanation": "El esfuerzo inefectivo se produce cuando el paciente hace una contracción diafragmática, pero la presión o el flujo generado no son suficientes para alcanzar el umbral (sensibilidad) del ventilador."
+      }
+    ]
+  }

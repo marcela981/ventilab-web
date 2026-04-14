@@ -28,6 +28,8 @@ import {
   getCurrentUser,
   isAuthenticated as checkAuthenticated,
   getUserData,
+  getAuthToken,
+  refreshBackendTokenFromSession,
 } from '@/shared/services/authService';
 
 // Import centralized role constants and helpers
@@ -169,6 +171,13 @@ export function useAuth() {
       console.log('[useAuth] Session authenticated:', session.user.email);
       setUser(session.user);
       setError(null);
+      // NextAuth login doesn't call authService.login(), so the backend JWT is
+      // never stored in localStorage. Fetch it now so all API clients can use it.
+      if (!getAuthToken()) {
+        refreshBackendTokenFromSession().catch((err) =>
+          console.warn('[useAuth] Could not fetch backend token:', err?.message)
+        );
+      }
     } else if (status === 'unauthenticated') {
       console.log('[useAuth] Session unauthenticated');
 

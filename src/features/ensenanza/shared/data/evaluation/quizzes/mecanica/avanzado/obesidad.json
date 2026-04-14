@@ -1,0 +1,69 @@
+{
+    "id": "quiz-mecanica-l3-m5-obesidad",
+    "type": "quiz",
+    "title": "Quiz: Ventilación en Pacientes Obesos",
+    "description": "Comprende los cambios biomecánicos que induce la obesidad y los ajustes necesarios para prevenir atelectasias y complicaciones.",
+    "moduleId": "module-05-obesidad-sedentarismo",
+    "level": "level03-avanzado",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "Un paciente pesa 140 kg y mide 1.70 m. Al programar la ventilación mecánica, ¿cómo se debe calcular el Volumen Tidal para evitar daño pulmonar?",
+        "options": [
+          { "id": "a", "text": "Calculando de 6 a 8 ml/kg con su peso real (140 kg), unos 1000 ml.", "isCorrect": false },
+          { "id": "b", "text": "Calculando de 6 a 8 ml/kg con su peso corporal ideal (predicho) basado en su talla, aproximadamente 400 - 520 ml.", "isCorrect": true },
+          { "id": "c", "text": "Dando siempre un volumen constante de 700 ml independientemente del peso o talla.", "isCorrect": false },
+          { "id": "d", "text": "Calculando con el peso real, pero restando un 20%.", "isCorrect": false }
+        ],
+        "explanation": "Los pulmones no crecen con la ganancia de tejido adiposo. Su tamaño depende de la estatura y el sexo biológico. Usar el peso real someterá a los pulmones de tamaño normal a volúmenes masivos, causando severo volutrauma."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "A nivel de la mecánica respiratoria, ¿cuál es el hallazgo fisiopatológico primario y más importante que se observa en los pacientes con obesidad severa?",
+        "options": [
+          { "id": "a", "text": "Disminución marcada de la distensibilidad (compliance) de la pared torácica y caída de la Capacidad Residual Funcional (CRF).", "isCorrect": true },
+          { "id": "b", "text": "Pérdida de la elasticidad del parénquima pulmonar similar a un enfisema.", "isCorrect": false },
+          { "id": "c", "text": "Reducción de las resistencias de las vías aéreas superiores.", "isCorrect": false },
+          { "id": "d", "text": "Aumento significativo de la capacidad pulmonar total (CPT).", "isCorrect": false }
+        ],
+        "explanation": "La masa de tejido graso en tórax y abdomen comprime el sistema respiratorio externamente. Esto disminuye la compliance de la pared y hace que el pulmón se vacíe demasiado, colapsando los alvéolos básales (CRF baja)."
+      },
+      {
+        "id": "q3",
+        "type": "true_false",
+        "text": "Al evaluar la presión de las vías aéreas en un paciente obeso, es aceptable tolerar Presiones Meseta (Plateau) de hasta 35 cmH2O si esto es secundario al incremento de la presión intraabdominal y torácica.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": true },
+          { "id": "false", "text": "Falso", "isCorrect": false }
+        ],
+        "explanation": "Verdadero. En obesos, una gran parte de la presión de vía aérea se gasta en 'levantar' el peso del tórax y abdomen, no en distender el alvéolo. Por ende, la Presión Transpulmonar suele ser segura aunque la Meseta ronde los 35 cmH2O."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "¿Qué intervención en cuanto a parámetros del ventilador es fundamental para contrarrestar el colapso alveolar intraoperatorio o en UCI en estos pacientes?",
+        "options": [
+          { "id": "a", "text": "Uso de FiO2 al 100% de manera ininterrumpida.", "isCorrect": false },
+          { "id": "b", "text": "Uso de PEEP elevado y personalizado (a menudo >10 cmH2O) junto con maniobras de reclutamiento.", "isCorrect": true },
+          { "id": "c", "text": "Uso de PEEP en 0 (ZEEP) para facilitar el retorno venoso.", "isCorrect": false },
+          { "id": "d", "text": "Inversión de la relación I:E en todos los casos.", "isCorrect": false }
+        ],
+        "explanation": "El exceso de peso colapsa fuertemente las bases pulmonares. Para vencer esta presión extrapulmonar y mantener los alvéolos abiertos, los obesos requieren niveles de PEEP significativamente más altos que los pacientes delgados."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "La posición del paciente obeso tiene un impacto dramático en la mecánica respiratoria. ¿Cuál es la posición recomendada para optimizar la oxigenación y la intubación/extubación?",
+        "options": [
+          { "id": "a", "text": "Decúbito supino plano (0 grados).", "isCorrect": false },
+          { "id": "b", "text": "Posición de Trendelenburg.", "isCorrect": false },
+          { "id": "c", "text": "Posición semi-incorporada, 'Rampa' o Anti-Trendelenburg de al menos 30-45 grados.", "isCorrect": true },
+          { "id": "d", "text": "Decúbito lateral estricto todo el tiempo.", "isCorrect": false }
+        ],
+        "explanation": "Al incorporar al paciente, se evita que el contenido abdominal empuje el diafragma hacia el cráneo. Esto mejora enormemente la capacidad residual funcional (CRF) y reduce el esfuerzo respiratorio y las atelectasias."
+      }
+    ]
+  }

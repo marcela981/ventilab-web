@@ -1,0 +1,69 @@
+{
+    "id": "quiz-mecanica-l1-m5-monitorizacion-grafica",
+    "type": "quiz",
+    "title": "Quiz: Monitorización Gráfica Básica",
+    "description": "Comprueba tu habilidad para interpretar la información clínica de las curvas escalares (presión, flujo, volumen) en el ventilador mecánico.",
+    "moduleId": "module-05-monitorizacion-grafica",
+    "level": "level01-principiante",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "Observas la curva de Presión-Tiempo en tu paciente ventilado en VCV. Notas que la diferencia entre la Presión Pico (máxima) y la Presión Meseta (pausa inspiratoria) ha aumentado de 5 cmH2O a 20 cmH2O. ¿Qué sospechas?",
+        "options": [
+          { "id": "a", "text": "Que el pulmón se ha vuelto más rígido (caída de compliance).", "isCorrect": false },
+          { "id": "b", "text": "Que hay un aumento severo en la resistencia de la vía aérea (ej. secreciones, broncoespasmo, tubo doblado).", "isCorrect": true },
+          { "id": "c", "text": "Que el paciente está listo para extubarse.", "isCorrect": false },
+          { "id": "d", "text": "Que hay una desconexión en el circuito.", "isCorrect": false }
+        ],
+        "explanation": "La diferencia entre la presión pico y la presión meseta representa el componente resistivo. Un aumento en esta brecha indica un problema obstructivo (tubo, vía aérea) y no un problema elástico del parénquima."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "Analizando la curva de Flujo-Tiempo, si durante la fase de espiración el trazado del flujo NO regresa a la línea cero antes de que comience la siguiente inspiración, esto es un indicador clásico de:",
+        "options": [
+          { "id": "a", "text": "Fuga en el neumotaponamiento.", "isCorrect": false },
+          { "id": "b", "text": "Auto-PEEP (Atrapamiento aéreo).", "isCorrect": true },
+          { "id": "c", "text": "Ciclado perfecto.", "isCorrect": false },
+          { "id": "d", "text": "Falla del sensor de oxígeno.", "isCorrect": false }
+        ],
+        "explanation": "Si el flujo espiratorio no vuelve a cero, significa que el paciente no alcanzó a vaciar sus pulmones antes del próximo ciclo. El aire se va acumulando dentro del pulmón, fenómeno conocido como atrapamiento de aire o Auto-PEEP."
+      },
+      {
+        "id": "q3",
+        "type": "true_false",
+        "text": "La curva de Volumen-Tiempo que presenta un trazado inspiratorio normal, pero en la espiración no retorna a la línea base de cero (es decir, el ventilador marca que salió menos volumen del que entró) es fuertemente indicativa de fugas en el sistema.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": true },
+          { "id": "false", "text": "Falso", "isCorrect": false }
+        ],
+        "explanation": "Verdadero. Si el volumen entregado (inspirado) no es igual al devuelto (espirado), ese aire debió escapar por algún sitio: fugas alrededor del manguito endotraqueal (cuff) o conexiones flojas del circuito."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "¿Cómo se suele visualizar de manera típica el patrón de flujo inspiratorio en la Ventilación Controlada por Presión (PCV) en la curva Flujo-Tiempo?",
+        "options": [
+          { "id": "a", "text": "Como una onda cuadrada y constante.", "isCorrect": false },
+          { "id": "b", "text": "Como una onda sinusal pura.", "isCorrect": false },
+          { "id": "c", "text": "Como una onda desacelerante (o decreciente).", "isCorrect": true },
+          { "id": "d", "text": "Como una onda ascendente exponencial.", "isCorrect": false }
+        ],
+        "explanation": "En PCV, el ventilador entrega un alto flujo al principio para alcanzar rápidamente la presión objetivo y luego el flujo va cayendo gradualmente a medida que los pulmones se llenan y la presión alveolar se iguala con la del ventilador (flujo desacelerante)."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "En el análisis del Bucle Presión-Volumen (Curva P-V), identificar el 'Punto de inflexión inferior' es históricamente útil para orientar la titulación de qué parámetro:",
+        "options": [
+          { "id": "a", "text": "El tiempo inspiratorio.", "isCorrect": false },
+          { "id": "b", "text": "El PEEP (para evitar apertura y cierre cíclico alveolar).", "isCorrect": true },
+          { "id": "c", "text": "La FiO2.", "isCorrect": false },
+          { "id": "d", "text": "El Trigger inspiratorio.", "isCorrect": false }
+        ],
+        "explanation": "El punto de inflexión inferior del bucle P-V se asocia a la presión en la cual se produce un reclutamiento alveolar masivo. Ajustar el PEEP ligeramente por encima de este punto ayuda a evitar el colapso alveolar cíclico."
+      }
+    ]
+  }

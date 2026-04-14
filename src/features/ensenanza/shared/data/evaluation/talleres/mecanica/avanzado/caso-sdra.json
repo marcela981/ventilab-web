@@ -1,0 +1,52 @@
+{
+    "id": "taller-mecanica-l3-caso-sdra",
+    "type": "taller",
+    "title": "Taller ABP: Manejo Avanzado del SDRA",
+    "description": "Simulación clínica de alta complejidad. Aborda a un paciente con Síndrome de Distrés Respiratorio Agudo severo enfocado en estrategias de pulmón abierto y limitación del VILI.",
+    "moduleId": "level03-talleres",
+    "level": "level03-avanzado",
+    "passingScore": 80,
+    "caseStudy": {
+      "patient": "Masculino de 55 años, 80 kg peso ideal.",
+      "scenario": "Neumonía bilateral viral severa. Gases arteriales revelan PaO2 de 58 mmHg con FiO2 al 80% (PaO2/FiO2 = 72, SDRA grave). Paciente muy asincrónico, taquipneico. Radiografía muestra opacidades difusas (pulmón blanco).",
+      "objective": "Aplicar medidas de ventilación protectora, calcular Driving Pressure e indicar terapias de rescate."
+    },
+    "questions": [
+      {
+        "id": "t4q1",
+        "type": "scenario_choice",
+        "text": "El paciente lucha agresivamente contra el ventilador (Doble disparo y P-SILI). Tu primer paso en este SDRA grave es:",
+        "options": [
+          { "id": "a", "text": "Infundir un bloqueador neuromuscular (ej. Cisatracurio) por 48 hrs y usar ventilación controlada.", "isCorrect": true, "feedback": "Correcto. En SDRA grave (PaO2/FiO2 < 150), eliminar las asincronías y el esfuerzo vigoroso con parálisis neuromuscular temporal reduce el daño autoinducido y el consumo de oxígeno." },
+          { "id": "b", "text": "Transicionar a modo CPAP para mejorar la sincronía.", "isCorrect": false, "feedback": "Incorrecto. El paciente tiene un pulmón rígidísimo y SDRA grave; en CPAP hará fatiga inminente y paro respiratorio." }
+        ]
+      },
+      {
+        "id": "t4q2",
+        "type": "scenario_choice",
+        "text": "Ahora configuras los parámetros protectores. Considerando su peso ideal de 80 kg, configuras un Volumen Tidal de 480 ml (6 ml/kg). Al medir las presiones, obtienes una Presión Meseta de 32 cmH2O y un PEEP de 10 cmH2O. ¿Cuál es su Driving Pressure (Presión de Distensión) y qué significa?",
+        "options": [
+          { "id": "a", "text": "Driving Pressure de 42 cmH2O. Es protectora.", "isCorrect": false, "feedback": "Incorrecto. La Driving Pressure es Pplat - PEEP, no Pplat + PEEP." },
+          { "id": "b", "text": "Driving Pressure de 22 cmH2O. Es peligrosamente alta.", "isCorrect": true, "feedback": "Correcto. 32 (Meseta) - 10 (PEEP) = 22. El objetivo seguro es < 15 cmH2O. Este pulmón se está estirando excesivamente en cada ciclo." }
+        ]
+      },
+      {
+        "id": "t4q3",
+        "type": "scenario_choice",
+        "text": "Para corregir esa Driving Pressure elevada y proteger el 'Pulmón Pequeño' (Baby Lung), ¿qué ajuste es el más apropiado?",
+        "options": [
+          { "id": "a", "text": "Disminuir el Volumen Tidal a 4 - 5 ml/kg (320 - 400 ml) tolerando hipercapnia permisiva.", "isCorrect": true, "feedback": "Correcto. Reducir el volumen disminuye directamente la presión de distensión alveolar. Se permite que el CO2 suba si el pH se mantiene > 7.20." },
+          { "id": "b", "text": "Aumentar el PEEP a 20 cmH2O.", "isCorrect": false, "feedback": "Incorrecto. Aumentar drásticamente el PEEP con una Driving Pressure alta empeorará la sobredistensión de las zonas ya abiertas si no se titula adecuadamente." }
+        ]
+      },
+      {
+        "id": "t4q4",
+        "type": "scenario_choice",
+        "text": "A pesar de optimizar el ventilador, la PaO2/FiO2 sigue en 90 (Hipoxemia refractaria). ¿Qué maniobra clínica, basada en fuerte evidencia, debes indicar de inmediato?",
+        "options": [
+          { "id": "a", "text": "Traqueostomía percutánea temprana.", "isCorrect": false, "feedback": "Incorrecto. La traqueostomía facilita el manejo a largo plazo pero no es una terapia de rescate para la hipoxemia refractaria." },
+          { "id": "b", "text": "Colocación del paciente en Decúbito Prono (boca abajo) por al menos 16 horas al día.", "isCorrect": true, "feedback": "Correcto. La posición prono homogeneiza la ventilación, alivia el peso del corazón sobre los pulmones y mejora dramáticamente la oxigenación y la supervivencia en SDRA severo." }
+        ]
+      }
+    ]
+  }

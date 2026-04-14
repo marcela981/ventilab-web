@@ -1,0 +1,69 @@
+{
+    "id": "quiz-mecanica-l1-m6-efectos-sistemicos",
+    "type": "quiz",
+    "title": "Quiz: Efectos Sistémicos de la Ventilación",
+    "description": "Evalúa el entendimiento de las interacciones corazón-pulmón y el impacto de la ventilación mecánica en otros órganos.",
+    "moduleId": "module-06-efectos-sistemicos",
+    "level": "level01-principiante",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "La ventilación mecánica a presión positiva altera la hemodinámica normal. ¿Cuál es su efecto principal sobre el corazón derecho?",
+        "options": [
+          { "id": "a", "text": "Aumenta la precarga del ventrículo derecho por succión venosa.", "isCorrect": false },
+          { "id": "b", "text": "Disminuye el retorno venoso, reduciendo la precarga del ventrículo derecho.", "isCorrect": true },
+          { "id": "c", "text": "Aumenta dramáticamente la frecuencia cardíaca sin afectar los volúmenes.", "isCorrect": false },
+          { "id": "d", "text": "No tiene efecto sobre el corazón derecho.", "isCorrect": false }
+        ],
+        "explanation": "La presión intratorácica positiva comprime las venas cavas, impidiendo el retorno normal de sangre desde el sistema venoso hacia la aurícula derecha. Esta es la causa más común de hipotensión al conectar a un paciente al ventilador."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "¿Cómo se beneficia un paciente con edema agudo de pulmón cardiogénico (falla severa del ventrículo izquierdo) con la presión positiva (PEEP / CPAP)?",
+        "options": [
+          { "id": "a", "text": "Al aumentar la presión positiva, se reduce la poscarga del ventrículo izquierdo facilitando su vaciado.", "isCorrect": true },
+          { "id": "b", "text": "El oxígeno a presión dilata los bronquios curando la falla cardíaca.", "isCorrect": false },
+          { "id": "c", "text": "Incrementa masivamente la sangre que llega al corazón llenándolo más (aumento de precarga).", "isCorrect": false },
+          { "id": "d", "text": "Acelera los riñones para orinar el edema.", "isCorrect": false }
+        ],
+        "explanation": "La presión intratorácica positiva actúa como un 'soporte' alrededor del corazón, disminuyendo la tensión transmural del ventrículo izquierdo y reduciendo la poscarga. Esto hace más fácil que un corazón fallido bombee sangre hacia la aorta."
+      },
+      {
+        "id": "q3",
+        "type": "true_false",
+        "text": "La ventilación mecánica invasiva prolongada y la PEEP alta tienen una tendencia a generar poliuria (aumento excesivo en la producción de orina).",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. La ventilación con presión positiva suele provocar lo contrario: oliguria y retención de líquidos. Esto ocurre porque al disminuir el gasto cardíaco y el retorno venoso, los riñones reciben menos flujo y se estimulan sistemas de retención hormonal (como la ADH y el sistema renina-angiotensina)."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "Si durante la programación del ventilador provocamos una hiperventilación severa y disminuimos drásticamente los niveles de CO2 en sangre (Hipocapnia), ¿qué efecto tendrá esto sobre la perfusión cerebral?",
+        "options": [
+          { "id": "a", "text": "Causará vasodilatación cerebral masiva, aumentando la presión intracraneal.", "isCorrect": false },
+          { "id": "b", "text": "Causará vasoconstricción cerebral, lo que disminuye el flujo sanguíneo cerebral.", "isCorrect": true },
+          { "id": "c", "text": "Aumentará la producción de líquido cefalorraquídeo.", "isCorrect": false },
+          { "id": "d", "text": "El cerebro es inmune a los cambios de CO2 en el adulto.", "isCorrect": false }
+        ],
+        "explanation": "El dióxido de carbono (CO2) es un potente regulador vascular en el cerebro. La hipocapnia provoca vasoconstricción, disminuyendo el flujo sanguíneo cerebral (riesgo de isquemia si es excesiva); en cambio, la hipercapnia causa vasodilatación."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "A nivel del sistema gastrointestinal, ¿cuál es un riesgo sistémico conocido en el paciente sometido a ventilación mecánica en UCI?",
+        "options": [
+          { "id": "a", "text": "Hipermovilidad gástrica con cuadros de diarrea profusa inmediatos.", "isCorrect": false },
+          { "id": "b", "text": "Mejora de la absorción de nutrientes gracias a la hiperoxigenación de los enterocitos.", "isCorrect": false },
+          { "id": "c", "text": "Hipoperfusión esplácnica, aumento del riesgo de isquemia mucosa y formación de úlceras por estrés.", "isCorrect": true },
+          { "id": "d", "text": "Aumento del flujo portal hepático que promueve toxicidad farmacológica acelerada.", "isCorrect": false }
+        ],
+        "explanation": "Debido a la redistribución del gasto cardíaco y el aumento de las presiones venosas, la circulación esplácnica se ve frecuentemente afectada (hipoperfusión), lo que altera la barrera mucosa y aumenta drásticamente el riesgo de úlceras por estrés e íleo paralítico."
+      }
+    ]
+  }

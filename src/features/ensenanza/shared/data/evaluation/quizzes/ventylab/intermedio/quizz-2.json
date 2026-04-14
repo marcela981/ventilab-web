@@ -1,0 +1,69 @@
+{
+    "id": "quiz-ventylab-l2-m2",
+    "type": "quiz",
+    "title": "Quiz: VMNI y Estrategias de Destete",
+    "description": "Evalúa tus criterios para aplicar Ventilación No Invasiva y tu capacidad para conducir un protocolo de liberación del ventilador (destete).",
+    "moduleId": "ventilaciónnoinvasiva_destete",
+    "level": "level02-intermedio",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "Se solicita inicio de Ventilación Mecánica No Invasiva (VMNI). ¿Cuál de los siguientes es una CONTRAINDICACIÓN absoluta para su uso?",
+        "options": [
+          { "id": "a", "text": "Exacerbación de EPOC con hipercapnia leve.", "isCorrect": false },
+          { "id": "b", "text": "Edema agudo de pulmón cardiogénico.", "isCorrect": false },
+          { "id": "c", "text": "Paciente en coma, sin protección de vía aérea y secreciones abundantes.", "isCorrect": true },
+          { "id": "d", "text": "Frecuencia respiratoria de 28 rpm.", "isCorrect": false }
+        ],
+        "explanation": "La VMNI exige que el paciente esté consciente (o fácilmente despertable) para cooperar, proteger su vía aérea y expectorar. Un paciente en coma corre un riesgo letal de aspiración de contenido gástrico."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "En la modalidad BiPAP (VNI de dos niveles de presión), ¿qué representa el parámetro IPAP y cuál es su objetivo principal?",
+        "options": [
+          { "id": "a", "text": "Presión Positiva Inspiratoria en la Vía Aérea; su objetivo es proporcionar soporte durante la inhalación para aumentar el volumen tidal y barrer CO2.", "isCorrect": true },
+          { "id": "b", "text": "Presión Positiva Espiratoria; su objetivo es mantener los alvéolos abiertos al final del ciclo.", "isCorrect": false },
+          { "id": "c", "text": "Índice de Presión Arterial Pulmonar.", "isCorrect": false },
+          { "id": "d", "text": "Frecuencia respiratoria de respaldo.", "isCorrect": false }
+        ],
+        "explanation": "El IPAP equivale a la Presión de Soporte en ventilación invasiva. Asiste el esfuerzo inspiratorio, ayudando al paciente a mover un mayor volumen de aire sin fatigarse y facilitando la eliminación del dióxido de carbono."
+      },
+      {
+        "id": "q3",
+        "type": "true_false",
+        "text": "La Prueba de Respiración Espontánea (SBT) debe realizarse rutinariamente conectando al paciente a CPAP puro (sin presión soporte) durante al menos 4 horas.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. Las guías recomiendan que el SBT dure entre 30 y 120 minutos. Se puede realizar con Tubo en T o con Presión Soporte baja (ej. 5 a 8 cmH2O) para compensar la resistencia del tubo. Prolongarlo a 4h suele inducir fatiga injustificada."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "Antes de decidir la extubación de un paciente que superó el SBT, aplicas la 'Prueba de Fuga del Manguito' (Cuff Leak Test). ¿Qué buscas descartar con esta prueba?",
+        "options": [
+          { "id": "a", "text": "Riesgo de neumonía intrahospitalaria.", "isCorrect": false },
+          { "id": "b", "text": "Edema laríngeo o de las vías respiratorias superiores que podría causar estridor y obstrucción tras sacar el tubo.", "isCorrect": true },
+          { "id": "c", "text": "Fuga en las mangueras del ventilador.", "isCorrect": false },
+          { "id": "d", "text": "Debilidad de los músculos diafragmáticos.", "isCorrect": false }
+        ],
+        "explanation": "Al desinflar el globo del tubo endotraqueal, el aire debería escapar por los lados si la laringe está sana. Si no hay fuga de aire, significa que el tejido circundante está hinchado y estrecho, contraindicando la extubación inmediata."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "Calculas el Índice de Respiración Rápida y Superficial (Tobin / RSBI) obteniendo un valor de 135 resp/min/L. ¿Cómo interpretas este resultado?",
+        "options": [
+          { "id": "a", "text": "El paciente está listo para ser extubado.", "isCorrect": false },
+          { "id": "b", "text": "El paciente tiene un patrón rápido y superficial, sugiriendo fatiga y alta probabilidad de fracaso en el destete.", "isCorrect": true },
+          { "id": "c", "text": "El paciente requiere broncodilatadores urgentes.", "isCorrect": false },
+          { "id": "d", "text": "Indica sobredistensión alveolar.", "isCorrect": false }
+        ],
+        "explanation": "Un RSBI mayor a 105 indica un patrón de respiración donde el paciente respira muy rápido pero con muy poco volumen, señal clásica de debilidad y fracaso inminente sin soporte mecánico."
+      }
+    ]
+  }

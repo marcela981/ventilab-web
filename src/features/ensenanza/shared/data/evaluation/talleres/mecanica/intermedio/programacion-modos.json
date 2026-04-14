@@ -1,0 +1,52 @@
+{
+    "id": "taller-mecanica-l2-programacion-modos",
+    "type": "taller",
+    "title": "Taller ABP: Transición de Modos y Soporte Parcial",
+    "description": "Taller práctico sobre la adaptación del ventilador cuando el paciente comienza a despertar y recuperar su esfuerzo respiratorio.",
+    "moduleId": "level02-talleres",
+    "level": "level02-intermedio",
+    "passingScore": 80,
+    "caseStudy": {
+      "patient": "Femenina de 50 años en recuperación de sepsis de origen urinario.",
+      "scenario": "La paciente lleva 48 hrs en ventilación Asistida/Controlada (A/C). Se ha suspendido la sedación y comienza a despertar, abriendo los ojos y moviendo extremidades. Notas que su frecuencia respiratoria es de 24 rpm y empieza a \"competir\" ligeramente con el ventilador.",
+      "objective": "Modificar la estrategia ventilatoria hacia un modo de soporte parcial para evaluar destete."
+    },
+    "questions": [
+      {
+        "id": "t2q1",
+        "type": "scenario_choice",
+        "text": "La paciente tiene un buen 'drive' respiratorio (inicia sus propias respiraciones). ¿A qué modo ventilatorio debes transicionarla para favorecer el trabajo muscular?",
+        "options": [
+          { "id": "a", "text": "Mantener en A/C pero aumentar la sedación.", "isCorrect": false, "feedback": "Incorrecto. Sedarla nuevamente prolongará la ventilación mecánica y favorecerá la atrofia diafragmática (VIDD)." },
+          { "id": "b", "text": "Cambiar a Presión Soporte (PSV) o SIMV + PSV.", "isCorrect": true, "feedback": "Correcto. Estos modos permiten que la paciente controle su frecuencia y flujo, iniciando el entrenamiento de los músculos respiratorios." }
+        ]
+      },
+      {
+        "id": "t2q2",
+        "type": "scenario_choice",
+        "text": "Pasas a la paciente a Presión Soporte (PSV) de 10 cmH2O y PEEP de 5. ¿Qué alarma/configuración de seguridad es vital establecer ahora que está en un modo espontáneo?",
+        "options": [
+          { "id": "a", "text": "Límite de Volumen Mínimo de 1000 ml.", "isCorrect": false, "feedback": "Incorrecto. Esto provocaría alarmas constantes y un volumen de 1000 ml no es protector." },
+          { "id": "b", "text": "Ventilación de Apnea (Apnea Backup).", "isCorrect": true, "feedback": "Correcto. Si la paciente se vuelve a dormir o se fatiga y deja de respirar, el ventilador debe entrar automáticamente en un modo controlado para salvarle la vida." }
+        ]
+      },
+      {
+        "id": "t2q3",
+        "type": "scenario_choice",
+        "text": "A la hora, notas que la paciente hace contracciones fuertes de los músculos abdominales al final de la inspiración. El ventilador muestra picos de presión espiratoria. ¿Qué asincronía está ocurriendo?",
+        "options": [
+          { "id": "a", "text": "Trigger inefectivo.", "isCorrect": false, "feedback": "Incorrecto. El esfuerzo inefectivo se da antes de inspirar, no al final." },
+          { "id": "b", "text": "Ciclado tardío.", "isCorrect": true, "feedback": "Correcto. El ventilador está tardando mucho en abrir la válvula espiratoria. La paciente quiere exhalar, pero la máquina sigue insuflando gas." }
+        ]
+      },
+      {
+        "id": "t2q4",
+        "type": "scenario_choice",
+        "text": "¿Cómo solucionas este ciclado tardío en el modo PSV?",
+        "options": [
+          { "id": "a", "text": "Aumentando el criterio de ciclado por flujo (ej. pasarlo del 10% al 30% del flujo pico).", "isCorrect": true, "feedback": "Correcto. Al subir el porcentaje de ciclado, el ventilador terminará la inspiración más pronto, coincidiendo con el tiempo neural de la paciente." },
+          { "id": "b", "text": "Aumentando la Presión de Soporte a 25 cmH2O.", "isCorrect": false, "feedback": "Incorrecto. A mayor presión de soporte, más tardará el flujo en caer, empeorando el ciclado tardío." }
+        ]
+      }
+    ]
+  }

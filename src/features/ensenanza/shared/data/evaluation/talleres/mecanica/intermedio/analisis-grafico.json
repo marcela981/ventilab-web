@@ -1,0 +1,52 @@
+{
+    "id": "taller-mecanica-l2-analisis-grafico",
+    "type": "taller",
+    "title": "Taller ABP: Interpretación de Ondas y Bucles",
+    "description": "Taller visual/lógico. Interpreta anomalías en las curvas de ventilación para diagnosticar problemas de interacción paciente-ventilador.",
+    "moduleId": "level02-talleres",
+    "level": "level02-intermedio",
+    "passingScore": 80,
+    "caseStudy": {
+      "patient": "Masculino de 40 años, postoperatorio de cirugía abdominal compleja.",
+      "scenario": "Al revisar el monitor del ventilador (Modo VCV), detectas varias alteraciones gráficas sutiles en la pantalla que el personal de enfermería no ha notado porque aún no rompen los límites de alarma.",
+      "objective": "Identificar tempranamente problemas de mecánica pulmonar a través de la monitorización gráfica."
+    },
+    "questions": [
+      {
+        "id": "t3q1",
+        "type": "scenario_choice",
+        "text": "En la curva Flujo-Tiempo, observas que el trazado del flujo espiratorio tiene una forma de 'dientes de sierra' (oscilaciones irregulares) en lugar de una curva suave hacia arriba. ¿Cuál es el diagnóstico más probable?",
+        "options": [
+          { "id": "a", "text": "Broncoespasmo distal severo.", "isCorrect": false, "feedback": "Incorrecto. El broncoespasmo se vería como una exhalación muy prolongada (flujo espiratorio cóncavo y aplanado)." },
+          { "id": "b", "text": "Presencia de secreciones en la vía aérea o agua en el circuito.", "isCorrect": true, "feedback": "Correcto. Estas irregularidades representan turbulencia provocada por líquido (moco/agua) vibrando con el flujo de aire." }
+        ]
+      },
+      {
+        "id": "t3q2",
+        "type": "scenario_choice",
+        "text": "Miras la curva de Volumen-Tiempo. Notas que la curva sube hasta 500 ml durante la inspiración, pero en la espiración desciende solo hasta la marca de 150 ml (no regresa a cero). ¿Qué está sucediendo?",
+        "options": [
+          { "id": "a", "text": "Hay una fuga en el sistema (ej. neumotaponamiento desinflado).", "isCorrect": true, "feedback": "Correcto. El ventilador mandó 500 ml pero solo 'regresaron' 350 ml al sensor espiratorio. El resto se fugó." },
+          { "id": "b", "text": "El paciente desarrolló Atrapamiento Aéreo (Auto-PEEP).", "isCorrect": false, "feedback": "Incorrecto. Aunque el atrapamiento de aire retiene volumen, en las gráficas el síntoma cardinal del auto-PEEP se ve en la curva de flujo que no llega a cero, no en una pérdida constante y masiva de volumen espirado." }
+        ]
+      },
+      {
+        "id": "t3q3",
+        "type": "scenario_choice",
+        "text": "Analizas ahora el bucle Presión-Volumen. Observas que en la parte superior derecha de la elipse se forma una prolongación aplanada que parece un 'pico de pato'. ¿Qué indica esto?",
+        "options": [
+          { "id": "a", "text": "Apertura óptima de las vías aéreas.", "isCorrect": false, "feedback": "Incorrecto. La apertura se refleja en el punto de inflexión inferior, no en el superior." },
+          { "id": "b", "text": "Sobredistensión alveolar (Volutrauma inminente).", "isCorrect": true, "feedback": "Correcto. El pico de pato significa que la presión aumenta dramáticamente sin conseguir mayor volumen, indicando que los pulmones llegaron a su límite elástico máximo." }
+        ]
+      },
+      {
+        "id": "t3q4",
+        "type": "scenario_choice",
+        "text": "Basado en la sobredistensión observada (pico de pato), ¿cuál debería ser tu intervención inmediata?",
+        "options": [
+          { "id": "a", "text": "Aumentar el PEEP.", "isCorrect": false, "feedback": "Incorrecto. Aumentar el PEEP añadirá más volumen y presión a un pulmón ya sobredistendido." },
+          { "id": "b", "text": "Disminuir el Volumen Tidal o la Presión Inspiratoria.", "isCorrect": true, "feedback": "Correcto. Debes reducir el volumen entregado para evitar lesionar las zonas sanas del pulmón por sobredistensión." }
+        ]
+      }
+    ]
+  }

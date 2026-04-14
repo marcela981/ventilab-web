@@ -1,0 +1,69 @@
+{
+    "id": "quiz-mecanica-l2-m5-graficas",
+    "type": "quiz",
+    "title": "Quiz: Análisis Gráfico y Fine Tuning",
+    "description": "Demuestra tu capacidad para detectar problemas a nivel alveolar y de la vía aérea a través de curvas y bucles avanzados.",
+    "moduleId": "module-05-graficas-fine-tuning",
+    "level": "level02-intermedio",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "Observas en la curva de Presión-Tiempo una pequeña deflexión negativa (caída de presión) que NO va seguida de una respiración entregada por el ventilador. Esto se conoce como:",
+        "options": [
+          { "id": "a", "text": "Doble disparo (Double triggering).", "isCorrect": false },
+          { "id": "b", "text": "Esfuerzo inspiratorio inefectivo (Ineffective trigger).", "isCorrect": true },
+          { "id": "c", "text": "Ciclado prematuro.", "isCorrect": false },
+          { "id": "d", "text": "Autociclado.", "isCorrect": false }
+        ],
+        "explanation": "El esfuerzo inefectivo ocurre cuando el paciente intenta respirar (caída de presión), pero el esfuerzo no es suficiente para vencer el umbral de sensibilidad o el auto-PEEP, por lo que el ventilador no responde."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "En el bucle (loop) Flujo-Volumen, la rama espiratoria presenta oscilaciones o un patrón 'aserrado' (dientes de sierra). ¿Qué condición clínica sugiere este hallazgo?",
+        "options": [
+          { "id": "a", "text": "Aumento de la distensibilidad.", "isCorrect": false },
+          { "id": "b", "text": "Presencia de secreciones en la vía aérea o agua en el circuito.", "isCorrect": true },
+          { "id": "c", "text": "Neumotórax a tensión.", "isCorrect": false },
+          { "id": "d", "text": "Auto-PEEP severo.", "isCorrect": false }
+        ],
+        "explanation": "El patrón aserrado en la curva espiratoria refleja un flujo turbulento causado comúnmente por la acumulación de secreciones gruesas en el tubo endotraqueal o líquido condensado en las mangueras."
+      },
+      {
+        "id": "q3",
+        "type": "true_false",
+        "text": "En el bucle Presión-Volumen, la formación de un 'pico de pato' (beak) en el extremo superior derecho indica que se está produciendo un reclutamiento alveolar óptimo.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. El 'pico de pato' indica SOBREDISTENSIÓN alveolar. Significa que para un pequeño aumento final de volumen se requiere un gran aumento de presión, indicando que el pulmón llegó a su límite de estiramiento y hay alto riesgo de volutrauma."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "¿Qué maniobra gráfica o ajuste de fine-tuning se recomienda para un paciente con EPOC severo que presenta Auto-PEEP persistente en la curva Flujo-Tiempo?",
+        "options": [
+          { "id": "a", "text": "Aumentar el Tiempo Inspiratorio y la relación I:E a 1:1.", "isCorrect": false },
+          { "id": "b", "text": "Aumentar el flujo inspiratorio (o disminuir el tiempo inspiratorio) para otorgar un mayor Tiempo Espiratorio.", "isCorrect": true },
+          { "id": "c", "text": "Aumentar el volumen tidal para forzar la apertura de la vía aérea.", "isCorrect": false },
+          { "id": "d", "text": "Eliminar toda la PEEP extrínseca (poner PEEP en cero).", "isCorrect": false }
+        ],
+        "explanation": "Los pacientes obstructivos necesitan mucho tiempo para vaciar sus pulmones. Aumentar el flujo pico hace que la inspiración sea más rápida, lo que deja más tiempo disponible en el ciclo total para la espiración (mayor tiempo espiratorio), disminuyendo el atrapamiento aéreo."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "Observas que durante la PSV (Presión Soporte), el paciente activa activamente sus músculos abdominales al final de la inspiración para forzar la exhalación. En las curvas, la presión se eleva bruscamente al final del ciclo. ¿Qué tipo de asincronía sospechas?",
+        "options": [
+          { "id": "a", "text": "Ciclado retrasado (Delayed cycling).", "isCorrect": true },
+          { "id": "b", "text": "Ciclado prematuro (Premature cycling).", "isCorrect": false },
+          { "id": "c", "text": "Trigger retardado.", "isCorrect": false },
+          { "id": "d", "text": "Autociclado.", "isCorrect": false }
+        ],
+        "explanation": "El ciclado retrasado ocurre cuando el tiempo inspiratorio del ventilador es más largo que el tiempo neural del paciente. El paciente quiere espirar, pero la máquina sigue insuflando, lo que causa contracción muscular espiratoria y un pico de presión."
+      }
+    ]
+  }

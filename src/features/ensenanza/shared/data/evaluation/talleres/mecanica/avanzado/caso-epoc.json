@@ -1,0 +1,52 @@
+{
+    "id": "taller-mecanica-l3-caso-epoc",
+    "type": "taller",
+    "title": "Taller ABP: Crisis Asmática y EPOC Exacerbado",
+    "description": "Taller para el manejo de patologías obstructivas severas. Previene el barotrauma provocado por hiperinsuflación dinámica.",
+    "moduleId": "level03-talleres",
+    "level": "level03-avanzado",
+    "passingScore": 80,
+    "caseStudy": {
+      "patient": "Femenina de 68 años con EPOC fenotipo enfisematoso.",
+      "scenario": "Intubada de urgencia por falla ventilatoria (PaCO2 90 mmHg, pH 7.15). Se la conecta a ventilación en VCV, Volumen 450 ml, Frecuencia Respiratoria 20. A los 5 minutos, la paciente se hipotensa severamente (PA 70/40) y la gráfica de flujo espiratorio muestra que no regresa a cero.",
+      "objective": "Manejar la hiperinsuflación dinámica (Auto-PEEP) y revertir el compromiso hemodinámico."
+    },
+    "questions": [
+      {
+        "id": "t5q1",
+        "type": "scenario_choice",
+        "text": "La paciente está hemodinámicamente inestable y el flujo no llega a cero. ¿Qué está causando la hipotensión?",
+        "options": [
+          { "id": "a", "text": "Una alergia al sedante utilizado en la intubación.", "isCorrect": false, "feedback": "Incorrecto. Aunque posible, el hallazgo de la curva de flujo apunta a una causa mecánica." },
+          { "id": "b", "text": "Auto-PEEP masivo que aumenta la presión intratorácica impidiendo el retorno venoso al corazón.", "isCorrect": true, "feedback": "Correcto. El aire está atrapado. El tórax actúa como un globo inflado a presión, comprimiendo las venas cavas y colapsando el gasto cardíaco." }
+        ]
+      },
+      {
+        "id": "t5q2",
+        "type": "scenario_choice",
+        "text": "Ante la urgencia hemodinámica (corazón colapsado por aire atrapado), ¿cuál es la maniobra de rescate inicial más rápida y efectiva?",
+        "options": [
+          { "id": "a", "text": "Desconectar a la paciente del ventilador mecánico durante unos segundos.", "isCorrect": true, "feedback": "Correcto. Al desconectar, se permite que el pulmón hiperinsuflado se vacíe pasivamente por completo a la atmósfera, restaurando instantáneamente el retorno venoso y la presión arterial." },
+          { "id": "b", "text": "Administrar un bolo de adrenalina intravenosa.", "isCorrect": false, "feedback": "Incorrecto. Los vasopresores no solucionarán el problema mecánico de base. Al no haber sangre llegando al corazón, no tendrán efecto útil." }
+        ]
+      },
+      {
+        "id": "t5q3",
+        "type": "scenario_choice",
+        "text": "Vuelves a conectarla. Para evitar que el Auto-PEEP se acumule nuevamente, ¿cómo modificas los parámetros de VCV?",
+        "options": [
+          { "id": "a", "text": "Aumento la Frecuencia Respiratoria a 25 para barrer el CO2.", "isCorrect": false, "feedback": "Incorrecto. Aumentar la FR recorta el tiempo total del ciclo, reduciendo aún más el tiempo espiratorio y agravando el atrapamiento de aire." },
+          { "id": "b", "text": "Disminuyo la Frecuencia Respiratoria (ej. 10 a 14) y aumento el flujo inspiratorio (ej. 60 L/min) para maximizar el Tiempo Espiratorio.", "isCorrect": true, "feedback": "Correcto. Dar flujo rápido acorta la inspiración. Una FR baja da ciclos largos. Esto resulta en una relación I:E muy amplia (ej. 1:4 o 1:5), dando tiempo a que los pulmones se vacíen." }
+        ]
+      },
+      {
+        "id": "t5q4",
+        "type": "scenario_choice",
+        "text": "Al despertar, la paciente presenta esfuerzos inefectivos constantes. Tiene un Auto-PEEP medido de 10 cmH2O. ¿Cómo ajustas el PEEP del ventilador (PEEP extrínseco) para ayudarla a gatillar (disparar) los ciclos?",
+        "options": [
+          { "id": "a", "text": "Pongo el PEEP extrínseco en 0 (ZEEP) para que el tórax se vacíe mejor.", "isCorrect": false, "feedback": "Incorrecto. Sin PEEP externo, el diafragma de la paciente deberá generar -10 cmH2O solo para igualar la presión, causando agotamiento inmediato." },
+          { "id": "b", "text": "Pongo el PEEP extrínseco en 8 cmH2O (80% del Auto-PEEP).", "isCorrect": true, "feedback": "Correcto. Aplicar PEEP externo disminuye la 'cascada' de presión. La paciente ahora solo debe hacer un esfuerzo de -2 cmH2O para vencer el umbral y accionar el ventilador." }
+        ]
+      }
+    ]
+  }

@@ -1,0 +1,69 @@
+{
+    "id": "quiz-mecanica-l2-m6-destete",
+    "type": "quiz",
+    "title": "Quiz: Evaluación y Práctica del Destete (Weaning)",
+    "description": "Comprueba tu habilidad para evaluar la preparación de un paciente para la liberación de la ventilación mecánica y la extubación.",
+    "moduleId": "module-06-avanzado-evaluacion-destete",
+    "level": "level02-intermedio",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "Antes de iniciar una prueba de respiración espontánea (SBT), ¿cuál de los siguientes NO es un prerrequisito clásico universalmente aceptado?",
+        "options": [
+          { "id": "a", "text": "Resolución o mejora significativa de la causa que llevó a la intubación.", "isCorrect": false },
+          { "id": "b", "text": "Estabilidad hemodinámica sin drogas vasoactivas a altas dosis.", "isCorrect": false },
+          { "id": "c", "text": "Ausencia total de ruidos respiratorios adventicios a la auscultación.", "isCorrect": true },
+          { "id": "d", "text": "Nivel de conciencia adecuado con capacidad para toser.", "isCorrect": false }
+        ],
+        "explanation": "La presencia de ruidos (como roncus o crepitantes) no contraindica el destete, siempre y cuando la causa principal esté resuelta, haya estabilidad hemodinámica, un drive respiratorio adecuado y capacidad de proteger la vía aérea."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "¿Cómo se calcula el Índice de Tobin (Índice de Respiración Rápida y Superficial o RSBI)?",
+        "options": [
+          { "id": "a", "text": "Volumen Tidal (en mL) multiplicado por Frecuencia Respiratoria.", "isCorrect": false },
+          { "id": "b", "text": "Frecuencia Respiratoria (rpm) dividida por Volumen Tidal (en Litros).", "isCorrect": true },
+          { "id": "c", "text": "Presión Inspiratoria Máxima multiplicada por Presión de Soporte.", "isCorrect": false },
+          { "id": "d", "text": "PaO2 dividido entre FiO2.", "isCorrect": false }
+        ],
+        "explanation": "El RSBI se calcula dividiendo la Frecuencia Respiratoria (resp/min) entre el Volumen Tidal medido en Litros (L). Un valor alto indica que el paciente está respirando muy rápido y muy poco profundo."
+      },
+      {
+        "id": "q3",
+        "type": "multiple_choice",
+        "text": "Un valor del Índice de Tobin (RSBI) inferior a 105 resp/min/L medido sin soporte durante 1 minuto, predice:",
+        "options": [
+          { "id": "a", "text": "Una alta probabilidad de éxito en la extubación.", "isCorrect": true },
+          { "id": "b", "text": "Falla inminente, el paciente requiere reintubación.", "isCorrect": false },
+          { "id": "c", "text": "Que el paciente tiene debilidad diafragmática severa.", "isCorrect": false },
+          { "id": "d", "text": "Que se debe iniciar ventilación de alta frecuencia.", "isCorrect": false }
+        ],
+        "explanation": "Históricamente, un RSBI < 105 es el umbral más utilizado para predecir que un paciente tolerará bien el trabajo respiratorio sin la máquina y es probable que el destete sea exitoso."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "Durante una prueba de respiración espontánea (SBT) de 30 minutos, el paciente desarrolla una frecuencia cardíaca de 145 lpm, diaforesis, agitación y una caída de SpO2 a 86%. ¿Qué se debe hacer?",
+        "options": [
+          { "id": "a", "text": "Animar al paciente a continuar y esperar a completar la hora de prueba.", "isCorrect": false },
+          { "id": "b", "text": "Extubar inmediatamente y colocar oxígeno a alto flujo.", "isCorrect": false },
+          { "id": "c", "text": "Suspender la prueba, retornar al paciente a un modo de ventilación que le provea soporte total (descanso) y evaluar las causas del fracaso.", "isCorrect": true },
+          { "id": "d", "text": "Aumentar la sedación profunda para calmarlo, manteniendo la SBT.", "isCorrect": false }
+        ],
+        "explanation": "Los signos mencionados indican un claro fracaso de la SBT por fatiga e intolerancia. Mantener al paciente en esta situación agrava el daño muscular y cardiovascular; se debe proveer descanso inmediato con soporte ventilatorio."
+      },
+      {
+        "id": "q5",
+        "type": "true_false",
+        "text": "La evidencia actual sugiere que el uso de Ventilación No Invasiva (VNI) preventiva inmediatamente posterior a la extubación está contraindicado en pacientes con EPOC.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. La evidencia recomienda fuertemente el uso profiláctico o temprano de VNI post-extubación específicamente en poblaciones de alto riesgo como los pacientes con EPOC o hipercapnia, ya que reduce la tasa de reintubación y la mortalidad."
+      }
+    ]
+  }

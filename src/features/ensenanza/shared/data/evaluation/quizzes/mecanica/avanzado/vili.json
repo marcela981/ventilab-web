@@ -1,0 +1,69 @@
+{
+    "id": "quiz-mecanica-l3-m1-vili",
+    "type": "quiz",
+    "title": "Quiz: VILI y Ventilación Protectora",
+    "description": "Comprueba tu comprensión sobre los mecanismos del daño pulmonar inducido por la ventilación mecánica (VILI) y las estrategias para su prevención.",
+    "moduleId": "module-01-daño-pulmonar-vili-ventilacion-protectora",
+    "level": "level03-avanzado",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "El concepto moderno de VILI no solo incluye el volutrauma y el barotrauma. ¿Cómo se denomina al daño pulmonar causado por la liberación de mediadores inflamatorios (citoquinas) sistémicos debido a la ventilación lesiva?",
+        "options": [
+          { "id": "a", "text": "Atelectrauma", "isCorrect": false },
+          { "id": "b", "text": "Biotrauma", "isCorrect": true },
+          { "id": "c", "text": "Ergotrauma", "isCorrect": false },
+          { "id": "d", "text": "Reotrauma", "isCorrect": false }
+        ],
+        "explanation": "El biotrauma es la respuesta inflamatoria biológica. El estrés mecánico activa vías celulares que liberan citoquinas a la circulación sistémica, pudiendo provocar disfunción multiorgánica."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "La Presión de Distensión Pulmonar (Driving Pressure o PDP) se ha posicionado como un fuerte predictor de mortalidad en SDRA. ¿Cómo se calcula de forma estática junto a la cama del paciente?",
+        "options": [
+          { "id": "a", "text": "Presión Pico menos Presión Meseta", "isCorrect": false },
+          { "id": "b", "text": "Presión Meseta (Plateau) menos PEEP", "isCorrect": true },
+          { "id": "c", "text": "Volumen Tidal dividido por PEEP", "isCorrect": false },
+          { "id": "d", "text": "Presión Media de la Vía Aérea menos PEEP", "isCorrect": false }
+        ],
+        "explanation": "La Driving Pressure (ΔP) es la presión dinámica que distiende los alvéolos. Se calcula restando la PEEP de la Presión Meseta (ΔP = Pplat - PEEP). Un valor < 15 cmH2O se considera protector."
+      },
+      {
+        "id": "q3",
+        "type": "multiple_choice",
+        "text": "El concepto de 'Ergotrauma' o 'Poder Mecánico' (Mechanical Power) unifica varias causas de lesión. ¿Qué variable fundamental añade este concepto que las mediciones estáticas (como la presión meseta) no contemplan?",
+        "options": [
+          { "id": "a", "text": "La oxigenación (PaO2).", "isCorrect": false },
+          { "id": "b", "text": "La frecuencia respiratoria y la energía transferida a lo largo del tiempo.", "isCorrect": true },
+          { "id": "c", "text": "La resistencia vascular pulmonar.", "isCorrect": false },
+          { "id": "d", "text": "El nivel de sedación del paciente.", "isCorrect": false }
+        ],
+        "explanation": "El Poder Mecánico evalúa la ENERGÍA total transferida al pulmón. Un pulmón no solo se daña por ser estirado (volumen/presión), sino por *cuántas veces* por minuto se estira (frecuencia respiratoria) y el flujo utilizado."
+      },
+      {
+        "id": "q4",
+        "type": "true_false",
+        "text": "Para evitar el 'Atelectrauma' (lesión por apertura y cierre cíclico alveolar), la estrategia recomendada es aplicar volúmenes tidales muy bajos (menores a 4 ml/kg) sin importar el nivel de PEEP.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. El atelectrauma se previene principalmente titulando un nivel óptimo de PEEP que mantenga el pulmón abierto (reclutado) al final de la espiración, impidiendo el colapso y la fricción por reapertura."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "De acuerdo a las estrategias de ventilación protectora estándar, ¿cuál es el límite superior de seguridad generalmente aceptado para la Presión Meseta (Pplat) en pacientes sin problemas de pared torácica/obesidad?",
+        "options": [
+          { "id": "a", "text": "20 cmH2O", "isCorrect": false },
+          { "id": "b", "text": "30 cmH2O", "isCorrect": true },
+          { "id": "c", "text": "40 cmH2O", "isCorrect": false },
+          { "id": "d", "text": "50 cmH2O", "isCorrect": false }
+        ],
+        "explanation": "Múltiples estudios de ventilación protectora han demostrado que mantener la Presión Meseta (presión alveolar máxima) por debajo de 30 cmH2O reduce significativamente el riesgo de sobredistensión y VILI."
+      }
+    ]
+  }

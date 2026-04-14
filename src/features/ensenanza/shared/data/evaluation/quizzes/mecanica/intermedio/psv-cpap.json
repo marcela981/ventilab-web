@@ -1,0 +1,69 @@
+{
+    "id": "quiz-mecanica-l2-m3-psv-cpap",
+    "type": "quiz",
+    "title": "Quiz: Modos Espontáneos - PSV y CPAP",
+    "description": "Comprende el funcionamiento, indicaciones y configuración de los modos de ventilación espontánea.",
+    "moduleId": "module-03-soporte-PSV-CPAP",
+    "level": "level02-intermedio",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "En el modo de Presión Soporte (PSV), ¿cuál de los siguientes parámetros NO es programado por el médico, sino controlado por el paciente?",
+        "options": [
+          { "id": "a", "text": "Nivel de PEEP.", "isCorrect": false },
+          { "id": "b", "text": "Frecuencia respiratoria y Volumen Tidal.", "isCorrect": true },
+          { "id": "c", "text": "Sensibilidad (Trigger).", "isCorrect": false },
+          { "id": "d", "text": "Fracción inspirada de oxígeno (FiO2).", "isCorrect": false }
+        ],
+        "explanation": "En PSV, el paciente dicta su propia frecuencia respiratoria y profundidad de la respiración (Volumen Tidal), basándose en su demanda neuronal y el nivel de soporte que recibe."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "¿Cuál es la diferencia fundamental entre CPAP y PSV?",
+        "options": [
+          { "id": "a", "text": "CPAP es invasivo, PSV siempre es no invasivo.", "isCorrect": false },
+          { "id": "b", "text": "CPAP solo proporciona una presión basal continua sin ayuda extra durante la inspiración; PSV añade una presión de asistencia adicional a cada esfuerzo inspiratorio.", "isCorrect": true },
+          { "id": "c", "text": "PSV se controla por volumen, CPAP se controla por presión.", "isCorrect": false },
+          { "id": "d", "text": "No hay diferencia, son dos nombres para el mismo modo.", "isCorrect": false }
+        ],
+        "explanation": "CPAP (Continuous Positive Airway Pressure) mantiene las vías aéreas abiertas con una presión constante, pero todo el trabajo inspiratorio lo hace el paciente. PSV (Pressure Support Ventilation) da un 'empujón' extra de presión por encima del PEEP cada vez que el paciente inspira."
+      },
+      {
+        "id": "q3",
+        "type": "true_false",
+        "text": "La Presión Soporte cicla (pasa de inspiración a espiración) típicamente cuando se alcanza un volumen predeterminado.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. La PSV cicla predominantemente por una caída del FLUJO. Cuando el flujo inspiratorio del paciente cae a un umbral configurado (ej. 25% del pico inspiratorio), la válvula se abre para permitir la espiración."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "¿Qué medida de seguridad esencial DEBE estar configurada al utilizar PSV o cualquier modo espontáneo?",
+        "options": [
+          { "id": "a", "text": "Pausa inspiratoria manual.", "isCorrect": false },
+          { "id": "b", "text": "Ventilación de respaldo por apnea (Apnea Backup).", "isCorrect": true },
+          { "id": "c", "text": "Relación I:E fija en 1:1.", "isCorrect": false },
+          { "id": "d", "text": "Bloqueo neuromuscular continuo.", "isCorrect": false }
+        ],
+        "explanation": "Dado que el modo depende del esfuerzo del paciente, si este deja de respirar (apnea, sedación excesiva), no recibirá ventilación. El 'Apnea Backup' asegura que el ventilador asuma el control mandatorio tras un tiempo sin detectar esfuerzo."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "Si un paciente en PSV tiene una frecuencia respiratoria de 35 rpm y un volumen tidal de 150 ml (taquipnea superficial), ¿qué acción inicial es la más apropiada respecto al soporte?",
+        "options": [
+          { "id": "a", "text": "Disminuir la Presión Soporte para que esfuerce más.", "isCorrect": false },
+          { "id": "b", "text": "Aumentar el nivel de Presión Soporte para vencer la resistencia y asistir mejor su volumen tidal, aliviando el trabajo.", "isCorrect": true },
+          { "id": "c", "text": "Cambiar a CPAP puro.", "isCorrect": false },
+          { "id": "d", "text": "Apagar el ventilador, está listo para extubar.", "isCorrect": false }
+        ],
+        "explanation": "Un patrón rápido y superficial en PSV suele indicar un trabajo respiratorio excesivo y fatiga. Aumentar el soporte de presión (ej. de 10 a 14 cmH2O) ayuda al paciente a lograr un mejor volumen tidal y reducir la frecuencia respiratoria."
+      }
+    ]
+  }

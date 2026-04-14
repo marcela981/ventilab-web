@@ -1,0 +1,67 @@
+{
+    "id": "quiz-mecanica-l1-m1-inversion-fisiologica",
+    "type": "quiz",
+    "title": "Quiz: La Inversión Fisiológica",
+    "description": "Evaluación formativa del módulo 1. Comprueba tu comprensión sobre los principios físicos de la ventilación mecánica y su impacto sistémico.",
+    "moduleId": "module-01-inversion-fisiologica",
+    "level": "level01-principiante",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "¿Cuál es la principal diferencia física entre la respiración espontánea y la ventilación mecánica invasiva convencional?",
+        "options": [
+          { "id": "a", "text": "La respiración espontánea genera presión alveolar positiva, la ventilación mecánica genera presión negativa.", "isCorrect": false },
+          { "id": "b", "text": "La respiración espontánea se basa en la generación de presión intratorácica negativa, mientras que el ventilador insufla aire mediante presión positiva.", "isCorrect": true },
+          { "id": "c", "text": "No hay diferencia física, ambas dependen del esfuerzo del diafragma.", "isCorrect": false },
+          { "id": "d", "text": "La ventilación mecánica solo utiliza oxígeno puro, a diferencia de la respiración espontánea.", "isCorrect": false }
+        ],
+        "explanation": "La contracción del diafragma en la respiración espontánea crea una presión intrapleural negativa que 'succiona' el aire. La ventilación mecánica convencional 'empuja' el aire hacia adentro usando presión positiva, invirtiendo la fisiología normal."
+      },
+      {
+        "id": "q2",
+        "type": "true_false",
+        "text": "Históricamente, el 'pulmón de acero' funcionaba mediante la aplicación de presión positiva directamente en la vía aérea del paciente.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. El pulmón de acero (usado extensamente durante la epidemia de polio) era un ventilador de presión NEGATIVA extra-torácica. Creaba un vacío alrededor del tórax para expandirlo, simulando la fisiología normal."
+      },
+      {
+        "id": "q3",
+        "type": "multiple_choice",
+        "text": "¿Qué efecto hemodinámico principal tiene la aplicación de presión positiva intratorácica?",
+        "options": [
+          { "id": "a", "text": "Aumenta significativamente el retorno venoso al corazón derecho.", "isCorrect": false },
+          { "id": "b", "text": "Disminuye el retorno venoso al corazón derecho, lo que puede reducir el gasto cardíaco.", "isCorrect": true },
+          { "id": "c", "text": "Causa bradicardia severa inmediata.", "isCorrect": false },
+          { "id": "d", "text": "No tiene ningún efecto sobre el sistema cardiovascular.", "isCorrect": false }
+        ],
+        "explanation": "Al aumentar la presión dentro del tórax (presión positiva), se comprime la vena cava y otras grandes venas, dificultando el retorno de sangre al corazón derecho (disminución de la precarga), lo que puede traducirse en hipotensión."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "Según los principios de la ventilación, ¿cuál de los siguientes NO es un objetivo fisiológico primario de la ventilación mecánica?",
+        "options": [
+          { "id": "a", "text": "Mantener el intercambio gaseoso (oxigenación y ventilación).", "isCorrect": false },
+          { "id": "b", "text": "Aumentar el trabajo respiratorio para fortalecer el diafragma.", "isCorrect": true },
+          { "id": "c", "text": "Garantizar la expansión pulmonar.", "isCorrect": false },
+          { "id": "d", "text": "Disminuir el consumo de oxígeno sistémico.", "isCorrect": false }
+        ],
+        "explanation": "La ventilación mecánica busca DISMINUIR o sustituir el trabajo respiratorio de un paciente agotado, no aumentarlo, para evitar la fatiga muscular y reducir el consumo de oxígeno."
+      },
+      {
+        "id": "q5",
+        "type": "true_false",
+        "text": "La insuficiencia respiratoria es la indicación principal para iniciar la ventilación mecánica.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": true },
+          { "id": "false", "text": "Falso", "isCorrect": false }
+        ],
+        "explanation": "Verdadero. Ya sea por un fallo en la oxigenación (hipoxémica), en la ventilación (hipercápnica) o ambas, la insuficiencia respiratoria aguda es la principal indicación para brindar soporte ventilatorio."
+      }
+    ]
+  }

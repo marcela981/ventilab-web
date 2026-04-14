@@ -1,0 +1,69 @@
+{
+    "id": "quiz-ventylab-l1-m1",
+    "type": "quiz",
+    "title": "Quiz: Historia y Fisiología Aplicada",
+    "description": "Comprueba tus conocimientos básicos sobre la evolución de la ventilación mecánica y la aplicación de los principios fisiológicos en el simulador.",
+    "moduleId": "historia_fisiología_aplicada",
+    "level": "level01-principiante",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "El 'pulmón de acero', ampliamente utilizado durante la epidemia de polio, es el ejemplo clásico de un dispositivo de:",
+        "options": [
+          { "id": "a", "text": "Ventilación por presión positiva intermitente.", "isCorrect": false },
+          { "id": "b", "text": "Ventilación por presión negativa.", "isCorrect": true },
+          { "id": "c", "text": "Ventilación de alta frecuencia oscilatoria.", "isCorrect": false },
+          { "id": "d", "text": "Ventilación no invasiva con presión de soporte.", "isCorrect": false }
+        ],
+        "explanation": "El pulmón de acero creaba un vacío (presión negativa) alrededor del tórax del paciente para expandirlo, emulando la fisiología natural de la respiración."
+      },
+      {
+        "id": "q2",
+        "type": "true_false",
+        "text": "La ventilación mecánica moderna convencional invierte la fisiología respiratoria normal al introducir aire en los pulmones mediante presión positiva.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": true },
+          { "id": "false", "text": "Falso", "isCorrect": false }
+        ],
+        "explanation": "Verdadero. Mientras que normalmente respiramos generando presión intratorácica negativa (succión), los ventiladores modernos 'empujan' el aire hacia adentro con presión positiva por encima de la atmosférica."
+      },
+      {
+        "id": "q3",
+        "type": "multiple_choice",
+        "text": "Al conectar a un paciente al simulador VentyLab, la Ecuación del Movimiento determina la presión total necesaria para ventilar. ¿Cuáles son las dos fuerzas que el ventilador debe vencer?",
+        "options": [
+          { "id": "a", "text": "Presión osmótica y presión hidrostática.", "isCorrect": false },
+          { "id": "b", "text": "Carga elástica (pulmones/tórax) y carga resistiva (vías aéreas/tubo).", "isCorrect": true },
+          { "id": "c", "text": "Presión arterial y presión venosa central.", "isCorrect": false },
+          { "id": "d", "text": "Gravedad y tensión superficial exclusivamente.", "isCorrect": false }
+        ],
+        "explanation": "El ventilador debe ejercer suficiente presión para superar la resistencia al flujo de aire en las vías (carga resistiva) y expandir el parénquima pulmonar y la pared torácica (carga elástica)."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "Si en la simulación notas que el paciente presenta una caída severa del gasto cardíaco tras iniciar la ventilación mecánica, ¿cuál es el mecanismo fisiológico responsable?",
+        "options": [
+          { "id": "a", "text": "La presión positiva intratorácica disminuye el retorno venoso al corazón derecho.", "isCorrect": true },
+          { "id": "b", "text": "El oxígeno a alta concentración es cardiotóxico.", "isCorrect": false },
+          { "id": "c", "text": "Aumento excesivo de la precarga del ventrículo izquierdo.", "isCorrect": false },
+          { "id": "d", "text": "Bloqueo del sistema nervioso simpático.", "isCorrect": false }
+        ],
+        "explanation": "La presión positiva intratorácica comprime las venas cavas, dificultando el retorno de sangre al corazón, lo que disminuye la precarga y, consecuentemente, el gasto cardíaco y la presión arterial."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "Desde una perspectiva de intercambio gaseoso, ¿cuál es el propósito fisiológico primario de aplicar PEEP (Presión Positiva al Final de la Espiración)?",
+        "options": [
+          { "id": "a", "text": "Mejorar la eliminación de dióxido de carbono (CO2).", "isCorrect": false },
+          { "id": "b", "text": "Mantener los alvéolos abiertos (reclutados) para prevenir el colapso al final de la espiración y mejorar la oxigenación.", "isCorrect": true },
+          { "id": "c", "text": "Disminuir el volumen corriente a niveles protectores.", "isCorrect": false },
+          { "id": "d", "text": "Aumentar el trabajo respiratorio del paciente.", "isCorrect": false }
+        ],
+        "explanation": "La PEEP mantiene una presión residual que evita que los alvéolos se cierren, preservando la Capacidad Residual Funcional (CRF) y mejorando el área para el intercambio de oxígeno."
+      }
+    ]
+  }

@@ -1,0 +1,69 @@
+{
+    "id": "quiz-mecanica-l2-m2-peep",
+    "type": "quiz",
+    "title": "Quiz: Optimización del PEEP",
+    "description": "Evalúa tus conocimientos sobre la titulación de PEEP, sus efectos en la oxigenación y la prevención del colapso alveolar.",
+    "moduleId": "module-02-peep-optimizar-oxigenacion",
+    "level": "level02-intermedio",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "¿Cuál es el principal mecanismo por el cual la PEEP (Presión Positiva al Final de la Espiración) mejora la oxigenación en pacientes con SDRA?",
+        "options": [
+          { "id": "a", "text": "Aumentando la concentración de FiO2 entregada al paciente.", "isCorrect": false },
+          { "id": "b", "text": "Reclutando alvéolos colapsados y aumentando la Capacidad Residual Funcional (CRF), lo que disminuye el shunt intrapulmonar.", "isCorrect": true },
+          { "id": "c", "text": "Mejorando el gasto cardíaco directamente.", "isCorrect": false },
+          { "id": "d", "text": "Disminuyendo el volumen corriente.", "isCorrect": false }
+        ],
+        "explanation": "La PEEP mantiene una presión supratmosférica que evita el cierre de los alvéolos al final de la espiración, 'reclutando' zonas atelectásicas, mejorando el área de intercambio y reduciendo la sangre que pasa sin oxigenarse (shunt)."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "Al aumentar progresivamente la PEEP, observas que el paciente presenta hipotensión y taquicardia severa. ¿A qué se debe esto principalmente?",
+        "options": [
+          { "id": "a", "text": "A un aumento de la poscarga del ventrículo izquierdo.", "isCorrect": false },
+          { "id": "b", "text": "A una caída del retorno venoso por el aumento de la presión intratorácica que comprime los grandes vasos.", "isCorrect": true },
+          { "id": "c", "text": "A una estimulación directa del nervio vago.", "isCorrect": false },
+          { "id": "d", "text": "A un aumento repentino del volumen sistólico.", "isCorrect": false }
+        ],
+        "explanation": "El exceso de PEEP eleva la presión media de la vía aérea e intratorácica, lo que disminuye el gradiente de presión para que la sangre regrese al corazón derecho (menor retorno venoso), provocando una caída del gasto cardíaco y la tensión arterial."
+      },
+      {
+        "id": "q3",
+        "type": "true_false",
+        "text": "El 'PEEP óptimo' es aquel valor más alto posible que logra la saturación de 100%, sin importar la distensibilidad pulmonar ni la hemodinámica.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. El PEEP óptimo es un balance: es el nivel que maximiza el reclutamiento alveolar y la oxigenación, mientras minimiza la sobredistensión alveolar (mejorando la distensibilidad) y evita el deterioro del gasto cardíaco."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "¿Qué herramienta gráfica se utiliza a menudo para ayudar a encontrar la PEEP óptima evitando el colapso cíclico?",
+        "options": [
+          { "id": "a", "text": "La curva de Presión Arterial Invasiva.", "isCorrect": false },
+          { "id": "b", "text": "El análisis del punto de inflexión inferior en el bucle Presión-Volumen estático.", "isCorrect": true },
+          { "id": "c", "text": "La onda de capnografía volumétrica.", "isCorrect": false },
+          { "id": "d", "text": "La curva Flujo-Tiempo.", "isCorrect": false }
+        ],
+        "explanation": "En el bucle P-V estático, el punto de inflexión inferior marca la presión a la cual se inicia el reclutamiento masivo. Programar el PEEP ligeramente por encima de este punto previene que los alvéolos se colapsen y se vuelvan a abrir en cada ciclo (atelectrauma)."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "¿Qué efecto adverso pulmonar directo puede ocurrir si la PEEP se ajusta a niveles extremadamente altos en un pulmón heterogéneo?",
+        "options": [
+          { "id": "a", "text": "Sobredistensión de los alvéolos sanos, incrementando el riesgo de volutrauma y espacio muerto.", "isCorrect": true },
+          { "id": "b", "text": "Colapso inmediato de toda la vía aérea pequeña.", "isCorrect": false },
+          { "id": "c", "text": "Disminución de la oxigenación tisular debido a un aumento de la hemoglobina.", "isCorrect": false },
+          { "id": "d", "text": "Aumento del clearance mucociliar.", "isCorrect": false }
+        ],
+        "explanation": "En pulmones enfermos (como en el SDRA), algunas zonas están muy sanas y otras colapsadas. Una PEEP muy alta puede abrir las zonas enfermas, pero causará una peligrosa sobredistensión en las zonas sanas, comprimiendo capilares y aumentando el espacio muerto."
+      }
+    ]
+  }

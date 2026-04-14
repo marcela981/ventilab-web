@@ -1,0 +1,127 @@
+{
+    "id": "examen-ventylab-l1-final",
+    "type": "examen",
+    "title": "Examen Final: VentyLab Principiante",
+    "description": "Evaluación sumativa del Nivel 1 de VentyLab. Demuestra tus conocimientos sobre la historia de la ventilación, los principios físicos y el armado y funcionamiento del hardware del equipo.",
+    "moduleId": "level01-examen",
+    "level": "level01-principiante",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "exvl1q1",
+        "type": "multiple_choice",
+        "text": "Desde una perspectiva histórica y fisiológica, la transición del 'pulmón de acero' a los ventiladores modernos en las UCIs representó el cambio de:",
+        "options": [
+          { "id": "a", "text": "Ventilación invasiva a ventilación no invasiva.", "isCorrect": false },
+          { "id": "b", "text": "Ventilación por presión negativa externa a ventilación por presión positiva a través de la vía aérea.", "isCorrect": true },
+          { "id": "c", "text": "Ventilación manual a ventilación puramente espontánea.", "isCorrect": false },
+          { "id": "d", "text": "Uso de oxígeno al 21% a uso exclusivo de oxígeno al 100%.", "isCorrect": false }
+        ],
+        "explanation": "El pulmón de acero generaba un vacío (presión negativa) para expandir el tórax, imitando la fisiología normal. Los ventiladores modernos insufian aire a presión positiva, invirtiendo la mecánica respiratoria natural."
+      },
+      {
+        "id": "exvl1q2",
+        "type": "multiple_choice",
+        "text": "Al conectar las mangueras de suministro en la parte posterior del simulador VentyLab, es obligatorio conectar tanto la fuente de Oxígeno (O2) como la de Aire Médico. ¿Por qué?",
+        "options": [
+          { "id": "a", "text": "Para evitar que el ventilador se sobrecaliente.", "isCorrect": false },
+          { "id": "b", "text": "Porque el ventilador necesita mezclar ambos gases presurizados en su válvula mezcladora (blender) para entregar fracciones inspiradas de oxígeno (FiO2) exactas entre 21% y 100%.", "isCorrect": true },
+          { "id": "c", "text": "Para duplicar la presión máxima alcanzable por el equipo.", "isCorrect": false },
+          { "id": "d", "text": "Para que el aire médico humidifique al oxígeno puro.", "isCorrect": false }
+        ],
+        "explanation": "El sistema neumático depende del mezclador para titular la FiO2. Si solo se conecta O2, el equipo alertará falta de suministro y entregará FiO2 al 100%, exponiendo al paciente a toxicidad."
+      },
+      {
+        "id": "exvl1q3",
+        "type": "multiple_choice",
+        "text": "Durante la fase inspiratoria entregada por el ventilador mecánico, ¿cuál es el estado de la válvula espiratoria (de exhalación)?",
+        "options": [
+          { "id": "a", "text": "Completamente abierta para permitir el flujo bidireccional.", "isCorrect": false },
+          { "id": "b", "text": "Cerrada y sellada para permitir que el circuito se presurice y el gas entre a los pulmones del paciente.", "isCorrect": true },
+          { "id": "c", "text": "Semiabierta para regular el PEEP.", "isCorrect": false },
+          { "id": "d", "text": "Oscilando para generar flujo turbulento.", "isCorrect": false }
+        ],
+        "explanation": "Para que el aire sea 'empujado' hacia los pulmones, el circuito debe estar hermético durante la insuflación; de lo contrario, el flujo escaparía directamente por la válvula de exhalación."
+      },
+      {
+        "id": "exvl1q4",
+        "type": "multiple_choice",
+        "text": "En el armado del circuito del paciente, ¿dónde es indispensable colocar el filtro HEPA (antiviral/antibacteriano) para proteger el entorno y las válvulas internas del equipo de secreciones y patógenos?",
+        "options": [
+          { "id": "a", "text": "Al inicio de la rama inspiratoria.", "isCorrect": false },
+          { "id": "b", "text": "En el extremo distal de la rama espiratoria, justo antes de ingresar de nuevo al ventilador.", "isCorrect": true },
+          { "id": "c", "text": "En la entrada de aire médico a la pared.", "isCorrect": false },
+          { "id": "d", "text": "En la salida del humidificador activo.", "isCorrect": false }
+        ],
+        "explanation": "El aire que sale del paciente está húmedo y potencialmente contaminado. El filtro exhalatorio atrapa estas partículas antes de que ensucien los sensores de exhalación del equipo y se aerosolice en la UCI."
+      },
+      {
+        "id": "exvl1q5",
+        "type": "true_false",
+        "text": "La presión intrapleural, que normalmente es negativa durante la inspiración espontánea, se vuelve positiva durante la inspiración en la ventilación mecánica, lo que puede causar caída de la presión arterial.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": true },
+          { "id": "false", "text": "Falso", "isCorrect": false }
+        ],
+        "explanation": "Verdadero. La presión positiva transmitida a la cavidad torácica comprime los grandes vasos (vena cava), disminuyendo el retorno venoso al corazón derecho y reduciendo consecuentemente el gasto cardíaco y la tensión arterial."
+      },
+      {
+        "id": "exvl1q6",
+        "type": "multiple_choice",
+        "text": "Realizas el test de inicio (Check Pre-Uso) en el simulador VentyLab y el equipo reporta una 'Falla de Hermeticidad' o 'Fuga en el circuito'. ¿Cuál de las siguientes acciones debes realizar primero?",
+        "options": [
+          { "id": "a", "text": "Ignorar la alarma y conectar al paciente.", "isCorrect": false },
+          { "id": "b", "text": "Revisar el ajuste de todas las conexiones corrugadas, trampas de agua, y cerciorarse de que el bloque de la válvula espiratoria esté bien ensamblado.", "isCorrect": true },
+          { "id": "c", "text": "Cambiar la celda de oxígeno inmediatamente.", "isCorrect": false },
+          { "id": "d", "text": "Apagar la fuente de aire médico.", "isCorrect": false }
+        ],
+        "explanation": "La falla de hermeticidad indica que el equipo no puede mantener la presión porque el aire se escapa. Esto suele deberse a mangueras mal conectadas, puertos abiertos o la membrana espiratoria mal colocada."
+      },
+      {
+        "id": "exvl1q7",
+        "type": "multiple_choice",
+        "text": "El neumotacógrafo o sensor de flujo proximal que se conecta en la pieza en 'Y' (cerca del tubo del paciente) tiene como principal ventaja:",
+        "options": [
+          { "id": "a", "text": "Filtrar el aire que llega al paciente.", "isCorrect": false },
+          { "id": "b", "text": "Medir volúmenes, flujos y el esfuerzo del paciente (trigger) con máxima precisión y rapidez, evitando el retraso de las mangueras.", "isCorrect": true },
+          { "id": "c", "text": "Humidificar los gases inspirados.", "isCorrect": false },
+          { "id": "d", "text": "Medir directamente la presión arterial del paciente.", "isCorrect": false }
+        ],
+        "explanation": "Al ubicarse cerca de la vía aérea del paciente, detecta de forma inmediata los más mínimos cambios de flujo o presión, haciendo que el ventilador responda rápidamente a los esfuerzos inspiratorios (alta sensibilidad)."
+      },
+      {
+        "id": "exvl1q8",
+        "type": "multiple_choice",
+        "text": "¿Qué función cumple el PEEP programado en la interfaz del ventilador mecánico?",
+        "options": [
+          { "id": "a", "text": "Determina la presión máxima que no debe sobrepasarse en inspiración.", "isCorrect": false },
+          { "id": "b", "text": "Mantiene una presión positiva basal durante la espiración para evitar el colapso alveolar y mejorar la oxigenación.", "isCorrect": true },
+          { "id": "c", "text": "Regula la frecuencia con la que el ventilador asiste al paciente.", "isCorrect": false },
+          { "id": "d", "text": "Inicia el ciclo inspiratorio de forma automática.", "isCorrect": false }
+        ],
+        "explanation": "La Presión Positiva al Final de la Espiración (PEEP) impide que los alvéolos se vacíen completamente y se colapsen, mejorando la Capacidad Residual Funcional y el intercambio de gases."
+      },
+      {
+        "id": "exvl1q9",
+        "type": "true_false",
+        "text": "La variable de 'Trigger' configurada en el panel frontal del ventilador le indica al equipo cuándo finalizar la inspiración y permitir la exhalación.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. El 'Trigger' (Disparo o Sensibilidad) determina qué inicia la inspiración (el esfuerzo del paciente). La variable que finaliza la inspiración y permite la exhalación se llama variable de 'Ciclado'."
+      },
+      {
+        "id": "exvl1q10",
+        "type": "multiple_choice",
+        "text": "Al evaluar la ecuación del movimiento, un paciente intubado sin esfuerzo respiratorio requiere presión del ventilador para vencer dos cargas: Resistiva y Elástica. ¿Qué estructuras generan principalmente la carga elástica?",
+        "options": [
+          { "id": "a", "text": "El tubo endotraqueal y los bronquios principales.", "isCorrect": false },
+          { "id": "b", "text": "El parénquima pulmonar (alvéolos) y la caja torácica.", "isCorrect": true },
+          { "id": "c", "text": "La válvula espiratoria del ventilador.", "isCorrect": false },
+          { "id": "d", "text": "El sistema cardiovascular.", "isCorrect": false }
+        ],
+        "explanation": "La carga elástica (distensibilidad o compliance) está dada por los tejidos que deben estirarse para alojar el volumen: el pulmón propiamente dicho y la pared del tórax (costillas, diafragma, abdomen)."
+      }
+    ]
+  }

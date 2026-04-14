@@ -1,0 +1,69 @@
+{
+    "id": "quiz-mecanica-l1-m4-modos-ventilatorios",
+    "type": "quiz",
+    "title": "Quiz: Modos Ventilatorios Básicos",
+    "description": "Comprende las diferencias entre los modos de ventilación asistida-controlada, SIMV y espontáneos.",
+    "moduleId": "module-04-modos-ventilatorios",
+    "level": "level01-principiante",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "En el modo Asistido/Controlado (A/C), si el paciente hace un esfuerzo inspiratorio que supera el trigger, ¿qué ocurre?",
+        "options": [
+          { "id": "a", "text": "El ventilador se bloquea e ignora al paciente.", "isCorrect": false },
+          { "id": "b", "text": "El ventilador entrega una respiración completa con el volumen o presión preprogramado.", "isCorrect": true },
+          { "id": "c", "text": "El paciente respira su propio volumen y el ventilador solo le aporta algo de flujo.", "isCorrect": false },
+          { "id": "d", "text": "El ventilador emite una alarma de asincronía obligatoria.", "isCorrect": false }
+        ],
+        "explanation": "En A/C, cada vez que el paciente 'dispara' (trigger) el ventilador, recibe una respiración mandatoria completa igual a las controladas. Esto garantiza el soporte total, pero puede causar hiperventilación si el paciente está muy taquipneico."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "La principal diferencia entre la Ventilación Controlada por Volumen (VCV) y la Ventilación Controlada por Presión (PCV) es:",
+        "options": [
+          { "id": "a", "text": "En VCV se garantiza el volumen y la presión es variable; en PCV se garantiza la presión y el volumen es variable.", "isCorrect": true },
+          { "id": "b", "text": "La PCV solo se usa en neonatos y la VCV en adultos.", "isCorrect": false },
+          { "id": "c", "text": "La VCV requiere que el paciente esté siempre sedado, la PCV no.", "isCorrect": false },
+          { "id": "d", "text": "No hay diferencias clínicas reales.", "isCorrect": false }
+        ],
+        "explanation": "Es la característica definitoria: VCV prioriza asegurar un volumen tidal a costa de fluctuaciones en la presión de vía aérea. PCV prioriza limitar la presión máxima a costa de que el volumen tidal varíe según la mecánica del pulmón."
+      },
+      {
+        "id": "q3",
+        "type": "true_false",
+        "text": "En el modo SIMV, las respiraciones que ocurren entre los ciclos obligatorios del ventilador no reciben ningún tipo de ayuda y el paciente hace todo el esfuerzo.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. En la práctica clínica actual, las respiraciones espontáneas intercaladas en el modo SIMV casi siempre se asisten con Presión Soporte (PSV) para vencer la resistencia del tubo y disminuir el trabajo del paciente."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "En el modo Presión Soporte (PSV), ¿qué variables están determinadas íntegramente por el paciente?",
+        "options": [
+          { "id": "a", "text": "La FiO2 y el PEEP.", "isCorrect": false },
+          { "id": "b", "text": "La frecuencia respiratoria, el volumen tidal y el tiempo inspiratorio.", "isCorrect": true },
+          { "id": "c", "text": "La Presión Límite (Presión Pico).", "isCorrect": false },
+          { "id": "d", "text": "El tiempo de rampa de flujo.", "isCorrect": false }
+        ],
+        "explanation": "La PSV es un modo espontáneo. El paciente decide cuándo iniciar (frecuencia respiratoria), qué tan profundo respirar (flujo y volumen) y cuándo terminar (tiempo inspiratorio), mientras el ventilador solo aporta la presión constante configurada."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "Estás planeando retirar el ventilador (destete) de tu paciente, ¿cuál de los siguientes modos es el más adecuado para una prueba de respiración espontánea (SBT)?",
+        "options": [
+          { "id": "a", "text": "A/C VCV con volumen tidal alto.", "isCorrect": false },
+          { "id": "b", "text": "PCV con relación I:E invertida.", "isCorrect": false },
+          { "id": "c", "text": "CPAP o PSV mínima (ej. 5-7 cmH2O).", "isCorrect": true },
+          { "id": "d", "text": "Asisto-Controlado estricto sin trigger.", "isCorrect": false }
+        ],
+        "explanation": "La prueba de respiración espontánea (SBT) requiere evaluar si el paciente puede sostener la ventilación sin ayuda mecánica significativa. Modos como CPAP, Tubo en T o PSV con soportes mínimos son las estrategias avaladas."
+      }
+    ]
+  }
