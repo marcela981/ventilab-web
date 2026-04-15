@@ -60,7 +60,7 @@ export default function EvaluationIndexPage() {
         </Button>
       </Stack>
 
-      <ActivityList activities={activities} isLoading={isLoading} error={error} />
+      <ActivityList activities={activities} isLoading={isLoading} error={error} onRetry={refresh} />
     </Box>
   );
 }

@@ -1,0 +1,69 @@
+{
+    "id": "quiz-mecanica-l2-m1-vcv-vs-pcv",
+    "type": "quiz",
+    "title": "Quiz: VCV vs PCV - Análisis Profundo",
+    "description": "Evalúa tu comprensión sobre las diferencias mecánicas, ventajas y desventajas entre la Ventilación Controlada por Volumen y por Presión.",
+    "moduleId": "module-01-Ventilacion-vcv-vs-pcv",
+    "level": "level02-intermedio",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "Tienes un paciente ventilado en Volumen Control (VCV). De repente, presenta un broncoespasmo severo. ¿Qué cambio observarás inmediatamente en el ventilador?",
+        "options": [
+          { "id": "a", "text": "El volumen tidal entregado caerá significativamente.", "isCorrect": false },
+          { "id": "b", "text": "La presión pico aumentará, manteniendo el mismo volumen tidal (siempre que no alcance la alarma de límite de presión).", "isCorrect": true },
+          { "id": "c", "text": "La presión meseta disminuirá drásticamente.", "isCorrect": false },
+          { "id": "d", "text": "El ventilador cambiará automáticamente a PCV.", "isCorrect": false }
+        ],
+        "explanation": "En VCV, el ventilador garantiza el volumen corriente programado a expensas de la presión. Si la resistencia aumenta (broncoespasmo), se requerirá más presión para empujar ese mismo volumen, elevando la presión pico."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "Si el mismo paciente del caso anterior (broncoespasmo) estuviera ventilado en Presión Control (PCV), ¿cuál sería el efecto observado?",
+        "options": [
+          { "id": "a", "text": "La presión pico aumentaría a niveles peligrosos.", "isCorrect": false },
+          { "id": "b", "text": "El volumen tidal entregado disminuiría, con riesgo de hipoventilación.", "isCorrect": true },
+          { "id": "c", "text": "El flujo inspiratorio se volvería constante (cuadrado).", "isCorrect": false },
+          { "id": "d", "text": "No habría ningún cambio observable.", "isCorrect": false }
+        ],
+        "explanation": "En PCV, la presión es la constante. Si la resistencia aumenta o la distensibilidad empeora, el gas encontrará más dificultad para entrar con la misma presión límite, resultando en una caída del volumen tidal entregado."
+      },
+      {
+        "id": "q3",
+        "type": "true_false",
+        "text": "En el modo PCV (Control por Presión), la morfología clásica de la curva de flujo es constante (cuadrada).",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. En PCV, la curva de flujo es clásicamente desacelerante (decreciente). El ventilador entrega un flujo alto al inicio para alcanzar rápidamente la presión objetivo, y luego el flujo cae a medida que los pulmones se llenan."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "¿Cuál es una ventaja fisiológica teórica de la morfología de flujo desacelerante propia de la PCV?",
+        "options": [
+          { "id": "a", "text": "Mejora la distribución del gas en unidades alveolares con diferentes constantes de tiempo y disminuye la presión pico.", "isCorrect": true },
+          { "id": "b", "text": "Aumenta la hiperinsuflación dinámica.", "isCorrect": false },
+          { "id": "c", "text": "Asegura un volumen minuto estricto sin importar la mecánica pulmonar.", "isCorrect": false },
+          { "id": "d", "text": "Acorta significativamente el tiempo inspiratorio.", "isCorrect": false }
+        ],
+        "explanation": "El flujo desacelerante permite que el gas se distribuya de manera más homogénea a lo largo del tiempo inspiratorio, abriendo primero los alvéolos rápidos y luego manteniendo la presión para que se llenen los lentos, reduciendo la presión máxima en la vía aérea."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "Al programar VCV, ¿qué parámetro se suele ajustar para determinar qué tan rápido entra el aire y, en consecuencia, establecer la relación I:E?",
+        "options": [
+          { "id": "a", "text": "El nivel de PEEP.", "isCorrect": false },
+          { "id": "b", "text": "El Flujo Inspiratorio Pico (o el Tiempo Inspiratorio directamente, dependiendo del ventilador).", "isCorrect": true },
+          { "id": "c", "text": "La Sensibilidad (Trigger).", "isCorrect": false },
+          { "id": "d", "text": "El Volumen Corriente.", "isCorrect": false }
+        ],
+        "explanation": "En VCV, ajustar el pico de flujo (L/min) determina la velocidad a la que se entrega el volumen. Un flujo mayor entrega el volumen más rápido, acortando el tiempo inspiratorio (Ti) y prolongando el tiempo espiratorio (Te)."
+      }
+    ]
+  }

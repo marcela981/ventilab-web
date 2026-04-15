@@ -1,0 +1,69 @@
+{
+    "id": "quiz-mecanica-l3-m4-destete-complejo",
+    "type": "quiz",
+    "title": "Quiz: Destete Complejo y VMNI",
+    "description": "Evalúa tus conocimientos en escenarios difíciles de liberación del ventilador, fallas del SBT y traqueostomía.",
+    "moduleId": "module-04-destete-complejo-vmni",
+    "level": "level03-avanzado",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "Un paciente con falla cardíaca severa (FEVI 30%) falla repetidamente en la prueba de respiración espontánea (SBT) con Tubo en T. ¿Cuál es el mecanismo fisiopatológico principal que precipita esta falla cardíaca inducida por el destete?",
+        "options": [
+          { "id": "a", "text": "La caída de la presión intratorácica aumenta el retorno venoso (precarga) y la tensión transmural del VI (poscarga), descompensando al corazón enfermo.", "isCorrect": true },
+          { "id": "b", "text": "El aumento súbito de la distensibilidad pulmonar comprime el miocardio.", "isCorrect": false },
+          { "id": "c", "text": "La hiperoxia durante el Tubo en T induce espasmo coronario severo.", "isCorrect": false },
+          { "id": "d", "text": "La parálisis diafragmática desvía el flujo de sangre hacia el abdomen.", "isCorrect": false }
+        ],
+        "explanation": "Al pasar de presión positiva a negativa, el cuerpo atrae más sangre al corazón derecho y el ventrículo izquierdo debe bombear contra una mayor 'succión' torácica (poscarga aumentada), provocando edema pulmonar o isquemia."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "Al realizar una 'Prueba de Fuga del Manguito' (Cuff Leak Test) previo a la extubación, mides los volúmenes espirados. Si la fuga es < 10% o menor a 110 ml, ¿qué condición se sospecha y cómo debe abordarse?",
+        "options": [
+          { "id": "a", "text": "Sospecha fístula broncopleural; extubar de inmediato.", "isCorrect": false },
+          { "id": "b", "text": "Sospecha edema laríngeo/vía aérea estrecha; alto riesgo de estridor post-extubación, se sugiere tratar con corticoides sistémicos previos.", "isCorrect": true },
+          { "id": "c", "text": "Condición normal; proceder con extubación rutinaria.", "isCorrect": false },
+          { "id": "d", "text": "Debilidad diafragmática severa; derivar a traqueostomía.", "isCorrect": false }
+        ],
+        "explanation": "Al desinflar el cuff, el aire debería escapar alrededor del tubo. Si no lo hace (fuga muy baja), significa que el tejido alrededor está inflamado y bloqueando el paso, lo que generará estridor y falla al extubar."
+      },
+      {
+        "id": "q3",
+        "type": "true_false",
+        "text": "La Ventilación No Invasiva (VNI) preventiva (profiláctica) se recomienda en todos los pacientes sanos sin factores de riesgo inmediatamente después de la extubación rutinaria.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. La VNI profiláctica se recomienda explícitamente para pacientes con ALTO RIESGO de fracaso (ej. EPOC, hipercapnia, ICC), no de manera rutinaria para pacientes jóvenes, sanos o cirugías electivas sin complicaciones."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "La Polineuropatía/Miopatía del paciente crítico (Debilidad Adquirida en UCI) es una causa frecuente de destete prolongado. ¿Cuál es una de las estrategias basadas en la evidencia más efectivas para su prevención?",
+        "options": [
+          { "id": "a", "text": "Uso prolongado de relajantes musculares en todos los pacientes para dar descanso total.", "isCorrect": false },
+          { "id": "b", "text": "Nutrición parenteral total exclusiva.", "isCorrect": false },
+          { "id": "c", "text": "Movilización y rehabilitación física precoz combinada con minimización de la sedación profunda.", "isCorrect": true },
+          { "id": "d", "text": "Dosis altas de corticosteroides sistémicos por 14 días.", "isCorrect": false }
+        ],
+        "explanation": "El reposo en cama y la inmovilización, junto con sedación profunda, causan atrofia muscular rápida. Despertar al paciente (vacaciones de sedación) y movilizarlo pasiva o activamente de forma temprana previene esta debilidad."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "En relación al uso de traqueostomía en pacientes con falla respiratoria y dependencia de ventilación, la principal ventaja clínica documentada de realizarla es:",
+        "options": [
+          { "id": "a", "text": "Disminuir dramáticamente la mortalidad a 30 días.", "isCorrect": false },
+          { "id": "b", "text": "Erradicar por completo la incidencia de Neumonía Asociada a la Ventilación.", "isCorrect": false },
+          { "id": "c", "text": "Mejorar el confort del paciente, reducir la necesidad de sedación y facilitar la movilización y el aseo.", "isCorrect": true },
+          { "id": "d", "text": "Curar la miopatía del paciente crítico instantáneamente.", "isCorrect": false }
+        ],
+        "explanation": "Aunque la traqueostomía temprana vs tardía no ha demostrado diferencias significativas en la supervivencia global, sí provee beneficios logísticos innegables: menos sedación, boca libre, mejor higiene y movilización."
+      }
+    ]
+  }

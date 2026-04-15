@@ -1,0 +1,69 @@
+{
+    "id": "quiz-mecanica-l3-m6-epoc-asma",
+    "type": "quiz",
+    "title": "Quiz: EPOC y Crisis Asmática",
+    "description": "Evalúa tus conocimientos sobre la mecánica ventilatoria obstructiva, la hiperinsuflación dinámica y sus estrategias de manejo.",
+    "moduleId": "module-06-epoc-asma-fumadores",
+    "level": "level03-avanzado",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "En el paciente asmático grave intubado, el principal problema mecánico es la grave limitación al flujo de aire. Esto genera atrapamiento aéreo. ¿Qué nombre técnico recibe la acumulación de presión en los alvéolos al final de la espiración?",
+        "options": [
+          { "id": "a", "text": "Presión de Distensión (Driving Pressure).", "isCorrect": false },
+          { "id": "b", "text": "Auto-PEEP (PEEP intrínseco o Hiperinsuflación Dinámica).", "isCorrect": true },
+          { "id": "c", "text": "Presión Meseta.", "isCorrect": false },
+          { "id": "d", "text": "Presión Transpulmonar negativa.", "isCorrect": false }
+        ],
+        "explanation": "Debido a la alta resistencia y el colapso de la vía aérea en espiración, el pulmón no tiene tiempo suficiente para vaciarse por completo antes de la siguiente inhalación, acumulando volumen y presión con cada ciclo (Auto-PEEP)."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "Para manejar la ventilación en un paciente con EPOC exacerbado y disminuir el Auto-PEEP, ¿cuál de las siguientes estrategias de programación es la más indicada?",
+        "options": [
+          { "id": "a", "text": "Disminuir la frecuencia respiratoria y utilizar flujos inspiratorios altos para alargar el Tiempo Espiratorio.", "isCorrect": true },
+          { "id": "b", "text": "Aumentar la frecuencia respiratoria a 30 rpm para limpiar el CO2.", "isCorrect": false },
+          { "id": "c", "text": "Configurar una relación I:E de 1:1 o invertida.", "isCorrect": false },
+          { "id": "d", "text": "Aumentar el volumen tidal a 10-12 ml/kg.", "isCorrect": false }
+        ],
+        "explanation": "La clave para vaciar un pulmón obstruido es darle TIEMPO. Reducir la frecuencia (da más tiempo por ciclo) e insuflar rápido (flujo alto, acorta Ti) otorga el máximo tiempo posible para la fase de espiración (Te prolongado)."
+      },
+      {
+        "id": "q3",
+        "type": "true_false",
+        "text": "En el asma casi fatal intubada, intentar normalizar los valores de CO2 en gases arteriales (PaCO2 de 35-40) a expensas de presiones altas y volúmenes altos es la meta prioritaria.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. En asma severa, la estrategia mandatoria es la 'Hipercapnia Permisiva'. Intentar barrer el CO2 con frecuencias o volúmenes altos aumentaría masivamente el Auto-PEEP, llevando a barotrauma (neumotórax) y shock circulatorio."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "Durante la ventilación en un paciente con EPOC que presenta intentos espontáneos pero con alta asincronía (esfuerzos inefectivos), la aplicación de un PEEP externo ajustado (aproximadamente 80% del Auto-PEEP) tiene como objetivo:",
+        "options": [
+          { "id": "a", "text": "Sobreinsuflar los alvéolos para abrirlos más.", "isCorrect": false },
+          { "id": "b", "text": "Cerrar la fístula broncopleural.", "isCorrect": false },
+          { "id": "c", "text": "Mejorar la capacidad de los músculos inspiratorios del paciente para vencer el 'umbral' y gatillar (trigger) el ventilador.", "isCorrect": true },
+          { "id": "d", "text": "Provocar apnea en el paciente.", "isCorrect": false }
+        ],
+        "explanation": "Si el paciente tiene 10 de Auto-PEEP, debe generar un esfuerzo de >10 cmH2O (muy fatigante) solo para llegar a cero y activar el ventilador. Poner PEEP externo empuja la línea base, permitiendo que un esfuerzo mínimo alcance el umbral de disparo."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "¿Qué maniobra diagnóstica debes hacer en el ventilador para medir el Auto-PEEP de forma cuantitativa?",
+        "options": [
+          { "id": "a", "text": "Pausa inspiratoria de 1 segundo.", "isCorrect": false },
+          { "id": "b", "text": "Pausa espiratoria al final de la exhalación durante 2 a 3 segundos.", "isCorrect": true },
+          { "id": "c", "text": "Comprimir el abdomen del paciente en la inspiración.", "isCorrect": false },
+          { "id": "d", "text": "Aumentar el flujo pico al 100%.", "isCorrect": false }
+        ],
+        "explanation": "Al realizar una oclusión al final de la espiración (Pausa Espiratoria), el flujo cesa y las presiones en el circuito se igualan a las alveolares atrapadas, permitiendo que el ventilador lea el nivel de PEEP Total (Intrínseco + Extrínseco)."
+      }
+    ]
+  }

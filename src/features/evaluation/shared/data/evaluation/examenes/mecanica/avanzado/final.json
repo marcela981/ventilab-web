@@ -1,0 +1,127 @@
+{
+    "id": "examen-mecanica-l3-final",
+    "type": "examen",
+    "title": "Examen Final: Especialista en Ventilación Mecánica",
+    "description": "Evaluación sumativa del Nivel 3. Demuestra tus habilidades avanzadas en protección pulmonar, patologías críticas, asincronías severas y prevención de secuelas.",
+    "moduleId": "level03-examen",
+    "level": "level03-avanzado",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "ex3q1",
+        "type": "multiple_choice",
+        "text": "La Presión de Distensión (Driving Pressure) es un fuerte predictor de sobrevida en pacientes con SDRA. ¿Cuál es su fórmula y el límite superior recomendado?",
+        "options": [
+          { "id": "a", "text": "P.Pico - P.Meseta; límite < 20 cmH2O.", "isCorrect": false },
+          { "id": "b", "text": "P.Meseta - PEEP; límite < 15 cmH2O.", "isCorrect": true },
+          { "id": "c", "text": "Volumen Tidal / Compliance; límite < 30 cmH2O.", "isCorrect": false },
+          { "id": "d", "text": "P.Media - PEEP; límite < 10 cmH2O.", "isCorrect": false }
+        ],
+        "explanation": "La Driving Pressure (ΔP) se calcula restando la PEEP a la Presión Meseta. Representa la presión dinámica que estira los alvéolos. La evidencia sugiere mantenerla por debajo de 15 cmH2O para minimizar el VILI."
+      },
+      {
+        "id": "ex3q2",
+        "type": "multiple_choice",
+        "text": "El concepto del 'Poder Mecánico' (Mechanical Power) engloba varios determinantes del VILI. ¿Cuál de los siguientes factores es crítico en el Poder Mecánico pero que la Driving Pressure estática ignora?",
+        "options": [
+          { "id": "a", "text": "La Presión Meseta.", "isCorrect": false },
+          { "id": "b", "text": "El nivel de PEEP.", "isCorrect": false },
+          { "id": "c", "text": "La Frecuencia Respiratoria.", "isCorrect": true },
+          { "id": "d", "text": "La PaCO2.", "isCorrect": false }
+        ],
+        "explanation": "El Poder Mecánico mide la energía transferida por minuto. La Frecuencia Respiratoria determina cuántas veces por minuto se estira el pulmón, multiplicando el daño potencial."
+      },
+      {
+        "id": "ex3q3",
+        "type": "multiple_choice",
+        "text": "Para calcular la Presión Transpulmonar (la presión real que distiende el pulmón independientemente de la pared torácica), se requiere monitorizar una presión sustituta mediante:",
+        "options": [
+          { "id": "a", "text": "Un catéter en la arteria pulmonar.", "isCorrect": false },
+          { "id": "b", "text": "Un catéter de presión intraabdominal.", "isCorrect": false },
+          { "id": "c", "text": "Un balón esofágico.", "isCorrect": true },
+          { "id": "d", "text": "Capnografía volumétrica.", "isCorrect": false }
+        ],
+        "explanation": "La presión esofágica se utiliza como subrogado de la presión pleural. Restando la presión esofágica de la presión de la vía aérea, obtenemos la presión transpulmonar."
+      },
+      {
+        "id": "ex3q4",
+        "type": "multiple_choice",
+        "text": "En el manejo del paciente con EPOC severo exacerbado, para mitigar el Auto-PEEP severo, la estrategia de ajuste ventilatorio más efectiva es:",
+        "options": [
+          { "id": "a", "text": "Aumentar el Tiempo Inspiratorio y disminuir el flujo pico.", "isCorrect": false },
+          { "id": "b", "text": "Aumentar el Flujo Pico inspiratorio y disminuir la Frecuencia Respiratoria para prolongar el Tiempo Espiratorio.", "isCorrect": true },
+          { "id": "c", "text": "Incrementar el volumen tidal a 10 ml/kg.", "isCorrect": false },
+          { "id": "d", "text": "Reducir la relación I:E a 1:1.", "isCorrect": false }
+        ],
+        "explanation": "Los pulmones obstructivos requieren tiempo para vaciarse. Aumentar el flujo acelera la entrega de aire, y bajar la FR aumenta el tiempo total del ciclo, maximizando el tiempo de exhalación."
+      },
+      {
+        "id": "ex3q5",
+        "type": "true_false",
+        "text": "En el paciente obeso mórbido ventilado mecánicamente, el Volumen Tidal debe calcularse en base a su peso real para garantizar una ventilación alveolar suficiente.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. El tamaño de los pulmones no crece con la masa adiposa, depende de la altura y el sexo. Usar el peso real generaría un volutrauma severo; siempre se debe usar el Peso Corporal Ideal (Predicho)."
+      },
+      {
+        "id": "ex3q6",
+        "type": "multiple_choice",
+        "text": "En un paciente con SDRA grave (PaO2/FiO2 < 150) y asincronías que perpetúan el P-SILI, la intervención avalada por las guías en las primeras 48 horas es:",
+        "options": [
+          { "id": "a", "text": "Uso de infusión continua de bloqueadores neuromusculares para lograr sincronía y parálisis.", "isCorrect": true },
+          { "id": "b", "text": "Pasar al paciente a un modo puramente espontáneo (PSV).", "isCorrect": false },
+          { "id": "c", "text": "Realizar traqueostomía inmediata.", "isCorrect": false },
+          { "id": "d", "text": "Retirar el PEEP.", "isCorrect": false }
+        ],
+        "explanation": "La parálisis temprana (ej. con cisatracurio) en el SDRA grave ha demostrado reducir el daño inducido por el esfuerzo vigoroso del paciente (P-SILI) y facilitar la ventilación protectora."
+      },
+      {
+        "id": "ex3q7",
+        "type": "multiple_choice",
+        "text": "Observas un paciente ventilado con doble disparo (double triggering) casi constante. El análisis fisiológico indica que:",
+        "options": [
+          { "id": "a", "text": "El tiempo neural del paciente es más corto que el tiempo inspiratorio de la máquina.", "isCorrect": false },
+          { "id": "b", "text": "El tiempo inspiratorio fijado en la máquina es considerablemente más corto que el tiempo neural inspiratorio del paciente.", "isCorrect": true },
+          { "id": "c", "text": "El umbral de ciclado por flujo es muy bajo.", "isCorrect": false },
+          { "id": "d", "text": "Hay un exceso de PEEP.", "isCorrect": false }
+        ],
+        "explanation": "El doble disparo ocurre cuando la máquina finaliza la inspiración (cicla) pero el paciente sigue queriendo inspirar. Como su esfuerzo continúa, gatilla un segundo ciclo inmediatamente después del primero."
+      },
+      {
+        "id": "ex3q8",
+        "type": "multiple_choice",
+        "text": "En la capnografía volumétrica, una inclinación pronunciada ascendente en la Fase III (meseta alveolar) suele indicar:",
+        "options": [
+          { "id": "a", "text": "Heterogeneidad en el vaciado alveolar (patrón obstructivo).", "isCorrect": true },
+          { "id": "b", "text": "Un TEP masivo súbito.", "isCorrect": false },
+          { "id": "c", "text": "Una distensibilidad pulmonar excelente.", "isCorrect": false },
+          { "id": "d", "text": "Disminución del gasto cardíaco.", "isCorrect": false }
+        ],
+        "explanation": "La Fase III corresponde al vaciado de los alvéolos. Si es muy inclinada, los alvéolos con mayor constante de tiempo (más obstruidos y con más CO2) se vacían más tarde, deformando la curva."
+      },
+      {
+        "id": "ex3q9",
+        "type": "true_false",
+        "text": "La hipercapnia permisiva (permitir que el PCO2 se eleve) es una estrategia clave durante la ventilación protectora en SDRA para poder utilizar volúmenes tidales y presiones más bajos.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": true },
+          { "id": "false", "text": "Falso", "isCorrect": false }
+        ],
+        "explanation": "Verdadero. Para proteger el pulmón (Vt bajo de 6 ml/kg y presiones bajas), se sacrifica la eliminación de CO2. Se tolera la hipercapnia mientras el pH no caiga a niveles peligrosos."
+      },
+      {
+        "id": "ex3q10",
+        "type": "multiple_choice",
+        "text": "Para la prevención del Síndrome de Cuidados Intensivos (PICS) y la debilidad adquirida en UCI, ¿qué bundle o conjunto de medidas ha demostrado mayor eficacia?",
+        "options": [
+          { "id": "a", "text": "VNI profiláctica continua.", "isCorrect": false },
+          { "id": "b", "text": "Soporte nutricional parenteral agresivo.", "isCorrect": false },
+          { "id": "c", "text": "Bundle ABCDEF (Evaluación del dolor, interrupción de sedación/pruebas de despertar, prevención del delirium, movilización temprana y empoderamiento familiar).", "isCorrect": true },
+          { "id": "d", "text": "Traqueostomía dentro de las primeras 48 horas.", "isCorrect": false }
+        ],
+        "explanation": "El protocolo ABCDEF está fuertemente avalado por la evidencia como la estrategia más holística para reducir los días de ventilador, evitar la atrofia diafragmática y mitigar las secuelas cognitivas y musculares a largo plazo."
+      }
+    ]
+  }

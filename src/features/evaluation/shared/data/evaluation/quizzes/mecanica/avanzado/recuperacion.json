@@ -1,0 +1,69 @@
+{
+    "id": "quiz-mecanica-l3-m8-recuperacion",
+    "type": "quiz",
+    "title": "Quiz: Recuperación, Pronóstico y Secuelas",
+    "description": "Comprueba tus conocimientos sobre las implicaciones a largo plazo de la ventilación mecánica, debilidad y rehabilitación del enfermo crítico.",
+    "moduleId": "module-08-recuperacion-proteccion",
+    "level": "level03-avanzado",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "La 'Disfunción Diafragmática Inducida por el Ventilador' (VIDD) ocurre por inactividad. ¿En cuánto tiempo de reposo y ventilación mecánica controlada se ha observado microscópicamente la atrofia del diafragma?",
+        "options": [
+          { "id": "a", "text": "Al cabo de 1 mes completo.", "isCorrect": false },
+          { "id": "b", "text": "En las primeras 18 a 48 horas de inactividad total.", "isCorrect": true },
+          { "id": "c", "text": "Únicamente si el paciente usa corticoides.", "isCorrect": false },
+          { "id": "d", "text": "La atrofia es un mito, el diafragma solo se fatiga pero no se atrofia.", "isCorrect": false }
+        ],
+        "explanation": "El músculo diafragmático es altamente susceptible a la falta de uso. Modelos animales y biopsias en humanos muestran daño de la fibra muscular y proteólisis tras menos de 48 horas de ventilación mandatoria estricta sin esfuerzo."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "¿Qué conjunto de prácticas agrupa intervenciones basadas en evidencia (ABCDEF Bundle) para mejorar la supervivencia y recuperación funcional del paciente en UCI?",
+        "options": [
+          { "id": "a", "text": "Airway, Blood, Care, Defibrillation, Endotrach, Fluid.", "isCorrect": false },
+          { "id": "b", "text": "Analgesia, Both SAT and SBT trials, Choice of sedation, Delirium management, Early mobility, Family engagement.", "isCorrect": true },
+          { "id": "c", "text": "Atelectasis, Bacteria, Clots, Diuretics, Embolism, Fever.", "isCorrect": false },
+          { "id": "d", "text": "Antibiotics, Bicarbonate, Calcium, Dobutamine, Epinephrine, Fentanyl.", "isCorrect": false }
+        ],
+        "explanation": "El bundle 'ABCDEF' se enfoca en tratar el dolor, hacer pruebas diarias para despertar/destetar, evitar la sedación profunda/delirium, iniciar movilización muy temprana e involucrar a la familia, mejorando dramáticamente las secuelas a largo plazo."
+      },
+      {
+        "id": "q3",
+        "type": "true_false",
+        "text": "Los supervivientes de ventilación mecánica por SDRA grave tienen una función pulmonar permanentemente disminuida, pero su calidad de vida y función neurocognitiva quedan intactas.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. Paradójicamente, la mayoría recupera una función pulmonar (espirometría) casi normal al año. El impacto catastrófico y perdurable suele estar en la debilidad muscular, dolor crónico, y déficit neurocognitivo severo/psiquiátrico (Depresión/TEPT), conocido como Síndrome Post-Cuidados Intensivos (PICS)."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "¿Cuál es una de las medidas fundamentales orientadas a la prevención de la Neumonía Asociada a la Ventilación Mecánica (NAV), evento que entorpece gravemente la recuperación?",
+        "options": [
+          { "id": "a", "text": "Uso profiláctico de antibióticos intravenosos de amplio espectro durante toda la estadía.", "isCorrect": false },
+          { "id": "b", "text": "Mantener al paciente en posición de Trendelenburg estricto.", "isCorrect": false },
+          { "id": "c", "text": "Elevación de la cabecera de la cama a 30-45 grados y rigurosa higiene bucal con antisépticos.", "isCorrect": true },
+          { "id": "d", "text": "Cambio del tubo endotraqueal de rutina cada 72 horas.", "isCorrect": false }
+        ],
+        "explanation": "Mantener la cabecera elevada disminuye el riesgo de microaspiraciones del contenido gástrico, las cuales son la principal vía patogénica de la neumonía asociada a ventilador. Sumado a una buena higiene bucal para erradicar patógenos colonizadores."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "Al referirnos al balance en la 'miopatía inducida por el ventilador' versus 'daño auto-inducido por el paciente' (P-SILI), la recomendación actual respecto al esfuerzo espontáneo es:",
+        "options": [
+          { "id": "a", "text": "Fomentar esfuerzo espontáneo asistido (ej. con Presión Soporte) en niveles protectores, evitando ni el esfuerzo cero ni el esfuerzo excesivo.", "isCorrect": true },
+          { "id": "b", "text": "Anular todo esfuerzo hasta el día antes de extubar.", "isCorrect": false },
+          { "id": "c", "text": "Dejarlo en modo CPAP puro sin soporte en todos los casos para fortalecerlo.", "isCorrect": false },
+          { "id": "d", "text": "Sudar al paciente sin ventilación mecánica 4 horas diarias.", "isCorrect": false }
+        ],
+        "explanation": "Se ha demostrado que preservar un nivel de esfuerzo diafragmático 'protector' previene la atrofia del músculo (VIDD) sin desencadenar las grandes presiones transpulmonares que lastiman el tejido pulmonar (P-SILI). Es el llamado concepto de 'miotrauma' dual."
+      }
+    ]
+  }

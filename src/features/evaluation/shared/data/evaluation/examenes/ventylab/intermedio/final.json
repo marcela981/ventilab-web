@@ -1,0 +1,127 @@
+{
+    "id": "examen-ventylab-l2-final",
+    "type": "examen",
+    "title": "Examen Final: VentyLab Intermedio",
+    "description": "Evaluación sumativa del Nivel 2. Demuestra tu habilidad para interactuar con el simulador, programar modos ventilatorios y planificar protocolos de destete (weaning).",
+    "moduleId": "level02-examen",
+    "level": "level02-intermedio",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "exvl2q1",
+        "type": "multiple_choice",
+        "text": "Estás frente al panel del VentyLab programando Ventilación Controlada por Volumen (VCV) para un paciente adulto con peso ideal de 70 kg. ¿Qué volumen tidal debes fijar basándote en las recomendaciones de protección pulmonar?",
+        "options": [
+          { "id": "a", "text": "250 ml.", "isCorrect": false },
+          { "id": "b", "text": "420 a 560 ml.", "isCorrect": true },
+          { "id": "c", "text": "700 a 850 ml.", "isCorrect": false },
+          { "id": "d", "text": "1000 ml.", "isCorrect": false }
+        ],
+        "explanation": "La meta protectora es programar entre 6 y 8 ml por kg de peso corporal ideal. Para 70 kg, esto corresponde a un rango entre 420 y 560 ml."
+      },
+      {
+        "id": "exvl2q2",
+        "type": "multiple_choice",
+        "text": "En el simulador, al cambiar del modo VCV al modo Ventilación Controlada por Presión (PCV), desaparece el ajuste de 'Volumen Tidal'. En su lugar, ¿qué parámetro debes configurar para entregar el aire al paciente?",
+        "options": [
+          { "id": "a", "text": "Pico de Flujo inspiratorio.", "isCorrect": false },
+          { "id": "b", "text": "Presión Inspiratoria (Límite) sobre el PEEP.", "isCorrect": true },
+          { "id": "c", "text": "Presión de Soporte.", "isCorrect": false },
+          { "id": "d", "text": "Sensibilidad (Trigger).", "isCorrect": false }
+        ],
+        "explanation": "En PCV se programa una presión inspiratoria fija que el equipo mantendrá durante todo el tiempo inspiratorio. El volumen que ingrese dependerá de la compliance y resistencia del paciente."
+      },
+      {
+        "id": "exvl2q3",
+        "type": "multiple_choice",
+        "text": "Has configurado el modo Presión Soporte (PSV) para iniciar el destete. En la interfaz, ¿qué parámetro NO puedes ajustar porque depende enteramente del paciente?",
+        "options": [
+          { "id": "a", "text": "El nivel de presión de soporte.", "isCorrect": false },
+          { "id": "b", "text": "El PEEP.", "isCorrect": false },
+          { "id": "c", "text": "La frecuencia respiratoria y el tiempo inspiratorio.", "isCorrect": true },
+          { "id": "d", "text": "El porcentaje de oxígeno (FiO2).", "isCorrect": false }
+        ],
+        "explanation": "PSV es un modo espontáneo. El ventilador asiste con presión, pero el paciente decide cuándo iniciar la respiración (FR) y cuándo finalizarla (tiempo inspiratorio o ciclado), así como la profundidad del esfuerzo."
+      },
+      {
+        "id": "exvl2q4",
+        "type": "true_false",
+        "text": "Si al configurar el Trigger por Flujo lo pones en 0.5 L/min en lugar de los 2.0 L/min recomendados, haces que el ventilador sea menos sensible, obligando al paciente a hacer más esfuerzo.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. Valores más bajos en el Trigger por flujo (ej. 0.5) hacen al equipo EXTREMADAMENTE sensible, a tal punto que pequeñas fugas o los latidos cardíacos pueden disparar respiraciones no deseadas (autociclado)."
+      },
+      {
+        "id": "exvl2q5",
+        "type": "multiple_choice",
+        "text": "En el panel de Alarmas, programas la alarma de Presión Máxima (P. Peak). Para proteger al pulmón de un barotrauma inminente en un adulto sin obesidad ni enfermedad de pared, ¿en qué valor suele ajustarse esta alarma de seguridad?",
+        "options": [
+          { "id": "a", "text": "20 cmH2O", "isCorrect": false },
+          { "id": "b", "text": "35 a 40 cmH2O", "isCorrect": true },
+          { "id": "c", "text": "60 cmH2O", "isCorrect": false },
+          { "id": "d", "text": "Se debe mantener apagada", "isCorrect": false }
+        ],
+        "explanation": "El límite de seguridad general se fija entre 35 y 40 cmH2O. Si la presión alcanza este umbral, el ventilador detiene la insuflación inmediatamente y abre la válvula de exhalación para prevenir daños (barotrauma)."
+      },
+      {
+        "id": "exvl2q6",
+        "type": "multiple_choice",
+        "text": "Vas a iniciar Ventilación No Invasiva (VMNI) en modo BiPAP en un paciente con EPOC. Programas IPAP en 12 y EPAP en 5. ¿Cuál es el propósito fisiológico de la presión IPAP?",
+        "options": [
+          { "id": "a", "text": "Mantener la vía aérea abierta durante la espiración.", "isCorrect": false },
+          { "id": "b", "text": "Ayudar en la inspiración para vencer la resistencia de la vía aérea, aumentar el volumen tidal y facilitar la eliminación de CO2.", "isCorrect": true },
+          { "id": "c", "text": "Suministrar oxígeno al 100%.", "isCorrect": false },
+          { "id": "d", "text": "Aumentar el trabajo de los músculos respiratorios para entrenarlos.", "isCorrect": false }
+        ],
+        "explanation": "El IPAP (Inspiratory Positive Airway Pressure) funciona igual que la Presión Soporte; asiste el esfuerzo inhalatorio del paciente, logrando mejores volúmenes con menos fatiga muscular."
+      },
+      {
+        "id": "exvl2q7",
+        "type": "multiple_choice",
+        "text": "¿Cuál es un prerrequisito neurológico absoluto antes de intentar una Prueba de Respiración Espontánea (SBT) o aplicar VMNI en mascarilla facial?",
+        "options": [
+          { "id": "a", "text": "Glasgow de 15, orientado en las tres esferas.", "isCorrect": false },
+          { "id": "b", "text": "Ausencia de delirium agudo y paciente capaz de despertar (despertar fácil) y proteger su vía aérea.", "isCorrect": true },
+          { "id": "c", "text": "Relajación muscular completa residual.", "isCorrect": false },
+          { "id": "d", "text": "Sedación profunda para evitar la ansiedad.", "isCorrect": false }
+        ],
+        "explanation": "Un paciente que no puede despertar, que no tose o no maneja sus secreciones (coma o sedación profunda) no protegerá su vía aérea, teniendo un riesgo inminente de broncoaspiración si se extuba o se le pone VMNI."
+      },
+      {
+        "id": "exvl2q8",
+        "type": "multiple_choice",
+        "text": "Durante una prueba de destete (SBT), calculas el Índice de Tobin (RSBI) obteniendo 130 resp/min/L. El paciente está sudoroso y agitado. ¿Qué te indica el simulador y cuál es tu acción?",
+        "options": [
+          { "id": "a", "text": "El RSBI es óptimo. Procedo a la extubación.", "isCorrect": false },
+          { "id": "b", "text": "El paciente está fallando el destete (taquipnea y bajo volumen). Aborto el SBT y lo regreso a un modo de soporte total para descansar.", "isCorrect": true },
+          { "id": "c", "text": "Necesita más PEEP; aumento el soporte y mantengo el SBT 2 horas más.", "isCorrect": false },
+          { "id": "d", "text": "Ignoro el RSBI y espero a ver los gases arteriales en una hora.", "isCorrect": false }
+        ],
+        "explanation": "Un índice de Tobin > 105 indica un patrón de fatiga inminente (respiración muy rápida y superficial). Mantenerlo sufriendo este estrés causa daño muscular; se debe suspender la prueba y asistir la ventilación."
+      },
+      {
+        "id": "exvl2q9",
+        "type": "multiple_choice",
+        "text": "Previo a la extubación realizas la Prueba de Fuga del Manguito (Cuff Leak Test). Desinflas el globo y observas en el ventilador que NO hay escape de volumen (fuga de aire es menor a 110ml). ¿Qué significa esto?",
+        "options": [
+          { "id": "a", "text": "El circuito está perfectamente hermético, procedo a extubar.", "isCorrect": false },
+          { "id": "b", "text": "El tejido traqueal o laríngeo está edematizado y obstruye el paso del aire alrededor del tubo. Alto riesgo de estridor post-extubación.", "isCorrect": true },
+          { "id": "c", "text": "El paciente tiene EPOC severo.", "isCorrect": false },
+          { "id": "d", "text": "El ventilador está fallando en su sensor espiratorio.", "isCorrect": false }
+        ],
+        "explanation": "Al desinflar el manguito, el aire debería pasar por los lados del tubo. Si no lo hace, hay un anillo de edema (hinchazón) que sella el tubo. Sacar el tubo en este momento causará una obstrucción crítica de la vía aérea."
+      },
+      {
+        "id": "exvl2q10",
+        "type": "true_false",
+        "text": "La VMNI profiláctica (uso inmediato tras la extubación) está recomendada especialmente en pacientes con EPOC o hipercapnia previa para prevenir el fracaso respiratorio post-extubación.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": true },
+          { "id": "false", "text": "Falso", "isCorrect": false }
+        ],
+        "explanation": "Verdadero. La evidencia respalda el uso temprano y preventivo de VMNI en pacientes de alto riesgo (como EPOC, ICC o ancianos con hipercapnia) inmediatamente después de quitar el tubo, disminuyendo notablemente la tasa de reintubación."
+      }
+    ]
+  }

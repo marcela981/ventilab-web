@@ -1,22 +1,32 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box, CircularProgress, Grid, Typography } from '@mui/material';
+import { Box, Button, Grid, Skeleton, Typography } from '@mui/material';
 import ActivityCard from './ActivityCard';
+import styles from '../../UI/evaluation.module.css';
 
-export default function ActivityList({ activities, isLoading, error }) {
+export default function ActivityList({ activities, isLoading, error, onRetry }) {
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-        <CircularProgress />
-      </Box>
+      <Grid container spacing={2}>
+        {[1, 2, 3].map((n) => (
+          <Grid item xs={12} md={6} lg={4} key={n}>
+            <Skeleton variant="rectangular" className={styles.skeletonCard} />
+          </Grid>
+        ))}
+      </Grid>
     );
   }
 
   if (error) {
     return (
-      <Typography variant="body2" color="error" sx={{ py: 2 }}>
-        {error}
-      </Typography>
+      <Box className={styles.errorContainer}>
+        <Typography variant="body2" color="error">{error}</Typography>
+        {onRetry && (
+          <Button variant="outlined" size="small" onClick={onRetry}>
+            Reintentar
+          </Button>
+        )}
+      </Box>
     );
   }
 
@@ -43,5 +53,6 @@ ActivityList.propTypes = {
   activities: PropTypes.array,
   isLoading: PropTypes.bool,
   error: PropTypes.string,
+  onRetry: PropTypes.func,
 };
 

@@ -1,0 +1,69 @@
+{
+    "id": "quiz-ventylab-l1-m2",
+    "type": "quiz",
+    "title": "Quiz: Ventilador y sus Componentes",
+    "description": "Identifica y comprende el funcionamiento del hardware, circuito neumático y sensores del ventilador mecánico.",
+    "moduleId": "ventilador_compontentes",
+    "level": "level01-principiante",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "El sistema neumático de un ventilador moderno típicamente requiere la conexión a dos fuentes de gas a alta presión. ¿Cuáles son?",
+        "options": [
+          { "id": "a", "text": "Oxígeno y Óxido Nitroso.", "isCorrect": false },
+          { "id": "b", "text": "Oxígeno (O2) y Aire médico (comprimido).", "isCorrect": true },
+          { "id": "c", "text": "Helio y Oxígeno.", "isCorrect": false },
+          { "id": "d", "text": "Nitrógeno y Dióxido de Carbono.", "isCorrect": false }
+        ],
+        "explanation": "Los ventiladores mezclan el oxígeno puro (100%) con aire médico comprimido (21% O2) mediante válvulas mezcladoras (blenders) para lograr la FiO2 exacta programada por el operador."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "¿Cuál es la función principal del sistema de humidificación y calentamiento en el circuito del ventilador?",
+        "options": [
+          { "id": "a", "text": "Aumentar la presión pico del ventilador.", "isCorrect": false },
+          { "id": "b", "text": "Suplir la función natural de la vía aérea superior para evitar la desecación de mucosas, el espesamiento de secreciones y la hipotermia.", "isCorrect": true },
+          { "id": "c", "text": "Filtrar bacterias y virus del aire espirado.", "isCorrect": false },
+          { "id": "d", "text": "Medir el flujo inspiratorio con mayor precisión.", "isCorrect": false }
+        ],
+        "explanation": "Al intubar a un paciente, se evita la nariz y faringe, que normalmente calientan y humidifican el aire. Administrar gas seco y frío directamente a los pulmones daña la mucosa y espesa el moco, causando obstrucciones."
+      },
+      {
+        "id": "q3",
+        "type": "true_false",
+        "text": "La válvula espiratoria del ventilador se cierra completamente durante la fase inspiratoria para asegurar que todo el gas se dirija hacia los pulmones del paciente.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": true },
+          { "id": "false", "text": "Falso", "isCorrect": false }
+        ],
+        "explanation": "Verdadero. Para presurizar el circuito y que el aire entre al pulmón, el sistema debe ser hermético; por ello, la válvula espiratoria se cierra en la inspiración y se abre controladamente durante la exhalación (y para mantener la PEEP)."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "¿Qué componente del ventilador es el responsable de detectar el esfuerzo del paciente para iniciar una respiración asistida (Trigger)?",
+        "options": [
+          { "id": "a", "text": "La pantalla táctil.", "isCorrect": false },
+          { "id": "b", "text": "Los sensores de flujo y/o presión integrados en el circuito neumático.", "isCorrect": true },
+          { "id": "c", "text": "El compresor interno.", "isCorrect": false },
+          { "id": "d", "text": "La cascada calentadora.", "isCorrect": false }
+        ],
+        "explanation": "Los sensores ultra rápidos miden constantemente el flujo y la presión en el circuito. Cuando el paciente inhala, genera una caída de presión o un desvío de flujo que el sensor detecta, avisando a los microprocesadores para abrir la válvula inspiratoria."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "El circuito paciente estándar (las mangueras corrugadas) cuenta con una rama inspiratoria y una espiratoria. ¿Dónde se ubica usualmente el filtro antibacteriano/antiviral (HEPA) más crítico para proteger el ambiente y al equipo?",
+        "options": [
+          { "id": "a", "text": "Al inicio de la rama inspiratoria, a la salida del ventilador.", "isCorrect": false },
+          { "id": "b", "text": "En el extremo distal de la rama espiratoria, justo antes de que el aire retorne al bloque de exhalación del ventilador.", "isCorrect": true },
+          { "id": "c", "text": "Conectado directamente a la toma de pared de oxígeno.", "isCorrect": false },
+          { "id": "d", "text": "Dentro del humidificador activo.", "isCorrect": false }
+        ],
+        "explanation": "El filtro en la rama espiratoria (filtro de exhalación) atrapa los patógenos provenientes del paciente, protegiendo las válvulas internas del ventilador y evitando que el aire contaminado se libere en la habitación."
+      }
+    ]
+  }

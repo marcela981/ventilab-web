@@ -1,0 +1,69 @@
+{
+    "id": "quiz-mecanica-l3-m3-asincronias",
+    "type": "quiz",
+    "title": "Quiz: Asincronías Paciente-Ventilador",
+    "description": "Demuestra tu capacidad para diagnosticar y corregir situaciones complejas de asincronía en las curvas de ventilación.",
+    "moduleId": "module-03-advertencias-asincronias-situaciones-complejas",
+    "level": "level03-avanzado",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "En el modo Volumen Control, observas que la curva de Presión-Tiempo se torna cóncava (se 'hunde') durante la inspiración en lugar de elevarse de manera lineal o convexa. ¿Qué asincronía representa?",
+        "options": [
+          { "id": "a", "text": "Autociclado por fuga.", "isCorrect": false },
+          { "id": "b", "text": "Asincronía de Flujo (Flujo insuficiente o 'hambre de flujo').", "isCorrect": true },
+          { "id": "c", "text": "Ciclado tardío.", "isCorrect": false },
+          { "id": "d", "text": "Trigger inefectivo.", "isCorrect": false }
+        ],
+        "explanation": "El 'hambre de flujo' ocurre cuando el paciente tiene una demanda inspiratoria mayor que el flujo configurado en el ventilador. El esfuerzo del paciente 'aspira' la presión del circuito, deformando la curva hacia abajo (concavidad)."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "Observas un 'Doble Disparo' (Double Triggering) en el ventilador, entregando dos volúmenes tidales casi continuos sin tiempo de exhalación entre ellos. ¿Cuál es la causa más frecuente?",
+        "options": [
+          { "id": "a", "text": "El tiempo inspiratorio programado en la máquina es mucho más corto que el tiempo neural inspiratorio del paciente.", "isCorrect": true },
+          { "id": "b", "text": "Presencia de oscilaciones cardíacas muy fuertes.", "isCorrect": false },
+          { "id": "c", "text": "Nivel de PEEP excesivamente alto.", "isCorrect": false },
+          { "id": "d", "text": "Agua acumulada en las trampas del circuito.", "isCorrect": false }
+        ],
+        "explanation": "Si el ventilador termina la inspiración (cicla a espiración) pero el centro respiratorio del paciente sigue mandando señal de inspirar (tiempo neural largo), el paciente generará un nuevo esfuerzo inmediatamente, activando un segundo ciclo."
+      },
+      {
+        "id": "q3",
+        "type": "true_false",
+        "text": "El Autociclado (Auto-triggering) es comúnmente causado por un paciente con un alto trabajo respiratorio que hiperventila de forma voluntaria.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. El autociclado ocurre cuando el ventilador interpreta señales espurias como si fuesen esfuerzos del paciente. Suele ser causado por fugas en el circuito, oscilaciones cardíacas o un trigger (sensibilidad) configurado demasiado sensible, no por esfuerzo real del paciente."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "¿Cuál es la intervención más apropiada inicial para corregir los esfuerzos inefectivos (ineffective triggering) recurrentes en un paciente con EPOC exacerbado?",
+        "options": [
+          { "id": "a", "text": "Aumentar la sensibilidad del trigger a su máximo valor (hacerlo menos sensible).", "isCorrect": false },
+          { "id": "b", "text": "Añadir PEEP extrínseco (aproximadamente 80% del auto-PEEP) y aumentar el tiempo espiratorio.", "isCorrect": true },
+          { "id": "c", "text": "Administrar relajantes musculares (bloqueo neuromuscular).", "isCorrect": false },
+          { "id": "d", "text": "Invertir la relación I:E a 2:1.", "isCorrect": false }
+        ],
+        "explanation": "Los esfuerzos inefectivos en EPOC ocurren porque el paciente debe vencer su gran Auto-PEEP antes de poder gatillar el ventilador. Poner PEEP externo (PEEPi compensatorio) reduce la gradiente de presión que el diafragma debe vencer."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "En el modo Presión Soporte (PSV), si el porcentaje de ciclado por flujo (ej. ETS, Esens) está configurado en un valor muy BAJO (ej. 5% del flujo pico), ¿qué asincronía es más probable que ocurra?",
+        "options": [
+          { "id": "a", "text": "Ciclado prematuro.", "isCorrect": false },
+          { "id": "b", "text": "Ciclado tardío (retrasado).", "isCorrect": true },
+          { "id": "c", "text": "Doble disparo.", "isCorrect": false },
+          { "id": "d", "text": "Trigger inefectivo.", "isCorrect": false }
+        ],
+        "explanation": "Si el ventilador espera a que el flujo caiga hasta un 5% del máximo, la inspiración durará mucho tiempo. Si el paciente ya quiere espirar (tiempo neural corto), chocará contra el ventilador que aún está insuflando, generando un ciclado tardío y un pico de presión."
+      }
+    ]
+  }

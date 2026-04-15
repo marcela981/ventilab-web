@@ -1,0 +1,52 @@
+{
+    "id": "taller-ventylab-l3-resolucion-problemas",
+    "type": "taller",
+    "title": "Taller ABP: Troubleshooting y Raciocinio Avanzado",
+    "description": "Enfrenta simulaciones de descompensación aguda. Analiza la telemetría, interpreta curvas anormales y aplica medidas de rescate críticas.",
+    "moduleId": "level03-talleres",
+    "level": "level03-avanzado",
+    "passingScore": 80,
+    "caseStudy": {
+      "patient": "Femenina de 60 años, en VCV (VT 400ml, PEEP 10). Módulo de asincronías y alarmas críticas.",
+      "scenario": "El simulador VentyLab de repente enciende luces rojas y emite una alarma sonora continua. La pantalla muestra 'PRESIÓN VÍA AÉREA ALTA' y el ventilador está abortando las respiraciones entregando solo 150ml.",
+      "objective": "Diagnosticar la causa de la alarma analizando las gráficas y aplicar la solución correcta en la interfaz."
+    },
+    "questions": [
+      {
+        "id": "tl3q1",
+        "type": "scenario_choice",
+        "text": "Congelas las gráficas en el simulador para hacer una Pausa Inspiratoria. La Presión Pico es de 45 cmH2O (activando la alarma), pero la Presión Meseta (Plateau) es de apenas 18 cmH2O. ¿Qué está sucediendo?",
+        "options": [
+          { "id": "a", "text": "El pulmón ha sufrido un daño agudo (caída de compliance, SDRA inminente).", "isCorrect": false, "feedback": "Incorrecto. Si la compliance hubiese empeorado, la Presión Meseta (la presión en los alvéolos) también estaría muy elevada (ej. > 30 cmH2O)." },
+          { "id": "b", "text": "Hay una obstrucción severa al flujo (resistencia aumentada).", "isCorrect": true, "feedback": "Correcto. La gran diferencia entre Presión Pico y Meseta (45 - 18) indica un componente resistivo. El paciente puede estar mordiendo el tubo, o tener un tapón de moco o broncoespasmo grave." }
+        ]
+      },
+      {
+        "id": "tl3q2",
+        "type": "scenario_choice",
+        "text": "Solucionas la obstrucción (aspiras un tapón de moco) y las presiones se normalizan. Horas después, observas que en la curva Presión-Tiempo el ventilador inicia ciclos ('dispara') repetidamente a 40 rpm, pero el paciente luce profundamente dormido. El flujo no muestra caídas previas significativas. ¿Qué ajustas en el panel de control?",
+        "options": [
+          { "id": "a", "text": "Reviso el circuito por fugas o condensación de agua y configuro un Trigger (Sensibilidad) menos sensible.", "isCorrect": true, "feedback": "Correcto. El ventilador está 'autociclando'. El equipo está interpretando ruidos, agua en el circuito o fugas como si fuesen esfuerzos del paciente. Ajustar el trigger (ej. de 1 L/min a 3 L/min) lo corrige." },
+          { "id": "b", "text": "Invierto la relación I:E para forzarlo a exhalar.", "isCorrect": false, "feedback": "Incorrecto. Invertir la relación I:E se usa para problemas de oxigenación severa (SDRA), no para asincronías de disparo como el autociclado." }
+        ]
+      },
+      {
+        "id": "tl3q3",
+        "type": "scenario_choice",
+        "text": "Te avisan que la paciente ha sufrido un episodio súbito de hipotensión severa (TA 60/30). Miras la pantalla del capnógrafo volumétrico (EtCO2) integrado en el VentyLab y ves que la curva colapsó repentinamente de 40 mmHg a 12 mmHg. No hay problemas con el tubo. ¿Qué raciocinio clínico haces?",
+        "options": [
+          { "id": "a", "text": "La paciente está hiperventilando.", "isCorrect": false, "feedback": "Incorrecto. Una caída tan repentina y drástica del EtCO2 acompañada de hipotensión aguda rara vez es por hiperventilación sola." },
+          { "id": "b", "text": "Hay un colapso masivo en la perfusión pulmonar (Tromboembolismo pulmonar masivo o paro cardíaco inminente).", "isCorrect": true, "feedback": "Correcto. El CO2 no está llegando al pulmón para ser exhalado porque el corazón no está bombeando sangre (falla aguda del gasto cardíaco o TEP). Es una emergencia circulatoria vital." }
+        ]
+      },
+      {
+        "id": "tl3q4",
+        "type": "scenario_choice",
+        "text": "Durante el pase de visita, utilizando las métricas de telemetría del VentyLab, evalúas el Poder Mecánico (Mechanical Power). Ves que está en 32 J/min (muy elevado). ¿Cuál intervención tiene más impacto para reducir significativamente la energía transferida al parénquima y evitar el VILI?",
+        "options": [
+          { "id": "a", "text": "Disminuir la FiO2.", "isCorrect": false, "feedback": "Incorrecto. La FiO2 afecta la oxigenación y la toxicidad química, pero no modifica la fuerza mecánica (energía cinética) aplicada al pulmón." },
+          { "id": "b", "text": "Reducir el Volumen Tidal y la Frecuencia Respiratoria.", "isCorrect": true, "feedback": "Correcto. El volumen, la presión de distensión y las veces que se repite por minuto (FR) son los factores más determinantes de la energía que rompe la matriz pulmonar (Poder Mecánico)." }
+        ]
+      }
+    ]
+  }

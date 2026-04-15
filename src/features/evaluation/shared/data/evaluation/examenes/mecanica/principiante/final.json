@@ -1,0 +1,127 @@
+{
+    "id": "examen-mecanica-l1-final",
+    "type": "examen",
+    "title": "Examen Final: Fundamentos de Ventilación Mecánica",
+    "description": "Evaluación sumativa del Nivel 1. Demuestra tu dominio sobre los conceptos de mecánica respiratoria, variables, modos básicos y efectos sistémicos.",
+    "moduleId": "level01-examen",
+    "level": "level01-principiante",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "ex1q1",
+        "type": "multiple_choice",
+        "text": "En el ciclo ventilatorio, la variable que determina CUÁNDO finaliza la inspiración y comienza la espiración se denomina:",
+        "options": [
+          { "id": "a", "text": "Variable de Trigger (Disparo)", "isCorrect": false },
+          { "id": "b", "text": "Variable de Límite", "isCorrect": false },
+          { "id": "c", "text": "Variable de Ciclado", "isCorrect": true },
+          { "id": "d", "text": "Variable de Base", "isCorrect": false }
+        ],
+        "explanation": "El Ciclado es el criterio (volumen, tiempo, flujo o presión) que usa el ventilador para terminar la fase inspiratoria y abrir la válvula espiratoria."
+      },
+      {
+        "id": "ex1q2",
+        "type": "multiple_choice",
+        "text": "La presión positiva al final de la espiración (PEEP) tiene como objetivo principal:",
+        "options": [
+          { "id": "a", "text": "Aumentar el trabajo respiratorio del paciente.", "isCorrect": false },
+          { "id": "b", "text": "Evitar el colapso alveolar al final de la espiración, manteniendo la Capacidad Residual Funcional.", "isCorrect": true },
+          { "id": "c", "text": "Aumentar el retorno venoso al corazón.", "isCorrect": false },
+          { "id": "d", "text": "Eliminar el CO2 más rápidamente.", "isCorrect": false }
+        ],
+        "explanation": "La PEEP mantiene los alvéolos reclutados (abiertos) durante la espiración, mejorando el intercambio de oxígeno."
+      },
+      {
+        "id": "ex1q3",
+        "type": "multiple_choice",
+        "text": "De acuerdo con la monitorización gráfica, en la curva Volumen-Tiempo, si el volumen espirado es significativamente menor que el volumen inspirado, ¿cuál es la causa más probable?",
+        "options": [
+          { "id": "a", "text": "Mejora de la distensibilidad pulmonar.", "isCorrect": false },
+          { "id": "b", "text": "Fuga en el circuito o alrededor del tubo endotraqueal.", "isCorrect": true },
+          { "id": "c", "text": "Aumento de la resistencia de la vía aérea.", "isCorrect": false },
+          { "id": "d", "text": "Auto-PEEP.", "isCorrect": false }
+        ],
+        "explanation": "Si el volumen que retorna al ventilador (espirado) es menor que el que salió (inspirado), significa que el aire se está escapando por algún sitio (fugas)."
+      },
+      {
+        "id": "ex1q4",
+        "type": "multiple_choice",
+        "text": "¿Qué modo ventilatorio clásico proporciona respiraciones mandatorias a una frecuencia establecida, pero permite que el paciente intercale sus propias respiraciones espontáneas (generalmente soportadas por presión) entre ellas?",
+        "options": [
+          { "id": "a", "text": "Ventilación Controlada por Volumen (VCV) pura", "isCorrect": false },
+          { "id": "b", "text": "Ventilación Mandatoria Intermitente Sincronizada (SIMV)", "isCorrect": true },
+          { "id": "c", "text": "Presión Positiva Continua en la Vía Aérea (CPAP)", "isCorrect": false },
+          { "id": "d", "text": "Ventilación de Alta Frecuencia (HFOV)", "isCorrect": false }
+        ],
+        "explanation": "El modo SIMV sincroniza las ventilaciones obligatorias de la máquina con el esfuerzo del paciente y permite respiraciones espontáneas entre los ciclos mandatorios."
+      },
+      {
+        "id": "ex1q5",
+        "type": "multiple_choice",
+        "text": "En relación a los efectos sistémicos, ¿cómo afecta la ventilación mecánica con presión positiva a la función renal y esplácnica?",
+        "options": [
+          { "id": "a", "text": "Aumenta la perfusión en todos los órganos debido a la hiperoxigenación.", "isCorrect": false },
+          { "id": "b", "text": "Puede disminuir el flujo sanguíneo renal y hepático debido a la caída del gasto cardíaco y la transmisión de la presión intratorácica.", "isCorrect": true },
+          { "id": "c", "text": "Aumenta el filtrado glomerular estimulando la producción de orina (poliuria).", "isCorrect": false },
+          { "id": "d", "text": "No tiene impacto más allá del sistema cardiovascular.", "isCorrect": false }
+        ],
+        "explanation": "La caída del gasto cardíaco y el aumento de la presión venosa pueden reducir la perfusión a órganos abdominales como el riñón y el hígado, causando oliguria y retención de líquidos."
+      },
+      {
+        "id": "ex1q6",
+        "type": "true_false",
+        "text": "En un modo controlado por Presión (PCV), el flujo inspiratorio es constante (forma cuadrada).",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. En PCV, la presión es constante (onda cuadrada) y el flujo es desacelerante (onda decreciente), ya que se adapta a las presiones del pulmón a medida que se llena."
+      },
+      {
+        "id": "ex1q7",
+        "type": "true_false",
+        "text": "La variable de Trigger o Disparo por 'Flujo' suele ser más sensible y confortable para el paciente que el Trigger por 'Presión'.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": true },
+          { "id": "false", "text": "Falso", "isCorrect": false }
+        ],
+        "explanation": "Verdadero. El trigger de flujo requiere un esfuerzo menor y el sistema responde más rápido al detectar el cambio de flujo, disminuyendo el trabajo respiratorio."
+      },
+      {
+        "id": "ex1q8",
+        "type": "multiple_choice",
+        "text": "¿Cómo se define la distensibilidad pulmonar (Compliance) estática?",
+        "options": [
+          { "id": "a", "text": "Cambio de presión dividido por cambio de flujo.", "isCorrect": false },
+          { "id": "b", "text": "Cambio de volumen dividido por cambio de presión (Vt / [P.Meseta - PEEP]).", "isCorrect": true },
+          { "id": "c", "text": "Diferencia entre Presión Pico y Presión Meseta.", "isCorrect": false },
+          { "id": "d", "text": "Presión positiva intrínseca al final de la espiración.", "isCorrect": false }
+        ],
+        "explanation": "La compliance estática mide la elasticidad del pulmón en ausencia de flujo. Se calcula dividiendo el volumen corriente por la diferencia entre la Presión Plateau (Meseta) y el PEEP."
+      },
+      {
+        "id": "ex1q9",
+        "type": "multiple_choice",
+        "text": "Para realizar una medición correcta de la Presión Meseta (Plateau) en el ventilador, el operador debe aplicar:",
+        "options": [
+          { "id": "a", "text": "Una pausa espiratoria de 2 segundos.", "isCorrect": false },
+          { "id": "b", "text": "Una pausa inspiratoria de 0.5 a 1 segundo.", "isCorrect": true },
+          { "id": "c", "text": "Un aumento rápido del flujo.", "isCorrect": false },
+          { "id": "d", "text": "Presión de Soporte máxima.", "isCorrect": false }
+        ],
+        "explanation": "La pausa inspiratoria permite que el flujo cese y la presión se equilibre en los alvéolos (eliminando el componente resistivo), mostrando la verdadera presión alveolar (Meseta)."
+      },
+      {
+        "id": "ex1q10",
+        "type": "multiple_choice",
+        "text": "En el contexto de la protección pulmonar, la hipercapnia permisiva se tolera a menudo con el fin de:",
+        "options": [
+          { "id": "a", "text": "Aumentar el pH sanguíneo.", "isCorrect": false },
+          { "id": "b", "text": "Permitir el uso de volúmenes tidales y presiones en la vía aérea más bajos para evitar el VILI.", "isCorrect": true },
+          { "id": "c", "text": "Estimular el centro respiratorio para que el paciente despierte.", "isCorrect": false },
+          { "id": "d", "text": "Prevenir la toxicidad por oxígeno.", "isCorrect": false }
+        ],
+        "explanation": "Se permite que el CO2 aumente (hipercapnia) siempre que el pH no caiga a niveles peligrosos, todo con el objetivo de ventilar con volúmenes bajos y proteger el pulmón."
+      }
+    ]
+  }

@@ -1,0 +1,69 @@
+{
+    "id": "quiz-mecanica-l2-m4-duales-simv",
+    "type": "quiz",
+    "title": "Quiz: Modos Sincronizados y Duales",
+    "description": "Profundiza en el modo SIMV y las características de los modos de doble control como PRVC (VCRP).",
+    "moduleId": "module-04-duales-simv",
+    "level": "level02-intermedio",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "¿Cuál es la característica definitoria del modo SIMV (Ventilación Mandatoria Intermitente Sincronizada)?",
+        "options": [
+          { "id": "a", "text": "Todas las respiraciones son controladas por el ventilador y el paciente no puede respirar espontáneamente.", "isCorrect": false },
+          { "id": "b", "text": "Garantiza un número fijo de respiraciones mandatorias sincronizadas con el paciente, permitiendo respiraciones espontáneas adicionales entre ellas.", "isCorrect": true },
+          { "id": "c", "text": "Solo asiste al paciente cuando su frecuencia respiratoria cae a cero.", "isCorrect": false },
+          { "id": "d", "text": "Modifica automáticamente la PEEP basándose en la saturación de oxígeno.", "isCorrect": false }
+        ],
+        "explanation": "En SIMV, el paciente recibe ventilaciones 'obligatorias' sincronizadas con su esfuerzo. Si desea respirar más veces por minuto, puede hacerlo (respiraciones espontáneas), usualmente asistidas por presión soporte."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "Al utilizar SIMV, ¿por qué es una práctica estándar agregar Presión Soporte (PSV) a la configuración?",
+        "options": [
+          { "id": "a", "text": "Para aumentar la frecuencia cardíaca del paciente.", "isCorrect": false },
+          { "id": "b", "text": "Para evitar que el paciente despierte.", "isCorrect": false },
+          { "id": "c", "text": "Para asistir las respiraciones espontáneas que el paciente realiza entre las respiraciones mandatorias, venciendo la resistencia del tubo endotraqueal.", "isCorrect": true },
+          { "id": "d", "text": "Para apagar automáticamente las alarmas de presión alta.", "isCorrect": false }
+        ],
+        "explanation": "Sin PSV, las respiraciones espontáneas en SIMV requerirían que el paciente inhale aire a través de la resistencia del circuito y del tubo, lo que aumenta significativamente el trabajo respiratorio y fatiga al paciente."
+      },
+      {
+        "id": "q3",
+        "type": "multiple_choice",
+        "text": "El modo PRVC (Volumen Control Regulado por Presión) es un modo dual. ¿Cuál es su principio básico de funcionamiento?",
+        "options": [
+          { "id": "a", "text": "El ventilador garantiza un flujo cuadrado y constante en todo momento.", "isCorrect": false },
+          { "id": "b", "text": "El ventilador entrega respiraciones controladas por presión, ajustando la presión inspiratoria latido a latido (respiración a respiración) para lograr un volumen tidal objetivo.", "isCorrect": true },
+          { "id": "c", "text": "El paciente controla el volumen y la máquina la frecuencia.", "isCorrect": false },
+          { "id": "d", "text": "El ventilador desconecta la PEEP si detecta esfuerzo inspiratorio.", "isCorrect": false }
+        ],
+        "explanation": "En PRVC, el clínico establece un volumen meta. El equipo administra la inspiración con patrón de presión (flujo desacelerante) y calcula la presión necesaria. Si la compliance mejora, el ventilador baja automáticamente la presión para no pasarse del volumen deseado."
+      },
+      {
+        "id": "q4",
+        "type": "true_false",
+        "text": "Una desventaja descrita en la literatura para el modo SIMV es que puede generar asincronías y aumentar el trabajo respiratorio si no se configura correctamente.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": true },
+          { "id": "false", "text": "Falso", "isCorrect": false }
+        ],
+        "explanation": "Verdadero. Porque el paciente experimenta respiraciones de diferente tamaño y tipo (mandatorias vs espontáneas), puede causar confusión neurológica en el control respiratorio y llevar a asincronías y fatiga muscular."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "En el modo dual PRVC, ¿qué sucede si la resistencia de la vía aérea del paciente aumenta de forma súbita?",
+        "options": [
+          { "id": "a", "text": "El volumen tidal disminuye inmediatamente en esa misma respiración.", "isCorrect": false },
+          { "id": "b", "text": "El ventilador aumentará progresivamente la presión inspiratoria en las siguientes respiraciones para intentar alcanzar el volumen objetivo, hasta chocar con el límite de presión de seguridad.", "isCorrect": true },
+          { "id": "c", "text": "El ventilador se apaga por seguridad.", "isCorrect": false },
+          { "id": "d", "text": "El flujo se vuelve cuadrático automáticamente.", "isCorrect": false }
+        ],
+        "explanation": "El PRVC utiliza la retroalimentación de respiraciones previas. Si nota que no llegó al volumen objetivo por aumento de resistencia, subirá la presión en la siguiente respiración. Es crucial configurar una alarma/límite de presión máxima."
+      }
+    ]
+  }

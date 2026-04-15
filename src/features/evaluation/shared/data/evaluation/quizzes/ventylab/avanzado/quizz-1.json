@@ -1,0 +1,69 @@
+{
+    "id": "quiz-ventylab-l3-m1",
+    "type": "quiz",
+    "title": "Quiz: Innovación, Tecnología y Gestión",
+    "description": "Comprueba tu comprensión sobre los modos avanzados de asa cerrada, sincronía neuronal y el impacto de la telemetría en UCI.",
+    "moduleId": "innovación_tecnología_gestión",
+    "level": "level03-avanzado",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "En la tecnología de Asistencia Ventilatoria Ajustada Neuralmente (NAVA), ¿cómo detecta el ventilador el inicio del esfuerzo inspiratorio del paciente?",
+        "options": [
+          { "id": "a", "text": "A través de sensores de presión en el circuito.", "isCorrect": false },
+          { "id": "b", "text": "Mediante el registro de la actividad eléctrica del diafragma (Edi) a través de una sonda gástrica especial.", "isCorrect": true },
+          { "id": "c", "text": "Utilizando un neumotacógrafo distal.", "isCorrect": false },
+          { "id": "d", "text": "Mediante electrodos colocados en el tórax.", "isCorrect": false }
+        ],
+        "explanation": "NAVA no depende de caídas de presión o flujo en el tubo, sino que capta la señal eléctrica directa que el nervio frénico manda al diafragma, ofreciendo una sincronía casi perfecta entre el cerebro y el ventilador."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "¿Qué es un modo ventilatorio de 'Asa Cerrada' (Closed-Loop) o ventilación inteligente?",
+        "options": [
+          { "id": "a", "text": "Un modo en el que el circuito no tiene válvula exhalatoria.", "isCorrect": false },
+          { "id": "b", "text": "Un sistema donde el ventilador monitoriza continuamente las variables del paciente y autoajusta sus parámetros (como presión o FR) para cumplir un objetivo médico preestablecido.", "isCorrect": true },
+          { "id": "c", "text": "Un modo exclusivo para salas de cirugía.", "isCorrect": false },
+          { "id": "d", "text": "Un modo que bloquea todas las alarmas para que no suenen.", "isCorrect": false }
+        ],
+        "explanation": "Los modos de asa cerrada (ej. ASV, PRVC) usan retroalimentación algorítmica constante. Miden la compliance, resistencia o volumen, y realizan ajustes micro-segundo a micro-segundo para mantener la protección pulmonar y los objetivos."
+      },
+      {
+        "id": "q3",
+        "type": "true_false",
+        "text": "El modo Ventilación de Soporte Proporcional (PAV+) entrega un nivel de presión de soporte fijo en cada respiración, independientemente del esfuerzo que realice el paciente.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. En PAV+, el soporte es 'proporcional' al esfuerzo instantáneo del paciente. Si el paciente inhala más fuerte, el ventilador le da más flujo y presión; si inhala suave, le da menos. Actúa como un amplificador del esfuerzo muscular."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "La incorporación de la telemetría y la gestión de datos en plataformas modernas (como se proyecta en VentyLab) tiene como beneficio principal en la UCI:",
+        "options": [
+          { "id": "a", "text": "Reemplazar al personal médico y de enfermería.", "isCorrect": false },
+          { "id": "b", "text": "Permitir la monitorización remota en tiempo real, el análisis de tendencias (Big Data) para predecir complicaciones y facilitar interconsultas a distancia.", "isCorrect": true },
+          { "id": "c", "text": "Imprimir las gráficas en papel más rápido.", "isCorrect": false },
+          { "id": "d", "text": "Aumentar artificialmente los costos hospitalarios.", "isCorrect": false }
+        ],
+        "explanation": "La telemetría permite extraer datos del ventilador (IoT), detectar patrones de deterioro antes de que ocurran alarmas críticas, y facilitar el control remoto, optimizando la gestión de camas críticas."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "En el modo ASV (Ventilación de Soporte Adaptativo), el clínico solo programa el peso ideal y el porcentaje de volumen minuto deseado. ¿Qué principio utiliza la máquina para calcular la FR y el Volumen Tidal óptimos?",
+        "options": [
+          { "id": "a", "text": "La regla del 10% de PEEP.", "isCorrect": false },
+          { "id": "b", "text": "El principio de Otis: busca la combinación de volumen y frecuencia que resulte en el menor trabajo respiratorio (Work of Breathing) para el paciente.", "isCorrect": true },
+          { "id": "c", "text": "La medición de la presión intracraneal.", "isCorrect": false },
+          { "id": "d", "text": "Un generador de números aleatorios.", "isCorrect": false }
+        ],
+        "explanation": "ASV utiliza las fórmulas matemáticas del mínimo trabajo respiratorio (ecuación de Otis) para elegir un patrón ventilatorio que prevenga el auto-PEEP y la sobredistensión según la mecánica pulmonar minuto a minuto."
+      }
+    ]
+  }

@@ -1,0 +1,127 @@
+{
+    "id": "examen-ventylab-l3-final",
+    "type": "examen",
+    "title": "Examen Final: VentyLab Avanzado",
+    "description": "Evaluación sumativa de alta complejidad. Demuestra tus habilidades en resolución de alarmas, asincronías, fisiopatología obstructiva/restrictiva, y el uso de tecnologías de monitorización avanzada.",
+    "moduleId": "level03-examen",
+    "level": "level03-avanzado",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "exvl3q1",
+        "type": "multiple_choice",
+        "text": "En el simulador, suena la alarma de 'Presión Pico Alta'. Realizas una pausa inspiratoria y descubres que la Presión Pico es de 48 cmH2O y la Presión Meseta es de 18 cmH2O. ¿Cuál de las siguientes acciones resolvería el problema?",
+        "options": [
+          { "id": "a", "text": "Disminuir el volumen tidal inmediatamente.", "isCorrect": false },
+          { "id": "b", "text": "Aspirar el tubo endotraqueal, aliviar acodamientos y administrar broncodilatadores.", "isCorrect": true },
+          { "id": "c", "text": "Realizar una maniobra de reclutamiento alveolar.", "isCorrect": false },
+          { "id": "d", "text": "Aumentar el PEEP a 15 cmH2O.", "isCorrect": false }
+        ],
+        "explanation": "La gran diferencia entre Pico y Meseta (30 cmH2O) indica que la resistencia al flujo es muy alta. El problema está en los tubos o bronquios (secreciones, broncoespasmo, tubo mordido). No es un problema de distensibilidad alveolar."
+      },
+      {
+        "id": "exvl3q2",
+        "type": "multiple_choice",
+        "text": "Un paciente con SDRA grave (PaO2/FiO2 = 80) presenta asincronía severa (doble disparo continuo) y presiones de vía aérea muy elevadas. La conducta respaldada por guías en las primeras 48 hrs para evitar el P-SILI es:",
+        "options": [
+          { "id": "a", "text": "Cambiar a modo de presión soporte y despertar al paciente.", "isCorrect": false },
+          { "id": "b", "text": "Profundizar la sedación y utilizar relajantes musculares (bloqueo neuromuscular) en infusión continua.", "isCorrect": true },
+          { "id": "c", "text": "Incrementar agresivamente el volumen tidal.", "isCorrect": false },
+          { "id": "d", "text": "Retirar la PEEP.", "isCorrect": false }
+        ],
+        "explanation": "Los esfuerzos inspiratorios vigorosos asincrónicos estiran y destruyen el pulmón inflamado (Self-Inflicted Lung Injury). En SDRA muy grave, la parálisis relaja el tórax y permite la ventilación controlada estricta."
+      },
+      {
+        "id": "exvl3q3",
+        "type": "multiple_choice",
+        "text": "Analizas la telemetría en un paciente intubado por exacerbación de EPOC y notas hipotensión súbita (PA 60/40) acompañada de taquicardia. En la gráfica de flujo espiratorio, el trazado se corta abruptamente sin llegar a cero al iniciar la inspiración. El manejo inmediato es:",
+        "options": [
+          { "id": "a", "text": "Desconectar al paciente del ventilador por unos segundos y permitir que exhale todo el volumen atrapado.", "isCorrect": true },
+          { "id": "b", "text": "Comenzar masaje cardíaco externo de inmediato.", "isCorrect": false },
+          { "id": "c", "text": "Administrar bolos de noradrenalina y aumentar la frecuencia respiratoria del ventilador.", "isCorrect": false },
+          { "id": "d", "text": "Aumentar la FiO2 al 100%.", "isCorrect": false }
+        ],
+        "explanation": "La curva confirma Atrapamiento de Aire (Auto-PEEP masivo). El tórax tan inflado aplasta las venas cavas, provocando colapso hemodinámico. Desconectar el ventilador libera la presión atrapada y restaura el retorno venoso instantáneamente."
+      },
+      {
+        "id": "exvl3q4",
+        "type": "true_false",
+        "text": "La Driving Pressure (Presión de Distensión) se calcula restando la Presión Pico de la PEEP, y debe mantenerse por encima de 20 cmH2O para garantizar que los alvéolos permanezcan abiertos.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. Se calcula restando la PEEP a la Presión MESETA (Pplat - PEEP). Además, el límite seguro es mantenerla MENOR a 15 cmH2O. Valores > 15 implican daño pulmonar severo por sobredistensión (VILI)."
+      },
+      {
+        "id": "exvl3q5",
+        "type": "multiple_choice",
+        "text": "Se requiere intubar a un paciente de 150 kg y talla de 1.70m para una cirugía abdominal. La saturación cae rápidamente al anestesiarlo. ¿Cuál es el raciocinio correcto al programar el ventilador?",
+        "options": [
+          { "id": "a", "text": "Utilizar 1000 ml de Volumen Tidal para mover su gran pared torácica, y PEEP de 0.", "isCorrect": false },
+          { "id": "b", "text": "Calcular un Volumen Tidal de protección basado en el Peso Ideal (aprox. 450-500 ml) y utilizar niveles elevados de PEEP (>10 cmH2O) para contrarrestar el peso de su abdomen y evitar el colapso de las bases.", "isCorrect": true },
+          { "id": "c", "text": "Usar Presión de Soporte en el intraoperatorio para que mantenga el diafragma tónico.", "isCorrect": false },
+          { "id": "d", "text": "Posicionarlo en Trendelenburg.", "isCorrect": false }
+        ],
+        "explanation": "Los pulmones no crecen con la obesidad. Se usa volumen pequeño (para su estatura), pero se necesita PEEP alta para contrarrestar la altísima presión intraabdominal que colapsa el tejido pulmonar."
+      },
+      {
+        "id": "exvl3q6",
+        "type": "multiple_choice",
+        "text": "¿Qué ventaja principal ofrece el modo avanzado NAVA (Ventilación Asistida Ajustada Neuralmente) frente a los modos por trigger de flujo o presión?",
+        "options": [
+          { "id": "a", "text": "Reduce los costos del equipo en las UCIs.", "isCorrect": false },
+          { "id": "b", "text": "Al usar un catéter que capta la señal eléctrica del diafragma, sincroniza el inicio y el fin del ciclo de forma casi idéntica a la señal cerebral, eliminando asincronías por fugas o ruidos.", "isCorrect": true },
+          { "id": "c", "text": "Garantiza un volumen corriente milimétricamente exacto.", "isCorrect": false },
+          { "id": "d", "text": "Anula el esfuerzo del paciente asumiendo el control total.", "isCorrect": false }
+        ],
+        "explanation": "NAVA no lee presión o flujo (que sufren retrasos y alteraciones por la mecánica de las mangueras o fugas), lee el Edi (Actividad eléctrica del diafragma), logrando la máxima integración paciente-máquina."
+      },
+      {
+        "id": "exvl3q7",
+        "type": "multiple_choice",
+        "text": "Revisando el capnógrafo volumétrico integrado en el simulador, notas una caída brusca del EtCO2 desde 42 mmHg a 10 mmHg sostenidamente. El tubo no se ha salido y el ventilador está insuflando bien. Tienes que pensar en:",
+        "options": [
+          { "id": "a", "text": "Broncoespasmo leve.", "isCorrect": false },
+          { "id": "b", "text": "Obstrucción de un bronquio lobar.", "isCorrect": false },
+          { "id": "c", "text": "Un fallo catastrófico en la perfusión pulmonar (ej. Tromboembolismo Masivo o Paro Cardíaco).", "isCorrect": true },
+          { "id": "d", "text": "El inicio del destete ventilatorio.", "isCorrect": false }
+        ],
+        "explanation": "El ventilador mueve el aire, pero no sale CO2. Esto significa que la sangre no está pasando por los pulmones para 'entregar' ese CO2. Es signo inminente de parada circulatoria."
+      },
+      {
+        "id": "exvl3q8",
+        "type": "multiple_choice",
+        "text": "En el modo de asa cerrada ASV (Adaptive Support Ventilation), el ventilador ajusta dinámicamente la FR y el Volumen. Se basa en el 'Principio de Otis', que postula buscar:",
+        "options": [
+          { "id": "a", "text": "La combinación de parámetros que logre el menor Trabajo Respiratorio (Work of Breathing) para la mecánica específica del paciente en ese instante.", "isCorrect": true },
+          { "id": "b", "text": "El volumen máximo que pueda albergar el tórax.", "isCorrect": false },
+          { "id": "c", "text": "La hiperventilación agresiva para lograr pH de 7.45 constante.", "isCorrect": false },
+          { "id": "d", "text": "Un PEEP automático variable entre 0 y 20 cmH2O.", "isCorrect": false }
+        ],
+        "explanation": "ASV utiliza algoritmos para determinar la mecánica del paciente y selecciona el patrón de frecuencia y volumen que minimice el esfuerzo requerido para ventilar y el riesgo de auto-PEEP."
+      },
+      {
+        "id": "exvl3q9",
+        "type": "true_false",
+        "text": "La incorporación de Telemetría (Internet of Medical Things) en la UCI, como prevé el enfoque VentyLab, se limita a guardar las historias clínicas en la nube sin impacto clínico directo en tiempo real.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. La telemetría permite el análisis de grandes volúmenes de datos (Big Data) en tiempo real, ayudando a predecir asincronías, anticipar fatiga y permitir a los médicos de mayor experiencia monitorizar múltiples equipos de forma remota."
+      },
+      {
+        "id": "exvl3q10",
+        "type": "multiple_choice",
+        "text": "Al intentar ventilar a un paciente con SDRA grave (pulmón pequeño y rígido) que retiene CO2, decides utilizar Hipercapnia Permisiva. Esto implica que:",
+        "options": [
+          { "id": "a", "text": "Toleras valores altos de PaCO2 para poder usar volúmenes y presiones alveolares bajas (protectoras), siempre que el pH se mantenga en márgenes seguros (>7.20).", "isCorrect": true },
+          { "id": "b", "text": "Aumentas la frecuencia respiratoria hasta 40 para limpiar el CO2.", "isCorrect": false },
+          { "id": "c", "text": "Administras bicarbonato de sodio sistemáticamente.", "isCorrect": false },
+          { "id": "d", "text": "El paciente debe estar consciente durante este proceso.", "isCorrect": false }
+        ],
+        "explanation": "Para no dañar el pulmón forzándolo con volúmenes grandes para limpiar CO2, se utilizan volúmenes bajos (4-6 ml/kg). Se asume como un mal menor que el CO2 suba y se vuelva ácido, siempre y cuando la academia metabólica no ponga en riesgo la vida."
+      }
+    ]
+  }

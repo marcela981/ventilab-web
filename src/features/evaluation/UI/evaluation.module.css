@@ -1,0 +1,79 @@
+/*
+ * Funcionalidad: Estilos compartidos del módulo de Evaluación
+ * Descripción: Clases CSS para ActivityList, vista de quiz y gestión agrupada
+ * Versión: 1.0
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ */
+
+/* ─── ActivityList — skeleton loading ──────────────────────────────────────── */
+
+.skeletonCard {
+  height: 160px;
+  border-radius: 8px;
+}
+
+/* ─── ActivityList — error state ────────────────────────────────────────────── */
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+}
+
+/* ─── Quiz page — question view ──────────────────────────────────────────────── */
+
+.quizContainer {
+  max-width: 720px;
+}
+
+.progressText {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin-bottom: 12px;
+}
+
+.questionText {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.navigationRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+}
+
+/* ─── Quiz page — results view ──────────────────────────────────────────────── */
+
+.resultsContainer {
+  padding: 24px 0;
+}
+
+.resultsTitle {
+  margin-bottom: 16px;
+}
+
+.scoreRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.scoreItem {
+  font-size: 1rem;
+}
+
+/* ─── Manage page — grouped list ─────────────────────────────────────────────── */
+
+.typeSection {
+  margin-bottom: 32px;
+}
+
+.typeSectionTitle {
+  margin-bottom: 12px;
+}

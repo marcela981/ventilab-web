@@ -1,0 +1,52 @@
+{
+    "id": "taller-mecanica-l3-caso-obeso",
+    "type": "taller",
+    "title": "Taller ABP: Manejo del Paciente Obeso",
+    "description": "Estudio de caso enfocado en las particularidades de la biomecánica respiratoria en pacientes con obesidad severa.",
+    "moduleId": "level03-talleres",
+    "level": "level03-avanzado",
+    "passingScore": 80,
+    "caseStudy": {
+      "patient": "Masculino de 45 años, talla 1.70m, peso actual 150 kg (IMC 51.9 - Obesidad clase III).",
+      "scenario": "Ingresa a quirófano para cirugía bariátrica. Tras la inducción anestésica, relajación e intubación, su saturación cae rápidamente al 88%. El residente sugiere ventilarlo calculando el volumen con sus 150 kg y dejar PEEP en 5.",
+      "objective": "Corregir los errores de cálculo y aplicar estrategias intraoperatorias para revertir el colapso alveolar."
+    },
+    "questions": [
+      {
+        "id": "t6q1",
+        "type": "scenario_choice",
+        "text": "Respecto a la sugerencia del residente de calcular el Volumen Tidal usando los 150 kg (ej. 1000 ml), ¿cuál es tu postura clínica fundamentada?",
+        "options": [
+          { "id": "a", "text": "Es correcto, necesita grandes volúmenes para mover toda esa masa torácica.", "isCorrect": false, "feedback": "Incorrecto. Los pulmones no aumentan de tamaño con la grasa. Si le das 1000 ml a pulmones que miden 1.70m, causarás un daño por volutrauma letal." },
+          { "id": "b", "text": "Es incorrecto. El volumen siempre se calcula en base al Peso Predicho o Ideal (relacionado con la talla), que en él es de aproximadamente 66 kg.", "isCorrect": true, "feedback": "Correcto. Calculando 8 ml/kg sobre su peso ideal (66 kg), le corresponderían unos 520 ml, protegiendo así el parénquima pulmonar." }
+        ]
+      },
+      {
+        "id": "t6q2",
+        "type": "scenario_choice",
+        "text": "¿Por qué desaturó tan rápido tras la relajación muscular en posición supina plana?",
+        "options": [
+          { "id": "a", "text": "Porque el tejido adiposo absorbe el oxígeno de la sangre.", "isCorrect": false, "feedback": "Incorrecto. Esto carece de fundamento fisiológico." },
+          { "id": "b", "text": "Por el desplazamiento cefálico masivo del diafragma por el abdomen, lo que colapsa las bases pulmonares reduciendo dramáticamente su Capacidad Residual Funcional (CRF).", "isCorrect": true, "feedback": "Correcto. El peso aplasta el tórax. La CRF (reserva de oxígeno del pulmón) en el obeso anestesiado cae casi a cero, colapsando los alvéolos de inmediato." }
+        ]
+      },
+      {
+        "id": "t6q3",
+        "type": "scenario_choice",
+        "text": "Para revertir este colapso (atelectasias basales) durante la cirugía, ¿qué nivel de PEEP es el más recomendado de inicio?",
+        "options": [
+          { "id": "a", "text": "PEEP fisiológico de 5 cmH2O.", "isCorrect": false, "feedback": "Incorrecto. PEEP de 5 no es suficiente para levantar el inmenso peso del tórax y abdomen de un paciente con IMC > 50." },
+          { "id": "b", "text": "PEEP elevado, usualmente por encima de 10 cmH2O (y a menudo combinado con maniobras de reclutamiento).", "isCorrect": true, "feedback": "Correcto. Los obesos requieren presiones al final de la espiración mucho más altas para mantener abiertos (reclutados) los alvéolos contra el peso externo." }
+        ]
+      },
+      {
+        "id": "t6q4",
+        "type": "scenario_choice",
+        "text": "Llega el momento de la extubación y el destete en la sala de recuperación. ¿Cuál es la posición obligatoria para facilitar su mecánica ventilatoria?",
+        "options": [
+          { "id": "a", "text": "Posición semi-sentada (anti-Trendelenburg o Rampa) entre 30 y 45 grados.", "isCorrect": true, "feedback": "Correcto. Sentarlo hace que la gravedad aleje el contenido abdominal del diafragma, facilitando la contracción muscular y evitando el re-colapso pulmonar." },
+          { "id": "b", "text": "Decúbito supino plano sin almohadas.", "isCorrect": false, "feedback": "Incorrecto. Esta es la posición más letal para la mecánica del paciente obeso recién extubado, asegurando el fracaso del destete." }
+        ]
+      }
+    ]
+  }

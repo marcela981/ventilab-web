@@ -1,0 +1,69 @@
+{
+    "id": "quiz-ventylab-l3-m2",
+    "type": "quiz",
+    "title": "Quiz: Raciocinio Clínico - Patologías Críticas",
+    "description": "Evaluación integradora aplicando la lógica de programación y ajustes del ventilador frente a los escenarios más críticos en UCI.",
+    "moduleId": "raciocinioclínico_patologíascríticas",
+    "level": "level03-avanzado",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "Analizas el monitor de un paciente con SDRA grave. Notas una Presión Pico de 36 cmH2O y una Presión Meseta de 34 cmH2O con un PEEP de 12. Volumen Tidal a 6ml/kg. ¿Cuál es el raciocinio clínico correcto ante este escenario?",
+        "options": [
+          { "id": "a", "text": "El problema es la resistencia del tubo. Debo aspirar secreciones.", "isCorrect": false },
+          { "id": "b", "text": "El paciente tiene una Driving Pressure de 22 cmH2O (34 - 12) y una Meseta > 30. Existe un riesgo letal de VILI; debo reducir el volumen tidal a 4-5 ml/kg aceptando hipercapnia permisiva.", "isCorrect": true },
+          { "id": "c", "text": "Los parámetros están perfectos porque la Driving Pressure es de solo 2 cmH2O (36 - 34).", "isCorrect": false },
+          { "id": "d", "text": "Debo aumentar el Volumen Tidal porque la Meseta está por debajo de 40.", "isCorrect": false }
+        ],
+        "explanation": "La Driving Pressure (P.Meseta - PEEP) es 22 cmH2O. Es muy alta (meta < 15). Además, la meseta está > 30 cmH2O. El paso vital es bajar el volumen tidal para proteger ese pulmón tan poco distensible."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "En el simulador (paciente con crisis asmática severa intubado), observas hipotensión marcada y el flujo espiratorio no retorna a la línea base antes de la siguiente inhalación. ¿Cuál es el paso lógico inmediato?",
+        "options": [
+          { "id": "a", "text": "Administrar inotrópicos inmediatamente.", "isCorrect": false },
+          { "id": "b", "text": "Aumentar la frecuencia respiratoria del ventilador.", "isCorrect": false },
+          { "id": "c", "text": "Desconectar al paciente del ventilador temporalmente para permitir el vaciado pulmonar (aliviar el Auto-PEEP) y luego reprogramar con menor FR y mayor flujo inspiratorio.", "isCorrect": true },
+          { "id": "d", "text": "Aumentar el PEEP a 15 cmH2O.", "isCorrect": false }
+        ],
+        "explanation": "El compromiso hemodinámico por Auto-PEEP severo en asma es una emergencia. Desconectar permite la descompresión del tórax y la recuperación del retorno venoso. Luego se debe alargar el tiempo espiratorio."
+      },
+      {
+        "id": "q3",
+        "type": "true_false",
+        "text": "En un paciente neurocrítico (Trauma Craneoencefálico Grave), la estrategia de hiperventilación profiláctica intensa (PaCO2 de 25 mmHg) se recomienda rutinariamente para mantener el cerebro desinflamado.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. La hiperventilación intensa y rutinaria está proscrita porque causa una vasoconstricción cerebral tan severa que genera isquemia secundaria. Solo se usa como medida temporal de salvataje ante herniación inminente."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "Ingresa un paciente politraumatizado masivo en shock hemorrágico. Requiere ventilación mecánica. ¿Cuál es el raciocinio correcto respecto a los parámetros iniciales de Presión Positiva (PEEP)?",
+        "options": [
+          { "id": "a", "text": "Aplicar PEEP alto (15 cmH2O) para oxigenar los tejidos de inmediato.", "isCorrect": false },
+          { "id": "b", "text": "Aplicar PEEP moderado-bajo (ej. 5 cmH2O) o ZEEP inicialmente, ya que niveles altos colapsarán aún más el retorno venoso en un paciente hipovolémico, empeorando el shock.", "isCorrect": true },
+          { "id": "c", "text": "Utilizar ventilación no invasiva.", "isCorrect": false },
+          { "id": "d", "text": "La ventilación no afecta la hemodinámica en el trauma.", "isCorrect": false }
+        ],
+        "explanation": "El paciente está 'vacío' (hipovolémico). Cualquier presión positiva alta en el tórax impedirá completamente que el poco volumen de sangre regrese al corazón, desencadenando un paro circulatorio."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "Estás ajustando los parámetros en un paciente obeso mórbido ventilado en PCV. Logras un VT protector y oxigenación adecuada, pero notas que requiere un PEEP de 14 cmH2O. ¿Por qué es fisiológicamente esperable este requerimiento?",
+        "options": [
+          { "id": "a", "text": "Por la altísima distensibilidad del pulmón obeso.", "isCorrect": false },
+          { "id": "b", "text": "Para contrarrestar el peso de la pared torácica y el abdomen desplazado cefálicamente que provocan el colapso masivo de las bases pulmonares (baja CRF).", "isCorrect": true },
+          { "id": "c", "text": "Porque el tejido adiposo consume más oxígeno.", "isCorrect": false },
+          { "id": "d", "text": "Para reducir la presión intracraneal.", "isCorrect": false }
+        ],
+        "explanation": "La masa toraco-abdominal en el paciente obeso, particularmente en decúbito supino, aplasta físicamente los pulmones, elevando la presión pleural a niveles positivos. Se requiere un PEEP elevado para vencer este peso y abrir los alvéolos."
+      }
+    ]
+  }

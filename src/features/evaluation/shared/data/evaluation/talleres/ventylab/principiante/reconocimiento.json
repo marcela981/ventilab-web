@@ -1,0 +1,53 @@
+{
+    "id": "taller-ventylab-l1-reconocimiento",
+    "type": "taller",
+    "title": "Taller ABP: Reconocimiento y Armado del Circuito",
+    "description": "Taller práctico enfocado en el reconocimiento del hardware, conexiones y medidas de bioseguridad antes de iniciar la ventilación mecánica.",
+    "moduleId": "level01-talleres",
+    "level": "level01-principiante",
+    "passingScore": 80,
+    "caseStudy": {
+      "patient": "Preparación del simulador VentyLab en la UCI.",
+      "scenario": "Te acaban de asignar la tarea de preparar el ventilador mecánico para un nuevo ingreso. Debes asegurar las conexiones a la red de gases, armar el circuito corrugado correctamente y realizar el test de comprobación del equipo (check pre-uso).",
+      "objective": "Garantizar un ensamblaje hermético, seguro y funcional del equipo antes de conectarlo al paciente."
+    },
+    "questions": [
+      {
+        "id": "tl1q1",
+        "type": "scenario_choice",
+        "text": "Al conectar el equipo a las tomas de pared, debes asegurar el suministro dual de gases. ¿Qué conexiones son indispensables para que el ventilador pueda mezclar la FiO2 adecuadamente?",
+        "options": [
+          { "id": "a", "text": "Manguera de Oxígeno (O2) y manguera de Aire Médico (Aire comprimido).", "isCorrect": true, "feedback": "Correcto. El ventilador necesita ambas fuentes de alta presión para que la válvula mezcladora (blender) pueda entregar FiO2 desde el 21% (puro aire) hasta el 100% (puro oxígeno)." },
+          { "id": "b", "text": "Solo la manguera de Oxígeno (O2).", "isCorrect": false, "feedback": "Incorrecto. Si solo conectas oxígeno, el ventilador alertará falta de aire médico y no podrá entregar FiO2 menores al 100% con precisión en la mayoría de equipos de UCI." },
+          { "id": "c", "text": "Oxígeno (O2) y Óxido Nitroso (N2O).", "isCorrect": false, "feedback": "Incorrecto. El óxido nitroso es un gas anestésico, no se usa en los ventiladores estándar de cuidados intensivos." }
+        ]
+      },
+      {
+        "id": "tl1q2",
+        "type": "scenario_choice",
+        "text": "Procedas a instalar los filtros (intercambiadores de calor/humedad y filtros HEPA). Para proteger las válvulas internas del ventilador y evitar la aerosolización de patógenos en la sala, ¿dónde es crítico colocar el filtro antiviral/antibacteriano principal?",
+        "options": [
+          { "id": "a", "text": "A la salida inspiratoria del ventilador.", "isCorrect": false, "feedback": "Incorrecto. Este filtro protegería al paciente del ventilador, pero no protege al equipo ni al ambiente de los gases exhalados por el paciente." },
+          { "id": "b", "text": "En el extremo distal de la rama espiratoria, antes de la válvula de exhalación del ventilador.", "isCorrect": true, "feedback": "Correcto. El gas que viene del paciente está contaminado y húmedo. El filtro en la válvula espiratoria atrapa los patógenos antes de que entren al bloque del equipo y salgan a la UCI." }
+        ]
+      },
+      {
+        "id": "tl1q3",
+        "type": "scenario_choice",
+        "text": "Durante el test automático pre-uso, el ventilador reporta 'Fallo de hermeticidad' (Fuga importante detectada). Revisas el circuito y ves que las mangueras están bien conectadas. ¿Qué otro componente crítico suele causar este error si está mal colocado?",
+        "options": [
+          { "id": "a", "text": "El sensor de oxígeno (celda de O2).", "isCorrect": false, "feedback": "Incorrecto. Un fallo en el sensor de oxígeno daría un error de calibración de FiO2, pero no de hermeticidad o fuga de presión." },
+          { "id": "b", "text": "La válvula exhalatoria no está bien ensamblada o cerrada.", "isCorrect": true, "feedback": "Correcto. Si la membrana o el bloque de la válvula espiratoria está mal encajado, el aire se escapa masivamente por allí durante la presurización de prueba." }
+        ]
+      },
+      {
+        "id": "tl1q4",
+        "type": "scenario_choice",
+        "text": "El test pre-uso pasa exitosamente. Ahora notas un cable fino (o manguerita capilar) que va hacia la pieza en 'Y' cerca de donde irá el tubo del paciente. ¿Qué función cumple este sensor?",
+        "options": [
+          { "id": "a", "text": "Sensor de flujo proximal (neumotacógrafo) para medir con mayor sensibilidad el esfuerzo (trigger) y los volúmenes del paciente.", "isCorrect": true, "feedback": "Correcto. Al estar muy cerca del paciente, este sensor capta los flujos y presiones reales sin el retraso o la distorsión que generan las mangueras largas del circuito." },
+          { "id": "b", "text": "Es una sonda de succión automática.", "isCorrect": false, "feedback": "Incorrecto. Los sistemas de succión (cerrados o abiertos) son externos al sistema de sensores de monitorización fina del equipo." }
+        ]
+      }
+    ]
+  }

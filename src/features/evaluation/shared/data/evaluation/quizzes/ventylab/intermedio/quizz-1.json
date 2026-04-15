@@ -1,0 +1,69 @@
+{
+    "id": "quiz-ventylab-l2-m1",
+    "type": "quiz",
+    "title": "Quiz: Programación de Modos Clásicos",
+    "description": "Demuestra tus habilidades prácticas para programar correctamente los modos VCV, PCV y configurar los parámetros esenciales de seguridad.",
+    "moduleId": "programación_modo_clasicos",
+    "level": "level02-intermedio",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "Al configurar el modo Ventilación Controlada por Volumen (VCV) para un paciente de 60 kg de peso ideal sin patología restrictiva, ¿qué ajuste de volumen corriente inicial (Vt) es apropiado?",
+        "options": [
+          { "id": "a", "text": "360 a 480 ml", "isCorrect": true },
+          { "id": "b", "text": "200 ml fijos", "isCorrect": false },
+          { "id": "c", "text": "600 a 720 ml", "isCorrect": false },
+          { "id": "d", "text": "800 ml", "isCorrect": false }
+        ],
+        "explanation": "Para aplicar una ventilación protectora, se recomienda un volumen corriente entre 6 y 8 ml por kg de peso ideal. (60 kg x 6 = 360 ml; 60 kg x 8 = 480 ml)."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "Estás programando un modo Asistido/Controlado por Presión (PCV). A diferencia del VCV, ¿qué parámetro se convierte en la variable dependiente (que variará en cada respiración) en este modo?",
+        "options": [
+          { "id": "a", "text": "La presión inspiratoria máxima.", "isCorrect": false },
+          { "id": "b", "text": "El tiempo inspiratorio.", "isCorrect": false },
+          { "id": "c", "text": "El Volumen Tidal (corriente) y el Flujo.", "isCorrect": true },
+          { "id": "d", "text": "La frecuencia respiratoria del ventilador.", "isCorrect": false }
+        ],
+        "explanation": "En PCV, fijas la presión límite que el equipo no sobrepasará. El volumen que logre entrar al paciente dependerá enteramente de qué tan rígidos (compliance) o estrechos (resistencia) estén sus pulmones."
+      },
+      {
+        "id": "q3",
+        "type": "true_false",
+        "text": "En el modo SIMV, es mandatorio configurar un nivel de Presión Soporte (PSV) para ayudar a las respiraciones espontáneas que el paciente realice entre los ciclos controlados.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": true },
+          { "id": "false", "text": "Falso", "isCorrect": false }
+        ],
+        "explanation": "Verdadero. En la práctica actual, SIMV siempre se acompaña de PSV para vencer la resistencia del tubo endotraqueal durante las ventilaciones espontáneas, evitando el agotamiento del paciente."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "Al programar la sensibilidad o 'Trigger' por flujo, ¿qué sucede si lo configuras en un valor demasiado bajo (ej. 0.5 L/min en lugar de 2.0 L/min)?",
+        "options": [
+          { "id": "a", "text": "El paciente no podrá iniciar la respiración por fatiga.", "isCorrect": false },
+          { "id": "b", "text": "El ventilador se vuelve hiper-sensible y cualquier vibración o fuga (como latidos cardíacos) podría desencadenar respiraciones no deseadas (Autociclado).", "isCorrect": true },
+          { "id": "c", "text": "Aumenta la PEEP automáticamente.", "isCorrect": false },
+          { "id": "d", "text": "Disminuye la FiO2.", "isCorrect": false }
+        ],
+        "explanation": "Un trigger muy bajo significa que el ventilador está muy sensible. Cualquier mínimo movimiento de aire será interpretado como un esfuerzo del paciente, desencadenando ciclos falsos (autociclado o auto-triggering)."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "Respecto a la programación de alarmas críticas en el ventilador, ¿cuál debe ser el ajuste de seguridad estándar para la alarma de Presión Máxima (Pico) en la vía aérea en un paciente promedio?",
+        "options": [
+          { "id": "a", "text": "Entre 35 y 40 cmH2O.", "isCorrect": true },
+          { "id": "b", "text": "En 60 cmH2O para que no suene mucho.", "isCorrect": false },
+          { "id": "c", "text": "Desactivada durante el primer día.", "isCorrect": false },
+          { "id": "d", "text": "En 20 cmH2O.", "isCorrect": false }
+        ],
+        "explanation": "La alarma de presión máxima suele configurarse entre 35 y 40 cmH2O como medida de seguridad para prevenir barotrauma. Si se alcanza esta presión, el ventilador aborta la inspiración."
+      }
+    ]
+  }

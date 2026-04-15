@@ -1,0 +1,56 @@
+{
+    "id": "taller-mecanica-l1-integracion-basica",
+    "type": "taller",
+    "title": "Taller de Integración: Configuración Inicial y Parámetros",
+    "description": "Taller basado en Aprendizaje Basado en Problemas (ABP). Deberás analizar un caso clínico y determinar la configuración inicial del ventilador aplicando la ecuación de movimiento y las variables de fase.",
+    "moduleId": "level01-talleres",
+    "level": "level01-principiante",
+    "passingScore": 100,
+    "caseStudy": {
+      "patient": "Masculino de 65 años, 70 kg de peso ideal.",
+      "scenario": "Ingresa a urgencias por insuficiencia respiratoria aguda secundaria a neumonía adquirida en la comunidad. Presenta alteración del estado de consciencia, uso de musculatura accesoria, frecuencia respiratoria de 35 rpm y saturación de oxígeno de 82% a pesar de oxígeno suplementario. Se decide intubación endotraqueal y conexión a ventilación mecánica.",
+      "objective": "Establecer los parámetros iniciales seguros y comprender la mecánica de entrega de gas."
+    },
+    "questions": [
+      {
+        "id": "t1q1",
+        "type": "scenario_choice",
+        "text": "Tras la intubación (paciente pasivo, sedado), debes elegir un modo ventilatorio inicial. ¿Cuál es la elección más adecuada para asumir todo el trabajo respiratorio según los modos clásicos?",
+        "options": [
+          { "id": "a", "text": "Presión Soporte (PSV)", "isCorrect": false, "feedback": "Incorrecto. PSV requiere que el paciente tenga un impulso respiratorio activo (drive) y aquí el paciente está sedado y pasivo." },
+          { "id": "b", "text": "Ventilación Asistida/Controlada (A/C) por Volumen o Presión", "isCorrect": true, "feedback": "Correcto. El modo A/C asume el control total de la ventilación en un paciente sedado y garantiza un volumen minuto mínimo." },
+          { "id": "c", "text": "CPAP", "isCorrect": false, "feedback": "Incorrecto. CPAP solo brinda presión continua, no asiste la inspiración en un paciente que no respira por sí mismo." }
+        ]
+      },
+      {
+        "id": "t1q2",
+        "type": "scenario_choice",
+        "text": "Decides programar el ventilador en Volumen Control (VCV). De acuerdo a las variables de fase, ¿cuál es la variable de CONTROL (o límite) y cuál es la variable de CICLADO en este modo clásico?",
+        "options": [
+          { "id": "a", "text": "Control: Presión / Ciclado: Tiempo", "isCorrect": false, "feedback": "Incorrecto. Esa es la descripción de la Ventilación Controlada por Presión (PCV)." },
+          { "id": "b", "text": "Control: Flujo (Volumen) / Ciclado: Volumen", "isCorrect": true, "feedback": "Correcto. En VCV clásica, el ventilador controla el flujo para alcanzar un volumen predeterminado, y al entregar dicho volumen, cicla hacia la espiración." },
+          { "id": "c", "text": "Control: Flujo / Ciclado: Flujo", "isCorrect": false, "feedback": "Incorrecto. El ciclado por flujo es característico de los modos espontáneos como Presión Soporte (PSV)." }
+        ]
+      },
+      {
+        "id": "t1q3",
+        "type": "scenario_choice",
+        "text": "Considerando un peso ideal de 70 kg, ¿qué Volumen Tidal (Vt) programarías inicialmente buscando una estrategia protectora básica (6 a 8 ml/kg)?",
+        "options": [
+          { "id": "a", "text": "Entre 420 y 560 ml", "isCorrect": true, "feedback": "Excelente. 70 kg x 6 ml/kg = 420 ml; 70 kg x 8 ml/kg = 560 ml. Este es un rango seguro inicial." },
+          { "id": "b", "text": "700 ml (10 ml/kg)", "isCorrect": false, "feedback": "Incorrecto. Volúmenes altos (>8 ml/kg) aumentan el riesgo de daño pulmonar inducido por el ventilador (VILI / Volutrauma)." },
+          { "id": "c", "text": "300 ml", "isCorrect": false, "feedback": "Incorrecto. Podría generar hipoventilación severa si no se ajusta la frecuencia respiratoria adecuadamente." }
+        ]
+      },
+      {
+        "id": "t1q4",
+        "type": "scenario_choice",
+        "text": "Analizando la 'Ecuación del Movimiento', sabes que la presión necesaria para insuflar los pulmones debe vencer dos fuerzas principales. Si notas que la Presión Pico aumenta repentinamente (suena la alarma), ¿cuáles son los dos componentes resistivos que debes evaluar según la ecuación?",
+        "options": [
+          { "id": "a", "text": "Presión Venosa Central y Presión Arterial.", "isCorrect": false, "feedback": "Incorrecto. Estas son presiones hemodinámicas, no de la mecánica ventilatoria." },
+          { "id": "b", "text": "Elastancia (Distensibilidad pulmonar/torácica) y Resistencia de las vías aéreas.", "isCorrect": true, "feedback": "Correcto. Según la ecuación: P = (Volumen x Elastancia) + (Flujo x Resistencia) + PEEP." },
+          { "id": "c", "text": "Solo la resistencia del tubo endotraqueal.", "isCorrect": false, "feedback": "Incorrecto. Aunque el tubo aporta resistencia, la ecuación completa incluye las propiedades elásticas del pulmón y la pared torácica." }
+        ]
+      }
+    ]
+  }

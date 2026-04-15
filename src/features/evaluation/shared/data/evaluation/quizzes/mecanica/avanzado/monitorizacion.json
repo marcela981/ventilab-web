@@ -1,0 +1,69 @@
+{
+    "id": "quiz-mecanica-l3-m2-monitorizacion",
+    "type": "quiz",
+    "title": "Quiz: Monitorización de Alto Nivel",
+    "description": "Evalúa tus conocimientos en herramientas avanzadas de monitorización mecánica y hemodinámica respiratoria.",
+    "moduleId": "module-02-monitorizacion-alto-nivel",
+    "level": "level03-avanzado",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "¿Qué parámetro mide el Balón Esofágico en el contexto de la ventilación mecánica de pacientes críticos?",
+        "options": [
+          { "id": "a", "text": "La presión intraabdominal directa.", "isCorrect": false },
+          { "id": "b", "text": "La presión intrapleural (como un subrogado), permitiendo calcular la presión transpulmonar.", "isCorrect": true },
+          { "id": "c", "text": "El gasto cardíaco por termodilución.", "isCorrect": false },
+          { "id": "d", "text": "El pH del líquido gástrico para prevenir neumonía.", "isCorrect": false }
+        ],
+        "explanation": "La presión esofágica es un excelente subrogado de la presión pleural. Restar la presión esofágica de la presión de vía aérea nos da la Presión Transpulmonar, que es la presión real que distiende al alvéolo."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "Al observar la curva de Capnografía Volumétrica (EtCO2 vs Volumen Espirado), la fase III (meseta alveolar) tiene una pendiente muy inclinada hacia arriba. ¿Qué sugiere este hallazgo?",
+        "options": [
+          { "id": "a", "text": "Un intercambio gaseoso ideal sin espacio muerto.", "isCorrect": false },
+          { "id": "b", "text": "Vaciado alveolar heterogéneo, típicamente asociado a enfermedades obstructivas (EPOC/Asma) o broncoespasmo.", "isCorrect": true },
+          { "id": "c", "text": "Disminución abrupta del gasto cardíaco o TEP masivo.", "isCorrect": false },
+          { "id": "d", "text": "Una intubación esofágica accidental.", "isCorrect": false }
+        ],
+        "explanation": "Una fase III (meseta) empinada en la capnografía indica que los alvéolos tienen diferentes constantes de tiempo; los alvéolos más obstruidos (con más CO2 acumulado) tardan más en vaciarse, deformando la curva."
+      },
+      {
+        "id": "q3",
+        "type": "true_false",
+        "text": "El 'Índice de Estrés' (Stress Index) requiere que el paciente esté ventilado en modo Controlado por Volumen con flujo inspiratorio DESACELERANTE para poder ser calculado.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. El Índice de Estrés se mide analizando la forma de la curva de presión-tiempo durante una inspiración con flujo CONSTANTE (cuadrado), no desacelerante, para ver si hay convexidad (sobredistensión) o concavidad (reclutamiento)."
+      },
+      {
+        "id": "q4",
+        "type": "multiple_choice",
+        "text": "Si durante la monitorización observas una caída súbita y sostenida de la EtCO2 (presión de CO2 al final de la espiración) acompañada de hipotensión, la sospecha principal debe ser:",
+        "options": [
+          { "id": "a", "text": "Atelectasia basal leve.", "isCorrect": false },
+          { "id": "b", "text": "Disminución brusca del gasto cardíaco o Tromboembolismo Pulmonar (TEP).", "isCorrect": true },
+          { "id": "c", "text": "Mejora súbita de la oxigenación.", "isCorrect": false },
+          { "id": "d", "text": "Hipoventilación severa.", "isCorrect": false }
+        ],
+        "explanation": "La caída súbita del EtCO2 significa que no está llegando sangre a los pulmones para liberar CO2. Esto es característico de una reducción crítica de la perfusión pulmonar (Tromboembolismo, parada cardíaca, shock severo)."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "Al calcular la compliance dinámica, observas que ha disminuido a 15 ml/cmH2O, pero la compliance estática se mantiene en 45 ml/cmH2O. ¿Cuál es el diagnóstico funcional más probable?",
+        "options": [
+          { "id": "a", "text": "Edema agudo de pulmón.", "isCorrect": false },
+          { "id": "b", "text": "Fibrosis pulmonar severa.", "isCorrect": false },
+          { "id": "c", "text": "Aumento agudo de la resistencia de la vía aérea (ej. tubo tapado, broncoespasmo).", "isCorrect": true },
+          { "id": "d", "text": "Neumotórax a tensión.", "isCorrect": false }
+        ],
+        "explanation": "La compliance estática evalúa el parénquima, mientras que la dinámica incluye la resistencia de las vías aéreas. Si la dinámica empeora pero la estática está normal, el problema es obstructivo (tubo, bronquios) y no alveolar."
+      }
+    ]
+  }

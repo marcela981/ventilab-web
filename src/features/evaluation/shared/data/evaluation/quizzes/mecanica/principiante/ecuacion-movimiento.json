@@ -1,0 +1,69 @@
+{
+    "id": "quiz-mecanica-l1-m2-ecuacion-movimiento",
+    "type": "quiz",
+    "title": "Quiz: La Ecuación del Movimiento",
+    "description": "Comprueba tus conocimientos sobre las fuerzas físicas y presiones involucradas en el sistema respiratorio según la ecuación del movimiento.",
+    "moduleId": "module-02-ecuacion-movimiento",
+    "level": "level01-principiante",
+    "passingScore": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "type": "multiple_choice",
+        "text": "La ecuación del movimiento respiratorio establece que la presión total necesaria para entregar una respiración debe vencer dos fuerzas principales. ¿Cuáles son?",
+        "options": [
+          { "id": "a", "text": "La presión arterial y la presión venosa central.", "isCorrect": false },
+          { "id": "b", "text": "Las fuerzas elásticas (distensibilidad) y las fuerzas resistivas (resistencia de las vías aéreas).", "isCorrect": true },
+          { "id": "c", "text": "La resistencia del tubo endotraqueal y la humedad del circuito.", "isCorrect": false },
+          { "id": "d", "text": "La presión intracraneal y la presión intraabdominal.", "isCorrect": false }
+        ],
+        "explanation": "La presión total del ventilador (junto con el esfuerzo muscular si lo hay) se emplea en vencer la resistencia de la vía aérea al flujo de aire y en expandir el parénquima pulmonar y la caja torácica (elastancia)."
+      },
+      {
+        "id": "q2",
+        "type": "multiple_choice",
+        "text": "¿Qué parámetro de la mecánica respiratoria se obtiene dividiendo el Volumen Tidal (Vt) entre la diferencia de Presión Meseta (Plateau) y el PEEP?",
+        "options": [
+          { "id": "a", "text": "Resistencia de la Vía Aérea", "isCorrect": false },
+          { "id": "b", "text": "Presión de Conducción (Driving Pressure)", "isCorrect": false },
+          { "id": "c", "text": "Distensibilidad (Compliance) Estática", "isCorrect": true },
+          { "id": "d", "text": "Trabajo Respiratorio (WOB)", "isCorrect": false }
+        ],
+        "explanation": "La distensibilidad estática (Compliance) refleja la elasticidad del pulmón. Se calcula como el cambio de volumen (Vt) dividido por el cambio de presión elástica (Presión Meseta - PEEP)."
+      },
+      {
+        "id": "q3",
+        "type": "multiple_choice",
+        "text": "Si un paciente intubado sufre de broncoespasmo severo, ¿qué componente de la ecuación de movimiento se verá directamente afectado y aumentará?",
+        "options": [
+          { "id": "a", "text": "La Resistencia (componente resistivo).", "isCorrect": true },
+          { "id": "b", "text": "La Elastancia (componente elástico).", "isCorrect": false },
+          { "id": "c", "text": "El PEEP intrínseco de forma inmediata.", "isCorrect": false },
+          { "id": "d", "text": "El Volumen Tidal programado.", "isCorrect": false }
+        ],
+        "explanation": "El broncoespasmo estrecha el diámetro de las vías aéreas, aumentando drásticamente la resistencia al flujo de aire (componente resistivo). Se observará clínicamente como un aumento en la Presión Pico sin gran cambio en la Presión Meseta."
+      },
+      {
+        "id": "q4",
+        "type": "true_false",
+        "text": "La Presión Meseta (Plateau) refleja la presión máxima de resistencia en el tubo endotraqueal y no tiene relación con el estado de los alvéolos.",
+        "options": [
+          { "id": "true", "text": "Verdadero", "isCorrect": false },
+          { "id": "false", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. La Presión Meseta se mide mediante una pausa inspiratoria donde el flujo es cero. Al no haber flujo, se anula la resistencia de la vía aérea (y del tubo), reflejando fielmente la presión alveolar (fuerza elástica)."
+      },
+      {
+        "id": "q5",
+        "type": "multiple_choice",
+        "text": "En un paciente totalmente sedado y paralizado, ¿quién aporta la presión muscular (Pmus) en la ecuación de movimiento?",
+        "options": [
+          { "id": "a", "text": "El diafragma", "isCorrect": false },
+          { "id": "b", "text": "El ventilador mecánico", "isCorrect": false },
+          { "id": "c", "text": "Nadie, el valor de Pmus es igual a cero.", "isCorrect": true },
+          { "id": "d", "text": "Los músculos intercostales.", "isCorrect": false }
+        ],
+        "explanation": "Al estar el paciente bajo bloqueo neuromuscular o sedación profunda, no hay esfuerzo respiratorio espontáneo, por lo que la presión muscular (Pmus) es cero. Toda la presión necesaria para ventilar debe provenir del ventilador (Pvent)."
+      }
+    ]
+  }
