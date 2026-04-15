@@ -3,8 +3,8 @@ import type { Activity, CreateActivityPayload, UpdateActivityPayload } from '../
 
 export const activityApi = {
   list: async (): Promise<Activity[]> => {
-    const { data } = await http.get('/api/evaluation/activities');
-    return data.activities ?? [];
+    const { data } = await http.get('/evaluation/activities');
+    return data.data ?? [];
   },
   getById: async (id: string): Promise<Activity> => {
     const { data } = await http.get(`/api/evaluation/activities/${id}`);
