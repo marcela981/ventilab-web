@@ -86,23 +86,26 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.12));
   border-radius: var(--radius-lg, 12px);
-  background: rgba(160, 219, 233, 0.25);
-  box-shadow: var(--shadow-sm, 0 2px 10px rgba(0, 0, 0, 0.04));
+  /* Surface elevada con sutil tinte del primario (cyan) sobre fondo oscuro */
+  background: rgba(16, 174, 222, 0.10);
+  box-shadow: var(--shadow-sm);
   padding: 16px;
   min-height: 240px;
   max-height: 380px;
   overflow: hidden;
   box-sizing: border-box;
   transition:
-    box-shadow var(--transition-normal, 0.2s ease),
-    background-color var(--transition-normal, 0.2s ease);
+    box-shadow var(--transition-normal, 0.25s ease),
+    background-color var(--transition-normal, 0.25s ease),
+    border-color var(--transition-normal, 0.25s ease);
 }
 
 .evalCard:hover {
-  box-shadow: var(--shadow-md, 0 4px 16px rgba(0, 0, 0, 0.08));
-  background-color: rgba(160, 219, 233, 0.38);
+  box-shadow: var(--shadow-md), var(--shadow-primary, 0 4px 14px rgba(16, 174, 222, 0.2));
+  background-color: rgba(16, 174, 222, 0.17);
+  border-color: var(--color-border-strong, rgba(255, 255, 255, 0.2));
 }
 
 .evalCardUnavailable {
@@ -123,7 +126,7 @@
   font-weight: 600 !important;
   font-size: 1rem !important;
   line-height: 1.35 !important;
-  color: #1f2937;
+  color: var(--text-on-bg-primary, #e8f4fd);
   margin-bottom: 8px !important;
   /* Clamp to 2 lines */
   display: -webkit-box;
@@ -134,7 +137,7 @@
 
 /* Description */
 .evalCardDescription {
-  color: #4b5563;
+  color: var(--text-secondary, rgba(232, 244, 253, 0.7));
   font-size: 0.85rem !important;
   line-height: 1.45 !important;
   /* Clamp to 2 lines */
@@ -148,7 +151,7 @@
 /* Passing score (quizzes) */
 .evalCardPassingScore {
   font-size: 0.8rem !important;
-  color: #6b7280;
+  color: var(--text-hint, rgba(232, 244, 253, 0.5));
   margin-top: 4px !important;
 }
 
@@ -218,8 +221,9 @@
 
 /* MUI Accordion root override */
 .accordionRoot {
-  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.12)) !important;
   border-radius: var(--radius-lg, 12px) !important;
+  background-color: var(--color-surface-elevated, rgba(255, 255, 255, 0.08)) !important;
   box-shadow: none !important;
   margin-bottom: 12px !important;
   overflow: hidden;
@@ -234,25 +238,25 @@
 .accordionSummaryContent {
   font-weight: 700;
   font-size: 1.05rem;
-  color: #111827;
+  color: var(--text-on-bg-primary, #e8f4fd);
 }
 
 /* Track sub-section title */
 .trackTitle {
   font-weight: 700 !important;
   font-size: 0.95rem !important;
-  color: #374151;
+  color: var(--text-on-bg-primary, #e8f4fd);
   margin-top: 16px !important;
   margin-bottom: 10px !important;
   padding-bottom: 4px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  border-bottom: 1px solid var(--color-divider, rgba(255, 255, 255, 0.08));
 }
 
 /* Level label inside a track */
 .levelLabel {
   font-size: 0.8rem !important;
   font-weight: 600 !important;
-  color: #6b7280;
+  color: var(--text-secondary, rgba(232, 244, 253, 0.7));
   margin-top: 12px !important;
   margin-bottom: 8px !important;
   text-transform: uppercase;
