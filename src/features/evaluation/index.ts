@@ -5,6 +5,7 @@ export { assignmentApi } from './api/assignment.api';
 export { submissionApi } from './api/submission.api';
 
 export { useActivities } from './hooks/useActivities';
+export { useQuizzes } from './hooks/useQuizzes';
 export { useMySubmissions } from './hooks/useSubmissions';
 export { useActivityBuilder } from './hooks/useActivityBuilder';
 
@@ -12,6 +13,7 @@ export { EvaluationProvider, useEvaluationContext } from './context/EvaluationCo
 
 // Student components
 export { default as ActivityCard } from './components/student/ActivityCard';
+export { default as EvaluationCard } from './components/student/EvaluationCard';
 export { default as ActivityList } from './components/student/ActivityList';
 export { default as SubmissionForm } from './components/student/SubmissionForm';
 export { default as SubmissionStatusBadge } from './components/student/SubmissionStatusBadge';

@@ -14,12 +14,22 @@ import Link from 'next/link';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { useActivities } from '@/features/evaluation/hooks/useActivities';
+import { useQuizzes } from '@/features/evaluation/hooks/useQuizzes';
 import ActivityList from '@/features/evaluation/components/student/ActivityList';
 import styles from './UI/evaluation.module.css';
 
 export default function EvaluationIndexPage() {
   const { isTeacher } = useAuth();
-  const { activities, isLoading, error, refresh } = useActivities();
+  const { activities, isLoading: loadingActivities, error: errorActivities, refresh: refreshActivities } = useActivities();
+  const { quizzes, isLoading: loadingQuizzes, error: errorQuizzes, refresh: refreshQuizzes } = useQuizzes();
+
+  const isLoading = loadingActivities || loadingQuizzes;
+  const error = errorActivities ?? errorQuizzes ?? null;
+
+  function refresh() {
+    refreshActivities();
+    refreshQuizzes();
+  }
 
   if (isTeacher && isTeacher()) {
     return (
@@ -60,7 +70,13 @@ export default function EvaluationIndexPage() {
         </Button>
       </Stack>
 
-      <ActivityList activities={activities} isLoading={isLoading} error={error} onRetry={refresh} />
+      <ActivityList
+        activities={activities}
+        quizzes={quizzes}
+        isLoading={isLoading}
+        error={error}
+        onRetry={refresh}
+      />
     </Box>
   );
 }
