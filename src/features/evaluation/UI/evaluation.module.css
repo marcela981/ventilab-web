@@ -276,3 +276,226 @@
   font-size: 0.85rem;
   padding: 8px 0;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   Exam / Taller — interactive question renderer
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.examContainer {
+  max-width: 760px;
+}
+
+/* Progress */
+.progressRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.progressLabel {
+  font-size: 0.82rem !important;
+  color: var(--text-secondary, rgba(232, 244, 253, 0.7)) !important;
+}
+
+.progressBarMui {
+  height: 6px !important;
+  border-radius: 3px !important;
+  margin-bottom: 20px;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Case study box (talleres) */
+.caseStudyBox {
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.12));
+  border-left: 3px solid var(--color-primary, #10aede);
+  border-radius: var(--radius-md, 8px);
+  padding: 16px;
+  margin-bottom: 20px;
+  background: rgba(16, 174, 222, 0.06);
+}
+
+.caseStudyLabel {
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-primary, #10aede) !important;
+  margin-bottom: 8px !important;
+}
+
+.caseStudyPatient {
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  color: var(--text-on-bg-primary, #e8f4fd) !important;
+  margin-bottom: 6px !important;
+}
+
+.caseStudyScenario {
+  font-size: 0.85rem !important;
+  line-height: 1.55 !important;
+  color: var(--text-secondary, rgba(232, 244, 253, 0.7)) !important;
+}
+
+/* Question card */
+.questionCard {
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.12));
+  border-radius: var(--radius-lg, 12px);
+  padding: 24px;
+  background: var(--color-surface-elevated, rgba(255, 255, 255, 0.08));
+  margin-bottom: 16px;
+}
+
+.questionLabel {
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-primary, #10aede) !important;
+  margin-bottom: 10px !important;
+}
+
+/* Option rows */
+.optionRow {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 8px;
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.12)) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  padding: 10px 14px !important;
+  margin-bottom: 8px !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  cursor: pointer;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.optionRow:hover {
+  border-color: var(--color-primary, #10aede) !important;
+  background-color: rgba(16, 174, 222, 0.06) !important;
+}
+
+.optionRowSelected {
+  border-color: var(--color-primary, #10aede) !important;
+  background-color: rgba(16, 174, 222, 0.12) !important;
+}
+
+.optionRowCorrect {
+  border-color: var(--color-success, #4caf50) !important;
+  background-color: rgba(76, 175, 80, 0.12) !important;
+}
+
+.optionRowWrong {
+  border-color: var(--color-error, #f44336) !important;
+  background-color: rgba(244, 67, 54, 0.12) !important;
+}
+
+.optionContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.optionText {
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--text-on-bg-primary, #e8f4fd);
+}
+
+.optionFeedback {
+  font-size: 0.8rem !important;
+  margin-top: 4px !important;
+  font-style: italic;
+}
+
+.optionFeedbackCorrect {
+  color: var(--color-success, #4caf50) !important;
+}
+
+.optionFeedbackWrong {
+  color: var(--color-error, #f44336) !important;
+}
+
+/* Explanation box (quiz — shown after selecting) */
+.explanationBox {
+  border-left: 3px solid var(--color-accent, #00a1db);
+  padding: 10px 14px;
+  margin-top: 14px;
+  background: rgba(0, 161, 219, 0.06);
+  border-radius: 0 var(--radius-md, 8px) var(--radius-md, 8px) 0;
+}
+
+.explanationText {
+  font-size: 0.85rem !important;
+  font-style: italic;
+  color: var(--text-secondary, rgba(232, 244, 253, 0.7)) !important;
+}
+
+/* Open-text answer field */
+.openTextField {
+  width: 100%;
+  margin-top: 8px !important;
+}
+
+/* Results band */
+.resultsBand {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 24px;
+  border-radius: var(--radius-lg, 12px);
+  margin-bottom: 24px;
+}
+
+.resultsBandPassed {
+  background: rgba(76, 175, 80, 0.12);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.resultsBandFailed {
+  background: rgba(244, 67, 54, 0.12);
+  border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.resultsScoreNumber {
+  font-size: 2.6rem !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  margin-bottom: 2px !important;
+}
+
+.resultsScorePassed {
+  color: var(--color-success, #4caf50) !important;
+}
+
+.resultsScoreFailed {
+  color: var(--color-error, #f44336) !important;
+}
+
+.resultsDetail {
+  font-size: 0.9rem !important;
+  color: var(--text-secondary, rgba(232, 244, 253, 0.7)) !important;
+  margin-top: 4px !important;
+}
+
+/* Submit row */
+.submitRow {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding-top: 20px;
+}
+
+.unansweredWarning {
+  font-size: 0.82rem !important;
+  color: var(--color-warning, #ff9800) !important;
+}
+
+/* Timer countdown — turns red below 2 minutes */
+.timerWarning {
+  color: var(--color-error, #f44336) !important;
+  font-weight: 700 !important;
+}

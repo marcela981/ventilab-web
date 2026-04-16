@@ -11,7 +11,7 @@
  * Contacto: marcela.mazo@correounivalle.edu.co
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import {
   Box,
@@ -35,6 +35,7 @@ import {
 import SubmissionForm from '@/features/evaluation/components/student/SubmissionForm';
 import GradeResult from '@/features/evaluation/components/student/GradeResult';
 import SubmissionStatusBadge from '@/features/evaluation/components/student/SubmissionStatusBadge';
+import SubmitHandler from '@/features/evaluation/components/student/SubmitHandler';
 import evalStyles from '@/features/evaluation/UI/evaluation.module.css';
 import styles from './UI/evaluation.module.css';
 
@@ -100,6 +101,20 @@ export default function ActivityDetailPage() {
       setIsSubmitting(false);
     }
   };
+
+  // ── Parse structured questions from activity.instructions ─────────────────
+  // Teachers may store a JSON object with { questions, passingScore } in the
+  // instructions field.  If parsing succeeds and a questions array is found the
+  // page renders the interactive SubmitHandler; otherwise it falls back to the
+  // plain instructions + textarea submission form.
+  const parsedContent = useMemo(() => {
+    if (!activity?.instructions) return null;
+    try {
+      const p = JSON.parse(activity.instructions);
+      if (Array.isArray(p?.questions) && p.questions.length > 0) return p;
+    } catch { /* instructions is plain text — fall through */ }
+    return null;
+  }, [activity]);
 
   // ── Shared loading / error states ─────────────────────────────────────────
 
@@ -239,17 +254,15 @@ export default function ActivityDetailPage() {
     );
   }
 
-  // ── Regular activity view (existing behavior) ─────────────────────────────
+  // ── Regular activity view ─────────────────────────────────────────────────
+
+  const isStudentView = !isTeacher || !isTeacher();
 
   return (
     <Box className={styles.page}>
+      {/* ── Header: title, status badge, meta ───────────────────────────────── */}
       <Stack spacing={1}>
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          spacing={2}
-        >
+        <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
           <Typography variant="h4" className={styles.title}>
             {activity.title}
           </Typography>
@@ -258,31 +271,73 @@ export default function ActivityDetailPage() {
 
         <Typography variant="body2" className={styles.detailMeta}>
           Tipo: {activity.type} · Puntaje máximo: {activity.maxScore}
+          {activity.timeLimit ? ` · Tiempo: ${activity.timeLimit} min` : ''}
         </Typography>
 
         {activity.description && (
-          <Typography variant="body1">
-            {activity.description}
-          </Typography>
+          <Typography variant="body1">{activity.description}</Typography>
         )}
       </Stack>
 
       <Divider className={styles.divider} />
 
-      {activity.instructions && (
+      {/* ── Teacher view ────────────────────────────────────────────────────── */}
+      {!isStudentView && (
         <>
-          <Typography variant="h6" className={styles.sectionTitle}>
-            Instrucciones
+          {activity.instructions && (
+            <>
+              <Typography variant="h6" className={styles.sectionTitle}>
+                Instrucciones
+              </Typography>
+              <Typography variant="body2" className={styles.instructions}>
+                {activity.instructions}
+              </Typography>
+              <Divider className={styles.divider} />
+            </>
+          )}
+          <Typography variant="body2" className={styles.teacherNote}>
+            Vista docente en construcción. Usa el panel de calificación para revisar entregas.
           </Typography>
-          <Typography variant="body2" className={styles.instructions}>
-            {activity.instructions}
-          </Typography>
-          <Divider className={styles.divider} />
         </>
       )}
 
-      {!isTeacher || !isTeacher() ? (
+      {/* ── Student: structured questions → interactive form ───────────────── */}
+      {isStudentView && parsedContent && (
+        <SubmitHandler
+          activity={activity}
+          questions={parsedContent.questions}
+          passingScore={parsedContent.passingScore ?? 70}
+          submission={submission}
+          onSubmitted={() =>
+            setSubmission((s) => (s ? { ...s, status: 'SUBMITTED' } : s))
+          }
+        />
+      )}
+
+      {/* ── Student: no questions in instructions → show content-unavailable ── */}
+      {isStudentView && !parsedContent && !activity.instructions &&
+        ['EXAM', 'QUIZ', 'TALLER'].includes(activity.type) && (
+        <Box className={styles.errorBox}>
+          <Typography variant="body1">Contenido no disponible.</Typography>
+          <Button variant="outlined" onClick={() => router.back()}>Volver</Button>
+        </Box>
+      )}
+
+      {/* ── Student: plain-text instructions + open submission form ─────────── */}
+      {isStudentView && !parsedContent &&
+        (activity.instructions || !['EXAM', 'QUIZ', 'TALLER'].includes(activity.type)) && (
         <>
+          {activity.instructions && (
+            <>
+              <Typography variant="h6" className={styles.sectionTitle}>
+                Instrucciones
+              </Typography>
+              <Typography variant="body2" className={styles.instructions}>
+                {activity.instructions}
+              </Typography>
+              <Divider className={styles.divider} />
+            </>
+          )}
           <Typography variant="h6" className={styles.sectionTitle}>
             Entrega
           </Typography>
@@ -293,10 +348,6 @@ export default function ActivityDetailPage() {
           />
           <GradeResult submission={submission} />
         </>
-      ) : (
-        <Typography variant="body2" className={styles.teacherNote}>
-          Vista docente en construcción. Usa el panel de calificación para revisar entregas.
-        </Typography>
       )}
     </Box>
   );
