@@ -126,7 +126,9 @@ export default function QuestionRenderer({ question, value, onChange, mode, reve
         </Box>
       )}
 
-      <Typography variant="h6" gutterBottom>{question.text}</Typography>
+      <Typography variant="h6" className={evalStyles.questionTextHeading} gutterBottom>
+        {question.text}
+      </Typography>
 
       {/* Multiple choice / case study with options */}
       {(question.type === 'multiple_choice' || question.type === 'case_study') && hasChoices && (
@@ -149,15 +151,17 @@ export default function QuestionRenderer({ question, value, onChange, mode, reve
           >
             <FormControlLabel
               value="true"
-              control={<Radio />}
-              label="Verdadero"
+              control={<Radio size="small" className={evalStyles.radioBtn} />}
+              label={<Typography className={evalStyles.optionText}>Verdadero</Typography>}
               disabled={!isInteractive}
+              className={evalStyles.optionRow}
             />
             <FormControlLabel
               value="false"
-              control={<Radio />}
-              label="Falso"
+              control={<Radio size="small" className={evalStyles.radioBtn} />}
+              label={<Typography className={evalStyles.optionText}>Falso</Typography>}
               disabled={!isInteractive}
+              className={evalStyles.optionRow}
             />
           </RadioGroup>
         </FormControl>

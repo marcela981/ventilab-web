@@ -1,7 +1,8 @@
 /*
  * Funcionalidad: Estilos del módulo Evaluación (páginas)
- * Descripción: Clases CSS para las páginas de evaluación: índice y detalle de actividad
- * Versión: 1.0
+ * Descripción: Clases CSS para las páginas de evaluación: índice y detalle de actividad.
+ *              Todos los textos son claros para fondo oscuro.
+ * Versión: 2.0
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,10 +20,11 @@
 
 .title {
   font-weight: 700 !important;
+  color: var(--text-on-bg-primary, #e8f4fd) !important;
 }
 
 .subtitle {
-  opacity: 0.8;
+  color: var(--text-secondary, rgba(232, 244, 253, 0.7)) !important;
 }
 
 .loadingBox {
@@ -33,23 +35,31 @@
 
 .errorBox {
   padding: 24px;
+  color: var(--text-on-bg-primary, #e8f4fd) !important;
 }
 
 .sectionTitle {
   font-weight: 600 !important;
   margin-bottom: 8px !important;
+  color: var(--text-on-bg-primary, #e8f4fd) !important;
 }
 
 .instructions {
   white-space: pre-wrap;
   margin-top: 8px;
+  color: var(--text-secondary, rgba(232, 244, 253, 0.7)) !important;
 }
 
 .detailMeta {
-  opacity: 0.8;
+  color: var(--text-secondary, rgba(232, 244, 253, 0.7)) !important;
   margin-top: 4px;
 }
 
 .teacherNote {
-  opacity: 0.8;
+  color: var(--text-secondary, rgba(232, 244, 253, 0.7)) !important;
+}
+
+.divider {
+  border-color: var(--color-divider, rgba(255, 255, 255, 0.08)) !important;
+  margin: 16px 0 !important;
 }

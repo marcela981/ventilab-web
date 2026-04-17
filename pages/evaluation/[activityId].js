@@ -1,12 +1,17 @@
 /*
  * Funcionalidad: Página de detalle de Actividad de Evaluación
- * Descripción: Carga la actividad por ID; si el ID empieza con "quiz-" renderiza el quiz
- *              con navegación pregunta a pregunta y pantalla de resultados; para otras
- *              actividades muestra instrucciones y el formulario de entrega (SubmissionForm)
- * Versión: 1.1
+ * Descripción: Carga la actividad por ID y delega el renderizado al componente
+ *              apropiado según el tipo de actividad:
+ *              - QUIZ  → QuizRenderer  (todas las preguntas, feedback inmediato)
+ *              - TALLER → TallerRenderer (paginado, pistas, explicaciones)
+ *              - EXAM  → ExamRenderer  (paginado, temporizador, sin feedback)
+ *              Para actividades sin preguntas estructuradas muestra instrucciones
+ *              y el formulario de entrega (SubmissionForm).
+ * Versión: 2.0
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
- * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
  * Institución: Universidad del Valle
  * Contacto: marcela.mazo@correounivalle.edu.co
  */
@@ -18,10 +23,6 @@ import {
   Button,
   CircularProgress,
   Divider,
-  FormControl,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
   Stack,
   Typography,
 } from '@mui/material';
@@ -30,13 +31,13 @@ import { activityApi } from '@/features/evaluation/api/activity.api';
 import { submissionApi } from '@/features/evaluation/api/submission.api';
 import {
   fetchQuizById,
-  submitQuizAttempt,
 } from '@/features/evaluation/shared/services/evaluationService';
 import SubmissionForm from '@/features/evaluation/components/student/SubmissionForm';
 import GradeResult from '@/features/evaluation/components/student/GradeResult';
 import SubmissionStatusBadge from '@/features/evaluation/components/student/SubmissionStatusBadge';
-import SubmitHandler from '@/features/evaluation/components/student/SubmitHandler';
-import evalStyles from '@/features/evaluation/UI/evaluation.module.css';
+import QuizRenderer from '@/features/evaluation/components/student/QuizRenderer';
+import TallerRenderer from '@/features/evaluation/components/student/TallerRenderer';
+import ExamRenderer from '@/features/evaluation/components/student/ExamRenderer';
 import styles from './UI/evaluation.module.css';
 
 export default function ActivityDetailPage() {
@@ -48,12 +49,8 @@ export default function ActivityDetailPage() {
   const [activity, setActivity] = useState(null);
   const [submission, setSubmission] = useState(null);
 
-  // Quiz state
+  // Quiz state (fetched via quiz-specific endpoint for quiz-* IDs)
   const [quiz, setQuiz] = useState(null);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [attemptResult, setAttemptResult] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Shared state
   const [isLoading, setIsLoading] = useState(true);
@@ -85,28 +82,7 @@ export default function ActivityDetailPage() {
     run();
   }, [activityId, isTeacher]);
 
-  const handleSubmitQuiz = async () => {
-    const answers = Object.entries(selectedAnswers).map(([questionId, optionId]) => ({
-      questionId,
-      optionId,
-    }));
-    setIsSubmitting(true);
-    setError(null);
-    try {
-      const result = await submitQuizAttempt(String(activityId), answers);
-      setAttemptResult(result);
-    } catch (e) {
-      setError(e?.message ?? 'Error al enviar el quiz');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   // ── Parse structured questions from activity.instructions ─────────────────
-  // Teachers may store a JSON object with { questions, passingScore } in the
-  // instructions field.  If parsing succeeds and a questions array is found the
-  // page renders the interactive SubmitHandler; otherwise it falls back to the
-  // plain instructions + textarea submission form.
   const parsedContent = useMemo(() => {
     if (!activity?.instructions) return null;
     try {
@@ -135,117 +111,21 @@ export default function ActivityDetailPage() {
     );
   }
 
-  // ── Quiz: results screen ───────────────────────────────────────────────────
-
-  if (quiz && attemptResult) {
-    return (
-      <Box className={styles.page}>
-        <Box className={evalStyles.resultsContainer}>
-          <Typography variant="h5" className={evalStyles.resultsTitle}>
-            Resultados — {quiz.title}
-          </Typography>
-          <Box className={evalStyles.scoreRow}>
-            <Typography className={evalStyles.scoreItem}>
-              Puntaje: {attemptResult.score}/100
-            </Typography>
-            <Typography className={evalStyles.scoreItem}>
-              Aprobado: {attemptResult.passed ? '✅' : '❌'}
-            </Typography>
-            <Typography className={evalStyles.scoreItem}>
-              Correctas: {attemptResult.correctCount} de {attemptResult.totalCount}
-            </Typography>
-          </Box>
-          {attemptResult.feedback?.length > 0 && (
-            <Stack spacing={0.5}>
-              {attemptResult.feedback.map((f, i) => (
-                <Typography key={i} variant="body2">{f}</Typography>
-              ))}
-            </Stack>
-          )}
-          <Button variant="outlined" onClick={() => router.push('/evaluation')}>
-            Volver a evaluaciones
-          </Button>
-        </Box>
-      </Box>
-    );
-  }
-
-  // ── Quiz: question-by-question view ──────────────────────────────────────
-
+  // ── Quiz (fetched via quiz-specific endpoint) ─────────────────────────────
   if (quiz) {
-    const questions = quiz.questions ?? [];
-    const current = questions[currentQuestionIndex];
-    const isLast = currentQuestionIndex === questions.length - 1;
-    const allAnswered = questions.every((q) => selectedAnswers[q.id]);
-
     return (
       <Box className={styles.page}>
         <Typography variant="h4" className={styles.title}>{quiz.title}</Typography>
         <Divider className={styles.divider} />
-
-        <Box className={evalStyles.quizContainer}>
-          <Typography className={evalStyles.progressText}>
-            Pregunta {currentQuestionIndex + 1} de {questions.length}
-          </Typography>
-
-          {current && (
-            <>
-              <Typography className={evalStyles.questionText}>{current.text}</Typography>
-
-              <FormControl component="fieldset">
-                <RadioGroup
-                  value={selectedAnswers[current.id] ?? ''}
-                  onChange={(e) =>
-                    setSelectedAnswers((prev) => ({ ...prev, [current.id]: e.target.value }))
-                  }
-                >
-                  {current.options.map((opt) => (
-                    <FormControlLabel
-                      key={opt.id}
-                      value={opt.id}
-                      control={<Radio />}
-                      label={opt.text}
-                    />
-                  ))}
-                </RadioGroup>
-              </FormControl>
-
-              <Box className={evalStyles.navigationRow}>
-                <Button
-                  variant="outlined"
-                  disabled={currentQuestionIndex === 0}
-                  onClick={() => setCurrentQuestionIndex((i) => i - 1)}
-                >
-                  Anterior
-                </Button>
-
-                {isLast ? (
-                  <Button
-                    variant="contained"
-                    onClick={handleSubmitQuiz}
-                    disabled={isSubmitting || !allAnswered}
-                  >
-                    {isSubmitting ? 'Enviando…' : 'Enviar quiz'}
-                  </Button>
-                ) : (
-                  <Button
-                    variant="contained"
-                    disabled={!selectedAnswers[current.id]}
-                    onClick={() => setCurrentQuestionIndex((i) => i + 1)}
-                  >
-                    Siguiente
-                  </Button>
-                )}
-              </Box>
-            </>
-          )}
-        </Box>
+        <QuizRenderer
+          questions={quiz.questions ?? []}
+          passingScore={quiz.passingScore ?? 70}
+        />
       </Box>
     );
   }
 
   // ── Activity not found ────────────────────────────────────────────────────
-
   if (!activity) {
     return (
       <Box className={styles.errorBox}>
@@ -254,10 +134,57 @@ export default function ActivityDetailPage() {
     );
   }
 
-  // ── Regular activity view ─────────────────────────────────────────────────
-
+  // ── Select renderer based on activity.type ────────────────────────────────
   const isStudentView = !isTeacher || !isTeacher();
+  const activityType = (activity.type ?? '').toUpperCase();
 
+  // Render type-specific component when structured questions exist
+  const renderStructuredActivity = () => {
+    if (!parsedContent) return null;
+    const questions = parsedContent.questions;
+    const passingScore = parsedContent.passingScore ?? 70;
+
+    if (activityType === 'QUIZ') {
+      return (
+        <QuizRenderer
+          questions={questions}
+          passingScore={passingScore}
+          onSubmitted={() =>
+            setSubmission((s) => (s ? { ...s, status: 'SUBMITTED' } : s))
+          }
+        />
+      );
+    }
+
+    if (activityType === 'TALLER') {
+      return (
+        <TallerRenderer
+          questions={questions}
+          passingScore={passingScore}
+          onSubmitted={() =>
+            setSubmission((s) => (s ? { ...s, status: 'SUBMITTED' } : s))
+          }
+        />
+      );
+    }
+
+    if (activityType === 'EXAM') {
+      return (
+        <ExamRenderer
+          questions={questions}
+          passingScore={passingScore}
+          timeLimit={activity.timeLimit}
+          onSubmitted={() =>
+            setSubmission((s) => (s ? { ...s, status: 'SUBMITTED' } : s))
+          }
+        />
+      );
+    }
+
+    return null;
+  };
+
+  // ── Regular activity view ─────────────────────────────────────────────────
   return (
     <Box className={styles.page}>
       {/* ── Header: title, status badge, meta ───────────────────────────────── */}
@@ -275,7 +202,9 @@ export default function ActivityDetailPage() {
         </Typography>
 
         {activity.description && (
-          <Typography variant="body1">{activity.description}</Typography>
+          <Typography variant="body1" className={styles.subtitle}>
+            {activity.description}
+          </Typography>
         )}
       </Stack>
 
@@ -301,22 +230,12 @@ export default function ActivityDetailPage() {
         </>
       )}
 
-      {/* ── Student: structured questions → interactive form ───────────────── */}
-      {isStudentView && parsedContent && (
-        <SubmitHandler
-          activity={activity}
-          questions={parsedContent.questions}
-          passingScore={parsedContent.passingScore ?? 70}
-          submission={submission}
-          onSubmitted={() =>
-            setSubmission((s) => (s ? { ...s, status: 'SUBMITTED' } : s))
-          }
-        />
-      )}
+      {/* ── Student: structured questions → type-specific renderer ──────────── */}
+      {isStudentView && parsedContent && renderStructuredActivity()}
 
-      {/* ── Student: no questions in instructions → show content-unavailable ── */}
+      {/* ── Student: no questions in instructions → content unavailable ─────── */}
       {isStudentView && !parsedContent && !activity.instructions &&
-        ['EXAM', 'QUIZ', 'TALLER'].includes(activity.type) && (
+        ['EXAM', 'QUIZ', 'TALLER'].includes(activityType) && (
         <Box className={styles.errorBox}>
           <Typography variant="body1">Contenido no disponible.</Typography>
           <Button variant="outlined" onClick={() => router.back()}>Volver</Button>
@@ -325,7 +244,7 @@ export default function ActivityDetailPage() {
 
       {/* ── Student: plain-text instructions + open submission form ─────────── */}
       {isStudentView && !parsedContent &&
-        (activity.instructions || !['EXAM', 'QUIZ', 'TALLER'].includes(activity.type)) && (
+        (activity.instructions || !['EXAM', 'QUIZ', 'TALLER'].includes(activityType)) && (
         <>
           {activity.instructions && (
             <>
