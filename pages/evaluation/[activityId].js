@@ -115,12 +115,22 @@ export default function ActivityDetailPage() {
   if (quiz) {
     return (
       <Box className={styles.page}>
-        <Typography variant="h4" className={styles.title}>{quiz.title}</Typography>
-        <Divider className={styles.divider} />
-        <QuizRenderer
-          questions={quiz.questions ?? []}
-          passingScore={quiz.passingScore ?? 70}
-        />
+        <Box className={styles.rendererWrapper}>
+          <Button
+            variant="outlined"
+            size="small"
+            className={styles.backBtn}
+            onClick={() => router.push('/evaluation')}
+          >
+            ← Volver a evaluaciones
+          </Button>
+          <Typography variant="h4" className={styles.title}>{quiz.title}</Typography>
+          <Divider className={styles.divider} />
+          <QuizRenderer
+            questions={quiz.questions ?? []}
+            passingScore={quiz.passingScore ?? 70}
+          />
+        </Box>
       </Box>
     );
   }
@@ -187,7 +197,16 @@ export default function ActivityDetailPage() {
   // ── Regular activity view ─────────────────────────────────────────────────
   return (
     <Box className={styles.page}>
-      {/* ── Header: title, status badge, meta ───────────────────────────────── */}
+      <Box className={styles.rendererWrapper}>
+        {/* ── Header: title, status badge, meta ───────────────────────────────── */}
+        <Button
+        variant="outlined"
+        size="small"
+        className={styles.backBtn}
+        onClick={() => router.push('/evaluation')}
+      >
+        ← Volver a evaluaciones
+      </Button>
       <Stack spacing={1}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
           <Typography variant="h4" className={styles.title}>
@@ -268,6 +287,7 @@ export default function ActivityDetailPage() {
           <GradeResult submission={submission} />
         </>
       )}
+      </Box>
     </Box>
   );
 }
