@@ -15,7 +15,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Chip, Box, LinearProgress, Typography } from '@mui/material';
 import {
   LocalFlorist as BeginnerIcon,  // Plant/flower icon for BEGINNER
@@ -202,23 +201,5 @@ export function LevelBadge({
     </Box>
   );
 }
-
-LevelBadge.propTypes = {
-  level: PropTypes.oneOf(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']),
-  size: PropTypes.oneOf(['small', 'medium', 'large']),
-  showProgressBar: PropTypes.bool,
-  progressToNextLevel: PropTypes.number,
-  showLabel: PropTypes.bool,
-  sx: PropTypes.object,
-};
-
-LevelBadge.defaultProps = {
-  level: 'BEGINNER',
-  size: 'medium',
-  showProgressBar: false,
-  progressToNextLevel: 0,
-  showLabel: true,
-  sx: {},
-};
 
 export default LevelBadge;

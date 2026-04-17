@@ -15,7 +15,6 @@
  */
 
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Card,
@@ -558,8 +557,6 @@ export function ChangePasswordForm() {
     </Card>
   );
 }
-
-ChangePasswordForm.propTypes = {};
 
 export default ChangePasswordForm;
 

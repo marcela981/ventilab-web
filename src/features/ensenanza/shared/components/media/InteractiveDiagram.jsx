@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import dynamic from 'next/dynamic';
 import DOMPurify from 'dompurify';
 import {
@@ -527,74 +526,6 @@ const InteractiveDiagram = ({
       </Box>
     </DiagramContainer>
   );
-};
-
-InteractiveDiagram.propTypes = {
-  /**
-   * URL del archivo SVG a cargar.
-   * Se prioriza svgString si ambos están presentes.
-   */
-  svgSrc: PropTypes.string,
-  
-  /**
-   * Contenido SVG como string (inline).
-   * Tiene prioridad sobre svgSrc si ambos están presentes.
-   */
-  svgString: PropTypes.string,
-  
-  /**
-   * Altura del diagrama.
-   * Puede ser un número (px) o string CSS válido.
-   * 
-   * @default 500
-   */
-  height: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  
-  /**
-   * Ancho del diagrama.
-   * Puede ser un número (px) o string CSS válido.
-   * 
-   * @default '100%'
-   */
-  width: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  
-  /**
-   * Escala inicial del zoom.
-   * 
-   * @default 1
-   */
-  initialScale: PropTypes.number,
-  
-  /**
-   * Callback llamado cuando el diagrama se carga exitosamente.
-   */
-  onLoad: PropTypes.func,
-  
-  /**
-   * Callback llamado cuando ocurre un error al cargar o procesar el diagrama.
-   * 
-   * @param {Error} error - Objeto de error
-   */
-  onError: PropTypes.func,
-  
-  /**
-   * Label de accesibilidad para el diagrama.
-   * Describe el contenido del diagrama para lectores de pantalla.
-   * 
-   * @default 'Diagrama interactivo'
-   */
-  'aria-label': PropTypes.string,
-};
-
-InteractiveDiagram.defaultProps = {
-  svgSrc: null,
-  svgString: null,
-  height: 500,
-  width: '100%',
-  initialScale: 1,
-  onLoad: null,
-  onError: null,
-  'aria-label': 'Diagrama interactivo',
 };
 
 export default InteractiveDiagram;

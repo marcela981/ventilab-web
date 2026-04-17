@@ -11,7 +11,6 @@
  */
 
 import React, { useMemo, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
 import {
   MedicalServices as MedicalServicesIcon,
@@ -129,18 +128,6 @@ const Module03CurriculumView = ({
   }
 
   return null;
-};
-
-Module03CurriculumView.propTypes = {
-  moduleIdFromQuery: PropTypes.string,
-  lessonIdFromQuery: PropTypes.string,
-  router: PropTypes.object.isRequired,
-  activeCategoryId: PropTypes.string,
-  activeLessonId: PropTypes.string,
-  setModule: PropTypes.func.isRequired,
-  setCategory: PropTypes.func.isRequired,
-  setLesson: PropTypes.func.isRequired,
-  handleSectionClick: PropTypes.func.isRequired,
 };
 
 export default Module03CurriculumView;

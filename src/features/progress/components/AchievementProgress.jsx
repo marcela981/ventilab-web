@@ -17,7 +17,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   LinearProgress,
@@ -274,31 +273,6 @@ function AchievementProgress({
     </Box>
   );
 }
-
-AchievementProgress.propTypes = {
-  /**
-   * Type of achievement to track progress for
-   */
-  achievementType: PropTypes.string.isRequired,
-  /**
-   * Progress variant: 'linear' or 'circular'
-   */
-  variant: PropTypes.oneOf(['linear', 'circular']),
-  /**
-   * Size of the progress indicator: 'small', 'medium', or 'large'
-   */
-  size: PropTypes.oneOf(['small', 'medium', 'large']),
-  /**
-   * Whether to show the progress label
-   */
-  showLabel: PropTypes.bool,
-};
-
-AchievementProgress.defaultProps = {
-  variant: 'linear',
-  size: 'medium',
-  showLabel: true,
-};
 
 // Memoize component to prevent unnecessary re-renders
 export default React.memo(AchievementProgress);

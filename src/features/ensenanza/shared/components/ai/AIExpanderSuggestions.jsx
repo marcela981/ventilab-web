@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Box, Typography, Chip, Stack, Link } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
@@ -108,25 +107,6 @@ const AIExpanderSuggestions = ({
       )}
     </Box>
   );
-};
-
-AIExpanderSuggestions.propTypes = {
-  suggestions: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      text: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-  onSuggestionClick: PropTypes.func.isRequired,
-  onRotate: PropTypes.func,
-  totalSuggestions: PropTypes.number,
-  showRotateLink: PropTypes.bool,
-};
-
-AIExpanderSuggestions.defaultProps = {
-  onRotate: null,
-  totalSuggestions: 0,
-  showRotateLink: true,
 };
 
 export default AIExpanderSuggestions;

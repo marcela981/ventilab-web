@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Alert,
@@ -165,38 +164,6 @@ const MediaFallback = ({
       )}
     </FallbackContainer>
   );
-};
-
-MediaFallback.propTypes = {
-  /**
-   * Tipo de media para el cual se muestra el fallback.
-   * Determina el icono y estilos apropiados.
-   */
-  variant: PropTypes.oneOf(['video', 'image', 'svg', 'audio', 'default']),
-  
-  /**
-   * Mensaje principal a mostrar al usuario.
-   * Debe ser claro y descriptivo del problema.
-   */
-  message: PropTypes.string.isRequired,
-  
-  /**
-   * URL externa opcional para abrir el recurso en una nueva pestaña.
-   * Si se proporciona, se mostrará un botón para abrirla.
-   */
-  externalUrl: PropTypes.string,
-  
-  /**
-   * Texto personalizado para el botón de abrir en nueva pestaña.
-   * Si no se proporciona, se usa el texto por defecto.
-   */
-  buttonText: PropTypes.string,
-};
-
-MediaFallback.defaultProps = {
-  variant: 'default',
-  externalUrl: null,
-  buttonText: null,
 };
 
 export default MediaFallback;

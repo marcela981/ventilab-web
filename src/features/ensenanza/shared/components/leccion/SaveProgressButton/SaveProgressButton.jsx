@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import styles from './ui/SaveProgressButton.module.css';
 
 /**
@@ -65,12 +64,6 @@ const SaveProgressButton = ({ onSave, isSaving = false, isAlreadySaved = false }
       </div>
     </div>
   );
-};
-
-SaveProgressButton.propTypes = {
-  onSave: PropTypes.func,
-  isSaving: PropTypes.bool,
-  isAlreadySaved: PropTypes.bool,
 };
 
 export default SaveProgressButton;

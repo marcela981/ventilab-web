@@ -149,7 +149,6 @@ export const useVentilatorData = (serialConnection) => {
       volumeBuffer.current = [];
       sampleCounter.current = 0;
 
-      console.log(`100 muestras completadas - PMax: ${pressureMax.toFixed(1)}, PMin: ${pressureMin.toFixed(1)}, FMax: ${flowMax.toFixed(0)}, FMin: ${flowMin.toFixed(0)}, VMax: ${volumeMax.toFixed(0)}`);
     }
 
     // Volumen integrado en ref (NUNCA setState dentro de otro setState)
@@ -204,7 +203,6 @@ export const useVentilatorData = (serialConnection) => {
       connectionState: 'connected'
     }));
 
-    console.log('Estado del sistema:', decodedFrame.data.message);
   }, []);
 
   // Callback para procesar errores
@@ -243,7 +241,6 @@ export const useVentilatorData = (serialConnection) => {
       }
     }));
 
-    console.log('Confirmación recibida:', decodedFrame.data.message);
   }, []);
 
   // Callback para procesar confirmaciones de configuración
@@ -262,7 +259,6 @@ export const useVentilatorData = (serialConnection) => {
     }));
 
     if (decodedFrame.data.success) {
-      console.log('Configuración confirmada:', decodedFrame.data.details);
     } else {
       console.error('Error en configuración:', decodedFrame.data.details);
     }

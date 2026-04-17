@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import styles from './ui/UnsavedChangesAlert.module.css';
 
 /**
@@ -71,13 +70,6 @@ const UnsavedChangesAlert = ({ open, onSave, onDiscard, onCancel }) => {
       </div>
     </div>
   );
-};
-
-UnsavedChangesAlert.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onSave: PropTypes.func.isRequired,
-  onDiscard: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
 };
 
 export default UnsavedChangesAlert;

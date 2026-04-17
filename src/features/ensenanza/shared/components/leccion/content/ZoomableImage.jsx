@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import Image from 'next/image';
 import Zoom from 'react-medium-image-zoom';
 import 'react-medium-image-zoom/dist/styles.css';
@@ -272,43 +271,6 @@ const ZoomableImage = ({
       )}
     </ImageWrapper>
   );
-};
-
-ZoomableImage.propTypes = {
-  /**
-   * URL de la imagen. Puede ser una ruta local (ej: '/images/diagram.png')
-   * o una URL externa (ej: 'https://example.com/image.jpg')
-   */
-  src: PropTypes.string.isRequired,
-  
-  /**
-   * Texto alternativo para accesibilidad. Describe el contenido de la imagen
-   * para usuarios con lectores de pantalla.
-   */
-  alt: PropTypes.string.isRequired,
-  
-  /**
-   * Texto de leyenda o descripción que se muestra debajo de la imagen.
-   * Útil para figuras numeradas o descripciones adicionales.
-   */
-  caption: PropTypes.string,
-  
-  /**
-   * Ancho máximo de la imagen en la vista normal (antes del zoom).
-   * Acepta cualquier unidad CSS válida (px, %, rem, etc.)
-   */
-  maxWidth: PropTypes.string,
-  
-  /**
-   * Clase CSS adicional para personalización de estilos
-   */
-  className: PropTypes.string,
-};
-
-ZoomableImage.defaultProps = {
-  caption: '',
-  maxWidth: '800px',
-  className: '',
 };
 
 export default ZoomableImage;

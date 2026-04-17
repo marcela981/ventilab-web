@@ -41,7 +41,6 @@
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
   TableContainer,
   Table,
@@ -853,68 +852,6 @@ const ParameterTable = ({
 // =============================================================================
 // PropTypes
 // =============================================================================
-
-ParameterTable.propTypes = {
-  /**
-   * Array of parameter objects to display
-   */
-  parameters: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      unit: PropTypes.string,
-      initialValue: PropTypes.number,
-      acceptableRange: PropTypes.shape({
-        min: PropTypes.number.isRequired,
-        max: PropTypes.number.isRequired,
-      }),
-      objective: PropTypes.string,
-      criticality: PropTypes.oneOf(['critical', 'important', 'standard']),
-      notes: PropTypes.string,
-      category: PropTypes.string,
-    })
-  ).isRequired,
-  /**
-   * Show units column
-   */
-  showUnits: PropTypes.bool,
-  /**
-   * Show objective column
-   */
-  showObjective: PropTypes.bool,
-  /**
-   * Enable interactive features (hover, expand, etc.)
-   */
-  interactive: PropTypes.bool,
-  /**
-   * Highlight critical parameters visually
-   */
-  highlightCritical: PropTypes.bool,
-  /**
-   * Use compact mode (smaller table, mobile-friendly)
-   */
-  compactMode: PropTypes.bool,
-  /**
-   * Initial search term for filtering
-   */
-  searchTerm: PropTypes.string,
-  /**
-   * Table title/caption
-   */
-  title: PropTypes.string,
-  /**
-   * Callback when a parameter is clicked
-   */
-  onParameterClick: PropTypes.func,
-  /**
-   * Categories for grouping parameters
-   */
-  categories: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    })
-  ),
-};
 
 export default ParameterTable;
 

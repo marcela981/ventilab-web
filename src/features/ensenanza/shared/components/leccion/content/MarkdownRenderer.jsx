@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -340,29 +339,6 @@ const MarkdownRenderer = ({ content, className, sx, ...props }) => {
       </ReactMarkdown>
     </MarkdownContainer>
   );
-};
-
-MarkdownRenderer.propTypes = {
-  /** 
-   * Contenido Markdown a renderizar. Debe ser un string válido.
-   * Soporta GitHub Flavored Markdown, fórmulas matemáticas con LaTeX,
-   * tablas, imágenes, bloques de código y más.
-   */
-  content: PropTypes.string.isRequired,
-  
-  /** Clase CSS adicional para el contenedor principal */
-  className: PropTypes.string,
-  
-  /** 
-   * Estilos adicionales usando el sistema sx de Material UI.
-   * Se pueden pasar propiedades como padding, margin, etc.
-   */
-  sx: PropTypes.object,
-};
-
-MarkdownRenderer.defaultProps = {
-  className: '',
-  sx: {},
 };
 
 export default MarkdownRenderer;

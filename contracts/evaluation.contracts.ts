@@ -469,10 +469,10 @@ export interface AnswerFeedback {
   explanation?: string;
   
   /** Correct answer (if applicable) */
-  correctAnswer?: any;
+  correctAnswer?: string | string[];
   
   /** User's answer */
-  userAnswer: any;
+  userAnswer: string | string[];
 }
 
 /**

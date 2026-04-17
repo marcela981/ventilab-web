@@ -9,7 +9,6 @@
  * Sin sx props — toda la UI está en ui/DragHandle.module.css.
  */
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useEditMode } from '../EditModeContext';
 import styles from './ui/DragHandle.module.css';
 
@@ -48,16 +47,3 @@ export default function DragHandle({ dragHandleProps, isDragging, isCardOverlay 
   );
 }
 
-DragHandle.propTypes = {
-  /** Props del Draggable de @hello-pangea/dnd para activar el drag */
-  dragHandleProps: PropTypes.object,
-  /** true mientras el ítem está siendo arrastrado (aplica .drag-handle--dragging) */
-  isDragging: PropTypes.bool,
-  /** true cuando el handle se usa como overlay absoluto sobre una ModuleCard */
-  isCardOverlay: PropTypes.bool,
-};
-
-DragHandle.defaultProps = {
-  isDragging: false,
-  isCardOverlay: false,
-};

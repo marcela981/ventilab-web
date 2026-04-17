@@ -29,11 +29,9 @@ export class AIServiceManager {
   async initializeProviders() {
     // Solo inicializar en el cliente
     if (typeof window === 'undefined') {
-      console.log('⏭️ Saltando inicialización de AI Service Manager (server-side)');
       return;
     }
     
-    console.log('🚀 Inicializando AI Service Manager...');
     
     // Inicializar Gemini Provider
     try {
@@ -42,7 +40,6 @@ export class AIServiceManager {
       
       if (geminiInitialized) {
         this.providers.set('gemini', geminiProvider);
-        console.log('✅ Gemini Provider inicializado');
       } else {
         console.warn('⚠️ Gemini Provider no pudo inicializarse');
       }
@@ -57,7 +54,6 @@ export class AIServiceManager {
     // Establecer provider actual
     this.setCurrentProvider(this.preferredProvider);
     
-    console.log(`🎯 Provider actual: ${this.currentProvider?.name || 'ninguno'}`);
   }
 
   /**
@@ -66,7 +62,6 @@ export class AIServiceManager {
   setCurrentProvider(providerName) {
     if (this.providers.has(providerName)) {
       this.currentProvider = this.providers.get(providerName);
-      console.log(`🔄 Cambiado a provider: ${providerName}`);
       return true;
     }
     
@@ -81,7 +76,6 @@ export class AIServiceManager {
     // Intentar usar el primer proveedor disponible como fallback
     if (availableProviders.length > 0) {
       this.currentProvider = this.providers.get(availableProviders[0]);
-      console.log(`🔄 Usando proveedor disponible: ${availableProviders[0]}`);
       return true;
     }
     
@@ -95,7 +89,6 @@ export class AIServiceManager {
     const success = this.setCurrentProvider(newProvider);
     
     if (success) {
-      console.log(`✅ Cambiado exitosamente a ${newProvider}`);
       return {
         success: true,
         provider: newProvider,
@@ -191,7 +184,6 @@ export class AIServiceManager {
       }
 
       try {
-        console.log(`🔄 Intentando fallback con ${providerName}...`);
         const result = await provider.generateResponse(prompt, options);
         
         // Registrar solicitud exitosa
@@ -524,7 +516,6 @@ Responde en español.`;
    */
   resetRateLimit(providerName) {
     this.rateLimits.delete(providerName);
-    console.log(`🔄 Rate limit reiniciado para ${providerName}`);
   }
 
   /**
@@ -574,8 +565,6 @@ const getAIServiceManager = () => {
   if (!aiServiceManagerInstance) {
     aiServiceManagerInstance = new AIServiceManager();
     window.AIServiceManager = aiServiceManagerInstance;
-    console.log('🛠️ AIServiceManager disponible globalmente');
-    console.log('Prueba: AIServiceManager.getProviderStats()');
   }
 
   return aiServiceManagerInstance;

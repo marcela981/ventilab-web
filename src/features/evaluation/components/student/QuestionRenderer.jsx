@@ -14,7 +14,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   FormControl,
@@ -82,15 +81,6 @@ function ChoiceGroup({ options, value, disabled, onChange, isQuiz, revealed }) {
     </FormControl>
   );
 }
-
-ChoiceGroup.propTypes = {
-  options: PropTypes.array.isRequired,
-  value: PropTypes.string,
-  disabled: PropTypes.bool,
-  onChange: PropTypes.func.isRequired,
-  isQuiz: PropTypes.bool,
-  revealed: PropTypes.bool,
-};
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -191,25 +181,3 @@ export default function QuestionRenderer({ question, value, onChange, mode, reve
   );
 }
 
-QuestionRenderer.propTypes = {
-  question: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    type: PropTypes.oneOf(['multiple_choice', 'open_text', 'case_study', 'true_false']).isRequired,
-    text: PropTypes.string.isRequired,
-    options: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.string.isRequired,
-        text: PropTypes.string.isRequired,
-        isCorrect: PropTypes.bool,
-      })
-    ),
-    explanation: PropTypes.string,
-    patientInfo: PropTypes.string,
-    caseDescription: PropTypes.string,
-  }).isRequired,
-  value: PropTypes.string,
-  onChange: PropTypes.func.isRequired,
-  mode: PropTypes.oneOf(['exam', 'quiz']).isRequired,
-  revealed: PropTypes.bool,
-  locked: PropTypes.bool,
-};

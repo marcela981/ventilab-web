@@ -100,7 +100,6 @@ export const useProgressLoader = ({
       // don't overwrite it with potentially different-keyed API data.
       // This prevents the accordion expansion bug where progress resets to 0%.
       if (preserveExistingProgress && hasExistingLessonProgress(existingData)) {
-        console.log(`[useProgressLoader] Preserving existing progress for ${moduleId} (has ${Object.keys(existingData.lessonsById || {}).length} lessons)`);
         return existingData;
       }
       return existingData;
@@ -109,7 +108,6 @@ export const useProgressLoader = ({
     // Check if there's already a pending request for this module (request deduplication)
     const existingRequest = pendingLoadRequestsRef.current.get(moduleId);
     if (existingRequest && !force) {
-      console.log(`[useProgressLoader] Waiting for existing request for module ${moduleId}`);
       try {
         return await existingRequest;
       } catch (error) {
@@ -156,7 +154,6 @@ export const useProgressLoader = ({
             rateLimitRetryCountRef.current.set(moduleId, currentRetryCount + 1);
 
             setTimeout(() => {
-              console.log(`[useProgressLoader] Retrying after rate limit cooldown (attempt ${currentRetryCount + 1})...`);
               setIsRateLimited?.(false); // Clear rate limit state before retry (defensive call)
               loadModuleProgress(moduleId, { force: true });
             }, retryAfter * 1000);
@@ -275,7 +272,6 @@ export const useProgressLoader = ({
         
         // If error is due to missing token and we have a session, try to fetch token and retry once
         if (error.message?.includes('authentication token') && session?.user && !getAuthToken()) {
-          console.log('[useProgressLoader] Retrying after token fetch...');
           
           // Wait a bit and retry
           try {

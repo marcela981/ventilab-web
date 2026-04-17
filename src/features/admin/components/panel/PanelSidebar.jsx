@@ -15,7 +15,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
@@ -319,19 +318,3 @@ export default function PanelSidebar({ open, onToggle, drawerWidth }) {
   );
 }
 
-PanelSidebar.propTypes = {
-  /**
-   * Whether the sidebar is expanded
-   */
-  open: PropTypes.bool.isRequired,
-
-  /**
-   * Callback to toggle sidebar open/closed state
-   */
-  onToggle: PropTypes.func.isRequired,
-
-  /**
-   * Current drawer width in pixels
-   */
-  drawerWidth: PropTypes.number.isRequired,
-};

@@ -111,7 +111,6 @@ const MediaBlocksContainer = ({ media }) => {
                 width={data.width || '100%'}
                 initialScale={data.initialScale || 1}
                 onLoad={() => {
-                  console.log(`[MediaBlocksContainer] Diagrama ${index + 1} cargado exitosamente`, { blockIndex: index });
                 }}
                 onError={(error) => {
                   console.warn(`[MediaBlocksContainer] Error en diagrama ${index + 1}:`, error, { blockIndex: index, svgSrc: data.svgSrc });

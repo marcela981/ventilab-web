@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Typography,
@@ -171,13 +170,6 @@ const ContinueLearningSection = ({
       )}
     </ClientOnly>
   );
-};
-
-ContinueLearningSection.propTypes = {
-  nextModule: PropTypes.object,
-  onContinueLearning: PropTypes.func.isRequired,
-  calculateModuleProgress: PropTypes.func.isRequired,
-  curriculumData: PropTypes.object.isRequired
 };
 
 export default ContinueLearningSection;

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
   Accordion,
   AccordionSummary,
@@ -627,42 +626,6 @@ const PersonalNotes = ({
       </Dialog>
     </>
   );
-};
-
-PersonalNotes.propTypes = {
-  /**
-   * ID de la lección a la que pertenecen las notas
-   */
-  lessonId: PropTypes.string.isRequired,
-
-  /**
-   * ID del módulo al que pertenece la lección
-   */
-  moduleId: PropTypes.string.isRequired,
-
-  /**
-   * Callback opcional llamado cuando se agrega una nota.
-   * Recibe la nota creada como parámetro.
-   */
-  onNoteAdded: PropTypes.func,
-
-  /**
-   * Callback opcional llamado cuando se edita una nota.
-   * Recibe un objeto con id y text de la nota editada.
-   */
-  onNoteEdited: PropTypes.func,
-
-  /**
-   * Callback opcional llamado cuando se elimina una nota.
-   * Recibe la nota eliminada como parámetro.
-   */
-  onNoteDeleted: PropTypes.func,
-};
-
-PersonalNotes.defaultProps = {
-  onNoteAdded: null,
-  onNoteEdited: null,
-  onNoteDeleted: null,
 };
 
 export default PersonalNotes;

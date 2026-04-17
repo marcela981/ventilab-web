@@ -24,9 +24,9 @@ const ProgressTab: React.FC = () => {
   const fetchedOnce = useRef(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [skills, setSkills] = useState<any>(null);
-  const [milestones, setMilestones] = useState<any>(null);
-  const [achievements, setAchievements] = useState<any>(null);
+  const [skills, setSkills] = useState<Record<string, unknown> | null>(null);
+  const [milestones, setMilestones] = useState<Record<string, unknown> | null>(null);
+  const [achievements, setAchievements] = useState<Record<string, unknown> | null>(null);
   const [mounted, setMounted] = useState(false);
 
   const { snapshot, isLoadingSnapshot, snapshotError, refetchSnapshot } = useLearningProgress();
@@ -41,7 +41,7 @@ const ProgressTab: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const silentCatch = (fn: Promise<any>) =>
+        const silentCatch = (fn: Promise<unknown>) =>
           fn.catch(err => {
             debug.warn('Non-critical fetch failed:', err?.message);
             return null;
@@ -56,8 +56,8 @@ const ProgressTab: React.FC = () => {
         setSkills(skillsData);
         setMilestones(milestonesData);
         setAchievements(achievementsData);
-      } catch (e: any) {
-        setError(e?.message || 'Error cargando progreso');
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : 'Error cargando progreso');
       } finally {
         setLoading(false);
       }

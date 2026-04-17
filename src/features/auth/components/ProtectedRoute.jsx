@@ -16,7 +16,6 @@
 
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import PropTypes from 'prop-types';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { ROLES } from '@/lib/roles';
@@ -142,10 +141,6 @@ export function ProtectedRoute({
 
     // Access granted
     if (!isLoading && isAuthenticated) {
-      console.log('[ProtectedRoute] Access granted', {
-        user: user?.email,
-        role,
-      });
 
       if (typeof onAccessGranted === 'function') {
         onAccessGranted({ user, role });
@@ -184,30 +179,6 @@ export function ProtectedRoute({
   // All checks passed
   return <>{children}</>;
 }
-
-ProtectedRoute.propTypes = {
-  children: PropTypes.node.isRequired,
-  requiredRole: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.arrayOf(PropTypes.string),
-  ]),
-  requireAuth: PropTypes.bool,
-  redirectTo: PropTypes.string,
-  fallback: PropTypes.node,
-  preserveQuery: PropTypes.bool,
-  onAccessDenied: PropTypes.func,
-  onAccessGranted: PropTypes.func,
-};
-
-ProtectedRoute.defaultProps = {
-  requiredRole: null,
-  requireAuth: true,
-  redirectTo: '/auth/login',
-  fallback: null,
-  preserveQuery: true,
-  onAccessDenied: null,
-  onAccessGranted: null,
-};
 
 // Export ROLES for convenience when using ProtectedRoute
 export { ROLES };

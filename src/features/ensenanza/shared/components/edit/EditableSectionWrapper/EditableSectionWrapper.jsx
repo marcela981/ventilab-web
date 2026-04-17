@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import RichTextEditor from '../RichTextEditor/RichTextEditor';
 import styles from './ui/EditableSectionWrapper.module.css';
 
@@ -182,18 +181,6 @@ const EditableSectionWrapper = ({
       )}
     </div>
   );
-};
-
-EditableSectionWrapper.propTypes = {
-  children: PropTypes.node.isRequired,
-  pageType: PropTypes.string,
-  sectionIndex: PropTypes.number.isRequired,
-  totalSections: PropTypes.number.isRequired,
-  initialContent: PropTypes.string,
-  onContentChange: PropTypes.func,
-  onMoveUp: PropTypes.func,
-  onMoveDown: PropTypes.func,
-  onDelete: PropTypes.func,
 };
 
 export default EditableSectionWrapper;

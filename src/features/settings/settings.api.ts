@@ -4,5 +4,5 @@
  */
 export const settingsApi = {
   getSettings: async () => ({}),
-  updateSettings: async (data: any) => ({}),
+  updateSettings: async (data: Record<string, unknown>) => ({}),
 };

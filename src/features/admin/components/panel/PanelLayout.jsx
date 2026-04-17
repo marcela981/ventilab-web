@@ -11,7 +11,6 @@
  */
 
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import { Box, CssBaseline } from '@mui/material';
 import PanelSidebar from './PanelSidebar';
 
@@ -73,13 +72,6 @@ export default function PanelLayout({ children }) {
     </Box>
   );
 }
-
-PanelLayout.propTypes = {
-  /**
-   * Page content to render in the main area
-   */
-  children: PropTypes.node.isRequired,
-};
 
 // Export drawer width constants for use in child components if needed
 export { DRAWER_WIDTH_OPEN, DRAWER_WIDTH_CLOSED };

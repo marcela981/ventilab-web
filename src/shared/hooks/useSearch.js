@@ -414,7 +414,6 @@ export const useSearch = () => {
     } catch (err) {
       // Ignore abort errors
       if (err.name === 'AbortError') {
-        console.log('Search request was cancelled');
         return;
       }
 
@@ -491,7 +490,6 @@ export const useSearch = () => {
     } catch (err) {
       // Ignore abort errors
       if (err.name === 'AbortError') {
-        console.log('Suggestions request was cancelled');
         return;
       }
 

@@ -127,7 +127,6 @@ export const useLessonAvailability = () => {
 
     // Si no hay módulos con lecciones en el nivel, considerarlo completo
     if (modulesWithLessons.length === 0) {
-      console.log(`[isLevelCompleted] Level: ${levelId} has no modules with lessons, considering complete`);
       return true;
     }
 
@@ -154,13 +153,11 @@ export const useLessonAvailability = () => {
       
       // Si no tiene datos de progreso ni lecciones completadas, excluirlo del cálculo
       // Esto maneja el caso de módulos que no existen en la BD o no se han iniciado
-      console.log(`[isLevelCompleted] Excluding module ${mod.id} from level completion check (no progress data)`);
       return false;
     });
 
     // Si no hay módulos con progreso, considerar el nivel completo
     if (modulesWithProgress.length === 0) {
-      console.log(`[isLevelCompleted] Level: ${levelId} has no modules with progress data, considering complete`);
       return true;
     }
 
@@ -176,9 +173,7 @@ export const useLessonAvailability = () => {
     
     // Solo loggear si el nivel no está completo para debugging
     if (!allModulesCompleted) {
-      console.log(`[isLevelCompleted] Level: ${levelId} is NOT complete. Module progress:`, moduleProgresses);
     } else {
-      console.log(`[isLevelCompleted] Level: ${levelId} is COMPLETE. All modules:`, moduleProgresses.map(m => `${m.moduleId} (${m.progress}%)`).join(', '));
     }
 
     return allModulesCompleted;

@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useRouter } from 'next/router';
 import { Button, Tooltip } from '@mui/material';
 import { CheckCircle, Refresh, PlayArrow } from '@mui/icons-material';
@@ -160,23 +159,6 @@ const LessonCardFooter = ({
       {button}
     </footer>
   );
-};
-
-LessonCardFooter.propTypes = {
-  status: PropTypes.string.isRequired,
-  isAvailable: PropTypes.bool.isRequired,
-  allowEmpty: PropTypes.bool,
-  levelColor: PropTypes.string.isRequired,
-  theme: PropTypes.object.isRequired,
-  onLessonClick: PropTypes.func.isRequired,
-  moduleId: PropTypes.string.isRequired,
-  lessonId: PropTypes.string.isRequired,
-  lessonTitle: PropTypes.string,
-  missingPrerequisites: PropTypes.oneOfType([
-    PropTypes.arrayOf(PropTypes.string),
-    PropTypes.string
-  ]),
-  sections: PropTypes.array
 };
 
 export default LessonCardFooter;

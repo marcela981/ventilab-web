@@ -13,8 +13,8 @@ export function useMySubmissions() {
     try {
       const items = await submissionApi.my();
       setSubmissions(items);
-    } catch (e: any) {
-      setError(e?.message ?? 'Error cargando entregas');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error cargando entregas');
     } finally {
       setIsLoading(false);
     }

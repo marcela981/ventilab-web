@@ -10,7 +10,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useRouter } from 'next/router';
 import {
   Card,
@@ -186,27 +185,6 @@ const StudentCard = ({ student, onViewDetails }) => {
       </CardActions>
     </Card>
   );
-};
-
-StudentCard.propTypes = {
-  student: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string,
-    email: PropTypes.string.isRequired,
-    image: PropTypes.string,
-    stats: PropTypes.shape({
-      completedLessons: PropTypes.number,
-      totalLessons: PropTypes.number,
-      totalTimeSpent: PropTypes.number,
-      lastAccess: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
-      progressPercentage: PropTypes.number,
-    }),
-  }).isRequired,
-  onViewDetails: PropTypes.func,
-};
-
-StudentCard.defaultProps = {
-  onViewDetails: null,
 };
 
 export default StudentCard;

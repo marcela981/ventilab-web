@@ -91,7 +91,6 @@
  */
 
 import React, { useReducer, useCallback, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Paper,
@@ -1327,98 +1326,5 @@ const ClinicalCase = ({ caseData, onComplete }) => {
   );
 };
 
-// ============================================================================
-// PropTypes
-// ============================================================================
-
-ClinicalCase.propTypes = {
-  /**
-   * Clinical case data object containing all case information
-   */
-  caseData: PropTypes.shape({
-    /**
-     * Unique identifier for the case
-     */
-    caseId: PropTypes.string.isRequired,
-
-    /**
-     * Title of the clinical case
-     */
-    title: PropTypes.string.isRequired,
-
-    /**
-     * Patient information
-     */
-    patientInfo: PropTypes.shape({
-      age: PropTypes.number.isRequired,
-      sex: PropTypes.string.isRequired,
-      weight: PropTypes.number.isRequired,
-      height: PropTypes.number.isRequired,
-      admissionReason: PropTypes.string.isRequired,
-      vitalSigns: PropTypes.shape({
-        hr: PropTypes.number,
-        bp: PropTypes.string,
-        rr: PropTypes.number,
-        spo2: PropTypes.number,
-        temp: PropTypes.number,
-      }),
-      physicalExam: PropTypes.string,
-    }).isRequired,
-
-    /**
-     * Complementary examination results
-     */
-    complementaryExams: PropTypes.shape({
-      gasometry: PropTypes.objectOf(PropTypes.shape({
-        value: PropTypes.number.isRequired,
-        normal: PropTypes.arrayOf(PropTypes.number).isRequired,
-      })),
-      labs: PropTypes.objectOf(PropTypes.shape({
-        value: PropTypes.number.isRequired,
-        normal: PropTypes.arrayOf(PropTypes.number).isRequired,
-        unit: PropTypes.string,
-      })),
-      imaging: PropTypes.string,
-    }),
-
-    /**
-     * Available ventilatory modality options
-     */
-    modalityOptions: PropTypes.arrayOf(PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      description: PropTypes.string.isRequired,
-    })).isRequired,
-
-    /**
-     * Ventilator parameters configuration
-     */
-    parameters: PropTypes.objectOf(PropTypes.shape({
-      min: PropTypes.number.isRequired,
-      max: PropTypes.number.isRequired,
-      unit: PropTypes.string.isRequired,
-    })).isRequired,
-
-    /**
-     * Correct solution with expert reasoning
-     */
-    correctSolution: PropTypes.shape({
-      modality: PropTypes.string.isRequired,
-      reasoning: PropTypes.string.isRequired,
-      parameters: PropTypes.object.isRequired,
-      explanations: PropTypes.objectOf(PropTypes.string),
-    }).isRequired,
-  }).isRequired,
-
-  /**
-   * Callback function executed when case is completed successfully.
-   * Receives an object with: caseId, score, timeSpent, choices, correct
-   */
-  onComplete: PropTypes.func,
-};
-
-ClinicalCase.defaultProps = {
-  onComplete: null,
-};
 
 export default ClinicalCase;

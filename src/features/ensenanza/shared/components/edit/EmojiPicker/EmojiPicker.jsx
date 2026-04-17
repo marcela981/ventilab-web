@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { useEditMode } from '../EditModeContext';
 import { useAuth } from '@/shared/hooks/useAuth';
 import styles from './ui/EmojiPicker.module.css';
@@ -106,15 +105,6 @@ const EmojiPicker = ({ value, onChange }) => {
       )}
     </div>
   );
-};
-
-EmojiPicker.propTypes = {
-  value: PropTypes.string,
-  onChange: PropTypes.func.isRequired,
-};
-
-EmojiPicker.defaultProps = {
-  value: '',
 };
 
 export default EmojiPicker;

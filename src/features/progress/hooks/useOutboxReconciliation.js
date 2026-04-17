@@ -43,10 +43,6 @@ export const useOutboxReconciliation = ({
     const eventsToProcess = events.slice(0, MAX_RECONCILIATION_BATCH_SIZE);
     const remainingEventCount = events.length - eventsToProcess.length;
     
-    console.log(
-      `[useOutboxReconciliation] Reconciling ${eventsToProcess.length} outbox events` +
-      (remainingEventCount > 0 ? ` (${remainingEventCount} remaining for next batch)` : '') + '...'
-    );
     setSyncStatus('saving');
     
     const confirmedIds = [];
@@ -147,7 +143,6 @@ export const useOutboxReconciliation = ({
           
           // Wait for the specified time before continuing
           // This helps prevent immediate retry which would cause more rate limiting
-          console.log(`[useOutboxReconciliation] Waiting ${waitTime}ms before continuing...`);
           await delay(waitTime);
           
           // Stop processing this batch - remaining events will be processed in next reconciliation cycle
@@ -155,7 +150,6 @@ export const useOutboxReconciliation = ({
           // 1. Manual call to reconcileOutbox
           // 2. Online event handler
           // 3. Periodic check (if implemented elsewhere)
-          console.log(`[useOutboxReconciliation] Batch processing stopped due to rate limit. ${eventsToProcess.length - i - 1} events will be processed in next cycle.`);
           break;
         }
         
@@ -252,7 +246,6 @@ export const useOutboxReconciliation = ({
       const failedCount = removedCount - confirmedCount;
       
       if (confirmedCount > 0) {
-        console.log(`[useOutboxReconciliation] Reconciled ${confirmedCount} events`);
       }
       if (failedCount > 0) {
         console.warn(`[useOutboxReconciliation] Removed ${failedCount} permanently failed events`);

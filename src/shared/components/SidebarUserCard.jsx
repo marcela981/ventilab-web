@@ -15,7 +15,6 @@
  */
 
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import { useRouter } from 'next/router';
 import {
   Box,
@@ -433,20 +432,6 @@ export function SidebarUserCard({
     </>
   );
 }
-
-SidebarUserCard.propTypes = {
-  user: PropTypes.shape({
-    name: PropTypes.string.isRequired,
-    role: PropTypes.oneOf(['STUDENT', 'TEACHER', 'ADMIN']).isRequired,
-    image: PropTypes.string,
-    avatar: PropTypes.string,
-    email: PropTypes.string,
-  }).isRequired,
-  isExpanded: PropTypes.bool,
-  onLogout: PropTypes.func.isRequired,
-  onProfileClick: PropTypes.func,
-  isLoggingOut: PropTypes.bool,
-};
 
 export default SidebarUserCard;
 

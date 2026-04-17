@@ -64,12 +64,12 @@ export interface SendLessonAIOptions {
   /**
    * Callback cuando termina (solo si stream=true)
    */
-  onEnd?: (messageId?: string, usage?: any, suggestions?: string[] | null) => void;
+  onEnd?: (messageId?: string, usage?: Record<string, unknown>, suggestions?: string[] | null) => void;
   
   /**
    * Callback para errores (solo si stream=true)
    */
-  onError?: (error: string, errorInfo?: any) => void;
+  onError?: (error: string, errorInfo?: Record<string, unknown>) => void;
   
   /**
    * AbortController para cancelar (opcional)
@@ -90,7 +90,7 @@ export interface SendLessonAIOptions {
  * @param options - Opciones de la petición
  * @returns Promise con resultado (solo si stream=false)
  */
-export const sendLessonAI = async (options: SendLessonAIOptions): Promise<any> => {
+export const sendLessonAI = async (options: SendLessonAIOptions): Promise<unknown> => {
   const {
     lessonContext,
     user,

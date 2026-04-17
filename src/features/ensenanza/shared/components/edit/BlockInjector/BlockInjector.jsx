@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import styles from './ui/BlockInjector.module.css';
 
 const BLOCK_TYPES = [
@@ -50,7 +49,6 @@ const BlockInjector = ({ afterPageIndex, onInsertBlock }) => {
     setOpen(false);
     onInsertBlock?.({ type: blockType.id, afterIndex: afterPageIndex });
     // TODO Fase 3: POST /api/lessons/{lessonId}/blocks { type, afterIndex }
-    console.log('[BlockInjector] insert block:', { type: blockType.id, afterPageIndex });
   };
 
   return (
@@ -119,11 +117,6 @@ const BlockInjector = ({ afterPageIndex, onInsertBlock }) => {
       )}
     </div>
   );
-};
-
-BlockInjector.propTypes = {
-  afterPageIndex: PropTypes.number.isRequired,
-  onInsertBlock: PropTypes.func,
 };
 
 export default BlockInjector;

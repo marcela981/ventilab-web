@@ -8,7 +8,6 @@
  */
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import { Snackbar, Alert, Slide } from '@mui/material';
 
 // =============================================================================
@@ -145,10 +144,6 @@ export function NotificationProvider({ children }) {
     </NotificationContext.Provider>
   );
 }
-
-NotificationProvider.propTypes = {
-  children: PropTypes.node.isRequired,
-};
 
 // =============================================================================
 // useNotification Hook

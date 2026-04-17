@@ -21,8 +21,8 @@ export function useQuizzes() {
     try {
       const items = await quizApi.list();
       setQuizzes(items);
-    } catch (e: any) {
-      setError(e?.message ?? 'Error cargando quizzes');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error cargando quizzes');
     } finally {
       setIsLoading(false);
     }

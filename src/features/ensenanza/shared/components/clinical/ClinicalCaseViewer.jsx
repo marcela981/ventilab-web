@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Paper,
@@ -301,12 +300,6 @@ const ClinicalCaseViewer = ({ moduleId, onBack, onCompleted }) => {
       </Dialog>
     </Paper>
   );
-};
-
-ClinicalCaseViewer.propTypes = {
-  moduleId: PropTypes.string.isRequired,
-  onBack: PropTypes.func,
-  onCompleted: PropTypes.func,
 };
 
 export default ClinicalCaseViewer;

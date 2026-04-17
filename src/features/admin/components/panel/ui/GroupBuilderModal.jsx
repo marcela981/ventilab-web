@@ -5,7 +5,6 @@
  * Crea el grupo en BD y agrega a cada estudiante como miembro.
  */
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Box, Typography, Chip, Button, Avatar, Divider, Alert,
@@ -204,13 +203,3 @@ export default function GroupBuilderModal({ open, onClose, onCreated, selectedSt
   );
 }
 
-GroupBuilderModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onCreated: PropTypes.func,   // callback después de crear exitosamente
-  selectedStudents: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    name: PropTypes.string,
-    email: PropTypes.string,
-  })),
-};

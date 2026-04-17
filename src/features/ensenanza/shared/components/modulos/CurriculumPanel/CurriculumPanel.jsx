@@ -11,7 +11,6 @@
  */
 
 import React, { useMemo, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import ModuleNavigationRouter from '@/features/ensenanza/shared/components/navigation/ModuleNavigationRouter';
 import CurriculumSections from '../CurriculumSections/CurriculumSections';
 import { debug } from '@/shared/utils/debug';
@@ -131,33 +130,6 @@ const CurriculumPanel = ({
       moduleMetadata={moduleMetadata}
     />
   );
-};
-
-CurriculumPanel.propTypes = {
-  moduleIdFromQuery: PropTypes.string,
-  lessonIdFromQuery: PropTypes.string,
-  router: PropTypes.object.isRequired,
-  activeCategoryId: PropTypes.string,
-  activeLessonId: PropTypes.string,
-  setModule: PropTypes.func.isRequired,
-  setCategory: PropTypes.func.isRequired,
-  setLesson: PropTypes.func.isRequired,
-  handleSectionClick: PropTypes.func.isRequired,
-  levelProgress: PropTypes.object.isRequired,
-  getModulesByLevel: PropTypes.func.isRequired,
-  calculateModuleProgress: PropTypes.func.isRequired,
-  isModuleAvailable: PropTypes.func.isRequired,
-  getModuleStatus: PropTypes.func.isRequired,
-  getTooltipMessage: PropTypes.func.isRequired,
-  favoriteModules: PropTypes.instanceOf(Set).isRequired,
-  toggleFavorite: PropTypes.func.isRequired,
-  levels: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-    color: PropTypes.string.isRequired,
-    emoji: PropTypes.string,
-  })).isRequired,
 };
 
 export default CurriculumPanel;

@@ -5,7 +5,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Chip, Tooltip } from '@mui/material';
 import { Construction as ConstructionIcon } from '@mui/icons-material';
 
@@ -67,11 +66,6 @@ const ComingSoonBadge = ({
   }
 
   return badge;
-};
-
-ComingSoonBadge.propTypes = {
-  show: PropTypes.bool,
-  tooltip: PropTypes.string,
 };
 
 export default ComingSoonBadge;

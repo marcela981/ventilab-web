@@ -73,7 +73,6 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       setIsAuthenticated(false);
     };
     const onAuthenticated = ({ userId }: { userId: string }) => {
-      console.log('[Socket] Authenticated as', userId);
       setIsAuthenticated(true);
     };
     const onAuthError = () => {

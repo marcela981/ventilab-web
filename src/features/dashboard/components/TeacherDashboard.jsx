@@ -119,7 +119,6 @@ const TeacherDashboard = () => {
   const handleDeleteConfirm = async () => {
     if (selectedModule) {
       // Aquí iría la lógica de eliminación
-      console.log('Deleting module:', selectedModule.id);
       // await deleteModule(selectedModule.id);
       setDeleteDialogOpen(false);
       setSelectedModule(null);

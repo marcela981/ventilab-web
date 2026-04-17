@@ -125,7 +125,6 @@ export function useLevelContent(moduleId, lessonId) {
     setData(null);
 
     try {
-      console.log(`📚 [useLevelContent] Loading content: ${module}/${lesson} (Level: ${level})`);
 
       // Convert level to lowercase for file path
       const levelPath = level.toLowerCase();
@@ -173,13 +172,6 @@ export function useLevelContent(moduleId, lessonId) {
           `Lecciones disponibles: ${jsonContent.lessons.map(l => l.lessonId).join(', ')}`
         );
       }
-
-      console.log(`✅ [useLevelContent] Content loaded successfully:`, {
-        module,
-        lesson: lessonData.lessonId,
-        title: lessonData.title,
-        level,
-      });
 
       setData(lessonData);
       setError(null);
@@ -242,7 +234,6 @@ export function useLevelContent(moduleId, lessonId) {
 
     // Fallback: If userLevel is not available in user object, fetch from API
     if (!level) {
-      console.log('⚠️ [useLevelContent] User level not in session, fetching from API...');
 
       // Fetch user profile to get userLevel
       fetch('/api/users/profile', {

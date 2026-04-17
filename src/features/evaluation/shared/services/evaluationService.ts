@@ -70,8 +70,9 @@ export async function fetchQuizzes(moduleId?: string): Promise<Quiz[]> {
     const query = moduleId ? `?moduleId=${encodeURIComponent(moduleId)}` : '';
     const { data } = await http.get(`/api/evaluation/quizzes${query}`);
     return data.quizzes ?? [];
-  } catch (err: any) {
-    if (err?.response?.status === 404) return [];
+  } catch (err: unknown) {
+    const axiosErr = err as { response?: { status?: number } };
+    if (axiosErr?.response?.status === 404) return [];
     throw err;
   }
 }
@@ -112,8 +113,9 @@ export async function fetchActivities(type?: 'EXAM' | 'TALLER'): Promise<Activit
     const query = type ? `?type=${encodeURIComponent(type)}` : '';
     const { data } = await http.get(`/api/evaluation/activities${query}`);
     return data.activities ?? [];
-  } catch (err: any) {
-    if (err?.response?.status === 404) return [];
+  } catch (err: unknown) {
+    const axiosErr = err as { response?: { status?: number } };
+    if (axiosErr?.response?.status === 404) return [];
     throw err;
   }
 }

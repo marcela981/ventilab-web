@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
 
 /**
@@ -42,17 +41,6 @@ const AIExpanderChatMessage = ({ role, content, children }) => {
       )}
     </Box>
   );
-};
-
-AIExpanderChatMessage.propTypes = {
-  role: PropTypes.oneOf(['user', 'assistant']).isRequired,
-  content: PropTypes.string,
-  children: PropTypes.node,
-};
-
-AIExpanderChatMessage.defaultProps = {
-  content: '',
-  children: null,
 };
 
 export default AIExpanderChatMessage;

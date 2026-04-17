@@ -5,7 +5,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Box, Typography, Chip } from '@mui/material';
 import { AdminPanelSettings as AdminIcon } from '@mui/icons-material';
 import { getRoleDisplayName } from '@/lib/roles';
@@ -89,10 +88,3 @@ export default function DashboardHero({ user, role }) {
   );
 }
 
-DashboardHero.propTypes = {
-  user: PropTypes.shape({
-    name: PropTypes.string,
-    email: PropTypes.string,
-  }),
-  role: PropTypes.string,
-};

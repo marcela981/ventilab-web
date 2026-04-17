@@ -16,7 +16,6 @@
  *  - Se aplica a niveles, módulos y lecciones.
  */
 import React, { useState, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {
   Box, Typography, Accordion, AccordionSummary, AccordionDetails,
@@ -91,12 +90,6 @@ function LessonRow({ lesson, dragHandleProps, isDragging }) {
     </Box>
   );
 }
-
-LessonRow.propTypes = {
-  lesson: PropTypes.object.isRequired,
-  dragHandleProps: PropTypes.object,
-  isDragging: PropTypes.bool,
-};
 
 // ─── ModuleSection ────────────────────────────────────────────────────────────
 
@@ -193,14 +186,6 @@ function ModuleSection({ mod, colorScheme, dragHandleProps, isDragging, lessons 
     </Box>
   );
 }
-
-ModuleSection.propTypes = {
-  mod: PropTypes.object.isRequired,
-  colorScheme: PropTypes.object.isRequired,
-  dragHandleProps: PropTypes.object,
-  isDragging: PropTypes.bool,
-  lessons: PropTypes.array.isRequired,
-};
 
 // ─── NotionCurriculumEditor ───────────────────────────────────────────────────
 
@@ -436,21 +421,3 @@ export default function NotionCurriculumEditor({ levels = [], getModulesByLevel 
   );
 }
 
-NotionCurriculumEditor.propTypes = {
-  levels: PropTypes.array,
-  getModulesByLevel: PropTypes.func,
-};
-
-ModuleSection.propTypes = {
-  mod: PropTypes.object.isRequired,
-  colorScheme: PropTypes.object.isRequired,
-  dragHandleProps: PropTypes.object,
-  isDragging: PropTypes.bool,
-  lessons: PropTypes.array.isRequired,
-};
-
-LessonRow.propTypes = {
-  lesson: PropTypes.object.isRequired,
-  dragHandleProps: PropTypes.object,
-  isDragging: PropTypes.bool,
-};

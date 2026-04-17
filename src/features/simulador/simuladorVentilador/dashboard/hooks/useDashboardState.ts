@@ -16,25 +16,79 @@ import type { VentilatorData, VentilationMode, RealTimeData } from '@/features/s
  * Used a ref to avoid the loop where setVentilatorData → new ventilatorData → re-trigger.
  */
 
+interface SerialConnectionHook {
+  isConnected: boolean;
+  connect: (port: unknown, baudRate: number) => Promise<{ success: boolean; errorType?: string; error?: string }>;
+  disconnect: () => Promise<void>;
+  sendData: (data: string) => Promise<void>;
+  stopSystem: () => Promise<void>;
+}
+
+interface PatientDataState {
+  calculatedParams?: {
+    fio2Inicial?: number;
+    volumenTidal?: number;
+    peepRecomendado?: number;
+    frecuenciaResp?: number;
+    presionMaxRecomendada?: number;
+  };
+}
+
+interface ParameterValidationHook {
+  updateValidationState: (data: VentilatorData, mode: VentilationMode) => {
+    valid: boolean;
+    criticalErrors: Array<{ message: string }>;
+    warnings: Array<{ message: string }>;
+  };
+}
+
+interface DataRecordingHook {
+  downloadAsTxt: () => void;
+}
+
+interface DetectedError {
+  type: string;
+  message: string;
+  severity: 'high' | 'medium';
+  suggestedAdjustment?: number;
+}
+
+interface ComplianceResult {
+  compliance: number;
+  resetComplianceCalculation: () => void;
+}
+
+interface ErrorDetectionResult {
+  hasHighSeverityErrors: boolean;
+  getHighSeverityErrors: () => DetectedError[];
+  applyAdjustment: (error: DetectedError, handler: (param: string, value: number) => void) => void;
+}
+
 interface DashboardDeps {
-  serialConnection: any;
+  serialConnection: SerialConnectionHook;
   ventilatorData: VentilatorData;
   setVentilatorData: React.Dispatch<React.SetStateAction<VentilatorData>>;
   realTimeData: RealTimeData;
-  patientData: any;
+  patientData: PatientDataState | null;
   isDataPersisted: boolean;
-  sendPatientDataToConnection: (conn: any) => boolean;
+  sendPatientDataToConnection: (conn: SerialConnectionHook) => boolean;
   activatePatientMode: () => void;
   deactivatePatientMode: () => void;
-  parameterValidation: any;
-  dataRecording: any;
-  registerDataRecording: (hook: any) => void;
+  parameterValidation: ParameterValidationHook;
+  dataRecording: DataRecordingHook;
+  registerDataRecording: (hook: DataRecordingHook) => void;
   integratedVolume: number;
   resetIntegratedVolume: () => void;
-  useComplianceCalculation: (data: RealTimeData, mode: VentilationMode) => any;
-  useSignalProcessing: (data: RealTimeData) => any;
-  useErrorDetection: (target: VentilatorData, current: any, compliance: number) => any;
-  useAIAnalysis: () => any;
+  useComplianceCalculation: (data: RealTimeData, mode: VentilationMode) => ComplianceResult;
+  useSignalProcessing: (data: RealTimeData) => Record<string, unknown>;
+  useErrorDetection: (target: VentilatorData, current: Record<string, unknown>, compliance: number) => ErrorDetectionResult;
+  useAIAnalysis: () => {
+    isAnalyzing: boolean;
+    analysisResult: unknown;
+    analysisError: string | null;
+    analyzeConfiguration: (userConfig: Record<string, unknown>, optimalConfig: Record<string, unknown> | null, mode: VentilationMode, patient: PatientDataState | null) => void;
+    clearAnalysis: () => void;
+  };
 }
 
 const useDashboardState = ({
@@ -67,7 +121,7 @@ const useDashboardState = ({
   // UI state
   const [showAIPanel, setShowAIPanel] = useState(false);
   const [autoAdjustmentEnabled, setAutoAdjustmentEnabled] = useState(true);
-  const [lastAutoAdjustment, setLastAutoAdjustment] = useState<any>(null);
+  const [lastAutoAdjustment, setLastAutoAdjustment] = useState<Record<string, unknown> | null>(null);
   const [complianceCardExpanded, setComplianceCardExpanded] = useState(false);
   const [showValidationAlerts, setShowValidationAlerts] = useState(false);
   const [showCompactValidationAlerts, setShowCompactValidationAlerts] = useState(false);
@@ -79,7 +133,7 @@ const useDashboardState = ({
 
   // ==================== REFS (stable references for effects) ====================
   const ventilatorDataRef = useRef(ventilatorData);
-  const complianceDataRef = useRef<any>(null);
+  const complianceDataRef = useRef<ComplianceResult | null>(null);
   const serialConnectionRef = useRef(serialConnection);
   const autoAdjustmentEnabledRef = useRef(autoAdjustmentEnabled);
 
@@ -91,7 +145,7 @@ const useDashboardState = ({
   // ==================== DEPENDENT HOOKS ====================
   const displayData = useMemo(() => {
     if (dataSource === 'simulated') {
-      return { isSimulated: true, pressure: [], flow: [], volume: [], time: [] } as any;
+      return { isSimulated: true, pressure: [], flow: [], volume: [], time: [] } as unknown as RealTimeData;
     }
     return serialConnection.isConnected ? realTimeData : { pressure: [], flow: [], volume: [], time: [] };
   }, [serialConnection.isConnected, realTimeData, dataSource]);
@@ -160,7 +214,7 @@ const useDashboardState = ({
       autoAdjustmentEnabledRef.current
     ) {
       const highErrors = errorDetectionCalculated.getHighSeverityErrors();
-      highErrors.forEach((error: any) => {
+      highErrors.forEach((error: DetectedError) => {
         errorDetectionCalculated.applyAdjustment(error, handleParameterChange);
       });
 
@@ -295,7 +349,7 @@ const useDashboardState = ({
 
   // ==================== HANDLERS ====================
 
-  const handleConnection = useCallback(async (port: any, baudRate: number) => {
+  const handleConnection = useCallback(async (port: unknown, baudRate: number) => {
     const result = await serialConnection.connect(port, baudRate);
 
     if (result.success) {
@@ -374,7 +428,7 @@ const useDashboardState = ({
   }, [clearAnalysis]);
 
   const executeAIAnalysis = useCallback(
-    (userConfig: any, optimalConfig: any, mode: VentilationMode, patient: any) => {
+    (userConfig: Record<string, unknown>, optimalConfig: Record<string, unknown> | null, mode: VentilationMode, patient: PatientDataState | null) => {
       if (!userConfig || Object.keys(userConfig).length === 0) return;
       if (!mode || !['volume', 'pressure'].includes(mode)) return;
       analyzeConfiguration(userConfig, optimalConfig, mode, patient);

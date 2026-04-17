@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Chip } from '@mui/material';
 
 const LABELS = {
@@ -27,8 +26,4 @@ export default function SubmissionStatusBadge({ status }) {
     />
   );
 }
-
-SubmissionStatusBadge.propTypes = {
-  status: PropTypes.string,
-};
 

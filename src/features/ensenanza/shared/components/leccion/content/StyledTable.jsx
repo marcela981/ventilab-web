@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
   Table,
   TableBody,
@@ -174,17 +173,6 @@ const StyledTable = ({ children, className, ...props }) => {
       </Table>
     </StyledTableContainer>
   );
-};
-
-StyledTable.propTypes = {
-  /** Contenido de la tabla (elementos thead, tbody, etc.) */
-  children: PropTypes.node.isRequired,
-  /** Clase CSS adicional */
-  className: PropTypes.string,
-};
-
-StyledTable.defaultProps = {
-  className: '',
 };
 
 export default StyledTable;

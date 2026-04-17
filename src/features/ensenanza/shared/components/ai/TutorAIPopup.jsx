@@ -14,7 +14,6 @@
  */
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Paper,
@@ -298,17 +297,11 @@ const TutorAIPopup = ({
       const shouldAutoOpen = isFirstLesson && !hasEnteredBeforeRef.current && !isLessonCompleted;
 
       if (!shouldAutoOpen) {
-        console.log('[TutorAIPopup] Skipping auto-open:', {
-          isFirstLesson,
-          hasEnteredBefore: hasEnteredBeforeRef.current,
-          isLessonCompleted,
-        });
         // Still load suggestions in case user opens manually, but don't auto-open
         loadSuggestions(true, results);
         return;
       }
 
-      console.log('[TutorAIPopup] Auto-opening for first lesson, first entry');
       setActiveTab('suggestions');
       setOpen(true);
       loadSuggestions(true, results);
@@ -933,40 +926,6 @@ const TutorAIPopup = ({
       </Snackbar>
     </>
   );
-};
-
-TutorAIPopup.propTypes = {
-  lessonContext: PropTypes.shape({
-    lessonId: PropTypes.string,
-    title: PropTypes.string,
-    objectives: PropTypes.arrayOf(PropTypes.string),
-    tags: PropTypes.arrayOf(PropTypes.string),
-    tipoDeLeccion: PropTypes.oneOf(['teoria', 'caso_clinico', 'simulacion', 'evaluacion']),
-  }),
-  context: PropTypes.shape({
-    userId: PropTypes.string,
-    moduleId: PropTypes.string,
-    lessonId: PropTypes.string,
-    pageId: PropTypes.string,
-    sectionId: PropTypes.string,
-    moduleTitle: PropTypes.string,
-    lessonTitle: PropTypes.string,
-    pageTitle: PropTypes.string,
-    sectionTitle: PropTypes.string,
-  }),
-  defaultOpen: PropTypes.bool,
-  defaultTab: PropTypes.oneOf(['suggestions', 'notes', 'saved']),
-  /** Whether this is the first lesson in the module */
-  isFirstLesson: PropTypes.bool,
-  /** Whether the lesson was already completed before entering */
-  isLessonCompleted: PropTypes.bool,
-};
-
-TutorAIPopup.defaultProps = {
-  defaultOpen: false,
-  defaultTab: 'suggestions',
-  isFirstLesson: false,
-  isLessonCompleted: false,
 };
 
 export default TutorAIPopup;

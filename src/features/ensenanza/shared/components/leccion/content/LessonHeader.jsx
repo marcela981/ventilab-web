@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Paper,
@@ -442,63 +441,6 @@ const LessonHeader = ({ lesson, onHomeClick, onModuleClick }) => {
       )}
     </Box>
   );
-};
-
-LessonHeader.propTypes = {
-  /**
-   * Objeto con la información completa de la lección
-   */
-  lesson: PropTypes.shape({
-    /**
-     * Título de la lección
-     */
-    title: PropTypes.string.isRequired,
-
-    /**
-     * Descripción breve de la lección
-     */
-    description: PropTypes.string,
-
-    /**
-     * Tiempo estimado de completación en minutos
-     */
-    estimatedTime: PropTypes.number,
-
-    /**
-     * Nivel de dificultad de la lección
-     */
-    difficulty: PropTypes.oneOf(['beginner', 'intermediate', 'advanced']),
-
-    /**
-     * Nivel dentro del curriculum (ej: "Nivel 1", "Nivel 2")
-     */
-    level: PropTypes.string,
-
-    /**
-     * Array de objetivos de aprendizaje
-     */
-    learningObjectives: PropTypes.arrayOf(PropTypes.string),
-
-    /**
-     * Título del módulo al que pertenece la lección
-     */
-    moduleTitle: PropTypes.string,
-  }).isRequired,
-
-  /**
-   * Callback opcional ejecutado al hacer click en "Inicio" en los breadcrumbs
-   */
-  onHomeClick: PropTypes.func,
-
-  /**
-   * Callback opcional ejecutado al hacer click en el título del módulo en los breadcrumbs
-   */
-  onModuleClick: PropTypes.func,
-};
-
-LessonHeader.defaultProps = {
-  onHomeClick: null,
-  onModuleClick: null,
 };
 
 export default LessonHeader;

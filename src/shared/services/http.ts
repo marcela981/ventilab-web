@@ -9,7 +9,7 @@ function getApiUrl(): string {
     // Client-side: check both Next.js and Vite env vars
     const apiUrl = (
       process.env.NEXT_PUBLIC_API_URL ||
-      (typeof (window as any).__VENTY_ENV !== 'undefined' && (window as any).__VENTY_ENV?.VITE_API_URL) ||
+      (typeof (window as Record<string, unknown>).__VENTY_ENV !== 'undefined' && ((window as Record<string, unknown>).__VENTY_ENV as Record<string, unknown>)?.VITE_API_URL) ||
       'http://localhost:3001/api'
     );
     
@@ -54,8 +54,8 @@ export async function http(path: string, options: RequestInit & { authToken?: st
         ...(options.headers as Record<string,string> || {}),
       },
     });
-  } catch (e:any) {
-    g.error('✖ network error', e?.message);
+  } catch (e: unknown) {
+    g.error('✖ network error', e instanceof Error ? e.message : e);
     g.end();
     throw e;
   }
@@ -73,11 +73,11 @@ export async function http(path: string, options: RequestInit & { authToken?: st
     return { res, data: undefined, rid };
   }
 
-  let data: any = null;
+  let data: unknown = null;
   try {
     data = ct.includes('application/json') ? await res.json() : await res.text();
-  } catch (e:any) {
-    g.warn('parse body error', e?.message);
+  } catch (e: unknown) {
+    g.warn('parse body error', e instanceof Error ? e.message : e);
   }
 
   if (!res.ok) {
@@ -90,7 +90,7 @@ export async function http(path: string, options: RequestInit & { authToken?: st
   return { res, data, rid };
 }
 
-function truncateForLog(obj:any) {
+function truncateForLog(obj: unknown) {
   try {
     const s = JSON.stringify(obj);
     return s.length > 1200 ? s.slice(0,1200)+'…(trunc)' : obj;

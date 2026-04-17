@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Typography,
@@ -633,47 +632,5 @@ const QuickAccessLessons = ({
 // =========================================================================
 // PROP TYPES
 // =========================================================================
-
-QuickAccessLessons.propTypes = {
-  nextRecommendedLesson: PropTypes.shape({
-    moduleId: PropTypes.string,
-    lessonId: PropTypes.string,
-    moduleTitle: PropTypes.string,
-    lessonTitle: PropTypes.string,
-    estimatedTime: PropTypes.number,
-    currentProgress: PropTypes.number,
-  }),
-  inProgressLessons: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      title: PropTypes.string.isRequired,
-      moduleId: PropTypes.string.isRequired,
-      moduleTitle: PropTypes.string,
-      estimatedTime: PropTypes.number,
-      progress: PropTypes.number,
-    })
-  ),
-  favoriteLessons: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      title: PropTypes.string.isRequired,
-      moduleId: PropTypes.string.isRequired,
-      moduleTitle: PropTypes.string,
-      estimatedTime: PropTypes.number,
-    })
-  ),
-  onLessonClick: PropTypes.func.isRequired,
-  onRemoveFavorite: PropTypes.func.isRequired,
-  onViewAll: PropTypes.func,
-  isLoading: PropTypes.bool,
-};
-
-QuickAccessLessons.defaultProps = {
-  nextRecommendedLesson: null,
-  inProgressLessons: [],
-  favoriteLessons: [],
-  onViewAll: null,
-  isLoading: false,
-};
 
 export default QuickAccessLessons;

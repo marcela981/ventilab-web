@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
 import { CheckCircle, TrendingUp } from '@mui/icons-material';
 import ModuleStatusIcons from '@/features/ensenanza/shared/components/modulos/ModuleCard/ModuleStatusIcons';
@@ -85,14 +84,6 @@ const LessonCardHeader = ({
       </header>
     </>
   );
-};
-
-LessonCardHeader.propTypes = {
-  lesson: PropTypes.object.isRequired,
-  isAvailable: PropTypes.bool.isRequired,
-  status: PropTypes.string.isRequired,
-  levelColor: PropTypes.string.isRequired,
-  isHovered: PropTypes.bool.isRequired
 };
 
 export default LessonCardHeader;

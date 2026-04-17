@@ -15,7 +15,6 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { useRouter } from 'next/router';
 import {
   Box,
@@ -396,21 +395,6 @@ export function ProfileDropdown({
     </ClickAwayListener>
   );
 }
-
-ProfileDropdown.propTypes = {
-  user: PropTypes.shape({
-    name: PropTypes.string.isRequired,
-    role: PropTypes.oneOf(['STUDENT', 'TEACHER', 'ADMIN']).isRequired,
-    image: PropTypes.string,
-    avatar: PropTypes.string,
-    email: PropTypes.string,
-  }).isRequired,
-  isExpanded: PropTypes.bool,
-  onLogout: PropTypes.func.isRequired,
-  onProfileClick: PropTypes.func,
-  isLoggingOut: PropTypes.bool,
-  position: PropTypes.oneOf(['top', 'bottom']),
-};
 
 export default ProfileDropdown;
 

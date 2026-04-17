@@ -14,7 +14,6 @@
  */
 
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Button,
@@ -77,7 +76,7 @@ export default function QuizRenderer({ questions, passingScore, onSubmitted }) {
     const { score, correct, total } = calcAutoScore(questions, answers);
     const passed = score !== null ? score >= passingScore : null;
     setResult({ score, correct, total, passed });
-    onSubmitted?.();
+    onSubmitted?.({ answers, score, correct, total, passed });
   };
 
   // ── Results ────────────────────────────────────────────────────────────────
@@ -176,25 +175,3 @@ export default function QuizRenderer({ questions, passingScore, onSubmitted }) {
   );
 }
 
-QuizRenderer.propTypes = {
-  questions: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      text: PropTypes.string.isRequired,
-      options: PropTypes.arrayOf(
-        PropTypes.shape({
-          id: PropTypes.string.isRequired,
-          text: PropTypes.string.isRequired,
-          isCorrect: PropTypes.bool,
-        })
-      ),
-      explanation: PropTypes.string,
-    })
-  ).isRequired,
-  passingScore: PropTypes.number,
-  onSubmitted: PropTypes.func,
-};
-
-QuizRenderer.defaultProps = {
-  passingScore: 70,
-};

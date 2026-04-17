@@ -10,7 +10,6 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import {
   Accordion,
@@ -172,27 +171,6 @@ const CurriculumSections = ({
       })}
     </Box>
   );
-};
-
-CurriculumSections.propTypes = {
-  levels: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      title: PropTypes.string.isRequired,
-      description: PropTypes.string.isRequired,
-      color: PropTypes.string.isRequired,
-      emoji: PropTypes.string,
-    })
-  ).isRequired,
-  levelProgress: PropTypes.object.isRequired,
-  getModulesByLevel: PropTypes.func.isRequired,
-  calculateModuleProgress: PropTypes.func.isRequired,
-  isModuleAvailable: PropTypes.func.isRequired,
-  getModuleStatus: PropTypes.func.isRequired,
-  getTooltipMessage: PropTypes.func.isRequired,
-  handleSectionClick: PropTypes.func.isRequired,
-  favoriteModules: PropTypes.instanceOf(Set).isRequired,
-  toggleFavorite: PropTypes.func.isRequired,
 };
 
 export default CurriculumSections;

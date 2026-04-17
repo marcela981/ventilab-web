@@ -31,9 +31,9 @@ export type ProgressSnapshot = {
   lessons: LessonItem[];
   lastSyncAt?: string;
   source: 'db' | 'local' | 'merged';
-  _modules?: any[];
+  _modules?: Array<{ id: string; moduleId: string; progress: number; completedLessons: number; totalLessons: number; completed: boolean }>;
   /** Level-aggregated data from GET /api/progress/overview (levels[]). */
-  _levels?: any[];
+  _levels?: Array<Record<string, unknown>>;
 };
 
 interface LocalProgress {
@@ -52,7 +52,7 @@ const LS_SNAPSHOT = 'progress.last';
 
 function getAuth() {
   const token = getAuthToken() || '';
-  const userId = (getUserData() as any)?.id || (getUserData() as any)?._id || null;
+  const userId = (getUserData() as Record<string, unknown>)?.id as string || (getUserData() as Record<string, unknown>)?._id as string || null;
   if (!token) {
     debug.warn('[ProgressSource.getAuth] No backend token found in storage. ' +
       'If there is an active NextAuth session, the token should be refreshed ' +
@@ -320,7 +320,7 @@ function mergeProgress(
   return mergedSnapshot;
 }
 
-function mergeSnapshots(userId: string | null, localSnap: any, localQueue: LessonItem[], dbOverview?: Overview, dbLessons?: LessonItem[]): ProgressSnapshot {
+function mergeSnapshots(userId: string | null, localSnap: ProgressSnapshot | null, localQueue: LessonItem[], dbOverview?: Overview, dbLessons?: LessonItem[]): ProgressSnapshot {
   let source: 'db' | 'local' | 'merged' = 'local';
   let lessons: LessonItem[] = localSnap?.lessons || [];
   if (dbLessons) {
@@ -332,8 +332,8 @@ function mergeSnapshots(userId: string | null, localSnap: any, localQueue: Lesso
   return {
     userId, source, overview, lessons,
     lastSyncAt: new Date().toISOString(),
-    _modules: (dbOverview as any)?._modules || [],
-    _levels: (dbOverview as any)?._levels || [],
+    _modules: (dbOverview as Overview & { _modules?: ProgressSnapshot['_modules'] })?._modules || [],
+    _levels: (dbOverview as Overview & { _levels?: ProgressSnapshot['_levels'] })?._levels || [],
   };
 }
 
@@ -388,28 +388,15 @@ export const ProgressSource = {
    */
   async getSnapshot(): Promise<ProgressSnapshot> {
     const g = debug.group('ProgressSource.getSnapshot');
-    console.log('');
-    console.log('═══════════════════════════════════════════════════════════════');
-    console.log('🔄 [ProgressSource] getSnapshot() - Loading progress...');
-    console.log('═══════════════════════════════════════════════════════════════');
 
     const { token, userId } = getAuth();
     g.info('auth', { userId, hasToken: !!token, tokenPreview: debug.short(token) });
-    console.log('🔐 Auth status:', {
-      userId: userId ? `${userId.substring(0, 8)}...` : 'null',
-      hasToken: !!token
-    });
 
     // 1) Read local queue (pending changes NOT yet synced to DB)
     // DO NOT read full localStorage snapshot here - DB is primary source
     const localSnap = readLocalSnapshot();
     const localQueue = readLocalQueue();
     g.info('local state', { hasLocalSnap: !!localSnap, queueLen: localQueue.length });
-    console.log('📦 localStorage state:', {
-      hasSnapshot: !!localSnap,
-      queueLength: localQueue.length,
-      snapshotLessons: localSnap?.lessons?.length || 0
-    });
 
     // 2) If authenticated, fetch from DB (PRIMARY source)
     let dbOverview: Overview | undefined;
@@ -417,51 +404,28 @@ export const ProgressSource = {
 
     if (token) {
       try {
-        console.log('🌐 Fetching progress from DATABASE...');
-        console.log('   Token available:', token ? `${token.substring(0, 20)}...` : 'none');
-        console.log('   Calling getOverview()...');
 
-        const o: any = await getOverview();
+        const o = await getOverview() as Record<string, unknown>;
 
         // CRITICAL DEBUG: Log the EXACT response from backend
-        console.log('');
-        console.log('═══════════════════════════════════════════════════════════════');
-        console.log('🔍 [DEBUG] Backend Response Analysis:');
-        console.log('═══════════════════════════════════════════════════════════════');
-        console.log('   Response type:', typeof o);
-        console.log('   Response is null?', o === null);
-        console.log('   Response is undefined?', o === undefined);
-        console.log('   Response keys:', o ? Object.keys(o) : 'N/A');
-        console.log('   Has overview property?', o?.hasOwnProperty('overview'));
-        console.log('   Has lessons property?', o?.hasOwnProperty('lessons'));
-        console.log('   Has modules property?', o?.hasOwnProperty('modules'));
 
         if (o?.overview) {
-          console.log('   overview.completedLessons:', o.overview.completedLessons);
-          console.log('   overview.totalLessons:', o.overview.totalLessons);
         }
 
         if (o?.lessons) {
-          console.log('   lessons length:', Array.isArray(o.lessons) ? o.lessons.length : 'not an array');
           if (Array.isArray(o.lessons) && o.lessons.length > 0) {
-            console.log('   First lesson sample:', JSON.stringify(o.lessons[0], null, 2));
           }
         }
 
-        if ((o as any)?.modules) {
-          console.log('   modules length:', Array.isArray((o as any).modules) ? (o as any).modules.length : 'not an array');
+        if (o?.modules) {
         }
 
-        console.log('   Full response (stringified):', JSON.stringify(o, null, 2).substring(0, 500) + '...');
-        console.log('═══════════════════════════════════════════════════════════════');
-        console.log('');
-
         // getOverview returns overview data, extract lessons if available
-        dbOverview = (o as any)?.overview || o; // por si la API responde plano
+        dbOverview = (o?.overview || o) as Overview;
 
         // Map lessons array: backend may use 'pageId' or 'lessonId', normalize to 'lessonId'
-        const rawLessons = (o as any)?.lessons || [];
-        dbLessons = rawLessons.map((l: any) => ({
+        const rawLessons = (o?.lessons || []) as Array<Record<string, unknown>>;
+        dbLessons = rawLessons.map((l: Record<string, unknown>) => ({
           lessonId: l.lessonId || l.pageId || l.id || '',
           progress: typeof l.progress === 'number' ? l.progress : (l.completed ? 1 : 0),
           updatedAt: l.updatedAt || l.lastVisitedAt || new Date().toISOString(),
@@ -471,11 +435,11 @@ export const ProgressSource = {
         })).filter((l: LessonItem) => l.lessonId !== '');
 
         // La API retorna modules[], construir dbLessons adicionales si lessons estaba vacío
-        const oModules = (o as any)?.modules;
+        const oModules = o?.modules as Array<Record<string, unknown>> | undefined;
         if (dbLessons.length === 0 && Array.isArray(oModules) && oModules.length) {
           dbLessons = oModules
-            .filter((mod: any) => (mod.progress || mod.percentComplete || 0) > 0 || (mod.completedLessons || mod.completedPages || 0) > 0)
-            .map((mod: any) => ({
+            .filter((mod: Record<string, unknown>) => ((mod.progress as number) || (mod.percentComplete as number) || 0) > 0 || ((mod.completedLessons as number) || (mod.completedPages as number) || 0) > 0)
+            .map((mod: Record<string, unknown>) => ({
               lessonId: `__module__${mod.id || mod.moduleId}`,
               progress: ((mod.progress || mod.percentComplete || 0)) / 100,
               updatedAt: new Date().toISOString(),
@@ -483,7 +447,7 @@ export const ProgressSource = {
         }
         // Normalize modules data and store on dbOverview for moduleProgressAggregated fallback
         if (dbOverview && oModules) {
-          (dbOverview as any)._modules = oModules.map((mod: any) => ({
+          (dbOverview as Overview & { _modules?: ProgressSnapshot['_modules'] })._modules = oModules.map((mod: Record<string, unknown>) => ({
             id: mod.id || mod.moduleId,
             moduleId: mod.id || mod.moduleId,
             progress: mod.progress ?? mod.percentComplete ?? 0,
@@ -494,36 +458,23 @@ export const ProgressSource = {
         }
 
         // Store level-aggregated data (totalLessons, completedLessons, progressPercentage per level)
-        const rawLevels = (o as any)?.levels;
+        const rawLevels = o?.levels as Array<Record<string, unknown>> | undefined;
         if (dbOverview && Array.isArray(rawLevels) && rawLevels.length > 0) {
-          (dbOverview as any)._levels = rawLevels;
+          (dbOverview as Overview & { _levels?: ProgressSnapshot['_levels'] })._levels = rawLevels;
         }
-        console.log('[ProgressSource] modules from overview:', oModules?.length,
-          'dbLessons construidos:', dbLessons.length);
-
-        console.log('   Extracted dbOverview:', !!dbOverview ? 'exists' : 'null/undefined');
-        console.log('   Extracted dbLessons:', Array.isArray(dbLessons) ? `array with ${dbLessons.length} items` : 'not an array');
 
         g.info('db fetched', {
           overviewOk: !!dbOverview,
           lessonsCount: Array.isArray(dbLessons) ? dbLessons.length : 0
         });
-        console.log('✅ DB fetch SUCCESS:', {
-          hasOverview: !!dbOverview,
-          lessonsCount: Array.isArray(dbLessons) ? dbLessons.length : 0,
-          completedLessons: dbOverview?.completedLessons || 0,
-          totalLessons: dbOverview?.totalLessons || 0
-        });
-      } catch (err: any) {
-        g.warn('db fetch failed', err?.message);
+      } catch (err: unknown) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        g.warn('db fetch failed', errMsg);
         console.error('');
         console.error('═══════════════════════════════════════════════════════════════');
         console.error('❌ DB fetch FAILED');
         console.error('═══════════════════════════════════════════════════════════════');
-        console.error('   Error message:', err?.message);
-        console.error('   Error name:', err?.name);
-        console.error('   Error status:', err?.status || err?.response?.status);
-        console.error('   Error response:', err?.response?.data);
+        console.error('   Error:', errMsg);
         console.error('   Full error:', err);
         console.error('═══════════════════════════════════════════════════════════════');
         console.error('');
@@ -544,26 +495,15 @@ export const ProgressSource = {
       modulesCompleted: merged.overview.modulesCompleted,
       totalModules: merged.overview.totalModules
     });
-    console.log('🔀 Merged snapshot:', {
-      source: merged.source,
-      completedLessons: merged.overview.completedLessons,
-      totalLessons: merged.overview.totalLessons,
-      lessonsCount: merged.lessons.length
-    });
 
     // Log source breakdown for debugging
     if (merged.source === 'db') {
-      console.log('   ✅ Source: DATABASE (auth token available, DB fetch successful)');
     } else if (merged.source === 'merged') {
-      console.log('   ✅ Source: MERGED (DB + localStorage pending changes)');
     } else if (merged.source === 'local') {
-      console.log('   ⚠️  Source: LOCAL ONLY (no auth token OR DB fetch failed)');
     }
 
     // 4) Save merged snapshot for offline access
     saveLocalSnapshot(merged);
-    console.log('═══════════════════════════════════════════════════════════════');
-    console.log('');
     g.end();
     return merged;
   },
@@ -645,8 +585,8 @@ export const ProgressSource = {
         completed: progress >= 1.0
       });
       g.info('synced to DB');
-    } catch (err: any) {
-      g.warn('server refused, enqueuing local', err?.message);
+    } catch (err: unknown) {
+      g.warn('server refused, enqueuing local', err instanceof Error ? err.message : err);
       enqueueLocal({ lessonId, progress, updatedAt: new Date().toISOString() });
     }
     g.end();
@@ -656,7 +596,7 @@ export const ProgressSource = {
    * Migrate local progress to DB (called on login)
    */
   async migrateLocalToDB(): Promise<void> {
-    const userId = (getUserData() as any)?.id || (getUserData() as any)?._id || null;
+    const userId = (getUserData() as Record<string, unknown>)?.id as string || (getUserData() as Record<string, unknown>)?._id as string || null;
     const hasToken = !!getAuthToken();
 
     if (!userId || !hasToken) {

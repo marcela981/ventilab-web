@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import { Box, Button, Divider, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { useActivityBuilder } from '../../hooks/useActivityBuilder';
 import { assignmentApi } from '../../api/assignment.api';
@@ -154,9 +153,4 @@ export default function ActivityBuilder({ initialActivity, onSaved }) {
     </Box>
   );
 }
-
-ActivityBuilder.propTypes = {
-  initialActivity: PropTypes.object,
-  onSaved: PropTypes.func,
-};
 

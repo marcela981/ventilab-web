@@ -191,7 +191,6 @@ export const useSerialConnection = () => {
 
       const message = data + '\n';
       await writer.write(message);
-      console.log('Enviado:', message.trim());
       return true;
     } catch (error) {
       console.error('Error enviando datos:', error);

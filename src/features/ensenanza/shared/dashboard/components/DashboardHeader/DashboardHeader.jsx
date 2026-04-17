@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Typography,
@@ -108,12 +107,6 @@ const DashboardHeader = ({
       </Typography>
     </Box>
   );
-};
-
-DashboardHeader.propTypes = {
-  title: PropTypes.string,
-  description: PropTypes.string,
-  activeTab: PropTypes.number
 };
 
 export default DashboardHeader;

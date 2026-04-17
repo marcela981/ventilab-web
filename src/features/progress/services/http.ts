@@ -13,9 +13,9 @@ interface HttpOptions {
 export async function http(
   path: string,
   options: HttpOptions = {}
-): Promise<{ res: { ok: boolean; status: number; headers: { get(name: string): string | null } }; data: any }> {
+): Promise<{ res: { ok: boolean; status: number; headers: { get(name: string): string | null } }; data: unknown }> {
   const { method = 'GET', body, authToken } = options;
-  const config: any = {
+  const config: Record<string, unknown> = {
     method: method.toLowerCase(),
     url: path,
   };

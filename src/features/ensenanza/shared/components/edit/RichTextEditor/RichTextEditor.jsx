@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -27,14 +26,6 @@ const Btn = ({ onClick, active, disabled, title, children }) => (
     {children}
   </button>
 );
-
-Btn.propTypes = {
-  onClick: PropTypes.func.isRequired,
-  active: PropTypes.bool,
-  disabled: PropTypes.bool,
-  title: PropTypes.string,
-  children: PropTypes.node.isRequired,
-};
 
 /* ─── Divider helper ─────────────────────────────────────────────────────── */
 const Sep = () => <span className={styles['rte__sep']} aria-hidden="true" />;
@@ -218,13 +209,6 @@ const RichTextEditor = ({ content = '', onChange, placeholder = 'Escribe aquí�
       <EditorContent editor={editor} className={styles['rte__content']} />
     </div>
   );
-};
-
-RichTextEditor.propTypes = {
-  content: PropTypes.string,
-  onChange: PropTypes.func,
-  placeholder: PropTypes.string,
-  autoFocus: PropTypes.bool,
 };
 
 export default RichTextEditor;

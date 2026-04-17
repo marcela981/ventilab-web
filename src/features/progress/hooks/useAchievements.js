@@ -121,7 +121,6 @@ export default function useAchievements() {
       
       setAchievements(Array.isArray(achievementsData) ? achievementsData : []);
       
-      console.log(`[useAchievements] Fetched ${achievementsData.length} unlocked achievements`);
     } catch (err) {
       console.error('[useAchievements] Error fetching my achievements:', err);
       setError(err.message || 'Failed to load achievements');
@@ -152,7 +151,6 @@ export default function useAchievements() {
       
       setAllAchievements(Array.isArray(allAchievementsData) ? allAchievementsData : []);
       
-      console.log(`[useAchievements] Fetched ${allAchievementsData.length} total achievements`);
     } catch (err) {
       console.error('[useAchievements] Error fetching all achievements:', err);
       setError(err.message || 'Failed to load all achievements');

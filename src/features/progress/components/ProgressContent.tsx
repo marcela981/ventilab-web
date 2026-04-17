@@ -10,12 +10,45 @@ import { StreakCard } from './StreakCard';
 import { CalendarCard } from './CalendarCard';
 import { trackEvent } from '../utils/analytics';
 
+interface ProgressSnapshot {
+  userId: string | null;
+  source: string;
+  lastSyncAt: string | null;
+  overview?: ProgressOverview;
+}
+
+interface ProgressOverview {
+  completedLessons: number;
+  totalLessons: number;
+  modulesCompleted: number;
+  totalModules: number;
+  xpTotal: number;
+  level: number;
+  nextLevelXp: number;
+  streakDays: number;
+  calendar?: Record<string, unknown>;
+}
+
+interface SkillsData {
+  skills: Array<{ id: string; name: string; [key: string]: unknown }>;
+  unlockedSkillIds: string[];
+}
+
+interface MilestonesData {
+  milestones: Array<{ id: string; [key: string]: unknown }>;
+}
+
+interface AchievementsData {
+  achievements: Array<{ id: string; [key: string]: unknown }>;
+  medals: Array<{ id: string; [key: string]: unknown }>;
+}
+
 interface ProgressContentProps {
-  snapshot: any;
-  overview: any;
-  skills: any;
-  milestones: any;
-  achievements: any;
+  snapshot: ProgressSnapshot;
+  overview: ProgressOverview | undefined;
+  skills: SkillsData | null;
+  milestones: MilestonesData | null;
+  achievements: AchievementsData | null;
   mounted: boolean;
   isLocalSource: boolean;
   isAuthenticated: boolean;

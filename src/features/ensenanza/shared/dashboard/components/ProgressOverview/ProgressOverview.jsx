@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Typography,
@@ -165,19 +164,6 @@ const ProgressOverview = ({
       </Grid>
     </Grid>
   );
-};
-
-ProgressOverview.propTypes = {
-  globalStats: PropTypes.shape({
-    totalTimeSpent: PropTypes.number.isRequired,
-    completedLessons: PropTypes.number.isRequired,
-    totalLessons: PropTypes.number
-  }).isRequired,
-  dashboardData: PropTypes.shape({
-    nextLesson: PropTypes.shape({
-      title: PropTypes.string
-    })
-  }).isRequired
 };
 
 export default ProgressOverview;

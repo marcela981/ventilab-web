@@ -18,7 +18,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
   Card,
   CardMedia,
@@ -318,43 +317,6 @@ function AchievementCard({ achievement, isLocked, progress, onClick }) {
     </Tooltip>
   );
 }
-
-AchievementCard.propTypes = {
-  /**
-   * Achievement object with all achievement data
-   */
-  achievement: PropTypes.shape({
-    type: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    description: PropTypes.string,
-    icon: PropTypes.string,
-    points: PropTypes.number.isRequired,
-    rarity: PropTypes.oneOf(['COMMON', 'RARE', 'EPIC']),
-    unlockedAt: PropTypes.string,
-    condition: PropTypes.string,
-  }).isRequired,
-  /**
-   * Whether the achievement is locked
-   */
-  isLocked: PropTypes.bool.isRequired,
-  /**
-   * Progress data for progressive achievements
-   */
-  progress: PropTypes.shape({
-    current: PropTypes.number,
-    target: PropTypes.number,
-    percentage: PropTypes.number,
-  }),
-  /**
-   * Click handler for the card
-   */
-  onClick: PropTypes.func,
-};
-
-AchievementCard.defaultProps = {
-  progress: null,
-  onClick: null,
-};
 
 export default AchievementCard;
 

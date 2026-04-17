@@ -62,7 +62,6 @@
  */
 
 import React, { useState, useMemo, lazy, Suspense } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Tabs,
@@ -611,32 +610,6 @@ const ModuleCategoryNav = ({
       {effectiveVariant === 'tabs' ? renderTabsVariant() : renderAccordionVariant()}
     </Box>
   );
-};
-
-ModuleCategoryNav.propTypes = {
-  moduleId: PropTypes.string.isRequired,
-  categories: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      title: PropTypes.string.isRequired,
-      description: PropTypes.string,
-      icon: PropTypes.elementType,
-      color: PropTypes.string,
-      lessons: PropTypes.arrayOf(
-        PropTypes.shape({
-          id: PropTypes.string.isRequired,
-          title: PropTypes.string.isRequired,
-          estimatedTime: PropTypes.number,
-          type: PropTypes.oneOf(['quiz', 'case', 'protocol', 'theory', 'checklist']),
-        })
-      ).isRequired,
-    })
-  ).isRequired,
-  currentCategory: PropTypes.string,
-  currentLesson: PropTypes.string,
-  onCategoryChange: PropTypes.func,
-  onLessonClick: PropTypes.func,
-  variant: PropTypes.oneOf(['tabs', 'accordion']),
 };
 
 export default ModuleCategoryNav;

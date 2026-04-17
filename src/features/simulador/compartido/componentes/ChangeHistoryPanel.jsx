@@ -21,7 +21,6 @@
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
   Accordion,
   AccordionSummary,
@@ -212,19 +211,4 @@ export default function ChangeHistoryPanel({
     </Accordion>
   );
 }
-
-ChangeHistoryPanel.propTypes = {
-  entityType: PropTypes.oneOf(['lesson', 'card']).isRequired,
-  entityId: PropTypes.string.isRequired,
-  defaultExpanded: PropTypes.bool,
-  /**
-   * Optional key to force reload from parent (e.g. after saving).
-   */
-  refreshKey: PropTypes.number,
-};
-
-ChangeHistoryPanel.defaultProps = {
-  defaultExpanded: false,
-  refreshKey: 0,
-};
 

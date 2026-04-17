@@ -196,7 +196,6 @@ export const useAITutor = (lessonContext) => {
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
-        console.log('[AITutor] WebSocket conectado');
         reconnectAttemptsRef.current = 0;
       };
 
@@ -214,7 +213,6 @@ export const useAITutor = (lessonContext) => {
       };
 
       ws.onclose = () => {
-        console.log('[AITutor] WebSocket cerrado');
         wsRef.current = null;
       };
 

@@ -14,7 +14,6 @@
 
 import React from 'react';
 import { useRouter } from 'next/router';
-import PropTypes from 'prop-types';
 import { Box, Button, Typography } from '@mui/material';
 import evalStyles from '@/features/evaluation/UI/evaluation.module.css';
 
@@ -86,14 +85,3 @@ export default function ResultsScreen({ score, correct, total, passed, showEmoji
   );
 }
 
-ResultsScreen.propTypes = {
-  score: PropTypes.number,
-  correct: PropTypes.number,
-  total: PropTypes.number,
-  passed: PropTypes.bool,
-  showEmojis: PropTypes.bool,
-};
-
-ResultsScreen.defaultProps = {
-  showEmojis: true,
-};

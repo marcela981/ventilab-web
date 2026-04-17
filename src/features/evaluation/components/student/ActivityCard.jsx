@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import PropTypes from 'prop-types';
 import Link from 'next/link';
 import { Card, CardContent, CardActions, Typography, Button, Stack } from '@mui/material';
 import SubmissionStatusBadge from './SubmissionStatusBadge';
@@ -49,8 +48,4 @@ export default function ActivityCard({ activity }) {
     </Card>
   );
 }
-
-ActivityCard.propTypes = {
-  activity: PropTypes.object.isRequired,
-};
 

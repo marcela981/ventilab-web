@@ -17,7 +17,6 @@
  * Estilos : ui/DependencyModal.module.css
  */
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
   Dialog,
   DialogTitle,
@@ -213,27 +212,3 @@ export default function DependencyModal({ open, onClose, onSave, module, allModu
   );
 }
 
-DependencyModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onSave: PropTypes.func,
-  module: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    level: PropTypes.string,
-    description: PropTypes.string,
-    prerequisites: PropTypes.arrayOf(PropTypes.string),
-  }),
-  allModules: PropTypes.object,
-  levels: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-  })),
-};
-
-DependencyModal.defaultProps = {
-  onSave: null,
-  module: null,
-  allModules: {},
-  levels: [],
-};

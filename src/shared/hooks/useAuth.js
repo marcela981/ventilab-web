@@ -168,7 +168,6 @@ export function useAuth() {
     if (status === 'loading') return;
 
     if (status === 'authenticated' && session?.user) {
-      console.log('[useAuth] Session authenticated:', session.user.email);
       setUser(session.user);
       setError(null);
       // NextAuth login doesn't call authService.login(), so the backend JWT is
@@ -179,7 +178,6 @@ export function useAuth() {
         );
       }
     } else if (status === 'unauthenticated') {
-      console.log('[useAuth] Session unauthenticated');
 
       // Check for custom auth token (non-OAuth login)
       if (checkAuthenticated()) {

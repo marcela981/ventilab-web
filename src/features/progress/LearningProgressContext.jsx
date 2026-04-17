@@ -226,16 +226,11 @@ export const LearningProgressProvider = ({ children }) => {
     // Prevent concurrent calls
     if (loadingSnapshotRef.current) {
       debug.info(`Skipping loadSnapshot(${label}) - already loading`);
-      console.log(`[LearningProgressContext] 🔄 Skipping loadSnapshot(${label}) - already in progress`);
       return;
     }
 
     loadingSnapshotRef.current = true;
     const g = debug.group(`LearningProgressProvider.load (${label})`);
-    console.log('');
-    console.log('═══════════════════════════════════════════════════════════════');
-    console.log(`[LearningProgressContext] 🔄 loadSnapshot(${label}) - Starting...`);
-    console.log('═══════════════════════════════════════════════════════════════');
     setIsLoadingSnapshot(true);
     setSnapshotError(null);
 
@@ -254,16 +249,6 @@ export const LearningProgressProvider = ({ children }) => {
       const s = await ProgressSource.getSnapshot();
       setSnapshot(s);
       g.info('loaded', { source: s.source, completed: s.overview.completedLessons, total: s.overview.totalLessons });
-      console.log('✅ Snapshot loaded successfully:', {
-        label,
-        source: s.source,
-        completedLessons: s.overview.completedLessons,
-        totalLessons: s.overview.totalLessons,
-        lessonsCount: s.lessons?.length || 0,
-        userId: s.userId ? `${s.userId.substring(0, 8)}...` : 'null'
-      });
-      console.log('═══════════════════════════════════════════════════════════════');
-      console.log('');
     } catch (error) {
       setSnapshotError(error?.message || 'Error al cargar el progreso');
       g.error('failed', error?.message);
@@ -384,7 +369,6 @@ export const LearningProgressProvider = ({ children }) => {
     };
   }, [loadSnapshot, session]);
 
-
   // Migrate local to DB on login
   useEffect(() => {
     const userId = getUserData()?.id || getUserData()?._id || session?.user?.id || null;
@@ -409,10 +393,8 @@ export const LearningProgressProvider = ({ children }) => {
   //
   // When user clears localStorage, this effect ensures DB data repopulates progressByModule
   useEffect(() => {
-    console.log('[LearningProgressContext] 🔄 Sync effect triggered - checking snapshot...');
 
     if (!snapshot?.lessons || !Array.isArray(snapshot.lessons) || snapshot.lessons.length === 0) {
-      console.log('[LearningProgressContext] ⚠️  No snapshot lessons to sync (snapshot empty or not loaded yet)');
       return;
     }
 
@@ -426,23 +408,9 @@ export const LearningProgressProvider = ({ children }) => {
       return progressValue > 0;
     });
 
-    console.log('[LearningProgressContext] 📊 Snapshot analysis:', {
-      totalLessons: snapshot.lessons.length,
-      lessonsWithProgress: lessonsWithProgress.length,
-      source: snapshot.source,
-      completedInOverview: snapshot.overview?.completedLessons || 0
-    });
-
     if (lessonsWithProgress.length === 0) {
-      console.log('[LearningProgressContext] ⚠️  No lessons with progress > 0, skipping sync');
       return;
     }
-
-    console.log('');
-    console.log('═══════════════════════════════════════════════════════════════');
-    console.log(`[LearningProgressContext] 🔄 Syncing ${lessonsWithProgress.length} lessons with progress from snapshot to progressByModule`);
-    console.log('   Source:', snapshot.source);
-    console.log('═══════════════════════════════════════════════════════════════');
 
     debug.info(`[LearningProgressContext] Syncing ${lessonsWithProgress.length} lessons with progress from snapshot to progressByModule`);
 
@@ -591,15 +559,7 @@ export const LearningProgressProvider = ({ children }) => {
       }
 
       if (hasChanges) {
-        console.log('✅ progressByModule updated with snapshot data');
-        console.log('   Modules with data:', Object.keys(updated).length);
-        console.log('   Sample module:', Object.keys(updated)[0] || 'none');
-        console.log('═══════════════════════════════════════════════════════════════');
-        console.log('');
       } else {
-        console.log('ℹ️  No changes needed, progressByModule already up to date');
-        console.log('═══════════════════════════════════════════════════════════════');
-        console.log('');
       }
 
       return hasChanges ? updated : prev;
@@ -778,7 +738,6 @@ export const LearningProgressProvider = ({ children }) => {
         // Refresh the specific module's progress in progressByModule from backend
         // Use preserveExistingProgress: true to avoid resetting completed lessons
         if (moduleId && loadModuleProgress) {
-          console.log('[LearningProgressContext] Refreshing module progress for:', moduleId);
           loadModuleProgress(moduleId, { force: false, preserveExistingProgress: true }).catch(err => {
             console.warn('[LearningProgressContext] Failed to refresh module progress:', err);
           });
@@ -790,7 +749,6 @@ export const LearningProgressProvider = ({ children }) => {
           loadSnapshot('progress-event-debounced');
 
           if (moduleId && loadModuleProgress) {
-            console.log('[LearningProgressContext] Debounced refresh for module:', moduleId);
             loadModuleProgress(moduleId, { force: false, preserveExistingProgress: true }).catch(err => {
               console.warn('[LearningProgressContext] Failed to refresh module progress:', err);
             });
@@ -991,7 +949,6 @@ export const LearningProgressProvider = ({ children }) => {
           }
         }
       }
-      console.log('[moduleProgressAggregated] from overview:', Object.keys(moduleDataFromOverview));
 
       // Create a merged view of lesson progress from all sources
       // Priority: progressByModule > snapshot.lessons

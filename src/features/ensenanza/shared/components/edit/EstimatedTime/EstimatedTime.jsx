@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { useEditMode } from '../EditModeContext';
 import { useAuth } from '@/shared/hooks/useAuth';
 import styles from './ui/EstimatedTime.module.css';
@@ -107,15 +106,6 @@ const EstimatedTime = ({ duration, onChange }) => {
       {formatted || 'Añadir tiempo'}
     </button>
   );
-};
-
-EstimatedTime.propTypes = {
-  duration: PropTypes.number,
-  onChange: PropTypes.func.isRequired,
-};
-
-EstimatedTime.defaultProps = {
-  duration: 0,
 };
 
 export default EstimatedTime;

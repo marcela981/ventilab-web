@@ -18,7 +18,6 @@
  */
 
 import React, { createContext, useContext, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import useAchievementNotifications from '@/features/progress/hooks/useAchievementNotifications';
 import AchievementNotification from '@/features/progress/components/AchievementNotification';
 
@@ -128,13 +127,6 @@ export function AchievementProvider({ children }) {
     </AchievementContext.Provider>
   );
 }
-
-AchievementProvider.propTypes = {
-  /**
-   * Child components that will have access to achievement notifications
-   */
-  children: PropTypes.node.isRequired,
-};
 
 /**
  * HOC (Higher Order Component) to inject achievement notification functionality

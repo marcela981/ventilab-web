@@ -3,7 +3,6 @@
  * Aparece inline cuando el Modo Edición está activo.
  */
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 
@@ -45,9 +44,3 @@ export default function BlockPill({ label, onClick, size = 'medium', indent = 0 
   );
 }
 
-BlockPill.propTypes = {
-  label: PropTypes.string.isRequired,
-  onClick: PropTypes.func,
-  size: PropTypes.oneOf(['small', 'medium']),
-  indent: PropTypes.number,
-};

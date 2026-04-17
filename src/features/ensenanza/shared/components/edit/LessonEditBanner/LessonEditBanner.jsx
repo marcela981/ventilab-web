@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import styles from './ui/LessonEditBanner.module.css';
 
 /**
@@ -34,7 +33,6 @@ const LessonEditBanner = ({ lessonTitle, lessonType, totalSections, onTitleChang
     if (trimmed && trimmed !== lessonTitle) {
       onTitleChange?.(trimmed);
       // TODO Fase 3: PATCH /api/lessons/{lessonId} { title: trimmed }
-      console.log('[LessonEditBanner] title updated:', trimmed);
     } else {
       setTitle(lessonTitle || '');
     }
@@ -122,14 +120,6 @@ const LessonEditBanner = ({ lessonTitle, lessonType, totalSections, onTitleChang
       </div>
     </div>
   );
-};
-
-LessonEditBanner.propTypes = {
-  lessonTitle: PropTypes.string,
-  lessonType: PropTypes.string,
-  totalSections: PropTypes.number,
-  onTitleChange: PropTypes.func,
-  onAddSection: PropTypes.func,
 };
 
 export default LessonEditBanner;

@@ -15,7 +15,6 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Button,
@@ -83,7 +82,7 @@ export default function ExamRenderer({ questions, passingScore, timeLimit, onSub
     const { score, correct, total } = calcAutoScore(questions, answers);
     const passed = score !== null ? score >= passingScore : null;
     setResult({ score, correct, total, passed });
-    onSubmitted?.();
+    onSubmitted?.({ answers, score, correct, total, passed });
   }, [questions, answers, passingScore, onSubmitted]);
 
   const submitRef = useRef(handleSubmit);
@@ -216,25 +215,3 @@ export default function ExamRenderer({ questions, passingScore, timeLimit, onSub
   );
 }
 
-ExamRenderer.propTypes = {
-  questions: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      text: PropTypes.string.isRequired,
-      options: PropTypes.arrayOf(
-        PropTypes.shape({
-          id: PropTypes.string.isRequired,
-          text: PropTypes.string.isRequired,
-          isCorrect: PropTypes.bool,
-        })
-      ),
-    })
-  ).isRequired,
-  passingScore: PropTypes.number,
-  timeLimit: PropTypes.number,
-  onSubmitted: PropTypes.func,
-};
-
-ExamRenderer.defaultProps = {
-  passingScore: 70,
-};

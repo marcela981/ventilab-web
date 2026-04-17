@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import { Box, Button, Divider, Stack, TextField, Typography } from '@mui/material';
 import { submissionApi } from '../../api/submission.api';
 
@@ -90,9 +89,4 @@ export default function SubmissionReviewer({ submission, onGraded }) {
     </Box>
   );
 }
-
-SubmissionReviewer.propTypes = {
-  submission: PropTypes.object,
-  onGraded: PropTypes.func,
-};
 

@@ -57,7 +57,6 @@ export const useAIFeedback = (config = {}) => {
     analysisCountRef.current++;
 
     try {
-      console.log(`🔍 Iniciando análisis #${analysisCountRef.current}...`);
       
       const result = await AIServiceManager.analyzeVentilatorConfiguration(
         userConfig,
@@ -109,7 +108,6 @@ export const useAIFeedback = (config = {}) => {
           updateLearningMetrics(result, true);
         }
 
-        console.log('✅ Análisis completado exitosamente');
         return result;
 
       } else {
@@ -148,7 +146,6 @@ export const useAIFeedback = (config = {}) => {
     setError(null);
 
     try {
-      console.log('🚨 Analizando errores críticos...');
       
       // Prompt específico para errores críticos
       const criticalPrompt = `Eres un experto en ventilación mecánica. Analiza SOLO los errores CRÍTICOS en esta configuración que podrían poner en peligro al paciente.
@@ -220,7 +217,6 @@ Responde en español.`;
           updateLearningMetrics(result, true);
         }
 
-        console.log('✅ Análisis de errores críticos completado');
         return result;
 
       } else {
@@ -252,7 +248,6 @@ Responde en español.`;
     setFeedback(null);
     setRecommendations([]);
     setError(null);
-    console.log('🧹 Feedback limpiado');
   }, []);
 
   /**
@@ -289,13 +284,11 @@ Responde en español.`;
    */
   const changeAIModel = useCallback(async (newModel) => {
     try {
-      console.log(`🔄 Cambiando modelo de IA a: ${newModel}`);
       
       const result = AIServiceManager.switchModel(newModel);
       
       if (result.success) {
         setCurrentAIModel(newModel);
-        console.log(`✅ Modelo cambiado a: ${newModel}`);
         return {
           success: true,
           model: newModel,
@@ -446,7 +439,6 @@ Responde en español.`;
    * Efecto para inicialización
    */
   useEffect(() => {
-    console.log('🎯 useAIFeedback inicializado');
     
     // Verificar disponibilidad del AI Service Manager
     const isAvailable = AIServiceManager.isProviderAvailable('gemini');
@@ -455,7 +447,6 @@ Responde en español.`;
     }
     
     return () => {
-      console.log('🧹 useAIFeedback cleanup');
     };
   }, []);
 

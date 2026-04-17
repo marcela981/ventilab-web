@@ -667,3 +667,35 @@
   border-color: var(--color-divider, rgba(255, 255, 255, 0.08)) !important;
   margin: 16px 0 !important;
 }
+
+/* ─── EvaluationCard — completed state ──────────────────────────────────────── */
+
+.cardCompleted {
+  border-color: rgba(76, 175, 80, 0.45) !important;
+  background: rgba(76, 175, 80, 0.08) !important;
+}
+
+.cardCompleted:hover {
+  border-color: rgba(76, 175, 80, 0.65) !important;
+  background-color: rgba(76, 175, 80, 0.14) !important;
+}
+
+.completedBadge {
+  background-color: rgba(76, 175, 80, 0.15) !important;
+  color: var(--color-success, #4caf50) !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  border: 1px solid rgba(76, 175, 80, 0.3) !important;
+}
+
+.completedScore {
+  font-size: 0.8rem !important;
+  color: var(--text-secondary, rgba(232, 244, 253, 0.7)) !important;
+  margin-top: 4px !important;
+}
+
+.completedBtn {
+  font-size: 0.8rem !important;
+  color: var(--color-success, #4caf50) !important;
+  border-color: rgba(76, 175, 80, 0.4) !important;
+}

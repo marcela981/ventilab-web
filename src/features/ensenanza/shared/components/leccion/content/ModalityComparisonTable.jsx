@@ -9,7 +9,6 @@
  */
 
 import React, { useMemo, useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Card,
@@ -198,19 +197,5 @@ const ModalityComparisonTable = ({ tableData }) => {
   );
 };
 
-ModalityComparisonTable.propTypes = {
-  /** Datos de la tabla: columnas (key, label, tooltip) y filas con al menos la clave "modality" */
-  tableData: PropTypes.shape({
-    title: PropTypes.string,
-    columns: PropTypes.arrayOf(PropTypes.shape({
-      key: PropTypes.string.isRequired,
-      label: PropTypes.string.isRequired,
-      tooltip: PropTypes.string
-    })).isRequired,
-    rows: PropTypes.arrayOf(PropTypes.object).isRequired
-  }).isRequired
-};
-
 export default ModalityComparisonTable;
-
 

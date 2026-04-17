@@ -213,7 +213,7 @@ export function usePatientForm() {
   }, []);
 
   // Cargar caso predefinido (estructura antigua de patientSimulatedData.js)
-  const loadClinicalCase = useCallback((caseData: any) => {
+  const loadClinicalCase = useCallback((caseData: Record<string, unknown>) => {
     const b = caseData.patientBasicData ?? {};
     const c = caseData.clinicalData ?? {};
     const r = caseData.respiratoryConditions ?? {};

@@ -70,7 +70,6 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Paper,
@@ -468,28 +467,6 @@ const InteractiveChecklist = ({
       </Dialog>
     </ChecklistContainer>
   );
-};
-
-InteractiveChecklist.propTypes = {
-  checklistData: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    description: PropTypes.string,
-    category: PropTypes.string,
-    items: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.string.isRequired,
-        text: PropTypes.string.isRequired,
-        optional: PropTypes.bool,
-        criticality: PropTypes.oneOf(['critical', 'important', 'standard']),
-      })
-    ).isRequired,
-  }).isRequired,
-  onComplete: PropTypes.func,
-  showProgress: PropTypes.bool,
-  allowReset: PropTypes.bool,
-  persistState: PropTypes.bool,
-  storageKey: PropTypes.string,
 };
 
 export default InteractiveChecklist;

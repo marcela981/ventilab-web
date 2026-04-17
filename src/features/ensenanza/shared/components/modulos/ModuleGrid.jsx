@@ -1,5 +1,4 @@
 import React, { useMemo, useCallback, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Typography,
@@ -152,8 +151,6 @@ const ModuleGrid = ({
     );
 
     if (hasSnapshotData && hasAnyLessonProgress) {
-      console.log('[ModuleGrid] Skipping loadModuleProgress - snapshot data already present with',
-        Object.keys(progressByModule).length, 'modules');
       return;
     }
 
@@ -513,58 +510,6 @@ const MemoizedModuleGrid = React.memo(ModuleGrid, (prevProps, nextProps) => {
 });
 
 // PropTypes completos
-MemoizedModuleGrid.propTypes = {
-  /** Array de módulos a renderizar */
-  modules: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    description: PropTypes.string,
-    learningObjectives: PropTypes.arrayOf(PropTypes.string),
-    difficulty: PropTypes.string,
-    duration: PropTypes.number
-  })),
-  /** Función que calcula el progreso del módulo (retorna 0-100) [DEPRECATED] */
-  calculateModuleProgress: PropTypes.func,
-  /** Función que determina si un módulo está disponible */
-  isModuleAvailable: PropTypes.func,
-  /** Callback ejecutado al hacer click en un módulo */
-  onModuleClick: PropTypes.func,
-  /** Callback para toggle de favorito en un módulo */
-  onToggleFavorite: PropTypes.func,
-  /** Set de IDs de módulos marcados como favoritos */
-  favoriteModules: PropTypes.instanceOf(Set),
-  /** Función que retorna el icono de estado apropiado */
-  getStatusIcon: PropTypes.func,
-  /** Función que retorna el texto del botón según estado */
-  getButtonText: PropTypes.func,
-  /** Función que retorna el icono del botón según estado */
-  getButtonIcon: PropTypes.func,
-  /** Color hexadecimal del nivel para personalización */
-  levelColor: PropTypes.string,
-  /** Componente ModuleCard customizado (opcional) */
-  moduleCard: PropTypes.elementType,
-  /** Breakpoints personalizados para el Grid (deprecated: ahora se usa CSS Grid con auto-fill) */
-  columns: PropTypes.shape({
-    xs: PropTypes.number,
-    sm: PropTypes.number,
-    md: PropTypes.number,
-    lg: PropTypes.number,
-    xl: PropTypes.number
-  }),
-  /** Campo por el cual ordenar (progress, difficulty, title, duration) */
-  sortBy: PropTypes.oneOf(['progress', 'difficulty', 'title', 'duration']),
-  /** Orden de ordenamiento (asc o desc) */
-  sortOrder: PropTypes.oneOf(['asc', 'desc']),
-  /** Habilitar animaciones fade-in (default: true) */
-  enableAnimations: PropTypes.bool,
-  /** Mensaje a mostrar cuando no hay módulos */
-  emptyMessage: PropTypes.string,
-  /** Modo de renderizado: 'modules' (default) o 'lessons' */
-  mode: PropTypes.oneOf(['modules', 'lessons']),
-  /** ID del nivel para filtrar lecciones cuando mode='lessons' (opcional) */
-  levelId: PropTypes.string
-};
-
 // DisplayName para React DevTools
 MemoizedModuleGrid.displayName = 'ModuleGrid';
 

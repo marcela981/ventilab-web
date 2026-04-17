@@ -8,7 +8,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Box, Container } from '@mui/material';
 import Navbar from './Navbar';
 import { AchievementProvider } from '@/features/progress/AchievementContext';
@@ -87,29 +86,3 @@ export default function Layout({
 /**
  * PropTypes validation
  */
-Layout.propTypes = {
-  /**
-   * Page content to render
-   */
-  children: PropTypes.node.isRequired,
-
-  /**
-   * Maximum width of content container
-   * Set to false for full-width content
-   * Options: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | false
-   */
-  maxWidth: PropTypes.oneOfType([
-    PropTypes.oneOf(['xs', 'sm', 'md', 'lg', 'xl']),
-    PropTypes.bool,
-  ]),
-
-  /**
-   * If true, removes vertical padding from main content area
-   */
-  disablePadding: PropTypes.bool,
-
-  /**
-   * Background color of the page
-   */
-  backgroundColor: PropTypes.string,
-};

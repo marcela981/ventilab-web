@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
-import { Box, Divider, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Divider, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { activityApi } from '../../api/activity.api';
+import { submissionApi } from '../../api/submission.api';
 import SubmissionReviewer from './SubmissionReviewer';
 import { http } from '@/shared/services/api/http';
 
@@ -47,6 +47,15 @@ export default function GradingDashboard({ activityId }) {
     setSubmissions((prev) => prev.map((s) => (s.id === updated.id ? { ...s, ...updated } : s)));
   };
 
+  const handleReset = async (submissionId) => {
+    try {
+      await submissionApi.resetById(submissionId);
+      const items = await activityApi.listSubmissions(activityId, groupId ? { groupId } : undefined);
+      setSubmissions(items);
+      if (selectedId === submissionId) setSelectedId(items[0]?.id ?? '');
+    } catch { /* ignore */ }
+  };
+
   return (
     <Box sx={{ mt: 2 }}>
       <Stack spacing={1}>
@@ -81,21 +90,35 @@ export default function GradingDashboard({ activityId }) {
             {submissions.map((s) => (
               <Box
                 key={s.id}
-                onClick={() => setSelectedId(s.id)}
                 sx={{
-                  cursor: 'pointer',
                   border: '1px solid rgba(255,255,255,0.12)',
                   borderRadius: 2,
                   p: 1.5,
                   backgroundColor: s.id === selectedId ? 'rgba(255,255,255,0.06)' : 'transparent',
                 }}
               >
-                <Typography sx={{ fontWeight: 600 }}>
-                  {s.student?.name ?? s.student?.email ?? s.userId}
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                  {s.status} {s.score !== null && s.score !== undefined ? `· ${s.score}/${s.maxScore ?? s.activity?.maxScore ?? 100}` : ''}
-                </Typography>
+                <Box
+                  onClick={() => setSelectedId(s.id)}
+                  sx={{ cursor: 'pointer' }}
+                >
+                  <Typography sx={{ fontWeight: 600 }}>
+                    {s.student?.name ?? s.student?.email ?? s.userId}
+                  </Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                    {s.status} {s.score !== null && s.score !== undefined ? `· ${s.score}/${s.maxScore ?? s.activity?.maxScore ?? 100}` : ''}
+                  </Typography>
+                </Box>
+                {(s.status === 'SUBMITTED' || s.status === 'GRADED') && (
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="warning"
+                    sx={{ mt: 0.5, fontSize: '0.72rem' }}
+                    onClick={(e) => { e.stopPropagation(); handleReset(s.id); }}
+                  >
+                    Reiniciar intento
+                  </Button>
+                )}
               </Box>
             ))}
             {!submissions.length && (
@@ -116,8 +139,4 @@ export default function GradingDashboard({ activityId }) {
     </Box>
   );
 }
-
-GradingDashboard.propTypes = {
-  activityId: PropTypes.string.isRequired,
-};
 

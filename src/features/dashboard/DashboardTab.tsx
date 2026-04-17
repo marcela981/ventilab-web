@@ -47,23 +47,18 @@ const DashboardTab: React.FC<DashboardTabProps> = ({
 }) => {
   // Handlers por defecto si no se proporcionan
   const handleContinue = onContinue || (() => {
-    console.log('Continue clicked');
   });
   
   const handleAction = onAction || ((id: string) => {
-    console.log('Action clicked:', id);
   });
   
   const handleStartCase = onStartCase || ((id: string) => {
-    console.log('Start case clicked:', id);
   });
   
   const handleReadNotification = onReadNotification || ((id: string) => {
-    console.log('Read notification:', id);
   });
   
   const handleToggleTask = onToggleTask || ((id: string) => {
-    console.log('Toggle task:', id);
   });
 
   // Convertir datos al formato esperado por los componentes

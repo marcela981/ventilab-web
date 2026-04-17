@@ -1,5 +1,4 @@
 import React, { useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Paper,
@@ -453,52 +452,6 @@ const InteractiveQuiz = ({ quiz, onComplete }) => {
       )}
     </QuizContainer>
   );
-};
-
-InteractiveQuiz.propTypes = {
-  /**
-   * Objeto con los datos del quiz
-   */
-  quiz: PropTypes.shape({
-    /**
-     * Texto de la pregunta
-     */
-    question: PropTypes.string.isRequired,
-
-    /**
-     * Array de opciones de respuesta
-     */
-    options: PropTypes.arrayOf(PropTypes.string).isRequired,
-
-    /**
-     * Respuesta correcta. Para single-choice debe ser un string,
-     * para multiple-choice debe ser un array de strings.
-     */
-    correctAnswer: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.arrayOf(PropTypes.string),
-    ]).isRequired,
-
-    /**
-     * Explicación que se muestra después de responder
-     */
-    explanation: PropTypes.string.isRequired,
-
-    /**
-     * Tipo de quiz: 'single-choice' o 'multiple-choice'
-     */
-    type: PropTypes.oneOf(['single-choice', 'multiple-choice']).isRequired,
-  }).isRequired,
-
-  /**
-   * Callback opcional llamado cuando el usuario completa correctamente el quiz.
-   * Recibe un objeto con: quiz, attempts, correct
-   */
-  onComplete: PropTypes.func,
-};
-
-InteractiveQuiz.defaultProps = {
-  onComplete: null,
 };
 
 export default InteractiveQuiz;

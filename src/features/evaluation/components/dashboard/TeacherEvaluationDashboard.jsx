@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import Link from 'next/link';
 import { Box, Button, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { useActivities } from '../../hooks/useActivities';
@@ -9,12 +8,6 @@ function TabPanel({ value, index, children }) {
   if (value !== index) return null;
   return <Box sx={{ mt: 2 }}>{children}</Box>;
 }
-
-TabPanel.propTypes = {
-  value: PropTypes.number.isRequired,
-  index: PropTypes.number.isRequired,
-  children: PropTypes.node,
-};
 
 export default function TeacherEvaluationDashboard() {
   const [tab, setTab] = useState(0);

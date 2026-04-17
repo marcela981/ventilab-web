@@ -1,5 +1,4 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import { useTheme, useMediaQuery, Skeleton, Snackbar, Alert, Box } from '@mui/material';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import { useLearningProgress } from '@/features/progress/LearningProgressContext';
@@ -423,7 +422,6 @@ const ModuleCard = ({
           onClose={() => setDepModalOpen(false)}
           onSave={(selectedIds) => {
             // TODO Fase 3: PATCH /api/modules/{module.id}/prerequisites
-            console.log('[DependencyModal] prerequisites updated:', selectedIds);
           }}
           module={module}
           allModules={curriculumData.modules}
@@ -453,52 +451,5 @@ const ModuleCard = ({
 };
 
 // PropTypes con documentación completa
-ModuleCard.propTypes = {
-  /** Objeto con todos los datos del módulo */
-  module: PropTypes.shape({
-    /** ID único del módulo */
-    id: PropTypes.string.isRequired,
-    /** Título del módulo */
-    title: PropTypes.string.isRequired,
-    /** Descripción del módulo */
-    description: PropTypes.string,
-    /** Array de objetivos de aprendizaje */
-    learningObjectives: PropTypes.arrayOf(PropTypes.string),
-    /** Nivel de dificultad (ej: "básico", "intermedio", "avanzado") */
-    difficulty: PropTypes.string.isRequired,
-    /** Duración estimada en minutos */
-    duration: PropTypes.number.isRequired
-  }).isRequired,
-  /** Porcentaje de progreso del módulo (0-100) [DEPRECATED: usar progreso del contexto] */
-  moduleProgress: PropTypes.number,
-  /** Indica si el módulo está disponible para el usuario */
-  isAvailable: PropTypes.bool,
-  /** Indica si el módulo está marcado como favorito */
-  isFavorite: PropTypes.bool.isRequired,
-  /** Callback ejecutado al hacer click en la card */
-  onModuleClick: PropTypes.func.isRequired,
-  /** Callback para toggle del estado de favorito */
-  onToggleFavorite: PropTypes.func.isRequired,
-  /** Callback para cuando se hace click en una lección (opcional) */
-  onLessonClick: PropTypes.func,
-  /** Función para obtener el icono de estado apropiado (opcional, mantenido por compatibilidad) */
-  getStatusIcon: PropTypes.func,
-  /** Función para obtener el texto del botón según estado (opcional, mantenido por compatibilidad) */
-  getButtonText: PropTypes.func,
-  /** Función para obtener el icono del botón según estado (opcional, mantenido por compatibilidad) */
-  getButtonIcon: PropTypes.func,
-  /** Color hex del nivel para personalización visual */
-  levelColor: PropTypes.string.isRequired,
-  /** Array de IDs de módulos completados por el usuario (opcional) */
-  completedModules: PropTypes.arrayOf(PropTypes.string),
-  /** Progreso precalculado desde ModuleGrid para optimización (opcional, DEPRECATED) */
-  precalculatedProgress: PropTypes.shape({
-    percent: PropTypes.number,
-    percentInt: PropTypes.number,
-    completedLessons: PropTypes.number,
-    totalLessons: PropTypes.number
-  })
-};
-
 export default ModuleCard;
 

@@ -18,7 +18,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Drawer,
@@ -280,62 +279,6 @@ const ModuleLessonNavigator = ({
       </Box>
     </Drawer>
   );
-};
-
-ModuleLessonNavigator.propTypes = {
-  /**
-   * Whether the drawer is open
-   */
-  open: PropTypes.bool.isRequired,
-
-  /**
-   * Callback function when drawer is closed
-   */
-  onClose: PropTypes.func.isRequired,
-
-  /**
-   * Array of lesson objects
-   */
-  lessons: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      title: PropTypes.string,
-      estimatedTime: PropTypes.number,
-    })
-  ),
-
-  /**
-   * Current active lesson ID
-   */
-  currentLessonId: PropTypes.string,
-
-  /**
-   * Set of completed lesson IDs
-   */
-  completedLessons: PropTypes.instanceOf(Set),
-
-  /**
-   * Whether the module is fully completed (100%)
-   */
-  isModuleCompleted: PropTypes.bool.isRequired,
-
-  /**
-   * Callback function when user clicks a lesson to navigate
-   * Receives (lessonId) as parameter
-   */
-  onNavigateToLesson: PropTypes.func.isRequired,
-
-  /**
-   * Module title for display
-   */
-  moduleTitle: PropTypes.string,
-};
-
-ModuleLessonNavigator.defaultProps = {
-  lessons: [],
-  currentLessonId: null,
-  completedLessons: new Set(),
-  moduleTitle: null,
 };
 
 export default ModuleLessonNavigator;

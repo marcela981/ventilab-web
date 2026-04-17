@@ -375,7 +375,6 @@ const fetchWithRetry = async (url, options, maxRetries = 2, abortController = nu
       // Si es recuperable y no es el último intento, esperar y reintentar
       if (attempt < maxRetries) {
         const delay = calculateBackoffDelay(attempt);
-        console.log(`[chatService] Reintentando en ${delay.toFixed(0)}ms (intento ${attempt + 1}/${maxRetries})`);
         await new Promise(resolve => setTimeout(resolve, delay));
         continue;
       }
@@ -395,7 +394,6 @@ const fetchWithRetry = async (url, options, maxRetries = 2, abortController = nu
       // Si es error de red y no es el último intento, reintentar
       if (attempt < maxRetries && !error.code) {
         const delay = calculateBackoffDelay(attempt);
-        console.log(`[chatService] Error de red, reintentando en ${delay.toFixed(0)}ms (intento ${attempt + 1}/${maxRetries})`);
         await new Promise(resolve => setTimeout(resolve, delay));
         lastError = error;
         continue;

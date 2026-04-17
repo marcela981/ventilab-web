@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Chip,
@@ -192,18 +191,6 @@ const SuggestedQuestions = ({
       ))}
     </Box>
   );
-};
-
-SuggestedQuestions.propTypes = {
-  lessonContext: PropTypes.shape({
-    lessonId: PropTypes.string,
-    title: PropTypes.string,
-    objectives: PropTypes.arrayOf(PropTypes.string),
-    tags: PropTypes.arrayOf(PropTypes.string),
-    tipoDeLeccion: PropTypes.oneOf(['teoria', 'caso_clinico', 'simulacion', 'evaluacion']),
-  }),
-  suggestions: PropTypes.arrayOf(PropTypes.string),
-  onPick: PropTypes.func,
 };
 
 export default SuggestedQuestions;

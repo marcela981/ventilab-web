@@ -16,7 +16,6 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import PropTypes from 'prop-types';
 import {
   Avatar,
   Badge,
@@ -405,17 +404,5 @@ export function UserProfileButton({ showName = true, size = 'medium', onLogout }
     </>
   );
 }
-
-UserProfileButton.propTypes = {
-  showName: PropTypes.bool,
-  size: PropTypes.oneOf(['small', 'medium', 'large']),
-  onLogout: PropTypes.func,
-};
-
-UserProfileButton.defaultProps = {
-  showName: true,
-  size: 'medium',
-  onLogout: null,
-};
 
 export default UserProfileButton;

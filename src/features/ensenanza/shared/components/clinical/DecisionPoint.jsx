@@ -11,7 +11,6 @@
  */
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Card,
@@ -478,67 +477,6 @@ const DecisionPoint = ({ decision, onAnswer, isAnswered, isCaseFinalized = false
       </CardContent>
     </Card>
   );
-};
-
-DecisionPoint.propTypes = {
-  /**
-   * Objeto de decisión con estructura:
-   * {
-   *   id: string,
-   *   type: 'single' | 'multi',
-   *   prompt: string,
-   *   domain: string,
-   *   options: Array<{ id, label, rationale, isExpertChoice }>,
-   *   weights: Object<optionId: number>,
-   *   feedback: string (opcional)
-   * }
-   */
-  decision: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    type: PropTypes.oneOf(['single', 'multi']).isRequired,
-    prompt: PropTypes.string.isRequired,
-    domain: PropTypes.string,
-    options: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.string.isRequired,
-        label: PropTypes.string.isRequired,
-        rationale: PropTypes.string.isRequired,
-        isExpertChoice: PropTypes.bool,
-      })
-    ).isRequired,
-    weights: PropTypes.objectOf(PropTypes.number).isRequired,
-    feedback: PropTypes.string,
-  }).isRequired,
-
-  /**
-   * Callback ejecutado al confirmar respuesta
-   * @param {string} decisionId - ID de la decisión
-   * @param {Array<string>} selectedIds - IDs de opciones seleccionadas
-   * @param {number} scoreDelta - Cambio en el puntaje
-   * @param {Object} breakdownItem - Objeto con análisis de la respuesta
-   */
-  onAnswer: PropTypes.func.isRequired,
-
-  /**
-   * Indica si la decisión ya fue respondida
-   */
-  isAnswered: PropTypes.bool,
-
-  /**
-   * Indica si el caso clínico ha sido finalizado
-   */
-  isCaseFinalized: PropTypes.bool,
-
-  /**
-   * IDs de opciones previamente seleccionadas (para inicialización)
-   */
-  initialSelectedIds: PropTypes.arrayOf(PropTypes.string),
-};
-
-DecisionPoint.defaultProps = {
-  isAnswered: false,
-  isCaseFinalized: false,
-  initialSelectedIds: [],
 };
 
 export default DecisionPoint;

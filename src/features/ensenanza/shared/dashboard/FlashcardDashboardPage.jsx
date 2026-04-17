@@ -519,7 +519,6 @@ const FlashcardDashboardPage = () => {
   };
   
   const handleDateClick = (dateData) => {
-    console.log('Date clicked:', dateData);
     // Mostrar detalles de repasos para esa fecha
   };
   

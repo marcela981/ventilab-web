@@ -169,7 +169,7 @@ const findLessonInModules = (lessonId?: Nullable<string>, moduleId?: Nullable<st
 
   for (const module of moduleCandidates) {
     if (!module?.lessons) continue;
-    const lessonEntry = module.lessons.find((lesson: any) => {
+    const lessonEntry = module.lessons.find((lesson: Record<string, unknown>) => {
       const lessonIds = [
         lesson?.id,
         lesson?.lessonId,
@@ -226,11 +226,11 @@ const resolveLessonData = async (
   }
 };
 
-const extractPageContent = (lesson: any, pageId?: Nullable<string>) => {
+const extractPageContent = (lesson: Record<string, unknown> | null, pageId?: Nullable<string>) => {
   if (!lesson || !pageId) return null;
   const normalizedId = slugify(pageId);
 
-  const tryMatch = (collection: any[], idKey: string = 'id') => {
+  const tryMatch = (collection: Array<Record<string, unknown>> | undefined, idKey: string = 'id') => {
     if (!Array.isArray(collection)) return null;
     return collection.find((item) => {
       const candidateIds = [
@@ -292,7 +292,7 @@ const extractPageContent = (lesson: any, pageId?: Nullable<string>) => {
   if (normalizedId === 'references') {
     const references = lesson?.content?.references || lesson?.resources?.references || [];
     const referencesText = references
-      .map((ref: any) => {
+      .map((ref: Record<string, unknown>) => {
         const parts = [
           ref?.authors,
           ref?.year ? `(${ref.year})` : null,
@@ -318,7 +318,7 @@ const extractPageContent = (lesson: any, pageId?: Nullable<string>) => {
     ...(lesson?.content?.theory?.sections ?? []),
     ...(lesson?.sections ?? []),
   ];
-  const fallbackSection = allSections.find((section: any) =>
+  const fallbackSection = allSections.find((section: Record<string, unknown>) =>
     slugify(section?.title) === normalizedId
   );
 
@@ -336,7 +336,7 @@ const extractPageContent = (lesson: any, pageId?: Nullable<string>) => {
   return null;
 };
 
-const extractLearningObjectives = (lesson: any): string[] => {
+const extractLearningObjectives = (lesson: Record<string, unknown> | null): string[] => {
   if (!lesson) return [];
   const objectives =
     lesson.learningObjectives ||
@@ -345,7 +345,7 @@ const extractLearningObjectives = (lesson: any): string[] => {
   return normalizeList(objectives);
 };
 
-const extractKeyPoints = (lesson: any): string[] => {
+const extractKeyPoints = (lesson: Record<string, unknown> | null): string[] => {
   const keyPointsRaw = lesson?.content?.keyPoints || lesson?.content?.summary?.keyPoints;
   if (Array.isArray(keyPointsRaw)) {
     return keyPointsRaw
@@ -355,7 +355,7 @@ const extractKeyPoints = (lesson: any): string[] => {
   return [];
 };
 
-const extractSummary = (lesson: any): string => {
+const extractSummary = (lesson: Record<string, unknown> | null): string => {
   if (!lesson) return '';
   const parts = [
     markdownToPlainText(lesson?.description),
@@ -364,12 +364,12 @@ const extractSummary = (lesson: any): string => {
   return parts.join('\n\n').trim();
 };
 
-const extractReferences = (lesson: any): string => {
+const extractReferences = (lesson: Record<string, unknown> | null): string => {
   const references = lesson?.content?.references || lesson?.resources?.references || [];
   if (!Array.isArray(references)) return '';
 
   const formatted = references
-    .map((ref: any) => {
+    .map((ref: Record<string, unknown>) => {
       const pieces = [
         ref?.authors,
         ref?.year ? `(${ref.year})` : null,

@@ -1,6 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-
 /**
  * Overlay para módulos bloqueados - bloqueador transparente para prevenir interacciones
  * 
@@ -30,10 +28,6 @@ const ModuleCardOverlay = () => {
       aria-hidden="true"
     />
   );
-};
-
-ModuleCardOverlay.propTypes = {
-  // missingPrerequisites ya no se usa aquí, se pasa al header para el tooltip
 };
 
 export default ModuleCardOverlay;

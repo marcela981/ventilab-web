@@ -48,7 +48,6 @@ export async function waitForAuthToken(maxWaitMs = 5000): Promise<string | null>
     await new Promise(resolve => setTimeout(resolve, pollInterval));
     token = getAuthTokenFromService();
     if (token) {
-      console.log('[progressService] Token became available after', Date.now() - startTime, 'ms');
       return token;
     }
   }
@@ -318,12 +317,6 @@ export async function updateLessonProgress(
   // 1. DB lookup of the lesson
   // 2. Pattern extraction from lessonId (e.g., "module-01-..." -> "module-01")
 
-  console.log('[progressService] updateLessonProgress: Sending payload', {
-    lessonId,
-    payload,
-    providedModuleId: data.moduleId, // For cache invalidation only
-  });
-
   // ==========================================================================
   // EXECUTE THE UPDATE - HARD FAILURE IF NO AUTH TOKEN
   // ==========================================================================
@@ -398,11 +391,6 @@ export async function updateLessonProgress(
 
   // Emit progress:updated event for UI components to refresh
   if (typeof window !== 'undefined') {
-    console.log('[progressService] Dispatching progress:updated event', {
-      lessonId,
-      moduleId: moduleIdForCache,
-      completionPercentage: clampedPercentage,
-    });
     window.dispatchEvent(new CustomEvent('progress:updated', {
       detail: {
         lessonId,

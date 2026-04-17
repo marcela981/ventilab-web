@@ -16,7 +16,6 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { useRouter } from 'next/router';
 import {
   Box,
@@ -159,15 +158,6 @@ function StatCard({ icon, title, value, subtitle, color, animate }) {
     </Card>
   );
 }
-
-StatCard.propTypes = {
-  icon: PropTypes.node.isRequired,
-  title: PropTypes.string.isRequired,
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  subtitle: PropTypes.string,
-  color: PropTypes.string.isRequired,
-  animate: PropTypes.bool,
-};
 
 /**
  * UserStatsPanel Component
@@ -493,9 +483,5 @@ export function UserStatsPanel({ userId }) {
     </Box>
   );
 }
-
-UserStatsPanel.propTypes = {
-  userId: PropTypes.string.isRequired,
-};
 
 export default UserStatsPanel;

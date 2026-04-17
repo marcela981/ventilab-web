@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import { Box, Chip } from '@mui/material';
 import { MenuBook } from '@mui/icons-material';
 import { formatDuration } from './moduleCardHelpers';
@@ -25,13 +24,11 @@ const ModuleCardMeta = ({
   const handleTagsChange = (newTags) => {
     setTags(newTags);
     // TODO Fase 3: PATCH /api/modules/{module.id} { tags: newTags }
-    console.log('[TagBadge] tags updated:', { moduleId: module.id, tags: newTags });
   };
 
   const handleDurationChange = (newDuration) => {
     setDuration(newDuration);
     // TODO Fase 3: PATCH /api/modules/{module.id} { duration: newDuration }
-    console.log('[EstimatedTime] duration updated:', { moduleId: module.id, duration: newDuration });
   };
 
   const chipSx = {
@@ -82,11 +79,6 @@ const ModuleCardMeta = ({
       </Box>
     </div>
   );
-};
-
-ModuleCardMeta.propTypes = {
-  module: PropTypes.object.isRequired,
-  isAvailable: PropTypes.bool.isRequired,
 };
 
 export default ModuleCardMeta;

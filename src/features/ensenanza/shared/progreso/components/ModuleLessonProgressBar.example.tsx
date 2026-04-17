@@ -42,7 +42,6 @@ export const ModuleViewerExample: React.FC = () => {
    * This is called when user clicks on a segment (only when module is completed)
    */
   const handleSelectLesson = useCallback((lessonIndex: number) => {
-    console.log(`Navigating to lesson ${lessonIndex + 1}`);
     
     // Validate access (backend should also validate)
     if (!isModuleCompleted) {
@@ -107,7 +106,7 @@ export const ModuleViewerWithContext: React.FC = () => {
 
   // Get current lesson index
   const currentLessonIndex = module.lessons.findIndex(
-    (l: any) => l.id === currentLessonId
+    (l: { id: string }) => l.id === currentLessonId
   );
 
   /**
@@ -127,7 +126,6 @@ export const ModuleViewerWithContext: React.FC = () => {
 
     // Navigate using your existing navigation function
     // Example: onNavigate(targetLesson.id, moduleId);
-    console.log(`Navigating to ${targetLesson.id}`);
   }, [isModuleCompleted, module.lessons, moduleId]);
 
   return (
@@ -150,7 +148,7 @@ export const ModuleViewerWithContext: React.FC = () => {
           currentLesson={Math.max(0, currentLessonIndex)}
           isModuleCompleted={isModuleCompleted}
           onSelectLesson={handleNavigateToLesson}
-          lessonTitles={module.lessons.map((l: any) => l.title)}
+          lessonTitles={module.lessons.map((l: { title: string }) => l.title)}
           completedLessons={completedLessons}
         />
       </Box>
@@ -178,7 +176,6 @@ export const MinimalUsage: React.FC = () => {
         currentLesson={currentLesson}
         isModuleCompleted={isModuleCompleted}
         onSelectLesson={(index) => {
-          console.log('Cannot navigate - module not completed');
         }}
       />
       
@@ -213,7 +210,6 @@ export const FullFeaturedExample: React.FC = () => {
         isModuleCompleted={isModuleCompleted}
         onSelectLesson={(index) => {
           setCurrentLesson(index);
-          console.log(`Navigated to lesson ${index + 1}`);
         }}
         lessonTitles={lessonTitles}
         completedLessons={completedLessons}

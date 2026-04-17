@@ -18,7 +18,6 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   List,
@@ -298,42 +297,6 @@ const SearchHistory = ({
       </List>
     </Paper>
   );
-};
-
-SearchHistory.propTypes = {
-  /**
-   * Callback function when a search item is selected
-   * Receives the query string
-   */
-  onSearchSelect: PropTypes.func.isRequired,
-
-  /**
-   * Callback function to remove a specific search from history
-   * Receives the query string to remove
-   */
-  onRemoveSearch: PropTypes.func.isRequired,
-
-  /**
-   * Callback function to clear all search history
-   */
-  onClearHistory: PropTypes.func.isRequired,
-
-  /**
-   * Array of search history objects
-   * Each object should have: { query, timestamp, resultCount }
-   */
-  history: PropTypes.arrayOf(
-    PropTypes.shape({
-      query: PropTypes.string.isRequired,
-      timestamp: PropTypes.string.isRequired,
-      resultCount: PropTypes.number,
-    })
-  ),
-
-  /**
-   * Whether history is currently loading
-   */
-  isLoading: PropTypes.bool,
 };
 
 export default SearchHistory;

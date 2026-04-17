@@ -10,7 +10,6 @@
  */
 
 import React, { useState, useContext } from 'react';
-import PropTypes from 'prop-types';
 import { useAuth } from '@/shared/hooks/useAuth';
 import {
   Box,
@@ -303,20 +302,6 @@ const LessonItem = ({
   );
 };
 
-LessonItem.propTypes = {
-  lesson: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    estimatedTime: PropTypes.number,
-  }).isRequired,
-  lessonProgress: PropTypes.number,
-  isCompleted: PropTypes.bool,
-  isLocked: PropTypes.bool,
-  isAvailable: PropTypes.bool,
-  onLessonClick: PropTypes.func,
-  moduleId: PropTypes.string.isRequired,
-};
-
 /**
  * Componente principal que muestra la lista de lecciones
  */
@@ -461,31 +446,6 @@ const ModuleLessonsList = ({
       </Box>
     </Box>
   );
-};
-
-ModuleLessonsList.propTypes = {
-  lessons: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      title: PropTypes.string.isRequired,
-      estimatedTime: PropTypes.number,
-      description: PropTypes.string,
-    })
-  ),
-  moduleId: PropTypes.string.isRequired,
-  completedLessons: PropTypes.instanceOf(Set),
-  onLessonClick: PropTypes.func,
-  isModuleAvailable: PropTypes.bool,
-  maxLessonsToShow: PropTypes.number,
-  showTitle: PropTypes.bool, // Controla si se muestra el título "Lecciones"
-};
-
-ModuleLessonsList.defaultProps = {
-  lessons: [],
-  completedLessons: new Set(),
-  isModuleAvailable: true,
-  maxLessonsToShow: 3,
-  showTitle: true,
 };
 
 export default ModuleLessonsList;

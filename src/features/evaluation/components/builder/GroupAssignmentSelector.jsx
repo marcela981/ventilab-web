@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import { Box, Checkbox, FormControlLabel, Stack, TextField, Typography } from '@mui/material';
 import { http } from '@/shared/services/api/http';
 
@@ -81,9 +80,4 @@ export default function GroupAssignmentSelector({ value, onChange }) {
     </Box>
   );
 }
-
-GroupAssignmentSelector.propTypes = {
-  value: PropTypes.array,
-  onChange: PropTypes.func.isRequired,
-};
 

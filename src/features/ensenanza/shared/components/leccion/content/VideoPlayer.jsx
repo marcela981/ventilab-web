@@ -1,5 +1,4 @@
 import React, { useState, useRef, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import ReactPlayer from 'react-player';
 import {
   Box,
@@ -457,40 +456,6 @@ const VideoPlayer = ({ url, title, onProgress }) => {
       )}
     </VideoContainer>
   );
-};
-
-VideoPlayer.propTypes = {
-  /**
-   * URL del video a reproducir. Soporta YouTube, Vimeo y otras plataformas
-   * compatibles con react-player.
-   * Ejemplos:
-   * - YouTube: 'https://www.youtube.com/watch?v=VIDEO_ID'
-   * - Vimeo: 'https://vimeo.com/VIDEO_ID'
-   */
-  url: PropTypes.string.isRequired,
-
-  /**
-   * Título del video para accesibilidad y contexto.
-   * Se muestra encima del reproductor y se usa en aria-labels.
-   */
-  title: PropTypes.string,
-
-  /**
-   * Callback llamado periódicamente durante la reproducción.
-   * Recibe un objeto con:
-   * - played: Fracción reproducida (0-1)
-   * - playedSeconds: Segundos reproducidos
-   * - loaded: Fracción cargada (0-1)
-   * - loadedSeconds: Segundos cargados
-   * 
-   * @param {Object} state - Estado actual de reproducción
-   */
-  onProgress: PropTypes.func,
-};
-
-VideoPlayer.defaultProps = {
-  title: '',
-  onProgress: null,
 };
 
 export default VideoPlayer;

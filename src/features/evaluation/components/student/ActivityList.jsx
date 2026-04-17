@@ -8,7 +8,6 @@
  */
 
 import React, { useMemo } from 'react';
-import PropTypes from 'prop-types';
 import {
   Accordion,
   AccordionDetails,
@@ -49,7 +48,7 @@ const SECTIONS = [
  * Renders the level groups inside one track section.
  * Skips levels that have no items.
  */
-function LevelGroup({ byLevel }) {
+function LevelGroup({ byLevel, submissionMap }) {
   const hasAny = LEVELS.some((l) => byLevel[l].length > 0);
 
   if (!hasAny) {
@@ -72,7 +71,11 @@ function LevelGroup({ byLevel }) {
             </Typography>
             <div className={styles.cardGrid}>
               {items.map((item) => (
-                <EvaluationCard key={item.id} item={item} />
+                <EvaluationCard
+                  key={item.id}
+                  item={item}
+                  submission={submissionMap?.[item.id]}
+                />
               ))}
             </div>
           </div>
@@ -82,18 +85,10 @@ function LevelGroup({ byLevel }) {
   );
 }
 
-LevelGroup.propTypes = {
-  byLevel: PropTypes.shape({
-    principiante: PropTypes.array.isRequired,
-    intermedio:   PropTypes.array.isRequired,
-    avanzado:     PropTypes.array.isRequired,
-  }).isRequired,
-};
-
 /**
  * Renders the two track sub-sections (Mecánica / VentyLab) inside one accordion.
  */
-function TrackSections({ sectionData }) {
+function TrackSections({ sectionData, submissionMap }) {
   return (
     <>
       {TRACKS.map(({ key, label }) => {
@@ -103,7 +98,7 @@ function TrackSections({ sectionData }) {
         return (
           <div key={key}>
             <Typography className={styles.trackTitle}>{label}</Typography>
-            <LevelGroup byLevel={byLevel} />
+            <LevelGroup byLevel={byLevel} submissionMap={submissionMap} />
           </div>
         );
       })}
@@ -111,16 +106,9 @@ function TrackSections({ sectionData }) {
   );
 }
 
-TrackSections.propTypes = {
-  sectionData: PropTypes.shape({
-    mecanica: PropTypes.object.isRequired,
-    ventylab: PropTypes.object.isRequired,
-  }).isRequired,
-};
-
 // ─── Main component ──────────────────────────────────────────────────────────
 
-export default function ActivityList({ activities, quizzes, isLoading, error, onRetry }) {
+export default function ActivityList({ activities, quizzes, isLoading, error, onRetry, submissionMap }) {
   const grouped = useMemo(
     () => groupEvaluations(activities ?? [], quizzes ?? []),
     [activities, quizzes],
@@ -194,7 +182,7 @@ export default function ActivityList({ activities, quizzes, isLoading, error, on
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <TrackSections sectionData={sectionData} />
+              <TrackSections sectionData={sectionData} submissionMap={submissionMap} />
             </AccordionDetails>
           </Accordion>
         );
@@ -203,10 +191,3 @@ export default function ActivityList({ activities, quizzes, isLoading, error, on
   );
 }
 
-ActivityList.propTypes = {
-  activities: PropTypes.array,
-  quizzes:    PropTypes.array,
-  isLoading:  PropTypes.bool,
-  error:      PropTypes.string,
-  onRetry:    PropTypes.func,
-};

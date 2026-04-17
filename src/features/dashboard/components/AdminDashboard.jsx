@@ -343,7 +343,6 @@ const AdminDashboard = () => {
   const handleViewStats = (user) => {
     // TODO: Implementar vista de estadísticas
     showNotification('Vista de estadísticas en desarrollo', 'info');
-    console.log('Ver estadísticas de:', user);
   };
 
   /**
@@ -376,7 +375,6 @@ const AdminDashboard = () => {
   const handleViewHistory = (user) => {
     // TODO: Implementar vista de historial
     showNotification('Vista de historial en desarrollo', 'info');
-    console.log('Ver historial de:', user);
   };
 
   /**

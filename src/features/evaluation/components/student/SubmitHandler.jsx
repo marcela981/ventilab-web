@@ -25,7 +25,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
-import PropTypes from 'prop-types';
 import {
   Alert,
   Box,
@@ -355,18 +354,3 @@ export default function SubmitHandler({
   );
 }
 
-SubmitHandler.propTypes = {
-  activity: PropTypes.shape({
-    type: PropTypes.string.isRequired,
-    maxScore: PropTypes.number,
-    timeLimit: PropTypes.number,
-  }).isRequired,
-  questions: PropTypes.arrayOf(PropTypes.object).isRequired,
-  passingScore: PropTypes.number,
-  submission: PropTypes.object,
-  onSubmitted: PropTypes.func,
-};
-
-SubmitHandler.defaultProps = {
-  passingScore: 70,
-};

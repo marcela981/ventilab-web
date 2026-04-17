@@ -8,7 +8,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Alert, Box } from '@mui/material';
 import { useAuth } from '@/shared/contexts/AuthContext';
 
@@ -217,47 +216,6 @@ export const RoleGuard = ({
 /**
  * PropTypes validation
  */
-RoleGuard.propTypes = {
-  /**
-   * Content to render if user is authorized
-   */
-  children: PropTypes.node.isRequired,
-
-  /**
-   * Array of allowed user roles (e.g., ['TEACHER', 'ADMIN'])
-   * User must have one of these roles to see the content
-   * If null or empty, role check is skipped
-   */
-  allowedRoles: PropTypes.arrayOf(PropTypes.string),
-
-  /**
-   * Array of required permissions (e.g., ['create_modules', 'edit_modules'])
-   * Behavior depends on requireAll prop
-   * If null or empty, permission check is skipped
-   */
-  requiredPermissions: PropTypes.arrayOf(PropTypes.string),
-
-  /**
-   * If true, user must have ALL permissions in requiredPermissions (AND logic)
-   * If false, user must have AT LEAST ONE permission (OR logic)
-   * Default: false
-   */
-  requireAll: PropTypes.bool,
-
-  /**
-   * React element to render if user is not authorized
-   * If null, nothing is rendered when unauthorized
-   */
-  fallback: PropTypes.node,
-
-  /**
-   * If true, shows an error Alert when user is not authorized
-   * Takes priority over fallback
-   * Default: false
-   */
-  showError: PropTypes.bool,
-};
-
 /**
  * Default export
  */

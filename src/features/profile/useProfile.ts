@@ -6,6 +6,6 @@ export function useProfile() {
   return {
     profile: null,
     isLoading: false,
-    updateProfile: async (data: any) => {},
+    updateProfile: async (data: Record<string, unknown>) => {},
   };
 }

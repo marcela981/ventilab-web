@@ -4,7 +4,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
 import { ArrowForward as ArrowForwardIcon } from '@mui/icons-material';
 
@@ -106,21 +105,3 @@ export default function QuickActionsGrid({ actions, navigate }) {
   );
 }
 
-QuickActionsGrid.propTypes = {
-  actions: PropTypes.arrayOf(
-    PropTypes.shape({
-      path: PropTypes.string.isRequired,
-      title: PropTypes.string.isRequired,
-      description: PropTypes.string.isRequired,
-      icon: PropTypes.node.isRequired,
-    })
-  ).isRequired,
-  navigate: PropTypes.func.isRequired,
-};
-
-ActionCard.propTypes = {
-  icon: PropTypes.node.isRequired,
-  title: PropTypes.string.isRequired,
-  description: PropTypes.string.isRequired,
-  onClick: PropTypes.func.isRequired,
-};

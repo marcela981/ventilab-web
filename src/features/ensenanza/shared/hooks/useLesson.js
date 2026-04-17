@@ -23,7 +23,6 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import PropTypes from 'prop-types';
 import { curriculumData } from '@/features/ensenanza/shared/data/curriculumData';
 import {
   loadLessonById,
@@ -170,15 +169,6 @@ const useLesson = (lessonId, moduleId) => {
     }
 
     // DEBUG: Log lesson navigation calculation
-    console.log('[useLesson] Navigation calculation:', {
-      currentLessonId: lessonId,
-      lessonDataLessonId: lessonData.lessonId,
-      moduleId: moduleId,
-      lessonIndex: lessonIndex,
-      totalLessons: moduleLessons.length,
-      lessonIds: moduleLessons.map(l => l.id),
-      sortedByOrder: true
-    });
 
     // Build module info object
     const moduleInfo = module ? {
@@ -274,14 +264,6 @@ const useLesson = (lessonId, moduleId) => {
     }
 
     // DEBUG: Log final navigation result
-    console.log('[useLesson] Navigation result:', {
-      previousLesson: previousLesson?.id || null,
-      nextLesson: nextLesson?.id || null,
-      isLastLesson: nextLesson === null && lessonIndex === moduleLessons.length - 1,
-      lessonIndex: lessonIndex,
-      totalLessons: moduleLessons.length,
-      navigationError: navigationError,
-    });
 
     const navigation = {
       previousLesson,
@@ -336,7 +318,6 @@ const useLesson = (lessonId, moduleId) => {
       // Step 2: Invalidate cache if requested (for refetch)
       if (invalidateCache) {
         clearCache();
-        console.log(`[useLesson] Cache invalidated for refetch: ${lessonId}`);
       }
 
       // Step 3: Load lesson using lessonLoader helper
@@ -345,7 +326,6 @@ const useLesson = (lessonId, moduleId) => {
 
       // Check if component is still mounted before updating state
       if (!isMountedRef.current) {
-        console.log(`[useLesson] Component unmounted during load, skipping state update`);
         return;
       }
 
@@ -371,7 +351,6 @@ const useLesson = (lessonId, moduleId) => {
       if (isMountedRef.current) {
         setData(enrichedData);
         setIsLoading(false);
-        console.log(`[useLesson] Successfully loaded and enriched lesson: ${lessonId}`);
       }
       
     } catch (err) {
@@ -424,7 +403,6 @@ const useLesson = (lessonId, moduleId) => {
    * refetch(); // Invalidates cache and reloads
    */
   const refetch = useCallback(() => {
-    console.log(`[useLesson] Manual refetch requested for lesson: ${lessonId}`);
     loadLessonContent(true); // true = invalidate cache
   }, [loadLessonContent, lessonId]);
 
@@ -485,11 +463,6 @@ const useLesson = (lessonId, moduleId) => {
  * @property {string} lessonId - Required. Unique identifier of the lesson
  * @property {string} moduleId - Required. Identifier of the parent module
  */
-
-useLesson.propTypes = {
-  lessonId: PropTypes.string.isRequired,
-  moduleId: PropTypes.string.isRequired,
-};
 
 /**
  * Type definition for the hook's return value

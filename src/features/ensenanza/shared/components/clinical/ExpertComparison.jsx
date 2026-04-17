@@ -11,7 +11,6 @@
  */
 
 import React, { useMemo } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Paper,
@@ -496,65 +495,6 @@ const ExpertComparison = ({ caseData, answers, score, breakdownByDomain }) => {
   );
 };
 
-ExpertComparison.propTypes = {
-  /**
-   * Datos del caso clínico completo
-   */
-  caseData: PropTypes.shape({
-    id: PropTypes.string,
-    moduleId: PropTypes.string,
-    title: PropTypes.string,
-    steps: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.string,
-        title: PropTypes.string,
-        decisions: PropTypes.arrayOf(
-          PropTypes.shape({
-            id: PropTypes.string,
-            prompt: PropTypes.string,
-            domain: PropTypes.string,
-            type: PropTypes.oneOf(['single', 'multi']),
-            options: PropTypes.arrayOf(
-              PropTypes.shape({
-                id: PropTypes.string,
-                label: PropTypes.string,
-                rationale: PropTypes.string,
-                isExpertChoice: PropTypes.bool,
-              })
-            ),
-            weights: PropTypes.objectOf(PropTypes.number),
-            feedback: PropTypes.string,
-          })
-        ),
-      })
-    ),
-  }).isRequired,
-
-  /**
-   * Respuestas del estudiante
-   * Formato: { stepId: { decisionId: [optionIds] } }
-   */
-  answers: PropTypes.objectOf(
-    PropTypes.objectOf(PropTypes.arrayOf(PropTypes.string))
-  ).isRequired,
-
-  /**
-   * Puntaje total normalizado (0-100)
-   */
-  score: PropTypes.number.isRequired,
-
-  /**
-   * Desglose de resultados por dominio
-   * Formato: { domain: { totalScore, maxScore, decisions: [...] } }
-   */
-  breakdownByDomain: PropTypes.objectOf(
-    PropTypes.shape({
-      totalScore: PropTypes.number,
-      maxScore: PropTypes.number,
-      decisions: PropTypes.array,
-    })
-  ).isRequired,
-};
 
 export default ExpertComparison;
 

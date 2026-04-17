@@ -37,12 +37,5 @@ export function logEnvDiagnostics(context: string) {
 
   // Only log keys existence, never values
   // These logs are safe to keep in production while debugging
-  console.log(`[env] Diagnostics for ${context}`);
-  console.log('[env] Runtime:', isServer ? 'server' : 'client');
-  console.log('[env] BACKEND_URL defined:', !!process.env.BACKEND_URL);
-  console.log('[env] NEXT_PUBLIC_BACKEND_URL defined:', !!process.env.NEXT_PUBLIC_BACKEND_URL);
-  console.log('[env] NEXT_PUBLIC_API_URL defined:', !!process.env.NEXT_PUBLIC_API_URL);
-  console.log('[env] Resolved BACKEND_URL:', BACKEND_URL);
-  console.log('[env] Resolved BACKEND_API_URL:', BACKEND_API_URL);
 }
 

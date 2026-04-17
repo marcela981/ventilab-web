@@ -28,7 +28,6 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { CircularProgress, Box } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { ROLES, canAccessWithRoles } from '@/lib/roles';
 
@@ -133,17 +132,9 @@ function withAuth(WrappedComponent, allowedRoles = null) {
     ProtectedComponent.getStaticProps = WrappedComponent.getStaticProps;
   }
 
-  ProtectedComponent.propTypes = {
-    ...WrappedComponent.propTypes,
-  };
-
-  return ProtectedComponent;
+  
+return ProtectedComponent;
 }
-
-withAuth.propTypes = {
-  WrappedComponent: PropTypes.elementType.isRequired,
-  allowedRoles: PropTypes.arrayOf(PropTypes.string),
-};
 
 export default withAuth;
 

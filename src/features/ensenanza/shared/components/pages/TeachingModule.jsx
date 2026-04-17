@@ -288,7 +288,6 @@ const TeachingModule = () => {
             const resumePoint = await getModuleResumePoint(moduleId);
             if (resumePoint?.lessonId) {
               targetLessonId = resumePoint.lessonId;
-              console.log('[TeachingModule] Resuming from:', targetLessonId);
             }
           } catch (error) {
             console.warn('[TeachingModule] Could not fetch resume point:', error);
@@ -530,7 +529,6 @@ const TeachingModule = () => {
       return;
     }
 
-    console.log('[TeachingModule] ✓ Navigating to lesson:', { targetLessonId, targetModuleId });
     handleSectionClick(targetModuleId, targetLessonId);
   }, [handleSectionClick, lessonIdFromQuery, moduleIdFromQuery]);
   

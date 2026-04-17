@@ -25,7 +25,6 @@
  */
 
 import React, { createContext, useContext, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import { useAuth as useAuthHook } from '@/shared/hooks/useAuth';
 import { canAccessWithRoles } from '@/lib/roles';
 
@@ -54,10 +53,6 @@ export const AuthProvider = React.memo(function AuthProvider({ children }) {
     <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 });
-
-AuthProvider.propTypes = {
-  children: PropTypes.node.isRequired,
-};
 
 // =============================================================================
 // useAuth Hook
@@ -160,12 +155,6 @@ export function RequireAuth({
   return children;
 }
 
-RequireAuth.propTypes = {
-  children: PropTypes.node.isRequired,
-  redirectTo: PropTypes.string,
-  loadingComponent: PropTypes.node,
-};
-
 /**
  * RequireRole Component
  * Wrapper that requires specific role(s) to render children.
@@ -200,15 +189,6 @@ export function RequireRole({ children, role: requiredRole, fallback = null }) {
   return children;
 }
 
-RequireRole.propTypes = {
-  children: PropTypes.node.isRequired,
-  role: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.arrayOf(PropTypes.string),
-  ]).isRequired,
-  fallback: PropTypes.node,
-};
-
 /**
  * RequirePermission Component
  * Wrapper that requires specific permission(s) to render children
@@ -241,11 +221,3 @@ export function RequirePermission({
   return children;
 }
 
-RequirePermission.propTypes = {
-  children: PropTypes.node.isRequired,
-  permission: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.arrayOf(PropTypes.string),
-  ]).isRequired,
-  fallback: PropTypes.node,
-};

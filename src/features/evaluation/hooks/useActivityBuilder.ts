@@ -11,8 +11,8 @@ export function useActivityBuilder() {
     setError(null);
     try {
       return await activityApi.create(payload);
-    } catch (e: any) {
-      setError(e?.message ?? 'Error creando actividad');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error creando actividad');
       throw e;
     } finally {
       setIsSaving(false);
@@ -24,8 +24,8 @@ export function useActivityBuilder() {
     setError(null);
     try {
       return await activityApi.update(id, payload);
-    } catch (e: any) {
-      setError(e?.message ?? 'Error actualizando actividad');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error actualizando actividad');
       throw e;
     } finally {
       setIsSaving(false);
@@ -37,8 +37,8 @@ export function useActivityBuilder() {
     setError(null);
     try {
       return await activityApi.publish(id);
-    } catch (e: any) {
-      setError(e?.message ?? 'Error publicando actividad');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error publicando actividad');
       throw e;
     } finally {
       setIsSaving(false);

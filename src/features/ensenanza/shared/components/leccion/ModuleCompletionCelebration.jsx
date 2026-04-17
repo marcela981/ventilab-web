@@ -17,7 +17,6 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   Dialog,
   DialogContent,
@@ -299,38 +298,6 @@ const ModuleCompletionCelebration = ({
       </DialogActions>
     </Dialog>
   );
-};
-
-ModuleCompletionCelebration.propTypes = {
-  /**
-   * Whether the dialog is open
-   */
-  open: PropTypes.bool.isRequired,
-
-  /**
-   * Callback function when dialog is closed
-   */
-  onClose: PropTypes.func.isRequired,
-
-  /**
-   * Title of the completed module
-   */
-  moduleTitle: PropTypes.string,
-
-  /**
-   * Module ID (for tracking shown state)
-   */
-  moduleId: PropTypes.string.isRequired,
-
-  /**
-   * Total number of lessons in the module
-   */
-  totalLessons: PropTypes.number,
-};
-
-ModuleCompletionCelebration.defaultProps = {
-  moduleTitle: 'Módulo',
-  totalLessons: 0,
 };
 
 export default ModuleCompletionCelebration;

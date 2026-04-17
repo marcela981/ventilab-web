@@ -137,7 +137,6 @@ const ProgressDashboard = () => {
     return () => clearTimeout(timer);
   }, []);
 
-
   // Preparar datos para los componentes (ANTES de returns condicionales)
   const currentLevel = useMemo(() => 
     Math.floor(globalStats.completedLessonsCount / 5) + 1,
@@ -298,7 +297,6 @@ const ProgressDashboard = () => {
           <SkillTree
             skills={[]}
             onOpenSkill={(id) => {
-              console.log('Skill clicked:', id);
             }}
           />
         </div>
@@ -315,7 +313,6 @@ const ProgressDashboard = () => {
               <AchievementsGrid
                 achievements={achievements}
                 onAchievementClick={(id) => {
-                  console.log('Achievement clicked:', id);
                 }}
               />
             </div>
@@ -338,7 +335,6 @@ const ProgressDashboard = () => {
               <StreakWidget
                 streak={streakInfo}
                 onUseFreeze={() => {
-                  console.log('Freeze streak clicked');
                 }}
               />
             </div>
@@ -346,7 +342,6 @@ const ProgressDashboard = () => {
               <FeedbackStrip
                 feedback={undefined}
                 onDismiss={() => {
-                  console.log('Feedback dismissed');
                 }}
                 loading={false}
               />
@@ -380,7 +375,6 @@ const ProgressDashboard = () => {
                 }}
                 recentEvents={[]}
                 onEventClick={(level) => {
-                  console.log('Narrative event clicked:', level);
                 }}
               />
             </div>
@@ -392,7 +386,6 @@ const ProgressDashboard = () => {
               <ComprehensionPanel
                 trends={comprehensionTrends}
                 onReinforce={(conceptId) => {
-                  console.log('Reinforce concept:', conceptId);
                 }}
               />
             </div>
@@ -420,13 +413,11 @@ const ProgressDashboard = () => {
                 }
               ]}
               onChallengeClick={(id) => {
-                console.log('Challenge clicked:', id);
               }}
             />
             <BossFightCard
               boss={bossFight}
               onStart={(id) => {
-                console.log('Boss fight started:', id);
               }}
             />
           </div>

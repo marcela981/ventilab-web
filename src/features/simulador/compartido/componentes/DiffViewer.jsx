@@ -18,7 +18,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Chip,
@@ -295,31 +294,4 @@ export default function DiffViewer({ diffs, dense = false }) {
     </Stack>
   );
 }
-
-DiffViewer.propTypes = {
-  /**
-   * Structured diffs to render. Either:
-   * - Array<{ field: string, before: any, after: any }>
-   * - Object map: { [field: string]: { before: any, after: any } }
-   */
-  diffs: PropTypes.oneOfType([
-    PropTypes.arrayOf(
-      PropTypes.shape({
-        field: PropTypes.string.isRequired,
-        before: PropTypes.any,
-        after: PropTypes.any,
-      })
-    ),
-    PropTypes.object,
-  ]),
-  /**
-   * Render in a more compact style (reduced paddings).
-   */
-  dense: PropTypes.bool,
-};
-
-DiffViewer.defaultProps = {
-  diffs: [],
-  dense: false,
-};
 

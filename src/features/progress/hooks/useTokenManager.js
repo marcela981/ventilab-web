@@ -128,7 +128,6 @@ export const useTokenManager = () => {
                   localStorage.setItem('ventilab_user_data', JSON.stringify(data.user));
                 }
               }
-              console.log('[useTokenManager] Backend token fetched and stored');
               tokenReadyRef.current = true;
               
               // Clear waiting promise (will be resolved by waitForToken checking)

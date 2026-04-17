@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Typography,
@@ -343,13 +342,6 @@ const ChatMessage = ({ role, content, time, error }) => {
       </Box>
     </Box>
   );
-};
-
-ChatMessage.propTypes = {
-  role: PropTypes.oneOf(['user', 'assistant']).isRequired,
-  content: PropTypes.string.isRequired,
-  time: PropTypes.string,
-  error: PropTypes.string,
 };
 
 export default ChatMessage;

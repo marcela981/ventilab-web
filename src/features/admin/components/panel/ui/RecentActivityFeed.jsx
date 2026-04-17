@@ -4,7 +4,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
   Box, Typography, Avatar, LinearProgress, Skeleton, Button, Divider,
 } from '@mui/material';
@@ -141,18 +140,3 @@ export default function RecentActivityFeed({ students, navigate, loading }) {
   );
 }
 
-RecentActivityFeed.propTypes = {
-  students: PropTypes.array,
-  navigate: PropTypes.func.isRequired,
-  loading: PropTypes.bool,
-};
-
-StudentRow.propTypes = {
-  student: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    name: PropTypes.string,
-    email: PropTypes.string,
-    stats: PropTypes.shape({ progressPercentage: PropTypes.number }),
-  }).isRequired,
-  onClick: PropTypes.func.isRequired,
-};

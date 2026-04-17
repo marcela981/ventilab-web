@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Box, Chip } from '@mui/material';
 import { MenuBook, AccessTime } from '@mui/icons-material';
 import { formatDuration } from '@/features/ensenanza/shared/components/modulos/ModuleCard/moduleCardHelpers';
@@ -125,12 +124,6 @@ const LessonCardMeta = ({
       </Box>
     </div>
   );
-};
-
-LessonCardMeta.propTypes = {
-  lesson: PropTypes.object.isRequired,
-  isAvailable: PropTypes.bool.isRequired,
-  allowEmpty: PropTypes.bool
 };
 
 export default LessonCardMeta;

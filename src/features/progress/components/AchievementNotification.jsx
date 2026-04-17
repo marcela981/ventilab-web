@@ -19,7 +19,6 @@
  */
 
 import React, { useEffect, useState, useRef } from 'react';
-import PropTypes from 'prop-types';
 import {
   Dialog,
   DialogContent,
@@ -117,7 +116,6 @@ function AchievementNotification({ achievement, show, onDismiss }) {
         oscillator.stop(audioContext.currentTime + 0.3);
       } catch (error) {
         // Silently fail if audio is not supported or user hasn't interacted
-        console.log('[AchievementNotification] Audio not available');
       }
 
       // Auto-dismiss after 5 seconds
@@ -308,28 +306,6 @@ function AchievementNotification({ achievement, show, onDismiss }) {
     </>
   );
 }
-
-AchievementNotification.propTypes = {
-  /**
-   * Achievement object with title, description, icon, points, rarity
-   */
-  achievement: PropTypes.shape({
-    title: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-    icon: PropTypes.string,
-    points: PropTypes.number.isRequired,
-    rarity: PropTypes.oneOf(['COMMON', 'RARE', 'EPIC']),
-    unlockedAt: PropTypes.string,
-  }),
-  /**
-   * Whether to show the notification
-   */
-  show: PropTypes.bool.isRequired,
-  /**
-   * Callback function when notification is dismissed
-   */
-  onDismiss: PropTypes.func.isRequired,
-};
 
 export default AchievementNotification;
 

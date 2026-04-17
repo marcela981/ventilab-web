@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Typography,
@@ -164,27 +163,6 @@ const LessonProgressItem = ({
       </ListItemButton>
     </ListItem>
   );
-};
-
-LessonProgressItem.propTypes = {
-  lesson: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    estimatedTime: PropTypes.number,
-    order: PropTypes.number,
-  }).isRequired,
-  moduleId: PropTypes.string.isRequired,
-  isCompleted: PropTypes.bool,
-  isDisabled: PropTypes.bool,
-  isLocked: PropTypes.bool,
-  onLessonClick: PropTypes.func,
-};
-
-LessonProgressItem.defaultProps = {
-  isCompleted: false,
-  isDisabled: false,
-  isLocked: false,
-  onLessonClick: null,
 };
 
 /**
@@ -892,49 +870,5 @@ const ModuleProgressCard = ({
 };
 
 // PropTypes para validación
-ModuleProgressCard.propTypes = {
-  module: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    description: PropTypes.string,
-    difficulty: PropTypes.string,
-    estimatedTime: PropTypes.number,
-    prerequisites: PropTypes.arrayOf(PropTypes.string),
-  }).isRequired,
-  progressPercentage: PropTypes.number,
-  status: PropTypes.oneOf(['locked', 'available', 'in-progress', 'completed']),
-  isExpanded: PropTypes.bool,
-  onToggleExpansion: PropTypes.func,
-  onModuleClick: PropTypes.func,
-  onLessonClick: PropTypes.func,
-  lessons: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      title: PropTypes.string.isRequired,
-      estimatedTime: PropTypes.number,
-    })
-  ),
-  completedLessons: PropTypes.instanceOf(Set),
-  missingPrerequisites: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      title: PropTypes.string.isRequired,
-      progress: PropTypes.number,
-    })
-  ),
-};
-
 // Valores por defecto
-ModuleProgressCard.defaultProps = {
-  progressPercentage: 0,
-  status: 'available',
-  isExpanded: false,
-  onToggleExpansion: null,
-  onModuleClick: null,
-  onLessonClick: null,
-  lessons: [],
-  completedLessons: new Set(),
-  missingPrerequisites: [],
-};
-
 export default ModuleProgressCard;

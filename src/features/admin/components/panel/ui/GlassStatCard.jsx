@@ -4,7 +4,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Box, Typography, Skeleton } from '@mui/material';
 
 // Mapeo de nombre de color → rgba para fondos translúcidos en oscuro
@@ -82,11 +81,3 @@ export default function GlassStatCard({ icon, title, value, accent = 'cyan', loa
   );
 }
 
-GlassStatCard.propTypes = {
-  icon: PropTypes.node.isRequired,
-  title: PropTypes.string.isRequired,
-  value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  accent: PropTypes.oneOf(['cyan', 'green', 'purple', 'orange']),
-  loading: PropTypes.bool,
-  onClick: PropTypes.func,
-};

@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { useEditMode } from '../EditModeContext';
 import { useAuth } from '@/shared/hooks/useAuth';
 import styles from './ui/TagBadge.module.css';
@@ -127,11 +126,6 @@ const TagBadge = ({ tags, onChange }) => {
       )}
     </div>
   );
-};
-
-TagBadge.propTypes = {
-  tags: PropTypes.arrayOf(PropTypes.string).isRequired,
-  onChange: PropTypes.func.isRequired,
 };
 
 export default TagBadge;

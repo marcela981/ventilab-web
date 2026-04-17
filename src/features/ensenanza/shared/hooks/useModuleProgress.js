@@ -119,7 +119,6 @@ export const useModuleProgress = (moduleId, options = {}) => {
       // Si no hay moduleId en el evento, recargar de todos modos para estar seguro
       const eventModuleId = event?.detail?.moduleId;
       if (!eventModuleId || eventModuleId === moduleId) {
-        console.log('[useModuleProgress] Received progress:updated event, reloading...');
         load(true);
       }
     };

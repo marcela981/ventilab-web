@@ -15,7 +15,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Card,
@@ -362,25 +361,6 @@ export function ProfileInfo({ user, isEditMode, onEditToggle }) {
     </Card>
   );
 }
-
-ProfileInfo.propTypes = {
-  user: PropTypes.shape({
-    name: PropTypes.string,
-    email: PropTypes.string,
-    role: PropTypes.string,
-    image: PropTypes.string,
-    bio: PropTypes.string,
-    createdAt: PropTypes.string,
-    isActive: PropTypes.bool,
-  }),
-  isEditMode: PropTypes.bool,
-  onEditToggle: PropTypes.func.isRequired,
-};
-
-ProfileInfo.defaultProps = {
-  user: null,
-  isEditMode: false,
-};
 
 export default ProfileInfo;
 

@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import { Box, Button, Stack, TextField, Typography } from '@mui/material';
 import { submissionApi } from '../../api/submission.api';
 
@@ -70,10 +69,4 @@ export default function SubmissionForm({ activityId, submission, onSubmissionCha
     </Box>
   );
 }
-
-SubmissionForm.propTypes = {
-  activityId: PropTypes.string.isRequired,
-  submission: PropTypes.object,
-  onSubmissionChange: PropTypes.func,
-};
 

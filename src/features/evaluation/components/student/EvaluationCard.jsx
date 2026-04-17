@@ -9,7 +9,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useRouter } from 'next/router';
 import { Button, Chip, Typography } from '@mui/material';
 import styles from '../../UI/evaluation.module.css';
@@ -36,25 +35,35 @@ const LEVEL_CHIP_CLASS = {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export default function EvaluationCard({ item }) {
+export default function EvaluationCard({ item, submission }) {
   const router = useRouter();
   const published = item.isPublished !== false;
+  const isCompleted = submission?.status === 'SUBMITTED' || submission?.status === 'GRADED';
 
   function handleStart() {
-    router.push(`/evaluation/${item.id}`);
+    if (!isCompleted) router.push(`/evaluation/${item.id}`);
   }
 
+  const scoreText = isCompleted && submission.score != null
+    ? `Nota: ${submission.score}${submission.maxScore != null ? `/${submission.maxScore}` : ''}`
+    : null;
+
   return (
-    <article className={`${styles.evalCard} ${!published ? styles.evalCardUnavailable : ''}`}>
+    <article
+      className={[
+        styles.evalCard,
+        !published ? styles.evalCardUnavailable : '',
+        isCompleted ? styles.cardCompleted : '',
+      ].join(' ')}
+    >
 
       {/* Badges row */}
       <div className={styles.evalCardBadges}>
         {!published && (
-          <Chip
-            label="No disponible"
-            size="small"
-            className={styles.chipUnavailable}
-          />
+          <Chip label="No disponible" size="small" className={styles.chipUnavailable} />
+        )}
+        {isCompleted && (
+          <Chip label="Completado ✓" size="small" className={styles.completedBadge} />
         )}
         <Chip
           label={TYPE_LABELS[item.itemType] ?? item.itemType}
@@ -87,33 +96,38 @@ export default function EvaluationCard({ item }) {
         </Typography>
       )}
 
-      {/* Footer — start button */}
+      {/* Score on completed card */}
+      {scoreText && (
+        <Typography variant="body2" className={styles.completedScore}>
+          {scoreText}
+        </Typography>
+      )}
+
+      {/* Footer */}
       <div className={styles.evalCardFooter}>
-        <Button
-          variant="contained"
-          size="small"
-          disabled={!published}
-          onClick={handleStart}
-          className={styles.evalCardStartBtn}
-        >
-          Iniciar →
-        </Button>
+        {isCompleted ? (
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={handleStart}
+            className={styles.completedBtn}
+          >
+            Ver resultados
+          </Button>
+        ) : (
+          <Button
+            variant="contained"
+            size="small"
+            disabled={!published}
+            onClick={handleStart}
+            className={styles.evalCardStartBtn}
+          >
+            Iniciar →
+          </Button>
+        )}
       </div>
 
     </article>
   );
 }
 
-EvaluationCard.propTypes = {
-  item: PropTypes.shape({
-    id:           PropTypes.string.isRequired,
-    title:        PropTypes.string.isRequired,
-    itemType:     PropTypes.oneOf(['QUIZ', 'TALLER', 'EXAM']).isRequired,
-    description:  PropTypes.string,
-    maxScore:     PropTypes.number,
-    isPublished:  PropTypes.bool,
-    passingScore: PropTypes.number,
-    level:        PropTypes.oneOf(['principiante', 'intermedio', 'avanzado']).isRequired,
-    track:        PropTypes.oneOf(['mecanica', 'ventylab']).isRequired,
-  }).isRequired,
-};

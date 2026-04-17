@@ -16,7 +16,7 @@
  * Contacto: marcela.mazo@correounivalle.edu.co
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import {
   Box,
@@ -29,12 +29,14 @@ import {
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { activityApi } from '@/features/evaluation/api/activity.api';
 import { submissionApi } from '@/features/evaluation/api/submission.api';
+import { quizApi } from '@/features/evaluation/api/quiz.api';
 import {
   fetchQuizById,
 } from '@/features/evaluation/shared/services/evaluationService';
 import SubmissionForm from '@/features/evaluation/components/student/SubmissionForm';
 import GradeResult from '@/features/evaluation/components/student/GradeResult';
 import SubmissionStatusBadge from '@/features/evaluation/components/student/SubmissionStatusBadge';
+import ResultsScreen from '@/features/evaluation/components/student/ResultsScreen';
 import QuizRenderer from '@/features/evaluation/components/student/QuizRenderer';
 import TallerRenderer from '@/features/evaluation/components/student/TallerRenderer';
 import ExamRenderer from '@/features/evaluation/components/student/ExamRenderer';
@@ -51,6 +53,7 @@ export default function ActivityDetailPage() {
 
   // Quiz state (fetched via quiz-specific endpoint for quiz-* IDs)
   const [quiz, setQuiz] = useState(null);
+  const [quizAttempt, setQuizAttempt] = useState(null);
 
   // Shared state
   const [isLoading, setIsLoading] = useState(true);
@@ -63,8 +66,12 @@ export default function ActivityDetailPage() {
       setError(null);
       try {
         if (String(activityId).startsWith('quiz-')) {
-          const q = await fetchQuizById(String(activityId));
+          const [q, attempt] = await Promise.all([
+            fetchQuizById(String(activityId)),
+            quizApi.getMyAttempt(String(activityId)),
+          ]);
           setQuiz(q);
+          setQuizAttempt(attempt);
         } else {
           const a = await activityApi.getById(String(activityId));
           setActivity(a);
@@ -92,6 +99,13 @@ export default function ActivityDetailPage() {
     return null;
   }, [activity]);
 
+  // ── Parse previously saved result from submission.content ─────────────────
+  const submittedResult = useMemo(() => {
+    if (!submission?.content) return null;
+    if (!['SUBMITTED', 'GRADED'].includes(submission.status)) return null;
+    try { return JSON.parse(submission.content); } catch { return null; }
+  }, [submission]);
+
   // ── Shared loading / error states ─────────────────────────────────────────
 
   if (isLoading) {
@@ -113,6 +127,20 @@ export default function ActivityDetailPage() {
 
   // ── Quiz (fetched via quiz-specific endpoint) ─────────────────────────────
   if (quiz) {
+    const quizId = String(activityId);
+
+    const handleQuizSubmitted = async ({ answers, score, correct, total, passed }) => {
+      try {
+        const answersArray = Object.entries(answers ?? {}).map(
+          ([questionId, selectedOptionId]) => ({ questionId, selectedOptionId }),
+        );
+        const attempt = await quizApi.submitAttempt(quizId, answersArray);
+        setQuizAttempt(attempt);
+      } catch {
+        // ResultsScreen is already shown from local renderer state; backend is best-effort
+      }
+    };
+
     return (
       <Box className={styles.page}>
         <Box className={styles.rendererWrapper}>
@@ -126,10 +154,21 @@ export default function ActivityDetailPage() {
           </Button>
           <Typography variant="h4" className={styles.title}>{quiz.title}</Typography>
           <Divider className={styles.divider} />
-          <QuizRenderer
-            questions={quiz.questions ?? []}
-            passingScore={quiz.passingScore ?? 70}
-          />
+          {quizAttempt ? (
+            <ResultsScreen
+              score={quizAttempt.score}
+              correct={null}
+              total={null}
+              passed={quizAttempt.passed}
+              showEmojis
+            />
+          ) : (
+            <QuizRenderer
+              questions={quiz.questions ?? []}
+              passingScore={quiz.passingScore ?? 70}
+              onSubmitted={handleQuizSubmitted}
+            />
+          )}
         </Box>
       </Box>
     );
@@ -154,14 +193,39 @@ export default function ActivityDetailPage() {
     const questions = parsedContent.questions;
     const passingScore = parsedContent.passingScore ?? 70;
 
+    // Re-entry: show previously submitted results
+    if (submittedResult || ['SUBMITTED', 'GRADED'].includes(submission?.status)) {
+      return (
+        <ResultsScreen
+          score={submittedResult?.score ?? null}
+          correct={submittedResult?.correct ?? null}
+          total={submittedResult?.total ?? null}
+          passed={submittedResult?.passed ?? null}
+          showEmojis={activityType !== 'EXAM'}
+        />
+      );
+    }
+
+    const handleSubmitted = async ({ answers, score, correct, total, passed }) => {
+      try {
+        if (submission?.id) {
+          await submissionApi.saveDraft(submission.id, {
+            content: JSON.stringify({ answers, score, correct, total, passed }),
+          });
+          const updated = await submissionApi.submit(submission.id);
+          setSubmission(updated);
+        }
+      } catch {
+        setSubmission((s) => (s ? { ...s, status: 'SUBMITTED' } : s));
+      }
+    };
+
     if (activityType === 'QUIZ') {
       return (
         <QuizRenderer
           questions={questions}
           passingScore={passingScore}
-          onSubmitted={() =>
-            setSubmission((s) => (s ? { ...s, status: 'SUBMITTED' } : s))
-          }
+          onSubmitted={handleSubmitted}
         />
       );
     }
@@ -171,9 +235,7 @@ export default function ActivityDetailPage() {
         <TallerRenderer
           questions={questions}
           passingScore={passingScore}
-          onSubmitted={() =>
-            setSubmission((s) => (s ? { ...s, status: 'SUBMITTED' } : s))
-          }
+          onSubmitted={handleSubmitted}
         />
       );
     }
@@ -184,9 +246,7 @@ export default function ActivityDetailPage() {
           questions={questions}
           passingScore={passingScore}
           timeLimit={activity.timeLimit}
-          onSubmitted={() =>
-            setSubmission((s) => (s ? { ...s, status: 'SUBMITTED' } : s))
-          }
+          onSubmitted={handleSubmitted}
         />
       );
     }

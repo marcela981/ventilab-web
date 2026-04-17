@@ -1,5 +1,4 @@
 import React, { useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import Zoom from 'react-medium-image-zoom';
 import 'react-medium-image-zoom/dist/styles.css';
 import {
@@ -273,47 +272,6 @@ const ImageGallery = ({
       </ImageList>
     </GalleryContainer>
   );
-};
-
-ImageGallery.propTypes = {
-  /**
-   * Array de objetos de imagen.
-   * Cada objeto debe tener:
-   * - src (string, requerido): URL de la imagen
-   * - alt (string, opcional): Texto alternativo para accesibilidad
-   * - caption (string, opcional): Descripción que se muestra bajo la imagen
-   * 
-   * @required
-   */
-  images: PropTypes.arrayOf(
-    PropTypes.shape({
-      src: PropTypes.string.isRequired,
-      alt: PropTypes.string,
-      caption: PropTypes.string,
-    })
-  ).isRequired,
-
-  /**
-   * Número de columnas fijo (opcional).
-   * Si no se proporciona, se calcula automáticamente según el breakpoint:
-   * - Móvil (< md): 2 columnas
-   * - Tablet (md-lg): 3 columnas
-   * - Desktop (>= lg): 4 columnas
-   */
-  columns: PropTypes.number,
-
-  /**
-   * Callback llamado cuando una imagen falla al cargar.
-   * 
-   * @param {number} index - Índice de la imagen que falló
-   * @param {string} src - URL de la imagen que falló
-   */
-  onImageError: PropTypes.func,
-};
-
-ImageGallery.defaultProps = {
-  columns: null, // Se calcula automáticamente
-  onImageError: null,
 };
 
 export default ImageGallery;

@@ -10,7 +10,6 @@
  */
 
 import React, { useMemo, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
 import {
   MedicalServices as MedicalServicesIcon,
@@ -230,44 +229,6 @@ const ModuleNavigationRouter = ({
       <ModuleInfoPanel />
     </Box>
   );
-};
-
-ModuleNavigationRouter.propTypes = {
-  moduleIdFromQuery: PropTypes.string,
-  lessonIdFromQuery: PropTypes.string,
-  router: PropTypes.shape({
-    pathname: PropTypes.string.isRequired,
-    query: PropTypes.object.isRequired,
-    push: PropTypes.func.isRequired,
-  }).isRequired,
-  activeCategoryId: PropTypes.string,
-  activeLessonId: PropTypes.string,
-  setModule: PropTypes.func.isRequired,
-  setCategory: PropTypes.func.isRequired,
-  setLesson: PropTypes.func.isRequired,
-  handleSectionClick: PropTypes.func.isRequired,
-  levelProgress: PropTypes.object.isRequired,
-  getModulesByLevel: PropTypes.func.isRequired,
-  calculateModuleProgress: PropTypes.func.isRequired,
-  isModuleAvailable: PropTypes.func.isRequired,
-  getModuleStatus: PropTypes.func.isRequired,
-  getTooltipMessage: PropTypes.func.isRequired,
-  favoriteModules: PropTypes.instanceOf(Set).isRequired,
-  toggleFavorite: PropTypes.func.isRequired,
-  levels: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-    color: PropTypes.string.isRequired,
-    emoji: PropTypes.string,
-  })).isRequired,
-  moduleContent: PropTypes.object,
-  moduleMetadata: PropTypes.shape({
-    id: PropTypes.string,
-    title: PropTypes.string,
-    description: PropTypes.string,
-    categories: PropTypes.object,
-  }),
 };
 
 export default ModuleNavigationRouter;

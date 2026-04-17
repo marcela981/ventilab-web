@@ -13,8 +13,8 @@ export function useActivities() {
     try {
       const items = await activityApi.list();
       setActivities(items);
-    } catch (e: any) {
-      setError(e?.message ?? 'Error cargando actividades');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error cargando actividades');
     } finally {
       setIsLoading(false);
     }

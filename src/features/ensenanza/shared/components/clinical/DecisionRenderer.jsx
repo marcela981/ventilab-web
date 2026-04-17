@@ -1,5 +1,4 @@
 import React, { useMemo, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Card,
@@ -162,13 +161,6 @@ const DecisionRenderer = ({ decision, selectedOptions, onSelectionChange, showFe
       </CardContent>
     </Card>
   );
-};
-
-DecisionRenderer.propTypes = {
-  decision: PropTypes.object.isRequired,
-  selectedOptions: PropTypes.array,
-  onSelectionChange: PropTypes.func.isRequired,
-  showFeedback: PropTypes.bool,
 };
 
 export default DecisionRenderer;

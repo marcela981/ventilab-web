@@ -10,7 +10,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useRouter } from 'next/router';
 import {
   TableRow,
@@ -187,27 +186,6 @@ const StudentRow = ({ student, onViewDetails }) => {
       </TableCell>
     </TableRow>
   );
-};
-
-StudentRow.propTypes = {
-  student: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string,
-    email: PropTypes.string.isRequired,
-    image: PropTypes.string,
-    stats: PropTypes.shape({
-      completedLessons: PropTypes.number,
-      totalLessons: PropTypes.number,
-      totalTimeSpent: PropTypes.number,
-      lastAccess: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
-      progressPercentage: PropTypes.number,
-    }),
-  }).isRequired,
-  onViewDetails: PropTypes.func,
-};
-
-StudentRow.defaultProps = {
-  onViewDetails: null,
 };
 
 export default StudentRow;

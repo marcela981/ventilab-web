@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Paper, Box, Typography } from '@mui/material';
 import { Lock as LockIcon } from '@mui/icons-material';
 import PrerequisiteTooltip from '@/features/ensenanza/shared/components/modulos/ModuleCard/PrerequisiteTooltip';
@@ -39,10 +38,6 @@ const ClinicalCaseLockedView = ({ moduleId }) => {
       </Typography>
     </Paper>
   );
-};
-
-ClinicalCaseLockedView.propTypes = {
-  moduleId: PropTypes.string.isRequired,
 };
 
 export default ClinicalCaseLockedView;

@@ -30,7 +30,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Paper,
@@ -275,85 +274,6 @@ const StudentsList = ({
       )}
     </Box>
   );
-};
-
-StudentsList.propTypes = {
-  /**
-   * Array of students to display
-   */
-  students: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string,
-      email: PropTypes.string.isRequired,
-      image: PropTypes.string,
-      stats: PropTypes.shape({
-        completedLessons: PropTypes.number,
-        totalLessons: PropTypes.number,
-        totalTimeSpent: PropTypes.number,
-        lastAccess: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
-        progressPercentage: PropTypes.number,
-      }),
-    })
-  ).isRequired,
-
-  /**
-   * Whether data is loading
-   */
-  isLoading: PropTypes.bool,
-
-  /**
-   * Callback when "View Details" is clicked
-   */
-  onViewDetails: PropTypes.func,
-
-  /**
-   * Current page (0-indexed)
-   */
-  page: PropTypes.number.isRequired,
-
-  /**
-   * Rows per page
-   */
-  rowsPerPage: PropTypes.number.isRequired,
-
-  /**
-   * Total count of students (for pagination)
-   */
-  totalCount: PropTypes.number.isRequired,
-
-  /**
-   * Callback when page changes
-   */
-  onPageChange: PropTypes.func.isRequired,
-
-  /**
-   * Callback when rows per page changes
-   */
-  onRowsPerPageChange: PropTypes.func.isRequired,
-
-  /**
-   * Property to sort by
-   */
-  orderBy: PropTypes.string,
-
-  /**
-   * Sort direction ('asc' or 'desc')
-   */
-  order: PropTypes.oneOf(['asc', 'desc']),
-
-  /**
-   * Callback when sort is requested
-   */
-  onRequestSort: PropTypes.func,
-};
-
-StudentsList.defaultProps = {
-  isLoading: false,
-  onViewDetails: null,
-  orderBy: 'name',
-  order: 'asc',
-  onRequestSort: null,
 };
 
 export default StudentsList;

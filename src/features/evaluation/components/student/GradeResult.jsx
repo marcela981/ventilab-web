@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Alert, Stack, Typography } from '@mui/material';
 
 export default function GradeResult({ submission }) {
@@ -23,8 +22,4 @@ export default function GradeResult({ submission }) {
     </Stack>
   );
 }
-
-GradeResult.propTypes = {
-  submission: PropTypes.object,
-};
 

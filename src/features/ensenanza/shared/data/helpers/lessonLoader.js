@@ -75,7 +75,6 @@ class LRUCache {
 
   clear() {
     this.cache.clear();
-    console.log('[lessonLoader] Cache cleared');
   }
 
   get size() {
@@ -266,13 +265,11 @@ async function loadFromApi(lessonId) {
   if (!result) return null;
 
   if (result.source === 'page' && result.data) {
-    console.log(`[lessonLoader] DB hit for: ${lessonId}`);
     return transformPageToLessonData(result.data);
   }
 
   if (result.source === 'lesson') {
     // Not migrated yet — caller should use legacy JSON
-    console.log(`[lessonLoader] Not migrated: ${lessonId} (will use legacy JSON)`);
     return null;
   }
 
@@ -663,12 +660,10 @@ async function loadFromLegacyJson(lessonId, moduleId) {
  * @returns {Promise<Object>} Normalized lesson data
  */
 export async function loadLessonById(lessonId, moduleId) {
-  console.log(`[lessonLoader] Loading lesson: ${lessonId} (module: ${moduleId})`);
 
   // 1. Cache check
   const cached = getCachedLesson(lessonId);
   if (cached) {
-    console.log(`[lessonLoader] Cache hit: ${lessonId}`);
     return cached;
   }
 
@@ -681,7 +676,6 @@ export async function loadLessonById(lessonId, moduleId) {
       apiData.lessonId = lessonId;
       if (!apiData.moduleId) apiData.moduleId = moduleId;
       cacheLesson(lessonId, apiData);
-      console.log(`[lessonLoader] Loaded from DB: ${lessonId}`);
       return apiData;
     }
   } catch (apiError) {
@@ -704,10 +698,8 @@ export async function loadLessonById(lessonId, moduleId) {
   }
 
   // 3. Not migrated (source === "lesson") or SSR fallback — use legacy JSON
-  console.log(`[lessonLoader] Falling back to legacy JSON: ${lessonId}`);
   const legacyData = await loadFromLegacyJson(lessonId, moduleId);
   cacheLesson(lessonId, legacyData);
-  console.log(`[lessonLoader] Loaded from legacy JSON: ${lessonId}`);
   return legacyData;
 }
 

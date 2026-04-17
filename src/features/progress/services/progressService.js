@@ -474,14 +474,6 @@ export const getModuleProgress = async (moduleId) => {
  * // }
  */
 export const updateLessonProgress = async (payload) => {
-  console.log('');
-  console.log('═══════════════════════════════════════════════════════════════');
-  console.log('🚀 [FRONTEND] updateLessonProgress CALLED');
-  console.log('═══════════════════════════════════════════════════════════════');
-  console.log('📍 Timestamp:', new Date().toISOString());
-  console.log('📍 Current URL:', typeof window !== 'undefined' ? window.location.href : 'N/A');
-  console.log('📦 payload:', JSON.stringify(payload, null, 2));
-  console.log('');
 
   // ==========================================================================
   // STRICT VALIDATION - Prevent 400 errors from invalid payloads
@@ -514,8 +506,6 @@ export const updateLessonProgress = async (payload) => {
       throw new Error('completionPercentage must be a number between 0 and 100');
     }
   }
-
-  console.log('[progressService] ✅ Validation passed:', { lessonId: payload.lessonId, moduleId: payload.moduleId });
 
   // ==========================================================================
   // BUILD CLEAN PAYLOAD - Only send fields expected by backend
@@ -582,13 +572,6 @@ export const updateLessonProgress = async (payload) => {
 
       const url = buildUrl(`/progress/lesson/${lessonId}`);
       
-      console.log('📡 [FRONTEND] Request details:');
-      console.log('   - URL:', url);
-      console.log('   - Method: PUT');
-      console.log('   - Body:', JSON.stringify(body, null, 2));
-      console.log('   - Headers:', JSON.stringify(getAuthHeaders(), null, 2));
-      console.log('═══════════════════════════════════════════════════════════════');
-      console.log('');
       
       let response;
 
@@ -600,12 +583,6 @@ export const updateLessonProgress = async (payload) => {
           body: JSON.stringify(body),
         });
         
-        console.log('📥 [FRONTEND] Response received:');
-        console.log('   - Status:', response.status);
-        console.log('   - StatusText:', response.statusText);
-        console.log('   - OK:', response.ok);
-        console.log('   - Headers:', JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2));
-        console.log('');
         
       } catch (fetchError) {
         console.error('');
@@ -629,10 +606,6 @@ export const updateLessonProgress = async (payload) => {
         return data; // Return structured rate limit result
       }
       
-      console.log('✅ [FRONTEND] SUCCESS - Response data:');
-      console.log(JSON.stringify(data, null, 2));
-      console.log('═══════════════════════════════════════════════════════════════');
-      console.log('');
       
       return data;
     } catch (error) {

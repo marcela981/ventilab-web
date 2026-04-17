@@ -95,8 +95,6 @@ export default function useAchievementNotifications(options = {}) {
       return;
     }
 
-    console.log(`[useAchievementNotifications] Adding to queue: ${achievement.type}`);
-
     // Add achievement to the end of the queue
     setQueue(prevQueue => [...prevQueue, {
       ...achievement,
@@ -109,7 +107,6 @@ export default function useAchievementNotifications(options = {}) {
    * Manually dismiss the current notification and show next in queue
    */
   const dismissNotification = useCallback(() => {
-    console.log('[useAchievementNotifications] Dismissing current notification');
     
     // Clear any pending timeout
     if (timeoutRef.current) {
@@ -126,7 +123,6 @@ export default function useAchievementNotifications(options = {}) {
    * Clear all notifications from queue
    */
   const clearQueue = useCallback(() => {
-    console.log('[useAchievementNotifications] Clearing notification queue');
     setQueue([]);
     dismissNotification();
   }, [dismissNotification]);
@@ -152,10 +148,6 @@ export default function useAchievementNotifications(options = {}) {
     // Get the next notification from queue (FIFO)
     const [nextNotification, ...remainingQueue] = queue;
     
-    console.log(
-      `[useAchievementNotifications] Showing notification: ${nextNotification.type} ` +
-      `(${remainingQueue.length} remaining in queue)`
-    );
 
     // Update queue (remove the notification we're about to show)
     setQueue(remainingQueue);
@@ -166,7 +158,6 @@ export default function useAchievementNotifications(options = {}) {
     // Set up auto-dismiss if enabled
     if (autoDismiss) {
       timeoutRef.current = setTimeout(() => {
-        console.log(`[useAchievementNotifications] Auto-dismissing ${nextNotification.type}`);
         setCurrentNotification(null);
         isProcessingRef.current = false;
         timeoutRef.current = null;

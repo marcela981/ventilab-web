@@ -64,7 +64,6 @@ export const useProgressUpdater = ({
       }
     }
 
-    console.log('[useProgressUpdater] Validation passed, proceeding with update', { lessonId, moduleId: resolvedModuleId });
     
     // Generate client event ID for outbox tracking
     const clientEventId = generateClientEventId();
@@ -159,7 +158,6 @@ export const useProgressUpdater = ({
           // Schedule automatic retry after cooldown (default 5 seconds)
           const retryAfter = result.retryAfter || 5;
           setTimeout(() => {
-            console.log('[useProgressUpdater] Retrying after rate limit cooldown...');
             setIsRateLimited?.(false); // Clear rate limit state before retry (defensive call)
             performUpdate(0); // Retry the update
           }, retryAfter * 1000);

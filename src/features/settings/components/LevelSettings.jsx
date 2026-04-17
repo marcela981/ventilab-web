@@ -15,7 +15,6 @@
  */
 
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Typography,
@@ -168,8 +167,6 @@ export function LevelSettings({ onLevelChange }) {
       setIsUpdating(true);
       setShowConfirmDialog(false);
 
-      console.log(`🔄 [LevelSettings] Changing level from ${currentLevel} to ${selectedLevel}`);
-
       // Call API to update user level
       const token = localStorage.getItem('token');
       const response = await fetch(`/api/users/${user.id}/level`, {
@@ -186,8 +183,6 @@ export function LevelSettings({ onLevelChange }) {
       if (!response.ok || !result.success) {
         throw new Error(result.error?.message || 'Error al actualizar el nivel');
       }
-
-      console.log(`✅ [LevelSettings] Level updated successfully to ${selectedLevel}`);
 
       // Refresh user data
       await refreshUser();
@@ -497,13 +492,5 @@ export function LevelSettings({ onLevelChange }) {
     </Box>
   );
 }
-
-LevelSettings.propTypes = {
-  onLevelChange: PropTypes.func,
-};
-
-LevelSettings.defaultProps = {
-  onLevelChange: null,
-};
 
 export default LevelSettings;

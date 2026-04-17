@@ -10,7 +10,6 @@
  */
 
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Button,
@@ -83,8 +82,6 @@ const calculateTopic = (context) => {
   // Limitar longitud del topic a 200 caracteres
   return topic.length > 200 ? topic.substring(0, 200) + '...' : topic;
 };
-
-
 
 /**
  * Componente principal AITopicExpander
@@ -354,7 +351,6 @@ const AITopicExpander = ({
       };
     }
   }, [open]);
-
 
   // Manejar apertura del panel
   const handleOpen = useCallback(() => {
@@ -1640,36 +1636,6 @@ const AITopicExpander = ({
       </AccordionDetails>
     </Accordion>
   );
-};
-
-AITopicExpander.propTypes = {
-  context: PropTypes.shape({
-    moduleId: PropTypes.string,
-    lessonId: PropTypes.string,
-    sectionId: PropTypes.string,
-    moduleTitle: PropTypes.string,
-    lessonTitle: PropTypes.string,
-    sectionTitle: PropTypes.string,
-    breadcrumbs: PropTypes.arrayOf(PropTypes.string),
-    pageUrl: PropTypes.string,
-    locale: PropTypes.string,
-    userLevel: PropTypes.oneOf(['beginner', 'intermediate', 'advanced']),
-    visibleText: PropTypes.string,
-    selectionText: PropTypes.string,
-    contentLength: PropTypes.number,
-    sectionContent: PropTypes.string,
-    userSelection: PropTypes.string,
-    visibleTextBlock: PropTypes.string,
-    pageType: PropTypes.string,
-    sectionType: PropTypes.string,
-  }).isRequired,
-  variant: PropTypes.oneOf(['button', 'accordion']),
-  enabled: PropTypes.bool,
-};
-
-AITopicExpander.defaultProps = {
-  variant: 'button',
-  enabled: true,
 };
 
 export default AITopicExpander;

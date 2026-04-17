@@ -15,7 +15,6 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Card,
@@ -597,17 +596,6 @@ export function EditProfileForm({ user, onSave, onCancel }) {
     </Card>
   );
 }
-
-EditProfileForm.propTypes = {
-  user: PropTypes.shape({
-    name: PropTypes.string,
-    email: PropTypes.string,
-    bio: PropTypes.string,
-    image: PropTypes.string,
-  }).isRequired,
-  onSave: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
-};
 
 export default EditProfileForm;
 

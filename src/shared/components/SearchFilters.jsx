@@ -18,7 +18,6 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Accordion,
@@ -719,50 +718,6 @@ const SearchFilters = ({
   );
 };
 
-SearchFilters.propTypes = {
-  /**
-   * Objeto de filtros actual del hook useSearch
-   */
-  filters: PropTypes.shape({
-    categories: PropTypes.arrayOf(PropTypes.string),
-    difficulties: PropTypes.arrayOf(PropTypes.string),
-    duration: PropTypes.string,
-    status: PropTypes.string,
-    type: PropTypes.string,
-  }).isRequired,
-
-  /**
-   * Función para actualizar un filtro individual
-   */
-  setFilter: PropTypes.func.isRequired,
-
-  /**
-   * Función para limpiar todos los filtros
-   */
-  clearFilters: PropTypes.func.isRequired,
-
-  /**
-   * Número total de resultados encontrados
-   */
-  totalResults: PropTypes.number,
-
-  /**
-   * Indica si está cargando resultados
-   */
-  isSearching: PropTypes.bool,
-
-  /**
-   * Callback cuando se aplican filtros (modo manual)
-   */
-  onApplyFilters: PropTypes.func,
-
-  /**
-   * Si true, aplica filtros automáticamente al cambiar
-   * Si false, requiere hacer clic en "Aplicar Filtros"
-   */
-  autoApply: PropTypes.bool,
-};
-
 export default SearchFilters;
 
 /**
@@ -879,16 +834,5 @@ export const ActiveFiltersChips = ({ filters, setFilter }) => {
       </Stack>
     </Paper>
   );
-};
-
-ActiveFiltersChips.propTypes = {
-  filters: PropTypes.shape({
-    categories: PropTypes.arrayOf(PropTypes.string),
-    difficulties: PropTypes.arrayOf(PropTypes.string),
-    duration: PropTypes.string,
-    status: PropTypes.string,
-    type: PropTypes.string,
-  }).isRequired,
-  setFilter: PropTypes.func.isRequired,
 };
 

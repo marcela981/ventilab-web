@@ -16,7 +16,6 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import { Line } from 'react-chartjs-2';
 import {
   Chart,
@@ -320,23 +319,5 @@ const WaveformVisualization = ({ waveformData }) => {
   );
 };
 
-WaveformVisualization.propTypes = {
-  waveformData: PropTypes.shape({
-    modality: PropTypes.string,
-    params: PropTypes.shape({
-      vt: PropTypes.number,
-      f: PropTypes.number,
-      peep: PropTypes.number,
-      pinsp: PropTypes.number
-    }),
-    annotations: PropTypes.arrayOf(PropTypes.shape({ t: PropTypes.number, label: PropTypes.string }))
-  })
-};
-
-WaveformVisualization.defaultProps = {
-  waveformData: { modality: 'VCV', params: { vt: 500, f: 15, peep: 5, pinsp: 18 }, annotations: [] }
-};
-
 export default WaveformVisualization;
-
 

@@ -15,6 +15,7 @@ import { Box, Button, Stack, Typography } from '@mui/material';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { useActivities } from '@/features/evaluation/hooks/useActivities';
 import { useQuizzes } from '@/features/evaluation/hooks/useQuizzes';
+import { useMySubmissions } from '@/features/evaluation/hooks/useMySubmissions';
 import ActivityList from '@/features/evaluation/components/student/ActivityList';
 import styles from './UI/evaluation.module.css';
 
@@ -22,6 +23,7 @@ export default function EvaluationIndexPage() {
   const { isTeacher } = useAuth();
   const { activities, isLoading: loadingActivities, error: errorActivities, refresh: refreshActivities } = useActivities();
   const { quizzes, isLoading: loadingQuizzes, error: errorQuizzes, refresh: refreshQuizzes } = useQuizzes();
+  const { submissionMap, refetch: refetchSubmissions } = useMySubmissions();
 
   const isLoading = loadingActivities || loadingQuizzes;
   const error = errorActivities ?? errorQuizzes ?? null;
@@ -29,6 +31,7 @@ export default function EvaluationIndexPage() {
   function refresh() {
     refreshActivities();
     refreshQuizzes();
+    refetchSubmissions();
   }
 
   if (isTeacher && isTeacher()) {
@@ -76,6 +79,7 @@ export default function EvaluationIndexPage() {
         isLoading={isLoading}
         error={error}
         onRetry={refresh}
+        submissionMap={submissionMap}
       />
     </Box>
   );

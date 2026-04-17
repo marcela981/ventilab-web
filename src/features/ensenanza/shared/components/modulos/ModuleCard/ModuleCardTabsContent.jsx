@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Box, Chip, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
 import { CheckCircle } from '@mui/icons-material';
 import ModuleLessonsList from '@/features/ensenanza/shared/components/modulos/ModuleLessonsList/ModuleLessonsList';
@@ -183,14 +182,6 @@ const ModuleCardTabsContent = ({
   }
 
   return null;
-};
-
-ModuleCardTabsContent.propTypes = {
-  activeTab: PropTypes.number.isRequired,
-  module: PropTypes.object.isRequired,
-  isAvailable: PropTypes.bool.isRequired,
-  completedLessons: PropTypes.array.isRequired,
-  onLessonClick: PropTypes.func
 };
 
 export default ModuleCardTabsContent;

@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Box, Tabs, Tab, Typography } from '@mui/material';
 import { Info, List as ListIcon } from '@mui/icons-material';
 import styles from '@/styles/curriculum.module.css';
@@ -103,14 +102,6 @@ const LessonCardBody = ({
       </Box>
     </div>
   );
-};
-
-LessonCardBody.propTypes = {
-  activeTab: PropTypes.number.isRequired,
-  setActiveTab: PropTypes.func.isRequired,
-  lesson: PropTypes.object.isRequired,
-  isAvailable: PropTypes.bool.isRequired,
-  handleCardBodyInteraction: PropTypes.func.isRequired
 };
 
 export default LessonCardBody;

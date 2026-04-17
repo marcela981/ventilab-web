@@ -49,8 +49,6 @@
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.2",
     "chart.js": "^4.4.9",
-    "chartjs-adapter-date-fns": "^3.0.0",
-    "chartjs-plugin-zoom": "^2.2.0",
     "date-fns": "^4.1.0",
     "dompurify": "^3.3.0",
     "fast-glob": "^3.3.2",
@@ -60,7 +58,6 @@
     "next": "^16.1.1",
     "next-auth": "^4.24.13",
     "prisma": "^6.19.2",
-    "prop-types": "^15.8.1",
     "react": "^19.0.0",
     "react-chartjs-2": "^5.3.0",
     "react-confetti": "^6.4.0",
@@ -77,8 +74,7 @@
     "remark-math": "^6.0.0",
     "socket.io-client": "^4.8.3",
     "swr": "^2.3.8",
-    "zod": "^3.25.76",
-    "zustand": "^5.0.5"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

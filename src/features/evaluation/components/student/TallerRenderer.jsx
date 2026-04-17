@@ -15,7 +15,6 @@
  */
 
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Button,
@@ -98,7 +97,7 @@ export default function TallerRenderer({ questions, passingScore, onSubmitted })
     const { score, correct, total } = calcAutoScore(questions, answers);
     const passed = score !== null ? score >= passingScore : null;
     setResult({ score, correct, total, passed });
-    onSubmitted?.();
+    onSubmitted?.({ answers, score, correct, total, passed });
   };
 
   // ── Results ────────────────────────────────────────────────────────────────
@@ -246,26 +245,3 @@ export default function TallerRenderer({ questions, passingScore, onSubmitted })
   );
 }
 
-TallerRenderer.propTypes = {
-  questions: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      text: PropTypes.string.isRequired,
-      options: PropTypes.arrayOf(
-        PropTypes.shape({
-          id: PropTypes.string.isRequired,
-          text: PropTypes.string.isRequired,
-          isCorrect: PropTypes.bool,
-        })
-      ),
-      explanation: PropTypes.string,
-      hint: PropTypes.string,
-    })
-  ).isRequired,
-  passingScore: PropTypes.number,
-  onSubmitted: PropTypes.func,
-};
-
-TallerRenderer.defaultProps = {
-  passingScore: 70,
-};

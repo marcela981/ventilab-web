@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import dynamic from 'next/dynamic';
 import { Box, styled } from '@mui/material';
 import vscDarkPlus from 'react-syntax-highlighter/dist/esm/styles/prism/vsc-dark-plus';
@@ -149,23 +148,6 @@ const MedicalCodeBlock = ({ children, className, inline = false, language, ...pr
       </SyntaxHighlighter>
     </StyledCodeContainer>
   );
-};
-
-MedicalCodeBlock.propTypes = {
-  /** Código a renderizar */
-  children: PropTypes.node.isRequired,
-  /** Clase CSS opcional (puede incluir lenguaje como 'language-javascript') */
-  className: PropTypes.string,
-  /** Si es código inline (true) o bloque (false) */
-  inline: PropTypes.bool,
-  /** Lenguaje del código para syntax highlighting */
-  language: PropTypes.string,
-};
-
-MedicalCodeBlock.defaultProps = {
-  className: '',
-  inline: false,
-  language: 'text',
 };
 
 export default MedicalCodeBlock;

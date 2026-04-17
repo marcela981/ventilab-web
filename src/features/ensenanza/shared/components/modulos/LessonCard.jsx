@@ -1,5 +1,4 @@
 import React, { useMemo, useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import { useTheme, useMediaQuery, Box, LinearProgress, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useLearningProgress } from '@/features/progress/LearningProgressContext';
@@ -261,35 +260,5 @@ const LessonCard = ({
 };
 
 // PropTypes con documentación completa
-LessonCard.propTypes = {
-  /** Objeto con todos los datos de la lección */
-  lesson: PropTypes.shape({
-    /** ID del módulo al que pertenece */
-    moduleId: PropTypes.string.isRequired,
-    /** ID único de la lección */
-    lessonId: PropTypes.string.isRequired,
-    /** Título de la lección */
-    title: PropTypes.string.isRequired,
-    /** Descripción de la lección */
-    description: PropTypes.string,
-    /** Tiempo estimado en minutos */
-    estimatedTime: PropTypes.number,
-    /** Nivel de dificultad (ej: "básico", "intermedio", "avanzado") */
-    difficulty: PropTypes.string,
-    /** Orden de la lección */
-    order: PropTypes.number,
-    /** Número de páginas (sections.length) */
-    pages: PropTypes.number
-  }).isRequired,
-  /** Indica si la lección está disponible para el usuario */
-  isAvailable: PropTypes.bool,
-  /** Color hex del nivel para personalización visual */
-  levelColor: PropTypes.string.isRequired,
-  /** Callback ejecutado al hacer click en la lección (moduleId, lessonId) */
-  onLessonClick: PropTypes.func,
-  /** Indica si la lección está en construcción (allowEmpty) */
-  allowEmpty: PropTypes.bool
-};
-
 export default LessonCard;
 

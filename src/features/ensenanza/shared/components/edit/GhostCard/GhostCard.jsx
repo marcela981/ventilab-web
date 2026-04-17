@@ -9,7 +9,6 @@
  * Sin sx props — toda la UI está en ui/GhostCard.module.css.
  */
 import React from 'react';
-import PropTypes from 'prop-types';
 import AddIcon from '@mui/icons-material/Add';
 import styles from './ui/GhostCard.module.css';
 
@@ -36,9 +35,3 @@ export default function GhostCard({ label, onCreate }) {
   );
 }
 
-GhostCard.propTypes = {
-  /** Texto descriptivo de la acción, ej: "Agregar lección" */
-  label: PropTypes.string.isRequired,
-  /** Callback disparado al hacer clic o presionar Enter/Space */
-  onCreate: PropTypes.func,
-};

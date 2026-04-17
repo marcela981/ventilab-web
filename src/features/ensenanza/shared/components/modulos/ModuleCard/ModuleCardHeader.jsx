@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import { Box, IconButton, Typography } from '@mui/material';
 import { BookmarkBorder, Bookmark, CheckCircle, TrendingUp } from '@mui/icons-material';
 import ModuleStatusIcons from './ModuleStatusIcons';
@@ -27,7 +26,6 @@ const ModuleCardHeader = ({
   const handleEmojiChange = (newEmoji) => {
     setEmoji(newEmoji);
     // TODO Fase 3: PATCH /api/modules/{module.id} { emoji: newEmoji }
-    console.log('[EmojiPicker] emoji updated:', { moduleId: module.id, emoji: newEmoji });
   };
 
   return (
@@ -193,19 +191,6 @@ const ModuleCardHeader = ({
       </header>
     </>
   );
-};
-
-ModuleCardHeader.propTypes = {
-  module: PropTypes.object.isRequired,
-  isFavorite: PropTypes.bool.isRequired,
-  isAvailable: PropTypes.bool.isRequired,
-  status: PropTypes.string.isRequired,
-  availabilityStatus: PropTypes.string.isRequired,
-  levelColor: PropTypes.string.isRequired,
-  isHovered: PropTypes.bool.isRequired,
-  onToggleFavorite: PropTypes.func.isRequired,
-  completedAt: PropTypes.string,
-  missingPrerequisites: PropTypes.arrayOf(PropTypes.string)
 };
 
 export default ModuleCardHeader;

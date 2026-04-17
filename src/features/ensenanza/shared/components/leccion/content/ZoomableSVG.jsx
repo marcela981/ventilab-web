@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import dynamic from 'next/dynamic';
 import DOMPurify from 'dompurify';
 import {
@@ -329,51 +328,6 @@ const ZoomableSVG = ({
       )}
     </Box>
   );
-};
-
-ZoomableSVG.propTypes = {
-  /**
-   * URL del archivo SVG a cargar.
-   * Se prioriza sobre svgContent si ambos están presentes.
-   */
-  src: PropTypes.string,
-  
-  /**
-   * Contenido SVG como string (inline).
-   * Útil para SVG generados dinámicamente.
-   */
-  svgContent: PropTypes.string,
-  
-  /**
-   * Texto alternativo para accesibilidad.
-   * Describe el contenido del SVG para lectores de pantalla.
-   */
-  alt: PropTypes.string.isRequired,
-  
-  /**
-   * Leyenda descriptiva que se muestra debajo del SVG.
-   */
-  caption: PropTypes.string,
-  
-  /**
-   * Nivel de zoom inicial (1 = 100%).
-   */
-  defaultZoom: PropTypes.number,
-  
-  /**
-   * Callback llamado cuando ocurre un error al cargar el SVG.
-   * 
-   * @param {Error} error - Objeto de error
-   */
-  onError: PropTypes.func,
-};
-
-ZoomableSVG.defaultProps = {
-  src: null,
-  svgContent: null,
-  caption: null,
-  defaultZoom: 1,
-  onError: null,
 };
 
 export default ZoomableSVG;

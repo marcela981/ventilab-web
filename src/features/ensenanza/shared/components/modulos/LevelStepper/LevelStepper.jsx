@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -171,7 +170,6 @@ const LevelStepper = ({
     if (percentage > 0) return { label: t('status.inProgress'), color: 'primary' };
     return { label: t('status.notStarted'), color: 'default' };
   };
-
 
   // Renderizar módulos usando ModuleGrid con datos del backend.
   // dbProgressFn: función de progreso por módulo respaldada por API (se genera por nivel en el map).
@@ -643,38 +641,5 @@ const LevelStepper = ({
 };
 
 // PropTypes
-LevelStepper.propTypes = {
-  levels: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-    color: PropTypes.string.isRequired,
-    emoji: PropTypes.string // Emoji opcional para cada nivel
-  })),
-  levelProgress: PropTypes.objectOf(PropTypes.shape({
-    // Estructura nueva (levelProgressAggregated): basada en lecciones
-    completedLessons: PropTypes.number,
-    totalLessons: PropTypes.number,
-    percentage: PropTypes.number,
-    totalModules: PropTypes.number,
-    completedPages: PropTypes.number,
-    totalPages: PropTypes.number,
-    // Estructura legacy: basada en módulos
-    total: PropTypes.number,
-    completed: PropTypes.number,
-  })),
-  getModulesByLevel: PropTypes.func,
-  calculateModuleProgress: PropTypes.func,
-  isModuleAvailable: PropTypes.func,
-  getModuleStatus: PropTypes.func,
-  getTooltipMessage: PropTypes.func,
-  onModuleClick: PropTypes.func,
-  onSectionClick: PropTypes.func,
-  favoriteModules: PropTypes.instanceOf(Set),
-  onToggleFavorite: PropTypes.func,
-  moduleGrid: PropTypes.element,
-  renderMode: PropTypes.oneOf(['modules', 'lessons'])
-};
-
 export default LevelStepper;
 

@@ -60,13 +60,6 @@ const Sidebar = ({ open, onToggle, useCompactProfile = false }) => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Debug: Log user state
-  console.log('🔍 [Sidebar Debug]', {
-    user,
-    isLoading,
-    hasUser: !!user,
-    userName: user?.name,
-    userRole: user?.role,
-  });
 
   /**
    * Handle logout with proper error handling and loading state

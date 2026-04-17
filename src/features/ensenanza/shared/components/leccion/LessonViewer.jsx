@@ -37,7 +37,6 @@ import { useLessonViewerState } from './useLessonViewerState';
  */
 
 import React, { useState, useEffect, useCallback, useRef, memo, Suspense, lazy, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import {
   Container,
   Grid,
@@ -511,7 +510,6 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
           onComplete={() => {
             setShowConfetti(false);
             // Optionally navigate to next lesson or module
-            console.log('[LessonViewer] Confetti animation complete');
           }}
           message="¡Lección completada! ✅"
           duration={3000}
@@ -814,42 +812,5 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
 });
 
 LessonViewer.displayName = 'LessonViewer';
-
-LessonViewer.propTypes = {
-  onProgressUpdate: PropTypes.func,
-  /**
-   * Unique identifier of the lesson to display
-   */
-  lessonId: PropTypes.string.isRequired,
-  
-  /**
-   * Identifier of the parent module
-   */
-  moduleId: PropTypes.string.isRequired,
-  
-  /**
-   * Callback function executed when lesson is completed
-   * Receives the lesson data object as parameter
-   */
-  onComplete: PropTypes.func,
-  
-  /**
-   * Callback function executed when navigating to a different lesson
-   * Receives (lessonId, moduleId) as parameters
-   */
-  onNavigate: PropTypes.func,
-  
-  /**
-   * Si es true, el chat del tutor IA se abre automáticamente al montar
-   * Útil para demos y pruebas
-   */
-  defaultOpen: PropTypes.bool,
-};
-
-LessonViewer.defaultProps = {
-  onComplete: null,
-  onNavigate: null,
-  defaultOpen: false,
-};
 
 export default LessonViewer;

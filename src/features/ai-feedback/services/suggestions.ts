@@ -20,7 +20,7 @@ export interface SuggestionContext {
   moduleTitle?: string;
   lessonTitle?: string;
   pageTitle?: string;
-  results?: any; // Resultados del quiz/ejercicio final (opcional)
+  results?: Record<string, unknown>; // Resultados del quiz/ejercicio final (opcional)
 }
 
 export interface Suggestion {

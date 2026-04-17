@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@mui/material';
 import { CheckCircle, Refresh, PlayArrow } from '@mui/icons-material';
@@ -84,15 +83,6 @@ const ModuleCardFooter = ({
       </Button>
     </footer>
   );
-};
-
-ModuleCardFooter.propTypes = {
-  status: PropTypes.string.isRequired,
-  isAvailable: PropTypes.bool.isRequired,
-  levelColor: PropTypes.string.isRequired,
-  theme: PropTypes.object.isRequired,
-  onModuleClick: PropTypes.func.isRequired,
-  moduleId: PropTypes.string.isRequired
 };
 
 export default ModuleCardFooter;

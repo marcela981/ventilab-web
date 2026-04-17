@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import dynamic from 'next/dynamic';
 import {
   Box,
@@ -359,61 +358,6 @@ const VideoPlayer = ({
       </CardContent>
     </Card>
   );
-};
-
-VideoPlayer.propTypes = {
-  /**
-   * URL del video a reproducir.
-   * Soporta YouTube, Vimeo y otras plataformas compatibles con react-player.
-   * 
-   * Ejemplos:
-   * - YouTube: 'https://www.youtube.com/watch?v=VIDEO_ID'
-   * - Vimeo: 'https://vimeo.com/VIDEO_ID'
-   * 
-   * @required
-   */
-  url: PropTypes.string.isRequired,
-
-  /**
-   * Título del video para accesibilidad y contexto.
-   * Se muestra encima del reproductor y se usa en aria-labels.
-   */
-  title: PropTypes.string,
-
-  /**
-   * Proveedor del video. Si es 'auto', react-player detectará automáticamente.
-   * 
-   * @default 'auto'
-   */
-  provider: PropTypes.oneOf(['youtube', 'vimeo', 'auto']),
-
-  /**
-   * Tiempo de inicio en segundos.
-   * El video comenzará a reproducirse desde este offset.
-   */
-  start: PropTypes.number,
-
-  /**
-   * URL de la imagen de previsualización (poster).
-   * Se muestra antes de que el usuario inicie la reproducción.
-   */
-  poster: PropTypes.string,
-
-  /**
-   * Callback llamado cuando ocurre un error al cargar o reproducir el video.
-   * 
-   * @param {Error|string} error - Objeto de error o mensaje de error
-   * @param {string} url - URL del video que falló
-   */
-  onError: PropTypes.func,
-};
-
-VideoPlayer.defaultProps = {
-  title: null,
-  provider: 'auto',
-  start: null,
-  poster: null,
-  onError: null,
 };
 
 export default VideoPlayer;

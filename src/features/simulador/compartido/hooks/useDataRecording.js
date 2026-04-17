@@ -12,13 +12,11 @@ export const useDataRecording = () => {
     setIsRecording(true);
     setRecordedData([]);
     recordingStartTime.current = Date.now();
-    console.log('Iniciando grabación de datos enviados...');
   }, []);
 
   // Detener grabación
   const stopRecording = useCallback(() => {
     setIsRecording(false);
-    console.log('Deteniendo grabación de datos enviados...');
   }, []);
 
   // Agregar datos enviados a la grabación
@@ -49,7 +47,6 @@ export const useDataRecording = () => {
       };
       
       setRecordedData(prev => [...prev, dataPoint]);
-      console.log('Datos enviados registrados:', dataPoint);
     }
   }, [isRecording]);
 
@@ -101,7 +98,6 @@ export const useDataRecording = () => {
     a.click();
     URL.revokeObjectURL(url);
     
-    console.log(`Datos de sensores guardados automáticamente: ${filename}`);
   }, []);
 
   // **NUEVO**: Función para descargar buffer actual manualmente
@@ -393,7 +389,6 @@ export const useDataRecording = () => {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        console.log('Datos de sensores descargados:', fileData.filename);
       }
     }, [generateSensorDataFile]),
     downloadCurrentSensorData

@@ -233,13 +233,11 @@ export const useQRBridge = () => {
       const result = openWhatsApp(message);
       
       if (result.success) {
-        console.log('WhatsApp abierto exitosamente');
         
         // Si requiere acción manual, copiar el enlace al portapapeles
         if (result.requiresManualAction) {
           try {
             navigator.clipboard.writeText(result.whatsappUrl);
-            console.log('Enlace copiado al portapapeles');
           } catch (clipboardError) {
             console.warn('No se pudo copiar al portapapeles:', clipboardError);
           }

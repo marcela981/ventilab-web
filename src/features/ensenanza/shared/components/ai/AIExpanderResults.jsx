@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Box, Typography, IconButton, Link } from '@mui/material';
 import { Star as StarIcon } from '@mui/icons-material';
 import ReactMarkdown from 'react-markdown';
@@ -194,27 +193,6 @@ const AIExpanderResults = ({ response, resultId, onSaveToNotes, savingNote, note
       )}
     </Box>
   );
-};
-
-AIExpanderResults.propTypes = {
-  response: PropTypes.shape({
-    expandedExplanation: PropTypes.string,
-    keyPoints: PropTypes.arrayOf(PropTypes.string),
-    deeperDive: PropTypes.arrayOf(PropTypes.string),
-    suggestedReferences: PropTypes.array,
-    internalLinks: PropTypes.array,
-    isOffline: PropTypes.bool,
-  }),
-  resultId: PropTypes.string.isRequired,
-  onSaveToNotes: PropTypes.func.isRequired,
-  savingNote: PropTypes.bool,
-  noteSaved: PropTypes.bool,
-};
-
-AIExpanderResults.defaultProps = {
-  response: null,
-  savingNote: false,
-  noteSaved: false,
 };
 
 export default AIExpanderResults;

@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Typography,
@@ -790,11 +789,4 @@ const ProgressTree = ({ modules, userProgress, onModuleClick, onLessonClick }) =
 };
 
 // PropTypes para validación de props
-ProgressTree.propTypes = {
-  modules: PropTypes.object.isRequired,
-  userProgress: PropTypes.object.isRequired,
-  onModuleClick: PropTypes.func.isRequired,
-  onLessonClick: PropTypes.func.isRequired,
-};
-
 export default ProgressTree;

@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Paper,
@@ -520,17 +519,6 @@ const AITutorChat = ({ lessonContext, defaultOpen = false }) => {
       </Fade>
     </>
   );
-};
-
-AITutorChat.propTypes = {
-  lessonContext: PropTypes.shape({
-    lessonId: PropTypes.string,
-    title: PropTypes.string,
-    objectives: PropTypes.arrayOf(PropTypes.string),
-    tags: PropTypes.arrayOf(PropTypes.string),
-    tipoDeLeccion: PropTypes.oneOf(['teoria', 'caso_clinico', 'simulacion', 'evaluacion']),
-  }),
-  defaultOpen: PropTypes.bool,
 };
 
 export default AITutorChat;

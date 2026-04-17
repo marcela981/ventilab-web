@@ -128,7 +128,6 @@ export function useLessonProgress({
     }
 
     if (isSaving) {
-      console.log('[useLessonProgress] Already saving, skipping...');
       return;
     }
 
@@ -163,7 +162,6 @@ export function useLessonProgress({
     }
 
     // CRITICAL: Wait for auth token to be available (handles race condition with token bridge)
-    console.log('[useLessonProgress] saveProgress: Waiting for auth token...');
     const token = await waitForAuthToken(5000); // Wait up to 5 seconds
 
     if (!token) {
@@ -184,8 +182,6 @@ export function useLessonProgress({
       return;
     }
 
-    console.log('[useLessonProgress] ✅ saveProgress: Auth token ready');
-
     // CRITICAL: Do not send percentage-only updates - require step data
     if (!currentStep || !totalSteps) {
       console.warn('[useLessonProgress] Skipping backend save: step data not available. Use savePageProgress for step-based updates.');
@@ -194,7 +190,6 @@ export function useLessonProgress({
 
     // If rate limited, skip save attempt (will retry after cooldown)
     if (isRateLimited) {
-      console.log('[useLessonProgress] Rate limited - skipping save. Progress saved locally and will sync after cooldown.');
       return;
     }
 
@@ -211,14 +206,6 @@ export function useLessonProgress({
         scrollPosition: scrollPositionRef.current,
         ...(scores || {}),
       };
-
-      console.log('[useLessonProgress] Saving to backend:', {
-        lessonId,
-        progress: completionPercentage,
-        step: `${currentStep}/${totalSteps}`,
-        timeSpent,
-        hasToken: !!token,
-      });
 
       const result: UpdateLessonProgressResult = await updateLessonProgress(lessonId, data);
       
@@ -238,12 +225,10 @@ export function useLessonProgress({
         
         // Set cooldown timer to automatically resume saving
         rateLimitCooldownRef.current = setTimeout(() => {
-          console.log('[useLessonProgress] Rate limit cooldown expired. Resuming automatic saves.');
           setIsRateLimited(false);
           
           // Retry saving if there's unsaved progress
           if (localProgress > lastSavedProgress) {
-            console.log('[useLessonProgress] Retrying save after rate limit cooldown...');
             saveProgress();
           }
         }, cooldownMs);
@@ -277,13 +262,8 @@ export function useLessonProgress({
           // Ignore
         }
 
-        console.log('[useLessonProgress] ✅ Successfully saved to backend:', {
-          lessonId,
-          progress: completionPercentage,
-          timeSpent,
-        });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[useLessonProgress] ❌ Save error:', error);
       
       // Mark as failed save so it can be retried later
@@ -293,9 +273,8 @@ export function useLessonProgress({
           scrollPosition: scrollPositionRef.current,
           timeSpent,
           timestamp: Date.now(),
-          error: error?.message || 'Unknown error',
+          error: error instanceof Error ? error.message : 'Unknown error',
         }));
-        console.log('[useLessonProgress] Marked for retry on next sync');
       } catch (e) {
         console.error('[useLessonProgress] Failed to mark for retry:', e);
       }
@@ -316,27 +295,17 @@ export function useLessonProgress({
     () => debounce((progress: number) => {
       // Skip if rate limited - will retry after cooldown
       if (isRateLimited) {
-        console.log('[useLessonProgress] Debounced save skipped - rate limited');
         return;
       }
 
       const progressDiff = progress - lastSavedProgress;
       
-      console.log('[useLessonProgress] Debounced save check (scroll/time-based):', {
-        currentProgress: progress,
-        lastSaved: lastSavedProgress,
-        diff: progressDiff,
-        threshold: autoSaveThreshold,
-        shouldSave: progressDiff >= autoSaveThreshold || progress >= 100,
-      });
       
       // Only save if progress increased by threshold or reached 100%
       // This throttling applies ONLY to scroll/time-based updates, NOT step navigation
       if (progressDiff >= autoSaveThreshold || progress >= 100) {
-        console.log('[useLessonProgress] Triggering time-based save...');
         saveProgress();
       } else {
-        console.log('[useLessonProgress] Scroll progress change too small, throttling save (this is OK for scroll-based tracking)');
       }
     }, 1000), // Wait 1 second after last scroll
     [lastSavedProgress, autoSaveThreshold, saveProgress, isRateLimited]
@@ -372,21 +341,11 @@ export function useLessonProgress({
     // Calculate percentage from step position (derived from currentStep/totalSteps)
     const pageProgress = Math.round((currentStep / stepsTotal) * 100);
 
-    console.log('[useLessonProgress] 📄 Step progress:', {
-      currentPage: currentPage + 1,
-      totalPages,
-      currentStep,
-      totalSteps: stepsTotal,
-      percentage: pageProgress,
-      lastSavedStep,
-    });
-
     // Update local state immediately
     setLocalProgress(pageProgress);
 
     // CRITICAL: Wait for auth token to be available (handles race condition with token bridge)
     // This ensures the PUT request ALWAYS includes Authorization header
-    console.log('[useLessonProgress] Waiting for auth token...');
     const token = await waitForAuthToken(5000); // Wait up to 5 seconds
 
     if (!token) {
@@ -420,33 +379,18 @@ export function useLessonProgress({
       throw new Error('Auth token not available - progress queued for later sync');
     }
 
-    console.log('[useLessonProgress] ✅ Auth token ready, proceeding with backend save');
-
     // CRITICAL: Always save when currentStep changes, regardless of percentage delta
     // This ensures step navigation is always persisted to backend
     const stepChanged = lastSavedStep === null || currentStep !== lastSavedStep;
     
     if (!stepChanged) {
-      console.log('[useLessonProgress] Step unchanged, skipping backend save');
       return;
     }
-
-    console.log('[useLessonProgress] ✅ Step changed, saving to backend:', {
-      from: lastSavedStep,
-      to: currentStep,
-    });
 
     try {
       setIsSaving(true);
 
       const timeSpent = Math.floor((Date.now() - startTimeRef.current) / 1000);
-
-      console.log('[useLessonProgress] 🚀 POST /api/progress/step/update:', {
-        lessonId,
-        page: `${currentPage + 1}/${totalPages}`,
-        currentStepIndex: currentPage, // 0-based
-        totalSteps: stepsTotal,
-      });
 
       // Use the dedicated step endpoint (POST /api/progress/step/update).
       // Sends currentStepIndex 0-based — no conversion needed.
@@ -495,8 +439,6 @@ export function useLessonProgress({
         }));
         localStorage.removeItem(`lesson_progress_${lessonId}_failed`);
 
-        console.log('[useLessonProgress] ✅ Step progress saved:', stepResult);
-
         if (stepResult.progressPercentage >= autoCompleteThreshold && !isCompleted && !stepResult.completed) {
           setIsCompleted(true);
           if (onComplete) onComplete();
@@ -537,7 +479,7 @@ export function useLessonProgress({
           }));
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[useLessonProgress] ❌ Save page progress error:', error);
       // Mark for retry
       try {
@@ -550,7 +492,7 @@ export function useLessonProgress({
           scrollPosition: 0,
           timeSpent: Math.floor((Date.now() - startTimeRef.current) / 1000),
           timestamp: Date.now(),
-          error: error?.message || 'Unknown error',
+          error: error instanceof Error ? error.message : 'Unknown error',
         }));
       } catch (e) {
         // Ignore localStorage errors
@@ -585,8 +527,6 @@ export function useLessonProgress({
    */
   const handleAutoComplete = useCallback(async () => {
     if (isCompleted) return;
-
-    console.log('[useLessonProgress] Auto-completing lesson');
 
     setIsCompleted(true);
     await saveProgress(true);
@@ -655,18 +595,19 @@ export function useLessonProgress({
           let progress = null;
           try {
             progress = await getLessonProgress(lessonId);
-          } catch (fetchError: any) {
+          } catch (fetchError: unknown) {
+            const err = fetchError as { name?: string; isNetworkError?: boolean; message?: string; code?: string };
             const isNetworkError =
-              fetchError?.name === 'ApiUnavailableError' ||
-              fetchError?.isNetworkError === true ||
-              fetchError?.message?.includes('No se pudo conectar') ||
-              fetchError?.message?.includes('ERR_') ||
-              fetchError?.code === 'NETWORK_ERROR';
+              err?.name === 'ApiUnavailableError' ||
+              err?.isNetworkError === true ||
+              err?.message?.includes('No se pudo conectar') ||
+              err?.message?.includes('ERR_') ||
+              err?.code === 'NETWORK_ERROR';
 
             if (isNetworkError) {
               console.warn('[useLessonProgress] Backend unavailable, starting lesson with local progress:', {
                 lessonId,
-                error: fetchError?.message,
+                error: err?.message,
               });
               // progress remains null — lesson loads from localStorage cache or starts at 0%
             } else {
@@ -693,7 +634,6 @@ export function useLessonProgress({
             // and NEVER downgrade it. This prevents the "completed → in progress" bug.
             if (progress.completed) {
               setIsCompleted(true);
-              console.log('[useLessonProgress] Lesson already completed in DB, marking as completed');
             } else {
               setIsCompleted(false);
             }
@@ -767,11 +707,6 @@ export function useLessonProgress({
       
       // Only update if progress increased
       if (percentage > localProgress) {
-        console.log('[useLessonProgress] Scroll progress:', {
-          previous: localProgress,
-          current: percentage,
-          increased: percentage > localProgress,
-        });
         
         setLocalProgress(percentage);
         
@@ -781,7 +716,6 @@ export function useLessonProgress({
         // Check for auto-completion
         // CRITICAL: Do not trigger auto-complete if lesson is already completed
         if (percentage >= autoCompleteThreshold && !isCompleted && !backendProgress?.completed) {
-          console.log('[useLessonProgress] Auto-completion threshold reached:', percentage);
           handleAutoComplete();
         }
       }
@@ -789,10 +723,10 @@ export function useLessonProgress({
 
     // Attach scroll listener
     const element = contentRef.current || window;
-    element.addEventListener('scroll', handleScroll as any);
+    element.addEventListener('scroll', handleScroll as EventListener);
 
     return () => {
-      element.removeEventListener('scroll', handleScroll as any);
+      element.removeEventListener('scroll', handleScroll as EventListener);
     };
   }, [
     contentRef,
@@ -811,10 +745,6 @@ export function useLessonProgress({
     // Save before page unload
     const handleBeforeUnload = () => {
       if (localProgress > lastSavedProgress) {
-        console.log('[useLessonProgress] Saving on page unload...', {
-          progress: localProgress,
-          lastSaved: lastSavedProgress,
-        });
         
         // Save to localStorage immediately (always works, syncs later)
         try {
@@ -850,11 +780,6 @@ export function useLessonProgress({
       // Final save on unmount (when component is removed)
       const finalSave = async () => {
         if (localProgress > lastSavedProgress) {
-          console.log('[useLessonProgress] Saving on unmount...', {
-            progress: localProgress,
-            lastSaved: lastSavedProgress,
-            timeSpent: Math.floor((Date.now() - startTimeRef.current) / 1000),
-          });
           
           try {
             await saveProgress(); // Use the saveProgress function which handles token check
@@ -906,7 +831,6 @@ export function useLessonProgress({
           // Clear failed save after successful sync
           if (result.success) {
             localStorage.removeItem(`lesson_progress_${lessonId}_failed`);
-            console.log('[useLessonProgress] Synced offline progress');
           }
         } catch (error) {
           console.error('[useLessonProgress] Sync error:', error);
@@ -941,7 +865,6 @@ export function useLessonProgress({
                 if (!result.success && result.rateLimited) {
                   console.warn('[useLessonProgress] Rate limited during cached sync. Will retry later.');
                 } else if (result.success) {
-                  console.log('[useLessonProgress] Synced cached progress to server');
                 }
               }
             } else {

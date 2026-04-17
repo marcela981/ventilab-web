@@ -17,7 +17,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Paper,
@@ -320,59 +319,6 @@ const LessonIndexNavigator = ({
       </Box>
     </Paper>
   );
-};
-
-LessonIndexNavigator.propTypes = {
-  /**
-   * Current active page index (0-based)
-   */
-  currentPage: PropTypes.number.isRequired,
-
-  /**
-   * Total number of pages in the lesson
-   */
-  totalPages: PropTypes.number.isRequired,
-
-  /**
-   * Array of page objects with type and metadata
-   */
-  pages: PropTypes.arrayOf(
-    PropTypes.shape({
-      type: PropTypes.string,
-      index: PropTypes.number,
-      section: PropTypes.object,
-      sectionIndex: PropTypes.number,
-      caseIndex: PropTypes.number,
-      analogyIndex: PropTypes.number,
-    })
-  ),
-
-  /**
-   * Whether the module is fully completed (100%)
-   */
-  isModuleCompleted: PropTypes.bool.isRequired,
-
-  /**
-   * Callback function when user clicks a page to navigate
-   * Receives (pageIndex) as parameter
-   */
-  onNavigateToPage: PropTypes.func.isRequired,
-
-  /**
-   * Module ID (for context)
-   */
-  moduleId: PropTypes.string,
-
-  /**
-   * Lesson ID (for context)
-   */
-  lessonId: PropTypes.string,
-};
-
-LessonIndexNavigator.defaultProps = {
-  pages: [],
-  moduleId: null,
-  lessonId: null,
 };
 
 export default LessonIndexNavigator;

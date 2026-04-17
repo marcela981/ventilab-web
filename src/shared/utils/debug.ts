@@ -6,7 +6,7 @@ function getDebugEnabled(): boolean {
     // Client-side: check both Next.js and Vite env vars
     return (
       process.env.NEXT_PUBLIC_DEBUG_PROGRESS === 'true' ||
-      (typeof (window as any).__VENTY_ENV !== 'undefined' && (window as any).__VENTY_ENV?.VITE_DEBUG_PROGRESS === 'true')
+      (typeof (window as Record<string, unknown>).__VENTY_ENV !== 'undefined' && ((window as Record<string, unknown>).__VENTY_ENV as Record<string, unknown>)?.VITE_DEBUG_PROGRESS === 'true')
     );
   }
   // Server-side: only Next.js env vars are available
@@ -35,22 +35,22 @@ export const debug = {
     if (!enabled) return { log(){}, info(){}, warn(){}, error(){}, end(){} };
     console.groupCollapsed(`%c[progress] ${label}`, 'color:#0aa');
     return {
-      log:  (...a:any[]) => enabled && console.log(...a),
-      info: (...a:any[]) => enabled && console.info(...a),
-      warn: (...a:any[]) => enabled && console.warn(...a),
-      error:(...a:any[]) => enabled && console.error(...a),
+      log:  (...a:unknown[]) => enabled && console.log(...a),
+      info: (...a:unknown[]) => enabled && console.info(...a),
+      warn: (...a:unknown[]) => enabled && console.warn(...a),
+      error:(...a:unknown[]) => enabled && console.error(...a),
       end:  () => enabled && console.groupEnd(),
     };
   },
-  info: (...a:any[]) => enabled && console.info('[progress]', ...a),
-  warn: (...a:any[]) => enabled && console.warn('[progress]', ...a),
-  error:(...a:any[]) => enabled && console.error('[progress]', ...a),
+  info: (...a:unknown[]) => enabled && console.info('[progress]', ...a),
+  warn: (...a:unknown[]) => enabled && console.warn('[progress]', ...a),
+  error:(...a:unknown[]) => enabled && console.error('[progress]', ...a),
   short,
   now,
   /**
    * Log progress snapshot details
    */
-  logSnapshot: (snapshot: any, source: string) => {
+  logSnapshot: (snapshot: Record<string, unknown> | null, source: string) => {
     if (!enabled) return;
     debug.info(`Snapshot from ${source}:`, {
       userId: snapshot?.userId || 'null',
@@ -78,7 +78,7 @@ export const debug = {
   /**
    * Log divergence between sources
    */
-  logDivergence: (local: any, db: any) => {
+  logDivergence: (local: Record<string, unknown> | null, db: Record<string, unknown> | null) => {
     if (!enabled) return;
     debug.warn('Progress divergence detected:', {
       local: {
@@ -94,7 +94,7 @@ export const debug = {
   /**
    * Log empty state reason
    */
-  logEmptyStateReason: (reason: string, details?: any) => {
+  logEmptyStateReason: (reason: string, details?: unknown) => {
     if (!enabled) return;
     debug.warn(`Empty state reason: ${reason}`, details);
   }
@@ -102,7 +102,7 @@ export const debug = {
 
 // Comandos desde consola (solo en cliente):
 if (typeof window !== 'undefined') {
-  (window as any).__VENTY_DEBUG = { debug };
+  (window as Record<string, unknown>).__VENTY_DEBUG = { debug };
 }
 
 // Legacy compatibility exports

@@ -6,6 +6,6 @@ export function useSettings() {
   return {
     settings: {},
     isLoading: false,
-    updateSetting: async (key: string, value: any) => {},
+    updateSetting: async (key: string, value: unknown) => {},
   };
 }

@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Typography,
@@ -178,27 +177,4 @@ const ModuleInfoPanel = ({
 };
 
 // PropTypes con validación completa
-ModuleInfoPanel.propTypes = {
-  /** Título principal del panel */
-  title: PropTypes.string,
-
-  /** Contenido descriptivo o informativo */
-  description: PropTypes.string,
-
-  /** Subtítulo opcional para contexto adicional */
-  subtitle: PropTypes.string,
-
-  /** Controla si se muestra el emoji en el título */
-  showEmoji: PropTypes.bool,
-
-  /** Emoji personalizado a mostrar (requiere showEmoji: true) */
-  emoji: PropTypes.string,
-
-  /** Modo compacto con padding y fuentes reducidas */
-  compact: PropTypes.bool,
-
-  /** Duración en ms del retraso para la animación fade-in */
-  fadeDelay: PropTypes.number
-};
-
 export default ModuleInfoPanel;

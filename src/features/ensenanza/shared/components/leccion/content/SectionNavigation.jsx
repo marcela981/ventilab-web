@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Paper,
@@ -400,47 +399,6 @@ const SectionNavigation = ({ sections, currentSection, onSectionClick }) => {
       </Drawer>
     </>
   );
-};
-
-SectionNavigation.propTypes = {
-  /**
-   * Array de secciones de la lección
-   */
-  sections: PropTypes.arrayOf(
-    PropTypes.shape({
-      /**
-       * ID único de la sección
-       */
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-
-      /**
-       * Título de la sección
-       */
-      title: PropTypes.string.isRequired,
-
-      /**
-       * Tipo de sección para mostrar el icono apropiado
-       * Opciones: 'text', 'image', 'video', 'quiz', 'diagram', 'article'
-       */
-      type: PropTypes.oneOf(['text', 'image', 'video', 'quiz', 'diagram', 'article']).isRequired,
-
-      /**
-       * Indica si la sección está completada
-       */
-      completed: PropTypes.bool,
-    })
-  ).isRequired,
-
-  /**
-   * Índice de la sección actual (0-based)
-   */
-  currentSection: PropTypes.number.isRequired,
-
-  /**
-   * Callback ejecutado cuando se hace click en una sección.
-   * Recibe el índice de la sección como parámetro.
-   */
-  onSectionClick: PropTypes.func.isRequired,
 };
 
 export default SectionNavigation;

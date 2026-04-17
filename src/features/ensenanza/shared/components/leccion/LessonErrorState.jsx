@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Container, Alert, Button, CssBaseline } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { teachingModuleTheme } from '@/theme/teachingModuleTheme';
@@ -30,15 +29,6 @@ const LessonErrorState = ({ error, onRetry }) => {
       </Container>
     </ThemeProvider>
   );
-};
-
-LessonErrorState.propTypes = {
-  error: PropTypes.string,
-  onRetry: PropTypes.func.isRequired,
-};
-
-LessonErrorState.defaultProps = {
-  error: null,
 };
 
 export default LessonErrorState;

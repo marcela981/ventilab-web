@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import PropTypes from 'prop-types';
 import styles from './ui/SlashMenu.module.css';
 
 /** Catálogo completo de comandos disponibles con el / */
@@ -101,13 +100,6 @@ const SlashMenu = ({ query, position, onSelect, onClose }) => {
       </div>
     </div>
   );
-};
-
-SlashMenu.propTypes = {
-  query: PropTypes.string,
-  position: PropTypes.shape({ top: PropTypes.number, left: PropTypes.number }).isRequired,
-  onSelect: PropTypes.func.isRequired,
-  onClose: PropTypes.func.isRequired,
 };
 
 export default SlashMenu;

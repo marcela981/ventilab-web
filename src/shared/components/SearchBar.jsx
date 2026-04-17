@@ -20,7 +20,6 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import { useRouter } from 'next/router';
 import {
   TextField,
@@ -681,34 +680,6 @@ const SearchBar = ({
       </Typography>
     </Box>
   );
-};
-
-SearchBar.propTypes = {
-  /**
-   * Placeholder text for the search input
-   */
-  placeholder: PropTypes.string,
-
-  /**
-   * Maximum number of suggestions to display
-   */
-  maxSuggestions: PropTypes.number,
-
-  /**
-   * Enable keyboard shortcut (Ctrl+K / Cmd+K)
-   */
-  enableShortcut: PropTypes.bool,
-
-  /**
-   * Callback function when navigating to a result
-   * Receives (selectedItem, path) as arguments
-   */
-  onNavigate: PropTypes.func,
-
-  /**
-   * Additional styles for the container
-   */
-  sx: PropTypes.object,
 };
 
 export default SearchBar;

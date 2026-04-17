@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Box, Skeleton, styled } from '@mui/material';
 
 /**
@@ -97,40 +96,6 @@ const MediaSkeleton = ({
       />
     </MediaSkeletonContainer>
   );
-};
-
-MediaSkeleton.propTypes = {
-  /**
-   * Tipo de media para el cual se muestra el skeleton.
-   * Determina las dimensiones y estilos apropiados.
-   */
-  variant: PropTypes.oneOf(['video', 'image', 'svg', 'audio', 'default']),
-  
-  /**
-   * Altura personalizada del skeleton.
-   * Puede ser un número (px) o string CSS válido.
-   */
-  height: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  
-  /**
-   * Ancho personalizado del skeleton.
-   * Puede ser un número (px) o string CSS válido.
-   */
-  width: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  
-  /**
-   * Tipo de animación del skeleton.
-   * 'wave' es la animación por defecto más suave.
-   */
-  animation: PropTypes.oneOfType([
-    PropTypes.oneOf(['pulse', 'wave', false]),
-    PropTypes.bool,
-  ]),
-};
-
-MediaSkeleton.defaultProps = {
-  variant: 'default',
-  animation: 'wave',
 };
 
 export default MediaSkeleton;

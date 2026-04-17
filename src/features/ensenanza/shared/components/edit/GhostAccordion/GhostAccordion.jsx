@@ -15,7 +15,6 @@
  * Sin sx props — toda la UI está en ui/GhostAccordion.module.css.
  */
 import React from 'react';
-import PropTypes from 'prop-types';
 import AddIcon from '@mui/icons-material/Add';
 import styles from './ui/GhostAccordion.module.css';
 
@@ -49,18 +48,3 @@ export default function GhostAccordion({ label, depth, onCreate }) {
   );
 }
 
-GhostAccordion.propTypes = {
-  /** Texto descriptivo de la acción, ej: "Agregar nivel" */
-  label: PropTypes.string.isRequired,
-  /**
-   * Profundidad actual en el árbol curricular (0=raíz, 1=subnivel, 2=módulo).
-   * Si depth >= 3, el componente no se renderiza.
-   */
-  depth: PropTypes.number,
-  /** Callback disparado al hacer clic o presionar Enter/Space */
-  onCreate: PropTypes.func,
-};
-
-GhostAccordion.defaultProps = {
-  depth: 0,
-};

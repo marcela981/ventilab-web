@@ -19,7 +19,6 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import {
   Container,
   Typography,
@@ -57,12 +56,6 @@ function TabPanel({ children, value, index }) {
     </div>
   );
 }
-
-TabPanel.propTypes = {
-  children: PropTypes.node,
-  value: PropTypes.number.isRequired,
-  index: PropTypes.number.isRequired,
-};
 
 /**
  * AchievementsGallery Component
