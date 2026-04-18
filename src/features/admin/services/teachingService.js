@@ -1,24 +1,48 @@
 /**
+ * =============================================================================
  * Teaching Service - /api/levels, /api/modules, /api/lessons, /api/cards, /api/changelog
+ * =============================================================================
  * Full CRUD for teaching content hierarchy: Level → Module → Lesson → Step (Card)
+ * Uses the centralized httpClient for all requests.
+ * =============================================================================
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+import { httpClient } from '@/shared/services/httpClient';
 
+/**
+ * Normalize httpClient response to service envelope format.
+ */
 async function request(endpoint, options = {}) {
-  const token = localStorage.getItem('ventilab_auth_token');
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
-    ...(options.headers || {}),
-  };
   try {
-    const res = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
-    const data = await res.json();
-    if (!res.ok) return { success: false, data: null, error: { message: data.message || 'Error', statusCode: res.status } };
+    const { method = 'GET', body } = options;
+    let data;
+
+    switch (method) {
+      case 'POST':
+        data = await httpClient.post(endpoint, body ? JSON.parse(body) : undefined);
+        break;
+      case 'PUT':
+        data = await httpClient.put(endpoint, body ? JSON.parse(body) : undefined);
+        break;
+      case 'PATCH':
+        data = await httpClient.patch(endpoint, body ? JSON.parse(body) : undefined);
+        break;
+      case 'DELETE':
+        data = await httpClient.delete(endpoint);
+        break;
+      default:
+        data = await httpClient.get(endpoint);
+    }
+
     return { success: true, data, error: null };
-  } catch {
-    return { success: false, data: null, error: { message: 'Error de conexión', statusCode: 0 } };
+  } catch (err) {
+    const status = err?.response?.status || 0;
+    const message = err?.response?.data?.message || err?.message || 'Error de conexión';
+    return {
+      success: false,
+      data: null,
+      error: { message, statusCode: status },
+    };
   }
 }
 
@@ -39,7 +63,6 @@ export const getLevelModules = (levelId) =>
   request(`/levels/${levelId}/modules`);
 
 // ── Modules ──────────────────────────────────────────────────────────────────
-// levelId passes through the service as an extra body field (Prisma accepts it)
 export const createModule = (data) =>
   request('/modules', { method: 'POST', body: JSON.stringify(data) });
 
@@ -56,7 +79,6 @@ export const getModuleLessons = (moduleId) =>
 export const getLessonById = (id) =>
   request(`/lessons/${id}`);
 
-// content must be a valid JSON string with { type, sections: [{...}] }
 export const createLesson = (data) =>
   request('/lessons', { method: 'POST', body: JSON.stringify(data) });
 
@@ -70,8 +92,6 @@ export const deleteLesson = (id) =>
 export const getLessonSteps = (lessonId) =>
   request(`/lessons/${lessonId}/steps`);
 
-// contentType: text | image | video | quiz | simulation | code
-// content: plain string for text/image/video, JSON string for quiz
 export const createStep = (data) =>
   request('/cards', { method: 'POST', body: JSON.stringify(data) });
 

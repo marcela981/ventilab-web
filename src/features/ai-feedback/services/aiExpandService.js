@@ -14,11 +14,7 @@
  */
 
 import { getAuthToken } from '@/shared/services/authService';
-
-/**
- * API Base URL
- */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+import { BACKEND_API_URL as API_BASE_URL } from '@/config/env';
 
 /**
  * Timeout en milisegundos (25 segundos)

@@ -11,6 +11,8 @@
 
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { buildCandidateBank, rerankCandidates } from '@/shared/utils/suggestions.es';
+import { getAuthToken } from '@/shared/services/authService';
+import { BACKEND_API_URL } from '@/config/env';
 
 /**
  * Feature flag para modo de sugerencias
@@ -32,13 +34,12 @@ const SERVER_TIMEOUT = 5000;
  */
 async function fetchServerSuggestions(context, seed) {
   try {
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-    const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    const authToken = getAuthToken();
     
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), SERVER_TIMEOUT);
     
-    const response = await fetch(`${API_BASE_URL}/ai/suggest-questions`, {
+    const response = await fetch(`${BACKEND_API_URL}/ai/suggest-questions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

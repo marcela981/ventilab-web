@@ -17,67 +17,50 @@
  * =============================================================================
  */
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+import { httpClient } from '@/shared/services/httpClient';
 
 /**
- * Helper: perform an authenticated JSON request.
+ * Helper: perform an authenticated JSON request via centralized httpClient.
  *
  * Returns a normalized envelope:
  * { success: boolean, data: any, error: { message, details?, statusCode? } | null }
  */
 async function request(endpoint, options = {}) {
-  // Prefer the same token key used elsewhere in the app
-  const storedToken =
-    typeof window !== 'undefined'
-      ? localStorage.getItem('ventilab_auth_token') ||
-        localStorage.getItem('token')
-      : null;
-
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(storedToken && { Authorization: `Bearer ${storedToken}` }),
-    ...(options.headers || {}),
-  };
-
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers,
-    });
+    const { method = 'GET', body } = options;
+    let data;
 
-    const json = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      return {
-        success: false,
-        data: null,
-        error: {
-          message: json.message || 'Error en la solicitud',
-          details: json.details || [],
-          statusCode: response.status,
-        },
-      };
+    switch (method) {
+      case 'POST':
+        data = await httpClient.post(endpoint, body ? JSON.parse(body) : undefined);
+        break;
+      case 'PUT':
+        data = await httpClient.put(endpoint, body ? JSON.parse(body) : undefined);
+        break;
+      case 'PATCH':
+        data = await httpClient.patch(endpoint, body ? JSON.parse(body) : undefined);
+        break;
+      case 'DELETE':
+        data = await httpClient.delete(endpoint);
+        break;
+      default:
+        data = await httpClient.get(endpoint);
     }
 
-    return {
-      success: true,
-      data: json,
-      error: null,
-    };
+    return { success: true, data, error: null };
   } catch (err) {
-    console.error('[teachingContentService] Request error:', err);
+    const status = err?.response?.status || 0;
+    const message = err?.response?.data?.message || err?.message || 'Error de conexión con el servidor';
+    const details = err?.response?.data?.details || [err?.message].filter(Boolean);
+    console.error('[teachingContentService] Request error:', err?.message);
     return {
       success: false,
       data: null,
-      error: {
-        message: 'Error de conexión con el servidor',
-        details: [err.message],
-        statusCode: 0,
-      },
+      error: { message, details, statusCode: status },
     };
   }
 }
+
 
 // =============================================================================
 // Lessons

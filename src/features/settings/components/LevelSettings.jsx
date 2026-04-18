@@ -48,6 +48,7 @@ import {
   EmojiEvents as AdvancedIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/shared/hooks/useAuth';
+import { getAuthToken } from '@/shared/services/authService';
 import { LevelBadge } from '@/shared/components/LevelBadge';
 
 /**
@@ -168,7 +169,7 @@ export function LevelSettings({ onLevelChange }) {
       setShowConfirmDialog(false);
 
       // Call API to update user level
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await fetch(`/api/users/${user.id}/level`, {
         method: 'PUT',
         headers: {

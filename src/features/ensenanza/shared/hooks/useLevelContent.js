@@ -70,6 +70,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import useAuth from '@/shared/hooks/useAuth';
+import { getAuthToken } from '@/shared/services/authService';
 
 /**
  * Custom hook to load educational content based on user's learning level
@@ -239,7 +240,7 @@ export function useLevelContent(moduleId, lessonId) {
       fetch('/api/users/profile', {
         cache: 'no-store', // Evita cache del navegador y 304 en dev
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${getAuthToken()}`,
           'cache-control': 'no-cache',
         },
       })

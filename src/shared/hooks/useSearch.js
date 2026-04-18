@@ -65,12 +65,8 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-
-/**
- * API Base URL
- * Uses environment variable with fallback to localhost
- */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+import { getAuthToken } from '@/shared/services/authService';
+import { BACKEND_API_URL } from '@/config/env';
 
 /**
  * LocalStorage key for search history
@@ -92,16 +88,6 @@ const SEARCH_DEBOUNCE_DELAY = 300;
  */
 const SUGGESTIONS_DEBOUNCE_DELAY = 200;
 
-/**
- * Helper function to get authentication token
- * @returns {string|null} Authentication token
- */
-const getAuthToken = () => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('ventilab_auth_token') || 
-         localStorage.getItem('token') || 
-         sessionStorage.getItem('token');
-};
 
 /**
  * Helper function to make authenticated API requests with AbortController support
@@ -157,7 +143,7 @@ const fetchWithAuth = async (url, options = {}, signal = null) => {
  * @returns {string} Full URL with query string
  */
 const buildUrlWithParams = (endpoint, params = {}) => {
-  const url = new URL(`${API_BASE_URL}${endpoint}`);
+  const url = new URL(`${BACKEND_API_URL}${endpoint}`);
   
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
@@ -685,7 +671,7 @@ export const useSearch = () => {
       if (!token) return; // Don't log if user is not authenticated
 
       // Fire-and-forget: don't await or handle errors
-      fetch(`${API_BASE_URL}/search/log-click`, {
+      fetch(`${BACKEND_API_URL}/search/log-click`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

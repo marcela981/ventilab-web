@@ -10,40 +10,9 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/shared/contexts/AuthContext';
+import { httpClient } from '@/shared/services/httpClient';
 
-/**
- * Base API URL
- */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
-/**
- * Helper function to make authenticated API requests
- * @param {string} url - API endpoint URL
- * @param {Object} options - Fetch options
- * @returns {Promise<Object>} Parsed JSON response
- * @throws {Error} If request fails
- */
-async function fetchWithAuth(url, options = {}) {
-  const token = localStorage.getItem('ventilab_auth_token');
-
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
-    ...options.headers,
-  };
-
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || `HTTP error! status: ${response.status}`);
-  }
-
-  return response.json();
-}
 
 /**
  * Custom hook for managing user achievements
@@ -114,7 +83,7 @@ export default function useAchievements() {
       setLoading(true);
       setError(null);
 
-      const response = await fetchWithAuth(`${API_BASE_URL}/achievements`);
+      const response = await httpClient.get(`/achievements`);
 
       // Handle response structure: { success, data, message }
       const achievementsData = response.data || response;
@@ -144,7 +113,7 @@ export default function useAchievements() {
       setLoading(true);
       setError(null);
 
-      const response = await fetchWithAuth(`${API_BASE_URL}/achievements/all`);
+      const response = await httpClient.get(`/achievements/all`);
 
       // Handle response structure: { success, data, message }
       const allAchievementsData = response.data || response;

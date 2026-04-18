@@ -8,6 +8,8 @@
  * 
  * @service
  */
+import { getAuthToken } from '@/shared/services/authService';
+import { BACKEND_API_URL } from '@/config/env';
 
 export interface NoteContext {
   userId?: string;
@@ -43,7 +45,7 @@ export interface Note {
 const getUserId = (): string | undefined => {
   if (typeof window === 'undefined') return undefined;
   // Intentar obtener desde localStorage/sessionStorage
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const token = getAuthToken();
   if (token) {
     try {
       // Decodificar JWT básico (solo para obtener userId, no validar)
@@ -160,10 +162,10 @@ const apiAdapter = {
    */
   isAvailable: async (): Promise<boolean> => {
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const token = getAuthToken();
       if (!token) return false;
 
-      const baseUrl = process.env.REACT_APP_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || '';
+      const baseUrl = BACKEND_API_URL.replace(/\/api\/?$/, '');
       const response = await fetch(`${baseUrl}/api/notes`, {
         method: 'GET',
         headers: {
@@ -184,10 +186,10 @@ const apiAdapter = {
    */
   getNotes: async (ctx: NoteContext): Promise<Note[]> => {
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const token = getAuthToken();
       if (!token) return [];
 
-      const baseUrl = process.env.REACT_APP_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || '';
+      const baseUrl = BACKEND_API_URL.replace(/\/api\/?$/, '');
       const params = new URLSearchParams();
       if (ctx.moduleId) params.append('moduleId', ctx.moduleId);
       if (ctx.lessonId) params.append('lessonId', ctx.lessonId);
@@ -223,13 +225,13 @@ const apiAdapter = {
    */
   saveNote: async (ctx: NoteContext, note: Partial<Note>): Promise<Note> => {
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const token = getAuthToken();
       if (!token) {
         // No hay token, usar localStorage
         return localStorageAdapter.saveNote(ctx, note);
       }
 
-      const baseUrl = process.env.REACT_APP_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || '';
+      const baseUrl = BACKEND_API_URL.replace(/\/api\/?$/, '');
       const userId = ctx.userId || getUserId();
       const now = new Date().toISOString();
       const noteId = note.id || `note-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -286,14 +288,14 @@ const apiAdapter = {
    */
   deleteNote: async (ctx: NoteContext, noteId: string): Promise<void> => {
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const token = getAuthToken();
       if (!token) {
         // No hay token, usar localStorage
         localStorageAdapter.deleteNote(ctx, noteId);
         return;
       }
 
-      const baseUrl = process.env.REACT_APP_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || '';
+      const baseUrl = BACKEND_API_URL.replace(/\/api\/?$/, '');
       const response = await fetch(`${baseUrl}/api/notes/${noteId}`, {
         method: 'DELETE',
         headers: {

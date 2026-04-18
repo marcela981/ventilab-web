@@ -3,25 +3,43 @@
  * Groups Service - /api/groups/* endpoints
  * =============================================================================
  * CRUD for groups/subgroups, member management, simulator lead assignment.
+ * Uses the centralized httpClient for all requests.
  * =============================================================================
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+import { httpClient } from '@/shared/services/httpClient';
 
+/**
+ * Normalize httpClient response to service envelope format.
+ */
 async function request(endpoint, options = {}) {
-  const token = localStorage.getItem('ventilab_auth_token');
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
-    ...(options.headers || {}),
-  };
   try {
-    const res = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
-    const data = await res.json();
-    if (!res.ok) return { success: false, data: null, error: { message: data.message || 'Error', statusCode: res.status } };
+    const { method = 'GET', body } = options;
+    let data;
+
+    switch (method) {
+      case 'POST':
+        data = await httpClient.post(endpoint, body ? JSON.parse(body) : undefined);
+        break;
+      case 'PATCH':
+        data = await httpClient.patch(endpoint, body ? JSON.parse(body) : undefined);
+        break;
+      case 'DELETE':
+        data = await httpClient.delete(endpoint);
+        break;
+      default:
+        data = await httpClient.get(endpoint);
+    }
+
     return { success: true, data, error: null };
   } catch (err) {
-    return { success: false, data: null, error: { message: 'Error de conexión', statusCode: 0 } };
+    const status = err?.response?.status || 0;
+    const message = err?.response?.data?.message || err?.message || 'Error de conexión';
+    return {
+      success: false,
+      data: null,
+      error: { message, statusCode: status },
+    };
   }
 }
 

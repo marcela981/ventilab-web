@@ -16,17 +16,6 @@
 import chatService from './chatService';
 
 /**
- * Obtener token de autenticación
- */
-const getAuthToken = () => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('token') || 
-         localStorage.getItem('ventilab_auth_token') || 
-         sessionStorage.getItem('token') || 
-         null;
-};
-
-/**
  * Opciones para sendLessonAI
  */
 export interface SendLessonAIOptions {

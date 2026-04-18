@@ -4,7 +4,7 @@ import { mutate } from 'swr';
 import { getAuthToken } from '@/shared/services/authService';
 import { SWR_KEYS, extractModuleIdFromLessonId, getProgressInvalidationMatcher } from '@/lib/swrKeys';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { BACKEND_API_URL as API_URL } from '@/config/env';
 const AUTO_SAVE_INTERVAL = 5 * 60 * 1000; // 5 minutos en ms
 
 interface ProgressState {

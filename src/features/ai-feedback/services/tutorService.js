@@ -3,34 +3,8 @@
  * Maneja WebSocket, caché read-through, y fallback HTTP
  */
 
-// Detectar si estamos en Vite o Next.js
-const getEnvVar = (viteVar, nextVar, fallback) => {
-  // Vite usa import.meta.env
-  // En Vite, import.meta está disponible directamente en módulos ES
-  // Intentar acceder directamente (solo funciona en Vite)
-  try {
-    // Acceder a import.meta.env directamente
-    // En Vite esto está disponible, en otros entornos lanzará error
-    // eslint-disable-next-line no-undef
-    const metaEnv = import.meta?.env;
-    if (metaEnv && metaEnv[viteVar]) {
-      return metaEnv[viteVar];
-    }
-  } catch (e) {
-    // Ignorar si import.meta no está disponible (no es Vite o no es módulo ES)
-  }
-  
-  // Next.js usa process.env
-  if (typeof process !== 'undefined' && process.env) {
-    return process.env[nextVar] || fallback;
-  }
-  return fallback;
-};
-
-const API_BASE_HTTP = getEnvVar('VITE_API_BASE_HTTP', 'NEXT_PUBLIC_API_URL', 'http://localhost:3001/api');
-const API_BASE_WS = getEnvVar('VITE_API_BASE_WS', 'NEXT_PUBLIC_WS_URL', null);
-// Mantener compatibilidad con VITE_API_BASE_URL
-const API_BASE_URL = getEnvVar('VITE_API_BASE_URL', 'NEXT_PUBLIC_API_URL', API_BASE_HTTP);
+import { getAuthToken } from '@/shared/services/authService';
+import { BACKEND_API_URL, BACKEND_URL } from '@/config/env';
 
 // Versión del template de prompt (incrementar cuando cambie el prompt del sistema)
 const PROMPT_TEMPLATE_VERSION = '1.0.0';
@@ -84,16 +58,6 @@ const generateCacheHash = async (question, lessonContext, provider) => {
   return await generateSHA256(cacheString);
 };
 
-/**
- * Obtener token de autenticación
- */
-const getAuthToken = () => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('token') || 
-         localStorage.getItem('ventilab_auth_token') || 
-         sessionStorage.getItem('token') || 
-         null;
-};
 
 /**
  * Manejar errores HTTP con mensajes legibles en español
@@ -139,17 +103,10 @@ export const getWSUrl = ({ lessonId, sessionId, provider }) => {
     throw new Error('lessonId, sessionId y provider son requeridos');
   }
 
-  // Si hay VITE_API_BASE_WS configurado, usarlo directamente
-  if (API_BASE_WS) {
-    const separator = API_BASE_WS.includes('?') ? '&' : '?';
-    return `${API_BASE_WS}${separator}lessonId=${lessonId}&sessionId=${sessionId}&provider=${provider}`;
-  }
-
-  // Fallback: construir desde API_BASE_HTTP/API_BASE_URL o window.location
-  const baseUrl = (API_BASE_HTTP || API_BASE_URL || '').replace('/api', '');
-  if (baseUrl) {
-    const wsProtocol = baseUrl.startsWith('https') ? 'wss:' : 'ws:';
-    const wsHost = baseUrl.replace(/^https?:\/\//, '').replace(/^wss?:\/\//, '');
+  // Build WebSocket URL from BACKEND_URL
+  if (BACKEND_URL) {
+    const wsProtocol = BACKEND_URL.startsWith('https') ? 'wss:' : 'ws:';
+    const wsHost = BACKEND_URL.replace(/^https?:\/\//, '').replace(/^wss?:\/\//, '');
     return `${wsProtocol}//${wsHost}/ws/ai/tutor?lessonId=${lessonId}&sessionId=${sessionId}&provider=${provider}`;
   }
   
@@ -191,7 +148,7 @@ export const checkCache = async (question, lessonContext, provider) => {
 
     // 2. Consultar backend
     const token = getAuthToken();
-    const baseUrl = API_BASE_HTTP || API_BASE_URL;
+    const baseUrl = BACKEND_API_URL;
     const response = await fetch(`${baseUrl}/ai/tutor/cache?hash=${encodeURIComponent(hash)}`, {
       method: 'GET',
       headers: {
@@ -256,7 +213,7 @@ export const putCache = async (question, lessonContext, provider, answer) => {
 
     // Guardar en backend
     const token = getAuthToken();
-    const baseUrl = API_BASE_HTTP || API_BASE_URL;
+    const baseUrl = BACKEND_API_URL;
     const response = await fetch(`${baseUrl}/ai/tutor/cache`, {
       method: 'POST',
       headers: {
@@ -307,7 +264,7 @@ export const completionsHTTP = async ({
     
     // Intentar SSE primero
     // Usar el mismo endpoint unificado que el chat por página: /ai/chat/completions
-    const baseUrl = API_BASE_HTTP || API_BASE_URL;
+    const baseUrl = BACKEND_API_URL;
     const sseResponse = await fetch(`${baseUrl}/ai/chat/completions`, {
       method: 'POST',
       headers: {
@@ -478,7 +435,7 @@ export const trimHistory = (history, maxTurns = 12) => {
 export const getProviders = async () => {
   try {
     const token = getAuthToken();
-    const baseUrl = API_BASE_HTTP || API_BASE_URL;
+    const baseUrl = BACKEND_API_URL;
     const response = await fetch(`${baseUrl}/ai/providers`, {
       method: 'GET',
       headers: {

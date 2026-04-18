@@ -3,53 +3,22 @@
  * Servicio para generar contenido educativo clínico
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+import { httpClient } from '@/shared/services/httpClient';
 
 /**
- * Obtiene el token de autenticación desde localStorage o sessionStorage
- */
-const getAuthToken = () => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('token') || sessionStorage.getItem('token');
-};
-
-/**
- * Realiza una petición a la API con autenticación
+ * Realiza una petición a la API con autenticación vía httpClient
  */
 const apiRequest = async (endpoint, method = 'GET', body = null) => {
-  const token = getAuthToken();
-  
-  const headers = {
-    'Content-Type': 'application/json'
-  };
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  const config = {
-    method,
-    headers
-  };
-
-  if (body && (method === 'POST' || method === 'PUT')) {
-    config.body = JSON.stringify(body);
-  }
-
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Error en la petición');
-    }
-
-    return data;
-  } catch (error) {
-    console.error('API Request Error:', error);
-    throw error;
+  switch (method) {
+    case 'POST':
+      return httpClient.post(endpoint, body);
+    case 'PUT':
+      return httpClient.put(endpoint, body);
+    default:
+      return httpClient.get(endpoint);
   }
 };
+
 
 /**
  * Genera contenido de lección (sin guardar)

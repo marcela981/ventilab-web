@@ -9,36 +9,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/shared/contexts/AuthContext';
-
-/**
- * Base API URL
- */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
-
-/**
- * Helper function to make authenticated API requests
- */
-async function fetchWithAuth(url, options = {}) {
-  const token = localStorage.getItem('ventilab_auth_token');
-
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
-    ...options.headers,
-  };
-
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || `HTTP error! status: ${response.status}`);
-  }
-
-  return response.json();
-}
+import { httpClient } from '@/shared/services/httpClient';
 
 // =============================================================================
 // STUDENT DASHBOARD HOOKS
@@ -66,7 +37,7 @@ export function useStudentProgress() {
       setError(null);
 
       // Fetch user's module progress
-      const data = await fetchWithAuth(`${API_BASE_URL}/users/${user.id}/progress`);
+      const data = await httpClient.get(`/users/${user.id}/progress`);
 
       setProgress(data);
     } catch (err) {
@@ -100,7 +71,7 @@ export function useRecommendedLessons() {
       setError(null);
 
       // Fetch recommended lessons based on user progress
-      const data = await fetchWithAuth(`${API_BASE_URL}/lessons/recommended`);
+      const data = await httpClient.get(`/lessons/recommended`);
 
       setRecommendations(data.lessons || []);
     } catch (err) {
@@ -151,7 +122,7 @@ export function useStudentStats() {
       setLoading(true);
       setError(null);
 
-      const data = await fetchWithAuth(`${API_BASE_URL}/users/${user.id}/stats`);
+      const data = await httpClient.get(`/users/${user.id}/stats`);
 
       setStats(data);
     } catch (err) {
@@ -199,7 +170,7 @@ export function useTeacherModules() {
       setError(null);
 
       // Fetch modules created by this teacher
-      const data = await fetchWithAuth(`${API_BASE_URL}/modules?createdBy=${user.id}`);
+      const data = await httpClient.get(`/modules?createdBy=${user.id}`);
 
       setModules(data.modules || []);
     } catch (err) {
@@ -252,7 +223,7 @@ export function useTeacherStats() {
       setLoading(true);
       setError(null);
 
-      const data = await fetchWithAuth(`${API_BASE_URL}/teachers/${user.id}/stats`);
+      const data = await httpClient.get(`/teachers/${user.id}/stats`);
 
       setStats(data);
     } catch (err) {
@@ -297,7 +268,7 @@ export function useSystemStats() {
       setLoading(true);
       setError(null);
 
-      const data = await fetchWithAuth(`${API_BASE_URL}/admin/stats`);
+      const data = await httpClient.get(`/admin/stats`);
 
       setStats(data);
     } catch (err) {
@@ -340,7 +311,7 @@ export function useAllUsers() {
       setLoading(true);
       setError(null);
 
-      const data = await fetchWithAuth(`${API_BASE_URL}/users`);
+      const data = await httpClient.get(`/users`);
 
       setUsers(data.users || []);
     } catch (err) {
@@ -388,10 +359,7 @@ export function useAllUsers() {
   const updateUser = useCallback(
     async (userId, updates) => {
       try {
-        await fetchWithAuth(`${API_BASE_URL}/users/${userId}`, {
-          method: 'PATCH',
-          body: JSON.stringify(updates),
-        });
+        await httpClient.patch(`/users/${userId}`, updates);
 
         // Refresh user list
         await fetchUsers();
@@ -411,9 +379,7 @@ export function useAllUsers() {
   const deleteUser = useCallback(
     async (userId) => {
       try {
-        await fetchWithAuth(`${API_BASE_URL}/users/${userId}`, {
-          method: 'DELETE',
-        });
+        await httpClient.delete(`/users/${userId}`);
 
         // Refresh user list
         await fetchUsers();
@@ -471,7 +437,7 @@ export function useStudentDashboard() {
 
   const fetchAllModules = useCallback(async () => {
     try {
-      const response = await fetchWithAuth(`${API_BASE_URL}/modules`);
+      const response = await httpClient.get(`/modules`);
       return response.modules || response.data || [];
     } catch (err) {
       console.error('[useStudentDashboard] Error fetching modules:', err);
@@ -481,7 +447,7 @@ export function useStudentDashboard() {
 
   const fetchRecommendedLessons = useCallback(async () => {
     try {
-      const response = await fetchWithAuth(`${API_BASE_URL}/lessons/recommended`);
+      const response = await httpClient.get(`/lessons/recommended`);
       return response.lessons || response.data || [];
     } catch (err) {
       console.error('[useStudentDashboard] Error fetching recommendations:', err);
@@ -533,7 +499,7 @@ export function useStudentDashboard() {
       };
 
       try {
-        const statsResponse = await fetchWithAuth(`${API_BASE_URL}/users/${user.id}/stats`);
+        const statsResponse = await httpClient.get(`/users/${user.id}/stats`);
         if (statsResponse) {
           statistics = {
             modulesCompleted,
@@ -604,8 +570,8 @@ export function useTeacherDashboard() {
       // Fetch modules created by this teacher
       let myModules = [];
       try {
-        const modulesResponse = await fetchWithAuth(
-          `${API_BASE_URL}/modules?createdBy=${user.id}`
+        const modulesResponse = await httpClient.get(
+          `/modules?createdBy=${user.id}`
         );
         myModules = modulesResponse.modules || modulesResponse.data || [];
       } catch (err) {
@@ -643,7 +609,7 @@ export function useTeacherDashboard() {
       };
 
       try {
-        const statsResponse = await fetchWithAuth(`${API_BASE_URL}/teachers/${user.id}/stats`);
+        const statsResponse = await httpClient.get(`/teachers/${user.id}/stats`);
         if (statsResponse) {
           studentStats = {
             totalStudents: statsResponse.totalStudents || 0,
@@ -721,7 +687,7 @@ export function useAdminDashboard() {
       };
 
       try {
-        const statsResponse = await fetchWithAuth(`${API_BASE_URL}/admin/stats`);
+        const statsResponse = await httpClient.get(`/admin/stats`);
         if (statsResponse) {
           systemStats = {
             totalUsers: statsResponse.totalUsers || 0,
@@ -745,7 +711,7 @@ export function useAdminDashboard() {
 
       // Fetch all modules to count lessons
       try {
-        const modulesResponse = await fetchWithAuth(`${API_BASE_URL}/modules`);
+        const modulesResponse = await httpClient.get(`/modules`);
         const modules = modulesResponse.modules || modulesResponse.data || [];
         
         // Count lessons across all modules
@@ -753,8 +719,8 @@ export function useAdminDashboard() {
         for (const module of modules.slice(0, 10)) {
           // Limit to first 10 modules to avoid too many requests
           try {
-            const lessonsResponse = await fetchWithAuth(
-              `${API_BASE_URL}/modules/${module.id}/lessons`
+            const lessonsResponse = await httpClient.get(
+              `/modules/${module.id}/lessons`
             );
             const lessons = lessonsResponse.lessons || lessonsResponse.data || [];
             totalLessons += lessons.length;
@@ -772,7 +738,7 @@ export function useAdminDashboard() {
       // Fetch all users
       let users = [];
       try {
-        const usersResponse = await fetchWithAuth(`${API_BASE_URL}/users`);
+        const usersResponse = await httpClient.get(`/users`);
         users = usersResponse.users || usersResponse.data || [];
         systemStats.totalUsers = users.length || systemStats.totalUsers;
         systemStats.activeUsers = users.filter((u) => u.isActive !== false).length || users.length;
@@ -831,10 +797,7 @@ export function useAdminDashboard() {
   const updateUserRole = useCallback(
     async (userId, newRole) => {
       try {
-        await fetchWithAuth(`${API_BASE_URL}/users/${userId}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ role: newRole }),
-        });
+        await httpClient.patch(`/users/${userId}`, { role: newRole });
 
         // Refresh data after update
         await fetchAdminData();
@@ -854,9 +817,7 @@ export function useAdminDashboard() {
   const deactivateUser = useCallback(
     async (userId) => {
       try {
-        await fetchWithAuth(`${API_BASE_URL}/users/${userId}`, {
-          method: 'DELETE',
-        });
+        await httpClient.delete(`/users/${userId}`);
 
         // Refresh data after deactivation
         await fetchAdminData();

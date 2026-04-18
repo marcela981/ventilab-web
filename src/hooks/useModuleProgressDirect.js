@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { getAuthToken } from '@/shared/services/authService';
 import { useTokenManager } from '@/features/progress/hooks/useTokenManager';
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api').replace(/\/$/, '');
+import { BACKEND_API_URL as API_URL } from '@/config/env';
 
 /**
  * Fetch module progress directly from the backend endpoint.

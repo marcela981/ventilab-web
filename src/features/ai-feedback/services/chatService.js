@@ -10,38 +10,8 @@
  * @service
  */
 
-// Detectar si estamos en Vite o Next.js
-const getEnvVar = (viteVar, nextVar, fallback) => {
-  try {
-    // eslint-disable-next-line no-undef
-    const metaEnv = import.meta?.env;
-    if (metaEnv && metaEnv[viteVar]) {
-      return metaEnv[viteVar];
-    }
-  } catch (e) {
-    // Ignorar si import.meta no está disponible
-  }
-  
-  if (typeof process !== 'undefined' && process.env) {
-    return process.env[nextVar] || fallback;
-  }
-  return fallback;
-};
-
-const API_BASE_HTTP = getEnvVar('VITE_API_BASE_HTTP', 'NEXT_PUBLIC_API_URL', 'http://localhost:3001/api');
-const API_BASE_WS = getEnvVar('VITE_API_BASE_WS', 'NEXT_PUBLIC_WS_URL', null);
-const API_BASE_URL = getEnvVar('VITE_API_BASE_URL', 'NEXT_PUBLIC_API_URL', API_BASE_HTTP);
-
-/**
- * Obtener token de autenticación
- */
-const getAuthToken = () => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('token') || 
-         localStorage.getItem('ventilab_auth_token') || 
-         sessionStorage.getItem('token') || 
-         null;
-};
+import { getAuthToken } from '@/shared/services/authService';
+import { BACKEND_API_URL } from '@/config/env';
 
 /**
  * Determinar si un error es recuperable (se puede reintentar)
@@ -238,7 +208,7 @@ const sendMessageStream = async ({
 }) => {
   try {
     const token = getAuthToken();
-    const baseUrl = API_BASE_HTTP || API_BASE_URL;
+    const baseUrl = BACKEND_API_URL;
     
     // Construir mensajes normalizados
     const messages = buildMessages({ system, developer, user, history });
@@ -424,7 +394,7 @@ const sendMessageNoStream = async ({
 }) => {
   try {
     const token = getAuthToken();
-    const baseUrl = API_BASE_HTTP || API_BASE_URL;
+    const baseUrl = BACKEND_API_URL;
     
     // Construir mensajes normalizados
     const messages = buildMessages({ system, developer, user, history });
@@ -580,7 +550,7 @@ export const sendMessage = async ({
 export const getProviders = async () => {
   try {
     const token = getAuthToken();
-    const baseUrl = API_BASE_HTTP || API_BASE_URL;
+    const baseUrl = BACKEND_API_URL;
     const response = await fetch(`${baseUrl}/ai/providers`, {
       method: 'GET',
       headers: {

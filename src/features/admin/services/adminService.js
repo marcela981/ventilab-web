@@ -2,105 +2,100 @@
  * =============================================================================
  * Admin Service - /api/admin/* endpoints
  * =============================================================================
- * Provides access to the teacher/admin dashboard data:
- * - Student list with progress (with group/search filters)
- * - Detailed student progress
- * - Teacher list (admin only)
- * - Role management (admin only)
- * - Platform statistics (admin only)
+ * Uses the centralized httpClient for all requests.
+ * Token and base URL are handled automatically by the HTTP layer.
  * =============================================================================
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+import { httpClient } from '@/shared/services/httpClient';
 
-/** Authenticated fetch helper */
+/**
+ * Normalize httpClient response to service envelope format.
+ * httpClient throws on non-2xx, so we wrap in try/catch.
+ */
 async function request(endpoint, options = {}) {
-  const token = localStorage.getItem('ventilab_auth_token');
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
-    ...(options.headers || {}),
-  };
-
   try {
-    const res = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
-    const data = await res.json();
-    if (!res.ok) return { success: false, data: null, error: { message: data.message || 'Error', statusCode: res.status } };
+    const { method = 'GET', body } = options;
+    let data;
+
+    switch (method) {
+      case 'POST':
+        data = await httpClient.post(endpoint, body ? JSON.parse(body) : undefined);
+        break;
+      case 'PUT':
+        data = await httpClient.put(endpoint, body ? JSON.parse(body) : undefined);
+        break;
+      case 'PATCH':
+        data = await httpClient.patch(endpoint, body ? JSON.parse(body) : undefined);
+        break;
+      case 'DELETE':
+        data = await httpClient.delete(endpoint);
+        break;
+      default:
+        data = await httpClient.get(endpoint);
+    }
+
     return { success: true, data, error: null };
   } catch (err) {
-    return { success: false, data: null, error: { message: 'Error de conexión', statusCode: 0 } };
+    const status = err?.response?.status || 0;
+    const message = err?.response?.data?.message || err?.message || 'Error en la solicitud';
+    return {
+      success: false,
+      data: null,
+      error: { message, statusCode: status },
+    };
   }
 }
 
-// ---------------------------------------------------------------------------
-// Students
-// ---------------------------------------------------------------------------
+// =============================================================================
+// Users
+// =============================================================================
 
-/**
- * Get paginated student list with progress.
- * @param {Object} options
- * @param {string} [options.groupId] - Filter by group
- * @param {string} [options.search] - Name/email search
- * @param {boolean} [options.myGroups] - Only students in my groups
- * @param {number} [options.page=1]
- * @param {number} [options.limit=20]
- * @param {string} [options.sortBy='name']
- * @param {'asc'|'desc'} [options.sortOrder='asc']
- */
-export async function getStudents(options = {}) {
-  const { groupId, search, myGroups, page = 1, limit = 20, sortBy = 'name', sortOrder = 'asc' } = options;
-  const params = new URLSearchParams({ page, limit, sortBy, sortOrder });
-  if (groupId) params.append('groupId', groupId);
-  if (search) params.append('search', search);
-  if (myGroups) params.append('myGroups', 'true');
-  return request(`/admin/students?${params}`);
+export async function getUsers() {
+  return request('/admin/users');
 }
 
-/**
- * Get detailed progress for a student.
- * @param {string} studentId
- */
-export async function getStudentProgress(studentId) {
-  return request(`/admin/students/${studentId}/progress`);
+export async function getUserById(userId) {
+  return request(`/admin/users/${userId}`);
 }
 
-// ---------------------------------------------------------------------------
-// Teachers (admin only)
-// ---------------------------------------------------------------------------
-
-/**
- * Get list of teachers.
- * @param {string} [search]
- */
-export async function getTeachers(search) {
-  const params = search ? `?search=${encodeURIComponent(search)}` : '';
-  return request(`/admin/teachers${params}`);
+export async function updateUser(userId, updates) {
+  return request(`/admin/users/${userId}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates),
+  });
 }
 
-// ---------------------------------------------------------------------------
-// Role management (admin only)
-// ---------------------------------------------------------------------------
+export async function deleteUser(userId) {
+  return request(`/admin/users/${userId}`, { method: 'DELETE' });
+}
 
-/**
- * Change a user's role.
- * @param {string} userId
- * @param {'STUDENT'|'TEACHER'|'ADMIN'} role
- */
+// =============================================================================
+// Roles
+// =============================================================================
+
 export async function updateUserRole(userId, role) {
   return request(`/admin/users/${userId}/role`, {
-    method: 'PATCH',
+    method: 'PUT',
     body: JSON.stringify({ role }),
   });
 }
 
-// ---------------------------------------------------------------------------
-// Statistics (admin only)
-// ---------------------------------------------------------------------------
+// =============================================================================
+// Statistics
+// =============================================================================
 
-export async function getPlatformStatistics() {
-  return request('/admin/statistics');
+export async function getAdminStats() {
+  return request('/admin/stats');
 }
 
-// Default export
-const adminService = { getStudents, getStudentProgress, getTeachers, updateUserRole, getPlatformStatistics };
+const adminService = {
+  getUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
+  updateUserRole,
+  getAdminStats,
+};
+
 export default adminService;

@@ -66,37 +66,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-
-/**
- * Base API URL
- */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
-
-/**
- * Helper function to make authenticated API requests
- * Matches the pattern used in useDashboardData.js
- */
-async function fetchWithAuth(url, options = {}) {
-  const token = localStorage.getItem('ventilab_auth_token');
-
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
-    ...options.headers,
-  };
-
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || `HTTP error! status: ${response.status}`);
-  }
-
-  return response.json();
-}
+import { httpClient } from '@/shared/services/httpClient';
 
 /**
  * Page size options for pagination
@@ -251,8 +221,8 @@ export function useUserManagement() {
       }
 
       // Make API request
-      const data = await fetchWithAuth(
-        `${API_BASE_URL}/admin/users?${queryParams.toString()}`
+      const data = await httpClient.get(
+        `/admin/users?${queryParams.toString()}`
       );
 
       // Update state with response data
@@ -307,10 +277,7 @@ export function useUserManagement() {
       setError(null);
 
       try {
-        await fetchWithAuth(`${API_BASE_URL}/admin/users/${userId}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ role: newRole }),
-        });
+        await httpClient.patch(`/admin/users/${userId}`, { role: newRole });
 
         // Refresh user list after successful update
         await fetchUsers();
@@ -346,10 +313,7 @@ export function useUserManagement() {
       setError(null);
 
       try {
-        await fetchWithAuth(`${API_BASE_URL}/admin/users/${userId}/status`, {
-          method: 'PATCH',
-          body: JSON.stringify({ isActive }),
-        });
+        await httpClient.patch(`/admin/users/${userId}/status`, { isActive });
 
         // Refresh user list after successful update
         await fetchUsers();
@@ -390,9 +354,7 @@ export function useUserManagement() {
       setError(null);
 
       try {
-        await fetchWithAuth(`${API_BASE_URL}/admin/users/${userId}`, {
-          method: 'DELETE',
-        });
+        await httpClient.delete(`/admin/users/${userId}`);
 
         // Refresh user list after successful deletion
         await fetchUsers();
@@ -440,10 +402,7 @@ export function useUserManagement() {
       setError(null);
 
       try {
-        const response = await fetchWithAuth(`${API_BASE_URL}/admin/users`, {
-          method: 'POST',
-          body: JSON.stringify(userData),
-        });
+        const response = await httpClient.post(`/admin/users`, userData);
 
         // Refresh user list after successful creation
         await fetchUsers();
@@ -482,11 +441,8 @@ export function useUserManagement() {
     setError(null);
 
     try {
-      const response = await fetchWithAuth(
-        `${API_BASE_URL}/admin/users/${userId}/reset-password`,
-        {
-          method: 'POST',
-        }
+      const response = await httpClient.post(
+        `/admin/users/${userId}/reset-password`
       );
 
       return { success: true, data: response };

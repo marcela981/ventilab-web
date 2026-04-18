@@ -64,6 +64,7 @@ import withAuth from '../hoc/withAuth';
 import { useLearningProgress } from '@/features/progress/LearningProgressContext';
 import { useStudentDashboard } from '@/features/dashboard/hooks/useDashboardData';
 import { useAuth } from '@/shared/hooks/useAuth';
+import { getAuthToken } from '@/shared/services/authService';
 import { LevelBadge } from '../common/LevelBadge';
 import AchievementsDashboard from '../gamification/AchievementsDashboard';
 
@@ -139,7 +140,7 @@ const StudentDashboard = () => {
         setLoadingLevel(true);
 
         // Obtener evaluación de nivel
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         const response = await fetch(`/api/users/${user.id}/evaluate-level`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -206,7 +207,7 @@ const StudentDashboard = () => {
     try {
       setPromotingLevel(true);
 
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await fetch(`/api/users/${user.id}/evaluate-level?autoApply=true`, {
         method: 'POST',
         headers: {
