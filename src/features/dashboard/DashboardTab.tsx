@@ -1,6 +1,6 @@
 import React from 'react';
 import { Alert, Skeleton, Fade } from '@mui/material';
-import { DashboardData } from './types';
+import { DashboardData, DashboardOverview, OverviewToday } from './types';
 import DashboardOverviewCard from './components/DashboardOverviewCard';
 import QuickActions from './components/QuickActions';
 import WeeklyPlan from './components/WeeklyPlan';
@@ -64,9 +64,9 @@ const DashboardTab: React.FC<DashboardTabProps> = ({
   // Convertir datos al formato esperado por los componentes
   const overviewData = data.overview ? {
     ...data.overview,
-    lessonTitle: (data.overview as any).lessonTitle || undefined,
-    estMin: (data.overview as any).estMin || undefined,
-    progressPercent: (data.overview as any).progressPercent || (data.overview as any).levelProgress || undefined,
+    lessonTitle: (data.overview as OverviewToday).lessonTitle || undefined,
+    estMin: (data.overview as OverviewToday).estMin || undefined,
+    progressPercent: (data.overview as OverviewToday).progressPercent || (data.overview as DashboardOverview).levelProgress || undefined,
     xpToday: data.overview.xpToday || 0,
     level: data.overview.level || 1,
     role: data.overview.role || 'Estudiante'

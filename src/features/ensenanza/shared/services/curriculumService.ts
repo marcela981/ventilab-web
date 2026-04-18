@@ -250,8 +250,8 @@ export async function fetchModuleWithLessons(moduleId: string): Promise<ModuleWi
     apiFetch<ApiLesson[]>(`/modules/${moduleId}/lessons`),
   ]);
 
-  const levelId = (moduleData as any).level?.id ?? '';
-  const track = (moduleData as any).level?.track ?? 'mecanica';
+  const levelId = moduleData.level?.id ?? '';
+  const track = moduleData.level?.track ?? 'mecanica';
 
   const lessons: CurriculumLesson[] = lessonsData.map((lesson) => ({
     id: lesson.id,
@@ -291,7 +291,7 @@ export async function fetchLessonWithSteps(lessonId: string): Promise<LessonWith
     title: lessonData.title,
     description: lessonData.description ?? null,
     estimatedTime: lessonData.estimatedTime ?? null,
-    moduleId: (lessonData as any).moduleId ?? '',
+    moduleId: lessonData.moduleId ?? '',
     steps: stepsData.filter((s) => s.isActive).sort((a, b) => a.order - b.order),
   };
 

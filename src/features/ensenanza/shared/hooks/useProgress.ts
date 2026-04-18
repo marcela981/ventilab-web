@@ -66,8 +66,7 @@ export function useProgress({ lessonId, totalSteps, onComplete }: UseProgressOpt
 
     const token =
       getAuthToken() ||
-      (session as any)?.accessToken ||
-      (session as any)?.user?.accessToken;
+      session?.accessToken;
 
     if (!token) return; // still no token — effect re-runs when session changes
 

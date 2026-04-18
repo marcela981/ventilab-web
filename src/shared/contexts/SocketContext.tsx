@@ -107,7 +107,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     // auth config), otherwise fall back to the backend JWT stored in localStorage
     // by the custom authService after credential login.
     const token =
-      (session as any)?.accessToken ?? getAuthToken();
+      session?.accessToken ?? getAuthToken();
 
     const hasSession = status === 'authenticated' || !!token;
 

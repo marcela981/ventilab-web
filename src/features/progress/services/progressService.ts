@@ -278,8 +278,7 @@ export async function updateLessonProgress(
   // BUILD CLEAN PAYLOAD - Only send fields expected by backend
   // NEVER send undefined values
   // ==========================================================================
-  const payload: Record<string, any> = {
-    // REQUIRED: completionPercentage (backend format)
+  const payload: Record<string, number> = {
     completionPercentage: clampedPercentage,
   };
 
@@ -665,7 +664,7 @@ export async function invalidateProgressCache(moduleId?: string, lessonId?: stri
  * SWR fetcher function for use with useSWR hook
  * Example: const { data } = useSWR('/progress/overview', progressFetcher)
  */
-export async function progressFetcher(path: string): Promise<any> {
+export async function progressFetcher(path: string): Promise<unknown> {
   const token = getAuthToken();
   
   const { res, data } = await http(path, {
@@ -674,8 +673,7 @@ export async function progressFetcher(path: string): Promise<any> {
   });
 
   if (!res.ok) {
-    const error = new Error(data?.message || 'Error al obtener datos');
-    (error as any).status = res.status;
+    const error = Object.assign(new Error(data?.message || 'Error al obtener datos'), { status: res.status });
     throw error;
   }
 
