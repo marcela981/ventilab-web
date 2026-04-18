@@ -41,7 +41,7 @@ export default function EvaluationCard({ item, submission }) {
   const isCompleted = submission?.status === 'SUBMITTED' || submission?.status === 'GRADED';
 
   function handleStart() {
-    if (!isCompleted) router.push(`/evaluation/${item.id}`);
+    router.push(`/evaluation/${item.id}`);
   }
 
   const scoreText = isCompleted && submission.score != null

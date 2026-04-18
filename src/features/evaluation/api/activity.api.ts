@@ -3,33 +3,32 @@ import type { Activity, CreateActivityPayload, UpdateActivityPayload } from '../
 
 export const activityApi = {
   list: async (): Promise<Activity[]> => {
-    const { data } = await http.get('/evaluation/activities');
-    return data.data ?? [];
+    const { data } = await http.get('/activities');
+    return data.activities ?? data.data ?? [];
   },
   getById: async (id: string): Promise<Activity> => {
-    const { data } = await http.get(`/evaluation/activities/${id}`);
+    const { data } = await http.get(`/activities/${id}`);
     return data.activity;
   },
   create: async (payload: CreateActivityPayload): Promise<Activity> => {
-    const { data } = await http.post('/evaluation/activities', payload);
+    const { data } = await http.post('/activities', payload);
     return data.activity;
   },
   update: async (id: string, payload: UpdateActivityPayload): Promise<Activity> => {
-    const { data } = await http.put(`/evaluation/activities/${id}`, payload);
+    const { data } = await http.put(`/activities/${id}`, payload);
     return data.activity;
   },
   remove: async (id: string): Promise<Activity> => {
-    const { data } = await http.delete(`/evaluation/activities/${id}`);
+    const { data } = await http.delete(`/activities/${id}`);
     return data.activity;
   },
   publish: async (id: string): Promise<Activity> => {
-    const { data } = await http.post(`/evaluation/activities/${id}/publish`);
+    const { data } = await http.post(`/activities/${id}/publish`);
     return data.activity;
   },
   listSubmissions: async (id: string, params?: { groupId?: string }) => {
     const query = params?.groupId ? `?groupId=${encodeURIComponent(params.groupId)}` : '';
-    const { data } = await http.get(`/evaluation/activities/${id}/submissions${query}`);
+    const { data } = await http.get(`/activities/${id}/submissions${query}`);
     return data.submissions ?? [];
   },
 };
-
