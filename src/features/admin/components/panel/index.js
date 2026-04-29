@@ -12,9 +12,6 @@ export { default as PanelLayout } from './PanelLayout';
 export { DRAWER_WIDTH_OPEN, DRAWER_WIDTH_CLOSED } from './PanelLayout';
 export { default as PanelSidebar } from './PanelSidebar';
 
-// Route Protection
-export { default as ProtectedPanelRoute } from './ProtectedPanelRoute';
-
 // Panel Pages
 export { default as PanelDashboard } from './pages/PanelDashboard';
 export { default as PanelStudents } from './pages/PanelStudents';
