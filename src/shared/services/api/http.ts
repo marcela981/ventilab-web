@@ -1,12 +1,16 @@
-/**
- * =============================================================================
- * Shared Axios instance — Single HTTP entry point for VentyLab
- * =============================================================================
- * - Base URL resolved from config/env.ts (BACKEND_API_URL)
- * - Request interceptor:  auto-attach Bearer token via authService.getAuthToken()
- * - Response interceptor: global 401 handling (refresh → retry → logout)
- * - Network error wrapping (ApiUnavailableError)
- * =============================================================================
+/*
+ * Funcionalidad: Cliente HTTP compartido — punto de entrada único
+ * Descripción: Instancia Axios configurada con interceptores de autenticación y
+ *              manejo de errores de red para toda la app VentyLab. Distingue tres
+ *              tipos de fallo: red/CORS (sin respuesta HTTP), sesión expirada
+ *              (401/403), y errores del servidor (4xx/5xx).
+ * Versión: 2.0
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
  */
 
 import axios from 'axios';
@@ -45,12 +49,17 @@ http.interceptors.request.use(
 );
 
 // =============================================================================
-// RESPONSE INTERCEPTOR — Global 401 handling + network errors
+// RESPONSE INTERCEPTOR — Tres casos bien diferenciados:
+//   1. Sin respuesta HTTP   → ApiUnavailableError (red real, CORS, DNS)
+//   2. 401/403              → intento de refresco de token / logout
+//   3. Otros 4xx/5xx        → mensaje normalizado del backend
+// NUNCA muestra "No se pudo conectar" para respuestas HTTP recibidas.
+// Los TypeError de render NO llegan aquí (son errores de React, no de axios).
 // =============================================================================
 
-/** Flag to prevent infinite refresh loops. */
+/** Flag para evitar bucles infinitos de refresco. */
 let isRefreshing = false;
-/** Queue of requests waiting for token refresh. */
+/** Cola de requests pendientes mientras se refresca el token. */
 let failedQueue: Array<{
   resolve: (value: unknown) => void;
   reject: (reason?: unknown) => void;
@@ -58,11 +67,8 @@ let failedQueue: Array<{
 
 function processQueue(error: unknown) {
   failedQueue.forEach(({ resolve, reject }) => {
-    if (error) {
-      reject(error);
-    } else {
-      resolve(undefined);
-    }
+    if (error) reject(error);
+    else resolve(undefined);
   });
   failedQueue = [];
 }
@@ -72,30 +78,33 @@ http.interceptors.response.use(
   async err => {
     if (axios.isCancel(err)) return Promise.reject(err);
 
-    // ── Network errors (no response at all) ──────────────────────────────
+    const method = (err.config?.method ?? 'GET').toUpperCase();
+    const url    = err.config?.url ?? '(unknown)';
+
+    // ── Caso 1: Sin respuesta HTTP (red real, CORS, DNS, timeout) ─────────
+    // Nota: curl no tiene CORS — si curl funciona pero el browser no, es CORS.
     if (!err.response) {
       const offline = typeof navigator !== 'undefined' && navigator && !navigator.onLine;
-      const msg = offline
-        ? 'Sin conexión a internet.'
-        : `No se pudo conectar con el backend en ${http.defaults.baseURL}`;
+      const msg = offline ? 'Sin conexión a internet.' : 'No se pudo conectar con el servidor.';
+      console.error(`[http] ${method} ${url} → sin respuesta HTTP (red/CORS/DNS):`, err.message);
       return Promise.reject(new ApiUnavailableError(msg));
     }
 
-    // ── 401 Unauthorized — attempt token refresh ─────────────────────────
+    const { status, data: body } = err.response;
     const originalRequest = err.config;
 
-    if (err.response.status === 401 && !originalRequest._retry) {
-      // Don't try to refresh if we're already on the auth/login path
+    console.error(`[http] ${method} ${url} → ${status}`, body);
+
+    // ── Caso 2: 401 Unauthorized — intento de refresco de token ──────────
+    if (status === 401 && !originalRequest._retry) {
       if (originalRequest.url?.includes('/auth/')) {
         return Promise.reject(err);
       }
 
       if (isRefreshing) {
-        // Another request is already refreshing — queue this one
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         }).then(() => {
-          // Token was refreshed, retry with new token
           originalRequest.headers.Authorization = `Bearer ${getAuthToken()}`;
           return http(originalRequest);
         });
@@ -105,29 +114,21 @@ http.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Attempt to refresh the backend token via NextAuth bridge
         const response = await fetch('/api/auth/backend-token', {
           method: 'GET',
           headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
           credentials: 'include',
         });
 
-        if (!response.ok) {
-          throw new Error('Token refresh failed');
-        }
+        if (!response.ok) throw new Error('Token refresh failed');
 
         const payload = await response.json();
 
         if (payload?.success && payload?.token) {
-          // Dynamically import to avoid circular dependency at module level
           const { setAuthToken } = await import('@/shared/services/authService');
           setAuthToken(payload.token);
           authEvents.emit('auth:token-refreshed');
-
-          // Retry queued requests
           processQueue(null);
-
-          // Retry the original request
           originalRequest.headers.Authorization = `Bearer ${payload.token}`;
           return http(originalRequest);
         }
@@ -135,23 +136,34 @@ http.interceptors.response.use(
         throw new Error('Token refresh response missing token');
       } catch (refreshError) {
         processQueue(refreshError);
-
-        // Token irrecoverable → force logout
         removeAuthToken();
         authEvents.emit('auth:logout', { reason: 'token_refresh_failed' });
-
-        // Redirect to login (only client-side)
         if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
           window.location.href = '/login';
         }
-
-        return Promise.reject(refreshError);
+        const sessionErr = new Error('Sesión expirada, vuelve a iniciar sesión.');
+        return Promise.reject(sessionErr);
       } finally {
         isRefreshing = false;
       }
     }
 
-    // ── Other HTTP errors (4xx, 5xx) — pass through ─────────────────────
+    // ── Caso 3: 403 Forbidden — acceso denegado, cerrar sesión ───────────
+    if (status === 403) {
+      removeAuthToken();
+      authEvents.emit('auth:logout', { reason: 'forbidden' });
+      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
+      const sessionErr = new Error('Sesión expirada, vuelve a iniciar sesión.');
+      return Promise.reject(sessionErr);
+    }
+
+    // ── Caso 4: Otros 4xx / 5xx — normalizar mensaje del backend ─────────
+    const backendMsg = typeof (body as Record<string, unknown>)?.message === 'string'
+      ? (body as { message: string }).message
+      : null;
+    err.message = backendMsg ?? `Error del servidor (${status})`;
     return Promise.reject(err);
   }
 );
