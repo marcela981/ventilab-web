@@ -697,108 +697,6 @@ export const getProgressSummary = async () => {
   });
 };
 
-// Legacy compatibility - deprecated, use getModuleProgress instead
-export const fetchProgress = async ({ moduleId, lessonId } = {}) => {
-  console.warn('[progressService] fetchProgress is deprecated. Use getModuleProgress(moduleId) instead.');
-  
-  if (moduleId) {
-    try {
-      const moduleProgress = await getModuleProgress(moduleId);
-      // Transform to legacy format
-      return moduleProgress.lessonProgress.map(lp => ({
-        id: lp.id,
-        userId: moduleProgress.learningProgress.userId,
-        moduleId: lp.lessonId, // Note: this is incorrect but maintains compatibility
-        lessonId: lp.lessonId,
-        positionSeconds: 0, // Not available in new model
-        progress: lp.progress,
-        isCompleted: lp.completed,
-        attempts: 0, // Not available in new model
-        score: null, // Not in lesson progress
-        metadata: null, // Not available in new model
-        clientUpdatedAt: lp.lastAccessed,
-        serverUpdatedAt: lp.updatedAt,
-        createdAt: lp.createdAt,
-      }));
-    } catch (error) {
-      console.error('[progressService] fetchProgress (legacy) failed:', error);
-      return [];
-    }
-  }
-  
-  return [];
-};
-
-// Legacy compatibility - deprecated, use updateLessonProgress instead
-export const upsertProgress = async (payload) => {
-  console.warn('[progressService] upsertProgress is deprecated. Use updateLessonProgress instead.');
-  
-  if (!payload || !payload.lessonId) {
-    throw new Error('lessonId is required');
-  }
-
-  try {
-    const result = await updateLessonProgress({
-      lessonId: payload.lessonId,
-      progress: payload.progress,
-      completed: payload.isCompleted,
-      timeSpentDelta: payload.positionSeconds ? Math.floor(payload.positionSeconds / 60) : undefined,
-      lastAccessed: payload.clientUpdatedAt || new Date().toISOString(),
-    });
-
-    // Transform to legacy format
-    return {
-      id: result.lessonProgress.id,
-      userId: '', // Not available in response
-      moduleId: payload.moduleId || '', // From request
-      lessonId: result.lessonProgress.lessonId,
-      positionSeconds: result.lessonProgress.timeSpent * 60, // Convert minutes to seconds
-      progress: result.lessonProgress.progress,
-      isCompleted: result.lessonProgress.completed,
-      attempts: 0, // Not available
-      score: null, // Not in lesson progress
-      metadata: null, // Not available
-      clientUpdatedAt: result.lessonProgress.lastAccessed || new Date().toISOString(),
-      serverUpdatedAt: result.lessonProgress.updatedAt,
-      createdAt: result.lessonProgress.createdAt,
-    };
-  } catch (error) {
-    console.error('[progressService] upsertProgress (legacy) failed:', error);
-    throw error;
-  }
-};
-
-// Legacy compatibility - deprecated
-export const bulkSyncProgress = async (items) => {
-  console.warn('[progressService] bulkSyncProgress is deprecated. Use updateLessonProgress for individual updates.');
-  
-  if (!Array.isArray(items) || items.length === 0) {
-    return { merged: [], records: [] };
-  }
-
-  const results = [];
-  const merged = [];
-
-  for (const item of items) {
-    try {
-      const result = await updateLessonProgress({
-        lessonId: item.lessonId,
-        progress: item.progress,
-        completed: item.isCompleted,
-        timeSpentDelta: item.positionSeconds ? Math.floor(item.positionSeconds / 60) : undefined,
-        lastAccessed: item.clientUpdatedAt || new Date().toISOString(),
-      });
-
-      results.push(result.lessonProgress);
-      merged.push({ lessonId: item.lessonId, merged: true });
-    } catch (error) {
-      merged.push({ lessonId: item.lessonId, merged: false, error: error.message });
-    }
-  }
-
-  return { merged, records: results };
-};
-
 /**
  * Get progress overview
  * 
@@ -1070,8 +968,4 @@ export default {
   getAchievements,
   getUserState,
   getModuleResumePoint,
-  // Legacy exports
-  fetchProgress,
-  upsertProgress,
-  bulkSyncProgress,
 };
