@@ -256,6 +256,25 @@ export type {
 } from '@/contracts/simulator.contracts';
 
 // =============================================================================
+// Health endpoint
+// =============================================================================
+
+export interface SimulationHealthResponse {
+  mqtt: { status: string; brokerUrl: string; topic: string };
+  ws: { connectedUsers: number; userIds: string[] };
+  telemetry: {
+    lastFrameAt: number | null;
+    lastFrameAgeMs: number | null;
+    framesPerSecond: number;
+  };
+  reservation: {
+    isReserved: boolean;
+    currentUser?: string;
+    endsAt?: number;
+  };
+}
+
+// =============================================================================
 // Chart configuration
 // =============================================================================
 

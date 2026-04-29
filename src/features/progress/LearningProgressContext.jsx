@@ -167,39 +167,13 @@ export const LearningProgressProvider = ({ children }) => {
     progressByModuleRef.current = progressByModule;
   }, [progressByModule]);
 
-  // CRITICAL FIX: DO NOT load from localStorage on mount
-  // The snapshot from the database is the SINGLE SOURCE OF TRUTH
-  // localStorage is ONLY used as a temporary cache, NOT as the primary data source
-  // 
-  // If we load from localStorage here, we risk showing stale data when:
-  // 1. User logs in from a different device
-  // 2. User clears localStorage (expected behavior: reload from DB)
-  // 3. Progress is updated on the server but localStorage has old data
-  //
-  // The correct flow is:
-  // 1. Mount → loadSnapshot() fetches from DB
-  // 2. DB data populates progressByModule via sync effect (line 354)
-  // 3. localStorage is used ONLY for outbox queue (offline changes pending sync)
-  //
-  // useEffect(() => {
-  //   if (typeof window === 'undefined') {
-  //     return;
-  //   }
-  //   
-  //   try {
-  //     const stored = localStorage.getItem('vlab:progress:state');
-  //     if (stored) {
-  //       const parsed = JSON.parse(stored);
-  //       setProgressByModule(parsed.progressByModule || {});
-  //       setCurrentModuleId(parsed.currentModuleId || null);
-  //       setCurrentLessonId(parsed.currentLessonId || null);
-  //     }
-  //   } catch (error) {
-  //     console.warn('[LearningProgressContext] Failed to restore state from localStorage:', error);
-  //   }
-  // }, []);
-
-  // Persist state to localStorage (saves automatically when state changes)
+  // VentyLab — Phantom-persistence guard.
+  // We deliberately DO NOT hydrate `progressByModule` from localStorage on
+  // mount, and `useProgressPersistence` is now a no-op. The database is the
+  // only source of truth; the new canonical pipeline lives in
+  // `@/features/ensenanza/shared/progreso` (useProgress hook, SWR around
+  // GET /api/progress/overview). This context survives only to feed legacy
+  // consumers; new code MUST use the canonical hook.
   useProgressPersistence(progressByModule, currentModuleId, currentLessonId);
 
   // Configure progress service

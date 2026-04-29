@@ -2,7 +2,9 @@
  * useLevelsCurriculum
  *
  * Fetches the full level + module hierarchy from the backend
- * (GET /api/levels/curriculum) instead of reading from static JSON files.
+ * (GET /api/levels/curriculum — passed as `/levels/curriculum` since the
+ * shared axios instance already sets baseURL to `${BACKEND_URL}/api`)
+ * instead of reading from static JSON files.
  *
  * Returns levels shaped for LevelStepper:
  *   { id (slug), title, description, color, emoji, order,
@@ -28,7 +30,7 @@ export function useLevelsCurriculum() {
       try {
         setIsLoading(true);
         setError(null);
-        const data = await get('/api/levels/curriculum');
+        const data = await get('/levels/curriculum');
         if (!cancelled) {
           // `data` may be the raw array or wrapped in { data: [...] }
           const levelsArray = Array.isArray(data) ? data : (data?.data ?? []);

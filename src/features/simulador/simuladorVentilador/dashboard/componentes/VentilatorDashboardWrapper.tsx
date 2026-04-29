@@ -1,6 +1,7 @@
 import { useMemo, useEffect, useRef } from 'react';
 
 import VentilatorDashboard from './VentilatorDashboard';
+import { NoSignalBanner } from './NoSignalBanner';
 import { useVentilatorData } from '@/features/simulador/conexion/websocket/hooks/useVentilatorData';
 import { useChartCalculations } from '@/features/simulador/simuladorVentilador/graficasMonitor/hooks/useChartCalculations';
 import { useVentilatorControls } from '@/features/simulador/simuladorVentilador/panelControl/hooks/useVentilatorControls';
@@ -47,6 +48,7 @@ export function VentilatorDashboardWrapper({
   isRealVentilator = false,
 }: VentilatorDashboardWrapperProps) {
   const ventilatorData = useVentilatorData();
+  const { isStale } = ventilatorData;
   const chartCalculations = useChartCalculations({ data: ventilatorData.data });
   const controls = useVentilatorControls();
 
@@ -114,16 +116,17 @@ export function VentilatorDashboardWrapper({
   }
 
   // WebSocket mode: pass adapted data as future-compatible props.
-  // VentilatorDashboard currently ignores these props until it is updated
-  // to consume them (the hooks above are already running and data is ready).
   return (
-    <VentilatorDashboard
-      externalVentilatorData={adaptedVentilatorData}
-      externalRealTimeData={adaptedRealTimeData}
-      externalSystemStatus={adaptedSystemStatus}
-      externalSendCommand={controls.sendCommand}
-      isRemoteConnection={true}
-    />
+    <>
+      {isStale && isRealVentilator && <NoSignalBanner />}
+      <VentilatorDashboard
+        externalVentilatorData={adaptedVentilatorData}
+        externalRealTimeData={adaptedRealTimeData}
+        externalSystemStatus={adaptedSystemStatus}
+        externalSendCommand={controls.sendCommand}
+        isRemoteConnection={true}
+      />
+    </>
   );
 }
 

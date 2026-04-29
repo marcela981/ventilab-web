@@ -1,0 +1,22 @@
+/* ============================================================
+   NoSignalBanner — alerta de pérdida de señal del ventilador real
+   ============================================================ */
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #b71c1c;
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.icon {
+  font-style: normal;
+  font-size: 1rem;
+  flex-shrink: 0;
+}

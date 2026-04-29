@@ -62,20 +62,10 @@ function getAuth() {
 }
 
 function getLocalProgress(): LocalProgress | null {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  try {
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (!stored) {
-      return null;
-    }
-    return JSON.parse(stored);
-  } catch (error) {
-    debug.error('Failed to read local progress:', error);
-    return null;
-  }
+  // VentyLab: the legacy local snapshot is no longer trusted as a source of
+  // truth (see phantom-persistence guard above). Return null so the merge
+  // logic always defers to the database.
+  return null;
 }
 
 function saveLocalProgress(progress: LocalProgress): void {
@@ -136,12 +126,19 @@ function enqueueLocal(it: LessonItem) {
   localStorage.setItem(LS_QUEUE, JSON.stringify(q));
 }
 
+// =============================================================================
+// VentyLab — Phantom-persistence guard
+// =============================================================================
+// `LS_SNAPSHOT` and `vlab:progress:local` were used as a "secondary" progress
+// store. In practice they masked the database (UI rendered values that never
+// got persisted). The DB is the only source of truth — these helpers are
+// intentionally no-ops so localStorage cannot win against /api/progress/overview.
 function readLocalSnapshot(): ProgressSnapshot | null {
-  try { return JSON.parse(localStorage.getItem(LS_SNAPSHOT) || 'null'); } catch { return null; }
+  return null;
 }
 
-function saveLocalSnapshot(s: ProgressSnapshot) {
-  localStorage.setItem(LS_SNAPSHOT, JSON.stringify(s));
+function saveLocalSnapshot(_s: ProgressSnapshot) {
+  // no-op
 }
 
 // =============================================================================

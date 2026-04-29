@@ -220,4 +220,17 @@ export interface UseVentilatorDataReturn {
     reconnect: () => void;
     acknowledgeAlarm: (alarmId: AlarmType) => void;
   };
+  // ---------------------------------------------------------------------------
+  // Derived fields (additive — do not break existing consumers)
+  // ---------------------------------------------------------------------------
+  /** Alias of `latest` */
+  latestFrame: VentilatorReading | null;
+  /** Alias of `data` */
+  recentFrames: VentilatorReading[];
+  /** Frames received in the last 1 second (updated every 500 ms) */
+  fps: number;
+  /** True when no frame has arrived in the last 2 s (updated every 500 ms) */
+  isStale: boolean;
+  /** Total frames received since mount (from ref — accurate at render time) */
+  frameCount: number;
 }

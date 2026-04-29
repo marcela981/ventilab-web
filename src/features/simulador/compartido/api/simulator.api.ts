@@ -1,5 +1,6 @@
 import { BACKEND_API_URL } from '@/config/env';
 import { getAuthToken } from '@/shared/services/authService';
+import type { SimulationHealthResponse } from '@/features/simulador/compartido/tipos/simulator.types';
 import type {
   GetVentilatorStatusResponse,
   ReserveVentilatorRequest,
@@ -182,5 +183,21 @@ export const simulatorApi = {
     isSimulating: boolean;
   }> => {
     return fetchApi('/simulation/patient');
+  },
+
+  /**
+   * GET /api/simulation/health
+   * Public endpoint — no auth required.
+   */
+  getHealth: async (): Promise<SimulationHealthResponse> => {
+    const response = await fetch(`${BACKEND_API_URL}/simulation/health`, {
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const envelope = await response.json() as { success: boolean; data: SimulationHealthResponse };
+    return envelope.data;
   },
 };

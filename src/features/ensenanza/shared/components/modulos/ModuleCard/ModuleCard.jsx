@@ -1,16 +1,35 @@
+/**
+ * =============================================================================
+ * VentyLab — ModuleCard
+ * =============================================================================
+ *
+ * SOURCE OF TRUTH FOR PROGRESS:
+ *   `useProgress()` from `@/features/ensenanza/shared/progreso`. The hook
+ *   wraps SWR around `GET /api/progress/overview` and exposes `modules[]`
+ *   with the canonical contract `{ moduleId, lessonsTotal, lessonsCompleted,
+ *   percent }`. We look up this card's row by `moduleId` and use its
+ *   `percent` to drive the progress bar — no localStorage reads, no
+ *   `snapshot.lessons` derivations, no `progressByModule` fallbacks.
+ *
+ * The legacy context (`useLearningProgress`) is still consulted ONLY for
+ * cross-cutting concerns that have not yet been migrated (sync status banner,
+ * lesson list expansion). It is no longer the source of truth for the bar.
+ *
+ * Module: src/features/ensenanza/shared/components/modulos/ModuleCard/ModuleCard.jsx
+ * =============================================================================
+ */
+
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useTheme, useMediaQuery, Skeleton, Snackbar, Alert, Box } from '@mui/material';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import { useLearningProgress } from '@/features/progress/LearningProgressContext';
 import useModuleAvailability from '@/features/ensenanza/shared/hooks/useModuleAvailability';
 import { useAuth } from '@/shared/hooks/useAuth';
-import { useModuleProgress } from '@/features/ensenanza/shared/hooks/useModuleProgress';
 import { useEditMode } from '@/features/ensenanza/shared/components/edit/EditModeContext';
 import DependencyModal from '@/features/ensenanza/shared/components/edit/DependencyModal/DependencyModal';
 import { curriculumData } from '@/features/ensenanza/shared/data/curriculumData';
 import depStyles from '@/features/ensenanza/shared/components/edit/DependencyModal/ui/DependencyModal.module.css';
 
-import { useModuleLessonsCount } from '@/features/ensenanza/shared/hooks/useModuleLessonsCount';
 import { getModuleStatus } from './moduleCardHelpers';
 import ModuleCardHeader from './ModuleCardHeader';
 import ModuleCardMeta from './ModuleCardMeta';
@@ -18,7 +37,7 @@ import ModuleCardBody from './ModuleCardBody';
 import ModuleCardFooter from './ModuleCardFooter';
 import ComingSoonBadge from './ComingSoonBadge';
 import { isModuleComingSoon } from '@/features/ensenanza/shared/data/curriculum/selectors.js';
-import { useModuleProgressDirect } from '@/hooks/useModuleProgressDirect';
+import { useProgress } from '@/features/ensenanza/shared/progreso';
 import styles from '@/styles/curriculum.module.css';
 import CurriculumProgressBar from './CurriculumProgressBar';
 
@@ -87,124 +106,51 @@ const ModuleCard = ({
   const [depModalOpen, setDepModalOpen] = useState(false);
   
 
-  
-  // Obtener conteo real de lecciones del módulo desde la BD
-  const { count: totalLessonsFromDB, loading: isLoadingLessonsCount } = useModuleLessonsCount(module.id);
-  
-  // Obtener progreso del módulo usando el nuevo hook (para compatibilidad)
-  const { progress, isLoading: isLoadingProgress, error: progressError } = useModuleProgress(
-    module.id,
-    { autoLoad: true, reloadOnMount: false }
-  );
-  
-  // Obtener lecciones completadas y progreso agregado del contexto
-  const { completedLessons, syncStatus, moduleProgressAggregated, getModuleProgressAggregated, snapshot } = useLearningProgress();
+  // SINGLE source of truth for the progress bar: GET /api/progress/overview
+  // delivered by `useProgress()` (SWR-backed). We pick this card's row from
+  // `modules[]` by `moduleId` — no localStorage, no `snapshot.lessons`
+  // mapping heuristics, no `progressByModule` fallbacks.
+  const {
+    getModuleProgress: getOverviewModuleProgress,
+    isLoading: isLoadingProgress,
+    error: progressError,
+  } = useProgress();
 
-  // Progreso directo desde el backend - fuente de verdad para el progress bar
-  // Incluye retry de token para casos donde el auth es asíncrono
-  const { data: directProgress, loading: loadingDirectProgress } = useModuleProgressDirect(module?.id);
+  // Legacy context — kept ONLY for cross-cutting UI concerns (sync banner,
+  // lesson-list expansion). It is NOT consulted for the progress bar.
+  const { completedLessons, syncStatus } = useLearningProgress();
 
   const moduleProgressAggregate = useMemo(() => {
-    // SOURCE 0: Dato directo del backend (MÁS CONFIABLE)
-    if (directProgress) {
+    const dto = getOverviewModuleProgress(module?.id);
+    const fallbackTotal = module?.lessons?.length || 0;
+
+    if (!dto) {
       return {
-        percent: directProgress.percentInt / 100,
-        percentInt: directProgress.percentInt,
-        completedLessons: directProgress.completedLessons,
-        totalLessons: directProgress.totalLessons,
-        isCompleted: directProgress.isCompleted,
-        completedAt: directProgress.isCompleted ? new Date() : null,
+        percent: 0,
+        percentInt: 0,
+        completedLessons: 0,
+        totalLessons: fallbackTotal,
+        isCompleted: false,
+        completedAt: null,
         completedPages: 0,
-        totalPages: directProgress.totalLessons,
+        totalPages: fallbackTotal,
       };
     }
 
-    // SOURCE 1: Calcular directo desde snapshot.lessons (más confiable)
-    // El snapshot tiene los lessonIds reales tal como están guardados en DB
-    // Las lecciones del módulo están en module.lessons[i].id (curriculum local)
-    if (snapshot?.lessons && Array.isArray(snapshot.lessons) && snapshot.lessons.length > 0) {
-      const moduleLessonIds = new Set(
-        (module?.lessons || []).map(l => l.id)
-      );
-
-      if (moduleLessonIds.size > 0) {
-        let completedCount = 0;
-        let totalWithProgress = 0;
-
-        for (const snapshotLesson of snapshot.lessons) {
-          const sId = snapshotLesson.lessonId || '';
-          const progressValue = Math.max(0, Math.min(1, snapshotLesson.progress || 0));
-
-          // Estrategia A: match exacto con lesson.id del curriculum
-          const directMatch = moduleLessonIds.has(sId);
-
-          // Estrategia B: el snapshotLesson.lessonId contiene el module.id como prefijo
-          const prefixMatch = sId.startsWith(module.id + '-') || sId.startsWith(module.id + '/');
-
-          // Estrategia C: algún lesson.id del curriculum está contenido en el snapshotId
-          const reverseMatch = !directMatch && !prefixMatch &&
-            Array.from(moduleLessonIds).some(lid => sId.includes(lid) || lid.includes(sId));
-
-          if (directMatch || prefixMatch || reverseMatch) {
-            totalWithProgress++;
-            if (progressValue >= 0.99) completedCount++;
-          }
-        }
-
-        const totalLessons = module?.lessons?.length || 0;
-        const effectiveTotal = totalLessons > 0 ? totalLessons : totalWithProgress;
-
-        if (effectiveTotal > 0 && totalWithProgress > 0) {
-          const percentInt = Math.round((completedCount / effectiveTotal) * 100);
-          const progressVal = completedCount / effectiveTotal;
-          return {
-            percent: progressVal,
-            percentInt,
-            completedLessons: completedCount,
-            totalLessons: effectiveTotal,
-            isCompleted: completedCount === effectiveTotal && effectiveTotal > 0,
-            completedAt: completedCount === effectiveTotal ? new Date() : null,
-            completedPages: 0,
-            totalPages: effectiveTotal,
-          };
-        }
-      }
-    }
-
-    // SOURCE 2: Fallback a moduleProgressAggregated del context
-    const contextProgress = moduleProgressAggregated?.[module.id];
-    if (contextProgress && (contextProgress.progressPercent > 0 || contextProgress.completedLessons > 0)) {
-      const progressValue = contextProgress.progress ?? 0;
-      const isCompleted = progressValue === 1;
-      const normalizedPercentInt = Math.max(0, Math.min(100,
-        contextProgress.progressPercent ?? Math.round(progressValue * 100)
-      ));
-      return {
-        percent: progressValue,
-        percentInt: normalizedPercentInt,
-        completedLessons: contextProgress.completedLessons ?? 0,
-        totalLessons: contextProgress.totalLessons ?? 0,
-        isCompleted,
-        completedAt: isCompleted ? new Date() : null,
-        completedPages: 0,
-        totalPages: contextProgress.totalLessons ?? 0,
-      };
-    }
-
-    // SOURCE 3: Último fallback - todo en 0
+    const totalLessons = dto.lessonsTotal || fallbackTotal;
+    const isCompleted = totalLessons > 0 && dto.lessonsCompleted >= totalLessons;
     return {
-      percent: 0,
-      percentInt: 0,
-      completedLessons: 0,
-      totalLessons: module?.lessons?.length || 0,
-      isCompleted: false,
-      completedAt: null,
-      completedPages: 0,
-      totalPages: module?.lessons?.length || 0,
+      percent: dto.percent / 100,
+      percentInt: dto.percent,
+      completedLessons: dto.lessonsCompleted,
+      totalLessons,
+      isCompleted,
+      completedAt: isCompleted ? new Date() : null,
+      completedPages: dto.lessonsCompleted,
+      totalPages: totalLessons,
     };
-  }, [directProgress, snapshot, module, moduleProgressAggregated]);
-  
-  // Determinar si el módulo tiene lecciones
+  }, [getOverviewModuleProgress, module?.id, module?.lessons?.length]);
+
   const hasLessons = moduleProgressAggregate.totalLessons > 0;
   
   // Estado para tabs internos de la card
@@ -217,7 +163,8 @@ const ModuleCard = ({
   // Mostrar error en Snackbar cuando hay un error de sincronización
   useEffect(() => {
     if (progressError && syncStatus === 'error') {
-      setSnackbarMessage(progressError);
+      const msg = progressError instanceof Error ? progressError.message : String(progressError);
+      setSnackbarMessage(msg);
       setSnackbarOpen(true);
     }
   }, [progressError, syncStatus]);
@@ -230,11 +177,8 @@ const ModuleCard = ({
     setSnackbarOpen(false);
   }, []);
   
-  // Escuchar cambios en el progreso del módulo para actualización en caliente
-  useEffect(() => {
-    // El progreso se actualiza automáticamente cuando cambia progressByModule en el contexto
-    // No necesitamos hacer nada adicional aquí, solo re-renderizar cuando cambia
-  }, [progress]);
+  // El progreso se re-renderiza automáticamente cuando SWR revalida la
+  // respuesta de /api/progress/overview — no se requiere efecto adicional.
   
   // Check if module is coming soon or placeholder
   const isComingSoon = isModuleComingSoon(module.id);
@@ -336,7 +280,7 @@ const ModuleCard = ({
         >
           {/* Barra de progreso del módulo - encima de los títulos */}
           <div style={{ padding: '8px 16px 0', opacity: effectiveIsAvailable ? 1 : 0.6 }}>
-            {(isLoadingProgress || isLoadingLessonsCount || loadingDirectProgress) ? (
+            {isLoadingProgress ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Skeleton variant="rectangular" width="100%" height={8} sx={{ borderRadius: 4, flex: 1 }} />
                 <Skeleton variant="text" width={36} />

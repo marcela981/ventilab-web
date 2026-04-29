@@ -11,6 +11,8 @@ import type {
 
 const BUFFER_SIZE = 300;
 const UI_THROTTLE_MS = 333; // ~3 actualizaciones/seg para evitar re-renders a 60 Hz
+const STALE_THRESHOLD_MS = 2000;
+const FPS_WINDOW_MS = 1000;
 
 /**
  * Subscribes to real-time ventilator telemetry via WebSocket.
@@ -27,6 +29,13 @@ export function useVentilatorData(): UseVentilatorDataReturn {
   const bufferRef = useRef<VentilatorReading[]>([]);
   const lastThrottleRef = useRef(0);
 
+  // --- New derived-field refs ---
+  const lastFrameAtRef = useRef<number>(0);
+  const frameCountRef = useRef<number>(0);
+  const frameTimestampsRef = useRef<number[]>([]);
+  const [fps, setFps] = useState<number>(0);
+  const [isStale, setIsStale] = useState<boolean>(false);
+
   useEffect(() => {
     if (!socket) return;
 
@@ -37,6 +46,16 @@ export function useVentilatorData(): UseVentilatorDataReturn {
       if (buf.length > BUFFER_SIZE) buf.splice(0, buf.length - BUFFER_SIZE);
 
       const now = Date.now();
+
+      // Track frame arrival for fps/isStale
+      lastFrameAtRef.current = now;
+      frameCountRef.current += 1;
+      frameTimestampsRef.current.push(now);
+      // Cap to avoid unbounded growth (~60 Hz × 2 s = 120 max)
+      if (frameTimestampsRef.current.length > 200) {
+        frameTimestampsRef.current = frameTimestampsRef.current.slice(-200);
+      }
+
       if (now - lastThrottleRef.current >= UI_THROTTLE_MS) {
         lastThrottleRef.current = now;
         setData([...buf]);
@@ -81,6 +100,21 @@ export function useVentilatorData(): UseVentilatorDataReturn {
   }, [socket]);
 
   // ---------------------------------------------------------------------------
+  // fps + isStale — updated every 500 ms via interval (no RAF needed)
+  // ---------------------------------------------------------------------------
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      const now = Date.now();
+      const cutoff = now - FPS_WINDOW_MS;
+      const recentCount = frameTimestampsRef.current.filter((t) => t >= cutoff).length;
+      setFps(recentCount);
+      setIsStale(lastFrameAtRef.current > 0 && now - lastFrameAtRef.current > STALE_THRESHOLD_MS);
+    }, 500);
+    return () => clearInterval(id);
+  }, []);
+
+  // ---------------------------------------------------------------------------
   // Derive connection status from socket state
   // ---------------------------------------------------------------------------
 
@@ -119,13 +153,21 @@ export function useVentilatorData(): UseVentilatorDataReturn {
   // Return
   // ---------------------------------------------------------------------------
 
+  const latest = data[data.length - 1] ?? null;
+
   return {
     data,
-    latest: data[data.length - 1] ?? null,
+    latest,
     isConnected,
     error,
     status,
     activeAlarms,
     actions: { clearData, reconnect, acknowledgeAlarm },
+    // Derived fields
+    latestFrame: latest,
+    recentFrames: data,
+    fps,
+    isStale,
+    frameCount: frameCountRef.current,
   };
 }
