@@ -1,7 +1,9 @@
 /*
  * Funcionalidad: Página índice de Evaluaciones
- * Descripción: Lista actividades disponibles para el estudiante; redirige al docente al panel de gestión y calificación
- * Versión: 1.0
+ * Descripción: Lista actividades disponibles para el estudiante (catálogo público
+ *              `/api/evaluation/activities` + `/api/evaluation/quizzes` desde la DB);
+ *              redirige al docente al panel de gestión y calificación.
+ * Versión: 2.0
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,7 +15,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { useAuth } from '@/shared/contexts/AuthContext';
-import { useActivities } from '@/features/evaluation/hooks/useActivities';
+import { usePublicActivities } from '@/features/evaluation/hooks/usePublicActivities';
 import { useQuizzes } from '@/features/evaluation/hooks/useQuizzes';
 import { useMySubmissions } from '@/features/evaluation/hooks/useMySubmissions';
 import ActivityList from '@/features/evaluation/components/student/ActivityList';
@@ -21,7 +23,7 @@ import styles from './UI/evaluation.module.css';
 
 export default function EvaluationIndexPage() {
   const { isTeacher } = useAuth();
-  const { activities, isLoading: loadingActivities, error: errorActivities, refresh: refreshActivities } = useActivities();
+  const { activities, isLoading: loadingActivities, error: errorActivities, refresh: refreshActivities } = usePublicActivities();
   const { quizzes, isLoading: loadingQuizzes, error: errorQuizzes, refresh: refreshQuizzes } = useQuizzes();
   const { submissionMap, refetch: refetchSubmissions } = useMySubmissions();
 

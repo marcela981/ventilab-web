@@ -5,6 +5,7 @@ export { assignmentApi } from './api/assignment.api';
 export { submissionApi } from './api/submission.api';
 
 export { useActivities } from './hooks/useActivities';
+export { usePublicActivities } from './hooks/usePublicActivities';
 export { useQuizzes } from './hooks/useQuizzes';
 export { useMySubmissions } from './hooks/useSubmissions';
 export { useActivityBuilder } from './hooks/useActivityBuilder';
