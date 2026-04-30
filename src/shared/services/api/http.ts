@@ -1,10 +1,11 @@
 /*
- * Funcionalidad: Cliente HTTP compartido — punto de entrada único
- * Descripción: Instancia Axios configurada con interceptores de autenticación y
- *              manejo de errores de red para toda la app VentyLab. Distingue tres
- *              tipos de fallo: red/CORS (sin respuesta HTTP), sesión expirada
- *              (401/403), y errores del servidor (4xx/5xx).
- * Versión: 2.0
+ * Funcionalidad: Cliente HTTP compartido — instancias fast y slow
+ * Descripción: Dos instancias Axios configuradas con interceptores de autenticación y manejo
+ *              de errores de red para toda la app VentyLab.
+ *              - http      → timeout 8 000 ms  (operaciones normales)
+ *              - httpSlow  → timeout 60 000 ms (health/login/warm-up, primer request post-cold-start)
+ *              Ambas instancias comparten la lógica de refresco de token y logout.
+ * Versión: 3.0
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -13,19 +14,16 @@
  * Contacto: marcela.mazo@correounivalle.edu.co
  */
 
-import axios from 'axios';
+import axios, { type AxiosInstance } from 'axios';
 import { BACKEND_API_URL } from '@/config/env';
 import { getAuthToken, removeAuthToken } from '@/shared/services/authService';
 import { authEvents } from '@/shared/services/authEvents';
 
-// Re-export for other modules that need the resolved URL
 export { BACKEND_API_URL };
 
-export const http = axios.create({
-  baseURL: BACKEND_API_URL,
-  timeout: 8000,
-  withCredentials: true,
-});
+// =============================================================================
+// Error de indisponibilidad — sin respuesta HTTP (red/CORS/DNS/timeout)
+// =============================================================================
 
 export class ApiUnavailableError extends Error {
   constructor(msg: string) {
@@ -35,37 +33,33 @@ export class ApiUnavailableError extends Error {
 }
 
 // =============================================================================
-// REQUEST INTERCEPTOR — Attach token from authService (single source of truth)
-// =============================================================================
-http.interceptors.request.use(
-  config => {
-    const token = getAuthToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  error => Promise.reject(error)
-);
-
-// =============================================================================
-// RESPONSE INTERCEPTOR — Tres casos bien diferenciados:
-//   1. Sin respuesta HTTP   → ApiUnavailableError (red real, CORS, DNS)
-//   2. 401/403              → intento de refresco de token / logout
-//   3. Otros 4xx/5xx        → mensaje normalizado del backend
-// NUNCA muestra "No se pudo conectar" para respuestas HTTP recibidas.
-// Los TypeError de render NO llegan aquí (son errores de React, no de axios).
+// Instancias Axios
 // =============================================================================
 
-/** Flag para evitar bucles infinitos de refresco. */
+export const http = axios.create({
+  baseURL: BACKEND_API_URL,
+  timeout: 8_000,
+  withCredentials: true,
+});
+
+/** Para endpoints que pueden tardar hasta 60 s: health, login, evaluación post-cold-start. */
+export const httpSlow = axios.create({
+  baseURL: BACKEND_API_URL,
+  timeout: 60_000,
+  withCredentials: true,
+});
+
+// =============================================================================
+// Estado compartido de refresco de token (una sola operación activa a la vez)
+// =============================================================================
+
 let isRefreshing = false;
-/** Cola de requests pendientes mientras se refresca el token. */
 let failedQueue: Array<{
   resolve: (value: unknown) => void;
   reject: (reason?: unknown) => void;
 }> = [];
 
-function processQueue(error: unknown) {
+function processQueue(error: unknown): void {
   failedQueue.forEach(({ resolve, reject }) => {
     if (error) reject(error);
     else resolve(undefined);
@@ -73,100 +67,124 @@ function processQueue(error: unknown) {
   failedQueue = [];
 }
 
-http.interceptors.response.use(
-  res => res,
-  async err => {
-    if (axios.isCancel(err)) return Promise.reject(err);
+// =============================================================================
+// Fábrica de interceptores — aplica la misma lógica a cualquier instancia
+// =============================================================================
 
-    const method = (err.config?.method ?? 'GET').toUpperCase();
-    const url    = err.config?.url ?? '(unknown)';
+function attachInterceptors(instance: AxiosInstance): void {
+  // ── REQUEST: adjuntar token ─────────────────────────────────────────────
+  instance.interceptors.request.use(
+    config => {
+      const token = getAuthToken();
+      if (token) config.headers.Authorization = `Bearer ${token}`;
+      return config;
+    },
+    error => Promise.reject(error),
+  );
 
-    // ── Caso 1: Sin respuesta HTTP (red real, CORS, DNS, timeout) ─────────
-    // Nota: curl no tiene CORS — si curl funciona pero el browser no, es CORS.
-    if (!err.response) {
-      const offline = typeof navigator !== 'undefined' && navigator && !navigator.onLine;
-      const msg = offline ? 'Sin conexión a internet.' : 'No se pudo conectar con el servidor.';
-      console.error(`[http] ${method} ${url} → sin respuesta HTTP (red/CORS/DNS):`, err.message);
-      return Promise.reject(new ApiUnavailableError(msg));
-    }
+  // ── RESPONSE: tres casos diferenciados ─────────────────────────────────
+  // 1. Sin respuesta HTTP   → ApiUnavailableError (red, CORS, DNS, timeout)
+  // 2. 401 Unauthorized     → intento de refresco de token
+  // 3. 403 Forbidden        → cerrar sesión
+  // 4. Otros 4xx/5xx        → normalizar mensaje del backend
+  //
+  // NUNCA lanza "No se pudo conectar" para respuestas HTTP recibidas.
+  instance.interceptors.response.use(
+    res => res,
+    async err => {
+      if (axios.isCancel(err)) return Promise.reject(err);
 
-    const { status, data: body } = err.response;
-    const originalRequest = err.config;
+      const method = (err.config?.method ?? 'GET').toUpperCase();
+      const url    = err.config?.url ?? '(unknown)';
 
-    console.error(`[http] ${method} ${url} → ${status}`, body);
-
-    // ── Caso 2: 401 Unauthorized — intento de refresco de token ──────────
-    if (status === 401 && !originalRequest._retry) {
-      if (originalRequest.url?.includes('/auth/')) {
-        return Promise.reject(err);
+      // ── Caso 1: Sin respuesta HTTP ──────────────────────────────────────
+      if (!err.response) {
+        const offline = typeof navigator !== 'undefined' && !navigator.onLine;
+        const msg = offline
+          ? 'Sin conexión a internet.'
+          : 'No se pudo conectar con el servidor.';
+        console.error(`[http] ${method} ${url} → sin respuesta HTTP (red/CORS/DNS):`, err.message);
+        return Promise.reject(new ApiUnavailableError(msg));
       }
 
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        }).then(() => {
-          originalRequest.headers.Authorization = `Bearer ${getAuthToken()}`;
-          return http(originalRequest);
-        });
-      }
+      const { status, data: body } = err.response;
+      const originalRequest = err.config;
 
-      originalRequest._retry = true;
-      isRefreshing = true;
+      console.error(`[http] ${method} ${url} → ${status}`, body);
 
-      try {
-        const response = await fetch('/api/auth/backend-token', {
-          method: 'GET',
-          headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
-          credentials: 'include',
-        });
+      // ── Caso 2: 401 Unauthorized — intento de refresco de token ────────
+      if (status === 401 && !originalRequest._retry) {
+        if (originalRequest.url?.includes('/auth/')) return Promise.reject(err);
 
-        if (!response.ok) throw new Error('Token refresh failed');
-
-        const payload = await response.json();
-
-        if (payload?.success && payload?.token) {
-          const { setAuthToken } = await import('@/shared/services/authService');
-          setAuthToken(payload.token);
-          authEvents.emit('auth:token-refreshed');
-          processQueue(null);
-          originalRequest.headers.Authorization = `Bearer ${payload.token}`;
-          return http(originalRequest);
+        if (isRefreshing) {
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          }).then(() => {
+            originalRequest.headers.Authorization = `Bearer ${getAuthToken()}`;
+            return instance(originalRequest);
+          });
         }
 
-        throw new Error('Token refresh response missing token');
-      } catch (refreshError) {
-        processQueue(refreshError);
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        try {
+          const response = await fetch('/api/auth/backend-token', {
+            method: 'GET',
+            headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+            credentials: 'include',
+          });
+
+          if (!response.ok) throw new Error('Token refresh failed');
+
+          const payload = await response.json();
+
+          if (payload?.success && payload?.token) {
+            const { setAuthToken } = await import('@/shared/services/authService');
+            setAuthToken(payload.token);
+            authEvents.emit('auth:token-refreshed');
+            processQueue(null);
+            originalRequest.headers.Authorization = `Bearer ${payload.token}`;
+            return instance(originalRequest);
+          }
+
+          throw new Error('Token refresh response missing token');
+        } catch (refreshError) {
+          processQueue(refreshError);
+          removeAuthToken();
+          authEvents.emit('auth:logout', { reason: 'token_refresh_failed' });
+          if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+            window.location.href = '/login';
+          }
+          return Promise.reject(new Error('Sesión expirada, vuelve a iniciar sesión.'));
+        } finally {
+          isRefreshing = false;
+        }
+      }
+
+      // ── Caso 3: 403 Forbidden ───────────────────────────────────────────
+      if (status === 403) {
         removeAuthToken();
-        authEvents.emit('auth:logout', { reason: 'token_refresh_failed' });
+        authEvents.emit('auth:logout', { reason: 'forbidden' });
         if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
           window.location.href = '/login';
         }
-        const sessionErr = new Error('Sesión expirada, vuelve a iniciar sesión.');
-        return Promise.reject(sessionErr);
-      } finally {
-        isRefreshing = false;
+        return Promise.reject(new Error('Sesión expirada, vuelve a iniciar sesión.'));
       }
-    }
 
-    // ── Caso 3: 403 Forbidden — acceso denegado, cerrar sesión ───────────
-    if (status === 403) {
-      removeAuthToken();
-      authEvents.emit('auth:logout', { reason: 'forbidden' });
-      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
-      }
-      const sessionErr = new Error('Sesión expirada, vuelve a iniciar sesión.');
-      return Promise.reject(sessionErr);
-    }
+      // ── Caso 4: Otros 4xx/5xx — normalizar mensaje del backend ─────────
+      const backendMsg =
+        typeof (body as Record<string, unknown>)?.message === 'string'
+          ? (body as { message: string }).message
+          : null;
+      err.message = backendMsg ?? `Error del servidor (${status})`;
+      return Promise.reject(err);
+    },
+  );
+}
 
-    // ── Caso 4: Otros 4xx / 5xx — normalizar mensaje del backend ─────────
-    const backendMsg = typeof (body as Record<string, unknown>)?.message === 'string'
-      ? (body as { message: string }).message
-      : null;
-    err.message = backendMsg ?? `Error del servidor (${status})`;
-    return Promise.reject(err);
-  }
-);
+attachInterceptors(http);
+attachInterceptors(httpSlow);
 
 // =============================================================================
 // Legacy helper — kept for backward compat with existing `get()` consumers

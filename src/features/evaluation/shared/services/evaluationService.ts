@@ -2,7 +2,7 @@
  * Funcionalidad: Servicio de Evaluación — quizzes y actividades
  * Descripción: Funciones para consultar quizzes, actividades y enviar intentos al backend;
  *              cubre los endpoints /api/evaluation/* del servidor VentyLab
- * Versión: 1.0
+ * Versión: 1.1
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que
@@ -11,7 +11,7 @@
  * Contacto: marcela.mazo@correounivalle.edu.co
  */
 
-import { http } from '@/shared/services/api/http';
+import { httpSlow } from '@/shared/services/api/http';
 import type { Activity } from '../../evaluation.types';
 
 // ─── Auth note ───────────────────────────────────────────────────────────────
@@ -68,7 +68,7 @@ export interface AttemptResult {
 export async function fetchQuizzes(moduleId?: string): Promise<Quiz[]> {
   try {
     const query = moduleId ? `?moduleId=${encodeURIComponent(moduleId)}` : '';
-    const { data } = await http.get(`/api/evaluation/quizzes${query}`);
+    const { data } = await httpSlow.get(`/api/evaluation/quizzes${query}`);
     return data.quizzes ?? [];
   } catch (err: unknown) {
     const axiosErr = err as { response?: { status?: number } };
@@ -82,7 +82,7 @@ export async function fetchQuizzes(moduleId?: string): Promise<Quiz[]> {
  * Throws on any error (including 404 — quiz must exist to render).
  */
 export async function fetchQuizById(quizId: string): Promise<Quiz> {
-  const { data } = await http.get(`/api/evaluation/quizzes/${encodeURIComponent(quizId)}`);
+  const { data } = await httpSlow.get(`/api/evaluation/quizzes/${encodeURIComponent(quizId)}`);
   return data.quiz;
 }
 
@@ -94,7 +94,7 @@ export async function submitQuizAttempt(
   quizId: string,
   answers: Answer[],
 ): Promise<AttemptResult> {
-  const { data } = await http.post(
+  const { data } = await httpSlow.post(
     `/api/evaluation/quizzes/${encodeURIComponent(quizId)}/attempt`,
     { answers },
   );
@@ -111,7 +111,7 @@ export async function submitQuizAttempt(
 export async function fetchActivities(type?: 'EXAM' | 'TALLER'): Promise<Activity[]> {
   try {
     const query = type ? `?type=${encodeURIComponent(type)}` : '';
-    const { data } = await http.get(`/api/evaluation/activities${query}`);
+    const { data } = await httpSlow.get(`/api/evaluation/activities${query}`);
     return data.activities ?? [];
   } catch (err: unknown) {
     const axiosErr = err as { response?: { status?: number } };

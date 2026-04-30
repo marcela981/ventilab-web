@@ -1,8 +1,23 @@
+/*
+ * Funcionalidad: _app — raíz de la aplicación Next.js
+ * Descripción: Árbol de providers globales para VentyLab. Incluye WarmupProvider para
+ *              detección y notificación de cold starts del backend en Render free tier.
+ * Versión: 2.0
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
+ */
+
 import React, { useState } from 'react';
 import { Box, CssBaseline, ThemeProvider } from '@mui/material';
-import { SessionProvider } from 'next-auth/react';
+import { SessionProvider, useSession } from 'next-auth/react';
 import { AuthProvider } from '../src/shared/contexts/AuthContext';
 import { NotificationProvider } from '../src/shared/contexts/NotificationContext';
+import { WarmupProvider, useWarmup } from '../src/shared/contexts/WarmupContext';
+import WarmupOverlay from '../src/shared/components/UI/WarmupOverlay';
 import Providers from '../src/providers/Providers';
 import Sidebar from '../src/shared/components/Sidebar';
 import ErrorBoundary from '../src/shared/components/ErrorBoundary';
@@ -14,6 +29,30 @@ import { SidebarContext } from '../src/shared/contexts/SidebarContext';
 import '../src/App.css';
 // Importar y inicializar i18n
 import '../src/i18n/i18n';
+
+/**
+ * Dispara un GET /api/health (timeout 60 s) la primera vez que el usuario
+ * llega autenticado a una página no-auth. Activa WarmupOverlay mientras espera.
+ * Debe ser hijo de SessionProvider y WarmupProvider.
+ */
+function AppWarmupEffect({ isAuthPage }) {
+  const { status } = useSession();
+  const { setWarmingUp } = useWarmup();
+  const warmedRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (status !== 'authenticated' || isAuthPage || warmedRef.current) return;
+    warmedRef.current = true;
+
+    setWarmingUp(true);
+    import('../src/shared/services/api/http')
+      .then(({ httpSlow }) => httpSlow.get('/api/health'))
+      .catch(() => {})
+      .finally(() => setWarmingUp(false));
+  }, [status, isAuthPage, setWarmingUp]);
+
+  return null;
+}
 
 function MyApp({ Component, pageProps: { session, ...pageProps } }) {
   const router = useRouter();
@@ -80,11 +119,13 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
           - refetchInterval: Refetch session every 5 minutes to keep it updated
           - refetchOnWindowFocus: Revalidate session when user returns to window
         */}
+        <WarmupProvider>
         <SessionProvider
           session={session}
           refetchInterval={5 * 60} // 5 minutes in seconds
           refetchOnWindowFocus={false} // Desactivado para evitar revalidaciones agresivas
         >
+          <AppWarmupEffect isAuthPage={isAuthPage} />
           <AuthProvider>
             <SocketProvider>
               <ThemeProvider theme={theme}>
@@ -129,6 +170,8 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
             </SocketProvider>
           </AuthProvider>
         </SessionProvider>
+        <WarmupOverlay />
+        </WarmupProvider>
       </Providers>
     </ErrorBoundary>
   );

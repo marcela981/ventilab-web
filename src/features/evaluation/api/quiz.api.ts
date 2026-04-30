@@ -2,7 +2,7 @@
  * Funcionalidad: API client de Quizzes
  * Descripción: Wrapper Axios para los endpoints /evaluation/quizzes del backend VentyLab.
  *              Tipado con ApiResponse<T> para prevenir mismatches de forma de respuesta.
- * Versión: 2.0
+ * Versión: 2.1
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -11,7 +11,7 @@
  * Contacto: marcela.mazo@correounivalle.edu.co
  */
 
-import { http } from '@/shared/services/api/http';
+import { httpSlow } from '@/shared/services/api/http';
 import type { ApiResponse } from '@/types/api';
 import type { Quiz } from '../shared/services/evaluationService';
 
@@ -33,14 +33,14 @@ interface SingleAttemptResponse {
 
 export const quizApi = {
   list: async (): Promise<Quiz[]> => {
-    const { data } = await http.get<ApiResponse<Quiz[]>>('/evaluation/quizzes');
+    const { data } = await httpSlow.get<ApiResponse<Quiz[]>>('/evaluation/quizzes');
     // Backend: GET /api/evaluation/quizzes → { success: true, data: Quiz[] }
     return data.data ?? [];
   },
 
   getMyAttempts: async (): Promise<QuizAttemptSummary[]> => {
     try {
-      const { data } = await http.get<AttemptsResponse>('/evaluation/quizzes/my-attempts');
+      const { data } = await httpSlow.get<AttemptsResponse>('/evaluation/quizzes/my-attempts');
       return data.attempts ?? [];
     } catch {
       return [];
@@ -49,7 +49,7 @@ export const quizApi = {
 
   getMyAttempt: async (quizId: string): Promise<QuizAttemptSummary | null> => {
     try {
-      const { data } = await http.get<SingleAttemptResponse>(
+      const { data } = await httpSlow.get<SingleAttemptResponse>(
         `/evaluation/quizzes/${encodeURIComponent(quizId)}/my-attempt`,
       );
       return data.attempt ?? null;
@@ -62,7 +62,7 @@ export const quizApi = {
     quizId: string,
     answers: Array<{ questionId: string; selectedOptionId: string }>,
   ): Promise<QuizAttemptSummary & { score: number; passed: boolean }> => {
-    const { data } = await http.post<QuizAttemptSummary & { score: number; passed: boolean }>(
+    const { data } = await httpSlow.post<QuizAttemptSummary & { score: number; passed: boolean }>(
       `/evaluation/quizzes/${encodeURIComponent(quizId)}/attempt`,
       { answers },
     );

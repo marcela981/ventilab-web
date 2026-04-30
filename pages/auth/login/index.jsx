@@ -1,15 +1,23 @@
-/**
- * =============================================================================
- * Login Page for VentyLab
- * =============================================================================
- * Primary authentication via Google OAuth with fallback to email/password
- * Uses getServerSideProps for robust server-side redirect when authenticated
- * =============================================================================
+/*
+ * Funcionalidad: Login — página de inicio de sesión
+ * Descripción: Autenticación primaria con Google OAuth y fallback email/contraseña.
+ *              Incluye warm-up del backend (Render free tier) tras credenciales correctas:
+ *              llama a GET /api/health con timeout 60 s antes de redirigir al dashboard
+ *              para evitar errores de cold start en los primeros requests post-login.
+ * Versión: 2.0
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
  */
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { signIn, getSession } from 'next-auth/react';
+import { httpSlow } from '@/shared/services/api/http';
+import { useWarmup } from '@/shared/contexts/WarmupContext';
 import {
   Box,
   Card,
@@ -83,6 +91,7 @@ const VentiLabLogo = () => (
 export default function LoginPage() {
   const router = useRouter();
   const { error: authError, callbackUrl } = router.query;
+  const { setWarmingUp } = useWarmup();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -216,8 +225,16 @@ export default function LoginPage() {
         setFormData((prev) => ({ ...prev, password: '' }));
         setLoading(false);
       } else if (result?.ok) {
-        // Success - redirect to dashboard
-        // Use window.location for a full page reload to ensure clean state
+        // Warm up the Express backend before navigating (Render free tier cold start)
+        setWarmingUp(true);
+        try {
+          await httpSlow.get('/api/health');
+        } catch {
+          // Server still starting — proceed anyway; retry logic in httpClient will handle it
+        } finally {
+          setWarmingUp(false);
+        }
+        // Full page reload to ensure clean state
         window.location.href = callbackUrl || '/dashboard';
       }
     } catch (err) {
