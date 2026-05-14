@@ -61,6 +61,12 @@ export interface AttemptResult {
 
 // ─── Quiz endpoints ──────────────────────────────────────────────────────────
 
+// NOTA: httpSlow.baseURL ya termina en `/api` (ver src/config/env.ts →
+// BACKEND_API_URL). Las rutas aquí deben empezar en `/evaluation/...`,
+// NO en `/api/evaluation/...` — agregar `/api` produce un doble prefijo
+// y un 404 silencioso. Backend (quiz.router.ts) responde con la forma
+// `{ success: true, data: ... }` para list y getById.
+
 /**
  * Fetch all quizzes, optionally filtered by moduleId.
  * Returns [] on 404; throws on 500.
@@ -68,8 +74,8 @@ export interface AttemptResult {
 export async function fetchQuizzes(moduleId?: string): Promise<Quiz[]> {
   try {
     const query = moduleId ? `?moduleId=${encodeURIComponent(moduleId)}` : '';
-    const { data } = await httpSlow.get(`/api/evaluation/quizzes${query}`);
-    return data.quizzes ?? [];
+    const { data } = await httpSlow.get(`/evaluation/quizzes${query}`);
+    return data.data ?? [];
   } catch (err: unknown) {
     const axiosErr = err as { response?: { status?: number } };
     if (axiosErr?.response?.status === 404) return [];
@@ -82,23 +88,32 @@ export async function fetchQuizzes(moduleId?: string): Promise<Quiz[]> {
  * Throws on any error (including 404 — quiz must exist to render).
  */
 export async function fetchQuizById(quizId: string): Promise<Quiz> {
-  const { data } = await httpSlow.get(`/api/evaluation/quizzes/${encodeURIComponent(quizId)}`);
-  return data.quiz;
+  const { data } = await httpSlow.get(`/evaluation/quizzes/${encodeURIComponent(quizId)}`);
+  return data.data;
 }
 
 /**
  * Submit a student's answers for a quiz attempt.
  * Returns the scored result from the backend.
+ *
+ * Backend respuesta: `{ success: true, ...attempt }` (campos en raíz),
+ * por eso leemos directamente de `data` y no de `data.result`.
  */
 export async function submitQuizAttempt(
   quizId: string,
   answers: Answer[],
 ): Promise<AttemptResult> {
   const { data } = await httpSlow.post(
-    `/api/evaluation/quizzes/${encodeURIComponent(quizId)}/attempt`,
+    `/evaluation/quizzes/${encodeURIComponent(quizId)}/attempt`,
     { answers },
   );
-  return data.result;
+  return {
+    score: data.score,
+    passed: data.passed,
+    correctCount: data.correctCount ?? data.correct ?? 0,
+    totalCount: data.totalCount ?? data.total ?? 0,
+    feedback: data.feedback,
+  };
 }
 
 // ─── Activity endpoints ──────────────────────────────────────────────────────
@@ -111,8 +126,8 @@ export async function submitQuizAttempt(
 export async function fetchActivities(type?: 'EXAM' | 'TALLER'): Promise<Activity[]> {
   try {
     const query = type ? `?type=${encodeURIComponent(type)}` : '';
-    const { data } = await httpSlow.get(`/api/evaluation/activities${query}`);
-    return data.activities ?? [];
+    const { data } = await httpSlow.get(`/evaluation/activities${query}`);
+    return data.data ?? [];
   } catch (err: unknown) {
     const axiosErr = err as { response?: { status?: number } };
     if (axiosErr?.response?.status === 404) return [];
