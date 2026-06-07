@@ -70,9 +70,14 @@ export default function EvaluationIndexPage() {
         <Typography variant="h4" className={styles.title}>
           Evaluación
         </Typography>
-        <Button variant="outlined" onClick={refresh} disabled={isLoading}>
-          Actualizar
-        </Button>
+        <Stack direction="row" spacing={1}>
+          <Link href="/evaluation/clinical-case" style={{ textDecoration: 'none' }}>
+            <Button variant="contained">Casos clínicos</Button>
+          </Link>
+          <Button variant="outlined" onClick={refresh} disabled={isLoading}>
+            Actualizar
+          </Button>
+        </Stack>
       </Stack>
 
       <ActivityList
