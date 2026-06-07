@@ -2,16 +2,21 @@
  * =============================================================================
  * Profile Page - VentyLab
  * =============================================================================
- * User profile page displaying personal information, password change form,
- * and personal statistics.
+ * User profile page displaying personal information and password change form.
  *
  * Features:
  * - Profile information display
  * - Inline profile editing
  * - Password change functionality
- * - Personal learning statistics
  * - Tabbed navigation
  * - Protected route (requires authentication)
+ *
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
  * =============================================================================
  */
 
@@ -32,7 +37,6 @@ import {
 import {
   Person as PersonIcon,
   Lock as LockIcon,
-  Assessment as AssessmentIcon,
   Home as HomeIcon,
   NavigateNext as NavigateNextIcon,
 } from '@mui/icons-material';
@@ -41,7 +45,6 @@ import {
   ProfileInfo,
   EditProfileForm,
   ChangePasswordForm,
-  UserStatsPanel,
 } from '@/features/profile/components';
 
 /**
@@ -70,7 +73,6 @@ export default function ProfilePage() {
 
   const [activeTab, setActiveTab] = useState(0);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [statsKey, setStatsKey] = useState(0); // Key to force stats refresh
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -85,26 +87,16 @@ export default function ProfilePage() {
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
     setIsEditMode(false); // Exit edit mode when changing tabs
-    
-    // Refresh stats when navigating to stats tab
-    if (newValue === 2) {
-      setStatsKey(prev => prev + 1);
-    }
   };
 
   /**
    * Handle successful profile save
    */
-  const handleProfileSave = async (updatedUser) => {
+  const handleProfileSave = async () => {
     try {
       // Refresh user data from server to get updated info
       await refreshUser();
       setIsEditMode(false);
-      
-      // If we're on stats tab, refresh stats as well
-      if (activeTab === 2) {
-        setStatsKey(prev => prev + 1);
-      }
     } catch (error) {
       console.error('Error refreshing user data:', error);
     }
@@ -122,14 +114,6 @@ export default function ProfilePage() {
    */
   const handleEditToggle = () => {
     setIsEditMode(true);
-  };
-
-  /**
-   * Handle password changed successfully
-   */
-  const handlePasswordChanged = () => {
-    // Could add additional logic here if needed
-    // e.g., log activity, show special message, etc.
   };
 
   // Loading state
@@ -223,7 +207,7 @@ export default function ProfilePage() {
           Mi Perfil
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Gestiona tu información personal, seguridad y revisa tus estadísticas
+          Gestiona tu información personal y la seguridad de tu cuenta
         </Typography>
       </Box>
 
@@ -267,13 +251,6 @@ export default function ProfilePage() {
             id="profile-tab-1"
             aria-controls="profile-tabpanel-1"
           />
-          <Tab
-            icon={<AssessmentIcon />}
-            iconPosition="start"
-            label="Estadísticas"
-            id="profile-tab-2"
-            aria-controls="profile-tabpanel-2"
-          />
         </Tabs>
 
         {/* Tab: Personal Information */}
@@ -298,40 +275,7 @@ export default function ProfilePage() {
           <ChangePasswordForm />
         </TabPanel>
 
-        {/* Tab: Statistics */}
-        <TabPanel value={activeTab} index={2}>
-          <UserStatsPanel key={statsKey} userId={user.id} />
-        </TabPanel>
       </Paper>
-
-      {/* Footer Info */}
-      <Box
-        sx={{
-          textAlign: 'center',
-          py: 3,
-          borderTop: 1,
-          borderColor: 'divider',
-          mt: 4,
-        }}
-      >
-        <Typography variant="body2" color="text.secondary">
-          ¿Necesitas ayuda con tu cuenta?{' '}
-          <Link
-            component="button"
-            onClick={() => router.push('/settings')}
-            sx={{
-              textDecoration: 'none',
-              color: 'primary.main',
-              fontWeight: 600,
-              '&:hover': {
-                textDecoration: 'underline',
-              },
-            }}
-          >
-            Visita la configuración
-          </Link>
-        </Typography>
-      </Box>
     </Container>
   );
 }

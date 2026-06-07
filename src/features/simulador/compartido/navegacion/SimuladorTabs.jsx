@@ -1,3 +1,16 @@
+/*
+ * Funcionalidad: SimuladorTabs
+ * Descripción: Orquestador de navegación del simulador. Gestiona la tab activa y
+ *   renderiza el contenido de Simular Paciente, Monitoreo y Conexión.
+ * Versión: 2.0
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
+ */
+
 import React, { Suspense, useState } from 'react';
 import {
   Box,
@@ -7,11 +20,7 @@ import {
 } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
-import ShowChartIcon from '@mui/icons-material/ShowChart';
 import WifiIcon from '@mui/icons-material/Wifi';
-
-// Tab 2: Gráficas — fallback placeholder si no se inyecta chartsContent
-import GraficasTab from '@/features/simulador/graficas/GraficasTab';
 
 // Tab 0: Simular Paciente — lazy-loaded desde su propio submódulo
 const FormularioPaciente = React.lazy(
@@ -42,8 +51,6 @@ const SimuladorTabs = ({
   navigationWidth,
   monitoringContent,
   connectionContent,
-  /** JSX pre-construido para la tab Gráficas (tab 2). Si no se pasa, usa el placeholder. */
-  chartsContent,
   defaultTab = 1,
   onTabChange,
 }) => {
@@ -73,9 +80,6 @@ const SimuladorTabs = ({
 
       case 1:
         return monitoringContent ?? null;
-
-      case 2:
-        return chartsContent ?? <GraficasTab />;
 
       case 3:
         return connectionContent ?? null;
@@ -118,7 +122,6 @@ const SimuladorTabs = ({
       >
         <BottomNavigationAction label="Simular Paciente" value={0} icon={<PersonIcon />} />
         <BottomNavigationAction label="Monitoreo"        value={1} icon={<MonitorHeartIcon />} />
-        <BottomNavigationAction label="Gráficas"         value={2} icon={<ShowChartIcon />} />
         <BottomNavigationAction label="Conexión"         value={3} icon={<WifiIcon />} />
       </BottomNavigation>
     </>

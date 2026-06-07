@@ -6,6 +6,13 @@
  *
  * NOTE: Role definitions and permission helpers are in ./roles.js
  * This file only contains route configuration and auth error handling.
+ *
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
  * =============================================================================
  */
 
@@ -59,7 +66,6 @@ export const PROTECTED_ROUTES = [
   '/teaching',
   '/flashcards',
   '/evaluation',
-  '/settings',
   '/panel',
 ];
 
@@ -158,7 +164,7 @@ export const SESSION_CONFIG = {
   updateAge: 24 * 60 * 60, // Update every 24 hours
 };
 
-export default {
+const authConfig = {
   ROLES,
   USER_ROLES,
   ROLE_DASHBOARDS,
@@ -175,3 +181,5 @@ export default {
   getRoleDisplayName,
   SESSION_CONFIG,
 };
+
+export default authConfig;

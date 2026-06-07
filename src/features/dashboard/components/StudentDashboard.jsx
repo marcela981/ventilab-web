@@ -15,10 +15,16 @@
  * - Promoción automática cuando se cumplen criterios
  * - Protección con role STUDENT
  *
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
  * =============================================================================
  */
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import {
   Box,
@@ -53,8 +59,6 @@ import {
   PlayArrow,
   EmojiEvents,
   MenuBook,
-  Settings as SettingsIcon,
-  ExpandMore as ExpandMoreIcon,
   Close as CloseIcon,
   LocalFlorist as BeginnerIcon,
   School as IntermediateIcon,
@@ -129,6 +133,39 @@ const StudentDashboard = () => {
     };
   }, [completedLessons, quizScores, timeSpent, flashcards]);
 
+  /**
+   * Calculate progress percentage to next level.
+   * Definido con useCallback (antes del efecto que lo usa) para mantener una
+   * referencia estable y poder incluirlo en las dependencias del useEffect.
+   */
+  const calculateProgressPercentage = useCallback((metrics) => {
+    if (!metrics) return 0;
+
+    const currentLevel = user?.userLevel || 'BEGINNER';
+
+    if (currentLevel === 'BEGINNER') {
+      // Criterios para BEGINNER -> INTERMEDIATE
+      const lessonsProgress = Math.min((metrics.lessonsByDifficulty.BEGINNER / 5) * 100, 100);
+      const scoreProgress = Math.min((metrics.averageQuizScore / 80) * 100, 100);
+      const efficiencyProgress = Math.min((metrics.averageTimeEfficiency / 80) * 100, 100);
+
+      return Math.floor((lessonsProgress + scoreProgress + efficiencyProgress) / 3);
+    } else if (currentLevel === 'INTERMEDIATE') {
+      // Criterios para INTERMEDIATE -> ADVANCED
+      const lessonsProgress = Math.min((metrics.lessonsByDifficulty.INTERMEDIATE / 8) * 100, 100);
+      const scoreProgress = Math.min((metrics.averageQuizScore / 85) * 100, 100);
+      const recentScoreProgress = metrics.recentLessonsScore
+        ? Math.min((metrics.recentLessonsScore / 85) * 100, 100)
+        : 0;
+      const consistencyProgress = Math.min((metrics.consistencyScore / 70) * 100, 100);
+
+      return Math.floor((lessonsProgress + scoreProgress + recentScoreProgress + consistencyProgress) / 4);
+    } else {
+      // ADVANCED - ya está en el nivel máximo
+      return 100;
+    }
+  }, [user?.userLevel]);
+
   // ============================================================================
   // Cargar datos de nivel y evaluación
   // ============================================================================
@@ -165,38 +202,7 @@ const StudentDashboard = () => {
     };
 
     fetchLevelData();
-  }, [user?.id]);
-
-  /**
-   * Calculate progress percentage to next level
-   */
-  const calculateProgressPercentage = (metrics) => {
-    if (!metrics) return 0;
-
-    const currentLevel = user?.userLevel || 'BEGINNER';
-
-    if (currentLevel === 'BEGINNER') {
-      // Criterios para BEGINNER -> INTERMEDIATE
-      const lessonsProgress = Math.min((metrics.lessonsByDifficulty.BEGINNER / 5) * 100, 100);
-      const scoreProgress = Math.min((metrics.averageQuizScore / 80) * 100, 100);
-      const efficiencyProgress = Math.min((metrics.averageTimeEfficiency / 80) * 100, 100);
-
-      return Math.floor((lessonsProgress + scoreProgress + efficiencyProgress) / 3);
-    } else if (currentLevel === 'INTERMEDIATE') {
-      // Criterios para INTERMEDIATE -> ADVANCED
-      const lessonsProgress = Math.min((metrics.lessonsByDifficulty.INTERMEDIATE / 8) * 100, 100);
-      const scoreProgress = Math.min((metrics.averageQuizScore / 85) * 100, 100);
-      const recentScoreProgress = metrics.recentLessonsScore
-        ? Math.min((metrics.recentLessonsScore / 85) * 100, 100)
-        : 0;
-      const consistencyProgress = Math.min((metrics.consistencyScore / 70) * 100, 100);
-
-      return Math.floor((lessonsProgress + scoreProgress + recentScoreProgress + consistencyProgress) / 4);
-    } else {
-      // ADVANCED - ya está en el nivel máximo
-      return 100;
-    }
-  };
+  }, [user?.id, calculateProgressPercentage]);
 
   // ============================================================================
   // Manejar promoción de nivel
@@ -240,10 +246,6 @@ const StudentDashboard = () => {
 
   const handleViewAllModules = () => {
     router.push('/teaching');
-  };
-
-  const handleManageLevel = () => {
-    router.push('/settings');
   };
 
   // ============================================================================
@@ -369,11 +371,6 @@ const StudentDashboard = () => {
               }
               title="Tu Nivel de Aprendizaje"
               subheader="Personaliza tu experiencia"
-              action={
-                <IconButton onClick={handleManageLevel}>
-                  <SettingsIcon />
-                </IconButton>
-              }
             />
             <CardContent>
               <Box sx={{ textAlign: 'center', mb: 2 }}>
@@ -410,16 +407,6 @@ const StudentDashboard = () => {
                   />
                 </Box>
               )}
-
-              <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<SettingsIcon />}
-                onClick={handleManageLevel}
-                sx={{ mt: 2 }}
-              >
-                Ajustar Nivel
-              </Button>
             </CardContent>
           </Card>
         </Grid>

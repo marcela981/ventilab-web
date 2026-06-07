@@ -71,9 +71,6 @@ export default function EvaluationIndexPage() {
           Evaluación
         </Typography>
         <Stack direction="row" spacing={1}>
-          <Link href="/evaluation/clinical-case" style={{ textDecoration: 'none' }}>
-            <Button variant="contained">Casos clínicos</Button>
-          </Link>
           <Button variant="outlined" onClick={refresh} disabled={isLoading}>
             Actualizar
           </Button>

@@ -11,6 +11,13 @@
  * - Context menu with "View Profile" and "Logout" options
  * - Hover effects and transitions
  * - Role-based color coding
+ *
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
  * =============================================================================
  */
 
@@ -30,7 +37,6 @@ import {
   Tooltip,
 } from '@mui/material';
 import {
-  Person as PersonIcon,
   Logout as LogoutIcon,
   MoreVert as MoreVertIcon,
   AccountCircle as AccountCircleIcon,
@@ -272,7 +278,7 @@ export function SidebarUserCard({
           )}
         </Box>
 
-        {/* Action Buttons (Collapsed View) */}
+        {/* Action Buttons (Collapsed View) — el avatar es el único acceso al perfil */}
         {!isExpanded && (
           <Box
             sx={{
@@ -282,23 +288,6 @@ export function SidebarUserCard({
               mt: 1,
             }}
           >
-            {/* Profile Button */}
-            <Tooltip title="Ver Perfil" placement="right">
-              <IconButton
-                onClick={handleProfileClick}
-                size="small"
-                sx={{
-                  color: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                  },
-                }}
-              >
-                <PersonIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-
             {/* Logout Button */}
             <Tooltip title={isLoggingOut ? "Cerrando sesión..." : "Cerrar Sesión"} placement="right">
               <span>

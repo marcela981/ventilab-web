@@ -1,3 +1,16 @@
+/*
+ * Funcionalidad: Sidebar
+ * Descripción: Barra lateral de navegación de VentyLab. Lista las secciones
+ *   principales, el panel docente y la tarjeta de usuario con acceso al perfil.
+ * Versión: 1.1
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
+ */
+
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -18,7 +31,6 @@ import {
   Dashboard as DashboardIcon,
   School as TeachingIcon,
   Assessment as EvaluationIcon,
-  Settings as SettingsIcon,
   Menu as MenuIcon,
   ChevronLeft as ChevronLeftIcon,
   AdminPanelSettings as AdminPanelIcon,
@@ -45,11 +57,6 @@ const menuItems = [
     text: 'Evaluación',
     icon: <EvaluationIcon />,
     path: '/evaluation'
-  },
-  {
-    text: 'Configuración',
-    icon: <SettingsIcon />,
-    path: '/settings'
   }
 ];
 

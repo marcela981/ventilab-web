@@ -1,4 +1,17 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+/*
+ * Funcionalidad: VentilatorDashboard
+ * Descripción: Dashboard del simulador de ventilador. Orquesta SimuladorTabs con
+ *   las tabs Simular Paciente, Monitoreo y Conexión.
+ * Versión: 1.1
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
+ */
+
+import React, { useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -37,7 +50,6 @@ import { useVentilatorControls } from '@/features/simulador/simuladorVentilador/
 import useDashboardState from '@/features/simulador/simuladorVentilador/dashboard/hooks/useDashboardState';
 // useVentilatorConnection removed — physical ventilator UI is now RealVentilatorPanel
 import AIAnalysisPanel from '@/features/simulador/simuladorVentilador/IAMonitor/componentes/AIAnalysisPanel';
-import VentilatorCharts from '@/features/simulador/simuladorVentilador/dashboard/componentes/VentilatorCharts';
 import { useSidebar } from '@/shared/contexts/SidebarContext';
 
 // Usar el tema centralizado desde mui-overrides.js
@@ -46,8 +58,6 @@ const ventilatorTheme = muiTheme;
 const VentilatorDashboard = ({
   externalVentilatorData,
   externalRealTimeData,
-  externalSystemStatus,
-  isRemoteConnection,
 } = {}) => {
   const { sidebarOpen } = useSidebar();
 
@@ -62,22 +72,23 @@ const VentilatorDashboard = ({
     ventilatorData: _ventilatorData,
     realTimeData: _realTimeData,
     setVentilatorData, // Necesitamos el setter
-    calculations,
     integratedVolume,
-    getCurrentIntegratedVolume,
     resetIntegratedVolume,
-    maxMinData, // Nuevos datos de máx/mín cada 100 muestras
     registerDataRecording, // Función para registrar el hook de grabación
-    systemStatus // Estado del sistema
   } = useVentilatorData(serialConnection);
 
   // Remote/WebSocket mode: merge external data over local serial data.
   // User-configured params (PEEP, FiO2, mode…) come from local state (control panel).
   // Real-time measured values (pressure, flow, volume) come from the WebSocket stream.
   // realTimeData arrays are fully replaced so Chart.js paints the simulated curves.
-  const ventilatorData = externalVentilatorData
-    ? { ..._ventilatorData, ...externalVentilatorData }
-    : _ventilatorData;
+  // useMemo estabiliza la referencia: solo se recalcula cuando cambian los datos
+  // serie locales o los externos, evitando que dependa de cada render aguas abajo.
+  const ventilatorData = useMemo(
+    () => (externalVentilatorData
+      ? { ..._ventilatorData, ...externalVentilatorData }
+      : _ventilatorData),
+    [externalVentilatorData, _ventilatorData],
+  );
   const realTimeData = externalRealTimeData ?? _realTimeData;
 
   // Hook para datos del paciente simulado
@@ -191,22 +202,10 @@ const VentilatorDashboard = ({
     }).catch(() => {
       // Non-blocking: serial flow already notified the user if there was a validation error.
     });
-  }, [actions, sendCommand, state.ventilationMode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [actions, sendCommand, state.ventilationMode]);
 
   // Hook para códigos QR y compartir
-  const qrBridge = useQRBridge();
-
-  // Validación defensiva para asegurar que los hooks estén inicializados
-  if (!parameterValidation || !parameterValidation.validationState) {
-    return (
-      <ThemeProvider theme={ventilatorTheme}>
-        <CssBaseline />
-        <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-          <Typography variant="h6">Cargando sistema de ventilación...</Typography>
-        </Box>
-      </ThemeProvider>
-    );
-  }
+  useQRBridge();
 
   // ─── Auto-recalculate derived parameters when user inputs change ────────────
   // IMPORTANT: Two separate effects (one per mode) prevent the infinite loop.
@@ -219,7 +218,9 @@ const VentilatorDashboard = ({
   // Fix: VCV effect includes `vol` (user input). PCV effect does NOT include
   // `vol` (it is an output) or `compliance` (read from complianceDataRef
   // inside calcPress, never reactive).
-
+  //
+  // NOTA: estos efectos deben declararse ANTES del early return de validación
+  // defensiva para no violar las reglas de hooks de React (orden constante).
   const mode = state.ventilationMode;
   const ie = ventilatorData.inspiracionEspiracion;
   const freq = ventilatorData.frecuencia;
@@ -250,7 +251,17 @@ const VentilatorDashboard = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- calcPress is a stable useCallback
   }, [mode, ie, freq, pi, pe, peep, pmax]);
 
-
+  // Validación defensiva para asegurar que los hooks estén inicializados
+  if (!parameterValidation || !parameterValidation.validationState) {
+    return (
+      <ThemeProvider theme={ventilatorTheme}>
+        <CssBaseline />
+        <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+          <Typography variant="h6">Cargando sistema de ventilación...</Typography>
+        </Box>
+      </ThemeProvider>
+    );
+  }
 
   // Generar datos de tarjetas basados en la configuración utilizando la nueva función helper
   const cardData = buildCardData(state, ventilatorData, integratedVolume, resetIntegratedVolume);
@@ -413,8 +424,6 @@ const VentilatorDashboard = ({
         navigationLeft={navigationLeft}
         navigationWidth={navigationWidth}
         defaultTab={1}
-
-        chartsContent={undefined} // Force fallback to GraficasTab
 
         monitoringContent={
           <MonitoringTab

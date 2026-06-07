@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-06-07T16:29:01.280Z",
+  "levels": [
+    {
+      "levelId": "beginner",
+      "totalLessons": 0,
+      "totalPages": 0
+    },
+    {
+      "levelId": "intermediate",
+      "totalLessons": 0,
+      "totalPages": 0
+    },
+    {
+      "levelId": "advanced",
+      "totalLessons": 0,
+      "totalPages": 0
+    }
+  ],
+  "lessons": []
+}
