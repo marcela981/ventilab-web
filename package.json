@@ -7,7 +7,7 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "validate:lessons": "node ./scripts/validate-lessons.mjs",
     "validate:lessons:fix": "node ./scripts/validate-lessons.mjs --fix",
     "validate:curriculum": "node ./scripts/validate-curriculum.mjs",
