@@ -1,7 +1,16 @@
-/**
- * PanelDashboard - Admin Panel Home Page
- * Inyector de datos: fetches stats y estudiantes, pasa todo a componentes ui/.
- * Layout responsivo que se adapta correctamente al abrir/cerrar el sidebar.
+/*
+ * Funcionalidad: PanelDashboard — home del panel de profesor/admin
+ * Descripción: Inyector de datos: trae stats y estudiantes vía adminService y los
+ *              pasa a los componentes ui/. Layout responsivo que se adapta al
+ *              abrir/cerrar el sidebar. Consume el DTO plano del backend
+ *              (overallProgress por estudiante).
+ * Versión: 1.1
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
  */
 
 import React, { useState, useEffect } from 'react';
@@ -49,7 +58,7 @@ export default function PanelDashboard() {
             id: s.id,
             name: s.name,
             email: s.email,
-            stats: { progressPercentage: s.progress?.overallProgress ?? 0 },
+            stats: { progressPercentage: s.overallProgress ?? 0 },
           }))
         );
       }

@@ -1,7 +1,16 @@
-/**
- * PanelStudents - Centro de Estudiantes (Fase 2)
- * Tab A: Directorio con tabla oscura + checkboxes + "Conformar Grupo"
- * Tab B: Estadísticas Globales
+/*
+ * Funcionalidad: PanelStudents — Centro de Estudiantes del panel
+ * Descripción: Tab A: Directorio (tabla oscura + checkboxes + "Conformar Grupo").
+ *              Tab B: Estadísticas Globales. Consume adminService.getStudents /
+ *              getPlatformStatistics y mapea el DTO plano del backend
+ *              (overallProgress, completedModules, groupName) a la vista.
+ * Versión: 1.1
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -225,8 +234,9 @@ export default function PanelStudents() {
       ]);
       if (studRes.success) {
         setStudents((studRes.data.students || []).map((s) => ({
-          id: s.id, name: s.name, email: s.email, image: s.image, groups: s.groups || [],
-          stats: { progressPercentage: s.progress?.overallProgress ?? 0, completedLessons: s.progress?.completedModules ?? 0 },
+          id: s.id, name: s.name, email: s.email, image: s.image,
+          groups: s.groupName ? [{ id: s.groupName, name: s.groupName }] : [],
+          stats: { progressPercentage: s.overallProgress ?? 0, completedLessons: s.completedModules ?? 0 },
         })));
         setTotalCount(studRes.data.total ?? 0);
       } else { setError(studRes.error?.message || 'Error al cargar estudiantes'); }
