@@ -1,7 +1,21 @@
-import React, { useState } from 'react';
+/*
+ * Funcionalidad: MonitoringTab
+ * Descripción: Tab de monitoreo del simulador. Compone las tres columnas
+ *   (métricas, gráficas, controles) del dashboard de ventilación.
+ * Versión: 1.1
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
+ */
+
+import React, { useState, useMemo } from 'react';
 import { Box } from '@mui/material';
 
 import { useVentilatorData } from '@/features/simulador/conexion/websocket/hooks/useVentilatorData';
+import { useRenderCount } from '@/shared/dev/perfInstrumentation';
 
 import MetricColumn from './MetricColumn';
 import ParameterInputRow from './ParameterInputRow';
@@ -55,14 +69,19 @@ const MonitoringTab = ({
   handleAIAnalysis,
   handleModeChange,
 }) => {
+  useRenderCount('MonitoringTab');
   const [chartsEnabled, setChartsEnabled] = useState(false);
   const { latest } = useVentilatorData();
 
   const isSimulated = dataSource === 'simulated';
 
-  // Inyectar datos en tiempo real del WebSocket si la simulación de gráficas está activa
-  const displayCardData = cardData.map((card) => {
-    if (isSimulated && chartsEnabled && latest) {
+  // Inyectar datos en tiempo real del WebSocket si la simulación de gráficas está
+  // activa. Memoizado: cuando no hay inyección en vivo, conserva la identidad de
+  // `cardData`, de modo que MetricColumn (React.memo) no se re-renderiza de más.
+  const displayCardData = useMemo(() => {
+    if (!(isSimulated && chartsEnabled && latest)) return cardData;
+
+    return cardData.map((card) => {
       let newValue = card.value;
       let newRawValue = card.rawValue;
 
@@ -70,37 +89,32 @@ const MonitoringTab = ({
         case 'presionPico':
         case 'presionMedia':
           if (card.id === 'presionMedia' || ventilationMode !== 'pressure') {
-             newValue = latest.pressure.toFixed(1);
-             newRawValue = latest.pressure;
+            newValue = latest.pressure.toFixed(1);
+            newRawValue = latest.pressure;
           }
           break;
         case 'flujoMax':
         case 'flujo':
         case 'flujoMin':
           if (card.id !== 'flujoMax' || !card.isConfigured) {
-             newValue = latest.flow.toFixed(1);
-             newRawValue = latest.flow;
+            newValue = latest.flow.toFixed(1);
+            newRawValue = latest.flow;
           }
           break;
         case 'volMax':
         case 'volumen':
-           if (card.id === 'volMax' || ventilationMode !== 'volume') {
-               newValue = latest.volume.toFixed(1);
-               newRawValue = latest.volume;
-           }
-           break;
+          if (card.id === 'volMax' || ventilationMode !== 'volume') {
+            newValue = latest.volume.toFixed(1);
+            newRawValue = latest.volume;
+          }
+          break;
         default:
           break;
       }
 
-      return {
-        ...card,
-        value: newValue,
-        rawValue: newRawValue,
-      };
-    }
-    return card;
-  });
+      return { ...card, value: newValue, rawValue: newRawValue };
+    });
+  }, [cardData, isSimulated, chartsEnabled, latest, ventilationMode]);
 
   return (
     <Box sx={{ px: { xs: 1, sm: 2 }, pt: 1, pb: 10 }}>

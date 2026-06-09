@@ -155,4 +155,4 @@ const ParameterInputRow = ({
   );
 };
 
-export default ParameterInputRow;
+export default React.memo(ParameterInputRow);

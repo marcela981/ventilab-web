@@ -1,3 +1,16 @@
+/*
+ * Funcionalidad: MetricColumn
+ * Descripción: Columna izquierda del dashboard: logos, toggles de fuente de datos
+ *   y gráficas, botones de acción y tarjetas de métricas del ventilador.
+ * Versión: 1.1
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
+ */
+
 import React from 'react';
 import {
   Box,
@@ -21,6 +34,7 @@ import ShowChartIcon from '@mui/icons-material/ShowChart';
 
 import EditableCard, { EditControls } from './EditableCard';
 import AIAnalysisButton from '@/features/simulador/compartido/componentes/AIAnalysisButton';
+import { useRenderCount } from '@/shared/dev/perfInstrumentation';
 
 const MetricColumn = ({
   patientData,
@@ -49,6 +63,7 @@ const MetricColumn = ({
   getValueColor,
   getTrend,
 }) => {
+  useRenderCount('MetricColumn');
   return (
     <Box sx={{ width: { xs: '100%', sm: '260px' }, flexShrink: 0, minWidth: '240px', overflow: 'hidden', mt: 0, pl: { sm: 1 } }}>
       <Box display="flex" flexDirection="column" alignItems="flex-start" gap={1}>
@@ -556,4 +571,4 @@ const MetricColumn = ({
   );
 };
 
-export default MetricColumn;
+export default React.memo(MetricColumn);

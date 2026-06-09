@@ -29,6 +29,9 @@ import '@/features/simulador/conexion/websocket/registro/ChartRegistry';
 // Centralized value color/trend functions
 import { getValueColor, getTrend } from '@/features/simulador/compartido/constantes/ventilator-limits';
 
+// DEV: instrumentación de rendimiento (no-op sin flag NEXT_PUBLIC_DEV_PERF_HUD)
+import { useRenderCount, useHeapLogging } from '@/shared/dev/perfInstrumentation';
+
 // Componentes del simulador
 import SimuladorTabs from '@/features/simulador/compartido/navegacion/SimuladorTabs';
 import MonitoringTab from '@/features/simulador/simuladorVentilador/dashboard/componentes/MonitoringTab';
@@ -60,6 +63,9 @@ const VentilatorDashboard = ({
   externalRealTimeData,
 } = {}) => {
   const { sidebarOpen } = useSidebar();
+
+  useRenderCount('VentilatorDashboard');
+  useHeapLogging();
 
   // Calcular valores para la barra de navegación
   const sidebarWidth = sidebarOpen ? '240px' : '64px';
@@ -251,6 +257,27 @@ const VentilatorDashboard = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- calcPress is a stable useCallback
   }, [mode, ie, freq, pi, pe, peep, pmax]);
 
+  // Generar datos de tarjetas. Memoizado por sus entradas reales para que la
+  // identidad sea estable entre renders (MetricColumn es React.memo).
+  // IMPORTANTE: declarado ANTES del early return para no violar las reglas de
+  // hooks (orden constante de hooks entre renders).
+  const cardData = useMemo(
+    () => buildCardData(state, ventilatorData, integratedVolume, resetIntegratedVolume),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- deps granulares a propósito; `state` cambia de identidad cada render
+    [
+      state.ventilationMode,
+      state.filteredData,
+      state.displayData,
+      state.complianceData,
+      state.errorDetection,
+      state.cardConfig,
+      state.isAdjustMode,
+      ventilatorData,
+      integratedVolume,
+      resetIntegratedVolume,
+    ],
+  );
+
   // Validación defensiva para asegurar que los hooks estén inicializados
   if (!parameterValidation || !parameterValidation.validationState) {
     return (
@@ -262,9 +289,6 @@ const VentilatorDashboard = ({
       </ThemeProvider>
     );
   }
-
-  // Generar datos de tarjetas basados en la configuración utilizando la nueva función helper
-  const cardData = buildCardData(state, ventilatorData, integratedVolume, resetIntegratedVolume);
 
   // getValueColor and getTrend are now imported from constants/ventilator-limits.ts
 

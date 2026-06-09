@@ -13,6 +13,7 @@ import {
   Tooltip,
   Legend,
   Filler,
+  Decimation,
 } from 'chart.js';
 
 ChartJS.register(
@@ -25,4 +26,5 @@ ChartJS.register(
   Tooltip,
   Legend,
   Filler,
+  Decimation,
 );

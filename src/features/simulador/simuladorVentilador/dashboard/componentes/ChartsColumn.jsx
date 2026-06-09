@@ -1,3 +1,17 @@
+/*
+ * Funcionalidad: ChartsColumn
+ * Descripción: Columna central del dashboard: gráficas de presión, flujo y
+ *   volumen en tiempo real (Chart.js). Selecciona la fuente de datos (WebSocket
+ *   o serial legacy) y renderiza las curvas.
+ * Versión: 1.1
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
+ */
+
 import React, { useMemo } from 'react';
 import { Box, Paper, Typography, ButtonGroup, Button, Stack, Chip } from '@mui/material';
 import { Line } from 'react-chartjs-2';
@@ -10,17 +24,24 @@ import '@/features/simulador/conexion/websocket/registro/ChartRegistry';
 
 import { useVentilatorData } from '@/features/simulador/conexion/websocket/hooks/useVentilatorData';
 import { useChartCalculations } from '@/features/simulador/simuladorVentilador/graficasMonitor/hooks/useChartCalculations';
+import { useRenderCount } from '@/shared/dev/perfInstrumentation';
 
 // =============================================================================
 // Chart helpers (mirrored from VentilatorCharts)
 // =============================================================================
 
+// Opciones estables por color (identidad constante entre renders → Chart.js no
+// reconstruye escalas en cada update). animation:false + decimation LTTB +
+// parsing:false/normalized:true optimizan el redibujado en tiempo real.
 const buildChartOptions = (color) => ({
   responsive: true,
   animation: false,
   maintainAspectRatio: false,
+  parsing: false,
+  normalized: true,
   plugins: {
     legend: { display: false },
+    decimation: { enabled: true, algorithm: 'lttb', samples: 120 },
     tooltip: {
       mode: 'index',
       intersect: false,
@@ -49,6 +70,12 @@ const buildChartOptions = (color) => ({
   },
 });
 
+// Instancias únicas de opciones (no recrear por render).
+const PRESSURE_OPTIONS = buildChartOptions('#ef5350');
+const FLOW_OPTIONS = buildChartOptions('#42a5f5');
+const VOLUME_OPTIONS = buildChartOptions('#66bb6a');
+
+// Decimation requiere parsing:false → los puntos ya vienen como {x,y} ordenados.
 const buildDataset = (points, color, label) => ({
   datasets: [
     {
@@ -57,7 +84,6 @@ const buildDataset = (points, color, label) => ({
       borderColor: color,
       backgroundColor: color + '18',
       fill: true,
-      parsing: { xAxisKey: 'x', yAxisKey: 'y' },
     },
   ],
 });
@@ -67,11 +93,11 @@ const buildDataset = (points, color, label) => ({
 // =============================================================================
 
 const ChartsColumn = ({
-  dataSource,
   displayData, // Fallback/legacy mode array
   serialConnection,
   chartsEnabled
 }) => {
+  useRenderCount('ChartsColumn');
   // ── WebSocket path (simulation + real remote) ─────────────────────────────
   const wsData = useVentilatorData();
   const { pressurePoints, flowPoints, volumePoints, actions } = useChartCalculations({
@@ -102,7 +128,20 @@ const ChartsColumn = ({
   const hasData = activePoints.pressure.length > 0;
   const zoomActions = legacyPoints ? null : actions;
   const isRealVentilator = serialConnection?.isConnected;
-  const isSimulated = dataSource === 'simulated';
+
+  // Datasets memoizados: sólo se reconstruyen cuando cambian sus puntos.
+  const pressureData = useMemo(
+    () => buildDataset(activePoints.pressure, '#ef5350', 'Presión'),
+    [activePoints.pressure],
+  );
+  const flowData = useMemo(
+    () => buildDataset(activePoints.flow, '#42a5f5', 'Flujo'),
+    [activePoints.flow],
+  );
+  const volumeData = useMemo(
+    () => buildDataset(activePoints.volume, '#66bb6a', 'Volumen'),
+    [activePoints.volume],
+  );
 
   // Solo mostrar gráficos activos dependiendo del modo y estado de chartsEnabled
   const showCharts = isRealVentilator 
@@ -192,10 +231,7 @@ const ChartsColumn = ({
               Presión (cmH₂O)
             </Typography>
             <Box flex={1} minHeight={0} sx={{ position: 'relative' }}>
-              <Line
-                data={buildDataset(activePoints.pressure, '#ef5350', 'Presión')}
-                options={buildChartOptions('#ef5350')}
-              />
+              <Line data={pressureData} options={PRESSURE_OPTIONS} />
             </Box>
           </Paper>
 
@@ -216,10 +252,7 @@ const ChartsColumn = ({
               Flujo (L/min)
             </Typography>
             <Box flex={1} minHeight={0} sx={{ position: 'relative' }}>
-              <Line
-                data={buildDataset(activePoints.flow, '#42a5f5', 'Flujo')}
-                options={buildChartOptions('#42a5f5')}
-              />
+              <Line data={flowData} options={FLOW_OPTIONS} />
             </Box>
           </Paper>
 
@@ -240,10 +273,7 @@ const ChartsColumn = ({
               Volumen (mL)
             </Typography>
             <Box flex={1} minHeight={0} sx={{ position: 'relative' }}>
-              <Line
-                data={buildDataset(activePoints.volume, '#66bb6a', 'Volumen')}
-                options={buildChartOptions('#66bb6a')}
-              />
+              <Line data={volumeData} options={VOLUME_OPTIONS} />
             </Box>
           </Paper>
         </>
@@ -252,5 +282,5 @@ const ChartsColumn = ({
   );
 };
 
-export default ChartsColumn;
+export default React.memo(ChartsColumn);
 

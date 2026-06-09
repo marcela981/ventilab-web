@@ -1,9 +1,12 @@
-import { useMemo, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import VentilatorDashboard from './VentilatorDashboard';
 import { NoSignalBanner } from './NoSignalBanner';
-import { useVentilatorData } from '@/features/simulador/conexion/websocket/hooks/useVentilatorData';
-import { useChartCalculations } from '@/features/simulador/simuladorVentilador/graficasMonitor/hooks/useChartCalculations';
+import {
+  useVentilatorStale,
+  useBindVentilatorStream,
+} from '@/features/simulador/conexion/websocket/hooks/useVentilatorData';
+import { getSnapshot } from '@/features/simulador/conexion/websocket/stream/ventilatorStreamStore';
 import { useVentilatorControls } from '@/features/simulador/simuladorVentilador/panelControl/hooks/useVentilatorControls';
 import { simulatorApi } from '@/features/simulador/compartido/api/simulator.api';
 
@@ -29,43 +32,59 @@ interface VentilatorDashboardWrapperProps {
 }
 
 // =============================================================================
+// Banner de "sin señal" (sólo ventilador real)
+// =============================================================================
+
+/**
+ * Aísla la suscripción a `isStale` en un componente propio para que SÓLO exista
+ * cuando hay un ventilador real. Así, en el modo simulado/enseñanza el wrapper no
+ * mantiene consumidores del store y el stream (y el bucle de flush) se pausa al
+ * salir de la tab Monitoreo.
+ */
+function NoSignalGate() {
+  const isStale = useVentilatorStale();
+  return isStale ? <NoSignalBanner /> : null;
+}
+
+// =============================================================================
 // Component
 // =============================================================================
 
 /**
- * Bridge between the WebSocket data layer and the existing VentilatorDashboard UI.
+ * Puente entre la capa de datos WebSocket y el dashboard del ventilador.
  *
- * In 'serial' mode the original dashboard renders untouched.
+ * En modo 'serial' renderiza el dashboard legacy sin tocar.
  *
- * In 'websocket' mode the three TS hooks run and their adapted output is passed
- * as optional props.  VentilatorDashboard currently ignores unknown props — the
- * next step is to update it to consume:
- *   externalVentilatorData, externalRealTimeData, externalSystemStatus,
- *   externalSendCommand, isRemoteConnection
+ * En modo 'websocket' enlaza el stream UNA sola vez (useBindVentilatorStream) y
+ * consume sólo `isStale` (selector ligero) para el banner de "sin señal". Las
+ * curvas y tarjetas obtienen los datos directamente del store (ChartsColumn /
+ * MonitoringTab), por lo que el wrapper NO recibe ni propaga datos en vivo: así
+ * el dashboard deja de re-renderizarse a la cadencia del stream (desacople
+ * ingesta → render). La persistencia de sesión lee el buffer del store al
+ * desmontar, sin suscribirse por muestra.
  */
 export function VentilatorDashboardWrapper({
   connectionMode = 'websocket',
   isRealVentilator = false,
 }: VentilatorDashboardWrapperProps) {
-  const ventilatorData = useVentilatorData();
-  const { isStale } = ventilatorData;
-  const chartCalculations = useChartCalculations({ data: ventilatorData.data });
+  // Enlaza el socket del contexto al store (no-op en modo serial más abajo).
+  // bindSocket NO registra un consumidor del store: el bucle de flush sólo corre
+  // cuando hay componentes suscritos (tab Monitoreo).
+  useBindVentilatorStream();
   const controls = useVentilatorControls();
 
   // -------------------------------------------------------------------------
-  // Session persistence on unmount
-  // Use refs so the cleanup closure always sees the latest data without
-  // having to list live state as effect deps (which would re-run the effect).
+  // Persistencia de sesión al desmontar.
+  // Refs para que el cleanup vea el último valor sin re-ejecutar el efecto.
+  // Las lecturas se leen del store en el momento del desmontaje (no se rastrean
+  // por muestra, evitando renders del wrapper).
   // -------------------------------------------------------------------------
-  const dataRef = useRef(ventilatorData.data);
-  useEffect(() => { dataRef.current = ventilatorData.data; }, [ventilatorData.data]);
-
   const historyRef = useRef(controls.commandHistory);
   useEffect(() => { historyRef.current = controls.commandHistory; }, [controls.commandHistory]);
 
   useEffect(() => {
     return () => {
-      const readings = dataRef.current;
+      const readings = getSnapshot().data;
       const commands = historyRef.current;
       if (readings.length === 0) return; // nothing to save
       simulatorApi.saveSession({
@@ -79,53 +98,15 @@ export function VentilatorDashboardWrapper({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // run cleanup only on unmount
 
-  // Adapt WebSocket data to the shape the legacy dashboard expects
-  const adaptedVentilatorData = useMemo(
-    () => ({
-      pressure: ventilatorData.latest?.pressure ?? 0,
-      flow: ventilatorData.latest?.flow ?? 0,
-      volume: ventilatorData.latest?.volume ?? 0,
-    }),
-    [ventilatorData.latest]
-  );
-
-  const adaptedRealTimeData = useMemo(
-    () => ({
-      pressure: chartCalculations.pressurePoints.map((p) => p.y),
-      flow: chartCalculations.flowPoints.map((p) => p.y),
-      volume: chartCalculations.volumePoints.map((p) => p.y),
-      // integratedVolume: not tracked in WebSocket mode; empty so Chart.js skips it
-      integratedVolume: [] as number[],
-      // time: millisecond timestamps aligned with chart window (x in seconds → ms)
-      time: chartCalculations.pressurePoints.map((p) => Math.round(p.x * 1000)),
-    }),
-    [chartCalculations.pressurePoints, chartCalculations.flowPoints, chartCalculations.volumePoints]
-  );
-
-  const adaptedSystemStatus = useMemo(
-    () => ({
-      connectionState: ventilatorData.isConnected ? 'connected' : 'disconnected',
-      lastError: ventilatorData.error?.message ?? null,
-    }),
-    [ventilatorData.isConnected, ventilatorData.error]
-  );
-
   // Serial mode: render the unmodified legacy dashboard
   if (connectionMode === 'serial') {
     return <VentilatorDashboard />;
   }
 
-  // WebSocket mode: pass adapted data as future-compatible props.
   return (
     <>
-      {isStale && isRealVentilator && <NoSignalBanner />}
-      <VentilatorDashboard
-        externalVentilatorData={adaptedVentilatorData}
-        externalRealTimeData={adaptedRealTimeData}
-        externalSystemStatus={adaptedSystemStatus}
-        externalSendCommand={controls.sendCommand}
-        isRemoteConnection={true}
-      />
+      {isRealVentilator && <NoSignalGate />}
+      <VentilatorDashboard />
     </>
   );
 }

@@ -1,3 +1,16 @@
+/*
+ * Funcionalidad: ControlsColumn
+ * Descripción: Columna derecha del dashboard: sliders e inputs de parámetros de
+ *   ventilación (I:E, pausas, frecuencia), estado de compliance y alertas.
+ * Versión: 1.1
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
+ */
+
 import React from 'react';
 import {
   Box,
@@ -16,6 +29,7 @@ import ModeToggle from '@/features/simulador/compartido/componentes/ModeToggle';
 import AIAnalysisButton from '@/features/simulador/compartido/componentes/AIAnalysisButton';
 import ComplianceStatus from '@/features/simulador/simuladorVentilador/panelControl/componentes/ComplianceStatus';
 import ValidationAlerts from '@/features/simulador/simuladorVentilador/panelControl/componentes/ValidationAlerts';
+import { useRenderCount } from '@/shared/dev/perfInstrumentation';
 
 const ControlsColumn = ({
   ventilationMode,
@@ -32,6 +46,7 @@ const ControlsColumn = ({
   isAnalyzing,
   handleAIAnalysis,
 }) => {
+  useRenderCount('ControlsColumn');
   return (
     <Box sx={{ width: { xs: '100%', sm: '250px' }, flexShrink: 0, minWidth: '230px', pl: { sm: 1 }, pt: 1 }}>
       <Box display="flex" flexDirection="column" gap={1.5}>
@@ -201,4 +216,4 @@ const ControlsColumn = ({
   );
 };
 
-export default ControlsColumn;
+export default React.memo(ControlsColumn);
