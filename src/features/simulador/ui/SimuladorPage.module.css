@@ -1,19 +1,13 @@
 /* ============================================================
-   SimuladorPage — layout: sidebar (ConnectionPanel) + main content
+   SimuladorPage — layout de una sola columna.
+   La reserva/conexión MQTT dejó de vivir en un sidebar; ahora
+   se gestiona dentro de la tab "Conexión" (ConexionVentiladorTab).
    ============================================================ */
 
 .layout {
   display: flex;
   height: 100%;
   min-height: 0;
-}
-
-.sidebar {
-  width: 260px;
-  flex-shrink: 0;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-  background-color: #1a1a2e;
-  overflow-y: auto;
 }
 
 .main {

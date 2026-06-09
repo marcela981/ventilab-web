@@ -79,7 +79,6 @@ export function useVentilatorConnection({
     latest: remoteLatest,
     data: remoteData,
     reservation: remoteReservation,
-    connect: remoteConnect,
     disconnect: remoteDisconnect,
     requestReservation: remoteRequestReservation,
     releaseReservation: remoteReleaseReservation,
@@ -117,7 +116,9 @@ export function useVentilatorConnection({
         pressure: remoteLatest.pressure,
         flow: remoteLatest.flow,
         volume: remoteLatest.volume,
-        pco2: remoteLatest.pco2,
+        // Omit `pco2` when absent rather than setting it to undefined, so the
+        // shape matches `pco2?: number` under exactOptionalPropertyTypes.
+        ...(remoteLatest.pco2 !== undefined ? { pco2: remoteLatest.pco2 } : {}),
       };
     }
     if (mode === 'local' && localData?.ventilatorData) {

@@ -256,7 +256,12 @@ export function useRemoteVentilator(): UseRemoteVentilatorReturn {
       setIsLoading(true);
       setError(null);
       try {
-        const result = await simulatorApi.reserve({ durationMinutes, purpose });
+        const result = await simulatorApi.reserve({
+          durationMinutes,
+          // Omit `purpose` entirely when undefined: exactOptionalPropertyTypes
+          // forbids passing an explicit `undefined` to an optional field.
+          ...(purpose !== undefined ? { purpose } : {}),
+        });
         if (result.success && result.reservationId && result.endTime) {
           setHasReservation(true);
           setReservation({

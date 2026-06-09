@@ -1,0 +1,144 @@
+/*
+ * Funcionalidad: ConexionVentilador (estilos)
+ * Descripción: CSS Modules co-localizado para la tab Conexión: paneles de reserva
+ *   y de broker/conexión más el indicador de estado de la FSM. Sin inline/sx.
+ * Versión: 1.0
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
+ */
+
+/* ── Layout de la tab ─────────────────────────────────────────────────────── */
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 24px 16px 88px; /* clearance sobre la navegación inferior fija */
+  gap: 18px;
+  align-items: center;
+}
+
+.grid {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ── Tarjetas (paneles) ───────────────────────────────────────────────────── */
+
+.card {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.cardTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 6px;
+}
+
+.cardDescription {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0 0 18px;
+  line-height: 1.5;
+}
+
+/* ── Filas de estado ──────────────────────────────────────────────────────── */
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.rowLabel {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.rowValue {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+}
+
+.message {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 18px;
+  min-height: 1.2em;
+}
+
+/* ── Botonera ─────────────────────────────────────────────────────────────── */
+
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ── Indicador de estado (FSM) ────────────────────────────────────────────── */
+
+.indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+
+.dotIdle {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.dotPending {
+  background: #fb8c00;
+  box-shadow: 0 0 7px #fb8c00;
+  animation: pulse 1.1s ease-in-out infinite;
+}
+
+.dotReady {
+  background: #1e88e5;
+  box-shadow: 0 0 7px #1e88e5;
+}
+
+.dotActive {
+  background: #43a047;
+  box-shadow: 0 0 8px #43a047;
+}
+
+.dotError {
+  background: #e53935;
+  box-shadow: 0 0 7px #e53935;
+}
+
+.indicatorLabel {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
+}

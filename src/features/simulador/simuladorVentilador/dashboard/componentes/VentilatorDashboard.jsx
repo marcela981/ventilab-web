@@ -33,7 +33,7 @@ import { getValueColor, getTrend } from '@/features/simulador/compartido/constan
 import SimuladorTabs from '@/features/simulador/compartido/navegacion/SimuladorTabs';
 import MonitoringTab from '@/features/simulador/simuladorVentilador/dashboard/componentes/MonitoringTab';
 import { buildCardData } from '../utils/cardDataBuilder';
-import { RealVentilatorPanel } from '@/features/simulador/components/RealVentilatorPanel';
+import { ConexionVentiladorTab } from '@/features/simulador/conexion/componentes/ConexionVentiladorTab';
 
 // Hooks
 import { useSerialConnection } from '@/features/simulador/conexion/serial/hooks/useSerialConnection';
@@ -48,7 +48,7 @@ import { useQRBridge } from '@/features/simulador/compartido/hooks/useQRBridge';
 import { useAIAnalysis } from '@/features/simulador/simuladorVentilador/IAMonitor/hooks/useAIAnalysis';
 import { useVentilatorControls } from '@/features/simulador/simuladorVentilador/panelControl/hooks/useVentilatorControls';
 import useDashboardState from '@/features/simulador/simuladorVentilador/dashboard/hooks/useDashboardState';
-// useVentilatorConnection removed — physical ventilator UI is now RealVentilatorPanel
+// La UI de reserva/conexión del ventilador físico vive en ConexionVentiladorTab (FSM)
 import AIAnalysisPanel from '@/features/simulador/simuladorVentilador/IAMonitor/componentes/AIAnalysisPanel';
 import { useSidebar } from '@/shared/contexts/SidebarContext';
 
@@ -466,7 +466,7 @@ const VentilatorDashboard = ({
           />
         }
 
-        connectionContent={<RealVentilatorPanel />}
+        connectionContent={<ConexionVentiladorTab />}
       />
 
       {/* Panel de análisis de IA */}
