@@ -95,7 +95,8 @@ const buildDataset = (points, color, label) => ({
 const ChartsColumn = ({
   displayData, // Fallback/legacy mode array
   serialConnection,
-  chartsEnabled
+  chartsEnabled,
+  isRealVentilatorConnected, // conectada al ventilador físico vía WebSocket/MQTT (FSM)
 }) => {
   useRenderCount('ChartsColumn');
   // ── WebSocket path (simulation + real remote) ─────────────────────────────
@@ -127,7 +128,10 @@ const ChartsColumn = ({
 
   const hasData = activePoints.pressure.length > 0;
   const zoomActions = legacyPoints ? null : actions;
-  const isRealVentilator = serialConnection?.isConnected;
+  // "Ventilador físico" = conexión serial legacy O conexión remota por
+  // WebSocket/MQTT (FSM). En ambos casos las curvas se pintan en cuanto llegan
+  // datos, sin exigir el toggle "Simular Gráficas" (que es sólo para el simulado).
+  const isRealVentilator = Boolean(serialConnection?.isConnected) || Boolean(isRealVentilatorConnected);
 
   // Datasets memoizados: sólo se reconstruyen cuando cambian sus puntos.
   const pressureData = useMemo(

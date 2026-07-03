@@ -1,3 +1,4 @@
+// force recompile 2026-06-18
 import NextAuth from 'next-auth';
 import { authOptions } from '../../../lib/auth';
 

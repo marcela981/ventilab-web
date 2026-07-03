@@ -15,8 +15,6 @@ import type {
 // Types
 // =============================================================================
 
-const BUFFER_SIZE = 300;
-
 export interface RemoteVentilatorState {
   /** WebSocket connection to the backend */
   isSocketConnected: boolean;
@@ -82,20 +80,28 @@ export function useRemoteVentilator(): UseRemoteVentilatorReturn {
   const [error, setError] = useState<Error | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const bufferRef = useRef<VentilatorReading[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Espejo de hasReservation para leerlo en callbacks estables (deps vacías)
+  // sin recrearlos en cada cambio. Evita que checkStatus borre por error una
+  // reserva que SÍ tenemos localmente cuando el backend reporta ownership ambiguo.
+  const hasReservationRef = useRef(false);
+  useEffect(() => {
+    hasReservationRef.current = hasReservation;
+  }, [hasReservation]);
 
   // ---------------------------------------------------------------------------
   // WebSocket event listeners
+  //
+  // NOTA: la telemetría de alta frecuencia (`ventilator:data`, ~30 Hz) NO se
+  // escucha aquí. Vive en ventilatorStreamStore (useVentilatorData), que coalesce
+  // las muestras en un único buffer y re-renderiza a ~12 fps vía rAF. Suscribirla
+  // también aquí re-renderizaba la FSM de conexión (y todo el contexto que la
+  // consume) 30 veces/seg, trabando la UI. Este hook sólo escucha eventos de baja
+  // frecuencia: estado, alarmas y reserva.
   // ---------------------------------------------------------------------------
 
   useEffect(() => {
     if (!socket || !isSocketConnected) return;
-
-    const handleData = (reading: VentilatorReading) => {
-      bufferRef.current = [...bufferRef.current.slice(-(BUFFER_SIZE - 1)), reading];
-      setData([...bufferRef.current]);
-    };
 
     const handleAlarm = (alarm: VentilatorAlarm) => {
       setAlarms((prev) => {
@@ -131,14 +137,12 @@ export function useRemoteVentilator(): UseRemoteVentilatorReturn {
       setReservation(null);
     };
 
-    socket.on('ventilator:data', handleData);
     socket.on('ventilator:alarm', handleAlarm);
     socket.on('ventilator:status', handleStatus);
     socket.on('ventilator:reserved', handleReserved);
     socket.on('ventilator:released', handleReleased);
 
     return () => {
-      socket.off('ventilator:data', handleData);
       socket.off('ventilator:alarm', handleAlarm);
       socket.off('ventilator:status', handleStatus);
       socket.off('ventilator:reserved', handleReserved);
@@ -223,8 +227,11 @@ export function useRemoteVentilator(): UseRemoteVentilatorReturn {
               ),
             }
         );
-      } else {
-        // Reservation exists but belongs to another user
+      } else if (!hasReservationRef.current) {
+        // El backend dice que está reservado pero no pudimos confirmar que sea
+        // de ESTE usuario (id en otro formato, reservationEndsAt ausente, etc.).
+        // Sólo lo tratamos como "de otro usuario" si NO tenemos ya una reserva
+        // local; de lo contrario conservamos la nuestra para no autoliberarla.
         setHasReservation(false);
         setReservation(null);
       }
@@ -242,11 +249,14 @@ export function useRemoteVentilator(): UseRemoteVentilatorReturn {
     if (!hasReservation) {
       throw new Error('Necesitas una reserva activa para conectar al ventilador.');
     }
-    await checkStatus();
-  }, [isSocketConnected, hasReservation, checkStatus]);
+    // NO se reconcilia con checkStatus aquí: hacerlo borraba la reserva recién
+    // creada cuando la comparación de ownership del backend era ambigua, lo que
+    // producía el falso "la reserva finalizó o fue liberada" justo al conectar.
+    // El canal ya está abierto (socket autenticado + reserva activa); el estado
+    // del ventilador llega por el evento WebSocket `ventilator:status`.
+  }, [isSocketConnected, hasReservation]);
 
   const disconnect = useCallback(() => {
-    bufferRef.current = [];
     setData([]);
     setAlarms([]);
   }, []);
@@ -322,7 +332,6 @@ export function useRemoteVentilator(): UseRemoteVentilatorReturn {
   );
 
   const clearData = useCallback(() => {
-    bufferRef.current = [];
     setData([]);
   }, []);
 
