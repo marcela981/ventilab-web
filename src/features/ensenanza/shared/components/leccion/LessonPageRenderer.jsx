@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { Box, Paper, Skeleton, Typography } from '@mui/material';
 import LockIcon from '@mui/icons-material/Lock';
 import PrerequisiteTooltip from '@/features/ensenanza/shared/components/modulos/ModuleCard/PrerequisiteTooltip';
+import { retryImport } from '@/shared/components/ChunkErrorBoundary';
 
 import {
   LessonHeader,
@@ -18,7 +19,7 @@ import {
   CompletionPage,
 } from './sections';
 
-const ClinicalCaseViewer = lazy(() => import('../clinical/ClinicalCaseViewer'));
+const ClinicalCaseViewer = lazy(() => retryImport(() => import('../clinical/ClinicalCaseViewer')));
 
 const LessonPageRenderer = ({
   data,

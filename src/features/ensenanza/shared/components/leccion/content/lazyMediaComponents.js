@@ -11,6 +11,7 @@
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@mui/material';
 import MediaSkeleton from './MediaSkeleton';
+import { retryImport } from '@/shared/components/ChunkErrorBoundary';
 
 /**
  * Skeleton de carga por defecto para componentes lazy
@@ -23,7 +24,7 @@ const DefaultLoadingSkeleton = () => (
  * ZoomableImage - Carga diferida del componente de imagen con zoom
  */
 export const LazyZoomableImage = dynamic(
-  () => import('./ZoomableImage'),
+  () => retryImport(() => import('./ZoomableImage')),
   {
     ssr: false,
     loading: () => <MediaSkeleton variant="image" />,
@@ -34,7 +35,7 @@ export const LazyZoomableImage = dynamic(
  * ZoomableSVG - Carga diferida del componente SVG con pan/zoom
  */
 export const LazyZoomableSVG = dynamic(
-  () => import('./ZoomableSVG'),
+  () => retryImport(() => import('./ZoomableSVG')),
   {
     ssr: false,
     loading: () => <MediaSkeleton variant="svg" />,
@@ -45,7 +46,7 @@ export const LazyZoomableSVG = dynamic(
  * WaveformVisualization - Carga diferida de visualización de formas de onda
  */
 export const LazyWaveformVisualization = dynamic(
-  () => import('./WaveformVisualization'),
+  () => retryImport(() => import('./WaveformVisualization')),
   {
     ssr: false,
     loading: () => <MediaSkeleton variant="default" height={300} />,
@@ -56,7 +57,7 @@ export const LazyWaveformVisualization = dynamic(
  * InteractiveQuiz - Carga diferida del quiz interactivo
  */
 export const LazyInteractiveQuiz = dynamic(
-  () => import('./InteractiveQuiz'),
+  () => retryImport(() => import('./InteractiveQuiz')),
   {
     ssr: false,
     loading: () => <DefaultLoadingSkeleton />,
@@ -67,7 +68,7 @@ export const LazyInteractiveQuiz = dynamic(
  * InteractiveChecklist - Carga diferida de la checklist interactiva
  */
 export const LazyInteractiveChecklist = dynamic(
-  () => import('./InteractiveChecklist'),
+  () => retryImport(() => import('./InteractiveChecklist')),
   {
     ssr: false,
     loading: () => <DefaultLoadingSkeleton />,
@@ -78,7 +79,7 @@ export const LazyInteractiveChecklist = dynamic(
  * MarkdownRenderer - Carga diferida del renderizador de Markdown
  */
 export const LazyMarkdownRenderer = dynamic(
-  () => import('./MarkdownRenderer'),
+  () => retryImport(() => import('./MarkdownRenderer')),
   {
     ssr: true, // Markdown puede renderizarse en servidor
     loading: () => (

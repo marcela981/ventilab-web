@@ -20,9 +20,12 @@ import {
   NavigateNext
 } from '@mui/icons-material';
 import LessonViewerWrapper from '@/features/ensenanza/shared/components/leccion/LessonViewerWrapper';
+import ChunkErrorBoundary, { retryImport } from '@/shared/components/ChunkErrorBoundary';
 
-// Lazy load LessonViewer for better performance
-const LessonViewer = lazy(() => import('@/features/ensenanza/shared/components/leccion/LessonViewer'));
+// Lazy load LessonViewer for better performance.
+// retryImport reintenta el chunk ante fallos transitorios de red; si el fallo
+// persiste, ChunkErrorBoundary (abajo) muestra el fallback con "Recargar".
+const LessonViewer = lazy(() => retryImport(() => import('@/features/ensenanza/shared/components/leccion/LessonViewer')));
 
 /**
  * TeachingLessonView - Displays a lesson with breadcrumbs, navigation, and progress
@@ -237,24 +240,26 @@ const TeachingLessonView = ({
 
           {/* Componente LessonViewer con Suspense y manejo de errores */}
           {!lessonError && (
-            <Suspense
-              fallback={
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-                  <CircularProgress />
-                </Box>
-              }
-            >
-              <LessonViewerWrapper
-                lessonId={lessonId}
-                moduleId={moduleId}
-                onComplete={onLessonComplete}
-                onNavigate={onNavigateLesson}
-                onError={onLessonError}
-                onBackToDashboard={onBackToDashboard}
-                onProgressUpdate={onProgressUpdate}
-                LessonViewerComponent={LessonViewer}
-              />
-            </Suspense>
+            <ChunkErrorBoundary>
+              <Suspense
+                fallback={
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+                    <CircularProgress />
+                  </Box>
+                }
+              >
+                <LessonViewerWrapper
+                  lessonId={lessonId}
+                  moduleId={moduleId}
+                  onComplete={onLessonComplete}
+                  onNavigate={onNavigateLesson}
+                  onError={onLessonError}
+                  onBackToDashboard={onBackToDashboard}
+                  onProgressUpdate={onProgressUpdate}
+                  LessonViewerComponent={LessonViewer}
+                />
+              </Suspense>
+            </ChunkErrorBoundary>
           )}
         </Box>
       </Fade>

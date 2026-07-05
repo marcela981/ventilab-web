@@ -2,11 +2,12 @@ import React, { Suspense, lazy, useCallback } from 'react';
 import { Box, Stack } from '@mui/material';
 import MediaSkeleton from './content/MediaSkeleton';
 import MediaFallback from './content/MediaFallback';
+import { retryImport } from '@/shared/components/ChunkErrorBoundary';
 
-// Lazy load multimedia components
-const LazyVideoPlayer = lazy(() => import('../media/VideoPlayer'));
-const LazyImageGallery = lazy(() => import('../media/ImageGallery'));
-const LazyInteractiveDiagram = lazy(() => import('../media/InteractiveDiagram'));
+// Lazy load multimedia components (con reintentos ante fallos de red/chunk)
+const LazyVideoPlayer = lazy(() => retryImport(() => import('../media/VideoPlayer')));
+const LazyImageGallery = lazy(() => retryImport(() => import('../media/ImageGallery')));
+const LazyInteractiveDiagram = lazy(() => retryImport(() => import('../media/InteractiveDiagram')));
 
 const MediaBlocksContainer = ({ media }) => {
   const renderMediaBlock = useCallback((block, index) => {

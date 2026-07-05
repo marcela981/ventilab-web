@@ -79,16 +79,17 @@ import LessonEditBanner from '@/features/ensenanza/shared/components/edit/Lesson
 // para que el modo lectura no descargue el editor — solo se pide el chunk al renderizarse
 // en modo edición (isScrollMode).
 const EditableSectionWrapper = dynamic(
-  () => import('@/features/ensenanza/shared/components/edit/EditableSectionWrapper/EditableSectionWrapper'),
+  () => retryImport(() => import('@/features/ensenanza/shared/components/edit/EditableSectionWrapper/EditableSectionWrapper')),
   { ssr: false }
 );
 import UnsavedChangesAlert from '@/features/ensenanza/shared/components/edit/UnsavedChangesAlert/UnsavedChangesAlert';
 import SaveProgressButton from './SaveProgressButton/SaveProgressButton';
 import { useTopicContext } from '@/features/ensenanza/shared/hooks/useTopicContext';
 import useScrollCompletion from '@/shared/hooks/useScrollCompletion';
+import ChunkErrorBoundary, { retryImport } from '@/shared/components/ChunkErrorBoundary';
 import CompletionConfetti from '@/features/ensenanza/shared/components/leccion/CompletionConfetti';
 // Lazy load clinical case components for code splitting
-const ClinicalCaseViewer = lazy(() => import('../clinical/ClinicalCaseViewer'));
+const ClinicalCaseViewer = lazy(() => retryImport(() => import('../clinical/ClinicalCaseViewer')));
 import PrerequisiteTooltip from '@/features/ensenanza/shared/components/modulos/ModuleCard/PrerequisiteTooltip';
 import { getModuleById } from '@/features/ensenanza/shared/data/curriculumData';
 import {
@@ -571,6 +572,9 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
               )}
 
               <article id="lesson-content" ref={contentRef}>
+                {/* ChunkErrorBoundary: cubre los chunks diferidos del contenido
+                    (EditableSectionWrapper, media, MathMarkdown, casos clínicos) */}
+                <ChunkErrorBoundary>
                 {isScrollMode && scrollPages.length > 0 ? (
                   /* ── Modo Scroll Continuo (TEACHER / ADMIN) ─────────────────
                      Todas las páginas apiladas verticalmente; sin Anterior/Siguiente.
@@ -684,6 +688,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
                 
                 {/* Media Blocks Section - Rendered after main content */}
                 <MediaBlocksContainer media={data?.media} />
+                </ChunkErrorBoundary>
               </article>
         </Container>
         

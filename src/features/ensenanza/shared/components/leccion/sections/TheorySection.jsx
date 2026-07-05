@@ -6,9 +6,10 @@ import {
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import MarkdownRenderer from '@/features/ensenanza/shared/components/leccion/content/MarkdownRenderer';
+import { retryImport } from '@/shared/components/ChunkErrorBoundary';
 
-// Lazy load AITopicExpander
-const AITopicExpander = lazy(() => import('@/features/ensenanza/shared/components/ai/AITopicExpander'));
+// Lazy load AITopicExpander (con reintentos ante fallos de red/chunk)
+const AITopicExpander = lazy(() => retryImport(() => import('@/features/ensenanza/shared/components/ai/AITopicExpander')));
 
 /**
  * TheorySection - Componente para renderizar una sección de teoría

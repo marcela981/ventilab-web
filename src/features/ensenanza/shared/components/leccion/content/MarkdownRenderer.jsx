@@ -6,10 +6,11 @@ import { Box, Typography, Divider, styled, Link as MuiLink } from '@mui/material
 import MedicalCodeBlock from './MedicalCodeBlock';
 import StyledTable from './StyledTable';
 import ZoomableImage from './ZoomableImage';
+import { retryImport } from '@/shared/components/ChunkErrorBoundary';
 
 // remark-math + rehype-katex + CSS de KaTeX viven en MathMarkdown (chunk aparte):
 // solo se descargan cuando un bloque contiene fórmulas ($...$ / $$...$$).
-const MathMarkdown = dynamic(() => import('./MathMarkdown'), { ssr: true });
+const MathMarkdown = dynamic(() => retryImport(() => import('./MathMarkdown')), { ssr: true });
 
 /**
  * MarkdownContainer - Contenedor principal con estilos globales para el contenido Markdown
