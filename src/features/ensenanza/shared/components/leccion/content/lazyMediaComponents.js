@@ -20,17 +20,6 @@ const DefaultLoadingSkeleton = () => (
 );
 
 /**
- * VideoPlayer - Carga diferida del reproductor de video
- */
-export const LazyVideoPlayer = dynamic(
-  () => import('./VideoPlayer'),
-  {
-    ssr: false,
-    loading: () => <MediaSkeleton variant="video" />,
-  }
-);
-
-/**
  * ZoomableImage - Carga diferida del componente de imagen con zoom
  */
 export const LazyZoomableImage = dynamic(
@@ -117,7 +106,6 @@ export const createLazyMediaComponent = (importFn, options = {}) => {
 };
 
 export default {
-  LazyVideoPlayer,
   LazyZoomableImage,
   LazyZoomableSVG,
   LazyWaveformVisualization,
