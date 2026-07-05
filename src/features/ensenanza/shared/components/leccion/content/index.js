@@ -12,11 +12,9 @@
 export { default as MarkdownRenderer } from './MarkdownRenderer';
 
 // Componentes de estructura y navegación
-export { default as LessonHeader } from './LessonHeader';
 export { default as SectionNavigation } from './SectionNavigation';
 
 // Componentes interactivos
-export { default as VideoPlayer } from './VideoPlayer';
 export { default as InteractiveQuiz } from './InteractiveQuiz';
 export { default as InteractiveChecklist } from './InteractiveChecklist';
 export { default as PersonalNotes } from './PersonalNotes';
