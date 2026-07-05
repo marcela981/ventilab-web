@@ -37,6 +37,7 @@ import { useLessonViewerState } from './useLessonViewerState';
  */
 
 import React, { useState, useEffect, useCallback, useRef, memo, Suspense, lazy, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Container,
   Grid,
@@ -74,7 +75,13 @@ import LessonIndexNavigator from './LessonIndexNavigator';
 import TutorAIPopup from '@/features/ensenanza/shared/components/ai/TutorAIPopup';
 import BlockInjector from '@/features/ensenanza/shared/components/edit/BlockInjector/BlockInjector';
 import LessonEditBanner from '@/features/ensenanza/shared/components/edit/LessonEditBanner/LessonEditBanner';
-import EditableSectionWrapper from '@/features/ensenanza/shared/components/edit/EditableSectionWrapper/EditableSectionWrapper';
+// EditableSectionWrapper arrastra RichTextEditor (Tiptap): se difiere con next/dynamic
+// para que el modo lectura no descargue el editor — solo se pide el chunk al renderizarse
+// en modo edición (isScrollMode).
+const EditableSectionWrapper = dynamic(
+  () => import('@/features/ensenanza/shared/components/edit/EditableSectionWrapper/EditableSectionWrapper'),
+  { ssr: false }
+);
 import UnsavedChangesAlert from '@/features/ensenanza/shared/components/edit/UnsavedChangesAlert/UnsavedChangesAlert';
 import SaveProgressButton from './SaveProgressButton/SaveProgressButton';
 import { useTopicContext } from '@/features/ensenanza/shared/hooks/useTopicContext';

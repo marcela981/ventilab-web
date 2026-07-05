@@ -22,7 +22,12 @@ import {
 } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import { useSession } from 'next-auth/react';
-import { getAuthToken } from '@/shared/services/authService';
+import {
+  getAuthToken,
+  refreshBackendTokenFromSession,
+} from '@/shared/services/authService';
+import { authEvents } from '@/shared/services/authEvents';
+import { handleSessionExpired } from '@/shared/services/sessionExpired';
 
 // =============================================================================
 // Types
@@ -55,6 +60,9 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   const socketRef = useRef<Socket | null>(null);
   // Trigger re-render when socketRef is populated so consumers receive the instance.
   const [, setTick] = useState(0);
+  // Un solo reintento de re-autenticación tras 'auth_error' (JWT de backend
+  // vencido con sesión NextAuth aún viva); al segundo fallo se cierra sesión.
+  const reauthAttemptedRef = useRef(false);
 
   // Create the socket once on mount; clean up on unmount.
   useEffect(() => {
@@ -72,13 +80,31 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       setIsConnected(false);
       setIsAuthenticated(false);
     };
-    const onAuthenticated = ({ userId }: { userId: string }) => {
+    const onAuthenticated = () => {
+      reauthAttemptedRef.current = false;
       setIsAuthenticated(true);
     };
     const onAuthError = () => {
-      console.warn('[Socket] Authentication failed — disconnecting');
       setIsAuthenticated(false);
       socket.disconnect();
+
+      if (reauthAttemptedRef.current) {
+        console.warn('[Socket] Token inválido tras reintento — cerrando sesión');
+        handleSessionExpired('socket_auth_error');
+        return;
+      }
+
+      // Primer 'auth_error': puede ser solo el JWT de backend vencido con la
+      // sesión NextAuth aún viva — renovar el token una vez y reconectar.
+      reauthAttemptedRef.current = true;
+      void refreshBackendTokenFromSession().then((token) => {
+        if (token) {
+          socket.once('connect', () => socket.emit('authenticate', token));
+          socket.connect();
+        } else {
+          handleSessionExpired('socket_auth_error');
+        }
+      });
     };
 
     socket.on('connect', onConnect);
@@ -86,7 +112,15 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     socket.on('authenticated', onAuthenticated);
     socket.on('auth_error', onAuthError);
 
+    // Logout central (sesión expirada detectada por HTTP u otro módulo):
+    // cerrar el socket para no dejarlo autenticado con una sesión muerta.
+    const unsubscribeLogout = authEvents.on('auth:logout', () => {
+      setIsAuthenticated(false);
+      socket.disconnect();
+    });
+
     return () => {
+      unsubscribeLogout();
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
       socket.off('authenticated', onAuthenticated);

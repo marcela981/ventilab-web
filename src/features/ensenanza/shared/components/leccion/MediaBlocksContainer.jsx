@@ -1,6 +1,7 @@
 import React, { Suspense, lazy, useCallback } from 'react';
 import { Box, Stack } from '@mui/material';
-import { MediaSkeleton, MediaFallback } from './content';
+import MediaSkeleton from './content/MediaSkeleton';
+import MediaFallback from './content/MediaFallback';
 
 // Lazy load multimedia components
 const LazyVideoPlayer = lazy(() => import('../media/VideoPlayer'));

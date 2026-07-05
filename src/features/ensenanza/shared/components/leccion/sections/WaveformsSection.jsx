@@ -4,7 +4,7 @@ import {
   Typography,
   Paper,
 } from '@mui/material';
-import { WaveformVisualization } from '@/features/ensenanza/shared/components/leccion/content';
+import { LazyWaveformVisualization } from '@/features/ensenanza/shared/components/leccion/content/lazyMediaComponents';
 
 /**
  * WaveformsSection - Componente para renderizar visualizaciones de waveforms
@@ -29,7 +29,7 @@ const WaveformsSection = ({ data }) => {
       </Typography>
       {items.map((item, idx) => (
         <Paper key={idx} elevation={2} sx={{ p: { xs: 2, md: 3 }, mb: 3 }}>
-          <WaveformVisualization waveformData={item.waveformData} />
+          <LazyWaveformVisualization waveformData={item.waveformData} />
         </Paper>
       ))}
     </Box>

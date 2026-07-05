@@ -1,20 +1,20 @@
 import React from 'react';
+import dynamic from 'next/dynamic';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
 import { Box, Typography, Divider, styled, Link as MuiLink } from '@mui/material';
 import MedicalCodeBlock from './MedicalCodeBlock';
 import StyledTable from './StyledTable';
 import ZoomableImage from './ZoomableImage';
 
-// Importar estilos CSS de KaTeX
-import 'katex/dist/katex.min.css';
+// remark-math + rehype-katex + CSS de KaTeX viven en MathMarkdown (chunk aparte):
+// solo se descargan cuando un bloque contiene fórmulas ($...$ / $$...$$).
+const MathMarkdown = dynamic(() => import('./MathMarkdown'), { ssr: true });
 
 /**
  * MarkdownContainer - Contenedor principal con estilos globales para el contenido Markdown
  */
-const MarkdownContainer = styled(Box)(({ theme }) => ({
+export const MarkdownContainer = styled(Box)(({ theme }) => ({
   fontFamily: theme.typography.fontFamily,
   fontSize: '1rem',
   lineHeight: 1.8,
@@ -178,7 +178,7 @@ const MarkdownContainer = styled(Box)(({ theme }) => ({
 /**
  * Componentes personalizados para react-markdown
  */
-const components = {
+export const markdownComponents = {
   // Encabezados - Textos importantes en azul
   h1: ({ node, ...props }) => (
     <Typography variant="h3" component="h1" sx={{ color: '#0BBAF4' }} {...props} />
@@ -323,17 +323,19 @@ const MarkdownRenderer = ({ content, className, sx, ...props }) => {
     );
   }
 
+  // remark-math solo reconoce fórmulas delimitadas por '$': si el bloque no
+  // contiene ninguno, no puede haber math y se evita descargar KaTeX.
+  if (content.includes('$')) {
+    return <MathMarkdown content={content} className={className} sx={sx} {...props} />;
+  }
+
   return (
     <MarkdownContainer className={className} sx={sx} {...props}>
       <ReactMarkdown
         remarkPlugins={[
           remarkGfm,      // Soporte para GitHub Flavored Markdown (tablas, listas de tareas, etc.)
-          remarkMath,     // Soporte para notación matemática
         ]}
-        rehypePlugins={[
-          rehypeKatex,    // Renderizado de fórmulas matemáticas con KaTeX
-        ]}
-        components={components}
+        components={markdownComponents}
       >
         {content}
       </ReactMarkdown>

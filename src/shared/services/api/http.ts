@@ -16,8 +16,9 @@
 
 import axios, { type AxiosInstance } from 'axios';
 import { BACKEND_API_URL } from '@/config/env';
-import { getAuthToken, removeAuthToken } from '@/shared/services/authService';
+import { getAuthToken } from '@/shared/services/authService';
 import { authEvents } from '@/shared/services/authEvents';
+import { handleSessionExpired } from '@/shared/services/sessionExpired';
 
 export { BACKEND_API_URL };
 
@@ -139,23 +140,21 @@ function attachInterceptors(instance: AxiosInstance): void {
 
           const payload = await response.json();
 
-          if (payload?.success && payload?.token) {
+          // backend-token responde { token } a secas — sin envelope {success}.
+          const newToken: string | undefined = payload?.token;
+          if (newToken) {
             const { setAuthToken } = await import('@/shared/services/authService');
-            setAuthToken(payload.token);
+            setAuthToken(newToken);
             authEvents.emit('auth:token-refreshed');
             processQueue(null);
-            originalRequest.headers.Authorization = `Bearer ${payload.token}`;
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
             return instance(originalRequest);
           }
 
           throw new Error('Token refresh response missing token');
         } catch (refreshError) {
           processQueue(refreshError);
-          removeAuthToken();
-          authEvents.emit('auth:logout', { reason: 'token_refresh_failed' });
-          if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-            window.location.href = '/login';
-          }
+          handleSessionExpired('token_refresh_failed');
           return Promise.reject(new Error('Sesión expirada, vuelve a iniciar sesión.'));
         } finally {
           isRefreshing = false;
@@ -164,11 +163,7 @@ function attachInterceptors(instance: AxiosInstance): void {
 
       // ── Caso 3: 403 Forbidden ───────────────────────────────────────────
       if (status === 403) {
-        removeAuthToken();
-        authEvents.emit('auth:logout', { reason: 'forbidden' });
-        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-          window.location.href = '/login';
-        }
+        handleSessionExpired('forbidden');
         return Promise.reject(new Error('Sesión expirada, vuelve a iniciar sesión.'));
       }
 

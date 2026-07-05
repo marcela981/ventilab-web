@@ -5,7 +5,7 @@ import {
   Box,
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
-import { MarkdownRenderer } from '@/features/ensenanza/shared/components/leccion/content';
+import MarkdownRenderer from '@/features/ensenanza/shared/components/leccion/content/MarkdownRenderer';
 
 // Lazy load AITopicExpander
 const AITopicExpander = lazy(() => import('@/features/ensenanza/shared/components/ai/AITopicExpander'));

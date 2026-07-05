@@ -12,8 +12,10 @@
  */
 import React from 'react';
 import { useRouter } from 'next/router';
-// Import canonical LessonViewer (same one used by TeachingModule)
-import { LessonViewer } from '@/features/ensenanza/shared/components/leccion';
+// Import canonical LessonViewer (same one used by TeachingModule).
+// Import directo (no vía barrel leccion/index.js): el barrel re-exporta todo
+// content/ y metía Chart.js y otros pesos al first-load de la lección.
+import LessonViewer from '@/features/ensenanza/shared/components/leccion/LessonViewer';
 
 const LessonViewerRouteAdapter = ({ 
   moduleId, 

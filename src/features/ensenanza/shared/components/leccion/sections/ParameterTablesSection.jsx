@@ -3,7 +3,7 @@ import {
   Box,
   Typography,
 } from '@mui/material';
-import { ParameterTable } from '@/features/ensenanza/shared/components/leccion/content';
+import ParameterTable from '@/features/ensenanza/shared/components/leccion/content/ParameterTable';
 
 /**
  * ParameterTablesSection - Componente para renderizar tablas de parámetros
