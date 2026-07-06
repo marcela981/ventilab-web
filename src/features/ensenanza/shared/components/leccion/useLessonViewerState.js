@@ -68,6 +68,7 @@ export function useLessonViewerState({ lessonId, moduleId, onComplete, onNavigat
   const [assessmentScore, setAssessmentScore] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -82,6 +83,14 @@ export function useLessonViewerState({ lessonId, moduleId, onComplete, onNavigat
   // Tracks whether the initial page position has been restored from backendProgress.
   // Once initialized for the current lessonId we never overwrite the user's manual navigation.
   const pageInitializedForLessonRef = useRef(null);
+  // Tracks whether the backend resume position was already reconciled for this lessonId.
+  // backendProgress llega DESPUÉS del primer render (GET async): sin esto, el
+  // puntero de resume de la BD nunca se aplicaba (quedaba bloqueado por el guard).
+  const backendResumeAppliedRef = useRef(null);
+  // True en cuanto el usuario navega manualmente — a partir de ahí jamás le saltamos la página.
+  const userNavigatedRef = useRef(false);
+  // Evita notificar el fallo de guardado más de una vez por lección.
+  const saveErrorNotifiedRef = useRef(false);
 
   const { isScrolledEnough, meetsReadingTime } = useScrollCompletion({ contentRef, estimatedTimeMinutes });
 
@@ -113,55 +122,81 @@ export function useLessonViewerState({ lessonId, moduleId, onComplete, onNavigat
       // Reset the initialisation guard so backendProgress can set the correct
       // starting page for the new lesson.
       pageInitializedForLessonRef.current = null;
+      backendResumeAppliedRef.current = null;
+      userNavigatedRef.current = false;
+      saveErrorNotifiedRef.current = false;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [lessonId]);
 
   useEffect(() => {
-    // Only restore the initial page ONCE per lessonId.
-    // If the user is manually navigating (including repeating a completed lesson)
-    // we must not reset their position on every backendProgress update.
-    if (pageInitializedForLessonRef.current === lessonId) return;
-
-    if (!backendProgress) {
-      try {
-        const savedProgress = localStorage.getItem(`lesson_progress_${lessonId}`);
-        if (savedProgress) {
-          const { currentPage: savedPage } = JSON.parse(savedProgress);
-          if (typeof savedPage === 'number' && savedPage >= 0) {
-            setCurrentPage(savedPage);
-            pageInitializedForLessonRef.current = lessonId;
-            return;
-          }
-        }
-      } catch (e) {
-        console.error('[LessonViewer] Error reading localStorage:', e);
-      }
-      setCurrentPage(0);
+    // FASE A — Inicialización inmediata (una vez por lessonId).
+    // En el primer render backendProgress todavía es null (el GET es async),
+    // así que arrancamos con el puntero de localStorage si existe.
+    if (pageInitializedForLessonRef.current !== lessonId) {
       pageInitializedForLessonRef.current = lessonId;
+
+      if (!backendProgress) {
+        try {
+          const savedProgress = localStorage.getItem(`lesson_progress_${lessonId}`);
+          if (savedProgress) {
+            const { currentPage: savedPage } = JSON.parse(savedProgress);
+            if (typeof savedPage === 'number' && savedPage >= 0) {
+              setCurrentPage(savedPage);
+              return;
+            }
+          }
+        } catch (e) {
+          console.error('[LessonViewer] Error reading localStorage:', e);
+        }
+        setCurrentPage(0);
+        return;
+      }
+      // backendProgress ya disponible al inicializar (poco frecuente):
+      // Completed lesson: start from the beginning so the user can freely navigate.
+      // In-progress lesson: resume from the last saved step.
+      backendResumeAppliedRef.current = lessonId;
+      if (backendProgress.completed) {
+        setCurrentPage(0);
+      } else if (backendProgress.currentStep && backendProgress.currentStep > 0) {
+        setCurrentPage(backendProgress.currentStep - 1);
+      } else {
+        setCurrentPage(0);
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
-    // Completed lesson: start from the beginning so the user can freely navigate.
-    // In-progress lesson: resume from the last saved step.
-    if (backendProgress.completed) {
-      setCurrentPage(0);
-    } else if (backendProgress.currentStep && backendProgress.currentStep > 0) {
-      setCurrentPage(backendProgress.currentStep - 1);
-    } else {
-      setCurrentPage(0);
+
+    // FASE B — Reconciliación diferida con el backend (una sola vez por lessonId).
+    // Cuando el GET de progreso llega después del primer render, aplicamos el
+    // puntero de la BD SOLO si el usuario aún no navegó manualmente. Se toma la
+    // posición más avanzada entre localStorage y backend (resume = última página vista).
+    if (backendResumeAppliedRef.current === lessonId) return;
+    if (!backendProgress) return;
+    backendResumeAppliedRef.current = lessonId;
+
+    if (userNavigatedRef.current) return;
+    if (backendProgress.completed) return; // completada: se queda al inicio (modo repaso)
+    if (backendProgress.currentStep && backendProgress.currentStep > 0) {
+      const backendPage = backendProgress.currentStep - 1;
+      setCurrentPage(prev => Math.max(prev, backendPage));
     }
-    pageInitializedForLessonRef.current = lessonId;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [lessonId, backendProgress]);
 
-  const handleNavigateToLesson = useCallback(async (targetLessonId, targetModuleId) => {
+  const handleNavigateToLesson = useCallback((targetLessonId, targetModuleId) => {
     if (targetLessonId === lessonId) return;
-    if (!targetLessonId || !targetModuleId) return;
-    try { await saveProgress(); } catch (error) { console.error('Failed to save progress', error); }
+    if (!targetLessonId || !targetModuleId) {
+      console.error('[LessonViewer] handleNavigateToLesson: parámetros incompletos', { targetLessonId, targetModuleId });
+      return;
+    }
+    // Optimistic UI: navegar de inmediato. El guardado corre en segundo plano;
+    // si falla, queda encolado en localStorage (_failed) y se sincroniza después.
+    Promise.resolve(saveProgress()).catch((error) => console.error('Failed to save progress', error));
     if (onNavigate) {
       onNavigate(targetLessonId, targetModuleId);
     } else if (typeof window !== 'undefined') {
-      window.location.href = `/teaching/lesson/${targetModuleId}/${targetLessonId}`;
+      // Ruta canónica: /teaching/[moduleId]/[lessonId] (la ruta /teaching/lesson/... no existe)
+      window.location.href = `/teaching/${targetModuleId}/${targetLessonId}`;
     }
   }, [lessonId, saveProgress, onNavigate]);
 
@@ -179,6 +214,7 @@ export function useLessonViewerState({ lessonId, moduleId, onComplete, onNavigat
       }
       return true;
     } catch (error) {
+      setSnackbarSeverity('error');
       setSnackbarMessage('No se pudo completar la lección automáticamente.');
       setSnackbarOpen(true);
       return false;
@@ -221,6 +257,14 @@ export function useLessonViewerState({ lessonId, moduleId, onComplete, onNavigat
   const totalPages = calculatePages.length;
   const currentPageData = calculatePages[currentPage];
 
+  // Red de seguridad: si el puntero restaurado excede el total real de páginas
+  // (contenido editado, datos viejos), lo recortamos a la última página válida.
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages - 1) {
+      setCurrentPage(totalPages - 1);
+    }
+  }, [totalPages, currentPage]);
+
   useEffect(() => {
     if (onProgressUpdate && totalPages > 0) onProgressUpdate(currentPage, totalPages);
   }, [currentPage, totalPages, onProgressUpdate]);
@@ -229,29 +273,42 @@ export function useLessonViewerState({ lessonId, moduleId, onComplete, onNavigat
 
   const totalSteps = useMemo(() => (!data?.sections || !Array.isArray(data.sections)) ? totalPages : data.sections.length, [data, totalPages]);
 
+  // Aviso único por lección cuando el guardado remoto falla: la posición queda
+  // en localStorage y se sincroniza después, pero el usuario debe saberlo.
+  const notifySaveError = useCallback(() => {
+    if (saveErrorNotifiedRef.current) return;
+    saveErrorNotifiedRef.current = true;
+    setSnackbarSeverity('warning');
+    setSnackbarMessage('No se pudo guardar tu progreso en el servidor. Tu posición quedó guardada en este dispositivo y se sincronizará automáticamente.');
+    setSnackbarOpen(true);
+  }, []);
+
   const handleNextPage = useCallback(async () => {
     if (currentPage < totalPages - 1) {
+      userNavigatedRef.current = true;
       setCurrentPage(c => c + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      try { await savePageProgress(currentPage + 1, totalPages, totalSteps); } catch (e) {}
+      try { await savePageProgress(currentPage + 1, totalPages, totalSteps); } catch (e) { notifySaveError(); }
     }
-  }, [currentPage, totalPages, totalSteps, savePageProgress]);
+  }, [currentPage, totalPages, totalSteps, savePageProgress, notifySaveError]);
 
   const handlePrevPage = useCallback(async () => {
     if (currentPage > 0) {
+      userNavigatedRef.current = true;
       setCurrentPage(c => c - 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      try { await savePageProgress(currentPage - 1, totalPages, totalSteps); } catch (e) {}
+      try { await savePageProgress(currentPage - 1, totalPages, totalSteps); } catch (e) { notifySaveError(); }
     }
-  }, [currentPage, totalPages, totalSteps, savePageProgress]);
+  }, [currentPage, totalPages, totalSteps, savePageProgress, notifySaveError]);
 
   const handleNavigateToPage = useCallback((targetPageIndex) => {
     if (targetPageIndex >= 0 && targetPageIndex < totalPages) {
+      userNavigatedRef.current = true;
       setCurrentPage(targetPageIndex);
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      savePageProgress(targetPageIndex, totalPages, totalSteps);
+      savePageProgress(targetPageIndex, totalPages, totalSteps).catch(() => { notifySaveError(); });
     }
-  }, [totalPages, totalSteps, savePageProgress]);
+  }, [totalPages, totalSteps, savePageProgress, notifySaveError]);
 
   const handleSelectLesson = useCallback((index) => {
     if (!module?.lessons) return;
@@ -292,7 +349,7 @@ export function useLessonViewerState({ lessonId, moduleId, onComplete, onNavigat
     data, isLoading, error, refetch, module, moduleCompletion, isModuleCompleted,
     totalLessons, completedLessonsCount, currentLessonIndex, lessonType, isFirstLesson,
     caseAnswers, showCaseAnswers, assessmentAnswers, showAssessmentResults, assessmentScore,
-    snackbarOpen, snackbarMessage, completionDialogOpen, currentPage, showConfetti,
+    snackbarOpen, snackbarMessage, snackbarSeverity, completionDialogOpen, currentPage, showConfetti,
     contentRef, isRateLimited, showResumeAlert, backendProgress, localProgress,
     dismissResumeAlert, totalPages, currentPageData, topicContext, totalSteps,
     wasLessonCompletedOnEntry,

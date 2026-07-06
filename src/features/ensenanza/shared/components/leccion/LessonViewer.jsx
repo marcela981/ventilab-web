@@ -220,7 +220,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
     data, isLoading, error, refetch, module, moduleCompletion, isModuleCompleted,
     totalLessons, completedLessonsCount, currentLessonIndex, lessonType, isFirstLesson,
     caseAnswers, showCaseAnswers, assessmentAnswers, showAssessmentResults, assessmentScore,
-    snackbarOpen, snackbarMessage, completionDialogOpen, currentPage, showConfetti,
+    snackbarOpen, snackbarMessage, snackbarSeverity, completionDialogOpen, currentPage, showConfetti,
     contentRef, isRateLimited, showResumeAlert, backendProgress, localProgress,
     dismissResumeAlert, totalPages, currentPageData, topicContext, totalSteps,
     wasLessonCompletedOnEntry,
@@ -728,7 +728,7 @@ const LessonViewer = memo(({ lessonId, moduleId, onComplete, onNavigate, default
           onClose={handleCloseSnackbar}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
-          <Alert onClose={handleCloseSnackbar} severity="success" variant="filled">
+          <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity || 'success'} variant="filled">
             {snackbarMessage}
           </Alert>
         </Snackbar>

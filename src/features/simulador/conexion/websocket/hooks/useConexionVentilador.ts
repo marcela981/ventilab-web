@@ -6,7 +6,7 @@
  *   Reusa useRemoteVentilator (reserva vía simulatorApi.reserve/release y telemetría
  *   WebSocket); NO duplica lógica de backend ni de MQTT. El hook concentra el estado
  *   y las acciones con guardas; el render vive en componentes presentacionales (UI/).
- * Versión: 1.0
+ * Versión: 1.1
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -40,6 +40,8 @@ export interface UseConexionVentiladorReturn {
   mensaje: string;
   /** Reserva activa de ESTE usuario sobre el ventilador. */
   tieneReserva: boolean;
+  /** Nombre del usuario que tiene reservado el ventilador (null si está libre o es propio). */
+  reservadoPor: string | null;
   /** WebSocket con el backend (puerta de enlace al broker MQTT). */
   socketConectado: boolean;
   /** Estado reportado por el backend para el ventilador físico. */
@@ -79,6 +81,7 @@ export function useConexionVentilador(): UseConexionVentiladorReturn {
   const {
     isSocketConnected,
     hasReservation,
+    occupiedBy,
     ventilatorStatus,
     reservation,
     requestReservation,
@@ -176,8 +179,11 @@ export function useConexionVentilador(): UseConexionVentiladorReturn {
 
   const guardas = useMemo(
     () => ({
+      // Además del estado de la FSM, el recurso único debe estar libre: si otro
+      // usuario lo tiene reservado (occupiedBy) el botón Reservar se deshabilita.
       puedeReservar:
         !ocupado &&
+        occupiedBy === null &&
         (estadoEfectivo === 'SIN_RESERVA' ||
           estadoEfectivo === 'DESCONECTADO' ||
           estadoEfectivo === 'ERROR'),
@@ -185,13 +191,14 @@ export function useConexionVentilador(): UseConexionVentiladorReturn {
       puedeDesconectar: estadoEfectivo === 'CONECTADO' || estadoEfectivo === 'CONECTANDO',
       puedeLiberar: !ocupado && hasReservation,
     }),
-    [estadoEfectivo, ocupado, hasReservation],
+    [estadoEfectivo, ocupado, hasReservation, occupiedBy],
   );
 
   return {
     estado: estadoEfectivo,
     mensaje: mensajeEfectivo,
     tieneReserva: hasReservation,
+    reservadoPor: occupiedBy ? occupiedBy.name ?? 'otro usuario' : null,
     socketConectado: isSocketConnected,
     estadoVentilador: ventilatorStatus,
     minutosRestantes: reservation?.remainingMinutes ?? 0,

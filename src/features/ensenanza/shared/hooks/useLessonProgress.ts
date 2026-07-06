@@ -135,14 +135,18 @@ export function useLessonProgress({
     const completionPercentage = forceComplete ? 100 : localProgress;
 
     // Try to get step data from localStorage (from previous savePageProgress calls)
+    // IMPORTANT: also preserve currentPage — es el puntero de resume que lee
+    // useLessonViewerState al montar la lección. NUNCA sobreescribirlo con undefined.
     let currentStep: number | undefined;
     let totalSteps: number | undefined;
+    let currentPage: number | undefined;
     try {
       const cached = localStorage.getItem(`lesson_progress_${lessonId}`);
       if (cached) {
         const cachedData = JSON.parse(cached);
         currentStep = cachedData.currentStep;
         totalSteps = cachedData.totalSteps;
+        currentPage = cachedData.currentPage;
       }
     } catch (e) {
       // Ignore localStorage errors
@@ -155,6 +159,7 @@ export function useLessonProgress({
         scrollPosition: scrollPositionRef.current,
         currentStep,
         totalSteps,
+        ...(typeof currentPage === 'number' && { currentPage }),
         timestamp: Date.now(),
       }));
     } catch (e) {
@@ -494,9 +499,23 @@ export function useLessonProgress({
           timestamp: Date.now(),
           error: error instanceof Error ? error.message : 'Unknown error',
         }));
+        // CRITICAL: también persistir el puntero de resume en la clave principal.
+        // Aunque el backend haya fallado, al reabrir la lección debe reanudar
+        // en esta página (useLessonViewerState lee `currentPage` de esta clave).
+        localStorage.setItem(`lesson_progress_${lessonId}`, JSON.stringify({
+          progress: pageProgress,
+          currentPage,
+          totalPages,
+          currentStep,
+          totalSteps: stepsTotal,
+          scrollPosition: 0,
+          timestamp: Date.now(),
+        }));
       } catch (e) {
         // Ignore localStorage errors
       }
+      // Notificar al llamador para que la UI avise que el guardado falló
+      throw error;
     } finally {
       setIsSaving(false);
     }
@@ -745,19 +764,32 @@ export function useLessonProgress({
     // Save before page unload
     const handleBeforeUnload = () => {
       if (localProgress > lastSavedProgress) {
-        
+
         // Save to localStorage immediately (always works, syncs later)
+        // CRITICAL: hacer MERGE con la clave existente — antes esta escritura
+        // sobreescribía la clave sin `currentPage`/`currentStep`, destruyendo
+        // el puntero de resume justo al salir de la lección.
         try {
+          let existing: Record<string, unknown> = {};
+          try {
+            const cached = localStorage.getItem(`lesson_progress_${lessonId}`);
+            if (cached) existing = JSON.parse(cached);
+          } catch (e) {
+            // Ignore parse errors — se sobreescribe con datos frescos
+          }
           localStorage.setItem(`lesson_progress_${lessonId}`, JSON.stringify({
+            ...existing,
             progress: localProgress,
             scrollPosition: scrollPositionRef.current,
             timestamp: Date.now(),
           }));
-          
+
           // Mark as failed save so it syncs when token is available
           localStorage.setItem(`lesson_progress_${lessonId}_failed`, JSON.stringify({
             progress: localProgress,
             scrollPosition: scrollPositionRef.current,
+            currentStep: (existing as { currentStep?: number }).currentStep,
+            totalSteps: (existing as { totalSteps?: number }).totalSteps,
             timeSpent: Math.floor((Date.now() - startTimeRef.current) / 1000),
             timestamp: Date.now(),
           }));

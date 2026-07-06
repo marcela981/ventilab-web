@@ -3,7 +3,7 @@
  * Descripción: Componente presentacional puro para el primer paso de la FSM:
  *   solicitar/liberar la reserva del ventilador (recurso único). Abre el
  *   ReservationDialog existente y delega la acción al hook vía props. Sin lógica.
- * Versión: 1.0
+ * Versión: 1.1
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -20,6 +20,8 @@ import styles from './ui/ConexionVentilador.module.css';
 
 interface PanelReservaProps {
   tieneReserva: boolean;
+  /** Nombre del usuario que ocupa el ventilador (null si está libre o es propio). */
+  reservadoPor: string | null;
   minutosRestantes: number;
   puedeReservar: boolean;
   puedeLiberar: boolean;
@@ -30,6 +32,7 @@ interface PanelReservaProps {
 
 export function PanelReserva({
   tieneReserva,
+  reservadoPor,
   minutosRestantes,
   puedeReservar,
   puedeLiberar,
@@ -53,7 +56,11 @@ export function PanelReserva({
       <div className={styles.row}>
         <span className={styles.rowLabel}>Reserva:</span>
         <span className={styles.rowValue}>
-          {tieneReserva ? `Activa · ${minutosRestantes} min restantes` : 'No reservado'}
+          {tieneReserva
+            ? `Activa · ${minutosRestantes} min restantes`
+            : reservadoPor
+              ? `Reservado por ${reservadoPor}`
+              : 'Disponible'}
         </span>
       </div>
 

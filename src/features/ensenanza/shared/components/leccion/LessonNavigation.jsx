@@ -153,7 +153,10 @@ const LessonNavigation = ({
           variant="contained"
           endIcon={currentPage === totalPages - 1 ? <RocketIcon /> : <ArrowForwardIcon />}
           onClick={currentPage === totalPages - 1 && data?.navigation?.nextLesson
-            ? () => onNavigateToLesson(data.navigation.nextLesson.id, data.moduleId)
+            // nextLesson.moduleId manda: la siguiente lección puede pertenecer a OTRO
+            // módulo (todos los módulos beginner/intermedio/avanzado tienen una sola
+            // lección). Usar siempre data.moduleId rompía la navegación cross-módulo.
+            ? () => onNavigateToLesson(data.navigation.nextLesson.id, data.navigation.nextLesson.moduleId || data.moduleId)
             : onNextPage}
           disabled={currentPage === totalPages - 1 && !data?.navigation?.nextLesson}
           size="large"

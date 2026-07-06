@@ -4,7 +4,7 @@
  *   (useConexionVentiladorContext) y cablea el estado/acciones a los componentes
  *   presentacionales PanelReserva y PanelConexion. No contiene lógica de negocio:
  *   reservar→conectar→desconectar→liberar viven en useConexionVentilador.
- * Versión: 1.0
+ * Versión: 1.1
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -23,6 +23,7 @@ export function ConexionVentiladorTab() {
     estado,
     mensaje,
     tieneReserva,
+    reservadoPor,
     socketConectado,
     minutosRestantes,
     puedeReservar,
@@ -38,6 +39,7 @@ export function ConexionVentiladorTab() {
       <div className={styles.grid}>
         <PanelReserva
           tieneReserva={tieneReserva}
+          reservadoPor={reservadoPor}
           minutosRestantes={minutosRestantes}
           puedeReservar={puedeReservar}
           puedeLiberar={puedeLiberar}

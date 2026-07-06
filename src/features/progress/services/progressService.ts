@@ -340,6 +340,7 @@ export async function updateLessonProgress(
     method: 'PUT',
     body: JSON.stringify(payload),
     authToken: token, // Always included - hard failure above ensures token exists
+    slow: true, // escritura crítica — tolera cold start de Neon (>8 s)
   });
 
   // ==========================================================================
@@ -445,6 +446,7 @@ export async function callStepUpdate(
     return null;
   }
 
+  // slow: escritura crítica — debe sobrevivir el cold start de Neon (>8 s)
   const { res, data } = await http('/progress/step/update', {
     method: 'POST',
     body: JSON.stringify({
@@ -457,6 +459,7 @@ export async function callStepUpdate(
       caseScore,
     }),
     authToken: token,
+    slow: true,
   });
 
   if (res.status === 429) {
@@ -485,6 +488,7 @@ export async function getLessonProgress(lessonId: string): Promise<LessonProgres
     const { res, data } = await http(`/progress/lesson/${lessonId}`, {
       method: 'GET',
       ...(token && { authToken: token }),
+      slow: true, // lectura del resume pointer — no bloquea la UI y tolera cold start
     });
 
     if (!res.ok) {

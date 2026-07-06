@@ -27,7 +27,11 @@ const LessonViewerRouteAdapter = ({
   const router = useRouter();
 
   // Map old callbacks to new interface
-  const handleNavigate = React.useCallback((targetModuleId, targetLessonId) => {
+  // CONTRATO: LessonViewer emite onNavigate(targetLessonId, targetModuleId) — en ese
+  // orden (ver useLessonViewerState.handleNavigateToLesson). La página espera
+  // (moduleId, lessonId), así que aquí se traduce. Antes se interpretaba al revés
+  // y "Siguiente Lección" navegaba a /teaching/<lessonId>/<moduleId> (URL invertida).
+  const handleNavigate = React.useCallback((targetLessonId, targetModuleId) => {
     if (onNavigateLesson) {
       onNavigateLesson(targetModuleId, targetLessonId);
     } else if (targetModuleId && targetLessonId) {
@@ -39,11 +43,9 @@ const LessonViewerRouteAdapter = ({
     if (onMarkComplete) {
       onMarkComplete();
     }
-    // Optionally navigate back to teaching dashboard
-    if (onClose) {
-      onClose();
-    }
-  }, [onMarkComplete, onClose]);
+    // NO llamar onClose() aquí: expulsaba al usuario a /teaching al completar,
+    // impidiendo usar "Continuar con la siguiente lección" desde la página final.
+  }, [onMarkComplete]);
 
   const handleClose = React.useCallback(() => {
     if (onClose) {
