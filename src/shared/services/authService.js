@@ -8,11 +8,15 @@
 // Configuration
 // ============================================================================
 
+import { BACKEND_API_URL } from '@/config/env';
+
 /**
- * Get the API base URL from environment variables
- * Falls back to localhost if not defined
+ * Base URL del backend, resuelta centralmente en config/env (misma fuente que
+ * los clientes axios). Antes usaba NEXT_PUBLIC_API_URL con fallback :3001 —
+ * esa variable no existe en el .env, así que todas las llamadas de este
+ * servicio iban a un puerto muerto.
  */
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_URL = BACKEND_API_URL;
 
 /**
  * Local storage key for storing authentication token
@@ -334,7 +338,10 @@ export const getCurrentUser = async () => {
     };
   }
 
-  const response = await makeRequest('/auth/me', {
+  // GET /users/me (profile.controller) devuelve { user }. El viejo /auth/me
+  // del backend es un stub que responde solo un mensaje, sin datos de usuario,
+  // por lo que refreshUser() nunca reflejaba los cambios guardados.
+  const response = await makeRequest('/users/me', {
     method: 'GET',
   });
 
@@ -445,125 +452,11 @@ export const resetPassword = async (token, newPassword) => {
   });
 };
 
-/**
- * Get current user's profile
- * @returns {Promise<Object>} Response object containing user profile data
- *
- * @example
- * const result = await getProfile();
- * if (result.success) {
- *   console.log('Profile:', result.data.user);
- * }
- */
-export const getProfile = async () => {
-  const response = await makeRequest('/users/profile', {
-    method: 'GET',
-  });
-
-  // Update stored user data if request successful
-  if (response.success && response.data?.user) {
-    setUserData(response.data.user);
-  }
-
-  return response;
-};
-
-/**
- * Update current user's profile
- * @param {Object} updates - Object containing fields to update (name, bio)
- * @returns {Promise<Object>} Response object containing updated user data
- *
- * @example
- * const result = await updateProfile({ name: 'New Name', bio: 'Medical student' });
- * if (result.success) {
- *   console.log('Profile updated:', result.data.user);
- * }
- */
-export const updateProfile = async (updates) => {
-  const response = await makeRequest('/users/profile', {
-    method: 'PUT',
-    body: JSON.stringify(updates),
-  });
-
-  // Update stored user data if request successful
-  if (response.success && response.data?.user) {
-    setUserData(response.data.user);
-  }
-
-  return response;
-};
-
-/**
- * Upload user avatar
- * @param {string} avatarData - Base64 encoded image data or URL
- * @returns {Promise<Object>} Response object containing updated user data
- *
- * @example
- * const result = await uploadAvatar('data:image/png;base64,...');
- * if (result.success) {
- *   console.log('Avatar updated:', result.data.user);
- * }
- */
-export const uploadAvatar = async (avatarData) => {
-  const response = await makeRequest('/users/profile/avatar', {
-    method: 'POST',
-    body: JSON.stringify({ avatarUrl: avatarData }),
-  });
-
-  // Update stored user data if request successful
-  if (response.success && response.data?.user) {
-    setUserData(response.data.user);
-  }
-
-  return response;
-};
-
-/**
- * Change user's password
- * @param {string} currentPassword - Current password for verification
- * @param {string} newPassword - New password to set
- * @param {string} confirmPassword - Confirmation of new password
- * @returns {Promise<Object>} Response object indicating if password was changed
- *
- * @example
- * const result = await changePassword('oldPass123', 'newPass456', 'newPass456');
- * if (result.success) {
- *   console.log('Password changed successfully');
- * }
- */
-export const changePassword = async (currentPassword, newPassword, confirmPassword) => {
-  return await makeRequest('/users/profile/password', {
-    method: 'PUT',
-    body: JSON.stringify({ currentPassword, newPassword, confirmPassword }),
-  });
-};
-
-/**
- * Get user's profile statistics and learning progress
- * @returns {Promise<Object>} Response object with user statistics
- *
- * @example
- * const result = await getProfileStats();
- * if (result.success) {
- *   console.log('Stats:', result.data);
- *   // {
- *   //   lessonsCompleted: 12,
- *   //   totalLessons: 30,
- *   //   modulesCompleted: 3,
- *   //   totalModules: 8,
- *   //   totalTime: "3 horas 45 minutos",
- *   //   streakDays: 5,
- *   //   lastActivity: "Hace 2 días",
- *   //   progressPercent: 40,
- *   //   recentLessons: [...]
- *   // }
- * }
- */
-export const getProfileStats = async () => {
-  return await makeRequest('/users/profile/stats', {
-    method: 'GET',
-  });
-};
+// NOTA: las funciones de perfil (getProfile, updateProfile, uploadAvatar,
+// changePassword, getProfileStats) se eliminaron de este servicio: apuntaban
+// a rutas /users/profile* que nunca existieron en el backend. El cliente
+// vigente del perfil es src/features/profile/profile.api.ts (httpSlow,
+// rutas reales /users/me*).
 
 /**
  * Refresh backend JWT token from an active NextAuth session.

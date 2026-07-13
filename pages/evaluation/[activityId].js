@@ -7,7 +7,11 @@
  *              - EXAM  → ExamRenderer  (paginado, temporizador, sin feedback)
  *              Para actividades sin preguntas estructuradas muestra instrucciones
  *              y el formulario de entrega (SubmissionForm).
- * Versión: 2.0
+ *              Política de intento único: el backend manda. El envío se espera
+ *              (no es best-effort); un 409 already_completed se refleja como
+ *              "Ya realizada" con el intento previo, y un fallo de red muestra
+ *              error con reintento en vez de un éxito local falso.
+ * Versión: 2.1
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -16,9 +20,10 @@
  * Contacto: marcela.mazo@correounivalle.edu.co
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import {
+  Alert,
   Box,
   Button,
   CircularProgress,
@@ -59,6 +64,15 @@ export default function ActivityDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Intento único — el backend manda; la UI solo refleja su respuesta.
+  // alreadyCompleted: había intento/entrega al montar, o el backend devolvió
+  // 409 already_completed al enviar. pendingSubmitRef guarda el último payload
+  // para poder reintentar tras un fallo de red sin perder respuestas.
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [alreadyCompleted, setAlreadyCompleted] = useState(false);
+  const pendingSubmitRef = useRef(null);
+
   useEffect(() => {
     if (!activityId) return;
     const run = async () => {
@@ -72,12 +86,14 @@ export default function ActivityDetailPage() {
           ]);
           setQuiz(q);
           setQuizAttempt(attempt);
+          if (attempt) setAlreadyCompleted(true);
         } else {
           const a = await activityApi.getById(String(activityId));
           setActivity(a);
           if (!isTeacher || !isTeacher()) {
             const s = await submissionApi.getOrCreateForActivity(String(activityId));
             setSubmission(s);
+            if (s && ['SUBMITTED', 'GRADED'].includes(s.status)) setAlreadyCompleted(true);
           }
         }
       } catch (e) {
@@ -129,16 +145,28 @@ export default function ActivityDetailPage() {
   if (quiz) {
     const quizId = String(activityId);
 
-    const handleQuizSubmitted = async ({ answers, score, correct, total, passed }) => {
+    // El intento solo cuenta si el backend lo registró: se espera su respuesta
+    // antes de dar por buena la nota. 409 → reflejar el intento previo.
+    const submitQuizToBackend = async (answersArray) => {
+      setSubmitting(true);
+      setSubmitError(null);
       try {
-        const answersArray = Object.entries(answers ?? {}).map(
-          ([questionId, selectedOptionId]) => ({ questionId, selectedOptionId }),
-        );
-        const attempt = await quizApi.submitAttempt(quizId, answersArray);
-        setQuizAttempt(attempt);
-      } catch {
-        // ResultsScreen is already shown from local renderer state; backend is best-effort
+        const outcome = await quizApi.submitAttempt(quizId, answersArray);
+        if (outcome.alreadyCompleted) setAlreadyCompleted(true);
+        if (outcome.attempt) setQuizAttempt(outcome.attempt);
+      } catch (e) {
+        setSubmitError(e?.message ?? 'No se pudo registrar el intento. Intenta nuevamente.');
+      } finally {
+        setSubmitting(false);
       }
+    };
+
+    const handleQuizSubmitted = ({ answers }) => {
+      const answersArray = Object.entries(answers ?? {}).map(
+        ([questionId, selectedOptionId]) => ({ questionId, selectedOptionId }),
+      );
+      pendingSubmitRef.current = answersArray;
+      submitQuizToBackend(answersArray);
     };
 
     return (
@@ -154,14 +182,45 @@ export default function ActivityDetailPage() {
           </Button>
           <Typography variant="h4" className={styles.title}>{quiz.title}</Typography>
           <Divider className={styles.divider} />
-          {quizAttempt ? (
-            <ResultsScreen
-              score={quizAttempt.score}
-              correct={null}
-              total={null}
-              passed={quizAttempt.passed}
-              showEmojis
-            />
+          {submitting ? (
+            <Box className={styles.loadingBox}>
+              <CircularProgress />
+              <Typography variant="body2">Registrando intento…</Typography>
+            </Box>
+          ) : submitError ? (
+            <Stack spacing={2}>
+              <Alert severity="error">{submitError}</Alert>
+              <Box>
+                <Button
+                  variant="contained"
+                  onClick={() => submitQuizToBackend(pendingSubmitRef.current)}
+                  disabled={!pendingSubmitRef.current}
+                >
+                  Reintentar envío
+                </Button>
+              </Box>
+            </Stack>
+          ) : quizAttempt || alreadyCompleted ? (
+            <Stack spacing={2}>
+              {alreadyCompleted && (
+                <Alert severity="info">
+                  Ya realizaste esta evaluación
+                  {quizAttempt?.completedAt
+                    ? ` el ${new Date(quizAttempt.completedAt).toLocaleDateString()}`
+                    : ''}
+                  . Solo se permite un intento; contacta a tu docente si necesitas repetirla.
+                </Alert>
+              )}
+              {quizAttempt && (
+                <ResultsScreen
+                  score={quizAttempt.score}
+                  correct={null}
+                  total={null}
+                  passed={quizAttempt.passed}
+                  showEmojis
+                />
+              )}
+            </Stack>
           ) : (
             <QuizRenderer
               questions={quiz.questions ?? []}
@@ -193,32 +252,87 @@ export default function ActivityDetailPage() {
     const questions = parsedContent.questions;
     const passingScore = parsedContent.passingScore ?? 70;
 
-    // Re-entry: show previously submitted results
-    if (submittedResult || ['SUBMITTED', 'GRADED'].includes(submission?.status)) {
+    // El envío solo cuenta si el backend lo registró: se espera su respuesta.
+    // 409 → reflejar la entrega previa; otro error → mostrarlo con reintento
+    // (nunca marcar SUBMITTED localmente sin confirmación del backend).
+    const submitActivityToBackend = async (payload) => {
+      if (!submission?.id) return;
+      setSubmitting(true);
+      setSubmitError(null);
+      try {
+        await submissionApi.saveDraft(submission.id, {
+          content: JSON.stringify(payload),
+        });
+        const updated = await submissionApi.submit(submission.id);
+        setSubmission(updated);
+      } catch (e) {
+        if (e?.response?.status === 409) {
+          setAlreadyCompleted(true);
+          const prev = e.response?.data?.submission;
+          if (prev) setSubmission(prev);
+        } else {
+          setSubmitError(e?.message ?? 'No se pudo registrar el envío. Intenta nuevamente.');
+        }
+      } finally {
+        setSubmitting(false);
+      }
+    };
+
+    const handleSubmitted = ({ answers, score, correct, total, passed }) => {
+      const payload = { answers, score, correct, total, passed };
+      pendingSubmitRef.current = payload;
+      submitActivityToBackend(payload);
+    };
+
+    if (submitting) {
       return (
-        <ResultsScreen
-          score={submittedResult?.score ?? null}
-          correct={submittedResult?.correct ?? null}
-          total={submittedResult?.total ?? null}
-          passed={submittedResult?.passed ?? null}
-          showEmojis={activityType !== 'EXAM'}
-        />
+        <Box className={styles.loadingBox}>
+          <CircularProgress />
+          <Typography variant="body2">Registrando envío…</Typography>
+        </Box>
       );
     }
 
-    const handleSubmitted = async ({ answers, score, correct, total, passed }) => {
-      try {
-        if (submission?.id) {
-          await submissionApi.saveDraft(submission.id, {
-            content: JSON.stringify({ answers, score, correct, total, passed }),
-          });
-          const updated = await submissionApi.submit(submission.id);
-          setSubmission(updated);
-        }
-      } catch {
-        setSubmission((s) => (s ? { ...s, status: 'SUBMITTED' } : s));
-      }
-    };
+    if (submitError) {
+      return (
+        <Stack spacing={2}>
+          <Alert severity="error">{submitError}</Alert>
+          <Box>
+            <Button
+              variant="contained"
+              onClick={() => submitActivityToBackend(pendingSubmitRef.current)}
+              disabled={!pendingSubmitRef.current}
+            >
+              Reintentar envío
+            </Button>
+          </Box>
+        </Stack>
+      );
+    }
+
+    // Re-entry: show previously submitted results
+    if (submittedResult || ['SUBMITTED', 'GRADED'].includes(submission?.status) || alreadyCompleted) {
+      return (
+        <Stack spacing={2}>
+          {alreadyCompleted && (
+            <Alert severity="info">
+              Ya realizaste esta evaluación
+              {submission?.submittedAt
+                ? ` el ${new Date(submission.submittedAt).toLocaleDateString()}`
+                : ''}
+              . Solo se permite un intento; contacta a tu docente si necesitas repetirla.
+            </Alert>
+          )}
+          <ResultsScreen
+            score={submittedResult?.score ?? null}
+            correct={submittedResult?.correct ?? null}
+            total={submittedResult?.total ?? null}
+            passed={submittedResult?.passed ?? null}
+            showEmojis={activityType !== 'EXAM'}
+          />
+        </Stack>
+      );
+    }
 
     if (activityType === 'QUIZ') {
       return (

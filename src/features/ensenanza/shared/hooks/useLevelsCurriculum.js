@@ -16,7 +16,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { get } from '@/shared/services/api/http';
+import { httpSlow } from '@/shared/services/api/http';
 
 export function useLevelsCurriculum() {
   const [levels, setLevels] = useState([]);
@@ -30,7 +30,10 @@ export function useLevelsCurriculum() {
       try {
         setIsLoading(true);
         setError(null);
-        const data = await get('/levels/curriculum');
+        // httpSlow (60 s): el helper legacy get() usaba la instancia rápida de
+        // 8 s con 3 reintentos cortos, que muere siempre durante el cold start
+        // del pooler (>8 s) y forzaba el fallback estático sin progreso real.
+        const { data } = await httpSlow.get('/levels/curriculum');
         if (!cancelled) {
           // `data` may be the raw array or wrapped in { data: [...] }
           const levelsArray = Array.isArray(data) ? data : (data?.data ?? []);

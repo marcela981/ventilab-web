@@ -34,6 +34,7 @@
  */
 
 import http from '@/shared/services/api/http';
+import { http as progressHttp } from './http';
 import { setAuthToken, removeAuthToken } from '@/shared/services/authService';
 
 // Use the same resolved base URL as the shared axios instance for consistency
@@ -362,6 +363,20 @@ const parseResponse = async (response) => {
   // Fallback to direct payload
   return payload;
 };
+
+/**
+ * Adapta el resultado { res, data } del wrapper axios del módulo
+ * (services/http.ts) a la interfaz Response de fetch que espera
+ * parseResponse, para reusar intacto su manejo de 429/errores/envelope.
+ * axios ya parseó el body, por eso json()/text() devuelven `data` directo.
+ */
+const toFetchLikeResponse = ({ res, data }) => ({
+  ok: res.ok,
+  status: res.status,
+  headers: res.headers,
+  json: async () => data,
+  text: async () => (typeof data === 'string' ? data : JSON.stringify(data)),
+});
 
 const handleNetworkError = (error, apiBaseUrl) => {
   if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
@@ -703,24 +718,27 @@ export const getProgressSummary = async () => {
  * @param {AbortSignal} [signal] - Optional abort signal for request cancellation
  * @returns {Promise<Object>} Overview data
  */
-export const getOverview = async (signal) => {
+export const getOverview = async () => {
   return executeWithAuthRetry(async () => {
     try {
-      const url = buildUrl('/progress/overview');
-      let response;
+      // Read path del snapshot vía el wrapper axios del módulo con slow:true
+      // (httpSlow, timeout 60 s). El fetch crudo anterior NO tenía timeout y
+      // dejaba la UI esperando indefinidamente durante el cold start del
+      // pooler de Supabase. El wrapper además trae los interceptores del
+      // cliente compartido (refresh de token en 401 incluido).
+      let wrapped;
 
       try {
-        response = await fetch(url, {
-          method: 'GET',
-          headers: getAuthHeaders(),
-          credentials: 'include',
-          signal,
+        const { token } = authResolver() || {};
+        wrapped = await progressHttp('/progress/overview', {
+          slow: true,
+          authToken: token || null,
         });
       } catch (fetchError) {
         handleNetworkError(fetchError, apiBaseUrl);
       }
 
-      const data = await parseResponse(response);
+      const data = await parseResponse(toFetchLikeResponse(wrapped));
       
       // Check if result is a rate-limited response
       if (data && typeof data === 'object' && data.type === 'RATE_LIMITED') {

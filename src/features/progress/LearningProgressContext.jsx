@@ -70,10 +70,50 @@ import { inferModuleIdFromLesson } from './utils/progressHelpers';
 // Constants
 import { AUTOSAVE_INTERVAL_MS } from './utils/constants';
 
+// ============================================================================
+// Cache de pintado (stale-while-revalidate) + TTL de revalidación
+// ============================================================================
+// La BD sigue siendo la ÚNICA fuente de verdad. Acá solo se persiste la última
+// RESPUESTA del servidor (GET /progress/overview ya mergeada) para pintarla al
+// instante en el próximo montaje mientras se revalida en background. Nunca se
+// escribe progreso generado en el cliente (ver phantom-persistence guard).
+const PAINT_CACHE_PREFIX = 'vlab:progress:paintCache:v1:';
+// Revalidaciones automáticas (mount repetido, focus, tab-visible) se saltean
+// si el último snapshot del servidor tiene menos de 60 s.
+const SNAPSHOT_TTL_MS = 60_000;
+const AUTO_REVALIDATE_LABELS = ['mount', 'focus', 'tab-visible'];
+
+function readPaintCache(userId) {
+  if (typeof window === 'undefined' || !userId) return null;
+  try {
+    const raw = localStorage.getItem(`${PAINT_CACHE_PREFIX}${userId}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || !parsed.snapshot) return null;
+    return parsed; // { snapshot, savedAt }
+  } catch {
+    return null;
+  }
+}
+
+function savePaintCache(userId, snapshot) {
+  if (typeof window === 'undefined' || !userId) return;
+  try {
+    localStorage.setItem(
+      `${PAINT_CACHE_PREFIX}${userId}`,
+      JSON.stringify({ snapshot, savedAt: Date.now() }),
+    );
+  } catch {
+    // Cuota llena / modo privado: el cache es solo un acelerador, se ignora.
+  }
+}
+
 const LearningProgressContext = createContext({
   // Unified progress snapshot
   snapshot: null,
   isLoadingSnapshot: false,
+  // true solo cuando se carga SIN dato previo que pintar (gate de skeletons)
+  isLoadingProgress: false,
   snapshotError: null,
 
   // State
@@ -190,55 +230,102 @@ export const LearningProgressProvider = ({ children }) => {
     });
   }, [session]);
 
-  // Track ongoing snapshot load to prevent concurrent calls
-  const loadingSnapshotRef = useRef(false);
+  // In-flight coalescing + freshness tracking for snapshot loads
+  const inFlightSnapshotRef = useRef(null);
+  const lastSnapshotAtRef = useRef(0); // timestamp de la última respuesta del servidor
+  const snapshotRef = useRef(null);
+
+  // Mirror snapshot into a ref so the stable loadSnapshot callback can read it
+  useEffect(() => {
+    snapshotRef.current = snapshot;
+  }, [snapshot]);
+
+  const resolveUserId = () => {
+    const user = getUserData();
+    return user?.id ?? user?._id ?? sessionRef.current?.user?.id ?? null;
+  };
 
   // Load unified snapshot on mount and when session changes
   // CRITICAL: This is the PRIMARY way progress is loaded from the database
-  // DO NOT rely on localStorage - this function ALWAYS fetches from DB when authenticated
+  // DO NOT rely on localStorage as truth - this function ALWAYS fetches from DB
+  // when authenticated. The paint cache only accelerates the first paint.
   const loadSnapshot = useCallback(async (label = 'initial') => {
-    // Prevent concurrent calls
-    if (loadingSnapshotRef.current) {
-      debug.info(`Skipping loadSnapshot(${label}) - already loading`);
+    // TTL: los disparos automáticos (focus/tab-visible/re-mounts) no
+    // refetchean si el snapshot del servidor tiene menos de 60 s.
+    // refetch/upsert/migration no están en la lista y siempre revalidan.
+    if (
+      AUTO_REVALIDATE_LABELS.includes(label) &&
+      snapshotRef.current &&
+      Date.now() - lastSnapshotAtRef.current < SNAPSHOT_TTL_MS
+    ) {
+      debug.info(`Skipping loadSnapshot(${label}) - snapshot fresh (<${SNAPSHOT_TTL_MS / 1000}s)`);
       return;
     }
 
-    loadingSnapshotRef.current = true;
-    const g = debug.group(`LearningProgressProvider.load (${label})`);
-    setIsLoadingSnapshot(true);
-    setSnapshotError(null);
+    // Coalescing: un solo GET en vuelo; los llamados concurrentes (focus +
+    // visibilitychange disparan juntos en cada Alt+Tab) comparten la promesa.
+    if (inFlightSnapshotRef.current) {
+      debug.info(`Coalescing loadSnapshot(${label}) into in-flight request`);
+      return inFlightSnapshotRef.current;
+    }
 
-    try {
-      // Asegurar que el token de backend esté disponible antes de leer snapshot
-      const currentToken = getAuthToken();
-      if (!currentToken && sessionRef.current?.user) {
-        // Hay sesión NextAuth pero no token backend → recuperarlo
-        try {
-          await waitForTokenRef.current();
-        } catch (e) {
-          debug.warn('waitForToken failed before snapshot, proceeding anyway', e?.message);
+    const run = (async () => {
+      const g = debug.group(`LearningProgressProvider.load (${label})`);
+      setIsLoadingSnapshot(true);
+      setSnapshotError(null);
+
+      // Cache-first: si todavía no hay snapshot en memoria (montaje nuevo del
+      // provider), pintar de inmediato la última respuesta conocida del
+      // servidor mientras la revalidación corre en background.
+      if (!snapshotRef.current) {
+        const cached = readPaintCache(resolveUserId());
+        if (cached) {
+          g.info('painted from cache (stale, revalidating)', {
+            savedAt: new Date(cached.savedAt).toISOString(),
+          });
+          snapshotRef.current = cached.snapshot;
+          setSnapshot(cached.snapshot);
         }
       }
 
-      const s = await ProgressSource.getSnapshot();
-      setSnapshot(s);
-      g.info('loaded', { source: s.source, completed: s.overview.completedLessons, total: s.overview.totalLessons });
-    } catch (error) {
-      setSnapshotError(error?.message || 'Error al cargar el progreso');
-      g.error('failed', error?.message);
-      console.error('');
-      console.error('═══════════════════════════════════════════════════════════════');
-      console.error(`[LearningProgressContext] ❌ loadSnapshot(${label}) FAILED`);
-      console.error('═══════════════════════════════════════════════════════════════');
-      console.error('Error:', error?.message);
-      console.error('Stack:', error?.stack);
-      console.error('═══════════════════════════════════════════════════════════════');
-      console.error('');
-    } finally {
-      setIsLoadingSnapshot(false);
-      loadingSnapshotRef.current = false;
-      g.end();
-    }
+      try {
+        // Asegurar que el token de backend esté disponible antes de leer snapshot
+        const currentToken = getAuthToken();
+        if (!currentToken && sessionRef.current?.user) {
+          // Hay sesión NextAuth pero no token backend → recuperarlo
+          try {
+            await waitForTokenRef.current();
+          } catch (e) {
+            debug.warn('waitForToken failed before snapshot, proceeding anyway', e?.message);
+          }
+        }
+
+        const s = await ProgressSource.getSnapshot();
+        snapshotRef.current = s;
+        lastSnapshotAtRef.current = Date.now();
+        setSnapshot(s);
+        savePaintCache(resolveUserId(), s);
+        g.info('loaded', { source: s.source, completed: s.overview.completedLessons, total: s.overview.totalLessons });
+      } catch (error) {
+        setSnapshotError(error?.message || 'Error al cargar el progreso');
+        g.error('failed', error?.message);
+        console.error('');
+        console.error('═══════════════════════════════════════════════════════════════');
+        console.error(`[LearningProgressContext] ❌ loadSnapshot(${label}) FAILED`);
+        console.error('═══════════════════════════════════════════════════════════════');
+        console.error('Error:', error?.message);
+        console.error('Stack:', error?.stack);
+        console.error('═══════════════════════════════════════════════════════════════');
+        console.error('');
+      } finally {
+        setIsLoadingSnapshot(false);
+        inFlightSnapshotRef.current = null;
+        g.end();
+      }
+    })();
+
+    inFlightSnapshotRef.current = run;
+    return run;
   }, []);
 
   // Refetch snapshot (for revalidation)
@@ -1366,6 +1453,11 @@ export const LearningProgressProvider = ({ children }) => {
     // Unified progress snapshot
     snapshot,
     isLoadingSnapshot,
+    // Gate de skeletons: true solo cuando se carga SIN dato que pintar.
+    // TeachingModule y ProgressDashboard ya destructuraban este nombre (que
+    // no existía y quedaba undefined → skeletons muertos → pantalla vacía).
+    // Con cache de pintado presente queda en false y se pinta el dato previo.
+    isLoadingProgress: isLoadingSnapshot && !snapshot,
     snapshotError,
     refetchSnapshot: () => loadSnapshot('refetch'),
     upsertLessonProgressUnified,

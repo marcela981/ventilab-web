@@ -7,10 +7,12 @@
  * Features:
  * - Inline editing within profile view
  * - Real-time form validation
- * - Avatar upload placeholder
+ * - Avatar upload/removal persisted via PUT /users/me (image as base64 data-URL)
  * - Unsaved changes warning
  * - Success/error feedback
  * - Responsive layout
+ *
+ * Estilos: clases de ../ui/profile.module.css (variables de tema VentyLab).
  * =============================================================================
  */
 
@@ -23,7 +25,6 @@ import {
   Typography,
   TextField,
   Button,
-  Alert,
   IconButton,
   Tooltip,
   CircularProgress,
@@ -35,8 +36,9 @@ import {
   PhotoCamera as PhotoCameraIcon,
   Delete as DeleteIcon,
 } from '@mui/icons-material';
-import { updateProfile, uploadAvatar } from '@/shared/services/authService';
+import { profileApi } from '@/features/profile/profile.api';
 import { useNotification } from '@/shared/contexts/NotificationContext';
+import styles from '../ui/profile.module.css';
 
 /**
  * Get initials from name for avatar
@@ -72,7 +74,6 @@ export function EditProfileForm({ user, onSave, onCancel }) {
 
   const [formData, setFormData] = useState({
     name: user?.name || '',
-    bio: user?.bio || '',
   });
 
   const [errors, setErrors] = useState({});
@@ -80,13 +81,10 @@ export function EditProfileForm({ user, onSave, onCancel }) {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(user?.image || null);
-  const [avatarFile, setAvatarFile] = useState(null);
 
   // Track if form has been modified
   useEffect(() => {
-    const changed =
-      formData.name !== (user?.name || '') ||
-      formData.bio !== (user?.bio || '');
+    const changed = formData.name !== (user?.name || '');
     setHasChanges(changed);
   }, [formData, user]);
 
@@ -124,12 +122,6 @@ export function EditProfileForm({ user, onSave, onCancel }) {
         }
         return null;
 
-      case 'bio':
-        if (value && value.length > 500) {
-          return 'La biografía no puede exceder 500 caracteres';
-        }
-        return null;
-
       default:
         return null;
     }
@@ -146,17 +138,19 @@ export function EditProfileForm({ user, onSave, onCancel }) {
       [name]: value,
     }));
 
-    // Real-time validation
+    // Real-time validation. El campo válido se ELIMINA del objeto (no se
+    // guarda como null): el botón Guardar se deshabilita con
+    // Object.keys(errors).length, y una clave con null lo bloquearía siempre.
     const error = validateField(name, value);
-    setErrors((prev) => ({
-      ...prev,
-      [name]: error,
-    }));
-
-    // Clear API error when user starts typing
-    if (apiError) {
-      setApiError(null);
-    }
+    setErrors((prev) => {
+      const next = { ...prev };
+      if (error) {
+        next[name] = error;
+      } else {
+        delete next[name];
+      }
+      return next;
+    });
   };
 
   /**
@@ -167,7 +161,6 @@ export function EditProfileForm({ user, onSave, onCancel }) {
     const newErrors = {};
 
     newErrors.name = validateField('name', formData.name);
-    newErrors.bio = validateField('bio', formData.bio);
 
     // Remove null errors
     Object.keys(newErrors).forEach((key) => {
@@ -181,7 +174,8 @@ export function EditProfileForm({ user, onSave, onCancel }) {
   };
 
   /**
-   * Handle avatar upload
+   * Handle avatar upload — la foto se persiste vía PUT /users/me como
+   * data-URL base64 (el backend la valida y guarda en User.image).
    */
   const handleAvatarChange = async (e) => {
     const file = e.target.files?.[0];
@@ -206,21 +200,20 @@ export function EditProfileForm({ user, onSave, onCancel }) {
     reader.onloadend = async () => {
       const base64Data = reader.result;
       setAvatarPreview(base64Data);
-      setAvatarFile(base64Data);
 
       // Upload avatar immediately
       setIsUploadingAvatar(true);
       try {
-        const response = await uploadAvatar(base64Data);
+        const response = await profileApi.updateProfile({ image: base64Data });
 
         if (response.success) {
-          showSuccess('Avatar actualizado correctamente');
+          showSuccess('Foto de perfil actualizada correctamente');
           // Call onSave with updated user data
           if (onSave) {
             onSave(response.data.user);
           }
         } else {
-          showError(response.error?.message || 'Error al actualizar el avatar');
+          showError(response.error?.message || 'Error al actualizar la foto');
           // Revert preview on error
           setAvatarPreview(user?.image || null);
         }
@@ -241,27 +234,25 @@ export function EditProfileForm({ user, onSave, onCancel }) {
   };
 
   /**
-   * Handle avatar removal
+   * Handle avatar removal — image: null limpia la foto en el backend.
    */
   const handleRemoveAvatar = async () => {
     setIsUploadingAvatar(true);
     try {
-      // Upload empty avatar (null or empty string)
-      const response = await uploadAvatar('');
+      const response = await profileApi.updateProfile({ image: null });
 
       if (response.success) {
-        showSuccess('Avatar eliminado correctamente');
+        showSuccess('Foto de perfil eliminada correctamente');
         setAvatarPreview(null);
-        setAvatarFile(null);
         if (onSave) {
           onSave(response.data.user);
         }
       } else {
-        showError(response.error?.message || 'Error al eliminar el avatar');
+        showError(response.error?.message || 'Error al eliminar la foto');
       }
     } catch (error) {
       console.error('Error removing avatar:', error);
-      showError('Error inesperado al eliminar el avatar');
+      showError('Error inesperado al eliminar la foto');
     } finally {
       setIsUploadingAvatar(false);
     }
@@ -293,9 +284,6 @@ export function EditProfileForm({ user, onSave, onCancel }) {
       if (formData.name !== (user?.name || '')) {
         updates.name = formData.name.trim();
       }
-      if (formData.bio !== (user?.bio || '')) {
-        updates.bio = formData.bio.trim();
-      }
 
       // Check if there are actually changes to send
       if (Object.keys(updates).length === 0) {
@@ -305,7 +293,7 @@ export function EditProfileForm({ user, onSave, onCancel }) {
       }
 
       // Call API to update profile
-      const response = await updateProfile(updates);
+      const response = await profileApi.updateProfile(updates);
 
       if (response.success) {
         showSuccess('Perfil actualizado correctamente');
@@ -330,7 +318,7 @@ export function EditProfileForm({ user, onSave, onCancel }) {
   };
 
   /**
-   * showInfo helper (using showWarning if showInfo doesn't exist)
+   * showInfo helper (using showSuccess if showInfo doesn't exist)
    */
   const showInfo = (message) => {
     showSuccess(message); // Or use a custom info notification
@@ -352,48 +340,19 @@ export function EditProfileForm({ user, onSave, onCancel }) {
   };
 
   return (
-    <Card
-      elevation={3}
-      sx={{
-        position: 'relative',
-        overflow: 'visible',
-        borderRadius: 3,
-      }}
-    >
+    <Card elevation={3} className={styles.card}>
       {/* Background gradient header */}
-      <Box
-        sx={{
-          height: 120,
-          background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
-          position: 'relative',
-        }}
-      />
+      <Box className={styles.cardBanner} />
 
-      <CardContent sx={{ pt: 0, px: { xs: 2, sm: 4 }, pb: 4 }}>
+      <CardContent className={styles.cardContent}>
         {/* Avatar Section */}
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            position: 'relative',
-            mt: -8,
-          }}
-        >
+        <Box className={styles.avatarSection}>
           {/* Avatar with edit overlay */}
-          <Box sx={{ position: 'relative' }}>
+          <Box className={styles.avatarWrap}>
             <Avatar
               src={avatarPreview}
               alt={formData.name || 'Usuario'}
-              sx={{
-                width: 140,
-                height: 140,
-                border: '5px solid white',
-                boxShadow: 3,
-                bgcolor: 'primary.main',
-                fontSize: '3rem',
-                fontWeight: 600,
-              }}
+              className={styles.avatar}
             >
               {getInitials(formData.name)}
             </Avatar>
@@ -403,20 +362,7 @@ export function EditProfileForm({ user, onSave, onCancel }) {
               <IconButton
                 component="label"
                 disabled={isUploadingAvatar || isSubmitting}
-                sx={{
-                  position: 'absolute',
-                  bottom: 0,
-                  right: 0,
-                  bgcolor: 'primary.main',
-                  color: 'white',
-                  '&:hover': {
-                    bgcolor: 'primary.dark',
-                  },
-                  boxShadow: 2,
-                  '&.Mui-disabled': {
-                    bgcolor: 'action.disabledBackground',
-                  },
-                }}
+                className={styles.avatarUploadBtn}
               >
                 {isUploadingAvatar ? (
                   <CircularProgress size={20} color="inherit" />
@@ -439,20 +385,7 @@ export function EditProfileForm({ user, onSave, onCancel }) {
                 <IconButton
                   onClick={handleRemoveAvatar}
                   disabled={isUploadingAvatar || isSubmitting}
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    right: 0,
-                    bgcolor: 'error.main',
-                    color: 'white',
-                    '&:hover': {
-                      bgcolor: 'error.dark',
-                    },
-                    boxShadow: 2,
-                    '&.Mui-disabled': {
-                      bgcolor: 'action.disabledBackground',
-                    },
-                  }}
+                  className={styles.avatarRemoveBtn}
                   size="small"
                 >
                   <DeleteIcon fontSize="small" />
@@ -464,7 +397,7 @@ export function EditProfileForm({ user, onSave, onCancel }) {
           <Typography
             variant="caption"
             color="text.secondary"
-            sx={{ mt: 2, textAlign: 'center' }}
+            className={styles.avatarCaption}
           >
             {isUploadingAvatar
               ? 'Subiendo imagen...'
@@ -477,7 +410,7 @@ export function EditProfileForm({ user, onSave, onCancel }) {
           component="form"
           onSubmit={handleSubmit}
           noValidate
-          sx={{ mt: 4 }}
+          className={styles.formSection}
         >
 
           <Grid container spacing={3}>
@@ -512,51 +445,16 @@ export function EditProfileForm({ user, onSave, onCancel }) {
                 }}
               />
             </Grid>
-
-            {/* Bio Field */}
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Biografía"
-                name="bio"
-                value={formData.bio}
-                onChange={handleChange}
-                error={!!errors.bio}
-                helperText={
-                  errors.bio ||
-                  `${formData.bio.length}/500 caracteres`
-                }
-                multiline
-                rows={4}
-                disabled={isSubmitting}
-                placeholder="Cuéntanos un poco sobre ti..."
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-            </Grid>
           </Grid>
 
           {/* Action Buttons */}
-          <Box
-            sx={{
-              display: 'flex',
-              gap: 2,
-              justifyContent: 'flex-end',
-              mt: 4,
-            }}
-          >
+          <Box className={styles.actionsRow}>
             <Button
               variant="outlined"
               onClick={handleCancelClick}
               disabled={isSubmitting}
               startIcon={<CancelIcon />}
-              sx={{
-                textTransform: 'none',
-                fontWeight: 600,
-                borderRadius: 2,
-                px: 3,
-              }}
+              className={styles.actionBtn}
             >
               Cancelar
             </Button>
@@ -577,12 +475,7 @@ export function EditProfileForm({ user, onSave, onCancel }) {
                   <SaveIcon />
                 )
               }
-              sx={{
-                textTransform: 'none',
-                fontWeight: 600,
-                borderRadius: 2,
-                px: 3,
-              }}
+              className={styles.actionBtn}
             >
               {isSubmitting
                 ? 'Guardando...'
@@ -598,4 +491,3 @@ export function EditProfileForm({ user, onSave, onCancel }) {
 }
 
 export default EditProfileForm;
-

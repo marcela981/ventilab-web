@@ -11,6 +11,8 @@
  * - Member since date with locale formatting
  * - Edit mode toggle
  * - Responsive design with Material UI
+ *
+ * Estilos: clases de ../ui/profile.module.css (variables de tema VentyLab).
  * =============================================================================
  */
 
@@ -25,8 +27,6 @@ import {
   Button,
   Divider,
   Grid,
-  IconButton,
-  Tooltip,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -36,6 +36,7 @@ import {
   Person as PersonIcon,
 } from '@mui/icons-material';
 import { ROLE_DISPLAY_NAMES } from '@/lib/auth-config';
+import styles from '../ui/profile.module.css';
 
 /**
  * Get initials from name for avatar
@@ -92,7 +93,6 @@ const formatMemberSince = (date) => {
  * @param {string} props.user.email - User's email
  * @param {string} props.user.role - User's role
  * @param {string} props.user.image - User's avatar image URL
- * @param {string} props.user.bio - User's bio
  * @param {string} props.user.createdAt - User's registration date
  * @param {boolean} props.isEditMode - Whether edit mode is active
  * @param {Function} props.onEditToggle - Callback to toggle edit mode
@@ -118,47 +118,18 @@ export function ProfileInfo({ user, isEditMode, onEditToggle }) {
   }
 
   return (
-    <Card
-      elevation={3}
-      sx={{
-        position: 'relative',
-        overflow: 'visible',
-        borderRadius: 3,
-      }}
-    >
+    <Card elevation={3} className={styles.card}>
       {/* Background gradient header */}
-      <Box
-        sx={{
-          height: 120,
-          background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
-          position: 'relative',
-        }}
-      />
+      <Box className={styles.cardBanner} />
 
-      <CardContent sx={{ pt: 0, px: { xs: 2, sm: 4 }, pb: 4 }}>
+      <CardContent className={styles.cardContent}>
         {/* Avatar Section */}
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            position: 'relative',
-            mt: -8,
-          }}
-        >
+        <Box className={styles.avatarSection}>
           {/* Avatar */}
           <Avatar
             src={user.image}
             alt={user.name || 'Usuario'}
-            sx={{
-              width: 140,
-              height: 140,
-              border: '5px solid white',
-              boxShadow: 3,
-              bgcolor: 'primary.main',
-              fontSize: '3rem',
-              fontWeight: 600,
-            }}
+            className={styles.avatar}
           >
             {getInitials(user.name)}
           </Avatar>
@@ -169,13 +140,7 @@ export function ProfileInfo({ user, isEditMode, onEditToggle }) {
               variant="contained"
               startIcon={<EditIcon />}
               onClick={onEditToggle}
-              sx={{
-                mt: 2,
-                textTransform: 'none',
-                fontWeight: 600,
-                borderRadius: 2,
-                px: 3,
-              }}
+              className={`${styles.actionBtn} ${styles.editProfileBtn}`}
             >
               Editar Perfil
             </Button>
@@ -183,75 +148,48 @@ export function ProfileInfo({ user, isEditMode, onEditToggle }) {
         </Box>
 
         {/* User Information */}
-        <Box sx={{ mt: 3 }}>
+        <Box className={styles.formSection}>
           {/* Name */}
           <Typography
             variant="h4"
             align="center"
             fontWeight={700}
             gutterBottom
-            sx={{ mb: 1 }}
+            className={styles.nameHeading}
           >
             {user.name || 'Usuario'}
           </Typography>
 
-          {/* Bio */}
-          {user.bio && (
-            <Typography
-              variant="body1"
-              align="center"
-              color="text.secondary"
-              sx={{ mb: 2, maxWidth: 600, mx: 'auto' }}
-            >
-              {user.bio}
-            </Typography>
-          )}
-
           {/* Role Badge */}
-          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+          <Box className={styles.centerRow}>
             <Chip
               icon={<BadgeIcon />}
               label={ROLE_DISPLAY_NAMES[user.role] || user.role}
               color={getRoleColor(user.role)}
               size="medium"
-              sx={{
-                fontWeight: 600,
-                fontSize: '0.95rem',
-                px: 1,
-              }}
+              className={styles.roleChip}
             />
           </Box>
 
-          <Divider sx={{ my: 3 }} />
+          <Divider className={styles.sectionDivider} />
 
           {/* Information Grid */}
-          <Grid container spacing={3} sx={{ mt: 1 }}>
+          <Grid container spacing={3} className={styles.infoGrid}>
             {/* Email */}
             <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box
-                  sx={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 2,
-                    bgcolor: 'primary.lighter',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
+              <Box className={styles.infoTile}>
+                <Box className={`${styles.infoTileIcon} ${styles.tintPrimary}`}>
                   <EmailIcon color="primary" />
                 </Box>
-                <Box sx={{ flexGrow: 1 }}>
+                <Box className={styles.infoTileBody}>
                   <Typography
                     variant="caption"
                     color="text.secondary"
-                    fontWeight={600}
-                    sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}
+                    className={styles.infoLabel}
                   >
                     Correo Electrónico
                   </Typography>
-                  <Typography variant="body1" fontWeight={500} noWrap>
+                  <Typography variant="body1" className={styles.infoValue} noWrap>
                     {user.email}
                   </Typography>
                 </Box>
@@ -260,30 +198,19 @@ export function ProfileInfo({ user, isEditMode, onEditToggle }) {
 
             {/* Member Since */}
             <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box
-                  sx={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 2,
-                    bgcolor: 'success.lighter',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
+              <Box className={styles.infoTile}>
+                <Box className={`${styles.infoTileIcon} ${styles.tintSuccess}`}>
                   <CalendarIcon color="success" />
                 </Box>
-                <Box sx={{ flexGrow: 1 }}>
+                <Box className={styles.infoTileBody}>
                   <Typography
                     variant="caption"
                     color="text.secondary"
-                    fontWeight={600}
-                    sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}
+                    className={styles.infoLabel}
                   >
                     Registro
                   </Typography>
-                  <Typography variant="body1" fontWeight={500}>
+                  <Typography variant="body1" className={styles.infoValue}>
                     {formatMemberSince(user.createdAt)}
                   </Typography>
                 </Box>
@@ -292,30 +219,19 @@ export function ProfileInfo({ user, isEditMode, onEditToggle }) {
 
             {/* Additional User Role Info */}
             <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box
-                  sx={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 2,
-                    bgcolor: 'secondary.lighter',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
+              <Box className={styles.infoTile}>
+                <Box className={`${styles.infoTileIcon} ${styles.tintSecondary}`}>
                   <PersonIcon color="secondary" />
                 </Box>
-                <Box sx={{ flexGrow: 1 }}>
+                <Box className={styles.infoTileBody}>
                   <Typography
                     variant="caption"
                     color="text.secondary"
-                    fontWeight={600}
-                    sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}
+                    className={styles.infoLabel}
                   >
                     Tipo de Cuenta
                   </Typography>
-                  <Typography variant="body1" fontWeight={500}>
+                  <Typography variant="body1" className={styles.infoValue}>
                     {ROLE_DISPLAY_NAMES[user.role] || user.role}
                   </Typography>
                 </Box>
@@ -324,32 +240,25 @@ export function ProfileInfo({ user, isEditMode, onEditToggle }) {
 
             {/* Account Status */}
             <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box className={styles.infoTile}>
                 <Box
-                  sx={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 2,
-                    bgcolor: user.isActive ? 'success.lighter' : 'error.lighter',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
+                  className={`${styles.infoTileIcon} ${
+                    user.isActive !== false ? styles.tintSuccess : styles.tintError
+                  }`}
                 >
                   <BadgeIcon
-                    color={user.isActive ? 'success' : 'error'}
+                    color={user.isActive !== false ? 'success' : 'error'}
                   />
                 </Box>
-                <Box sx={{ flexGrow: 1 }}>
+                <Box className={styles.infoTileBody}>
                   <Typography
                     variant="caption"
                     color="text.secondary"
-                    fontWeight={600}
-                    sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}
+                    className={styles.infoLabel}
                   >
                     Estado
                   </Typography>
-                  <Typography variant="body1" fontWeight={500}>
+                  <Typography variant="body1" className={styles.infoValue}>
                     {user.isActive !== false ? 'Cuenta Activa' : 'Cuenta Inactiva'}
                   </Typography>
                 </Box>
@@ -363,4 +272,3 @@ export function ProfileInfo({ user, isEditMode, onEditToggle }) {
 }
 
 export default ProfileInfo;
-

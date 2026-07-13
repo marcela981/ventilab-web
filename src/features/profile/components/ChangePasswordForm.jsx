@@ -5,12 +5,14 @@
  * Form for changing user password with validation and security requirements.
  *
  * Features:
- * - Current password verification
+ * - Current password verification (POST /users/me/change-password)
  * - Password strength indicator
- * - Password confirmation matching
+ * - Password confirmation matching (solo en el formulario)
  * - Show/hide password toggle
  * - Real-time validation
  * - Success/error feedback
+ *
+ * Estilos: clases de ../ui/profile.module.css (variables de tema VentyLab).
  * =============================================================================
  */
 
@@ -40,8 +42,9 @@ import {
   Close as CloseIcon,
   Save as SaveIcon,
 } from '@mui/icons-material';
-import { changePassword } from '@/shared/services/authService';
+import { profileApi } from '@/features/profile/profile.api';
 import { useNotification } from '@/shared/contexts/NotificationContext';
+import styles from '../ui/profile.module.css';
 
 /**
  * Password strength calculation
@@ -258,10 +261,11 @@ export function ChangePasswordForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await changePassword(
+      // El backend solo recibe currentPassword y newPassword; la confirmación
+      // se valida en este formulario.
+      const response = await profileApi.changePassword(
         formData.currentPassword,
-        formData.newPassword,
-        formData.confirmPassword
+        formData.newPassword
       );
 
       if (response.success) {
@@ -273,17 +277,17 @@ export function ChangePasswordForm() {
           newPassword: '',
           confirmPassword: '',
         });
-        
+
         // Clear errors
         setErrors({});
       } else {
         // Handle specific error messages from backend
         const errorMsg = response.error?.message || 'Error al cambiar la contraseña';
-        
+
         // Check for specific error types
-        if (errorMsg.includes('actual incorrecta') || errorMsg.includes('Contraseña actual incorrecta')) {
+        if (errorMsg.includes('actual no es correcta') || errorMsg.includes('actual incorrecta')) {
           showError('Contraseña actual incorrecta');
-        } else if (errorMsg.includes('no coinciden') || errorMsg.includes('Las contraseñas no coinciden')) {
+        } else if (errorMsg.includes('no coinciden')) {
           showError('Las contraseñas no coinciden');
         } else if (errorMsg.includes('diferente')) {
           showError('La nueva contraseña debe ser diferente a la actual');
@@ -300,22 +304,12 @@ export function ChangePasswordForm() {
   };
 
   return (
-    <Card elevation={3} sx={{ borderRadius: 3 }}>
-      <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
+    <Card elevation={3} className={styles.cardPlain}>
+      <CardContent className={styles.cardContentPadded}>
         {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-          <Box
-            sx={{
-              width: 56,
-              height: 56,
-              borderRadius: 2,
-              bgcolor: 'warning.lighter',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <LockIcon sx={{ fontSize: 32, color: 'warning.main' }} />
+        <Box className={styles.pwHeader}>
+          <Box className={`${styles.pwHeaderIcon} ${styles.tintWarning}`}>
+            <LockIcon className={styles.pwLockIcon} />
           </Box>
           <Box>
             <Typography variant="h5" fontWeight={700}>
@@ -327,7 +321,7 @@ export function ChangePasswordForm() {
           </Box>
         </Box>
 
-        <Divider sx={{ mb: 3 }} />
+        <Divider className={styles.pwDivider} />
 
         {/* Form */}
         <Box component="form" onSubmit={handleSubmit} noValidate>
@@ -343,7 +337,7 @@ export function ChangePasswordForm() {
             helperText={errors.currentPassword}
             required
             disabled={isSubmitting}
-            sx={{ mb: 3 }}
+            className={styles.pwField}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -374,7 +368,7 @@ export function ChangePasswordForm() {
             helperText={errors.newPassword}
             required
             disabled={isSubmitting}
-            sx={{ mb: 2 }}
+            className={styles.pwFieldTight}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -395,14 +389,8 @@ export function ChangePasswordForm() {
 
           {/* Password Strength Indicator */}
           {formData.newPassword && (
-            <Box sx={{ mb: 3 }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  mb: 1,
-                }}
-              >
+            <Box className={styles.pwStrengthBlock}>
+              <Box className={styles.pwStrengthRow}>
                 <Typography variant="caption" color="text.secondary">
                   Fuerza de la contraseña:
                 </Typography>
@@ -418,20 +406,24 @@ export function ChangePasswordForm() {
                 variant="determinate"
                 value={passwordStrength.score}
                 color={passwordStrength.color}
-                sx={{ height: 6, borderRadius: 3 }}
+                className={styles.pwStrengthBar}
               />
             </Box>
           )}
 
           {/* Password Requirements */}
           {formData.newPassword && (
-            <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
-              <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+            <Box className={styles.pwRequirements}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                className={styles.pwReqTitle}
+              >
                 Requisitos de contraseña:
               </Typography>
               <List dense disablePadding>
-                <ListItem disablePadding sx={{ py: 0.5 }}>
-                  <ListItemIcon sx={{ minWidth: 32 }}>
+                <ListItem disablePadding className={styles.pwReqItem}>
+                  <ListItemIcon className={styles.pwReqIcon}>
                     {passwordRequirements.minLength ? (
                       <CheckIcon fontSize="small" color="success" />
                     ) : (
@@ -446,8 +438,8 @@ export function ChangePasswordForm() {
                     }}
                   />
                 </ListItem>
-                <ListItem disablePadding sx={{ py: 0.5 }}>
-                  <ListItemIcon sx={{ minWidth: 32 }}>
+                <ListItem disablePadding className={styles.pwReqItem}>
+                  <ListItemIcon className={styles.pwReqIcon}>
                     {passwordRequirements.hasLowercase ? (
                       <CheckIcon fontSize="small" color="success" />
                     ) : (
@@ -462,8 +454,8 @@ export function ChangePasswordForm() {
                     }}
                   />
                 </ListItem>
-                <ListItem disablePadding sx={{ py: 0.5 }}>
-                  <ListItemIcon sx={{ minWidth: 32 }}>
+                <ListItem disablePadding className={styles.pwReqItem}>
+                  <ListItemIcon className={styles.pwReqIcon}>
                     {passwordRequirements.hasUppercase ? (
                       <CheckIcon fontSize="small" color="success" />
                     ) : (
@@ -478,8 +470,8 @@ export function ChangePasswordForm() {
                     }}
                   />
                 </ListItem>
-                <ListItem disablePadding sx={{ py: 0.5 }}>
-                  <ListItemIcon sx={{ minWidth: 32 }}>
+                <ListItem disablePadding className={styles.pwReqItem}>
+                  <ListItemIcon className={styles.pwReqIcon}>
                     {passwordRequirements.hasNumber ? (
                       <CheckIcon fontSize="small" color="success" />
                     ) : (
@@ -510,7 +502,7 @@ export function ChangePasswordForm() {
             helperText={errors.confirmPassword}
             required
             disabled={isSubmitting}
-            sx={{ mb: 3 }}
+            className={styles.pwField}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -543,12 +535,7 @@ export function ChangePasswordForm() {
                 <SaveIcon />
               )
             }
-            sx={{
-              textTransform: 'none',
-              fontWeight: 600,
-              borderRadius: 2,
-              py: 1.5,
-            }}
+            className={styles.pwSubmitBtn}
           >
             {isSubmitting ? 'Actualizando...' : 'Cambiar Contraseña'}
           </Button>
@@ -559,4 +546,3 @@ export function ChangePasswordForm() {
 }
 
 export default ChangePasswordForm;
-

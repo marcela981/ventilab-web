@@ -1,0 +1,297 @@
+/*
+ * Funcionalidad: Estilos del módulo Perfil — cards de ajustes (info, edición, contraseña)
+ * Descripción: Reemplaza los sx inline con clases basadas en las variables de tema
+ *              de src/styles/theme.css (paleta VentyLab: --color-primary cyan,
+ *              --gradient-primary, radios y espaciados del sistema). Sin colores
+ *              hardcoded: los tintes se derivan con color-mix() desde las variables.
+ *              Los selectores duplicados (.x.x) suben especificidad por encima de
+ *              los estilos emotion de MUI sin recurrir a !important.
+ * Versión: 1.0
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
+ */
+
+/* ─── Card base (info de perfil y edición) ─────────────────────────────────── */
+
+.card.card {
+  position: relative;
+  overflow: visible; /* el avatar sobresale del banner */
+  border-radius: var(--radius-lg);
+}
+
+.cardBanner {
+  height: 120px;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.cardContent.cardContent {
+  padding: 0 var(--spacing-md) var(--spacing-xl);
+}
+
+/* Card sin banner (cambio de contraseña) */
+.cardPlain.cardPlain {
+  border-radius: var(--radius-lg);
+}
+
+.cardContentPadded.cardContentPadded {
+  padding: var(--spacing-md);
+}
+
+@media (min-width: 600px) {
+  .cardContent.cardContent {
+    padding: 0 var(--spacing-xl) var(--spacing-xl);
+  }
+
+  .cardContentPadded.cardContentPadded {
+    padding: var(--spacing-xl);
+  }
+}
+
+/* ─── Avatar ───────────────────────────────────────────────────────────────── */
+
+.avatarSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  margin-top: -64px; /* superpone el avatar sobre el banner */
+}
+
+.avatarWrap {
+  position: relative;
+}
+
+.avatar.avatar {
+  width: 140px;
+  height: 140px;
+  border: 5px solid var(--text-on-primary);
+  background-color: var(--color-primary);
+  font-size: 3rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+}
+
+.avatarUploadBtn.avatarUploadBtn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: var(--color-primary);
+  color: var(--text-on-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.avatarUploadBtn.avatarUploadBtn:hover {
+  background-color: var(--color-accent);
+}
+
+.avatarRemoveBtn.avatarRemoveBtn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: var(--color-error);
+  color: var(--text-on-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.avatarRemoveBtn.avatarRemoveBtn:hover {
+  background-color: var(--color-error);
+  filter: brightness(0.9);
+}
+
+.avatarCaption {
+  margin-top: var(--spacing-md);
+  text-align: center;
+}
+
+/* ─── Formulario de edición ────────────────────────────────────────────────── */
+
+.formSection {
+  margin-top: var(--spacing-xl);
+}
+
+.actionsRow {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-end;
+  margin-top: var(--spacing-xl);
+}
+
+.actionBtn.actionBtn {
+  text-transform: none;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  padding-left: var(--spacing-lg);
+  padding-right: var(--spacing-lg);
+}
+
+.editProfileBtn.editProfileBtn {
+  margin-top: var(--spacing-md);
+}
+
+/* ─── Vista de información ─────────────────────────────────────────────────── */
+
+.nameHeading.nameHeading {
+  margin-bottom: var(--spacing-sm);
+}
+
+.centerRow {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.roleChip.roleChip {
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding-left: var(--spacing-sm);
+  padding-right: var(--spacing-sm);
+}
+
+.sectionDivider.sectionDivider {
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.infoGrid.infoGrid {
+  margin-top: var(--spacing-sm);
+}
+
+.infoTile {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.infoTileIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.infoTileBody {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+/* Tintes suaves derivados de la paleta (reemplazan a los tokens MUI
+   "*.lighter" que no existen en el theme y renderizaban transparente) */
+.tintPrimary {
+  background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+.tintSecondary {
+  background-color: color-mix(in srgb, var(--color-secondary) 12%, transparent);
+}
+
+.tintSuccess {
+  background-color: color-mix(in srgb, var(--color-success) 12%, transparent);
+}
+
+.tintError {
+  background-color: color-mix(in srgb, var(--color-error) 12%, transparent);
+}
+
+.tintWarning {
+  background-color: color-mix(in srgb, var(--color-warning) 15%, transparent);
+}
+
+.infoLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.infoValue {
+  font-weight: 500;
+}
+
+/* ─── Card de contraseña ───────────────────────────────────────────────────── */
+
+.pwHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.pwHeaderIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pwLockIcon.pwLockIcon {
+  font-size: 32px;
+  color: var(--color-warning);
+}
+
+.pwDivider.pwDivider {
+  margin-bottom: var(--spacing-lg);
+}
+
+.pwField.pwField {
+  margin-bottom: var(--spacing-lg);
+}
+
+.pwFieldTight.pwFieldTight {
+  margin-bottom: var(--spacing-md);
+}
+
+.pwStrengthBlock {
+  margin-bottom: var(--spacing-lg);
+}
+
+.pwStrengthRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm);
+}
+
+.pwStrengthBar.pwStrengthBar {
+  height: 6px;
+  border-radius: var(--radius-sm);
+}
+
+.pwRequirements {
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background-color: color-mix(in srgb, var(--color-primary) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+  border-radius: var(--radius-md);
+}
+
+.pwReqTitle {
+  display: block;
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+}
+
+.pwReqItem.pwReqItem {
+  padding-top: var(--spacing-xs);
+  padding-bottom: var(--spacing-xs);
+}
+
+.pwReqIcon.pwReqIcon {
+  min-width: 32px;
+}
+
+.pwSubmitBtn.pwSubmitBtn {
+  text-transform: none;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
