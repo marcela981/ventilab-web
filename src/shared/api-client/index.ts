@@ -1,0 +1,45 @@
+/*
+* Funcionalidad: api-client public API
+* Descripción: Public surface of the typed backend client: request helpers, ApiError, token storage, the auth event bus, the shared single-flight refresh, timeout categories and the SWR standard (provider and hooks). Generated OpenAPI types are re-exported as types.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+export { ApiError, CLIENT_ERROR_CODES, isApiError, toApiError } from "./api-error";
+export type { ApiErrorInit } from "./api-error";
+export { apiDelete, apiGet, apiPatch, apiPost, apiPut, apiRequest } from "./api-request";
+export type {
+  ApiPagination,
+  ApiPath,
+  ApiResult,
+  HttpMethod,
+  PathsWithMethod,
+  RequestBody,
+  RequestOptions,
+  ResponseData,
+} from "./api-types";
+export { emitAuthEvent, onAuthEvent } from "./auth-events";
+export type { AuthEvent, AuthEventListener } from "./auth-events";
+export type { components, operations, paths } from "./generated/schema";
+export { httpClient } from "./http-client";
+export { API_SWR_CONFIG, ApiSWRProvider } from "./swr-config";
+export type { ApiQueryKey } from "./swr-config";
+export { SLOW_ROUTES, TIMEOUTS } from "./timeouts";
+export type { TimeoutCategory } from "./timeouts";
+export { expireSession, refreshAccessToken } from "./token-refresh";
+export {
+  clearTokens,
+  getAccessToken,
+  getRefreshToken,
+  getTokens,
+  saveTokens,
+  setAccessToken,
+  subscribeTokens,
+} from "./token-storage";
+export type { TokenListener, TokenSnapshot } from "./token-storage";
+export { apiQueryKey, invalidateApiQueries, useApiMutation, useApiQuery } from "./use-api-query";
+export type { ApiMutationState, UseApiMutationConfig } from "./use-api-query";

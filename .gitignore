@@ -72,6 +72,12 @@ next-env.d.ts
 *.spec.jsx
 *.spec.ts
 *.spec.tsx
+# Tests of the new-code folders (frontend-template-refactor) are versioned.
+!src/shared/**/*.test.ts
+!src/shared/**/*.test.tsx
+!src/features/**/*.test.ts
+!src/features/**/*.test.tsx
+!e2e/**/*.spec.ts
 
 # =============================================================================
 # IDEs and editors

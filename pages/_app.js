@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: _app — raíz de la aplicación Next.js
-* Descripción: Árbol de providers globales para VentyLab. Incluye WarmupProvider para detección y notificación de cold starts del backend en Render free tier. Usa el tema MUI con cssVariables de src/shared/design-system/theme (Roboto self-hosted vía next/font) e importa los CSS globales (App.css legacy + tokens.css del design system); el CSS global solo se importa aquí.
-* Versión: 2.1
+* Descripción: Árbol de providers globales para VentyLab. Incluye WarmupProvider para detección y notificación de cold starts del backend en Render free tier. Usa el tema MUI con cssVariables de src/shared/design-system/theme (Roboto self-hosted vía next/font) e importa los CSS globales (App.css legacy + tokens.css del design system); el CSS global solo se importa aquí. v2.2: monta ApiSWRProvider (config SWR estándar de @shared/api-client, caché por defecto) y el warm-up llama GET /health del backend con el cliente tipado (antes httpSlow.get('/api/health') duplicaba el prefijo: /api/api/health).
+* Versión: 2.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,6 +21,8 @@ import Sidebar from '../src/shared/components/Sidebar';
 import ErrorBoundary from '../src/shared/components/ErrorBoundary';
 import { useRouter } from 'next/router';
 import { theme } from '@shared/design-system/theme';
+// Direct module import: the api-client index would pull axios and the request layer into the app shell.
+import { ApiSWRProvider } from '@shared/api-client/swr-config';
 import { PatientDataProvider } from '../src/features/simulador/simuladorPaciente/contexto/PatientDataContext';
 import { SocketProvider } from '../src/shared/contexts/SocketContext';
 import { SidebarContext } from '../src/shared/contexts/SidebarContext';
@@ -30,7 +32,7 @@ import '../src/shared/design-system/UI/tokens.css';
 import '../src/i18n/i18n';
 
 /**
- * Dispara un GET /api/health (timeout 60 s) la primera vez que el usuario
+ * Dispara un GET /health del backend (ruta lenta, timeout 60 s) la primera vez que el usuario
  * llega autenticado a una página no-auth. Activa WarmupOverlay mientras espera.
  * Debe ser hijo de SessionProvider y WarmupProvider.
  */
@@ -44,8 +46,8 @@ function AppWarmupEffect({ isAuthPage }) {
     warmedRef.current = true;
 
     setWarmingUp(true);
-    import('../src/shared/services/api/http')
-      .then(({ httpSlow }) => httpSlow.get('/api/health'))
+    import('@shared/api-client/api-request')
+      .then(({ apiGet }) => apiGet('/health', { timeout: 'slow' }))
       .catch(() => {})
       .finally(() => setWarmingUp(false));
   }, [status, isAuthPage, setWarmingUp]);
@@ -112,6 +114,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
   return (
     <ErrorBoundary>
       <Providers>
+        <ApiSWRProvider>
         {/*
           SessionProvider: Provides NextAuth.js session to all components
           - session: Initial session from getServerSideProps (SSR optimization)
@@ -171,6 +174,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
         </SessionProvider>
         <WarmupOverlay />
         </WarmupProvider>
+        </ApiSWRProvider>
       </Providers>
     </ErrorBoundary>
   );

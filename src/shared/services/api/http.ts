@@ -5,7 +5,12 @@
  *              - http      → timeout 8 000 ms  (operaciones normales)
  *              - httpSlow  → timeout 60 000 ms (health/login/warm-up, primer request post-cold-start)
  *              Ambas instancias comparten la lógica de refresco de token y logout.
- * Versión: 3.0
+ *              v3.1: el refresco en 401 delega en refreshAccessToken() (single-flight de
+ *              @shared/api-client) cuando hay refresh token del backend; si no, mantiene el
+ *              puente NextAuth /api/auth/backend-token. Toda petición reintentada se marca
+ *              _retry (sin loops) y todas comparten una sola promesa de refresco. Un 403 ya
+ *              no cierra la sesión: se rechaza con el mensaje normalizado del backend.
+ * Versión: 3.1
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -19,6 +24,9 @@ import { BACKEND_API_URL } from '@/config/env';
 import { getAuthToken } from '@/shared/services/authService';
 import { authEvents } from '@/shared/services/authEvents';
 import { handleSessionExpired } from '@/shared/services/sessionExpired';
+// Direct module imports (not the api-client index) so legacy chunks do not pull in SWR/React hooks.
+import { refreshAccessToken } from '@shared/api-client/token-refresh';
+import { getRefreshToken } from '@shared/api-client/token-storage';
 
 export { BACKEND_API_URL };
 
@@ -54,18 +62,45 @@ export const httpSlow = axios.create({
 // Estado compartido de refresco de token (una sola operación activa a la vez)
 // =============================================================================
 
-let isRefreshing = false;
-let failedQueue: Array<{
-  resolve: (value: unknown) => void;
-  reject: (reason?: unknown) => void;
-}> = [];
+let legacyRefresh: Promise<string> | null = null;
 
-function processQueue(error: unknown): void {
-  failedQueue.forEach(({ resolve, reject }) => {
-    if (error) reject(error);
-    else resolve(undefined);
+/** Puente NextAuth: /api/auth/backend-token responde { token } a secas — sin envelope {success}. */
+async function refreshFromNextAuthBridge(): Promise<string> {
+  const response = await fetch('/api/auth/backend-token', {
+    method: 'GET',
+    headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+    credentials: 'include',
   });
-  failedQueue = [];
+
+  if (!response.ok) throw new Error('Token refresh failed');
+
+  const payload = await response.json();
+  const newToken: string | undefined = payload?.token;
+  if (!newToken) throw new Error('Token refresh response missing token');
+
+  const { setAuthToken } = await import('@/shared/services/authService');
+  setAuthToken(newToken);
+  return newToken;
+}
+
+/**
+ * Una sola operación de refresco activa a la vez. Con refresh token del backend se
+ * comparte el single-flight de @shared/api-client; sin él, el puente NextAuth.
+ */
+function refreshLegacyToken(): Promise<string> {
+  if (!legacyRefresh) {
+    const refresh = getRefreshToken() ? refreshAccessToken() : refreshFromNextAuthBridge();
+    legacyRefresh = refresh
+      .then(newToken => {
+        // Una sola notificación por refresco (SocketContext re-autentica el socket).
+        authEvents.emit('auth:token-refreshed');
+        return newToken;
+      })
+      .finally(() => {
+        legacyRefresh = null;
+      });
+  }
+  return legacyRefresh;
 }
 
 // =============================================================================
@@ -86,7 +121,7 @@ function attachInterceptors(instance: AxiosInstance): void {
   // ── RESPONSE: tres casos diferenciados ─────────────────────────────────
   // 1. Sin respuesta HTTP   → ApiUnavailableError (red, CORS, DNS, timeout)
   // 2. 401 Unauthorized     → intento de refresco de token
-  // 3. 403 Forbidden        → cerrar sesión
+  // 3. 403 Forbidden        → error normalizado (sin logout)
   // 4. Otros 4xx/5xx        → normalizar mensaje del backend
   //
   // NUNCA lanza "No se pudo conectar" para respuestas HTTP recibidas.
@@ -117,55 +152,21 @@ function attachInterceptors(instance: AxiosInstance): void {
       if (status === 401 && !originalRequest._retry) {
         if (originalRequest.url?.includes('/auth/')) return Promise.reject(err);
 
-        if (isRefreshing) {
-          return new Promise((resolve, reject) => {
-            failedQueue.push({ resolve, reject });
-          }).then(() => {
-            originalRequest.headers.Authorization = `Bearer ${getAuthToken()}`;
-            return instance(originalRequest);
-          });
-        }
-
+        // Toda petición reintentada (líder o en espera) se marca: un segundo 401 no refresca otra vez.
         originalRequest._retry = true;
-        isRefreshing = true;
 
         try {
-          const response = await fetch('/api/auth/backend-token', {
-            method: 'GET',
-            headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
-            credentials: 'include',
-          });
-
-          if (!response.ok) throw new Error('Token refresh failed');
-
-          const payload = await response.json();
-
-          // backend-token responde { token } a secas — sin envelope {success}.
-          const newToken: string | undefined = payload?.token;
-          if (newToken) {
-            const { setAuthToken } = await import('@/shared/services/authService');
-            setAuthToken(newToken);
-            authEvents.emit('auth:token-refreshed');
-            processQueue(null);
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
-            return instance(originalRequest);
-          }
-
-          throw new Error('Token refresh response missing token');
-        } catch (refreshError) {
-          processQueue(refreshError);
+          const newToken = await refreshLegacyToken();
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return instance(originalRequest);
+        } catch {
           handleSessionExpired('token_refresh_failed');
           return Promise.reject(new Error('Sesión expirada, vuelve a iniciar sesión.'));
-        } finally {
-          isRefreshing = false;
         }
       }
 
-      // ── Caso 3: 403 Forbidden ───────────────────────────────────────────
-      if (status === 403) {
-        handleSessionExpired('forbidden');
-        return Promise.reject(new Error('Sesión expirada, vuelve a iniciar sesión.'));
-      }
+      // ── Caso 3: 403 Forbidden — sin logout (los 403 por rol no expiran la sesión);
+      //    cae al caso 4 y se rechaza con el mensaje normalizado del backend.
 
       // ── Caso 4: Otros 4xx/5xx — normalizar mensaje del backend ─────────
       const backendMsg =
