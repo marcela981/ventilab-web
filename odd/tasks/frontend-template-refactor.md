@@ -155,7 +155,7 @@ Route legend: D = delegated writer.
 - Accepted contract-driven deviations: a backend session requires BOTH tokens (a lone `ventilab_auth_token` is the legacy NextAuth bridge token), and logout sends no body (openapi has none).
 
 ## Next step
-T4 committed (see log). Next: T5 realtime.
+T4 committed `0e6a9ce`, reviewed (4R approved). Next: T5 realtime.
 
 ### Commits / native review log
 - T0 `c26eed2` docs: baseline + plan. Review: passive (docs only), no review.
@@ -164,3 +164,4 @@ T4 committed (see log). Next: T5 realtime.
 - T2 `23e037b` tokens/theme (+ legacy dark-page scoping for /teaching, /simulador, /panel, /evaluation). Assessed medium; review granted (pre-authorized); reliability lens APPROVED and acknowledged. Boundary advances to `23e037b`.
 - Contrast AA failures reported (white on primary 2.58, on success 2.78, on warning 2.16, on secondary 3.20, on error 3.68; primary as link 2.58; text.secondary on paper 4.49). Existing colors kept; new `--vl-color-link` added. Author decision pending.
 - T3 `8ca81f0` api-client. /_app gzip 273.9 -> 278.8 kB (+4.9): justified (SWR core + ApiSWRProvider mounted in _app; axios/refresh kept out of _app). .gitignore now versions tests under src/shared, src/features, e2e. Assessed high (high_risk, 1647 lines); consent granted (pre-authorized); first run killed by the OS (low memory, 4 concurrent lenses); re-run with sequential lenses: 4R (risk, resilience, readability, reliability) APPROVED and acknowledged, no correction. Boundary advances to `8ca81f0`.
+- T4 `0e6a9ce` session (AuthProvider/useSession, guards, routes.config, role-changed handler). /_app gzip 278.8 -> 280.3 kB (+1.5). Assessed high (high_risk, 1280 lines); consent granted (pre-authorized); first run killed by the OS (low memory); retry (author-requested) with sequential lenses: 4R APPROVED and acknowledged, no correction. Boundary advances to `0e6a9ce`.
