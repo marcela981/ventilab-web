@@ -1,15 +1,13 @@
 /*
- * Funcionalidad: _app — raíz de la aplicación Next.js
- * Descripción: Árbol de providers globales para VentyLab. Incluye WarmupProvider para
- *              detección y notificación de cold starts del backend en Render free tier.
- * Versión: 2.0
- * Autor: Marcela Mazo Castro
- * Proyecto: VentyLab
- * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
- *        que integre un sistema de retroalimentación usando modelos de lenguaje
- * Institución: Universidad del Valle
- * Contacto: marcela.mazo@correounivalle.edu.co
- */
+* Funcionalidad: _app — raíz de la aplicación Next.js
+* Descripción: Árbol de providers globales para VentyLab. Incluye WarmupProvider para detección y notificación de cold starts del backend en Render free tier. Usa el tema MUI con cssVariables de src/shared/design-system/theme (Roboto self-hosted vía next/font) e importa los CSS globales (App.css legacy + tokens.css del design system); el CSS global solo se importa aquí.
+* Versión: 2.1
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
 
 import React, { useState } from 'react';
 import { Box, CssBaseline, ThemeProvider } from '@mui/material';
@@ -22,11 +20,12 @@ import Providers from '../src/providers/Providers';
 import Sidebar from '../src/shared/components/Sidebar';
 import ErrorBoundary from '../src/shared/components/ErrorBoundary';
 import { useRouter } from 'next/router';
-import theme from '../src/theme/theme';
+import { theme } from '@shared/design-system/theme';
 import { PatientDataProvider } from '../src/features/simulador/simuladorPaciente/contexto/PatientDataContext';
 import { SocketProvider } from '../src/shared/contexts/SocketContext';
 import { SidebarContext } from '../src/shared/contexts/SidebarContext';
 import '../src/App.css';
+import '../src/shared/design-system/UI/tokens.css';
 // Importar y inicializar i18n
 import '../src/i18n/i18n';
 

@@ -84,7 +84,7 @@ Route legend: D = delegated writer.
 
 - [ ] T0 Baseline: real `npm run build` + First Load JS per route (build-manifest + gzip) -> `odd/baseline-bundle.md`
 - [x] T1 Tooling (D): tsconfig paths + `tsconfig.strict.json`, ESLint boundaries + style ban, Vitest, scripts `lint`/`typecheck`/`test`/`generate:api`
-- [ ] T2 Tokens/theme (D): `cssVariables` MUI theme, `tokens.css`, `next/font` Roboto, legacy theme re-export, global CSS reconciliation
+- [x] T2 Tokens/theme (D): `cssVariables` MUI theme, `tokens.css`, `next/font` Roboto, legacy theme re-export, global CSS reconciliation
 - [ ] T3 api-client (D): generated schema, fast/slow wrapper, single-flight refresh, error normalization, SWR config; legacy `http.ts` adapter; tests
 - [ ] T4 session (D): AuthProvider/useSession, RequireAuth/RequireRole, routes.config, role-changed handling; tests
 - [ ] T5 realtime (D): authenticated socket provider + re-auth after refresh/reconnect, useSocketEvent, SSE helper
@@ -108,5 +108,26 @@ Route legend: D = delegated writer.
 - No `src/types/css-modules.d.ts`: `next-env.d.ts` -> `next/types/global.d.ts` already declares `*.module.css`; a duplicate would conflict. `next-env.d.ts` needs `.next/types/routes.d.ts` (exists after build/dev).
 - JSON files (`package.json`, `tsconfig*.json`, `openapi/openapi.json`) carry no header (JSON has no comments).
 
+### T2 Tokens/theme — route D (delegated writer), done 2026-10-13 (commit: pending, parent commits)
+- Files: new `src/shared/design-system/theme/{palette.ts,roboto.ts,theme.ts,mui-augmentation.d.ts,index.ts,theme.test.ts}`, new `src/shared/design-system/UI/tokens.css`; modified `src/theme/theme.js` (v4.0, 1:1 adapter), `pages/_app.js` (v2.1: new theme + tokens.css import), `src/App.css` (v1.1: removed `!important` dark body bg), `src/index.css` (v1.1: html/body bg/color -> `--mui-palette-*`), `src/features/simulador/ui/SimuladorPage.module.css` (v1.1: dark bg scoped to the page root with the legacy `--color-bg-primary` token).
+- Theme: `createTheme({ cssVariables: true, colorSchemes: { light: { palette } } })`, same values as the old theme.js. Roboto via `next/font/google` (400/500/600/700, swap) wired into `typography.fontFamily`, so it lands in `--mui-font-*` on `:root` and in CssBaseline (body, portals). Next 16 registers the family as `Roboto` + `Roboto Fallback`, so legacy CSS that names 'Roboto' now gets the real font too.
+- SSR: no `@mui/material-nextjs`/AppCacheProvider/_document; Emotion's default SSR inlines the styles, and the prerendered `.next/server/pages/profile.html` contains `--mui-palette-primary-main:#10aede` and `--mui-font-body1:400 1rem/1.5 'Roboto','Roboto Fallback',...`. No new dependency added.
+- Checks: `npm run typecheck` exit 0; `npm run lint` exit 0 (+ `eslint src/theme/theme.js` exit 0); `npm run test` 3 files / 11 tests passed; `npm run build` exit 0 (no `next dev` running); legacy `tsc -p tsconfig.json` = 279 `error TS` (none in touched files); sx/style/styled grep over the new shared folders = 0; hex/rgb grep over new `*.module.css` = 0 (the literal `rg ... src/shared` also matches LEGACY `src/shared/components|hooks|utils`, out of scope).
+- First Load JS gzip (baseline -> T2): `/_app` 273 -> 273.9; `/profile` 329 -> 329.3; `/auth/login` 317 -> 317.7; `/simulador` 464 -> 464.1; `/teaching/[moduleId]/[lessonId]` 467 -> 470.1. The lesson-route-only chunks contain no theme/design-system code (no `10aede`/`mui-palette`), so its +3 kB comes from outside T2 (T1 or chunking); to confirm.
+- WCAG: failures reported (white on primary/secondary/error/success/warning, primary as link text); existing colors unchanged; added the NEW `--vl-color-link` (6.3:1).
+- Correction round (coordinator, "do not break legacy pages"):
+  - `/teaching` (whole page, not only the Dashboard tab: `DashboardHeader` also uses white/#e8f4fd text, and the progress/curriculum components live inside it) gets a root wrapper in `pages/teaching/index.js` (v1.1) with new `src/features/ensenanza/shared/dashboard/ui/TeachingPage.module.css` (dark `--color-bg-primary`, min-height 100vh) + the global `vl-legacy-dark` class. Every `src/features/dashboard/components/*` consumer is rendered only through `DashboardTab` inside `TeachingModule`, i.e. inside that root.
+  - `src/index.css` v1.2: the light-text element rules (`h1-h6`, `p`, `input/textarea/select` color/bg/border, placeholders, `.form-label`, `.form-input`) moved under `:where(.vl-legacy-dark)`, which keeps the original specificity (MUI classes still win as before); unscoped elements inherit the MUI text color. Placeholders unscoped use `--mui-palette-text-secondary`. App.css `input{border:none;background:transparent}` still overrides as before.
+  - Dark scopes: `/simulador` root (`pages/simulador/index.js` v2.1), `/teaching` root, `/panel/*` main area (`PanelLayout.jsx` v1.1, `className="vl-legacy-dark"`).
+  - Raw usages: `<h1-6>` only in LessonViewer HTML strings (light lesson page), UnsavedChangesAlert (module class), print/export HTML in `useDataRecording`/`useAchievements` (separate documents); raw `<p>` only in edit modals/WarmupOverlay (module classes); `.form-label/.form-input/.error-page/.nav-item/.btn-*/.ventilab-card/.dashboard-container` have no usages.
+  - Re-run: typecheck exit 0; lint exit 0 (+ touched legacy files exit 0); test 11/11; build exit 0 (no dev); legacy tsc 279; gzip `/teaching` 528 -> 528.4, `/_app` 273 -> 273.9.
+  - Still at risk (outside allowed surfaces, not edited): `/evaluation/*` is dark-designed (`#e8f4fd` text, translucent cards in `src/features/evaluation/UI/evaluation.module.css`) with a single root `.page` in `pages/evaluation/UI/evaluation.module.css` that has no background: one-line fix (`background: var(--color-bg-primary)` + `vl-legacy-dark`) needs authorization for `pages/evaluation/**`. Portaled dialogs/menus of dark pages render outside the scope (raw h/p there would now inherit dark text). `/achievements` light text on white is pre-existing (Layout already paints `background.default`). `InteractiveQuiz`/`PersonalNotes` are dark-styled but not rendered by any page.
+  - Nested legacy themes `teachingModuleTheme.js`, `ventilatorTheme.js`, `styles/mui-overrides.js` unchanged.
+
 ## Next step
-T1 done (pending parent commit). Next: T2 Tokens/theme.
+T2 done (pending parent commit). Next: T3 api-client.
+
+### Commits / native review log
+- T0 `c26eed2` docs: baseline + plan. Review: passive (docs only), no review.
+- T1 `8717f6d` tooling. Assessed medium (slice_budget_reached); consent granted; START refused `lens_context_budget_exceeded` (the generated openapi.json + schema.d.ts are ~3.8 MB). Outcome: unavailable. Reviewed boundary advances to `8717f6d`.
+- Pending author action: `git rm` of the 14 unreferenced files (CRA/Next boilerplate in public/, jsconfig.json, ARQUITECTURA.md, old docs/). Blocked by the auto-mode classifier; the command was given to the author.

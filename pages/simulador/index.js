@@ -4,8 +4,9 @@
  *   conexión al ventilador físico se gobiernan con la FSM useConexionVentilador,
  *   compartida vía ConexionVentiladorProvider; su tab vive dentro del dashboard
  *   (tab "Conexión"). Aquí solo se renderiza VentilatorDashboardWrapper, que lee
- *   del contexto si la sesión está sobre un ventilador real.
- * Versión: 2.0
+ *   del contexto si la sesión está sobre un ventilador real. v2.1: el root lleva
+ *   la clase global `vl-legacy-dark` (página diseñada oscura; ver src/index.css).
+ * Versión: 2.1
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -32,7 +33,7 @@ function SimuladorContent() {
   const { tieneReserva } = useConexionVentiladorContext();
 
   return (
-    <div className={styles.layout}>
+    <div className={`${styles.layout} vl-legacy-dark`}>
       <main className={styles.main}>
         <VentilatorDashboardWrapper isRealVentilator={tieneReserva} />
       </main>

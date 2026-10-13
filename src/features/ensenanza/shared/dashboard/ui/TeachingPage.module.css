@@ -1,0 +1,15 @@
+/*
+* Funcionalidad: Teaching page root styles
+* Descripción: Root container of the /teaching page (TeachingModule: header, tabs, student dashboard, curriculum, progress). The page is designed dark (light #e8f4fd text, translucent cards) and used to rely on the forced dark body; since the global body follows the light MUI theme (decision 6), the dark background is scoped here with the legacy --color-bg-primary token. Used by pages/teaching/index.js together with the global `vl-legacy-dark` class.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.root {
+  min-height: 100vh;
+  background: var(--color-bg-primary);
+}

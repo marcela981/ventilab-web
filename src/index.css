@@ -1,3 +1,13 @@
+/*
+* Funcionalidad: Index base styles (legacy)
+* Descripción: Legacy base styles and utility classes; imports styles/theme.css (legacy dark tokens, values unchanged). Loaded through App.css from pages/_app.js. v1.1: html/body background and text color follow the MUI light theme variables (--mui-palette-*) instead of the legacy dark tokens. v1.2: the light-text element rules (h1-h6, p, input/textarea/select, placeholder, .form-label, .form-input) moved under the global `.vl-legacy-dark` scope used by dark-designed page roots.
+* Versión: 1.2
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
 /* VentyLab - Estilos Base */
 /* Importa el tema y aplica estilos globales */
 
@@ -13,8 +23,9 @@
 html, body {
   height: 100%;
   font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
-  background: var(--color-bg-primary);
-  color: var(--text-primary);
+  /* Light identity (decision 6): follows the MUI cssVariables theme instead of the legacy dark tokens. */
+  background: var(--mui-palette-background-default);
+  color: var(--mui-palette-text-primary);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -39,7 +50,6 @@ h1, h2, h3, h4, h5, h6 {
   font-family: inherit;
   font-weight: 600;
   line-height: 1.2;
-  color: var(--text-primary);
   margin-bottom: var(--spacing-md);
 }
 
@@ -52,7 +62,6 @@ h6 { font-size: 1.125rem; }
 
 p {
   line-height: 1.5;
-  color: var(--text-secondary);
   margin-bottom: var(--spacing-md);
 }
 
@@ -96,10 +105,7 @@ button:focus {
 /* === INPUTS BASE === */
 input, textarea, select {
   font-family: inherit;
-  border: 1px solid var(--color-border);
   outline: none;
-  background: var(--color-surface);
-  color: var(--text-primary);
   border-radius: var(--radius-md);
   padding: var(--spacing-sm) var(--spacing-md);
   transition: all var(--transition-fast);
@@ -111,7 +117,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 input::placeholder, textarea::placeholder {
-  color: var(--text-hint);
+  color: var(--mui-palette-text-secondary);
 }
 
 /* === SCROLLBAR PERSONALIZADO === */
@@ -380,16 +386,12 @@ input::placeholder, textarea::placeholder {
   display: block;
   margin-bottom: var(--spacing-xs);
   font-weight: 500;
-  color: var(--text-primary);
 }
 
 .form-input {
   width: 100%;
   padding: var(--spacing-sm) var(--spacing-md);
-  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--text-primary);
   transition: all var(--transition-fast);
 }
 
@@ -462,4 +464,39 @@ input::placeholder, textarea::placeholder {
 
 .slide-in {
   animation: slideIn 0.3s ease-out;
+}
+
+/* === LEGACY DARK SCOPE (decision 6) ===
+ * The global body follows the light MUI theme. Pages designed dark add the
+ * global class `vl-legacy-dark` to their root, and the light-text element rules
+ * that used to be global apply only inside it. :where() keeps the original
+ * specificity, so MUI classes still win exactly as before.
+ * Unscoped elements inherit the MUI text color (light pages stay legible).
+ */
+:where(.vl-legacy-dark) :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--text-primary);
+}
+
+:where(.vl-legacy-dark) p {
+  color: var(--text-secondary);
+}
+
+:where(.vl-legacy-dark) :is(input, textarea, select) {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--text-primary);
+}
+
+:where(.vl-legacy-dark) :is(input, textarea)::placeholder {
+  color: var(--text-hint);
+}
+
+:where(.vl-legacy-dark) .form-label {
+  color: var(--text-primary);
+}
+
+:where(.vl-legacy-dark) .form-input {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--text-primary);
 }

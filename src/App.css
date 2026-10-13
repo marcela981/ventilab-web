@@ -1,3 +1,13 @@
+/*
+* Funcionalidad: App global styles (legacy)
+* Descripción: Legacy global reset and base styles; imports index.css (which imports the legacy styles/theme.css tokens). Imported only from pages/_app.js. v1.1: removed the forced dark html/body background so pages show the light MUI theme background; base text color now follows the MUI theme.
+* Versión: 1.1
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
 /* App Global Styles - VentyLab */
 /* Importa el tema principal desde index.css */
 @import './index.css';
@@ -12,8 +22,8 @@
 html, body {
   height: 100%;
   font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
-  background: var(--color-bg-primary) !important;
-  color: var(--text-primary);
+  /* Light identity (decision 6): the forced dark !important background was removed; CssBaseline paints the body. */
+  color: var(--mui-palette-text-primary);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

@@ -1,0 +1,98 @@
+/*
+* Funcionalidad: VentyLab app-level design tokens
+* Descripción: Global --vl-* tokens (spacing scale, radii, shadows, z-index, transitions, focus ring, semantic color aliases) layered on top of the MUI cssVariables theme (--mui-*). Imported ONLY from pages/_app.js. CSS Modules consume var(--vl-*) / var(--mui-*) and never hex/rgb literals. Depends on src/shared/design-system/theme (it emits the --mui-* variables on :root).
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+:root {
+  /* === SPACING (base 8px, same as theme.spacing) === */
+  --vl-space-0: 0;
+  --vl-space-1: calc(var(--mui-spacing) * 0.5); /* 4px */
+  --vl-space-2: var(--mui-spacing); /* 8px */
+  --vl-space-3: calc(var(--mui-spacing) * 1.5); /* 12px */
+  --vl-space-4: calc(var(--mui-spacing) * 2); /* 16px */
+  --vl-space-5: calc(var(--mui-spacing) * 3); /* 24px */
+  --vl-space-6: calc(var(--mui-spacing) * 4); /* 32px */
+  --vl-space-7: calc(var(--mui-spacing) * 6); /* 48px */
+  --vl-space-8: calc(var(--mui-spacing) * 8); /* 64px */
+
+  /* === RADII === */
+  --vl-radius-sm: 4px; /* LinearProgress */
+  --vl-radius-md: var(--mui-shape-borderRadius); /* 8px: Button, Paper, TextField */
+  --vl-radius-lg: 12px; /* Card */
+  --vl-radius-pill: 999px;
+
+  /* === SHADOWS (MUI elevations 1-5) === */
+  --vl-shadow-1: var(--mui-shadows-1);
+  --vl-shadow-2: var(--mui-shadows-2);
+  --vl-shadow-3: var(--mui-shadows-3);
+  --vl-shadow-4: var(--mui-shadows-4);
+  --vl-shadow-5: var(--mui-shadows-5);
+  /*
+   * Documented raw value: the tinted hover shadow of contained buttons
+   * (theme MuiButton.contained:hover). MUI exposes no variable for a tinted
+   * shadow; the channel variable keeps the tint tied to primary.main.
+   */
+  --vl-shadow-primary-hover: 0 4px 12px rgba(var(--mui-palette-primary-mainChannel) / 0.3);
+
+  /* === Z-INDEX (aligned with MUI zIndex scale) === */
+  --vl-z-base: 0;
+  --vl-z-raised: 1;
+  --vl-z-sticky: 100;
+  --vl-z-app-bar: var(--mui-zIndex-appBar);
+  --vl-z-drawer: var(--mui-zIndex-drawer);
+  --vl-z-modal: var(--mui-zIndex-modal);
+  --vl-z-snackbar: var(--mui-zIndex-snackbar);
+  --vl-z-tooltip: var(--mui-zIndex-tooltip);
+
+  /* === TRANSITIONS (theme.transitions) === */
+  --vl-duration-shortest: 150ms;
+  --vl-duration-short: 250ms;
+  --vl-duration-standard: 300ms;
+  --vl-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --vl-ease-sharp: cubic-bezier(0.4, 0, 0.6, 1);
+  --vl-transition-base: all var(--vl-duration-standard) var(--vl-ease-standard);
+
+  /* === FOCUS RING (accessibility) === */
+  --vl-focus-ring-color: var(--mui-palette-primary-main);
+  --vl-focus-ring-width: 2px;
+  --vl-focus-ring-offset: 2px;
+
+  /* === SEMANTIC COLOR ALIASES === */
+  --vl-color-bg: var(--mui-palette-background-default);
+  --vl-color-surface: var(--mui-palette-background-paper);
+  --vl-color-surface-contrast: var(--mui-palette-background-contrast);
+  --vl-color-text: var(--mui-palette-text-primary);
+  --vl-color-text-muted: var(--mui-palette-text-secondary);
+  --vl-color-text-disabled: var(--mui-palette-text-disabled);
+  --vl-color-border: var(--mui-palette-divider);
+  --vl-color-primary: var(--mui-palette-primary-main);
+  --vl-color-on-primary: var(--mui-palette-primary-contrastText);
+  --vl-color-secondary: var(--mui-palette-secondary-main);
+  --vl-color-success: var(--mui-palette-success-main);
+  --vl-color-warning: var(--mui-palette-warning-main);
+  --vl-color-error: var(--mui-palette-error-main);
+  --vl-color-info: var(--mui-palette-info-main);
+  --vl-color-hover: var(--mui-palette-action-hover);
+  --vl-color-selected: var(--mui-palette-action-selected);
+  /*
+   * NEW AA-safe link color. primary.main on white is 2.58:1 (fails WCAG AA);
+   * mixing it 60% with black gives about 6.3:1 on background and 6.0:1 on paper.
+   * The existing primary color is NOT changed.
+   */
+  --vl-color-link: color-mix(in srgb, var(--mui-palette-primary-main) 60%, var(--mui-palette-common-black));
+}
+
+/*
+ * Visible keyboard focus for every interactive element (mouse focus stays clean).
+ * Text fields are excluded: MUI already draws their focused outline.
+ */
+:focus-visible:not(input, textarea, select) {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}

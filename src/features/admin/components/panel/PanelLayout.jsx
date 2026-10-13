@@ -1,14 +1,13 @@
-/**
- * =============================================================================
- * PanelLayout - Administrative Panel Layout
- * =============================================================================
- * Main layout wrapper for the administrative panel (/panel/*).
- * Includes a collapsible sidebar and main content area.
- *
- * This layout is visually distinct from the student dashboard and is only
- * accessible to users with teacher, admin, or superuser roles.
- * =============================================================================
- */
+/*
+* Funcionalidad: PanelLayout - Administrative Panel Layout
+* Descripción: Main layout wrapper for the administrative panel (/panel/*): collapsible PanelSidebar plus the main content area with the dark gradient. Visually distinct from the student area; only for teacher, admin and superuser roles. v1.1: the main area carries the global `vl-legacy-dark` scope (src/index.css) so raw headings/paragraphs/inputs keep their legacy light text now that the global body follows the light MUI theme.
+* Versión: 1.1
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
 
 import React, { useState } from 'react';
 import { Box, CssBaseline } from '@mui/material';
@@ -54,6 +53,7 @@ export default function PanelLayout({ children }) {
       {/* Main Content Area */}
       <Box
         component="main"
+        className="vl-legacy-dark"
         sx={{
           flexGrow: 1,
           minWidth: 0,
