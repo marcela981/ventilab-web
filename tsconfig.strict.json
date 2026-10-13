@@ -1,0 +1,39 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowJs": false,
+    "checkJs": false,
+    "noEmit": true,
+    "incremental": false,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "types": ["node"]
+  },
+  "include": [
+    "next-env.d.ts",
+    "vitest.config.ts",
+    "vitest.setup.ts",
+    "src/shared/api-client/**/*",
+    "src/shared/realtime/**/*",
+    "src/shared/session/**/*",
+    "src/shared/design-system/**/*",
+    "src/shared/layouts/**/*",
+    "src/shared/rich-content/**/*",
+    "src/shared/waveforms/**/*",
+    "src/shared/ai-rating/**/*",
+    "src/shared/lib/**/*",
+    "src/features/auth/api/**/*",
+    "src/features/auth/application/**/*",
+    "src/features/auth/index.ts",
+    "src/features/profile/api/**/*",
+    "src/features/profile/application/**/*",
+    "src/features/profile/index.ts",
+    "src/features/groups/**/*"
+  ]
+}

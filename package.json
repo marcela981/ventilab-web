@@ -7,7 +7,11 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "eslint --no-error-on-unmatched-pattern src/shared/api-client src/shared/realtime src/shared/session src/shared/design-system src/shared/layouts src/shared/rich-content src/shared/waveforms src/shared/ai-rating src/shared/lib src/features/auth/api src/features/auth/application src/features/auth/index.ts src/features/profile/api src/features/profile/application src/features/profile/index.ts src/features/groups pages/_app.js",
+    "lint:legacy": "eslint .",
+    "typecheck": "tsc -p tsconfig.strict.json --noEmit",
+    "test": "vitest run",
+    "generate:api": "node ./scripts/generate-api.mjs",
     "validate:lessons": "node ./scripts/validate-lessons.mjs",
     "validate:lessons:fix": "node ./scripts/validate-lessons.mjs --fix",
     "validate:curriculum": "node ./scripts/validate-curriculum.mjs",
@@ -78,6 +82,9 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.3",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.17.57",
@@ -89,7 +96,12 @@
     "chalk": "^5.6.2",
     "eslint": "^9",
     "eslint-config-next": "^16.1.1",
+    "eslint-plugin-boundaries": "^5.4.0",
+    "jsdom": "^26.1.0",
+    "msw": "^2.15.0",
+    "openapi-typescript": "^7.13.0",
     "prompts": "^2.4.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   }
 }

@@ -83,7 +83,7 @@ Everything else under `src/` and the legacy `pages/` keeps its pre-existing tsc 
 Route legend: D = delegated writer.
 
 - [ ] T0 Baseline: real `npm run build` + First Load JS per route (build-manifest + gzip) -> `odd/baseline-bundle.md`
-- [ ] T1 Tooling (D): tsconfig paths + `tsconfig.strict.json`, ESLint boundaries + style ban, Vitest, scripts `lint`/`typecheck`/`test`/`generate:api`
+- [x] T1 Tooling (D): tsconfig paths + `tsconfig.strict.json`, ESLint boundaries + style ban, Vitest, scripts `lint`/`typecheck`/`test`/`generate:api`
 - [ ] T2 Tokens/theme (D): `cssVariables` MUI theme, `tokens.css`, `next/font` Roboto, legacy theme re-export, global CSS reconciliation
 - [ ] T3 api-client (D): generated schema, fast/slow wrapper, single-flight refresh, error normalization, SWR config; legacy `http.ts` adapter; tests
 - [ ] T4 session (D): AuthProvider/useSession, RequireAuth/RequireRole, routes.config, role-changed handling; tests
@@ -99,5 +99,14 @@ Route legend: D = delegated writer.
 ## Progress / evidence
 (updated per task with the commit hash and the observed check output)
 
+### T1 Tooling — route D (delegated writer), done 2026-10-13 (commit: pending, parent commits)
+- Files: `tsconfig.json` (+`@shared/*`, `@features/*`), `tsconfig.strict.json` (new), `eslint.config.mjs` (v3.0: boundaries + style ban), `package.json`/`package-lock.json`, `vitest.config.ts`, `vitest.setup.ts`, `scripts/generate-api.mjs`, `openapi/openapi.json` (copied), `src/shared/api-client/generated/schema.d.ts` (generated, ~1.6 MB), `src/shared/lib/class-names.ts` (+ test), `src/shared/lib/test-environment.test.tsx`.
+- devDependencies: vitest 3.2.7, @testing-library/react 16.3.3, @testing-library/dom 10.4.2, @testing-library/jest-dom 6.9.1, jsdom 26.1.0, msw 2.15.0, openapi-typescript 7.13.0, eslint-plugin-boundaries 5.4.0. eslint-import-resolver-typescript 3.10.1 already present via eslint-config-next.
+- Checks: `npm run generate:api` OK; `npm run typecheck` exit 0 (0 errors); `npm run lint` exit 0; violation sample (sx, style, styled(), styled.x, @emotion/styled, MUI styled, `@/` legacy import, cross-feature internal, shared->feature, shared->legacy) = 11 errors as expected, then deleted; allowed sample (`@features/<x>` index, same-feature, `@shared/*`) = 0 errors; `npm run test` 2 files / 4 tests passed; `npm run build` exit 0; legacy `tsc -p tsconfig.json` = 279 `error TS` (baseline ~280, none in new files); `eslint .` (lint:legacy) 234 errors / 566 warnings pre-existing, 0 from boundaries.
+- Scope note: `src/features/auth` and `src/features/profile` already contain LEGACY files (root `*.api.ts`, `components/`, `profile/ui/profile.module.css`). New-code scope for them is only `api/`, `application/`, `UI/`, `index.ts`; `groups/` is new code as a whole. Widen when T9/T10 remove the legacy files. Windows is case-insensitive: `profile/ui` (legacy) and `profile/UI` (template) are the SAME folder — resolve in T10.
+- `pages/_app.js` is linted but is not yet under the new-code boundaries/style rules (it uses `sx` and legacy providers); add rewritten thin routes to `NEW_PAGE_FILES` in `eslint.config.mjs` (T6+).
+- No `src/types/css-modules.d.ts`: `next-env.d.ts` -> `next/types/global.d.ts` already declares `*.module.css`; a duplicate would conflict. `next-env.d.ts` needs `.next/types/routes.d.ts` (exists after build/dev).
+- JSON files (`package.json`, `tsconfig*.json`, `openapi/openapi.json`) carry no header (JSON has no comments).
+
 ## Next step
-T0 baseline build is running.
+T1 done (pending parent commit). Next: T2 Tokens/theme.

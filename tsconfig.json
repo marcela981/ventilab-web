@@ -46,7 +46,9 @@
       "@/theme/*": ["./src/theme/*"],
       "@/styles/*": ["./src/styles/*"],
       "@/types/*": ["./src/types/*"],
-      "@/config/*": ["./src/config/*"]
+      "@/config/*": ["./src/config/*"],
+      "@shared/*": ["./src/shared/*"],
+      "@features/*": ["./src/features/*"]
     },
     /* Next.js */
     "plugins": [
