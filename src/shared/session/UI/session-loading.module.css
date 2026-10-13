@@ -1,0 +1,25 @@
+/*
+* Funcionalidad: Session loading styles
+* Descripción: Full-viewport neutral loading state shown by the route guards while the session resolves or a redirect is pending. Tokens only (MUI CSS variables and VentyLab tokens).
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.root {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vl-space-4);
+  background: var(--mui-palette-background-default);
+  color: var(--mui-palette-text-secondary);
+}
+
+.label {
+  font: var(--mui-font-body2);
+}

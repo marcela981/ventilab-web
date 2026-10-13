@@ -10,7 +10,10 @@
  *              puente NextAuth /api/auth/backend-token. Toda petición reintentada se marca
  *              _retry (sin loops) y todas comparten una sola promesa de refresco. Un 403 ya
  *              no cierra la sesión: se rechaza con el mensaje normalizado del backend.
- * Versión: 3.1
+ *              v3.2: al fallar el refresco, además de handleSessionExpired se borran ambos
+ *              tokens del backend (incl. ventilab_refresh_token) vía clearTokens() de
+ *              @shared/api-client, que notifica a la sesión nueva (idempotente).
+ * Versión: 3.2
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -26,7 +29,7 @@ import { authEvents } from '@/shared/services/authEvents';
 import { handleSessionExpired } from '@/shared/services/sessionExpired';
 // Direct module imports (not the api-client index) so legacy chunks do not pull in SWR/React hooks.
 import { refreshAccessToken } from '@shared/api-client/token-refresh';
-import { getRefreshToken } from '@shared/api-client/token-storage';
+import { clearTokens, getRefreshToken } from '@shared/api-client/token-storage';
 
 export { BACKEND_API_URL };
 
@@ -160,6 +163,8 @@ function attachInterceptors(instance: AxiosInstance): void {
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return instance(originalRequest);
         } catch {
+          // handleSessionExpired solo borra ventilab_auth_token; el refresh token se borra aquí.
+          clearTokens();
           handleSessionExpired('token_refresh_failed');
           return Promise.reject(new Error('Sesión expirada, vuelve a iniciar sesión.'));
         }
