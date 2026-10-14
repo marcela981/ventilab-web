@@ -18,7 +18,9 @@
  *   v3.5 (T0 learning): registra las features nuevas learning y content-editor (sin legacy,
  *   toda la carpeta es código nuevo con el layout template); sus rutas delgadas se agregan
  *   a NEW_PAGE_FILES en las tareas que las crean.
- * Versión: 3.5
+ *   v3.6 (L1 learning): pages/learn/index.tsx, pages/learn/[sectionId].tsx y
+ *   pages/learn/modules/[moduleId]/index.tsx entran en NEW_PAGE_FILES.
+ * Versión: 3.6
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -52,6 +54,9 @@ const NEW_PAGE_FILES = [
   "pages/my-group/index.tsx",
   "pages/groups/index.tsx",
   "pages/groups/[[]groupId[]].tsx",
+  "pages/learn/index.tsx",
+  "pages/learn/[[]sectionId[]].tsx",
+  "pages/learn/modules/[[]moduleId[]]/index.tsx",
 ];
 
 const NEW_CODE_FILES = [

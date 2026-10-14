@@ -39,6 +39,9 @@
     "pages/profile/index.tsx",
     "pages/my-group/index.tsx",
     "pages/groups/index.tsx",
-    "pages/groups/[groupId].tsx"
+    "pages/groups/[groupId].tsx",
+    "pages/learn/index.tsx",
+    "pages/learn/[sectionId].tsx",
+    "pages/learn/modules/[moduleId]/index.tsx"
   ]
 }
