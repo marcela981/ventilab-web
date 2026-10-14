@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: _app — raíz de la aplicación Next.js
-* Descripción: Árbol de providers globales para VentyLab. Incluye WarmupProvider para detección y notificación de cold starts del backend en Render free tier. Usa el tema MUI con cssVariables de src/shared/design-system/theme (Roboto self-hosted vía next/font) e importa los CSS globales (App.css legacy + tokens.css del design system); el CSS global solo se importa aquí. v2.2: monta ApiSWRProvider (config SWR estándar de @shared/api-client, caché por defecto) y el warm-up llama GET /health del backend con el cliente tipado (antes httpSlow.get('/api/health') duplicaba el prefijo: /api/api/health). v2.3: monta el AuthProvider de @shared/session (sesión del backend para código nuevo, importado como BackendSessionProvider para no chocar con el AuthProvider legacy) dentro de ApiSWRProvider; no cambia NextAuth ni el AuthContext legacy y no navega por sí mismo. v2.4: monta el RealtimeProvider de @shared/realtime (socket autenticado del código nuevo, solo con sesión de backend) dentro de BackendSessionProvider; el SocketProvider legacy no cambia. v2.5: per-page layouts: si la página exporta getLayout(page) (resolvePageLayout de @shared/layouts/get-layout), se renderiza Component.getLayout(<Component />) sin el shell legacy (Sidebar/ErrorBoundary por página; el layout nuevo trae su propio RouteErrorBoundary); las páginas sin getLayout conservan exactamente el envoltorio legacy anterior. Los layouts se importan desde las páginas que los usan, nunca desde _app.
-* Versión: 2.5
+* Descripción: Árbol de providers globales para VentyLab. Incluye WarmupProvider para detección y notificación de cold starts del backend en Render free tier. Usa el tema MUI con cssVariables de src/shared/design-system/theme (Roboto self-hosted vía next/font) e importa los CSS globales (App.css legacy + tokens.css del design system); el CSS global solo se importa aquí. v2.2: monta ApiSWRProvider (config SWR estándar de @shared/api-client, caché por defecto) y el warm-up llama GET /health del backend con el cliente tipado (antes httpSlow.get('/api/health') duplicaba el prefijo: /api/api/health). v2.3: monta el AuthProvider de @shared/session (sesión del backend para código nuevo, importado como BackendSessionProvider para no chocar con el AuthProvider legacy) dentro de ApiSWRProvider; no cambia NextAuth ni el AuthContext legacy y no navega por sí mismo. v2.4: monta el RealtimeProvider de @shared/realtime (socket autenticado del código nuevo, solo con sesión de backend) dentro de BackendSessionProvider; el SocketProvider legacy no cambia. v2.5: per-page layouts: si la página exporta getLayout(page) (resolvePageLayout de @shared/layouts/get-layout), se renderiza Component.getLayout(<Component />) sin el shell legacy (Sidebar/ErrorBoundary por página; el layout nuevo trae su propio RouteErrorBoundary); las páginas sin getLayout conservan exactamente el envoltorio legacy anterior. Los layouts se importan desde las páginas que los usan, nunca desde _app. v2.6: monta una sola vez el ToastProvider global del design system (useToast del código nuevo) dentro del ThemeProvider, alrededor del contenido de la página; el NotificationProvider legacy no cambia.
+* Versión: 2.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -29,6 +29,8 @@ import { AuthProvider as BackendSessionProvider } from '@shared/session/auth-pro
 import { RealtimeProvider } from '@shared/realtime/realtime-provider';
 // Direct module import: the layouts index would pull the AppShell and every layout into the app shell.
 import { resolvePageLayout } from '@shared/layouts/get-layout';
+// Direct module import: the design-system index would pull every base component into the app shell.
+import { ToastProvider } from '@shared/design-system/components/toast-provider';
 import { PatientDataProvider } from '../src/features/simulador/simuladorPaciente/contexto/PatientDataContext';
 import { SocketProvider } from '../src/shared/contexts/SocketContext';
 import { SidebarContext } from '../src/shared/contexts/SidebarContext';
@@ -142,6 +144,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
             <SocketProvider>
               <ThemeProvider theme={theme}>
                 <NotificationProvider>
+                  <ToastProvider>
                   <PatientDataProvider>
                     <CssBaseline />
                     {/* Pages with getLayout: their own layout, no legacy shell */}
@@ -180,6 +183,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
                       </SidebarContext.Provider>
                     )}
                   </PatientDataProvider>
+                  </ToastProvider>
                 </NotificationProvider>
               </ThemeProvider>
             </SocketProvider>

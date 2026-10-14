@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LoginForm
-* Descripción: Local login form: labelled email and password fields (autocomplete hints, password visibility toggle with an accessible label), client-side validation with per-field messages (validateCredentials) before submitting, and a submit button disabled while a login is pending. Server errors are shown by the page. Spanish copy, TODO(i18n). Depends on MUI, the auth entities and UI/login-form.module.css.
-* Versión: 1.0
+* Descripción: Local login form: labelled email and password fields (autocomplete hints, password visibility toggle with an accessible label), client-side validation with per-field messages (validateCredentials) before submitting, and a submit button disabled while a login is pending. Server errors are shown by the page. v1.1 (T6b): fields are design-system FormFields and the submit is an AsyncButton (spinner + aria-busy while pending, same label). Spanish copy, TODO(i18n). Depends on MUI, @shared/design-system, the auth entities and UI/login-form.module.css.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,12 +11,12 @@
 
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import InputAdornment from "@mui/material/InputAdornment";
-import TextField from "@mui/material/TextField";
 import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
+import { AsyncButton } from "@shared/design-system/components/async-button";
+import { FormField } from "@shared/design-system/components/form-field";
 import { cx } from "@shared/lib/class-names";
 import { validateCredentials } from "../entities/auth.entity";
 import type { LoginCredentials, LoginFieldErrors } from "../entities/auth.entity";
@@ -63,7 +63,7 @@ export function LoginForm({ pending, onSubmit, onEdit = noop }: LoginFormProps) 
 
   return (
     <form className={cx(styles.form)} noValidate onSubmit={handleSubmit} aria-label="Iniciar sesión con correo">
-      <TextField
+      <FormField
         id="login-email"
         label="Correo electrónico"
         type="email"
@@ -73,11 +73,11 @@ export function LoginForm({ pending, onSubmit, onEdit = noop }: LoginFormProps) 
         fullWidth
         value={credentials.email}
         onChange={handleChange("email")}
-        error={Boolean(fieldErrors.email)}
-        helperText={fieldErrors.email ?? " "}
+        error={fieldErrors.email}
+        helperText=" "
         disabled={pending}
       />
-      <TextField
+      <FormField
         id="login-password"
         label="Contraseña"
         type={showPassword ? "text" : "password"}
@@ -87,8 +87,8 @@ export function LoginForm({ pending, onSubmit, onEdit = noop }: LoginFormProps) 
         fullWidth
         value={credentials.password}
         onChange={handleChange("password")}
-        error={Boolean(fieldErrors.password)}
-        helperText={fieldErrors.password ?? " "}
+        error={fieldErrors.password}
+        helperText=" "
         disabled={pending}
         slotProps={{
           input: {
@@ -108,9 +108,9 @@ export function LoginForm({ pending, onSubmit, onEdit = noop }: LoginFormProps) 
           },
         }}
       />
-      <Button type="submit" variant="contained" size="large" fullWidth disabled={pending} className={cx(styles.submit)}>
-        {pending ? "Iniciando sesión…" : "Iniciar sesión"}
-      </Button>
+      <AsyncButton type="submit" variant="contained" size="large" fullWidth loading={pending} className={cx(styles.submit)}>
+        Iniciar sesión
+      </AsyncButton>
     </form>
   );
 }

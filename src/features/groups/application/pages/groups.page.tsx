@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GroupsPage
-* Descripción: Staff page /groups (teachers and admins): reads `GET /api/groups` (the backend decides the scope: every group for an admin, the managed, supervised and own teacher groups for a teacher) and shows them in a table with client-side filters (text, type, active state) and client-side pagination (10, 25 or 50 per page), because the endpoint has neither (decision 7, backend gap). Changing a filter returns to the first page. Empty states for no groups and for no match (with "Limpiar filtros"), a loading state and an error state with retry (403 included). v1.1 (T11b): "Crear grupo" (teachers and admins, the route is staff-only) opens GroupFormDialog for a STUDENT group (teacher groups are created by admins in slice C); `POST /api/groups` through useGroupMutation, which refreshes every groups key; server errors (403 type_creation_forbidden included) show inline in the dialog and a success shows a toast. Group names link to the detail. v1.2 (T11c): admins choose the type (STUDENT or TEACHER) in the dialog ("Crear grupo"); teachers keep the student-only dialog and always send STUDENT. Loaded on demand through lazy-staff-pages. Depends on MUI, next/head, @shared/design-system components, @shared/session, useGroups, GroupFilters, GroupsTable and the groups CSS Module.
-* Versión: 1.2
+* Descripción: Staff page /groups (teachers and admins): reads `GET /api/groups` (the backend decides the scope: every group for an admin, the managed, supervised and own teacher groups for a teacher) and shows them in a table with client-side filters (text, type, active state) and client-side pagination (10, 25 or 50 per page), because the endpoint has neither (decision 7, backend gap). Changing a filter returns to the first page. Empty states for no groups and for no match (with "Limpiar filtros"), a loading state and an error state with retry (403 included). v1.1 (T11b): "Crear grupo" (teachers and admins, the route is staff-only) opens GroupFormDialog for a STUDENT group (teacher groups are created by admins in slice C); `POST /api/groups` through useGroupMutation, which refreshes every groups key; server errors (403 type_creation_forbidden included) show inline in the dialog and a success shows a toast. Group names link to the detail. v1.2 (T11c): admins choose the type (STUDENT or TEACHER) in the dialog ("Crear grupo"); teachers keep the student-only dialog and always send STUDENT. Loaded on demand through lazy-staff-pages. v1.3 (T6b): the success message goes to the global design-system toast (useToast) instead of the feature-local FeedbackToast. Depends on MUI, next/head, @shared/design-system components, @shared/session, useGroups, GroupFilters, GroupsTable and the groups CSS Module.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,12 +19,11 @@ import { EmptyState } from "@shared/design-system/components/empty-state";
 import { ErrorState } from "@shared/design-system/components/error-state";
 import { LoadingState } from "@shared/design-system/components/loading-state";
 import { PageHeader } from "@shared/design-system/components/page-header";
+import { useToast } from "@shared/design-system/components/use-toast";
 import { cx } from "@shared/lib/class-names";
 import { useSession } from "@shared/session/use-session";
 import { toCreateGroupRequest } from "../../api/mappers/groups.mapper";
 import { createGroup } from "../../api/services/groups.service";
-import { FeedbackToast } from "../components/feedback-toast";
-import type { Feedback } from "../components/feedback-toast";
 import { GroupFilters } from "../components/group-filters";
 import { GroupFormDialog } from "../components/group-form-dialog";
 import { GroupsTable } from "../components/groups-table";
@@ -124,7 +123,7 @@ function CreateGroupAction() {
   const { pending, run } = useGroupMutation();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const toast = useToast();
 
   const submit = async(draft: GroupDraft) => {
     setError(null);
@@ -137,7 +136,7 @@ function CreateGroupAction() {
       setError(outcome.message);
     } else if (outcome.status === "success") {
       setOpen(false);
-      setFeedback({ severity: "success", message: PAGE_COPY.created(draft.name.trim()) });
+      toast.success(PAGE_COPY.created(draft.name.trim()));
     }
   };
 
@@ -165,7 +164,6 @@ function CreateGroupAction() {
           onCancel={() => setOpen(false)}
         />
       ) : null}
-      <FeedbackToast feedback={feedback} onClose={() => setFeedback(null)} />
     </div>
   );
 }

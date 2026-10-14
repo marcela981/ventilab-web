@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GroupDetailPage
-* Descripción: Staff page /groups/[groupId] (teachers and admins): reads `GET /api/groups/{id}` and shows the group facts and members. When the user can manage the group (admins every group; teachers the student groups the backend lists for them, teacher groups are read-only for teachers) it offers: edit (GroupFormDialog, `PATCH /api/groups/{id}` with only the changed fields), add a member through the student search (`POST /api/groups/{id}/members`, student groups), remove a member (ConfirmDialog, `DELETE /api/groups/{id}/members/{userId}`), assign the simulator leader (ConfirmDialog that says the previous leader stays as a member, `PATCH /api/groups/{id}/lead`) and deactivate / reactivate (`PATCH /api/groups/{id}` with isActive: the contract's explicit deactivation; `DELETE` would erase a group without activity, so it is not offered). Every mutation goes through useGroupMutation (one at a time, refreshes the list, detail, members and mine keys); errors show their specific Spanish message (403 management_forbidden, 409 group_full / student_already_in_group, 422 member_role_not_allowed / leader_not_allowed / lead_not_member) in an alert toast, edit errors inline in the dialog. v1.1 (T11c): admins manage teacher groups too: the member search looks for TEACHER accounts (teacher groups admit teachers and admins; no leader, the backend rejects one with leader_not_allowed) and a "Grupos supervisados" panel (GroupSupervisions) lists, adds (`POST /api/groups/{id}/supervisions`) and removes behind a ConfirmDialog (`DELETE /api/groups/{id}/supervisions/{studentGroupId}`) the student groups it supervises; teachers never see it. The contract has no endpoint that lists the teacher groups supervising a student group for staff, so the student group view shows none (backend gap). Depends on MUI, next/head, next/link, @shared/design-system, @shared/session, the groups hooks, components and CSS Module.
-* Versión: 1.1
+* Descripción: Staff page /groups/[groupId] (teachers and admins): reads `GET /api/groups/{id}` and shows the group facts and members. When the user can manage the group (admins every group; teachers the student groups the backend lists for them, teacher groups are read-only for teachers) it offers: edit (GroupFormDialog, `PATCH /api/groups/{id}` with only the changed fields), add a member through the student search (`POST /api/groups/{id}/members`, student groups), remove a member (ConfirmDialog, `DELETE /api/groups/{id}/members/{userId}`), assign the simulator leader (ConfirmDialog that says the previous leader stays as a member, `PATCH /api/groups/{id}/lead`) and deactivate / reactivate (`PATCH /api/groups/{id}` with isActive: the contract's explicit deactivation; `DELETE` would erase a group without activity, so it is not offered). Every mutation goes through useGroupMutation (one at a time, refreshes the list, detail, members and mine keys); errors show their specific Spanish message (403 management_forbidden, 409 group_full / student_already_in_group, 422 member_role_not_allowed / leader_not_allowed / lead_not_member) in an alert toast, edit errors inline in the dialog. v1.1 (T11c): admins manage teacher groups too: the member search looks for TEACHER accounts (teacher groups admit teachers and admins; no leader, the backend rejects one with leader_not_allowed) and a "Grupos supervisados" panel (GroupSupervisions) lists, adds (`POST /api/groups/{id}/supervisions`) and removes behind a ConfirmDialog (`DELETE /api/groups/{id}/supervisions/{studentGroupId}`) the student groups it supervises; teachers never see it. The contract has no endpoint that lists the teacher groups supervising a student group for staff, so the student group view shows none (backend gap). v1.2 (T6b): results go to the global design-system toast (useToast) instead of the feature-local FeedbackToast. Depends on MUI, next/head, next/link, @shared/design-system, @shared/session, the groups hooks, components and CSS Module.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,6 +19,7 @@ import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
 import { ErrorState } from "@shared/design-system/components/error-state";
 import { LoadingState } from "@shared/design-system/components/loading-state";
 import { PageHeader } from "@shared/design-system/components/page-header";
+import { useToast } from "@shared/design-system/components/use-toast";
 import { cx } from "@shared/lib/class-names";
 import { useSession } from "@shared/session/use-session";
 import { toUpdateGroupRequest } from "../../api/mappers/groups.mapper";
@@ -30,8 +31,6 @@ import {
   setGroupLeader,
   updateGroup,
 } from "../../api/services/groups.service";
-import { FeedbackToast } from "../components/feedback-toast";
-import type { Feedback } from "../components/feedback-toast";
 import { GroupFormDialog } from "../components/group-form-dialog";
 import { GroupInfo } from "../components/group-info";
 import { GroupMembers } from "../components/group-members";
@@ -150,7 +149,7 @@ function confirmCopy(confirm: PendingConfirm, group: GroupDetail) {
 
 function GroupManagement({ group, canManage, canSupervise }: GroupManagementProps) {
   const { pending, run } = useGroupMutation();
-  const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const toast = useToast();
   const [editing, setEditing] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   // The last confirmation stays set while the dialog closes, so its text does not vanish mid-transition.
@@ -168,9 +167,15 @@ function GroupManagement({ group, canManage, canSupervise }: GroupManagementProp
       return false;
     }
 
-    setFeedback(outcome.status === "success" ? { severity: "success", message: success } : { severity: "error", message: outcome.message });
+    if (outcome.status === "success") {
+      toast.success(success);
 
-    return outcome.status === "success";
+      return true;
+    }
+
+    toast.error(outcome.message);
+
+    return false;
   };
 
   const saveEdit = async(draft: GroupDraft) => {
@@ -190,7 +195,7 @@ function GroupManagement({ group, canManage, canSupervise }: GroupManagementProp
       setEditError(outcome.message);
     } else if (outcome.status === "success") {
       setEditing(false);
-      setFeedback({ severity: "success", message: PAGE_COPY.saved });
+      toast.success(PAGE_COPY.saved);
     }
   };
 
@@ -314,7 +319,6 @@ function GroupManagement({ group, canManage, canSupervise }: GroupManagementProp
         }}
         onCancel={() => setConfirmOpen(false)}
       />
-      <FeedbackToast feedback={feedback} onClose={() => setFeedback(null)} />
     </>
   );
 }

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Groups page test helpers
-* Descripción: Shared fixtures of the groups page tests: backend envelope and error bodies, a GroupDTO / GroupDetailDTO / UserDTO / GroupSupervisionDTO factory (v1.1, T11c: platform role of members and users, supervisions) and a render helper that mounts a page inside an isolated SWR cache and a session context with the given role (no AuthProvider, no network for the session). Test-only code. Depends on Testing Library, SWR and the session context.
-* Versión: 1.1
+* Descripción: Shared fixtures of the groups page tests: backend envelope and error bodies, a GroupDTO / GroupDetailDTO / UserDTO / GroupSupervisionDTO factory (v1.1, T11c: platform role of members and users, supervisions) and a render helper that mounts a page inside an isolated SWR cache and a session context with the given role (no AuthProvider, no network for the session). v1.2 (T6b): the render helper also mounts the global ToastProvider, as pages/_app.js does. Test-only code. Depends on Testing Library, SWR, the session context and the design-system toast.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,6 +13,7 @@ import { render } from "@testing-library/react";
 import { HttpResponse } from "msw";
 import type { ReactElement } from "react";
 import { SWRConfig } from "swr";
+import { ToastProvider } from "@shared/design-system/components/toast-provider";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
 import { SessionContext } from "@shared/session/session-context";
 import type { SessionContextValue } from "@shared/session/session-context";
@@ -119,7 +120,9 @@ function sessionValue(role: Role): SessionContextValue {
 export function renderWithSession(ui: ReactElement, role: Role = "TEACHER") {
   return render(
     <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false }}>
-      <SessionContext.Provider value={sessionValue(role)}>{ui}</SessionContext.Provider>
+      <SessionContext.Provider value={sessionValue(role)}>
+        <ToastProvider>{ui}</ToastProvider>
+      </SessionContext.Provider>
     </SWRConfig>,
   );
 }

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GroupDetailPage tests
-* Descripción: Renders the group detail page against a mocked backend (msw): group facts and members, the read-only view of a teacher group for a teacher, edit with only the changed fields and the student limit validation, the member search (STUDENT role, current members excluded), add member (success and the 409/422 messages), remove member and assign leader behind a confirmation (with the previous leader text), deactivate (PATCH isActive=false), the 403 message and a missing group. v1.1 (T11c): reactivate, a rejected edit (error inside the open dialog), an edit without changes (no request), an admin managing a teacher group (teacher search, no leader), the supervisions panel (list, add excluding supervised and teacher groups, remove after a confirmation, 403) and its absence for teachers. Depends on vitest, Testing Library, msw and the groups feature.
-* Versión: 1.1
+* Descripción: Renders the group detail page against a mocked backend (msw): group facts and members, the read-only view of a teacher group for a teacher, edit with only the changed fields and the student limit validation, the member search (STUDENT role, current members excluded), add member (success and the 409/422 messages), remove member and assign leader behind a confirmation (with the previous leader text), deactivate (PATCH isActive=false), the 403 message and a missing group. v1.1 (T11c): reactivate, a rejected edit (error inside the open dialog), an edit without changes (no request), an admin managing a teacher group (teacher search, no leader), the supervisions panel (list, add excluding supervised and teacher groups, remove after a confirmation, 403) and its absence for teachers. v1.2 (T6b): the supervisions list is refetched after an add or a remove (the added group leaves the select and the selection clears; GROUP_SUPERVISIONS_PATH is one of the invalidated keys), the error-with-retry states of the supervisions and student-groups reads, and zero supervisions requests for a teacher (counted). Depends on vitest, Testing Library, msw and the groups feature.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,15 +13,23 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { GROUP_QUERY_PATHS, GROUP_SUPERVISIONS_PATH } from "../../api/services/groups.service";
 import { GroupDetailPage } from "./group-detail.page";
 import { apiUrl, envelope, errorResponse, groupDto, memberDto, renderWithSession, supervisionDto, userDto } from "./groups-test-helpers";
 
 const GROUP_URL = apiUrl("/api/groups/g1");
 
+// Student groups returned by GET /api/groups (g3 is inactive), used to build the supervisions the backend stores.
+const STUDENT_GROUPS: Record<string, { name: string, isActive: boolean }> = {
+  g2: { name: "UCI Tarde", isActive: true },
+  g3: { name: "UCI Noche", isActive: false },
+};
+
 type Detail = ReturnType<typeof groupDto> & { members: Array<ReturnType<typeof memberDto>> };
 
 let detail: Detail;
 let detailReads = 0;
+let supervisionReads = 0;
 let supervisions: Array<ReturnType<typeof supervisionDto>> = [];
 let requests: Array<{ method: string, path: string, body: unknown, search?: string }> = [];
 
@@ -80,7 +88,11 @@ function useDefaultHandlers() {
 
       return HttpResponse.json(envelope(null));
     }),
-    http.get(apiUrl("/api/groups/g1/supervisions"), () => HttpResponse.json(envelope(supervisions))),
+    http.get(apiUrl("/api/groups/g1/supervisions"), () => {
+      supervisionReads += 1;
+
+      return HttpResponse.json(envelope(supervisions));
+    }),
     http.get(apiUrl("/api/groups"), () => HttpResponse.json(envelope([
       groupDto(1, { type: "TEACHER", name: "Docentes UCI" }),
       groupDto(2, { name: "UCI Tarde" }),
@@ -90,10 +102,18 @@ function useDefaultHandlers() {
     http.post(apiUrl("/api/groups/g1/supervisions"), async({ request }) => {
       await record(request);
 
+      const { studentGroupId } = requests[requests.length - 1]?.body as { studentGroupId: string };
+      const studentGroup = STUDENT_GROUPS[studentGroupId];
+
+      if (studentGroup) {
+        supervisions = [...supervisions, supervisionDto("g1", studentGroupId, studentGroup.name, studentGroup.isActive)];
+      }
+
       return HttpResponse.json(envelope(null));
     }),
-    http.delete(apiUrl("/api/groups/g1/supervisions/:studentGroupId"), async({ request }) => {
+    http.delete(apiUrl("/api/groups/g1/supervisions/:studentGroupId"), async({ request, params }) => {
       await record(request);
+      supervisions = supervisions.filter((supervision) => supervision.studentGroup.id !== params.studentGroupId);
 
       return HttpResponse.json(envelope(null));
     }),
@@ -128,6 +148,7 @@ beforeAll(() => {
 beforeEach(() => {
   detail = studentGroup();
   detailReads = 0;
+  supervisionReads = 0;
   supervisions = [];
   requests = [];
   useDefaultHandlers();
@@ -377,10 +398,108 @@ describe("GroupDetailPage", () => {
     await screen.findByRole("heading", { level: 1, name: "Docentes UCI" });
     expect(screen.queryByRole("region", { name: "Grupos supervisados" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Buscar docente")).not.toBeInTheDocument();
+    expect(supervisionReads).toBe(0);
     unmount();
 
     detail = studentGroup();
     await renderDetail("ADMIN");
     expect(screen.queryByRole("region", { name: "Grupos supervisados" })).not.toBeInTheDocument();
+  });
+
+  it("makes zero supervisions requests for a teacher", async() => {
+    detail = teacherGroup();
+    await renderDetail("TEACHER");
+    // Let any request triggered on mount reach the handlers before counting.
+    await waitFor(() => expect(detailReads).toBeGreaterThan(0));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
+
+    expect(supervisionReads).toBe(0);
+  });
+
+  it("refetches the supervisions after adding one: the group leaves the select and the selection clears", async() => {
+    expect(GROUP_QUERY_PATHS).toContain(GROUP_SUPERVISIONS_PATH);
+    detail = teacherGroup();
+    await renderDetail("ADMIN");
+
+    const panel = await supervisionsPanel();
+    const select = await within(panel).findByLabelText("Grupo de estudiantes");
+
+    await within(select).findByRole("option", { name: "UCI Tarde" });
+    expect(supervisionReads).toBe(1);
+    fireEvent.change(select, { target: { value: "g2" } });
+    fireEvent.click(within(panel).getByRole("button", { name: "Agregar supervisión" }));
+
+    expect(await within(panel).findByRole("link", { name: "UCI Tarde" })).toHaveAttribute("href", "/groups/g2");
+    expect(supervisionReads).toBeGreaterThan(1);
+
+    const refreshed = within(panel).getByLabelText("Grupo de estudiantes");
+
+    expect(within(refreshed).getAllByRole("option").map((option) => option.textContent)).toEqual([
+      "Selecciona un grupo",
+      "UCI Noche (inactivo)",
+    ]);
+    expect(refreshed).toHaveValue("");
+    expect(within(panel).getByRole("button", { name: "Agregar supervisión" })).toBeDisabled();
+  });
+
+  it("refetches the supervisions after removing one", async() => {
+    detail = teacherGroup();
+    supervisions = [supervisionDto("g1", "g2", "UCI Tarde")];
+    await renderDetail("ADMIN");
+
+    const panel = await supervisionsPanel();
+
+    fireEvent.click(await within(panel).findByRole("button", { name: "Quitar supervisión de UCI Tarde" }));
+    fireEvent.click(within(await screen.findByRole("dialog")).getByRole("button", { name: "Quitar supervisión" }));
+
+    expect(await within(panel).findByText("Este grupo docente todavía no supervisa grupos de estudiantes.")).toBeInTheDocument();
+    expect(within(panel).queryByRole("link", { name: "UCI Tarde" })).not.toBeInTheDocument();
+    expect(await within(within(panel).getByLabelText("Grupo de estudiantes")).findByRole("option", { name: "UCI Tarde" })).toBeInTheDocument();
+  });
+
+  it("shows an error with retry when the supervisions cannot be loaded", async() => {
+    let failing = true;
+
+    server.use(http.get(apiUrl("/api/groups/g1/supervisions"), () => {
+      supervisionReads += 1;
+
+      return failing ? errorResponse("common.internal_error", 500) : HttpResponse.json(envelope([supervisionDto("g1", "g2", "UCI Tarde")]));
+    }));
+    detail = teacherGroup();
+    await renderDetail("ADMIN");
+
+    const panel = await supervisionsPanel();
+
+    expect(await within(panel).findByText("No se pudieron cargar las supervisiones")).toBeInTheDocument();
+    expect(within(panel).queryByLabelText("Grupo de estudiantes")).not.toBeInTheDocument();
+
+    failing = false;
+    fireEvent.click(within(panel).getByRole("button", { name: "Reintentar" }));
+
+    expect(await within(panel).findByRole("link", { name: "UCI Tarde" })).toBeInTheDocument();
+    expect(within(panel).queryByText("No se pudieron cargar las supervisiones")).not.toBeInTheDocument();
+  });
+
+  it("shows an error with retry when the student groups cannot be loaded", async() => {
+    let failing = true;
+
+    server.use(http.get(apiUrl("/api/groups"), () => (failing
+      ? errorResponse("common.internal_error", 500)
+      : HttpResponse.json(envelope([groupDto(2, { name: "UCI Tarde" })])))));
+    detail = teacherGroup();
+    await renderDetail("ADMIN");
+
+    const panel = await supervisionsPanel();
+
+    expect(await within(panel).findByText("No se pudieron cargar los grupos de estudiantes")).toBeInTheDocument();
+
+    failing = false;
+    fireEvent.click(within(panel).getByRole("button", { name: "Reintentar" }));
+
+    const select = await within(panel).findByLabelText("Grupo de estudiantes");
+
+    expect(await within(select).findByRole("option", { name: "UCI Tarde" })).toBeInTheDocument();
   });
 });

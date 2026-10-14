@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GroupFormDialog
-* Descripción: Dialog form to create or edit a student group: name (required), description, semester, academic year and student limit (empty = no limit; otherwise an integer >= 1). Validates on submit with validateGroupDraft and shows per-field errors (noValidate, labelled fields), shows a server error inline (alert) and blocks closing while saving. The parent mounts it per opening, so the draft starts from initialDraft. v1.1 (T11c): optional typeOptions; with more than one type (admins creating a group) a labelled native select "Tipo de grupo" sets the draft type. Depends on MUI, the group entity and the group detail CSS Module.
-* Versión: 1.1
+* Descripción: Dialog form to create or edit a student group: name (required), description, semester, academic year and student limit (empty = no limit; otherwise an integer >= 1). Validates on submit with validateGroupDraft and shows per-field errors (noValidate, labelled fields), shows a server error inline (alert) and blocks closing while saving. The parent mounts it per opening, so the draft starts from initialDraft. v1.1 (T11c): optional typeOptions; with more than one type (admins creating a group) a labelled native select "Tipo de grupo" sets the draft type. v1.2 (T6b): text fields are design-system FormFields and the submit is an AsyncButton (centered spinner + aria-busy while saving). Depends on MUI, @shared/design-system, the group entity and the group detail CSS Module.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,7 +11,6 @@
 
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
-import CircularProgress from "@mui/material/CircularProgress";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -19,6 +18,8 @@ import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
 import { useId, useState } from "react";
 import type { FormEvent } from "react";
+import { AsyncButton } from "@shared/design-system/components/async-button";
+import { FormField } from "@shared/design-system/components/form-field";
 import { cx } from "@shared/lib/class-names";
 import { GROUP_TYPE_LABELS, validateGroupDraft } from "../entities/group.entity";
 import type { GroupDraft, GroupDraftErrors, GroupDraftField, GroupType } from "../entities/group.entity";
@@ -83,16 +84,16 @@ export function GroupFormDialog({ title, submitLabel, initialDraft, pending, err
 
   const field = (name: TextFieldName, label: string, extra: { multiline?: boolean, required?: boolean, numeric?: boolean } = {}) => {
     const fieldError = name === "name" || name === "maxStudents" ? fieldErrors[name] : undefined;
-    const helper = fieldError ?? (name === "maxStudents" ? FORM_COPY.maxStudentsHelp : undefined);
+    const helper = name === "maxStudents" ? FORM_COPY.maxStudentsHelp : undefined;
 
     return (
-      <TextField
+      <FormField
         name={name}
         label={label}
         value={draft[name]}
         onChange={(event) => change(name, event.target.value)}
-        error={Boolean(fieldError)}
-        {...(helper ? { helperText: helper } : {})}
+        error={fieldError}
+        helperText={helper}
         {...(extra.multiline ? { multiline: true, minRows: 2 } : {})}
         {...(extra.numeric ? { slotProps: { htmlInput: { inputMode: "numeric" as const } } } : {})}
         required={extra.required ?? false}
@@ -138,14 +139,9 @@ export function GroupFormDialog({ title, submitLabel, initialDraft, pending, err
         </DialogContent>
         <DialogActions>
           <Button onClick={onCancel} disabled={pending}>{FORM_COPY.cancel}</Button>
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={pending}
-            startIcon={pending ? <CircularProgress size={16} color="inherit" aria-hidden="true" /> : null}
-          >
+          <AsyncButton type="submit" variant="contained" loading={pending}>
             {submitLabel}
-          </Button>
+          </AsyncButton>
         </DialogActions>
       </form>
     </Dialog>

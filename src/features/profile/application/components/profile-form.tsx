@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ProfileForm
-* Descripción: Edit form of the own profile: name and avatar URL (http/https only) with a live avatar preview that falls back to the initials, a "Quitar foto" action (saves `image: null`), client validation with per-field messages (`noValidate`, same approach as the login form: entity validation + MUI TextField error/helperText), backend field errors, one error alert and a success notice. "Guardar cambios" is disabled while nothing changed or a save is running. Spanish copy, TODO(i18n). Depends on MUI, the profile hooks/entities, ProfileAvatar and UI/profile-form.module.css.
-* Versión: 1.0
+* Descripción: Edit form of the own profile: name and avatar URL (http/https only) with a live avatar preview that falls back to the initials, a "Quitar foto" action (saves `image: null`), client validation with per-field messages (`noValidate`, same approach as the login form: entity validation + MUI TextField error/helperText), backend field errors, one error alert and a success notice. "Guardar cambios" is disabled while nothing changed or a save is running. v1.1 (T6b): fields are design-system FormFields and "Guardar cambios" is an AsyncButton (spinner + aria-busy while saving, same label). Spanish copy, TODO(i18n). Depends on MUI, @shared/design-system, the profile hooks/entities, ProfileAvatar and UI/profile-form.module.css.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,10 +11,11 @@
 
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useId, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
+import { AsyncButton } from "@shared/design-system/components/async-button";
+import { FormField } from "@shared/design-system/components/form-field";
 import { cx } from "@shared/lib/class-names";
 import { hasProfileChanges } from "../../api/mappers/profile.mapper";
 import { isHttpUrl, toDraft } from "../entities/profile.entity";
@@ -32,7 +33,6 @@ const FORM_COPY = {
   preview: "Vista previa de la foto de perfil",
   removeImage: "Quitar foto",
   submit: "Guardar cambios",
-  saving: "Guardando…",
   saved: "Perfil actualizado.",
 } as const;
 
@@ -83,7 +83,7 @@ export function ProfileForm({ profile, onSaved }: ProfileFormProps) {
             {FORM_COPY.removeImage}
           </Button>
         </div>
-        <TextField
+        <FormField
           id="profile-name"
           label={FORM_COPY.name}
           name="name"
@@ -92,11 +92,11 @@ export function ProfileForm({ profile, onSaved }: ProfileFormProps) {
           fullWidth
           value={draft.name}
           onChange={handleChange("name")}
-          error={Boolean(fieldErrors.name)}
-          helperText={fieldErrors.name ?? " "}
+          error={fieldErrors.name}
+          helperText=" "
           disabled={saving}
         />
-        <TextField
+        <FormField
           id="profile-image"
           label={FORM_COPY.image}
           name="image"
@@ -105,16 +105,16 @@ export function ProfileForm({ profile, onSaved }: ProfileFormProps) {
           fullWidth
           value={draft.image}
           onChange={handleChange("image")}
-          error={Boolean(fieldErrors.image)}
-          helperText={fieldErrors.image ?? FORM_COPY.imageHint}
+          error={fieldErrors.image}
+          helperText={FORM_COPY.imageHint}
           disabled={saving}
         />
         {message ? <Alert severity="error">{message}</Alert> : null}
         {saved ? <Alert severity="success" role="status">{FORM_COPY.saved}</Alert> : null}
         <div className={cx(styles.actions)}>
-          <Button type="submit" variant="contained" disabled={saving || !changed}>
-            {saving ? FORM_COPY.saving : FORM_COPY.submit}
-          </Button>
+          <AsyncButton type="submit" variant="contained" loading={saving} disabled={!changed}>
+            {FORM_COPY.submit}
+          </AsyncButton>
         </div>
       </form>
     </section>
