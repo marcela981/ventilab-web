@@ -34,6 +34,8 @@
     "src/features/profile/**/*",
     "src/features/groups/**/*",
     "pages/auth/login/index.tsx",
-    "pages/profile/index.tsx"
+    "pages/profile/index.tsx",
+    "pages/my-group/index.tsx",
+    "pages/groups/index.tsx"
   ]
 }

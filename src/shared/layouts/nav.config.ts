@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Navigation config
-* Descripción: Typed main-navigation items of the AppShell. Every item points to an EXISTING route of the session route table (routes.config) and lists the roles that see it (a test asserts each route exists and admits those roles). getNavItems filters by role; findActiveHref picks the longest matching item for the current Next pathname. Labels are plain Spanish because the i18next setup (src/i18n) is outside the new-code modules; TODO(i18n): move them to an i18next namespace. Depends on MUI icons and the session route table and entities.
-* Versión: 1.0
+* Descripción: Typed main-navigation items of the AppShell. Every item points to an EXISTING route of the session route table (routes.config) and lists the roles that see it (a test asserts each route exists and admits those roles). v1.1 (T11a): "Mi grupo" (/my-group, students) and "Grupos" (/groups, teachers and admins). getNavItems filters by role; findActiveHref picks the longest matching item for the current Next pathname. Labels are plain Spanish because the i18next setup (src/i18n) is outside the new-code modules; TODO(i18n): move them to an i18next namespace. Depends on MUI icons and the session route table and entities.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,6 +17,7 @@ import EditNoteIcon from "@mui/icons-material/EditNote";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GradingIcon from "@mui/icons-material/Grading";
 import GroupsIcon from "@mui/icons-material/Groups";
+import GroupWorkIcon from "@mui/icons-material/GroupWork";
 import HomeIcon from "@mui/icons-material/Home";
 import MonitorHeartIcon from "@mui/icons-material/MonitorHeart";
 import PersonIcon from "@mui/icons-material/Person";
@@ -44,8 +45,10 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/simulador", label: "Simulador", icon: MonitorHeartIcon, roles: STUDENT },
   { href: "/evaluation", label: "Evaluaciones", icon: AssignmentIcon, roles: STUDENT },
   { href: "/achievements", label: "Logros", icon: EmojiEventsIcon, roles: STUDENT },
+  { href: "/my-group", label: "Mi grupo", icon: GroupWorkIcon, roles: STUDENT },
   { href: "/panel", label: "Panel", icon: DashboardIcon, roles: STAFF },
   { href: "/panel/students", label: "Estudiantes", icon: GroupsIcon, roles: STAFF },
+  { href: "/groups", label: "Grupos", icon: GroupWorkIcon, roles: STAFF },
   { href: "/evaluation/manage", label: "Gestionar evaluaciones", icon: EditNoteIcon, roles: STAFF },
   { href: "/evaluation/grade", label: "Calificar", icon: GradingIcon, roles: STAFF },
   { href: "/panel/admin", label: "Administración", icon: AdminPanelSettingsIcon, roles: ADMIN },

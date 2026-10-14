@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Navigation config tests
-* Descripción: Verifies that every nav item points to an existing route of routes.config that its roles can reach, that items are filtered by role, and that the active item is the longest matching route. Depends on vitest and the session route table.
-* Versión: 1.0
+* Descripción: Verifies that every nav item points to an existing route of routes.config that its roles can reach, that items are filtered by role, and that the active item is the longest matching route. v1.1 (T11a): students get /my-group, teachers and admins get /groups. Depends on vitest and the session route table.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -36,6 +36,8 @@ describe("getNavItems", () => {
 
     expect(hrefs).toContain("/dashboard");
     expect(hrefs).toContain("/profile");
+    expect(hrefs).toContain("/my-group");
+    expect(hrefs).not.toContain("/groups");
     expect(hrefs.some((href) => href.startsWith("/panel"))).toBe(false);
   });
 
@@ -46,6 +48,8 @@ describe("getNavItems", () => {
     expect(hrefs).toContain("/panel/students");
     expect(hrefs).not.toContain("/panel/admin");
     expect(hrefs).not.toContain("/dashboard");
+    expect(hrefs).toContain("/groups");
+    expect(hrefs).not.toContain("/my-group");
   });
 
   it("gives admins the admin routes", () => {
@@ -53,6 +57,8 @@ describe("getNavItems", () => {
 
     expect(hrefs).toContain("/panel/admin");
     expect(hrefs).toContain("/panel/settings");
+    expect(hrefs).toContain("/groups");
+    expect(hrefs).not.toContain("/my-group");
   });
 });
 

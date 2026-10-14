@@ -1,7 +1,7 @@
 <!--
 * Funcionalidad: Legacy coexistence report
-* Descripción: T8 inventory of how the legacy frontend coexists with the new template code: adapters done, pending swaps (gap + owning task), legacy allowlist counts, NextAuth uses that must stay, the profile/ui vs profile/UI case collision and the files the author still has to git rm. Source of truth for T9–T12 legacy work. v1.1 (T9): legacy login replaced, authService getUserData bridge, refreshToken removed, NextAuth list corrected. v1.2 (T9 follow-up + T10): NextAuth session verified after login, legacy guard race fixed, NextAuth note made consistent, legacy profile removed and the ui/UI collision resolved.
-* Versión: 1.2
+* Descripción: T8 inventory of how the legacy frontend coexists with the new template code: adapters done, pending swaps (gap + owning task), legacy allowlist counts, NextAuth uses that must stay, the profile/ui vs profile/UI case collision and the files the author still has to git rm. Source of truth for T9–T12 legacy work. v1.1 (T9): legacy login replaced, authService getUserData bridge, refreshToken removed, NextAuth list corrected. v1.2 (T9 follow-up + T10): NextAuth session verified after login, legacy guard race fixed, NextAuth note made consistent, legacy profile removed and the ui/UI collision resolved. v1.3 (T11a): legacy group management in the panel listed as a pending swap.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -42,6 +42,7 @@ Legacy consumers unchanged: `useVentilatorData.ts` (`socket`, `isConnected`, `bi
 | Legacy `useSocket` consumers -> `useSocketEvent` | `@shared/realtime` | `ventilator:*` events are not typed in the realtime contract yet. | Simulator migration |
 | `httpClient.ts` | — | No own refresh/logout logic (delegates to `http.ts`); nothing to change. | — |
 | Legacy profile page `pages/profile/index.js` + `src/features/profile/{components,profile.api.ts,profile.types.ts,useProfile.ts,ui/}` | `@features/profile` `ProfilePage` | Done in T10: deleted (the page was their only importer), thin route `pages/profile/index.tsx`. Not carried over: password change and avatar file upload (outside `PATCH /api/users/me`). | Author decision (T10 pending a) |
+| Legacy group management `src/features/admin/services/groupsService.js` + `components/panel/ui/GroupBuilderModal.jsx` (`/panel/students`) | `@features/groups` (`/groups`, T11b detail) | Legacy UI inside the legacy panel (own modal, legacy http); not 1:1. Its mutations do not invalidate the new SWR group keys (the new pages revalidate on mount). | Panel migration / after T11b |
 
 Hydration note: `SocketContext` reads token storage with `useSyncExternalStore` (server snapshot `false`) plus a fresh read when memoizing the legacy socket, so a backend-session tab never creates the legacy `io()` instance, even during hydration.
 

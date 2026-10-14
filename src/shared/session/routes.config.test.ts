@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Route table tests
-* Descripción: Open-redirect safety of the returnTo helper (rejects protocol-relative, absolute, javascript: and auth-page targets), login URL building, route lookup by Next pathname pattern and the default landing route per role. v1.1 (T9 follow-up): role access of concrete paths (dynamic segments, query strings) and the post-login fallback to the role home when the returnTo route is not allowed for the role. Depends on vitest and routes.config.
-* Versión: 1.1
+* Descripción: Open-redirect safety of the returnTo helper (rejects protocol-relative, absolute, javascript: and auth-page targets), login URL building, route lookup by Next pathname pattern and the default landing route per role. v1.1 (T9 follow-up): role access of concrete paths (dynamic segments, query strings) and the post-login fallback to the role home when the returnTo route is not allowed for the role. v1.2 (T11a): /my-group is student-only and /groups is staff-only. Depends on vitest and routes.config.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -97,6 +97,14 @@ describe("findRoute", () => {
   it("finds a route by its Next pathname pattern", () => {
     expect(findRoute("/panel/admin")).toMatchObject({ access: "authenticated", roles: ["ADMIN"] });
     expect(findRoute(LOGIN_PATH)).toMatchObject({ access: "public" });
+  });
+
+  it("restricts /my-group to students and /groups to teachers and admins", () => {
+    expect(findRoute("/my-group")).toMatchObject({ access: "authenticated", roles: ["STUDENT"] });
+    expect(findRoute("/groups")).toMatchObject({ access: "authenticated", roles: ["TEACHER", "ADMIN"] });
+    expect(isPathAllowedForRole("/my-group", "TEACHER")).toBe(false);
+    expect(isPathAllowedForRole("/groups?type=STUDENT", "STUDENT")).toBe(false);
+    expect(isPathAllowedForRole("/groups", "ADMIN")).toBe(true);
   });
 
   it("returns null for unknown paths", () => {

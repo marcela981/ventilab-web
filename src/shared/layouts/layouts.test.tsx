@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Layouts and AppShell tests
-* Descripción: Verifies the guard behavior of the Student/Teacher/Admin layouts (redirect to login, wrong role to its landing route, content for the right role), the public layout without auth, and the AppShell (role-filtered nav, skip link, sign-out through the session, realtime status indicator, route error boundary). Depends on vitest, Testing Library, next/router and next/link (mocked) and the session/realtime contexts.
-* Versión: 1.0
+* Descripción: Verifies the guard behavior of the Student/Teacher/Admin layouts (redirect to login, wrong role to its landing route, content for the right role), the public layout without auth, and the AppShell (role-filtered nav, skip link, sign-out through the session, realtime status indicator, route error boundary). v1.1 (T11a): the user avatar shows the session image with the initials as fallback, and the student-only layout sends other roles to their landing route. Depends on vitest, Testing Library, next/router and next/link (mocked) and the session/realtime contexts.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,7 +20,7 @@ import type { SessionContextValue } from "@shared/session/session-context";
 import { AppShell } from "./app-shell";
 import { AdminLayout } from "./admin-layout";
 import { PublicLayout } from "./public-layout";
-import { StudentLayout, withStudentLayout } from "./student-layout";
+import { StudentLayout, StudentOnlyLayout, withStudentLayout } from "./student-layout";
 import { TeacherLayout } from "./teacher-layout";
 
 const router = vi.hoisted(() => ({
@@ -40,8 +40,8 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-function sessionValue(status: SessionStatus, role: Role | null = null): SessionContextValue {
-  const user = role ? { id: "u1", email: "ana@ventylab.demo", name: "Ana Torres", image: null, role } : null;
+function sessionValue(status: SessionStatus, role: Role | null = null, image: string | null = null): SessionContextValue {
+  const user = role ? { id: "u1", email: "ana@ventylab.demo", name: "Ana Torres", image, role } : null;
 
   return {
     status,
@@ -91,6 +91,19 @@ describe("authenticated layouts", () => {
 
   it("StudentLayout renders the page inside the shell for any authenticated role", () => {
     renderWith(sessionValue("authenticated", "STUDENT"), <StudentLayout>{content}</StudentLayout>);
+
+    expect(screen.getByRole("main")).toContainElement(screen.getByText("Contenido de la página"));
+  });
+
+  it("StudentOnlyLayout sends a teacher to the teacher landing route", () => {
+    renderWith(sessionValue("authenticated", "TEACHER"), <StudentOnlyLayout>{content}</StudentOnlyLayout>);
+
+    expect(router.replace).toHaveBeenCalledWith("/panel");
+    expect(screen.queryByText("Contenido de la página")).not.toBeInTheDocument();
+  });
+
+  it("StudentOnlyLayout renders the page for a student", () => {
+    renderWith(sessionValue("authenticated", "STUDENT"), <StudentOnlyLayout>{content}</StudentOnlyLayout>);
 
     expect(screen.getByRole("main")).toContainElement(screen.getByText("Contenido de la página"));
   });
@@ -153,6 +166,23 @@ describe("AppShell", () => {
 
     expect(skip).toHaveAttribute("href", "#main-content");
     expect(screen.getByRole("main")).toHaveAttribute("id", "main-content");
+  });
+
+  it("shows the session user's avatar image when present", () => {
+    renderWith(sessionValue("authenticated", "STUDENT", "https://cdn.example/ana.png"), <AppShell>{content}</AppShell>);
+
+    const button = screen.getByRole("button", { name: "Abrir menú de usuario" });
+
+    expect(button.querySelector("img")).toHaveAttribute("src", "https://cdn.example/ana.png");
+  });
+
+  it("falls back to the initials without an avatar image", () => {
+    renderWith(sessionValue("authenticated", "STUDENT"), <AppShell>{content}</AppShell>);
+
+    const button = screen.getByRole("button", { name: "Abrir menú de usuario" });
+
+    expect(button.querySelector("img")).toBeNull();
+    expect(button).toHaveTextContent("AT");
   });
 
   it("signs out through the session from the user menu", () => {

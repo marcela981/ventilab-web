@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AppShell
-* Descripción: Authenticated application chrome for new pages: skip link to the main region, a permanent navigation drawer on desktop (>= md) and a temporary drawer opened from the header on mobile, the role-filtered navigation from nav.config (useSession role, active item = longest matching route with aria-current), a header with the app name, a small realtime status chip when the new socket is disconnected or unauthorized, and a user menu whose "Cerrar sesión" calls signOut() from the session (the route guard then redirects to login). Page content renders inside RouteErrorBoundary, reset on route change. It does not guard by itself: the Student/Teacher/Admin layouts wrap it in RequireAuth/RequireRole. Plain Spanish copy (TODO(i18n), see nav.config). Depends on MUI, next/link, next/router, @shared/session, @shared/realtime context and @shared/design-system components.
-* Versión: 1.0
+* Descripción: Authenticated application chrome for new pages: skip link to the main region, a permanent navigation drawer on desktop (>= md) and a temporary drawer opened from the header on mobile, the role-filtered navigation from nav.config (useSession role, active item = longest matching route with aria-current), a header with the app name, a small realtime status chip when the new socket is disconnected or unauthorized, and a user menu (avatar = the session user's image, initials as fallback, v1.1 T11a) whose "Cerrar sesión" calls signOut() from the session (the route guard then redirects to login). Page content renders inside RouteErrorBoundary, reset on route change. It does not guard by itself: the Student/Teacher/Admin layouts wrap it in RequireAuth/RequireRole. Plain Spanish copy (TODO(i18n), see nav.config). Depends on MUI, next/link, next/router, @shared/session, @shared/realtime context and @shared/design-system components.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -125,6 +125,8 @@ export function AppShell({ children }: AppShellProps) {
   const closeMenu = () => setMenuAnchor(null);
   const menuAria = menuAnchor ? { "aria-controls": userMenuId, "aria-expanded": "true" as const } : {};
   const openMenu = (event: MouseEvent<HTMLElement>) => setMenuAnchor(event.currentTarget);
+  // Decorative image (the button has its own label); MUI falls back to the initials if it fails to load.
+  const avatarImage = user?.image ? { src: user.image, alt: "" } : {};
 
   const handleSignOut = () => {
     closeMenu();
@@ -162,7 +164,7 @@ export function AppShell({ children }: AppShellProps) {
               {...menuAria}
               onClick={openMenu}
             >
-              <Avatar>{initialsOf(user?.name, user?.email)}</Avatar>
+              <Avatar {...avatarImage}>{initialsOf(user?.name, user?.email)}</Avatar>
             </IconButton>
             <Menu id={userMenuId} anchorEl={menuAnchor} open={menuAnchor !== null} onClose={closeMenu}>
               <div className={styles.userInfo}>

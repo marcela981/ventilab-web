@@ -11,7 +11,8 @@
  *   v3.1 (T9): la ruta delgada pages/auth/login/index.tsx entra en NEW_PAGE_FILES.
  *   v3.2 (T10): pages/profile/index.tsx entra en NEW_PAGE_FILES; profile/ ya no tiene
  *   legacy (eliminado en T10), así que toda la carpeta es código nuevo, como groups/.
- * Versión: 3.2
+ *   v3.3 (T11a): pages/my-group/index.tsx y pages/groups/index.tsx entran en NEW_PAGE_FILES.
+ * Versión: 3.3
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -38,7 +39,12 @@ const NEW_FEATURE_FILES = [
 
 // Thin route files under pages/ that already follow the new structure. Add each
 // one here when it is created or rewritten (T6+); they get the new-code rules.
-const NEW_PAGE_FILES = ["pages/auth/login/index.tsx", "pages/profile/index.tsx"];
+const NEW_PAGE_FILES = [
+  "pages/auth/login/index.tsx",
+  "pages/profile/index.tsx",
+  "pages/my-group/index.tsx",
+  "pages/groups/index.tsx",
+];
 
 const NEW_CODE_FILES = [
   `src/shared/{${NEW_SHARED_MODULES}}/**/*.${SOURCE_EXT}`,
