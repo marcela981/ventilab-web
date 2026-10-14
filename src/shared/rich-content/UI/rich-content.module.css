@@ -1,0 +1,145 @@
+/*
+* Funcionalidad: RichContent styles
+* Descripción: Typography for rendered lesson markdown (headings, lists, tables, quotes, code, images, KaTeX blocks) on the light theme. Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.root {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  font: var(--mui-font-body1);
+  line-height: 1.8;
+  color: var(--vl-color-text);
+}
+
+.root h1,
+.root h2,
+.root h3,
+.root h4,
+.root h5,
+.root h6 {
+  margin: var(--vl-space-5) 0 var(--vl-space-3);
+  font-weight: 600;
+  color: var(--vl-color-text);
+}
+
+.root h1 {
+  font: var(--mui-font-h3);
+  border-bottom: 3px solid var(--vl-color-primary);
+  padding-bottom: var(--vl-space-2);
+}
+
+.root h2 {
+  font: var(--mui-font-h4);
+  border-bottom: 2px solid var(--vl-color-primary);
+  padding-bottom: var(--vl-space-1);
+}
+
+.root h3 {
+  font: var(--mui-font-h5);
+}
+
+.root h4 {
+  font: var(--mui-font-h6);
+}
+
+.root p {
+  margin: var(--vl-space-4) 0;
+}
+
+.root ul,
+.root ol {
+  margin: var(--vl-space-3) 0;
+  padding-left: var(--vl-space-6);
+}
+
+.root li {
+  margin: var(--vl-space-1) 0;
+}
+
+.root a {
+  color: var(--vl-color-link);
+  font-weight: 500;
+}
+
+.root blockquote {
+  margin: var(--vl-space-4) 0;
+  padding: var(--vl-space-2) var(--vl-space-4);
+  border-left: 4px solid var(--vl-color-primary);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-hover);
+  font-style: italic;
+}
+
+.root hr {
+  margin: var(--vl-space-5) 0;
+  border: none;
+  border-top: 2px solid var(--vl-color-border);
+}
+
+.root code {
+  padding: 0 var(--vl-space-1);
+  border-radius: var(--vl-radius-sm);
+  background: var(--vl-color-hover);
+  font-family: monospace;
+}
+
+.root pre {
+  overflow: auto;
+  padding: var(--vl-space-3);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-hover);
+}
+
+.root pre code {
+  padding: 0;
+  background: none;
+}
+
+.root table {
+  width: 100%;
+  margin: var(--vl-space-4) 0;
+  border-collapse: collapse;
+}
+
+.root th,
+.root td {
+  padding: var(--vl-space-2) var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  text-align: left;
+}
+
+.root th {
+  background: var(--vl-color-hover);
+  font-weight: 600;
+}
+
+.root img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--vl-radius-md);
+}
+
+.root :global(.katex) {
+  font-size: 1.1em;
+}
+
+.root :global(.katex-display) {
+  overflow: auto;
+  margin: var(--vl-space-4) 0;
+  padding: var(--vl-space-4);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-hover);
+}
+
+.empty {
+  margin: 0;
+  padding: var(--vl-space-4);
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}

@@ -1,0 +1,49 @@
+/*
+* Funcionalidad: AiRatingWidget styles
+* Descripción: Layout of the "¿Te fue útil?" widget: question row with the thumb buttons, comment form and status/error messages. Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-2) 0;
+  color: var(--vl-color-text);
+}
+
+.question {
+  display: flex;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.title {
+  margin: 0;
+  color: var(--vl-color-text-muted);
+}
+
+.thumbs {
+  display: flex;
+  gap: var(--vl-space-1);
+}
+
+.comment {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--vl-space-2);
+}
+
+.submit {
+  align-self: flex-end;
+}
+
+.thanks {
+  color: var(--vl-color-text-muted);
+}
