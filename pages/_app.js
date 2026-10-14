@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: _app — raíz de la aplicación Next.js
-* Descripción: Árbol de providers globales para VentyLab. Incluye WarmupProvider para detección y notificación de cold starts del backend en Render free tier. Usa el tema MUI con cssVariables de src/shared/design-system/theme (Roboto self-hosted vía next/font) e importa los CSS globales (App.css legacy + tokens.css del design system); el CSS global solo se importa aquí. v2.2: monta ApiSWRProvider (config SWR estándar de @shared/api-client, caché por defecto) y el warm-up llama GET /health del backend con el cliente tipado (antes httpSlow.get('/api/health') duplicaba el prefijo: /api/api/health). v2.3: monta el AuthProvider de @shared/session (sesión del backend para código nuevo, importado como BackendSessionProvider para no chocar con el AuthProvider legacy) dentro de ApiSWRProvider; no cambia NextAuth ni el AuthContext legacy y no navega por sí mismo.
-* Versión: 2.3
+* Descripción: Árbol de providers globales para VentyLab. Incluye WarmupProvider para detección y notificación de cold starts del backend en Render free tier. Usa el tema MUI con cssVariables de src/shared/design-system/theme (Roboto self-hosted vía next/font) e importa los CSS globales (App.css legacy + tokens.css del design system); el CSS global solo se importa aquí. v2.2: monta ApiSWRProvider (config SWR estándar de @shared/api-client, caché por defecto) y el warm-up llama GET /health del backend con el cliente tipado (antes httpSlow.get('/api/health') duplicaba el prefijo: /api/api/health). v2.3: monta el AuthProvider de @shared/session (sesión del backend para código nuevo, importado como BackendSessionProvider para no chocar con el AuthProvider legacy) dentro de ApiSWRProvider; no cambia NextAuth ni el AuthContext legacy y no navega por sí mismo. v2.4: monta el RealtimeProvider de @shared/realtime (socket autenticado del código nuevo, solo con sesión de backend) dentro de BackendSessionProvider; el SocketProvider legacy no cambia.
+* Versión: 2.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -25,6 +25,8 @@ import { theme } from '@shared/design-system/theme';
 import { ApiSWRProvider } from '@shared/api-client/swr-config';
 // Direct module import: the session index would also pull the guards and the route table.
 import { AuthProvider as BackendSessionProvider } from '@shared/session/auth-provider';
+// Direct module import: the realtime index re-exports hooks and types the app shell does not need.
+import { RealtimeProvider } from '@shared/realtime/realtime-provider';
 import { PatientDataProvider } from '../src/features/simulador/simuladorPaciente/contexto/PatientDataContext';
 import { SocketProvider } from '../src/shared/contexts/SocketContext';
 import { SidebarContext } from '../src/shared/contexts/SidebarContext';
@@ -118,6 +120,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
       <Providers>
         <ApiSWRProvider>
         <BackendSessionProvider>
+        <RealtimeProvider>
         {/*
           SessionProvider: Provides NextAuth.js session to all components
           - session: Initial session from getServerSideProps (SSR optimization)
@@ -177,6 +180,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
         </SessionProvider>
         <WarmupOverlay />
         </WarmupProvider>
+        </RealtimeProvider>
         </BackendSessionProvider>
         </ApiSWRProvider>
       </Providers>
