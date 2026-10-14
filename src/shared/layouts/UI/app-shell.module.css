@@ -1,0 +1,118 @@
+/*
+* Funcionalidad: AppShell styles
+* Descripción: Responsive shell layout: permanent navigation drawer from the md breakpoint (900px, MUI default) and a header menu button below it, sticky header, main content region and a skip link that is visually hidden until focused. Classes are applied to elements the shell owns or to MUI slots where MUI sets no conflicting property (drawer paper width, header border). Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.root {
+  --shell-drawer-width: 16.25rem;
+
+  display: flex;
+  min-height: 100vh;
+  background: var(--vl-color-bg);
+  color: var(--vl-color-text);
+}
+
+.skipLink {
+  position: absolute;
+  top: var(--vl-space-2);
+  left: var(--vl-space-2);
+  z-index: var(--vl-z-tooltip);
+  padding: var(--vl-space-2) var(--vl-space-4);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-link);
+  font: var(--mui-font-button);
+  box-shadow: var(--vl-shadow-3);
+  transform: translateY(-200%);
+}
+
+.skipLink:focus {
+  transform: none;
+}
+
+.desktopNav {
+  display: none;
+}
+
+.drawerPaper {
+  width: var(--shell-drawer-width);
+  box-sizing: border-box;
+}
+
+.navigation {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  min-height: var(--vl-space-8);
+  padding: 0 var(--vl-space-4);
+  color: var(--vl-color-link);
+  font: var(--mui-font-h6);
+  text-decoration: none;
+}
+
+.column {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.header {
+  border-bottom: 1px solid var(--vl-color-border);
+}
+
+.toolbar {
+  gap: var(--vl-space-2);
+}
+
+.menuButton {
+  display: inline-flex;
+}
+
+.title {
+  flex: 1;
+}
+
+.realtime {
+  display: inline-flex;
+}
+
+.userInfo {
+  padding: var(--vl-space-2) var(--vl-space-4);
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  padding: var(--vl-space-5) var(--vl-space-4);
+}
+
+.main:focus {
+  outline: none;
+}
+
+@media (min-width: 900px) {
+  .desktopNav {
+    display: block;
+    width: var(--shell-drawer-width);
+    flex-shrink: 0;
+  }
+
+  .menuButton {
+    display: none;
+  }
+
+  .main {
+    padding: var(--vl-space-6);
+  }
+}

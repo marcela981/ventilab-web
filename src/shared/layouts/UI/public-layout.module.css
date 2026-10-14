@@ -1,0 +1,25 @@
+/*
+* Funcionalidad: PublicLayout styles
+* Descripción: Full-viewport centered column for public pages such as login. Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.root {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: var(--vl-space-5) var(--vl-space-4);
+  background: var(--vl-color-bg);
+  color: var(--vl-color-text);
+}
+
+.content {
+  width: 100%;
+  max-width: 28rem;
+}

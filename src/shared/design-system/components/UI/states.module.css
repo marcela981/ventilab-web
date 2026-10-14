@@ -1,0 +1,37 @@
+/*
+* Funcionalidad: State view styles
+* Descripción: Shared centered column used by EmptyState, ErrorState and LoadingState. Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-6) var(--vl-space-4);
+  text-align: center;
+  color: var(--vl-color-text);
+}
+
+.icon {
+  display: flex;
+  color: var(--vl-color-text-muted);
+  font-size: var(--vl-space-7);
+}
+
+.action {
+  margin-top: var(--vl-space-2);
+}
+
+.alert {
+  width: 100%;
+  max-width: 40rem;
+  text-align: left;
+}
