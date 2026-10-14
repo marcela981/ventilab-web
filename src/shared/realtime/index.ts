@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Realtime public API
-* Descripción: Public surface of the realtime module: RealtimeProvider (authenticated Socket.io connection bound to the backend session), useSocket, useSocketEvent and the contract types from asyncapi.yaml. No SSE helper: the only text/event-stream routes in openapi.json are the AI tutor and simulation assistance, outside the identity features and layouts (YAGNI).
-* Versión: 1.0
+* Descripción: Public surface of the realtime module: RealtimeProvider (authenticated Socket.io connection bound to the backend session), useSocket, useSocketEvent and the contract types from asyncapi.yaml. v1.1 (T0 learning): the SSE helper for the text/event-stream routes (AI tutor, simulation assistance) lives in @shared/api-client (postEventStream/runEventStream) because it is a POST request that shares the bearer token and refresh logic of the HTTP client, not a push channel.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje

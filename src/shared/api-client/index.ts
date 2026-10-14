@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: api-client public API
-* Descripción: Public surface of the typed backend client: request helpers, ApiError, token storage, the auth event bus, the shared single-flight refresh, timeout categories and the SWR standard (provider and hooks). Generated OpenAPI types are re-exported as types.
-* Versión: 1.0
+* Descripción: Public surface of the typed backend client: request helpers, ApiError, token storage, the auth event bus, the shared single-flight refresh, timeout categories and the SWR standard (provider and hooks). Generated OpenAPI types are re-exported as types. v1.1 (T0 learning): the SSE stream helper (postEventStream, runEventStream, createSseParser) and apiErrorFromResponse.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,8 +9,8 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-export { ApiError, CLIENT_ERROR_CODES, isApiError, toApiError } from "./api-error";
-export type { ApiErrorInit } from "./api-error";
+export { ApiError, apiErrorFromResponse, CLIENT_ERROR_CODES, isApiError, toApiError } from "./api-error";
+export type { ApiErrorInit, HttpErrorResponse } from "./api-error";
 export { apiDelete, apiGet, apiPatch, apiPost, apiPut, apiRequest } from "./api-request";
 export type {
   ApiPagination,
@@ -28,6 +28,15 @@ export type { components, operations, paths } from "./generated/schema";
 export { httpClient } from "./http-client";
 export { API_SWR_CONFIG, ApiSWRProvider } from "./swr-config";
 export type { ApiQueryKey } from "./swr-config";
+export { createSseParser, postEventStream, runEventStream } from "./sse-stream";
+export type {
+  EventStreamEvent,
+  EventStreamHandlers,
+  EventStreamOptions,
+  SseFrame,
+  SseParser,
+  TutorStreamDone,
+} from "./sse-stream";
 export { SLOW_ROUTES, TIMEOUTS } from "./timeouts";
 export type { TimeoutCategory } from "./timeouts";
 export { expireSession, refreshAccessToken } from "./token-refresh";

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: API error normalization
-* Descripción: Single frontend error type (ApiError) built from the backend error envelope `{ success:false, code, message, data, traceId }`, the Retry-After header, or a network failure. Client-side codes: `network.unavailable`, `network.timeout`, `auth.session_expired`, `common.unknown`. No runtime dependencies (axios errors are detected by their `isAxiosError` flag, the same check axios uses), so it can live in the app shell without pulling axios in.
-* Versión: 1.0
+* Descripción: Single frontend error type (ApiError) built from the backend error envelope `{ success:false, code, message, data, traceId }`, the Retry-After header, or a network failure. Client-side codes: `network.unavailable`, `network.timeout`, `network.stream_interrupted`, `auth.session_expired`, `common.unknown`. No runtime dependencies (axios errors are detected by their `isAxiosError` flag, the same check axios uses), so it can live in the app shell without pulling axios in. v1.1 (T0 learning): apiErrorFromResponse builds the ApiError from a raw status/body/Retry-After triple so the fetch-based SSE helper maps errors exactly like axios responses (toApiError reuses it); new client code `network.stream_interrupted`.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,6 +12,7 @@
 export const CLIENT_ERROR_CODES = {
   networkUnavailable: "network.unavailable",
   networkTimeout: "network.timeout",
+  streamInterrupted: "network.stream_interrupted",
   sessionExpired: "auth.session_expired",
   unknown: "common.unknown",
 } as const;
@@ -102,6 +103,25 @@ function asBody(data: unknown): ErrorBody {
   return typeof data === "object" && data !== null ? (data as ErrorBody) : {};
 }
 
+export type HttpErrorResponse = {
+  status: number
+  body: unknown
+  retryAfterHeader?: unknown
+};
+
+export function apiErrorFromResponse({ status, body: data, retryAfterHeader }: HttpErrorResponse): ApiError {
+  const body = asBody(data);
+
+  return new ApiError({
+    code: typeof body.code === "string" ? body.code : CLIENT_ERROR_CODES.unknown,
+    message: normalizeMessage(body.message) ?? `Request failed with status ${status}`,
+    status,
+    details: body.data ?? null,
+    traceId: typeof body.traceId === "string" ? body.traceId : undefined,
+    retryAfter: parseRetryAfter(retryAfterHeader),
+  });
+}
+
 export function toApiError(error: unknown): ApiError {
   if (isApiError(error)) {
     return error;
@@ -119,16 +139,8 @@ export function toApiError(error: unknown): ApiError {
     }
 
     const { status, data, headers } = error.response;
-    const body = asBody(data);
 
-    return new ApiError({
-      code: typeof body.code === "string" ? body.code : CLIENT_ERROR_CODES.unknown,
-      message: normalizeMessage(body.message) ?? `Request failed with status ${status}`,
-      status,
-      details: body.data ?? null,
-      traceId: typeof body.traceId === "string" ? body.traceId : undefined,
-      retryAfter: parseRetryAfter(headers?.["retry-after"]),
-    });
+    return apiErrorFromResponse({ status, body: data, retryAfterHeader: headers?.["retry-after"] });
   }
 
   return new ApiError({
