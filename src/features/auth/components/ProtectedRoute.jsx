@@ -1,3 +1,14 @@
+/*
+* Funcionalidad: ProtectedRoute (legacy route guard)
+* Descripción: Legacy component guard (authentication, role hierarchy, redirect to /auth/login?callbackUrl or /auth/access-denied) over the NextAuth/custom-token useAuth hook. v1.1 (T9 follow-up, redirect loop): useAuth adopts a custom-token user (backend session snapshot or legacy user data, see authService.getUserData) in an effect that has not re-rendered yet when this guard's effect runs, so users of the new login were bounced to /auth/login and redirected back (loop). While such a user is pending adoption the guard now waits instead of redirecting. Depends on next/router, MUI, useAuth, lib/roles and authService.
+* Versión: 1.1
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
 /**
  * =============================================================================
  * ProtectedRoute Component for VentyLab
@@ -19,6 +30,10 @@ import { useRouter } from 'next/router';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { ROLES } from '@/lib/roles';
+import { getAuthToken, getUserData } from '@/shared/services/authService';
+
+// A token user useAuth adopts in its own effect, one render after this guard's effect.
+const hasPendingTokenUser = () => Boolean(getAuthToken() && getUserData());
 
 /**
  * Default loading fallback component
@@ -94,6 +109,8 @@ export function ProtectedRoute({
 
     // Not authenticated but auth is required
     if (requireAuth && !isAuthenticated) {
+      if (hasPendingTokenUser()) return;
+
       console.warn('[ProtectedRoute] Access denied: User not authenticated');
 
       if (typeof onAccessDenied === 'function') {

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Route table
-* Descripción: Typed route table keyed by Next pathname pattern (`access: public | authenticated`, optional `roles`), the login path, the default landing route per role and an open-redirect safe `returnTo` helper that only accepts same-origin relative paths outside `/auth/`. The table lists the current pages as data; legacy pages keep their own guards. Depends on session entities.
-* Versión: 1.0
+* Descripción: Typed route table keyed by Next pathname pattern (`access: public | authenticated`, optional `roles`), the login path, the default landing route per role and an open-redirect safe `returnTo` helper that only accepts same-origin relative paths outside `/auth/`. The table lists the current pages as data; legacy pages keep their own guards. v1.1 (T9 follow-up): isPathAllowedForRole checks a concrete path (dynamic segments, query/hash ignored, static routes first) against the table, and resolvePostLoginRoute falls back to the role home when the returnTo route is not allowed for the role (the target page would bounce the user). Depends on session entities.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -102,6 +102,30 @@ export function buildLoginUrl(returnTo?: string | null): string {
   return safe ? `${LOGIN_PATH}?${RETURN_TO_PARAM}=${encodeURIComponent(safe)}` : LOGIN_PATH;
 }
 
+function patternMatches(pattern: string, pathname: string): boolean {
+  const patternSegments = pattern.split("/");
+  const pathSegments = pathname.split("/");
+
+  return patternSegments.length === pathSegments.length
+    && patternSegments.every((segment, index) => segment === pathSegments[index]
+      || (segment.startsWith("[") && segment.endsWith("]") && pathSegments[index] !== ""));
+}
+
+// Role check of a concrete path ("/panel/students/abc?tab=1"). Paths outside the table are allowed:
+// their own page decides.
+export function isPathAllowedForRole(path: string, role: Role): boolean {
+  const { pathname } = new URL(path, PROBE_ORIGIN);
+  // A static route ("/evaluation/manage") wins over a dynamic one ("/evaluation/[activityId]").
+  const pattern = findRoute(pathname) ? pathname : Object.keys(ROUTES).find((key) => patternMatches(key, pathname));
+  const route: RouteConfig | null = pattern ? findRoute(pattern) : null;
+
+  return !route?.roles || route.roles.includes(role);
+}
+
+// A returnTo the role cannot open would be bounced by that page's guard (back to login or to
+// another page), so it falls back to the role home.
 export function resolvePostLoginRoute(returnTo: unknown, role: Role): string {
-  return sanitizeReturnTo(returnTo) ?? DEFAULT_ROUTE_BY_ROLE[role];
+  const safe = sanitizeReturnTo(returnTo);
+
+  return safe && isPathAllowedForRole(safe, role) ? safe : DEFAULT_ROUTE_BY_ROLE[role];
 }

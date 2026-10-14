@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Route table tests
-* Descripción: Open-redirect safety of the returnTo helper (rejects protocol-relative, absolute, javascript: and auth-page targets), login URL building, route lookup by Next pathname pattern and the default landing route per role. Depends on vitest and routes.config.
-* Versión: 1.0
+* Descripción: Open-redirect safety of the returnTo helper (rejects protocol-relative, absolute, javascript: and auth-page targets), login URL building, route lookup by Next pathname pattern and the default landing route per role. v1.1 (T9 follow-up): role access of concrete paths (dynamic segments, query strings) and the post-login fallback to the role home when the returnTo route is not allowed for the role. Depends on vitest and routes.config.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,6 +15,7 @@ import {
   DEFAULT_ROUTE_BY_ROLE,
   findRoute,
   LOGIN_PATH,
+  isPathAllowedForRole,
   resolvePostLoginRoute,
   sanitizeReturnTo,
 } from "./routes.config";
@@ -66,6 +67,29 @@ describe("resolvePostLoginRoute", () => {
 
   it("falls back to the role landing route", () => {
     expect(resolvePostLoginRoute("//evil.com", "TEACHER")).toBe(DEFAULT_ROUTE_BY_ROLE.TEACHER);
+  });
+
+  it("falls back to the role landing route when the returnTo route is not allowed for the role", () => {
+    expect(resolvePostLoginRoute("/panel/students/abc?tab=1", "STUDENT")).toBe(DEFAULT_ROUTE_BY_ROLE.STUDENT);
+    expect(resolvePostLoginRoute("/panel/admin", "TEACHER")).toBe(DEFAULT_ROUTE_BY_ROLE.TEACHER);
+    expect(resolvePostLoginRoute("/panel/students/abc?tab=1", "TEACHER")).toBe("/panel/students/abc?tab=1");
+  });
+});
+
+describe("isPathAllowedForRole", () => {
+  it("matches dynamic segments and ignores the query string", () => {
+    expect(isPathAllowedForRole("/evaluation/grade/a1?x=1", "STUDENT")).toBe(false);
+    expect(isPathAllowedForRole("/evaluation/grade/a1?x=1", "ADMIN")).toBe(true);
+    expect(isPathAllowedForRole("/teaching/m1/l2#step", "STUDENT")).toBe(true);
+  });
+
+  it("prefers a static route over a dynamic one with the same shape", () => {
+    expect(isPathAllowedForRole("/evaluation/manage", "STUDENT")).toBe(false);
+    expect(isPathAllowedForRole("/evaluation/a1", "STUDENT")).toBe(true);
+  });
+
+  it("allows paths that are not in the route table (their own page decides)", () => {
+    expect(isPathAllowedForRole("/unknown/page", "STUDENT")).toBe(true);
   });
 });
 

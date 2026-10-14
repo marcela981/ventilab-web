@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Login page tests
-* Descripción: Integration tests of the login page with the real backend session (AuthProvider) and MSW: local login posts the credentials and navigates to the role home or a safe returnTo, each backend error code shows its Spanish message, the Google ID token from Google Identity Services is posted to /api/auth/google, an authenticated visitor is redirected to the home of their role, the Google button is disabled without a client ID and an expired session shows a notice. v1.1: the best-effort NextAuth bridge (next-auth/react mocked): a local login signs in to NextAuth after establishSession and before the redirect, a bridge failure still redirects, and Google login never calls it (it only clears a stale NextAuth cookie). Depends on vitest, Testing Library, MSW, next/router (mocked) and the hard navigation helper (mocked).
-* Versión: 1.1
+* Descripción: Integration tests of the login page with the real backend session (AuthProvider) and MSW: local login posts the credentials and navigates to the role home or a safe returnTo, each backend error code shows its Spanish message, the Google ID token from Google Identity Services is posted to /api/auth/google, an authenticated visitor is redirected to the home of their role, the Google button is disabled without a client ID and an expired session shows a notice. v1.1: the best-effort NextAuth bridge (next-auth/react mocked): a local login signs in to NextAuth after establishSession and before the redirect, a bridge failure still redirects, and Google login never calls it (it only clears a stale NextAuth cookie). v1.2 (T9 follow-up): NextAuth session reconciliation (same user or none -> redirect; another user's session cleared -> redirect; persisting -> Spanish error, backend session signed out, no redirect, for local and Google logins), redirect loop guard (a bounced returnTo falls back to the role home; a bounced role home stops with an error and a sign-out button) and a staff-only returnTo for a student -> role home. Depends on vitest, Testing Library, MSW, next/router (mocked) and the hard navigation helper (mocked).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,6 +17,7 @@ import { getAccessToken, getRefreshToken, saveTokens } from "@shared/api-client/
 import { BACKEND_ORIGIN } from "@shared/lib/env";
 import { AuthProvider } from "@shared/session/auth-provider";
 import type { Role } from "@shared/session/session.entity";
+import { REDIRECT_HISTORY_KEY } from "../entities/redirect-loop-guard";
 import { LoginPage } from "./login.page";
 
 const router = vi.hoisted(() => ({
@@ -34,6 +35,7 @@ const navigation = vi.hoisted(() => ({ navigateTo: vi.fn() }));
 const nextAuth = vi.hoisted(() => ({
   signIn: vi.fn<(...args: unknown[]) => Promise<unknown>>(() => Promise.resolve({ ok: true, error: null })),
   signOut: vi.fn<(...args: unknown[]) => Promise<unknown>>(() => Promise.resolve(undefined)),
+  getSession: vi.fn<(...args: unknown[]) => Promise<unknown>>(() => Promise.resolve(null)),
 }));
 
 vi.mock("next/router", () => ({ useRouter: () => router }));
@@ -70,6 +72,7 @@ let currentRole: Role = "STUDENT";
 let loginBodies: unknown[] = [];
 let googleBodies: unknown[] = [];
 let meCalls = 0;
+let logoutCalls = 0;
 
 const user = () => ({ id: "u1", email: "ana@ventylab.demo", name: "Ana", image: null, role: currentRole });
 
@@ -91,6 +94,11 @@ const server = setupServer(
     googleBodies.push(await request.json());
 
     return loginResponse();
+  }),
+  http.post(url("/api/auth/logout"), () => {
+    logoutCalls += 1;
+
+    return HttpResponse.json(envelope(null));
   }),
 );
 
@@ -132,11 +140,14 @@ beforeEach(() => {
   loginBodies = [];
   googleBodies = [];
   meCalls = 0;
+  logoutCalls = 0;
   googleCallback = null;
   nextAuth.signIn.mockReset();
   nextAuth.signIn.mockImplementation(() => Promise.resolve({ ok: true, error: null }));
   nextAuth.signOut.mockReset();
   nextAuth.signOut.mockImplementation(() => Promise.resolve(undefined));
+  nextAuth.getSession.mockReset();
+  nextAuth.getSession.mockImplementation(() => Promise.resolve(null));
   router.query = {};
   router.isReady = true;
   navigation.navigateTo.mockClear();
@@ -149,6 +160,7 @@ beforeEach(() => {
 afterEach(() => {
   server.resetHandlers();
   window.localStorage.clear();
+  window.sessionStorage.clear();
   vi.unstubAllEnvs();
   delete (window as unknown as { google?: unknown }).google;
 });
@@ -325,10 +337,99 @@ describe("LoginPage with an existing session", () => {
     expect(screen.queryByRole("button", { name: /iniciar sesión/i })).not.toBeInTheDocument();
   });
 
+  it("falls back to the role home when the returnTo just bounced back to the login page", async() => {
+    saveTokens("access-0", "refresh-0");
+    window.sessionStorage.setItem(REDIRECT_HISTORY_KEY, JSON.stringify([{ target: "/teaching", at: Date.now() }]));
+    router.query = { returnUrl: "/teaching" };
+    renderLogin();
+
+    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/dashboard"), { timeout: 5000 });
+    expect(navigation.navigateTo).toHaveBeenCalledTimes(1);
+  });
+
+  it("stops redirecting and offers to sign out when the role home bounced too", async() => {
+    saveTokens("access-0", "refresh-0");
+    window.sessionStorage.setItem(REDIRECT_HISTORY_KEY, JSON.stringify([{ target: "/dashboard", at: Date.now() }]));
+    renderLogin();
+
+    expect(await screen.findByRole("alert", {}, { timeout: 5000 })).toHaveTextContent("No se pudo abrir la página de destino");
+    expect(navigation.navigateTo).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: /cerrar sesión/i }));
+
+    await waitFor(() => expect(getAccessToken()).toBeNull());
+    expect(await screen.findByRole("button", { name: /iniciar sesión/i })).toBeInTheDocument();
+    expect(window.sessionStorage.getItem(REDIRECT_HISTORY_KEY)).toBeNull();
+  });
+
+  it("sends a student to the role home instead of a staff-only returnTo", async() => {
+    router.query = { returnTo: "/panel/students" };
+    renderLogin();
+    fillAndSubmit();
+
+    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/dashboard"), { timeout: 5000 });
+  });
+
   it("shows a notice when the previous session expired", async() => {
     router.query = { expired: "1" };
     renderLogin();
 
     expect(await screen.findByText(/tu sesión expiró/i)).toBeInTheDocument();
+  });
+});
+
+describe("LoginPage NextAuth session reconciliation", () => {
+  const otherUser = { user: { email: "luis@ventylab.demo" } };
+
+  it("redirects when the NextAuth session belongs to the same user", async() => {
+    nextAuth.getSession.mockImplementation(() => Promise.resolve({ user: { email: "ana@ventylab.demo" } }));
+    renderLogin();
+    fillAndSubmit();
+
+    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/dashboard"), { timeout: 5000 });
+    expect(nextAuth.signOut).not.toHaveBeenCalled();
+  });
+
+  it("signs out a NextAuth session of another user and then redirects", async() => {
+    nextAuth.getSession.mockImplementationOnce(() => Promise.resolve(otherUser));
+    renderLogin();
+    fillAndSubmit();
+
+    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/dashboard"), { timeout: 5000 });
+    expect(nextAuth.signOut).toHaveBeenCalledWith({ redirect: false });
+    expect(getAccessToken()).toBe("access-1");
+  });
+
+  it("does not open legacy pages when the other user's NextAuth session persists", async() => {
+    nextAuth.getSession.mockImplementation(() => Promise.resolve(otherUser));
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    renderLogin();
+    fillAndSubmit();
+
+    expect(await screen.findByRole("alert", {}, { timeout: 5000 })).toHaveTextContent(
+      "No se pudo cerrar la sesión anterior. Cierra el navegador o borra las cookies e inténtalo de nuevo.",
+    );
+    expect(navigation.navigateTo).not.toHaveBeenCalled();
+    expect(getAccessToken()).toBeNull();
+    expect(getRefreshToken()).toBeNull();
+    expect(logoutCalls).toBe(1);
+    expect(screen.getByRole("button", { name: /iniciar sesión/i })).toBeEnabled();
+    warn.mockRestore();
+  });
+
+  it("does not open legacy pages after a Google login when another NextAuth session persists", async() => {
+    nextAuth.getSession.mockImplementation(() => Promise.resolve(otherUser));
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    renderLogin();
+
+    await waitFor(() => expect(googleIdentity.initialize).toHaveBeenCalled());
+    googleCallback?.({ credential: "google-id-token" });
+
+    expect(await screen.findByRole("alert", {}, { timeout: 5000 })).toHaveTextContent("No se pudo cerrar la sesión anterior");
+    expect(navigation.navigateTo).not.toHaveBeenCalled();
+    expect(getAccessToken()).toBeNull();
+    warn.mockRestore();
   });
 });

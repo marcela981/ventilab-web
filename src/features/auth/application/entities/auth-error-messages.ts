@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Auth error messages
-* Descripción: Maps login failures (ApiError codes from the backend envelope or client network codes) to clear Spanish messages: invalid credentials, inactive account, Google-only account, domain not allowed, unverified Google email, invalid Google token, Google sign-in not configured, rate limit with the Retry-After wait, timeout/network and generic fallbacks. Spanish copy, TODO(i18n). Depends on @shared/api-client api-error.
-* Versión: 1.0
+* Descripción: Maps login failures (ApiError codes from the backend envelope or client network codes) to clear Spanish messages: invalid credentials, inactive account, Google-only account, domain not allowed, unverified Google email, invalid Google token, Google sign-in not configured, rate limit with the Retry-After wait, timeout/network and generic fallbacks. v1.1 (T9 follow-up): STALE_SESSION_MESSAGE for a NextAuth session of another user that could not be cleared after login, and the post-login redirect loop message. Spanish copy, TODO(i18n). Depends on @shared/api-client api-error.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,6 +27,14 @@ export const AUTH_ERROR_MESSAGES = {
   server: "Ocurrió un error en el servidor. Inténtalo de nuevo más tarde.",
   unknown: "No se pudo iniciar sesión. Inténtalo de nuevo.",
 } as const;
+
+// TODO(i18n)
+export const STALE_SESSION_MESSAGE =
+  "No se pudo cerrar la sesión anterior. Cierra el navegador o borra las cookies e inténtalo de nuevo.";
+
+// TODO(i18n)
+export const REDIRECT_LOOP_MESSAGE =
+  "No se pudo abrir la página de destino porque no reconoce tu sesión. Cierra sesión e inicia sesión de nuevo.";
 
 const MESSAGES_BY_CODE: Readonly<Record<string, string>> = {
   "auth.invalid_credentials": AUTH_ERROR_MESSAGES.invalidCredentials,

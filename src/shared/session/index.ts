@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: session public API
-* Descripción: Public surface of the backend session layer for new code: AuthProvider, useSession, the RequireAuth/RequireRole guards, the loading view, the route table helpers (login path, safe returnTo, default route per role) and the session entities. Legacy pages keep NextAuth; `pages/_app.js` imports auth-provider directly to keep the app shell small. v1.1 (T9 follow-up): exports the best-effort NextAuth coexistence bridge (runNextAuthBestEffort, signOutOfNextAuth) for the auth feature.
-* Versión: 1.1
+* Descripción: Public surface of the backend session layer for new code: AuthProvider, useSession, the RequireAuth/RequireRole guards, the loading view, the route table helpers (login path, safe returnTo, default route per role) and the session entities. Legacy pages keep NextAuth; `pages/_app.js` imports auth-provider directly to keep the app shell small. v1.1 (T9 follow-up): exports the best-effort NextAuth coexistence bridge (runNextAuthBestEffort, signOutOfNextAuth) for the auth feature. v1.2: exports isPathAllowedForRole.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,6 +20,7 @@ export {
   buildLoginUrl,
   DEFAULT_ROUTE_BY_ROLE,
   findRoute,
+  isPathAllowedForRole,
   LOGIN_PATH,
   resolvePostLoginRoute,
   RETURN_TO_PARAM,

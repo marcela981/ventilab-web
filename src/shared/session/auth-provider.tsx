@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AuthProvider (backend session)
-* Descripción: Owns the backend session for new code. A backend session exists only when token-storage holds BOTH tokens (a lone `ventilab_auth_token` is the legacy NextAuth bridge token and is left alone). On mount it loads `GET /api/auth/me` (slow route) or settles as unauthenticated without a request. Exposes establishSession (store tokens + load /me), best-effort signOut (`POST /api/auth/logout`, then always clears both tokens and the typed SWR entries), reloadSession and handleRoleChanged (single-flight refresh + reload /me for the current user). Follows token-storage changes (including other tabs) and the api-client `session-expired` event; ending the session is idempotent and never navigates (guards redirect). v1.1 (T9): a voluntary signOut ends the session with `signedOut: true` so the guards send the user to a clean login (no returnTo); every authenticated /me load persists the user snapshot of session-user-cache (read by legacy pages during coexistence) and ending the session removes it. v1.2 (T9 follow-up): signOut also signs out of NextAuth best effort (nextauth-bridge, no redirect, failures ignored) after the backend session ended, so no stale NextAuth cookie survives for legacy pages. The request layer and the refresh module are imported lazily so the app shell does not ship axios. Depends on react, swr and the api-client modules.
-* Versión: 1.2
+* Descripción: Owns the backend session for new code. A backend session exists only when token-storage holds BOTH tokens (a lone `ventilab_auth_token` is the legacy NextAuth bridge token and is left alone). On mount it loads `GET /api/auth/me` (slow route) or settles as unauthenticated without a request. Exposes establishSession (store tokens + load /me), best-effort signOut (`POST /api/auth/logout`, then always clears both tokens and the typed SWR entries), reloadSession and handleRoleChanged (single-flight refresh + reload /me for the current user). Follows token-storage changes (including other tabs) and the api-client `session-expired` event; ending the session is idempotent and never navigates (guards redirect). v1.1 (T9): a voluntary signOut ends the session with `signedOut: true` so the guards send the user to a clean login (no returnTo); every authenticated /me load persists the user snapshot of session-user-cache (read by legacy pages during coexistence) and ending the session removes it. v1.2 (T9 follow-up): signOut also signs out of NextAuth best effort (nextauth-bridge, no redirect, failures ignored) after the backend session ended, so no stale NextAuth cookie survives for legacy pages. v1.3: the early return of endSession is spelled out (readability only, same behavior). The request layer and the refresh module are imported lazily so the app shell does not ship axios. Depends on react, swr and the api-client modules.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -87,8 +87,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signOutRequestedRef.current = false;
 
     const current = stateRef.current;
+    const alreadyEnded = current.status === "unauthenticated" && current.error === null;
+    // A voluntary sign-out must still mark an already ended session as signed out (clean login URL).
+    const mustMarkSignedOut = signedOut && !current.signedOut;
 
-    if (current.status === "unauthenticated" && current.error === null && (current.signedOut || !signedOut)) {
+    if (alreadyEnded && !mustMarkSignedOut) {
       return;
     }
 

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Google Identity Services loader
-* Descripción: Loads the Google Identity Services client script (`https://accounts.google.com/gsi/client`) on demand, once per page (a failed load can be retried), and returns its `google.accounts.id` API. Declares the minimal typed subset of the GIS API the login page uses (initialize, renderButton, cancel). No npm dependency; browser only.
-* Versión: 1.0
+* Descripción: Loads the Google Identity Services client script (`https://accounts.google.com/gsi/client`) on demand, once per page (a failed load can be retried), and returns its `google.accounts.id` API. v1.1 (T9 follow-up): the load is bounded by GOOGLE_IDENTITY_LOAD_TIMEOUT_MS (10 s), and on an error, a timeout or a load without the API the script tag is removed, so a retry appends exactly one new script; late events of an abandoned script are ignored. Declares the minimal typed subset of the GIS API the login page uses (initialize, renderButton, cancel). No npm dependency; browser only.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,6 +10,8 @@
 */
 
 export const GOOGLE_IDENTITY_SCRIPT_URL = "https://accounts.google.com/gsi/client";
+
+export const GOOGLE_IDENTITY_LOAD_TIMEOUT_MS = 10_000;
 
 export type GoogleCredentialResponse = {
   credential: string
@@ -51,7 +53,7 @@ function currentApi(): GoogleAccountsId | null {
   return (window as GoogleWindow).google?.accounts?.id ?? null;
 }
 
-export function loadGoogleIdentity(): Promise<GoogleAccountsId> {
+export function loadGoogleIdentity(timeoutMs: number = GOOGLE_IDENTITY_LOAD_TIMEOUT_MS): Promise<GoogleAccountsId> {
   if (typeof window === "undefined") {
     return Promise.reject(new Error("Google Identity Services is only available in the browser"));
   }
@@ -68,6 +70,25 @@ export function loadGoogleIdentity(): Promise<GoogleAccountsId> {
 
   pending = new Promise<GoogleAccountsId>((resolve, reject) => {
     const script = document.createElement("script");
+    let settled = false;
+
+    const settle = (outcome: () => void) => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      clearTimeout(timer);
+      outcome();
+    };
+
+    const fail = (message: string) => settle(() => {
+      // Without the tag a retry can append a fresh script instead of a duplicate.
+      script.remove();
+      reject(new Error(message));
+    });
+
+    const timer = setTimeout(() => fail(`Google Identity Services timed out after ${timeoutMs} ms`), timeoutMs);
 
     script.src = GOOGLE_IDENTITY_SCRIPT_URL;
     script.async = true;
@@ -76,15 +97,12 @@ export function loadGoogleIdentity(): Promise<GoogleAccountsId> {
       const api = currentApi();
 
       if (api) {
-        resolve(api);
+        settle(() => resolve(api));
       } else {
-        reject(new Error("Google Identity Services did not initialize"));
+        fail("Google Identity Services did not initialize");
       }
     };
-    script.onerror = () => {
-      script.remove();
-      reject(new Error("Google Identity Services could not be loaded"));
-    };
+    script.onerror = () => fail("Google Identity Services could not be loaded");
     document.head.appendChild(script);
   }).catch((error: unknown) => {
     pending = null;

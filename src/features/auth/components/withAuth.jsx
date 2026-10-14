@@ -1,3 +1,14 @@
+/*
+* Funcionalidad: withAuth (legacy route guard)
+* Descripción: Legacy HOC that protects panel pages with the NextAuth/custom-token useAuth of AuthContext (role hierarchy, redirect to /auth/login?returnUrl or /auth/access-denied). v1.1 (T9 follow-up, redirect loop): the AuthContext provider adopts a custom-token user (backend session snapshot or legacy user data, see authService.getUserData) in its own effect, which runs AFTER this child effect, so the first settled render looked unauthenticated and bounced users of the new login back to /auth/login, which redirected them here again (loop). While such a user is pending adoption the guard now waits instead of redirecting. Depends on next/router, MUI, AuthContext, lib/roles and authService.
+* Versión: 1.1
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
 /**
  * =============================================================================
  * withAuth Higher Order Component
@@ -30,6 +41,10 @@ import { useRouter } from 'next/router';
 import { CircularProgress, Box } from '@mui/material';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { ROLES, canAccessWithRoles } from '@/lib/roles';
+import { getAuthToken, getUserData } from '@/shared/services/authService';
+
+// A token user the auth context adopts in its own effect, one render after this guard's effect.
+const hasPendingTokenUser = () => Boolean(getAuthToken() && getUserData());
 
 /**
  * Higher Order Component for route protection
@@ -54,6 +69,8 @@ function withAuth(WrappedComponent, allowedRoles = null) {
 
       // Check authentication
       if (!isAuthenticated) {
+        if (hasPendingTokenUser()) return;
+
         const returnUrl = router.asPath;
         router.push({
           pathname: '/auth/login',
