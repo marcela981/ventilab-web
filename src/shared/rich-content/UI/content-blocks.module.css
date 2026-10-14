@@ -1,0 +1,194 @@
+/*
+* Funcionalidad: Content blocks styles
+* Descripción: Layout of the page block renderer (block spacing and titles, callout variants, figures and captions, responsive 16:9 video frame, native video, file link, equations, code, divider, task lists) plus the print mode (no shadows, blocks not split across pages). Rich text typography comes from rich-content.module.css. Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-5);
+  min-width: 0;
+  color: var(--vl-color-text);
+}
+
+.block {
+  min-width: 0;
+}
+
+.title {
+  margin: 0 0 var(--vl-space-3);
+  font: var(--mui-font-h5);
+  font-weight: 600;
+  color: var(--vl-color-text);
+}
+
+.tiptapDoc > :first-child {
+  margin-top: 0;
+}
+
+.tiptapDoc > :last-child {
+  margin-bottom: 0;
+}
+
+.unknownNode {
+  display: contents;
+}
+
+.taskList {
+  list-style: none;
+  padding-left: var(--vl-space-2);
+}
+
+.taskItem {
+  display: flex;
+  gap: var(--vl-space-2);
+  align-items: flex-start;
+}
+
+.taskItem input {
+  margin-top: var(--vl-space-2);
+}
+
+.taskItem p {
+  margin: 0;
+}
+
+.callout {
+  padding: var(--vl-space-3) var(--vl-space-4);
+  border-left: 4px solid var(--vl-color-info);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-hover);
+}
+
+.calloutInfo {
+  border-left-color: var(--vl-color-info);
+}
+
+.calloutTip {
+  border-left-color: var(--vl-color-secondary);
+}
+
+.calloutSuccess {
+  border-left-color: var(--vl-color-success);
+}
+
+.calloutWarning {
+  border-left-color: var(--vl-color-warning);
+}
+
+.calloutError {
+  border-left-color: var(--vl-color-error);
+}
+
+.figure {
+  margin: 0;
+}
+
+.image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  border-radius: var(--vl-radius-md);
+}
+
+.caption {
+  margin-top: var(--vl-space-2);
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+  text-align: center;
+}
+
+.videoFrame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-surface-contrast);
+}
+
+.videoFrame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.video {
+  display: block;
+  width: 100%;
+  max-height: 70vh;
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-surface-contrast);
+}
+
+.videoLink,
+.file {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.videoLink a,
+.file a {
+  color: var(--vl-color-link);
+  font-weight: 500;
+}
+
+.unavailable {
+  margin: 0;
+  padding: var(--vl-space-3);
+  border: 1px dashed var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.equationDisplay {
+  overflow-x: auto;
+  padding: var(--vl-space-3);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-hover);
+  text-align: center;
+}
+
+.equationInline {
+  display: inline-block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.equationSource {
+  font-family: monospace;
+  color: var(--vl-color-text-muted);
+}
+
+.code {
+  margin: 0;
+  overflow: auto;
+  padding: var(--vl-space-3);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-hover);
+  font-family: monospace;
+}
+
+.divider {
+  margin: 0;
+  border: none;
+  border-top: 2px solid var(--vl-color-border);
+}
+
+.print .block {
+  break-inside: avoid;
+}
+
+.print .videoLink a {
+  text-decoration: underline;
+}
