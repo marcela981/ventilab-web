@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Groups page test helpers
-* Descripción: Shared fixtures of the groups page tests: backend envelope and error bodies, a GroupDTO / GroupDetailDTO / UserDTO factory and a render helper that mounts a page inside an isolated SWR cache and a session context with the given role (no AuthProvider, no network for the session). Test-only code. Depends on Testing Library, SWR and the session context.
-* Versión: 1.0
+* Descripción: Shared fixtures of the groups page tests: backend envelope and error bodies, a GroupDTO / GroupDetailDTO / UserDTO / GroupSupervisionDTO factory (v1.1, T11c: platform role of members and users, supervisions) and a render helper that mounts a page inside an isolated SWR cache and a session context with the given role (no AuthProvider, no network for the session). Test-only code. Depends on Testing Library, SWR and the session context.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -62,31 +62,39 @@ export function groupDto(index: number, overrides: Record<string, unknown> = {})
   };
 }
 
-export function memberDto(userId: string, name: string, memberRole: "LEADER" | "MEMBER" = "MEMBER") {
+export function memberDto(userId: string, name: string, memberRole: "LEADER" | "MEMBER" = "MEMBER", role: "STUDENT" | "TEACHER" = "STUDENT") {
   const email = `${userId}@ventylab.demo`;
 
   return {
     id: `m-${userId}`,
     groupId: "g1",
     userId,
-    role: "STUDENT",
+    role,
     memberRole,
     joinedAt: "2026-08-03T00:00:00.000Z",
-    user: { id: userId, name, email, role: "STUDENT", image: null, createdAt: null },
+    user: { id: userId, name, email, role, image: null, createdAt: null },
   };
 }
 
-export function userDto(id: string, name: string) {
+export function userDto(id: string, name: string, role: Role = "STUDENT") {
   return {
     id,
     email: `${id}@ventylab.demo`,
     name,
     image: null,
-    role: "STUDENT",
+    role,
     isActive: true,
     emailVerified: null,
     createdAt: "2026-01-01T00:00:00.000Z",
     updatedAt: "2026-01-01T00:00:00.000Z",
+  };
+}
+
+export function supervisionDto(teacherGroupId: string, studentGroupId: string, name: string, isActive = true) {
+  return {
+    teacherGroupId,
+    createdAt: "2026-08-05T00:00:00.000Z",
+    studentGroup: { id: studentGroupId, name, isActive },
   };
 }
 

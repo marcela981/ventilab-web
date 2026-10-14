@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GroupsPage tests
-* Descripción: Renders the staff group list against a mocked backend (`GET /api/groups`, msw): client-side pagination (10 per page), the text, type and status filters (which return to the first page), the no-match and no-groups empty states and the 403 error. v1.1 (T11b): the filter-reset test now proves the return to page 1 with a result that still spans several pages; group names link to the detail; "Crear grupo" creates a student group (validation, POST body, refreshed list, 403 message). Depends on vitest, Testing Library, msw, SWR and the groups feature.
-* Versión: 1.1
+* Descripción: Renders the staff group list against a mocked backend (`GET /api/groups`, msw): client-side pagination (10 per page), the text, type and status filters (which return to the first page), the no-match and no-groups empty states and the 403 error. v1.1 (T11b): the filter-reset test now proves the return to page 1 with a result that still spans several pages; group names link to the detail; "Crear grupo" creates a student group (validation, POST body, refreshed list, 403 message). v1.2 (T11c): rendered with a session role; the type selector only for admins and an admin creating a teacher group. Depends on vitest, Testing Library, msw, the groups test helpers and the groups feature.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,13 +9,13 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { SWRConfig } from "swr";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
 import { GroupsPage } from "./groups.page";
+import { renderWithSession } from "./groups-test-helpers";
 
 const GROUPS_URL = `${BACKEND_ORIGIN}/api/groups`;
 
@@ -60,12 +60,8 @@ function respondWith(groups: unknown[]) {
   server.use(http.get(GROUPS_URL, () => HttpResponse.json(envelope(groups))));
 }
 
-function renderPage() {
-  return render(
-    <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false }}>
-      <GroupsPage />
-    </SWRConfig>,
-  );
+function renderPage(role: "TEACHER" | "ADMIN" = "TEACHER") {
+  return renderWithSession(<GroupsPage />, role);
 }
 
 async function groupNames(): Promise<string[]> {
@@ -167,7 +163,7 @@ describe("GroupsPage", () => {
     fireEvent.change(within(dialog).getByLabelText(/Nombre del grupo/), { target: { value: " Aaa nuevo " } });
     fireEvent.change(within(dialog).getByLabelText("Límite de estudiantes"), { target: { value: "12.5" } });
     fireEvent.click(within(dialog).getByRole("button", { name: "Crear grupo" }));
-    expect(await within(dialog).findByText("El límite de estudiantes debe ser un número entero mayor que 0.")).toBeInTheDocument();
+    expect(await within(dialog).findByText("El límite de estudiantes debe ser un número entero entre 1 y 2147483647.")).toBeInTheDocument();
     expect(bodies).toHaveLength(0);
 
     fireEvent.change(within(dialog).getByLabelText("Límite de estudiantes"), { target: { value: "20" } });
@@ -239,5 +235,47 @@ describe("GroupsPage", () => {
     renderPage();
 
     expect(await screen.findByText("No tienes permiso para gestionar este grupo.")).toBeInTheDocument();
+  });
+
+  it("offers the group type only to admins", async() => {
+    respondWith(twelveGroups);
+    const { unmount } = renderPage("TEACHER");
+
+    await groupNames();
+    fireEvent.click(screen.getByRole("button", { name: "Crear grupo" }));
+    expect(within(await screen.findByRole("dialog")).queryByLabelText("Tipo de grupo")).not.toBeInTheDocument();
+    unmount();
+
+    renderPage("ADMIN");
+    await groupNames();
+    fireEvent.click(screen.getByRole("button", { name: "Crear grupo" }));
+
+    const select = within(await screen.findByRole("dialog", { name: "Crear grupo" })).getByLabelText("Tipo de grupo");
+
+    expect(select).toHaveValue("STUDENT");
+    expect(within(select).getAllByRole("option").map((option) => option.textContent)).toEqual(["Estudiantes", "Docentes"]);
+  });
+
+  it("lets an admin create a teacher group", async() => {
+    const bodies: unknown[] = [];
+
+    respondWith(twelveGroups);
+    server.use(http.post(GROUPS_URL, async({ request }) => {
+      bodies.push(await request.json());
+
+      return HttpResponse.json(envelope({ id: "g13" }));
+    }));
+    renderPage("ADMIN");
+    await groupNames();
+    fireEvent.click(screen.getByRole("button", { name: "Crear grupo" }));
+
+    const dialog = await screen.findByRole("dialog", { name: "Crear grupo" });
+
+    fireEvent.change(within(dialog).getByLabelText("Tipo de grupo"), { target: { value: "TEACHER" } });
+    fireEvent.change(within(dialog).getByLabelText(/Nombre del grupo/), { target: { value: "Docentes UCI 2" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Crear grupo" }));
+
+    expect(await screen.findByText("Grupo «Docentes UCI 2» creado.")).toBeInTheDocument();
+    expect(bodies).toEqual([{ name: "Docentes UCI 2", type: "TEACHER" }]);
   });
 });

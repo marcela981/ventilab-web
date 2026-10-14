@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Group detail styles
-* Descripción: Layout of the group detail page (/groups/[groupId]) and its dialogs: page column, back link, cards for the group facts and the members, description list, members and search result rows (wrap on small screens), group form fields, a read-only notice and a visible focus ring for keyboard users. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
-* Versión: 1.0
+* Descripción: Layout of the group detail page (/groups/[groupId]) and its dialogs: page column, back link, cards for the group facts and the members, description list, members and search result rows (wrap on small screens), group form fields, a read-only notice and a visible focus ring for keyboard users. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (T11c): link style of the supervised student groups.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -119,6 +119,17 @@
   display: flex;
   flex-direction: column;
   gap: var(--vl-space-2);
+}
+
+.groupLink {
+  color: var(--vl-color-link);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.groupLink:hover {
+  text-decoration-thickness: 2px;
 }
 
 .muted {

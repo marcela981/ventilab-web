@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GroupsPage
-* Descripción: Staff page /groups (teachers and admins): reads `GET /api/groups` (the backend decides the scope: every group for an admin, the managed, supervised and own teacher groups for a teacher) and shows them in a table with client-side filters (text, type, active state) and client-side pagination (10, 25 or 50 per page), because the endpoint has neither (decision 7, backend gap). Changing a filter returns to the first page. Empty states for no groups and for no match (with "Limpiar filtros"), a loading state and an error state with retry (403 included). v1.1 (T11b): "Crear grupo" (teachers and admins, the route is staff-only) opens GroupFormDialog for a STUDENT group (teacher groups are created by admins in slice C); `POST /api/groups` through useGroupMutation, which refreshes every groups key; server errors (403 type_creation_forbidden included) show inline in the dialog and a success shows a toast. Group names link to the detail. Depends on MUI, next/head, @shared/design-system components, useGroups, GroupFilters, GroupsTable and the groups CSS Module.
-* Versión: 1.1
+* Descripción: Staff page /groups (teachers and admins): reads `GET /api/groups` (the backend decides the scope: every group for an admin, the managed, supervised and own teacher groups for a teacher) and shows them in a table with client-side filters (text, type, active state) and client-side pagination (10, 25 or 50 per page), because the endpoint has neither (decision 7, backend gap). Changing a filter returns to the first page. Empty states for no groups and for no match (with "Limpiar filtros"), a loading state and an error state with retry (403 included). v1.1 (T11b): "Crear grupo" (teachers and admins, the route is staff-only) opens GroupFormDialog for a STUDENT group (teacher groups are created by admins in slice C); `POST /api/groups` through useGroupMutation, which refreshes every groups key; server errors (403 type_creation_forbidden included) show inline in the dialog and a success shows a toast. Group names link to the detail. v1.2 (T11c): admins choose the type (STUDENT or TEACHER) in the dialog ("Crear grupo"); teachers keep the student-only dialog and always send STUDENT. Loaded on demand through lazy-staff-pages. Depends on MUI, next/head, @shared/design-system components, @shared/session, useGroups, GroupFilters, GroupsTable and the groups CSS Module.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,6 +20,7 @@ import { ErrorState } from "@shared/design-system/components/error-state";
 import { LoadingState } from "@shared/design-system/components/loading-state";
 import { PageHeader } from "@shared/design-system/components/page-header";
 import { cx } from "@shared/lib/class-names";
+import { useSession } from "@shared/session/use-session";
 import { toCreateGroupRequest } from "../../api/mappers/groups.mapper";
 import { createGroup } from "../../api/services/groups.service";
 import { FeedbackToast } from "../components/feedback-toast";
@@ -27,7 +28,7 @@ import type { Feedback } from "../components/feedback-toast";
 import { GroupFilters } from "../components/group-filters";
 import { GroupFormDialog } from "../components/group-form-dialog";
 import { GroupsTable } from "../components/groups-table";
-import { EMPTY_GROUP_DRAFT, EMPTY_GROUP_FILTERS, filterGroups, paginate } from "../entities/group.entity";
+import { creatableGroupTypes, EMPTY_GROUP_DRAFT, EMPTY_GROUP_FILTERS, filterGroups, paginate } from "../entities/group.entity";
 import type { Group, GroupDraft, GroupFilters as GroupFiltersValue } from "../entities/group.entity";
 import { getGroupErrorMessage } from "../entities/groups-error-messages";
 import { useGroupMutation } from "../hooks/use-group-mutation";
@@ -49,6 +50,7 @@ const PAGE_COPY = {
   rowsPerPage: "Filas por página:",
   create: "Crear grupo",
   createTitle: "Crear grupo de estudiantes",
+  createAnyTitle: "Crear grupo",
   created: (name: string) => `Grupo «${name}» creado.`,
 } as const;
 
@@ -117,6 +119,8 @@ function GroupList({ groups }: GroupListProps) {
 }
 
 function CreateGroupAction() {
+  const { role } = useSession();
+  const types = creatableGroupTypes(role);
   const { pending, run } = useGroupMutation();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -125,7 +129,9 @@ function CreateGroupAction() {
   const submit = async(draft: GroupDraft) => {
     setError(null);
 
-    const outcome = await run(() => createGroup(toCreateGroupRequest({ ...draft, type: "STUDENT" })));
+    // The backend rejects a type the role cannot create; the UI never sends one.
+    const type = types.includes(draft.type) ? draft.type : "STUDENT";
+    const outcome = await run(() => createGroup(toCreateGroupRequest({ ...draft, type })));
 
     if (outcome.status === "error") {
       setError(outcome.message);
@@ -149,9 +155,10 @@ function CreateGroupAction() {
       </Button>
       {open ? (
         <GroupFormDialog
-          title={PAGE_COPY.createTitle}
+          title={types.length > 1 ? PAGE_COPY.createAnyTitle : PAGE_COPY.createTitle}
           submitLabel={PAGE_COPY.create}
           initialDraft={EMPTY_GROUP_DRAFT}
+          typeOptions={types}
           pending={pending}
           error={error}
           onSubmit={(draft) => void submit(draft)}

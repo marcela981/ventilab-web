@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GroupDetailPage
-* Descripción: Staff page /groups/[groupId] (teachers and admins): reads `GET /api/groups/{id}` and shows the group facts and members. When the user can manage the group (admins every group; teachers the student groups the backend lists for them, teacher groups are read-only for teachers) it offers: edit (GroupFormDialog, `PATCH /api/groups/{id}` with only the changed fields), add a member through the student search (`POST /api/groups/{id}/members`, student groups), remove a member (ConfirmDialog, `DELETE /api/groups/{id}/members/{userId}`), assign the simulator leader (ConfirmDialog that says the previous leader stays as a member, `PATCH /api/groups/{id}/lead`) and deactivate / reactivate (`PATCH /api/groups/{id}` with isActive: the contract's explicit deactivation; `DELETE` would erase a group without activity, so it is not offered). Every mutation goes through useGroupMutation (one at a time, refreshes the list, detail, members and mine keys); errors show their specific Spanish message (403 management_forbidden, 409 group_full / student_already_in_group, 422 member_role_not_allowed / leader_not_allowed / lead_not_member) in an alert toast, edit errors inline in the dialog. Teacher groups for admins (members, supervisions) come in slice C. Depends on MUI, next/head, next/link, @shared/design-system, @shared/session, the groups hooks, components and CSS Module.
-* Versión: 1.0
+* Descripción: Staff page /groups/[groupId] (teachers and admins): reads `GET /api/groups/{id}` and shows the group facts and members. When the user can manage the group (admins every group; teachers the student groups the backend lists for them, teacher groups are read-only for teachers) it offers: edit (GroupFormDialog, `PATCH /api/groups/{id}` with only the changed fields), add a member through the student search (`POST /api/groups/{id}/members`, student groups), remove a member (ConfirmDialog, `DELETE /api/groups/{id}/members/{userId}`), assign the simulator leader (ConfirmDialog that says the previous leader stays as a member, `PATCH /api/groups/{id}/lead`) and deactivate / reactivate (`PATCH /api/groups/{id}` with isActive: the contract's explicit deactivation; `DELETE` would erase a group without activity, so it is not offered). Every mutation goes through useGroupMutation (one at a time, refreshes the list, detail, members and mine keys); errors show their specific Spanish message (403 management_forbidden, 409 group_full / student_already_in_group, 422 member_role_not_allowed / leader_not_allowed / lead_not_member) in an alert toast, edit errors inline in the dialog. v1.1 (T11c): admins manage teacher groups too: the member search looks for TEACHER accounts (teacher groups admit teachers and admins; no leader, the backend rejects one with leader_not_allowed) and a "Grupos supervisados" panel (GroupSupervisions) lists, adds (`POST /api/groups/{id}/supervisions`) and removes behind a ConfirmDialog (`DELETE /api/groups/{id}/supervisions/{studentGroupId}`) the student groups it supervises; teachers never see it. The contract has no endpoint that lists the teacher groups supervising a student group for staff, so the student group view shows none (backend gap). Depends on MUI, next/head, next/link, @shared/design-system, @shared/session, the groups hooks, components and CSS Module.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,15 +22,30 @@ import { PageHeader } from "@shared/design-system/components/page-header";
 import { cx } from "@shared/lib/class-names";
 import { useSession } from "@shared/session/use-session";
 import { toUpdateGroupRequest } from "../../api/mappers/groups.mapper";
-import { addGroupMember, removeGroupMember, setGroupLeader, updateGroup } from "../../api/services/groups.service";
+import {
+  addGroupMember,
+  addGroupSupervision,
+  removeGroupMember,
+  removeGroupSupervision,
+  setGroupLeader,
+  updateGroup,
+} from "../../api/services/groups.service";
 import { FeedbackToast } from "../components/feedback-toast";
 import type { Feedback } from "../components/feedback-toast";
 import { GroupFormDialog } from "../components/group-form-dialog";
 import { GroupInfo } from "../components/group-info";
 import { GroupMembers } from "../components/group-members";
+import { GroupSupervisions } from "../components/group-supervisions";
 import { MemberSearch } from "../components/member-search";
-import { canManageGroup, GROUP_TYPE_LABELS, personName, toGroupDraft } from "../entities/group.entity";
-import type { GroupDetail, GroupDraft, GroupMember, UserOption } from "../entities/group.entity";
+import {
+  canManageGroup,
+  canManageSupervisions,
+  GROUP_TYPE_LABELS,
+  memberSearchRole,
+  personName,
+  toGroupDraft,
+} from "../entities/group.entity";
+import type { Group, GroupDetail, GroupDraft, GroupMember, GroupSupervision, UserOption } from "../entities/group.entity";
 import { getGroupErrorMessage } from "../entities/groups-error-messages";
 import { useGroupDetail } from "../hooks/use-group-detail";
 import { useGroupMutation } from "../hooks/use-group-mutation";
@@ -69,19 +84,38 @@ const PAGE_COPY = {
   leaderConfirm: "Hacer líder",
   leaderSet: (name: string) => `${name} es ahora el líder del grupo.`,
   added: (name: string) => `${name} se agregó al grupo.`,
+  supervisions: "Grupos supervisados",
+  supervisionAdded: (name: string) => `«${name}» ahora está supervisado por este grupo.`,
+  unsuperviseTitle: (name: string) => `¿Dejar de supervisar «${name}»?`,
+  unsuperviseDescription: (teacher: string, student: string) => `«${teacher}» dejará de supervisar a «${student}». Puedes volver a agregar la supervisión cuando quieras.`,
+  unsuperviseConfirm: "Quitar supervisión",
+  supervisionRemoved: (name: string) => `«${name}» ya no está supervisado por este grupo.`,
 } as const;
 
 type PendingConfirm =
   | { kind: "remove", member: GroupMember }
   | { kind: "leader", member: GroupMember }
+  | { kind: "unsupervise", supervision: GroupSupervision }
   | { kind: "deactivate" };
 
 type GroupManagementProps = {
   group: GroupDetail
   canManage: boolean
+  canSupervise: boolean
 };
 
 function confirmCopy(confirm: PendingConfirm, group: GroupDetail) {
+  if (confirm.kind === "unsupervise") {
+    const student = confirm.supervision.studentGroup.name;
+
+    return {
+      title: PAGE_COPY.unsuperviseTitle(student),
+      description: PAGE_COPY.unsuperviseDescription(group.name, student),
+      confirmLabel: PAGE_COPY.unsuperviseConfirm,
+      destructive: true,
+    };
+  }
+
   if (confirm.kind === "deactivate") {
     return {
       title: PAGE_COPY.deactivateTitle,
@@ -114,7 +148,7 @@ function confirmCopy(confirm: PendingConfirm, group: GroupDetail) {
   };
 }
 
-function GroupManagement({ group, canManage }: GroupManagementProps) {
+function GroupManagement({ group, canManage, canSupervise }: GroupManagementProps) {
   const { pending, run } = useGroupMutation();
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [editing, setEditing] = useState(false);
@@ -124,6 +158,7 @@ function GroupManagement({ group, canManage }: GroupManagementProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const infoTitleId = useId();
   const membersTitleId = useId();
+  const supervisionsTitleId = useId();
   const isStudentGroup = group.type === "STUDENT";
 
   const runAction = async(action: () => Promise<unknown>, success: string): Promise<boolean> => {
@@ -162,6 +197,10 @@ function GroupManagement({ group, canManage }: GroupManagementProps) {
   const confirmAction = async(current: PendingConfirm) => {
     if (current.kind === "deactivate") {
       await runAction(() => updateGroup(group.id, { isActive: false }), PAGE_COPY.deactivated);
+    } else if (current.kind === "unsupervise") {
+      const { id, name } = current.supervision.studentGroup;
+
+      await runAction(() => removeGroupSupervision(group.id, id), PAGE_COPY.supervisionRemoved(name));
     } else if (current.kind === "remove") {
       await runAction(() => removeGroupMember(group.id, current.member.userId), PAGE_COPY.removed(personName(current.member)));
     } else {
@@ -179,6 +218,11 @@ function GroupManagement({ group, canManage }: GroupManagementProps) {
   const addMember = (user: UserOption) => {
     void runAction(() => addGroupMember(group.id, user.id), PAGE_COPY.added(personName(user)));
   };
+
+  const addSupervision = (studentGroup: Pick<Group, "id" | "name">) => runAction(
+    () => addGroupSupervision(group.id, studentGroup.id),
+    PAGE_COPY.supervisionAdded(studentGroup.name),
+  );
 
   const copy = confirm ? confirmCopy(confirm, group) : null;
 
@@ -227,13 +271,24 @@ function GroupManagement({ group, canManage }: GroupManagementProps) {
           onMakeLeader={(member) => askConfirm({ kind: "leader", member })}
           onRemove={(member) => askConfirm({ kind: "remove", member })}
         />
-        {canManage && isStudentGroup ? (
+        {canManage ? (
           <>
             <h3 className={cx(styles.cardTitle)}>{PAGE_COPY.addMember}</h3>
-            <MemberSearch members={group.members} disabled={pending} onAdd={addMember} />
+            <MemberSearch members={group.members} role={memberSearchRole(group.type)} disabled={pending} onAdd={addMember} />
           </>
         ) : null}
       </section>
+      {canSupervise ? (
+        <section className={cx(styles.card)} aria-labelledby={supervisionsTitleId}>
+          <h2 id={supervisionsTitleId} className={cx(styles.cardTitle)}>{PAGE_COPY.supervisions}</h2>
+          <GroupSupervisions
+            teacherGroupId={group.id}
+            disabled={pending}
+            onAdd={addSupervision}
+            onRemove={(supervision) => askConfirm({ kind: "unsupervise", supervision })}
+          />
+        </section>
+      ) : null}
       {editing ? (
         <GroupFormDialog
           title={PAGE_COPY.editTitle}
@@ -281,7 +336,7 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
       {group ? (
         <>
           <PageHeader title={group.name} subtitle={`Grupo de ${GROUP_TYPE_LABELS[group.type].toLowerCase()}`} />
-          <GroupManagement group={group} canManage={canManageGroup(group, role)} />
+          <GroupManagement group={group} canManage={canManageGroup(group, role)} canSupervise={canManageSupervisions(group, role)} />
         </>
       ) : null}
       {!group && isLoading ? <LoadingState label={PAGE_COPY.loading} /> : null}

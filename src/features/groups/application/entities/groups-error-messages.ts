@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Groups error messages
-* Descripción: Spanish message for any failure of a groups request: every groups error code of the backend (openapi Backend facts: student_already_in_group 409, member_role_not_allowed 422, leader_not_allowed 422, group_full 409, management_forbidden 403, type_creation_forbidden 403; plus group_has_subgroups and lead_not_member from the backend domain errors, used by slice B), then fallbacks by status (403, 404, 409, 400/422, 429 with Retry-After, 5xx), timeout, network and unknown errors. The UI hides actions the role cannot use, but a 403 is always handled here. Depends on the api-client errors.
-* Versión: 1.0
+* Descripción: Spanish message for any failure of a groups request: every groups error code of the backend (openapi Backend facts: student_already_in_group 409, member_role_not_allowed 422, leader_not_allowed 422, group_full 409, management_forbidden 403, type_creation_forbidden 403; plus group_has_subgroups and lead_not_member from the backend domain errors, used by slice B), then fallbacks by status (403, 404, 409, 400/422, 429 with Retry-After, 5xx), timeout, network and unknown errors. The UI hides actions the role cannot use, but a 403 is always handled here. v1.1 (T11c): invalid_supervision 422 and supervision_not_found 404 (backend domain errors of the supervisions endpoints). Depends on the api-client errors.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,6 +22,8 @@ export const GROUP_ERROR_MESSAGES = {
   "groups.type_creation_forbidden": "No tienes permiso para crear este tipo de grupo.",
   "groups.group_has_subgroups": "Elimina o desactiva primero los subgrupos de este grupo.",
   "groups.lead_not_member": "El líder debe ser integrante del grupo.",
+  "groups.invalid_supervision": "Una supervisión solo puede unir un grupo docente con un grupo de estudiantes.",
+  "groups.supervision_not_found": "Esa supervisión ya no existe. Actualiza la página.",
 } as const satisfies Record<string, string>;
 
 export const GROUP_FALLBACK_MESSAGES = {

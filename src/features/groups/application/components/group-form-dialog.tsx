@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GroupFormDialog
-* Descripción: Dialog form to create or edit a student group: name (required), description, semester, academic year and student limit (empty = no limit; otherwise an integer >= 1). Validates on submit with validateGroupDraft and shows per-field errors (noValidate, labelled fields), shows a server error inline (alert) and blocks closing while saving. The parent mounts it per opening, so the draft starts from initialDraft. Depends on MUI, the group entity and the group detail CSS Module.
-* Versión: 1.0
+* Descripción: Dialog form to create or edit a student group: name (required), description, semester, academic year and student limit (empty = no limit; otherwise an integer >= 1). Validates on submit with validateGroupDraft and shows per-field errors (noValidate, labelled fields), shows a server error inline (alert) and blocks closing while saving. The parent mounts it per opening, so the draft starts from initialDraft. v1.1 (T11c): optional typeOptions; with more than one type (admins creating a group) a labelled native select "Tipo de grupo" sets the draft type. Depends on MUI, the group entity and the group detail CSS Module.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,8 +20,8 @@ import TextField from "@mui/material/TextField";
 import { useId, useState } from "react";
 import type { FormEvent } from "react";
 import { cx } from "@shared/lib/class-names";
-import { validateGroupDraft } from "../entities/group.entity";
-import type { GroupDraft, GroupDraftErrors, GroupDraftField } from "../entities/group.entity";
+import { GROUP_TYPE_LABELS, validateGroupDraft } from "../entities/group.entity";
+import type { GroupDraft, GroupDraftErrors, GroupDraftField, GroupType } from "../entities/group.entity";
 import styles from "../../UI/group-detail.module.css";
 
 // TODO(i18n): move to a groups namespace in src/i18n.
@@ -32,6 +32,7 @@ const FORM_COPY = {
   academicYear: "Año académico",
   maxStudents: "Límite de estudiantes",
   maxStudentsHelp: "Déjalo vacío si el grupo no tiene límite.",
+  type: "Tipo de grupo",
   cancel: "Cancelar",
 } as const;
 
@@ -45,9 +46,11 @@ export type GroupFormDialogProps = {
   error: string | null
   onSubmit: (draft: GroupDraft) => void
   onCancel: () => void
+  // More than one type shows the type selector (admins create student and teacher groups).
+  typeOptions?: readonly GroupType[]
 };
 
-export function GroupFormDialog({ title, submitLabel, initialDraft, pending, error, onSubmit, onCancel }: GroupFormDialogProps) {
+export function GroupFormDialog({ title, submitLabel, initialDraft, pending, error, onSubmit, onCancel, typeOptions = [] }: GroupFormDialogProps) {
   const titleId = useId();
   const [draft, setDraft] = useState<GroupDraft>(initialDraft);
   const [fieldErrors, setFieldErrors] = useState<GroupDraftErrors>({});
@@ -106,6 +109,24 @@ export function GroupFormDialog({ title, submitLabel, initialDraft, pending, err
         <DialogContent>
           <div className={cx(styles.form)}>
             {error ? <Alert severity="error">{error}</Alert> : null}
+            {typeOptions.length > 1 ? (
+              <TextField
+                select
+                name="type"
+                label={FORM_COPY.type}
+                value={draft.type}
+                onChange={(event) => setDraft((current) => ({ ...current, type: event.target.value as GroupType }))}
+                slotProps={{ select: { native: true }, inputLabel: { shrink: true } }}
+                disabled={pending}
+                fullWidth
+              >
+                {typeOptions.map((type) => (
+                  <option key={type} value={type}>
+                    {GROUP_TYPE_LABELS[type]}
+                  </option>
+                ))}
+              </TextField>
+            ) : null}
             {field("name", FORM_COPY.name, { required: true })}
             {field("description", FORM_COPY.description, { multiline: true })}
             <div className={cx(styles.formRow)}>

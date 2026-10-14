@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: MemberSearch
-* Descripción: Adds members to a student group: a labelled search field (name or email, at least 2 characters, debounced) over `GET /api/users` filtered by the STUDENT role and active accounts, a polite live region with the search state (typing hint, searching, no results, load error) and the matching users that are not members yet, each with an "Agregar" button. The parent runs the request (adding is reversible, so there is no confirmation). Depends on MUI, useUserSearch, the group entity, the groups error messages and the group detail CSS Module.
-* Versión: 1.0
+* Descripción: Adds members to a group: a labelled search field (name or email, at least 2 characters, debounced) over `GET /api/users` filtered by the platform role the group admits (v1.1, T11c: STUDENT for student groups, TEACHER for teacher groups, with the copy of each) and active accounts, a polite live region with the search state (typing hint, searching, no results, load error) and the matching users that are not members yet, each with an "Agregar" button. The parent runs the request (adding is reversible, so there is no confirmation). Depends on MUI, useUserSearch, the group entity, the groups error messages and the group detail CSS Module.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,33 +22,45 @@ import styles from "../../UI/group-detail.module.css";
 
 // TODO(i18n): move to a groups namespace in src/i18n.
 const SEARCH_COPY = {
-  label: "Buscar estudiante",
   helper: "Nombre o correo electrónico",
   hint: `Escribe al menos ${USER_SEARCH_MIN_LENGTH} caracteres para buscar.`,
-  searching: "Buscando estudiantes…",
-  empty: "No hay estudiantes disponibles con ese nombre o correo.",
   results: "Resultados de la búsqueda",
   add: "Agregar",
 } as const;
 
+const ROLE_COPY = {
+  STUDENT: {
+    label: "Buscar estudiante",
+    searching: "Buscando estudiantes…",
+    empty: "No hay estudiantes disponibles con ese nombre o correo.",
+  },
+  TEACHER: {
+    label: "Buscar docente",
+    searching: "Buscando docentes…",
+    empty: "No hay docentes disponibles con ese nombre o correo.",
+  },
+} as const;
+
 export type MemberSearchProps = {
   members: readonly GroupMember[]
+  role: keyof typeof ROLE_COPY
   disabled: boolean
   onAdd: (user: UserOption) => void
 };
 
-export function MemberSearch({ members, disabled, onAdd }: MemberSearchProps) {
+export function MemberSearch({ members, role, disabled, onAdd }: MemberSearchProps) {
   const [term, setTerm] = useState("");
-  const { active, results, isLoading, error } = useUserSearch(term, "STUDENT", members);
+  const { active, results, isLoading, error } = useUserSearch(term, role, members);
+  const copy = ROLE_COPY[role];
 
   let status: string = SEARCH_COPY.hint;
 
   if (active && error) {
     status = getGroupErrorMessage(error);
   } else if (active && isLoading && !results) {
-    status = SEARCH_COPY.searching;
+    status = copy.searching;
   } else if (results && results.length === 0) {
-    status = SEARCH_COPY.empty;
+    status = copy.empty;
   } else if (results) {
     status = "";
   }
@@ -56,7 +68,7 @@ export function MemberSearch({ members, disabled, onAdd }: MemberSearchProps) {
   return (
     <div className={cx(styles.search)}>
       <TextField
-        label={SEARCH_COPY.label}
+        label={copy.label}
         helperText={SEARCH_COPY.helper}
         type="search"
         value={term}

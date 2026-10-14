@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Group entity tests
-* Descripción: Verifies the client-side filters of the group list (text over name, description, period, parent, leader and creator ignoring case and accents; type; active state), the page slicing and the display name of a person. v1.1 (T11b): student limit parsing, draft validation, the management rule per role and the member search exclusion. Depends on vitest and the group entity.
-* Versión: 1.1
+* Descripción: Verifies the client-side filters of the group list (text over name, description, period, parent, leader and creator ignoring case and accents; type; active state), the page slicing and the display name of a person. v1.1 (T11b): student limit parsing, draft validation, the management rule per role and the member search exclusion. v1.2 (T11c): upper bound of the student limit, the group types each role creates, the member search role per group type, the supervision rule and the supervisable student groups. Depends on vitest and the group entity.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,13 +12,18 @@
 import { describe, expect, it } from "vitest";
 import {
   canManageGroup,
+  canManageSupervisions,
+  creatableGroupTypes,
   EMPTY_GROUP_DRAFT,
   EMPTY_GROUP_FILTERS,
   excludeMembers,
   filterGroups,
+  MAX_STUDENT_LIMIT,
+  memberSearchRole,
   paginate,
   parseStudentLimit,
   personName,
+  supervisableGroups,
   toGroupDraft,
   validateGroupDraft,
 } from "./group.entity";
@@ -103,13 +108,19 @@ describe("parseStudentLimit", () => {
   it.each(["abc", "12.5", "0", "-3", "1e3"])("rejects %j", (value) => {
     expect(parseStudentLimit(value)).toEqual({ valid: false });
   });
+
+  it("accepts the largest value the database integer holds and rejects anything above it", () => {
+    expect(parseStudentLimit(String(MAX_STUDENT_LIMIT))).toEqual({ valid: true, value: 2147483647 });
+    expect(parseStudentLimit("2147483648")).toEqual({ valid: false });
+    expect(parseStudentLimit("99999999999999999999")).toEqual({ valid: false });
+  });
 });
 
 describe("validateGroupDraft", () => {
   it("requires a name and a valid student limit", () => {
     expect(validateGroupDraft({ ...EMPTY_GROUP_DRAFT, name: "  ", maxStudents: "12.5" })).toEqual({
       name: "Escribe el nombre del grupo.",
-      maxStudents: "El límite de estudiantes debe ser un número entero mayor que 0.",
+      maxStudents: "El límite de estudiantes debe ser un número entero entre 1 y 2147483647.",
     });
     expect(validateGroupDraft({ ...EMPTY_GROUP_DRAFT, name: "UCI", maxStudents: "" })).toEqual({});
   });
@@ -133,6 +144,36 @@ describe("canManageGroup", () => {
     expect(canManageGroup(makeGroup({ type: "TEACHER" }), "TEACHER")).toBe(false);
     expect(canManageGroup(makeGroup({ type: "STUDENT" }), "STUDENT")).toBe(false);
     expect(canManageGroup(makeGroup({ type: "STUDENT" }), null)).toBe(false);
+  });
+});
+
+describe("slice C rules", () => {
+  it("offers the teacher group type only to admins", () => {
+    expect(creatableGroupTypes("ADMIN")).toEqual(["STUDENT", "TEACHER"]);
+    expect(creatableGroupTypes("TEACHER")).toEqual(["STUDENT"]);
+    expect(creatableGroupTypes(null)).toEqual(["STUDENT"]);
+  });
+
+  it("searches students for student groups and teachers for teacher groups", () => {
+    expect(memberSearchRole("STUDENT")).toBe("STUDENT");
+    expect(memberSearchRole("TEACHER")).toBe("TEACHER");
+  });
+
+  it("lets only admins manage the supervisions of a teacher group", () => {
+    expect(canManageSupervisions(makeGroup({ type: "TEACHER" }), "ADMIN")).toBe(true);
+    expect(canManageSupervisions(makeGroup({ type: "STUDENT" }), "ADMIN")).toBe(false);
+    expect(canManageSupervisions(makeGroup({ type: "TEACHER" }), "TEACHER")).toBe(false);
+  });
+
+  it("lists the student groups that are not supervised yet", () => {
+    const groups = [
+      makeGroup({ id: "t1", type: "TEACHER" }),
+      makeGroup({ id: "s1" }),
+      makeGroup({ id: "s2" }),
+    ];
+    const supervisions = [{ teacherGroupId: "t1", studentGroup: { id: "s1", name: "S1", isActive: true } }];
+
+    expect(supervisableGroups(groups, supervisions).map((group) => group.id)).toEqual(["s2"]);
   });
 });
 

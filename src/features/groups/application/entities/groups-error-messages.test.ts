@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Groups error messages tests
-* Descripción: Verifies the Spanish message of every groups error code of the backend and the fallbacks by status (403, 404, 409, 400/422, 429 with and without Retry-After, 5xx), timeout, network and unknown errors. Depends on vitest, the api-client ApiError and the groups error messages.
-* Versión: 1.0
+* Descripción: Verifies the Spanish message of every groups error code of the backend and the fallbacks by status (403, 404, 409, 400/422, 429 with and without Retry-After, 5xx), timeout, network and unknown errors. v1.1 (T11c): the supervision codes (invalid_supervision 422, supervision_not_found 404). Depends on vitest, the api-client ApiError and the groups error messages.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -24,6 +24,8 @@ describe("getGroupErrorMessage", () => {
     ["groups.group_full", 409],
     ["groups.management_forbidden", 403],
     ["groups.type_creation_forbidden", 403],
+    ["groups.invalid_supervision", 422],
+    ["groups.supervision_not_found", 404],
   ] as const)("maps %s (%i)", (code, status) => {
     expect(getGroupErrorMessage(apiError(code, status))).toBe(GROUP_ERROR_MESSAGES[code]);
   });
