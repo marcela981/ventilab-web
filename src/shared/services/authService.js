@@ -1,14 +1,21 @@
-/**
- * Authentication Service
- * Handles all authentication-related operations for the VentyLab application
- * Communicates with the backend API for login, registration, and user management
- */
+/*
+* Funcionalidad: Authentication Service (legacy)
+* Descripción: Legacy authentication operations (login, registration, NextAuth bridge token, local token/user storage) against the backend API. v1.1 (T8 coexistence): removeAuthToken clears BOTH backend tokens through clearTokens() of @shared/api-client/token-storage (so the new backend session and realtime layer are notified) plus the legacy user data; the default export no longer lists the profile/password functions removed earlier (they were undefined identifiers, a ReferenceError when the module is evaluated without tree shaking). Depends on @/config/env and @shared/api-client/token-storage.
+* Versión: 1.1
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
 
 // ============================================================================
 // Configuration
 // ============================================================================
 
 import { BACKEND_API_URL } from '@/config/env';
+// Direct module import (not the api-client index) so legacy chunks do not pull in axios/SWR.
+import { clearTokens } from '@shared/api-client/token-storage';
 
 /**
  * Base URL del backend, resuelta centralmente en config/env (misma fuente que
@@ -55,12 +62,13 @@ export const getAuthToken = () => {
 };
 
 /**
- * Remove authentication token from localStorage
+ * Remove the backend tokens (access + refresh, via the shared token storage, which
+ * notifies the new session) and the legacy user data from localStorage.
  * @returns {void}
  */
 export const removeAuthToken = () => {
   if (typeof window !== 'undefined') {
-    localStorage.removeItem(TOKEN_KEY);
+    clearTokens();
     localStorage.removeItem(USER_KEY);
   }
 };
@@ -508,11 +516,4 @@ export default {
   // Password management
   requestPasswordReset,
   resetPassword,
-  changePassword,
-
-  // Profile management
-  getProfile,
-  updateProfile,
-  uploadAvatar,
-  getProfileStats,
 };

@@ -3,7 +3,14 @@
  * Descripción: Contexto React para la conexión WebSocket con el backend.
  *   Maneja la autenticación via JWT con WSGateway. Depende de next-auth session
  *   y socket.io-client.
- * Versión: 1.0
+ *   v1.1 (T8 coexistence): when a backend session exists (both tokens in
+ *   @shared/api-client/token-storage) the legacy provider stays idle (no io()
+ *   connection of its own) and exposes the RealtimeProvider socket through a 1:1
+ *   adapter: socket = realtime socket, isConnected = status connecting|authenticated,
+ *   isAuthenticated = status authenticated; re-auth after a token refresh comes from
+ *   the new provider. NextAuth-bridge-only users keep the legacy socket unchanged.
+ *   The socket instance is memoized per backend-session state (no ref read during render).
+ * Versión: 1.1
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica
@@ -16,8 +23,10 @@ import {
   createContext,
   useContext,
   useEffect,
+  useMemo,
   useState,
   useRef,
+  useSyncExternalStore,
   type ReactNode,
 } from 'react';
 import { io, type Socket } from 'socket.io-client';
@@ -28,6 +37,9 @@ import {
 } from '@/shared/services/authService';
 import { authEvents } from '@/shared/services/authEvents';
 import { handleSessionExpired } from '@/shared/services/sessionExpired';
+// Direct module imports (not the indexes) so the app shell does not pull extra code.
+import { getTokens, subscribeTokens } from '@shared/api-client/token-storage';
+import { RealtimeContext } from '@shared/realtime/realtime-context';
 
 // =============================================================================
 // Types
@@ -47,6 +59,19 @@ export const SocketContext = createContext<SocketContextValue | null>(null);
 SocketContext.displayName = 'SocketContext';
 
 // =============================================================================
+// Backend-session detection (same rule as @shared/session: BOTH tokens stored)
+// =============================================================================
+
+function hasBackendSession(): boolean {
+  const { accessToken, refreshToken } = getTokens();
+  return !!accessToken && !!refreshToken;
+}
+
+function useHasBackendSession(): boolean {
+  return useSyncExternalStore(subscribeTokens, hasBackendSession, () => false);
+}
+
+// =============================================================================
 // Provider
 // =============================================================================
 
@@ -55,25 +80,33 @@ const BACKEND_URL =
 
 export function SocketProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
+  const backendSession = useHasBackendSession();
+  const realtime = useContext(RealtimeContext);
   const [isConnected, setIsConnected] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const socketRef = useRef<Socket | null>(null);
-  // Trigger re-render when socketRef is populated so consumers receive the instance.
-  const [, setTick] = useState(0);
   // Un solo reintento de re-autenticación tras 'auth_error' (JWT de backend
   // vencido con sesión NextAuth aún viva); al segundo fallo se cierra sesión.
   const reauthAttemptedRef = useRef(false);
 
-  // Create the socket once on mount; clean up on unmount.
-  useEffect(() => {
-    const socket = io(BACKEND_URL, {
+  // The legacy socket instance exists only while there is no backend session (the
+  // RealtimeProvider owns the connection then). autoConnect:false, so creating it opens
+  // nothing; the effects below connect it. The fresh read covers hydration, where the
+  // store still reports the server snapshot (false).
+  const socket = useMemo<Socket | null>(() => {
+    if (backendSession || hasBackendSession()) return null;
+
+    return io(BACKEND_URL, {
       autoConnect: false,
       withCredentials: true,
       transports: ['websocket', 'polling'],
     });
+  }, [backendSession]);
 
-    socketRef.current = socket;
-    setTick((t) => t + 1);
+  // Wire the legacy socket listeners; clean up when the instance changes.
+  useEffect(() => {
+    if (!socket) return;
+
+    const legacySocket = socket;
 
     const onConnect = () => setIsConnected(true);
     const onDisconnect = () => {
@@ -86,7 +119,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     };
     const onAuthError = () => {
       setIsAuthenticated(false);
-      socket.disconnect();
+      legacySocket.disconnect();
 
       if (reauthAttemptedRef.current) {
         console.warn('[Socket] Token inválido tras reintento — cerrando sesión');
@@ -99,43 +132,42 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       reauthAttemptedRef.current = true;
       void refreshBackendTokenFromSession().then((token) => {
         if (token) {
-          socket.once('connect', () => socket.emit('authenticate', token));
-          socket.connect();
+          legacySocket.once('connect', () => legacySocket.emit('authenticate', token));
+          legacySocket.connect();
         } else {
           handleSessionExpired('socket_auth_error');
         }
       });
     };
 
-    socket.on('connect', onConnect);
-    socket.on('disconnect', onDisconnect);
-    socket.on('authenticated', onAuthenticated);
-    socket.on('auth_error', onAuthError);
+    legacySocket.on('connect', onConnect);
+    legacySocket.on('disconnect', onDisconnect);
+    legacySocket.on('authenticated', onAuthenticated);
+    legacySocket.on('auth_error', onAuthError);
 
     // Logout central (sesión expirada detectada por HTTP u otro módulo):
     // cerrar el socket para no dejarlo autenticado con una sesión muerta.
     const unsubscribeLogout = authEvents.on('auth:logout', () => {
       setIsAuthenticated(false);
-      socket.disconnect();
+      legacySocket.disconnect();
     });
 
     return () => {
       unsubscribeLogout();
-      socket.off('connect', onConnect);
-      socket.off('disconnect', onDisconnect);
-      socket.off('authenticated', onAuthenticated);
-      socket.off('auth_error', onAuthError);
-      socket.disconnect();
-      socketRef.current = null;
+      legacySocket.off('connect', onConnect);
+      legacySocket.off('disconnect', onDisconnect);
+      legacySocket.off('authenticated', onAuthenticated);
+      legacySocket.off('auth_error', onAuthError);
+      legacySocket.disconnect();
+      setIsConnected(false);
+      setIsAuthenticated(false);
     };
-  }, []);
+  }, [socket]);
 
   // Connect/disconnect based on session state; emit 'authenticate' after connect.
   useEffect(() => {
     if (status === 'loading') return;
-
-    const socket = socketRef.current;
-    if (!socket) return;
+    if (backendSession || !socket) return;
 
     // Resolve the JWT: prefer the NextAuth accessToken (if exposed by the
     // auth config), otherwise fall back to the backend JWT stored in localStorage
@@ -149,8 +181,9 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       const sendAuth = () => socket.emit('authenticate', token);
 
       if (!socket.connected) {
-        socket.connect();
+        // Listener first: identical with the async real client, never misses a sync connect.
         socket.once('connect', sendAuth);
+        socket.connect();
       } else {
         sendAuth();
       }
@@ -159,20 +192,32 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         socket.off('connect', sendAuth);
       };
     } else {
-      // No session — disconnect cleanly.
+      // No session — disconnect cleanly ('disconnect' resets isConnected and
+      // isAuthenticated; an unconnected socket is never authenticated).
       if (socket.connected) socket.disconnect();
-      setIsAuthenticated(false);
+      return undefined;
     }
-  }, [status, session]);
+  }, [status, session, socket, backendSession]);
+
+  const realtimeSocket = realtime?.socket ?? null;
+  const realtimeStatus = realtime?.status ?? 'idle';
+
+  const value = useMemo<SocketContextValue>(() => {
+    if (backendSession) {
+      // 1:1 adapter over the new provider: the typed realtime socket is the same
+      // socket.io client; legacy consumers only use on/off/emit with their own events.
+      return {
+        socket: realtimeSocket as unknown as Socket | null,
+        isConnected: realtimeStatus === 'connecting' || realtimeStatus === 'authenticated',
+        isAuthenticated: realtimeStatus === 'authenticated',
+      };
+    }
+
+    return { socket, isConnected, isAuthenticated };
+  }, [backendSession, realtimeSocket, realtimeStatus, socket, isConnected, isAuthenticated]);
 
   return (
-    <SocketContext.Provider
-      value={{
-        socket: socketRef.current,
-        isConnected,
-        isAuthenticated,
-      }}
-    >
+    <SocketContext.Provider value={value}>
       {children}
     </SocketContext.Provider>
   );

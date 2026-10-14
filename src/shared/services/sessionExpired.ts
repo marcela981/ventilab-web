@@ -8,7 +8,11 @@
  *              /auth/login?expired=1. Idempotente: múltiples 401 simultáneos
  *              producen un solo logout y un solo redirect, sin loops si ya se
  *              está en la página de login.
- * Versión: 1.0
+ *              v1.1 (T8): para todo llamador, removeAuthToken borra AMBOS tokens del
+ *              backend (access + refresh) vía clearTokens() de
+ *              @shared/api-client/token-storage, que notifica a la sesión nueva
+ *              (fin de sesión y cierre del socket realtime) una sola vez.
+ * Versión: 1.1
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -39,7 +43,8 @@ export function handleSessionExpired(reason: string = 'token_expired'): void {
   if (inProgress) return;
   inProgress = true;
 
-  // 1. Limpiar credenciales locales (ventilab_auth_token + ventilab_user_data).
+  // 1. Limpiar credenciales locales: ambos tokens del backend vía clearTokens()
+  //    (notifica a la sesión nueva y al RealtimeProvider) + ventilab_user_data.
   removeAuthToken();
 
   // 2. Avisar al resto de la app (SocketContext desconecta el socket).

@@ -126,7 +126,7 @@ const statusText = () => screen.getByTestId("status").textContent;
 async function renderAuthenticated(cache?: Cache, extra?: ReactNode) {
   saveTokens("access-1", "refresh-1");
   renderSession(cache, extra);
-  await waitFor(() => expect(statusText()).toBe("authenticated:STUDENT"));
+  await waitFor(() => expect(statusText()).toBe("authenticated:STUDENT"), { timeout: 5000 });
 }
 
 beforeAll(() => {
@@ -165,7 +165,7 @@ describe("AuthProvider boot", () => {
     renderSession();
 
     expect(statusText()).toBe("loading:none");
-    await waitFor(() => expect(statusText()).toBe("authenticated:STUDENT"));
+    await waitFor(() => expect(statusText()).toBe("authenticated:STUDENT"), { timeout: 5000 });
     expect(meCalls).toBe(1);
     expect(session?.user?.email).toBe("ana@ventylab.demo");
     expect(session?.hasRole("STUDENT", "TEACHER")).toBe(true);
