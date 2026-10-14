@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useCurriculumTree
-* Descripción: Reads the student curriculum tree (`GET /api/curriculum/tree`) through useApiQuery with the learning cache config (60 s dedupe, keepPreviousData) and maps it to the CurriculumTree entity (levels and modules carry locked / missingPrerequisites / completed). Exposes loading, error and reload. Depends on @shared/api-client and the curriculum mapper/service.
-* Versión: 1.0
+* Descripción: Reads the student curriculum tree (`GET /api/curriculum/tree`) through useApiQuery with the learning cache config (60 s dedupe; v1.1 (L3): no keepPreviousData) and maps it to the CurriculumTree entity (levels and modules carry locked / missingPrerequisites / completed). Exposes loading, error and reload. Depends on @shared/api-client and the curriculum mapper/service.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje

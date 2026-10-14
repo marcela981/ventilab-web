@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Continue target tests
-* Descripción: Unit tests of "Continuar donde quedé" inside a module: first lesson whose viewedPages < totalPages, at page viewedPages + 1 (clamped), start at the first lesson without progress, review from the start when everything is viewed, lessons without Pages skipped. Depends on vitest.
-* Versión: 1.0
+* Descripción: Unit tests of "Continuar donde quedé" inside a module: first lesson whose viewedPages < totalPages, at page viewedPages + 1 clamped to the real page count of the lesson (v1.1 L3: the lesson list count, not the progress total), finished-ness from the progress total, start at the first lesson without progress, review from the start when everything is viewed, lessons without Pages skipped. Depends on vitest.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -37,9 +37,20 @@ describe("findContinueTarget", () => {
     expect(findContinueTarget(lessons, [progress("l1", 2, 2)])).toEqual({ lessonId: "l2", pageNumber: 1, kind: "continue" });
   });
 
-  it("clamps the page to the lesson size", () => {
-    expect(findContinueTarget([lesson("l1", 1, 2)], [{ lessonId: "l1", viewedPages: 1, totalPages: 1, completed: false }]))
+  it("clamps the page to the real page count of the lesson", () => {
+    // The progress total counts more Pages than the lesson really lists: never point past its last Page.
+    expect(findContinueTarget([lesson("l1", 1, 2)], [{ lessonId: "l1", viewedPages: 3, totalPages: 4, completed: false }]))
       .toEqual({ lessonId: "l1", pageNumber: 2, kind: "continue" });
+  });
+
+  it("uses the progress total to decide whether a lesson is finished", () => {
+    expect(findContinueTarget([lesson("l1", 1, 2), lesson("l2", 2)], [progress("l1", 1, 1)]))
+      .toEqual({ lessonId: "l2", pageNumber: 1, kind: "continue" });
+  });
+
+  it("skips lessons that list no Pages even when the progress counts some", () => {
+    expect(findContinueTarget([lesson("l1", 1, 0), lesson("l2", 2)], [progress("l1", 0, 2)]))
+      .toEqual({ lessonId: "l2", pageNumber: 1, kind: "start" });
   });
 
   it("skips lessons without Pages", () => {

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Learning progress hooks
-* Descripción: useProgressSummary, useSectionProgress, useLevelProgress and useModuleProgress read the backend progress (`GET /api/progress/summary`, `/sections/{sectionId}`, `/levels/{levelId}`, `/modules/{moduleId}`) through useApiQuery with the learning cache config (C4: cache-first, stale-while-revalidate, 60 s dedupe, keepPreviousData) and map them to the progress entities. Values are the backend's; nothing is recalculated. A null id disables the query. None of them waits for another query (no request cascade). Depends on @shared/api-client and the progress mapper/service.
-* Versión: 1.0
+* Descripción: useProgressSummary, useSectionProgress, useLevelProgress and useModuleProgress read the backend progress (`GET /api/progress/summary`, `/sections/{sectionId}`, `/levels/{levelId}`, `/modules/{moduleId}`) through useApiQuery with the learning cache config (C4: cache-first, stale-while-revalidate, 60 s dedupe; v1.1 (L3): no keepPreviousData, so a changed id never shows the previous id's progress) and map them to the progress entities. Values are the backend's; nothing is recalculated. A null id disables the query. None of them waits for another query (no request cascade). Depends on @shared/api-client and the progress mapper/service.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
