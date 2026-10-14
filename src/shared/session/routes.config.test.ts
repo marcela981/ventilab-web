@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Route table tests
-* Descripción: Open-redirect safety of the returnTo helper (rejects protocol-relative, absolute, javascript: and auth-page targets), login URL building, route lookup by Next pathname pattern and the default landing route per role. v1.1 (T9 follow-up): role access of concrete paths (dynamic segments, query strings) and the post-login fallback to the role home when the returnTo route is not allowed for the role. v1.2 (T11a): /my-group is student-only and /groups is staff-only. v1.3 (T11b): /groups/[groupId] is staff-only. Depends on vitest and routes.config.
-* Versión: 1.3
+* Descripción: Open-redirect safety of the returnTo helper (rejects protocol-relative, absolute, javascript: and auth-page targets), login URL building, route lookup by Next pathname pattern and the default landing route per role. v1.1 (T9 follow-up): role access of concrete paths (dynamic segments, query strings) and the post-login fallback to the role home when the returnTo route is not allowed for the role. v1.2 (T11a): /my-group is student-only and /groups is staff-only. v1.3 (T11b): /groups/[groupId] is staff-only. v1.4 (T0 learning): learning routes for every role, module print view and content-editor routes for staff only. Depends on vitest and routes.config.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -90,6 +90,23 @@ describe("isPathAllowedForRole", () => {
 
   it("allows paths that are not in the route table (their own page decides)", () => {
     expect(isPathAllowedForRole("/unknown/page", "STUDENT")).toBe(true);
+  });
+});
+
+describe("learning and content-editor routes", () => {
+  it("lets every role open the learning viewer and only staff open print and the content editor", () => {
+    for (const role of ["STUDENT", "TEACHER", "ADMIN"] as const) {
+      expect(isPathAllowedForRole("/learn", role)).toBe(true);
+      expect(isPathAllowedForRole("/learn/section-1", role)).toBe(true);
+      expect(isPathAllowedForRole("/learn/modules/m1", role)).toBe(true);
+      expect(isPathAllowedForRole("/learn/modules/m1/lessons/l1/2", role)).toBe(true);
+    }
+
+    expect(isPathAllowedForRole("/learn/modules/m1/print", "STUDENT")).toBe(false);
+    expect(isPathAllowedForRole("/learn/modules/m1/print", "TEACHER")).toBe(true);
+    expect(isPathAllowedForRole("/content", "STUDENT")).toBe(false);
+    expect(isPathAllowedForRole("/content/pages/p1", "STUDENT")).toBe(false);
+    expect(isPathAllowedForRole("/content/pages/p1", "ADMIN")).toBe(true);
   });
 });
 

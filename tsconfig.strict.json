@@ -33,6 +33,8 @@
     "src/features/auth/index.ts",
     "src/features/profile/**/*",
     "src/features/groups/**/*",
+    "src/features/learning/**/*",
+    "src/features/content-editor/**/*",
     "pages/auth/login/index.tsx",
     "pages/profile/index.tsx",
     "pages/my-group/index.tsx",

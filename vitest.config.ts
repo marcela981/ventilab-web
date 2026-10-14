@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Vitest configuration
-* Descripción: Test runner for the new-code folders (template structure) plus the legacy coexistence adapters covered in T8 (session expiry, legacy SocketContext). jsdom environment, @shared/@features/@ aliases and the jest-dom setup file. Depends on vitest and jsdom.
-* Versión: 1.1
+* Descripción: Test runner for the new-code folders (template structure) plus the legacy coexistence adapters covered in T8 (session expiry, legacy SocketContext). jsdom environment, @shared/@features/@ aliases and the jest-dom setup file. v1.2 (T0 learning): the learning and content-editor features join the test include. Depends on vitest and jsdom.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,7 +13,7 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
 const NEW_SHARED = "src/shared/{api-client,realtime,session,design-system,layouts,rich-content,waveforms,ai-rating,lib}";
-const NEW_FEATURES = "src/features/{auth/api,auth/application,profile/api,profile/application,groups}";
+const NEW_FEATURES = "src/features/{auth/api,auth/application,profile/api,profile/application,groups,learning,content-editor}";
 const TEST_FILES = "**/*.{test,spec}.{ts,tsx}";
 // Legacy files that adapt to new shared code (T8); their tests live next to them.
 const LEGACY_ADAPTER_TESTS = ["src/shared/services/*.test.ts", "src/shared/contexts/*.test.tsx"];

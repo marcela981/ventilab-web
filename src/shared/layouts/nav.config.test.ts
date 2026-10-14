@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Navigation config tests
-* Descripción: Verifies that every nav item points to an existing route of routes.config that its roles can reach, that items are filtered by role, and that the active item is the longest matching route. v1.1 (T11a): students get /my-group, teachers and admins get /groups. Depends on vitest and the session route table.
-* Versión: 1.1
+* Descripción: Verifies that every nav item points to an existing route of routes.config that its roles can reach, that items are filtered by role, and that the active item is the longest matching route. v1.1 (T11a): students get /my-group, teachers and admins get /groups. v1.2 (T0 learning): every role gets /learn, only teachers and admins get /content. Depends on vitest and the session route table.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -59,6 +59,15 @@ describe("getNavItems", () => {
     expect(hrefs).toContain("/panel/settings");
     expect(hrefs).toContain("/groups");
     expect(hrefs).not.toContain("/my-group");
+  });
+});
+
+describe("learning navigation", () => {
+  it("shows Aprender to every role and Contenido to staff only", () => {
+    expect(getNavItems("STUDENT").map((item) => item.href)).toEqual(expect.arrayContaining(["/learn"]));
+    expect(getNavItems("STUDENT").map((item) => item.href)).not.toContain("/content");
+    expect(getNavItems("TEACHER").map((item) => item.href)).toEqual(expect.arrayContaining(["/learn", "/content"]));
+    expect(getNavItems("ADMIN").map((item) => item.href)).toEqual(expect.arrayContaining(["/learn", "/content"]));
   });
 });
 

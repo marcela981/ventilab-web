@@ -15,7 +15,10 @@
  *   v3.4 (T11b): pages/groups/[groupId].tsx entra en NEW_PAGE_FILES como `[[]groupId[]]`:
  *   en un glob `[groupId]` sería una clase de caracteres y el escape con `\[` no coincide
  *   en Windows; las clases `[[]` y `[]]` sí coinciden con los corchetes literales.
- * Versión: 3.4
+ *   v3.5 (T0 learning): registra las features nuevas learning y content-editor (sin legacy,
+ *   toda la carpeta es código nuevo con el layout template); sus rutas delgadas se agregan
+ *   a NEW_PAGE_FILES en las tareas que las crean.
+ * Versión: 3.5
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -29,15 +32,16 @@ import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
 
 const NEW_SHARED_MODULES = "api-client,realtime,session,design-system,layouts,rich-content,waveforms,ai-rating,lib";
-const NEW_FEATURES = "auth,profile,groups";
+const NEW_FEATURES = "auth,profile,groups,learning,content-editor";
 const SOURCE_EXT = "{js,jsx,ts,tsx,mjs,cjs}";
 // auth/ still holds legacy files at its root and in components/, so only its template
-// layers count as new code. profile/ (legacy removed in T10) and groups/ have no legacy,
-// so the whole folder is new code.
+// layers count as new code. profile/ (legacy removed in T10), groups/, learning/ and
+// content-editor/ have no legacy, so the whole folder is new code.
+const LEGACY_FREE_FEATURES = "profile,groups,learning,content-editor";
 const NEW_FEATURE_FILES = [
   `src/features/auth/{api,application}/**/*.${SOURCE_EXT}`,
   `src/features/{${NEW_FEATURES}}/index.ts`,
-  `src/features/{profile,groups}/**/*.${SOURCE_EXT}`,
+  `src/features/{${LEGACY_FREE_FEATURES}}/**/*.${SOURCE_EXT}`,
 ];
 
 // Thin route files under pages/ that already follow the new structure. Add each
@@ -126,7 +130,10 @@ const eslintConfig = [
         {
           type: "feature",
           mode: "full",
-          pattern: [`src/features/{auth,profile}/{api,application,UI}/**/*`, `src/features/(groups)/**/*`],
+          pattern: [
+            `src/features/{auth,profile,learning,content-editor}/{api,application,UI}/**/*`,
+            `src/features/(groups)/**/*`,
+          ],
           capture: ["feature"],
         },
         ...(NEW_PAGE_FILES.length > 0 ? [{ type: "page", mode: "full", pattern: NEW_PAGE_FILES }] : []),

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Route table
-* Descripción: Typed route table keyed by Next pathname pattern (`access: public | authenticated`, optional `roles`), the login path, the default landing route per role and an open-redirect safe `returnTo` helper that only accepts same-origin relative paths outside `/auth/`. The table lists the current pages as data; legacy pages keep their own guards. v1.1 (T9 follow-up): isPathAllowedForRole checks a concrete path (dynamic segments, query/hash ignored, static routes first) against the table, and resolvePostLoginRoute falls back to the role home when the returnTo route is not allowed for the role (the target page would bounce the user). v1.2 (T11a): /my-group (STUDENT only) and /groups (TEACHER, ADMIN) of the groups feature. v1.3 (T11b): /groups/[groupId] (TEACHER, ADMIN). Depends on session entities.
-* Versión: 1.3
+* Descripción: Typed route table keyed by Next pathname pattern (`access: public | authenticated`, optional `roles`), the login path, the default landing route per role and an open-redirect safe `returnTo` helper that only accepts same-origin relative paths outside `/auth/`. The table lists the current pages as data; legacy pages keep their own guards. v1.1 (T9 follow-up): isPathAllowedForRole checks a concrete path (dynamic segments, query/hash ignored, static routes first) against the table, and resolvePostLoginRoute falls back to the role home when the returnTo route is not allowed for the role (the target page would bounce the user). v1.2 (T11a): /my-group (STUDENT only) and /groups (TEACHER, ADMIN) of the groups feature. v1.3 (T11b): /groups/[groupId] (TEACHER, ADMIN). v1.4 (T0 learning): learning routes /learn, /learn/[sectionId], /learn/modules/[moduleId] and the lesson page viewer for every authenticated role (teachers and admins use them as preview), the module print view and the content-editor routes /content, /content/pages/[pageId] for TEACHER and ADMIN. Depends on session entities.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -42,6 +42,13 @@ export const ROUTES = {
   "/flashcards": { access: "authenticated" },
   "/search": { access: "authenticated" },
   "/simulador": { access: "authenticated" },
+  "/learn": { access: "authenticated" },
+  "/learn/[sectionId]": { access: "authenticated" },
+  "/learn/modules/[moduleId]": { access: "authenticated" },
+  "/learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]": { access: "authenticated" },
+  "/learn/modules/[moduleId]/print": { access: "authenticated", roles: STAFF },
+  "/content": { access: "authenticated", roles: STAFF },
+  "/content/pages/[pageId]": { access: "authenticated", roles: STAFF },
   "/teaching": { access: "authenticated" },
   "/teaching/[moduleId]/[lessonId]": { access: "authenticated" },
   "/evaluation": { access: "authenticated" },
