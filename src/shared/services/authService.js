@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Authentication Service (legacy)
-* Descripción: Legacy authentication operations (login, registration, NextAuth bridge token, local token/user storage) against the backend API. v1.1 (T8 coexistence): removeAuthToken clears BOTH backend tokens through clearTokens() of @shared/api-client/token-storage (so the new backend session and realtime layer are notified) plus the legacy user data; the default export no longer lists the profile/password functions removed earlier (they were undefined identifiers, a ReferenceError when the module is evaluated without tree shaking). Depends on @/config/env and @shared/api-client/token-storage.
-* Versión: 1.1
+* Descripción: Legacy authentication operations (login, registration, NextAuth bridge token, local token/user storage) against the backend API. v1.1 (T8 coexistence): removeAuthToken clears BOTH backend tokens through clearTokens() of @shared/api-client/token-storage (so the new backend session and realtime layer are notified) plus the legacy user data; the default export no longer lists the profile/password functions removed earlier (they were undefined identifiers, a ReferenceError when the module is evaluated without tree shaking). v1.2 (T9 auth): the broken refreshToken() was removed (it POSTed /auth/refresh without the refreshToken body the contract requires and had no callers; the shared single-flight refresh of @shared/api-client is the only refresh), and getUserData() returns the backend session user snapshot (@shared/session/session-user-cache) first, so legacy pages recognise users who signed in through the new login. Depends on @/config/env, @shared/api-client/token-storage and @shared/session/session-user-cache.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,6 +16,8 @@
 import { BACKEND_API_URL } from '@/config/env';
 // Direct module import (not the api-client index) so legacy chunks do not pull in axios/SWR.
 import { clearTokens } from '@shared/api-client/token-storage';
+// Direct module import (not the session index) so legacy chunks do not pull in the guards.
+import { readCachedSessionUser } from '@shared/session/session-user-cache';
 
 /**
  * Base URL del backend, resuelta centralmente en config/env (misma fuente que
@@ -85,10 +87,16 @@ const setUserData = (user) => {
 };
 
 /**
- * Retrieve user data from localStorage
+ * Retrieve user data: the backend session user (new login) first, then the legacy cached user.
  * @returns {Object|null} The stored user data or null if not found
  */
 export const getUserData = () => {
+  const sessionUser = readCachedSessionUser();
+
+  if (sessionUser) {
+    return sessionUser;
+  }
+
   if (typeof window !== 'undefined') {
     const userData = localStorage.getItem(USER_KEY);
     return userData ? JSON.parse(userData) : null;
@@ -362,51 +370,6 @@ export const getCurrentUser = async () => {
 };
 
 /**
- * Refresh authentication token
- * Requests a new token from the server using the current token
- * @returns {Promise<Object>} Response object containing new token
- * @throws {Error} If token refresh fails or current token is invalid
- *
- * @example
- * const result = await refreshToken();
- * if (result.success) {
- *   console.log('Token refreshed successfully');
- * } else {
- *   console.error('Token refresh failed:', result.error.message);
- *   // Redirect to login page
- * }
- */
-export const refreshToken = async () => {
-  const token = getAuthToken();
-
-  if (!token) {
-    return {
-      success: false,
-      data: null,
-      error: {
-        message: 'No authentication token found',
-        details: ['Cannot refresh token without an existing token'],
-        statusCode: 401,
-      },
-    };
-  }
-
-  const response = await makeRequest('/auth/refresh', {
-    method: 'POST',
-  });
-
-  // If refresh successful, update stored token
-  if (response.success && response.data?.token) {
-    setAuthToken(response.data.token);
-  } else {
-    // If refresh failed, clear invalid token
-    removeAuthToken();
-  }
-
-  return response;
-};
-
-/**
  * Check if user is currently authenticated
  * This only checks for presence of token, not validity
  * For validation, use getCurrentUser() instead
@@ -511,7 +474,6 @@ export default {
   register,
   logout,
   getCurrentUser,
-  refreshToken,
 
   // Password management
   requestPasswordReset,

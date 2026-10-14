@@ -8,7 +8,8 @@
  *   src/shared nuevo y el index.ts de otras features; shared nunca importa features;
  *   código nuevo nunca importa legacy) y la prohibición de sx/style/styled().
  *   `npm run lint` revisa el código nuevo; `npm run lint:legacy` conserva `eslint .`.
- * Versión: 3.0
+ *   v3.1 (T9): la ruta delgada pages/auth/login/index.tsx entra en NEW_PAGE_FILES.
+ * Versión: 3.1
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -35,7 +36,7 @@ const NEW_FEATURE_FILES = [
 
 // Thin route files under pages/ that already follow the new structure. Add each
 // one here when it is created or rewritten (T6+); they get the new-code rules.
-const NEW_PAGE_FILES = [];
+const NEW_PAGE_FILES = ["pages/auth/login/index.tsx"];
 
 const NEW_CODE_FILES = [
   `src/shared/{${NEW_SHARED_MODULES}}/**/*.${SOURCE_EXT}`,

@@ -7,7 +7,7 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint --no-error-on-unmatched-pattern src/shared/api-client src/shared/realtime src/shared/session src/shared/design-system src/shared/layouts src/shared/rich-content src/shared/waveforms src/shared/ai-rating src/shared/lib src/features/auth/api src/features/auth/application src/features/auth/index.ts src/features/profile/api src/features/profile/application src/features/profile/index.ts src/features/groups pages/_app.js",
+    "lint": "eslint --no-error-on-unmatched-pattern src/shared/api-client src/shared/realtime src/shared/session src/shared/design-system src/shared/layouts src/shared/rich-content src/shared/waveforms src/shared/ai-rating src/shared/lib src/features/auth/api src/features/auth/application src/features/auth/index.ts src/features/profile/api src/features/profile/application src/features/profile/index.ts src/features/groups pages/_app.js pages/auth/login/index.tsx",
     "lint:legacy": "eslint .",
     "typecheck": "tsc -p tsconfig.strict.json --noEmit",
     "test": "vitest run",

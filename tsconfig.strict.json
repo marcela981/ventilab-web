@@ -34,6 +34,7 @@
     "src/features/profile/api/**/*",
     "src/features/profile/application/**/*",
     "src/features/profile/index.ts",
-    "src/features/groups/**/*"
+    "src/features/groups/**/*",
+    "pages/auth/login/index.tsx"
   ]
 }

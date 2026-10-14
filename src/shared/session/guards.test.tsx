@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Route guard tests
-* Descripción: RequireAuth and RequireRole behavior with a mocked Next router: neutral loading state without protected content, redirect to the login page with a safe returnTo, redirect of a wrong role to its landing route, and a single redirect when the session expires twice. Depends on vitest, Testing Library, next/router (mocked) and the session modules.
-* Versión: 1.0
+* Descripción: RequireAuth and RequireRole behavior with a mocked Next router: neutral loading state without protected content, redirect to the login page with a safe returnTo, redirect of a wrong role to its landing route, a single redirect when the session expires twice, and a clean login (no returnTo) after a voluntary sign-out. Depends on vitest, Testing Library, next/router (mocked) and the session modules.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,7 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import type { ReactNode } from "react";
@@ -20,10 +20,11 @@ import { BACKEND_ORIGIN } from "@shared/lib/env";
 import { AuthProvider } from "./auth-provider";
 import { RequireAuth } from "./require-auth";
 import { RequireRole } from "./require-role";
-import { DEFAULT_ROUTE_BY_ROLE } from "./routes.config";
+import { DEFAULT_ROUTE_BY_ROLE, LOGIN_PATH } from "./routes.config";
 import type { Role, SessionStatus } from "./session.entity";
 import { SessionContext } from "./session-context";
 import type { SessionContextValue } from "./session-context";
+import { useSession } from "./use-session";
 
 const router = vi.hoisted(() => ({
   asPath: "/teaching/m1/l2?tab=quiz",
@@ -32,6 +33,7 @@ const router = vi.hoisted(() => ({
 }));
 
 vi.mock("next/router", () => ({ useRouter: () => router }));
+vi.mock("next-auth/react", () => ({ signOut: vi.fn(() => Promise.resolve(undefined)) }));
 
 const server = setupServer(
   http.get(`${BACKEND_ORIGIN}/api/auth/me`, () =>
@@ -87,6 +89,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  server.resetHandlers();
   window.localStorage.clear();
 });
 
@@ -137,6 +140,69 @@ describe("RequireAuth", () => {
 
     expect(screen.queryByText("Contenido protegido")).not.toBeInTheDocument();
     expect(router.replace).toHaveBeenCalledTimes(1);
+  });
+
+  it("sends a voluntary sign-out to a clean login without returnTo", async() => {
+    server.use(http.post(`${BACKEND_ORIGIN}/api/auth/logout`, () => new HttpResponse(null, { status: 204 })));
+    saveTokens("access-1", "refresh-1");
+
+    function SignOutButton() {
+      const { signOut } = useSession();
+
+      return <button type="button" onClick={() => void signOut()}>Salir</button>;
+    }
+
+    render(
+      <AuthProvider>
+        <SignOutButton />
+        <RequireAuth>{protectedContent}</RequireAuth>
+      </AuthProvider>,
+    );
+
+    expect(await screen.findByText("Contenido protegido")).toBeInTheDocument();
+
+    await act(async() => {
+      screen.getByRole("button", { name: "Salir" }).click();
+    });
+
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith(LOGIN_PATH));
+    expect(router.replace).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps returnTo when the session expires after a previous sign-out", async() => {
+    server.use(http.post(`${BACKEND_ORIGIN}/api/auth/logout`, () => new HttpResponse(null, { status: 204 })));
+    saveTokens("access-1", "refresh-1");
+
+    function SignOutButton() {
+      const { signOut } = useSession();
+
+      return <button type="button" onClick={() => void signOut()}>Salir</button>;
+    }
+
+    render(
+      <AuthProvider>
+        <SignOutButton />
+        <RequireAuth>{protectedContent}</RequireAuth>
+      </AuthProvider>,
+    );
+
+    expect(await screen.findByText("Contenido protegido")).toBeInTheDocument();
+    await act(async() => {
+      screen.getByRole("button", { name: "Salir" }).click();
+    });
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith(LOGIN_PATH));
+
+    router.replace.mockClear();
+    act(() => {
+      saveTokens("access-2", "refresh-2");
+    });
+    expect(await screen.findByText("Contenido protegido")).toBeInTheDocument();
+
+    act(() => {
+      emitAuthEvent({ type: "session-expired", reason: "auth.refresh_token_expired" });
+    });
+
+    expect(router.replace).toHaveBeenCalledWith("/auth/login?returnTo=%2Fteaching%2Fm1%2Fl2%3Ftab%3Dquiz");
   });
 });
 

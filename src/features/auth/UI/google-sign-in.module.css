@@ -1,0 +1,33 @@
+/*
+* Funcionalidad: GoogleSignInButton styles
+* Descripción: Container of the official Google button, the inert state while a login is pending and the explanatory note. Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--vl-space-2);
+}
+
+.button {
+  display: flex;
+  justify-content: center;
+  min-height: 2.75rem;
+}
+
+.inert {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.note {
+  color: var(--vl-color-text-muted);
+  text-align: center;
+}

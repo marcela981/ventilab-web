@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Session context
-* Descripción: React context and value type shared by AuthProvider, useSession and the route guards: status, user, role, permissions, last load error, role/permission checks and the session actions (establishSession, signOut, reloadSession, handleRoleChanged). Depends on react and session entities.
-* Versión: 1.0
+* Descripción: React context and value type shared by AuthProvider, useSession and the route guards: status, user, role, permissions, last load error, role/permission checks and the session actions (establishSession, signOut, reloadSession, handleRoleChanged). v1.1 (T9): `signedOut` is true after a voluntary signOut until the next session, so guards can send the user to a clean login; optional so test doubles may omit it. Depends on react and session entities.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,6 +19,7 @@ export type SessionContextValue = {
   role: Role | null
   permissions: readonly Permission[]
   error: ApiError | null
+  signedOut?: boolean
   hasRole: (...roles: Role[]) => boolean
   hasPermission: (permission: Permission) => boolean
   establishSession: (tokens: SessionTokens) => Promise<SessionUser>
