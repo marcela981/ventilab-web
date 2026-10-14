@@ -1,0 +1,31 @@
+/*
+* Funcionalidad: ProfilePage styles
+* Descripción: Page column of the profile page: readable max width and a two-column grid (form + account data) from 900px. Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--vl-space-4);
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .content {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+}

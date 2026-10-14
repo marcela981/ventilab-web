@@ -1,0 +1,41 @@
+/*
+* Funcionalidad: ProfileForm styles
+* Descripción: Card, vertical field stack, avatar row and action alignment of the profile edit form. Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-5);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.avatarRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-3);
+  margin-bottom: var(--vl-space-2);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}

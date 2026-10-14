@@ -9,7 +9,9 @@
  *   código nuevo nunca importa legacy) y la prohibición de sx/style/styled().
  *   `npm run lint` revisa el código nuevo; `npm run lint:legacy` conserva `eslint .`.
  *   v3.1 (T9): la ruta delgada pages/auth/login/index.tsx entra en NEW_PAGE_FILES.
- * Versión: 3.1
+ *   v3.2 (T10): pages/profile/index.tsx entra en NEW_PAGE_FILES; profile/ ya no tiene
+ *   legacy (eliminado en T10), así que toda la carpeta es código nuevo, como groups/.
+ * Versión: 3.2
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -25,18 +27,18 @@ import nextTypescript from "eslint-config-next/typescript";
 const NEW_SHARED_MODULES = "api-client,realtime,session,design-system,layouts,rich-content,waveforms,ai-rating,lib";
 const NEW_FEATURES = "auth,profile,groups";
 const SOURCE_EXT = "{js,jsx,ts,tsx,mjs,cjs}";
-// auth/ and profile/ still hold legacy files at their root and in components/ (to be
-// replaced in T9/T10), so only their template layers count as new code. groups/ has
-// no legacy, so the whole folder is new code.
+// auth/ still holds legacy files at its root and in components/, so only its template
+// layers count as new code. profile/ (legacy removed in T10) and groups/ have no legacy,
+// so the whole folder is new code.
 const NEW_FEATURE_FILES = [
-  `src/features/{auth,profile}/{api,application}/**/*.${SOURCE_EXT}`,
+  `src/features/auth/{api,application}/**/*.${SOURCE_EXT}`,
   `src/features/{${NEW_FEATURES}}/index.ts`,
-  `src/features/groups/**/*.${SOURCE_EXT}`,
+  `src/features/{profile,groups}/**/*.${SOURCE_EXT}`,
 ];
 
 // Thin route files under pages/ that already follow the new structure. Add each
 // one here when it is created or rewritten (T6+); they get the new-code rules.
-const NEW_PAGE_FILES = ["pages/auth/login/index.tsx"];
+const NEW_PAGE_FILES = ["pages/auth/login/index.tsx", "pages/profile/index.tsx"];
 
 const NEW_CODE_FILES = [
   `src/shared/{${NEW_SHARED_MODULES}}/**/*.${SOURCE_EXT}`,
