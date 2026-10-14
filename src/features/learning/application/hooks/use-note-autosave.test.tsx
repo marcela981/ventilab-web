@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useNoteAutosave tests
-* Descripción: Unit tests of the debounced note autosave with fake timers and a mocked notes service (no Tiptap: the editor value is a plain Tiptap JSON object): a typing burst sends one PATCH with the latest document, a new note is created once (POST with the anchor pageId) and later edits PATCH it without racing the POST, empty new notes are never created, a failed save shows the error status and retries, and a pending edit is flushed on unmount. Depends on vitest and Testing Library.
-* Versión: 1.0
+* Descripción: Unit tests of the debounced note autosave with fake timers and a mocked notes service (no Tiptap: the editor value is a plain Tiptap JSON object): a typing burst sends one PATCH with the latest document, a new note is created once (POST with the anchor pageId) and later edits PATCH it without racing the POST, empty new notes are never created, a failed save shows the error status and retries, and a pending edit is flushed on unmount. v1.1 (L5/L6): an edit left pending by a failed save gets one final save attempt on unmount. Depends on vitest and Testing Library.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -142,5 +142,24 @@ describe("useNoteAutosave", () => {
     await advance(0);
     expect(service.updateNoteContent).toHaveBeenCalledTimes(2);
     expect(service.updateNoteContent).toHaveBeenLastCalledWith("n1", doc("cerrar"));
+  });
+
+  it("attempts one final save on unmount after a failed save instead of dropping the pending edit", async() => {
+    service.updateNoteContent.mockRejectedValueOnce(new Error("boom"));
+    const { result, unmount } = renderHook(() => useNoteAutosave({ lessonId: "l1", initialNote: note("n1", doc("a")), anchorPageId: null, onSaved: vi.fn() }));
+
+    act(() => result.current.change(doc("perdida")));
+    await advance(NOTE_AUTOSAVE_DELAY_MS);
+    expect(result.current.status).toBe("error");
+    expect(service.updateNoteContent).toHaveBeenCalledTimes(1);
+
+    unmount();
+    await advance(0);
+    expect(service.updateNoteContent).toHaveBeenCalledTimes(2);
+    expect(service.updateNoteContent).toHaveBeenLastCalledWith("n1", doc("perdida"));
+
+    // Only one final attempt: nothing loops after unmount.
+    await advance(NOTE_AUTOSAVE_DELAY_MS * 5);
+    expect(service.updateNoteContent).toHaveBeenCalledTimes(2);
   });
 });

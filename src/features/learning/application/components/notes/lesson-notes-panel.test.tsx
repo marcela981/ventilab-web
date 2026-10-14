@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LessonNotesPanel tests
-* Descripción: Integration tests of the lesson notes panel against msw handlers of /api/notes: the caller's notes render with a page indicator that links to the anchored page (disabled when the page is unknown), a new note anchored to the current page sends its pageId, editing PATCHes the note, delete asks for confirmation before the DELETE, the AI analysis renders summary, key concepts, gaps, suggestions and the rating widget, and 429/503 show their messages. The lazy Tiptap editor is replaced by a textarea (the autosave rules are covered by use-note-autosave.test). Depends on vitest, Testing Library, msw and the learning test helpers.
-* Versión: 1.0
+* Descripción: Integration tests of the lesson notes panel against msw handlers of /api/notes: the caller's notes render with a page indicator that links to the anchored page (disabled when the page is unknown), a new note anchored to the current page sends its pageId, editing PATCHes the note, delete asks for confirmation before the DELETE, the AI analysis renders summary, key concepts, gaps, suggestions and the rating widget, and 429/503 show their messages. The lazy Tiptap editor is replaced by a textarea (the autosave rules are covered by use-note-autosave.test). v1.1 (L5/L6): a failed delete closes the dialog, keeps the note and shows a dismissible error alert. Depends on vitest, Testing Library, msw and the learning test helpers.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -171,6 +171,25 @@ describe("LessonNotesPanel", () => {
 
     await waitFor(() => expect(requests).toEqual([{ method: "DELETE", path: "/api/notes/n2", body: null }]));
     await waitFor(() => expect(screen.queryByText("Nota libre")).not.toBeInTheDocument());
+  });
+
+  it("closes the dialog and shows a dismissible error when the delete fails", async() => {
+    server.use(http.delete(apiUrl("/api/notes/:noteId"), () => errorResponse("FORBIDDEN", 403)));
+    renderPanel();
+    const item = (await screen.findByText("Nota libre")).closest("li");
+
+    fireEvent.click(within(item as HTMLElement).getByRole("button", { name: "Eliminar nota" }));
+    fireEvent.click(within(await screen.findByRole("dialog", { name: "¿Eliminar esta nota?" })).getByRole("button", { name: "Eliminar" }));
+
+    const alert = await screen.findByRole("alert");
+
+    expect(alert).toHaveTextContent("No tienes acceso a este contenido.");
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "¿Eliminar esta nota?" })).not.toBeInTheDocument());
+    // The note is kept.
+    expect(screen.getByText("Nota libre")).toBeInTheDocument();
+
+    fireEvent.click(within(alert).getByRole("button", { name: /close/i }));
+    await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
   });
 
   it("analyzes the lesson notes with AI and offers the rating widget", async() => {

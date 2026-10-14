@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useNoteAutosave
-* Descripción: Debounced autosave of one lesson note while it is edited. `change(doc)` keeps only the latest document and schedules a save after NOTE_AUTOSAVE_DELAY_MS (1 s) of inactivity; `flush()` saves now (blur, "Listo", close) and resolves whether everything was saved; the pending edit is also flushed on unmount. Saves are serialized: a new note is created once with POST /api/notes (lessonId + the anchor pageId read at that moment) and every later edit PATCHes the created id, never before the POST resolved; the latest edit always wins. A new note is not created while its document has no text. Status: idle | saving | saved | error; a failed save keeps the edit pending and is not retried in a loop: `retry()` (or a new edit) tries again. Depends on react and the notes service.
-* Versión: 1.0
+* Descripción: Debounced autosave of one lesson note while it is edited. `change(doc)` keeps only the latest document and schedules a save after NOTE_AUTOSAVE_DELAY_MS (1 s) of inactivity; `flush()` saves now (blur, "Listo", close) and resolves whether everything was saved; the pending edit is also flushed on unmount. Saves are serialized: a new note is created once with POST /api/notes (lessonId + the anchor pageId read at that moment) and every later edit PATCHes the created id, never before the POST resolved; the latest edit always wins. A new note is not created while its document has no text. Status: idle | saving | saved | error; a failed save keeps the edit pending and is not retried in a loop: `retry()` (or a new edit) tries again. v1.1 (L5/L6): on unmount an edit left pending by a failed save gets one final fire-and-forget save attempt instead of being dropped. Depends on react and the notes service.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -154,7 +154,9 @@ export function useNoteAutosave({
   }, [flush]);
 
   useEffect(() => () => {
-    // Closing the editor must not lose the last keystrokes.
+    // Closing the editor must not lose the last keystrokes: even after a failed save, the pending
+    // document gets one final fire-and-forget attempt (drain stops again if it fails, so no loop).
+    failedRef.current = false;
     void flushPending();
   }, [flushPending]);
 
