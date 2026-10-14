@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Learning test helpers
-* Descripción: Shared fixtures of the learning tests: backend envelope and error bodies, factories of the curriculum tree, module lessons and progress DTOs (summary, section, module), and a render helper that mounts a page inside an isolated SWR cache and a session context with the given role (no AuthProvider, no network for the session). Test-only code. Depends on Testing Library, msw, SWR and the session context.
-* Versión: 1.0
+* Descripción: Shared fixtures of the learning tests: backend envelope and error bodies, factories of the curriculum tree, module lessons and progress DTOs (summary, section, module), v1.1 (L3) lesson Page summaries, Page details with Tiptap text blocks, and a render helper that mounts a page inside an isolated SWR cache and a session context with the given role (no AuthProvider, no network for the session). Test-only code. Depends on Testing Library, msw, SWR and the session context.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,7 +17,15 @@ import { BACKEND_ORIGIN } from "@shared/lib/env";
 import { SessionContext } from "@shared/session/session-context";
 import type { SessionContextValue } from "@shared/session/session-context";
 import type { Role } from "@shared/session/session.entity";
-import type { CurriculumTreeDTO, ModuleLessonDTO, TreeLevelDTO, TreeModuleDTO } from "../../api/dtos/curriculum.dto";
+import type {
+  CurriculumTreeDTO,
+  ModuleLessonDTO,
+  PageDetailDTO,
+  PageSectionDTO,
+  PageSummaryDTO,
+  TreeLevelDTO,
+  TreeModuleDTO,
+} from "../../api/dtos/curriculum.dto";
 
 export const apiUrl = (path: string): string => `${BACKEND_ORIGIN}${path}`;
 
@@ -132,6 +140,72 @@ export function moduleProgressDto(moduleId: string, percentage: number, lessons:
   const completedLessons = lessons.filter((lesson) => lesson.completed).length;
 
   return { moduleId, levelId: "lv1", ...progressItem(percentage, completedLessons, lessons.length), lessons };
+}
+
+export function pageSummaryDto(id: string, order: number, lessonId: string): PageSummaryDTO {
+  return {
+    id,
+    title: `Página ${id}`,
+    order,
+    difficulty: "BEGINNER",
+    estimatedMinutes: null,
+    hasRequiredQuiz: false,
+    learningObjectives: [],
+    legacyJsonId: null,
+    legacyLessonId: null,
+    lessonId,
+    slug: id,
+    status: "PUBLISHED",
+    type: "LESSON",
+  };
+}
+
+const tiptapText = (text: string) => ({ doc: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text }] }] } });
+
+export function pageSectionDto(id: string, order: number, text: string, overrides: Partial<PageSectionDTO> = {}): PageSectionDTO {
+  return {
+    id,
+    order,
+    type: "TEXT",
+    title: null,
+    content: tiptapText(text) as unknown as PageSectionDTO["content"],
+    createdAt: "2026-08-01T00:00:00.000Z",
+    createdBy: null,
+    estimatedTime: null,
+    isActive: true,
+    mediaId: null,
+    mediaUrl: null,
+    pageId: "p",
+    sectionId: null,
+    updatedAt: "2026-08-01T00:00:00.000Z",
+    updatedBy: null,
+    ...overrides,
+  };
+}
+
+export function pageDetailDto(id: string, lessonId: string, moduleId: string, sections: PageSectionDTO[]): PageDetailDTO {
+  return {
+    ...pageSummaryDto(id, 1, lessonId),
+    aiConfig: null,
+    bloomLevel: null,
+    createdAt: "2026-08-01T00:00:00.000Z",
+    createdBy: "u",
+    description: null,
+    isActive: true,
+    isPublished: true,
+    keyTakeaways: [],
+    minQuizScore: null,
+    module: { id: moduleId, title: `Módulo ${moduleId}`, isActive: true, levelId: "lv1" },
+    moduleId,
+    prerequisites: [],
+    publishedAt: null,
+    resources: null,
+    sections,
+    tags: [],
+    updatedAt: "2026-08-01T00:00:00.000Z",
+    updatedBy: null,
+    version: 1,
+  };
 }
 
 function sessionValue(role: Role): SessionContextValue {

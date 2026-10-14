@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Curriculum mapper tests
-* Descripción: Unit tests of the curriculum DTO -> entity mapper: sections, levels and modules are sorted by `order`, lock state and missing prerequisites are kept as the backend sends them, and module lessons are sorted by order. Depends on vitest.
-* Versión: 1.0
+* Descripción: Unit tests of the curriculum DTO -> entity mapper: sections, levels and modules are sorted by `order`, lock state and missing prerequisites are kept as the backend sends them, and module lessons are sorted by order. v1.1 (L3): toPageContent keeps the active blocks sorted by order and the Page owners. Depends on vitest.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,8 +10,8 @@
 */
 
 import { describe, expect, it } from "vitest";
-import { lessonDto, treeDto } from "../../application/pages/learning-test-helpers";
-import { toCurriculumTree, toLessonPages, toLessonSummaries } from "./curriculum.mapper";
+import { lessonDto, pageDetailDto, pageSectionDto, treeDto } from "../../application/pages/learning-test-helpers";
+import { toCurriculumTree, toLessonPages, toLessonSummaries, toPageContent } from "./curriculum.mapper";
 
 describe("toCurriculumTree", () => {
   it("sorts every level of the tree by order and keeps the lock state", () => {
@@ -59,5 +59,20 @@ describe("toLessonPages", () => {
     });
 
     expect(toLessonPages([page("p2", 5), page("p1", 1)]).map((item) => item.id)).toEqual(["p1", "p2"]);
+  });
+});
+
+describe("toPageContent", () => {
+  it("keeps the active blocks sorted by order with the Page owners", () => {
+    const dto = pageDetailDto("p1", "l1", "m2", [
+      pageSectionDto("b2", 2, "Segundo", { title: "Teoría", mediaUrl: "https://cdn/x.png" }),
+      pageSectionDto("hidden", 0, "Inactivo", { isActive: false }),
+      pageSectionDto("b1", 1, "Primero"),
+    ]);
+    const page = toPageContent(dto);
+
+    expect(page).toMatchObject({ id: "p1", title: "Página p1", lessonId: "l1", moduleId: "m2" });
+    expect(page.blocks.map((block) => block.id)).toEqual(["b1", "b2"]);
+    expect(page.blocks[1]).toMatchObject({ type: "TEXT", title: "Teoría", mediaUrl: "https://cdn/x.png", mediaId: null });
   });
 });

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Learning URL tests
-* Descripción: Unit tests of the pure learning URL builders (/learn, section, module, lesson page, print) and of the route parsers (route id and the 1-based pageNumber, which only accepts positive integers). Depends on vitest.
-* Versión: 1.0
+* Descripción: Unit tests of the pure learning URL builders (/learn, section, module, lesson page, print) and of the route parsers (route id and the 1-based pageNumber, which only accepts positive integers). v1.1 (L3): the module completion URL (?completed=1). Depends on vitest.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,6 +12,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildLessonPageUrl,
+  buildModuleCompletedUrl,
   buildLevelUrl,
   buildModulePrintUrl,
   buildModuleUrl,
@@ -29,6 +30,7 @@ describe("learning URL builders", () => {
     expect(buildModuleUrl("m 1")).toBe("/learn/modules/m%201");
     expect(buildLessonPageUrl("m1", "l/1", 3)).toBe("/learn/modules/m1/lessons/l%2F1/3");
     expect(buildModulePrintUrl("m1")).toBe("/learn/modules/m1/print");
+    expect(buildModuleCompletedUrl("m 1")).toBe("/learn/modules/m%201?completed=1");
   });
 
   it("defaults the lesson page to the first page", () => {

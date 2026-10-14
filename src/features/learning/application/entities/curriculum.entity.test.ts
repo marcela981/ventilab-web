@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Curriculum entity tests
-* Descripción: Unit tests of the curriculum tree helpers: locating a section, level and module (with their parents, for the breadcrumb and the locks), resolving the links of missing prerequisites (levels link to their section anchor, modules to their page, unknown references have no link) and picking the module for "Continuar donde quedé" (first unlocked, not completed module in curriculum order; preview ignores locks). Depends on vitest.
-* Versión: 1.0
+* Descripción: Unit tests of the curriculum tree helpers: locating a section, level and module (with their parents, for the breadcrumb and the locks), resolving the links of missing prerequisites (levels link to their section anchor, modules to their page, unknown references have no link) and picking the module for "Continuar donde quedé" (first unlocked, not completed module in curriculum order; preview ignores locks). v1.1 (L3): excludeModuleId skips the module just completed. Depends on vitest.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -119,6 +119,10 @@ describe("findNextModule", () => {
 
   it("ignores locks in preview mode", () => {
     expect(findNextModule(tree, { ignoreLocks: true })?.id).toBe("m2");
+  });
+
+  it("skips the excluded module (the one just completed, before the backend marks it)", () => {
+    expect(findNextModule(tree, { ignoreLocks: true, excludeModuleId: "m2" })?.id).not.toBe("m2");
   });
 
   it("returns null when everything is completed", () => {

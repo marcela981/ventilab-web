@@ -20,7 +20,9 @@
  *   a NEW_PAGE_FILES en las tareas que las crean.
  *   v3.6 (L1 learning): pages/learn/index.tsx, pages/learn/[sectionId].tsx y
  *   pages/learn/modules/[moduleId]/index.tsx entran en NEW_PAGE_FILES.
- * Versión: 3.6
+ *   v3.7 (L3 learning): pages/learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber].tsx
+ *   entra en NEW_PAGE_FILES.
+ * Versión: 3.7
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -57,6 +59,7 @@ const NEW_PAGE_FILES = [
   "pages/learn/index.tsx",
   "pages/learn/[[]sectionId[]].tsx",
   "pages/learn/modules/[[]moduleId[]]/index.tsx",
+  "pages/learn/modules/[[]moduleId[]]/lessons/[[]lessonId[]]/[[]pageNumber[]].tsx",
 ];
 
 const NEW_CODE_FILES = [

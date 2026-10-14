@@ -42,6 +42,7 @@
     "pages/groups/[groupId].tsx",
     "pages/learn/index.tsx",
     "pages/learn/[sectionId].tsx",
-    "pages/learn/modules/[moduleId]/index.tsx"
+    "pages/learn/modules/[moduleId]/index.tsx",
+    "pages/learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber].tsx"
   ]
 }

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Learning URLs
-* Descripción: Pure builders and parsers of the learning routes. The URL is the ONLY source of navigation state (no in-memory step pointer): /learn, /learn/[sectionId], /learn/modules/[moduleId], /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber] (pageNumber = 1-based order of the backend Page inside its lesson) and /learn/modules/[moduleId]/print. Levels have no route of their own: they link to their anchor inside the section page (or /learn for levels without a section). No dependencies.
-* Versión: 1.0
+* Descripción: Pure builders and parsers of the learning routes. The URL is the ONLY source of navigation state (no in-memory step pointer): /learn, /learn/[sectionId], /learn/modules/[moduleId], /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber] (pageNumber = 1-based order of the backend Page inside its lesson) and /learn/modules/[moduleId]/print. Levels have no route of their own: they link to their anchor inside the section page (or /learn for levels without a section). v1.1 (L3): buildModuleCompletedUrl, the module page with ?completed=1 (completion screen shown after the last Page of the module). No dependencies.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -33,6 +33,12 @@ export function buildModuleUrl(moduleId: string): string {
 
 export function buildLessonPageUrl(moduleId: string, lessonId: string, pageNumber = 1): string {
   return `${buildModuleUrl(moduleId)}/lessons/${segment(lessonId)}/${pageNumber}`;
+}
+
+export const MODULE_COMPLETED_PARAM = "completed";
+
+export function buildModuleCompletedUrl(moduleId: string): string {
+  return `${buildModuleUrl(moduleId)}?${MODULE_COMPLETED_PARAM}=1`;
 }
 
 export function buildModulePrintUrl(moduleId: string): string {

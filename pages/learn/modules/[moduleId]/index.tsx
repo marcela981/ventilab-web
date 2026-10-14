@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Learn module route
-* Descripción: Thin route for /learn/modules/[moduleId]: composes the student layout (RequireAuth + AppShell, which waits for router.isReady) with the ModulePage of the learning feature for the moduleId of the URL (progress, lessons, continue link, lock screen). Depends on next/router, @features/learning and @shared/layouts/student-layout.
-* Versión: 1.0
+* Descripción: Thin route for /learn/modules/[moduleId]: composes the student layout (RequireAuth + AppShell, which waits for router.isReady) with the ModulePage of the learning feature for the moduleId of the URL (progress, lessons, continue link, lock screen). v1.1 (L3): ?completed=1 (set by the lesson viewer after the last Page) shows the module completion card. Depends on next/router, @features/learning and @shared/layouts/student-layout.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,7 +10,7 @@
 */
 
 import { useRouter } from "next/router";
-import { ModulePage, parseRouteId } from "@features/learning";
+import { MODULE_COMPLETED_PARAM, ModulePage, parseRouteId } from "@features/learning";
 import type { NextPageWithLayout } from "@shared/layouts/get-layout";
 // Direct module import: the layouts index would pull every layout into this chunk.
 import { withStudentLayout } from "@shared/layouts/student-layout";
@@ -19,7 +19,9 @@ const LearnModuleRoute: NextPageWithLayout = () => {
   const { query } = useRouter();
   const moduleId = parseRouteId(query.moduleId);
 
-  return moduleId ? <ModulePage moduleId={moduleId} /> : null;
+  const completed = query[MODULE_COMPLETED_PARAM] === "1";
+
+  return moduleId ? <ModulePage moduleId={moduleId} completed={completed} /> : null;
 };
 
 LearnModuleRoute.getLayout = withStudentLayout;

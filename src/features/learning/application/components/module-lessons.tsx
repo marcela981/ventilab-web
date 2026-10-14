@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ModuleLessons
-* Descripción: Lessons block of the module page: the "Continuar donde quedé" link (shown once the module progress settled; label by kind: start / continue / review) and the ordered lesson list, each lesson linking to its first Page with its backend page progress ("x de y páginas") and a completed mark. Loading skeleton and error with retry for the lessons query. Depends on MUI icons, next/link, @shared/design-system, continue-target, learning-urls and the learning CSS Module.
-* Versión: 1.0
+* Descripción: Lessons block of the module page: the "Continuar donde quedé" link (shown only once the module progress loaded; label by kind: start / continue / review; v1.1 (L3): hidden when the progress failed instead of offering "Comenzar módulo") and the ordered lesson list, each lesson linking to its first Page with its backend page progress ("x de y páginas") and a completed mark. Loading skeleton and error with retry for the lessons query. Depends on MUI icons, next/link, @shared/design-system, continue-target, learning-urls and the learning CSS Module.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -47,11 +47,11 @@ export type ModuleLessonsProps = {
   isLoading: boolean
   error: ApiError | null
   onRetry: () => void
+  // null while loading or after a failure: the continue link is then hidden (never a misleading "start").
   progress: LessonProgress[] | null
-  progressSettled: boolean
 };
 
-export function ModuleLessons({ moduleId, lessons, isLoading, error, onRetry, progress, progressSettled }: ModuleLessonsProps) {
+export function ModuleLessons({ moduleId, lessons, isLoading, error, onRetry, progress }: ModuleLessonsProps) {
   if (!lessons) {
     if (!isLoading && error) {
       return <ErrorState title={COPY.loadErrorTitle} description={getLearningErrorMessage(error)} onRetry={onRetry} />;
@@ -61,7 +61,7 @@ export function ModuleLessons({ moduleId, lessons, isLoading, error, onRetry, pr
   }
 
   const byLesson = new Map((progress ?? []).map((item) => [item.lessonId, item]));
-  const target = progressSettled ? findContinueTarget(lessons, progress) : null;
+  const target = progress ? findContinueTarget(lessons, progress) : null;
 
   return (
     <section className={cx(styles.card)} aria-labelledby="module-lessons-heading">

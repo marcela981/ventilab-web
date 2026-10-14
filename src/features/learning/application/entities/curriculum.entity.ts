@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Curriculum entity
-* Descripción: Frontend model of the student curriculum tree (sections -> levels -> modules, plus levels without section) with the backend lock state (locked, missingPrerequisites, completed), and pure helpers: locate a section, level or module with its parents (breadcrumb and locks), resolve the links of missing prerequisites (level -> its section anchor, module -> its page; references the tree does not know get no link) and pick the module for "Continuar donde quedé" (first unlocked, not completed module in curriculum order; preview mode ignores locks). Depends on learning-urls.
-* Versión: 1.0
+* Descripción: Frontend model of the student curriculum tree (sections -> levels -> modules, plus levels without section) with the backend lock state (locked, missingPrerequisites, completed), and pure helpers: locate a section, level or module with its parents (breadcrumb and locks), resolve the links of missing prerequisites (level -> its section anchor, module -> its page; references the tree does not know get no link) and pick the module for "Continuar donde quedé" (first unlocked, not completed module in curriculum order; preview mode ignores locks). v1.1 (L3): findNextModule takes excludeModuleId, so the module completion screen never proposes the module just completed while the backend tree still reports it as not completed. Depends on learning-urls.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -108,13 +108,18 @@ export function modulePrerequisiteLinks(tree: CurriculumTree, prerequisites: Nam
   }));
 }
 
-export function findNextModule(tree: CurriculumTree, { ignoreLocks }: { ignoreLocks: boolean }): CurriculumModule | null {
+export type FindNextModuleOptions = {
+  ignoreLocks: boolean
+  excludeModuleId?: string
+};
+
+export function findNextModule(tree: CurriculumTree, { ignoreLocks, excludeModuleId }: FindNextModuleOptions): CurriculumModule | null {
   for (const { level } of levelLocations(tree)) {
     if (level.locked && !ignoreLocks) {
       continue;
     }
 
-    const next = level.modules.find((module) => !module.completed && (ignoreLocks || !module.locked));
+    const next = level.modules.find((module) => module.id !== excludeModuleId && !module.completed && (ignoreLocks || !module.locked));
 
     if (next) {
       return next;

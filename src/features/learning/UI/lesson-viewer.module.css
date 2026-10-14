@@ -1,0 +1,139 @@
+/*
+* Funcionalidad: Lesson viewer styles
+* Descripción: Layout of the lesson page viewer (/learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]): wide column with the main content next to the collapsible side panel (Notas | Profundizar | Preguntas) on desktop, a single column on mobile where the panel becomes a bottom sheet opened by a button; Previous/Next bar; module completion card. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.viewer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--vl-space-4);
+}
+
+/* Below the MUI md breakpoint (900px) the side panel is a bottom sheet: one column. */
+@media (max-width: 899.95px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  min-width: 0;
+}
+
+.article {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-5);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.pageTitle {
+  margin: 0;
+  font: var(--mui-font-h5);
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+}
+
+.navSpacer {
+  flex: 1 1 auto;
+}
+
+.panel {
+  position: sticky;
+  top: var(--vl-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+  box-shadow: var(--vl-shadow-1);
+  width: 20rem;
+}
+
+.panelCollapsed {
+  width: auto;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+}
+
+.panelBody {
+  padding: var(--vl-space-2) 0;
+}
+
+.panelPlaceholder {
+  margin: 0;
+  color: var(--vl-color-text-muted);
+}
+
+.sheet {
+  max-height: 80vh;
+  padding: var(--vl-space-3) var(--vl-space-4) var(--vl-space-5);
+  border-top-left-radius: var(--vl-radius-lg);
+  border-top-right-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+}
+
+.sheetButton {
+  align-self: flex-end;
+}
+
+.completion {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-5);
+  border: 1px solid var(--vl-color-success);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.completionIcon {
+  color: var(--vl-color-success);
+  font-size: 2.5rem;
+}
+
+.completionProgress {
+  width: 100%;
+}

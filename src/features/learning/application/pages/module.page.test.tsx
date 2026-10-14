@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ModulePage tests
-* Descripción: Renders /learn/modules/[moduleId] against a mocked backend (msw): breadcrumb, backend module progress, lessons with per-lesson page progress and the "Continuar donde quedé" link; the lock screen with prerequisite links for students on a locked module; the preview mode for teachers (no lock screen); and the parallel loading (lessons and progress are requested while the tree is still pending: no request cascade). Depends on vitest, Testing Library, msw and the learning test helpers.
-* Versión: 1.0
+* Descripción: Renders /learn/modules/[moduleId] against a mocked backend (msw): breadcrumb, backend module progress, lessons with per-lesson page progress and the "Continuar donde quedé" link; the lock screen with prerequisite links for students on a locked module; the preview mode for teachers (no lock screen); and the parallel loading (lessons and progress are requested while the tree is still pending: no request cascade); v1.1 (L3): no continue link when the module progress fails, and the module completion screen (?completed=1) with the backend progress and the next unlocked module or a link back to the section. Depends on vitest, Testing Library, msw and the learning test helpers.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,6 +16,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from
 import {
   apiUrl,
   envelope,
+  errorResponse,
   lessonDto,
   lessonProgressDto,
   moduleProgressDto,
@@ -110,6 +111,45 @@ describe("ModulePage", () => {
       expect([...requested].sort()).toEqual(["lessons", "progress", "tree"]);
     });
     expect(screen.getByRole("status")).toBeInTheDocument();
+  });
+
+  it("hides the continue link when the module progress fails", async() => {
+    let requestedProgress = 0;
+
+    server.use(http.get(apiUrl("/api/progress/modules/:moduleId"), () => {
+      requestedProgress += 1;
+
+      return errorResponse("common.internal_error", 500);
+    }));
+    renderWithSession(<ModulePage moduleId="m2" />);
+
+    expect(await screen.findByRole("list", { name: "Lecciones" })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(requestedProgress).toBeGreaterThan(0);
+    });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
+    expect(screen.queryByRole("link", { name: /Comenzar módulo|Continuar donde quedé|Repasar/ })).not.toBeInTheDocument();
+  });
+
+  it("shows the completion screen with the next unlocked module", async() => {
+    renderWithSession(<ModulePage moduleId="m2" completed />);
+
+    expect(await screen.findByRole("heading", { name: "¡Completaste el módulo!" })).toBeInTheDocument();
+    expect(await screen.findByRole("progressbar", { name: "Progreso de Módulo m2" })).toHaveAttribute("aria-valuenow", "50");
+    expect(screen.getByRole("link", { name: /Siguiente módulo: Módulo m9/ })).toHaveAttribute("href", "/learn/modules/m9");
+  });
+
+  it("links back to the section when there is no next module", async() => {
+    const tree = treeDto();
+
+    tree.unsectionedLevels = [];
+    server.use(http.get(apiUrl("/api/curriculum/tree"), () => HttpResponse.json(envelope(tree))));
+    renderWithSession(<ModulePage moduleId="m2" completed />);
+
+    expect(await screen.findByRole("heading", { name: "¡Completaste el módulo!" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Volver a la sección" })).toHaveAttribute("href", "/learn/s1");
   });
 
   it("says when the module is not available", async() => {
