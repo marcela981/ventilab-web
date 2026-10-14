@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LessonViewerPage
-* Descripción: Page viewer of /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]. Navigation state comes ONLY from the URL: pageNumber is the 1-based position of the backend Page inside its lesson (decision 1). Tree, module lessons and lesson Pages load in parallel; the Page content (`GET /api/pages/{id}`) is requested only once its id is known AND the module is visible for the user. An invalid pageNumber is replaced with Page 1, an out-of-range one with the last Page; an unknown module or a lesson outside the module is "not available". A student on a locked module (module or level locked in the curriculum tree) gets the lock screen with prerequisites; teachers/admins preview everything (PreviewNotice, no lock, no view registration). Breadcrumb Sección > Nivel > Módulo > Lección > Página. Previous/Next cross lesson boundaries (lesson-navigation entity); "Siguiente" registers the page view (fire-and-forget, also after 5 s) and navigates; after the last Page "Finalizar módulo" opens the module completion screen (/learn/modules/[moduleId]?completed=1). Side panel Notas | Profundizar | Preguntas with slots for L4-L6. Depends on next/router, next/head, @shared/design-system, the learning hooks, entities and components.
-* Versión: 1.0
+* Descripción: Page viewer of /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]. Navigation state comes ONLY from the URL: pageNumber is the 1-based position of the backend Page inside its lesson (decision 1). Tree, module lessons and lesson Pages load in parallel; the Page content (`GET /api/pages/{id}`) is requested only once its id is known AND the module is visible for the user. An invalid pageNumber is replaced with Page 1, an out-of-range one with the last Page; an unknown module or a lesson outside the module is "not available". A student on a locked module (module or level locked in the curriculum tree) gets the lock screen with prerequisites; teachers/admins preview everything (PreviewNotice, no lock, no view registration). Breadcrumb Sección > Nivel > Módulo > Lección > Página. Previous/Next cross lesson boundaries (lesson-navigation entity); "Siguiente" registers the page view (fire-and-forget, also after 5 s) and navigates; after the last Page "Finalizar módulo" opens the module completion screen (/learn/modules/[moduleId]?completed=1). Side panel Notas | Profundizar | Preguntas with slots for L4-L6. v1.1 (L4): the "Notas" slot defaults to LessonNotesPanel (the caller's own notes of the lesson, anchored to the visible Page, page numbers resolved with the lesson Pages already loaded here); `panels.notes` still overrides it. The panel is a lazy chunk (React.lazy + retryImport, design-system error boundary, list skeleton fallback) so its MUI dialog/form pieces, the rating widget and the note renderer stay out of the viewer's First Load JS; the Tiptap editor is a further lazy chunk loaded only when a note is created or edited. Depends on next/router, next/head, @shared/design-system, the learning hooks, entities and components.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,12 +13,14 @@ import MenuBookIcon from "@mui/icons-material/MenuBook";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { EmptyState } from "@shared/design-system/components/empty-state";
 import { ErrorState } from "@shared/design-system/components/error-state";
 import { PageHeader } from "@shared/design-system/components/page-header";
-import { CardSkeleton } from "@shared/design-system/components/skeleton";
+import { RouteErrorBoundary } from "@shared/design-system/components/route-error-boundary";
+import { CardSkeleton, ListSkeleton } from "@shared/design-system/components/skeleton";
 import { cx } from "@shared/lib/class-names";
+import { retryImport } from "@shared/lib/retry-import";
 import { LearningBreadcrumb } from "../components/learning-breadcrumb";
 import { LessonPageContent } from "../components/lesson-page-content";
 import { LessonPageNav } from "../components/lesson-page-nav";
@@ -48,6 +50,10 @@ import { usePreviewMode } from "../hooks/use-preview-mode";
 import learningStyles from "../../UI/learning.module.css";
 import styles from "../../UI/lesson-viewer.module.css";
 
+const LessonNotesPanel = lazy(() =>
+  retryImport(() => import("../components/notes/lesson-notes-panel")).then((module) => ({ default: module.LessonNotesPanel })),
+);
+
 // TODO(i18n): move to a learning namespace in src/i18n.
 const PAGE_COPY = {
   documentTitle: (title: string) => `${title} | VentyLab`,
@@ -61,6 +67,7 @@ const PAGE_COPY = {
   backModule: "Volver al módulo",
   loadErrorTitle: "No se pudo cargar la lección",
   pageOf: (page: number, total: number) => `Página ${page} de ${total}`,
+  loadingNotes: "Cargando tus notas…",
 } as const;
 
 export type LessonViewerPageProps = {
@@ -220,7 +227,16 @@ export function LessonViewerPage({ moduleId, lessonId, pageParam, panels }: Less
             />
             {visiblePage ? <LessonPageNav {...nav} onNext={handleNext} /> : null}
           </div>
-          <LessonSidePanel {...panels} />
+          <LessonSidePanel
+            {...panels}
+            notes={panels?.notes ?? (
+              <RouteErrorBoundary resetKey={lessonId}>
+                <Suspense fallback={<ListSkeleton label={PAGE_COPY.loadingNotes} />}>
+                  <LessonNotesPanel key={lessonId} moduleId={moduleId} lessonId={lessonId} currentPageId={visiblePage?.id ?? null} pages={pages} />
+                </Suspense>
+              </RouteErrorBoundary>
+            )}
+          />
         </div>
       </>
     );

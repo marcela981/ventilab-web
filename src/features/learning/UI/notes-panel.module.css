@@ -1,0 +1,174 @@
+/*
+* Funcionalidad: Notes panel styles
+* Descripción: Styles of the "Notas" tab of the lesson viewer: toolbar, list of saved notes (body, anchor page link or unknown-page hint, date, actions), the note composer with the lazy Tiptap editor (content area, placeholder of the empty paragraph, autosave status) and the AI analysis block (summary, lists). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+}
+
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+}
+
+.itemBody {
+  font: var(--mui-font-body2);
+  overflow-wrap: anywhere;
+}
+
+.itemFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.pageLink {
+  padding: 0 var(--vl-space-2);
+  border-radius: var(--vl-radius-pill);
+  background: var(--vl-color-selected);
+  color: var(--vl-color-link);
+  text-decoration: none;
+}
+
+.pageLink:hover {
+  text-decoration: underline;
+}
+
+.pageLink:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}
+
+.pageUnknown {
+  font-style: italic;
+}
+
+.time {
+  flex: 1;
+}
+
+.actions {
+  display: inline-flex;
+  gap: var(--vl-space-1);
+}
+
+.empty {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.composer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.editor {
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-surface);
+}
+
+.editor:focus-within {
+  border-color: var(--vl-color-primary);
+}
+
+.editorContent {
+  min-height: 6rem;
+  padding: var(--vl-space-2) var(--vl-space-3);
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text);
+  outline: none;
+}
+
+.editorContent :global(p.is-editor-empty:first-child)::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--vl-color-text-disabled);
+  pointer-events: none;
+}
+
+.composerFooter {
+  display: flex;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.saveStatus {
+  flex: 1;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.saveStatusError {
+  color: var(--vl-color-error);
+}
+
+.analysis {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding-top: var(--vl-space-3);
+  border-top: 1px solid var(--vl-color-border);
+}
+
+.analysisResult {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.sectionTitle {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+}
+
+.summary {
+  margin: 0;
+  font: var(--mui-font-body2);
+}
+
+.analysisHeading {
+  margin: 0;
+  font: var(--mui-font-subtitle2);
+}
+
+.analysisList {
+  margin: 0;
+  padding-left: var(--vl-space-4);
+  font: var(--mui-font-body2);
+}

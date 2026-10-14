@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LessonViewerPage tests
-* Descripción: Renders /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber] against a mocked backend (msw) with a mocked next/router: blocks of Page N with the breadcrumb and Previous link; lock screen for a student on a locked module (the Page content is never requested) and the content in preview for a teacher; "Siguiente" registers the view once and navigates to the next lesson; "Finalizar módulo" goes to the completion screen; an invalid or out-of-range pageNumber redirects; a lesson outside the module is not found; the side panel tabs and its persisted collapsed state. Depends on vitest, Testing Library, msw and the learning test helpers.
-* Versión: 1.0
+* Descripción: Renders /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber] against a mocked backend (msw) with a mocked next/router: blocks of Page N with the breadcrumb and Previous link; lock screen for a student on a locked module (the Page content is never requested) and the content in preview for a teacher; "Siguiente" registers the view once and navigates to the next lesson; "Finalizar módulo" goes to the completion screen; an invalid or out-of-range pageNumber redirects; a lesson outside the module is not found; the side panel tabs and its persisted collapsed state. v1.1 (L4): the Notas tab shows the caller's notes of the lesson with the anchor page link. Depends on vitest, Testing Library, msw and the learning test helpers.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -82,6 +82,9 @@ beforeEach(() => {
       }));
     }),
     http.get(apiUrl("/api/progress/*"), () => HttpResponse.json(envelope(null), { status: 404 })),
+    http.get(apiUrl("/api/notes/lessons/:lessonId"), ({ params }) => HttpResponse.json(envelope(params.lessonId === "l1"
+      ? [{ id: "n1", lessonId: "l1", pageId: "p1b", content: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Mi nota" }] }] }, createdAt: "2026-10-14T00:00:00.000Z", updatedAt: "2026-10-14T00:00:00.000Z" }]
+      : []))),
   );
 });
 
@@ -194,5 +197,12 @@ describe("LessonViewerPage", { timeout: 20_000 }, () => {
     expect(window.localStorage.getItem("vl-learning-side-panel-collapsed")).toBe("1");
     fireEvent.click(screen.getByRole("button", { name: "Mostrar panel" }));
     expect(screen.getByRole("tab", { name: "Notas" })).toBeInTheDocument();
+  });
+
+  it("shows the caller's notes of the lesson in the Notas tab with the anchor page link", async() => {
+    renderWithSession(<LessonViewerPage moduleId="m2" lessonId="l1" pageParam="1" />);
+
+    expect(await screen.findByText("Mi nota", {}, LAZY_WAIT)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Ir a la página 2" })).toHaveAttribute("href", "/learn/modules/m2/lessons/l1/2");
   });
 });
