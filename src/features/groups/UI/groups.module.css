@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Groups list styles
-* Descripción: Layout of the staff group list (/groups): page column, filter bar (wraps on small screens, search grows), results card with the scrollable table and pagination, name and parent lines of the row header, and a visible focus ring for keyboard users inside the filters and pagination. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
-* Versión: 1.0
+* Descripción: Layout of the staff group list (/groups): page column, filter bar (wraps on small screens, search grows), results card with the scrollable table and pagination, name and parent lines of the row header (v1.1: the name is a link to the detail, in the AA link color), and a visible focus ring for keyboard users inside the filters and pagination. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -52,6 +52,16 @@
   color: var(--vl-color-text);
 }
 
+.groupLink {
+  color: var(--vl-color-link);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.groupLink:hover {
+  text-decoration-thickness: 2px;
+}
+
 .secondary {
   display: block;
   font: var(--mui-font-body2);
@@ -59,7 +69,8 @@
 }
 
 .filters :focus-visible,
-.results :focus-visible {
+.results :focus-visible,
+.headerActions :focus-visible {
   outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
   outline-offset: var(--vl-focus-ring-offset);
 }

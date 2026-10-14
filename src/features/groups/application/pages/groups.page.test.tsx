@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GroupsPage tests
-* Descripción: Renders the staff group list against a mocked backend (`GET /api/groups`, msw): client-side pagination (10 per page), the text, type and status filters (which return to the first page), the no-match and no-groups empty states and the 403 error. Depends on vitest, Testing Library, msw, SWR and the groups feature.
-* Versión: 1.0
+* Descripción: Renders the staff group list against a mocked backend (`GET /api/groups`, msw): client-side pagination (10 per page), the text, type and status filters (which return to the first page), the no-match and no-groups empty states and the 403 error. v1.1 (T11b): the filter-reset test now proves the return to page 1 with a result that still spans several pages; group names link to the detail; "Crear grupo" creates a student group (validation, POST body, refreshed list, 403 message). Depends on vitest, Testing Library, msw, SWR and the groups feature.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,7 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { SWRConfig } from "swr";
@@ -101,11 +101,10 @@ describe("GroupsPage", () => {
     expect(await groupNames()).toEqual(["Docentes UCI", "Neumología"]);
   });
 
-  it("filters by text, type and status and returns to the first page", async() => {
+  it("filters by text, type and status", async() => {
     respondWith(twelveGroups);
     renderPage();
     await groupNames();
-    fireEvent.click(screen.getByRole("button", { name: "Página siguiente" }));
 
     fireEvent.change(screen.getByLabelText("Buscar"), { target: { value: "gomez" } });
     expect(await groupNames()).toEqual(["Neumología"]);
@@ -118,6 +117,83 @@ describe("GroupsPage", () => {
     fireEvent.change(screen.getByLabelText("Tipo"), { target: { value: "all" } });
     fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "inactive" } });
     expect(await groupNames()).toEqual(["Neumología"]);
+  });
+
+  it("returns to the first page when a filter changes", async() => {
+    respondWith(twelveGroups);
+    renderPage();
+    await groupNames();
+    fireEvent.click(screen.getByRole("button", { name: "Página siguiente" }));
+    expect(await groupNames()).toEqual(["Docentes UCI", "Neumología"]);
+
+    // 11 student groups still span two pages: without the reset, page 2 ("11–11 de 11") would stay.
+    fireEvent.change(screen.getByLabelText("Tipo"), { target: { value: "STUDENT" } });
+
+    expect(screen.getByText("1–10 de 11")).toBeInTheDocument();
+    expect(await groupNames()).toHaveLength(10);
+    expect((await groupNames())[0]).toBe("Grupo 01");
+  });
+
+  it("links every group name to its detail page", async() => {
+    respondWith(twelveGroups);
+    renderPage();
+    await groupNames();
+
+    expect(screen.getByRole("link", { name: "Grupo 01" })).toHaveAttribute("href", "/groups/g1");
+  });
+
+  it("creates a student group from the dialog and refreshes the list", async() => {
+    const bodies: unknown[] = [];
+    let listed = twelveGroups;
+
+    server.use(
+      http.get(GROUPS_URL, () => HttpResponse.json(envelope(listed))),
+      http.post(GROUPS_URL, async({ request }) => {
+        bodies.push(await request.json());
+        listed = [...twelveGroups, groupDto(13, { name: "Aaa nuevo" })];
+
+        return HttpResponse.json(envelope({ id: "g13" }));
+      }),
+    );
+    renderPage();
+    await groupNames();
+    fireEvent.click(screen.getByRole("button", { name: "Crear grupo" }));
+
+    const dialog = await screen.findByRole("dialog", { name: "Crear grupo de estudiantes" });
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Crear grupo" }));
+    expect(await within(dialog).findByText("Escribe el nombre del grupo.")).toBeInTheDocument();
+
+    fireEvent.change(within(dialog).getByLabelText(/Nombre del grupo/), { target: { value: " Aaa nuevo " } });
+    fireEvent.change(within(dialog).getByLabelText("Límite de estudiantes"), { target: { value: "12.5" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Crear grupo" }));
+    expect(await within(dialog).findByText("El límite de estudiantes debe ser un número entero mayor que 0.")).toBeInTheDocument();
+    expect(bodies).toHaveLength(0);
+
+    fireEvent.change(within(dialog).getByLabelText("Límite de estudiantes"), { target: { value: "20" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Crear grupo" }));
+
+    expect(await screen.findByText("Grupo «Aaa nuevo» creado.")).toBeInTheDocument();
+    expect(bodies).toEqual([{ name: "Aaa nuevo", maxStudents: 20, type: "STUDENT" }]);
+    await waitFor(() => expect(screen.getByText("1–10 de 13")).toBeInTheDocument());
+  });
+
+  it("shows the permission message when the creation is forbidden", async() => {
+    respondWith(twelveGroups);
+    server.use(http.post(GROUPS_URL, () => HttpResponse.json(
+      { success: false, message: "Forbidden", data: null, code: "groups.type_creation_forbidden", timestamp: "", traceId: "t", pagination: null },
+      { status: 403 },
+    )));
+    renderPage();
+    await groupNames();
+    fireEvent.click(screen.getByRole("button", { name: "Crear grupo" }));
+
+    const dialog = await screen.findByRole("dialog");
+
+    fireEvent.change(within(dialog).getByLabelText(/Nombre del grupo/), { target: { value: "UCI" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Crear grupo" }));
+
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent("No tienes permiso para crear este tipo de grupo.");
   });
 
   it("shows the row data of a group", async() => {

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GroupsTable
-* Descripción: Table of one page of groups (caption "Grupos"): name as row header with the parent group of a subgroup, type, active state chip, member count (with the student limit), simulator leader and academic period. The name is plain text until the group detail route exists (slice B adds /groups/[groupId]). Depends on MUI, the group entity and the groups CSS Module.
-* Versión: 1.0
+* Descripción: Table of one page of groups (caption "Grupos"): name as row header with the parent group of a subgroup, type, active state chip, member count (with the student limit), simulator leader and academic period. v1.1 (T11b): the name links to the group detail (/groups/[groupId]). Depends on next/link, MUI, the group entity and the groups CSS Module.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,6 +16,7 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import Link from "next/link";
 import { cx } from "@shared/lib/class-names";
 import { GROUP_TYPE_LABELS, personName } from "../entities/group.entity";
 import type { Group } from "../entities/group.entity";
@@ -68,7 +69,9 @@ export function GroupsTable({ groups }: GroupsTableProps) {
           {groups.map((group) => (
             <TableRow key={group.id}>
               <TableCell component="th" scope="row">
-                <span className={styles.groupName}>{group.name}</span>
+                <Link href={`/groups/${encodeURIComponent(group.id)}`} className={cx(styles.groupName, styles.groupLink)}>
+                  {group.name}
+                </Link>
                 {group.parentGroupName ? (
                   <span className={styles.secondary}>{`${TABLE_COPY.subgroupOf} ${group.parentGroupName}`}</span>
                 ) : null}

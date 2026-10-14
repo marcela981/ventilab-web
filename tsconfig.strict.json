@@ -36,6 +36,7 @@
     "pages/auth/login/index.tsx",
     "pages/profile/index.tsx",
     "pages/my-group/index.tsx",
-    "pages/groups/index.tsx"
+    "pages/groups/index.tsx",
+    "pages/groups/[groupId].tsx"
   ]
 }

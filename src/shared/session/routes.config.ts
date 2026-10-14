@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Route table
-* Descripción: Typed route table keyed by Next pathname pattern (`access: public | authenticated`, optional `roles`), the login path, the default landing route per role and an open-redirect safe `returnTo` helper that only accepts same-origin relative paths outside `/auth/`. The table lists the current pages as data; legacy pages keep their own guards. v1.1 (T9 follow-up): isPathAllowedForRole checks a concrete path (dynamic segments, query/hash ignored, static routes first) against the table, and resolvePostLoginRoute falls back to the role home when the returnTo route is not allowed for the role (the target page would bounce the user). v1.2 (T11a): /my-group (STUDENT only) and /groups (TEACHER, ADMIN) of the groups feature. Depends on session entities.
-* Versión: 1.2
+* Descripción: Typed route table keyed by Next pathname pattern (`access: public | authenticated`, optional `roles`), the login path, the default landing route per role and an open-redirect safe `returnTo` helper that only accepts same-origin relative paths outside `/auth/`. The table lists the current pages as data; legacy pages keep their own guards. v1.1 (T9 follow-up): isPathAllowedForRole checks a concrete path (dynamic segments, query/hash ignored, static routes first) against the table, and resolvePostLoginRoute falls back to the role home when the returnTo route is not allowed for the role (the target page would bounce the user). v1.2 (T11a): /my-group (STUDENT only) and /groups (TEACHER, ADMIN) of the groups feature. v1.3 (T11b): /groups/[groupId] (TEACHER, ADMIN). Depends on session entities.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -37,6 +37,7 @@ export const ROUTES = {
   "/profile": { access: "authenticated" },
   "/my-group": { access: "authenticated", roles: STUDENT_ONLY },
   "/groups": { access: "authenticated", roles: STAFF },
+  "/groups/[groupId]": { access: "authenticated", roles: STAFF },
   "/achievements": { access: "authenticated" },
   "/flashcards": { access: "authenticated" },
   "/search": { access: "authenticated" },

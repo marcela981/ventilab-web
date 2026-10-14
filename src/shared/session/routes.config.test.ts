@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Route table tests
-* Descripción: Open-redirect safety of the returnTo helper (rejects protocol-relative, absolute, javascript: and auth-page targets), login URL building, route lookup by Next pathname pattern and the default landing route per role. v1.1 (T9 follow-up): role access of concrete paths (dynamic segments, query strings) and the post-login fallback to the role home when the returnTo route is not allowed for the role. v1.2 (T11a): /my-group is student-only and /groups is staff-only. Depends on vitest and routes.config.
-* Versión: 1.2
+* Descripción: Open-redirect safety of the returnTo helper (rejects protocol-relative, absolute, javascript: and auth-page targets), login URL building, route lookup by Next pathname pattern and the default landing route per role. v1.1 (T9 follow-up): role access of concrete paths (dynamic segments, query strings) and the post-login fallback to the role home when the returnTo route is not allowed for the role. v1.2 (T11a): /my-group is student-only and /groups is staff-only. v1.3 (T11b): /groups/[groupId] is staff-only. Depends on vitest and routes.config.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -105,6 +105,13 @@ describe("findRoute", () => {
     expect(isPathAllowedForRole("/my-group", "TEACHER")).toBe(false);
     expect(isPathAllowedForRole("/groups?type=STUDENT", "STUDENT")).toBe(false);
     expect(isPathAllowedForRole("/groups", "ADMIN")).toBe(true);
+  });
+
+  it("restricts the group detail to teachers and admins", () => {
+    expect(findRoute("/groups/[groupId]")).toMatchObject({ access: "authenticated", roles: ["TEACHER", "ADMIN"] });
+    expect(isPathAllowedForRole("/groups/g1", "TEACHER")).toBe(true);
+    expect(isPathAllowedForRole("/groups/g1?tab=members", "ADMIN")).toBe(true);
+    expect(isPathAllowedForRole("/groups/g1", "STUDENT")).toBe(false);
   });
 
   it("returns null for unknown paths", () => {

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Groups mappers
-* Descripción: Maps the backend group DTOs to the groups entities (Group with the parent name flattened, GroupDetail with members, the student's own group, supervisions, member options from UserDTO) and builds the request bodies of the group form: create (trimmed values, empty optionals omitted, student limit parsed, optional parent group) and update (only the changed fields; an emptied optional or limit is sent as null, which the contract uses to clear it). Depends on the groups DTOs and entities.
-* Versión: 1.0
+* Descripción: Maps the backend group DTOs to the groups entities (Group with the parent name flattened, GroupDetail with members, the student's own group, supervisions, member options from UserDTO) and builds the request bodies of the group form: create (trimmed values, empty optionals omitted, student limit parsed, optional parent group) and update (only the changed fields; an emptied optional or limit is sent as null, which the contract uses to clear it). v1.1 (T11b review fix): the student limit goes through parseStudentLimit, so an invalid value (not a positive integer) is never sent, and an unchanged limit is not sent on update; the form shows the field error before submitting. Depends on the groups DTOs and entities.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,6 +19,7 @@ import type {
   MyGroups,
   UserOption,
 } from "../../application/entities/group.entity";
+import { parseStudentLimit } from "../../application/entities/group.entity";
 import type {
   CreateGroupRequestDTO,
   GroupDetailDTO,
@@ -104,12 +105,6 @@ export function toUserOption(user: UserDTO): UserOption {
   return { id: user.id, name: user.name, email: user.email, role: user.role };
 }
 
-function parseLimit(value: string): number | null {
-  const trimmed = value.trim();
-
-  return trimmed === "" ? null : Number(trimmed);
-}
-
 export function toCreateGroupRequest(draft: GroupDraft, parentGroupId?: string): CreateGroupRequestDTO {
   const request: CreateGroupRequestDTO = { name: draft.name.trim(), type: draft.type };
   const optionalText = { description: draft.description, semester: draft.semester, academicYear: draft.academicYear };
@@ -120,10 +115,10 @@ export function toCreateGroupRequest(draft: GroupDraft, parentGroupId?: string):
     }
   }
 
-  const maxStudents = parseLimit(draft.maxStudents);
+  const limit = parseStudentLimit(draft.maxStudents);
 
-  if (maxStudents !== null) {
-    request.maxStudents = maxStudents;
+  if (limit.valid && limit.value !== null) {
+    request.maxStudents = limit.value;
   }
 
   if (parentGroupId) {
@@ -151,10 +146,10 @@ export function toUpdateGroupRequest(draft: GroupDraft, group: Group): UpdateGro
     }
   }
 
-  const maxStudents = parseLimit(draft.maxStudents);
+  const limit = parseStudentLimit(draft.maxStudents);
 
-  if (maxStudents !== group.maxStudents) {
-    request.maxStudents = maxStudents;
+  if (limit.valid && limit.value !== group.maxStudents) {
+    request.maxStudents = limit.value;
   }
 
   return request;

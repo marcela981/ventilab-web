@@ -12,7 +12,10 @@
  *   v3.2 (T10): pages/profile/index.tsx entra en NEW_PAGE_FILES; profile/ ya no tiene
  *   legacy (eliminado en T10), así que toda la carpeta es código nuevo, como groups/.
  *   v3.3 (T11a): pages/my-group/index.tsx y pages/groups/index.tsx entran en NEW_PAGE_FILES.
- * Versión: 3.3
+ *   v3.4 (T11b): pages/groups/[groupId].tsx entra en NEW_PAGE_FILES como `[[]groupId[]]`:
+ *   en un glob `[groupId]` sería una clase de caracteres y el escape con `\[` no coincide
+ *   en Windows; las clases `[[]` y `[]]` sí coinciden con los corchetes literales.
+ * Versión: 3.4
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -44,6 +47,7 @@ const NEW_PAGE_FILES = [
   "pages/profile/index.tsx",
   "pages/my-group/index.tsx",
   "pages/groups/index.tsx",
+  "pages/groups/[[]groupId[]].tsx",
 ];
 
 const NEW_CODE_FILES = [

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Groups mapper tests
 * Descripción: Verifies the mapping of the backend group DTOs (GroupDTO, GroupDetailDTO, MyGroupsDTO, GroupSupervisionDTO, UserDTO) to the groups entities, and the create/update request bodies built from a group draft (trimmed values, omitted empty optionals on create, only changed fields with null to clear on update). Depends on vitest and the groups mappers.
-* Versión: 1.0
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -198,5 +198,23 @@ describe("toUpdateGroupRequest", () => {
       academicYear: null,
       maxStudents: null,
     });
+  });
+});
+
+describe("student limit parsing (T11b review fix)", () => {
+  it.each(["abc", "12.5", "0", "-3"])("never sends an invalid limit %j when creating", (maxStudents) => {
+    expect(toCreateGroupRequest({ ...draft, maxStudents })).not.toHaveProperty("maxStudents");
+  });
+
+  it.each(["abc", "12.5", "0", "-3"])("never sends an invalid limit %j when updating", (maxStudents) => {
+    expect(toUpdateGroupRequest({ ...draft, name: "UCI Mañana", description: "Rotación de la mañana", academicYear: "2026", maxStudents }, group))
+      .toEqual({});
+  });
+
+  it("does not send an unchanged limit and sends a changed one", () => {
+    const unchanged = { ...draft, name: "UCI Mañana", description: "Rotación de la mañana", academicYear: "2026" };
+
+    expect(toUpdateGroupRequest({ ...unchanged, maxStudents: " 12 " }, group)).toEqual({});
+    expect(toUpdateGroupRequest({ ...unchanged, maxStudents: "20" }, group)).toEqual({ maxStudents: 20 });
   });
 });
