@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GroupDetailPage tests
-* Descripción: Renders the group detail page against a mocked backend (msw): group facts and members, the read-only view of a teacher group for a teacher, edit with only the changed fields and the student limit validation, the member search (STUDENT role, current members excluded), add member (success and the 409/422 messages), remove member and assign leader behind a confirmation (with the previous leader text), deactivate (PATCH isActive=false), the 403 message and a missing group. v1.1 (T11c): reactivate, a rejected edit (error inside the open dialog), an edit without changes (no request), an admin managing a teacher group (teacher search, no leader), the supervisions panel (list, add excluding supervised and teacher groups, remove after a confirmation, 403) and its absence for teachers. v1.2 (T6b): the supervisions list is refetched after an add or a remove (the added group leaves the select and the selection clears; GROUP_SUPERVISIONS_PATH is one of the invalidated keys), the error-with-retry states of the supervisions and student-groups reads, and zero supervisions requests for a teacher (counted). Depends on vitest, Testing Library, msw and the groups feature.
-* Versión: 1.2
+* Descripción: Renders the group detail page against a mocked backend (msw): group facts and members, the read-only view of a teacher group for a teacher, edit with only the changed fields and the student limit validation, the member search (STUDENT role, current members excluded), add member (success and the 409/422 messages), remove member and assign leader behind a confirmation (with the previous leader text), deactivate (PATCH isActive=false), the 403 message and a missing group. v1.1 (T11c): reactivate, a rejected edit (error inside the open dialog), an edit without changes (no request), an admin managing a teacher group (teacher search, no leader), the supervisions panel (list, add excluding supervised and teacher groups, remove after a confirmation, 403) and its absence for teachers. v1.2 (T6b): the supervisions list is refetched after an add or a remove (the added group leaves the select and the selection clears; GROUP_SUPERVISIONS_PATH is one of the invalidated keys), the error-with-retry states of the supervisions and student-groups reads, and zero supervisions requests for a teacher (counted). v1.3 (T12): the duplicate zero-supervisions test and its fixed wait were removed (the remaining one counts after the read-only view rendered) and request handlers read their own body. Depends on vitest, Testing Library, msw and the groups feature.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -49,11 +49,15 @@ function studentGroup(overrides: Record<string, unknown> = {}): Detail {
   };
 }
 
-async function record(request: Request) {
+// Records the request and returns its parsed body, so a handler reads its own body (not the last recorded one).
+async function record(request: Request): Promise<unknown> {
   const url = new URL(request.url);
   const text = await request.text();
+  const body: unknown = text ? JSON.parse(text) : null;
 
-  requests.push({ method: request.method, path: url.pathname, body: text ? JSON.parse(text) : null, search: url.search });
+  requests.push({ method: request.method, path: url.pathname, body, search: url.search });
+
+  return body;
 }
 
 function useDefaultHandlers() {
@@ -100,9 +104,7 @@ function useDefaultHandlers() {
       groupDto(4, { type: "TEACHER", name: "Docentes Neumología" }),
     ]))),
     http.post(apiUrl("/api/groups/g1/supervisions"), async({ request }) => {
-      await record(request);
-
-      const { studentGroupId } = requests[requests.length - 1]?.body as { studentGroupId: string };
+      const { studentGroupId } = (await record(request)) as { studentGroupId: string };
       const studentGroup = STUDENT_GROUPS[studentGroupId];
 
       if (studentGroup) {
@@ -396,6 +398,8 @@ describe("GroupDetailPage", () => {
     const { unmount } = renderWithSession(<GroupDetailPage groupId="g1" />, "TEACHER");
 
     await screen.findByRole("heading", { level: 1, name: "Docentes UCI" });
+    // Counted once the page settled on its read-only view (a supervisions read would start in that same render).
+    await screen.findByText(/Solo lectura/);
     expect(screen.queryByRole("region", { name: "Grupos supervisados" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Buscar docente")).not.toBeInTheDocument();
     expect(supervisionReads).toBe(0);
@@ -404,18 +408,6 @@ describe("GroupDetailPage", () => {
     detail = studentGroup();
     await renderDetail("ADMIN");
     expect(screen.queryByRole("region", { name: "Grupos supervisados" })).not.toBeInTheDocument();
-  });
-
-  it("makes zero supervisions requests for a teacher", async() => {
-    detail = teacherGroup();
-    await renderDetail("TEACHER");
-    // Let any request triggered on mount reach the handlers before counting.
-    await waitFor(() => expect(detailReads).toBeGreaterThan(0));
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50);
-    });
-
-    expect(supervisionReads).toBe(0);
   });
 
   it("refetches the supervisions after adding one: the group leaves the select and the selection clears", async() => {

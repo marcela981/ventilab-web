@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: FormField, AsyncButton and skeleton tests
-* Descripción: Verifies FormField (visible label, required marker, id-linked helper and error text, aria-invalid from an entity validator string), AsyncButton (spinner and aria-busy while `loading` or while the Promise returned by onClick is pending, disabled meanwhile, accessible name preserved) and the list/card skeleton presets (hidden from assistive technology inside a busy status region). Depends on vitest and Testing Library.
-* Versión: 1.0
+* Descripción: Verifies FormField (visible label, required marker, id-linked helper and error text, aria-invalid from an entity validator string), AsyncButton (spinner and aria-busy while `loading` or while the Promise returned by onClick is pending, disabled meanwhile, accessible name preserved; a rejected onClick promise re-enables it without an unhandled rejection) and the list/card skeleton presets (hidden from assistive technology inside a busy status region). Depends on vitest and Testing Library.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -83,6 +83,34 @@ describe("AsyncButton", () => {
 
     expect(screen.getByRole("button", { name: "Agregar" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Agregar" })).toHaveAttribute("aria-busy", "false");
+  });
+
+  it("leaves the busy state after a rejected onClick promise without an unhandled rejection", async() => {
+    const unhandled = vi.fn();
+    let fail: (reason: Error) => void = () => {};
+    const onClick = vi.fn(() => new Promise<void>((_resolve, reject) => {
+      fail = reject;
+    }));
+
+    process.on("unhandledRejection", unhandled);
+
+    try {
+      render(<AsyncButton onClick={onClick}>Quitar</AsyncButton>);
+      fireEvent.click(screen.getByRole("button", { name: "Quitar" }));
+      expect(screen.getByRole("button", { name: "Quitar" })).toBeDisabled();
+
+      await act(async() => {
+        fail(new Error("Fallo del servidor"));
+      });
+      // Unhandled rejections are reported after the microtask queue drains.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(screen.getByRole("button", { name: "Quitar" })).toBeEnabled();
+      expect(screen.getByRole("button", { name: "Quitar" })).toHaveAttribute("aria-busy", "false");
+      expect(unhandled).not.toHaveBeenCalled();
+    } finally {
+      process.off("unhandledRejection", unhandled);
+    }
   });
 
   it("does not become busy for a synchronous onClick and respects disabled", () => {

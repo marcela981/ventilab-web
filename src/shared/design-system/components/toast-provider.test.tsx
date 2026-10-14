@@ -1,7 +1,7 @@
-﻿/*
+/*
 * Funcionalidad: Global toast tests
-* Descripción: Verifies the ToastProvider + useToast pair: success and info toasts are polite status messages that hide after 6 s, error toasts are alerts that stay until closed, only one toast is visible at a time and queued toasts follow in order, a custom auto-hide duration, and useToast outside the provider throws. Depends on vitest, Testing Library and MUI.
-* Versión: 1.0
+* Descripción: Verifies the ToastProvider + useToast pair: success and info toasts are polite status messages that hide after 6 s, error toasts are alerts that stay until closed, only one toast is visible at a time and queued toasts follow in order, a new toast replaces a visible error instead of waiting behind it, the pending queue keeps only the latest 3 messages, a custom auto-hide duration, and useToast outside the provider throws. Depends on vitest, Testing Library and MUI.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -104,17 +104,65 @@ describe("ToastProvider", () => {
     renderProvider();
 
     act(() => {
-      toast.error("Primero");
-      toast.success("Segundo");
+      toast.success("Primero", { autoHideMs: null });
+      toast.info("Segundo");
     });
 
-    expect(screen.getByRole("alert")).toHaveTextContent("Primero");
+    expect(screen.getByRole("status")).toHaveTextContent("Primero");
     expect(screen.queryByText("Segundo")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /close|cerrar/i }));
 
-    expect(await screen.findByRole("status")).toHaveTextContent("Segundo");
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Segundo"));
     expect(screen.queryByText("Primero")).not.toBeInTheDocument();
+  });
+
+  it("replaces a visible error with the newest toast instead of queueing behind it", async() => {
+    renderProvider();
+
+    act(() => toast.error("No se pudo guardar."));
+    expect(screen.getByRole("alert")).toHaveTextContent("No se pudo guardar.");
+
+    act(() => toast.success("Integrante agregado."));
+
+    expect(await screen.findByRole("status")).toHaveTextContent("Integrante agregado.");
+    await waitFor(() => expect(screen.queryByText("No se pudo guardar.")).not.toBeInTheDocument());
+  });
+
+  it("replaces a visible error with a newer error, which keeps role alert", async() => {
+    renderProvider();
+
+    act(() => toast.error("Primer error"));
+    act(() => toast.error("Segundo error"));
+
+    await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Segundo error"));
+    expect(screen.queryByText("Primer error")).not.toBeInTheDocument();
+  });
+
+  it("keeps only the latest 3 pending toasts behind the visible one", async() => {
+    renderProvider();
+
+    act(() => {
+      toast.success("Visible", { autoHideMs: null });
+      toast.info("Uno", { autoHideMs: null });
+      toast.info("Dos", { autoHideMs: null });
+      toast.info("Tres", { autoHideMs: null });
+      toast.info("Cuatro", { autoHideMs: null });
+      toast.info("Cinco", { autoHideMs: null });
+    });
+
+    const shown: string[] = [];
+
+    for (let step = 0; step < 4; step += 1) {
+      const status = await screen.findByRole("status");
+
+      shown.push(status.textContent ?? "");
+      fireEvent.click(screen.getByRole("button", { name: /close|cerrar/i }));
+      await waitFor(() => expect(screen.queryByText(shown[step] ?? "")).not.toBeInTheDocument());
+    }
+
+    expect(shown).toEqual(["Visible", "Tres", "Cuatro", "Cinco"]);
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
   it("fails fast when useToast is used outside the provider", () => {

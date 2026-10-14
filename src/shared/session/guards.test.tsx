@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Route guard tests
-* Descripción: RequireAuth and RequireRole behavior with a mocked Next router: neutral loading state without protected content, redirect to the login page with a safe returnTo, redirect of a wrong role to its landing route, a single redirect when the session expires twice, and a clean login (no returnTo) after a voluntary sign-out. Depends on vitest, Testing Library, next/router (mocked) and the session modules.
-* Versión: 1.1
+* Descripción: RequireAuth and RequireRole behavior with a mocked Next router: neutral loading state without protected content, redirect to the login page with a safe returnTo, redirect of a wrong role to its landing route, a single redirect when the session expires twice, and a clean login (no returnTo) after a voluntary sign-out. v1.2 (T12): end to end, a failed token refresh (real api-client, 401 then refresh 401) clears both tokens, hides the content and redirects to the login page with returnTo; a student on a teacher route (the /groups roles of the route table) goes to the student home. Depends on vitest, Testing Library, next/router (mocked) and the session modules.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,13 +14,14 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import type { ReactNode } from "react";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { apiGet } from "@shared/api-client/api-request";
 import { emitAuthEvent } from "@shared/api-client/auth-events";
-import { saveTokens } from "@shared/api-client/token-storage";
+import { getAccessToken, getRefreshToken, saveTokens } from "@shared/api-client/token-storage";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
 import { AuthProvider } from "./auth-provider";
 import { RequireAuth } from "./require-auth";
 import { RequireRole } from "./require-role";
-import { DEFAULT_ROUTE_BY_ROLE, LOGIN_PATH } from "./routes.config";
+import { DEFAULT_ROUTE_BY_ROLE, LOGIN_PATH, ROUTES } from "./routes.config";
 import type { Role, SessionStatus } from "./session.entity";
 import { SessionContext } from "./session-context";
 import type { SessionContextValue } from "./session-context";
@@ -142,6 +143,44 @@ describe("RequireAuth", () => {
     expect(router.replace).toHaveBeenCalledTimes(1);
   });
 
+  it("logs out and redirects to the login page with returnTo when the token refresh fails", async() => {
+    let refreshCalls = 0;
+
+    server.use(
+      http.get(`${BACKEND_ORIGIN}/api/groups`, () => HttpResponse.json(
+        { success: false, message: "Token expired", data: null, code: "auth.token_expired", timestamp: "", traceId: "t", pagination: null },
+        { status: 401 },
+      )),
+      http.post(`${BACKEND_ORIGIN}/api/auth/refresh`, () => {
+        refreshCalls += 1;
+
+        return HttpResponse.json(
+          { success: false, message: "Refresh token expired", data: null, code: "auth.refresh_token_expired", timestamp: "", traceId: "t", pagination: null },
+          { status: 401 },
+        );
+      }),
+    );
+    saveTokens("access-1", "refresh-1");
+    render(
+      <AuthProvider>
+        <RequireAuth>{protectedContent}</RequireAuth>
+      </AuthProvider>,
+    );
+
+    expect(await screen.findByText("Contenido protegido")).toBeInTheDocument();
+
+    await act(async() => {
+      await expect(apiGet("/api/groups")).rejects.toMatchObject({ status: 401 });
+    });
+
+    expect(refreshCalls).toBe(1);
+    expect(getAccessToken()).toBeNull();
+    expect(getRefreshToken()).toBeNull();
+    expect(screen.queryByText("Contenido protegido")).not.toBeInTheDocument();
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/auth/login?returnTo=%2Fteaching%2Fm1%2Fl2%3Ftab%3Dquiz"));
+    expect(router.replace).toHaveBeenCalledTimes(1);
+  });
+
   it("sends a voluntary sign-out to a clean login without returnTo", async() => {
     server.use(http.post(`${BACKEND_ORIGIN}/api/auth/logout`, () => new HttpResponse(null, { status: 204 })));
     saveTokens("access-1", "refresh-1");
@@ -222,6 +261,14 @@ describe("RequireRole", () => {
     expect(screen.queryByText("Contenido protegido")).not.toBeInTheDocument();
     expect(router.replace).toHaveBeenCalledTimes(1);
     expect(router.replace).toHaveBeenCalledWith(DEFAULT_ROUTE_BY_ROLE.STUDENT);
+  });
+
+  it("redirects a student on a teacher route to the student home", () => {
+    renderWith(sessionValue("authenticated", "STUDENT"), <RequireRole roles={ROUTES["/groups"].roles}>{protectedContent}</RequireRole>);
+
+    expect(screen.queryByText("Contenido protegido")).not.toBeInTheDocument();
+    expect(router.replace).toHaveBeenCalledTimes(1);
+    expect(router.replace).toHaveBeenCalledWith("/dashboard");
   });
 
   it("sends an unauthenticated visitor to the login page", () => {

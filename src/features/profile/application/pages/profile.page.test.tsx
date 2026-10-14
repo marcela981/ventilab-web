@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Profile page tests
-* Descripción: Integration tests of the profile page with the real backend session (AuthProvider), an isolated SWR cache and MSW: role, email and account status are shown read-only; name and avatar edits PATCH /api/users/me with only the changed fields and then refresh the session user (/api/auth/me) so the shell shows the new name; an avatar URL that is not http(s) is blocked before any request; backend validation messages land on their field; 403, 429 (Retry-After) and network failures show clear Spanish messages; the avatar preview falls back to initials. Depends on vitest, Testing Library, MSW and SWR.
-* Versión: 1.0
+* Descripción: Integration tests of the profile page with the real backend session (AuthProvider), an isolated SWR cache and MSW: role, email and account status are shown read-only; name and avatar edits PATCH /api/users/me with only the changed fields and then refresh the session user (/api/auth/me); v1.1 (T12): while a save is pending "Guardar cambios" keeps its label, is disabled and aria-busy with a spinner (no "Guardando…" text) so the shell shows the new name; an avatar URL that is not http(s) is blocked before any request; backend validation messages land on their field; 403, 429 (Retry-After) and network failures show clear Spanish messages; the avatar preview falls back to initials. Depends on vitest, Testing Library, MSW and SWR.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -175,6 +175,33 @@ describe("ProfilePage editing", () => {
     expect(patchBodies).toEqual([{ name: "Ana María Torres" }]);
     await waitFor(() => expect(meCalls).toBe(2));
     await waitFor(() => expect(screen.getByLabelText("Usuario de la sesión")).toHaveTextContent("Ana María Torres"));
+  });
+
+  it("keeps the save label and shows a busy spinner while the save is pending", async() => {
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+
+    server.use(http.patch(url("/api/users/me"), async() => {
+      await gate;
+
+      return HttpResponse.json(envelope(null));
+    }));
+    renderProfile();
+    fireEvent.change(await nameField(), { target: { value: "Ana María Torres" } });
+    save();
+
+    const button = screen.getByRole("button", { name: /guardar cambios/i });
+
+    await waitFor(() => expect(button).toHaveAttribute("aria-busy", "true"));
+    expect(button).toBeDisabled();
+    expect(button).toHaveAccessibleName("Guardar cambios");
+    expect(within(button).getByRole("progressbar")).toBeInTheDocument();
+    expect(screen.queryByText(/guardando/i)).not.toBeInTheDocument();
+
+    release();
+    expect(await screen.findByText("Perfil actualizado.", {}, { timeout: 5000 })).toBeInTheDocument();
   });
 
   it("PATCHes only the changed avatar", async() => {

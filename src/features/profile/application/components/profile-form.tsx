@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ProfileForm
-* Descripción: Edit form of the own profile: name and avatar URL (http/https only) with a live avatar preview that falls back to the initials, a "Quitar foto" action (saves `image: null`), client validation with per-field messages (`noValidate`, same approach as the login form: entity validation + MUI TextField error/helperText), backend field errors, one error alert and a success notice. "Guardar cambios" is disabled while nothing changed or a save is running. v1.1 (T6b): fields are design-system FormFields and "Guardar cambios" is an AsyncButton (spinner + aria-busy while saving, same label). Spanish copy, TODO(i18n). Depends on MUI, @shared/design-system, the profile hooks/entities, ProfileAvatar and UI/profile-form.module.css.
-* Versión: 1.1
+* Descripción: Edit form of the own profile: name and avatar URL (http/https only) with a live avatar preview that falls back to the initials, a "Quitar foto" action (saves `image: null`), client validation with per-field messages (`noValidate`, same approach as the login form: entity validation + design-system FormField error/helper text), backend field errors, one error alert and a success notice. "Guardar cambios" is disabled while nothing changed or a save is running. "Guardar cambios" is a design-system AsyncButton (spinner + aria-busy while saving, the label stays). v1.1 (T6b): FormField + AsyncButton adopted; v1.2 (T12): description updated. Spanish copy, TODO(i18n). Depends on MUI, @shared/design-system, the profile hooks/entities, ProfileAvatar and UI/profile-form.module.css.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje

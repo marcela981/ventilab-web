@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Login page tests
-* Descripción: Integration tests of the login page with the real backend session (AuthProvider) and MSW: local login posts the credentials and navigates to the role home or a safe returnTo, each backend error code shows its Spanish message, the Google ID token from Google Identity Services is posted to /api/auth/google, an authenticated visitor is redirected to the home of their role, the Google button is disabled without a client ID and an expired session shows a notice. v1.1: the best-effort NextAuth bridge (next-auth/react mocked): a local login signs in to NextAuth after establishSession and before the redirect, a bridge failure still redirects, and Google login never calls it (it only clears a stale NextAuth cookie). v1.2 (T9 follow-up): NextAuth session reconciliation (same user or none -> redirect; another user's session cleared -> redirect; persisting -> Spanish error, backend session signed out, no redirect, for local and Google logins), redirect loop guard (a bounced returnTo falls back to the role home; a bounced role home stops with an error and a sign-out button) and a staff-only returnTo for a student -> role home. Depends on vitest, Testing Library, MSW, next/router (mocked) and the hard navigation helper (mocked).
-* Versión: 1.2
+* Descripción: Integration tests of the login page with the real backend session (AuthProvider) and MSW: local login posts the credentials and navigates to the role home or a safe returnTo, each backend error code shows its Spanish message, the Google ID token from Google Identity Services is posted to /api/auth/google, an authenticated visitor is redirected to the home of their role, the Google button is disabled without a client ID and an expired session shows a notice. v1.1: the best-effort NextAuth bridge (next-auth/react mocked): a local login signs in to NextAuth after establishSession and before the redirect, a bridge failure still redirects, and Google login never calls it (it only clears a stale NextAuth cookie). v1.2 (T9 follow-up): NextAuth session reconciliation (same user or none -> redirect; another user's session cleared -> redirect; persisting -> Spanish error, backend session signed out, no redirect, for local and Google logins), redirect loop guard (a bounced returnTo falls back to the role home; a bounced role home stops with an error and a sign-out button) and a staff-only returnTo for a student -> role home. v1.3 (T12): while a login is pending "Iniciar sesión" keeps its label, is disabled and aria-busy with a spinner (no "Iniciando sesión…" text). Depends on vitest, Testing Library, MSW, next/router (mocked) and the hard navigation helper (mocked).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -192,6 +192,32 @@ describe("LoginPage local login", () => {
     fillAndSubmit();
 
     await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/panel"), { timeout: 5000 });
+  });
+
+  it("keeps the submit label and shows a busy spinner while the login is pending", async() => {
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+
+    server.use(http.post(url("/api/auth/login"), async() => {
+      await gate;
+
+      return errorResponse("auth.invalid_credentials", 401);
+    }));
+    renderLogin();
+    fillAndSubmit();
+
+    const submit = screen.getByRole("button", { name: /iniciar sesión/i });
+
+    await waitFor(() => expect(submit).toHaveAttribute("aria-busy", "true"));
+    expect(submit).toBeDisabled();
+    expect(submit).toHaveAccessibleName("Iniciar sesión");
+    expect(screen.getByRole("progressbar")).toBeInTheDocument();
+    expect(screen.queryByText(/iniciando sesión/i)).not.toBeInTheDocument();
+
+    release();
+    await waitFor(() => expect(submit).toHaveAttribute("aria-busy", "false"));
   });
 
   it("validates the fields before calling the backend", async() => {
