@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LessonViewerPage tests
-* Descripción: Renders /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber] against a mocked backend (msw) with a mocked next/router: blocks of Page N with the breadcrumb and Previous link; lock screen for a student on a locked module (the Page content is never requested) and the content in preview for a teacher; "Siguiente" registers the view once and navigates to the next lesson; "Finalizar módulo" goes to the completion screen; an invalid or out-of-range pageNumber redirects; a lesson outside the module is not found; the side panel tabs and its persisted collapsed state. v1.1 (L4): the Notas tab shows the caller's notes of the lesson with the anchor page link. Depends on vitest, Testing Library, msw and the learning test helpers.
-* Versión: 1.1
+* Descripción: Renders /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber] against a mocked backend (msw) with a mocked next/router: blocks of Page N with the breadcrumb and Previous link; lock screen for a student on a locked module (the Page content is never requested) and the content in preview for a teacher; "Siguiente" registers the view once and navigates to the next lesson; "Finalizar módulo" goes to the completion screen; an invalid or out-of-range pageNumber redirects; a lesson outside the module is not found; the side panel tabs and its persisted collapsed state. v1.1 (L4): the Notas tab shows the caller's notes of the lesson with the anchor page link. v1.2 (L5/L6): the Profundizar tab lazily shows the deepen button and the Preguntas tab the lesson chat. Depends on vitest, Testing Library, msw and the learning test helpers.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -187,11 +187,15 @@ describe("LessonViewerPage", { timeout: 20_000 }, () => {
   });
 
   it("offers the Notas, Profundizar and Preguntas tabs in the side panel", async() => {
+    server.use(http.get(apiUrl("/api/tutor/conversations"), () => HttpResponse.json(envelope([]))));
     renderWithSession(<LessonViewerPage moduleId="m2" lessonId="l1" pageParam="1" />);
 
     expect(await screen.findByRole("tab", { name: "Notas" })).toHaveAttribute("aria-selected", "true");
+    fireEvent.click(screen.getByRole("tab", { name: "Profundizar" }));
+    expect(await screen.findByRole("button", { name: "¿Deseas profundizar en el tema?" }, LAZY_WAIT)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("tab", { name: "Preguntas" }));
     expect(screen.getByRole("tab", { name: "Preguntas" })).toHaveAttribute("aria-selected", "true");
+    expect(await screen.findByText("Pregunta al tutor de IA lo que quieras sobre esta lección.", {}, LAZY_WAIT)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Ocultar panel" }));
     expect(screen.queryByRole("tab", { name: "Notas" })).not.toBeInTheDocument();
     expect(window.localStorage.getItem("vl-learning-side-panel-collapsed")).toBe("1");

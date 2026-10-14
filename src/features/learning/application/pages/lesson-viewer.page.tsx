@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LessonViewerPage
-* Descripción: Page viewer of /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]. Navigation state comes ONLY from the URL: pageNumber is the 1-based position of the backend Page inside its lesson (decision 1). Tree, module lessons and lesson Pages load in parallel; the Page content (`GET /api/pages/{id}`) is requested only once its id is known AND the module is visible for the user. An invalid pageNumber is replaced with Page 1, an out-of-range one with the last Page; an unknown module or a lesson outside the module is "not available". A student on a locked module (module or level locked in the curriculum tree) gets the lock screen with prerequisites; teachers/admins preview everything (PreviewNotice, no lock, no view registration). Breadcrumb Sección > Nivel > Módulo > Lección > Página. Previous/Next cross lesson boundaries (lesson-navigation entity); "Siguiente" registers the page view (fire-and-forget, also after 5 s) and navigates; after the last Page "Finalizar módulo" opens the module completion screen (/learn/modules/[moduleId]?completed=1). Side panel Notas | Profundizar | Preguntas with slots for L4-L6. v1.1 (L4): the "Notas" slot defaults to LessonNotesPanel (the caller's own notes of the lesson, anchored to the visible Page, page numbers resolved with the lesson Pages already loaded here); `panels.notes` still overrides it. The panel is a lazy chunk (React.lazy + retryImport, design-system error boundary, list skeleton fallback) so its MUI dialog/form pieces, the rating widget and the note renderer stay out of the viewer's First Load JS; the Tiptap editor is a further lazy chunk loaded only when a note is created or edited. Depends on next/router, next/head, @shared/design-system, the learning hooks, entities and components.
-* Versión: 1.1
+* Descripción: Page viewer of /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]. Navigation state comes ONLY from the URL: pageNumber is the 1-based position of the backend Page inside its lesson (decision 1). Tree, module lessons and lesson Pages load in parallel; the Page content (`GET /api/pages/{id}`) is requested only once its id is known AND the module is visible for the user. An invalid pageNumber is replaced with Page 1, an out-of-range one with the last Page; an unknown module or a lesson outside the module is "not available". A student on a locked module (module or level locked in the curriculum tree) gets the lock screen with prerequisites; teachers/admins preview everything (PreviewNotice, no lock, no view registration). Breadcrumb Sección > Nivel > Módulo > Lección > Página. Previous/Next cross lesson boundaries (lesson-navigation entity); "Siguiente" registers the page view (fire-and-forget, also after 5 s) and navigates; after the last Page "Finalizar módulo" opens the module completion screen (/learn/modules/[moduleId]?completed=1). Side panel Notas | Profundizar | Preguntas with slots for L4-L6. v1.1 (L4): the "Notas" slot defaults to LessonNotesPanel (the caller's own notes of the lesson, anchored to the visible Page, page numbers resolved with the lesson Pages already loaded here); `panels.notes` still overrides it. The panel is a lazy chunk (React.lazy + retryImport, design-system error boundary, list skeleton fallback) so its MUI dialog/form pieces, the rating widget and the note renderer stay out of the viewer's First Load JS; the Tiptap editor is a further lazy chunk loaded only when a note is created or edited. v1.2 (L5/L6): the "Profundizar" slot defaults to DeepenPanel (AI deepening of the visible Page, keyed by pageId) and "Preguntas" to QuestionsPanel (lesson/module chat, keyed by lessonId), both lazy chunks with the same retryImport + error boundary + skeleton pattern (not exported from the shared feature barrel); `panels.deepen` / `panels.questions` still override them. Depends on next/router, next/head, @shared/design-system, the learning hooks, entities and components.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -54,6 +54,14 @@ const LessonNotesPanel = lazy(() =>
   retryImport(() => import("../components/notes/lesson-notes-panel")).then((module) => ({ default: module.LessonNotesPanel })),
 );
 
+const DeepenPanel = lazy(() =>
+  retryImport(() => import("../components/tutor/deepen-panel")).then((module) => ({ default: module.DeepenPanel })),
+);
+
+const QuestionsPanel = lazy(() =>
+  retryImport(() => import("../components/tutor/questions-panel")).then((module) => ({ default: module.QuestionsPanel })),
+);
+
 // TODO(i18n): move to a learning namespace in src/i18n.
 const PAGE_COPY = {
   documentTitle: (title: string) => `${title} | VentyLab`,
@@ -68,6 +76,7 @@ const PAGE_COPY = {
   loadErrorTitle: "No se pudo cargar la lección",
   pageOf: (page: number, total: number) => `Página ${page} de ${total}`,
   loadingNotes: "Cargando tus notas…",
+  loadingTutor: "Cargando el tutor…",
 } as const;
 
 export type LessonViewerPageProps = {
@@ -233,6 +242,20 @@ export function LessonViewerPage({ moduleId, lessonId, pageParam, panels }: Less
               <RouteErrorBoundary resetKey={lessonId}>
                 <Suspense fallback={<ListSkeleton label={PAGE_COPY.loadingNotes} />}>
                   <LessonNotesPanel key={lessonId} moduleId={moduleId} lessonId={lessonId} currentPageId={visiblePage?.id ?? null} pages={pages} />
+                </Suspense>
+              </RouteErrorBoundary>
+            )}
+            deepen={panels?.deepen ?? (
+              <RouteErrorBoundary resetKey={lessonId}>
+                <Suspense fallback={<ListSkeleton label={PAGE_COPY.loadingTutor} />}>
+                  <DeepenPanel pageId={visiblePage?.id ?? null} />
+                </Suspense>
+              </RouteErrorBoundary>
+            )}
+            questions={panels?.questions ?? (
+              <RouteErrorBoundary resetKey={lessonId}>
+                <Suspense fallback={<ListSkeleton label={PAGE_COPY.loadingTutor} />}>
+                  <QuestionsPanel key={lessonId} moduleId={moduleId} lessonId={lessonId} currentPageId={visiblePage?.id ?? null} />
                 </Suspense>
               </RouteErrorBoundary>
             )}
