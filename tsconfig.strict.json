@@ -50,6 +50,7 @@
     "pages/evaluations/index.tsx",
     "pages/evaluations/[evaluationId]/index.tsx",
     "pages/evaluations/[evaluationId]/attempts/[attemptId]/index.tsx",
-    "pages/evaluations/[evaluationId]/attempts/[attemptId]/result.tsx"
+    "pages/evaluations/[evaluationId]/attempts/[attemptId]/result.tsx",
+    "pages/evaluations/manage/index.tsx"
   ]
 }

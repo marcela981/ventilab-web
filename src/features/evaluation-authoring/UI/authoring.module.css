@@ -1,0 +1,93 @@
+/*
+* Funcionalidad: Evaluation authoring styles
+* Descripción: Layout of the evaluation authoring pages (/evaluations/manage): centered column, filter bar, results panel (border, radius, surface, shadow) like the groups and learning pages, the evaluation title and secondary lines, the row actions and the status badges colored with the semantic tokens (draft warning, ready success, archived muted). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-3);
+  align-items: flex-start;
+}
+
+.search {
+  flex: 1 1 18rem;
+}
+
+.results {
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+  overflow: hidden;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.evaluationTitle {
+  display: block;
+  font-weight: 500;
+  color: var(--vl-color-text);
+}
+
+.secondary {
+  display: block;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-1);
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--vl-space-1) var(--vl-space-2);
+  border: 1px solid currentColor;
+  border-radius: var(--vl-radius-pill);
+  font: var(--mui-font-caption);
+  white-space: nowrap;
+}
+
+.statusDraft {
+  color: var(--vl-color-warning);
+}
+
+.statusReady {
+  color: var(--vl-color-success);
+}
+
+.statusArchived {
+  color: var(--vl-color-text-muted);
+}
+
+.filters :focus-visible,
+.results :focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}
