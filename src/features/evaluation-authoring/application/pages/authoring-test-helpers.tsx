@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation authoring test helpers
-* Descripción: Shared fixtures of the evaluation authoring tests: backend envelope (with optional pagination) and error bodies, a factory of EvaluationSummaryDTO and a render helper that mounts a page inside an isolated SWR cache and the global ToastProvider (as pages/_app.js does). Test-only code. Depends on Testing Library, msw, SWR, the design-system toast provider and the authoring DTOs.
-* Versión: 1.0
+* Descripción: Shared fixtures of the evaluation authoring tests: backend envelope (with optional pagination) and error bodies, a factory of EvaluationSummaryDTO and a render helper that mounts a page inside an isolated SWR cache and the global ToastProvider (as pages/_app.js does). Test-only code. Depends on Testing Library, msw, SWR, the design-system toast provider and the authoring DTOs. v1.1 (A2): factories of the builder detail (EvaluationDetailDTO, questions, options, scenarios) and a Tiptap paragraph document.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,7 +15,13 @@ import type { ReactElement } from "react";
 import { SWRConfig } from "swr";
 import { ToastProvider } from "@shared/design-system/components/toast-provider";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
-import type { EvaluationSummaryDTO } from "../../api/dtos/evaluation-authoring.dto";
+import type {
+  EvaluationDetailDTO,
+  EvaluationOptionDTO,
+  EvaluationQuestionDTO,
+  EvaluationScenarioDTO,
+  EvaluationSummaryDTO,
+} from "../../api/dtos/evaluation-authoring.dto";
 
 export const apiUrl = (path: string): string => `${BACKEND_ORIGIN}${path}`;
 
@@ -67,4 +73,65 @@ export function renderWithProviders(ui: ReactElement) {
       <ToastProvider>{ui}</ToastProvider>
     </SWRConfig>,
   );
+}
+
+export const paragraphDoc = (text: string) => ({
+  type: "doc",
+  content: [{ type: "paragraph", content: [{ type: "text", text }] }],
+});
+
+export function optionDto(id: string, order: number, overrides: Partial<EvaluationOptionDTO> = {}): EvaluationOptionDTO {
+  return { id, order, content: `Opción ${id}`, isCorrect: false, mediaId: null, media: null, feedback: null, ...overrides };
+}
+
+export function questionDto(id: string, order: number, overrides: Partial<EvaluationQuestionDTO> = {}): EvaluationQuestionDTO {
+  return {
+    id,
+    scenarioId: null,
+    order,
+    type: "OPEN_TEXT",
+    prompt: paragraphDoc(`Enunciado ${id}`),
+    mediaIds: [],
+    media: [],
+    points: 1,
+    explanation: null,
+    clinicalCaseId: null,
+    rubric: null,
+    options: [],
+    ...overrides,
+  };
+}
+
+export function scenarioDto(id: string, order: number, overrides: Partial<EvaluationScenarioDTO> = {}): EvaluationScenarioDTO {
+  return { id, order, content: paragraphDoc(`Escenario ${id}`), mediaIds: [], media: [], ...overrides };
+}
+
+export function evaluationDetailDto(id: string, overrides: Partial<EvaluationDetailDTO> = {}): EvaluationDetailDTO {
+  return {
+    id,
+    type: "EXAM",
+    title: "Parcial de ventilación",
+    description: null,
+    status: "DRAFT",
+    moduleId: null,
+    levelId: null,
+    lessonId: null,
+    durationMinutes: 45,
+    maxAttempts: 1,
+    shuffleQuestions: false,
+    showResultsImmediately: false,
+    order: 0,
+    createdById: "teacher-1",
+    legacySource: null,
+    legacyType: null,
+    scenarios: [],
+    questions: [],
+    usage: { attempts: 0, submittedAttempts: 0, assignments: 0 },
+    structureLocked: false,
+    readinessIssues: [],
+    canManage: true,
+    createdAt: "2026-10-01T15:00:00.000Z",
+    updatedAt: "2026-10-02T15:30:00.000Z",
+    ...overrides,
+  };
 }

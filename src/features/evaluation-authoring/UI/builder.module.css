@@ -1,0 +1,341 @@
+/*
+* Funcionalidad: Evaluation builder styles
+* Descripción: Layout of the evaluation builder (/evaluations/manage/new and /evaluations/manage/[id]/edit): centered column, header actions with the save state, panels (border, radius, surface, shadow) for the metadata and the structure, form grid, rich text field and Tiptap editor, scenario groups, question cards (dirty cards marked with the warning token), drag handles, option rows, media thumbnails, the placeholder sections and the issue lists. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.saveState {
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.saveStateDirty {
+  color: var(--vl-color-warning);
+  font-weight: 600;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-4);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.panelTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+  color: var(--vl-color-text);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--vl-space-3);
+}
+
+.wide {
+  grid-column: span 2;
+}
+
+.switches {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.muted {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.errorText {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-color-error);
+}
+
+.issueList {
+  margin: 0;
+  padding-left: var(--vl-space-4);
+}
+
+.richField,
+.subsection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.fieldLabel {
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-color-text);
+}
+
+.editor {
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-surface);
+}
+
+.editor:focus-within {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}
+
+.editorToolbar {
+  display: flex;
+  gap: var(--vl-space-1);
+  padding: var(--vl-space-1);
+  border-bottom: 1px solid var(--vl-color-border);
+}
+
+.editorContent {
+  min-height: 5rem;
+  padding: var(--vl-space-2) var(--vl-space-3);
+  color: var(--vl-color-text);
+  outline: none;
+}
+
+.editorContent p {
+  margin: 0 0 var(--vl-space-2);
+}
+
+.editorContent p:global(.is-editor-empty):first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--vl-color-text-muted);
+  pointer-events: none;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.scenarioList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+.scenario {
+  padding: var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+}
+
+.groupTitle {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+  color: var(--vl-color-text);
+}
+
+.questionList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  min-height: var(--vl-space-7);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.questionItem {
+  list-style: none;
+}
+
+.emptyGroup {
+  padding: var(--vl-space-3);
+  border: 1px dashed var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+  text-align: center;
+}
+
+.questionCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.questionDirty {
+  border-color: var(--vl-color-warning);
+}
+
+.cardHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.cardTitle {
+  font: var(--mui-font-subtitle1);
+  color: var(--vl-color-text);
+}
+
+.cardAction {
+  margin-left: auto;
+}
+
+.typeBadge,
+.unsavedBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--vl-space-1) var(--vl-space-2);
+  border: 1px solid currentColor;
+  border-radius: var(--vl-radius-pill);
+  font: var(--mui-font-caption);
+  white-space: nowrap;
+}
+
+.typeBadge {
+  color: var(--vl-color-info);
+}
+
+.unsavedBadge {
+  color: var(--vl-color-warning);
+}
+
+.dragHandle {
+  display: inline-flex;
+  align-items: center;
+  color: var(--vl-color-text-muted);
+  cursor: grab;
+}
+
+.dragHandle:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}
+
+.pointsField {
+  max-width: 10rem;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.optionList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.optionRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.optionText {
+  flex: 1 1 16rem;
+}
+
+.optionImage {
+  max-width: 6rem;
+  max-height: 4rem;
+  border-radius: var(--vl-radius-sm);
+  object-fit: cover;
+}
+
+.optionActions {
+  display: flex;
+  gap: var(--vl-space-1);
+}
+
+.addQuestion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.mediaList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mediaImage {
+  max-width: 12rem;
+  max-height: 8rem;
+  border-radius: var(--vl-radius-sm);
+  object-fit: cover;
+}
+
+.placeholder {
+  padding: var(--vl-space-3);
+  border: 1px dashed var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.definition {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--vl-space-1) var(--vl-space-3);
+  margin: 0;
+  font: var(--mui-font-body2);
+}
+
+.definition dt {
+  color: var(--vl-color-text-muted);
+}
+
+.definition dd {
+  margin: 0;
+  color: var(--vl-color-text);
+}

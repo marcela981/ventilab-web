@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation authoring feature barrel
-* Descripción: Public surface of the evaluation authoring feature (teachers and admins): the EvaluationsManagePage of /evaluations/manage and the URL builders of the authoring routes. The only import surface for pages and other features. Depends on the authoring pages and entities.
-* Versión: 1.0
+* Descripción: Public surface of the evaluation authoring feature (teachers and admins): the EvaluationsManagePage of /evaluations/manage and the URL builders of the authoring routes. The only import surface for pages and other features. Depends on the authoring pages and entities. v1.1 (A2): exports the EvaluationBuilderPage of /evaluations/manage/new and /evaluations/manage/[id]/edit.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,4 +15,6 @@ export {
   EVALUATIONS_MANAGE_URL,
   NEW_EVALUATION_URL,
 } from "./application/entities/authoring-urls";
+export { EvaluationBuilderPage } from "./application/pages/evaluation-builder.page";
+export type { EvaluationBuilderPageProps } from "./application/pages/evaluation-builder.page";
 export { EvaluationsManagePage } from "./application/pages/evaluations-manage.page";
