@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Grading test helpers
-* Descripción: Shared fixtures of the grading tests: backend envelope (with optional pagination) and error bodies, factories of GradingQueueItemDTO, EvaluationSummaryDTO and GroupDTO, and a render helper that mounts a tree inside an isolated SWR cache. Test-only code. Depends on Testing Library, msw, SWR and the grading DTOs.
-* Versión: 1.0
+* Descripción: Shared fixtures of the grading tests: backend envelope (with optional pagination) and error bodies, factories of GradingQueueItemDTO, EvaluationSummaryDTO and GroupDTO, and a render helper that mounts a tree inside an isolated SWR cache. Test-only code. Depends on Testing Library, msw, SWR and the grading DTOs. v1.1 (G2): factories of the grading attempt (questions, options, answers, practical score) and the staff feedback DTOs, a fake socket that lets a test emit server events, and renderGradingPage, which mounts a page with an isolated SWR cache, a TEACHER session, the realtime context with the fake socket and the global ToastProvider.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,12 +9,27 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { render } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
 import { HttpResponse } from "msw";
 import type { ReactElement } from "react";
 import { SWRConfig } from "swr";
+import { ToastProvider } from "@shared/design-system/components/toast-provider";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
-import type { EvaluationSummaryDTO, GradingQueueItemDTO, GroupDTO } from "../../api/dtos/grading.dto";
+import { RealtimeContext } from "@shared/realtime/realtime-context";
+import type { RealtimeEventMap, RealtimeEventName, RealtimeSocket } from "@shared/realtime/realtime.entity";
+import { SessionContext } from "@shared/session/session-context";
+import type { SessionContextValue } from "@shared/session/session-context";
+import type {
+  EvaluationSummaryDTO,
+  GradeFeedbackDTO,
+  GradeFeedbackItemDTO,
+  GradingAnswerDTO,
+  GradingAttemptDTO,
+  GradingOptionDTO,
+  GradingQuestionDTO,
+  GradingQueueItemDTO,
+  GroupDTO,
+} from "../../api/dtos/grading.dto";
 
 export const apiUrl = (path: string): string => `${BACKEND_ORIGIN}${path}`;
 
@@ -91,5 +106,155 @@ export function groupDto(id: string, name: string, overrides: Partial<GroupDTO> 
 export function renderWithSwr(ui: ReactElement) {
   return render(
     <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false }}>{ui}</SWRConfig>,
+  );
+}
+
+const paragraphDoc = (text: string) => ({
+  type: "doc",
+  content: [{ type: "paragraph", content: [{ type: "text", text }] }],
+});
+
+export function gradingOptionDto(id: string, order: number, overrides: Partial<GradingOptionDTO> = {}): GradingOptionDTO {
+  return { id, order, content: `Opción ${id}`, isCorrect: false, mediaId: null, media: null, feedback: null, ...overrides };
+}
+
+export function gradingQuestionDto(id: string, order: number, overrides: Partial<GradingQuestionDTO> = {}): GradingQuestionDTO {
+  return {
+    id,
+    scenarioId: null,
+    order,
+    type: "OPEN_TEXT",
+    prompt: paragraphDoc(`Enunciado ${id}`),
+    mediaIds: [],
+    media: [],
+    points: 2,
+    explanation: null,
+    clinicalCaseId: null,
+    rubric: null,
+    options: [],
+    ...overrides,
+  } as GradingQuestionDTO;
+}
+
+export function gradingAnswerDto(questionId: string, overrides: Partial<GradingAnswerDTO> = {}): GradingAnswerDTO {
+  return {
+    answerId: `ans-${questionId}`,
+    questionId,
+    selectedOptionIds: [],
+    textAnswer: null,
+    simulationSessionId: null,
+    autoScore: null,
+    manualScore: null,
+    earnedScore: null,
+    pending: false,
+    gradedById: null,
+    teacherComment: null,
+    practicalScore: null,
+    ...overrides,
+  };
+}
+
+export function gradingAttemptDto(id: string, overrides: Partial<GradingAttemptDTO> = {}): GradingAttemptDTO {
+  return {
+    id,
+    assignmentId: "as-1",
+    attemptNumber: 2,
+    evaluationId: "ev-1",
+    evaluationTitle: "Parcial de ventilación",
+    evaluationType: "EXAM",
+    userId: "st-1",
+    legacy: false,
+    status: "PENDING_REVIEW",
+    startedAt: "2026-10-11T10:00:00.000Z",
+    submittedAt: "2026-10-11T11:00:00.000Z",
+    score: null,
+    maxScore: 4,
+    grade: null,
+    passed: null,
+    passingGrade: 3,
+    gradePublishedAt: null,
+    showResultsImmediately: false,
+    questions: [],
+    scenarios: [],
+    answers: [],
+    ...overrides,
+  };
+}
+
+export function feedbackItemDto(id: string, overrides: Partial<GradeFeedbackItemDTO> = {}): GradeFeedbackItemDTO {
+  return {
+    id,
+    questionId: null,
+    status: "READY",
+    source: "LLM",
+    content: "Buen manejo de la PEEP.",
+    provider: "gemini",
+    model: "gemini-2.0-flash",
+    updatedAt: "2026-10-12T15:00:00.000Z",
+    ...overrides,
+  };
+}
+
+export function feedbackDto(attemptId: string, overrides: Partial<GradeFeedbackDTO> = {}): GradeFeedbackDTO {
+  return { attemptId, overall: null, questions: [], ...overrides };
+}
+
+type Listener = (payload: never) => void;
+
+export type FakeSocket = {
+  socket: RealtimeSocket
+  emit: <E extends RealtimeEventName>(event: E, payload: RealtimeEventMap[E]) => void
+};
+
+export function createFakeSocket(): FakeSocket {
+  const listeners = new Map<string, Set<Listener>>();
+  const socket = {
+    on: (event: string, listener: Listener) => {
+      listeners.set(event, (listeners.get(event) ?? new Set<Listener>()).add(listener));
+    },
+    off: (event: string, listener: Listener) => {
+      listeners.get(event)?.delete(listener);
+    },
+  };
+
+  return {
+    socket: socket as unknown as RealtimeSocket,
+    emit: (event, payload) => {
+      act(() => {
+        for (const listener of listeners.get(event) ?? []) {
+          (listener as (value: typeof payload) => void)(payload);
+        }
+      });
+    },
+  };
+}
+
+function teacherSession(): SessionContextValue {
+  const user = { id: "teacher-1", email: "laura@ventylab.demo", name: "Laura", image: null, role: "TEACHER" as const };
+
+  return {
+    status: "authenticated",
+    user,
+    role: "TEACHER",
+    permissions: [],
+    error: null,
+    hasRole: (...roles) => roles.includes("TEACHER"),
+    hasPermission: () => false,
+    establishSession: () => Promise.resolve(user),
+    signOut: () => Promise.resolve(),
+    reloadSession: () => Promise.resolve(user),
+    handleRoleChanged: () => Promise.resolve(false),
+  };
+}
+
+export function renderGradingPage(ui: ReactElement, socket: FakeSocket | null = null) {
+  return render(
+    <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false }}>
+      <SessionContext.Provider value={teacherSession()}>
+        <RealtimeContext.Provider value={{ socket: socket?.socket ?? null, status: socket ? "authenticated" : "idle" }}>
+          <ToastProvider>{ui}</ToastProvider>
+        </RealtimeContext.Provider>
+      </SessionContext.Provider>
+    </SWRConfig>,
   );
 }

@@ -1,0 +1,307 @@
+/*
+* Funcionalidad: Grade attempt styles
+* Descripción: Layout of the staff page /grading/attempts/[attemptId]: centered column, header actions, the attempt summary (status, publication, grade colored with the semantic success/error tokens from the API pass state), the sticky question navigator next to the question cards (stacked on narrow screens), the answer cards with their dirty marker, scores, staff references, grading fields and the rubric breakdown table, and the AI feedback panel with its status colors. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  align-items: center;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+.summary,
+.card,
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-4);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.summaryRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-3);
+  align-items: center;
+}
+
+.publication {
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.publicationDone {
+  color: var(--vl-color-success);
+}
+
+.grade {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--vl-space-1);
+  font: var(--mui-font-subtitle1);
+}
+
+.gradePassed {
+  color: var(--vl-color-success);
+}
+
+.gradeFailed {
+  color: var(--vl-color-error);
+}
+
+.muted {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.dirty {
+  margin: 0;
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-color-warning);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--vl-space-4);
+}
+
+@media (min-width: 900px) {
+  .layout {
+    grid-template-columns: 4rem minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .navigator {
+    position: sticky;
+    top: var(--vl-space-4);
+  }
+}
+
+.navigatorList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 900px) {
+  .navigatorList {
+    flex-direction: column;
+  }
+}
+
+.navigatorLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-pill);
+  color: var(--vl-color-text);
+  text-decoration: none;
+}
+
+.navigatorLink:hover {
+  background: var(--vl-color-hover);
+}
+
+.navigatorPending {
+  border-color: var(--vl-color-warning);
+  color: var(--vl-color-warning);
+}
+
+.questions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  min-width: 0;
+}
+
+.questionBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+}
+
+.card {
+  scroll-margin-top: var(--vl-space-6);
+}
+
+.cardDirty {
+  border-color: var(--vl-color-warning);
+}
+
+.cardHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+}
+
+.subheading {
+  margin: 0;
+  font: var(--mui-font-subtitle2);
+}
+
+.reference {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  padding: var(--vl-space-3);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-selected);
+}
+
+.correctList {
+  margin: 0;
+  padding-left: var(--vl-space-5);
+}
+
+.explanation {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.scoreLine {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.gradeFields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-3);
+  align-items: flex-start;
+}
+
+.scoreField {
+  flex: 0 1 12rem;
+}
+
+.commentField {
+  flex: 1 1 20rem;
+}
+
+.rubric {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.tableContainer {
+  overflow-x: auto;
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.panelHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panelTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+}
+
+.feedbackList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.feedbackItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  padding-bottom: var(--vl-space-3);
+  border-bottom: 1px solid var(--vl-color-border);
+}
+
+.feedbackItem:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.feedbackHeader {
+  display: flex;
+  gap: var(--vl-space-2);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.feedbackTitle {
+  font: var(--mui-font-subtitle2);
+}
+
+.feedbackStatus {
+  padding: 0 var(--vl-space-2);
+  border: 1px solid currentColor;
+  border-radius: var(--vl-radius-pill);
+  font: var(--mui-font-caption);
+}
+
+.feedbackPending {
+  color: var(--vl-color-info);
+}
+
+.feedbackReady {
+  color: var(--vl-color-success);
+}
+
+.feedbackFailed {
+  color: var(--vl-color-error);
+}
+
+.feedbackContent {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.page :focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}

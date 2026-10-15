@@ -1,13 +1,21 @@
 /*
 * Funcionalidad: Grading service
-* Descripción: API path constants of the grading feature (teachers and admins). G1 reads the grading queue (`GET /api/evaluation-grading/queue`, PENDING_REVIEW attempts only, filters evaluationId and groupId, paginated) with useApiQuery, plus the READY evaluations and the active student groups that fill its filters. The attempt, answer, publish, feedback and evaluation stats paths are declared here for the grading detail and publish screens. GRADING_QUERY_PATHS lists the cached reads every grading mutation must refresh (the queue key also feeds the pending-count badge). Depends on nothing at runtime.
-* Versión: 1.0
+* Descripción: API path constants of the grading feature (teachers and admins). G1 reads the grading queue (`GET /api/evaluation-grading/queue`, PENDING_REVIEW attempts only, filters evaluationId and groupId, paginated) with useApiQuery, plus the READY evaluations and the active student groups that fill its filters. The attempt, answer, publish, feedback and evaluation stats paths are declared here for the grading detail and publish screens. GRADING_QUERY_PATHS lists the cached reads every grading mutation must refresh (the queue key also feeds the pending-count badge). Depends on nothing at runtime. v1.1 (G2): mutations of the grade-attempt page through @shared/api-client: gradeAnswer (`PUT .../answers/{questionId}` with {manualScore, comment?}), publishAttemptGrade (`POST .../publish`, idempotent) and regenerateFeedback (`POST .../feedback/regenerate`, 202 PENDING). Also depends on the grading DTOs.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
 * Institución: Universidad del Valle
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
+
+import { apiPost, apiPut } from "@shared/api-client/api-request";
+import type {
+  GradeAnswerBodyDTO,
+  GradeAnswerResponseDTO,
+  GradeFeedbackRegenerationDTO,
+  PublishAttemptGradeResponseDTO,
+} from "../dtos/grading.dto";
 
 export const GRADING_QUEUE_PATH = "/api/evaluation-grading/queue";
 export const GRADING_ATTEMPT_PATH = "/api/evaluation-grading/attempts/{attemptId}";
@@ -28,3 +36,21 @@ export const GRADING_QUERY_PATHS = [
   GRADING_FEEDBACK_PATH,
   EVALUATION_STATS_PATH,
 ] as const;
+
+export async function gradeAnswer(attemptId: string, questionId: string, body: GradeAnswerBodyDTO): Promise<GradeAnswerResponseDTO> {
+  const result = await apiPut(GRADING_ANSWER_PATH, { params: { attemptId, questionId }, body });
+
+  return result.data;
+}
+
+export async function publishAttemptGrade(attemptId: string): Promise<PublishAttemptGradeResponseDTO> {
+  const result = await apiPost(GRADING_PUBLISH_ATTEMPT_PATH, { params: { attemptId } });
+
+  return result.data;
+}
+
+export async function regenerateFeedback(attemptId: string): Promise<GradeFeedbackRegenerationDTO> {
+  const result = await apiPost(GRADING_FEEDBACK_REGENERATE_PATH, { params: { attemptId } });
+
+  return result.data;
+}

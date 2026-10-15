@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Grading DTOs
-* Descripción: Type aliases over the generated OpenAPI schemas used by the grading feature: the grading queue item and its student, plus the evaluation summaries and groups read to fill the queue filters. Types only. Depends on @shared/api-client/generated/schema.
-* Versión: 1.0
+* Descripción: Type aliases over the generated OpenAPI schemas used by the grading feature: the grading queue item and its student, plus the evaluation summaries and groups read to fill the queue filters. Types only. Depends on @shared/api-client/generated/schema. v1.1 (G2): the grading attempt (answers with auto/manual/earned scores, practical score, questions, scenarios and media), the grade-answer body and response, the publish response and the staff feedback DTOs.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,3 +17,16 @@ export type GradingQueueItemDTO = Schemas["GradingQueueItemDTO"];
 export type GradingStudentDTO = Schemas["GradingStudentDTO"];
 export type EvaluationSummaryDTO = Schemas["EvaluationSummaryDTO"];
 export type GroupDTO = Schemas["GroupDTO"];
+export type GradingAttemptDTO = Schemas["GradingAttemptDTO"];
+export type GradingAnswerDTO = Schemas["GradingAnswerDTO"];
+export type PracticalScoreDTO = Schemas["PracticalScoreDTO"];
+export type GradingQuestionDTO = Schemas["EvaluationQuestionDTO"];
+export type GradingOptionDTO = Schemas["EvaluationOptionDTO"];
+export type GradingScenarioDTO = Schemas["EvaluationScenarioDTO"];
+export type GradingMediaDTO = Schemas["EvaluationMediaDTO"];
+export type GradeAnswerBodyDTO = Schemas["GradeEvaluationAnswerDTO"];
+export type GradeAnswerResponseDTO = Schemas["GradeEvaluationAnswerResponseDTO"];
+export type PublishAttemptGradeResponseDTO = Schemas["PublishAttemptGradeResponseDTO"];
+export type GradeFeedbackDTO = Schemas["GradeFeedbackDTO"];
+export type GradeFeedbackItemDTO = Schemas["GradeFeedbackItemDTO"];
+export type GradeFeedbackRegenerationDTO = Schemas["GradeFeedbackRegenerationDTO"];
