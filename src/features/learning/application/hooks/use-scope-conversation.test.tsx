@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useScopeConversation tests
-* Descripción: Tests of the scope conversation lookup against msw: the conversation found in the listing stays selected (id and messages) while the listing revalidates, and a definitive new listing result replaces it. Depends on vitest, Testing Library, msw and the learning test helpers.
-* Versión: 1.0 (L6 fix)
+* Descripción: Tests of the scope conversation lookup against msw: the conversation found in the listing stays selected (id and messages) while the listing revalidates, and a definitive new listing result replaces it. Depends on vitest, Testing Library, msw and the learning test helpers. v1.1 (L7 follow-up): discriminating case: the revalidated listing page 1 no longer contains the conversation and announces a second page (a non-definitive result); while page 2 is pending the conversation must stay selected (an implementation that derives the id from the latest listing data, stale or fresh, drops it to null here).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -92,5 +92,62 @@ describe("useScopeConversation", () => {
     });
 
     await waitFor(() => expect(result.current.conversationId).toBe("c-l1b"));
+  });
+
+  it("keeps the conversation through a non-definitive revalidation until the definitive result", async() => {
+    const gate: { release: (() => void) | null } = { release: null };
+    let revalidating = false;
+    const listRequests: string[] = [];
+
+    server.use(
+      http.get(apiUrl("/api/tutor/conversations"), async({ request }) => {
+        const page = new URL(request.url).searchParams.get("page") ?? "1";
+
+        listRequests.push(page);
+
+        if (!revalidating) {
+          return HttpResponse.json({ ...envelope([conversationDto("c-l1", "l1")]), pagination });
+        }
+
+        if (page === "1") {
+          // Another conversation became more recent: page 1 no longer lists c-l1 and a page 2 exists.
+          return HttpResponse.json({ ...envelope([conversationDto("c-other", "l2")]), pagination: { ...pagination, pages: 2, total: 2 } });
+        }
+
+        await new Promise<void>((resolve) => {
+          gate.release = resolve;
+        });
+
+        return HttpResponse.json({ ...envelope([conversationDto("c-l1", "l1")]), pagination: { ...pagination, page: 2, pages: 2, total: 2 } });
+      }),
+      http.get(apiUrl("/api/tutor/conversations/:conversationId"), ({ params }) => HttpResponse.json(envelope({
+        ...conversationDto(String(params.conversationId), "l1"),
+        messages: [{ id: "u1", role: "USER", content: "Hola", isIncomplete: false, aiCallId: null, createdAt: "2026-10-14T00:00:00.000Z" }],
+      }))),
+    );
+
+    const { result } = renderHook(() => useScopeConversation("LESSON", "l1"), { wrapper: Wrapper });
+
+    await waitFor(() => expect(result.current.messages).toHaveLength(1));
+    expect(result.current.conversationId).toBe("c-l1");
+
+    revalidating = true;
+    act(() => {
+      void result.current.reload();
+    });
+
+    // Page 1 answered without c-l1 and the lookup moved on to page 2, which is still pending.
+    await waitFor(() => expect(gate.release).not.toBeNull());
+    expect(listRequests).toEqual(["1", "1", "2"]);
+    expect(result.current.conversationId).toBe("c-l1");
+    expect(result.current.messages).toHaveLength(1);
+
+    await act(async() => {
+      gate.release?.();
+    });
+
+    await waitFor(() => expect(listRequests).toHaveLength(3));
+    expect(result.current.conversationId).toBe("c-l1");
+    expect(result.current.messages).toHaveLength(1);
   });
 });

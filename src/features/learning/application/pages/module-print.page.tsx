@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ModulePrintPage
-* Descripción: Print view of a whole module (/learn/modules/[moduleId]/print, TEACHER and ADMIN) built from exactly ONE request (GET /api/modules/{id}/full; no tree, lessons or progress queries). It renders a cover (title, description, difficulty, estimated time, lesson count and the print date; the payload has no level or section names), then every lesson in order starting on a new printed page (break-before: page) with its Pages and blocks in order through the shared ContentBlocks in print mode (KaTeX equations, images fitted to the page width, videos as a visible link with their URL), and the Pages without a lesson at the end. "Descargar PDF" opens the browser print dialog (window.print(); the user picks "Guardar como PDF") and is hidden when printing, like the "Volver al módulo" link. Loading skeleton, 404 not-found state and error state with retry. ContentBlocks is a lazy chunk (C1 code splitting). Depends on MUI, next/head, next/link, @shared/design-system, @shared/lib, useModuleFull, the learning URLs and error messages and the print CSS Module.
-* Versión: 1.0 (L7)
+* Descripción: Print view of a whole module (/learn/modules/[moduleId]/print, TEACHER and ADMIN) built from exactly ONE request (GET /api/modules/{id}/full; no tree, lessons or progress queries). It renders a cover (title, description, difficulty, estimated time, lesson count and the print date; the payload has no level or section names), then every lesson in order starting on a new printed page (break-before: page) with its Pages and blocks in order through the shared ContentBlocks in print mode (KaTeX equations, images fitted to the page width, videos as a visible link with their URL), and the Pages without a lesson at the end. "Descargar PDF" opens the browser print dialog (window.print(); the user picks "Guardar como PDF") and is hidden when printing, like the "Volver al módulo" link. Loading skeleton, 404 not-found state and error state with retry. ContentBlocks is a lazy chunk (C1 code splitting). Depends on MUI, next/head, next/link, @shared/design-system, @shared/lib, useModuleFull, the learning URLs and error messages and the print CSS Module. v1.1 (L7 follow-up): "Descargar PDF" is disabled (with a "Preparando…" hint) until the lazy content blocks of every printed page have rendered: a ReadySignal rendered next to ContentBlocks inside each page's Suspense reports the page once the chunk resolved, so the dialog never prints skeletons. A module without pages is ready at once.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,7 +15,7 @@ import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import Button from "@mui/material/Button";
 import Head from "next/head";
 import Link from "next/link";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { EmptyState } from "@shared/design-system/components/empty-state";
 import { ErrorState } from "@shared/design-system/components/error-state";
 import { RouteErrorBoundary } from "@shared/design-system/components/route-error-boundary";
@@ -51,11 +51,26 @@ const COPY = {
   emptyLesson: "Esta lección no tiene páginas.",
   unassignedTitle: "Páginas sin lección",
   loadingPage: "Cargando la página…",
+  preparing: "Preparando el contenido para imprimir…",
 } as const;
 
 const PRINT_DATE_FORMAT = new Intl.DateTimeFormat("es", { dateStyle: "long" });
 
-function PrintedPage({ page }: { page: PrintPage }) {
+// Rendered after ContentBlocks inside the same Suspense: it only commits once the lazy chunk has resolved.
+function ReadySignal({ id, onReady }: { id: string, onReady: (id: string) => void }) {
+  useEffect(() => {
+    onReady(id);
+  }, [id, onReady]);
+
+  return null;
+}
+
+type PrintedPageProps = {
+  page: PrintPage
+  onReady: (id: string) => void
+};
+
+function PrintedPage({ page, onReady }: PrintedPageProps) {
   const titleId = `print-page-${page.id}`;
 
   return (
@@ -64,6 +79,7 @@ function PrintedPage({ page }: { page: PrintPage }) {
       <RouteErrorBoundary resetKey={page.id}>
         <Suspense fallback={<CardSkeleton label={COPY.loadingPage} />}>
           <ContentBlocks blocks={page.blocks} mode="print" />
+          <ReadySignal id={page.id} onReady={onReady} />
         </Suspense>
       </RouteErrorBoundary>
     </article>
@@ -85,7 +101,17 @@ function ModuleCover({ content }: { content: PrintModule }) {
   );
 }
 
+function allPageIds(content: PrintModule): string[] {
+  return [...content.lessons.flatMap((lesson) => lesson.pages), ...content.unassignedPages].map((page) => page.id);
+}
+
 function ModuleDocument({ content }: { content: PrintModule }) {
+  const [readyIds, setReadyIds] = useState<ReadonlySet<string>>(() => new Set());
+  const markReady = useCallback((id: string) => {
+    setReadyIds((current) => (current.has(id) ? current : new Set(current).add(id)));
+  }, []);
+  const ready = allPageIds(content).every((id) => readyIds.has(id));
+
   return (
     <>
       <div className={cx(styles.toolbar, styles.noPrint)}>
@@ -93,8 +119,8 @@ function ModuleDocument({ content }: { content: PrintModule }) {
           <ArrowBackIcon fontSize="small" aria-hidden />
           {COPY.backToModule}
         </Link>
-        <span className={cx(styles.hint)}>{COPY.downloadHint}</span>
-        <Button variant="contained" startIcon={<PictureAsPdfIcon />} onClick={() => window.print()}>
+        <span className={cx(styles.hint)} aria-live="polite">{ready ? COPY.downloadHint : COPY.preparing}</span>
+        <Button variant="contained" startIcon={<PictureAsPdfIcon />} disabled={!ready} onClick={() => window.print()}>
           {COPY.download}
         </Button>
       </div>
@@ -103,13 +129,13 @@ function ModuleDocument({ content }: { content: PrintModule }) {
         <section key={lesson.id} className={cx(styles.lesson)} aria-labelledby={`print-lesson-${lesson.id}`}>
           <h2 id={`print-lesson-${lesson.id}`} className={cx(styles.lessonTitle)}>{lesson.title}</h2>
           {lesson.pages.length === 0 ? <p className={cx(styles.hint)}>{COPY.emptyLesson}</p> : null}
-          {lesson.pages.map((page) => <PrintedPage key={page.id} page={page} />)}
+          {lesson.pages.map((page) => <PrintedPage key={page.id} page={page} onReady={markReady} />)}
         </section>
       ))}
       {content.unassignedPages.length > 0 ? (
         <section className={cx(styles.lesson)} aria-labelledby="print-unassigned">
           <h2 id="print-unassigned" className={cx(styles.lessonTitle)}>{COPY.unassignedTitle}</h2>
-          {content.unassignedPages.map((page) => <PrintedPage key={page.id} page={page} />)}
+          {content.unassignedPages.map((page) => <PrintedPage key={page.id} page={page} onReady={markReady} />)}
         </section>
       ) : null}
     </>

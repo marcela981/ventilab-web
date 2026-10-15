@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ModulePrintPage tests
-* Descripción: Integration tests of the module print view against msw: exactly one backend request (GET /api/modules/{id}/full, counted over every request), the cover with title, description and lesson count, lessons in `order` each starting a printed page (break class), their Pages and blocks in order with ContentBlocks in print mode (a video becomes a visible link with its URL), unassigned Pages at the end, "Descargar PDF" calling window.print, the 404 not-found state and the error state with retry. Depends on vitest, Testing Library, msw and the learning test helpers.
-* Versión: 1.0 (L7)
+* Descripción: Integration tests of the module print view against msw: exactly one backend request (GET /api/modules/{id}/full, counted over every request), the cover with title, description and lesson count, lessons in `order` each starting a printed page (break class), their Pages and blocks in order with ContentBlocks in print mode (a video becomes a visible link with its URL), unassigned Pages at the end, "Descargar PDF" calling window.print, the 404 not-found state and the error state with retry. Depends on vitest, Testing Library, msw and the learning test helpers. v1.1 (L7 follow-up): "Descargar PDF" stays disabled until the lazy content blocks of every printed page have rendered (a fresh page module with a gated content-blocks chunk proves the disabled state deterministically).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -140,9 +140,45 @@ describe("ModulePrintPage", () => {
     renderWithSession(<ModulePrintPage moduleId="m1" />, "TEACHER");
     const button = await screen.findByRole("button", { name: "Descargar PDF" });
 
+    await waitFor(() => expect(button).toBeEnabled(), { timeout: 5000 });
+
     expect(button.closest(".noPrint")).not.toBeNull();
     fireEvent.click(button);
     expect(print).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps Descargar PDF disabled until the lazy content blocks have loaded", async() => {
+    const chunk: { release: (() => void) | null } = { release: null };
+
+    vi.resetModules();
+    vi.doMock("@shared/rich-content/blocks/content-blocks", async() => {
+      await new Promise<void>((resolve) => {
+        chunk.release = resolve;
+      });
+
+      return { ContentBlocks: () => <p>Bloques cargados</p> };
+    });
+
+    try {
+      // Fresh page module: its lazy ContentBlocks has never resolved, whatever earlier tests loaded.
+      const { ModulePrintPage: FreshModulePrintPage } = await import("./module-print.page");
+
+      renderWithSession(<FreshModulePrintPage moduleId="m1" />, "TEACHER");
+      const button = await screen.findByRole("button", { name: "Descargar PDF" }, { timeout: 5000 });
+
+      await waitFor(() => expect(chunk.release).not.toBeNull(), { timeout: 5000 });
+      expect(button).toBeDisabled();
+      expect(screen.getByText("Preparando el contenido para imprimir…")).toBeInTheDocument();
+
+      chunk.release?.();
+
+      await waitFor(() => expect(button).toBeEnabled(), { timeout: 5000 });
+      expect(screen.getAllByText("Bloques cargados")).toHaveLength(3);
+      expect(screen.queryByText("Preparando el contenido para imprimir…")).not.toBeInTheDocument();
+    } finally {
+      vi.doUnmock("@shared/rich-content/blocks/content-blocks");
+      vi.resetModules();
+    }
   });
 
   it("shows the not-found state when the module does not exist", async() => {
