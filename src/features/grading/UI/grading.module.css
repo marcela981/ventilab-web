@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Grading styles
-* Descripción: Layout of the grading queue page: centered page column, filter bar, results card with a horizontally scrollable table, and the primary/secondary text lines of the table cells. Tokens only (var(--vl-*) / var(--mui-*)).
-* Versión: 1.0
+* Descripción: Layout of the grading queue page: centered page column, filter bar, results card with a horizontally scrollable table, and the primary/secondary text lines of the table cells. Tokens only (var(--vl-*) / var(--mui-*)). v1.1 (G3): the evaluation title link to its results page.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -56,6 +56,11 @@
   display: block;
   font: var(--mui-font-body2);
   color: var(--vl-color-text-muted);
+}
+
+.link {
+  color: var(--vl-color-primary);
+  text-decoration: underline;
 }
 
 .filters :focus-visible,

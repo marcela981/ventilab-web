@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GradingQueueTable
-* Descripción: Table of the attempts waiting for review: student (name, or email when the name is missing, with the email below), evaluation title and type, attempt number, submission date in Bogota time with its age ("hace 3 días"), the automatic score so far when there is one, and a "Calificar" link to /grading/attempts/[attemptId]. Depends on MUI, next/link, @shared/lib, the grading entities and URLs and the CSS Module.
-* Versión: 1.0
+* Descripción: Table of the attempts waiting for review: student (name, or email when the name is missing, with the email below), evaluation title and type, attempt number, submission date in Bogota time with its age ("hace 3 días"), the automatic score so far when there is one, and a "Calificar" link to /grading/attempts/[attemptId]. Depends on MUI, next/link, @shared/lib, the grading entities and URLs and the CSS Module. v1.1 (G3): the evaluation title links to its results page /grading/evaluations/[evaluationId].
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,7 +20,7 @@ import Link from "next/link";
 import { cx } from "@shared/lib/class-names";
 import { formatDateTime, formatRelativeAge } from "@shared/lib/format";
 import type { GradingEvaluationType, GradingQueueItem } from "../entities/grading.entity";
-import { buildGradingAttemptUrl } from "../entities/grading-urls";
+import { buildGradingAttemptUrl, buildGradingEvaluationUrl } from "../entities/grading-urls";
 import styles from "../../UI/grading.module.css";
 
 // TODO(i18n): move to a grading namespace in src/i18n.
@@ -38,6 +38,7 @@ export const QUEUE_TABLE_COPY = {
   score: (score: string, maxScore: string | null) => (maxScore === null ? score : `${score} / ${maxScore}`),
   attemptNumber: (attemptNumber: number) => `#${attemptNumber}`,
   gradeAction: (student: string) => `Calificar el intento de ${student}`,
+  resultsAction: (title: string) => `Ver resultados de ${title}`,
 } as const;
 
 export const EVALUATION_TYPE_LABELS: Record<GradingEvaluationType, string> = {
@@ -86,7 +87,13 @@ export function GradingQueueTable({ items, now }: GradingQueueTableProps) {
                   {item.studentName ? <span className={styles.secondary}>{item.studentEmail}</span> : null}
                 </TableCell>
                 <TableCell>
-                  <span className={styles.primary}>{item.evaluationTitle}</span>
+                  <Link
+                    href={buildGradingEvaluationUrl(item.evaluationId)}
+                    className={cx(styles.primary, styles.link)}
+                    aria-label={QUEUE_TABLE_COPY.resultsAction(item.evaluationTitle)}
+                  >
+                    {item.evaluationTitle}
+                  </Link>
                   <span className={styles.secondary}>{EVALUATION_TYPE_LABELS[item.evaluationType]}</span>
                 </TableCell>
                 <TableCell>{QUEUE_TABLE_COPY.attemptNumber(item.attemptNumber)}</TableCell>

@@ -26,6 +26,7 @@
     "src/shared/layouts/**/*",
     "src/shared/rich-content/**/*",
     "src/shared/waveforms/**/*",
+    "src/shared/charts/**/*",
     "src/shared/ai-rating/**/*",
     "src/shared/lib/**/*",
     "src/features/auth/api/**/*",
@@ -56,6 +57,7 @@
     "pages/evaluations/manage/[evaluationId]/edit.tsx",
     "pages/evaluations/manage/[evaluationId]/assignments.tsx",
     "pages/grading/index.tsx",
-    "pages/grading/attempts/[attemptId].tsx"
+    "pages/grading/attempts/[attemptId].tsx",
+    "pages/grading/evaluations/[evaluationId].tsx"
   ]
 }

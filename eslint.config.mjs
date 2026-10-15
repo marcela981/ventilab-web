@@ -36,7 +36,9 @@
  *   entra en NEW_PAGE_FILES.
  *   v3.14 (G1 grading): pages/grading/index.tsx entra en NEW_PAGE_FILES.
  *   v3.15 (G2 grading): pages/grading/attempts/[attemptId].tsx entra en NEW_PAGE_FILES.
- * Versión: 3.15
+ *   v3.16 (G3 grading): nuevo módulo compartido src/shared/charts y la ruta delgada
+ *   pages/grading/evaluations/[evaluationId].tsx entra en NEW_PAGE_FILES.
+ * Versión: 3.16
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -49,7 +51,7 @@ import boundaries from "eslint-plugin-boundaries";
 import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
 
-const NEW_SHARED_MODULES = "api-client,realtime,session,design-system,layouts,rich-content,waveforms,ai-rating,lib";
+const NEW_SHARED_MODULES = "api-client,realtime,session,design-system,layouts,rich-content,waveforms,charts,ai-rating,lib";
 const NEW_FEATURES = "auth,profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading";
 const SOURCE_EXT = "{js,jsx,ts,tsx,mjs,cjs}";
 // auth/ still holds legacy files at its root and in components/, so only its template
@@ -84,6 +86,7 @@ const NEW_PAGE_FILES = [
   "pages/evaluations/manage/[[]evaluationId[]]/assignments.tsx",
   "pages/grading/index.tsx",
   "pages/grading/attempts/[[]attemptId[]].tsx",
+  "pages/grading/evaluations/[[]evaluationId[]].tsx",
 ];
 
 const NEW_CODE_FILES = [
