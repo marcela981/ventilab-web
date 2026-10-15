@@ -41,6 +41,7 @@
     "src/features/evaluations/**/*",
     "src/features/evaluation-authoring/**/*",
     "src/features/grading/**/*",
+    "src/features/ai-chat/**/*",
     "pages/auth/login/index.tsx",
     "pages/profile/index.tsx",
     "pages/my-group/index.tsx",
@@ -71,6 +72,8 @@
     "pages/evaluation/manage/new.tsx",
     "pages/evaluation/manage/[activityId]/edit.tsx",
     "pages/evaluation/grade/index.tsx",
-    "pages/evaluation/grade/[activityId].tsx"
+    "pages/evaluation/grade/[activityId].tsx",
+    "pages/assistant/index.tsx",
+    "pages/assistant/[conversationId].tsx"
   ]
 }

@@ -46,7 +46,9 @@
  *   delgadas .tsx a las rutas nuevas y entran en NEW_PAGE_FILES.
  *   v3.22 (merge): integra las rutas de evaluations/grading con las de learning/content-editor.
  *   v3.23 (S1): nuevo módulo compartido src/shared/media-upload (subida de archivos multimedia).
- * Versión: 3.23
+ *   v3.24 (A1 ai-chat): nueva feature src/features/ai-chat (sin legado) y sus rutas delgadas
+ *   pages/assistant/index.tsx y pages/assistant/[conversationId].tsx.
+ * Versión: 3.24
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -60,12 +62,12 @@ import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
 
 const NEW_SHARED_MODULES = "api-client,realtime,session,design-system,layouts,rich-content,waveforms,charts,ai-rating,media-upload,ai-conversation,lib";
-const NEW_FEATURES = "auth,profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading";
+const NEW_FEATURES = "auth,profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat";
 const SOURCE_EXT = "{js,jsx,ts,tsx,mjs,cjs}";
 // auth/ still holds legacy files at its root and in components/, so only its template
 // layers count as new code. profile/ (legacy removed in T10), groups/, learning/ and
 // content-editor/ have no legacy, so the whole folder is new code.
-const LEGACY_FREE_FEATURES = "profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading";
+const LEGACY_FREE_FEATURES = "profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat";
 const NEW_FEATURE_FILES = [
   `src/features/auth/{api,application}/**/*.${SOURCE_EXT}`,
   `src/features/{${NEW_FEATURES}}/index.ts`,
@@ -106,6 +108,8 @@ const NEW_PAGE_FILES = [
   "pages/evaluation/manage/[[]activityId[]]/edit.tsx",
   "pages/evaluation/grade/index.tsx",
   "pages/evaluation/grade/[[]activityId[]].tsx",
+  "pages/assistant/index.tsx",
+  "pages/assistant/[[]conversationId[]].tsx",
 ];
 
 const NEW_CODE_FILES = [
@@ -185,7 +189,7 @@ const eslintConfig = [
           type: "feature",
           mode: "full",
           pattern: [
-            `src/features/{auth,profile,learning,content-editor,evaluations,evaluation-authoring,grading}/{api,application,UI}/**/*`,
+            `src/features/{auth,profile,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat}/{api,application,UI}/**/*`,
             `src/features/(groups)/**/*`,
           ],
           capture: ["feature"],
