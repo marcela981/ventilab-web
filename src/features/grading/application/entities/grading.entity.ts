@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Grading queue entities
-* Descripción: View models and pure rules of the grading queue: a queue item (student, evaluation, attempt number, submission date, auto score), a queue page with its pagination, the filter choices (evaluation, group, oldest or newest first), the query sent to `GET /api/evaluation-grading/queue` (0-based table page to 1-based API page), the evaluation filter options (READY evaluations merged with the evaluations present in the loaded queue page, sorted by title) and the pending count read from the envelope pagination. Depends on nothing at runtime.
-* Versión: 1.0
+* Descripción: View models and pure rules of the grading queue: a queue item (student, evaluation, attempt number, submission date, auto score), a queue page with its pagination, the filter choices (evaluation, group), the query sent to `GET /api/evaluation-grading/queue` (0-based table page to 1-based API page), the evaluation filter options (READY evaluations merged with the evaluations present in the loaded queue page, sorted by title) and the pending count read from the envelope pagination. Depends on nothing at runtime. v1.1 (G1 review W1): no sort order; the backend ignores sortOrder and always lists the oldest submissions first (evaluation-grading-prisma.repository orderBy submittedAt asc), so the toggle was a no-op and was removed (reported API gap).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,8 +10,6 @@
 */
 
 export type GradingEvaluationType = "EXAM" | "QUIZ" | "WORKSHOP";
-
-export type GradingSortOrder = "asc" | "desc";
 
 export type GradingQueueItem = {
   attemptId: string
@@ -37,7 +35,6 @@ export type GradingQueuePage = {
 export type GradingQueueFilters = {
   evaluationId: string
   groupId: string
-  sortOrder: GradingSortOrder
 };
 
 export const ALL_OPTION = "";
@@ -45,13 +42,12 @@ export const ALL_OPTION = "";
 export const DEFAULT_GRADING_FILTERS: GradingQueueFilters = {
   evaluationId: ALL_OPTION,
   groupId: ALL_OPTION,
-  sortOrder: "asc",
 };
 
 export type GradingQueueQuery = {
   evaluationId?: string
+  // No sortOrder: the backend ignores it and always lists the oldest submissions first (API gap).
   groupId?: string
-  sortOrder: GradingSortOrder
   page: number
   limit: number
 };
@@ -66,7 +62,6 @@ export function toGradingQueueQuery(filters: GradingQueueFilters, pageIndex: num
   return {
     ...(filters.evaluationId ? { evaluationId: filters.evaluationId } : {}),
     ...(filters.groupId ? { groupId: filters.groupId } : {}),
-    sortOrder: filters.sortOrder,
     page: pageIndex + 1,
     limit,
   };

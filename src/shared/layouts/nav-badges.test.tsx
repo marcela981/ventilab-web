@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Navigation badges tests
-* Descripción: Verifies the nav-badges registry (a setter stores a positive count, zero or null clears it, setters are no-ops without a provider) and its rendering in the AppShell: the "Calificar" item of a teacher shows the gradingPending count as a badge with screen-reader text, and shows nothing at 0. Depends on vitest, Testing Library, next/router and next/link (mocked), the session context, the AppShell and the nav-badges registry.
-* Versión: 1.0
+* Descripción: Verifies the nav-badges registry (a setter stores a positive count, zero or null clears it, setters are no-ops without a provider) and its rendering in the AppShell: the "Calificar" item of a teacher shows the gradingPending count as a badge with screen-reader text, and shows nothing at 0. Depends on vitest, Testing Library, next/router and next/link (mocked), the session context, the AppShell and the nav-badges registry. v1.1 (G1 review W2): badges are visible only while an AppShell (badge host) is mounted.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,7 +17,7 @@ import type { Role } from "@shared/session/session.entity";
 import { SessionContext } from "@shared/session/session-context";
 import type { SessionContextValue } from "@shared/session/session-context";
 import { AppShell } from "./app-shell";
-import { NavBadgeProvider, useNavBadgeCounts, useSetNavBadgeCount } from "./nav-badges";
+import { NavBadgeProvider, useNavBadgeCounts, useNavBadgesVisible, useSetNavBadgeCount } from "./nav-badges";
 
 const router = vi.hoisted(() => ({ pathname: "/panel", asPath: "/panel", isReady: true, replace: vi.fn() }));
 
@@ -133,5 +133,35 @@ describe("AppShell navigation badges", () => {
 
     expect(link).toHaveAccessibleName("Calificar");
     expect(within(link).queryByText(/pendiente/)).not.toBeInTheDocument();
+  });
+});
+
+function VisibilityProbe() {
+  return <output aria-label="visible">{useNavBadgesVisible() ? "sí" : "no"}</output>;
+}
+
+describe("nav-badge host visibility", () => {
+  it("is visible only while an AppShell is mounted", () => {
+    const tree = (withShell: boolean): ReactElement => (
+      <SessionContext.Provider value={sessionValue("TEACHER")}>
+        <NavBadgeProvider>
+          <VisibilityProbe />
+          {withShell ? <AppShell><p>Contenido</p></AppShell> : null}
+        </NavBadgeProvider>
+      </SessionContext.Provider>
+    );
+    const { rerender } = render(tree(false));
+
+    expect(screen.getByLabelText("visible")).toHaveTextContent("no");
+    rerender(tree(true));
+    expect(screen.getByLabelText("visible")).toHaveTextContent("sí");
+    rerender(tree(false));
+    expect(screen.getByLabelText("visible")).toHaveTextContent("no");
+  });
+
+  it("is never visible without a provider", () => {
+    render(<VisibilityProbe />);
+
+    expect(screen.getByLabelText("visible")).toHaveTextContent("no");
   });
 });

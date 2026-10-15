@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GradingPendingBadgeSync tests
-* Descripción: Verifies the pending-grading navigation badge feed against MSW: a teacher's count comes from `pagination.total` of a one-row queue page (limit=1), a zero total clears the badge, the count refreshes every 60 s, and students send no request. Depends on vitest, Testing Library, msw, the session context, the nav-badges registry and the grading badge sync and test helpers.
-* Versión: 1.0
+* Descripción: Verifies the pending-grading navigation badge feed against MSW: a teacher's count comes from `pagination.total` of a one-row queue page (limit=1), a zero total clears the badge, the count refreshes every 120 s, and students send no request. Depends on vitest, Testing Library, msw, the session context, the nav-badges registry and the grading badge sync and test helpers. v1.1 (G1 review W2/S3/S4/S5): the sync polls only while a badge host (AppShell) is mounted; the zero case flips a shown badge (7) to none; the student case asserts after the loader chunk resolves; a session that turns into a student or signs out clears the badge; a render error of the loader renders nothing.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,30 +9,36 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
+import type { ReactElement } from "react";
+import { SWRConfig } from "swr";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { NavBadgeProvider, useNavBadgeCounts } from "@shared/layouts/nav-badges";
+import { NavBadgeProvider, useNavBadgeCounts, useNavBadgeHost } from "@shared/layouts/nav-badges";
 import type { Role } from "@shared/session/session.entity";
 import { SessionContext } from "@shared/session/session-context";
 import type { SessionContextValue } from "@shared/session/session-context";
-import { apiUrl, envelope, queueItemDto, renderWithSwr } from "../pages/grading-test-helpers";
+import { apiUrl, envelope, queueItemDto } from "../pages/grading-test-helpers";
 import { PENDING_COUNT_REFRESH_MS } from "../hooks/use-pending-grading-count";
-import { GradingPendingBadgeSync } from "./lazy-grading-pending-badge-sync";
+import { BadgeErrorBoundary, GradingPendingBadgeSync } from "./lazy-grading-pending-badge-sync";
 
 const server = setupServer();
 let total: number;
 let queueQueries: URLSearchParams[] = [];
 
-function sessionValue(role: Role): SessionContextValue {
+type Viewer = Role | "ANONYMOUS";
+
+function sessionValue(viewer: Viewer): SessionContextValue {
+  const role = viewer === "ANONYMOUS" ? null : viewer;
+
   return {
-    status: "authenticated",
-    user: { id: "u1", email: "laura@ventylab.demo", name: "Laura", image: null, role },
+    status: role ? "authenticated" : "unauthenticated",
+    user: role ? { id: "u1", email: "laura@ventylab.demo", name: "Laura", image: null, role } : null,
     role,
     permissions: [],
     error: null,
-    hasRole: (...roles: Role[]) => roles.includes(role),
+    hasRole: (...roles: Role[]) => role !== null && roles.includes(role),
     hasPermission: () => false,
     establishSession: vi.fn(),
     signOut: vi.fn(() => Promise.resolve()),
@@ -47,16 +53,44 @@ function BadgeProbe() {
   return <output aria-label="pendientes">{counts.gradingPending === undefined ? "sin insignia" : String(counts.gradingPending)}</output>;
 }
 
-function renderSync(role: Role) {
-  return renderWithSwr(
-    <SessionContext.Provider value={sessionValue(role)}>
-      <NavBadgeProvider>
-        <GradingPendingBadgeSync />
-        <BadgeProbe />
-      </NavBadgeProvider>
-    </SessionContext.Provider>,
+// Stands in for the AppShell, which registers itself as the badge host.
+function BadgeHost() {
+  useNavBadgeHost();
+
+  return null;
+}
+
+// The SWR cache lives outside the tree so a rerender keeps it.
+function tree(viewer: Viewer, withHost: boolean, cache: Map<string, unknown>): ReactElement {
+  return (
+    <SWRConfig value={{ provider: () => cache as never, dedupingInterval: 0, shouldRetryOnError: false }}>
+      <SessionContext.Provider value={sessionValue(viewer)}>
+        <NavBadgeProvider>
+          <GradingPendingBadgeSync />
+          {withHost ? <BadgeHost /> : null}
+          <BadgeProbe />
+        </NavBadgeProvider>
+      </SessionContext.Provider>
+    </SWRConfig>
   );
 }
+
+function renderSync(viewer: Viewer, withHost = true) {
+  const cache = new Map<string, unknown>();
+  const view = render(tree(viewer, withHost, cache));
+
+  return { ...view, rerenderAs: (next: Viewer, nextHost = withHost) => view.rerender(tree(next, nextHost, cache)) };
+}
+
+// Resolves the lazy loader chunk and flushes React, so "no request" assertions are not timing-based.
+async function settleLazyChunk() {
+  await import("./grading-pending-badge-loader");
+  await act(async() => {
+    await Promise.resolve();
+  });
+}
+
+const badge = () => screen.getByLabelText("pendientes");
 
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" });
@@ -67,9 +101,7 @@ beforeEach(() => {
   queueQueries = [];
   server.use(
     http.get(apiUrl("/api/evaluation-grading/queue"), ({ request }) => {
-      const params = new URL(request.url).searchParams;
-
-      queueQueries.push(params);
+      queueQueries.push(new URL(request.url).searchParams);
 
       return HttpResponse.json(envelope(total > 0 ? [queueItemDto("a1")] : [], { total, pages: total, page: 1, limit: 1 }));
     }),
@@ -79,6 +111,7 @@ beforeEach(() => {
 afterEach(() => {
   server.resetHandlers();
   vi.useRealTimers();
+  vi.restoreAllMocks();
 });
 
 afterAll(() => {
@@ -89,45 +122,81 @@ describe("GradingPendingBadgeSync", () => {
   it("feeds the badge with the queue total read from a one-row page", async() => {
     renderSync("TEACHER");
 
-    await waitFor(() => {
-      expect(screen.getByLabelText("pendientes")).toHaveTextContent("7");
-    });
+    await waitFor(() => expect(badge()).toHaveTextContent("7"));
     expect(Object.fromEntries(queueQueries[0] ?? [])).toEqual({ page: "1", limit: "1" });
   });
 
-  it("hides the badge when nothing is pending", async() => {
-    total = 0;
-    renderSync("ADMIN");
+  it("does not poll while no badge host (AppShell) is mounted", async() => {
+    const { rerenderAs } = renderSync("TEACHER", false);
 
-    await waitFor(() => {
-      expect(queueQueries).toHaveLength(1);
-    });
-    expect(screen.getByLabelText("pendientes")).toHaveTextContent("sin insignia");
+    await settleLazyChunk();
+    expect(queueQueries).toHaveLength(0);
+    expect(badge()).toHaveTextContent("sin insignia");
+
+    rerenderAs("TEACHER", true);
+    await waitFor(() => expect(badge()).toHaveTextContent("7"));
   });
 
-  it("refreshes the count every 60 seconds", async() => {
+  it("refreshes every 120 seconds and hides the badge when the total drops to zero", async() => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
-    renderSync("TEACHER");
+    renderSync("ADMIN");
 
-    await waitFor(() => {
-      expect(screen.getByLabelText("pendientes")).toHaveTextContent("7");
-    });
+    await waitFor(() => expect(badge()).toHaveTextContent("7"));
 
     total = 3;
     await vi.advanceTimersByTimeAsync(PENDING_COUNT_REFRESH_MS + 100);
+    await waitFor(() => expect(badge()).toHaveTextContent("3"));
 
-    await waitFor(() => {
-      expect(screen.getByLabelText("pendientes")).toHaveTextContent("3");
-    });
+    total = 0;
+    await vi.advanceTimersByTimeAsync(PENDING_COUNT_REFRESH_MS + 100);
+    await waitFor(() => expect(badge()).toHaveTextContent("sin insignia"));
   });
 
   it("sends no request for students", async() => {
     renderSync("STUDENT");
 
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50);
-    });
+    await settleLazyChunk();
     expect(queueQueries).toHaveLength(0);
-    expect(screen.getByLabelText("pendientes")).toHaveTextContent("sin insignia");
+    expect(badge()).toHaveTextContent("sin insignia");
+  });
+
+  it("clears the badge when the teacher becomes a student", async() => {
+    const { rerenderAs } = renderSync("TEACHER");
+
+    await waitFor(() => expect(badge()).toHaveTextContent("7"));
+    rerenderAs("STUDENT");
+
+    await waitFor(() => expect(badge()).toHaveTextContent("sin insignia"));
+  });
+
+  it("clears the badge when the session signs out", async() => {
+    const { rerenderAs } = renderSync("TEACHER");
+
+    await waitFor(() => expect(badge()).toHaveTextContent("7"));
+    rerenderAs("ANONYMOUS");
+
+    await waitFor(() => expect(badge()).toHaveTextContent("sin insignia"));
+  });
+});
+
+describe("BadgeErrorBoundary", () => {
+  function Broken(): null {
+    throw new Error("badge failed");
+  }
+
+  it("renders nothing when the badge fails to render", () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    const { container } = render(
+      <div>
+        <BadgeErrorBoundary>
+          <Broken />
+        </BadgeErrorBoundary>
+        <p>Contenido</p>
+      </div>,
+    );
+
+    expect(screen.getByText("Contenido")).toBeInTheDocument();
+    expect(container.querySelectorAll("p")).toHaveLength(1);
   });
 });

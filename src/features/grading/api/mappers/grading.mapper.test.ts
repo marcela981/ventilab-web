@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Grading mapper and entity tests
-* Descripción: Verifies the mapping of grading queue items and pages (pagination with row-count fallback, blank student names), the evaluation and student group filter options, the queue query built from the filters, the merge of READY evaluations with the evaluations of the loaded queue page, the pending count read from the pagination and the Spanish grading error messages. Depends on vitest, the grading mappers, entities, error messages and test helpers.
-* Versión: 1.0
+* Descripción: Verifies the mapping of grading queue items and pages (pagination with row-count fallback, blank student names), the evaluation and student group filter options, the queue query built from the filters, the merge of READY evaluations with the evaluations of the loaded queue page, the pending count read from the pagination and the Spanish grading error messages. Depends on vitest, the grading mappers, entities, error messages and test helpers. v1.1 (G1 review W1): the queue query carries no sortOrder.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -88,15 +88,14 @@ describe("filter options", () => {
 });
 
 describe("toGradingQueueQuery", () => {
-  it("sends oldest first and no filters by default", () => {
-    expect(toGradingQueueQuery(DEFAULT_GRADING_FILTERS, 0, 10)).toEqual({ sortOrder: "asc", page: 1, limit: 10 });
+  it("sends no filters and no sort order by default (the backend ignores sortOrder)", () => {
+    expect(toGradingQueueQuery(DEFAULT_GRADING_FILTERS, 0, 10)).toEqual({ page: 1, limit: 10 });
   });
 
-  it("sends the chosen evaluation, group, order and 1-based page", () => {
-    expect(toGradingQueueQuery({ evaluationId: "e1", groupId: "g1", sortOrder: "desc" }, 2, 25)).toEqual({
+  it("sends the chosen evaluation, group and 1-based page", () => {
+    expect(toGradingQueueQuery({ evaluationId: "e1", groupId: "g1" }, 2, 25)).toEqual({
       evaluationId: "e1",
       groupId: "g1",
-      sortOrder: "desc",
       page: 3,
       limit: 25,
     });

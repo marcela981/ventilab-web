@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useGradingQueue
-* Descripción: Reads one page of the grading queue (`GET /api/evaluation-grading/queue` with evaluationId, groupId, sortOrder, page and limit; PENDING_REVIEW attempts of the caller's student groups) through useApiQuery and maps it to a GradingQueuePage. The previous page stays on screen while the next one loads (keepPreviousData) and the queue revalidates when the window regains focus, since other teachers may grade the same attempts. Depends on React, @shared/api-client and the grading mappers, service and entities.
-* Versión: 1.0
+* Descripción: Reads one page of the grading queue (`GET /api/evaluation-grading/queue` with evaluationId, groupId, page and limit; PENDING_REVIEW attempts of the caller's student groups) through useApiQuery and maps it to a GradingQueuePage. The previous page stays on screen while the next one loads (keepPreviousData) and the queue revalidates when the window regains focus, since other teachers may grade the same attempts. Depends on React, @shared/api-client and the grading mappers, service and entities. v1.1 (G1 review W1): no sortOrder param (ignored by the backend).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje

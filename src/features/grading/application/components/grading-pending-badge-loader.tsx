@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GradingPendingBadgeLoader
-* Descripción: Renders nothing; feeds the "gradingPending" navigation badge (nav-badges registry of @shared/layouts) with the number of attempts waiting for review, read by usePendingGradingCount (refreshed every 60 s and on window focus). Clears the badge when it unmounts. Loaded lazily, and only for teachers and admins, by GradingPendingBadgeSync. Depends on React, @shared/layouts/nav-badges and the pending count hook.
-* Versión: 1.0
+* Descripción: Renders nothing; feeds the "gradingPending" navigation badge (nav-badges registry of @shared/layouts) with the number of attempts waiting for review, read by usePendingGradingCount (refreshed every 120 s and on window focus). Clears the badge when it unmounts. Loaded lazily, and only for teachers and admins, by GradingPendingBadgeSync. Depends on React, @shared/layouts/nav-badges and the pending count hook. v1.1 (G1 review W2): refresh interval 120 s.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje

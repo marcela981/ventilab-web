@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GradingQueueFilters
-* Descripción: Filter bar of the grading queue: evaluation and student group native selects ("Todas"/"Todos" by default) and an order toggle between oldest first (default) and newest first. Controlled: reports the whole filter object on every change. Depends on MUI, @shared/lib, the grading entities and CSS Module.
-* Versión: 1.0
+* Descripción: Filter bar of the grading queue: evaluation and student group native selects ("Todas"/"Todos" by default) (the queue is always oldest first). Controlled: reports the whole filter object on every change. Depends on MUI, @shared/lib, the grading entities and CSS Module. v1.1 (G1 review W1): no sort order; the backend ignores sortOrder and always lists the oldest submissions first (evaluation-grading-prisma.repository orderBy submittedAt asc), so the toggle was a no-op and was removed (reported API gap).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,12 +10,10 @@
 */
 
 import TextField from "@mui/material/TextField";
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import { useId } from "react";
 import { cx } from "@shared/lib/class-names";
 import { ALL_OPTION } from "../entities/grading.entity";
-import type { FilterOption, GradingQueueFilters as Filters, GradingSortOrder } from "../entities/grading.entity";
+import type { FilterOption, GradingQueueFilters as Filters } from "../entities/grading.entity";
 import styles from "../../UI/grading.module.css";
 
 // TODO(i18n): move to a grading namespace in src/i18n.
@@ -25,9 +23,6 @@ export const FILTER_COPY = {
   group: "Grupo",
   allEvaluations: "Todas",
   allGroups: "Todos",
-  order: "Orden",
-  oldest: "Más antiguos primero",
-  newest: "Más recientes primero",
 } as const;
 
 const NATIVE_SELECT = { select: { native: true }, inputLabel: { shrink: true } } as const;
@@ -77,20 +72,7 @@ export function GradingQueueFilters({ value, evaluations, groups, onChange }: Gr
           </option>
         ))}
       </TextField>
-      <ToggleButtonGroup
-        exclusive
-        size="small"
-        aria-label={FILTER_COPY.order}
-        value={value.sortOrder}
-        onChange={(_event, next: GradingSortOrder | null) => {
-          if (next) {
-            onChange({ ...value, sortOrder: next });
-          }
-        }}
-      >
-        <ToggleButton value="asc">{FILTER_COPY.oldest}</ToggleButton>
-        <ToggleButton value="desc">{FILTER_COPY.newest}</ToggleButton>
-      </ToggleButtonGroup>
+      {/* No sort toggle: the backend ignores sortOrder and always lists the oldest submissions first (API gap). */}
     </div>
   );
 }

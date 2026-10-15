@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GradingQueuePage
-* Descripción: Staff page /grading (teachers and admins): the queue of attempts waiting for review from `GET /api/evaluation-grading/queue`, filtered on the server by evaluation (READY evaluations plus those already in the loaded page) and student group, oldest first by default with a toggle to newest first (sortOrder), 10/25/50 per page (changing a filter returns to the first page). Each row shows the student, the evaluation and its type, the attempt number, the submission date in Bogota time with its age and the automatic score so far, and links to /grading/attempts/[attemptId]. Revalidates on window focus. Loading, error with retry and empty ("No hay intentos pendientes de calificación") states; when the requested page comes back empty beyond the last page the list steps back to the last available page. Depends on MUI, next/head, the design-system components, @shared/lib, the grading hooks, entities, components and CSS Module.
-* Versión: 1.0
+* Descripción: Staff page /grading (teachers and admins): the queue of attempts waiting for review from `GET /api/evaluation-grading/queue`, filtered on the server by evaluation (READY evaluations plus those already in the loaded page) and student group, always oldest first (the backend has no sort option), 10/25/50 per page (changing a filter returns to the first page). Each row shows the student, the evaluation and its type, the attempt number, the submission date in Bogota time with its age and the automatic score so far, and links to /grading/attempts/[attemptId]. Revalidates on window focus. Loading, error with retry and empty ("No hay intentos pendientes de calificación") states; when the requested page comes back empty beyond the last page the list steps back to the last available page. Depends on MUI, next/head, the design-system components, @shared/lib, the grading hooks, entities, components and CSS Module. v1.1 (G1 review W1/S7): no sort toggle (the backend ignores sortOrder; reported gap); when a refresh fails while a page is already shown, an inline warning with the Spanish error and a retry stays above the (possibly stale) list.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,6 +10,7 @@
 */
 
 import GradingIcon from "@mui/icons-material/Grading";
+import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import TablePagination from "@mui/material/TablePagination";
 import Head from "next/head";
@@ -41,6 +42,8 @@ export const QUEUE_COPY = {
   noMatchDescription: "Prueba con otra evaluación u otro grupo.",
   clearFilters: "Limpiar filtros",
   rowsPerPage: "Filas por página:",
+  staleWarning: "No se pudo actualizar la cola. Los datos mostrados pueden estar desactualizados.",
+  retry: "Reintentar",
 } as const;
 
 const PAGE_SIZES = [10, 25, 50];
@@ -111,7 +114,7 @@ export function GradingQueuePage({ now }: GradingQueuePageProps = {}) {
             title={QUEUE_COPY.noMatchTitle}
             description={QUEUE_COPY.noMatchDescription}
             action={(
-              <Button onClick={() => changeFilters({ ...DEFAULT_GRADING_FILTERS, sortOrder: filters.sortOrder })}>
+              <Button onClick={() => changeFilters(DEFAULT_GRADING_FILTERS)}>
                 {QUEUE_COPY.clearFilters}
               </Button>
             )}
@@ -147,6 +150,14 @@ export function GradingQueuePage({ now }: GradingQueuePageProps = {}) {
       </Head>
       <PageHeader title={QUEUE_COPY.title} subtitle={QUEUE_COPY.subtitle} />
       <div className={cx(styles.content)}>
+        {page && error ? (
+          <Alert
+            severity="warning"
+            action={<Button color="inherit" size="small" onClick={() => void reload()}>{QUEUE_COPY.retry}</Button>}
+          >
+            {QUEUE_COPY.staleWarning} {getGradingErrorMessage(error)}
+          </Alert>
+        ) : null}
         {renderList()}
         {!page && isLoading ? <LoadingState label={QUEUE_COPY.loading} /> : null}
         {!page && !isLoading && error ? (
