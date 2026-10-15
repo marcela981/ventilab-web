@@ -1,0 +1,57 @@
+/*
+* Funcionalidad: Content editor error messages tests
+* Descripción: Unit tests of the Spanish error mapping of the content editor: the student-data 409 (archive instead) and other known codes, the 409 variants (duplicate slug or title, generic conflict), status fallbacks (400, 403, 404, 413, 415, 422, 429 with and without Retry-After, 5xx), timeout and network errors, and isStudentDataConflict. Depends on vitest and the api-client errors.
+* Versión: 1.0 (C2)
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+import { describe, expect, it } from "vitest";
+import { ApiError, CLIENT_ERROR_CODES } from "@shared/api-client/api-error";
+import {
+  CONTENT_ERROR_MESSAGES,
+  CONTENT_FALLBACK_MESSAGES,
+  getContentErrorMessage,
+  isStudentDataConflict,
+} from "./content-editor-error-messages";
+
+const apiError = (status: number, code = "common.unknown", retryAfter?: number) => new ApiError({ status, code, message: code, retryAfter });
+
+describe("getContentErrorMessage", () => {
+  it("maps the known content codes", () => {
+    expect(getContentErrorMessage(apiError(409, "curriculum.node_has_student_data"))).toBe(CONTENT_ERROR_MESSAGES["curriculum.node_has_student_data"]);
+    expect(getContentErrorMessage(apiError(409, "sections.section_slug_already_exists"))).toMatch(/identificador/);
+    expect(getContentErrorMessage(apiError(409, "levels.level_title_already_exists"))).toMatch(/título/);
+    expect(getContentErrorMessage(apiError(400, "modules.invalid_module_reorder"))).toMatch(/orden/);
+  });
+
+  it("falls back by status", () => {
+    expect(getContentErrorMessage(apiError(400))).toBe(CONTENT_FALLBACK_MESSAGES.invalid);
+    expect(getContentErrorMessage(apiError(403))).toBe(CONTENT_FALLBACK_MESSAGES.forbidden);
+    expect(getContentErrorMessage(apiError(404))).toBe(CONTENT_FALLBACK_MESSAGES.notFound);
+    expect(getContentErrorMessage(apiError(409))).toBe(CONTENT_FALLBACK_MESSAGES.conflict);
+    expect(getContentErrorMessage(apiError(413))).toBe(CONTENT_FALLBACK_MESSAGES.tooLarge);
+    expect(getContentErrorMessage(apiError(415))).toBe(CONTENT_FALLBACK_MESSAGES.unsupportedType);
+    expect(getContentErrorMessage(apiError(422))).toBe(CONTENT_FALLBACK_MESSAGES.invalid);
+    expect(getContentErrorMessage(apiError(429))).toBe(CONTENT_FALLBACK_MESSAGES.tooManyRequests);
+    expect(getContentErrorMessage(apiError(429, "common.too_many_requests", 30))).toBe("Demasiadas solicitudes. Inténtalo de nuevo en 30 segundos.");
+    expect(getContentErrorMessage(apiError(503))).toBe(CONTENT_FALLBACK_MESSAGES.server);
+  });
+
+  it("maps client-side failures", () => {
+    expect(getContentErrorMessage(apiError(0, CLIENT_ERROR_CODES.networkTimeout))).toBe(CONTENT_FALLBACK_MESSAGES.timeout);
+    expect(getContentErrorMessage(apiError(0, CLIENT_ERROR_CODES.networkUnavailable))).toBe(CONTENT_FALLBACK_MESSAGES.network);
+    expect(getContentErrorMessage(new Error("boom"))).toBe(CONTENT_FALLBACK_MESSAGES.unknown);
+  });
+});
+
+describe("isStudentDataConflict", () => {
+  it("only accepts the student-data 409", () => {
+    expect(isStudentDataConflict(apiError(409, "curriculum.node_has_student_data"))).toBe(true);
+    expect(isStudentDataConflict(apiError(409, "sections.section_slug_already_exists"))).toBe(false);
+    expect(isStudentDataConflict(apiError(500, "curriculum.node_has_student_data"))).toBe(false);
+  });
+});
