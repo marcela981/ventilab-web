@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: QuestionCard
 * Descripción: Editor of one question in the builder (article "Pregunta N"): drag handle slot, type label, "Sin guardar" marker, delete action, prompt as rich text, the statement media (QuestionMediaField), points, the fields of its type (options for SINGLE_CHOICE, MULTIPLE_CHOICE and TRUE_FALSE; a teacher note for OPEN_TEXT; the SimulationQuestionFields placeholder for SIMULATION) and the explanation shown with the results (plain text or markdown: the backend stores it as a string). Shows the validation messages, the error of its last failed save and, after a 422, its readiness issues from the reloaded detail. With the structure locked, points, options and delete are disabled. Depends on React, MUI, the design-system FormField, @shared/media-upload, the builder entities, components, copy and CSS Module. v1.1 (A3): SIMULATION questions edit their clinical case and rubric (SimulationQuestionFields) with the rubric issues of the validation; on a READY evaluation the correct answer of SINGLE_CHOICE and TRUE_FALSE is read-only with a hint to return to draft; the readiness issues come from the backend or from the client validation. v1.2 (S1): the card owns the media uploads of its statement and option images (shared useMediaUploader, one slot per statement and per option key); an uploaded media is added to the latest draft (statement mediaIds, option mediaId with its preview) and removing only changes the draft; media edits stay enabled with the structure locked.
-* Versión: 1.2
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -88,8 +88,11 @@ export function QuestionCard({
     latest.current = { draft, onChange };
   }, [draft, onChange]);
 
+  // The ref is updated right away so two uploads finishing before the next render do not overwrite each other.
   const applyDraft = (change: (current: QuestionDraft) => QuestionDraft) => {
-    latest.current.onChange(change(latest.current.draft));
+    const next = change(latest.current.draft);
+    latest.current = { ...latest.current, draft: next };
+    latest.current.onChange(next);
   };
 
   const selectStatementMedia = (file: File) => {
