@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluations mappers tests
-* Descripción: Verifies the DTO → entity mapping of the student evaluations feature: items without an evaluation summary are dropped, attempts are sorted and carry a result only when published with a grade, descriptions become text or Tiptap doc RichText, the attempt start keeps the attempt id, and the attempt detail sorts scenarios, questions and options while copying correctness, explanation, rubric and earned score only when the backend sends them. Depends on vitest, the mappers and the test helpers.
-* Versión: 1.0
+* Descripción: Verifies the DTO → entity mapping of the student evaluations feature: items without an evaluation summary are dropped, attempts are sorted and carry a result only when published with a grade, descriptions become text or Tiptap doc RichText, the attempt start keeps the attempt id, and the attempt detail sorts scenarios, questions and options while copying correctness, explanation, rubric and earned score only when the backend sends them. Depends on vitest, the mappers and the test helpers. v1.1 (E3): toAttemptFeedback keeps the overall item (or null) and the per-question items.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,7 +12,7 @@
 import { describe, expect, it } from "vitest";
 import { attemptDto, myEvaluationDto } from "../../application/pages/evaluations-test-helpers";
 import type { StudentAttemptDetailDTO, StudentQuestionDTO } from "../dtos/evaluations.dto";
-import { toAttemptDetail, toAttemptStart, toMyEvaluations, toMyGrade, toRichText } from "./evaluations.mapper";
+import { toAttemptDetail, toAttemptFeedback, toAttemptStart, toMyEvaluations, toMyGrade, toRichText } from "./evaluations.mapper";
 
 const tiptapDoc = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Hola" }] }] };
 
@@ -192,5 +192,19 @@ describe("toAttemptDetail", () => {
     expect(detail.result).toEqual({ grade: 2.5, passed: false, score: 1, maxScore: 4 });
     expect(detail.questions[0]).toMatchObject({ explanation: "Porque sí", earnedScore: 0, rubric: null });
     expect(detail.questions[0]?.options[0]).toMatchObject({ isCorrect: false, feedback: null });
+  });
+});
+
+describe("toAttemptFeedback", () => {
+  it("keeps the overall item and the question items", () => {
+    expect(toAttemptFeedback({
+      attemptId: "at1",
+      overall: null,
+      questions: [{ id: "f1", questionId: "q1", status: "READY", source: "DETERMINISTIC", content: "Correcto." }],
+    })).toEqual({
+      attemptId: "at1",
+      overall: null,
+      questions: [{ id: "f1", questionId: "q1", status: "READY", source: "DETERMINISTIC", content: "Correcto." }],
+    });
   });
 });

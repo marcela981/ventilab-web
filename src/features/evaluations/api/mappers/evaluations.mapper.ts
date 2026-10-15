@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluations mappers
-* Descripción: Pure DTO → entity mappers of the student evaluations feature: my evaluations (items without an evaluation summary are dropped, attempts sorted by number, the result only when the attempt is published and the API sent its grade), my grades, the attempt start and the attempt detail (scenarios by order, questions by position, options by order; isCorrect, feedback, explanation, rubric and earnedScore are copied only when the backend sends them, that is, once published). Descriptions, prompts and scenario contents become RichText: a non-empty string is text, a Tiptap document object is a doc. Depends on the evaluations DTOs and entities. v1.1 (E2): toSaveAnswerBody, the PUT body of one answer by question type (choices send selectedOptionIds, OPEN_TEXT sends textAnswer, SIMULATION sends simulationSessionId when there is one).
-* Versión: 1.1
+* Descripción: Pure DTO → entity mappers of the student evaluations feature: my evaluations (items without an evaluation summary are dropped, attempts sorted by number, the result only when the attempt is published and the API sent its grade), my grades, the attempt start and the attempt detail (scenarios by order, questions by position, options by order; isCorrect, feedback, explanation, rubric and earnedScore are copied only when the backend sends them, that is, once published). Descriptions, prompts and scenario contents become RichText: a non-empty string is text, a Tiptap document object is a doc. Depends on the evaluations DTOs and entities. v1.1 (E2): toSaveAnswerBody, the PUT body of one answer by question type (choices send selectedOptionIds, OPEN_TEXT sends textAnswer, SIMULATION sends simulationSessionId when there is one). v1.2 (E3): toAttemptFeedback, the AI feedback of a published attempt (overall and per-question items with status and source).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,6 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import type { AttemptFeedback, FeedbackItem } from "../../application/entities/attempt-feedback";
 import type {
   AttemptAnswer,
   AttemptDetail,
@@ -33,6 +34,8 @@ import type {
   StudentAnswerDTO,
   StudentAttemptDetailDTO,
   StudentAttemptStartDTO,
+  StudentGradeFeedbackDTO,
+  StudentGradeFeedbackItemDTO,
   StudentOptionDTO,
   StudentQuestionDTO,
   StudentScenarioDTO,
@@ -238,4 +241,16 @@ export function toSaveAnswerBody(type: QuestionType, answer: AttemptAnswer): Sav
   }
 
   return { selectedOptionIds: [...answer.selectedOptionIds] };
+}
+
+function toFeedbackItem(dto: StudentGradeFeedbackItemDTO): FeedbackItem {
+  return { id: dto.id, questionId: dto.questionId, status: dto.status, source: dto.source, content: dto.content };
+}
+
+export function toAttemptFeedback(dto: StudentGradeFeedbackDTO): AttemptFeedback {
+  return {
+    attemptId: dto.attemptId,
+    overall: dto.overall ? toFeedbackItem(dto.overall) : null,
+    questions: dto.questions.map(toFeedbackItem),
+  };
 }

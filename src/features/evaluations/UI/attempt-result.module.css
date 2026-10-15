@@ -1,0 +1,248 @@
+/*
+* Funcionalidad: Attempt result styles
+* Descripción: Layout of the attempt result page (/evaluations/[evaluationId]/attempts/[attemptId]/result): back links, header, the unpublished status card, the grade summary (passed/failed colors from the semantic tokens), the question cards with the option review (correct in success, wrong selection in error), the teacher explanation, the rubric table and the AI feedback block (pending hint, discreet automatic-feedback label). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  width: 100%;
+  max-width: 60rem;
+  margin: 0 auto;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2) var(--vl-space-4);
+}
+
+.link {
+  color: var(--vl-color-link);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.title {
+  margin: 0;
+  color: var(--vl-color-text);
+  font-size: 1.5rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.muted {
+  margin: 0;
+  color: var(--vl-color-text-muted);
+}
+
+.statusCard,
+.summary,
+.questionCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  min-width: 0;
+  padding: var(--vl-space-5);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+}
+
+.statusCard {
+  border-left: 4px solid var(--vl-color-info);
+}
+
+.statusTitle {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.grade {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--vl-space-2) var(--vl-space-3);
+  margin: 0;
+}
+
+.gradeLabel {
+  color: var(--vl-color-text-muted);
+}
+
+.gradeValue {
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.gradeVerdict {
+  font-weight: 600;
+}
+
+.gradePassed .gradeValue,
+.gradePassed .gradeVerdict {
+  color: var(--vl-color-success);
+}
+
+.gradeFailed .gradeValue,
+.gradeFailed .gradeVerdict {
+  color: var(--vl-color-error);
+}
+
+.questionHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-2) var(--vl-space-3);
+}
+
+.questionTitle {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.questionPoints {
+  color: var(--vl-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.optionReview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reviewItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-2) var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.reviewCorrect {
+  border-color: var(--vl-color-success);
+}
+
+.reviewCorrect > svg {
+  color: var(--vl-color-success);
+}
+
+.reviewWrong {
+  border-color: var(--vl-color-error);
+}
+
+.reviewWrong > svg {
+  color: var(--vl-color-error);
+}
+
+.reviewText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.reviewLabel {
+  font-weight: 600;
+}
+
+.reviewFeedback {
+  color: var(--vl-color-text-muted);
+  font-size: 0.875rem;
+}
+
+.explanation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.blockTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.rubric {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  overflow-x: auto;
+}
+
+.rubricTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rubricTable th,
+.rubricTable td {
+  padding: var(--vl-space-2);
+  border-bottom: 1px solid var(--vl-color-border);
+  text-align: left;
+}
+
+.rubricCaption {
+  margin-bottom: var(--vl-space-2);
+  font-weight: 600;
+  text-align: left;
+}
+
+.rubricJustification {
+  margin: 0;
+}
+
+.feedback {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-3) var(--vl-space-4);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-hover);
+}
+
+.feedbackHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2) var(--vl-space-3);
+}
+
+.feedbackTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.feedbackSource {
+  color: var(--vl-color-text-muted);
+  font-size: 0.75rem;
+}
+
+.feedbackHint {
+  margin: 0;
+  color: var(--vl-color-text-muted);
+  font-size: 0.875rem;
+}

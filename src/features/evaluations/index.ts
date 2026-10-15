@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: evaluations public API
-* Descripción: Public surface of the student evaluations feature for pages and other features: EvaluationsListPage (thin route pages/evaluations), EvaluationIntroPage (thin route pages/evaluations/[evaluationId]), the URL builders of the student evaluation routes, the entities and labels, the RichTextView and the attempt/grade badges (reused by the attempt player, the result page and the authoring preview), and the realtime refresh hook. Depends on the evaluations application layer. v1.1 (E2): AttemptPlayerPage (thin route pages/evaluations/[evaluationId]/attempts/[attemptId]); QuestionView and the per-type question components with their props (readOnly mode reused by the authoring preview); PracticalQuestionSlot and registerPracticalQuestionRenderer, the extension point a future simulator feature uses to render SIMULATION questions.
-* Versión: 1.1
+* Descripción: Public surface of the student evaluations feature for pages and other features: EvaluationsListPage (thin route pages/evaluations), EvaluationIntroPage (thin route pages/evaluations/[evaluationId]), the URL builders of the student evaluation routes, the entities and labels, the RichTextView and the attempt/grade badges (reused by the attempt player, the result page and the authoring preview), and the realtime refresh hook. Depends on the evaluations application layer. v1.1 (E2): AttemptPlayerPage (thin route pages/evaluations/[evaluationId]/attempts/[attemptId]); QuestionView and the per-type question components with their props (readOnly mode reused by the authoring preview); PracticalQuestionSlot and registerPracticalQuestionRenderer, the extension point a future simulator feature uses to render SIMULATION questions. v1.2 (E3): AttemptResultPage (thin route pages/evaluations/[evaluationId]/attempts/[attemptId]/result).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -50,6 +50,8 @@ export {
 export { useEvaluationsRealtime } from "./application/hooks/use-evaluations-realtime";
 export { AttemptPlayerPage } from "./application/pages/attempt-player.page";
 export type { AttemptPlayerPageProps } from "./application/pages/attempt-player.page";
+export { AttemptResultPage } from "./application/pages/attempt-result.page";
+export type { AttemptResultPageProps } from "./application/pages/attempt-result.page";
 export { EvaluationIntroPage } from "./application/pages/evaluation-intro.page";
 export type { EvaluationIntroPageProps } from "./application/pages/evaluation-intro.page";
 export { EvaluationsListPage } from "./application/pages/evaluations-list.page";
