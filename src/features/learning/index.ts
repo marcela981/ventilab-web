@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: learning public API
-* Descripción: Public surface of the learning feature for the thin routes under pages/learn (LearnHomePage, SectionPage, ModulePage) and for the next learning tasks (L3 viewer, L7 print): URL builders/parsers, curriculum tree and lesson hooks with the tree locators, LockedContentScreen, LearningBreadcrumb, PreviewNotice, usePreviewMode, the progress hooks, the page-view tracker and the learning error messages. v1.1 (L3): LessonViewerPage, LessonSidePanel (slots for the L4-L6 panels), the lesson navigation rules, PageContent/usePageContent and the module completion URL. v1.2 (L7): ModulePrintPage and withPrintLayout (print view without the app shell, TEACHER/ADMIN guard).
-* Versión: 1.2
+* Descripción: Public surface of the learning feature for the thin routes under pages/learn (LearnHomePage, SectionPage, ModulePage) and for the next learning tasks (L3 viewer, L7 print): URL builders/parsers, curriculum tree and lesson hooks with the tree locators, LockedContentScreen, LearningBreadcrumb, PreviewNotice, usePreviewMode, the progress hooks, the page-view tracker and the learning error messages. v1.1 (L3): LessonViewerPage, LessonSidePanel (slots for the L4-L6 panels), the lesson navigation rules, PageContent/usePageContent and the module completion URL. v1.2 (L7): ModulePrintPage and withPrintLayout (print view without the app shell, TEACHER/ADMIN guard). v1.3 (R1): resolveLegacyLessonUrl for the legacy /teaching redirects.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -47,6 +47,7 @@ export {
   MODULE_COMPLETED_PARAM,
   parsePageNumber,
   parseRouteId,
+  resolveLegacyLessonUrl,
 } from "./application/entities/learning-urls";
 export type { LessonPage, LessonSummary, PageContent } from "./application/entities/lesson.entity";
 export { findNextStep, findPreviousStep, resolvePageRedirect } from "./application/entities/lesson-navigation";

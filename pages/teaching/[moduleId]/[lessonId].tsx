@@ -1,44 +1,20 @@
-// Next.js Dynamic Lesson Page - VentyLab
-// Route: /teaching/[moduleId]/[lessonId]
-import React from 'react';
-import { useRouter } from 'next/router';
-import { LearningProgressProvider } from '@/features/progress/LearningProgressContext';
-import LessonViewerRouteAdapter from '@/features/ensenanza/shared/components/pages/LessonViewerRouteAdapter';
+/*
+* Funcionalidad: Legacy lesson route redirect (/teaching/[moduleId]/[lessonId])
+* Descripción: The legacy lesson viewer route (LearningProgressProvider + LessonViewerRouteAdapter) now redirects server-side to page 1 of the equivalent lesson in the learning feature (/learn/modules/[moduleId]/lessons/[lessonId]/1). Seeded module and lesson ids are identical in the legacy curriculum and the backend; the legacy viewer kept its page pointer in memory, so there is no page to carry over. Missing ids redirect to /learn. Temporary (307) so the target can still change while the legacy modules coexist. v2.0 (R1): replaces the legacy viewer page. Depends on next and @features/learning.
+* Versión: 2.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+import type { GetServerSideProps } from "next";
+import { LEARN_HOME_URL, resolveLegacyLessonUrl } from "@features/learning";
 
-export default function LessonPage() {
-  const router = useRouter();
-  const { moduleId, lessonId } = router.query;
+export const getServerSideProps: GetServerSideProps = async ({ params }) => ({
+  redirect: { destination: resolveLegacyLessonUrl(params ?? {}) ?? LEARN_HOME_URL, permanent: false },
+});
 
-  // Handler para cerrar la lección y volver al módulo de enseñanza
-  const handleClose = () => {
-    router.push('/teaching');
-  };
-
-  // Handler para navegar a otra lección
-  const handleNavigateLesson = (targetModuleId, targetLessonId) => {
-    router.push(`/teaching/${targetModuleId}/${targetLessonId}`);
-  };
-
-  // Handler para marcar lección como completada
-  const handleMarkComplete = () => {
-    // Esta funcionalidad es manejada por el contexto LearningProgress
-    // No necesita implementación adicional aquí
-  };
-
-  // Mostrar loading mientras se obtienen los parámetros de la ruta
-  if (!moduleId || !lessonId) {
-    return null;
-  }
-
-  return (
-    <LearningProgressProvider>
-      <LessonViewerRouteAdapter
-        moduleId={moduleId}
-        lessonId={lessonId}
-        onClose={handleClose}
-        onNavigateLesson={handleNavigateLesson}
-        onMarkComplete={handleMarkComplete}
-      />
-    </LearningProgressProvider>
-  );
+export default function LegacyLessonRedirect(): null {
+  return null;
 }

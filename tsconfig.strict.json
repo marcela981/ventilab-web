@@ -46,6 +46,7 @@
     "pages/learn/modules/[moduleId]/print.tsx",
     "pages/learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber].tsx",
     "pages/content/index.tsx",
-    "pages/content/pages/[pageId].tsx"
+    "pages/content/pages/[pageId].tsx",
+    "pages/teaching/[moduleId]/[lessonId].tsx"
   ]
 }
