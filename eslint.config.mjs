@@ -32,7 +32,9 @@
  *   v3.11 (A1 evaluation-authoring): pages/evaluations/manage/index.tsx entra en NEW_PAGE_FILES.
  *   v3.12 (A2 evaluation-authoring): pages/evaluations/manage/new.tsx y
  *   pages/evaluations/manage/[evaluationId]/edit.tsx entran en NEW_PAGE_FILES.
- * Versión: 3.12
+ *   v3.13 (A4 evaluation-authoring): pages/evaluations/manage/[evaluationId]/assignments.tsx
+ *   entra en NEW_PAGE_FILES.
+ * Versión: 3.13
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -77,6 +79,7 @@ const NEW_PAGE_FILES = [
   "pages/evaluations/manage/index.tsx",
   "pages/evaluations/manage/new.tsx",
   "pages/evaluations/manage/[[]evaluationId[]]/edit.tsx",
+  "pages/evaluations/manage/[[]evaluationId[]]/assignments.tsx",
 ];
 
 const NEW_CODE_FILES = [

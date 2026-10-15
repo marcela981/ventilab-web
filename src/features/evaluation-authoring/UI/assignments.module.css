@@ -1,0 +1,141 @@
+/*
+* Funcionalidad: Evaluation assignments styles
+* Descripción: Layout of the activations page /evaluations/manage/[evaluationId]/assignments: centered column, header actions, the not-activatable notice, the activations table with its state badges (upcoming in info, active in success, closed muted) and attempt breakdown, and the activation dialog (scrollable group checklist and the date-time row that wraps on narrow screens). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.statusText {
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.results {
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+  overflow: hidden;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.groupName {
+  display: block;
+  font-weight: 500;
+  color: var(--vl-color-text);
+}
+
+.secondary {
+  display: block;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.stateBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--vl-space-1) var(--vl-space-2);
+  border: 1px solid currentColor;
+  border-radius: var(--vl-radius-pill);
+  font: var(--mui-font-caption);
+  white-space: nowrap;
+}
+
+.stateUpcoming {
+  color: var(--vl-color-info);
+}
+
+.stateActive {
+  color: var(--vl-color-success);
+}
+
+.stateClosed {
+  color: var(--vl-color-text-muted);
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--vl-space-1);
+}
+
+.dialogBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+.groupFieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.groupLegend {
+  margin-bottom: var(--vl-space-1);
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-color-text);
+}
+
+.groupList {
+  display: flex;
+  flex-direction: column;
+  max-height: 16rem;
+  padding: var(--vl-space-1) var(--vl-space-2);
+  overflow-y: auto;
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.fieldError {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-color-error);
+}
+
+.dateRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-3);
+}
+
+.dateField {
+  flex: 1 1 14rem;
+}
+
+.muted {
+  margin: 0;
+  color: var(--vl-color-text-muted);
+}

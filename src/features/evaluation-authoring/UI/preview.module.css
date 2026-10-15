@@ -1,0 +1,97 @@
+/*
+* Funcionalidad: Student preview styles
+* Descripción: Layout of the full-screen student preview of the evaluation builder: the notice bar, the body with the question navigator beside the content on wide screens, the scenario panel beside the question card when the question belongs to a scenario, the question header and the previous/next pager. The question, navigator and scenario components keep their own evaluations styles. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-3) var(--vl-space-4);
+  border-bottom: 1px solid var(--vl-color-border);
+  background: var(--vl-color-surface);
+}
+
+.toolbarTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+  color: var(--vl-color-text);
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--vl-space-4);
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--vl-space-4);
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--vl-space-4);
+  min-width: 0;
+}
+
+.questionCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  min-width: 0;
+  padding: var(--vl-space-5);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.questionHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2) var(--vl-space-3);
+}
+
+.questionTitle {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.questionPoints {
+  color: var(--vl-color-text-muted);
+}
+
+.pager {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+}
+
+@media (min-width: 900px) {
+  .body {
+    grid-template-columns: 14rem minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .contentWithScenario {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    align-items: start;
+  }
+}

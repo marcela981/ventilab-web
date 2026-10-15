@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: evaluations public API
-* Descripción: Public surface of the student evaluations feature for pages and other features: EvaluationsListPage (thin route pages/evaluations), EvaluationIntroPage (thin route pages/evaluations/[evaluationId]), the URL builders of the student evaluation routes, the entities and labels, the RichTextView and the attempt/grade badges (reused by the attempt player, the result page and the authoring preview), and the realtime refresh hook. Depends on the evaluations application layer. v1.1 (E2): AttemptPlayerPage (thin route pages/evaluations/[evaluationId]/attempts/[attemptId]); QuestionView and the per-type question components with their props (readOnly mode reused by the authoring preview); PracticalQuestionSlot and registerPracticalQuestionRenderer, the extension point a future simulator feature uses to render SIMULATION questions. v1.2 (E3): AttemptResultPage (thin route pages/evaluations/[evaluationId]/attempts/[attemptId]/result).
-* Versión: 1.2
+* Descripción: Public surface of the student evaluations feature for pages and other features: EvaluationsListPage (thin route pages/evaluations), EvaluationIntroPage (thin route pages/evaluations/[evaluationId]), the URL builders of the student evaluation routes, the entities and labels, the RichTextView and the attempt/grade badges (reused by the attempt player, the result page and the authoring preview), and the realtime refresh hook. Depends on the evaluations application layer. v1.1 (E2): AttemptPlayerPage (thin route pages/evaluations/[evaluationId]/attempts/[attemptId]); QuestionView and the per-type question components with their props (readOnly mode reused by the authoring preview); PracticalQuestionSlot and registerPracticalQuestionRenderer, the extension point a future simulator feature uses to render SIMULATION questions. v1.2 (E3): AttemptResultPage (thin route pages/evaluations/[evaluationId]/attempts/[attemptId]/result). v1.3 (A4): the attempt player pieces reused by the authoring student preview: QuestionNavigator, ScenarioPanel, findScenario/clampQuestionIndex, and toRichText (the rich text normalization of the student mapper).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,6 +9,10 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+export { toRichText } from "./api/mappers/evaluations.mapper";
+export { QuestionNavigator } from "./application/components/attempt/question-navigator";
+export type { QuestionNavigatorProps } from "./application/components/attempt/question-navigator";
+export { ScenarioPanel } from "./application/components/attempt/scenario-panel";
 export { AttemptStatusBadge, GradeBadge } from "./application/components/attempt-badges";
 export { MultipleChoiceQuestion } from "./application/components/questions/multiple-choice-question";
 export { OpenTextQuestion } from "./application/components/questions/open-text-question";
@@ -37,7 +41,7 @@ export type {
   RichText,
 } from "./application/entities/evaluation.entity";
 export { EVALUATION_TYPES } from "./application/entities/evaluation.entity";
-export { OPEN_TEXT_MAX_LENGTH } from "./application/entities/attempt-progress";
+export { clampQuestionIndex, findScenario, OPEN_TEXT_MAX_LENGTH } from "./application/entities/attempt-progress";
 export type { PracticalQuestionRendererProps, QuestionViewProps } from "./application/entities/practical-question-renderer";
 export { registerPracticalQuestionRenderer } from "./application/entities/practical-question-renderer";
 export { ATTEMPT_STATUS_LABELS, EVALUATION_TYPE_LABELS } from "./application/entities/evaluation-labels";

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useAuthoringMutation
-* Descripción: Runs one evaluation authoring mutation at a time (duplicate, archive and the later builder actions): ignores a second call while one is pending ("busy"), invalidates every authoring SWR key after a success (EVALUATION_AUTHORING_QUERY_PATHS: list, detail, activations) and turns a failure into the Spanish message of getAuthoringErrorMessage (backend codes such as invalid_status_transition, then status fallbacks). Depends on SWR, @shared/api-client, the authoring service and error messages. v1.1 (A2): a failure also carries the backend error code and HTTP status, so the builder can react to 409 evaluation.has_submitted_attempts and 422.
-* Versión: 1.1
+* Descripción: Runs one evaluation authoring mutation at a time (duplicate, archive and the later builder actions): ignores a second call while one is pending ("busy"), invalidates every authoring SWR key after a success (EVALUATION_AUTHORING_QUERY_PATHS: list, detail, activations) and turns a failure into the Spanish message of getAuthoringErrorMessage (backend codes such as invalid_status_transition, then status fallbacks). Depends on SWR, @shared/api-client, the authoring service and error messages. v1.1 (A2): a failure also carries the backend error code and HTTP status, so the builder can react to 409 evaluation.has_submitted_attempts and 422. v1.2 (A4): an optional message function replaces getAuthoringErrorMessage (the activations page passes getAssignmentErrorMessage).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,7 +26,7 @@ export type UseAuthoringMutationResult = {
   run: <T>(action: () => Promise<T>) => Promise<AuthoringMutationOutcome<T>>
 };
 
-export function useAuthoringMutation(): UseAuthoringMutationResult {
+export function useAuthoringMutation(toMessage: (error: unknown) => string = getAuthoringErrorMessage): UseAuthoringMutationResult {
   const { mutate } = useSWRConfig();
   const pendingRef = useRef(false);
   const [pending, setPending] = useState(false);
@@ -49,12 +49,12 @@ export function useAuthoringMutation(): UseAuthoringMutationResult {
     } catch (caught) {
       const apiError = toApiError(caught);
 
-      return { status: "error", message: getAuthoringErrorMessage(apiError), code: apiError.code, httpStatus: apiError.status };
+      return { status: "error", message: toMessage(apiError), code: apiError.code, httpStatus: apiError.status };
     } finally {
       pendingRef.current = false;
       setPending(false);
     }
-  }, [mutate]);
+  }, [mutate, toMessage]);
 
   return { pending, run };
 }

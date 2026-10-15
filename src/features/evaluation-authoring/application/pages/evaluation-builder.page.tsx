@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationBuilderPage
-* Descripción: Staff page of the evaluation builder: /evaluations/manage/new (evaluationId null) and /evaluations/manage/[id]/edit. Header with "Volver a la lista", the "Cambios sin guardar"/"Todo guardado" indicator and the explicit "Guardar" ("Crear evaluación" while creating: the first save posts the evaluation and replaces the route with its editor). Below: the structure-locked banner with "Duplicar", the evaluation-level readiness issues after a 422, the metadata form and, once the evaluation exists, the scenarios and questions editor (BuilderStructure, loaded with React.lazy + retryImport so the drag-and-drop library stays in its own chunk) with delete confirmations. Leaving with unsaved changes asks for confirmation (route change and beforeunload). Loading and error-with-retry states for the edit route. Depends on React, MUI, next/head, next/link, the design-system components, @shared/lib, the builder hook, entities, components and CSS Module. v1.1 (A3): the header shows the evaluation status with "Marcar como lista (READY)" for a DRAFT (client READY validation first, issues on the cards, then `PATCH .../status`) and "Volver a borrador" for a READY evaluation; the evaluation-level issues come from the backend or from the client validation.
-* Versión: 1.1
+* Descripción: Staff page of the evaluation builder: /evaluations/manage/new (evaluationId null) and /evaluations/manage/[id]/edit. Header with "Volver a la lista", the "Cambios sin guardar"/"Todo guardado" indicator and the explicit "Guardar" ("Crear evaluación" while creating: the first save posts the evaluation and replaces the route with its editor). Below: the structure-locked banner with "Duplicar", the evaluation-level readiness issues after a 422, the metadata form and, once the evaluation exists, the scenarios and questions editor (BuilderStructure, loaded with React.lazy + retryImport so the drag-and-drop library stays in its own chunk) with delete confirmations. Leaving with unsaved changes asks for confirmation (route change and beforeunload). Loading and error-with-retry states for the edit route. Depends on React, MUI, next/head, next/link, the design-system components, @shared/lib, the builder hook, entities, components and CSS Module. v1.1 (A3): the header shows the evaluation status with "Marcar como lista (READY)" for a DRAFT (client READY validation first, issues on the cards, then `PATCH .../status`) and "Volver a borrador" for a READY evaluation; the evaluation-level issues come from the backend or from the client validation. v1.2 (A4): "Vista previa como estudiante" opens the StudentPreviewDialog (loaded on demand with React.lazy + retryImport) with the saved evaluation rendered by the student components.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,6 +10,7 @@
 */
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import Head from "next/head";
@@ -38,6 +39,10 @@ const BuilderStructure = lazy(() =>
   retryImport(() => import("../components/builder/builder-structure")).then((module) => ({ default: module.BuilderStructure })),
 );
 
+const StudentPreviewDialog = lazy(() =>
+  retryImport(() => import("../components/preview/student-preview-dialog")).then((module) => ({ default: module.StudentPreviewDialog })),
+);
+
 export type EvaluationBuilderPageProps = {
   // null: a new evaluation (/evaluations/manage/new).
   evaluationId: string | null
@@ -49,6 +54,7 @@ export function EvaluationBuilderPage({ evaluationId }: EvaluationBuilderPagePro
   const builder = useEvaluationBuilder(evaluationId);
   const { creating, evaluation, form, layout } = builder;
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const keyCounter = useRef(0);
 
   const newKey = useCallback(() => {
@@ -84,6 +90,11 @@ export function EvaluationBuilderPage({ evaluationId }: EvaluationBuilderPagePro
         <span className={cx(styles.saveState, builder.dirty && styles.saveStateDirty)} role="status">
           {builder.dirty ? BUILDER_COPY.unsaved : BUILDER_COPY.allSaved}
         </span>
+      ) : null}
+      {!creating && evaluation ? (
+        <Button variant="outlined" startIcon={<VisibilityIcon />} onClick={() => setPreviewOpen(true)}>
+          {BUILDER_COPY.preview}
+        </Button>
       ) : null}
       <AsyncButton
         variant="contained"
@@ -174,6 +185,13 @@ export function EvaluationBuilderPage({ evaluationId }: EvaluationBuilderPagePro
             {renderStructure()}
           </section>
         </div>
+      ) : null}
+      {previewOpen && evaluation ? (
+        <RouteErrorBoundary>
+          <Suspense fallback={<LoadingState label={BUILDER_COPY.loadingPreview} />}>
+            <StudentPreviewDialog evaluationId={evaluation.id} dirty={builder.dirty} onClose={() => setPreviewOpen(false)} />
+          </Suspense>
+        </RouteErrorBoundary>
       ) : null}
       <ConfirmDialog
         open={deleteTarget !== null}

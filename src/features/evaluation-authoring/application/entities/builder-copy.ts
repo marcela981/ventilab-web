@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Builder copy
-* Descripción: Spanish UI copy of the evaluation builder (/evaluations/manage/new and /evaluations/manage/[id]/edit): page titles, metadata form labels, the question and scenario editors, the unsaved-changes indicator and guard, save results, the structure-locked banner and the delete confirmations. Shared by the builder hook, components and page. No dependencies. v1.1 (A3): copy of the SIMULATION editor (clinical case selector and rubric editor), the READY and DRAFT status actions, the client readiness check, the READY-evaluation hints and the structural edits dropped after a 409.
-* Versión: 1.1
+* Descripción: Spanish UI copy of the evaluation builder (/evaluations/manage/new and /evaluations/manage/[id]/edit): page titles, metadata form labels, the question and scenario editors, the unsaved-changes indicator and guard, save results, the structure-locked banner and the delete confirmations. Shared by the builder hook, components and page. No dependencies. v1.1 (A3): copy of the SIMULATION editor (clinical case selector and rubric editor), the READY and DRAFT status actions, the client readiness check, the READY-evaluation hints and the structural edits dropped after a 409. v1.2 (A4): the "Vista previa como estudiante" action and its loading label. v1.3 (A3 review W2/S2): the clinical case filter reads "Filtrar por título" with the hint "Filtra solo esta página", and the non-blocking "Se recomienda vincular un caso clínico" hint of SIMULATION questions.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,6 +18,8 @@ export const BUILDER_COPY = {
   newSubtitle: "Completa los datos generales y guarda para empezar a agregar preguntas.",
   editSubtitle: "Edita los datos, los escenarios y las preguntas. Los cambios se guardan al pulsar «Guardar».",
   backToList: "Volver a la lista",
+  preview: "Vista previa como estudiante",
+  loadingPreview: "Cargando la vista previa…",
   save: "Guardar",
   create: "Crear evaluación",
   unsaved: "Cambios sin guardar",
@@ -105,7 +107,10 @@ export const BUILDER_COPY = {
   simulationTitle: "Simulación",
   simulationCase: "Caso clínico",
   simulationNoCase: "Sin caso clínico",
-  simulationCaseFilter: "Buscar por título en esta página",
+  simulationCaseFilter: "Filtrar por título",
+  // The API has no text search: the filter narrows the loaded page only.
+  simulationCaseFilterHelp: "Filtra solo esta página",
+  simulationCaseRecommended: "Se recomienda vincular un caso clínico.",
   simulationCaseHelp: "Solo se listan casos clínicos publicados.",
   simulationCasesLoading: "Cargando casos clínicos…",
   simulationCasesError: "No se pudieron cargar los casos clínicos.",

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation authoring error messages
-* Descripción: Spanish message for any failure of an evaluation authoring request: the authoring error codes of the backend (evaluation.errors.ts mapped in common/presentation/errors-map.ts: evaluation_not_found 404, management_forbidden 403, has_submitted_attempts 409, invalid_status_transition 409, not_ready 422, options_not_allowed 422, media_not_found 422, reference_not_found 422, invalid_reorder 400, invalid_rich_text 400, assignment_not_found 404, assignment_forbidden 403, not_activatable 409, assignment_group_invalid 422, assignment_window_invalid 422, assignment_overlap 409, assignment_closed 409, assignment_has_attempts 409), then fallbacks by status (403, 404, 409, 400/422, 429 with Retry-After, 5xx), timeout, network and unknown errors. Depends on the api-client errors.
-* Versión: 1.0
+* Descripción: Spanish message for any failure of an evaluation authoring request: the authoring error codes of the backend (evaluation.errors.ts mapped in common/presentation/errors-map.ts: evaluation_not_found 404, management_forbidden 403, has_submitted_attempts 409, invalid_status_transition 409, not_ready 422, options_not_allowed 422, media_not_found 422, reference_not_found 422, invalid_reorder 400, invalid_rich_text 400, assignment_not_found 404, assignment_forbidden 403, not_activatable 409, assignment_group_invalid 422, assignment_window_invalid 422, assignment_overlap 409, assignment_closed 409, assignment_has_attempts 409), then fallbacks by status (403, 404, 409, 400/422, 429 with Retry-After, 5xx), timeout, network and unknown errors. Depends on the api-client errors. v1.1 (A4): getAssignmentErrorMessage for the activations page: the same map, but a 403 without a more specific code explains that the caller can only activate or change activations of the groups they manage.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -94,4 +94,18 @@ export function getAuthoringErrorMessage(error: unknown): string {
   }
 
   return STATUS_MESSAGES[apiError.status] ?? AUTHORING_FALLBACK_MESSAGES.unknown;
+}
+
+export const ASSIGNMENT_FORBIDDEN_MESSAGE =
+  "No tienes permiso para gestionar las activaciones de esta evaluación o de alguno de esos grupos. Solo puedes usar los grupos que administras.";
+
+// The activations page: same messages, with a clearer 403 when the backend sends no specific code.
+export function getAssignmentErrorMessage(error: unknown): string {
+  const apiError = toApiError(error);
+
+  if (apiError.status === 403 && !isKnownCode(apiError.code)) {
+    return ASSIGNMENT_FORBIDDEN_MESSAGE;
+  }
+
+  return getAuthoringErrorMessage(apiError);
 }
