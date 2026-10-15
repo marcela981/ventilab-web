@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Page editor page tests
-* Descripción: Integration tests of PageEditorPage with msw over a mutable in-memory page: loads the blocks in order with the saved status, an equation edit marks "Cambios sin guardar" (beforeunload prevented, router guard registered and cancelling when the user stays) and saves only that block's content, add/duplicate/delete (with confirmation)/move are saved as DELETE, POST and one reorder with every id, the lazy Tiptap editor opens for a new text block, an invalid video URL blocks saving, and a failed save keeps the changes with the mapped error. Depends on vitest, Testing Library, msw, the content editor test helpers and the page editor page. v1.1 (C4 review): guard aborts with the string sentinel and silences its rejection, back/forward through beforePopState (declined restores the entry, confirmed is not asked twice), a rich text edit through the real Tiptap editor (exposed on its DOM node, jsdom cannot type into ProseMirror) marks unsaved changes and POSTs its Tiptap JSON, and a load error retries into the editor. v1.2 (C5): pop latch cleared when the navigation ends without routeChangeStart (hash-only pop); an image upload (client type validation first, then POST /api/media and the signed preview URL) makes the new block valid and saves it with its mediaId; Quitar archivo on media in use (409 media.media_in_use) keeps the file and shows the message. v1.3 (C6): the student preview renders the current draft (markdown rich text, KaTeX equation, YouTube embed, uploaded image through its signed URL) with the learning viewer's page article, and later edits show up in it without saving. Quitar archivo on media in use (409) now clears the block and shows an informational note.
-* Versión: 1.3 (C6)
+* Descripción: Integration tests of PageEditorPage with msw over a mutable in-memory page: loads the blocks in order with the saved status, an equation edit marks "Cambios sin guardar" (beforeunload prevented, router guard registered and cancelling when the user stays) and saves only that block's content, add/duplicate/delete (with confirmation)/move are saved as DELETE, POST and one reorder with every id, the lazy Tiptap editor opens for a new text block, an invalid video URL blocks saving, and a failed save keeps the changes with the mapped error. Depends on vitest, Testing Library, msw, the content editor test helpers and the page editor page. v1.1 (C4 review): guard aborts with the string sentinel and silences its rejection, back/forward through beforePopState (declined restores the entry, confirmed is not asked twice), a rich text edit through the real Tiptap editor (exposed on its DOM node, jsdom cannot type into ProseMirror) marks unsaved changes and POSTs its Tiptap JSON, and a load error retries into the editor. v1.2 (C5): pop latch cleared when the navigation ends without routeChangeStart (hash-only pop); an image upload (client type validation first, then POST /api/media and the signed preview URL) makes the new block valid and saves it with its mediaId; Quitar archivo on media in use (409 media.media_in_use) keeps the file and shows the message. v1.3 (C6): the student preview renders the current draft (markdown rich text, KaTeX equation, YouTube embed, uploaded image through its signed URL) with the learning viewer's page article, and later edits show up in it without saving. v1.4 (C6 review): the equation literals escape the LaTeX backslash so a real \cdot command reaches KaTeX. Quitar archivo on media in use (409) now clears the block and shows an informational note.
+* Versión: 1.4 (C6)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -252,7 +252,7 @@ describe("PageEditorPage", { timeout: 30_000 }, () => {
   it("forgets a confirmed back/forward that ended without a route change", async() => {
     await renderEditor();
 
-    fireEvent.change(screen.getByLabelText("Ecuación (LaTeX)"), { target: { value: "P = F \cdot R" } });
+    fireEvent.change(screen.getByLabelText("Ecuación (LaTeX)"), { target: { value: "P = F \\cdot R" } });
 
     const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
 
@@ -392,7 +392,7 @@ describe("PageEditorPage", { timeout: 30_000 }, () => {
   it("previews the current draft as students see it, unsaved edits included", async() => {
     await renderEditor();
 
-    fireEvent.change(screen.getByLabelText("Ecuación (LaTeX)"), { target: { value: "P = F \cdot R" } });
+    fireEvent.change(screen.getByLabelText("Ecuación (LaTeX)"), { target: { value: "P = F \\cdot R" } });
 
     const image = await addImageBlock();
 
@@ -406,7 +406,7 @@ describe("PageEditorPage", { timeout: 30_000 }, () => {
     // The learning viewer's own page article: title heading and the shared block renderers.
     expect(await within(preview).findByRole("heading", { name: "Presiones en la vía aérea" }, LOAD)).toBeInTheDocument();
     expect(await within(preview).findByText("presión", { selector: "strong" }, LOAD)).toBeInTheDocument();
-    await waitFor(() => expect(preview.querySelector("annotation")).toHaveTextContent("P = F \cdot R"), LOAD);
+    await waitFor(() => expect(preview.querySelector("annotation")).toHaveTextContent("P = F \\cdot R"), LOAD);
     expect(preview.querySelector("iframe")?.getAttribute("src")).toContain("youtube-nocookie.com/embed/dQw4w9WgXcQ");
     expect(preview.querySelector("img")).toHaveAttribute("src", "https://cdn.example.org/m1.png");
     expect(screen.queryByLabelText("Ecuación (LaTeX)")).not.toBeInTheDocument();
