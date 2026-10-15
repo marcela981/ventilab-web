@@ -1,0 +1,150 @@
+/*
+* Funcionalidad: Module print styles
+* Descripción: Styles of the module print view (/learn/modules/[moduleId]/print) and its minimal layout (no app shell). On screen: a centered document column with a toolbar ("Volver al módulo", hint, "Descargar PDF"), the cover and the lessons. With @media print: the toolbar and anything marked .noPrint are hidden, every lesson starts on a new printed page (break-before: page), Page titles stay with their content, and there are no shadows, backgrounds or borders; images are already fitted to the width by the shared ContentBlocks styles. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0 (L7)
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.layout {
+  min-height: 100vh;
+  padding: var(--vl-space-5) var(--vl-space-4);
+  background: var(--vl-color-bg);
+  color: var(--vl-color-text);
+}
+
+.document {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-5);
+  width: 100%;
+  max-width: 52rem;
+  margin: 0 auto;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-3) var(--vl-space-4);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.toolbar .hint {
+  flex: 1 1 12rem;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+  color: var(--vl-color-link);
+  font: var(--mui-font-button);
+  text-decoration: none;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.hint {
+  margin: 0;
+  color: var(--vl-color-text-muted);
+  font: var(--mui-font-body2);
+}
+
+.cover,
+.lesson {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  padding: var(--vl-space-6) var(--vl-space-5);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.coverTitle {
+  margin: 0;
+  font: var(--mui-font-h4);
+}
+
+.coverDescription {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+}
+
+.coverFacts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--vl-color-text-muted);
+  font: var(--mui-font-body2);
+}
+
+.lessonTitle {
+  margin: 0;
+  font: var(--mui-font-h5);
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+}
+
+.pageTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+}
+
+@media print {
+  .layout {
+    min-height: 0;
+    padding: 0;
+    background: none;
+  }
+
+  .document {
+    max-width: none;
+    gap: var(--vl-space-4);
+  }
+
+  .noPrint {
+    display: none;
+  }
+
+  .cover,
+  .lesson {
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .cover {
+    justify-content: center;
+    min-height: 80vh;
+  }
+
+  .lesson {
+    break-before: page;
+  }
+
+  .lessonTitle,
+  .pageTitle {
+    break-after: avoid;
+  }
+}

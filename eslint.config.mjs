@@ -22,7 +22,8 @@
  *   pages/learn/modules/[moduleId]/index.tsx entran en NEW_PAGE_FILES.
  *   v3.7 (L3 learning): pages/learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber].tsx
  *   entra en NEW_PAGE_FILES.
- * Versión: 3.7
+ *   v3.8 (L7 learning): pages/learn/modules/[moduleId]/print.tsx entra en NEW_PAGE_FILES.
+ * Versión: 3.8
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -59,6 +60,7 @@ const NEW_PAGE_FILES = [
   "pages/learn/index.tsx",
   "pages/learn/[[]sectionId[]].tsx",
   "pages/learn/modules/[[]moduleId[]]/index.tsx",
+  "pages/learn/modules/[[]moduleId[]]/print.tsx",
   "pages/learn/modules/[[]moduleId[]]/lessons/[[]lessonId[]]/[[]pageNumber[]].tsx",
 ];
 
