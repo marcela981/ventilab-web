@@ -66,12 +66,12 @@ Work-unit commits per task.
   - client-side READY validation;
   - handling of 422 and 409 responses, with the duplicate banner.
 - [x] A4 (D) Student preview (evaluations components in read-only mode) and the assignments page: activate dialog, list, close now.
-- [ ] G1 (D) Grading queue with filters and age; pending-count badge in the nav.
-- [ ] G2 (D) Grade attempt: manual scores, the comment-required rule when overriding, publish, regenerate AI feedback.
-- [ ] G3 (D) Evaluation results: stats from the API, lazy-loaded charts, bulk publish with confirmation.
+- [x] G1 (D) Grading queue with filters and age; pending-count badge in the nav.
+- [x] G2 (D) Grade attempt: manual scores, the comment-required rule when overriding, publish, regenerate AI feedback.
+- [x] G3 (D) Evaluation results: stats from the API, lazy-loaded charts, bulk publish with confirmation.
 - [ ] S1 (D) Promote the media upload component to `shared/media-upload` and use it in the question editor.
-- [ ] R1 (D) Legacy `/evaluation/**` routes redirect to the new routes.
-- [ ] P1 (D) Parity checklist with evidence in `odd/evaluations-parity.md`.
+- [x] R1 (D) Legacy `/evaluation/**` routes redirect to the new routes.
+- [x] P1 (D) Parity checklist with evidence in `odd/evaluations-parity.md`.
 - [ ] P2 Legacy removal, after author approval.
 
 ## Progress log
@@ -98,5 +98,22 @@ Work-unit commits per task.
   - no clinical-case text search;
   - rubric has no weights, thresholds or AI policy.
 
+- A4 review C1 fixed in 4e8d888: staff may activate shared READY evaluations.
+- G1 d50595e (queue + badge). Independent review: 0 critical. Fixes in 6cf56b0: badge polls only while AppShell is shown, every 120 s; the ignored sort toggle was removed.
+- G2 9b261ce (grade attempt). Independent review: 0 critical. Fixes in 1b28ee2: an override needs a fresh comment; the staff FEEDBACK_READY handler was removed because the backend only notifies the student.
+- G3 35007ad (results, shared/charts, bulk publish). Independent review: 0 critical. Fixes in 49953f7: no client-side publish estimate; a note about the 60 s stats cache delay.
+- R1 6a6f633 (legacy /evaluation/** pages replaced by client redirects; legacy components kept). P1 240a418: odd/evaluations-parity.md lists 45 covered, 2 partial, 3 API gaps, 1 out of scope.
+- Native review review-ecff3a7f1451adca (49953f7..240a418): approved and acknowledged, with 2 suggestions.
+- The production build in the worktree (npx next build --webpack) was stopped by the host for low memory. It was not re-run, so the bundle has not been measured.
+- More backend gaps:
+  - GradingAttemptDTO has no student name.
+  - The override rule requires a comment whenever a score exists.
+  - PracticalScoreDTO.breakdown is untyped.
+  - The simulation scorer expects the clinical-case criterion rubric, but evaluation questions validate the parameter rubric, so scoring may return INVALID_RUBRIC.
+  - The grading queue ignores sortOrder.
+  - FEEDBACK_READY only reaches the student.
+  - Analytics are cached for 60 s with no invalidation on publish.
+  - Assignment counts do not separate published from unpublished grades.
+
 ## Next step
-G1 queue + badge, then G2, G3, S1, R1, P1.
+S1 (waits for the content-editor media upload in C5, from the peer session). After that: cherry-pick onto master once the peer session has closed content-editor, run the build and bundle measurement in the main tree, push. P2 needs author approval.
