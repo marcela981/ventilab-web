@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useChatSession tests
-* Descripción: Behaviour of the AI chat state machine against msw with real SSE bodies: the FREE conversation is created lazily by the first send (POST /api/tutor/conversations, never on mount), the answer streams and `done` adopts conversationId, aiCallId, messageId and sources and revalidates the listing; later sends go to /{id}/messages; stop keeps the partial text as interrupted; retry resends the last user message; the fixed off-topic reply is flagged; a 429 quota error shows the local reset time and cannot be retried; a mid-stream error can be retried; a first FREE turn stopped before `done` re-reads the newest FREE conversation to adopt it; an existing conversation seeds the thread from its detail; moving the page to the adopted id keeps the thread and opening another conversation resets it. Depends on Testing Library, msw, the shared SSE test helpers and the AI chat test helpers.
-* Versión: 1.0
+* Descripción: Behaviour of the AI chat state machine against msw with real SSE bodies: the FREE conversation is created lazily by the first send (POST /api/tutor/conversations, never on mount), the answer streams and `done` adopts conversationId, aiCallId, messageId and sources and revalidates the listing; later sends go to /{id}/messages; stop keeps the partial text as interrupted; retry resends the last user message; the fixed off-topic reply is flagged; a 429 quota error shows the local reset time and cannot be retried; a mid-stream error can be retried; a first FREE turn stopped before `done` re-reads the newest FREE conversation to adopt it; an existing conversation seeds the thread from its detail; moving the page to the adopted id keeps the thread and opening another conversation resets it. Depends on Testing Library, msw, the shared SSE test helpers and the AI chat test helpers. v1.1 (A2 review fixes): a newest FREE conversation older than the stopped turn is not adopted; a stop after a delta arrived but before its animation frame flushed still recovers the created conversation; a 500 on the detail is load-error, blocks sending and recovers on reload. Stops settle outside act because the session waits for the aborted render.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,7 +12,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { controlledStream, deltaFrame, doneFrame, errorFrame, sseResponse } from "@shared/ai-conversation/application/sse-test-helpers";
 import { OFF_TOPIC_REPLY } from "../config/ai-chat.config";
 import { apiUrl, conversationDto, envelope, errorResponse, messageDto, SwrWrapper } from "./ai-chat-test-helpers";
@@ -31,6 +31,7 @@ beforeAll(() => {
 
 afterEach(() => {
   server.resetHandlers();
+  vi.unstubAllGlobals();
 });
 
 afterAll(() => {
@@ -174,10 +175,14 @@ describe("useChatSession", () => {
     await waitFor(() => expect(result.current.messages[1]?.content).toBe("El volumen tidal es"));
     expect(result.current.messages[1]?.status).toBe("streaming");
 
-    await act(async() => {
+    act(() => {
       result.current.stop();
       // msw does not cancel the body read on abort: closing it lets the aborted read loop end.
       stream.close();
+    });
+    // The session reads "received" once the aborted phase is rendered: let it render outside act.
+    await waitFor(() => expect(result.current.messages[1]?.status).toBe("interrupted"));
+    await act(async() => {
       await sending;
     });
 
@@ -303,7 +308,7 @@ describe("useChatSession", () => {
       http.get(LIST_URL, ({ request }) => {
         listQueries.push(new URL(request.url).search);
 
-        return HttpResponse.json(envelope([conversationDto("c-created")], PAGINATION));
+        return HttpResponse.json(envelope([conversationDto("c-created", { createdAt: new Date().toISOString() })], PAGINATION));
       }),
       detailHandler([]),
     );
@@ -317,10 +322,14 @@ describe("useChatSession", () => {
     stream.push(deltaFrame("Empieza"));
     await waitFor(() => expect(result.current.messages[1]?.content).toBe("Empieza"));
 
-    await act(async() => {
+    act(() => {
       result.current.stop();
       // msw does not cancel the body read on abort: closing it lets the aborted read loop end.
       stream.close();
+    });
+    // The session reads "received" once the aborted phase is rendered: let it render outside act.
+    await waitFor(() => expect(result.current.messages[1]?.status).toBe("interrupted"));
+    await act(async() => {
       await sending;
     });
 
@@ -342,10 +351,14 @@ describe("useChatSession", () => {
     });
     await waitFor(() => expect(result.current.isStreaming).toBe(true));
 
-    await act(async() => {
+    act(() => {
       result.current.stop();
       // msw does not cancel the body read on abort: closing it lets the aborted read loop end.
       stream.close();
+    });
+    // The session reads "received" once the aborted phase is rendered: let it render outside act.
+    await waitFor(() => expect(result.current.messages[1]?.status).toBe("interrupted"));
+    await act(async() => {
       await sending;
     });
 
@@ -390,5 +403,123 @@ describe("useChatSession", () => {
     });
 
     expect(result.current.messages).toEqual([]);
+  });
+  it("does not adopt a newest FREE conversation older than the stopped first turn", async() => {
+    const stream = controlledStream();
+    const listQueries: string[] = [];
+    const anHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+
+    server.use(
+      http.post(LIST_URL, () => stream.response()),
+      http.get(LIST_URL, ({ request }) => {
+        listQueries.push(new URL(request.url).search);
+
+        return HttpResponse.json(envelope([conversationDto("c-old", { createdAt: anHourAgo, updatedAt: anHourAgo })], PAGINATION));
+      }),
+      detailHandler([]),
+    );
+
+    const { result } = renderHook(() => useChatSession({}), { wrapper: SwrWrapper });
+    let sending: Promise<void> = Promise.resolve();
+
+    act(() => {
+      sending = result.current.send("Primera pregunta");
+    });
+    stream.push(deltaFrame("Empieza"));
+    await waitFor(() => expect(result.current.messages[1]?.content).toBe("Empieza"));
+
+    act(() => {
+      result.current.stop();
+      stream.close();
+    });
+    // The session reads "received" once the aborted phase is rendered: let it render outside act.
+    await waitFor(() => expect(result.current.messages[1]?.status).toBe("interrupted"));
+    await act(async() => {
+      await sending;
+    });
+
+    await waitFor(() => expect(listQueries).toEqual(["?scope=FREE&page=1&limit=1"]));
+    expect(result.current.conversationId).toBeNull();
+    expect(result.current.messages[1]).toMatchObject({ content: "Empieza", status: "interrupted" });
+  });
+
+  it("recovers the created conversation when stopped after a delta arrived but before its frame flushed", async() => {
+    const stream = controlledStream();
+    const listQueries: string[] = [];
+    // Animation frames never run: the received delta stays buffered in the stream hook until the abort.
+    const raf = vi.fn(() => 1);
+
+    vi.stubGlobal("requestAnimationFrame", raf);
+    vi.stubGlobal("cancelAnimationFrame", vi.fn());
+    server.use(
+      http.post(LIST_URL, () => stream.response()),
+      http.get(LIST_URL, ({ request }) => {
+        listQueries.push(new URL(request.url).search);
+
+        return HttpResponse.json(envelope([conversationDto("c-created", { createdAt: new Date().toISOString() })], PAGINATION));
+      }),
+      detailHandler([]),
+    );
+
+    const { result } = renderHook(() => useChatSession({}), { wrapper: SwrWrapper });
+    let sending: Promise<void> = Promise.resolve();
+
+    act(() => {
+      sending = result.current.send("Primera pregunta");
+    });
+    await waitFor(() => expect(result.current.isStreaming).toBe(true));
+    stream.push(deltaFrame("Empieza"));
+    await waitFor(() => expect(raf).toHaveBeenCalled());
+    expect(result.current.messages[1]?.content).toBe("");
+
+    act(() => {
+      result.current.stop();
+      stream.close();
+    });
+    // The session reads "received" once the aborted phase is rendered: let it render outside act.
+    await waitFor(() => expect(result.current.messages[1]?.status).toBe("interrupted"));
+    await act(async() => {
+      await sending;
+    });
+
+    await waitFor(() => expect(result.current.conversationId).toBe("c-created"));
+    expect(listQueries).toEqual(["?scope=FREE&page=1&limit=1"]);
+    expect(result.current.messages[1]).toMatchObject({ content: "Empieza", status: "interrupted" });
+  });
+
+  it("surfaces a detail load failure as load-error, blocks sending and recovers on reload", async() => {
+    let fail = true;
+    const posts: string[] = [];
+
+    server.use(
+      http.get(DETAIL_URL, ({ params }) => (fail
+        ? errorResponse("internal_error", 500)
+        : HttpResponse.json(envelope({ ...conversationDto(String(params.conversationId)), messages: [messageDto("u1", "USER", "Hola")] })))),
+      http.post(MESSAGES_URL, ({ params }) => {
+        posts.push(String(params.conversationId));
+
+        return sseResponse([deltaFrame("Ok"), doneFrame({ aiCallId: "call-1", messageId: "m-1", conversationId: "c1" })]);
+      }),
+    );
+
+    const { result } = renderHook(() => useChatSession({ conversationId: "c1" }), { wrapper: SwrWrapper });
+
+    await waitFor(() => expect(result.current.status).toBe("load-error"));
+    expect(result.current.loadError).not.toBeNull();
+
+    await act(async() => {
+      await result.current.send("Pregunta");
+    });
+
+    expect(posts).toEqual([]);
+
+    fail = false;
+    await act(async() => {
+      await result.current.reload();
+    });
+
+    await waitFor(() => expect(result.current.status).toBe("ready"));
+    expect(result.current.loadError).toBeNull();
+    expect(result.current.messages).toHaveLength(1);
   });
 });

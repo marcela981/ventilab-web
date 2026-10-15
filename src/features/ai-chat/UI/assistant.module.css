@@ -1,0 +1,201 @@
+/*
+* Funcionalidad: Assistant page styles
+* Descripción: Layout of /assistant and /assistant/[conversationId]: centered page column; from 900px two columns (conversation list on the left, chat on the right, both filling the viewport height below the header); below 900px a single column where the list and the conversation are separate screens (.hiddenOnMobile hides the inactive one and the mobile back control only shows there). Conversation list pieces: header with "Nueva conversación", scope toggle and title filter, items (link with title, scope chip and date, active highlight, rename and delete buttons, inline rename form, origin link) and the pager. Visible focus rings on links. Tokens only (var(--vl-*) / var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+.columns {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+.listColumn,
+.chatColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  min-width: 0;
+}
+
+.chat {
+  height: 75vh;
+}
+
+.mobileBack {
+  display: flex;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+  color: var(--vl-color-link);
+  text-decoration: none;
+}
+
+.backLink:focus-visible,
+.itemLink:focus-visible,
+.originLink:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+  border-radius: var(--vl-radius-sm);
+}
+
+@media (max-width: 899.95px) {
+  .hiddenOnMobile {
+    display: none;
+  }
+}
+
+@media (min-width: 900px) {
+  .columns {
+    display: grid;
+    grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .mobileBack {
+    display: none;
+  }
+
+  .listColumn {
+    max-height: 75vh;
+    overflow-y: auto;
+  }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.listHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+}
+
+.listTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+  color: var(--vl-color-text);
+}
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.scopeFilter {
+  flex-wrap: wrap;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  padding: var(--vl-space-2);
+  border: 1px solid transparent;
+  border-radius: var(--vl-radius-md);
+}
+
+.item:hover {
+  background: var(--vl-color-hover);
+}
+
+.itemActive {
+  border-color: var(--vl-color-primary);
+  background: var(--vl-color-selected);
+}
+
+.itemMain {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--vl-space-1);
+}
+
+.itemLink {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  min-width: 0;
+  color: var(--vl-color-text);
+  text-decoration: none;
+}
+
+.itemTitle {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.itemMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-muted);
+}
+
+.scopeChip {
+  height: auto;
+}
+
+.itemActions {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.renameForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.renameActions {
+  display: flex;
+  gap: var(--vl-space-2);
+}
+
+.originLink {
+  align-self: flex-start;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-link);
+}
+
+.pager {
+  align-self: center;
+}

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useChatSession
-* Descripción: State machine of one AI assistant conversation, shared by the /assistant page and the global drawer. With a conversationId it seeds the thread from the stored detail once (404 → status not-found); without one it starts empty and creates the FREE conversation lazily on the first send, never before, through the streamed `POST /api/tutor/conversations` {scope: "FREE", message}; later sends stream from `/{id}/messages`. One turn at a time: the answer streams through the shared useStreamingResponse; on `done` the turn adopts conversationId, aiCallId, messageId and sources (when present) and the listing and detail reads are revalidated (the title is only known server-side). `stop()` aborts and keeps the partial answer as interrupted. A failure is classified (quota with the local reset time and no retry, provider unavailable, interrupted mid-stream, not found, failed); `retry()` resends the last user message (a turn rejected before its stream started is dropped, since the backend did not store it; a started one stays as interrupted). BACKEND GAP: the id of a new FREE conversation arrives only in `done`, so a first turn stopped after some text or failed mid-stream re-reads the newest FREE conversation (`?scope=FREE&limit=1`) to adopt it; a turn stopped before any frame adopts nothing. A completed answer equal to the fixed off-topic reply gets kind off-topic. Session expiry is left to the api-client. Depends on React, SWR, @shared/api-client, @shared/ai-conversation and the AI chat service, entity, config and useConversation.
-* Versión: 1.0
+* Descripción: State machine of one AI assistant conversation, shared by the /assistant page and the global drawer. With a conversationId it seeds the thread from the stored detail once (404 → status not-found); without one it starts empty and creates the FREE conversation lazily on the first send, never before, through the streamed `POST /api/tutor/conversations` {scope: "FREE", message}; later sends stream from `/{id}/messages`. One turn at a time: the answer streams through the shared useStreamingResponse; on `done` the turn adopts conversationId, aiCallId, messageId and sources (when present) and the listing and detail reads are revalidated (the title is only known server-side). `stop()` aborts and keeps the partial answer as interrupted. A failure is classified (quota with the local reset time and no retry, provider unavailable, interrupted mid-stream, not found, failed); `retry()` resends the last user message (a turn rejected before its stream started is dropped, since the backend did not store it; a started one stays as interrupted). BACKEND GAP: the id of a new FREE conversation arrives only in `done`, so a first turn stopped after some text or failed mid-stream re-reads the newest FREE conversation (`?scope=FREE&limit=1`) to adopt it; a turn stopped before any frame adopts nothing. A completed answer equal to the fixed off-topic reply gets kind off-topic. Session expiry is left to the api-client. Depends on React, SWR, @shared/api-client, @shared/ai-conversation and the AI chat service, entity, config and useConversation. v1.1 (A2 review fixes): the recovery adopts the newest FREE conversation only when it was created at or after the turn start minus RECOVERY_CLOCK_SKEW_MS and is not a conversation this session already knew; "received" for a stopped turn is read after the aborted phase is rendered (the abort flushes the text buffered for the next animation frame), with a bounded wait; a non-404 detail failure sets status load-error (send stays blocked) and reload() re-reads the detail.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,7 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useSWRConfig } from "swr";
 import { invalidateApiQueries } from "@shared/api-client/use-api-query";
 import type { ApiError } from "@shared/api-client/api-error";
@@ -29,7 +29,14 @@ import { useConversation } from "./use-conversation";
 
 export type ChatDone = StreamDoneMetadata & { conversationId?: string | undefined };
 
-export type ChatSessionStatus = "loading" | "not-found" | "ready" | "streaming";
+export type ChatSessionStatus = "loading" | "load-error" | "not-found" | "ready" | "streaming";
+
+// Clock-skew tolerance between the browser and the backend when a stopped first FREE turn adopts the
+// newest FREE conversation: one created earlier than the turn minus this margin belongs to something else.
+export const RECOVERY_CLOCK_SKEW_MS = 5 * 60 * 1000;
+
+// Upper bound to wait for the render of an aborted turn before reading its received text.
+const ABORT_SETTLE_TIMEOUT_MS = 1000;
 
 export type ChatSessionOptions = {
   // Conversation to open; null/undefined starts a new FREE chat on the first send.
@@ -47,8 +54,10 @@ export type ChatSession = {
   isStreaming: boolean
   // Failure of the last turn; null after a success or a stop.
   error: ChatError | null
-  // Failure loading the conversation detail (other than 404).
+  // Failure loading the conversation detail (other than 404); status is then load-error and send is blocked.
   loadError: ApiError | null
+  // Re-reads the conversation detail after a load error.
+  reload: () => Promise<void>
   canRetry: boolean
   send: (text: string) => Promise<void>
   stop: () => void
@@ -126,11 +135,27 @@ export function useChatSession({ conversationId: requestedId }: ChatSessionOptio
   const stoppedRef = useRef(false);
   const keyRef = useRef(0);
   const recoveryRef = useRef<Promise<void> | null>(null);
+  // Conversations this session opened or adopted; a recovery never adopts one of them.
+  const knownIdsRef = useRef<Set<string>>(new Set(propId === null ? [] : [propId]));
+  // Resolved once the aborted phase of the given turn (and the stream text flushed by the abort) is committed.
+  const settleRef = useRef<{ key: number, resolve: () => void } | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     textRef.current = stream.text;
     turnRef.current = turn;
+
+    const settle = settleRef.current;
+
+    if (settle && (turn?.key !== settle.key || turn.phase === "aborted")) {
+      settleRef.current = null;
+      settle.resolve();
+    }
   }, [stream.text, turn]);
+
+  useEffect(() => () => {
+    settleRef.current?.resolve();
+    settleRef.current = null;
+  }, []);
 
   // Seed the thread from the stored detail once per opened conversation (state update during render).
   if (activeId !== null && seededId !== activeId && detail.conversation?.id === activeId) {
@@ -177,6 +202,10 @@ export function useChatSession({ conversationId: requestedId }: ChatSessionOptio
 
   useEffect(() => {
     activeIdRef.current = activeId;
+
+    if (activeId !== null) {
+      knownIdsRef.current.add(activeId);
+    }
   }, [activeId]);
 
   const adopt = useCallback((id: string) => {
@@ -185,17 +214,23 @@ export function useChatSession({ conversationId: requestedId }: ChatSessionOptio
     }
 
     activeIdRef.current = id;
+    knownIdsRef.current.add(id);
     setSeededId(id);
     setActiveId(id);
   }, []);
 
   const revalidate = useCallback(() => invalidateApiQueries(mutate, [CONVERSATIONS_PATH, CONVERSATION_PATH]).catch(() => undefined), [mutate]);
 
-  // BACKEND GAP: the first FREE turn ended before `done`; the backend stored it, adopt the newest FREE one.
-  const recoverCreated = useCallback(() => {
+  // BACKEND GAP: the first FREE turn ended before `done`; the backend stored it, adopt the newest FREE one
+  // only when it plausibly is that turn's conversation (created after the turn started, not one already known).
+  const recoverCreated = useCallback((startedAt: number) => {
     const recovery = fetchLatestFreeConversation()
       .then((latest) => {
-        if (latest && activeIdRef.current === null) {
+        const plausible = latest !== null
+          && !knownIdsRef.current.has(latest.id)
+          && Date.parse(latest.createdAt) >= startedAt - RECOVERY_CLOCK_SKEW_MS;
+
+        if (latest && plausible && activeIdRef.current === null) {
           adopt(latest.id);
         }
 
@@ -230,6 +265,7 @@ export function useChatSession({ conversationId: requestedId }: ChatSessionOptio
 
     const key = keyRef.current;
     const conversationId = activeIdRef.current;
+    const startedAt = Date.now();
     const next: Turn = { key, userText, conversationId, phase: "streaming", streamStarted: false, done: null, error: null };
     const update = (patch: Partial<Turn>) => {
       setTurn((current) => (current?.key === key ? { ...current, ...patch } : current));
@@ -269,19 +305,40 @@ export function useChatSession({ conversationId: requestedId }: ChatSessionOptio
       update({ phase: "error", streamStarted: outcome.streamStarted, error: classifyChatError(outcome.error) });
 
       if (conversationId === null && outcome.streamStarted) {
-        await recoverCreated();
+        await recoverCreated(startedAt);
       }
 
       return;
     }
 
-    // Aborted by stop(): the backend stored the conversation once a frame was received.
+    // Aborted by stop(): the backend stored the conversation once a frame was received. The abort flushes the
+    // text still buffered for the next animation frame, so "received" is read once that commit is rendered.
+    // The timeout only guards against a commit that never comes (e.g. a test awaiting send inside act).
+    const settled = new Promise<void>((resolve) => {
+      const timer = setTimeout(resolve, ABORT_SETTLE_TIMEOUT_MS);
+
+      settleRef.current = {
+        key,
+        resolve: () => {
+          clearTimeout(timer);
+          resolve();
+        },
+      };
+    });
+
+    update({ phase: "aborted" });
+    await settled;
+
+    if (turnRef.current?.key !== key) {
+      return;
+    }
+
     const received = textRef.current !== "";
 
-    update({ phase: "aborted", streamStarted: received });
+    update({ streamStarted: received });
 
     if (conversationId === null && stoppedRef.current && received) {
-      await recoverCreated();
+      await recoverCreated(startedAt);
     }
   }, [adopt, recoverCreated, revalidate, startStream]);
 
@@ -333,6 +390,8 @@ export function useChatSession({ conversationId: requestedId }: ChatSessionOptio
 
   if (activeId !== null && detail.notFound) {
     status = "not-found";
+  } else if (isLoading && detail.error) {
+    status = "load-error";
   } else if (isStreaming) {
     status = "streaming";
   } else if (isLoading) {
@@ -355,6 +414,7 @@ export function useChatSession({ conversationId: requestedId }: ChatSessionOptio
     isStreaming,
     error: turn?.phase === "error" ? turn.error : null,
     loadError: detail.error,
+    reload: detail.reload,
     canRetry,
     send,
     stop,

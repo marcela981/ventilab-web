@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI chat feature (public API)
-* Descripción: Public surface of the AI assistant feature (free chat about medicine and the respiratory system plus the caller's conversations): the chat session state machine shared by the /assistant pages and the global drawer, the conversation listing, detail, actions and origin-link hooks, the domain types, the URL builders and the static configuration (limits, off-topic reply mirror, suggested questions, scope text, disclaimer).
-* Versión: 1.0
+* Descripción: Public surface of the AI assistant feature (free chat about medicine and the respiratory system plus the caller's conversations): the chat session state machine shared by the /assistant pages and the global drawer, the conversation listing, detail and actions hooks, the domain types, the URL builders and the static configuration (limits, off-topic reply mirror, suggested questions, scope text, disclaimer). v1.1 (A2): the lazy AssistantPage of /assistant and /assistant/[conversationId] and the lazy ChatPanel (with its props and focusComposer handle types) for the global drawer; both are React.lazy entry points, so importing the barrel bundles neither. The learning origin link (useConversationOrigin, buildConversationOriginUrl, ORIGIN_LINK_LABEL) is no longer exported: only the conversation list uses it, and exporting it made every barrel import pull the learning barrel in.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -36,8 +36,10 @@ export type {
   ConversationScope,
   ConversationSummary,
 } from "./application/entities/ai-chat.entity";
-export { buildConversationOriginUrl, ORIGIN_LINK_LABEL } from "./application/entities/conversation-origin";
-export type { ConversationOrigin } from "./application/entities/conversation-origin";
+export type { ChatPanelHandle, ChatPanelProps } from "./application/components/chat-panel";
+export { ChatPanel } from "./application/components/lazy-chat-panel";
+export type { AssistantPageProps } from "./application/pages/assistant.page";
+export { AssistantPage } from "./application/pages/lazy-assistant-page";
 export { useChatSession } from "./application/hooks/use-chat-session";
 export type { ChatDone, ChatSession, ChatSessionOptions, ChatSessionStatus } from "./application/hooks/use-chat-session";
 export { useConversation } from "./application/hooks/use-conversation";
@@ -46,5 +48,3 @@ export { INVALID_TITLE_MESSAGE, useConversationActions } from "./application/hoo
 export type { ConversationActionOutcome, UseConversationActionsResult } from "./application/hooks/use-conversation-actions";
 export { useConversationList } from "./application/hooks/use-conversation-list";
 export type { ConversationListOptions, ConversationPagination, UseConversationListResult } from "./application/hooks/use-conversation-list";
-export { useConversationOrigin } from "./application/hooks/use-conversation-origin";
-export type { ConversationOriginLink } from "./application/hooks/use-conversation-origin";
