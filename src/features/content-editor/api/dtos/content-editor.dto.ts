@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Content editor DTOs
-* Descripción: Backend shapes used by the content editor, taken from the generated OpenAPI schema: sections (GET /api/sections), levels with their sectionId (GET /api/levels), the staff curriculum tree (GET /api/teaching/tree: levels > modules > lessons, no sections and no pages), lesson page summaries (GET /api/pages?lessonId=) and the create/update request bodies of sections, levels, modules, lessons and pages. Depends on @shared/api-client generated types.
-* Versión: 1.0 (C1)
+* Descripción: Backend shapes used by the content editor, taken from the generated OpenAPI schema: sections (GET /api/sections), levels with their sectionId (GET /api/levels), the staff curriculum tree (GET /api/teaching/tree: levels > modules > lessons, no sections and no pages), lesson page summaries (GET /api/pages?lessonId=) and the create/update request bodies of sections, levels, modules, lessons and pages. Depends on @shared/api-client generated types. v1.1 (C3): level prerequisites (GET /api/levels/{id}/prerequisites: prerequisites and dependent levels), module detail (GET /api/modules/{id}: prerequisites and dependent modules) and the replace bodies of both (PUT .../prerequisites).
+* Versión: 1.1 (C3)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -46,3 +46,13 @@ export type UpdateLessonDTO = Schemas["UpdateLessonDTO"];
 export type CreatePageDTO = Schemas["CreatePageDTO"];
 
 export type UpdatePageDTO = Schemas["UpdatePageDTO"];
+
+export type LevelPrerequisitesDTO = Schemas["LevelPrerequisitesDTO"];
+
+export type LevelPrerequisiteItemDTO = Schemas["LevelPrerequisiteItemDTO"];
+
+export type ModuleDetailDTO = Schemas["ModuleDetailDTO"];
+
+export type SetLevelPrerequisitesDTO = Schemas["SetLevelPrerequisitesDTO"];
+
+export type SetModulePrerequisitesDTO = Schemas["SetModulePrerequisitesDTO"];

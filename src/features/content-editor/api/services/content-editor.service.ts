@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Content editor service
-* Descripción: Backend calls of the content editor through the typed api-client. Read keys (paths) used with useApiQuery: GET /api/sections, GET /api/levels (limit 100 = backend max, includeInactive for staff; only source of each level's sectionId), GET /api/teaching/tree, GET /api/pages?lessonId=. CONTENT_QUERY_PATHS are the keys every mutation invalidates. Mutations: createNode (POST in the sibling group, with the next free order for modules and lessons: section, level of a section or unsectioned, module of a level, lesson of a module, page of a lesson; new nodes start as DRAFT), updateNode (PUT with the editable fields of each kind), changeNodeStatus (PATCH /api/sections/{id}/status for sections; PUT {status} for the other kinds: BACKEND GAP, only sections have a status endpoint), deleteNode (DELETE; 409 curriculum.node_has_student_data when students have data) and reorderGroup (PUT /api/<kind>/reorder per parent). BACKEND GAP: CreateLessonDTO still requires the legacy `content` JSON with a type and a non-empty sections array, so a minimal placeholder is sent; new levels use the backend default track (mecanica). Default (fast) timeout; errors reject with ApiError. Depends on @shared/api-client, the content editor DTOs and entities.
-* Versión: 1.0 (C1)
+* Descripción: Backend calls of the content editor through the typed api-client. Read keys (paths) used with useApiQuery: GET /api/sections, GET /api/levels (limit 100 = backend max, includeInactive for staff; only source of each level's sectionId), GET /api/teaching/tree, GET /api/pages?lessonId=. CONTENT_QUERY_PATHS are the keys every mutation invalidates. Mutations: createNode (POST in the sibling group, with the next free order for modules and lessons: section, level of a section or unsectioned, module of a level, lesson of a module, page of a lesson; new nodes start as DRAFT), updateNode (PUT with the editable fields of each kind), changeNodeStatus (PATCH /api/sections/{id}/status for sections; PUT {status} for the other kinds: BACKEND GAP, only sections have a status endpoint), deleteNode (DELETE; 409 curriculum.node_has_student_data when students have data) and reorderGroup (PUT /api/<kind>/reorder per parent). BACKEND GAP: CreateLessonDTO still requires the legacy `content` JSON with a type and a non-empty sections array, so a minimal placeholder is sent; new levels use the backend default track (mecanica). Default (fast) timeout; errors reject with ApiError. Depends on @shared/api-client, the content editor DTOs and entities. v1.1 (C3): CONTENT_QUERY_PATHS also covers the prerequisite reads (GET /api/levels/{id}/prerequisites, GET /api/modules/{id}) and the student curriculum tree (GET /api/curriculum/tree, whose locks depend on prerequisites and statuses), so every content mutation, prerequisites included, refreshes them.
+* Versión: 1.1 (C3)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,16 +13,27 @@ import { apiDelete, apiPatch, apiPost, apiPut } from "@shared/api-client/api-req
 import type { ContentStatus, NodeFormValues, NodeKind, SiblingGroup } from "../../application/entities/content-node.entity";
 import type { CreateLessonDTO, CreateLevelDTO } from "../dtos/content-editor.dto";
 import { reorderRequest } from "../../application/entities/content-reorder";
+import { LEVEL_PREREQUISITES_PATH, MODULE_DETAIL_PATH } from "./content-prerequisites.service";
 
 export const SECTIONS_PATH = "/api/sections";
 export const LEVELS_PATH = "/api/levels";
 export const TEACHING_TREE_PATH = "/api/teaching/tree";
 export const LESSON_PAGES_PATH = "/api/pages";
+// Read by the learning feature (student locks); listed here only to invalidate it after a content change.
+const CURRICULUM_TREE_PATH = "/api/curriculum/tree";
 
 // The backend caps `limit` at 100; more levels than that would show the extra ones under "Sin sección".
 export const LEVELS_QUERY = { limit: 100, includeInactive: true } as const;
 
-export const CONTENT_QUERY_PATHS = [SECTIONS_PATH, LEVELS_PATH, TEACHING_TREE_PATH, LESSON_PAGES_PATH] as const;
+export const CONTENT_QUERY_PATHS = [
+  SECTIONS_PATH,
+  LEVELS_PATH,
+  TEACHING_TREE_PATH,
+  LESSON_PAGES_PATH,
+  LEVEL_PREREQUISITES_PATH,
+  MODULE_DETAIL_PATH,
+  CURRICULUM_TREE_PATH,
+] as const;
 
 const NEW_NODE_STATUS: ContentStatus = "DRAFT";
 // The generated schema marks `track` as required (it has a default); "mecanica" is the backend default.

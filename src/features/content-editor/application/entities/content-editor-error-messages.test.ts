@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Content editor error messages tests
-* Descripción: Unit tests of the Spanish error mapping of the content editor: the student-data 409 (archive instead) and other known codes, the 409 variants (duplicate slug or title, generic conflict), status fallbacks (400, 403, 404, 413, 415, 422, 429 with and without Retry-After, 5xx), timeout and network errors, and isStudentDataConflict. Depends on vitest and the api-client errors.
-* Versión: 1.0 (C2)
+* Descripción: Unit tests of the Spanish error mapping of the content editor: the student-data 409 (archive instead) and other known codes, the 409 variants (duplicate slug or title, generic conflict), status fallbacks (400, 403, 404, 413, 415, 422, 429 with and without Retry-After, 5xx), timeout and network errors, and isStudentDataConflict. v1.1 (C3): prerequisite codes and isCircularDependency. Depends on vitest and the api-client errors.
+* Versión: 1.1 (C3)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,6 +15,7 @@ import {
   CONTENT_ERROR_MESSAGES,
   CONTENT_FALLBACK_MESSAGES,
   getContentErrorMessage,
+  isCircularDependency,
   isStudentDataConflict,
 } from "./content-editor-error-messages";
 
@@ -53,5 +54,16 @@ describe("isStudentDataConflict", () => {
     expect(isStudentDataConflict(apiError(409, "curriculum.node_has_student_data"))).toBe(true);
     expect(isStudentDataConflict(apiError(409, "sections.section_slug_already_exists"))).toBe(false);
     expect(isStudentDataConflict(apiError(500, "curriculum.node_has_student_data"))).toBe(false);
+  });
+});
+
+describe("isCircularDependency", () => {
+  it("accepts the level and module cycle 409 and maps them to a cycle message", () => {
+    expect(isCircularDependency(apiError(409, "levels.level_circular_dependency"))).toBe(true);
+    expect(isCircularDependency(apiError(409, "modules.module_circular_dependency"))).toBe(true);
+    expect(isCircularDependency(apiError(409, "modules.module_prerequisite_already_exists"))).toBe(false);
+    expect(isCircularDependency(apiError(500, "levels.level_circular_dependency"))).toBe(false);
+    expect(getContentErrorMessage(apiError(409, "modules.module_circular_dependency"))).toMatch(/ciclo/);
+    expect(getContentErrorMessage(apiError(400, "levels.level_self_prerequisite"))).toMatch(/sí mismo/);
   });
 });

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Content editor error messages
-* Descripción: Spanish message for any failure of a content editor request. Known backend codes first: curriculum.node_has_student_data (409 on delete of any node with student progress or notes: archive instead), duplicate slug/title (409), invalid reorder (400), not-found codes, lesson creation in an inactive module, invalid lesson content, module without level. Then fallbacks by status (400/422 invalid, 403, 404, 409, 413 too large, 415 unsupported type, 429 with Retry-After, 5xx), timeout, network and unknown. isStudentDataConflict tells the delete flow to offer "Archivar en su lugar". Depends on the api-client errors.
-* Versión: 1.0 (C2)
+* Descripción: Spanish message for any failure of a content editor request. Known backend codes first: curriculum.node_has_student_data (409 on delete of any node with student progress or notes: archive instead), duplicate slug/title (409), invalid reorder (400), not-found codes, lesson creation in an inactive module, invalid lesson content, module without level. Then fallbacks by status (400/422 invalid, 403, 404, 409, 413 too large, 415 unsupported type, 429 with Retry-After, 5xx), timeout, network and unknown. isStudentDataConflict tells the delete flow to offer "Archivar en su lugar". Depends on the api-client errors. v1.1 (C3): prerequisite codes (circular dependency of levels and modules, self prerequisite, missing prerequisite) and isCircularDependency, which tells the prerequisites editor to explain the cycle.
+* Versión: 1.1 (C3)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,6 +12,9 @@
 import { CLIENT_ERROR_CODES, toApiError } from "@shared/api-client/api-error";
 
 export const STUDENT_DATA_CONFLICT_CODE = "curriculum.node_has_student_data";
+export const CIRCULAR_DEPENDENCY_CODES = ["levels.level_circular_dependency", "modules.module_circular_dependency"] as const;
+
+const CYCLE_MESSAGE = "Uno de los prerrequisitos elegidos ya depende de este contenido; guardarlo formaría un ciclo.";
 
 const REORDER_MESSAGE = "El orden enviado ya no coincide con el contenido actual. Actualiza la página e inténtalo de nuevo.";
 
@@ -35,6 +38,13 @@ export const CONTENT_ERROR_MESSAGES = {
   "lessons.inactive_module_lesson_creation": "No se pueden crear lecciones en un módulo inactivo.",
   "lessons.invalid_lesson_content": "El contenido inicial de la lección no es válido.",
   "modules.module_node_level_required": "El módulo debe pertenecer a un nivel.",
+  "levels.level_circular_dependency": CYCLE_MESSAGE,
+  "modules.module_circular_dependency": CYCLE_MESSAGE,
+  "levels.level_self_prerequisite": "Un nivel no puede ser prerrequisito de sí mismo.",
+  "modules.module_self_prerequisite": "Un módulo no puede ser prerrequisito de sí mismo.",
+  "levels.prerequisite_level_not_found": "Uno de los niveles elegidos ya no existe. Actualiza la página.",
+  "modules.prerequisite_module_not_found": "Uno de los módulos elegidos ya no existe. Actualiza la página.",
+  "modules.invalid_module_prerequisites": "Uno de los módulos elegidos ya no existe. Actualiza la página.",
 } as const satisfies Record<string, string>;
 
 export const CONTENT_FALLBACK_MESSAGES = {
@@ -79,6 +89,12 @@ export function isStudentDataConflict(error: unknown): boolean {
   const apiError = toApiError(error);
 
   return apiError.status === 409 && apiError.code === STUDENT_DATA_CONFLICT_CODE;
+}
+
+export function isCircularDependency(error: unknown): boolean {
+  const apiError = toApiError(error);
+
+  return apiError.status === 409 && (CIRCULAR_DEPENDENCY_CODES as readonly string[]).includes(apiError.code);
 }
 
 export function getContentErrorMessage(error: unknown): string {

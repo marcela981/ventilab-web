@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Tree actions context
-* Descripción: Context shared by the recursive tree components of the content editor (provided by ContentTreePage): the active filter, expansion state and toggle, the optimistic order of each sibling group, the registry of displayed sibling ids per drop list (read by the drag and drop handler) and the node actions (create child, edit, change status, delete). Depends on React and the content editor entities.
-* Versión: 1.0 (C1)
+* Descripción: Context shared by the recursive tree components of the content editor (provided by ContentTreePage): the active filter, expansion state and toggle, the optimistic order of each sibling group, the registry of displayed sibling ids per drop list (read by the drag and drop handler) and the node actions (create child, edit, change status, delete). v1.1 (C3): onPrerequisites opens the prerequisites editor of a level or module. Depends on React and the content editor entities.
+* Versión: 1.1 (C3)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -24,6 +24,7 @@ export type TreeActions = {
   onEdit: (node: ContentNode) => void
   onStatus: (node: ContentNode, status: ContentStatus) => void
   onDelete: (node: ContentNode) => void
+  onPrerequisites: (node: ContentNode) => void
 };
 
 export const TreeActionsContext = createContext<TreeActions | null>(null);

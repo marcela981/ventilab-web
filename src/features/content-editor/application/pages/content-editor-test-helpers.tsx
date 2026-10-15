@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Content editor test helpers
-* Descripción: Shared fixtures of the content editor tests: backend envelope and error bodies, DTO factories for sections, levels (with sectionId), the staff curriculum tree (levels > modules > lessons) and lesson page summaries, a default content fixture (two sections, one unsectioned level) and a render helper that mounts a page inside an isolated SWR cache, a session context with the given role and the global ToastProvider. Test-only code. Depends on Testing Library, msw, SWR, the session context and the design-system toast.
-* Versión: 1.0 (C1)
+* Descripción: Shared fixtures of the content editor tests: backend envelope and error bodies, DTO factories for sections, levels (with sectionId), the staff curriculum tree (levels > modules > lessons) and lesson page summaries, a default content fixture (two sections, one unsectioned level) and a render helper that mounts a page inside an isolated SWR cache, a session context with the given role and the global ToastProvider. v1.1 (C3): level prerequisites and module detail factories (prerequisites and dependents) for the prerequisites editor tests. Test-only code. Depends on Testing Library, msw, SWR, the session context and the design-system toast.
+* Versión: 1.1 (C3)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,6 +21,9 @@ import type { Role } from "@shared/session/session.entity";
 import type {
   ContentStatusDTO,
   LevelDTO,
+  LevelPrerequisiteItemDTO,
+  LevelPrerequisitesDTO,
+  ModuleDetailDTO,
   PageSummaryDTO,
   SectionDTO,
   TreeLessonDTO,
@@ -131,6 +134,47 @@ export function pageSummaryDto(id: string, lessonId: string, order: number, titl
     hasRequiredQuiz: false,
     legacyLessonId: null,
     legacyJsonId: null,
+  };
+}
+
+export type RefFixture = { id: string, title: string };
+
+function levelPrerequisiteItem({ id, title }: RefFixture, order: number): LevelPrerequisiteItemDTO {
+  return { id: `rel-${id}`, levelId: id, levelTitle: title, order, isActive: true };
+}
+
+export function levelPrerequisitesDto(level: RefFixture, prerequisites: RefFixture[], dependents: RefFixture[] = []): LevelPrerequisitesDTO {
+  return {
+    levelId: level.id,
+    levelTitle: level.title,
+    prerequisites: prerequisites.map(levelPrerequisiteItem),
+    dependentLevels: dependents.map(levelPrerequisiteItem),
+  };
+}
+
+export function moduleDetailDto(module: RefFixture, prerequisites: RefFixture[], dependents: RefFixture[] = []): ModuleDetailDTO {
+  return {
+    id: module.id,
+    title: module.title,
+    levelId: null,
+    levelColor: "",
+    description: null,
+    category: null,
+    difficulty: null,
+    estimatedTime: null,
+    thumbnail: null,
+    order: 1,
+    isActive: true,
+    status: "PUBLISHED",
+    color: null,
+    tags: [],
+    lessonCount: 0,
+    lastModifiedAt: null,
+    lastModifiedBy: null,
+    createdAt: DATE,
+    updatedAt: DATE,
+    prerequisites: prerequisites.map(({ id, title }) => ({ id, title, description: null, difficulty: null, category: null, estimatedTime: null })),
+    dependentModules: dependents,
   };
 }
 

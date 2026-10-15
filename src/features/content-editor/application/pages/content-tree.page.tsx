@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ContentTreePage
-* Descripción: Content editor tree (/content, TEACHER and ADMIN): the whole hierarchy Sección > Nivel > Módulo > Lección > Página composed by useContentTree (sections + levels + teaching tree; levels without a section under "Sin sección"; lesson pages loaded only when the lesson is expanded). Every node shows its status badge and can be expanded/collapsed. Filters by title text and by status keep the ancestors of every match visible and expanded. Actions per node: create the child of the next level and edit (NodeFormDialog with the DTO fields), change the status (PATCH for sections, PUT {status} for the rest) with a confirmation when publishing under a draft/archived ancestor (students would not see it), and delete with confirmation; when the backend answers 409 curriculum.node_has_student_data the "Archivar en su lugar" dialog sets ARCHIVED instead. Drag and drop (@hello-pangea/dnd) reorders siblings of the same parent with an optimistic update and the per-parent batch endpoint (reverted with a toast on failure); it is disabled while a filter is active. Loading skeleton, error state with retry and empty state. Depends on MUI, @hello-pangea/dnd, @shared/design-system, the content editor service, entities, hooks, components and CSS Module.
-* Versión: 1.0 (C1)
+* Descripción: Content editor tree (/content, TEACHER and ADMIN): the whole hierarchy Sección > Nivel > Módulo > Lección > Página composed by useContentTree (sections + levels + teaching tree; levels without a section under "Sin sección"; lesson pages loaded only when the lesson is expanded). Every node shows its status badge and can be expanded/collapsed. Filters by title text and by status keep the ancestors of every match visible and expanded. Actions per node: create the child of the next level and edit (NodeFormDialog with the DTO fields), change the status (PATCH for sections, PUT {status} for the rest) with a confirmation when publishing under a draft/archived ancestor (students would not see it), and delete with confirmation; when the backend answers 409 curriculum.node_has_student_data the "Archivar en su lugar" dialog sets ARCHIVED instead. Drag and drop (@hello-pangea/dnd) reorders siblings of the same parent with an optimistic update and the per-parent batch endpoint (reverted with a toast on failure); it is disabled while a filter is active. Loading skeleton, error state with retry and empty state. v1.1 (C3): "Prerrequisitos" on levels and modules opens PrerequisitesDialog (candidates from the composed tree, never the node itself) and saves the whole selection with the replace endpoint (PUT); every content read, prerequisite reads included, is revalidated after it. A 409 circular dependency is explained in the dialog by walking the dependents of the edited node (findCycleChain over GET /api/levels/{id}/prerequisites or GET /api/modules/{id}; the backend does not name the dependency) and naming the selected item that already depends on it; when the walk finds nothing the generic cycle message is shown. Depends on MUI, @hello-pangea/dnd, @shared/design-system, the content editor services, entities, hooks, components and CSS Module.
+* Versión: 1.1 (C3)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,6 +26,7 @@ import { ListSkeleton } from "@shared/design-system/components/skeleton";
 import { useToast } from "@shared/design-system/components/use-toast";
 import { cx } from "@shared/lib/class-names";
 import { changeNodeStatus, createNode, deleteNode, updateNode } from "../../api/services/content-editor.service";
+import { fetchDependents, setNodePrerequisites } from "../../api/services/content-prerequisites.service";
 import {
   CONTENT_STATUSES,
   GROUP_NODE_KIND,
@@ -37,7 +38,9 @@ import {
   STATUS_LABELS,
 } from "../entities/content-node.entity";
 import type { AncestorRef, ContentNode, ContentStatus, NodeFormValues, SiblingGroup } from "../entities/content-node.entity";
-import { isStudentDataConflict } from "../entities/content-editor-error-messages";
+import { isCircularDependency, isStudentDataConflict } from "../entities/content-editor-error-messages";
+import { cycleMessage, findCycleChain, hasPrerequisites, prerequisiteOptions } from "../entities/content-prerequisites";
+import type { PrerequisiteKind } from "../entities/content-prerequisites";
 import { filterNodes, isFilterActive, NO_FILTER } from "../entities/content-tree-filter";
 import type { StatusFilter, TreeFilter } from "../entities/content-tree-filter";
 import { useContentMutation } from "../hooks/use-content-mutation";
@@ -45,6 +48,7 @@ import { useContentTree } from "../hooks/use-content-tree";
 import { useSiblingReorder } from "../hooks/use-sibling-reorder";
 import { SiblingList } from "../components/content-tree-list";
 import { EMPTY_FORM_VALUES, NodeFormDialog } from "../components/node-form-dialog";
+import { PrerequisitesDialog } from "../components/prerequisites-dialog";
 import { TreeActionsContext } from "../components/tree-actions-context";
 import type { TreeActions } from "../components/tree-actions-context";
 import styles from "../../UI/content-tree.module.css";
@@ -79,6 +83,7 @@ const COPY = {
   publishDescription: (ancestor: AncestorRef) =>
     `Los estudiantes no lo verán mientras ${KIND_LABELS[ancestor.kind].toLowerCase()} «${ancestor.title}» esté en estado ${STATUS_LABELS[ancestor.status].toLowerCase()}.`,
   publishConfirm: "Publicar de todos modos",
+  prerequisitesSaved: "Prerrequisitos guardados.",
 } as const;
 
 const SECTIONS_GROUP: SiblingGroup = { kind: "sections" };
@@ -91,6 +96,8 @@ type FormState =
 type PublishState = { node: ContentNode, ancestor: AncestorRef };
 
 type GroupEntry = { group: SiblingGroup, ids: readonly string[] };
+
+type PrerequisitesTarget = { kind: PrerequisiteKind, id: string, title: string };
 
 function formValuesOf(node: ContentNode): NodeFormValues {
   return { title: node.title, slug: node.slug ?? "", description: node.description ?? "" };
@@ -108,6 +115,9 @@ export function ContentTreePage() {
   const [deleteTarget, setDeleteTarget] = useState<ContentNode | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<ContentNode | null>(null);
   const [publishTarget, setPublishTarget] = useState<PublishState | null>(null);
+  const [prerequisitesTarget, setPrerequisitesTarget] = useState<PrerequisitesTarget | null>(null);
+  const [prerequisitesError, setPrerequisitesError] = useState<string | null>(null);
+  const [explainingCycle, setExplainingCycle] = useState(false);
   const groups = useRef(new Map<string, GroupEntry>());
   const filterActive = isFilterActive(filter);
   const filtered = useMemo(() => {
@@ -124,6 +134,11 @@ export function ContentTreePage() {
       expandedKeys: new Set([...sections.expandedKeys, ...unsectioned.expandedKeys]),
     };
   }, [tree, filter]);
+
+  const candidates = useMemo(
+    () => (tree && prerequisitesTarget ? prerequisiteOptions(tree, prerequisitesTarget) : []),
+    [tree, prerequisitesTarget],
+  );
 
   const applyStatus = useCallback(async(node: ContentNode, status: ContentStatus) => {
     const outcome = await run(() => changeNodeStatus(node.kind, node.id, status));
@@ -180,6 +195,12 @@ export function ContentTreePage() {
       }
     },
     onDelete: setDeleteTarget,
+    onPrerequisites: (node) => {
+      if (hasPrerequisites(node.kind)) {
+        setPrerequisitesError(null);
+        setPrerequisitesTarget({ kind: node.kind, id: node.id, title: node.title });
+      }
+    },
   }), [filter, filterActive, expanded, filtered, orderOf, registerGroup, applyStatus]);
 
   const submitForm = async(values: NodeFormValues) => {
@@ -196,6 +217,37 @@ export function ContentTreePage() {
       setForm(null);
     } else if (outcome.status === "error") {
       setFormError(outcome.message);
+    }
+  };
+
+  const savePrerequisites = async(prerequisiteIds: string[]) => {
+    const target = prerequisitesTarget;
+
+    if (!target) {
+      return;
+    }
+
+    setPrerequisitesError(null);
+
+    const outcome = await run(() => setNodePrerequisites(target.kind, target.id, prerequisiteIds));
+
+    if (outcome.status === "success") {
+      toast.success(COPY.prerequisitesSaved);
+      setPrerequisitesTarget(null);
+    } else if (outcome.status === "error") {
+      if (!isCircularDependency(outcome.error)) {
+        setPrerequisitesError(outcome.message);
+
+        return;
+      }
+
+      // The 409 does not say which dependency closes the cycle: walk the dependents of the edited node.
+      setExplainingCycle(true);
+
+      const chain = await findCycleChain(target, prerequisiteIds, (id) => fetchDependents(target.kind, id)).catch(() => null);
+
+      setExplainingCycle(false);
+      setPrerequisitesError(chain ? cycleMessage(chain) : outcome.message);
     }
   };
 
@@ -322,6 +374,18 @@ export function ContentTreePage() {
           error={formError}
           onSubmit={submitForm}
           onCancel={() => setForm(null)}
+        />
+      ) : null}
+      {prerequisitesTarget && tree ? (
+        <PrerequisitesDialog
+          kind={prerequisitesTarget.kind}
+          nodeId={prerequisitesTarget.id}
+          nodeTitle={prerequisitesTarget.title}
+          options={candidates}
+          pending={pending || explainingCycle}
+          error={prerequisitesError}
+          onSave={savePrerequisites}
+          onCancel={() => setPrerequisitesTarget(null)}
         />
       ) : null}
       <ConfirmDialog

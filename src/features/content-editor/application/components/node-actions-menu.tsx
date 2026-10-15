@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: NodeActionsMenu and StatusBadge
-* Descripción: StatusBadge shows the status of a node (Borrador / Publicado / Archivado) as a small outlined MUI Chip (success color when published). NodeActionsMenu is the "Acciones de <título>" button of every tree row: create the child of the next level (Nuevo nivel / módulo / lección / página), Editar, change the status (Borrador / Publicado / Archivado; the current one is disabled) and Eliminar. It only calls the tree actions; dialogs and requests live in the page. Depends on MUI, the content node entity and the tree actions context.
-* Versión: 1.0 (C1)
+* Descripción: StatusBadge shows the status of a node (Borrador / Publicado / Archivado) as a small outlined MUI Chip (success color when published). NodeActionsMenu is the "Acciones de <título>" button of every tree row: create the child of the next level (Nuevo nivel / módulo / lección / página), Editar, change the status (Borrador / Publicado / Archivado; the current one is disabled) and Eliminar. It only calls the tree actions; dialogs and requests live in the page. v1.1 (C3): "Prerrequisitos" (after Editar) on levels and modules opens the prerequisites editor. Depends on MUI, the content node and prerequisites entities and the tree actions context.
+* Versión: 1.1 (C3)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,6 +26,7 @@ import {
   STATUS_LABELS,
 } from "../entities/content-node.entity";
 import type { ContentNode, ContentStatus } from "../entities/content-node.entity";
+import { hasPrerequisites } from "../entities/content-prerequisites";
 import { useTreeActions } from "./tree-actions-context";
 
 export function StatusBadge({ status }: { status: ContentStatus }) {
@@ -71,6 +72,9 @@ export function NodeActionsMenu({ node }: { node: ContentNode }) {
           <MenuItem onClick={choose(() => actions.onCreate(childGroup, node))}>{NEW_NODE_LABELS[GROUP_NODE_KIND[childGroup.kind]]}</MenuItem>
         ) : null}
         <MenuItem onClick={choose(() => actions.onEdit(node))}>Editar</MenuItem>
+        {hasPrerequisites(node.kind) ? (
+          <MenuItem onClick={choose(() => actions.onPrerequisites(node))}>Prerrequisitos</MenuItem>
+        ) : null}
         <Divider />
         <ListSubheader>Cambiar estado</ListSubheader>
         {CONTENT_STATUSES.map((status) => (
