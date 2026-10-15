@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: BlockFields
-* Descripción: Type-specific fields of one block in the page editor. Rich text types: a Tiptap document opens the lazy RichTextEditor (React.lazy + retryImport behind a skeleton and an error boundary, so Tiptap is a separate chunk); stored Markdown or HTML is edited as source with a live preview; any other shape (e.g. legacy quiz data) is preserved untouched. Equation: LaTeX source, display toggle and a live KaTeX preview. Video: YouTube/Vimeo URL and caption with the embed preview once the link is valid (an uploaded video keeps its media). Image and file: caption (and alt text) plus the upload slot reserved for C5, with the current media preview. Code: language and source. Divider: nothing to edit. Unknown types are kept as they are. Previews reuse the shared ContentBlock renderer. Depends on React, MUI, @shared/design-system, @shared/lib, @shared/rich-content, the page draft entity and the page editor CSS Module. v1.1 (C5): media upload (MediaUploadField) in IMAGE and FILE blocks replacing the C5 slot, and in VIDEO blocks as the alternative below the link (an uploaded video shows replace/remove instead of the link); previews of uploaded media through the signed URL, with a note when it is unavailable.
-* Versión: 1.1 (C5)
+* Descripción: Type-specific fields of one block in the page editor. Rich text types: a Tiptap document opens the lazy RichTextEditor (React.lazy + retryImport behind a skeleton and an error boundary, so Tiptap is a separate chunk); stored Markdown or HTML is edited as source with a live preview; any other shape (e.g. legacy quiz data) is preserved untouched. Equation: LaTeX source, display toggle and a live KaTeX preview. Video: YouTube/Vimeo URL and caption with the embed preview once the link is valid (an uploaded video keeps its media). Image and file: caption (and alt text) plus the upload slot reserved for C5, with the current media preview. Code: language and source. Divider: nothing to edit. Unknown types are kept as they are. Previews reuse the shared ContentBlock renderer. Depends on React, MUI, @shared/design-system, @shared/lib, @shared/rich-content, the page draft entity and the page editor CSS Module. v1.1 (C5): media upload (MediaUploadField) in IMAGE and FILE blocks replacing the C5 slot, and in VIDEO blocks as the alternative below the link (an uploaded video shows replace/remove instead of the link); previews of uploaded media through the signed URL, with a note when it is unavailable. v1.2 (S1): MediaUploadField and mediaKindOf come from the shared media-upload module.
+* Versión: 1.2 (S1)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,11 +21,10 @@ import { retryImport } from "@shared/lib/retry-import";
 import { ContentBlock } from "@shared/rich-content/blocks/content-blocks";
 import { isRecord, isRichTextBlockType, readString } from "@shared/rich-content/blocks/content-block.types";
 import { parseVideoEmbed } from "@shared/rich-content/blocks/video-source";
-import { mediaKindOf } from "../entities/media-upload.entity";
+import { mediaKindOf, MediaUploadField } from "@shared/media-upload";
 import { richTextFormat } from "../entities/page-draft.entity";
 import type { BlockContent, DraftBlock } from "../entities/page-draft.entity";
 import type { BlockMediaControls } from "../hooks/use-media-uploads";
-import { MediaUploadField } from "./media-upload-field";
 import styles from "../../UI/page-editor.module.css";
 
 const RichTextEditor = lazy(() =>

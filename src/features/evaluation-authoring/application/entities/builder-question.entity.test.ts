@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Builder question draft tests
-* Descripción: Unit tests of the question draft rules of the evaluation builder: radio semantics of the correct answer for SINGLE_CHOICE and TRUE_FALSE and checkbox semantics for MULTIPLE_CHOICE, moving options, validation (points, option text), the save plan (question PATCH with only the changed fields, option creates, PATCHes with the newly correct ones first, deletes and the reorder flag), the dirty check and the body of a new TRUE_FALSE question. Depends on vitest and the builder entities. v1.1 (A3): the plan splits the text PATCH from the structural PATCH and covers the clinical case and the rubric of a SIMULATION question; an option created by a failed save (id set, client key kept) is neither recreated nor reordered; stripStructuralEdits keeps only the texts; withCreatedOptionIds merges created ids by key; SIMULATION rubric errors block the draft; backend rubric details are translated in readiness messages. v1.2 (A3 review S1): optionSaveSteps runs the creates before the updates that set isCorrect=false.
-* Versión: 1.2
+* Descripción: Unit tests of the question draft rules of the evaluation builder: radio semantics of the correct answer for SINGLE_CHOICE and TRUE_FALSE and checkbox semantics for MULTIPLE_CHOICE, moving options, validation (points, option text), the save plan (question PATCH with only the changed fields, option creates, PATCHes with the newly correct ones first, deletes and the reorder flag), the dirty check and the body of a new TRUE_FALSE question. Depends on vitest and the builder entities. v1.1 (A3): the plan splits the text PATCH from the structural PATCH and covers the clinical case and the rubric of a SIMULATION question; an option created by a failed save (id set, client key kept) is neither recreated nor reordered; stripStructuralEdits keeps only the texts; withCreatedOptionIds merges created ids by key; SIMULATION rubric errors block the draft; backend rubric details are translated in readiness messages. v1.2 (A3 review S1): optionSaveSteps runs the creates before the updates that set isCorrect=false. v1.3 (S1): statement media and option images: added media go in the text PATCH (mediaIds), option images in the option PATCH (mediaId, null removes it), the statement media limit, and stripStructuralEdits keeps them.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,6 +12,10 @@
 import { describe, expect, it } from "vitest";
 import {
   addOptionDraft,
+  addQuestionMedia,
+  MAX_MEDIA_PER_QUESTION,
+  removeQuestionMedia,
+  setOptionMedia,
   isQuestionDraftDirty,
   moveOptionDraft,
   newQuestionBody,
@@ -247,5 +251,48 @@ describe("newQuestionBody", () => {
       options: [{ content: "Verdadero", isCorrect: false }, { content: "Falso", isCorrect: false }],
     });
     expect(newQuestionBody("OPEN_TEXT", null)).toEqual({ type: "OPEN_TEXT", prompt: { type: "doc", content: [] } });
+  });
+});
+
+describe("question media", () => {
+  const image = (mediaId: string) => ({ mediaId, url: `https://cdn.example.org/${mediaId}.png`, mimeType: "image/png", kind: "IMAGE" as const });
+
+  it("sends the statement media list in the text PATCH", () => {
+    const question = { ...choiceQuestion(), mediaIds: ["m1"], media: [image("m1")] };
+    const draft = removeQuestionMedia(addQuestionMedia(questionDraftFrom(question), image("m2")), "m1");
+    const plan = planQuestionSave(question, draft);
+
+    expect(draft.media.map((item) => item.mediaId)).toEqual(["m2"]);
+    expect(plan.text).toEqual({ mediaIds: ["m2"] });
+    expect(plan.structure).toBeNull();
+    expect(isQuestionDraftDirty(question, questionDraftFrom(question))).toBe(false);
+  });
+
+  it("does not add the same media twice nor more than the backend limit", () => {
+    const draft = questionDraftFrom(choiceQuestion());
+    const full = { ...draft, mediaIds: Array.from({ length: MAX_MEDIA_PER_QUESTION }, (_, index) => `m${index}`) };
+
+    expect(addQuestionMedia(addQuestionMedia(draft, image("m1")), image("m1")).mediaIds).toEqual(["m1"]);
+    expect(addQuestionMedia(full, image("extra"))).toBe(full);
+  });
+
+  it("sends an option image change in the option PATCH and null to remove it", () => {
+    const question = choiceQuestion();
+    const withImage = { ...question, options: question.options.map((option) => (option.id === "o2" ? { ...option, mediaId: "m9", media: image("m9") } : option)) };
+    const added = { ...questionDraftFrom(question), options: setOptionMedia(questionDraftFrom(question).options, "o1", image("m1")) };
+    const removed = { ...questionDraftFrom(withImage), options: setOptionMedia(questionDraftFrom(withImage).options, "o2", null) };
+
+    expect(planQuestionSave(question, added).updates).toEqual([{ id: "o1", changes: { mediaId: "m1" } }]);
+    expect(planQuestionSave(withImage, removed).updates).toEqual([{ id: "o2", changes: { mediaId: null } }]);
+  });
+
+  it("keeps the media edits when the structural edits are dropped", () => {
+    const question = choiceQuestion();
+    const draft = addQuestionMedia({ ...questionDraftFrom(question), points: "5", options: setOptionMedia(questionDraftFrom(question).options, "o1", image("m1")) }, image("m2"));
+    const stripped = stripStructuralEdits(question, draft);
+
+    expect(stripped.points).toBe("2");
+    expect(stripped.mediaIds).toEqual(["m2"]);
+    expect(stripped.options[0]?.mediaId).toBe("m1");
   });
 });

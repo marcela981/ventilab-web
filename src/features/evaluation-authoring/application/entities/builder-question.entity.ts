@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Builder question drafts
-* Descripción: Pure rules of the question editor of the evaluation builder: Spanish labels of the question types, the local draft of a question (prompt document, points, explanation and, for choice questions, the option list with stable client keys; new options have no id yet), the correct-answer semantics (radio for SINGLE_CHOICE and TRUE_FALSE, checkbox for MULTIPLE_CHOICE), adding, removing and moving options, validation mirroring the backend DTOs (points positive, option text required, at most 20 options), the dirty check and the save plan of a draft against the loaded question: the question PATCH holding only the changed fields, the options to create, the option PATCHes (the ones that become correct first, so a multiple choice never drops to zero correct answers on the way), the options to delete and whether the final option order must be sent with `PUT .../options/order`. Also the body of a new question (TRUE_FALSE starts with the two options Verdadero and Falso) and the Spanish messages of the readiness issues of `GET /api/evaluations/{id}`. No dependencies besides the builder entities. v1.1 (A3): SIMULATION drafts carry the clinical case and the rubric draft (saved in the question PATCH, validated with the backend rubric rules); the question PATCH is split into the text part (prompt, explanation) and the structural part (points, clinical case, rubric) so texts still save on an evaluation with submitted attempts; stripStructuralEdits drops the structural edits of a draft once the structure is locked; withCreatedOptionIds gives created options their backend id; the option order check compares option ids (an option created by a failed save keeps its client key); readiness messages cover clinical_case_required and translate the English rubric details of the backend. Depends on the simulation rubric entity. v1.2 (A3 review W2/S1): optionSaveSteps fixes the order of the option calls (options becoming correct, creates, the remaining updates such as isCorrect=false, deletes); clinical_case_required is no longer a readiness message; READY_CHANGE_REFUSED carries the READY hint shown when a 422 has no client explanation.
-* Versión: 1.2
+* Descripción: Pure rules of the question editor of the evaluation builder: Spanish labels of the question types, the local draft of a question (prompt document, points, explanation and, for choice questions, the option list with stable client keys; new options have no id yet), the correct-answer semantics (radio for SINGLE_CHOICE and TRUE_FALSE, checkbox for MULTIPLE_CHOICE), adding, removing and moving options, validation mirroring the backend DTOs (points positive, option text required, at most 20 options), the dirty check and the save plan of a draft against the loaded question: the question PATCH holding only the changed fields, the options to create, the option PATCHes (the ones that become correct first, so a multiple choice never drops to zero correct answers on the way), the options to delete and whether the final option order must be sent with `PUT .../options/order`. Also the body of a new question (TRUE_FALSE starts with the two options Verdadero and Falso) and the Spanish messages of the readiness issues of `GET /api/evaluations/{id}`. No dependencies besides the builder entities. v1.1 (A3): SIMULATION drafts carry the clinical case and the rubric draft (saved in the question PATCH, validated with the backend rubric rules); the question PATCH is split into the text part (prompt, explanation) and the structural part (points, clinical case, rubric) so texts still save on an evaluation with submitted attempts; stripStructuralEdits drops the structural edits of a draft once the structure is locked; withCreatedOptionIds gives created options their backend id; the option order check compares option ids (an option created by a failed save keeps its client key); readiness messages cover clinical_case_required and translate the English rubric details of the backend. Depends on the simulation rubric entity. v1.2 (A3 review W2/S1): optionSaveSteps fixes the order of the option calls (options becoming correct, creates, the remaining updates such as isCorrect=false, deletes); clinical_case_required is no longer a readiness message; READY_CHANGE_REFUSED carries the READY hint shown when a 422 has no client explanation. v1.3 (S1): the draft carries the statement media (mediaIds, the list the question PATCH replaces, plus the resolved media to show them) and the option images (mediaId); addQuestionMedia (at most 20, the backend limit), removeQuestionMedia and setOptionMedia edit them; media changes are text changes (the backend accepts them with submitted attempts): mediaIds goes in the text PATCH, an option mediaId in its option PATCH, and stripStructuralEdits keeps them.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,6 +19,9 @@ import type { RubricDraft } from "./simulation-rubric.entity";
 export type { QuestionType } from "./evaluation-builder.entity";
 
 export const MAX_OPTIONS_PER_QUESTION = 20;
+
+// Backend MAX_MEDIA_PER_ITEM.
+export const MAX_MEDIA_PER_QUESTION = 20;
 
 // TODO(i18n): move to an evaluation-authoring namespace in src/i18n.
 export const QUESTION_TYPE_LABELS: Readonly<Record<QuestionType, string>> = {
@@ -86,6 +89,10 @@ export type QuestionDraft = {
   prompt: RichDoc
   points: string
   explanation: string
+  // Statement media, in order (the question PATCH replaces the whole list).
+  mediaIds: string[]
+  // Resolved media of mediaIds, to show them (may miss some when storage is unavailable).
+  media: BuilderMedia[]
   options: OptionDraft[]
   // SIMULATION only (null and an empty rubric for the other types).
   clinicalCaseId: string | null
@@ -97,6 +104,8 @@ export function questionDraftFrom(question: BuilderQuestion): QuestionDraft {
     prompt: question.prompt,
     points: String(question.points),
     explanation: question.explanation ?? "",
+    mediaIds: [...question.mediaIds],
+    media: [...question.media],
     options: question.options.map((option) => ({
       key: option.id,
       id: option.id,
@@ -147,6 +156,35 @@ export function moveOptionDraft(options: readonly OptionDraft[], key: string, de
 
 export function updateOptionContent(options: readonly OptionDraft[], key: string, content: string): OptionDraft[] {
   return options.map((option) => (option.key === key ? { ...option, content } : option));
+}
+
+// null removes the option image.
+export function setOptionMedia(options: readonly OptionDraft[], key: string, media: BuilderMedia | null): OptionDraft[] {
+  return options.map((option) => (option.key === key ? { ...option, mediaId: media?.mediaId ?? null, media } : option));
+}
+
+export function canAddQuestionMedia(draft: QuestionDraft): boolean {
+  return draft.mediaIds.length < MAX_MEDIA_PER_QUESTION;
+}
+
+export function addQuestionMedia(draft: QuestionDraft, media: BuilderMedia): QuestionDraft {
+  if (!canAddQuestionMedia(draft) || draft.mediaIds.includes(media.mediaId)) {
+    return draft;
+  }
+
+  return { ...draft, mediaIds: [...draft.mediaIds, media.mediaId], media: [...draft.media, media] };
+}
+
+export function removeQuestionMedia(draft: QuestionDraft, mediaId: string): QuestionDraft {
+  return {
+    ...draft,
+    mediaIds: draft.mediaIds.filter((id) => id !== mediaId),
+    media: draft.media.filter((item) => item.mediaId !== mediaId),
+  };
+}
+
+function sameIds(a: readonly string[], b: readonly string[]): boolean {
+  return a.length === b.length && a.every((id, index) => id === b[index]);
 }
 
 export type QuestionErrors = {
@@ -206,10 +244,11 @@ export function hasQuestionErrors(errors: QuestionErrors): boolean {
     || errors.rubric !== undefined;
 }
 
-// Prompt and explanation: allowed even after attempts were submitted.
+// Prompt, explanation and media: allowed even after attempts were submitted.
 export type QuestionTextChanges = {
   prompt?: RichDoc
   explanation?: string | null
+  mediaIds?: string[]
 };
 
 // Points, clinical case and rubric: refused by the backend once attempts were submitted.
@@ -221,7 +260,7 @@ export type QuestionStructureChanges = {
 
 export type OptionUpdate = {
   id: string
-  changes: { content?: string, isCorrect?: boolean }
+  changes: { content?: string, isCorrect?: boolean, mediaId?: string | null }
 };
 
 export type QuestionSavePlan = {
@@ -264,6 +303,10 @@ export function planQuestionSave(question: BuilderQuestion, draft: QuestionDraft
     text.explanation = explanation;
   }
 
+  if (!sameIds(draft.mediaIds, question.mediaIds)) {
+    text.mediaIds = [...draft.mediaIds];
+  }
+
   if (points !== null && points !== question.points) {
     structure.points = points;
   }
@@ -296,6 +339,10 @@ export function planQuestionSave(question: BuilderQuestion, draft: QuestionDraft
 
     if (option.isCorrect !== current.isCorrect) {
       optionChanges.isCorrect = option.isCorrect;
+    }
+
+    if (option.mediaId !== current.mediaId) {
+      optionChanges.mediaId = option.mediaId;
     }
 
     if (Object.keys(optionChanges).length > 0) {
@@ -367,23 +414,27 @@ export function newQuestionBody(type: QuestionType, scenarioId: string | null): 
 }
 
 // The draft without the edits the backend refuses once attempts were submitted: points, clinical case, rubric,
-// added, removed or reordered options and correct answers. Prompt, explanation and option texts are kept.
+// added, removed or reordered options and correct answers. Prompt, explanation, media and option texts and images are kept.
 export function stripStructuralEdits(question: BuilderQuestion, draft: QuestionDraft): QuestionDraft {
-  const contents = new Map(draft.options.filter((option) => option.id !== null).map((option) => [option.id, option.content]));
+  const kept = new Map(draft.options.filter((option) => option.id !== null).map((option) => [option.id, option]));
 
   return {
     ...draft,
     points: String(question.points),
     clinicalCaseId: question.clinicalCaseId,
     rubric: rubricDraftFrom(question.rubric),
-    options: question.options.map((option) => ({
-      key: option.id,
-      id: option.id,
-      content: contents.get(option.id) ?? option.content,
-      isCorrect: option.isCorrect,
-      mediaId: option.mediaId,
-      media: option.media,
-    })),
+    options: question.options.map((option) => {
+      const edited = kept.get(option.id);
+
+      return {
+        key: option.id,
+        id: option.id,
+        content: edited?.content ?? option.content,
+        isCorrect: option.isCorrect,
+        mediaId: edited ? edited.mediaId : option.mediaId,
+        media: edited ? edited.media : option.media,
+      };
+    }),
   };
 }
 

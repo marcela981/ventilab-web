@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: OptionListEditor
-* Descripción: Option list of a choice question in the builder: text of each option, the correct-answer control (radio semantics for SINGLE_CHOICE and TRUE_FALSE, checkbox for MULTIPLE_CHOICE), move up/down, remove and "Agregar opción" (up to 20). TRUE_FALSE keeps its two options. The attached option image, when there is one, is shown read-only (task S1 adds uploading). With the structure locked the correct answers and the add/remove actions are disabled; the texts stay editable. Changes go to the local draft; the builder saves them. Depends on MUI, the design-system FormField, the builder entities, copy and CSS Module. v1.1 (A3): correctLocked makes the correct answer read-only (locked structure, or a SINGLE_CHOICE/TRUE_FALSE question of a READY evaluation, with a hint to return to draft first).
-* Versión: 1.1
+* Descripción: Option list of a choice question in the builder: text of each option, the correct-answer control (radio semantics for SINGLE_CHOICE and TRUE_FALSE, checkbox for MULTIPLE_CHOICE), move up/down, remove and "Agregar opción" (up to 20). TRUE_FALSE keeps its two options. The attached option image, when there is one, is shown next to the text. With the structure locked the correct answers and the add/remove actions are disabled; the texts stay editable. Changes go to the local draft; the builder saves them. Depends on MUI, the design-system FormField, @shared/media-upload, the builder entities, copy and CSS Module. v1.1 (A3): correctLocked makes the correct answer read-only (locked structure, or a SINGLE_CHOICE/TRUE_FALSE question of a READY evaluation, with a hint to return to draft first). v1.2 (S1): each option uploads, replaces or removes its image with the shared media upload field (images only; allowed with the structure locked, as the backend treats it as a text change); removing an option releases its upload.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,6 +20,8 @@ import Radio from "@mui/material/Radio";
 import { useId } from "react";
 import { FormField } from "@shared/design-system/components/form-field";
 import { cx } from "@shared/lib/class-names";
+import { MediaUploadField } from "@shared/media-upload";
+import type { MediaUploadState } from "@shared/media-upload";
 import { BUILDER_COPY } from "../../entities/builder-copy";
 import {
   addOptionDraft,
@@ -33,6 +35,15 @@ import {
 import type { OptionDraft, QuestionErrors, QuestionType } from "../../entities/builder-question.entity";
 import styles from "../../../UI/builder.module.css";
 
+// Image uploads of the options, by option key.
+export type OptionMediaControls = {
+  stateOf: (key: string) => MediaUploadState
+  select: (key: string, file: File) => void
+  cancel: (key: string) => void
+  remove: (key: string) => void
+  release: (key: string) => void
+};
+
 export type OptionListEditorProps = {
   type: QuestionType
   options: readonly OptionDraft[]
@@ -41,10 +52,11 @@ export type OptionListEditorProps = {
   // The correct answer cannot change (locked structure, or single-correct on a READY evaluation).
   correctLocked: boolean
   newKey: () => string
+  media: OptionMediaControls
   onChange: (options: OptionDraft[]) => void
 };
 
-export function OptionListEditor({ type, options, errors, locked, correctLocked, newKey, onChange }: OptionListEditorProps) {
+export function OptionListEditor({ type, options, errors, locked, correctLocked, newKey, media, onChange }: OptionListEditorProps) {
   const groupName = useId();
   const single = hasSingleCorrect(type);
   const fixedCount = type === "TRUE_FALSE";
@@ -114,11 +126,30 @@ export function OptionListEditor({ type, options, errors, locked, correctLocked,
                     size="small"
                     aria-label={BUILDER_COPY.removeOption(position)}
                     disabled={locked}
-                    onClick={() => onChange(removeOptionDraft(options, option.key))}
+                    onClick={() => {
+                      media.release(option.key);
+                      onChange(removeOptionDraft(options, option.key));
+                    }}
                   >
                     <CloseIcon fontSize="small" />
                   </IconButton>
                 )}
+              </div>
+              <div className={cx(styles.optionMedia)}>
+                <MediaUploadField
+                  kind="IMAGE"
+                  hasMedia={option.mediaId !== null}
+                  state={media.stateOf(option.key)}
+                  validationError={null}
+                  copy={{
+                    upload: BUILDER_COPY.optionMediaUpload(position),
+                    replace: BUILDER_COPY.optionMediaReplace(position),
+                    remove: BUILDER_COPY.optionMediaRemove(position),
+                  }}
+                  onSelect={(file) => media.select(option.key, file)}
+                  onCancel={() => media.cancel(option.key)}
+                  onRemove={() => media.remove(option.key)}
+                />
               </div>
             </li>
           );

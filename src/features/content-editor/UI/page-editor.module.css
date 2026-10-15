@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Page editor styles
-* Descripción: Layout of the content page editor (/content/pages/[pageId]): page column, back link, status bar (status badge, saved/unsaved indicator, invalid block hint), save error banner, ordered block list, block cards (header with drag handle, type label, position and actions; body with the fields stacked), the dragging state, the Tiptap rich text editor (toolbar, editable area, placeholder), the live preview frame, notes, field errors and the dashed media upload slot reserved for C5, plus a visible focus ring for keyboard users. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (C5): upload actions, determinate progress row and the visually hidden file input of the media upload. v1.2 (C6): edit/preview mode toggle and the student preview column (the page body itself keeps the learning viewer styles).
-* Versión: 1.2 (C6)
+* Descripción: Layout of the content page editor (/content/pages/[pageId]): page column, back link, status bar (status badge, saved/unsaved indicator, invalid block hint), save error banner, ordered block list, block cards (header with drag handle, type label, position and actions; body with the fields stacked), the dragging state, the Tiptap rich text editor (toolbar, editable area, placeholder), the live preview frame, notes, field errors, plus a visible focus ring for keyboard users. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (C5): upload actions, determinate progress row and the visually hidden file input of the media upload. v1.2 (C6): edit/preview mode toggle and the student preview column (the page body itself keeps the learning viewer styles). v1.3 (S1): the media upload slot, actions, progress row and hidden file input moved to the shared media-upload module CSS Module.
+* Versión: 1.3 (S1)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -178,42 +178,6 @@
   margin: 0;
   font: var(--mui-font-body2);
   color: var(--vl-color-error);
-}
-
-.uploadSlot {
-  display: flex;
-  flex-direction: column;
-  gap: var(--vl-space-1);
-  padding: var(--vl-space-3);
-  border: 2px dashed var(--vl-color-border);
-  border-radius: var(--vl-radius-md);
-  text-align: center;
-}
-
-.uploadActions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--vl-space-2);
-}
-
-.uploadProgress {
-  display: flex;
-  flex-direction: column;
-  gap: var(--vl-space-1);
-}
-
-/* Visually hidden: the surrounding button label opens the picker. */
-.fileInput {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 .modeToggle {

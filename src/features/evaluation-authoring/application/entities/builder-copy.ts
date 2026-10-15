@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Builder copy
-* Descripción: Spanish UI copy of the evaluation builder (/evaluations/manage/new and /evaluations/manage/[id]/edit): page titles, metadata form labels, the question and scenario editors, the unsaved-changes indicator and guard, save results, the structure-locked banner and the delete confirmations. Shared by the builder hook, components and page. No dependencies. v1.1 (A3): copy of the SIMULATION editor (clinical case selector and rubric editor), the READY and DRAFT status actions, the client readiness check, the READY-evaluation hints and the structural edits dropped after a 409. v1.2 (A4): the "Vista previa como estudiante" action and its loading label. v1.3 (A3 review W2/S2): the clinical case filter reads "Filtrar por título" with the hint "Filtra solo esta página", and the non-blocking "Se recomienda vincular un caso clínico" hint of SIMULATION questions.
-* Versión: 1.3
+* Descripción: Spanish UI copy of the evaluation builder (/evaluations/manage/new and /evaluations/manage/[id]/edit): page titles, metadata form labels, the question and scenario editors, the unsaved-changes indicator and guard, save results, the structure-locked banner and the delete confirmations. Shared by the builder hook, components and page. No dependencies. v1.1 (A3): copy of the SIMULATION editor (clinical case selector and rubric editor), the READY and DRAFT status actions, the client readiness check, the READY-evaluation hints and the structural edits dropped after a 409. v1.2 (A4): the "Vista previa como estudiante" action and its loading label. v1.3 (A3 review W2/S2): the clinical case filter reads "Filtrar por título" with the hint "Filtra solo esta página", and the non-blocking "Se recomienda vincular un caso clínico" hint of SIMULATION questions. v1.4 (S1): upload copy of the statement media and the option images (replaces the "próximamente" placeholder).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -97,12 +97,18 @@ export const BUILDER_COPY = {
   cancel: "Cancelar",
   unsavedQuestion: "Sin guardar",
   issuesTitle: "Problemas para marcar la evaluación como lista",
-  // Media placeholder
+  // Media
   mediaTitle: "Multimedia del enunciado",
-  mediaPending: "La subida de imágenes y videos estará disponible próximamente.",
   mediaImage: (position: number) => `Imagen adjunta ${position}`,
   mediaVideo: "Ver video adjunto",
   mediaFile: "Ver archivo adjunto",
+  mediaNoPreview: "Archivo adjunto (vista previa no disponible)",
+  mediaUpload: "Agregar imagen o video",
+  mediaRemove: (position: number) => `Quitar multimedia ${position}`,
+  mediaLimit: "Alcanzaste el máximo de 20 archivos multimedia por pregunta.",
+  optionMediaUpload: (position: number) => `Agregar imagen a la opción ${position}`,
+  optionMediaReplace: (position: number) => `Reemplazar imagen de la opción ${position}`,
+  optionMediaRemove: (position: number) => `Quitar imagen de la opción ${position}`,
   // Simulation
   simulationTitle: "Simulación",
   simulationCase: "Caso clínico",

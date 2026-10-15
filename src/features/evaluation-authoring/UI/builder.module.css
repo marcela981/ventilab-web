@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation builder styles
-* Descripción: Layout of the evaluation builder (/evaluations/manage/new and /evaluations/manage/[id]/edit): centered column, header actions with the save state, panels (border, radius, surface, shadow) for the metadata and the structure, form grid, rich text field and Tiptap editor, scenario groups, question cards (dirty cards marked with the warning token), drag handles, option rows, media thumbnails, the placeholder sections and the issue lists. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
-* Versión: 1.0
+* Descripción: Layout of the evaluation builder (/evaluations/manage/new and /evaluations/manage/[id]/edit): centered column, header actions with the save state, panels (border, radius, surface, shadow) for the metadata and the structure, form grid, rich text field and Tiptap editor, scenario groups, question cards (dirty cards marked with the warning token), drag handles, option rows, media thumbnails, the placeholder sections and the issue lists. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (S1): statement media items with their remove action and the full-width option image upload row.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -315,6 +315,18 @@
   max-height: 8rem;
   border-radius: var(--vl-radius-sm);
   object-fit: cover;
+}
+
+.mediaItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--vl-space-1);
+}
+
+/* Option image upload: full row width under the option text. */
+.optionMedia {
+  flex: 1 1 100%;
 }
 
 .placeholder {

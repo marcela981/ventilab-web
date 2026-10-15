@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Media upload entity tests
-* Descripción: Client validation of the files uploaded from the page editor: media kind per block type, accepted MIME types per kind (MIME parameters and case ignored), empty files, the size limit of each kind (exactly at the limit is allowed) and the hint shown next to the upload button. Depends on vitest and the media upload entity.
-* Versión: 1.0 (C5)
+* Descripción: Client validation of the uploaded files: media kind per type name, accepted MIME types per kind (MIME parameters and case ignored), empty files, the size limit of each kind (exactly at the limit is allowed) and the hint shown next to the upload button. Depends on vitest and the media upload entity. v1.1 (S1): moved to the shared media-upload module; fields accepting several kinds (kind picked by MIME type, combined accept list, hint and format error).
+* Versión: 1.1 (S1)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,7 +10,7 @@
 */
 
 import { describe, expect, it } from "vitest";
-import { MEDIA_UPLOAD_LIMITS, mediaAccept, mediaHint, mediaKindOf, validateMediaFile } from "./media-upload.entity";
+import { matchMediaKind, MEDIA_UPLOAD_LIMITS, mediaAccept, mediaHint, mediaKindOf, validateMediaFile } from "./media-upload.entity";
 
 const MB = 1024 * 1024;
 
@@ -52,5 +52,17 @@ describe("media upload validation", () => {
 
   it("describes the formats and the limit", () => {
     expect(mediaHint("VIDEO")).toBe("MP4 o WebM, hasta 100 MB.");
+  });
+
+  it("validates a field that accepts several kinds by the kind of the file", () => {
+    const kinds = ["IMAGE", "VIDEO"] as const;
+
+    expect(matchMediaKind("video/mp4", kinds)).toBe("VIDEO");
+    expect(matchMediaKind("application/pdf", kinds)).toBeNull();
+    expect(mediaAccept(kinds)).toBe("image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm");
+    expect(mediaHint(kinds)).toBe("PNG, JPEG, WebP o GIF, hasta 10 MB. MP4 o WebM, hasta 100 MB.");
+    expect(validateMediaFile({ type: "video/webm", size: 50 * MB }, kinds)).toBeNull();
+    expect(validateMediaFile({ type: "image/png", size: 50 * MB }, kinds)).toBe("El archivo pesa 50 MB; el máximo para imágenes es 10 MB.");
+    expect(validateMediaFile({ type: "application/pdf", size: 10 }, kinds)).toBe("Formato no permitido. Usa PNG, JPEG, WebP o GIF; o MP4 o WebM.");
   });
 });

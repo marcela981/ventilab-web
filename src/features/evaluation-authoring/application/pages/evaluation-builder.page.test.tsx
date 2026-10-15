@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationBuilderPage tests
-* Descripción: Renders the evaluation builder against a mocked backend (msw) with a mocked next/router (with route events), a textarea standing in for the lazy Tiptap editor and a pass-through @hello-pangea/dnd that exposes onDragEnd: creating validates, applies the type defaults, posts the evaluation and replaces the route with its editor; editing tracks "Cambios sin guardar", arms beforeunload and the route-change confirmation, and saves only the changed metadata with PATCH; a choice question saves its prompt and points with PATCH and its correct answer with option PATCHes (radio semantics); questions are added and deleted; a drag sends the batch `PUT .../questions/order` (and `.../scenarios/order`) and a refused reorder restores the previous order with a toast; structureLocked and a 409 has_submitted_attempts show the banner whose "Duplicar" opens the copy; a 422 shows its message and the reloaded readiness issues on the question. Depends on vitest, Testing Library, msw and the authoring test helpers. v1.1 (A3 + A2 review): the question texts and its points go in separate PATCHes; a 409 on the structural PATCH keeps the saved texts and drops the structural edits; a 422 shows the client READY validation on the question (the mocked detail does not change); an option created while its text is edited keeps that edit and is not created twice; the refused reorder is shown optimistically while the PUT is pending; "Marcar como lista" validates on the client (issues on the cards, no request), sends `PATCH .../status` READY and shows the reloaded issues on a 422; a READY evaluation disables single-correct answers and adding questions and returns to DRAFT; a SIMULATION question picks a published clinical case and edits its rubric, invalid rubrics block the save. v1.2 (A3 review W2/S1/S2): a SIMULATION question without a clinical case shows the non-blocking recommendation and can still be marked READY; the case title filter says it covers this page only; a 422 on a save with no client READY issue shows the READY hint on the question.
-* Versión: 1.2
+* Descripción: Renders the evaluation builder against a mocked backend (msw) with a mocked next/router (with route events), a textarea standing in for the lazy Tiptap editor and a pass-through @hello-pangea/dnd that exposes onDragEnd: creating validates, applies the type defaults, posts the evaluation and replaces the route with its editor; editing tracks "Cambios sin guardar", arms beforeunload and the route-change confirmation, and saves only the changed metadata with PATCH; a choice question saves its prompt and points with PATCH and its correct answer with option PATCHes (radio semantics); questions are added and deleted; a drag sends the batch `PUT .../questions/order` (and `.../scenarios/order`) and a refused reorder restores the previous order with a toast; structureLocked and a 409 has_submitted_attempts show the banner whose "Duplicar" opens the copy; a 422 shows its message and the reloaded readiness issues on the question. Depends on vitest, Testing Library, msw and the authoring test helpers. v1.1 (A3 + A2 review): the question texts and its points go in separate PATCHes; a 409 on the structural PATCH keeps the saved texts and drops the structural edits; a 422 shows the client READY validation on the question (the mocked detail does not change); an option created while its text is edited keeps that edit and is not created twice; the refused reorder is shown optimistically while the PUT is pending; "Marcar como lista" validates on the client (issues on the cards, no request), sends `PATCH .../status` READY and shows the reloaded issues on a 422; a READY evaluation disables single-correct answers and adding questions and returns to DRAFT; a SIMULATION question picks a published clinical case and edits its rubric, invalid rubrics block the save. v1.2 (A3 review W2/S1/S2): a SIMULATION question without a clinical case shows the non-blocking recommendation and can still be marked READY; the case title filter says it covers this page only; a 422 on a save with no client READY issue shows the READY hint on the question. v1.3 (S1): with the shared media service upload mocked (msw serves the preview URL), the statement uploads a video and removes an attached image (saved as `mediaIds` in the text PATCH), an option uploads its image (saved as `mediaId` in its option PATCH), and a statement file of another kind is refused before uploading.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -67,6 +67,15 @@ vi.mock("@hello-pangea/dnd", () => ({
     children({ innerRef: () => undefined, droppableProps: {}, placeholder: null }, { isDraggingOver: false }),
   Draggable: ({ children }: { children: (provided: unknown, snapshot: unknown) => ReactNode }) =>
     children({ innerRef: () => undefined, draggableProps: {}, dragHandleProps: null }, { isDragging: false }),
+}));
+
+// msw cannot complete a jsdom XHR multipart upload: the upload itself is covered by the shared media
+// service tests; the preview URL still goes through msw.
+const upload = vi.hoisted(() => ({ ids: [] as string[] }));
+
+vi.mock("@shared/media-upload/api/media.service", async(importActual) => ({
+  ...await importActual<typeof import("@shared/media-upload/api/media.service")>(),
+  uploadMedia: () => Promise.resolve(upload.ids.shift() ?? "m-extra"),
 }));
 
 type DocLike = { content?: Array<{ content?: Array<{ text?: string }> }> };
@@ -165,6 +174,7 @@ beforeEach(() => {
   router.replace.mockClear();
   router.handlers.clear();
   dnd.onDragEnd = null;
+  upload.ids = [];
   requests = [];
   caseQueries = [];
   detail = choiceDetail();
@@ -187,6 +197,13 @@ beforeEach(() => {
       return HttpResponse.json(envelope(null));
     }),
     http.get(apiUrl("/api/curriculum/tree"), () => HttpResponse.json(envelope(curriculumTree))),
+    http.get(apiUrl("/api/media/:mediaId/url"), ({ params }) => HttpResponse.json(envelope({
+      mediaId: params.mediaId,
+      url: `https://cdn.example.org/${String(params.mediaId)}`,
+      mimeType: "image/png",
+      kind: "IMAGE",
+      expiresAt: "2026-10-15T13:00:00.000Z",
+    }))),
     http.get(apiUrl("/api/evaluations/:id"), () => HttpResponse.json(envelope(detail))),
     http.post(apiUrl("/api/evaluations"), async(info) => {
       await record("POST")(info);
@@ -497,6 +514,52 @@ describe("EvaluationBuilderPage — edit", () => {
       ["o2", { isCorrect: true }],
       ["o1", { isCorrect: false }],
     ]);
+  });
+
+  it("uploads statement media and an option image and saves them with the question and option PATCHes", async() => {
+    detail = choiceDetail({
+      questions: [
+        questionDto("q1", 0, {
+          type: "SINGLE_CHOICE",
+          points: 2,
+          mediaIds: ["m-old"],
+          media: [{ mediaId: "m-old", url: "https://cdn.example.org/m-old", mimeType: "image/png", kind: "IMAGE", expiresAt: null }],
+          options: [optionDto("o1", 0, { content: "5 cmH2O", isCorrect: true }), optionDto("o2", 1, { content: "8 cmH2O" })],
+        }),
+      ],
+    });
+    upload.ids = ["m-video", "m-option"];
+    renderWithProviders(<EvaluationBuilderPage evaluationId="e1" />);
+
+    const card = await findCard(1);
+
+    expect(within(card).getByRole("img", { name: BUILDER_COPY.mediaImage(1) })).toHaveAttribute("src", "https://cdn.example.org/m-old");
+
+    fireEvent.change(within(card).getByLabelText(BUILDER_COPY.mediaUpload), { target: { files: [new File(["mp4"], "curva.mp4", { type: "video/mp4" })] } });
+    expect(await within(card).findByRole("link", { name: BUILDER_COPY.mediaVideo })).toHaveAttribute("href", "https://cdn.example.org/m-video");
+    fireEvent.click(within(card).getByRole("button", { name: BUILDER_COPY.mediaRemove(1) }));
+
+    fireEvent.change(within(card).getByLabelText(BUILDER_COPY.optionMediaUpload(2)), { target: { files: [new File(["png"], "o2.png", { type: "image/png" })] } });
+    expect(await within(card).findByLabelText(BUILDER_COPY.optionMediaReplace(2))).toBeInTheDocument();
+    expect(within(card).getByText(BUILDER_COPY.unsavedQuestion)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: BUILDER_COPY.save }));
+
+    expect(await screen.findByText(BUILDER_COPY.saved)).toBeInTheDocument();
+    expect(bodiesOf("PATCH", /\/questions\/q1$/)).toEqual([{ mediaIds: ["m-video"] }]);
+    expect(bodiesOf("PATCH", /\/options\/o2$/)).toEqual([{ mediaId: "m-option" }]);
+  });
+
+  it("rejects a statement file that is neither an image nor a video before uploading", async() => {
+    upload.ids = ["m-pdf"];
+    renderWithProviders(<EvaluationBuilderPage evaluationId="e1" />);
+
+    const card = await findCard(1);
+
+    fireEvent.change(within(card).getByLabelText(BUILDER_COPY.mediaUpload), { target: { files: [new File(["pdf"], "guia.pdf", { type: "application/pdf" })] } });
+
+    expect(await within(card).findByRole("alert")).toHaveTextContent("Formato no permitido. Usa PNG, JPEG, WebP o GIF; o MP4 o WebM.");
+    expect(upload.ids).toEqual(["m-pdf"]);
   });
 
   it("lets a multiple choice question mark several correct options", async() => {

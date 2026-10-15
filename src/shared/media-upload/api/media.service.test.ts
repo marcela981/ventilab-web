@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Media service tests
-* Descripción: Unit tests of the media upload with the shared axios client mocked: the file goes as multipart field `file` to POST /api/media with a long explicit timeout, upload progress is reported as a 0..1 fraction (events without a total are ignored), the new media id is unwrapped from the envelope, aborting the signal rejects with a cancellation that isUploadCancelled recognizes, and a failure is normalized to ApiError. Depends on vitest, axios and the media service.
-* Versión: 1.0 (C5)
+* Descripción: Unit tests of the media upload with the shared axios client mocked: the file goes as multipart field `file` to POST /api/media with a long explicit timeout, upload progress is reported as a 0..1 fraction (events without a total are ignored), the new media id is unwrapped from the envelope, aborting the signal rejects with a cancellation that isUploadCancelled recognizes, and a failure is normalized to ApiError. Depends on vitest, axios and the media service. v1.1 (S1): moved with the service to the shared media-upload module.
+* Versión: 1.1 (S1)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje

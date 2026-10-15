@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useMediaUploads tests
-* Descripción: Tests of the per-block media uploads with the media service mocked: progress is exposed while uploading, cancel(key) and unmounting the editor abort the upload signal without showing an error, and an invalid file is rejected before any upload. v1.1 (C6): orphan cleanup (an upload cancelled after it resolved but before it was attached is deleted; replacing a session upload deletes the previous one), a 409 media.media_in_use on "Quitar archivo" clears the block anyway with an informational note and never deletes that media again, and releasing a deleted block deletes its finished session upload (unless another draft block uses it) and drops its state. Depends on vitest, Testing Library, the api-client errors, the page draft entity and useMediaUploads.
-* Versión: 1.1 (C6)
+* Descripción: Tests of the per-block media uploads with the media service mocked: progress is exposed while uploading, cancel(key) and unmounting the editor abort the upload signal without showing an error, and an invalid file is rejected before any upload. v1.1 (C6): orphan cleanup (an upload cancelled after it resolved but before it was attached is deleted; replacing a session upload deletes the previous one), a 409 media.media_in_use on "Quitar archivo" clears the block anyway with an informational note and never deletes that media again, and releasing a deleted block deletes its finished session upload (unless another draft block uses it) and drops its state. Depends on vitest, Testing Library, the api-client errors, the page draft entity and useMediaUploads. v1.2 (S1): the mocked media service is the one of the shared media-upload module.
+* Versión: 1.2 (S1)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -29,8 +29,8 @@ const service = vi.hoisted(() => ({
   deleteFails: null as ApiError | null,
 }));
 
-vi.mock("../../api/services/media.service", async(importActual) => ({
-  ...await importActual<typeof import("../../api/services/media.service")>(),
+vi.mock("@shared/media-upload/api/media.service", async(importActual) => ({
+  ...await importActual<typeof import("@shared/media-upload/api/media.service")>(),
   uploadMedia: (_file: File, options: UploadOptions) => {
     service.calls += 1;
     service.signals.push(options.signal);
