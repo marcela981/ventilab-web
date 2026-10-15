@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Lesson page content
-* Descripción: Main column states of the lesson viewer for an unlocked (or previewed) lesson: error with retry for the lessons, Pages or Page queries, empty state for a lesson without published Pages, skeleton while loading or redirecting, and the Page itself (title + blocks rendered by the shared ContentBlocks in screen mode, already sorted by order). ContentBlocks is a lazy chunk (React.lazy + retryImport, C1 pattern, with the design-system error boundary and the skeleton as fallback): the learning routes share the feature barrel, so a static import would add the block renderers to the First Load JS of /learn, sections and modules. Depends on @shared/design-system, @shared/lib/retry-import, @shared/rich-content (ContentBlocks only: Tiptap is never loaded), the learning error messages and the viewer CSS Module.
-* Versión: 1.0
+* Descripción: Main column states of the lesson viewer for an unlocked (or previewed) lesson: error with retry for the lessons, Pages or Page queries, empty state for a lesson without published Pages, skeleton while loading or redirecting, and the Page itself (title + blocks rendered by the shared ContentBlocks in screen mode, already sorted by order). ContentBlocks is a lazy chunk (React.lazy + retryImport, C1 pattern, with the design-system error boundary and the skeleton as fallback): the learning routes share the feature barrel, so a static import would add the block renderers to the First Load JS of /learn, sections and modules. Depends on @shared/design-system, @shared/lib/retry-import, @shared/rich-content (ContentBlocks only: Tiptap is never loaded), the learning error messages and the viewer CSS Module. v1.1 (C6): the Page article (title + lazy ContentBlocks) is exported as LessonPageArticle so the content editor's student preview renders the same component; viewer behavior unchanged.
+* Versión: 1.1 (C6)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -41,6 +41,24 @@ export type LessonPageContentProps = {
   onRetry: () => void
 };
 
+export type LessonPageArticleProps = {
+  page: Pick<PageContent, "id" | "title" | "blocks">
+};
+
+// The Page body exactly as students see it; also used by the content editor's student preview.
+export function LessonPageArticle({ page }: LessonPageArticleProps) {
+  return (
+    <article className={cx(styles.article)} aria-labelledby="lesson-page-title">
+      <h2 id="lesson-page-title" className={cx(styles.pageTitle)}>{page.title}</h2>
+      <RouteErrorBoundary resetKey={page.id}>
+        <Suspense fallback={<CardSkeleton label={COPY.loading} />}>
+          <ContentBlocks blocks={page.blocks} mode="screen" />
+        </Suspense>
+      </RouteErrorBoundary>
+    </article>
+  );
+}
+
 export function LessonPageContent({ page, isEmpty, error, onRetry }: LessonPageContentProps) {
   if (error) {
     return <ErrorState title={COPY.loadErrorTitle} description={getLearningErrorMessage(error)} onRetry={onRetry} />;
@@ -54,14 +72,5 @@ export function LessonPageContent({ page, isEmpty, error, onRetry }: LessonPageC
     return <CardSkeleton label={COPY.loading} />;
   }
 
-  return (
-    <article className={cx(styles.article)} aria-labelledby="lesson-page-title">
-      <h2 id="lesson-page-title" className={cx(styles.pageTitle)}>{page.title}</h2>
-      <RouteErrorBoundary resetKey={page.id}>
-        <Suspense fallback={<CardSkeleton label={COPY.loading} />}>
-          <ContentBlocks blocks={page.blocks} mode="screen" />
-        </Suspense>
-      </RouteErrorBoundary>
-    </article>
-  );
+  return <LessonPageArticle page={page} />;
 }

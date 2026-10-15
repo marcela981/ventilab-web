@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useScopeConversation
-* Descripción: The caller's AI tutor conversation of one scope (LESSON | MODULE) and refId (lessonId | moduleId), reopened if it exists. BACKEND GAP: GET /api/tutor/conversations filters only by scope, so the listing (most recently active first, 100 per page) is searched client-side page by page until the refId is found or the pages run out (bounded to CONVERSATION_LOOKUP_MAX_PAGES). The lookup always refetches on mount (no dedupe) so a conversation created moments ago is found and never duplicated. Once known, GET /api/tutor/conversations/{id} loads its messages. `messages` is null while resolving, [] when there is no conversation yet (the first message creates it). `adopt(id)` takes the conversation created by the first streamed answer (seeding its cache first so the thread does not flash); `refresh()` revalidates the messages after a stream (or repeats the lookup when the id is still unknown, e.g. a first answer stopped before `done`). Depends on SWR, @shared/api-client, the tutor service, mapper and entity.
-* Versión: 1.0
+* Descripción: The caller's AI tutor conversation of one scope (LESSON | MODULE) and refId (lessonId | moduleId), reopened if it exists. BACKEND GAP: GET /api/tutor/conversations filters only by scope, so the listing (most recently active first, 100 per page) is searched client-side page by page until the refId is found or the pages run out (bounded to CONVERSATION_LOOKUP_MAX_PAGES). The lookup always refetches on mount (no dedupe) so a conversation created moments ago is found and never duplicated. Once known, GET /api/tutor/conversations/{id} loads its messages. `messages` is null while resolving, [] when there is no conversation yet (the first message creates it). `adopt(id)` takes the conversation created by the first streamed answer (seeding its cache first so the thread does not flash); `refresh()` revalidates the messages after a stream (or repeats the lookup when the id is still unknown, e.g. a first answer stopped before `done`). Depends on SWR, @shared/api-client, the tutor service, mapper and entity. v1.1 (L6 fix): the conversation id of the last definitive lookup is kept while the listing revalidates (reload, refresh, focus), so the open conversation is not dropped until a definitive new result replaces it.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -52,8 +52,19 @@ export function useScopeConversation(scope: QuestionScope, refId: string): Scope
   );
   const lastPage = Math.min(listData?.pagination?.pages ?? 1, CONVERSATION_LOOKUP_MAX_PAGES);
   const hasMorePages = listData !== undefined && found === null && lookupPage < lastPage;
-  const conversationId = createdId ?? found?.id ?? null;
-  const isNew = conversationId === null && listData !== undefined && !hasMorePages;
+  // Definitive lookup result: found, or every listing page checked without a match.
+  const isDefinitive = listData !== undefined && (found !== null || !hasMorePages);
+  const definitiveId = found?.id ?? null;
+  // Conversation id of the last definitive result of this mount, kept while the listing revalidates.
+  const [resolvedId, setResolvedId] = useState<string | null>(null);
+
+  if (isDefinitive && resolvedId !== definitiveId) {
+    setResolvedId(definitiveId);
+  }
+
+  const conversationId = createdId ?? (isDefinitive ? definitiveId : resolvedId);
+  // "No conversation yet" only on a definitive result, so a revalidation never offers to start a duplicate.
+  const isNew = conversationId === null && isDefinitive;
   const detailQuery = useApiQuery(
     conversationId ? CONVERSATION_PATH : null,
     { params: { conversationId: conversationId ?? "" } },

@@ -22,25 +22,30 @@
  *   pages/learn/modules/[moduleId]/index.tsx entran en NEW_PAGE_FILES.
  *   v3.7 (L3 learning): pages/learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber].tsx
  *   entra en NEW_PAGE_FILES.
- *   v3.8 (S0 evaluations): registra las features nuevas evaluations, evaluation-authoring y
+ *   v3.8 (L7 learning): pages/learn/modules/[moduleId]/print.tsx entra en NEW_PAGE_FILES.
+ *   v3.9 (C1 content-editor): pages/content/index.tsx entra en NEW_PAGE_FILES.
+ *   v3.10 (C4 content-editor): pages/content/pages/[pageId].tsx entra en NEW_PAGE_FILES.
+ *   v3.11 (R1): pages/teaching/[moduleId]/[lessonId].tsx (redireccion legada) entra en NEW_PAGE_FILES.
+ *   v3.12 (S0 evaluations): registra las features nuevas evaluations, evaluation-authoring y
  *   grading (sin legacy); pages/evaluations/index.tsx y pages/evaluations/[evaluationId]/index.tsx
  *   entran en NEW_PAGE_FILES.
- *   v3.9 (E2 evaluations): pages/evaluations/[evaluationId]/attempts/[attemptId]/index.tsx
+ *   v3.13 (E2 evaluations): pages/evaluations/[evaluationId]/attempts/[attemptId]/index.tsx
  *   entra en NEW_PAGE_FILES.
- *   v3.10 (E3 evaluations): pages/evaluations/[evaluationId]/attempts/[attemptId]/result.tsx
+ *   v3.14 (E3 evaluations): pages/evaluations/[evaluationId]/attempts/[attemptId]/result.tsx
  *   entra en NEW_PAGE_FILES.
- *   v3.11 (A1 evaluation-authoring): pages/evaluations/manage/index.tsx entra en NEW_PAGE_FILES.
- *   v3.12 (A2 evaluation-authoring): pages/evaluations/manage/new.tsx y
+ *   v3.15 (A1 evaluation-authoring): pages/evaluations/manage/index.tsx entra en NEW_PAGE_FILES.
+ *   v3.16 (A2 evaluation-authoring): pages/evaluations/manage/new.tsx y
  *   pages/evaluations/manage/[evaluationId]/edit.tsx entran en NEW_PAGE_FILES.
- *   v3.13 (A4 evaluation-authoring): pages/evaluations/manage/[evaluationId]/assignments.tsx
+ *   v3.17 (A4 evaluation-authoring): pages/evaluations/manage/[evaluationId]/assignments.tsx
  *   entra en NEW_PAGE_FILES.
- *   v3.14 (G1 grading): pages/grading/index.tsx entra en NEW_PAGE_FILES.
- *   v3.15 (G2 grading): pages/grading/attempts/[attemptId].tsx entra en NEW_PAGE_FILES.
- *   v3.16 (G3 grading): nuevo módulo compartido src/shared/charts y la ruta delgada
+ *   v3.18 (G1 grading): pages/grading/index.tsx entra en NEW_PAGE_FILES.
+ *   v3.19 (G2 grading): pages/grading/attempts/[attemptId].tsx entra en NEW_PAGE_FILES.
+ *   v3.20 (G3 grading): nuevo módulo compartido src/shared/charts y la ruta delgada
  *   pages/grading/evaluations/[evaluationId].tsx entra en NEW_PAGE_FILES.
- *   v3.17 (R1 evaluations): las rutas legadas pages/evaluation/** pasan a ser redirecciones
+ *   v3.21 (R1 evaluations): las rutas legadas pages/evaluation/** pasan a ser redirecciones
  *   delgadas .tsx a las rutas nuevas y entran en NEW_PAGE_FILES.
- * Versión: 3.17
+ *   v3.22 (merge): integra las rutas de evaluations/grading con las de learning/content-editor.
+ * Versión: 3.22
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -77,7 +82,11 @@ const NEW_PAGE_FILES = [
   "pages/learn/index.tsx",
   "pages/learn/[[]sectionId[]].tsx",
   "pages/learn/modules/[[]moduleId[]]/index.tsx",
+  "pages/learn/modules/[[]moduleId[]]/print.tsx",
   "pages/learn/modules/[[]moduleId[]]/lessons/[[]lessonId[]]/[[]pageNumber[]].tsx",
+  "pages/content/index.tsx",
+  "pages/content/pages/[[]pageId[]].tsx",
+  "pages/teaching/[[]moduleId[]]/[[]lessonId[]].tsx",
   "pages/evaluations/index.tsx",
   "pages/evaluations/[[]evaluationId[]]/index.tsx",
   "pages/evaluations/[[]evaluationId[]]/attempts/[[]attemptId[]]/index.tsx",

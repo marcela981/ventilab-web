@@ -1,0 +1,447 @@
+/*
+* Funcionalidad: Page editor page tests
+* Descripción: Integration tests of PageEditorPage with msw over a mutable in-memory page: loads the blocks in order with the saved status, an equation edit marks "Cambios sin guardar" (beforeunload prevented, router guard registered and cancelling when the user stays) and saves only that block's content, add/duplicate/delete (with confirmation)/move are saved as DELETE, POST and one reorder with every id, the lazy Tiptap editor opens for a new text block, an invalid video URL blocks saving, and a failed save keeps the changes with the mapped error. Depends on vitest, Testing Library, msw, the content editor test helpers and the page editor page. v1.1 (C4 review): guard aborts with the string sentinel and silences its rejection, back/forward through beforePopState (declined restores the entry, confirmed is not asked twice), a rich text edit through the real Tiptap editor (exposed on its DOM node, jsdom cannot type into ProseMirror) marks unsaved changes and POSTs its Tiptap JSON, and a load error retries into the editor. v1.2 (C5): pop latch cleared when the navigation ends without routeChangeStart (hash-only pop); an image upload (client type validation first, then POST /api/media and the signed preview URL) makes the new block valid and saves it with its mediaId; Quitar archivo on media in use (409 media.media_in_use) keeps the file and shows the message. v1.3 (C6): the student preview renders the current draft (markdown rich text, KaTeX equation, YouTube embed, uploaded image through its signed URL) with the learning viewer's page article, and later edits show up in it without saving. v1.4 (C6 review): the equation literals escape the LaTeX backslash so a real \cdot command reaches KaTeX. Quitar archivo on media in use (409) now clears the block and shows an informational note.
+* Versión: 1.4 (C6)
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
+import { setupServer } from "msw/node";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import type { PageBlockDTO } from "../../api/dtos/content-editor.dto";
+import { apiUrl, envelope, errorResponse, renderWithSession } from "./content-editor-test-helpers";
+import { NAVIGATION_CANCELLED } from "../hooks/use-unsaved-changes-guard";
+import { PageEditorPage } from "./page-editor.page";
+
+type Recorded = { method: string, path: string, body: unknown };
+type RouteHandler = (url: string) => void;
+type PopHandler = () => boolean;
+
+const router = vi.hoisted(() => ({
+  asPath: "/content/pages/p1",
+  handlers: new Map<string, (url: string) => void>(),
+  popHandler: null as (() => boolean) | null,
+  beforePopState: (handler: () => boolean) => {
+    router.popHandler = handler;
+  },
+  events: {
+    on: (event: string, handler: (url: string) => void) => router.handlers.set(event, handler),
+    off: (event: string) => router.handlers.delete(event),
+    emit: () => undefined,
+  },
+}));
+
+vi.mock("next/router", () => ({ useRouter: () => router }));
+
+// msw cannot complete a jsdom XHR multipart upload (the request never resolves): the upload itself is
+// covered by the media service tests; the preview URL and delete calls still go through msw.
+const upload = vi.hoisted(() => ({ files: [] as File[] }));
+
+vi.mock("../../api/services/media.service", async(importActual) => ({
+  ...await importActual<typeof import("../../api/services/media.service")>(),
+  uploadMedia: (file: File, options?: { onProgress?: (fraction: number) => void }) => {
+    upload.files.push(file);
+    options?.onProgress?.(0.5);
+
+    return Promise.resolve("m1");
+  },
+}));
+
+// Generous waits: lazy chunks (Tiptap, KaTeX) and a slow machine.
+const LOAD = { timeout: 10_000 };
+const DATE = "2026-10-01T00:00:00.000Z";
+const server = setupServer();
+let requests: Recorded[] = [];
+let stored: PageBlockDTO[] = [];
+let nextId = 10;
+
+function blockDto(id: string, order: number, type: string, content: Record<string, unknown>, title: string | null = null): PageBlockDTO {
+  return {
+    id,
+    pageId: "p1",
+    sectionId: null,
+    type,
+    title,
+    order,
+    content: content as PageBlockDTO["content"],
+    mediaId: null,
+    mediaUrl: null,
+    estimatedTime: null,
+    isActive: true,
+    createdAt: DATE,
+    createdBy: null,
+    updatedAt: DATE,
+    updatedBy: null,
+  };
+}
+
+function pageDto() {
+  return {
+    id: "p1",
+    title: "Presiones en la vía aérea",
+    status: "DRAFT",
+    // Deliberately out of order: the editor sorts by `order`.
+    sections: [...stored].reverse(),
+  };
+}
+
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: "error" });
+  server.events.on("request:start", ({ request }) => {
+    const url = new URL(request.url);
+    const entry: Recorded = { method: request.method, path: url.pathname, body: null };
+
+    requests.push(entry);
+
+    if (request.method !== "GET" && request.method !== "DELETE") {
+      void request.clone().json().then((body: unknown) => {
+        entry.body = body;
+      }, () => undefined);
+    }
+  });
+});
+
+beforeEach(() => {
+  requests = [];
+  nextId = 10;
+  stored = [
+    blockDto("b1", 1, "TEXT", { markdown: "La **presión** de la vía aérea." }, "Definición"),
+    blockDto("b2", 2, "EQUATION", { latex: "P = F", display: true }),
+    blockDto("b3", 3, "VIDEO", { url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }),
+  ];
+  router.handlers.clear();
+  router.popHandler = null;
+  upload.files = [];
+
+  server.use(
+    http.get(apiUrl("/api/pages/p1"), () => HttpResponse.json(envelope(pageDto()))),
+    http.put(apiUrl("/api/pages/p1/blocks/reorder"), async({ request }) => {
+      const { ids } = await request.json() as { ids: string[] };
+
+      stored = ids.map((id, index) => ({ ...(stored.find((block) => block.id === id) as PageBlockDTO), order: index + 1 }));
+
+      return HttpResponse.json(envelope(null));
+    }),
+    http.put(apiUrl("/api/pages/p1/blocks/:blockId"), async({ request, params }) => {
+      const body = await request.json() as Partial<PageBlockDTO>;
+
+      stored = stored.map((block) => (block.id === params.blockId ? { ...block, ...body } : block));
+
+      return HttpResponse.json(envelope(null));
+    }),
+    http.post(apiUrl("/api/pages/p1/blocks"), async({ request }) => {
+      const body = await request.json() as { type: string, content: Record<string, unknown>, title?: string };
+      const id = `b${nextId++}`;
+
+      stored = [...stored, blockDto(id, stored.length + 1, body.type, body.content, body.title ?? null)];
+
+      return HttpResponse.json(envelope({ id }), { status: 201 });
+    }),
+    http.get(apiUrl("/api/media/:mediaId/url"), ({ params }) => HttpResponse.json(envelope({
+      mediaId: params.mediaId,
+      url: `https://cdn.example.org/${String(params.mediaId)}.png`,
+      mimeType: "image/png",
+      kind: "IMAGE",
+      expiresAt: DATE,
+    }))),
+    http.delete(apiUrl("/api/pages/p1/blocks/:blockId"), ({ params }) => {
+      stored = stored.filter((block) => block.id !== params.blockId);
+
+      return HttpResponse.json(envelope(null));
+    }),
+  );
+});
+
+afterEach(() => {
+  server.resetHandlers();
+  vi.restoreAllMocks();
+});
+
+afterAll(() => {
+  server.close();
+});
+
+const writes = () => requests.filter((request) => request.method !== "GET").map(({ method, path, body }) => ({ method, path, body }));
+const saveButton = () => screen.getByRole("button", { name: "Guardar cambios" });
+
+async function addImageBlock(): Promise<HTMLElement> {
+  fireEvent.click(screen.getByRole("button", { name: "Agregar bloque" }));
+  fireEvent.click(screen.getByRole("menuitem", { name: "Imagen" }));
+  await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument(), LOAD);
+
+  return screen.getByRole("listitem", { name: "bloque 4 (Imagen)" });
+}
+
+function selectFile(block: HTMLElement, file: File) {
+  const input = within(block).getByLabelText(/archivo/i, { selector: "input[type=file]" });
+
+  fireEvent.change(input, { target: { files: [file] } });
+}
+
+async function renderEditor() {
+  renderWithSession(<PageEditorPage pageId="p1" />);
+  await screen.findByRole("heading", { name: "Presiones en la vía aérea" }, LOAD);
+}
+
+describe("PageEditorPage", { timeout: 30_000 }, () => {
+  it("lists the blocks in order with everything saved", async() => {
+    await renderEditor();
+
+    const items = screen.getAllByRole("listitem").filter((item) => item.getAttribute("aria-label")?.startsWith("bloque"));
+
+    expect(items.map((item) => item.getAttribute("aria-label"))).toEqual(["bloque 1 (Texto)", "bloque 2 (Ecuación)", "bloque 3 (Video)"]);
+    expect(screen.getAllByLabelText("Título del bloque (opcional)")[0]).toHaveValue("Definición");
+    expect(screen.getByText("Todos los cambios están guardados")).toBeInTheDocument();
+    expect(saveButton()).toBeDisabled();
+  });
+
+  it("marks unsaved changes, guards leaving and saves only the edited block", async() => {
+    await renderEditor();
+
+    fireEvent.change(screen.getByLabelText("Ecuación (LaTeX)"), { target: { value: "P = F \\cdot R" } });
+
+    expect(screen.getByText("Cambios sin guardar")).toBeInTheDocument();
+
+    const unload = new Event("beforeunload", { cancelable: true });
+
+    window.dispatchEvent(unload);
+    expect(unload.defaultPrevented).toBe(true);
+
+    const onRouteChange = router.handlers.get("routeChangeStart") as RouteHandler;
+
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+
+    // In-app navigation: aborted with the string sentinel, whose unhandled rejection is silenced.
+    expect(() => onRouteChange("/content")).toThrow(NAVIGATION_CANCELLED);
+
+    const rejection = new Event("unhandledrejection", { cancelable: true }) as PromiseRejectionEvent;
+
+    Object.defineProperty(rejection, "reason", { value: NAVIGATION_CANCELLED });
+    window.dispatchEvent(rejection);
+    expect(rejection.defaultPrevented).toBe(true);
+
+    // Back/forward declined: Next does not route and the edited entry is pushed back.
+    const editedState: unknown = window.history.state;
+    const pushState = vi.spyOn(window.history, "pushState");
+
+    expect((router.popHandler as PopHandler)()).toBe(false);
+    expect(pushState).toHaveBeenCalledWith(editedState, "", "/content/pages/p1");
+
+    // Back/forward confirmed: the route change that follows is not asked again.
+    confirm.mockReturnValue(true);
+    expect((router.popHandler as PopHandler)()).toBe(true);
+    confirm.mockClear();
+    confirm.mockReturnValue(false);
+    expect(() => onRouteChange("/content")).not.toThrow();
+    expect(confirm).not.toHaveBeenCalled();
+
+    fireEvent.click(saveButton());
+
+    await screen.findByText("Página guardada.", {}, LOAD);
+    expect(writes()).toEqual([{ method: "PUT", path: "/api/pages/p1/blocks/b2", body: { content: { latex: "P = F \\cdot R", display: true } } }]);
+    await waitFor(() => expect(screen.getByText("Todos los cambios están guardados")).toBeInTheDocument(), LOAD);
+    expect(router.handlers.has("routeChangeStart")).toBe(false);
+    expect((router.popHandler as PopHandler)()).toBe(true);
+  });
+
+  it("forgets a confirmed back/forward that ended without a route change", async() => {
+    await renderEditor();
+
+    fireEvent.change(screen.getByLabelText("Ecuación (LaTeX)"), { target: { value: "P = F \\cdot R" } });
+
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    // A hash-only pop: Next emits hashChangeStart, never routeChangeStart.
+    expect((router.popHandler as PopHandler)()).toBe(true);
+    (router.handlers.get("hashChangeStart") as RouteHandler | undefined)?.("/content/pages/p1#b2");
+
+    confirm.mockClear();
+    confirm.mockReturnValue(false);
+
+    expect(() => (router.handlers.get("routeChangeStart") as RouteHandler)("/content")).toThrow(NAVIGATION_CANCELLED);
+    expect(confirm).toHaveBeenCalledTimes(1);
+  });
+
+  it("saves added, duplicated, deleted and moved blocks with one reorder", async() => {
+    await renderEditor();
+
+    fireEvent.click(screen.getByRole("button", { name: "Agregar bloque" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Separador" }));
+    await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument(), LOAD);
+    fireEvent.click(screen.getByRole("button", { name: "Duplicar bloque 2 (Ecuación)" }));
+    fireEvent.click(screen.getByRole("button", { name: "Eliminar bloque 1 (Texto)" }));
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Eliminar" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument(), LOAD);
+    fireEvent.click(screen.getByRole("button", { name: "Bajar bloque 1 (Ecuación)" }));
+
+    // Draft: b2 copy, b2, b3, divider.
+    fireEvent.click(saveButton());
+
+    await screen.findByText("Página guardada.", {}, LOAD);
+    expect(writes()).toEqual([
+      { method: "DELETE", path: "/api/pages/p1/blocks/b1", body: null },
+      { method: "POST", path: "/api/pages/p1/blocks", body: { type: "EQUATION", content: { latex: "P = F", display: true } } },
+      { method: "POST", path: "/api/pages/p1/blocks", body: { type: "DIVIDER", content: {} } },
+      { method: "PUT", path: "/api/pages/p1/blocks/reorder", body: { ids: ["b10", "b2", "b3", "b11"] } },
+    ]);
+    await waitFor(() => expect(screen.getByText("Todos los cambios están guardados")).toBeInTheDocument(), LOAD);
+  });
+
+  it("opens the lazy rich text editor for a new text block", async() => {
+    await renderEditor();
+
+    fireEvent.click(screen.getByRole("button", { name: "Agregar bloque" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Texto" }));
+
+    const editor = await screen.findByRole("textbox", { name: "Texto del bloque" }, LOAD);
+
+    expect(editor).toHaveAttribute("contenteditable", "true");
+    expect(screen.getByRole("toolbar", { name: "Formato: Texto del bloque" })).toBeInTheDocument();
+  });
+
+  it("sends the Tiptap JSON of an edited rich text block", async() => {
+    await renderEditor();
+
+    fireEvent.click(screen.getByRole("button", { name: "Agregar bloque" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Texto" }));
+
+    const field = await screen.findByRole("textbox", { name: "Texto del bloque" }, LOAD);
+    // jsdom cannot type into ProseMirror: drive the real Tiptap editor that @tiptap/core exposes on its DOM node.
+    const tiptap = (field as HTMLElement & { editor: { commands: { insertContent: (value: string) => boolean } } }).editor;
+
+    act(() => {
+      tiptap.commands.insertContent("Hola");
+    });
+
+    expect(screen.getByText("Cambios sin guardar")).toBeInTheDocument();
+    fireEvent.click(saveButton());
+
+    await screen.findByText("Página guardada.", {}, LOAD);
+    expect(writes()).toEqual([
+      {
+        method: "POST",
+        path: "/api/pages/p1/blocks",
+        body: { type: "TEXT", content: { doc: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Hola" }] }] } } },
+      },
+    ]);
+  });
+
+  it("shows the load error and loads the page on retry", async() => {
+    let fail = true;
+
+    server.use(http.get(apiUrl("/api/pages/p1"), () => (fail ? errorResponse("internal_error", 500) : HttpResponse.json(envelope(pageDto())))));
+    renderWithSession(<PageEditorPage pageId="p1" />);
+
+    expect(await screen.findByText("No se pudo cargar la página", {}, LOAD)).toBeInTheDocument();
+
+    fail = false;
+    fireEvent.click(screen.getByRole("button", { name: /reintentar/i }));
+
+    expect(await screen.findByRole("heading", { name: "Presiones en la vía aérea" }, LOAD)).toBeInTheDocument();
+  });
+
+  it("uploads an image so the new block becomes valid and is saved with its media", async() => {
+    await renderEditor();
+    const image = await addImageBlock();
+
+    expect(within(image).getByText("Falta el archivo de imagen.")).toBeInTheDocument();
+    expect(saveButton()).toBeDisabled();
+
+    // Client validation: a PDF is not an image and is never sent.
+    selectFile(image, new File(["%PDF"], "guia.pdf", { type: "application/pdf" }));
+    expect(within(image).getByRole("alert")).toHaveTextContent("Formato no permitido. Usa PNG, JPEG, WebP o GIF.");
+    expect(writes()).toEqual([]);
+
+    selectFile(image, new File(["png"], "curva.png", { type: "image/png" }));
+
+    expect(await within(image).findByRole("button", { name: "Quitar archivo" }, LOAD)).toBeInTheDocument();
+    // alt is still empty, so the preview image has no img role.
+    expect(image.querySelector("img")).toHaveAttribute("src", "https://cdn.example.org/m1.png");
+    expect(within(image).queryByText("Falta el archivo de imagen.")).not.toBeInTheDocument();
+
+    fireEvent.click(saveButton());
+
+    await screen.findByText("Página guardada.", {}, LOAD);
+    expect(upload.files.map((file) => file.name)).toEqual(["curva.png"]);
+    expect(writes()).toEqual([
+      { method: "POST", path: "/api/pages/p1/blocks", body: { type: "IMAGE", content: { caption: "", alt: "" }, mediaId: "m1" } },
+    ]);
+  });
+
+  it("clears the block with a note when the uploaded media is already in use", async() => {
+    server.use(http.delete(apiUrl("/api/media/m1"), () => errorResponse("media.media_in_use", 409)));
+    await renderEditor();
+    const image = await addImageBlock();
+
+    selectFile(image, new File(["png"], "curva.png", { type: "image/png" }));
+    fireEvent.click(await within(image).findByRole("button", { name: "Quitar archivo" }, LOAD));
+
+    expect(await within(image).findByRole("status", {}, LOAD)).toHaveTextContent("Otra página guardada ya lo usa");
+    expect(writes()).toContainEqual({ method: "DELETE", path: "/api/media/m1", body: null });
+    expect(within(image).queryByRole("alert")).not.toBeInTheDocument();
+    expect(within(image).getByRole("button", { name: "Subir archivo" })).toBeInTheDocument();
+    expect(image.querySelector("img")).toBeNull();
+    expect(within(image).getByText("Falta el archivo de imagen.")).toBeInTheDocument();
+  });
+
+  it("previews the current draft as students see it, unsaved edits included", async() => {
+    await renderEditor();
+
+    fireEvent.change(screen.getByLabelText("Ecuación (LaTeX)"), { target: { value: "P = F \\cdot R" } });
+
+    const image = await addImageBlock();
+
+    selectFile(image, new File(["png"], "curva.png", { type: "image/png" }));
+    await within(image).findByRole("button", { name: "Quitar archivo" }, LOAD);
+
+    fireEvent.click(screen.getByRole("button", { name: "Vista previa como estudiante" }));
+
+    const preview = screen.getByRole("region", { name: "Vista previa como estudiante" });
+
+    // The learning viewer's own page article: title heading and the shared block renderers.
+    expect(await within(preview).findByRole("heading", { name: "Presiones en la vía aérea" }, LOAD)).toBeInTheDocument();
+    expect(await within(preview).findByText("presión", { selector: "strong" }, LOAD)).toBeInTheDocument();
+    await waitFor(() => expect(preview.querySelector("annotation")).toHaveTextContent("P = F \\cdot R"), LOAD);
+    expect(preview.querySelector("iframe")?.getAttribute("src")).toContain("youtube-nocookie.com/embed/dQw4w9WgXcQ");
+    expect(preview.querySelector("img")).toHaveAttribute("src", "https://cdn.example.org/m1.png");
+    expect(screen.queryByLabelText("Ecuación (LaTeX)")).not.toBeInTheDocument();
+
+    // Back to editing, edit again: the preview shows the new draft, still without saving.
+    fireEvent.click(screen.getByRole("button", { name: "Editar" }));
+    fireEvent.change(screen.getByLabelText("Ecuación (LaTeX)"), { target: { value: "V_T = 500" } });
+    fireEvent.click(screen.getByRole("button", { name: "Vista previa como estudiante" }));
+
+    const updated = screen.getByRole("region", { name: "Vista previa como estudiante" });
+
+    await waitFor(() => expect(updated.querySelector("annotation")).toHaveTextContent("V_T = 500"), LOAD);
+    expect(writes()).toEqual([]);
+    expect(screen.getByText("Cambios sin guardar")).toBeInTheDocument();
+  });
+
+  it("blocks saving while a video link is not YouTube or Vimeo", async() => {
+    await renderEditor();
+
+    fireEvent.change(screen.getByLabelText("Enlace de YouTube o Vimeo"), { target: { value: "https://example.com/v.mp4" } });
+
+    expect(screen.getByText("Solo se admiten enlaces de YouTube o Vimeo.")).toBeInTheDocument();
+    expect(screen.getByText("Revisa el bloque 3 antes de guardar.")).toBeInTheDocument();
+    expect(saveButton()).toBeDisabled();
+  });
+
+  it("keeps the changes and shows the mapped error when the save fails", async() => {
+    server.use(http.put(apiUrl("/api/pages/p1/blocks/:blockId"), () => errorResponse("pages.invalid_page_block", 400)));
+    await renderEditor();
+
+    fireEvent.change(screen.getByLabelText("Ecuación (LaTeX)"), { target: { value: "\\frac{1}{2}" } });
+    fireEvent.click(saveButton());
+
+    expect(await screen.findByRole("alert", {}, LOAD)).toHaveTextContent("Uno de los bloques no tiene un contenido válido.");
+    expect(screen.getByText("Cambios sin guardar")).toBeInTheDocument();
+    expect(screen.getByLabelText("Ecuación (LaTeX)")).toHaveValue("\\frac{1}{2}");
+  });
+});

@@ -1,0 +1,227 @@
+/*
+* Funcionalidad: Page editor styles
+* Descripción: Layout of the content page editor (/content/pages/[pageId]): page column, back link, status bar (status badge, saved/unsaved indicator, invalid block hint), save error banner, ordered block list, block cards (header with drag handle, type label, position and actions; body with the fields stacked), the dragging state, the Tiptap rich text editor (toolbar, editable area, placeholder), the live preview frame, notes, field errors and the dashed media upload slot reserved for C5, plus a visible focus ring for keyboard users. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (C5): upload actions, determinate progress row and the visually hidden file input of the media upload. v1.2 (C6): edit/preview mode toggle and the student preview column (the page body itself keeps the learning viewer styles).
+* Versión: 1.2 (C6)
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  width: 100%;
+  max-width: 60rem;
+  margin: 0 auto;
+}
+
+.back {
+  align-self: flex-start;
+}
+
+.statusBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-3);
+}
+
+.saveState {
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.saveStateDirty {
+  color: var(--vl-color-warning);
+  font-weight: 600;
+}
+
+.saveError {
+  margin: 0;
+  padding: var(--vl-space-2) var(--vl-space-3);
+  border: 1px solid var(--vl-color-error);
+  border-radius: var(--vl-radius-md);
+  color: var(--vl-color-error);
+  font: var(--mui-font-body2);
+}
+
+.blocks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.block {
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.dragging {
+  box-shadow: var(--vl-shadow-3);
+}
+
+.blockHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-1) var(--vl-space-2);
+  border-bottom: 1px solid var(--vl-color-border);
+}
+
+.handle {
+  display: inline-flex;
+  align-items: center;
+  color: var(--vl-color-text-muted);
+  cursor: grab;
+}
+
+.handle:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}
+
+.blockType {
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-muted);
+  text-transform: uppercase;
+}
+
+.blockPosition {
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-disabled);
+}
+
+.blockActions {
+  display: flex;
+  margin-left: auto;
+}
+
+.blockBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-3);
+}
+
+.richText {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-surface);
+}
+
+.richText:focus-within {
+  border-color: var(--vl-color-primary);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-1);
+  padding: var(--vl-space-1);
+  border-bottom: 1px solid var(--vl-color-border);
+}
+
+.editor {
+  min-width: 0;
+}
+
+.editorContent {
+  min-height: 8rem;
+  padding: var(--vl-space-2) var(--vl-space-3);
+  font: var(--mui-font-body1);
+  color: var(--vl-color-text);
+  outline: none;
+}
+
+.editorContent :global(p.is-editor-empty:first-child)::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--vl-color-text-disabled);
+  pointer-events: none;
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  padding: var(--vl-space-2) var(--vl-space-3);
+  border: 1px dashed var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-bg);
+  overflow-x: auto;
+}
+
+.previewLabel {
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-muted);
+}
+
+.note {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.fieldError {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-error);
+}
+
+.uploadSlot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  padding: var(--vl-space-3);
+  border: 2px dashed var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+  text-align: center;
+}
+
+.uploadActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--vl-space-2);
+}
+
+.uploadProgress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+/* Visually hidden: the surrounding button label opens the picker. */
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.modeToggle {
+  align-self: flex-start;
+}
+
+.studentPreview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}

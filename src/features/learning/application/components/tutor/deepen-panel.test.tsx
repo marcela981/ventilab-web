@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: DeepenPanel tests
-* Descripción: Integration tests of the "Profundizar" panel against msw serving real text/event-stream bodies of POST /api/tutor/pages/{pageId}/deepen: deltas render progressively and the rating widget appears on `done`, "Detener" stops the answer (no further text, stopped note, no rating), a follow-up question reuses the returned conversationId, changing page resets the thread, and the 429 quota (local reset time), 503 provider and 404 unpublished page errors show their messages. RichContent is replaced by plain text (its lazy markdown renderer is covered in shared/rich-content). Depends on vitest, Testing Library, msw and the learning/SSE test helpers.
-* Versión: 1.0
+* Descripción: Integration tests of the "Profundizar" panel against msw serving real text/event-stream bodies of POST /api/tutor/pages/{pageId}/deepen: deltas render progressively and the rating widget appears on `done`, "Detener" stops the answer (no further text, stopped note, no rating), a follow-up question reuses the returned conversationId, changing page resets the thread, and the 429 quota (local reset time), 503 provider and 404 unpublished page errors show their messages. v1.1 (L5 fix): the conversationId of a finished answer survives a later failed answer; a first answer stopped before `done` has no conversationId to reuse (the backend only sends it in `done`). RichContent is replaced by plain text (its lazy markdown renderer is covered in shared/rich-content). Depends on vitest, Testing Library, msw and the learning/SSE test helpers.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,7 +14,7 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { AI_ERROR_MESSAGES } from "../../entities/ai-error-messages";
-import { controlledStream, deltaFrame, doneFrame, sseResponse } from "../../hooks/sse-test-helpers";
+import { controlledStream, deltaFrame, doneFrame, errorFrame, sseResponse } from "../../hooks/sse-test-helpers";
 import type { ControlledStream } from "../../hooks/sse-test-helpers";
 import { apiUrl, errorResponse, renderWithSession, SessionWrapper } from "../../pages/learning-test-helpers";
 import { DeepenPanel } from "./deepen-panel";
@@ -124,6 +124,50 @@ describe("DeepenPanel", () => {
     expect(screen.getByText("Respuesta uno")).toBeInTheDocument();
     expect(requests[1]).toEqual({ pageId: "p1", body: { question: "Segunda", conversationId: "conv-1" } });
     await waitFor(() => expect(screen.getAllByRole("heading", { name: "¿Te fue útil?" })).toHaveLength(2));
+  });
+
+  it("keeps the conversation of a finished answer after a later answer fails", async() => {
+    renderWithSession(<DeepenPanel pageId="p1" />);
+
+    ask("Primera");
+    stream.push(deltaFrame("Respuesta uno"));
+    stream.push(doneFrame(DONE));
+    expect(await screen.findByRole("heading", { name: "¿Te fue útil?" })).toBeInTheDocument();
+
+    server.use(http.post(apiUrl(DEEPEN_PATH), async({ request, params }) => {
+      requests.push({ pageId: String(params.pageId), body: await request.json() });
+
+      return requests.length === 2
+        ? sseResponse([deltaFrame("Parcial"), errorFrame("ai.stream_interrupted", "cortado")])
+        : sseResponse([deltaFrame("Respuesta tres"), doneFrame({ ...DONE, messageId: "msg-3" })]);
+    }));
+    ask("Segunda");
+    expect(await screen.findByText(AI_ERROR_MESSAGES.interrupted)).toBeInTheDocument();
+    ask("Tercera");
+
+    expect(await screen.findByText("Respuesta tres")).toBeInTheDocument();
+    expect(requests[2]).toEqual({ pageId: "p1", body: { question: "Tercera", conversationId: "conv-1" } });
+  });
+
+  it("starts the next answer without a conversation when the first one was stopped before done", async() => {
+    renderWithSession(<DeepenPanel pageId="p1" />);
+
+    ask("Primera");
+    stream.push(deltaFrame("Parte"));
+    expect(await screen.findByText("Parte")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Detener" }));
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Detener" })).not.toBeInTheDocument());
+
+    server.use(http.post(apiUrl(DEEPEN_PATH), async({ request, params }) => {
+      requests.push({ pageId: String(params.pageId), body: await request.json() });
+
+      return sseResponse([deltaFrame("Otra"), doneFrame(DONE)]);
+    }));
+    ask("Segunda");
+
+    expect(await screen.findByText("Otra")).toBeInTheDocument();
+    // BACKEND GAP (documented): only `done` carries conversationId, so nothing can be adopted from a stopped answer.
+    expect(requests[1]).toEqual({ pageId: "p1", body: { question: "Segunda" } });
   });
 
   it("starts a fresh thread when the page changes", async() => {
