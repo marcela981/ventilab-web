@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AttemptPlayerPage
-* Descripción: Page /evaluations/[evaluationId]/attempts/[attemptId]: the student answers one attempt. Loads the attempt (`GET /api/evaluation-attempts/{attemptId}`); an attempt that is no longer IN_PROGRESS goes straight to its result. Shows the question navigator (answered, unanswered, marked for review; marks are client-only), the sticky clinical scenario of the current question, the question (QuestionView) with Previous/Next, the autosave status per answer and a clock corrected for the server clock skew (toasts at 5 and 1 minutes). The current question and the marks are kept in sessionStorage so a reload resumes on the same question. Answers are saved automatically with a retry queue (unsaved values survive a reload). "Enviar intento" asks for confirmation with the number of unanswered questions, flushes the queue and submits once (single-flight); at zero the attempt is flushed and submitted automatically. Both end on the result page; a closed attempt (409) also goes there. The browser warns before leaving while answers are unsaved. Never reads correctness, explanation or rubric. Depends on MUI, next/head, next/link, next/router, the design-system components, @shared/lib, the evaluations hooks, entities and components, and the attempt player CSS Module.
-* Versión: 1.0
+* Descripción: Page /evaluations/[evaluationId]/attempts/[attemptId]: the student answers one attempt. Loads the attempt (`GET /api/evaluation-attempts/{attemptId}`); an attempt that is no longer IN_PROGRESS goes straight to its result. Shows the question navigator (answered, unanswered, marked for review; marks are client-only), the sticky clinical scenario of the current question, the question (QuestionView) with Previous/Next, the autosave status per answer and a clock corrected for the server clock skew (toasts at 5 and 1 minutes). The current question and the marks are kept in sessionStorage so a reload resumes on the same question. Answers are saved automatically with a retry queue (unsaved values survive a reload). "Enviar intento" asks for confirmation with the number of unanswered questions, flushes the queue and submits once (single-flight); at zero the attempt is flushed and submitted automatically. Both end on the result page; a closed attempt (409) also goes there. The browser warns before leaving while answers are unsaved. Never reads correctness, explanation or rubric. Depends on MUI, next/head, next/link, next/router, the design-system components, @shared/lib, the evaluations hooks, entities and components, and the attempt player CSS Module. v1.1 (E2 review): once the time is up the controls become read-only and the automatic submit is retried with exponential backoff (autoSubmitRetryDelay) after any failure that is not a closed attempt, also when a manual submit in flight at zero fails; the retry timer is cleared on unmount; the timer receives the attempt id to pair serverNow with the client clock of its response.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -73,6 +73,7 @@ export const PLAYER_COPY = {
   unsavedBeforeSubmit:
     "Algunas respuestas aún no se han guardado. Revisa tu conexión e intenta enviar de nuevo; no se perdió nada de lo que escribiste.",
   autoSubmitted: "Se acabó el tiempo. El intento se envió con las respuestas guardadas.",
+  autoSubmitRetrying: "Se acabó el tiempo y no se pudo enviar el intento. Lo seguiremos intentando automáticamente.",
   emptyAttempt: "Este intento no tiene preguntas.",
 } as const;
 
@@ -82,6 +83,14 @@ const CLOSED_ATTEMPT_CODES: ReadonlySet<string> = new Set([
   "evaluation.attempt_read_only",
   "evaluation.assignment_closed",
 ]);
+
+export const AUTO_SUBMIT_RETRY_BASE_MS = 2000;
+export const AUTO_SUBMIT_RETRY_MAX_MS = 30_000;
+
+// Delay before the n-th retry (1-based) of the automatic submit: 2 s, 4 s, 8 s… up to 30 s.
+export function autoSubmitRetryDelay(failures: number): number {
+  return Math.min(AUTO_SUBMIT_RETRY_MAX_MS, AUTO_SUBMIT_RETRY_BASE_MS * 2 ** (Math.max(1, failures) - 1));
+}
 
 function isClosedAttemptError(error: unknown): boolean {
   return CLOSED_ATTEMPT_CODES.has(toApiError(error).code);
@@ -124,8 +133,20 @@ function AttemptPlayer({ attempt, onFinished }: PlayerProps) {
   const [marked, setMarked] = useState<ReadonlySet<string>>(() => new Set(readMarkedQuestions(attempt.id)));
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [timeUp, setTimeUp] = useState(false);
   const submittingRef = useRef(false);
+  const timeUpRef = useRef(false);
+  const autoFailuresRef = useRef(0);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const finishRef = useRef<(mode: "manual" | "auto") => Promise<void>>(() => Promise.resolve());
   const { flush } = autosave;
+  const readOnly = submitting || timeUp;
+
+  useEffect(() => () => {
+    if (retryTimerRef.current !== null) {
+      clearTimeout(retryTimerRef.current);
+    }
+  }, []);
 
   useEffect(() => {
     writeQuestionIndex(attempt.id, index);
@@ -162,7 +183,7 @@ function AttemptPlayer({ attempt, onFinished }: PlayerProps) {
     const flushed = await flush();
 
     // A manual submit never leaves unsaved answers behind; at zero the server closes the attempt anyway.
-    if (!flushed && mode === "manual") {
+    if (!flushed && mode === "manual" && !timeUpRef.current) {
       toast.error(PLAYER_COPY.unsavedBeforeSubmit);
       submittingRef.current = false;
       setSubmitting(false);
@@ -191,22 +212,55 @@ function AttemptPlayer({ attempt, onFinished }: PlayerProps) {
       return;
     }
 
-    if (outcome.status === "error") {
-      toast.error(getEvaluationErrorMessage(outcome.error));
-    }
-
     submittingRef.current = false;
     setSubmitting(false);
     setConfirmOpen(false);
+
+    if (!timeUpRef.current) {
+      if (outcome.status === "error") {
+        toast.error(getEvaluationErrorMessage(outcome.error));
+      }
+
+      return;
+    }
+
+    // Time is up (whoever started this submit): keep retrying until it succeeds or the attempt is closed.
+    autoFailuresRef.current += 1;
+
+    if (autoFailuresRef.current === 1) {
+      toast.error(PLAYER_COPY.autoSubmitRetrying);
+    }
+
+    retryTimerRef.current = setTimeout(() => {
+      retryTimerRef.current = null;
+      void finishRef.current("auto");
+    }, autoSubmitRetryDelay(autoFailuresRef.current));
   }, [attempt.id, finishOnClosedAttempt, flush, onFinished, submit, toast]);
 
+  useEffect(() => {
+    finishRef.current = finish;
+  }, [finish]);
+
   const handleExpire = useCallback(() => {
+    timeUpRef.current = true;
+    setTimeUp(true);
+    setConfirmOpen(false);
+    // A manual submit in flight returns here; if it fails, its failure path schedules the retry.
     void finish("auto");
   }, [finish]);
 
-  const remainingMs = useAttemptTimer({ deadlineAt: attempt.deadlineAt, serverNow: attempt.serverNow, onExpire: handleExpire });
+  const remainingMs = useAttemptTimer({
+    attemptId: attempt.id,
+    deadlineAt: attempt.deadlineAt,
+    serverNow: attempt.serverNow,
+    onExpire: handleExpire,
+  });
 
   const handleChange = (question: AttemptQuestion, answer: AttemptAnswer) => {
+    if (timeUpRef.current) {
+      return;
+    }
+
     setAnswers((current) => ({ ...current, [question.id]: answer }));
     autosave.save(question.id, question.type, answer);
   };
@@ -250,7 +304,7 @@ function AttemptPlayer({ attempt, onFinished }: PlayerProps) {
               <span aria-hidden="true">{formatRemaining(remainingMs)}</span>
             </p>
           ) : null}
-          <AsyncButton variant="contained" loading={submitting} disabled={submitting} onClick={() => setConfirmOpen(true)}>
+          <AsyncButton variant="contained" loading={submitting} disabled={readOnly} onClick={() => setConfirmOpen(true)}>
             {PLAYER_COPY.submit}
           </AsyncButton>
         </div>
@@ -274,6 +328,7 @@ function AttemptPlayer({ attempt, onFinished }: PlayerProps) {
                   variant="text"
                   size="small"
                   aria-pressed={isMarked}
+                  disabled={timeUp}
                   startIcon={isMarked ? <BookmarkIcon /> : <BookmarkBorderIcon />}
                   onClick={() => toggleMarked(question.id)}
                 >
@@ -285,7 +340,7 @@ function AttemptPlayer({ attempt, onFinished }: PlayerProps) {
                 question={question}
                 answer={answers[question.id] ?? null}
                 onChange={(answer) => handleChange(question, answer)}
-                readOnly={submitting}
+                readOnly={readOnly}
               />
               <SaveStatusIndicator status={autosave.statuses[question.id] ?? null} />
               <div className={cx(styles.pager)}>

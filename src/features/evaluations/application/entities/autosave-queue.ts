@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Autosave queue
-* Descripción: Pure, framework-free save queue of the attempt answers with an injected sender, timers and persistence. Each question keeps only its latest unsaved value (last write wins): enqueue debounces the send (a longer delay for typing, a short one for choices), a value typed while a save is in flight is sent right after it, a retryable failure (network, timeout, 429, 5xx) keeps the value and retries with exponential backoff, retryNow resends everything at once (used on the browser `online` event), a non-retryable failure (409, 422…) drops the value and reports it (onError option or the late-bound setErrorListener), and flush sends every pending value immediately and resolves true only when nothing is left unsaved, and stop cancels the scheduled sends without dropping any value. Every change of the pending values is handed to persist, so a reload can restore and resend them. Statuses per question: pending, saving, saved, retrying, error. No dependencies.
-* Versión: 1.0
+* Descripción: Pure, framework-free save queue of the attempt answers with an injected sender, timers and persistence. Each question keeps only its latest unsaved value (last write wins): enqueue debounces the send (a longer delay for typing, a short one for choices), a value typed while a save is in flight is sent right after it, a retryable failure (network, timeout, 429, 5xx) keeps the value and retries with exponential backoff, retryNow resends everything at once (used on the browser `online` event), a non-retryable failure (409, 422…) drops the value and reports it (onError option or the late-bound setErrorListener), and flush sends every pending value immediately and resolves true only when nothing is left unsaved, and stop cancels the scheduled sends without dropping any value. Every change of the pending values is handed to persist, so a reload can restore and resend them. Statuses per question: pending, saving, saved, retrying, error. No dependencies. v1.1 (E2 review): stop() sets a stopped flag so nothing is scheduled or retried afterwards (including a send in flight that fails after stop, and retryNow); start() clears it so a remounted binding (React StrictMode) resumes; flush still sends explicitly.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -49,6 +49,7 @@ export class AutosaveQueue<T> {
   private readonly options: AutosaveQueueOptions<T>;
   private readonly timers: AutosaveTimers;
   private nextVersion = 1;
+  private stopped = false;
   private errorListener: ((key: string, error: unknown) => void) | null = null;
 
   constructor(options: AutosaveQueueOptions<T>) {
@@ -82,6 +83,10 @@ export class AutosaveQueue<T> {
 
   // Sends every pending value now (e.g. when the browser comes back online).
   retryNow(): void {
+    if (this.stopped) {
+      return;
+    }
+
     for (const key of [...this.pending.keys()]) {
       this.cancel(key);
       void this.run(key);
@@ -101,15 +106,27 @@ export class AutosaveQueue<T> {
     return this.pending.size === 0;
   }
 
-  // Cancels the scheduled sends (unmount); pending values stay and retryNow or flush send them.
+  // Cancels the scheduled sends (unmount) and blocks new ones; pending values stay and flush, or start + retryNow, send them.
   stop(): void {
+    this.stopped = true;
+
     for (const key of [...this.scheduled.keys()]) {
       this.cancel(key);
     }
   }
 
+  // Allows scheduling again after stop (a remounted binding resumes the same queue).
+  start(): void {
+    this.stopped = false;
+  }
+
   private schedule(key: string, delayMs: number): void {
     this.cancel(key);
+
+    if (this.stopped) {
+      return;
+    }
+
     this.scheduled.set(key, this.timers.setTimeout(() => {
       this.scheduled.delete(key);
       void this.run(key);
@@ -166,7 +183,7 @@ export class AutosaveQueue<T> {
 
       if (latest && latest.version !== version) {
         // A newer value arrived while sending: its debounce sends it, or send it now.
-        if (this.scheduled.has(key)) {
+        if (this.scheduled.has(key) || this.stopped) {
           this.setStatus(key, "pending");
 
           return;

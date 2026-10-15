@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useAttemptAutosave
-* Descripción: React binding of the AutosaveQueue for one attempt: every answer change is queued per question (800 ms debounce for text, about 150 ms for choices) and sent with `PUT /api/evaluation-attempts/{attemptId}/answers/{questionId}`; network, timeout, 429 and 5xx failures are retried with backoff and again as soon as the browser fires `online`; other failures (409 closed attempt, 422 invalid answer) are handed to onError. The unsaved values are mirrored to sessionStorage, restored on mount (returned as `restored` so the player shows them) and resent. Exposes the save status per question, hasUnsaved (drives the beforeunload warning) and flush (before submitting). Depends on the autosave queue, the attempt storage and progress entities, the evaluations mapper/service and the api-client errors.
-* Versión: 1.0
+* Descripción: React binding of the AutosaveQueue for one attempt: every answer change is queued per question (800 ms debounce for text, about 150 ms for choices) and sent with `PUT /api/evaluation-attempts/{attemptId}/answers/{questionId}`; network, timeout, 429 and 5xx failures are retried with backoff and again as soon as the browser fires `online`; other failures (409 closed attempt, 422 invalid answer) are handed to onError. The unsaved values are mirrored to sessionStorage, restored on mount (returned as `restored` so the player shows them) and resent. Exposes the save status per question, hasUnsaved (drives the beforeunload warning) and flush (before submitting). Depends on the autosave queue, the attempt storage and progress entities, the evaluations mapper/service and the api-client errors. v1.1 (E2 review): the mount effect restarts the queue (start) before resending, so the stop of an unmount (or a StrictMode remount) never leaves it blocked.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -68,6 +68,8 @@ export function useAttemptAutosave({ attemptId, onError }: UseAttemptAutosaveOpt
   }, [queue, onError]);
 
   useEffect(() => {
+    queue.start();
+
     // Values typed before a reload were never confirmed: send them again.
     for (const [questionId, pending] of Object.entries(restored)) {
       if (queue.getPendingValue(questionId) === null) {

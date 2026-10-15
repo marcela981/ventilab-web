@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AttemptResultPage tests
-* Descripción: Covers the attempt result page against an msw backend: an IN_PROGRESS attempt goes back to the player; unpublished attempts (SUBMITTED, PENDING_REVIEW) show only their state, render no question detail and never request the feedback; a published attempt shows the es-CO grade with the pass/fail class from `passed`, per-question earned points, the correct option, the teacher explanation and the simulation rubric; the AI feedback goes from the PENDING skeleton to READY after a FEEDBACK_READY notification for the attempt (and ignores other attempts), and DETERMINISTIC items carry the "Retroalimentación automática" label with the rating widget. Depends on Vitest, Testing Library, msw and the evaluations test helpers.
-* Versión: 1.0
+* Descripción: Covers the attempt result page against an msw backend: an IN_PROGRESS attempt goes back to the player; unpublished attempts (SUBMITTED, PENDING_REVIEW) show only their state, render no question detail and never request the feedback; a published attempt shows the es-CO grade with the pass/fail class from `passed`, per-question earned points, the correct option, the teacher explanation and the simulation rubric; the AI feedback goes from the PENDING skeleton to READY after a FEEDBACK_READY notification for the attempt (and ignores other attempts), and DETERMINISTIC items carry the "Retroalimentación automática" label with the rating widget. Depends on Vitest, Testing Library, msw and the evaluations test helpers. v1.1 (E3 review): the "other attempt is ignored" check now waits before comparing the request count and then proves exactly one extra request for this attempt; a failed first feedback read shows the unavailable message; a rubric that repeats a parameter renders every row.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -36,6 +36,8 @@ vi.mock("next/router", () => ({ useRouter: () => router }));
 
 const server = setupServer();
 const LAZY = { timeout: 5000 };
+// The first render loads the lazy markdown renderer cold; under a parallel run it can exceed the 5 s default.
+const COLD_START_TIMEOUT_MS = 15_000;
 let attempt: StudentAttemptDetailDTO;
 let feedback: StudentGradeFeedbackDTO;
 let feedbackRequests = 0;
@@ -178,7 +180,7 @@ describe("AttemptResultPage", () => {
     expect(within(rubric).getByRole("rowheader", { name: "PEEP" })).toBeInTheDocument();
     expect(within(rubric).getByText("8 – 12")).toBeInTheDocument();
     expect(within(rubric).getByText("Crítico")).toBeInTheDocument();
-  });
+  }, COLD_START_TIMEOUT_MS);
 
   it("colors a passed grade with the passed class", async() => {
     attempt = publishedAttempt({ grade: 4.2, passed: true });
@@ -217,6 +219,10 @@ describe("AttemptResultPage", () => {
       readAt: null,
       data: { attemptId: "other" } as unknown as Record<string, never>,
     });
+    // Give a (wrong) reload time to reach the handler before comparing.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 150);
+    });
     expect(feedbackRequests).toBe(requestsBefore);
 
     socket.emit("notification:new", {
@@ -231,6 +237,7 @@ describe("AttemptResultPage", () => {
 
     expect(await screen.findByText("Buen manejo general de la ventilación.", {}, LAZY)).toBeInTheDocument();
     expect(await screen.findByText("La PEEP correcta era 10 cmH2O.", {}, LAZY)).toBeInTheDocument();
+    expect(feedbackRequests).toBe(requestsBefore + 1);
     expect(screen.queryByRole("status", { name: /Generando retroalimentación/ })).not.toBeInTheDocument();
 
     const questionFeedback = screen.getByRole("region", { name: "Retroalimentación de la pregunta" });
@@ -239,6 +246,34 @@ describe("AttemptResultPage", () => {
     expect(within(questionFeedback).getByText("¿Te fue útil?")).toBeInTheDocument();
     expect(within(screen.getByRole("region", { name: "Retroalimentación general" })).queryByText("Retroalimentación automática"))
       .not.toBeInTheDocument();
+  });
+
+  it("says the feedback is unavailable when its first read fails", async() => {
+    server.use(http.get(apiUrl("/api/evaluation-attempts/:attemptId/feedback"), () => errorResponse("evaluation.feedback_not_found", 404)));
+
+    renderResult();
+
+    expect(await screen.findByText("La retroalimentación no está disponible por ahora.")).toBeInTheDocument();
+    expect(screen.getByTestId("attempt-grade")).toBeInTheDocument();
+  });
+
+  it("renders every row of a rubric that repeats a parameter", async() => {
+    const base = publishedAttempt();
+    const rubric = {
+      criteria: [
+        { parameter: "peep", expectedValue: 10, min: 8, max: 12, priority: "CRITICO" },
+        { parameter: "peep", expectedValue: 12, min: 10, max: 14, priority: "OPCIONAL" },
+      ],
+    } as unknown as Record<string, never>;
+
+    attempt = { ...base, questions: base.questions.map((question) => (question.id === "q2" ? { ...question, rubric } : question)) };
+
+    renderResult();
+
+    const table = await screen.findByRole("table", { name: "Rúbrica de la pregunta práctica" });
+
+    expect(within(table).getAllByRole("rowheader", { name: "PEEP" })).toHaveLength(2);
+    expect(within(table).getByText("10 – 14")).toBeInTheDocument();
   });
 
   it("shows a discreet message for failed feedback", async() => {

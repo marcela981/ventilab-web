@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: RubricCriteriaTable
-* Descripción: Published rubric of a SIMULATION question on the result page: one row per criterion (parameter label, expected value, accepted range min–max or "—", priority) and the rubric justification when present. The student API sends no per-criterion score nor teacher comment, so neither is shown. Renders nothing when the rubric cannot be parsed. Depends on the attempt feedback entities and the attempt result CSS Module.
-* Versión: 1.0
+* Descripción: Published rubric of a SIMULATION question on the result page: one row per criterion (parameter label, expected value, accepted range min–max or "—", priority) and the rubric justification when present. The student API sends no per-criterion score nor teacher comment, so neither is shown. Renders nothing when the rubric cannot be parsed. Depends on the attempt feedback entities and the attempt result CSS Module. v1.1 (E3 review): rows are keyed by position and parameter, so a rubric that repeats a parameter still renders deterministic rows.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -72,8 +72,8 @@ export function RubricCriteriaTable({ rubric }: { rubric: unknown }) {
             </tr>
           </thead>
           <tbody>
-            {parsed.criteria.map((criterion) => (
-              <tr key={criterion.parameter}>
+            {parsed.criteria.map((criterion, position) => (
+              <tr key={`${position}-${criterion.parameter}`}>
                 <th scope="row">{PARAMETER_LABELS[criterion.parameter] ?? criterion.parameter}</th>
                 <td>{formatValue(criterion.expectedValue)}</td>
                 <td>{formatRange(criterion)}</td>

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Autosave queue tests
-* Descripción: Unit tests of the pure answer save queue with vitest fake timers and an injected sender: the debounce sends only the last value of a burst, a network failure keeps the value queued and the backoff retry succeeds, a value typed during a failed or in-flight send wins (last write wins), retryNow resends at once, a non-retryable failure is reported and dropped, flush sends everything immediately and reports what is left, and the persisted snapshot always holds every unsaved value. Depends on vitest and the autosave queue entity.
-* Versión: 1.0
+* Descripción: Unit tests of the pure answer save queue with vitest fake timers and an injected sender: the debounce sends only the last value of a burst, a network failure keeps the value queued and the backoff retry succeeds, a value typed during a failed or in-flight send wins (last write wins), retryNow resends at once, a non-retryable failure is reported and dropped, flush sends everything immediately and reports what is left, and the persisted snapshot always holds every unsaved value. Depends on vitest and the autosave queue entity. v1.1 (E2 review): stop also blocks the retry of a send in flight that fails after stop and the retryNow resend; start resumes.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -203,5 +203,43 @@ describe("AutosaveQueue", () => {
 
     expect(sent).toEqual([]);
     expect(queue.getPendingValue("q1")).toBe("a");
+  });
+
+  it("never retries a send that fails after stop (unmount while in flight)", async() => {
+    let rejectSend: (error: unknown) => void = () => undefined;
+    const { queue, sent, statuses } = setup(() => new Promise<void>((_resolve, reject) => {
+      rejectSend = reject;
+    }));
+
+    queue.enqueue("q1", "a", 0);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(sent).toHaveLength(1);
+
+    queue.stop();
+    rejectSend(new NetworkError());
+    await vi.advanceTimersByTimeAsync(60_000);
+
+    expect(sent).toHaveLength(1);
+    expect(vi.getTimerCount()).toBe(0);
+    expect(statuses).not.toContainEqual(["q1", "saved"]);
+    expect(queue.getPendingValue("q1")).toBe("a");
+  });
+
+  it("ignores retryNow after stop and resumes after start", async() => {
+    const { queue, sent } = setup();
+
+    queue.enqueue("q1", "a", 800);
+    queue.stop();
+    queue.retryNow();
+    queue.enqueue("q2", "b", 0);
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(sent).toEqual([]);
+
+    queue.start();
+    queue.retryNow();
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(sent).toEqual([{ key: "q1", value: "a" }, { key: "q2", value: "b" }]);
   });
 });

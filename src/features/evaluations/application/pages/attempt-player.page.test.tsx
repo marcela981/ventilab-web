@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AttemptPlayerPage tests
-* Descripción: Renders /evaluations/[evaluationId]/attempts/[attemptId] against a mocked backend (msw) with a mocked next/router: the attempt payload without isCorrect, explanation or rubric renders with its sticky scenario, a choice is autosaved with a PUT, the current question survives a remount (sessionStorage), the submit dialog states the unanswered count, a double click on "Enviar" sends one POST and opens the result, the SIMULATION question renders the disabled practical slot with its notice, a submitted attempt redirects to its result, and at zero the attempt is submitted once automatically (fake timers). Depends on vitest, Testing Library, msw and the evaluations test helpers.
-* Versión: 1.0
+* Descripción: Renders /evaluations/[evaluationId]/attempts/[attemptId] against a mocked backend (msw) with a mocked next/router: the attempt payload without isCorrect, explanation or rubric renders with its sticky scenario, a choice is autosaved with a PUT, the current question survives a remount (sessionStorage), the submit dialog states the unanswered count, a double click on "Enviar" sends one POST and opens the result, the SIMULATION question renders the disabled practical slot with its notice, a submitted attempt redirects to its result, and at zero the attempt is submitted once automatically (fake timers). Depends on vitest, Testing Library, msw and the evaluations test helpers. v1.1 (E2 review): unsaved answers restored from sessionStorage are shown and resent; a closed-attempt 409 on a save or a submit clears the storage and opens the result; at zero the controls become read-only and a failed automatic submit (5xx) is retried with backoff, also when a manual submit in flight at zero fails.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,7 +15,8 @@ import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { StudentAttemptDetailDTO } from "../../api/dtos/evaluations.dto";
 import { PRACTICAL_COPY } from "../components/questions/practical-question-slot";
-import { AttemptPlayerPage } from "./attempt-player.page";
+import { attemptStorageKeys } from "../entities/attempt-session-storage";
+import { AttemptPlayerPage, autoSubmitRetryDelay } from "./attempt-player.page";
 import {
   apiUrl,
   attemptDetailDto,
@@ -23,6 +24,7 @@ import {
   optionDto,
   questionDto,
   renderWithSession,
+  errorResponse,
   scenarioDto,
 } from "./evaluations-test-helpers";
 
@@ -36,6 +38,8 @@ vi.mock("next/router", () => ({ useRouter: () => router }));
 const server = setupServer();
 const RESULT_URL = "/evaluations/e1/attempts/at1/result";
 const LAZY = { timeout: 5000 };
+// The first render loads the lazy markdown renderer cold; under a parallel run it can exceed the 5 s default.
+const COLD_START_TIMEOUT_MS = 15_000;
 let attempt: StudentAttemptDetailDTO;
 let saved: Array<{ questionId: string, body: unknown }> = [];
 let submits = 0;
@@ -113,7 +117,7 @@ describe("AttemptPlayerPage", () => {
     expect(await within(screen.getByRole("complementary", { name: "Escenario clínico" })).findByText("Paciente de 60 kg con SDRA moderado.", {}, LAZY))
       .toBeInTheDocument();
     expect(screen.queryByRole("timer")).not.toBeInTheDocument();
-  });
+  }, COLD_START_TIMEOUT_MS);
 
   it("autosaves a choice with a PUT", async() => {
     renderPlayer();
@@ -210,5 +214,153 @@ describe("AttemptPlayerPage", () => {
       expect(router.replace).toHaveBeenCalledWith(RESULT_URL);
     });
     expect(submits).toBe(1);
+  });
+
+  it("shows and resends the unsaved answers restored from sessionStorage", async() => {
+    const keys = attemptStorageKeys("at1");
+
+    sessionStorage.setItem(keys.questionIndex, "1");
+    sessionStorage.setItem(keys.pendingAnswers, JSON.stringify({
+      q2: { type: "OPEN_TEXT", answer: { selectedOptionIds: [], textAnswer: "Borrador sin guardar", simulationSessionId: null } },
+      bogus: { type: "UNKNOWN", answer: null },
+    }));
+
+    renderPlayer();
+
+    expect(await screen.findByLabelText("Tu respuesta")).toHaveValue("Borrador sin guardar");
+    await waitFor(() => {
+      expect(saved).toEqual([{ questionId: "q2", body: { textAnswer: "Borrador sin guardar" } }]);
+    }, LAZY);
+    await waitFor(() => {
+      expect(sessionStorage.getItem(keys.pendingAnswers)).toBeNull();
+    });
+  });
+
+  it("opens the result and clears the storage when a save finds the attempt closed", async() => {
+    server.use(http.put(apiUrl("/api/evaluation-attempts/:attemptId/answers/:questionId"), () =>
+      errorResponse("evaluation.attempt_deadline_passed", 409)));
+    renderPlayer();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Marcar para revisión" }));
+    fireEvent.click(screen.getByRole("radio", { name: "10 cmH2O" }));
+
+    await waitFor(() => {
+      expect(router.replace).toHaveBeenCalledWith(RESULT_URL);
+    }, LAZY);
+    expect(sessionStorage.getItem(attemptStorageKeys("at1").pendingAnswers)).toBeNull();
+    expect(sessionStorage.getItem(attemptStorageKeys("at1").marked)).toBeNull();
+  });
+
+  it("opens the result when the submit finds the attempt closed", async() => {
+    server.use(http.post(apiUrl("/api/evaluation-attempts/:attemptId/submit"), () => {
+      submits += 1;
+
+      return errorResponse("evaluation.attempt_not_in_progress", 409);
+    }));
+    renderPlayer();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Enviar intento" }));
+    fireEvent.click(within(await screen.findByRole("dialog", { name: "¿Enviar el intento?" })).getByRole("button", { name: "Enviar" }));
+
+    await waitFor(() => {
+      expect(router.replace).toHaveBeenCalledWith(RESULT_URL);
+    }, LAZY);
+    expect(submits).toBe(1);
+  });
+
+  it("makes the controls read-only at zero and retries a failed automatic submit with backoff", async() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    attempt = buildAttempt({ serverNow: "2026-10-14T15:29:57.000Z", deadlineAt: "2026-10-14T15:30:00.000Z" });
+    server.use(http.post(apiUrl("/api/evaluation-attempts/:attemptId/submit"), () => {
+      submits += 1;
+
+      if (submits < 3) {
+        return errorResponse("internal_error", 503);
+      }
+
+      attempt = { ...attempt, status: "SUBMITTED", submittedAt: "2026-10-14T15:30:05.000Z" };
+
+      return HttpResponse.json(envelope({ attemptId: "at1", status: "SUBMITTED", published: false }));
+    }));
+    renderPlayer();
+
+    expect(await screen.findByRole("timer")).toBeInTheDocument();
+
+    await act(async() => {
+      await vi.advanceTimersByTimeAsync(4000);
+    });
+    await waitFor(() => {
+      expect(submits).toBe(1);
+    });
+    expect(screen.getByRole("radio", { name: "10 cmH2O" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Enviar intento" })).toBeDisabled();
+    expect(router.replace).not.toHaveBeenCalled();
+
+    await act(async() => {
+      await vi.advanceTimersByTimeAsync(autoSubmitRetryDelay(1));
+    });
+    await waitFor(() => {
+      expect(submits).toBe(2);
+    });
+
+    await act(async() => {
+      await vi.advanceTimersByTimeAsync(autoSubmitRetryDelay(2));
+    });
+    await waitFor(() => {
+      expect(router.replace).toHaveBeenCalledWith(RESULT_URL);
+    });
+    expect(submits).toBe(3);
+  });
+
+  it("retries automatically when a manual submit in flight at zero fails", async() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    attempt = buildAttempt({ serverNow: "2026-10-14T15:29:57.000Z", deadlineAt: "2026-10-14T15:30:00.000Z" });
+
+    let releaseFirst: () => void = () => undefined;
+    const firstGate = new Promise<void>((resolve) => {
+      releaseFirst = resolve;
+    });
+
+    server.use(http.post(apiUrl("/api/evaluation-attempts/:attemptId/submit"), async() => {
+      submits += 1;
+
+      if (submits === 1) {
+        await firstGate;
+
+        return errorResponse("internal_error", 500);
+      }
+
+      attempt = { ...attempt, status: "SUBMITTED", submittedAt: "2026-10-14T15:30:05.000Z" };
+
+      return HttpResponse.json(envelope({ attemptId: "at1", status: "SUBMITTED", published: false }));
+    }));
+    renderPlayer();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Enviar intento" }));
+    fireEvent.click(within(await screen.findByRole("dialog", { name: "¿Enviar el intento?" })).getByRole("button", { name: "Enviar" }));
+    await waitFor(() => {
+      expect(submits).toBe(1);
+    });
+
+    // The timer expires while the manual submit is still in flight.
+    await act(async() => {
+      await vi.advanceTimersByTimeAsync(4000);
+    });
+    expect(submits).toBe(1);
+
+    releaseFirst();
+    await act(async() => {
+      await vi.advanceTimersByTimeAsync(autoSubmitRetryDelay(1));
+    });
+    await waitFor(() => {
+      expect(router.replace).toHaveBeenCalledWith(RESULT_URL);
+    });
+    expect(submits).toBe(2);
+  });
+});
+
+describe("autoSubmitRetryDelay", () => {
+  it("doubles from 2 s and caps at 30 s", () => {
+    expect([1, 2, 3, 4, 5, 10].map(autoSubmitRetryDelay)).toEqual([2000, 4000, 8000, 16_000, 30_000, 30_000]);
   });
 });
