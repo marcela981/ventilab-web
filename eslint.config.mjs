@@ -22,7 +22,10 @@
  *   pages/learn/modules/[moduleId]/index.tsx entran en NEW_PAGE_FILES.
  *   v3.7 (L3 learning): pages/learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber].tsx
  *   entra en NEW_PAGE_FILES.
- * Versión: 3.7
+ *   v3.8 (S0 evaluations): registra las features nuevas evaluations, evaluation-authoring y
+ *   grading (sin legacy); pages/evaluations/index.tsx y pages/evaluations/[evaluationId]/index.tsx
+ *   entran en NEW_PAGE_FILES.
+ * Versión: 3.8
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -36,12 +39,12 @@ import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
 
 const NEW_SHARED_MODULES = "api-client,realtime,session,design-system,layouts,rich-content,waveforms,ai-rating,lib";
-const NEW_FEATURES = "auth,profile,groups,learning,content-editor";
+const NEW_FEATURES = "auth,profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading";
 const SOURCE_EXT = "{js,jsx,ts,tsx,mjs,cjs}";
 // auth/ still holds legacy files at its root and in components/, so only its template
 // layers count as new code. profile/ (legacy removed in T10), groups/, learning/ and
 // content-editor/ have no legacy, so the whole folder is new code.
-const LEGACY_FREE_FEATURES = "profile,groups,learning,content-editor";
+const LEGACY_FREE_FEATURES = "profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading";
 const NEW_FEATURE_FILES = [
   `src/features/auth/{api,application}/**/*.${SOURCE_EXT}`,
   `src/features/{${NEW_FEATURES}}/index.ts`,
@@ -60,6 +63,8 @@ const NEW_PAGE_FILES = [
   "pages/learn/[[]sectionId[]].tsx",
   "pages/learn/modules/[[]moduleId[]]/index.tsx",
   "pages/learn/modules/[[]moduleId[]]/lessons/[[]lessonId[]]/[[]pageNumber[]].tsx",
+  "pages/evaluations/index.tsx",
+  "pages/evaluations/[[]evaluationId[]]/index.tsx",
 ];
 
 const NEW_CODE_FILES = [
@@ -139,7 +144,7 @@ const eslintConfig = [
           type: "feature",
           mode: "full",
           pattern: [
-            `src/features/{auth,profile,learning,content-editor}/{api,application,UI}/**/*`,
+            `src/features/{auth,profile,learning,content-editor,evaluations,evaluation-authoring,grading}/{api,application,UI}/**/*`,
             `src/features/(groups)/**/*`,
           ],
           capture: ["feature"],

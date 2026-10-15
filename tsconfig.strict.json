@@ -35,6 +35,9 @@
     "src/features/groups/**/*",
     "src/features/learning/**/*",
     "src/features/content-editor/**/*",
+    "src/features/evaluations/**/*",
+    "src/features/evaluation-authoring/**/*",
+    "src/features/grading/**/*",
     "pages/auth/login/index.tsx",
     "pages/profile/index.tsx",
     "pages/my-group/index.tsx",
@@ -43,6 +46,8 @@
     "pages/learn/index.tsx",
     "pages/learn/[sectionId].tsx",
     "pages/learn/modules/[moduleId]/index.tsx",
-    "pages/learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber].tsx"
+    "pages/learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber].tsx",
+    "pages/evaluations/index.tsx",
+    "pages/evaluations/[evaluationId]/index.tsx"
   ]
 }

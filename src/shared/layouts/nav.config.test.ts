@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Navigation config tests
-* Descripción: Verifies that every nav item points to an existing route of routes.config that its roles can reach, that items are filtered by role, and that the active item is the longest matching route. v1.1 (T11a): students get /my-group, teachers and admins get /groups. v1.2 (T0 learning): every role gets /learn, only teachers and admins get /content. Depends on vitest and the session route table.
-* Versión: 1.2
+* Descripción: Verifies that every nav item points to an existing route of routes.config that its roles can reach, that items are filtered by role, and that the active item is the longest matching route. v1.1 (T11a): students get /my-group, teachers and admins get /groups. v1.2 (T0 learning): every role gets /learn, only teachers and admins get /content. v1.3 (S0 evaluations): every role gets /evaluations, only teachers and admins get /evaluations/manage and /grading, the legacy /evaluation items are gone and /evaluations/manage wins over /evaluations as the active item. Depends on vitest and the session route table.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -68,6 +68,32 @@ describe("learning navigation", () => {
     expect(getNavItems("STUDENT").map((item) => item.href)).not.toContain("/content");
     expect(getNavItems("TEACHER").map((item) => item.href)).toEqual(expect.arrayContaining(["/learn", "/content"]));
     expect(getNavItems("ADMIN").map((item) => item.href)).toEqual(expect.arrayContaining(["/learn", "/content"]));
+  });
+});
+
+describe("evaluations navigation", () => {
+  it("shows Evaluaciones to every role and the authoring and grading items to staff only", () => {
+    const student = getNavItems("STUDENT").map((item) => item.href);
+
+    expect(student).toContain("/evaluations");
+    expect(student).not.toContain("/evaluations/manage");
+    expect(student).not.toContain("/grading");
+
+    for (const role of ["TEACHER", "ADMIN"] as const) {
+      expect(getNavItems(role).map((item) => item.href)).toEqual(expect.arrayContaining(["/evaluations", "/evaluations/manage", "/grading"]));
+    }
+  });
+
+  it("drops the legacy evaluation items", () => {
+    expect(NAV_ITEMS.some((item) => item.href.startsWith("/evaluation/") || item.href === "/evaluation")).toBe(false);
+  });
+
+  it("marks the authoring item active on its pages and Evaluaciones on the student pages", () => {
+    const items = getNavItems("TEACHER");
+
+    expect(findActiveHref(items, "/evaluations/manage/[evaluationId]/edit")).toBe("/evaluations/manage");
+    expect(findActiveHref(items, "/evaluations/[evaluationId]")).toBe("/evaluations");
+    expect(findActiveHref(items, "/grading/attempts/[attemptId]")).toBe("/grading");
   });
 });
 

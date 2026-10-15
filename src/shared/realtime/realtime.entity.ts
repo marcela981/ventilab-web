@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Realtime contract types
-* Descripción: Socket.io event names and payloads used by new code, taken from ventylab-server/openapi/asyncapi.yaml (connection events authenticated/auth_error, the client authenticate message and the user-room events user:role-changed, notification:new, grade:published, achievement:unlocked). Payload schemas that live in openapi.json come from the generated api-client types. Type-only module; depends on the session entity and the generated schema.
-* Versión: 1.0
+* Descripción: Socket.io event names and payloads used by new code, taken from ventylab-server/openapi/asyncapi.yaml (connection events authenticated/auth_error, the client authenticate message and the user-room events user:role-changed, notification:new, grade:published, achievement:unlocked). v1.1 (S0 evaluations): the group-room event evaluation:activated (an evaluation was assigned and opened for the group). Payload schemas that live in openapi.json come from the generated api-client types. Type-only module; depends on the session entity and the generated schema.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -23,12 +23,22 @@ export type GradePublishedEvent = {
   publishedAt: string
 };
 
+export type EvaluationActivatedEvent = {
+  evaluationId: string
+  assignmentId: string
+  title: string
+  type: string
+  startsAt: string
+  endsAt: string
+};
+
 export type RealtimeEventMap = {
   "authenticated": { userId: string }
   "auth_error": { message: string }
   "user:role-changed": RoleChangedEvent
   "notification:new": components["schemas"]["NotificationDTO"]
   "grade:published": GradePublishedEvent
+  "evaluation:activated": EvaluationActivatedEvent
   "achievement:unlocked": components["schemas"]["AchievementDTO"]
 };
 

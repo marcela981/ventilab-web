@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Route table tests
-* Descripción: Open-redirect safety of the returnTo helper (rejects protocol-relative, absolute, javascript: and auth-page targets), login URL building, route lookup by Next pathname pattern and the default landing route per role. v1.1 (T9 follow-up): role access of concrete paths (dynamic segments, query strings) and the post-login fallback to the role home when the returnTo route is not allowed for the role. v1.2 (T11a): /my-group is student-only and /groups is staff-only. v1.3 (T11b): /groups/[groupId] is staff-only. v1.4 (T0 learning): learning routes for every role, module print view and content-editor routes for staff only. Depends on vitest and routes.config.
-* Versión: 1.4
+* Descripción: Open-redirect safety of the returnTo helper (rejects protocol-relative, absolute, javascript: and auth-page targets), login URL building, route lookup by Next pathname pattern and the default landing route per role. v1.1 (T9 follow-up): role access of concrete paths (dynamic segments, query strings) and the post-login fallback to the role home when the returnTo route is not allowed for the role. v1.2 (T11a): /my-group is student-only and /groups is staff-only. v1.3 (T11b): /groups/[groupId] is staff-only. v1.4 (T0 learning): learning routes for every role, module print view and content-editor routes for staff only. v1.5 (S0 evaluations): student evaluation routes for every role, authoring and grading routes for staff only. Depends on vitest and routes.config.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -107,6 +107,35 @@ describe("learning and content-editor routes", () => {
     expect(isPathAllowedForRole("/content", "STUDENT")).toBe(false);
     expect(isPathAllowedForRole("/content/pages/p1", "STUDENT")).toBe(false);
     expect(isPathAllowedForRole("/content/pages/p1", "ADMIN")).toBe(true);
+  });
+});
+
+describe("evaluation routes", () => {
+  it("lets every role open the student evaluation pages", () => {
+    for (const role of ["STUDENT", "TEACHER", "ADMIN"] as const) {
+      expect(isPathAllowedForRole("/evaluations", role)).toBe(true);
+      expect(isPathAllowedForRole("/evaluations/e1", role)).toBe(true);
+      expect(isPathAllowedForRole("/evaluations/e1/attempts/a1", role)).toBe(true);
+      expect(isPathAllowedForRole("/evaluations/e1/attempts/a1/result", role)).toBe(true);
+    }
+  });
+
+  it("restricts authoring and grading to teachers and admins", () => {
+    const staffPaths = [
+      "/evaluations/manage",
+      "/evaluations/manage/new",
+      "/evaluations/manage/e1/edit",
+      "/evaluations/manage/e1/assignments",
+      "/grading",
+      "/grading/attempts/a1",
+      "/grading/evaluations/e1",
+    ];
+
+    for (const path of staffPaths) {
+      expect(isPathAllowedForRole(path, "STUDENT")).toBe(false);
+      expect(isPathAllowedForRole(path, "TEACHER")).toBe(true);
+      expect(isPathAllowedForRole(path, "ADMIN")).toBe(true);
+    }
   });
 });
 
