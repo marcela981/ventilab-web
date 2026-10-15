@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluations test helpers
-* Descripción: Shared fixtures of the evaluations tests: backend envelope and error bodies, factories of MyEvaluationDTO and MyEvaluationAttemptDTO, a fake socket that records listeners and lets a test emit server events, and a render helper that mounts a page inside an isolated SWR cache, a session context with the given role and a realtime context with the fake socket (no AuthProvider, no network for the session or the socket). Test-only code. Depends on Testing Library, msw, SWR, the session and realtime contexts and the evaluations DTOs.
-* Versión: 1.0
+* Descripción: Shared fixtures of the evaluations tests: backend envelope and error bodies, factories of MyEvaluationDTO and MyEvaluationAttemptDTO, a fake socket that records listeners and lets a test emit server events, and a render helper that mounts a page inside an isolated SWR cache, a session context with the given role and a realtime context with the fake socket (no AuthProvider, no network for the session or the socket). Test-only code. Depends on Testing Library, msw, SWR, the session and realtime contexts and the evaluations DTOs. v1.1 (E2): the render helper also mounts the global ToastProvider (as pages/_app.js does), plus factories of the student attempt detail, question, option and scenario DTOs (without isCorrect, explanation, rubric or earnedScore, as the backend sends them before publication).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,13 +13,21 @@ import { act, render } from "@testing-library/react";
 import { HttpResponse } from "msw";
 import type { ReactElement, ReactNode } from "react";
 import { SWRConfig } from "swr";
+import { ToastProvider } from "@shared/design-system/components/toast-provider";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
 import { RealtimeContext } from "@shared/realtime/realtime-context";
 import type { RealtimeEventMap, RealtimeEventName, RealtimeSocket } from "@shared/realtime/realtime.entity";
 import { SessionContext } from "@shared/session/session-context";
 import type { SessionContextValue } from "@shared/session/session-context";
 import type { Role } from "@shared/session/session.entity";
-import type { MyEvaluationAttemptDTO, MyEvaluationDTO } from "../../api/dtos/evaluations.dto";
+import type {
+  MyEvaluationAttemptDTO,
+  MyEvaluationDTO,
+  StudentAttemptDetailDTO,
+  StudentOptionDTO,
+  StudentQuestionDTO,
+  StudentScenarioDTO,
+} from "../../api/dtos/evaluations.dto";
 
 export const apiUrl = (path: string): string => `${BACKEND_ORIGIN}${path}`;
 
@@ -76,6 +84,58 @@ export function myEvaluationDto(
       questionCount: 5,
       ...evaluation,
     },
+  };
+}
+
+// Backend payloads type rich text as an empty object; tests send plain strings or Tiptap documents.
+const richText = (value: unknown) => value as Record<string, never>;
+
+export function optionDto(id: string, order: number, content: string, overrides: Partial<StudentOptionDTO> = {}): StudentOptionDTO {
+  return { id, order, content, media: null, ...overrides };
+}
+
+export function questionDto(
+  id: string,
+  position: number,
+  type: StudentQuestionDTO["type"],
+  overrides: Partial<Omit<StudentQuestionDTO, "prompt">> & { prompt?: unknown } = {},
+): StudentQuestionDTO {
+  const { prompt, ...rest } = overrides;
+
+  return {
+    id,
+    position,
+    type,
+    scenarioId: null,
+    prompt: richText(prompt ?? `Enunciado ${id}`),
+    media: [],
+    points: 1,
+    clinicalCaseId: null,
+    options: [],
+    answer: null,
+    ...rest,
+  };
+}
+
+export function scenarioDto(id: string, order: number, content: unknown): StudentScenarioDTO {
+  return { id, order, content: richText(content), media: [] };
+}
+
+export function attemptDetailDto(id: string, overrides: Partial<StudentAttemptDetailDTO> = {}): StudentAttemptDetailDTO {
+  return {
+    id,
+    assignmentId: "as1",
+    attemptNumber: 1,
+    status: "IN_PROGRESS",
+    startedAt: "2026-10-14T15:00:00.000Z",
+    submittedAt: null,
+    deadlineAt: null,
+    serverNow: "2026-10-14T15:00:00.000Z",
+    published: false,
+    evaluation: { id: "e1", title: "Quiz de PEEP", type: "QUIZ", description: null },
+    scenarios: [],
+    questions: [],
+    ...overrides,
   };
 }
 
@@ -139,7 +199,7 @@ function Wrapper({ role, socket, children }: WrapperProps) {
     <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false }}>
       <SessionContext.Provider value={sessionValue(role)}>
         <RealtimeContext.Provider value={{ socket, status: socket ? "authenticated" : "idle" }}>
-          {children}
+          <ToastProvider>{children}</ToastProvider>
         </RealtimeContext.Provider>
       </SessionContext.Provider>
     </SWRConfig>

@@ -25,7 +25,9 @@
  *   v3.8 (S0 evaluations): registra las features nuevas evaluations, evaluation-authoring y
  *   grading (sin legacy); pages/evaluations/index.tsx y pages/evaluations/[evaluationId]/index.tsx
  *   entran en NEW_PAGE_FILES.
- * Versión: 3.8
+ *   v3.9 (E2 evaluations): pages/evaluations/[evaluationId]/attempts/[attemptId]/index.tsx
+ *   entra en NEW_PAGE_FILES.
+ * Versión: 3.9
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -65,6 +67,7 @@ const NEW_PAGE_FILES = [
   "pages/learn/modules/[[]moduleId[]]/lessons/[[]lessonId[]]/[[]pageNumber[]].tsx",
   "pages/evaluations/index.tsx",
   "pages/evaluations/[[]evaluationId[]]/index.tsx",
+  "pages/evaluations/[[]evaluationId[]]/attempts/[[]attemptId[]]/index.tsx",
 ];
 
 const NEW_CODE_FILES = [

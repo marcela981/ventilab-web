@@ -1,0 +1,315 @@
+/*
+* Funcionalidad: Attempt player styles
+* Descripción: Layout of the attempt player (/evaluations/[evaluationId]/attempts/[attemptId]): header with the title, the clock (warning and critical colors from the semantic tokens) and the submit button; a two-column body with the question navigator (collapsible behind a toggle under 900px) and the content, where the clinical scenario stays sticky next to the question on wide screens and above it on mobile; the question card, its autosave status and the Previous/Next pager. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+.backLink {
+  align-self: flex-start;
+  color: var(--vl-color-link);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: var(--vl-z-sticky);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-3) var(--vl-space-4);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.headerTitle {
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  color: var(--vl-color-text);
+  font-size: 1.25rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--vl-color-text-muted);
+}
+
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-3);
+}
+
+.timer {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+  margin: 0;
+  padding: var(--vl-space-1) var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-pill);
+  color: var(--vl-color-text);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.timerWarning {
+  border-color: var(--vl-color-warning);
+  color: var(--vl-color-warning);
+}
+
+.timerCritical {
+  border-color: var(--vl-color-error);
+  color: var(--vl-color-error);
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--vl-space-4);
+}
+
+.navigator {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.navigatorPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-4);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+}
+
+.navigatorPanelCollapsed {
+  display: none;
+}
+
+.navigatorCount {
+  display: none;
+  margin: 0;
+  color: var(--vl-color-text-muted);
+}
+
+.navigatorList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(2.5rem, 1fr));
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navigatorItem {
+  width: 100%;
+  min-height: 2.5rem;
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.navigatorItem:hover {
+  background: var(--vl-color-hover);
+}
+
+.navigatorItem:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}
+
+.navigatorItemAnswered {
+  border-color: var(--vl-color-success);
+  background: var(--vl-color-selected);
+}
+
+.navigatorItemMarked {
+  border-color: var(--vl-color-warning);
+  box-shadow: inset 0 -3px 0 var(--vl-color-warning);
+}
+
+.navigatorItemCurrent {
+  border-color: var(--vl-color-primary);
+  background: var(--vl-color-primary);
+  color: var(--vl-color-on-primary);
+}
+
+.navigatorLegend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  margin: 0;
+  padding: 0;
+  color: var(--vl-color-text-muted);
+  font-size: 0.875rem;
+  list-style: none;
+}
+
+.navigatorLegend li {
+  display: flex;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.legendSwatch {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-sm);
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--vl-space-4);
+  min-width: 0;
+}
+
+.scenario {
+  position: sticky;
+  top: var(--vl-space-2);
+  z-index: var(--vl-z-raised);
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  max-height: 40vh;
+  overflow-y: auto;
+  padding: var(--vl-space-4);
+  border: 1px solid var(--vl-color-border);
+  border-left: 4px solid var(--vl-color-info);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+}
+
+.scenarioTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.questionCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  min-width: 0;
+  padding: var(--vl-space-5);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.questionHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2) var(--vl-space-3);
+}
+
+.questionTitle {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.questionPoints {
+  flex: 1;
+  color: var(--vl-color-text-muted);
+}
+
+.saveStatus {
+  min-height: 1.5rem;
+  margin: 0;
+  color: var(--vl-color-text-muted);
+  font-size: 0.875rem;
+}
+
+.saveStatusPending {
+  color: var(--vl-color-text-muted);
+}
+
+.saveStatusSaved {
+  color: var(--vl-color-success);
+}
+
+.saveStatusWarning {
+  color: var(--vl-color-warning);
+}
+
+.saveStatusError {
+  color: var(--vl-color-error);
+}
+
+.pager {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+}
+
+@media (min-width: 900px) {
+  .body {
+    grid-template-columns: 14rem minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .navigator {
+    position: sticky;
+    top: var(--vl-space-8);
+  }
+
+  /* Doubled selector: wins over the MUI Button display regardless of style injection order. */
+  .navigator .navigatorToggle {
+    display: none;
+  }
+
+  .navigatorPanelCollapsed {
+    display: flex;
+  }
+
+  .navigatorCount {
+    display: block;
+  }
+
+  .contentWithScenario {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    align-items: start;
+  }
+
+  .scenario {
+    top: var(--vl-space-8);
+    max-height: calc(100vh - 8rem);
+  }
+}

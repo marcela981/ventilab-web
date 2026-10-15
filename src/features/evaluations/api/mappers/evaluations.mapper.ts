@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluations mappers
-* Descripción: Pure DTO → entity mappers of the student evaluations feature: my evaluations (items without an evaluation summary are dropped, attempts sorted by number, the result only when the attempt is published and the API sent its grade), my grades, the attempt start and the attempt detail (scenarios by order, questions by position, options by order; isCorrect, feedback, explanation, rubric and earnedScore are copied only when the backend sends them, that is, once published). Descriptions, prompts and scenario contents become RichText: a non-empty string is text, a Tiptap document object is a doc. Depends on the evaluations DTOs and entities.
-* Versión: 1.0
+* Descripción: Pure DTO → entity mappers of the student evaluations feature: my evaluations (items without an evaluation summary are dropped, attempts sorted by number, the result only when the attempt is published and the API sent its grade), my grades, the attempt start and the attempt detail (scenarios by order, questions by position, options by order; isCorrect, feedback, explanation, rubric and earnedScore are copied only when the backend sends them, that is, once published). Descriptions, prompts and scenario contents become RichText: a non-empty string is text, a Tiptap document object is a doc. Depends on the evaluations DTOs and entities. v1.1 (E2): toSaveAnswerBody, the PUT body of one answer by question type (choices send selectedOptionIds, OPEN_TEXT sends textAnswer, SIMULATION sends simulationSessionId when there is one).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,6 +21,7 @@ import type {
   EvaluationMedia,
   MyEvaluation,
   MyGrade,
+  QuestionType,
   RichText,
 } from "../../application/entities/evaluation.entity";
 import type {
@@ -28,6 +29,7 @@ import type {
   MyEvaluationAttemptDTO,
   MyEvaluationDTO,
   MyEvaluationGradeDTO,
+  SaveEvaluationAnswerDTO,
   StudentAnswerDTO,
   StudentAttemptDetailDTO,
   StudentAttemptStartDTO,
@@ -224,4 +226,16 @@ export function toAttemptDetail(dto: StudentAttemptDetailDTO): AttemptDetail {
     questions: dto.questions.map(toQuestion).sort((a, b) => a.position - b.position),
     result: toAttemptResult(dto),
   };
+}
+
+export function toSaveAnswerBody(type: QuestionType, answer: AttemptAnswer): SaveEvaluationAnswerDTO {
+  if (type === "OPEN_TEXT") {
+    return { textAnswer: answer.textAnswer ?? "" };
+  }
+
+  if (type === "SIMULATION") {
+    return answer.simulationSessionId ? { simulationSessionId: answer.simulationSessionId } : {};
+  }
+
+  return { selectedOptionIds: [...answer.selectedOptionIds] };
 }

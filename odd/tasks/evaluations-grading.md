@@ -36,11 +36,11 @@ The Phase 1 report is `odd/evaluations-audit.md`. It covers API gaps, the parity
 Work-unit commits per task.
 
 ## Checklist
-- [ ] S0 (D) Shared setup:
+- [x] S0 (D) Shared setup:
   - register the three features in eslint, the lint script, tsconfig.strict and vitest;
   - add `/evaluations`, `/evaluations/manage` and `/grading` to routes.config and nav.config;
   - add `shared/lib/format.ts` (es-CO grade formatting, America/Bogota dates).
-- [ ] E1 (D) evaluations:
+- [x] E1 (D) evaluations:
   - API layer;
   - list with tabs, type filter and cards, invalidated by socket events;
   - intro page.
@@ -76,6 +76,9 @@ Work-unit commits per task.
 
 ## Progress log
 - 2026-10-14: Phase 1 audit done. Worktree created at b39e1af.
+
+- 2026-10-14: S0 committed e51990a, E1 committed e948239 (delegated writer; route: delegated, trigger = 2+ non-trivial files). Checks: typecheck 0, lint 0, vitest 19 files/183 tests green; parent spot check vitest evaluations+lib 10 files/55 tests green.
+- Native review lineage review-c0e81dd107ca912e (base b39e1af, S0+E1, risk medium, consent granted per author instruction): 1 lens (reliability) -> correction_required, finding R3-start-attempt-dead-route (intro pushes to the attempt route that only E2 adds). Not corrected inside the lineage: the fix is the E2 player page itself (>200-line budget) and abandoning needs maintainer authorization; lineage left open, finding resolved by the E2 commit, which is reviewed separately.
 
 ## Next step
 S0 and E1.
