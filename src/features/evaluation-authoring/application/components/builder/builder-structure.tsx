@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: BuilderStructure
-* Descripción: Scenarios and questions of the evaluation builder with drag-and-drop ordering (@hello-pangea/dnd, the library of content-editor): questions without a scenario first ("Preguntas sin escenario"), then each scenario with its rich text content and its questions. A question can be dragged inside its group or into another scenario (batch `PUT .../questions/order` with the scenarioId of every item); scenarios are dragged by their handle (`PUT .../scenarios/order`). Each group offers "Agregar pregunta" with the type to create; "Agregar escenario" adds an empty scenario. Questions are numbered in layout order and rendered with QuestionCard. This module is ONLY reached through React.lazy (EvaluationBuilderPage), so the dnd library stays in the builder chunk. Depends on @hello-pangea/dnd, MUI, the design-system FormField, the builder hook types, entities, components, copy and CSS Module.
-* Versión: 1.0
+* Descripción: Scenarios and questions of the evaluation builder with drag-and-drop ordering (@hello-pangea/dnd, the library of content-editor): questions without a scenario first ("Preguntas sin escenario"), then each scenario with its rich text content and its questions. A question can be dragged inside its group or into another scenario (batch `PUT .../questions/order` with the scenarioId of every item); scenarios are dragged by their handle (`PUT .../scenarios/order`). Each group offers "Agregar pregunta" with the type to create; "Agregar escenario" adds an empty scenario. Questions are numbered in layout order and rendered with QuestionCard. This module is ONLY reached through React.lazy (EvaluationBuilderPage), so the dnd library stays in the builder chunk. Depends on @hello-pangea/dnd, MUI, the design-system FormField, the builder hook types, entities, components, copy and CSS Module. v1.1 (A3): the readiness issues of each card come from the builder (backend issues or the client READY validation); on a READY evaluation adding questions is disabled, a hint explains how to return to draft, and the cards know the evaluation is READY.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -30,7 +30,7 @@ import {
   toQuestionOrderItems,
 } from "../../entities/builder-layout";
 import type { QuestionLayout } from "../../entities/builder-layout";
-import { QUESTION_TYPE_LABELS, QUESTION_TYPES, questionDraftFrom, questionIssues } from "../../entities/builder-question.entity";
+import { QUESTION_TYPE_LABELS, QUESTION_TYPES, questionDraftFrom } from "../../entities/builder-question.entity";
 import type { QuestionType } from "../../entities/builder-question.entity";
 import type { UseEvaluationBuilderResult } from "../../hooks/use-evaluation-builder";
 import { QuestionCard } from "./question-card";
@@ -90,6 +90,9 @@ export function BuilderStructure({ builder, layout, newKey, onRequestDeleteQuest
   const scenarios = new Map(evaluation.scenarios.map((scenario) => [scenario.id, scenario]));
   const positions = new Map(toQuestionOrderItems(layout).map((item) => [item.id, item.order + 1]));
   const structuralDisabled = builder.locked || builder.pending;
+  const ready = evaluation.status === "READY";
+  // On a READY evaluation a new question (no correct answer, no rubric) would leave it incomplete: the backend refuses it.
+  const addDisabled = structuralDisabled || ready;
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) {
@@ -138,8 +141,9 @@ export function BuilderStructure({ builder, layout, newKey, onRequestDeleteQuest
                       dirty={builder.isQuestionDirty(id)}
                       errors={builder.questionErrors(question)}
                       saveError={builder.saveErrors[id]}
-                      issues={builder.showIssues ? questionIssues(evaluation.readinessIssues, id) : []}
+                      issues={builder.issuesFor(id)}
                       locked={builder.locked}
+                      ready={ready}
                       busy={builder.pending}
                       dragHandle={<DragHandle label={BUILDER_COPY.dragQuestion(position)} handleProps={draggable.dragHandleProps} />}
                       newKey={newKey}
@@ -159,11 +163,12 @@ export function BuilderStructure({ builder, layout, newKey, onRequestDeleteQuest
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
+      {ready && !builder.locked ? <Alert severity="info">{BUILDER_COPY.readyHint}</Alert> : null}
       {evaluation.questions.length === 0 ? <p className={cx(styles.muted)}>{BUILDER_COPY.noQuestions}</p> : null}
       <section className={cx(styles.group)} aria-label={BUILDER_COPY.rootGroup}>
         <h3 className={cx(styles.groupTitle)}>{BUILDER_COPY.rootGroup}</h3>
         {renderQuestions(ROOT_DROPPABLE_ID, layout.root)}
-        <AddQuestionControl disabled={structuralDisabled} onAdd={(type) => void builder.addQuestionOfType(type, null)} />
+        <AddQuestionControl disabled={addDisabled} onAdd={(type) => void builder.addQuestionOfType(type, null)} />
       </section>
       <Droppable droppableId={SCENARIOS_DROPPABLE_ID} type={SCENARIO_DND_TYPE}>
         {(provided) => (
@@ -209,7 +214,7 @@ export function BuilderStructure({ builder, layout, newKey, onRequestDeleteQuest
                         onChange={(content) => builder.updateScenarioContent(group.id, content)}
                       />
                       {renderQuestions(scenarioDroppableId(group.id), group.questionIds)}
-                      <AddQuestionControl disabled={structuralDisabled} onAdd={(type) => void builder.addQuestionOfType(type, group.id)} />
+                      <AddQuestionControl disabled={addDisabled} onAdd={(type) => void builder.addQuestionOfType(type, group.id)} />
                     </section>
                   )}
                 </Draggable>

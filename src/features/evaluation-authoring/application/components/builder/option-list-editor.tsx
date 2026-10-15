@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: OptionListEditor
-* Descripción: Option list of a choice question in the builder: text of each option, the correct-answer control (radio semantics for SINGLE_CHOICE and TRUE_FALSE, checkbox for MULTIPLE_CHOICE), move up/down, remove and "Agregar opción" (up to 20). TRUE_FALSE keeps its two options. The attached option image, when there is one, is shown read-only (task S1 adds uploading). With the structure locked the correct answers and the add/remove actions are disabled; the texts stay editable. Changes go to the local draft; the builder saves them. Depends on MUI, the design-system FormField, the builder entities, copy and CSS Module.
-* Versión: 1.0
+* Descripción: Option list of a choice question in the builder: text of each option, the correct-answer control (radio semantics for SINGLE_CHOICE and TRUE_FALSE, checkbox for MULTIPLE_CHOICE), move up/down, remove and "Agregar opción" (up to 20). TRUE_FALSE keeps its two options. The attached option image, when there is one, is shown read-only (task S1 adds uploading). With the structure locked the correct answers and the add/remove actions are disabled; the texts stay editable. Changes go to the local draft; the builder saves them. Depends on MUI, the design-system FormField, the builder entities, copy and CSS Module. v1.1 (A3): correctLocked makes the correct answer read-only (locked structure, or a SINGLE_CHOICE/TRUE_FALSE question of a READY evaluation, with a hint to return to draft first).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -38,11 +38,13 @@ export type OptionListEditorProps = {
   options: readonly OptionDraft[]
   errors: QuestionErrors | null
   locked: boolean
+  // The correct answer cannot change (locked structure, or single-correct on a READY evaluation).
+  correctLocked: boolean
   newKey: () => string
   onChange: (options: OptionDraft[]) => void
 };
 
-export function OptionListEditor({ type, options, errors, locked, newKey, onChange }: OptionListEditorProps) {
+export function OptionListEditor({ type, options, errors, locked, correctLocked, newKey, onChange }: OptionListEditorProps) {
   const groupName = useId();
   const single = hasSingleCorrect(type);
   const fixedCount = type === "TRUE_FALSE";
@@ -52,6 +54,7 @@ export function OptionListEditor({ type, options, errors, locked, newKey, onChan
     <fieldset className={cx(styles.options)}>
       <legend className={cx(styles.fieldLabel)}>{BUILDER_COPY.options}</legend>
       <p className={cx(styles.muted)}>{single ? BUILDER_COPY.singleCorrectHelp : BUILDER_COPY.multipleCorrectHelp}</p>
+      {correctLocked && !locked ? <p className={cx(styles.muted)}>{BUILDER_COPY.readySingleCorrectHint}</p> : null}
       <ol className={cx(styles.optionList)}>
         {options.map((option, index) => {
           const position = index + 1;
@@ -64,14 +67,14 @@ export function OptionListEditor({ type, options, errors, locked, newKey, onChan
                 <Radio
                   name={groupName}
                   checked={option.isCorrect}
-                  disabled={locked}
+                  disabled={correctLocked}
                   onChange={(event) => toggle(event.target.checked)}
                   slotProps={{ input: { "aria-label": correctLabel } }}
                 />
               ) : (
                 <Checkbox
                   checked={option.isCorrect}
-                  disabled={locked}
+                  disabled={correctLocked}
                   onChange={(event) => toggle(event.target.checked)}
                   slotProps={{ input: { "aria-label": correctLabel } }}
                 />

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Builder copy
-* Descripción: Spanish UI copy of the evaluation builder (/evaluations/manage/new and /evaluations/manage/[id]/edit): page titles, metadata form labels, the question and scenario editors, the unsaved-changes indicator and guard, save results, the structure-locked banner and the delete confirmations. Shared by the builder hook, components and page. No dependencies.
-* Versión: 1.0
+* Descripción: Spanish UI copy of the evaluation builder (/evaluations/manage/new and /evaluations/manage/[id]/edit): page titles, metadata form labels, the question and scenario editors, the unsaved-changes indicator and guard, save results, the structure-locked banner and the delete confirmations. Shared by the builder hook, components and page. No dependencies. v1.1 (A3): copy of the SIMULATION editor (clinical case selector and rubric editor), the READY and DRAFT status actions, the client readiness check, the READY-evaluation hints and the structural edits dropped after a 409.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -101,13 +101,44 @@ export const BUILDER_COPY = {
   mediaImage: (position: number) => `Imagen adjunta ${position}`,
   mediaVideo: "Ver video adjunto",
   mediaFile: "Ver archivo adjunto",
-  // Simulation placeholder
+  // Simulation
   simulationTitle: "Simulación",
   simulationCase: "Caso clínico",
-  simulationNoCase: "Sin caso clínico asignado",
-  simulationPending: "El selector de caso clínico y el editor de rúbrica llegan en la siguiente entrega.",
-  simulationRubric: (count: number) => (count === 1 ? "La rúbrica tiene 1 criterio." : `La rúbrica tiene ${count} criterios.`),
-  simulationNoRubric: "Sin rúbrica.",
+  simulationNoCase: "Sin caso clínico",
+  simulationCaseFilter: "Buscar por título en esta página",
+  simulationCaseHelp: "Solo se listan casos clínicos publicados.",
+  simulationCasesLoading: "Cargando casos clínicos…",
+  simulationCasesError: "No se pudieron cargar los casos clínicos.",
+  simulationCasesRetry: "Reintentar",
+  simulationCasesEmpty: "Ningún caso de esta página coincide con la búsqueda.",
+  simulationCasePage: (page: number, pages: number) => `Página ${page} de ${pages}`,
+  simulationCasesPrevious: "Casos anteriores",
+  simulationCasesNext: "Más casos",
+  simulationCaseUnavailable: (id: string) => `Caso no disponible (${id})`,
+  rubricTitle: "Rúbrica",
+  rubricHelp: "Cada criterio compara un parámetro del ventilador con el valor esperado; el rango es opcional y solo para parámetros numéricos.",
+  rubricEmpty: "La rúbrica no tiene criterios. Agrega al menos uno para poder marcar la evaluación como lista.",
+  rubricParameter: (position: number) => `Parámetro del criterio ${position}`,
+  rubricExpected: (position: number) => `Valor esperado del criterio ${position}`,
+  rubricMin: (position: number) => `Mínimo del criterio ${position}`,
+  rubricMax: (position: number) => `Máximo del criterio ${position}`,
+  rubricPriority: (position: number) => `Prioridad del criterio ${position}`,
+  rubricRemove: (position: number) => `Quitar el criterio ${position}`,
+  rubricChooseParameter: "Elige un parámetro",
+  rubricAdd: "Agregar criterio",
+  rubricJustification: "Justificación (opcional)",
+  rubricIssues: "Problemas de la rúbrica",
+  // Status
+  statusLabel: (label: string) => `Estado: ${label}`,
+  markReady: "Marcar como lista (READY)",
+  backToDraft: "Volver a borrador",
+  markedReady: "La evaluación quedó lista para activarse.",
+  backInDraft: "La evaluación volvió a borrador.",
+  saveBeforeStatus: "Guarda los cambios antes de cambiar el estado.",
+  notReady: "La evaluación aún no está lista. Revisa los problemas marcados en las preguntas.",
+  readyHint: "La evaluación está lista: el servidor rechaza los cambios que la dejen incompleta. Para agregar o quitar preguntas, o cambiar la respuesta correcta de preguntas de selección única o verdadero o falso, vuélvela a borrador.",
+  readySingleCorrectHint: "En una evaluación lista no se puede cambiar la respuesta correcta de esta pregunta: vuélvela a borrador primero.",
+  structuralDiscarded: "Se descartaron los cambios de puntos, opciones, respuestas correctas y rúbricas porque la evaluación ya tiene intentos. Los textos se conservaron.",
   // Locked banner
   lockedTitle: "Tiene intentos registrados; para cambios estructurales, duplícala",
   lockedDescription: "Puedes corregir textos, pero no agregar ni quitar preguntas u opciones, ni cambiar puntos o respuestas correctas.",

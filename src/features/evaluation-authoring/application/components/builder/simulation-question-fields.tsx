@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: SimulationQuestionFields
-* Descripción: Placeholder section of a SIMULATION question in the builder: shows the linked clinical case id and the number of rubric criteria read-only. Task A3 replaces it with the clinical case selector (`GET /api/clinical-cases?status=PUBLISHED`) and the rubric editor of the real backend schema. Depends on @shared/lib, the builder copy and CSS Module.
-* Versión: 1.0
+* Descripción: SIMULATION part of a question card in the evaluation builder: the clinical case of the practice (ClinicalCaseSelector over the published cases) and its rubric (RubricEditor on the backend schema). Both are structural: they are disabled once the structure is locked and saved in the structural question PATCH. Depends on @shared/lib, the clinical case selector, the rubric editor, the builder entities and the simulation CSS Module. v1.1 (A3): replaces the A2 read-only placeholder with the editable case selector and rubric editor.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,29 +11,30 @@
 
 import { cx } from "@shared/lib/class-names";
 import { BUILDER_COPY } from "../../entities/builder-copy";
-import styles from "../../../UI/builder.module.css";
+import type { RubricDraft } from "../../entities/simulation-rubric.entity";
+import { ClinicalCaseSelector } from "./clinical-case-selector";
+import { RubricEditor } from "./rubric-editor";
+import styles from "../../../UI/simulation.module.css";
+
+export type SimulationChanges = {
+  clinicalCaseId?: string | null
+  rubric?: RubricDraft
+};
 
 export type SimulationQuestionFieldsProps = {
   clinicalCaseId: string | null
-  rubric: Record<string, unknown> | null
+  rubric: RubricDraft
+  rubricIssues: readonly string[] | undefined
+  locked: boolean
+  newKey: () => string
+  onChange: (changes: SimulationChanges) => void
 };
 
-function criteriaCount(rubric: Record<string, unknown> | null): number | null {
-  return rubric && Array.isArray(rubric.criteria) ? rubric.criteria.length : null;
-}
-
-export function SimulationQuestionFields({ clinicalCaseId, rubric }: SimulationQuestionFieldsProps) {
-  const count = criteriaCount(rubric);
-
+export function SimulationQuestionFields({ clinicalCaseId, rubric, rubricIssues, locked, newKey, onChange }: SimulationQuestionFieldsProps) {
   return (
-    <section className={cx(styles.subsection, styles.placeholder)} aria-label={BUILDER_COPY.simulationTitle}>
-      <span className={cx(styles.fieldLabel)}>{BUILDER_COPY.simulationTitle}</span>
-      <dl className={cx(styles.definition)}>
-        <dt>{BUILDER_COPY.simulationCase}</dt>
-        <dd>{clinicalCaseId ?? BUILDER_COPY.simulationNoCase}</dd>
-      </dl>
-      <p className={cx(styles.muted)}>{count === null ? BUILDER_COPY.simulationNoRubric : BUILDER_COPY.simulationRubric(count)}</p>
-      <p className={cx(styles.muted)}>{BUILDER_COPY.simulationPending}</p>
+    <section className={cx(styles.section)} aria-label={BUILDER_COPY.simulationTitle}>
+      <ClinicalCaseSelector value={clinicalCaseId} disabled={locked} onChange={(id) => onChange({ clinicalCaseId: id })} />
+      <RubricEditor rubric={rubric} issues={rubricIssues} disabled={locked} newKey={newKey} onChange={(next) => onChange({ rubric: next })} />
     </section>
   );
 }

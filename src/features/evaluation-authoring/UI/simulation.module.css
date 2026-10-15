@@ -1,0 +1,82 @@
+/*
+* Funcionalidad: Simulation question editor styles
+* Descripción: Layout of the SIMULATION question fields of the evaluation builder: the clinical case selector (filter, select and pager) and the rubric editor (criterion rows that wrap on narrow screens, numeric fields, justification and the issue list). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.caseRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+}
+
+.caseField {
+  flex: 1 1 14rem;
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.criteria {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.criterion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--vl-space-2);
+}
+
+.parameterField {
+  flex: 1 1 12rem;
+}
+
+.valueField {
+  flex: 0 1 8rem;
+}
+
+.priorityField {
+  flex: 0 1 9rem;
+}
+
+.issues {
+  margin: 0;
+  padding-left: var(--vl-space-4);
+  font: var(--mui-font-caption);
+  color: var(--vl-color-error);
+}

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useEvaluationBuilder
-* Descripción: State and actions of the evaluation builder. Holds a local draft over the evaluation loaded from `GET /api/evaluations/{id}` (null id: a new evaluation): the metadata form, the edited questions (prompt, points, explanation, options) and the edited scenario contents; dirty is true while any of them differs from the backend. save() validates and persists only the changed parts: creating sends `POST /api/evaluations` and replaces the route with the editor of the new evaluation; editing sends the metadata PATCH, one PATCH per edited scenario and, per edited question, its PATCH plus the option POST/PATCH/DELETE calls and `PUT .../options/order` when the order changed. Each part is saved independently: a failed part keeps its draft (created options keep their new ids) and its message is shown on its card; a 409 evaluation.has_submitted_attempts raises the structure-locked banner and a 422 re-reads the readiness issues to show them on the questions. Structural actions apply at once: add or delete questions and scenarios, the drag-and-drop reorders (`PUT .../questions/order` and `PUT .../scenarios/order`, shown optimistically and reverted with a toast on failure) and duplicate (opens the copy). Mutations are single-flight and refresh every authoring key. Depends on React, next/router, @shared/api-client, the design-system toast, the authoring services, mappers, entities and hooks.
-* Versión: 1.0
+* Descripción: State and actions of the evaluation builder. Holds a local draft over the evaluation loaded from `GET /api/evaluations/{id}` (null id: a new evaluation): the metadata form, the edited questions (prompt, points, explanation, options) and the edited scenario contents; dirty is true while any of them differs from the backend. save() validates and persists only the changed parts: creating sends `POST /api/evaluations` and replaces the route with the editor of the new evaluation; editing sends the metadata PATCH, one PATCH per edited scenario and, per edited question, its PATCH plus the option POST/PATCH/DELETE calls and `PUT .../options/order` when the order changed. Each part is saved independently: a failed part keeps its draft (created options keep their new ids) and its message is shown on its card; a 409 evaluation.has_submitted_attempts raises the structure-locked banner and a 422 re-reads the readiness issues to show them on the questions. Structural actions apply at once: add or delete questions and scenarios, the drag-and-drop reorders (`PUT .../questions/order` and `PUT .../scenarios/order`, shown optimistically and reverted with a toast on failure) and duplicate (opens the copy). Mutations are single-flight and refresh every authoring key. Depends on React, next/router, @shared/api-client, the design-system toast, the authoring services, mappers, entities and hooks. v1.1 (A3 + A2 review): the question PATCH is split into its text part (prompt, explanation) and its structural part (points, clinical case, rubric), so texts still save when attempts exist; options created by a save get their backend id merged into the current draft by client key (on success and on failure), so edits typed during the save survive and nothing is created twice; after a 409 has_submitted_attempts the structural edits of every draft are dropped (texts kept) with a toast, instead of repeating the 409 on every save; a 422 on a save shows the client READY validation of the drafts on the affected questions (the backend rolls the change back and sends no issues); markReady runs the client READY validation (issues shown on the cards) and then sends `PATCH .../status` READY, re-reading the readiness issues on a 422; markDraft returns a READY evaluation to DRAFT; deleting the only question of a READY evaluation is refused with the READY hint.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,6 +19,7 @@ import {
   addOption,
   addQuestion,
   addScenario,
+  changeEvaluationStatus,
   createEvaluation,
   duplicateEvaluation,
   removeOption,
@@ -41,7 +42,9 @@ import {
   isQuestionDraftDirty,
   newQuestionBody,
   planQuestionSave,
+  stripStructuralEdits,
   validateQuestionDraft,
+  withCreatedOptionIds,
 } from "../entities/builder-question.entity";
 import type { QuestionDraft, QuestionErrors, QuestionType } from "../entities/builder-question.entity";
 import { emptyDoc, sameRichText } from "../entities/builder-rich-text";
@@ -58,7 +61,8 @@ import {
   toUpdateEvaluationChanges,
   validateMetadata,
 } from "../entities/evaluation-builder.entity";
-import type { BuilderEvaluation, BuilderQuestion, MetadataErrors, MetadataForm } from "../entities/evaluation-builder.entity";
+import type { BuilderEvaluation, BuilderQuestion, MetadataErrors, MetadataForm, ReadinessIssue } from "../entities/evaluation-builder.entity";
+import { readinessQuestionsFrom, validateEvaluationReadiness } from "../entities/evaluation-readiness.entity";
 import { useAuthoringMutation } from "./use-authoring-mutation";
 import type { AuthoringMutationOutcome } from "./use-authoring-mutation";
 import { useEvaluationDetail } from "./use-evaluation-detail";
@@ -71,7 +75,9 @@ type FormState = { key: string | null, form: MetadataForm };
 type SaveSummary = {
   metadataSaved: boolean
   savedQuestions: Map<string, QuestionDraft>
-  failedQuestions: Map<string, QuestionDraft>
+  // Options created during the save, per question: client key -> backend id.
+  createdOptionIds: Map<string, Map<string, string>>
+  invalidQuestionIds: string[]
   questionErrors: Record<string, string>
   savedScenarios: Map<string, RichDoc>
   scenarioErrors: Record<string, string>
@@ -80,12 +86,17 @@ type SaveSummary = {
   invalid: boolean
 };
 
-async function saveQuestionDraft(evaluationId: string, question: BuilderQuestion, draft: QuestionDraft, working: { draft: QuestionDraft }): Promise<void> {
+// createdIds is filled as options are created, so a later failure still knows them and never creates them again.
+async function saveQuestionDraft(evaluationId: string, question: BuilderQuestion, draft: QuestionDraft, createdIds: Map<string, string>): Promise<void> {
   const plan = planQuestionSave(question, draft);
-  const createdIds = new Map<string, string>();
 
-  if (plan.question) {
-    await updateQuestion(evaluationId, question.id, plan.question);
+  // Texts first and on their own: they still save when the structural part is refused (submitted attempts).
+  if (plan.text) {
+    await updateQuestion(evaluationId, question.id, plan.text);
+  }
+
+  if (plan.structure) {
+    await updateQuestion(evaluationId, question.id, plan.structure);
   }
 
   for (const option of plan.creates) {
@@ -96,11 +107,6 @@ async function saveQuestionDraft(evaluationId: string, question: BuilderQuestion
     });
 
     createdIds.set(option.key, id);
-    // A later failure must not create this option again.
-    working.draft = {
-      ...working.draft,
-      options: working.draft.options.map((item) => (item.key === option.key ? { ...item, id } : item)),
-    };
   }
 
   for (const update of plan.updates) {
@@ -146,12 +152,15 @@ export type UseEvaluationBuilderResult = {
   scenarioContent: (scenarioId: string) => RichDoc | null
   updateScenarioContent: (scenarioId: string, content: RichDoc) => void
   saveErrors: Record<string, string>
-  showIssues: boolean
+  issuesFor: (questionId: string) => ReadinessIssue[]
+  generalIssues: ReadinessIssue[]
   locked: boolean
   dirty: boolean
   pending: boolean
   saving: boolean
   save: () => Promise<void>
+  markReady: () => Promise<void>
+  markDraft: () => Promise<void>
   addQuestionOfType: (type: QuestionType, scenarioId: string | null) => Promise<void>
   deleteQuestion: (questionId: string) => Promise<boolean>
   addNewScenario: () => Promise<void>
@@ -174,6 +183,8 @@ export function useEvaluationBuilder(evaluationId: string | null): UseEvaluation
   const [saveErrors, setSaveErrors] = useState<Record<string, string>>({});
   const [showValidation, setShowValidation] = useState(false);
   const [showIssues, setShowIssues] = useState(false);
+  // Issues found by the client READY validation (the backend sends none with a 422).
+  const [clientIssues, setClientIssues] = useState<ReadinessIssue[]>([]);
   const [lockedNotice, setLockedNotice] = useState(false);
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
@@ -290,7 +301,8 @@ export function useEvaluationBuilder(evaluationId: string | null): UseEvaluation
     const summary: SaveSummary = {
       metadataSaved: false,
       savedQuestions: new Map(),
-      failedQuestions: new Map(),
+      createdOptionIds: new Map(),
+      invalidQuestionIds: [],
       questionErrors: {},
       savedScenarios: new Map(),
       scenarioErrors: {},
@@ -331,21 +343,28 @@ export function useEvaluationBuilder(evaluationId: string | null): UseEvaluation
         continue;
       }
 
-      const working = { draft };
+      const createdIds = new Map<string, string>();
+
+      summary.createdOptionIds.set(questionId, createdIds);
 
       try {
-        await saveQuestionDraft(current.id, question, draft, working);
+        await saveQuestionDraft(current.id, question, draft, createdIds);
         summary.savedQuestions.set(questionId, draft);
       } catch (caught) {
-        summary.questionErrors[questionId] = recordFailure(summary, toApiError(caught));
-        summary.failedQuestions.set(questionId, working.draft);
+        const apiError = toApiError(caught);
+
+        summary.questionErrors[questionId] = recordFailure(summary, apiError);
+
+        if (apiError.status === 422) {
+          summary.invalidQuestionIds.push(questionId);
+        }
       }
     }
 
     return summary;
   };
 
-  const applySummary = (summary: SaveSummary, savedForm: FormState | null) => {
+  const applySummary = (summary: SaveSummary, savedForm: FormState | null, savedDrafts: Record<string, QuestionDraft>) => {
     if (summary.metadataSaved) {
       // Back to the backend values unless the form changed while saving.
       setFormState((currentState) => (currentState === savedForm ? null : currentState));
@@ -354,14 +373,27 @@ export function useEvaluationBuilder(evaluationId: string | null): UseEvaluation
     setDrafts((currentDrafts) => {
       const next = { ...currentDrafts };
 
-      for (const [id, saved] of summary.savedQuestions) {
-        if (next[id] === saved) {
+      for (const [id, createdIds] of summary.createdOptionIds) {
+        const draft = next[id];
+
+        if (summary.savedQuestions.get(id) === draft) {
+          // Untouched while saving: the reloaded question is the new baseline.
           delete next[id];
+        } else if (draft) {
+          // Edited while saving or failed: keep the current draft, with the ids of the options already created.
+          next[id] = withCreatedOptionIds(draft, createdIds);
         }
       }
 
-      for (const [id, failed] of summary.failedQuestions) {
-        next[id] = failed;
+      if (summary.locked) {
+        // The backend refuses structural edits now: drop them so the next save does not repeat the 409.
+        for (const [id, draft] of Object.entries(next)) {
+          const question = questionsById.get(id);
+
+          if (question) {
+            next[id] = stripStructuralEdits(question, draft);
+          }
+        }
       }
 
       return next;
@@ -381,10 +413,19 @@ export function useEvaluationBuilder(evaluationId: string | null): UseEvaluation
 
     if (summary.locked) {
       setLockedNotice(true);
+      toast.info(BUILDER_COPY.structuralDiscarded);
     }
 
-    if (summary.invalid) {
+    if (summary.invalid && evaluation) {
+      // The backend rolled the change back and sends no issues: check the drafts that were sent.
+      const failed = new Set(summary.invalidQuestionIds);
+      const issues = validateEvaluationReadiness(readinessQuestionsFrom(evaluation, savedDrafts))
+        .filter((issue) => issue.questionId === null || failed.has(issue.questionId));
+
+      setClientIssues(issues);
       setShowIssues(true);
+    } else {
+      setClientIssues([]);
     }
 
     if (summary.messages.length === 0) {
@@ -419,10 +460,11 @@ export function useEvaluationBuilder(evaluationId: string | null): UseEvaluation
       }
 
       const savedForm = formState;
+      const savedDrafts = drafts;
       const outcome = await run(() => saveChanges(evaluation, form));
 
       if (outcome.status === "success") {
-        applySummary(outcome.value, savedForm);
+        applySummary(outcome.value, savedForm, savedDrafts);
       } else if (outcome.status === "error") {
         reportError(outcome);
       }
@@ -449,6 +491,13 @@ export function useEvaluationBuilder(evaluationId: string | null): UseEvaluation
   const deleteQuestion = async(questionId: string): Promise<boolean> => {
     if (!evaluation) {
       return false;
+    }
+
+    if (evaluation.status === "READY" && evaluation.questions.length === 1) {
+      // The backend refuses to leave a READY evaluation without questions.
+      toast.error(BUILDER_COPY.readyHint);
+
+      return true;
     }
 
     const outcome = await run(() => removeQuestion(evaluation.id, questionId));
@@ -544,6 +593,81 @@ export function useEvaluationBuilder(evaluationId: string | null): UseEvaluation
     }
   };
 
+  const markReady = async() => {
+    if (!evaluation || savingRef.current) {
+      return;
+    }
+
+    if (dirty) {
+      toast.error(BUILDER_COPY.saveBeforeStatus);
+
+      return;
+    }
+
+    const issues = validateEvaluationReadiness(readinessQuestionsFrom(evaluation, {}));
+
+    if (issues.length > 0) {
+      setClientIssues(issues);
+      toast.error(BUILDER_COPY.notReady);
+
+      return;
+    }
+
+    const outcome = await run(() => changeEvaluationStatus(evaluation.id, "READY"));
+
+    if (outcome.status === "success") {
+      setClientIssues([]);
+      setShowIssues(false);
+      toast.success(BUILDER_COPY.markedReady);
+    } else if (outcome.status === "error" && outcome.httpStatus === 422) {
+      // The evaluation stayed in DRAFT: its readiness issues are the backend's verdict.
+      await reload().catch(() => undefined);
+      setClientIssues([]);
+      setShowIssues(true);
+      toast.error(BUILDER_COPY.notReady);
+    } else if (outcome.status === "error") {
+      reportError(outcome);
+    }
+  };
+
+  const markDraft = async() => {
+    if (!evaluation || savingRef.current) {
+      return;
+    }
+
+    const outcome = await run(() => changeEvaluationStatus(evaluation.id, "DRAFT"));
+
+    if (outcome.status === "success") {
+      toast.success(BUILDER_COPY.backInDraft);
+    } else if (outcome.status === "error") {
+      reportError(outcome);
+    }
+  };
+
+  const issuesFor = useCallback((questionId: string): ReadinessIssue[] => {
+    const server = showIssues && evaluation ? evaluation.readinessIssues : [];
+    const seen = new Set<string>();
+
+    return [...server, ...clientIssues].filter((issue) => {
+      const id = `${issue.code}|${issue.questionId ?? ""}`;
+
+      if (issue.questionId !== questionId || seen.has(id)) {
+        return false;
+      }
+
+      seen.add(id);
+
+      return true;
+    });
+  }, [clientIssues, evaluation, showIssues]);
+
+  const generalIssues = useMemo(() => {
+    const server = showIssues && evaluation ? evaluation.readinessIssues : [];
+    const all = [...server, ...clientIssues].filter((issue) => issue.questionId === null);
+
+    return all.filter((issue, index) => all.findIndex((other) => other.code === issue.code) === index);
+  }, [clientIssues, evaluation, showIssues]);
+
   const layout = layoutOverride ?? (evaluation ? layoutFrom(evaluation.scenarios, evaluation.questions) : null);
 
   return {
@@ -564,12 +688,15 @@ export function useEvaluationBuilder(evaluationId: string | null): UseEvaluation
     scenarioContent,
     updateScenarioContent,
     saveErrors,
-    showIssues,
+    issuesFor,
+    generalIssues,
     locked: Boolean(evaluation?.structureLocked) || lockedNotice,
     dirty,
     pending,
     saving,
     save,
+    markReady,
+    markDraft,
     addQuestionOfType,
     deleteQuestion,
     addNewScenario,

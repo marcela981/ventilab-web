@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: QuestionCard
-* Descripción: Editor of one question in the builder (article "Pregunta N"): drag handle slot, type label, "Sin guardar" marker, delete action, prompt as rich text, the statement media placeholder (QuestionMediaField), points, the fields of its type (options for SINGLE_CHOICE, MULTIPLE_CHOICE and TRUE_FALSE; a teacher note for OPEN_TEXT; the SimulationQuestionFields placeholder for SIMULATION) and the explanation shown with the results (plain text or markdown: the backend stores it as a string). Shows the validation messages, the error of its last failed save and, after a 422, its readiness issues from the reloaded detail. With the structure locked, points, options and delete are disabled. Depends on MUI, the design-system FormField, the builder entities, components, copy and CSS Module.
-* Versión: 1.0
+* Descripción: Editor of one question in the builder (article "Pregunta N"): drag handle slot, type label, "Sin guardar" marker, delete action, prompt as rich text, the statement media placeholder (QuestionMediaField), points, the fields of its type (options for SINGLE_CHOICE, MULTIPLE_CHOICE and TRUE_FALSE; a teacher note for OPEN_TEXT; the SimulationQuestionFields placeholder for SIMULATION) and the explanation shown with the results (plain text or markdown: the backend stores it as a string). Shows the validation messages, the error of its last failed save and, after a 422, its readiness issues from the reloaded detail. With the structure locked, points, options and delete are disabled. Depends on MUI, the design-system FormField, the builder entities, components, copy and CSS Module. v1.1 (A3): SIMULATION questions edit their clinical case and rubric (SimulationQuestionFields) with the rubric issues of the validation; on a READY evaluation the correct answer of SINGLE_CHOICE and TRUE_FALSE is read-only with a hint to return to draft; the readiness issues come from the backend or from the client validation.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,7 +16,7 @@ import type { ReactNode } from "react";
 import { FormField } from "@shared/design-system/components/form-field";
 import { cx } from "@shared/lib/class-names";
 import { BUILDER_COPY } from "../../entities/builder-copy";
-import { isChoiceType, QUESTION_TYPE_LABELS, readinessIssueMessage } from "../../entities/builder-question.entity";
+import { hasSingleCorrect, isChoiceType, QUESTION_TYPE_LABELS, readinessIssueMessage } from "../../entities/builder-question.entity";
 import type { QuestionDraft, QuestionErrors } from "../../entities/builder-question.entity";
 import type { BuilderQuestion, ReadinessIssue } from "../../entities/evaluation-builder.entity";
 import { OptionListEditor } from "./option-list-editor";
@@ -34,6 +34,8 @@ export type QuestionCardProps = {
   saveError: string | undefined
   issues: readonly ReadinessIssue[]
   locked: boolean
+  // The evaluation is READY: single-correct answers cannot change through single-option PATCHes.
+  ready: boolean
   busy: boolean
   dragHandle?: ReactNode
   newKey: () => string
@@ -50,6 +52,7 @@ export function QuestionCard({
   saveError,
   issues,
   locked,
+  ready,
   busy,
   dragHandle,
   newKey,
@@ -107,13 +110,21 @@ export function QuestionCard({
           options={draft.options}
           errors={errors}
           locked={locked}
+          correctLocked={locked || (ready && hasSingleCorrect(question.type))}
           newKey={newKey}
           onChange={(options) => onChange({ ...draft, options })}
         />
       ) : null}
       {question.type === "OPEN_TEXT" ? <p className={cx(styles.muted)}>{BUILDER_COPY.openTextHelp}</p> : null}
       {question.type === "SIMULATION" ? (
-        <SimulationQuestionFields clinicalCaseId={question.clinicalCaseId} rubric={question.rubric} />
+        <SimulationQuestionFields
+          clinicalCaseId={draft.clinicalCaseId}
+          rubric={draft.rubric}
+          rubricIssues={errors?.rubric}
+          locked={locked}
+          newKey={newKey}
+          onChange={(changes) => onChange({ ...draft, ...changes })}
+        />
       ) : null}
       <FormField
         label={BUILDER_COPY.explanation}

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationBuilderPage
-* Descripción: Staff page of the evaluation builder: /evaluations/manage/new (evaluationId null) and /evaluations/manage/[id]/edit. Header with "Volver a la lista", the "Cambios sin guardar"/"Todo guardado" indicator and the explicit "Guardar" ("Crear evaluación" while creating: the first save posts the evaluation and replaces the route with its editor). Below: the structure-locked banner with "Duplicar", the evaluation-level readiness issues after a 422, the metadata form and, once the evaluation exists, the scenarios and questions editor (BuilderStructure, loaded with React.lazy + retryImport so the drag-and-drop library stays in its own chunk) with delete confirmations. Leaving with unsaved changes asks for confirmation (route change and beforeunload). Loading and error-with-retry states for the edit route. Depends on React, MUI, next/head, next/link, the design-system components, @shared/lib, the builder hook, entities, components and CSS Module.
-* Versión: 1.0
+* Descripción: Staff page of the evaluation builder: /evaluations/manage/new (evaluationId null) and /evaluations/manage/[id]/edit. Header with "Volver a la lista", the "Cambios sin guardar"/"Todo guardado" indicator and the explicit "Guardar" ("Crear evaluación" while creating: the first save posts the evaluation and replaces the route with its editor). Below: the structure-locked banner with "Duplicar", the evaluation-level readiness issues after a 422, the metadata form and, once the evaluation exists, the scenarios and questions editor (BuilderStructure, loaded with React.lazy + retryImport so the drag-and-drop library stays in its own chunk) with delete confirmations. Leaving with unsaved changes asks for confirmation (route change and beforeunload). Loading and error-with-retry states for the edit route. Depends on React, MUI, next/head, next/link, the design-system components, @shared/lib, the builder hook, entities, components and CSS Module. v1.1 (A3): the header shows the evaluation status with "Marcar como lista (READY)" for a DRAFT (client READY validation first, issues on the cards, then `PATCH .../status`) and "Volver a borrador" for a READY evaluation; the evaluation-level issues come from the backend or from the client validation.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,6 +27,7 @@ import { retryImport } from "@shared/lib/retry-import";
 import { EvaluationMetadataForm } from "../components/builder/evaluation-metadata-form";
 import { StructureLockedBanner } from "../components/builder/structure-locked-banner";
 import { EVALUATIONS_MANAGE_URL } from "../entities/authoring-urls";
+import { EVALUATION_STATUS_LABELS } from "../entities/evaluation-authoring.entity";
 import { BUILDER_COPY } from "../entities/builder-copy";
 import { readinessIssueMessage } from "../entities/builder-question.entity";
 import { getAuthoringErrorMessage } from "../entities/evaluation-authoring-error-messages";
@@ -70,9 +71,8 @@ export function EvaluationBuilderPage({ evaluationId }: EvaluationBuilderPagePro
     }
   };
 
-  const generalIssues = builder.showIssues && evaluation
-    ? evaluation.readinessIssues.filter((issue) => issue.questionId === null)
-    : [];
+  const { generalIssues } = builder;
+  const statusBusy = builder.pending || builder.saving;
   const documentTitle = creating ? BUILDER_COPY.newDocumentTitle : BUILDER_COPY.editDocumentTitle(evaluation?.title ?? "");
 
   const actions = (
@@ -95,6 +95,18 @@ export function EvaluationBuilderPage({ evaluationId }: EvaluationBuilderPagePro
       </AsyncButton>
     </div>
   );
+
+  const statusActions = evaluation && evaluation.canManage ? (
+    <div className={cx(styles.headerActions)}>
+      <span className={cx(styles.saveState)}>{BUILDER_COPY.statusLabel(EVALUATION_STATUS_LABELS[evaluation.status])}</span>
+      {evaluation.status === "DRAFT" ? (
+        <Button variant="outlined" disabled={statusBusy} onClick={() => void builder.markReady()}>{BUILDER_COPY.markReady}</Button>
+      ) : null}
+      {evaluation.status === "READY" ? (
+        <Button variant="outlined" disabled={statusBusy || builder.locked} onClick={() => void builder.markDraft()}>{BUILDER_COPY.backToDraft}</Button>
+      ) : null}
+    </div>
+  ) : null;
 
   const renderStructure = () => {
     if (creating) {
@@ -140,6 +152,7 @@ export function EvaluationBuilderPage({ evaluationId }: EvaluationBuilderPagePro
       ) : null}
       {form ? (
         <div className={cx(styles.content)}>
+          {statusActions}
           {builder.locked ? <StructureLockedBanner busy={builder.pending} onDuplicate={builder.duplicate} /> : null}
           {generalIssues.length > 0 ? (
             <Alert severity="warning">

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Builder question drafts
-* Descripción: Pure rules of the question editor of the evaluation builder: Spanish labels of the question types, the local draft of a question (prompt document, points, explanation and, for choice questions, the option list with stable client keys; new options have no id yet), the correct-answer semantics (radio for SINGLE_CHOICE and TRUE_FALSE, checkbox for MULTIPLE_CHOICE), adding, removing and moving options, validation mirroring the backend DTOs (points positive, option text required, at most 20 options), the dirty check and the save plan of a draft against the loaded question: the question PATCH holding only the changed fields, the options to create, the option PATCHes (the ones that become correct first, so a multiple choice never drops to zero correct answers on the way), the options to delete and whether the final option order must be sent with `PUT .../options/order`. Also the body of a new question (TRUE_FALSE starts with the two options Verdadero and Falso) and the Spanish messages of the readiness issues of `GET /api/evaluations/{id}`. No dependencies besides the builder entities.
-* Versión: 1.0
+* Descripción: Pure rules of the question editor of the evaluation builder: Spanish labels of the question types, the local draft of a question (prompt document, points, explanation and, for choice questions, the option list with stable client keys; new options have no id yet), the correct-answer semantics (radio for SINGLE_CHOICE and TRUE_FALSE, checkbox for MULTIPLE_CHOICE), adding, removing and moving options, validation mirroring the backend DTOs (points positive, option text required, at most 20 options), the dirty check and the save plan of a draft against the loaded question: the question PATCH holding only the changed fields, the options to create, the option PATCHes (the ones that become correct first, so a multiple choice never drops to zero correct answers on the way), the options to delete and whether the final option order must be sent with `PUT .../options/order`. Also the body of a new question (TRUE_FALSE starts with the two options Verdadero and Falso) and the Spanish messages of the readiness issues of `GET /api/evaluations/{id}`. No dependencies besides the builder entities. v1.1 (A3): SIMULATION drafts carry the clinical case and the rubric draft (saved in the question PATCH, validated with the backend rubric rules); the question PATCH is split into the text part (prompt, explanation) and the structural part (points, clinical case, rubric) so texts still save on an evaluation with submitted attempts; stripStructuralEdits drops the structural edits of a draft once the structure is locked; withCreatedOptionIds gives created options their backend id; the option order check compares option ids (an option created by a failed save keeps its client key); readiness messages cover clinical_case_required and translate the English rubric details of the backend. Depends on the simulation rubric entity.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,6 +12,8 @@
 import { emptyDoc, sameRichText } from "./builder-rich-text";
 import type { RichDoc } from "./builder-rich-text";
 import type { BuilderMedia, BuilderQuestion, QuestionType, ReadinessIssue } from "./evaluation-builder.entity";
+import { parseBackendRubricError, rubricDraftFrom, rubricDraftIssues, rubricIssueMessage, sameRubric, toRubricValue } from "./simulation-rubric.entity";
+import type { RubricDraft } from "./simulation-rubric.entity";
 
 export type { QuestionType } from "./evaluation-builder.entity";
 
@@ -43,12 +45,19 @@ export const READINESS_ISSUE_MESSAGES: Readonly<Record<string, string>> = {
   single_correct_option_required: "Marca solo una opción correcta.",
   true_false_two_options_required: "Una pregunta de verdadero o falso debe tener exactamente dos opciones.",
   invalid_rubric: "La rúbrica de la simulación no es válida.",
+  clinical_case_required: "Elige el caso clínico de la simulación.",
 };
+
+function readinessDetail(detail: string): string {
+  const rubricIssue = parseBackendRubricError(detail);
+
+  return rubricIssue ? rubricIssueMessage(rubricIssue) : detail;
+}
 
 export function readinessIssueMessage(issue: ReadinessIssue): string {
   const base = READINESS_ISSUE_MESSAGES[issue.code] ?? "La pregunta tiene un problema que impide marcar la evaluación como lista.";
 
-  return issue.details.length > 0 ? `${base} ${issue.details.join("; ")}` : base;
+  return issue.details.length > 0 ? `${base} ${issue.details.map(readinessDetail).join(" ")}` : base;
 }
 
 export function isChoiceType(type: QuestionType): boolean {
@@ -74,6 +83,9 @@ export type QuestionDraft = {
   points: string
   explanation: string
   options: OptionDraft[]
+  // SIMULATION only (null and an empty rubric for the other types).
+  clinicalCaseId: string | null
+  rubric: RubricDraft
 };
 
 export function questionDraftFrom(question: BuilderQuestion): QuestionDraft {
@@ -89,6 +101,8 @@ export function questionDraftFrom(question: BuilderQuestion): QuestionDraft {
       mediaId: option.mediaId,
       media: option.media,
     })),
+    clinicalCaseId: question.clinicalCaseId,
+    rubric: rubricDraftFrom(question.rubric),
   };
 }
 
@@ -135,6 +149,8 @@ export type QuestionErrors = {
   points?: string
   options?: string
   optionContent: Record<string, string>
+  // Spanish messages of the rubric issues.
+  rubric?: string[]
 };
 
 function parsePoints(value: string): number | null {
@@ -168,17 +184,35 @@ export function validateQuestionDraft(type: QuestionType, draft: QuestionDraft):
     }
   }
 
+  if (type === "SIMULATION") {
+    const rubricIssues = rubricDraftIssues(draft.rubric);
+
+    if (rubricIssues.length > 0) {
+      errors.rubric = rubricIssues.map(rubricIssueMessage);
+    }
+  }
+
   return errors;
 }
 
 export function hasQuestionErrors(errors: QuestionErrors): boolean {
-  return errors.points !== undefined || errors.options !== undefined || Object.keys(errors.optionContent).length > 0;
+  return errors.points !== undefined
+    || errors.options !== undefined
+    || Object.keys(errors.optionContent).length > 0
+    || errors.rubric !== undefined;
 }
 
-export type UpdateQuestionChanges = {
+// Prompt and explanation: allowed even after attempts were submitted.
+export type QuestionTextChanges = {
   prompt?: RichDoc
-  points?: number
   explanation?: string | null
+};
+
+// Points, clinical case and rubric: refused by the backend once attempts were submitted.
+export type QuestionStructureChanges = {
+  points?: number
+  clinicalCaseId?: string | null
+  rubric?: Record<string, unknown> | null
 };
 
 export type OptionUpdate = {
@@ -187,39 +221,57 @@ export type OptionUpdate = {
 };
 
 export type QuestionSavePlan = {
-  question: UpdateQuestionChanges | null
+  text: QuestionTextChanges | null
+  structure: QuestionStructureChanges | null
   creates: OptionDraft[]
   updates: OptionUpdate[]
   deletes: string[]
   reorder: boolean
 };
 
+// Identity of a draft option: its backend id once created (a created option keeps its client key), else its key.
+const optionIdentity = (option: OptionDraft): string => option.id ?? option.key;
+
 // Order the backend ends with after the creates (appended) and deletes, before any reorder.
 function orderAfterCreatesAndDeletes(question: BuilderQuestion, draft: QuestionDraft): string[] {
-  const kept = new Set(draft.options.map((option) => option.key));
+  const keptIds = new Set(draft.options.map((option) => option.id).filter((id): id is string => id !== null));
+  const loadedIds = new Set(question.options.map((option) => option.id));
 
   return [
-    ...question.options.filter((option) => kept.has(option.id)).map((option) => option.id),
-    ...draft.options.filter((option) => option.id === null).map((option) => option.key),
+    ...question.options.filter((option) => keptIds.has(option.id)).map((option) => option.id),
+    // Created by an earlier save but not reloaded yet: already appended on the backend.
+    ...draft.options.filter((option) => option.id !== null && !loadedIds.has(option.id)).map(optionIdentity),
+    ...draft.options.filter((option) => option.id === null).map(optionIdentity),
   ];
 }
 
 // Assumes a valid draft (validateQuestionDraft returned no errors).
 export function planQuestionSave(question: BuilderQuestion, draft: QuestionDraft): QuestionSavePlan {
-  const changes: UpdateQuestionChanges = {};
+  const text: QuestionTextChanges = {};
+  const structure: QuestionStructureChanges = {};
   const points = parsePoints(draft.points);
   const explanation = draft.explanation.trim() === "" ? null : draft.explanation;
 
   if (!sameRichText(draft.prompt, question.prompt)) {
-    changes.prompt = draft.prompt;
-  }
-
-  if (points !== null && points !== question.points) {
-    changes.points = points;
+    text.prompt = draft.prompt;
   }
 
   if (explanation !== question.explanation) {
-    changes.explanation = explanation;
+    text.explanation = explanation;
+  }
+
+  if (points !== null && points !== question.points) {
+    structure.points = points;
+  }
+
+  if (question.type === "SIMULATION") {
+    if (draft.clinicalCaseId !== question.clinicalCaseId) {
+      structure.clinicalCaseId = draft.clinicalCaseId;
+    }
+
+    if (!sameRubric(draft.rubric, question.rubric)) {
+      structure.rubric = toRubricValue(draft.rubric);
+    }
   }
 
   const existing = new Map(question.options.map((option) => [option.id, option]));
@@ -247,14 +299,17 @@ export function planQuestionSave(question: BuilderQuestion, draft: QuestionDraft
     }
   }
 
-  // The options that become correct go first: a READY multiple choice never passes through zero correct answers.
+  // The options that become correct go first, so a READY MULTIPLE_CHOICE never passes through zero correct answers.
+  // This cannot help SINGLE_CHOICE or TRUE_FALSE on a READY evaluation: every order of single-option PATCHes
+  // passes through zero or two correct answers (there is no batch endpoint), so the builder asks to return to DRAFT first.
   updates.sort((a, b) => Number(b.changes.isCorrect === true) - Number(a.changes.isCorrect === true));
 
   const draftIds = new Set(draft.options.map((option) => option.id).filter((id): id is string => id !== null));
-  const finalOrder = draft.options.map((option) => option.key);
+  const finalOrder = draft.options.map(optionIdentity);
 
   return {
-    question: Object.keys(changes).length > 0 ? changes : null,
+    text: Object.keys(text).length > 0 ? text : null,
+    structure: Object.keys(structure).length > 0 ? structure : null,
     creates: draft.options.filter((option) => option.id === null),
     updates,
     deletes: question.options.filter((option) => !draftIds.has(option.id)).map((option) => option.id),
@@ -263,7 +318,7 @@ export function planQuestionSave(question: BuilderQuestion, draft: QuestionDraft
 }
 
 export function isPlanEmpty(plan: QuestionSavePlan): boolean {
-  return plan.question === null && plan.creates.length === 0 && plan.updates.length === 0 && plan.deletes.length === 0 && !plan.reorder;
+  return plan.text === null && plan.structure === null && plan.creates.length === 0 && plan.updates.length === 0 && plan.deletes.length === 0 && !plan.reorder;
 }
 
 export function isQuestionDraftDirty(question: BuilderQuestion, draft: QuestionDraft): boolean {
@@ -284,6 +339,43 @@ export function newQuestionBody(type: QuestionType, scenarioId: string | null): 
     prompt: emptyDoc(),
     ...(scenarioId === null ? {} : { scenarioId }),
     ...(type === "TRUE_FALSE" ? { options: TRUE_FALSE_OPTION_TEXTS.map((content) => ({ content, isCorrect: false })) } : {}),
+  };
+}
+
+// The draft without the edits the backend refuses once attempts were submitted: points, clinical case, rubric,
+// added, removed or reordered options and correct answers. Prompt, explanation and option texts are kept.
+export function stripStructuralEdits(question: BuilderQuestion, draft: QuestionDraft): QuestionDraft {
+  const contents = new Map(draft.options.filter((option) => option.id !== null).map((option) => [option.id, option.content]));
+
+  return {
+    ...draft,
+    points: String(question.points),
+    clinicalCaseId: question.clinicalCaseId,
+    rubric: rubricDraftFrom(question.rubric),
+    options: question.options.map((option) => ({
+      key: option.id,
+      id: option.id,
+      content: contents.get(option.id) ?? option.content,
+      isCorrect: option.isCorrect,
+      mediaId: option.mediaId,
+      media: option.media,
+    })),
+  };
+}
+
+// Gives the options created by a save their backend id, matched by client key.
+export function withCreatedOptionIds(draft: QuestionDraft, createdIds: ReadonlyMap<string, string>): QuestionDraft {
+  if (createdIds.size === 0) {
+    return draft;
+  }
+
+  return {
+    ...draft,
+    options: draft.options.map((option) => {
+      const id = option.id === null ? createdIds.get(option.key) : undefined;
+
+      return id === undefined ? option : { ...option, id };
+    }),
   };
 }
 

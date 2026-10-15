@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation authoring service
-* Descripción: Backend calls of the evaluation authoring feature through the typed api-client: the SWR keys (paths) of the read endpoints used with useApiQuery (`GET /api/evaluations`, `/api/evaluations/{id}`, `/api/evaluations/{id}/assignments`), EVALUATION_AUTHORING_QUERY_PATHS (the keys every authoring mutation invalidates) and the list mutations: change the status (`PATCH /api/evaluations/{id}/status`, used to archive) and duplicate (`POST /api/evaluations/{id}/duplicate`, returns the id of the copy). Errors reject with ApiError. Depends on @shared/api-client and the authoring DTOs. v1.1 (A2): adds the builder calls: create (`POST /api/evaluations`, returns the new id) and update (`PATCH /api/evaluations/{id}`) an evaluation; add, update and remove scenarios, questions and options (each add returns the new id); the batch reorders `PUT .../scenarios/order`, `PUT .../questions/order` (items may move a question to another scenario) and `PUT .../questions/{questionId}/options/order`.
-* Versión: 1.1
+* Descripción: Backend calls of the evaluation authoring feature through the typed api-client: the SWR keys (paths) of the read endpoints used with useApiQuery (`GET /api/evaluations`, `/api/evaluations/{id}`, `/api/evaluations/{id}/assignments`), EVALUATION_AUTHORING_QUERY_PATHS (the keys every authoring mutation invalidates) and the list mutations: change the status (`PATCH /api/evaluations/{id}/status`, used to archive) and duplicate (`POST /api/evaluations/{id}/duplicate`, returns the id of the copy). Errors reject with ApiError. Depends on @shared/api-client and the authoring DTOs. v1.1 (A2): adds the builder calls: create (`POST /api/evaluations`, returns the new id) and update (`PATCH /api/evaluations/{id}`) an evaluation; add, update and remove scenarios, questions and options (each add returns the new id); the batch reorders `PUT .../scenarios/order`, `PUT .../questions/order` (items may move a question to another scenario) and `PUT .../questions/{questionId}/options/order`. v1.2 (A3): CLINICAL_CASES_PATH (`GET /api/clinical-cases`) for the clinical case selector.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -38,6 +38,8 @@ export const EVALUATION_QUESTIONS_ORDER_PATH = "/api/evaluations/{id}/questions/
 export const EVALUATION_OPTIONS_PATH = "/api/evaluations/{id}/questions/{questionId}/options";
 export const EVALUATION_OPTION_PATH = "/api/evaluations/{id}/questions/{questionId}/options/{optionId}";
 export const EVALUATION_OPTIONS_ORDER_PATH = "/api/evaluations/{id}/questions/{questionId}/options/order";
+// Read with useApiQuery by the clinical case selector of SIMULATION questions (status=PUBLISHED, or ids for the chosen case).
+export const CLINICAL_CASES_PATH = "/api/clinical-cases";
 
 // Every authoring mutation can change the list (status, counts, new copies), the detail and the activations.
 export const EVALUATION_AUTHORING_QUERY_PATHS = [
