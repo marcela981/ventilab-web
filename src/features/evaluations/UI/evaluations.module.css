@@ -1,0 +1,180 @@
+/*
+* Funcionalidad: Evaluations styles
+* Descripción: Layout of the student evaluation pages (/evaluations and /evaluations/[evaluationId]): centered column, filter bar, grid of evaluation cards (border, radius, surface, shadow) like the learning and groups pages, detail lists, attempt status badges and the published grade colored with the semantic success/error tokens from the API `passed` flag, intro warnings and actions. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  width: 100%;
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.filtersLabel {
+  color: var(--vl-color-text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: var(--vl-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  height: 100%;
+  padding: var(--vl-space-5);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.cardHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+}
+
+.cardTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+}
+
+.titleLink {
+  color: var(--vl-color-link);
+  text-decoration: none;
+}
+
+.titleLink:hover,
+.titleLink:focus-visible {
+  text-decoration: underline;
+}
+
+.details {
+  font: var(--mui-font-body2);
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--vl-space-1) var(--vl-space-3);
+  margin: 0;
+}
+
+.details dt {
+  color: var(--vl-color-text-muted);
+}
+
+.details dd {
+  margin: 0;
+}
+
+.cardFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+  margin-top: auto;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--vl-space-1) var(--vl-space-2);
+  border: 1px solid currentColor;
+  border-radius: var(--vl-radius-pill);
+  font: var(--mui-font-caption);
+}
+
+.statusInProgress {
+  color: var(--vl-color-info);
+}
+
+.statusPending {
+  color: var(--vl-color-warning);
+}
+
+.statusDone {
+  color: var(--vl-color-text-muted);
+}
+
+.grade {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--vl-space-1);
+  font: var(--mui-font-subtitle2);
+}
+
+.gradePassed {
+  color: var(--vl-color-success);
+}
+
+.gradeFailed {
+  color: var(--vl-color-error);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-5);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.sectionTitle {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+}
+
+.warnings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding-left: var(--vl-space-5);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-3);
+}
+
+.blockedReason {
+  margin: 0;
+  color: var(--vl-color-text-muted);
+}
+
+.link {
+  color: var(--vl-color-link);
+}
+
+.backLink {
+  align-self: flex-start;
+  color: var(--vl-color-link);
+}
