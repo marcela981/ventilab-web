@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AppShell
-* Descripción: Authenticated application chrome for new pages: skip link to the main region, a permanent navigation drawer on desktop (>= md) and a temporary drawer opened from the header on mobile, the role-filtered navigation from nav.config (useSession role, active item = longest matching route with aria-current), a header with the app name, a small realtime status chip when the new socket is disconnected or unauthorized, and a user menu (avatar = the session user's image, initials as fallback, v1.1 T11a) whose "Cerrar sesión" calls signOut() from the session (the route guard then redirects to login). Page content renders inside RouteErrorBoundary, reset on route change. It does not guard by itself: the Student/Teacher/Admin layouts wrap it in RequireAuth/RequireRole. Plain Spanish copy (TODO(i18n), see nav.config). Depends on MUI, next/link, next/router, @shared/session, @shared/realtime context and @shared/design-system components.
-* Versión: 1.1
+* Descripción: Authenticated application chrome for new pages: skip link to the main region, a permanent navigation drawer on desktop (>= md) and a temporary drawer opened from the header on mobile, the role-filtered navigation from nav.config (useSession role, active item = longest matching route with aria-current), a header with the app name, a small realtime status chip when the new socket is disconnected or unauthorized, and a user menu (avatar = the session user's image, initials as fallback, v1.1 T11a) whose "Cerrar sesión" calls signOut() from the session (the route guard then redirects to login). Page content renders inside RouteErrorBoundary, reset on route change. It does not guard by itself: the Student/Teacher/Admin layouts wrap it in RequireAuth/RequireRole. Plain Spanish copy (TODO(i18n), see nav.config). v1.2 (G1 grading): a navigation item with a `badgeKey` shows its count from the nav-badges registry as an MUI Badge on the icon (hidden at 0) plus a visually hidden "N pendientes" text for screen readers. Depends on MUI, next/link, next/router, @shared/session, @shared/realtime context, @shared/design-system components and the nav-badges registry.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,6 +14,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import WifiOffIcon from "@mui/icons-material/WifiOff";
 import AppBar from "@mui/material/AppBar";
 import Avatar from "@mui/material/Avatar";
+import Badge from "@mui/material/Badge";
 import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
 import Drawer from "@mui/material/Drawer";
@@ -35,6 +36,8 @@ import { RealtimeContext } from "@shared/realtime/realtime-context";
 import { DEFAULT_ROUTE_BY_ROLE } from "@shared/session/routes.config";
 import { cx } from "@shared/lib/class-names";
 import { useSession } from "@shared/session/use-session";
+import { useNavBadgeCounts } from "./nav-badges";
+import type { NavBadgeCounts } from "./nav-badges";
 import { findActiveHref, getNavItems } from "./nav.config";
 import type { NavItem } from "./nav.config";
 import styles from "./UI/app-shell.module.css";
@@ -50,12 +53,24 @@ type NavigationProps = {
   items: readonly NavItem[]
   activeHref: string | null
   homeHref: string
+  badges: NavBadgeCounts
   onNavigate?: () => void
 };
 
 function noop() {}
 
-function Navigation({ items, activeHref, homeHref, onNavigate = noop }: NavigationProps) {
+// TODO(i18n): see nav.config.
+const pendingText = (count: number) => `${count} ${count === 1 ? "pendiente" : "pendientes"}`;
+
+const BADGE_MAX = 99;
+// The visible number is decorative: the screen-reader text below carries the count.
+const HIDDEN_BADGE_SLOT = { badge: { "aria-hidden": true } } as const;
+
+function itemBadgeCount(item: NavItem, badges: NavBadgeCounts): number {
+  return item.badgeKey ? badges[item.badgeKey] ?? 0 : 0;
+}
+
+function Navigation({ items, activeHref, homeHref, badges, onNavigate = noop }: NavigationProps) {
   return (
     <nav aria-label="Navegación principal" className={styles.navigation}>
       <Link href={homeHref} className={cx(styles.brand)} onClick={onNavigate}>
@@ -67,6 +82,7 @@ function Navigation({ items, activeHref, homeHref, onNavigate = noop }: Navigati
           const Icon = item.icon;
           const active = item.href === activeHref;
           const current = active ? { "aria-current": "page" as const } : {};
+          const count = itemBadgeCount(item, badges);
 
           return (
             <ListItemButton
@@ -78,9 +94,16 @@ function Navigation({ items, activeHref, homeHref, onNavigate = noop }: Navigati
               onClick={onNavigate}
             >
               <ListItemIcon>
-                <Icon />
+                {count > 0 ? (
+                  <Badge badgeContent={count} max={BADGE_MAX} color="error" slotProps={HIDDEN_BADGE_SLOT}>
+                    <Icon />
+                  </Badge>
+                ) : (
+                  <Icon />
+                )}
               </ListItemIcon>
               <ListItemText primary={item.label} />
+              {count > 0 ? <span className={styles.visuallyHidden}>{`, ${pendingText(count)}`}</span> : null}
             </ListItemButton>
           );
         })}
@@ -119,6 +142,7 @@ export function AppShell({ children }: AppShellProps) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const userMenuId = useId();
   const items = getNavItems(role);
+  const badges = useNavBadgeCounts();
   const activeHref = findActiveHref(items, router.pathname);
   const homeHref = role ? DEFAULT_ROUTE_BY_ROLE[role] : "/";
   const closeMobile = () => setMobileOpen(false);
@@ -140,11 +164,11 @@ export function AppShell({ children }: AppShellProps) {
       </a>
       <div className={styles.desktopNav}>
         <Drawer variant="permanent" open classes={{ paper: cx(styles.drawerPaper) }}>
-          <Navigation items={items} activeHref={activeHref} homeHref={homeHref} />
+          <Navigation items={items} activeHref={activeHref} homeHref={homeHref} badges={badges} />
         </Drawer>
       </div>
       <Drawer variant="temporary" open={mobileOpen} onClose={closeMobile} classes={{ paper: cx(styles.drawerPaper) }}>
-        <Navigation items={items} activeHref={activeHref} homeHref={homeHref} onNavigate={closeMobile} />
+        <Navigation items={items} activeHref={activeHref} homeHref={homeHref} badges={badges} onNavigate={closeMobile} />
       </Drawer>
       <div className={styles.column}>
         <AppBar position="sticky" color="default" elevation={0} className={cx(styles.header)}>

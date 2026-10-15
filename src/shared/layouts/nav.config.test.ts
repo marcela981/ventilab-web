@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Navigation config tests
-* Descripción: Verifies that every nav item points to an existing route of routes.config that its roles can reach, that items are filtered by role, and that the active item is the longest matching route. v1.1 (T11a): students get /my-group, teachers and admins get /groups. v1.2 (T0 learning): every role gets /learn, only teachers and admins get /content. v1.3 (S0 evaluations): every role gets /evaluations, only teachers and admins get /evaluations/manage and /grading, the legacy /evaluation items are gone and /evaluations/manage wins over /evaluations as the active item. Depends on vitest and the session route table.
-* Versión: 1.3
+* Descripción: Verifies that every nav item points to an existing route of routes.config that its roles can reach, that items are filtered by role, and that the active item is the longest matching route. v1.1 (T11a): students get /my-group, teachers and admins get /groups. v1.2 (T0 learning): every role gets /learn, only teachers and admins get /content. v1.3 (S0 evaluations): every role gets /evaluations, only teachers and admins get /evaluations/manage and /grading, the legacy /evaluation items are gone and /evaluations/manage wins over /evaluations as the active item. v1.4 (G1 grading): only "Calificar" names a badge key (gradingPending). Depends on vitest and the session route table.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -107,5 +107,13 @@ describe("findActiveHref", () => {
 
   it("does not match a sibling prefix", () => {
     expect(findActiveHref(items, "/panelx")).toBeNull();
+  });
+});
+
+describe("navigation badges", () => {
+  it("only Calificar carries the gradingPending badge key", () => {
+    const withBadges = NAV_ITEMS.filter((item) => item.badgeKey !== undefined);
+
+    expect(withBadges.map((item) => [item.href, item.badgeKey])).toEqual([["/grading", "gradingPending"]]);
   });
 });

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Navigation config
-* Descripción: Typed main-navigation items of the AppShell. Every item points to an EXISTING route of the session route table (routes.config) and lists the roles that see it (a test asserts each route exists and admits those roles). v1.1 (T11a): "Mi grupo" (/my-group, students) and "Grupos" (/groups, teachers and admins). v1.2 (T0 learning): "Aprender" (/learn, every role; teachers and admins preview the student viewer) and "Contenido" (/content, teachers and admins); the legacy "Aprendizaje" (/teaching) entry stays until the legacy routes redirect (R1). v1.3 (S0 evaluations): the legacy evaluation items are replaced by "Evaluaciones" (/evaluations, every role), "Gestionar evaluaciones" (/evaluations/manage) and "Calificar" (/grading), both for teachers and admins. getNavItems filters by role; findActiveHref picks the longest matching item for the current Next pathname. Labels are plain Spanish because the i18next setup (src/i18n) is outside the new-code modules; TODO(i18n): move them to an i18next namespace. Depends on MUI icons and the session route table and entities.
-* Versión: 1.3
+* Descripción: Typed main-navigation items of the AppShell. Every item points to an EXISTING route of the session route table (routes.config) and lists the roles that see it (a test asserts each route exists and admits those roles). v1.1 (T11a): "Mi grupo" (/my-group, students) and "Grupos" (/groups, teachers and admins). v1.2 (T0 learning): "Aprender" (/learn, every role; teachers and admins preview the student viewer) and "Contenido" (/content, teachers and admins); the legacy "Aprendizaje" (/teaching) entry stays until the legacy routes redirect (R1). v1.3 (S0 evaluations): the legacy evaluation items are replaced by "Evaluaciones" (/evaluations, every role), "Gestionar evaluaciones" (/evaluations/manage) and "Calificar" (/grading), both for teachers and admins. getNavItems filters by role; findActiveHref picks the longest matching item for the current Next pathname. v1.4 (G1 grading): an item may name a `badgeKey` (nav-badges registry); "Calificar" shows the gradingPending count. Labels are plain Spanish because the i18next setup (src/i18n) is outside the new-code modules; TODO(i18n): move them to an i18next namespace. Depends on MUI icons and the session route table and entities.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -28,12 +28,15 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import type { SvgIconComponent } from "@mui/icons-material";
 import type { RoutePath } from "@shared/session/routes.config";
 import type { Role } from "@shared/session/session.entity";
+import type { NavBadgeKey } from "./nav-badges";
 
 export type NavItem = {
   href: RoutePath
   label: string
   icon: SvgIconComponent
   roles: readonly Role[]
+  // Count shown as a badge on the item, fed by a feature through the nav-badges registry.
+  badgeKey?: NavBadgeKey
 };
 
 const STUDENT: readonly Role[] = ["STUDENT"];
@@ -54,7 +57,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/groups", label: "Grupos", icon: GroupWorkIcon, roles: STAFF },
   { href: "/content", label: "Contenido", icon: LibraryBooksIcon, roles: STAFF },
   { href: "/evaluations/manage", label: "Gestionar evaluaciones", icon: EditNoteIcon, roles: STAFF },
-  { href: "/grading", label: "Calificar", icon: GradingIcon, roles: STAFF },
+  { href: "/grading", label: "Calificar", icon: GradingIcon, roles: STAFF, badgeKey: "gradingPending" },
   { href: "/panel/admin", label: "Administración", icon: AdminPanelSettingsIcon, roles: ADMIN },
   { href: "/panel/settings", label: "Configuración", icon: SettingsIcon, roles: ADMIN },
   { href: "/admin/search-analytics", label: "Analítica de búsqueda", icon: AnalyticsIcon, roles: ADMIN },

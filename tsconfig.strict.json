@@ -54,6 +54,7 @@
     "pages/evaluations/manage/index.tsx",
     "pages/evaluations/manage/new.tsx",
     "pages/evaluations/manage/[evaluationId]/edit.tsx",
-    "pages/evaluations/manage/[evaluationId]/assignments.tsx"
+    "pages/evaluations/manage/[evaluationId]/assignments.tsx",
+    "pages/grading/index.tsx"
   ]
 }

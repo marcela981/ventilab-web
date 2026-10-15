@@ -1,0 +1,65 @@
+/*
+* Funcionalidad: Grading styles
+* Descripción: Layout of the grading queue page: centered page column, filter bar, results card with a horizontally scrollable table, and the primary/secondary text lines of the table cells. Tokens only (var(--vl-*) / var(--mui-*)).
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-3);
+  align-items: center;
+}
+
+.filterField {
+  flex: 1 1 14rem;
+}
+
+.results {
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+  overflow: hidden;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.primary {
+  display: block;
+  font-weight: 500;
+  color: var(--vl-color-text);
+}
+
+.secondary {
+  display: block;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.filters :focus-visible,
+.results :focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}
