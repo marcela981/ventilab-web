@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Content editor error messages tests
-* Descripción: Unit tests of the Spanish error mapping of the content editor: the student-data 409 (archive instead) and other known codes, the 409 variants (duplicate slug or title, generic conflict), status fallbacks (400, 403, 404, 413, 415, 422, 429 with and without Retry-After, 5xx), timeout and network errors, and isStudentDataConflict. v1.1 (C3): prerequisite codes and isCircularDependency. Depends on vitest and the api-client errors.
-* Versión: 1.1 (C3)
+* Descripción: Unit tests of the Spanish error mapping of the content editor: the student-data 409 (archive instead) and other known codes, the 409 variants (duplicate slug or title, generic conflict), status fallbacks (400, 403, 404, 413, 415, 422, 429 with and without Retry-After, 5xx), timeout and network errors, and isStudentDataConflict. v1.1 (C3): prerequisite codes and isCircularDependency. v1.2 (C4): page block codes (invalid block, block or media not found, invalid block reorder). Depends on vitest and the api-client errors.
+* Versión: 1.2 (C4)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,6 +27,13 @@ describe("getContentErrorMessage", () => {
     expect(getContentErrorMessage(apiError(409, "sections.section_slug_already_exists"))).toMatch(/identificador/);
     expect(getContentErrorMessage(apiError(409, "levels.level_title_already_exists"))).toMatch(/título/);
     expect(getContentErrorMessage(apiError(400, "modules.invalid_module_reorder"))).toMatch(/orden/);
+  });
+
+  it("maps the page block codes", () => {
+    expect(getContentErrorMessage(apiError(400, "pages.invalid_page_block"))).toMatch(/bloque/);
+    expect(getContentErrorMessage(apiError(404, "pages.page_block_not_found"))).toMatch(/bloque/);
+    expect(getContentErrorMessage(apiError(400, "pages.page_media_not_found"))).toMatch(/archivo/);
+    expect(getContentErrorMessage(apiError(400, "pages.invalid_page_block_reorder"))).toMatch(/orden/);
   });
 
   it("falls back by status", () => {

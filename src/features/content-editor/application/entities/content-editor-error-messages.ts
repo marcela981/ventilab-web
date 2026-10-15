@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Content editor error messages
-* Descripción: Spanish message for any failure of a content editor request. Known backend codes first: curriculum.node_has_student_data (409 on delete of any node with student progress or notes: archive instead), duplicate slug/title (409), invalid reorder (400), not-found codes, lesson creation in an inactive module, invalid lesson content, module without level. Then fallbacks by status (400/422 invalid, 403, 404, 409, 413 too large, 415 unsupported type, 429 with Retry-After, 5xx), timeout, network and unknown. isStudentDataConflict tells the delete flow to offer "Archivar en su lugar". Depends on the api-client errors. v1.1 (C3): prerequisite codes (circular dependency of levels and modules, self prerequisite, missing prerequisite) and isCircularDependency, which tells the prerequisites editor to explain the cycle.
-* Versión: 1.1 (C3)
+* Descripción: Spanish message for any failure of a content editor request. Known backend codes first: curriculum.node_has_student_data (409 on delete of any node with student progress or notes: archive instead), duplicate slug/title (409), invalid reorder (400), not-found codes, lesson creation in an inactive module, invalid lesson content, module without level. Then fallbacks by status (400/422 invalid, 403, 404, 409, 413 too large, 415 unsupported type, 429 with Retry-After, 5xx), timeout, network and unknown. isStudentDataConflict tells the delete flow to offer "Archivar en su lugar". Depends on the api-client errors. v1.1 (C3): prerequisite codes (circular dependency of levels and modules, self prerequisite, missing prerequisite) and isCircularDependency, which tells the prerequisites editor to explain the cycle. v1.2 (C4): page block codes of the page editor (invalid block content, block or media not found, invalid block reorder).
+* Versión: 1.2 (C4)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -45,6 +45,10 @@ export const CONTENT_ERROR_MESSAGES = {
   "levels.prerequisite_level_not_found": "Uno de los niveles elegidos ya no existe. Actualiza la página.",
   "modules.prerequisite_module_not_found": "Uno de los módulos elegidos ya no existe. Actualiza la página.",
   "modules.invalid_module_prerequisites": "Uno de los módulos elegidos ya no existe. Actualiza la página.",
+  "pages.invalid_page_block": "Uno de los bloques no tiene un contenido válido. Revísalo e inténtalo de nuevo.",
+  "pages.page_block_not_found": "Uno de los bloques ya no existe. Actualiza la página.",
+  "pages.page_media_not_found": "El archivo de uno de los bloques ya no existe. Elige otro.",
+  "pages.invalid_page_block_reorder": REORDER_MESSAGE,
 } as const satisfies Record<string, string>;
 
 export const CONTENT_FALLBACK_MESSAGES = {
