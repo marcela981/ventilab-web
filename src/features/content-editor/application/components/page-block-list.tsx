@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: PageBlockList
-* Descripción: Ordered block list of the page editor. Each block is a card with a drag handle (@hello-pangea/dnd, same library as the content tree; reorder inside the page only), its type label and position, move up/down buttons (keyboard and screen reader alternative to dragging), duplicate and delete actions, the optional title (not for dividers), the type-specific BlockFields and the block validation message. Changes only touch the local draft; nothing is sent until the page is saved. Depends on @hello-pangea/dnd, MUI, @shared/design-system, @shared/lib, the page draft entity, BlockFields and the page editor CSS Module. v1.1 (C4 review): a drop on the same index no longer calls onMove.
-* Versión: 1.1 (C4)
+* Descripción: Ordered block list of the page editor. Each block is a card with a drag handle (@hello-pangea/dnd, same library as the content tree; reorder inside the page only), its type label and position, move up/down buttons (keyboard and screen reader alternative to dragging), duplicate and delete actions, the optional title (not for dividers), the type-specific BlockFields and the block validation message. Changes only touch the local draft; nothing is sent until the page is saved. Depends on @hello-pangea/dnd, MUI, @shared/design-system, @shared/lib, the page draft entity, BlockFields and the page editor CSS Module. v1.1 (C4 review): a drop on the same index no longer calls onMove. v1.2 (C5): passes the media upload controls to each block's fields.
+* Versión: 1.2 (C5)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,6 +22,7 @@ import { FormField } from "@shared/design-system/components/form-field";
 import { cx } from "@shared/lib/class-names";
 import { blockError, blockTypeLabel } from "../entities/page-draft.entity";
 import type { DraftBlock } from "../entities/page-draft.entity";
+import type { BlockMediaControls } from "../hooks/use-media-uploads";
 import type { BlockChange } from "../hooks/use-page-editor";
 import { BlockFields } from "./block-fields";
 import styles from "../../UI/page-editor.module.css";
@@ -44,6 +45,7 @@ export type PageBlockListProps = {
   onDuplicate: (key: string) => void
   onDelete: (block: DraftBlock) => void
   onChange: (key: string, change: BlockChange) => void
+  media?: BlockMediaControls | undefined
 };
 
 type BlockCardProps = Omit<PageBlockListProps, "blocks" | "onMove"> & {
@@ -53,7 +55,7 @@ type BlockCardProps = Omit<PageBlockListProps, "blocks" | "onMove"> & {
   onMove: (from: number, to: number) => void
 };
 
-function BlockCard({ block, index, count, onMove, onDuplicate, onDelete, onChange }: BlockCardProps) {
+function BlockCard({ block, index, count, onMove, onDuplicate, onDelete, onChange, media }: BlockCardProps) {
   // "bloque 2 (Ecuación)": unique per position for the action labels.
   const label = `bloque ${index + 1} (${blockTypeLabel(block.type)})`;
   const error = blockError(block);
@@ -97,7 +99,7 @@ function BlockCard({ block, index, count, onMove, onDuplicate, onDelete, onChang
                 onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(block.key, { title: event.target.value })}
               />
             )}
-            <BlockFields block={block} error={error} onContentChange={(content) => onChange(block.key, { content })} />
+            <BlockFields block={block} error={error} media={media} onContentChange={(content) => onChange(block.key, { content })} />
           </div>
         </li>
       )}

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: usePageEditor
-* Descripción: State of the page editor for one Page. Loads GET /api/pages/{id} through useApiQuery (content editor cache config) and keeps a local draft of its blocks only once the user edits (until then the draft is the server blocks). Exposes the block operations (add, duplicate, remove, move, change), the save plan against the server blocks (pending changes flag) and the first invalid block, and save(): applies the plan with savePageBlocks (one save at a time), then refreshes the page, the module print view and the lesson pages. On success the draft is dropped (the fresh server blocks become the draft) unless the user kept editing during the save. On failure the draft is kept with the ids of the blocks already created, so a retry only sends what is still pending, and the server blocks are refreshed so the next plan diffs against what was really saved. Depends on React, SWR, @shared/api-client, the page blocks service and mapper, the page draft entity and the content editor error messages. v1.1 (C4 review): every operation confirmed by the backend (deleted, updated, created ids, reorder) is recorded over the loaded snapshot and applied with applySavedOperations, so a retry after a partial failure never re-POSTs or re-DELETEs even when the refresh also fails; after a successful save the draft is only dropped when the refresh succeeded, otherwise the saved blocks stay visible with their new ids.
-* Versión: 1.1 (C4)
+* Descripción: State of the page editor for one Page. Loads GET /api/pages/{id} through useApiQuery (content editor cache config) and keeps a local draft of its blocks only once the user edits (until then the draft is the server blocks). Exposes the block operations (add, duplicate, remove, move, change), the save plan against the server blocks (pending changes flag) and the first invalid block, and save(): applies the plan with savePageBlocks (one save at a time), then refreshes the page, the module print view and the lesson pages. On success the draft is dropped (the fresh server blocks become the draft) unless the user kept editing during the save. On failure the draft is kept with the ids of the blocks already created, so a retry only sends what is still pending, and the server blocks are refreshed so the next plan diffs against what was really saved. Depends on React, SWR, @shared/api-client, the page blocks service and mapper, the page draft entity and the content editor error messages. v1.1 (C4 review): every operation confirmed by the backend (deleted, updated, created ids, reorder) is recorded over the loaded snapshot and applied with applySavedOperations, so a retry after a partial failure never re-POSTs or re-DELETEs even when the refresh also fails; after a successful save the draft is only dropped when the refresh succeeded, otherwise the saved blocks stay visible with their new ids. v1.2 (C5): attachMedia and detachMedia operations on the current draft block (applied to its latest state, not a snapshot from when the upload started). v1.3 (C5): attachMedia and detachMedia operations on the current draft block (applied to its latest state, not a snapshot from when the upload started).
+* Versión: 1.3 (C5)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,8 +21,10 @@ import type { SaveProgressListener } from "../../api/services/page-blocks.servic
 import { getContentErrorMessage } from "../entities/content-editor-error-messages";
 import {
   applySavedOperations,
+  attachMedia,
   blockError,
   createDraftBlock,
+  detachMedia,
   duplicateBlock,
   hasPendingChanges,
   moveBlock,
@@ -55,6 +57,8 @@ export type UsePageEditorResult = {
   remove: (key: string) => void
   move: (from: number, to: number) => void
   change: (key: string, change: BlockChange) => void
+  attachMedia: (key: string, mediaId: string, mediaUrl: string | null) => void
+  detachMedia: (key: string) => void
   save: () => Promise<PageSaveOutcome>
 };
 
@@ -216,6 +220,8 @@ export function usePageEditor(pageId: string): UsePageEditorResult {
     remove: (key) => update((current) => removeBlock(current, key)),
     move: (from, to) => update((current) => moveBlock(current, from, to)),
     change: (key, blockChange) => update((current) => replaceBlock(current, key, blockChange)),
+    attachMedia: (key, mediaId, mediaUrl) => update((current) => attachMedia(current, key, mediaId, mediaUrl)),
+    detachMedia: (key) => update((current) => detachMedia(current, key)),
     save,
   };
 }

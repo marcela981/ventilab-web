@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Page editor page tests
-* Descripción: Integration tests of PageEditorPage with msw over a mutable in-memory page: loads the blocks in order with the saved status, an equation edit marks "Cambios sin guardar" (beforeunload prevented, router guard registered and cancelling when the user stays) and saves only that block's content, add/duplicate/delete (with confirmation)/move are saved as DELETE, POST and one reorder with every id, the lazy Tiptap editor opens for a new text block, an invalid video URL blocks saving, and a failed save keeps the changes with the mapped error. Depends on vitest, Testing Library, msw, the content editor test helpers and the page editor page. v1.1 (C4 review): guard aborts with the string sentinel and silences its rejection, back/forward through beforePopState (declined restores the entry, confirmed is not asked twice), a rich text edit through the real Tiptap editor (exposed on its DOM node, jsdom cannot type into ProseMirror) marks unsaved changes and POSTs its Tiptap JSON, and a load error retries into the editor.
-* Versión: 1.1 (C4)
+* Descripción: Integration tests of PageEditorPage with msw over a mutable in-memory page: loads the blocks in order with the saved status, an equation edit marks "Cambios sin guardar" (beforeunload prevented, router guard registered and cancelling when the user stays) and saves only that block's content, add/duplicate/delete (with confirmation)/move are saved as DELETE, POST and one reorder with every id, the lazy Tiptap editor opens for a new text block, an invalid video URL blocks saving, and a failed save keeps the changes with the mapped error. Depends on vitest, Testing Library, msw, the content editor test helpers and the page editor page. v1.1 (C4 review): guard aborts with the string sentinel and silences its rejection, back/forward through beforePopState (declined restores the entry, confirmed is not asked twice), a rich text edit through the real Tiptap editor (exposed on its DOM node, jsdom cannot type into ProseMirror) marks unsaved changes and POSTs its Tiptap JSON, and a load error retries into the editor. v1.2 (C5): pop latch cleared when the navigation ends without routeChangeStart (hash-only pop); an image upload (client type validation first, then POST /api/media and the signed preview URL) makes the new block valid and saves it with its mediaId; Quitar archivo on media in use (409 media.media_in_use) keeps the file and shows the message.
+* Versión: 1.2 (C5)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -37,6 +37,20 @@ const router = vi.hoisted(() => ({
 }));
 
 vi.mock("next/router", () => ({ useRouter: () => router }));
+
+// msw cannot complete a jsdom XHR multipart upload (the request never resolves): the upload itself is
+// covered by the media service tests; the preview URL and delete calls still go through msw.
+const upload = vi.hoisted(() => ({ files: [] as File[] }));
+
+vi.mock("../../api/services/media.service", async(importActual) => ({
+  ...await importActual<typeof import("../../api/services/media.service")>(),
+  uploadMedia: (file: File, options?: { onProgress?: (fraction: number) => void }) => {
+    upload.files.push(file);
+    options?.onProgress?.(0.5);
+
+    return Promise.resolve("m1");
+  },
+}));
 
 // Generous waits: lazy chunks (Tiptap, KaTeX) and a slow machine.
 const LOAD = { timeout: 10_000 };
@@ -102,6 +116,7 @@ beforeEach(() => {
   ];
   router.handlers.clear();
   router.popHandler = null;
+  upload.files = [];
 
   server.use(
     http.get(apiUrl("/api/pages/p1"), () => HttpResponse.json(envelope(pageDto()))),
@@ -127,6 +142,13 @@ beforeEach(() => {
 
       return HttpResponse.json(envelope({ id }), { status: 201 });
     }),
+    http.get(apiUrl("/api/media/:mediaId/url"), ({ params }) => HttpResponse.json(envelope({
+      mediaId: params.mediaId,
+      url: `https://cdn.example.org/${String(params.mediaId)}.png`,
+      mimeType: "image/png",
+      kind: "IMAGE",
+      expiresAt: DATE,
+    }))),
     http.delete(apiUrl("/api/pages/p1/blocks/:blockId"), ({ params }) => {
       stored = stored.filter((block) => block.id !== params.blockId);
 
@@ -146,6 +168,20 @@ afterAll(() => {
 
 const writes = () => requests.filter((request) => request.method !== "GET").map(({ method, path, body }) => ({ method, path, body }));
 const saveButton = () => screen.getByRole("button", { name: "Guardar cambios" });
+
+async function addImageBlock(): Promise<HTMLElement> {
+  fireEvent.click(screen.getByRole("button", { name: "Agregar bloque" }));
+  fireEvent.click(screen.getByRole("menuitem", { name: "Imagen" }));
+  await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument(), LOAD);
+
+  return screen.getByRole("listitem", { name: "bloque 4 (Imagen)" });
+}
+
+function selectFile(block: HTMLElement, file: File) {
+  const input = within(block).getByLabelText(/archivo/i, { selector: "input[type=file]" });
+
+  fireEvent.change(input, { target: { files: [file] } });
+}
 
 async function renderEditor() {
   renderWithSession(<PageEditorPage pageId="p1" />);
@@ -211,6 +247,24 @@ describe("PageEditorPage", { timeout: 30_000 }, () => {
     await waitFor(() => expect(screen.getByText("Todos los cambios están guardados")).toBeInTheDocument(), LOAD);
     expect(router.handlers.has("routeChangeStart")).toBe(false);
     expect((router.popHandler as PopHandler)()).toBe(true);
+  });
+
+  it("forgets a confirmed back/forward that ended without a route change", async() => {
+    await renderEditor();
+
+    fireEvent.change(screen.getByLabelText("Ecuación (LaTeX)"), { target: { value: "P = F \cdot R" } });
+
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    // A hash-only pop: Next emits hashChangeStart, never routeChangeStart.
+    expect((router.popHandler as PopHandler)()).toBe(true);
+    (router.handlers.get("hashChangeStart") as RouteHandler | undefined)?.("/content/pages/p1#b2");
+
+    confirm.mockClear();
+    confirm.mockReturnValue(false);
+
+    expect(() => (router.handlers.get("routeChangeStart") as RouteHandler)("/content")).toThrow(NAVIGATION_CANCELLED);
+    expect(confirm).toHaveBeenCalledTimes(1);
   });
 
   it("saves added, duplicated, deleted and moved blocks with one reorder", async() => {
@@ -289,6 +343,49 @@ describe("PageEditorPage", { timeout: 30_000 }, () => {
     fireEvent.click(screen.getByRole("button", { name: /reintentar/i }));
 
     expect(await screen.findByRole("heading", { name: "Presiones en la vía aérea" }, LOAD)).toBeInTheDocument();
+  });
+
+  it("uploads an image so the new block becomes valid and is saved with its media", async() => {
+    await renderEditor();
+    const image = await addImageBlock();
+
+    expect(within(image).getByText("Falta el archivo de imagen.")).toBeInTheDocument();
+    expect(saveButton()).toBeDisabled();
+
+    // Client validation: a PDF is not an image and is never sent.
+    selectFile(image, new File(["%PDF"], "guia.pdf", { type: "application/pdf" }));
+    expect(within(image).getByRole("alert")).toHaveTextContent("Formato no permitido. Usa PNG, JPEG, WebP o GIF.");
+    expect(writes()).toEqual([]);
+
+    selectFile(image, new File(["png"], "curva.png", { type: "image/png" }));
+
+    expect(await within(image).findByRole("button", { name: "Quitar archivo" }, LOAD)).toBeInTheDocument();
+    // alt is still empty, so the preview image has no img role.
+    expect(image.querySelector("img")).toHaveAttribute("src", "https://cdn.example.org/m1.png");
+    expect(within(image).queryByText("Falta el archivo de imagen.")).not.toBeInTheDocument();
+
+    fireEvent.click(saveButton());
+
+    await screen.findByText("Página guardada.", {}, LOAD);
+    expect(upload.files.map((file) => file.name)).toEqual(["curva.png"]);
+    expect(writes()).toEqual([
+      { method: "POST", path: "/api/pages/p1/blocks", body: { type: "IMAGE", content: { caption: "", alt: "" }, mediaId: "m1" } },
+    ]);
+  });
+
+  it("keeps the file and explains when the uploaded media is in use", async() => {
+    server.use(http.delete(apiUrl("/api/media/m1"), () => errorResponse("media.media_in_use", 409)));
+    await renderEditor();
+    const image = await addImageBlock();
+
+    selectFile(image, new File(["png"], "curva.png", { type: "image/png" }));
+    fireEvent.click(await within(image).findByRole("button", { name: "Quitar archivo" }, LOAD));
+
+    expect(await within(image).findByRole("alert", {}, LOAD)).toHaveTextContent("Este archivo ya se usa en el contenido guardado de una página");
+    expect(writes()).toContainEqual({ method: "DELETE", path: "/api/media/m1", body: null });
+    expect(within(image).getByRole("button", { name: "Reemplazar archivo" })).toBeInTheDocument();
+    // alt is still empty, so the preview image has no img role.
+    expect(image.querySelector("img")).toHaveAttribute("src", "https://cdn.example.org/m1.png");
   });
 
   it("blocks saving while a video link is not YouTube or Vimeo", async() => {

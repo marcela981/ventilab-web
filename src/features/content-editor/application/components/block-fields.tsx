@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: BlockFields
-* Descripción: Type-specific fields of one block in the page editor. Rich text types: a Tiptap document opens the lazy RichTextEditor (React.lazy + retryImport behind a skeleton and an error boundary, so Tiptap is a separate chunk); stored Markdown or HTML is edited as source with a live preview; any other shape (e.g. legacy quiz data) is preserved untouched. Equation: LaTeX source, display toggle and a live KaTeX preview. Video: YouTube/Vimeo URL and caption with the embed preview once the link is valid (an uploaded video keeps its media). Image and file: caption (and alt text) plus the upload slot reserved for C5, with the current media preview. Code: language and source. Divider: nothing to edit. Unknown types are kept as they are. Previews reuse the shared ContentBlock renderer. Depends on React, MUI, @shared/design-system, @shared/lib, @shared/rich-content, the page draft entity and the page editor CSS Module.
-* Versión: 1.0 (C4)
+* Descripción: Type-specific fields of one block in the page editor. Rich text types: a Tiptap document opens the lazy RichTextEditor (React.lazy + retryImport behind a skeleton and an error boundary, so Tiptap is a separate chunk); stored Markdown or HTML is edited as source with a live preview; any other shape (e.g. legacy quiz data) is preserved untouched. Equation: LaTeX source, display toggle and a live KaTeX preview. Video: YouTube/Vimeo URL and caption with the embed preview once the link is valid (an uploaded video keeps its media). Image and file: caption (and alt text) plus the upload slot reserved for C5, with the current media preview. Code: language and source. Divider: nothing to edit. Unknown types are kept as they are. Previews reuse the shared ContentBlock renderer. Depends on React, MUI, @shared/design-system, @shared/lib, @shared/rich-content, the page draft entity and the page editor CSS Module. v1.1 (C5): media upload (MediaUploadField) in IMAGE and FILE blocks replacing the C5 slot, and in VIDEO blocks as the alternative below the link (an uploaded video shows replace/remove instead of the link); previews of uploaded media through the signed URL, with a note when it is unavailable.
+* Versión: 1.1 (C5)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,8 +21,11 @@ import { retryImport } from "@shared/lib/retry-import";
 import { ContentBlock } from "@shared/rich-content/blocks/content-blocks";
 import { isRecord, isRichTextBlockType, readString } from "@shared/rich-content/blocks/content-block.types";
 import { parseVideoEmbed } from "@shared/rich-content/blocks/video-source";
+import { mediaKindOf } from "../entities/media-upload.entity";
 import { richTextFormat } from "../entities/page-draft.entity";
 import type { BlockContent, DraftBlock } from "../entities/page-draft.entity";
+import type { BlockMediaControls } from "../hooks/use-media-uploads";
+import { MediaUploadField } from "./media-upload-field";
 import styles from "../../UI/page-editor.module.css";
 
 const RichTextEditor = lazy(() =>
@@ -41,11 +44,11 @@ const COPY = {
   latex: "Ecuación (LaTeX)",
   display: "Mostrar como bloque centrado",
   videoUrl: "Enlace de YouTube o Vimeo",
-  uploadedVideo: "Este video es un archivo subido; se conserva sin cambios.",
+  videoUpload: "O sube un archivo de video en lugar del enlace:",
   caption: "Leyenda (opcional)",
   alt: "Texto alternativo",
-  uploadSlot: "La subida de archivos estará disponible próximamente.",
   noMedia: "Todavía no hay un archivo asociado.",
+  noPreview: "Archivo subido; la vista previa no está disponible ahora.",
   language: "Lenguaje (opcional)",
   code: "Código",
   divider: "Separador horizontal entre bloques.",
@@ -56,6 +59,8 @@ export type BlockFieldsProps = {
   block: DraftBlock
   error: string | null
   onContentChange: (content: BlockContent) => void
+  // Absent where uploads are not wired (the block is then shown without the upload control).
+  media?: BlockMediaControls | undefined
 };
 
 function textOf(content: BlockContent, field: string): string {
@@ -73,7 +78,35 @@ function Preview({ block }: { block: DraftBlock }) {
   );
 }
 
-type FieldsProps = { block: DraftBlock, error: string | null, set: (field: string, value: unknown) => void };
+type FieldsProps = { block: DraftBlock, error: string | null, set: (field: string, value: unknown) => void, media?: BlockMediaControls | undefined };
+
+function UploadControl({ block, error, media }: Pick<FieldsProps, "block" | "error" | "media">) {
+  const kind = mediaKindOf(block.type);
+
+  if (!kind || !media) {
+    return error ? <p className={cx(styles.fieldError)}>{error}</p> : null;
+  }
+
+  return (
+    <MediaUploadField
+      kind={kind}
+      hasMedia={block.mediaId !== null}
+      state={media.stateOf(block.key)}
+      validationError={error}
+      onSelect={(file) => void media.upload(block, file)}
+      onCancel={() => media.cancel(block.key)}
+      onRemove={() => void media.remove(block)}
+    />
+  );
+}
+
+function MediaPreview({ block }: { block: DraftBlock }) {
+  if (block.mediaUrl) {
+    return <Preview block={block} />;
+  }
+
+  return <p className={cx(styles.note)}>{block.mediaId === null ? COPY.noMedia : COPY.noPreview}</p>;
+}
 
 function RichTextFields({ block, set }: FieldsProps) {
   const format = richTextFormat(block.content);
@@ -145,13 +178,13 @@ function CaptionField({ block, set }: Pick<FieldsProps, "block" | "set">) {
   );
 }
 
-function VideoFields({ block, error, set }: FieldsProps) {
+function VideoFields({ block, error, set, media }: FieldsProps) {
   if (block.mediaId !== null && readString(block.content, "url") === null) {
     return (
       <>
-        <p className={cx(styles.note)}>{COPY.uploadedVideo}</p>
+        <UploadControl block={block} error={null} media={media} />
         <CaptionField block={block} set={set} />
-        <Preview block={block} />
+        <MediaPreview block={block} />
       </>
     );
   }
@@ -167,20 +200,22 @@ function VideoFields({ block, error, set }: FieldsProps) {
         error={url.trim() ? (error ?? undefined) : undefined}
         onChange={(event: ChangeEvent<HTMLInputElement>) => set("url", event.target.value)}
       />
+      {media ? (
+        <>
+          <p className={cx(styles.note)}>{COPY.videoUpload}</p>
+          <UploadControl block={block} error={null} media={media} />
+        </>
+      ) : null}
       <CaptionField block={block} set={set} />
       {parseVideoEmbed(url) ? <Preview block={block} /> : null}
     </>
   );
 }
 
-// TODO(C5): replace the upload slot with the media upload (progress, client validation, 413/415).
-function MediaFields({ block, error, set }: FieldsProps) {
+function MediaFields({ block, error, set, media }: FieldsProps) {
   return (
     <>
-      <div className={cx(styles.uploadSlot)} data-slot="media-upload">
-        <p className={cx(styles.note)}>{COPY.uploadSlot}</p>
-        {error ? <p className={cx(styles.fieldError)}>{error}</p> : null}
-      </div>
+      <UploadControl block={block} error={error} media={media} />
       <CaptionField block={block} set={set} />
       {block.type === "IMAGE" ? (
         <FormField
@@ -189,7 +224,7 @@ function MediaFields({ block, error, set }: FieldsProps) {
           onChange={(event: ChangeEvent<HTMLInputElement>) => set("alt", event.target.value)}
         />
       ) : null}
-      {block.mediaUrl ? <Preview block={block} /> : <p className={cx(styles.note)}>{COPY.noMedia}</p>}
+      <MediaPreview block={block} />
     </>
   );
 }
@@ -214,9 +249,9 @@ function CodeFields({ block, error, set }: FieldsProps) {
   );
 }
 
-export function BlockFields({ block, error, onContentChange }: BlockFieldsProps) {
+export function BlockFields({ block, error, onContentChange, media }: BlockFieldsProps) {
   const set = (field: string, value: unknown) => onContentChange({ ...block.content, [field]: value });
-  const props: FieldsProps = { block, error, set };
+  const props: FieldsProps = { block, error, set, media };
 
   if (isRichTextBlockType(block.type)) {
     return <RichTextFields {...props} />;

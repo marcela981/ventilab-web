@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Content editor error messages tests
-* Descripción: Unit tests of the Spanish error mapping of the content editor: the student-data 409 (archive instead) and other known codes, the 409 variants (duplicate slug or title, generic conflict), status fallbacks (400, 403, 404, 413, 415, 422, 429 with and without Retry-After, 5xx), timeout and network errors, and isStudentDataConflict. v1.1 (C3): prerequisite codes and isCircularDependency. v1.2 (C4): page block codes (invalid block, block or media not found, invalid block reorder). Depends on vitest and the api-client errors.
-* Versión: 1.2 (C4)
+* Descripción: Unit tests of the Spanish error mapping of the content editor: the student-data 409 (archive instead) and other known codes, the 409 variants (duplicate slug or title, generic conflict), status fallbacks (400, 403, 404, 413, 415, 422, 429 with and without Retry-After, 5xx), timeout and network errors, and isStudentDataConflict. v1.1 (C3): prerequisite codes and isCircularDependency. v1.2 (C4): page block codes (invalid block, block or media not found, invalid block reorder). Depends on vitest and the api-client errors. v1.3 (C5): media codes (in use, too large, unsupported type, file required, not found, storage unavailable), bare 413/415 and isMediaInUse.
+* Versión: 1.3 (C5)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,6 +16,7 @@ import {
   CONTENT_FALLBACK_MESSAGES,
   getContentErrorMessage,
   isCircularDependency,
+  isMediaInUse,
   isStudentDataConflict,
 } from "./content-editor-error-messages";
 
@@ -72,5 +73,26 @@ describe("isCircularDependency", () => {
     expect(isCircularDependency(apiError(500, "levels.level_circular_dependency"))).toBe(false);
     expect(getContentErrorMessage(apiError(409, "modules.module_circular_dependency"))).toMatch(/ciclo/);
     expect(getContentErrorMessage(apiError(400, "levels.level_self_prerequisite"))).toMatch(/sí mismo/);
+  });
+});
+
+describe("media errors", () => {
+  it("maps the media codes to specific messages", () => {
+    expect(getContentErrorMessage(apiError(409, "media.media_in_use"))).toBe(CONTENT_ERROR_MESSAGES["media.media_in_use"]);
+    expect(getContentErrorMessage(apiError(413, "media.media_too_large"))).toMatch(/demasiado grande/);
+    expect(getContentErrorMessage(apiError(415, "media.unsupported_media_type"))).toMatch(/PNG/);
+    expect(getContentErrorMessage(apiError(400, "media.file_required"))).toMatch(/vacío/);
+    expect(getContentErrorMessage(apiError(404, "media.media_not_found"))).toMatch(/ya no existe/);
+    expect(getContentErrorMessage(apiError(503, "media.storage_unavailable"))).toMatch(/almacenamiento/);
+  });
+
+  it("maps a bare 413 or 415 to the upload fallbacks", () => {
+    expect(getContentErrorMessage(apiError(413))).toBe(CONTENT_FALLBACK_MESSAGES.tooLarge);
+    expect(getContentErrorMessage(apiError(415))).toBe(CONTENT_FALLBACK_MESSAGES.unsupportedType);
+  });
+
+  it("recognizes the media in use conflict", () => {
+    expect(isMediaInUse(apiError(409, "media.media_in_use"))).toBe(true);
+    expect(isMediaInUse(apiError(409, "pages.page_slug_already_exists"))).toBe(false);
   });
 });

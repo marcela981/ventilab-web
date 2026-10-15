@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Page draft entity
-* Descripción: Local draft of the blocks of one Page in the page editor and its pure logic. A DraftBlock keeps a stable local key (the server id for loaded blocks, `new-N` for added ones) and its server id (null until created). Operations: createDraftBlock (default content per type, matching the backend block content shapes: {doc} rich text, {latex, display}, {url}, {caption, alt}, {code, language}, {}), duplicateBlock (copy right after the original, no id), moveBlock, removeBlock, replaceBlock. Validation mirrors the backend normalizeBlock rules (equation LaTeX required, video = exactly one of a YouTube/Vimeo https URL or a media id, code language pattern, image/file need a media id). planPageSave diffs the draft against the server blocks: deletes, updates with only the changed fields (title, content, mediaId), creates (the backend appends them) and a full reorder only when the final order differs from what the backend leaves after appending. toBlockPayload builds the request body (empty video URL / code language omitted; rich text never sends media). Depends on @shared/rich-content block types and the video source parser. v1.1 (C4 review): SavedOperations and applySavedOperations: the confirmed deletes, updates, creates and reorder of a save applied over the loaded server blocks, so a retry diffs against what was really saved even when the refresh failed.
-* Versión: 1.1 (C4)
+* Descripción: Local draft of the blocks of one Page in the page editor and its pure logic. A DraftBlock keeps a stable local key (the server id for loaded blocks, `new-N` for added ones) and its server id (null until created). Operations: createDraftBlock (default content per type, matching the backend block content shapes: {doc} rich text, {latex, display}, {url}, {caption, alt}, {code, language}, {}), duplicateBlock (copy right after the original, no id), moveBlock, removeBlock, replaceBlock. Validation mirrors the backend normalizeBlock rules (equation LaTeX required, video = exactly one of a YouTube/Vimeo https URL or a media id, code language pattern, image/file need a media id). planPageSave diffs the draft against the server blocks: deletes, updates with only the changed fields (title, content, mediaId), creates (the backend appends them) and a full reorder only when the final order differs from what the backend leaves after appending. toBlockPayload builds the request body (empty video URL / code language omitted; rich text never sends media). Depends on @shared/rich-content block types and the video source parser. v1.1 (C4 review): SavedOperations and applySavedOperations: the confirmed deletes, updates, creates and reorder of a save applied over the loaded server blocks, so a retry diffs against what was really saved even when the refresh failed. v1.2 (C5): attachMedia (uploaded file id and preview URL; a video drops its link so exactly one of url or mediaId remains) and detachMedia (a video asks for a link again).
+* Versión: 1.2 (C5)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -146,6 +146,36 @@ export function removeBlock(blocks: readonly DraftBlock[], key: string): DraftBl
 
 export function replaceBlock(blocks: readonly DraftBlock[], key: string, change: Partial<Pick<DraftBlock, "title" | "content" | "mediaId">>): DraftBlock[] {
   return blocks.map((block) => (block.key === key ? { ...block, ...change } : block));
+}
+
+// An uploaded file replaces a video link: the backend accepts exactly one of url or mediaId.
+export function attachMedia(blocks: readonly DraftBlock[], key: string, mediaId: string, mediaUrl: string | null): DraftBlock[] {
+  return blocks.map((block) => {
+    if (block.key !== key) {
+      return block;
+    }
+
+    const content = { ...block.content };
+
+    if (block.type === "VIDEO") {
+      delete content.url;
+    }
+
+    return { ...block, content, mediaId, mediaUrl };
+  });
+}
+
+// Without its file a video goes back to asking for a link.
+export function detachMedia(blocks: readonly DraftBlock[], key: string): DraftBlock[] {
+  return blocks.map((block) => {
+    if (block.key !== key) {
+      return block;
+    }
+
+    const content = block.type === "VIDEO" ? { ...block.content, url: "" } : block.content;
+
+    return { ...block, content, mediaId: null, mediaUrl: null };
+  });
 }
 
 export function richTextFormat(content: BlockContent): RichTextFormat | null {

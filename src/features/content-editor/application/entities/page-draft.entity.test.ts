@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Page draft entity tests
-* Descripción: Pure logic of the page editor draft: new block defaults, duplicate (copy right after, no server id), move and remove, per-block validation (equation, video YouTube/Vimeo URL, code language, image/file media), the save plan (deletes, changed-field updates, creates, reorder only when the final order differs from what the backend leaves after appending) and the backend payloads (empty video URL and code language omitted). Depends on vitest and the page draft entity. v1.1 (C4 review): applySavedOperations over a stale snapshot (deletes, updates, appended creates, reorder) leaves nothing pending.
-* Versión: 1.1 (C4)
+* Descripción: Pure logic of the page editor draft: new block defaults, duplicate (copy right after, no server id), move and remove, per-block validation (equation, video YouTube/Vimeo URL, code language, image/file media), the save plan (deletes, changed-field updates, creates, reorder only when the final order differs from what the backend leaves after appending) and the backend payloads (empty video URL and code language omitted). Depends on vitest and the page draft entity. v1.1 (C4 review): applySavedOperations over a stale snapshot (deletes, updates, appended creates, reorder) leaves nothing pending. v1.2 (C5): attachMedia and detachMedia (video keeps exactly one source).
+* Versión: 1.2 (C5)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,8 +12,10 @@
 import { describe, expect, it } from "vitest";
 import {
   applySavedOperations,
+  attachMedia,
   blockError,
   createDraftBlock,
+  detachMedia,
   duplicateBlock,
   hasPendingChanges,
   moveBlock,
@@ -167,5 +169,28 @@ describe("applySavedOperations", () => {
     const draft = [SERVER[1] as DraftBlock, SERVER[2] as DraftBlock, { ...created, key: "new-1" }];
 
     expect(hasPendingChanges(planPageSave(server, draft))).toBe(false);
+  });
+});
+
+describe("media of a block", () => {
+  it("attaches an uploaded file, dropping the video link so only one source remains", () => {
+    const video = { ...createDraftBlock("VIDEO", "v"), content: { url: "https://youtu.be/x", caption: "Maniobra" } };
+    const [attached] = attachMedia([video], "v", "m1", "https://cdn.example.org/m1.mp4");
+
+    expect(attached).toMatchObject({ mediaId: "m1", mediaUrl: "https://cdn.example.org/m1.mp4", content: { caption: "Maniobra" } });
+    expect(attached?.content).not.toHaveProperty("url");
+    expect(blockError(attached as DraftBlock)).toBeNull();
+    expect(toBlockPayload(attached as DraftBlock)).toEqual({ type: "VIDEO", content: { caption: "Maniobra" }, mediaId: "m1" });
+  });
+
+  it("detaches the file; a video asks for a link again", () => {
+    const image = { ...createDraftBlock("IMAGE", "i"), mediaId: "m2", mediaUrl: "https://cdn.example.org/m2.png" };
+    const video = { ...createDraftBlock("VIDEO", "v"), content: { caption: "" }, mediaId: "m3" };
+    const [plain, linkless] = detachMedia(detachMedia([image, video], "i"), "v");
+
+    expect(plain).toMatchObject({ mediaId: null, mediaUrl: null });
+    expect(blockError(plain as DraftBlock)).toBe("Falta el archivo de imagen.");
+    expect(linkless?.content).toEqual({ caption: "", url: "" });
+    expect(blockError(linkless as DraftBlock)).toBe("Pega el enlace de un video de YouTube o Vimeo.");
   });
 });

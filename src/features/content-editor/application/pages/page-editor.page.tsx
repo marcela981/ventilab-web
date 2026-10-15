@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: PageEditorPage
-* Descripción: Page editor of the content editor (/content/pages/[pageId], staff only). Loads the Page and its blocks (usePageEditor), lists them in a local draft (PageBlockList: drag and drop or up/down reorder, duplicate, delete with confirmation, type-specific fields: lazy Tiptap rich text, LaTeX with KaTeX live preview, YouTube/Vimeo video with preview, image/file shells for C5, code, divider), adds blocks from the "Agregar bloque" menu and saves explicitly ("Guardar cambios": deletes, updates, creates, reorder). Shows a "Cambios sin guardar" status, disables saving while a block is invalid (and says which), maps save failures to the content editor error messages and warns before leaving with pending changes (useUnsavedChangesGuard: router and beforeunload). Depends on React, MUI, next/link, @shared/design-system, @shared/lib, the page editor hooks and components, the content tree status badge and the page editor CSS Module.
-* Versión: 1.0 (C4)
+* Descripción: Page editor of the content editor (/content/pages/[pageId], staff only). Loads the Page and its blocks (usePageEditor), lists them in a local draft (PageBlockList: drag and drop or up/down reorder, duplicate, delete with confirmation, type-specific fields: lazy Tiptap rich text, LaTeX with KaTeX live preview, YouTube/Vimeo video with preview, image/file/video uploads, code, divider), adds blocks from the "Agregar bloque" menu and saves explicitly ("Guardar cambios": deletes, updates, creates, reorder). Shows a "Cambios sin guardar" status, disables saving while a block is invalid (and says which), maps save failures to the content editor error messages and warns before leaving with pending changes (useUnsavedChangesGuard: router and beforeunload). Depends on React, MUI, next/link, @shared/design-system, @shared/lib, the page editor hooks and components, the content tree status badge and the page editor CSS Module. v1.1 (C5): media uploads (useMediaUploads) wired into the block list; deleting a block aborts its upload and a successful save marks the session uploads as saved.
+* Versión: 1.1 (C5)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -29,6 +29,7 @@ import { cx } from "@shared/lib/class-names";
 import { getContentErrorMessage } from "../entities/content-editor-error-messages";
 import { ADDABLE_BLOCK_TYPES, blockTypeLabel } from "../entities/page-draft.entity";
 import type { DraftBlock } from "../entities/page-draft.entity";
+import { useMediaUploads } from "../hooks/use-media-uploads";
 import { usePageEditor } from "../hooks/use-page-editor";
 import { useUnsavedChangesGuard } from "../hooks/use-unsaved-changes-guard";
 import { StatusBadge } from "../components/node-actions-menu";
@@ -64,6 +65,7 @@ export type PageEditorPageProps = {
 export function PageEditorPage({ pageId }: PageEditorPageProps) {
   const editor = usePageEditor(pageId);
   const { page, blocks, dirty, invalidKey, saving } = editor;
+  const media = useMediaUploads({ blocks, attachMedia: editor.attachMedia, detachMedia: editor.detachMedia });
   const toast = useToast();
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DraftBlock | null>(null);
@@ -79,6 +81,8 @@ export function PageEditorPage({ pageId }: PageEditorPageProps) {
     const outcome = await editor.save();
 
     if (outcome.status === "success") {
+      // The saved page now references its uploads: they are no longer this session's to delete.
+      media.markSaved();
       toast.success(COPY.saved);
     } else if (outcome.status === "error") {
       setSaveError(outcome.message);
@@ -87,6 +91,7 @@ export function PageEditorPage({ pageId }: PageEditorPageProps) {
 
   const confirmDelete = () => {
     if (deleteTarget) {
+      media.cancel(deleteTarget.key);
       editor.remove(deleteTarget.key);
       setDeleteTarget(null);
     }
@@ -150,6 +155,7 @@ export function PageEditorPage({ pageId }: PageEditorPageProps) {
           blocks={blocks}
           onMove={editor.move}
           onDuplicate={editor.duplicate}
+          media={media}
           onDelete={setDeleteTarget}
           onChange={editor.change}
         />
