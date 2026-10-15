@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: PageEditorPage
-* Descripción: Page editor of the content editor (/content/pages/[pageId], staff only). Loads the Page and its blocks (usePageEditor), lists them in a local draft (PageBlockList: drag and drop or up/down reorder, duplicate, delete with confirmation, type-specific fields: lazy Tiptap rich text, LaTeX with KaTeX live preview, YouTube/Vimeo video with preview, image/file/video uploads, code, divider), adds blocks from the "Agregar bloque" menu and saves explicitly ("Guardar cambios": deletes, updates, creates, reorder). Shows a "Cambios sin guardar" status, disables saving while a block is invalid (and says which), maps save failures to the content editor error messages and warns before leaving with pending changes (useUnsavedChangesGuard: router and beforeunload). Depends on React, MUI, next/link, @shared/design-system, @shared/lib, the page editor hooks and components, the content tree status badge and the page editor CSS Module. v1.1 (C5): media uploads (useMediaUploads) wired into the block list; deleting a block aborts its upload and a successful save marks the session uploads as saved.
-* Versión: 1.1 (C5)
+* Descripción: Page editor of the content editor (/content/pages/[pageId], staff only). Loads the Page and its blocks (usePageEditor), lists them in a local draft (PageBlockList: drag and drop or up/down reorder, duplicate, delete with confirmation, type-specific fields: lazy Tiptap rich text, LaTeX with KaTeX live preview, YouTube/Vimeo video with preview, image/file/video uploads, code, divider), adds blocks from the "Agregar bloque" menu and saves explicitly ("Guardar cambios": deletes, updates, creates, reorder). Shows a "Cambios sin guardar" status, disables saving while a block is invalid (and says which), maps save failures to the content editor error messages and warns before leaving with pending changes (useUnsavedChangesGuard: router and beforeunload). Depends on React, MUI, next/link, @shared/design-system, @shared/lib, the page editor hooks and components, the content tree status badge and the page editor CSS Module. v1.1 (C5): media uploads (useMediaUploads) wired into the block list; deleting a block aborts its upload and a successful save marks the session uploads as saved. v1.2 (C6): "Editar" / "Vista previa como estudiante" toggle rendering the current draft with the learning viewer's page body (StudentPreview); deleting a block releases its media (aborts the upload, deletes a finished session upload, drops its state) using the block's current state, not the dialog snapshot.
+* Versión: 1.2 (C6)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,6 +17,8 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Link from "next/link";
 import { useState } from "react";
 import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
@@ -34,6 +36,7 @@ import { usePageEditor } from "../hooks/use-page-editor";
 import { useUnsavedChangesGuard } from "../hooks/use-unsaved-changes-guard";
 import { StatusBadge } from "../components/node-actions-menu";
 import { PageBlockList } from "../components/page-block-list";
+import { StudentPreview } from "../components/student-preview";
 import styles from "../../UI/page-editor.module.css";
 
 // TODO(i18n): move to a content-editor namespace in src/i18n.
@@ -54,6 +57,9 @@ const COPY = {
   deleteDescription: (label: string) => `Se quitará el bloque «${label}» de la página al guardar los cambios.`,
   deleteConfirm: "Eliminar",
   leave: "Hay cambios sin guardar en esta página. ¿Salir de todos modos?",
+  mode: "Modo del editor",
+  edit: "Editar",
+  preview: "Vista previa como estudiante",
 } as const;
 
 const CONTENT_URL = "/content";
@@ -70,6 +76,7 @@ export function PageEditorPage({ pageId }: PageEditorPageProps) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DraftBlock | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [previewing, setPreviewing] = useState(false);
 
   useUnsavedChangesGuard(dirty, COPY.leave);
 
@@ -91,7 +98,10 @@ export function PageEditorPage({ pageId }: PageEditorPageProps) {
 
   const confirmDelete = () => {
     if (deleteTarget) {
-      media.cancel(deleteTarget.key);
+      // The dialog keeps a snapshot: an upload may have attached its media since it opened.
+      const current = blocks?.find((block) => block.key === deleteTarget.key) ?? deleteTarget;
+
+      void media.releaseBlock(current);
       editor.remove(deleteTarget.key);
       setDeleteTarget(null);
     }
@@ -150,7 +160,23 @@ export function PageEditorPage({ pageId }: PageEditorPageProps) {
           </MenuItem>
         ))}
       </Menu>
-      {blocks.length === 0 ? <EmptyState icon={<ArticleIcon />} title={COPY.empty} description={COPY.emptyDescription} /> : (
+      <ToggleButtonGroup
+        exclusive
+        size="small"
+        value={previewing ? "preview" : "edit"}
+        aria-label={COPY.mode}
+        className={cx(styles.modeToggle)}
+        onChange={(_event, value: string | null) => {
+          if (value !== null) {
+            setPreviewing(value === "preview");
+          }
+        }}
+      >
+        <ToggleButton value="edit">{COPY.edit}</ToggleButton>
+        <ToggleButton value="preview">{COPY.preview}</ToggleButton>
+      </ToggleButtonGroup>
+      {previewing ? <StudentPreview pageId={page.id} title={page.title} blocks={blocks} /> : null}
+      {previewing ? null : blocks.length === 0 ? <EmptyState icon={<ArticleIcon />} title={COPY.empty} description={COPY.emptyDescription} /> : (
         <PageBlockList
           blocks={blocks}
           onMove={editor.move}

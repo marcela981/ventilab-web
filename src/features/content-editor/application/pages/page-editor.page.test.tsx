@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Page editor page tests
-* Descripción: Integration tests of PageEditorPage with msw over a mutable in-memory page: loads the blocks in order with the saved status, an equation edit marks "Cambios sin guardar" (beforeunload prevented, router guard registered and cancelling when the user stays) and saves only that block's content, add/duplicate/delete (with confirmation)/move are saved as DELETE, POST and one reorder with every id, the lazy Tiptap editor opens for a new text block, an invalid video URL blocks saving, and a failed save keeps the changes with the mapped error. Depends on vitest, Testing Library, msw, the content editor test helpers and the page editor page. v1.1 (C4 review): guard aborts with the string sentinel and silences its rejection, back/forward through beforePopState (declined restores the entry, confirmed is not asked twice), a rich text edit through the real Tiptap editor (exposed on its DOM node, jsdom cannot type into ProseMirror) marks unsaved changes and POSTs its Tiptap JSON, and a load error retries into the editor. v1.2 (C5): pop latch cleared when the navigation ends without routeChangeStart (hash-only pop); an image upload (client type validation first, then POST /api/media and the signed preview URL) makes the new block valid and saves it with its mediaId; Quitar archivo on media in use (409 media.media_in_use) keeps the file and shows the message.
-* Versión: 1.2 (C5)
+* Descripción: Integration tests of PageEditorPage with msw over a mutable in-memory page: loads the blocks in order with the saved status, an equation edit marks "Cambios sin guardar" (beforeunload prevented, router guard registered and cancelling when the user stays) and saves only that block's content, add/duplicate/delete (with confirmation)/move are saved as DELETE, POST and one reorder with every id, the lazy Tiptap editor opens for a new text block, an invalid video URL blocks saving, and a failed save keeps the changes with the mapped error. Depends on vitest, Testing Library, msw, the content editor test helpers and the page editor page. v1.1 (C4 review): guard aborts with the string sentinel and silences its rejection, back/forward through beforePopState (declined restores the entry, confirmed is not asked twice), a rich text edit through the real Tiptap editor (exposed on its DOM node, jsdom cannot type into ProseMirror) marks unsaved changes and POSTs its Tiptap JSON, and a load error retries into the editor. v1.2 (C5): pop latch cleared when the navigation ends without routeChangeStart (hash-only pop); an image upload (client type validation first, then POST /api/media and the signed preview URL) makes the new block valid and saves it with its mediaId; Quitar archivo on media in use (409 media.media_in_use) keeps the file and shows the message. v1.3 (C6): the student preview renders the current draft (markdown rich text, KaTeX equation, YouTube embed, uploaded image through its signed URL) with the learning viewer's page article, and later edits show up in it without saving. Quitar archivo on media in use (409) now clears the block and shows an informational note.
+* Versión: 1.3 (C6)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -373,7 +373,7 @@ describe("PageEditorPage", { timeout: 30_000 }, () => {
     ]);
   });
 
-  it("keeps the file and explains when the uploaded media is in use", async() => {
+  it("clears the block with a note when the uploaded media is already in use", async() => {
     server.use(http.delete(apiUrl("/api/media/m1"), () => errorResponse("media.media_in_use", 409)));
     await renderEditor();
     const image = await addImageBlock();
@@ -381,11 +381,46 @@ describe("PageEditorPage", { timeout: 30_000 }, () => {
     selectFile(image, new File(["png"], "curva.png", { type: "image/png" }));
     fireEvent.click(await within(image).findByRole("button", { name: "Quitar archivo" }, LOAD));
 
-    expect(await within(image).findByRole("alert", {}, LOAD)).toHaveTextContent("Este archivo ya se usa en el contenido guardado de una página");
+    expect(await within(image).findByRole("status", {}, LOAD)).toHaveTextContent("Otra página guardada ya lo usa");
     expect(writes()).toContainEqual({ method: "DELETE", path: "/api/media/m1", body: null });
-    expect(within(image).getByRole("button", { name: "Reemplazar archivo" })).toBeInTheDocument();
-    // alt is still empty, so the preview image has no img role.
-    expect(image.querySelector("img")).toHaveAttribute("src", "https://cdn.example.org/m1.png");
+    expect(within(image).queryByRole("alert")).not.toBeInTheDocument();
+    expect(within(image).getByRole("button", { name: "Subir archivo" })).toBeInTheDocument();
+    expect(image.querySelector("img")).toBeNull();
+    expect(within(image).getByText("Falta el archivo de imagen.")).toBeInTheDocument();
+  });
+
+  it("previews the current draft as students see it, unsaved edits included", async() => {
+    await renderEditor();
+
+    fireEvent.change(screen.getByLabelText("Ecuación (LaTeX)"), { target: { value: "P = F \cdot R" } });
+
+    const image = await addImageBlock();
+
+    selectFile(image, new File(["png"], "curva.png", { type: "image/png" }));
+    await within(image).findByRole("button", { name: "Quitar archivo" }, LOAD);
+
+    fireEvent.click(screen.getByRole("button", { name: "Vista previa como estudiante" }));
+
+    const preview = screen.getByRole("region", { name: "Vista previa como estudiante" });
+
+    // The learning viewer's own page article: title heading and the shared block renderers.
+    expect(await within(preview).findByRole("heading", { name: "Presiones en la vía aérea" }, LOAD)).toBeInTheDocument();
+    expect(await within(preview).findByText("presión", { selector: "strong" }, LOAD)).toBeInTheDocument();
+    await waitFor(() => expect(preview.querySelector("annotation")).toHaveTextContent("P = F \cdot R"), LOAD);
+    expect(preview.querySelector("iframe")?.getAttribute("src")).toContain("youtube-nocookie.com/embed/dQw4w9WgXcQ");
+    expect(preview.querySelector("img")).toHaveAttribute("src", "https://cdn.example.org/m1.png");
+    expect(screen.queryByLabelText("Ecuación (LaTeX)")).not.toBeInTheDocument();
+
+    // Back to editing, edit again: the preview shows the new draft, still without saving.
+    fireEvent.click(screen.getByRole("button", { name: "Editar" }));
+    fireEvent.change(screen.getByLabelText("Ecuación (LaTeX)"), { target: { value: "V_T = 500" } });
+    fireEvent.click(screen.getByRole("button", { name: "Vista previa como estudiante" }));
+
+    const updated = screen.getByRole("region", { name: "Vista previa como estudiante" });
+
+    await waitFor(() => expect(updated.querySelector("annotation")).toHaveTextContent("V_T = 500"), LOAD);
+    expect(writes()).toEqual([]);
+    expect(screen.getByText("Cambios sin guardar")).toBeInTheDocument();
   });
 
   it("blocks saving while a video link is not YouTube or Vimeo", async() => {

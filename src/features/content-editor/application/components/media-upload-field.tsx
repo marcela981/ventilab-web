@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: MediaUploadField
-* Descripción: Upload control of the IMAGE, FILE and VIDEO blocks of the page editor: the accepted formats and size limit, a file button ("Subir archivo", or "Reemplazar archivo" once the block has media) restricted to the MIME types of the kind, a determinate progress bar with the percentage and "Cancelar subida" while uploading, "Quitar archivo" when the block has media, and the upload or removal error as an alert (otherwise the block validation message). The file input is visually hidden inside the button label so the whole button opens the picker and keeps the accessible name. Depends on MUI, @shared/lib, the media upload entity, the media uploads hook types and the page editor CSS Module.
-* Versión: 1.0 (C5)
+* Descripción: Upload control of the IMAGE, FILE and VIDEO blocks of the page editor: the accepted formats and size limit, a file button ("Subir archivo", or "Reemplazar archivo" once the block has media) restricted to the MIME types of the kind, a determinate progress bar with the percentage and "Cancelar subida" while uploading, "Quitar archivo" when the block has media, and the upload or removal error as an alert (otherwise the block validation message). The file input is visually hidden inside the button label so the whole button opens the picker and keeps the accessible name. Depends on MUI, @shared/lib, the media upload entity, the media uploads hook types and the page editor CSS Module. v1.1 (C6): the informational note of the upload state (e.g. a removed file kept in the library) as a status message.
+* Versión: 1.1 (C6)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -77,6 +77,7 @@ export function MediaUploadField({ kind, hasMedia, state, validationError, onSel
       {state.error ? (
         <p role="alert" className={cx(styles.fieldError)}>{state.error}</p>
       ) : validationError ? <p className={cx(styles.fieldError)}>{validationError}</p> : null}
+      {state.info ? <p role="status" className={cx(styles.note)}>{state.info}</p> : null}
     </div>
   );
 }

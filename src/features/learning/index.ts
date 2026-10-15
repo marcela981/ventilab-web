@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: learning public API
-* Descripción: Public surface of the learning feature for the thin routes under pages/learn (LearnHomePage, SectionPage, ModulePage) and for the next learning tasks (L3 viewer, L7 print): URL builders/parsers, curriculum tree and lesson hooks with the tree locators, LockedContentScreen, LearningBreadcrumb, PreviewNotice, usePreviewMode, the progress hooks, the page-view tracker and the learning error messages. v1.1 (L3): LessonViewerPage, LessonSidePanel (slots for the L4-L6 panels), the lesson navigation rules, PageContent/usePageContent and the module completion URL. v1.2 (L7): ModulePrintPage and withPrintLayout (print view without the app shell, TEACHER/ADMIN guard). v1.3 (R1): resolveLegacyLessonUrl for the legacy /teaching redirects.
-* Versión: 1.3
+* Descripción: Public surface of the learning feature for the thin routes under pages/learn (LearnHomePage, SectionPage, ModulePage) and for the next learning tasks (L3 viewer, L7 print): URL builders/parsers, curriculum tree and lesson hooks with the tree locators, LockedContentScreen, LearningBreadcrumb, PreviewNotice, usePreviewMode, the progress hooks, the page-view tracker and the learning error messages. v1.1 (L3): LessonViewerPage, LessonSidePanel (slots for the L4-L6 panels), the lesson navigation rules, PageContent/usePageContent and the module completion URL. v1.2 (L7): ModulePrintPage and withPrintLayout (print view without the app shell, TEACHER/ADMIN guard). v1.3 (R1): resolveLegacyLessonUrl for the legacy /teaching redirects. v1.4 (C6): LessonPageArticle (Page body renderer) for the content editor's student preview.
+* Versión: 1.4 (C6)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,6 +11,8 @@
 
 export { LearningBreadcrumb } from "./application/components/learning-breadcrumb";
 export type { LearningBreadcrumbProps } from "./application/components/learning-breadcrumb";
+export { LessonPageArticle } from "./application/components/lesson-page-content";
+export type { LessonPageArticleProps } from "./application/components/lesson-page-content";
 export { LessonSidePanel } from "./application/components/lesson-side-panel";
 export type { LessonSidePanelProps, LessonSidePanelSlots, SidePanelTab } from "./application/components/lesson-side-panel";
 export { LockedContentScreen } from "./application/components/locked-content-screen";
