@@ -12,7 +12,7 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
-const NEW_SHARED = "src/shared/{api-client,realtime,session,design-system,layouts,rich-content,waveforms,charts,ai-rating,media-upload,lib}";
+const NEW_SHARED = "src/shared/{api-client,realtime,session,design-system,layouts,rich-content,waveforms,charts,ai-rating,media-upload,ai-conversation,lib}";
 const NEW_FEATURES = "src/features/{auth/api,auth/application,profile/api,profile/application,groups,learning,content-editor,evaluations,evaluation-authoring,grading}";
 const TEST_FILES = "**/*.{test,spec}.{ts,tsx}";
 // Legacy files that adapt to new shared code (T8); their tests live next to them.

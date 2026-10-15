@@ -29,6 +29,7 @@
     "src/shared/charts/**/*",
     "src/shared/ai-rating/**/*",
     "src/shared/media-upload/**/*",
+    "src/shared/ai-conversation/**/*",
     "src/shared/lib/**/*",
     "src/features/auth/api/**/*",
     "src/features/auth/application/**/*",

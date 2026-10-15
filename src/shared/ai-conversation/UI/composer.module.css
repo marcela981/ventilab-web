@@ -1,0 +1,37 @@
+/*
+* Funcionalidad: Composer styles
+* Descripción: Layout of the AI conversation composer: the form column, the footer row with the near-limit character counter on the left and the Detener/Enviar actions on the right. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.counter {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--vl-space-2);
+  margin-left: auto;
+}
