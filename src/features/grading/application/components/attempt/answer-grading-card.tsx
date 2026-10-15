@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AnswerGradingCard
-* Descripción: One question of the grade-attempt page, with an anchor id for the navigator: title with position and points, a "Pendiente" chip while it needs manual grading, the student answer rendered by QuestionView of the evaluations feature in read-only mode, the correct options and the explanation (staff only), the automatic, manual and counting scores, the server rubric breakdown of a SIMULATION answer, and the grading fields: the score (0 to the question points, up to two decimals) and the comment for the student (required when the answer already has an automatic or manual score). Field errors come from the client validation or from the backend 422 codes mapped by the page; other failures of its save show as an alert on the card. Depends on MUI, the evaluations barrel, the design-system FormField, @shared/lib, the grading components, copy and entities and the grade-attempt CSS Module.
-* Versión: 1.0
+* Descripción: One question of the grade-attempt page, with an anchor id for the navigator: title with position and points, a "Pendiente" chip while it needs manual grading, the student answer rendered by QuestionView of the evaluations feature in read-only mode, the correct options and the explanation (staff only), the automatic, manual and counting scores, the server rubric breakdown of a SIMULATION answer, and the grading fields: the score (0 to the question points, up to two decimals) and the comment for the student (required when the answer already has an automatic or manual score). Field errors come from the client validation or from the backend 422 codes mapped by the page; other failures of its save show as an alert on the card. Depends on MUI, the evaluations barrel, the design-system FormField, @shared/lib, the grading components, copy and entities and the grade-attempt CSS Module. v1.1 (G2 review W1/S4): a score change that needs a comment starts an empty override comment (applyScoreChange) with the previous teacher comment shown read-only above the field, and a comment-only edit of an automatic score shows that saving records an equal manual score counted as an override.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,7 +15,13 @@ import { QuestionView } from "@features/evaluations";
 import { FormField } from "@shared/design-system/components/form-field";
 import { cx } from "@shared/lib/class-names";
 import { formatPoints, GRADE_COPY } from "../../entities/grade-attempt-copy";
-import { MAX_TEACHER_COMMENT_LENGTH, requiresComment } from "../../entities/grading-attempt.entity";
+import {
+  applyScoreChange,
+  isCommentOnlyOverride,
+  isScoreChanged,
+  MAX_TEACHER_COMMENT_LENGTH,
+  requiresComment,
+} from "../../entities/grading-attempt.entity";
 import type { GradeDraft, GradeDraftErrors, GradingItem } from "../../entities/grading-attempt.entity";
 import { RubricBreakdownTable } from "./rubric-breakdown-table";
 import styles from "../../../UI/grade-attempt.module.css";
@@ -68,6 +74,12 @@ export function AnswerGradingCard({ item, draft, errors, dirty, disabled, onChan
   const { question } = item;
   const points = formatPoints(question.points);
   const commentRequired = requiresComment(item);
+  const overriding = commentRequired && isScoreChanged(item, draft);
+  const commentOnlyOverride = isCommentOnlyOverride(item, draft);
+  const previousComment = item.teacherComment?.trim() ? item.teacherComment : null;
+  const commentHint = overriding
+    ? GRADE_COPY.overrideCommentHint
+    : commentRequired ? GRADE_COPY.commentRequiredHint : GRADE_COPY.commentOptionalHint;
 
   return (
     <article id={gradingAnchorId(question.id)} className={cx(styles.card, dirty && styles.cardDirty)} aria-labelledby={`${gradingAnchorId(question.id)}-title`}>
@@ -97,13 +109,19 @@ export function AnswerGradingCard({ item, draft, errors, dirty, disabled, onChan
           disabled={disabled}
           className={cx(styles.scoreField)}
           slotProps={{ htmlInput: { inputMode: "decimal" } }}
-          onChange={(event) => onChange({ ...draft, score: event.target.value })}
+          onChange={(event) => onChange(applyScoreChange(item, draft, event.target.value))}
         />
+        {previousComment ? (
+          <div className={cx(styles.previousComment)}>
+            <h4 className={cx(styles.subheading)}>{GRADE_COPY.previousComment}</h4>
+            <p className={cx(styles.explanation)}>{previousComment}</p>
+          </div>
+        ) : null}
         <FormField
           label={GRADE_COPY.commentField}
           value={draft.comment}
           error={errors.comment}
-          helperText={commentRequired ? GRADE_COPY.commentRequiredHint : GRADE_COPY.commentOptionalHint}
+          helperText={commentHint}
           required={commentRequired}
           disabled={disabled}
           multiline
@@ -113,6 +131,7 @@ export function AnswerGradingCard({ item, draft, errors, dirty, disabled, onChan
           onChange={(event) => onChange({ ...draft, comment: event.target.value })}
         />
       </div>
+      {commentOnlyOverride ? <Alert severity="info">{GRADE_COPY.commentOnlyOverrideHint}</Alert> : null}
       {errors.general ? <Alert severity="error">{errors.general}</Alert> : null}
     </article>
   );

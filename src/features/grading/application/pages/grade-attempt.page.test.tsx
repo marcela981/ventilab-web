@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GradeAttemptPage tests
-* Descripción: Page tests of /grading/attempts/[attemptId] through MSW: the header (status, publication, passing grade from the API, grade with pass/fail from `passed`), the correct answer and the server rubric breakdown of a SIMULATION answer; overriding an automatic score without a comment shows the client error on the comment field and sends nothing, with a comment the PUT carries {manualScore, comment}; a score out of range is rejected on the client; the backend 422 codes land on their fields (manual_score_invalid on the score, grade_override_comment_required on the comment); a failed save keeps that draft while the saved one is refreshed from the server; "Publicar" is disabled until the attempt is GRADED and posts only after confirmation; "Regenerar retroalimentación IA" turns the feedback PENDING and it becomes READY through the spaced polling or the FEEDBACK_READY socket notification. Depends on vitest, Testing Library, msw, the grading page, copy, entities, error messages and test helpers.
-* Versión: 1.0
+* Descripción: Page tests of /grading/attempts/[attemptId] through MSW: the header (status, publication, passing grade from the API, grade with pass/fail from `passed`), the correct answer and the server rubric breakdown of a SIMULATION answer; overriding an automatic score without a comment shows the client error on the comment field and sends nothing, with a comment the PUT carries {manualScore, comment}; a score out of range is rejected on the client; the backend 422 codes land on their fields (manual_score_invalid on the score, grade_override_comment_required on the comment); a failed save keeps that draft while the saved one is refreshed from the server; "Publicar" is disabled until the attempt is GRADED and posts only after confirmation; "Regenerar retroalimentación IA" turns the feedback PENDING and it becomes READY through the spaced polling. Depends on vitest, Testing Library, msw, the grading page, copy, entities, error messages and test helpers. v1.1 (G2 review W1/W2/S3/S4): changing the score of a commented answer starts an empty comment, shows the previous one read-only and requires a new one; a comment-only edit of an automatic score shows the override hint; a failed read of the attempt after a successful save keeps the drafts and shows the reload alert until a reload succeeds; "Volver a cargar" after the polling stopped restarts it; the results link. The FEEDBACK_READY socket test is gone (staff never receive it).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,7 +20,6 @@ import { GRADING_ERROR_MESSAGES } from "../entities/grading-error-messages";
 import { GradeAttemptPage } from "./grade-attempt.page";
 import {
   apiUrl,
-  createFakeSocket,
   envelope,
   errorResponse,
   feedbackDto,
@@ -31,7 +30,6 @@ import {
   gradingQuestionDto,
   renderGradingPage,
 } from "./grading-test-helpers";
-import type { FakeSocket } from "./grading-test-helpers";
 
 vi.setConfig({ testTimeout: 20_000 });
 
@@ -53,6 +51,7 @@ let putBodies: { questionId: string, body: unknown }[];
 let putFailures: Record<string, { code: string, status: number }>;
 let publishCalls: number;
 let regenerateCalls: number;
+let attemptReadFails: boolean;
 
 function baseAttempt(): GradingAttemptDTO {
   return gradingAttemptDto("at1", {
@@ -96,8 +95,9 @@ beforeEach(() => {
   putFailures = {};
   publishCalls = 0;
   regenerateCalls = 0;
+  attemptReadFails = false;
   server.use(
-    http.get(apiUrl("/api/evaluation-grading/attempts/:attemptId"), () => HttpResponse.json(envelope(attempt))),
+    http.get(apiUrl("/api/evaluation-grading/attempts/:attemptId"), () => (attemptReadFails ? errorResponse("INTERNAL", 500) : HttpResponse.json(envelope(attempt)))),
     http.get(apiUrl("/api/evaluation-grading/attempts/:attemptId/feedback"), () => HttpResponse.json(envelope(feedback))),
     http.put(apiUrl("/api/evaluation-grading/attempts/:attemptId/answers/:questionId"), async({ params, request }) => {
       const questionId = String(params.questionId);
@@ -144,8 +144,8 @@ afterAll(() => {
   server.close();
 });
 
-function renderPage(socket: FakeSocket | null = null) {
-  return renderGradingPage(<GradeAttemptPage attemptId="at1" />, socket);
+function renderPage() {
+  return renderGradingPage(<GradeAttemptPage attemptId="at1" />);
 }
 
 const card = (position: number) => screen.getByRole("article", { name: new RegExp(`^Pregunta ${position} `) });
@@ -292,6 +292,75 @@ describe("GradeAttemptPage — grading", () => {
   });
 });
 
+describe("GradeAttemptPage — review fixes", () => {
+  it("starts an empty override comment, shows the previous one and requires a new one", async() => {
+    attempt = {
+      ...attempt,
+      answers: attempt.answers.map((answer) => (answer.questionId === "q2"
+        ? { ...answer, manualScore: 1, earnedScore: 1, pending: false, teacherComment: "Faltó la meseta" }
+        : answer)),
+    };
+    renderPage();
+    await loaded();
+
+    expect(commentField(2)).toHaveValue("Faltó la meseta");
+    fireEvent.change(scoreField(2), { target: { value: "1,5" } });
+
+    expect(commentField(2)).toHaveValue("");
+    expect(within(card(2)).getByText(GRADE_COPY.previousComment)).toBeInTheDocument();
+    expect(within(card(2)).getByText("Faltó la meseta")).toBeInTheDocument();
+
+    fireEvent.change(commentField(2), { target: { value: "Faltó la meseta" } });
+    fireEvent.click(saveButton());
+    expect(await within(card(2)).findByText(GRADE_DRAFT_ERRORS.commentNotNew)).toBeInTheDocument();
+    expect(putBodies).toEqual([]);
+
+    fireEvent.change(commentField(2), { target: { value: "Justificó la meseta en la revisión" } });
+    fireEvent.click(saveButton());
+    await waitFor(() => expect(putBodies).toEqual([
+      { questionId: "q2", body: { manualScore: 1.5, comment: "Justificó la meseta en la revisión" } },
+    ]));
+  });
+
+  it("explains that a comment-only edit of an automatic score is an override", async() => {
+    renderPage();
+    await loaded();
+
+    expect(within(card(1)).queryByText(GRADE_COPY.commentOnlyOverrideHint)).not.toBeInTheDocument();
+    fireEvent.change(commentField(1), { target: { value: "Revisa la PEEP" } });
+
+    expect(within(card(1)).getByText(GRADE_COPY.commentOnlyOverrideHint)).toBeInTheDocument();
+  });
+
+  it("keeps the drafts and asks to reload when the attempt cannot be read after a save", async() => {
+    renderPage();
+    await loaded();
+
+    fireEvent.change(scoreField(2), { target: { value: "1,5" } });
+    attemptReadFails = true;
+    fireEvent.click(saveButton());
+
+    expect(await screen.findByText(GRADE_COPY.refreshFailed)).toBeInTheDocument();
+    expect(putBodies).toHaveLength(1);
+    expect(scoreField(2)).toHaveValue("1,5");
+    expect(screen.getByText(GRADE_COPY.dirty(1))).toBeInTheDocument();
+
+    attemptReadFails = false;
+    fireEvent.click(screen.getByRole("button", { name: GRADE_COPY.reloadAttempt }));
+
+    await waitFor(() => expect(screen.queryByText(GRADE_COPY.refreshFailed)).not.toBeInTheDocument());
+    expect(within(card(2)).getByText(new RegExp(GRADE_COPY.manualScore("1,5")))).toBeInTheDocument();
+    expect(screen.queryByText(GRADE_COPY.dirty(1))).not.toBeInTheDocument();
+  });
+
+  it("links to the results page of the evaluation", async() => {
+    renderPage();
+    await loaded();
+
+    expect(screen.getByRole("link", { name: GRADE_COPY.viewResults })).toHaveAttribute("href", "/grading/evaluations/ev-1");
+  });
+});
+
 describe("GradeAttemptPage — publish", () => {
   it("is disabled until the attempt is GRADED", async() => {
     renderPage();
@@ -343,28 +412,27 @@ describe("GradeAttemptPage — AI feedback", () => {
     expect(screen.getByText(FEEDBACK_STATUS_LABELS.READY)).toBeInTheDocument();
   });
 
-  it("refreshes the feedback on the FEEDBACK_READY notification of this attempt", async() => {
-    const socket = createFakeSocket();
-
+  it("restarts the stopped polling when the feedback is reloaded", async() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     markGraded();
-    renderPage(socket);
+    feedback = feedbackDto("at1", { overall: feedbackItemDto("f-p", { status: "PENDING", source: null, content: "", provider: null, model: null }) });
+    renderPage();
     await loaded();
 
-    fireEvent.click(screen.getByRole("button", { name: GRADE_COPY.regenerate }));
     expect(await screen.findByText(FEEDBACK_STATUS_LABELS.PENDING)).toBeInTheDocument();
 
-    feedback = feedbackDto("at1", { overall: feedbackItemDto("f-new", { content: "Lista por socket." }) });
-    socket.emit("notification:new", {
-      id: "n1",
-      type: "FEEDBACK_READY",
-      title: "Retroalimentación disponible",
-      body: "",
-      data: { attemptId: "at1", evaluationId: "ev-1", feedbackId: "f-new" } as never,
-      readAt: null,
-      createdAt: "2026-10-12T16:00:00.000Z",
-    });
+    for (let step = 0; step < 24 && !screen.queryByText(GRADE_COPY.feedbackPollingStopped); step += 1) {
+      await vi.advanceTimersByTimeAsync(30_000);
+    }
 
-    expect(await screen.findByText("Lista por socket.")).toBeInTheDocument();
+    expect(await screen.findByText(GRADE_COPY.feedbackPollingStopped)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: GRADE_COPY.feedbackReload }));
+    await waitFor(() => expect(screen.queryByText(GRADE_COPY.feedbackPollingStopped)).not.toBeInTheDocument());
+
+    feedback = feedbackDto("at1", { overall: feedbackItemDto("f-p", { content: "Lista tras recargar." }) });
+    await vi.advanceTimersByTimeAsync(3_100);
+
+    expect(await screen.findByText("Lista tras recargar.")).toBeInTheDocument();
   });
 
   it("does not offer regeneration before the attempt is GRADED", async() => {

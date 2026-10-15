@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useGradingFeedback
-* Descripción: Staff view of the AI feedback of an attempt (`GET /api/evaluation-grading/attempts/{attemptId}/feedback`: overall and per-question items with status PENDING, READY or FAILED, source, provider, model and update time). While any item is PENDING it polls with spaced delays (3 s, 6 s, 12 s, 24 s, then every 30 s) up to FEEDBACK_MAX_POLLS reads and then reports pollingStopped; the page also revalidates it on the FEEDBACK_READY socket notification. Depends on React, @shared/api-client and the grading mappers, service and entities.
-* Versión: 1.0
+* Descripción: Staff view of the AI feedback of an attempt (`GET /api/evaluation-grading/attempts/{attemptId}/feedback`: overall and per-question items with status PENDING, READY or FAILED, source, provider, model and update time). While any item is PENDING it polls with spaced delays (3 s, 6 s, 12 s, 24 s, then every 30 s) up to FEEDBACK_MAX_POLLS reads and then reports pollingStopped. Depends on React, @shared/api-client and the grading mappers, service and entities. v1.1 (G2 review W2): no FEEDBACK_READY socket refresh (the backend only notifies the student); a manual reload restarts the spaced polling from the first delay.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -36,8 +36,11 @@ export function useGradingFeedback(attemptId: string | null): UseGradingFeedback
   const feedback = useMemo(() => (data ? toGradingFeedback(data.data) : null), [data]);
   const pending = hasPendingFeedback(feedback);
   const [pollingStopped, setPollingStopped] = useState(false);
+  // Bumped by a manual reload to restart the polling cycle.
+  const [pollCycle, setPollCycle] = useState(0);
 
   const reload = useCallback(async() => {
+    setPollCycle((cycle) => cycle + 1);
     await mutate();
   }, [mutate]);
 
@@ -75,7 +78,7 @@ export function useGradingFeedback(attemptId: string | null): UseGradingFeedback
       clearTimeout(timer);
       setPollingStopped(false);
     };
-  }, [pending, mutate]);
+  }, [pending, mutate, pollCycle]);
 
   return { feedback, isLoading, error: error ?? null, reload, pollingStopped: pending && pollingStopped };
 }

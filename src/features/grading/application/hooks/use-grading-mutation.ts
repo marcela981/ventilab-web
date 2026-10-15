@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useGradingMutation
-* Descripción: Runs one grading mutation at a time (publish an attempt, regenerate its AI feedback): a second call while one is pending returns "busy"; after a success it refreshes every grading SWR key (GRADING_QUERY_PATHS: queue and pending badge, attempt, feedback, evaluation stats); a failure becomes the Spanish message of getGradingErrorMessage plus the backend code and HTTP status. Depends on React, SWR, @shared/api-client and the grading service and error messages.
-* Versión: 1.0
+* Descripción: Runs one grading mutation at a time (publish an attempt, regenerate its AI feedback): a second call while one is pending returns "busy"; after a success it refreshes every grading SWR key (GRADING_QUERY_PATHS: queue and pending badge, attempt, feedback, evaluation stats); a failure becomes the Spanish message of getGradingErrorMessage plus the backend code and HTTP status. Depends on React, SWR, @shared/api-client and the grading service and error messages. v1.1 (G2 review S3): refresh reports whether the revalidation succeeded instead of swallowing the failure.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -24,7 +24,8 @@ export type GradingMutationOutcome<T> =
 export type UseGradingMutationResult = {
   pending: boolean
   run: <T>(action: () => Promise<T>) => Promise<GradingMutationOutcome<T>>
-  refresh: () => Promise<void>
+  // false when the revalidation failed; the screen may show stale data.
+  refresh: () => Promise<boolean>
 };
 
 export function useGradingMutation(): UseGradingMutationResult {
@@ -32,10 +33,10 @@ export function useGradingMutation(): UseGradingMutationResult {
   const pendingRef = useRef(false);
   const [pending, setPending] = useState(false);
 
-  // A failed refresh only leaves stale data on screen.
-  const refresh = useCallback(async() => {
-    await invalidateApiQueries(mutate, GRADING_QUERY_PATHS).catch(() => undefined);
-  }, [mutate]);
+  const refresh = useCallback(
+    () => invalidateApiQueries(mutate, GRADING_QUERY_PATHS).then(() => true, () => false),
+    [mutate],
+  );
 
   const run = useCallback(async<T>(action: () => Promise<T>): Promise<GradingMutationOutcome<T>> => {
     if (pendingRef.current) {

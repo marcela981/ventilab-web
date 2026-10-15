@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GradeAttemptPage
-* Descripción: Staff page /grading/attempts/[attemptId] (teachers and admins). Loads the attempt for grading (`GET /api/evaluation-grading/attempts/{attemptId}`) and shows a header with the evaluation, attempt number, student, status badge, the grade in es-CO with pass/fail from `passed` (or the passingGrade of the API, never a fixed threshold), the passing grade and the publication state; a navigator of anchors to every question (pending ones marked) and one AnswerGradingCard per question. Every card keeps a draft (score and comment); "Guardar calificación" validates the changed drafts on the client (score in [0, points] with up to two decimals; a comment when the answer already had an automatic or manual score, mirroring 422 evaluation.grade_override_comment_required) and sends `PUT .../answers/{questionId}` one at a time; each failure stays on its card (manual_score_invalid on the score, override_comment_required on the comment, any other message as an alert) and keeps its draft, while saved drafts are dropped after the grading keys are refreshed (the backend recomputes the status, GRADED once nothing is pending). A dirty counter and an unsaved-changes guard (beforeunload and client navigation) protect the drafts. "Publicar" is enabled only for a GRADED, unpublished attempt without unsaved drafts and asks for confirmation before `POST .../publish` (idempotent, alreadyPublished). The AI feedback panel reads `GET .../feedback`, "Regenerar retroalimentación IA" sends `POST .../feedback/regenerate` (202, PENDING) and the pending feedback is polled with spaced delays and refreshed by the FEEDBACK_READY notification of this attempt. Loading, error with retry and a link back to /grading. Depends on MUI, next/head, next/link, the evaluations barrel, the design-system components, @shared/lib, @shared/realtime, the grading hooks, service, entities and components and the grade-attempt CSS Module.
-* Versión: 1.0
+* Descripción: Staff page /grading/attempts/[attemptId] (teachers and admins). Loads the attempt for grading (`GET /api/evaluation-grading/attempts/{attemptId}`) and shows a header with the evaluation, attempt number, student, status badge, the grade in es-CO with pass/fail from `passed` (or the passingGrade of the API, never a fixed threshold), the passing grade and the publication state; a navigator of anchors to every question (pending ones marked) and one AnswerGradingCard per question. Every card keeps a draft (score and comment); "Guardar calificación" validates the changed drafts on the client (score in [0, points] with up to two decimals; a comment when the answer already had an automatic or manual score, mirroring 422 evaluation.grade_override_comment_required) and sends `PUT .../answers/{questionId}` one at a time; each failure stays on its card (manual_score_invalid on the score, override_comment_required on the comment, any other message as an alert) and keeps its draft, while saved drafts are dropped after the grading keys are refreshed (the backend recomputes the status, GRADED once nothing is pending). A dirty counter and an unsaved-changes guard (beforeunload and client navigation) protect the drafts. "Publicar" is enabled only for a GRADED, unpublished attempt without unsaved drafts and asks for confirmation before `POST .../publish` (idempotent, alreadyPublished). The AI feedback panel reads `GET .../feedback`, "Regenerar retroalimentación IA" sends `POST .../feedback/regenerate` (202, PENDING) and the pending feedback is polled with spaced delays ("Volver a cargar" restarts the polling). Loading, error with retry and a link back to /grading. Depends on MUI, next/head, next/link, the evaluations barrel, the design-system components, @shared/lib, @shared/realtime, the grading hooks, service, entities and components and the grade-attempt CSS Module. v1.1 (G2 review W1/W2/S3/S4, G3): no FEEDBACK_READY socket handler (the backend only notifies the student); the answer cards start an empty override comment on a score change and show the previous comment read-only; when the attempt cannot be read again after a successful save the drafts stay and an alert asks to reload ("Recarga para ver los valores guardados"); a link to the evaluation results page /grading/evaluations/[evaluationId].
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,7 +14,7 @@ import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import Head from "next/head";
 import Link from "next/link";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { AttemptStatusBadge, ScenarioPanel } from "@features/evaluations";
 import { toApiError } from "@shared/api-client/api-error";
 import { AsyncButton } from "@shared/design-system/components/async-button";
@@ -25,8 +25,6 @@ import { CardSkeleton } from "@shared/design-system/components/skeleton";
 import { useToast } from "@shared/design-system/components/use-toast";
 import { cx } from "@shared/lib/class-names";
 import { formatDateTime, formatGrade } from "@shared/lib/format";
-import { useSocketEvent } from "@shared/realtime";
-import type { RealtimeEventMap } from "@shared/realtime";
 import { gradeAnswer, publishAttemptGrade, regenerateFeedback } from "../../api/services/grading.service";
 import { AnswerGradingCard, gradingAnchorId } from "../components/attempt/answer-grading-card";
 import { GradingFeedbackPanel } from "../components/attempt/feedback-panel";
@@ -42,7 +40,7 @@ import {
 } from "../entities/grading-attempt.entity";
 import type { GradeDraft, GradeDraftErrors, GradingAttempt, GradingItem } from "../entities/grading-attempt.entity";
 import { getGradingErrorMessage } from "../entities/grading-error-messages";
-import { GRADING_URL } from "../entities/grading-urls";
+import { buildGradingEvaluationUrl, GRADING_URL } from "../entities/grading-urls";
 import { useGradingAttempt } from "../hooks/use-grading-attempt";
 import { useGradingFeedback } from "../hooks/use-grading-feedback";
 import { useGradingMutation } from "../hooks/use-grading-mutation";
@@ -67,13 +65,6 @@ export function toAnswerErrors(error: unknown): GradeDraftErrors {
   }
 
   return { general: message };
-}
-
-function notificationAttemptId(payload: RealtimeEventMap["notification:new"]): string | null {
-  const data = payload.data as Record<string, unknown> | null;
-  const attemptId = data?.attemptId;
-
-  return typeof attemptId === "string" ? attemptId : null;
 }
 
 function AttemptSummary({ attempt }: { attempt: GradingAttempt }) {
@@ -130,7 +121,7 @@ function QuestionNavigator({ items }: { items: readonly GradingItem[] }) {
 
 export function GradeAttemptPage({ attemptId }: GradeAttemptPageProps) {
   const toast = useToast();
-  const { attempt, isLoading, error, reload } = useGradingAttempt(attemptId);
+  const { attempt, isLoading, error, reload, refetch } = useGradingAttempt(attemptId);
   const feedback = useGradingFeedback(attemptId);
   const { pending: mutating, run, refresh } = useGradingMutation();
   const [drafts, setDrafts] = useState<Record<string, GradeDraft>>({});
@@ -139,6 +130,9 @@ export function GradeAttemptPage({ attemptId }: GradeAttemptPageProps) {
   const savingRef = useRef(false);
   const [confirmPublish, setConfirmPublish] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  // Saved answers whose fresh values could not be read back; their drafts stay until a reload succeeds.
+  const [staleSaved, setStaleSaved] = useState<string[]>([]);
+  const [reloadingStale, setReloadingStale] = useState(false);
 
   const items = useMemo(() => attempt?.items ?? [], [attempt]);
   const dirtyItems = useMemo(
@@ -155,14 +149,17 @@ export function GradeAttemptPage({ attemptId }: GradeAttemptPageProps) {
 
   useUnsavedGradesGuard(dirtyCount > 0, GRADE_COPY.unsavedPrompt);
 
-  const reloadFeedback = feedback.reload;
-  const handleNotification = useCallback((payload: RealtimeEventMap["notification:new"]) => {
-    if (payload.type === "FEEDBACK_READY" && notificationAttemptId(payload) === attemptId) {
-      void reloadFeedback().catch(() => undefined);
-    }
-  }, [attemptId, reloadFeedback]);
+  const dropDrafts = (questionIds: readonly string[]) => {
+    setDrafts((current) => {
+      const next = { ...current };
 
-  useSocketEvent("notification:new", handleNotification);
+      for (const questionId of questionIds) {
+        delete next[questionId];
+      }
+
+      return next;
+    });
+  };
 
   const changeDraft = (questionId: string, draft: GradeDraft) => {
     setDrafts((current) => ({ ...current, [questionId]: draft }));
@@ -224,16 +221,15 @@ export function GradeAttemptPage({ attemptId }: GradeAttemptPageProps) {
     }
 
     if (saved.length > 0) {
-      await refresh();
-      setDrafts((current) => {
-        const next = { ...current };
+      const [attemptRead] = await Promise.all([refetch(), refresh()]);
 
-        for (const questionId of saved) {
-          delete next[questionId];
-        }
-
-        return next;
-      });
+      if (attemptRead) {
+        dropDrafts(saved);
+        setStaleSaved([]);
+      } else {
+        // The drafts stay: dropping them would show the old server values as if the save had not happened.
+        setStaleSaved(saved);
+      }
     }
 
     setErrors(failures);
@@ -247,6 +243,19 @@ export function GradeAttemptPage({ attemptId }: GradeAttemptPageProps) {
 
     savingRef.current = false;
     setSaving(false);
+  };
+
+  const reloadAfterSave = async() => {
+    setReloadingStale(true);
+
+    const attemptRead = await refetch();
+
+    setReloadingStale(false);
+
+    if (attemptRead) {
+      dropDrafts(staleSaved);
+      setStaleSaved([]);
+    }
   };
 
   const publish = async() => {
@@ -283,6 +292,11 @@ export function GradeAttemptPage({ attemptId }: GradeAttemptPageProps) {
       <Button component={Link} href={GRADING_URL} startIcon={<ArrowBackIcon />}>
         {GRADE_COPY.backToQueue}
       </Button>
+      {attempt ? (
+        <Button component={Link} href={buildGradingEvaluationUrl(attempt.evaluationId)}>
+          {GRADE_COPY.viewResults}
+        </Button>
+      ) : null}
       {attempt ? (
         <>
           <AsyncButton variant="contained" disabled={dirtyCount === 0 || busy || readOnly} loading={saving} onClick={save}>
@@ -322,6 +336,18 @@ export function GradeAttemptPage({ attemptId }: GradeAttemptPageProps) {
     return (
       <div className={cx(styles.content)}>
         <AttemptSummary attempt={attempt} />
+        {staleSaved.length > 0 ? (
+          <Alert
+            severity="warning"
+            action={(
+              <AsyncButton color="inherit" size="small" loading={reloadingStale} onClick={() => void reloadAfterSave()}>
+                {GRADE_COPY.reloadAttempt}
+              </AsyncButton>
+            )}
+          >
+            {GRADE_COPY.refreshFailed}
+          </Alert>
+        ) : null}
         {publishHint()}
         {dirtyCount > 0 ? (
           <p className={cx(styles.dirty)} role="status">{GRADE_COPY.dirty(dirtyCount)}</p>

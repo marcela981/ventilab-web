@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Grade attempt copy
-* Descripción: Spanish UI copy of the grade-attempt page /grading/attempts/[attemptId]: header (attempt, student, status, grade, passing grade, publication), the question navigator, each answer card (scores, correct answer, explanation, score and comment fields), the simulation rubric breakdown (criterion and reason labels of the server scoring), the save and publish actions with their confirmations and toasts, the unsaved-changes prompt and the AI feedback panel (statuses, provider and model, regenerate). No dependencies.
-* Versión: 1.0
+* Descripción: Spanish UI copy of the grade-attempt page /grading/attempts/[attemptId]: header (attempt, student, status, grade, passing grade, publication), the question navigator, each answer card (scores, correct answer, explanation, score and comment fields), the simulation rubric breakdown (criterion and reason labels of the server scoring), the save and publish actions with their confirmations and toasts, the unsaved-changes prompt and the AI feedback panel (statuses, provider and model, regenerate). No dependencies. v1.1 (G2 review W1/S3/S4): the read-only previous comment, the hint of a comment-only edit of an automatic score, the stale-after-save alert and its reload action, and the results link of G3.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -49,6 +49,12 @@ export const GRADE_COPY = {
   commentField: "Comentario para el estudiante",
   commentRequiredHint: "Obligatorio: esta respuesta ya tiene un puntaje.",
   commentOptionalHint: "Opcional.",
+  previousComment: "Comentario anterior",
+  overrideCommentHint: "Obligatorio: escribe un comentario nuevo que explique el cambio de puntaje.",
+  commentOnlyOverrideHint: "Al guardar se registrará un puntaje manual igual al automático, y contará como una corrección del puntaje.",
+  refreshFailed: "Las calificaciones se guardaron, pero no se pudo actualizar el intento. Recarga para ver los valores guardados.",
+  reloadAttempt: "Recargar",
+  viewResults: "Ver resultados de la evaluación",
   rubricTitle: "Evaluación práctica (calculada por el servidor)",
   rubricScore: (percent: string) => `Puntaje práctico: ${percent}`,
   rubricUnavailable: "No se pudo calcular la evaluación práctica.",
