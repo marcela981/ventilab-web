@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Composer
-* Descripción: Message input of an AI conversation (controlled). Multiline textarea where Enter sends the trimmed message and Shift+Enter (or an IME composition) inserts a new line; `maxLength` caps the text and a counter appears from 90% of the limit; `disabled` locks the field; while `isStreaming` the Detener button calls `onStop` and sending is blocked. The `ref` points at the textarea so callers can focus it. Depends on MUI (TextField, Button, icons) and the composer styles.
-* Versión: 1.0
+* Descripción: Message input of an AI conversation (controlled). Multiline textarea where Enter sends the trimmed message and Shift+Enter (or an IME composition) inserts a new line (`submitOnEnter={false}` keeps Enter as a new line and only the Enviar button sends); `maxLength` caps the text and a counter appears from 90% of the limit (`showCounter={false}` hides it); `disabled` locks the field; while `isStreaming` the Detener button calls `onStop` and sending is blocked. The `ref` points at the textarea so callers can focus it. Depends on MUI (TextField, Button, icons) and the composer styles.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -39,6 +39,10 @@ export type ComposerProps = {
   isStreaming?: boolean
   onStop?: () => void
   maxRows?: number
+  // false: Enter inserts a new line like any multiline field and only the Enviar button sends.
+  submitOnEnter?: boolean
+  // false: no character counter, even near the limit (maxLength still caps the text).
+  showCounter?: boolean
   className?: string
   ref?: Ref<HTMLTextAreaElement>
 };
@@ -55,12 +59,14 @@ export function Composer({
   isStreaming = false,
   onStop,
   maxRows = 6,
+  submitOnEnter = true,
+  showCounter: counterEnabled = true,
   className,
   ref,
 }: ComposerProps) {
   const counterId = useId();
   const canSubmit = !disabled && !submitDisabled && !isStreaming && value.trim() !== "";
-  const showCounter = isNearLimit(value.length, maxLength);
+  const showCounter = counterEnabled && isNearLimit(value.length, maxLength);
 
   const submit = () => {
     if (canSubmit) {
@@ -74,7 +80,7 @@ export function Composer({
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) {
+    if (!submitOnEnter || event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) {
       return;
     }
 

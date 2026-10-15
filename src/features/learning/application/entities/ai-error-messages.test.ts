@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI tutor error messages tests
-* Descripción: Unit tests of the Spanish messages of the AI tutor errors: daily quota with the local reset time (and without it), short rate limit with the wait, provider unavailable (503 or its code), unpublished page (404, caller message or the learning default), interrupted stream (client code, backend code, 502), a generic stream failure and network fallbacks. Depends on vitest and the api-client ApiError.
-* Versión: 1.0
+* Descripción: Unit tests of the Spanish messages of the AI tutor errors: daily quota with the local reset time (and without it), short rate limit with the wait, provider unavailable (503 or its code), unpublished page (404, caller message or the learning default, pinned to the pre-S1 text), interrupted stream (client code, backend code, 502), a generic stream failure and network fallbacks. Depends on vitest and the api-client ApiError.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -50,6 +50,15 @@ describe("getAiErrorMessage", () => {
   it("uses the caller's not-found message for a 404 and the learning default otherwise", () => {
     expect(getAiErrorMessage(error("pages.page_not_found", 404), { notFound: AI_ERROR_MESSAGES.pageNotPublished })).toBe(AI_ERROR_MESSAGES.pageNotPublished);
     expect(getAiErrorMessage(error("ai-tutor.conversation_not_found", 404))).toBe(LEARNING_FALLBACK_MESSAGES.notFound);
+  });
+
+  it("keeps the pre-S1 learning not-found text for any 404 without a caller message", () => {
+    const expected = "Este contenido no existe o todavía no está publicado.";
+
+    expect(LEARNING_FALLBACK_MESSAGES.notFound).toBe(expected);
+    expect(getAiErrorMessage(error("pages.page_not_found", 404))).toBe(expected);
+    expect(getAiErrorMessage(error("common.not_found", 404), { now: NOW })).toBe(expected);
+    expect(getAiErrorMessage(error("ai-tutor.conversation_not_found", 404), {})).toBe(expected);
   });
 
   it("reports an interrupted answer", () => {

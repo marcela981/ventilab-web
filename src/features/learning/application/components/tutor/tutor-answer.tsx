@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: TutorAnswer
-* Descripción: One AI tutor answer bubble shared by the Profundizar and Preguntas panels: the markdown text rendered progressively with the shared RichContent (lazy markdown/KaTeX renderers), a "Pensando…" hint while the stream has not sent text yet, a note when the answer was stopped or saved incomplete, and the shared "¿Te fue útil?" widget (ai-ratings MESSAGE target = assistant message id) once the answer is complete. `initialRating` null skips loading a previous rating (fresh answers); undefined loads it (history). Depends on @shared/rich-content, @shared/ai-rating and the tutor CSS Module.
-* Versión: 1.0
+* Descripción: One AI tutor answer bubble shared by the Profundizar and Preguntas panels, composed from the shared @shared/ai-conversation pieces. A `live` answer (the one being streamed in this session) is a StreamingMessage: "Pensando…" while the stream has not sent text yet, the markdown as it grows and a visually hidden aria-live region that announces it by fragments. A saved answer (history) is a plain assistant MessageBubble. Both carry in their footer a note when the answer was stopped or saved incomplete and the shared "¿Te fue útil?" widget (ai-ratings MESSAGE target = assistant message id) once the answer is complete. `initialRating` null skips loading a previous rating (fresh answers); undefined loads it (history). Depends on @shared/ai-conversation, @shared/ai-rating and the tutor CSS Module. v1.1 (S2 ai-chat): bubbles, typing hint and markdown come from @shared/ai-conversation; same copy and rating placement.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,9 +9,10 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import { MessageBubble } from "@shared/ai-conversation/application/message-bubble";
+import { StreamingMessage } from "@shared/ai-conversation/application/streaming-message";
 import { AiRatingWidget } from "@shared/ai-rating";
 import { cx } from "@shared/lib/class-names";
-import { RichContent } from "@shared/rich-content/rich-content";
 import styles from "../../../UI/tutor-panel.module.css";
 
 // TODO(i18n): move to a learning namespace in src/i18n.
@@ -23,6 +24,8 @@ export const TUTOR_ANSWER_COPY = {
 
 export type TutorAnswerProps = {
   text: string
+  // The answer streamed in this session (announced to screen readers); false for saved history messages.
+  live?: boolean
   isStreaming?: boolean
   // "stopped" after Detener in this session, "incomplete" for a history message saved partially.
   interruption?: "stopped" | "incomplete" | null
@@ -31,12 +34,9 @@ export type TutorAnswerProps = {
   initialRating?: null
 };
 
-export function TutorAnswer({ text, isStreaming = false, interruption = null, ratingTargetId = null, initialRating }: TutorAnswerProps) {
-  return (
-    <div className={cx(styles.bubble, styles.assistantBubble)} aria-busy={isStreaming}>
-      {text === "" && isStreaming
-        ? <p className={cx(styles.thinking)} role="status">{TUTOR_ANSWER_COPY.thinking}</p>
-        : <RichContent content={text} emptyLabel="" />}
+export function TutorAnswer({ text, live = false, isStreaming = false, interruption = null, ratingTargetId = null, initialRating }: TutorAnswerProps) {
+  const footer = interruption || ratingTargetId ? (
+    <>
       {interruption ? <p className={cx(styles.note)}>{TUTOR_ANSWER_COPY[interruption]}</p> : null}
       {ratingTargetId ? (
         <AiRatingWidget
@@ -46,6 +46,19 @@ export function TutorAnswer({ text, isStreaming = false, interruption = null, ra
           {...(initialRating === undefined ? {} : { initialRating })}
         />
       ) : null}
-    </div>
-  );
+    </>
+  ) : undefined;
+
+  if (live) {
+    return (
+      <StreamingMessage
+        text={text}
+        isStreaming={isStreaming}
+        typingLabel={TUTOR_ANSWER_COPY.thinking}
+        {...(footer === undefined ? {} : { footer })}
+      />
+    );
+  }
+
+  return <MessageBubble role="assistant" content={text} {...(footer === undefined ? {} : { footer })} />;
 }

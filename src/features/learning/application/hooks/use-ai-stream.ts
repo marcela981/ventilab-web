@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useAiStream
-* Descripción: State of one streamed AI tutor answer over the shared SSE helper (postEventStream). `start({path, body})` opens the stream (aborting any running one), accumulates every `delta` text progressively and resolves with the outcome: done (payload {aiCallId, messageId, conversationId}), error (ApiError: errors before the stream such as 404/429/503, or an `event: error` frame with its backend code and status 0) or aborted. `stop()` aborts the request (the backend cancels the AI call and keeps the received part as incomplete), keeps the partial text and sets status aborted; later frames are ignored. Unmounting aborts the running stream, so closing the panel, switching tab or changing page never leaves an answer running. Status: idle | streaming | done | error | aborted. Depends on react and @shared/api-client. v1.1 (L6 fix): the error outcome carries `streamStarted` (whether any frame was received), so callers tell a rejection before the stream (status 4xx/5xx or a network failure with status 0) from an interrupted answer; an iterator that ends without `done`/`error` becomes the terminal error `network.stream_interrupted`, so the UI never stays in "streaming".
-* Versión: 1.1
+* Descripción: State of one streamed AI tutor answer. Thin learning wrapper over the shared useStreamingResponse (@shared/ai-conversation) typed with the tutor `done` payload {aiCallId, messageId, conversationId}: `start({path, body})` opens the stream (aborting any running one), accumulates the `delta` texts (committed once per animation frame) and resolves with the outcome: done, error (ApiError with `streamStarted`, so callers tell a rejection before the stream from an interrupted answer; an iterator that ends without `done`/`error` becomes `network.stream_interrupted`) or aborted. `stop()` aborts the request (the backend cancels the AI call and keeps the received part as incomplete), keeps the partial text and sets status aborted; later frames are ignored. Unmounting aborts the running stream, so closing the panel, switching tab or changing page never leaves an answer running. Status: idle | streaming | done | error | aborted. Depends on @shared/ai-conversation. v1.2 (S2 ai-chat): the stream logic moved to the shared hook; same public API (stop = shared abort).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,117 +9,23 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { ApiError, CLIENT_ERROR_CODES, toApiError } from "@shared/api-client/api-error";
-import { postEventStream } from "@shared/api-client/sse-stream";
+import { useStreamingResponse } from "@shared/ai-conversation/application/use-streaming-response";
+import type { StreamingOutcome, StreamingResponseState, StreamingStatus } from "@shared/ai-conversation/application/use-streaming-response";
 import type { TutorStreamDone } from "@shared/api-client/sse-stream";
 import type { TutorStreamRequest } from "../entities/tutor.entity";
 
-export type AiStreamStatus = "idle" | "streaming" | "done" | "error" | "aborted";
+export type AiStreamStatus = StreamingStatus;
 
-export type AiStreamOutcome =
-  | { status: "done", done: TutorStreamDone }
-  // streamStarted: at least one frame (delta, done or error) was received before the failure.
-  | { status: "error", error: ApiError, streamStarted: boolean }
-  | { status: "aborted" };
+export type AiStreamOutcome = StreamingOutcome<TutorStreamDone>;
 
-type AiStreamState = {
-  status: AiStreamStatus
-  text: string
-  done: TutorStreamDone | null
-  error: ApiError | null
-};
-
-export type AiStream = AiStreamState & {
+export type AiStream = StreamingResponseState<TutorStreamDone> & {
   start: (request: TutorStreamRequest) => Promise<AiStreamOutcome>
   stop: () => void
   reset: () => void
 };
 
-const IDLE: AiStreamState = { status: "idle", text: "", done: null, error: null };
-
 export function useAiStream(): AiStream {
-  const [state, setState] = useState<AiStreamState>(IDLE);
-  // The controller of the running stream; null once it finished, was stopped or was replaced.
-  const controllerRef = useRef<AbortController | null>(null);
+  const { abort, ...stream } = useStreamingResponse<TutorStreamDone>();
 
-  const stop = useCallback(() => {
-    const controller = controllerRef.current;
-
-    if (!controller) {
-      return;
-    }
-
-    controllerRef.current = null;
-    controller.abort();
-    setState((current) => (current.status === "streaming" ? { ...current, status: "aborted" } : current));
-  }, []);
-
-  const start = useCallback(async({ path, body }: TutorStreamRequest): Promise<AiStreamOutcome> => {
-    controllerRef.current?.abort();
-
-    const controller = new AbortController();
-    const isCurrent = () => controllerRef.current === controller;
-
-    controllerRef.current = controller;
-    setState({ status: "streaming", text: "", done: null, error: null });
-
-    let outcome: AiStreamOutcome | null = null;
-    let streamStarted = false;
-    const fail = (error: ApiError) => {
-      outcome = { status: "error", error, streamStarted };
-      setState((current) => ({ ...current, status: "error", error }));
-    };
-
-    try {
-      for await (const event of postEventStream(path, body, { signal: controller.signal })) {
-        if (!isCurrent()) {
-          break;
-        }
-
-        streamStarted = true;
-
-        if (event.type === "delta") {
-          setState((current) => ({ ...current, text: current.text + event.text }));
-        } else if (event.type === "done") {
-          outcome = { status: "done", done: event.data };
-          setState((current) => ({ ...current, status: "done", done: event.data }));
-        } else {
-          fail(new ApiError({ code: event.code, message: event.message, status: 0 }));
-        }
-      }
-
-      // The iterator ended without a terminal frame while this stream is still current (not stopped or replaced).
-      if (outcome === null && isCurrent()) {
-        fail(new ApiError({
-          code: CLIENT_ERROR_CODES.streamInterrupted,
-          message: "The connection closed before the answer finished",
-          status: 0,
-        }));
-      }
-    } catch (caught) {
-      if (isCurrent()) {
-        fail(toApiError(caught));
-      }
-    } finally {
-      if (isCurrent()) {
-        controllerRef.current = null;
-      }
-    }
-
-    return outcome ?? { status: "aborted" };
-  }, []);
-
-  const reset = useCallback(() => {
-    controllerRef.current?.abort();
-    controllerRef.current = null;
-    setState(IDLE);
-  }, []);
-
-  useEffect(() => () => {
-    controllerRef.current?.abort();
-    controllerRef.current = null;
-  }, []);
-
-  return { ...state, start, stop, reset };
+  return { ...stream, stop: abort };
 }

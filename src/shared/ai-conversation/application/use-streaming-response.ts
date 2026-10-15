@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useStreamingResponse
-* Descripción: Generic state of one streamed AI answer over the shared SSE helper (postEventStream). `start({path, body})` opens the stream (aborting any running one), accumulates the `delta` texts and resolves with the outcome: done (the route's `done` metadata: aiCallId, messageId, optional sources and extra fields such as conversationId), error (ApiError: errors before the stream such as 404/429/503 with `streamStarted` false, an `event: error` frame or a connection lost mid-stream with `streamStarted` true) or aborted. Deltas are buffered and committed once per animation frame, so a fast stream re-renders per frame, not per token; the buffer is flushed on done, error and abort. `abort()` keeps the partial text and sets status aborted; later frames are ignored. Unmounting aborts the running stream. Status: idle | streaming | done | error | aborted. Calling `start` again (e.g. a retry after an error) resets text, error and done. Depends on react and @shared/api-client.
-* Versión: 1.0
+* Descripción: Generic state of one streamed AI answer over the shared SSE helper (postEventStream). `start({path, body})` opens the stream (aborting any running one), accumulates the `delta` texts and resolves with the outcome: done (the route's `done` metadata: aiCallId, messageId, optional sources and extra fields such as conversationId), error (ApiError: errors before the stream such as 404/429/503 with `streamStarted` false, an `event: error` frame or a connection lost mid-stream with `streamStarted` true) or aborted. Deltas are buffered and committed once per animation frame, so a fast stream re-renders per frame, not per token; the buffer is flushed on done, error and abort. `abort()` keeps the partial text and sets status aborted; later frames are ignored. A terminal frame (done or error) ends the read loop, so frames after it are ignored. Unmounting aborts the running stream. Status: idle | streaming | done | error | aborted. Calling `start` again (e.g. a retry after an error) resets text, error and done. Depends on react and @shared/api-client.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -141,8 +141,14 @@ export function useStreamingResponse<TDone extends StreamDoneMetadata = DefaultS
 
           outcome = { status: "done", done };
           setState((current) => ({ ...current, text: current.text + pending, status: "done", done }));
+
+          // Terminal frame: nothing after it may change the answer.
+          break;
         } else {
           fail(new ApiError({ code: event.code, message: event.message, status: 0 }));
+
+          // Terminal frame: nothing after it may change the answer.
+          break;
         }
       }
 

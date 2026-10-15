@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: DeepenPanel
-* Descripción: "Profundizar" tab of the lesson viewer. "¿Deseas profundizar en el tema?" asks the AI tutor to deepen the visible Page (POST /api/tutor/pages/{pageId}/deepen, SSE) with an optional question; the answer renders progressively as markdown, "Detener" aborts it, and when it is done the shared "¿Te fue útil?" widget rates it (MESSAGE target = returned messageId). Follow-up questions reuse the returned conversationId and the thread of the current Page stays visible. The thread is keyed by pageId: changing page (and closing the panel or switching tab, which unmount it) aborts the running answer and starts a fresh thread. Errors use the shared AI messages (quota with the local reset time, provider unavailable, unpublished page, interrupted stream). Depends on MUI, useAiStream, the tutor service, the AI error messages, TutorAnswer and the tutor CSS Module. v1.1 (L5 fix, documented): a conversationId is adopted only from `done`; the backend tutor SSE (ventylab-server tutor-sse.ts) sends conversationId only in the `done` frame (delta = {text}, error = {code, message}), so a first answer stopped or failed after the stream started has no id to adopt and the next question starts a new conversation (BACKEND GAP). The id of an earlier finished answer survives later failures.
-* Versión: 1.1
+* Descripción: "Profundizar" tab of the lesson viewer. "¿Deseas profundizar en el tema?" asks the AI tutor to deepen the visible Page (POST /api/tutor/pages/{pageId}/deepen, SSE) with an optional question; the answer renders progressively as markdown, "Detener" aborts it, and when it is done the shared "¿Te fue útil?" widget rates it (MESSAGE target = returned messageId). Follow-up questions reuse the returned conversationId and the thread of the current Page stays visible. The thread is keyed by pageId: changing page (and closing the panel or switching tab, which unmount it) aborts the running answer and starts a fresh thread. Errors use the shared AI messages (quota with the local reset time, provider unavailable, unpublished page, interrupted stream). Depends on MUI, @shared/ai-conversation (MessageList, MessageBubble), useAiStream, the tutor service, the AI error messages, TutorAnswer and the tutor CSS Module. v1.1 (L5 fix, documented): a conversationId is adopted only from `done`; the backend tutor SSE (ventylab-server tutor-sse.ts) sends conversationId only in the `done` frame (delta = {text}, error = {code, message}), so a first answer stopped or failed after the stream started has no id to adopt and the next question starts a new conversation (BACKEND GAP). The id of an earlier finished answer survives later failures. v1.2 (S2 ai-chat): the thread and bubbles use the shared @shared/ai-conversation pieces; only the answer of the current turn is announced (StreamingMessage fragments), the list itself is no longer aria-live, so nothing is announced twice. The question form stays local: it allows an empty question (whole page) and its button reads "¿Deseas profundizar en el tema?", which the shared Composer does not support.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,6 +16,8 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { useState } from "react";
 import type { FormEvent } from "react";
+import { MessageBubble } from "@shared/ai-conversation/application/message-bubble";
+import { MessageList } from "@shared/ai-conversation/application/message-list";
 import { cx } from "@shared/lib/class-names";
 import { deepenPageRequest } from "../../../api/services/tutor.service";
 import { AI_ERROR_MESSAGES, getAiErrorMessage } from "../../entities/ai-error-messages";
@@ -46,13 +48,15 @@ type DeepenTurn = {
   messageId: string | null
 };
 
-function TurnView({ turn, error }: { turn: DeepenTurn, error: unknown }) {
+// `live` marks the turn of the running (or last) stream: its answer is announced by the StreamingMessage.
+function TurnView({ turn, error, live }: { turn: DeepenTurn, error: unknown, live: boolean }) {
   return (
-    <li className={cx(styles.turn)}>
-      <p className={cx(styles.bubble, styles.userBubble)}>{turn.question ?? COPY.wholePage}</p>
+    <>
+      <MessageBubble role="user" content={turn.question ?? COPY.wholePage} />
       {turn.status === "error" && turn.answer === "" ? null : (
         <TutorAnswer
           text={turn.answer}
+          live={live}
           isStreaming={turn.status === "streaming"}
           interruption={turn.status === "aborted" ? "stopped" : null}
           ratingTargetId={turn.status === "done" ? turn.messageId : null}
@@ -60,7 +64,7 @@ function TurnView({ turn, error }: { turn: DeepenTurn, error: unknown }) {
         />
       )}
       {turn.status === "error" ? <Alert severity="error">{getAiErrorMessage(error, { notFound: AI_ERROR_MESSAGES.pageNotPublished })}</Alert> : null}
-    </li>
+    </>
   );
 }
 
@@ -107,9 +111,11 @@ function DeepenThread({ pageId }: { pageId: string }) {
     <div className={cx(styles.panel)}>
       <p className={cx(styles.intro)}>{COPY.intro}</p>
       {turns.length > 0 ? (
-        <ul className={cx(styles.thread)} aria-label={COPY.threadLabel} aria-live="polite">
-          {turns.map((turn) => <TurnView key={turn.id} turn={turn} error={turn === currentTurn ? stream.error : null} />)}
-        </ul>
+        <MessageList label={COPY.threadLabel}>
+          {turns.map((turn) => (
+            <TurnView key={turn.id} turn={turn} error={turn === currentTurn ? stream.error : null} live={turn === currentTurn} />
+          ))}
+        </MessageList>
       ) : null}
       <form className={cx(styles.form)} onSubmit={(event) => void submit(event)}>
         <TextField

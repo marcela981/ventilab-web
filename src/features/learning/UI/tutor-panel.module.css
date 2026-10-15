@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI tutor panels styles
-* Descripción: Styles of the "Profundizar" and "Preguntas" tabs of the lesson viewer: panel column, scope selector, chat thread (student and tutor bubbles, streaming "thinking" hint, stopped/incomplete notes), the question form with its actions and the empty/hint texts. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
-* Versión: 1.0
+* Descripción: Styles of the "Profundizar" and "Preguntas" tabs of the lesson viewer: panel column, scope selector, stopped/incomplete notes, the deepen form with its actions and the intro/empty/hint texts. v1.1 (S2 ai-chat): the thread, bubbles and "thinking" hint moved to @shared/ai-conversation (conversation.module.css). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -25,49 +25,6 @@
 .scope {
   display: flex;
   justify-content: center;
-}
-
-.thread {
-  display: flex;
-  flex-direction: column;
-  gap: var(--vl-space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.turn {
-  display: flex;
-  flex-direction: column;
-  gap: var(--vl-space-2);
-}
-
-.bubble {
-  max-width: 100%;
-  padding: var(--vl-space-2) var(--vl-space-3);
-  border-radius: var(--vl-radius-md);
-  font: var(--mui-font-body2);
-  overflow-wrap: anywhere;
-}
-
-.userBubble {
-  align-self: flex-end;
-  background: var(--vl-color-selected);
-  color: var(--vl-color-text);
-  white-space: pre-wrap;
-}
-
-.assistantBubble {
-  align-self: stretch;
-  border: 1px solid var(--vl-color-border);
-  background: var(--vl-color-surface);
-  color: var(--vl-color-text);
-}
-
-.thinking {
-  margin: 0;
-  font-style: italic;
-  color: var(--vl-color-text-muted);
 }
 
 .note {

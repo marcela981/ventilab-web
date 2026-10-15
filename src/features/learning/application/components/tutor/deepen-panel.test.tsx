@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: DeepenPanel tests
-* Descripción: Integration tests of the "Profundizar" panel against msw serving real text/event-stream bodies of POST /api/tutor/pages/{pageId}/deepen: deltas render progressively and the rating widget appears on `done`, "Detener" stops the answer (no further text, stopped note, no rating), a follow-up question reuses the returned conversationId, changing page resets the thread, and the 429 quota (local reset time), 503 provider and 404 unpublished page errors show their messages. v1.1 (L5 fix): the conversationId of a finished answer survives a later failed answer; a first answer stopped before `done` has no conversationId to reuse (the backend only sends it in `done`). RichContent is replaced by plain text (its lazy markdown renderer is covered in shared/rich-content). Depends on vitest, Testing Library, msw and the learning/SSE test helpers.
-* Versión: 1.1
+* Descripción: Integration tests of the "Profundizar" panel against msw serving real text/event-stream bodies of POST /api/tutor/pages/{pageId}/deepen: deltas render progressively and the rating widget appears on `done`, "Detener" stops the answer (no further text, stopped note, no rating), a follow-up question reuses the returned conversationId, changing page resets the thread, and the 429 quota (local reset time), 503 provider and 404 unpublished page errors show their messages. v1.1 (L5 fix): the conversationId of a finished answer survives a later failed answer; a first answer stopped before `done` has no conversationId to reuse (the backend only sends it in `done`). RichContent is replaced by plain text (its lazy markdown renderer is covered in shared/rich-content). v1.2 (S2 ai-chat): the current answer is also rendered in the visually hidden live region of the shared StreamingMessage, so text queries of the visible answer skip that region and the stopped answer is checked to be announced. Depends on vitest, Testing Library, msw and the learning/SSE test helpers.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -50,6 +50,11 @@ afterEach(() => {
 afterAll(() => {
   server.close();
 });
+
+// A finished (or stopped) current answer is also in the visually hidden live region that announces it;
+// text queries of the visible bubble skip that region.
+const VISIBLE = { ignore: "script, style, [aria-live] *" } as const;
+const liveRegion = () => document.querySelector("[aria-live=\"polite\"]");
 
 const deepenButton = () => screen.getByRole("button", { name: "¿Deseas profundizar en el tema?" });
 
@@ -100,7 +105,8 @@ describe("DeepenPanel", () => {
     stream.push(doneFrame(DONE));
 
     await waitFor(() => expect(screen.queryByRole("button", { name: "Detener" })).not.toBeInTheDocument());
-    expect(screen.getByText("La distensibilidad")).toBeInTheDocument();
+    expect(screen.getByText("La distensibilidad", VISIBLE)).toBeInTheDocument();
+    expect(liveRegion()).toHaveTextContent("La distensibilidad");
     expect(screen.queryByText(/volumen\/presión/)).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "¿Te fue útil?" })).not.toBeInTheDocument();
   });
@@ -120,7 +126,7 @@ describe("DeepenPanel", () => {
     }));
     ask("Segunda");
 
-    expect(await screen.findByText("Respuesta dos")).toBeInTheDocument();
+    expect(await screen.findByText("Respuesta dos", VISIBLE)).toBeInTheDocument();
     expect(screen.getByText("Respuesta uno")).toBeInTheDocument();
     expect(requests[1]).toEqual({ pageId: "p1", body: { question: "Segunda", conversationId: "conv-1" } });
     await waitFor(() => expect(screen.getAllByRole("heading", { name: "¿Te fue útil?" })).toHaveLength(2));
@@ -145,7 +151,7 @@ describe("DeepenPanel", () => {
     expect(await screen.findByText(AI_ERROR_MESSAGES.interrupted)).toBeInTheDocument();
     ask("Tercera");
 
-    expect(await screen.findByText("Respuesta tres")).toBeInTheDocument();
+    expect(await screen.findByText("Respuesta tres", VISIBLE)).toBeInTheDocument();
     expect(requests[2]).toEqual({ pageId: "p1", body: { question: "Tercera", conversationId: "conv-1" } });
   });
 
@@ -165,7 +171,7 @@ describe("DeepenPanel", () => {
     }));
     ask("Segunda");
 
-    expect(await screen.findByText("Otra")).toBeInTheDocument();
+    expect(await screen.findByText("Otra", VISIBLE)).toBeInTheDocument();
     // BACKEND GAP (documented): only `done` carries conversationId, so nothing can be adopted from a stopped answer.
     expect(requests[1]).toEqual({ pageId: "p1", body: { question: "Segunda" } });
   });

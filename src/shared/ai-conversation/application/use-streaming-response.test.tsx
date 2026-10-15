@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useStreamingResponse tests
-* Descripción: Tests of the generic AI answer stream hook against msw serving real text/event-stream bodies: deltas accumulate and `done` resolves with its metadata (extra fields and sources included), an `event: error` frame and a 429 before the stream become ApiError state, abort keeps the partial text (also the text still buffered for the next frame) and ignores later frames, a new start after a lost connection resets the state, deltas are committed once per animation frame, and unmounting aborts. Depends on vitest, Testing Library, msw and the shared SSE test helpers.
-* Versión: 1.0
+* Descripción: Tests of the generic AI answer stream hook against msw serving real text/event-stream bodies: deltas accumulate and `done` resolves with its metadata (extra fields and sources included), an `event: error` frame and a 429 before the stream become ApiError state, abort keeps the partial text (also the text still buffered for the next frame) and ignores later frames, a new start after a lost connection resets the state, a start while another stream runs aborts it without leaking its buffered or late text, reset returns to idle, deltas are committed once per animation frame, and unmounting aborts. Depends on vitest, Testing Library, msw and the shared SSE test helpers.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -216,6 +216,92 @@ describe("useStreamingResponse", () => {
     expect(result.current.text).toBe("Uno, dos, tres.");
     expect(renders - before).toBe(1);
     act(() => result.current.abort());
+  });
+
+  it("aborts the running stream when start is called again and never leaks its text into the new one", async() => {
+    const frames = mockAnimationFrames();
+    const first = controlledStream();
+    const second = controlledStream();
+    const streams = [first, second];
+    server.use(http.post(URL, () => (streams.shift() ?? first).response()));
+    const { result } = renderHook(() => useStreamingResponse());
+    let firstOutcome: Promise<unknown> = Promise.resolve();
+    let secondOutcome: Promise<unknown> = Promise.resolve();
+
+    act(() => {
+      firstOutcome = result.current.start(REQUEST);
+    });
+    first.push(deltaFrame("vieja"));
+    // "vieja" is buffered for the next frame, not committed yet.
+    await waitFor(() => expect(frames.pending()).toBe(1));
+
+    act(() => {
+      secondOutcome = result.current.start(REQUEST);
+    });
+    expect(result.current.status).toBe("streaming");
+    expect(result.current.text).toBe("");
+    expect(frames.pending()).toBe(0);
+
+    first.push(deltaFrame(" tardía"));
+    first.push(doneFrame(DONE));
+    await act(async() => {
+      await expect(firstOutcome).resolves.toEqual({ status: "aborted" });
+    });
+    act(() => frames.runFrame());
+    expect(result.current.text).toBe("");
+    expect(result.current.done).toBeNull();
+
+    second.push(deltaFrame("nueva"));
+    await waitFor(() => expect(frames.pending()).toBe(1));
+    act(() => frames.runFrame());
+    expect(result.current.text).toBe("nueva");
+
+    second.push(doneFrame({ ...DONE, messageId: "msg-2" }));
+    await act(async() => {
+      await expect(secondOutcome).resolves.toEqual({ status: "done", done: { ...DONE, messageId: "msg-2" } });
+    });
+    expect(result.current.text).toBe("nueva");
+    expect(result.current.done?.messageId).toBe("msg-2");
+  });
+
+  it("reset aborts the running stream, drops the buffered text and returns to idle", async() => {
+    const frames = mockAnimationFrames();
+    const stream = controlledStream();
+
+    server.use(http.post(URL, () => stream.response()));
+    const { result } = renderHook(() => useStreamingResponse());
+    let outcome: Promise<unknown> = Promise.resolve();
+
+    act(() => {
+      outcome = result.current.start(REQUEST);
+    });
+    stream.push(deltaFrame("Parte uno"));
+    await waitFor(() => expect(frames.pending()).toBe(1));
+
+    act(() => result.current.reset());
+    expect(result.current).toMatchObject({ status: "idle", text: "", done: null, error: null });
+    expect(frames.pending()).toBe(0);
+
+    stream.push(deltaFrame(" y parte dos"));
+    stream.push(doneFrame(DONE));
+    await act(async() => {
+      await expect(outcome).resolves.toEqual({ status: "aborted" });
+    });
+    act(() => frames.runFrame());
+    expect(result.current).toMatchObject({ status: "idle", text: "", done: null, error: null });
+  });
+
+  it("reset after a finished answer clears it", async() => {
+    server.use(http.post(URL, () => sseResponse([deltaFrame("Respuesta"), doneFrame(DONE)])));
+    const { result } = renderHook(() => useStreamingResponse());
+
+    await act(async() => {
+      await result.current.start(REQUEST);
+    });
+    expect(result.current.status).toBe("done");
+
+    act(() => result.current.reset());
+    expect(result.current).toMatchObject({ status: "idle", text: "", done: null, error: null });
   });
 
   it("aborts the running stream on unmount", async() => {

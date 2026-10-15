@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: QuestionsPanel tests
-* Descripción: Integration tests of the "Preguntas" panel against msw (real text/event-stream bodies for the streamed answers): it reopens the caller's LESSON conversation (client-side refId lookup, also on a later page of the listing) and shows its history with the incomplete note and the rating widget, sending a message streams the answer progressively and then shows the saved conversation, the first message starts a conversation with scope/refId/currentPageId, switching to MODULE looks up and starts with the moduleId, "Detener" stops the answer, an error before the stream gives the question back, and unmounting aborts the running stream. RichContent is replaced by plain text. Depends on vitest, Testing Library, msw and the learning/SSE test helpers. v1.1 (L6 fix): a network failure before the stream (status 0) also gives the question back.
-* Versión: 1.1
+* Descripción: Integration tests of the "Preguntas" panel against msw (real text/event-stream bodies for the streamed answers): it reopens the caller's LESSON conversation (client-side refId lookup, also on a later page of the listing) and shows its history with the incomplete note and the rating widget, sending a message streams the answer progressively and then shows the saved conversation, the first message starts a conversation with scope/refId/currentPageId, switching to MODULE looks up and starts with the moduleId, "Detener" stops the answer, an error before the stream gives the question back, and unmounting aborts the running stream. v1.2 (S2 ai-chat): Enter keeps inserting a new line (no submit) and no character counter is shown, as before the shared Composer. RichContent is replaced by plain text. Depends on vitest, Testing Library, msw and the learning/SSE test helpers. v1.1 (L6 fix): a network failure before the stream (status 0) also gives the question back.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -226,6 +226,24 @@ describe("QuestionsPanel", () => {
     await waitFor(() => expect(screen.getAllByText("Respuesta incompleta: se interrumpió antes de terminar.")).toHaveLength(2));
     expect(screen.queryByText(/distensibilidad/)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Detener" })).not.toBeInTheDocument();
+  });
+
+  it("keeps Enter as a new line and shows no character counter, as before the shared composer", async() => {
+    renderPanel();
+    await screen.findByText("¿Qué es la PEEP?");
+
+    const field = screen.getByRole("textbox", { name: "Tu pregunta" });
+
+    fireEvent.change(field, { target: { value: "a".repeat(3990) } });
+    // fireEvent returns false only when the default action (the new line) was prevented.
+    expect(fireEvent.keyDown(field, { key: "Enter" })).toBe(true);
+    expect(screen.queryByText(/\/ 4000/)).not.toBeInTheDocument();
+    expect(field).toHaveAttribute("maxLength", "4000");
+
+    // Give a submit the time to reach the server; nothing may be sent.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(streamRequests).toEqual([]);
+    expect(field).toHaveValue("a".repeat(3990));
   });
 
   it("gives the question back when the tutor is unavailable before the stream", async() => {
