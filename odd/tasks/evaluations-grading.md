@@ -69,7 +69,7 @@ Work-unit commits per task.
 - [x] G1 (D) Grading queue with filters and age; pending-count badge in the nav.
 - [x] G2 (D) Grade attempt: manual scores, the comment-required rule when overriding, publish, regenerate AI feedback.
 - [x] G3 (D) Evaluation results: stats from the API, lazy-loaded charts, bulk publish with confirmation.
-- [ ] S1 (D) Promote the media upload component to `shared/media-upload` and use it in the question editor.
+- [x] S1 (D) Promote the media upload component to `shared/media-upload` and use it in the question editor.
 - [x] R1 (D) Legacy `/evaluation/**` routes redirect to the new routes.
 - [x] P1 (D) Parity checklist with evidence in `odd/evaluations-parity.md`.
 - [ ] P2 Legacy removal, after author approval.
@@ -115,5 +115,12 @@ Work-unit commits per task.
   - Analytics are cached for 60 s with no invalidation on publish.
   - Assignment counts do not separate published from unpublished grades.
 
+- 2026-10-15: cherry-pick onto master was blocked by the session permission classifier. Instead, master (23d50ef, content-editor closed) was merged into the worktree: faa7387. The three conflicts (eslint.config.mjs, package.json lint line, tsconfig.strict.json) were route lists, resolved as unions. Checks: typecheck 0, lint 0, vitest 130 files / 1065 tests (2 load flakes passed in isolation, 29/29). Native review of the whole branch against master: unavailable (lens_context_budget_exceeded, 26k lines; the branch was already reviewed slice by slice).
+- S1 bfb0d2b (delegated writer, trigger = 2+ non-trivial files): shared/media-upload holds the service, the validation entity, the field, its CSS, the error messages and the new useMediaUploader hook. Content-editor keeps the block-specific parts on top of the shared hook, with an unchanged API. The builder uploads statement media (mediaIds, up to 20) and option images (mediaId). Checks: typecheck 0, lint 0, vitest 32 files / 216 tests; parent spot check shared/media-upload 21/21. Native review review-4d133f45567e4cec: approved and acknowledged. Its WARNING about concurrent uploads overwriting the draft was fixed in 5debe73 (review-c06c97cad91fe520: approved and acknowledged; advisories: no concurrent-upload test, and the ref diverges if the parent rejects a change).
+- Open follow-up: the builder does not delete orphan uploads, which content-editor does.
+- next build --webpack in the worktree was stopped again by the host for low memory (about 1.4 GB free). The bundle is still not measured.
+
 ## Next step
-S1 (waits for the content-editor media upload in C5, from the peer session). After that: cherry-pick onto master once the peer session has closed content-editor, run the build and bundle measurement in the main tree, push. P2 needs author approval.
+1. The author fast-forwards master to the worktree HEAD (`git -C ventilab-web merge --ff-only <worktree HEAD>`), then pushes.
+2. Build and bundle measurement in the main tree, with free memory.
+3. P2 (removing the legacy code) needs the author's approval.
