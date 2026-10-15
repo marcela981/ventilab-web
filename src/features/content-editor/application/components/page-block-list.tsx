@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: PageBlockList
-* Descripción: Ordered block list of the page editor. Each block is a card with a drag handle (@hello-pangea/dnd, same library as the content tree; reorder inside the page only), its type label and position, move up/down buttons (keyboard and screen reader alternative to dragging), duplicate and delete actions, the optional title (not for dividers), the type-specific BlockFields and the block validation message. Changes only touch the local draft; nothing is sent until the page is saved. Depends on @hello-pangea/dnd, MUI, @shared/design-system, @shared/lib, the page draft entity, BlockFields and the page editor CSS Module.
-* Versión: 1.0 (C4)
+* Descripción: Ordered block list of the page editor. Each block is a card with a drag handle (@hello-pangea/dnd, same library as the content tree; reorder inside the page only), its type label and position, move up/down buttons (keyboard and screen reader alternative to dragging), duplicate and delete actions, the optional title (not for dividers), the type-specific BlockFields and the block validation message. Changes only touch the local draft; nothing is sent until the page is saved. Depends on @hello-pangea/dnd, MUI, @shared/design-system, @shared/lib, the page draft entity, BlockFields and the page editor CSS Module. v1.1 (C4 review): a drop on the same index no longer calls onMove.
+* Versión: 1.1 (C4)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -107,7 +107,8 @@ function BlockCard({ block, index, count, onMove, onDuplicate, onDelete, onChang
 
 export function PageBlockList({ blocks, onMove, ...actions }: PageBlockListProps) {
   const onDragEnd = ({ source, destination }: DropResult) => {
-    if (destination && destination.droppableId === source.droppableId) {
+    // A drop on its own position is not a change.
+    if (destination && destination.droppableId === source.droppableId && destination.index !== source.index) {
       onMove(source.index, destination.index);
     }
   };

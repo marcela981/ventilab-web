@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Page draft entity tests
-* Descripción: Pure logic of the page editor draft: new block defaults, duplicate (copy right after, no server id), move and remove, per-block validation (equation, video YouTube/Vimeo URL, code language, image/file media), the save plan (deletes, changed-field updates, creates, reorder only when the final order differs from what the backend leaves after appending) and the backend payloads (empty video URL and code language omitted). Depends on vitest and the page draft entity.
-* Versión: 1.0 (C4)
+* Descripción: Pure logic of the page editor draft: new block defaults, duplicate (copy right after, no server id), move and remove, per-block validation (equation, video YouTube/Vimeo URL, code language, image/file media), the save plan (deletes, changed-field updates, creates, reorder only when the final order differs from what the backend leaves after appending) and the backend payloads (empty video URL and code language omitted). Depends on vitest and the page draft entity. v1.1 (C4 review): applySavedOperations over a stale snapshot (deletes, updates, appended creates, reorder) leaves nothing pending.
+* Versión: 1.1 (C4)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,11 +11,13 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  applySavedOperations,
   blockError,
   createDraftBlock,
   duplicateBlock,
   hasPendingChanges,
   moveBlock,
+  NO_SAVED_OPERATIONS,
   planPageSave,
   removeBlock,
   richTextFormat,
@@ -137,5 +139,33 @@ describe("payloads", () => {
       title: "Ejemplo",
       content: { code: "x" },
     });
+  });
+});
+
+describe("applySavedOperations", () => {
+  it("returns the loaded blocks untouched when nothing was saved", () => {
+    expect(applySavedOperations(SERVER, NO_SAVED_OPERATIONS)).toBe(SERVER);
+  });
+
+  it("applies confirmed deletes, updates, creates and the reorder over a stale snapshot", () => {
+    const edited = serverBlock("b2", { type: "EQUATION", content: { latex: "P = F \cdot R", display: true } });
+    const created = serverBlock("b10", { type: "DIVIDER", content: {} });
+    const result = applySavedOperations(SERVER, {
+      deleted: new Set(["b1"]),
+      updated: new Map([["b2", edited]]),
+      created: [created],
+      order: ["b10", "b3", "b2"],
+    });
+
+    expect(result.map((block) => block.key)).toEqual(["b10", "b3", "b2"]);
+    expect(result[2]).toBe(edited);
+  });
+
+  it("leaves nothing pending once the draft matches the saved operations", () => {
+    const created = serverBlock("b10", { type: "DIVIDER", content: {} });
+    const server = applySavedOperations(SERVER, { deleted: new Set(["b1"]), updated: new Map(), created: [created], order: null });
+    const draft = [SERVER[1] as DraftBlock, SERVER[2] as DraftBlock, { ...created, key: "new-1" }];
+
+    expect(hasPendingChanges(planPageSave(server, draft))).toBe(false);
   });
 });

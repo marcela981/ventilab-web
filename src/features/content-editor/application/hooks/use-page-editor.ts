@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: usePageEditor
-* Descripción: State of the page editor for one Page. Loads GET /api/pages/{id} through useApiQuery (content editor cache config) and keeps a local draft of its blocks only once the user edits (until then the draft is the server blocks). Exposes the block operations (add, duplicate, remove, move, change), the save plan against the server blocks (pending changes flag) and the first invalid block, and save(): applies the plan with savePageBlocks (one save at a time), then refreshes the page, the module print view and the lesson pages. On success the draft is dropped (the fresh server blocks become the draft) unless the user kept editing during the save. On failure the draft is kept with the ids of the blocks already created, so a retry only sends what is still pending, and the server blocks are refreshed so the next plan diffs against what was really saved. Depends on React, SWR, @shared/api-client, the page blocks service and mapper, the page draft entity and the content editor error messages.
-* Versión: 1.0 (C4)
+* Descripción: State of the page editor for one Page. Loads GET /api/pages/{id} through useApiQuery (content editor cache config) and keeps a local draft of its blocks only once the user edits (until then the draft is the server blocks). Exposes the block operations (add, duplicate, remove, move, change), the save plan against the server blocks (pending changes flag) and the first invalid block, and save(): applies the plan with savePageBlocks (one save at a time), then refreshes the page, the module print view and the lesson pages. On success the draft is dropped (the fresh server blocks become the draft) unless the user kept editing during the save. On failure the draft is kept with the ids of the blocks already created, so a retry only sends what is still pending, and the server blocks are refreshed so the next plan diffs against what was really saved. Depends on React, SWR, @shared/api-client, the page blocks service and mapper, the page draft entity and the content editor error messages. v1.1 (C4 review): every operation confirmed by the backend (deleted, updated, created ids, reorder) is recorded over the loaded snapshot and applied with applySavedOperations, so a retry after a partial failure never re-POSTs or re-DELETEs even when the refresh also fails; after a successful save the draft is only dropped when the refresh succeeded, otherwise the saved blocks stay visible with their new ids.
+* Versión: 1.1 (C4)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,18 +17,21 @@ import { invalidateApiQueries, useApiQuery } from "@shared/api-client/use-api-qu
 import { toEditablePage } from "../../api/mappers/page-blocks.mapper";
 import type { EditablePage } from "../../api/mappers/page-blocks.mapper";
 import { PAGE_EDITOR_INVALIDATES, PAGE_EDITOR_PATH, savePageBlocks } from "../../api/services/page-blocks.service";
+import type { SaveProgressListener } from "../../api/services/page-blocks.service";
 import { getContentErrorMessage } from "../entities/content-editor-error-messages";
 import {
+  applySavedOperations,
   blockError,
   createDraftBlock,
   duplicateBlock,
   hasPendingChanges,
   moveBlock,
+  NO_SAVED_OPERATIONS,
   planPageSave,
   removeBlock,
   replaceBlock,
 } from "../entities/page-draft.entity";
-import type { AddableBlockType, DraftBlock } from "../entities/page-draft.entity";
+import type { AddableBlockType, DraftBlock, SavedOperations } from "../entities/page-draft.entity";
 import { CONTENT_QUERY_CONFIG } from "./use-content-tree";
 
 export type BlockChange = Partial<Pick<DraftBlock, "title" | "content" | "mediaId">>;
@@ -57,6 +60,48 @@ export type UsePageEditorResult = {
 
 type DraftState = { pageId: string, blocks: readonly DraftBlock[] };
 
+// Confirmed operations over one loaded snapshot (`basis` is the query data object they were applied to).
+type SavedState = { basis: unknown, operations: SavedOperations };
+
+type SaveRecorder = { listener: SaveProgressListener, created: ReadonlyMap<string, string>, snapshot: () => SavedOperations };
+
+// Collects every operation the backend confirms during one save, on top of the ones of earlier saves of the same snapshot.
+function createSaveRecorder(blocks: readonly DraftBlock[], prior: SavedOperations): SaveRecorder {
+  const byKey = new Map(blocks.map((block) => [block.key, block]));
+  const deleted = new Set(prior.deleted);
+  const updated = new Map(prior.updated);
+  const createdBlocks = [...prior.created];
+  const created = new Map<string, string>();
+  let order = prior.order;
+
+  return {
+    created,
+    listener: {
+      onDeleted: (id) => deleted.add(id),
+      onUpdated: (id) => {
+        const block = blocks.find((candidate) => candidate.id === id);
+
+        if (block) {
+          updated.set(id, { ...block, key: id });
+        }
+      },
+      onCreated: (key, id) => {
+        const block = byKey.get(key);
+
+        created.set(key, id);
+
+        if (block) {
+          createdBlocks.push({ ...block, key: id, id });
+        }
+      },
+      onReordered: (ids) => {
+        order = [...ids];
+      },
+    },
+    snapshot: () => ({ deleted: new Set(deleted), updated: new Map(updated), created: [...createdBlocks], order }),
+  };
+}
+
 function withIds(blocks: readonly DraftBlock[], created: ReadonlyMap<string, string>): DraftBlock[] {
   return blocks.map((block) => {
     const id = created.get(block.key);
@@ -70,11 +115,18 @@ export function usePageEditor(pageId: string): UsePageEditorResult {
   const query = useApiQuery(PAGE_EDITOR_PATH, { params: { id: pageId } }, CONTENT_QUERY_CONFIG);
   const page = useMemo(() => (query.data ? toEditablePage(query.data.data) : null), [query.data]);
   const [draft, setDraft] = useState<DraftState | null>(null);
+  const [saved, setSaved] = useState<SavedState | null>(null);
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
   const nextKey = useRef(0);
   const edits = useRef(0);
-  const serverBlocks = page?.blocks ?? null;
+  const loadedBlocks = page?.blocks ?? null;
+  // A newer snapshot (successful refresh) already contains the saved operations.
+  const savedOperations = saved && saved.basis === query.data ? saved.operations : NO_SAVED_OPERATIONS;
+  const serverBlocks = useMemo(
+    () => (loadedBlocks ? applySavedOperations(loadedBlocks, savedOperations) : null),
+    [loadedBlocks, savedOperations],
+  );
   const blocks = draft && draft.pageId === pageId ? draft.blocks : serverBlocks;
   const plan = useMemo(() => (serverBlocks && blocks ? planPageSave(serverBlocks, blocks) : null), [serverBlocks, blocks]);
   const invalidKey = blocks?.find((block) => blockError(block) !== null)?.key ?? null;
@@ -103,26 +155,32 @@ export function usePageEditor(pageId: string): UsePageEditorResult {
       return { status: "success" };
     }
 
-    const created = new Map<string, string>();
+    const basis = query.data;
+    const recorder = createSaveRecorder(blocks, savedOperations);
+    const record = () => setSaved({ basis, operations: recorder.snapshot() });
     const editsAtStart = edits.current;
 
     savingRef.current = true;
     setSaving(true);
 
     try {
-      await savePageBlocks(page.id, plan, (key, id) => created.set(key, id));
-      // The blocks are saved; a failed refresh only leaves stale data on screen.
-      await invalidateApiQueries(mutate, PAGE_EDITOR_INVALIDATES).catch(() => undefined);
+      await savePageBlocks(page.id, plan, recorder.listener);
+      record();
 
-      if (edits.current === editsAtStart) {
+      // The blocks are saved; a failed refresh only leaves the loaded snapshot stale.
+      const refreshed = await invalidateApiQueries(mutate, PAGE_EDITOR_INVALIDATES).then(() => true, () => false);
+
+      if (refreshed && edits.current === editsAtStart) {
         setDraft(null);
       } else {
-        setDraft((previous) => (previous ? { pageId, blocks: withIds(previous.blocks, created) } : previous));
+        setDraft((previous) => ({ pageId, blocks: withIds(previous && previous.pageId === pageId ? previous.blocks : blocks, recorder.created) }));
       }
 
       return { status: "success" };
     } catch (caught) {
-      setDraft((previous) => ({ pageId, blocks: withIds(previous && previous.pageId === pageId ? previous.blocks : blocks, created) }));
+      // Keep what was confirmed so a retry never re-sends it, even if the refresh below fails too.
+      record();
+      setDraft((previous) => ({ pageId, blocks: withIds(previous && previous.pageId === pageId ? previous.blocks : blocks, recorder.created) }));
       await query.mutate().catch(() => undefined);
 
       return { status: "error", message: getContentErrorMessage(toApiError(caught)) };

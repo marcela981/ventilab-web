@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Page editor page tests
-* Descripción: Integration tests of PageEditorPage with msw over a mutable in-memory page: loads the blocks in order with the saved status, an equation edit marks "Cambios sin guardar" (beforeunload prevented, router guard registered and cancelling when the user stays) and saves only that block's content, add/duplicate/delete (with confirmation)/move are saved as DELETE, POST and one reorder with every id, the lazy Tiptap editor opens for a new text block, an invalid video URL blocks saving, and a failed save keeps the changes with the mapped error. Depends on vitest, Testing Library, msw, the content editor test helpers and the page editor page.
-* Versión: 1.0 (C4)
+* Descripción: Integration tests of PageEditorPage with msw over a mutable in-memory page: loads the blocks in order with the saved status, an equation edit marks "Cambios sin guardar" (beforeunload prevented, router guard registered and cancelling when the user stays) and saves only that block's content, add/duplicate/delete (with confirmation)/move are saved as DELETE, POST and one reorder with every id, the lazy Tiptap editor opens for a new text block, an invalid video URL blocks saving, and a failed save keeps the changes with the mapped error. Depends on vitest, Testing Library, msw, the content editor test helpers and the page editor page. v1.1 (C4 review): guard aborts with the string sentinel and silences its rejection, back/forward through beforePopState (declined restores the entry, confirmed is not asked twice), a rich text edit through the real Tiptap editor (exposed on its DOM node, jsdom cannot type into ProseMirror) marks unsaved changes and POSTs its Tiptap JSON, and a load error retries into the editor.
+* Versión: 1.1 (C4)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,20 +9,26 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { PageBlockDTO } from "../../api/dtos/content-editor.dto";
 import { apiUrl, envelope, errorResponse, renderWithSession } from "./content-editor-test-helpers";
+import { NAVIGATION_CANCELLED } from "../hooks/use-unsaved-changes-guard";
 import { PageEditorPage } from "./page-editor.page";
 
 type Recorded = { method: string, path: string, body: unknown };
 type RouteHandler = (url: string) => void;
+type PopHandler = () => boolean;
 
 const router = vi.hoisted(() => ({
   asPath: "/content/pages/p1",
   handlers: new Map<string, (url: string) => void>(),
+  popHandler: null as (() => boolean) | null,
+  beforePopState: (handler: () => boolean) => {
+    router.popHandler = handler;
+  },
   events: {
     on: (event: string, handler: (url: string) => void) => router.handlers.set(event, handler),
     off: (event: string) => router.handlers.delete(event),
@@ -95,6 +101,7 @@ beforeEach(() => {
     blockDto("b3", 3, "VIDEO", { url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }),
   ];
   router.handlers.clear();
+  router.popHandler = null;
 
   server.use(
     http.get(apiUrl("/api/pages/p1"), () => HttpResponse.json(envelope(pageDto()))),
@@ -171,8 +178,31 @@ describe("PageEditorPage", { timeout: 30_000 }, () => {
 
     const onRouteChange = router.handlers.get("routeChangeStart") as RouteHandler;
 
-    vi.spyOn(window, "confirm").mockReturnValue(false);
-    expect(() => onRouteChange("/content")).toThrow();
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+
+    // In-app navigation: aborted with the string sentinel, whose unhandled rejection is silenced.
+    expect(() => onRouteChange("/content")).toThrow(NAVIGATION_CANCELLED);
+
+    const rejection = new Event("unhandledrejection", { cancelable: true }) as PromiseRejectionEvent;
+
+    Object.defineProperty(rejection, "reason", { value: NAVIGATION_CANCELLED });
+    window.dispatchEvent(rejection);
+    expect(rejection.defaultPrevented).toBe(true);
+
+    // Back/forward declined: Next does not route and the edited entry is pushed back.
+    const editedState: unknown = window.history.state;
+    const pushState = vi.spyOn(window.history, "pushState");
+
+    expect((router.popHandler as PopHandler)()).toBe(false);
+    expect(pushState).toHaveBeenCalledWith(editedState, "", "/content/pages/p1");
+
+    // Back/forward confirmed: the route change that follows is not asked again.
+    confirm.mockReturnValue(true);
+    expect((router.popHandler as PopHandler)()).toBe(true);
+    confirm.mockClear();
+    confirm.mockReturnValue(false);
+    expect(() => onRouteChange("/content")).not.toThrow();
+    expect(confirm).not.toHaveBeenCalled();
 
     fireEvent.click(saveButton());
 
@@ -180,6 +210,7 @@ describe("PageEditorPage", { timeout: 30_000 }, () => {
     expect(writes()).toEqual([{ method: "PUT", path: "/api/pages/p1/blocks/b2", body: { content: { latex: "P = F \\cdot R", display: true } } }]);
     await waitFor(() => expect(screen.getByText("Todos los cambios están guardados")).toBeInTheDocument(), LOAD);
     expect(router.handlers.has("routeChangeStart")).toBe(false);
+    expect((router.popHandler as PopHandler)()).toBe(true);
   });
 
   it("saves added, duplicated, deleted and moved blocks with one reorder", async() => {
@@ -217,6 +248,47 @@ describe("PageEditorPage", { timeout: 30_000 }, () => {
 
     expect(editor).toHaveAttribute("contenteditable", "true");
     expect(screen.getByRole("toolbar", { name: "Formato: Texto del bloque" })).toBeInTheDocument();
+  });
+
+  it("sends the Tiptap JSON of an edited rich text block", async() => {
+    await renderEditor();
+
+    fireEvent.click(screen.getByRole("button", { name: "Agregar bloque" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Texto" }));
+
+    const field = await screen.findByRole("textbox", { name: "Texto del bloque" }, LOAD);
+    // jsdom cannot type into ProseMirror: drive the real Tiptap editor that @tiptap/core exposes on its DOM node.
+    const tiptap = (field as HTMLElement & { editor: { commands: { insertContent: (value: string) => boolean } } }).editor;
+
+    act(() => {
+      tiptap.commands.insertContent("Hola");
+    });
+
+    expect(screen.getByText("Cambios sin guardar")).toBeInTheDocument();
+    fireEvent.click(saveButton());
+
+    await screen.findByText("Página guardada.", {}, LOAD);
+    expect(writes()).toEqual([
+      {
+        method: "POST",
+        path: "/api/pages/p1/blocks",
+        body: { type: "TEXT", content: { doc: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Hola" }] }] } } },
+      },
+    ]);
+  });
+
+  it("shows the load error and loads the page on retry", async() => {
+    let fail = true;
+
+    server.use(http.get(apiUrl("/api/pages/p1"), () => (fail ? errorResponse("internal_error", 500) : HttpResponse.json(envelope(pageDto())))));
+    renderWithSession(<PageEditorPage pageId="p1" />);
+
+    expect(await screen.findByText("No se pudo cargar la página", {}, LOAD)).toBeInTheDocument();
+
+    fail = false;
+    fireEvent.click(screen.getByRole("button", { name: /reintentar/i }));
+
+    expect(await screen.findByRole("heading", { name: "Presiones en la vía aérea" }, LOAD)).toBeInTheDocument();
   });
 
   it("blocks saving while a video link is not YouTube or Vimeo", async() => {

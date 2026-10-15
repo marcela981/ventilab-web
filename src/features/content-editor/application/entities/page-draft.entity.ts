@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Page draft entity
-* Descripción: Local draft of the blocks of one Page in the page editor and its pure logic. A DraftBlock keeps a stable local key (the server id for loaded blocks, `new-N` for added ones) and its server id (null until created). Operations: createDraftBlock (default content per type, matching the backend block content shapes: {doc} rich text, {latex, display}, {url}, {caption, alt}, {code, language}, {}), duplicateBlock (copy right after the original, no id), moveBlock, removeBlock, replaceBlock. Validation mirrors the backend normalizeBlock rules (equation LaTeX required, video = exactly one of a YouTube/Vimeo https URL or a media id, code language pattern, image/file need a media id). planPageSave diffs the draft against the server blocks: deletes, updates with only the changed fields (title, content, mediaId), creates (the backend appends them) and a full reorder only when the final order differs from what the backend leaves after appending. toBlockPayload builds the request body (empty video URL / code language omitted; rich text never sends media). Depends on @shared/rich-content block types and the video source parser.
-* Versión: 1.0 (C4)
+* Descripción: Local draft of the blocks of one Page in the page editor and its pure logic. A DraftBlock keeps a stable local key (the server id for loaded blocks, `new-N` for added ones) and its server id (null until created). Operations: createDraftBlock (default content per type, matching the backend block content shapes: {doc} rich text, {latex, display}, {url}, {caption, alt}, {code, language}, {}), duplicateBlock (copy right after the original, no id), moveBlock, removeBlock, replaceBlock. Validation mirrors the backend normalizeBlock rules (equation LaTeX required, video = exactly one of a YouTube/Vimeo https URL or a media id, code language pattern, image/file need a media id). planPageSave diffs the draft against the server blocks: deletes, updates with only the changed fields (title, content, mediaId), creates (the backend appends them) and a full reorder only when the final order differs from what the backend leaves after appending. toBlockPayload builds the request body (empty video URL / code language omitted; rich text never sends media). Depends on @shared/rich-content block types and the video source parser. v1.1 (C4 review): SavedOperations and applySavedOperations: the confirmed deletes, updates, creates and reorder of a save applied over the loaded server blocks, so a retry diffs against what was really saved even when the refresh failed.
+* Versión: 1.1 (C4)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -306,4 +306,42 @@ export function planPageSave(server: readonly DraftBlock[], draft: readonly Draf
 
 export function hasPendingChanges(plan: PageSavePlan): boolean {
   return plan.deletes.length > 0 || plan.updates.length > 0 || plan.creates.length > 0 || plan.order !== null;
+}
+
+// Operations the backend already confirmed for blocks loaded in one server snapshot.
+export type SavedOperations = {
+  deleted: ReadonlySet<string>
+  // Saved state of each updated block, keyed by its server id.
+  updated: ReadonlyMap<string, DraftBlock>
+  // Created blocks in creation order, with their server id as key and id.
+  created: readonly DraftBlock[]
+  // Final order of every block id when a reorder was saved.
+  order: readonly string[] | null
+};
+
+export const NO_SAVED_OPERATIONS: SavedOperations = { deleted: new Set(), updated: new Map(), created: [], order: null };
+
+// The server blocks as they really are after the saved operations, even while the loaded snapshot is stale.
+export function applySavedOperations(server: readonly DraftBlock[], saved: SavedOperations): readonly DraftBlock[] {
+  if (saved.deleted.size === 0 && saved.updated.size === 0 && saved.created.length === 0 && saved.order === null) {
+    return server;
+  }
+
+  const kept = server.filter((block) => !saved.deleted.has(block.key)).map((block) => saved.updated.get(block.key) ?? block);
+  const present = new Set(kept.map((block) => block.key));
+  // The backend appends created blocks after the kept ones, in creation order.
+  const blocks = [...kept, ...saved.created.filter((block) => !present.has(block.key))];
+  const order = saved.order;
+
+  if (!order) {
+    return blocks;
+  }
+
+  const position = (key: string) => {
+    const index = order.indexOf(key);
+
+    return index === -1 ? order.length : index;
+  };
+
+  return [...blocks].sort((left, right) => position(left.key) - position(right.key));
 }
