@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: StreamingMessage
-* Descripción: Assistant bubble of the answer being streamed. Shows the TypingIndicator until the first text arrives, then the markdown as it grows. Screen readers get a separate visually hidden aria-live="polite" region that only receives complete fragments (cut at sentence, clause or line ends) and the remainder once streaming stops, so it never announces per token. `footer`/`actions` are passed to the bubble (e.g. the "stopped" note). Depends on MessageBubble, AiMarkdown, TypingIndicator and the conversation styles.
-* Versión: 1.0
+* Descripción: Assistant bubble of the answer being streamed. Shows the TypingIndicator until the first text arrives, then the markdown as it grows. Screen readers get a separate visually hidden aria-live="polite" region that only receives complete fragments (cut at sentence, clause or line ends) and the remainder once streaming stops, so it never announces per token. `footer`/`actions` are passed to the bubble (e.g. the "stopped" note). `announce={false}` drops the live region (a finished turn kept in the history) while keeping the same element tree, so a stateful footer such as a rating is not remounted. Depends on MessageBubble, AiMarkdown, TypingIndicator and the conversation styles.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -52,10 +52,13 @@ export type StreamingMessageProps = {
   typingLabel?: string
   actions?: ReactNode
   footer?: ReactNode
+  // false drops the live region (e.g. a finished turn now in the history), so its text is not read twice;
+  // the bubble keeps the same element tree, so stateful footer content (a rating) is not remounted.
+  announce?: boolean
   className?: string
 };
 
-export function StreamingMessage({ text, isStreaming, typingLabel, actions, footer, className }: StreamingMessageProps) {
+export function StreamingMessage({ text, isStreaming, typingLabel, actions, footer, announce = true, className }: StreamingMessageProps) {
   const showTyping = isStreaming && text === "";
 
   return (
@@ -67,9 +70,11 @@ export function StreamingMessage({ text, isStreaming, typingLabel, actions, foot
       {...(className === undefined ? {} : { className })}
     >
       {showTyping ? <TypingIndicator {...(typingLabel === undefined ? {} : { label: typingLabel })} /> : <AiMarkdown content={text} />}
-      <div className={cx(styles.visuallyHidden)} aria-live="polite" aria-atomic="false" aria-relevant="additions">
-        {announcementFragments(text, isStreaming).map((fragment, index) => <span key={index}>{`${fragment} `}</span>)}
-      </div>
+      {announce ? (
+        <div className={cx(styles.visuallyHidden)} aria-live="polite" aria-atomic="false" aria-relevant="additions">
+          {announcementFragments(text, isStreaming).map((fragment, index) => <span key={index}>{`${fragment} `}</span>)}
+        </div>
+      ) : null}
     </MessageBubble>
   );
 }

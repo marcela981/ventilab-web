@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI conversation components tests
-* Descripción: Tests of the presentational AI conversation pieces: MessageList wraps each turn in a labelled list item, MessageBubble shows user text as typed with its slots, StreamingMessage shows the typing indicator before the first text and announces only complete fragments while streaming (the rest once it stops), and SourceCitations renders nothing without sources and only safe http(s) links otherwise. Depends on vitest and Testing Library.
-* Versión: 1.0
+* Descripción: Tests of the presentational AI conversation pieces: MessageList wraps each turn in a labelled list item, MessageBubble shows user text as typed with its slots, StreamingMessage shows the typing indicator before the first text and announces only complete fragments while streaming (the rest once it stops) and with `announce={false}` drops its live region without remounting the footer, and SourceCitations renders nothing without sources and only safe http(s) links otherwise. Depends on vitest and Testing Library.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -56,6 +56,17 @@ describe("StreamingMessage", () => {
     expect(live).toHaveTextContent(/^Primera frase\.$/);
     rerender(<StreamingMessage text="Primera frase. Segunda frase" isStreaming={false} />);
     expect(live).toHaveTextContent("Primera frase. Segunda frase");
+  });
+
+  it("drops the live region when announce is false and keeps the footer mounted", () => {
+    const { container, rerender } = render(<StreamingMessage text="Respuesta completa." isStreaming={false} footer={<input aria-label="Nota" defaultValue="" />} />);
+
+    screen.getByRole("textbox", { name: "Nota" }).setAttribute("data-mounted", "first");
+    rerender(<StreamingMessage text="Respuesta completa." isStreaming={false} announce={false} footer={<input aria-label="Nota" defaultValue="" />} />);
+
+    expect(container.querySelector("[aria-relevant='additions']")).toBeNull();
+    // Same DOM node: React kept the footer instead of remounting it.
+    expect(screen.getByRole("textbox", { name: "Nota" })).toHaveAttribute("data-mounted", "first");
   });
 });
 
