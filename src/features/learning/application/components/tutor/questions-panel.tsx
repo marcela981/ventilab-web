@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: QuestionsPanel
-* Descripción: "Preguntas" tab of the lesson viewer: a chat with the AI tutor about the lesson (default) or the whole module. The scope selector switches between LESSON (refId = lessonId) and MODULE (refId = moduleId); each scope reopens the caller's existing conversation (useScopeConversation, client-side refId lookup) and shows its history: student and tutor bubbles, tutor answers as markdown, a note on answers saved incomplete and the shared "¿Te fue útil?" widget per rateable answer (MESSAGE target = assistant message id). The first message starts the conversation (POST /api/tutor/conversations with scope, refId and currentPageId); later ones are sent to POST /api/tutor/conversations/{id}/messages; both stream the answer progressively (useAiStream) with a "Detener" button. After every stream the conversation is revalidated so the saved messages (including stopped, incomplete ones) replace the pending bubbles; an error before the stream gives the question back to the input. The thread is keyed by scope + refId, so switching scope, closing the panel or switching tab aborts the running answer. Depends on MUI, @shared/design-system, useAiStream, useScopeConversation, the tutor service, the AI error messages, TutorAnswer and the tutor CSS Module.
-* Versión: 1.0
+* Descripción: "Preguntas" tab of the lesson viewer: a chat with the AI tutor about the lesson (default) or the whole module. The scope selector switches between LESSON (refId = lessonId) and MODULE (refId = moduleId); each scope reopens the caller's existing conversation (useScopeConversation, client-side refId lookup) and shows its history: student and tutor bubbles, tutor answers as markdown, a note on answers saved incomplete and the shared "¿Te fue útil?" widget per rateable answer (MESSAGE target = assistant message id). The first message starts the conversation (POST /api/tutor/conversations with scope, refId and currentPageId); later ones are sent to POST /api/tutor/conversations/{id}/messages; both stream the answer progressively (useAiStream) with a "Detener" button. After every stream the conversation is revalidated so the saved messages (including stopped, incomplete ones) replace the pending bubbles; an error before the stream gives the question back to the input. The thread is keyed by scope + refId, so switching scope, closing the panel or switching tab aborts the running answer. Depends on MUI, @shared/design-system, useAiStream, useScopeConversation, the tutor service, the AI error messages, TutorAnswer and the tutor CSS Module. v1.1 (L6 fix): "rejected before the stream" is decided by whether any frame was received (outcome.streamStarted), not by the HTTP status, so network failures (status 0: network.unavailable/timeout) also give the question back.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -100,7 +100,7 @@ function ConversationThread({ scope, refId, currentPageId }: ConversationThreadP
       ? sendMessageRequest(existingId, { message, currentPageId })
       : startConversationRequest({ scope, refId, message, currentPageId }));
 
-    if (outcome.status === "error" && outcome.error.status !== 0) {
+    if (outcome.status === "error" && !outcome.streamStarted) {
       // Rejected before the stream started: nothing was saved, give the question back.
       setDraft((current) => (current === "" ? message : current));
       setPending(null);

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: QuestionsPanel tests
-* Descripción: Integration tests of the "Preguntas" panel against msw (real text/event-stream bodies for the streamed answers): it reopens the caller's LESSON conversation (client-side refId lookup, also on a later page of the listing) and shows its history with the incomplete note and the rating widget, sending a message streams the answer progressively and then shows the saved conversation, the first message starts a conversation with scope/refId/currentPageId, switching to MODULE looks up and starts with the moduleId, "Detener" stops the answer, an error before the stream gives the question back, and unmounting aborts the running stream. RichContent is replaced by plain text. Depends on vitest, Testing Library, msw and the learning/SSE test helpers.
-* Versión: 1.0
+* Descripción: Integration tests of the "Preguntas" panel against msw (real text/event-stream bodies for the streamed answers): it reopens the caller's LESSON conversation (client-side refId lookup, also on a later page of the listing) and shows its history with the incomplete note and the rating widget, sending a message streams the answer progressively and then shows the saved conversation, the first message starts a conversation with scope/refId/currentPageId, switching to MODULE looks up and starts with the moduleId, "Detener" stops the answer, an error before the stream gives the question back, and unmounting aborts the running stream. RichContent is replaced by plain text. Depends on vitest, Testing Library, msw and the learning/SSE test helpers. v1.1 (L6 fix): a network failure before the stream (status 0) also gives the question back.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -237,6 +237,18 @@ describe("QuestionsPanel", () => {
 
     expect(await screen.findByText(AI_ERROR_MESSAGES.providerUnavailable)).toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "Tu pregunta" })).toHaveValue("¿Sigue disponible?");
+  });
+
+  it("gives the question back when the network fails before the stream", async() => {
+    server.use(http.post(apiUrl("/api/tutor/conversations/:conversationId/messages"), () => HttpResponse.error()));
+    renderPanel();
+    await screen.findByText("¿Qué es la PEEP?");
+
+    send("¿Hay conexión?");
+
+    await waitFor(() => expect(screen.getByRole("textbox", { name: "Tu pregunta" })).toHaveValue("¿Hay conexión?"));
+    expect(screen.getAllByText("¿Qué es la PEEP?")).toHaveLength(1);
+    expect(screen.queryByText("¿Hay conexión?", { selector: "p" })).not.toBeInTheDocument();
   });
 
   it("aborts the running answer when the panel unmounts", async() => {

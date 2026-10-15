@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: DeepenPanel
-* Descripción: "Profundizar" tab of the lesson viewer. "¿Deseas profundizar en el tema?" asks the AI tutor to deepen the visible Page (POST /api/tutor/pages/{pageId}/deepen, SSE) with an optional question; the answer renders progressively as markdown, "Detener" aborts it, and when it is done the shared "¿Te fue útil?" widget rates it (MESSAGE target = returned messageId). Follow-up questions reuse the returned conversationId and the thread of the current Page stays visible. The thread is keyed by pageId: changing page (and closing the panel or switching tab, which unmount it) aborts the running answer and starts a fresh thread. Errors use the shared AI messages (quota with the local reset time, provider unavailable, unpublished page, interrupted stream). Depends on MUI, useAiStream, the tutor service, the AI error messages, TutorAnswer and the tutor CSS Module.
-* Versión: 1.0
+* Descripción: "Profundizar" tab of the lesson viewer. "¿Deseas profundizar en el tema?" asks the AI tutor to deepen the visible Page (POST /api/tutor/pages/{pageId}/deepen, SSE) with an optional question; the answer renders progressively as markdown, "Detener" aborts it, and when it is done the shared "¿Te fue útil?" widget rates it (MESSAGE target = returned messageId). Follow-up questions reuse the returned conversationId and the thread of the current Page stays visible. The thread is keyed by pageId: changing page (and closing the panel or switching tab, which unmount it) aborts the running answer and starts a fresh thread. Errors use the shared AI messages (quota with the local reset time, provider unavailable, unpublished page, interrupted stream). Depends on MUI, useAiStream, the tutor service, the AI error messages, TutorAnswer and the tutor CSS Module. v1.1 (L5 fix, documented): a conversationId is adopted only from `done`; the backend tutor SSE (ventylab-server tutor-sse.ts) sends conversationId only in the `done` frame (delta = {text}, error = {code, message}), so a first answer stopped or failed after the stream started has no id to adopt and the next question starts a new conversation (BACKEND GAP). The id of an earlier finished answer survives later failures.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -95,6 +95,7 @@ function DeepenThread({ pageId }: { pageId: string }) {
 
     const outcome = await stream.start(deepenPageRequest(pageId, { question: asked ?? undefined, conversationId }));
 
+    // Only `done` carries conversationId (backend SSE contract); stopped or failed answers keep the current one.
     if (outcome.status === "done") {
       setConversationId(outcome.done.conversationId);
     }
