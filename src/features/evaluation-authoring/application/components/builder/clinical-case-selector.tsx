@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ClinicalCaseSelector
-* Descripción: Clinical case picker of a SIMULATION question in the evaluation builder: a native select over one page of published cases (`GET /api/clinical-cases?status=PUBLISHED`, 20 per page, newest first) with "Casos anteriores"/"Más casos" paging and a title filter of the loaded page (the API has no text search). The chosen case stays in the select even when it is not on the page (read by id) or no longer exists. "Sin caso clínico" clears it. Loading and error-with-retry states. Depends on MUI, the design-system FormField, @shared/lib, the clinical case hooks and entities, the builder copy and the simulation CSS Module.
-* Versión: 1.0
+* Descripción: Clinical case picker of a SIMULATION question in the evaluation builder: a native select over one page of published cases (`GET /api/clinical-cases?status=PUBLISHED`, 20 per page, newest first) with "Casos anteriores"/"Más casos" paging and a title filter of the loaded page (the API has no text search). The chosen case stays in the select even when it is not on the page (read by id) or no longer exists. "Sin caso clínico" clears it. Loading and error-with-retry states. Depends on MUI, the design-system FormField, @shared/lib, the clinical case hooks and entities, the builder copy and the simulation CSS Module. v1.1 (A3 review S2): the title filter reads "Filtrar por título" with the hint "Filtra solo esta página".
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -59,6 +59,7 @@ export function ClinicalCaseSelector({ value, disabled, onChange }: ClinicalCase
         </FormField>
         <FormField
           label={BUILDER_COPY.simulationCaseFilter}
+          helperText={BUILDER_COPY.simulationCaseFilterHelp}
           value={term}
           size="small"
           className={cx(styles.caseField)}

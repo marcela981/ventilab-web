@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation readiness tests
-* Descripción: Unit tests of the client READY validation of the builder against the backend rule it mirrors: no questions, non-positive points, choice questions without a correct option, SINGLE_CHOICE and TRUE_FALSE with two correct options, TRUE_FALSE without exactly two options (reported alone), a valid MULTIPLE_CHOICE with several correct options, SIMULATION with an invalid rubric (Spanish details) and the client-only clinical case rule, and readinessQuestionsFrom applying the unsaved drafts. Depends on vitest and the builder entities.
-* Versión: 1.0
+* Descripción: Unit tests of the client READY validation of the builder against the backend rule it mirrors: no questions, non-positive points, choice questions without a correct option, SINGLE_CHOICE and TRUE_FALSE with two correct options, TRUE_FALSE without exactly two options (reported alone), a valid MULTIPLE_CHOICE with several correct options, SIMULATION with an invalid rubric (Spanish details) and the client-only clinical case rule, and readinessQuestionsFrom applying the unsaved drafts. Depends on vitest and the builder entities. v1.1 (A3 review W2): a SIMULATION question without a clinical case raises no readiness issue (the backend does not require it).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -48,7 +48,7 @@ describe("validateEvaluationReadiness", () => {
     ]);
   });
 
-  it("validates the rubric of a SIMULATION question and asks for its clinical case", () => {
+  it("validates the rubric of a SIMULATION question and never requires its clinical case", () => {
     const issues = validateEvaluationReadiness([
       question("q1", { type: "SIMULATION", rubric: { criteria: [] } }),
       question("q2", { type: "SIMULATION", rubric: { criteria: [{ parameter: "peep", expectedValue: 8 }] }, clinicalCaseId: "case-1" }),
@@ -56,7 +56,6 @@ describe("validateEvaluationReadiness", () => {
 
     expect(issues).toEqual([
       { code: "invalid_rubric", questionId: "q1", details: ["La rúbrica necesita al menos un criterio."] },
-      { code: "clinical_case_required", questionId: "q1", details: [] },
     ]);
   });
 });

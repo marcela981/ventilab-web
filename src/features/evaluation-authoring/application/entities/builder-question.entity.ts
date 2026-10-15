@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Builder question drafts
-* Descripción: Pure rules of the question editor of the evaluation builder: Spanish labels of the question types, the local draft of a question (prompt document, points, explanation and, for choice questions, the option list with stable client keys; new options have no id yet), the correct-answer semantics (radio for SINGLE_CHOICE and TRUE_FALSE, checkbox for MULTIPLE_CHOICE), adding, removing and moving options, validation mirroring the backend DTOs (points positive, option text required, at most 20 options), the dirty check and the save plan of a draft against the loaded question: the question PATCH holding only the changed fields, the options to create, the option PATCHes (the ones that become correct first, so a multiple choice never drops to zero correct answers on the way), the options to delete and whether the final option order must be sent with `PUT .../options/order`. Also the body of a new question (TRUE_FALSE starts with the two options Verdadero and Falso) and the Spanish messages of the readiness issues of `GET /api/evaluations/{id}`. No dependencies besides the builder entities. v1.1 (A3): SIMULATION drafts carry the clinical case and the rubric draft (saved in the question PATCH, validated with the backend rubric rules); the question PATCH is split into the text part (prompt, explanation) and the structural part (points, clinical case, rubric) so texts still save on an evaluation with submitted attempts; stripStructuralEdits drops the structural edits of a draft once the structure is locked; withCreatedOptionIds gives created options their backend id; the option order check compares option ids (an option created by a failed save keeps its client key); readiness messages cover clinical_case_required and translate the English rubric details of the backend. Depends on the simulation rubric entity.
-* Versión: 1.1
+* Descripción: Pure rules of the question editor of the evaluation builder: Spanish labels of the question types, the local draft of a question (prompt document, points, explanation and, for choice questions, the option list with stable client keys; new options have no id yet), the correct-answer semantics (radio for SINGLE_CHOICE and TRUE_FALSE, checkbox for MULTIPLE_CHOICE), adding, removing and moving options, validation mirroring the backend DTOs (points positive, option text required, at most 20 options), the dirty check and the save plan of a draft against the loaded question: the question PATCH holding only the changed fields, the options to create, the option PATCHes (the ones that become correct first, so a multiple choice never drops to zero correct answers on the way), the options to delete and whether the final option order must be sent with `PUT .../options/order`. Also the body of a new question (TRUE_FALSE starts with the two options Verdadero and Falso) and the Spanish messages of the readiness issues of `GET /api/evaluations/{id}`. No dependencies besides the builder entities. v1.1 (A3): SIMULATION drafts carry the clinical case and the rubric draft (saved in the question PATCH, validated with the backend rubric rules); the question PATCH is split into the text part (prompt, explanation) and the structural part (points, clinical case, rubric) so texts still save on an evaluation with submitted attempts; stripStructuralEdits drops the structural edits of a draft once the structure is locked; withCreatedOptionIds gives created options their backend id; the option order check compares option ids (an option created by a failed save keeps its client key); readiness messages cover clinical_case_required and translate the English rubric details of the backend. Depends on the simulation rubric entity. v1.2 (A3 review W2/S1): optionSaveSteps fixes the order of the option calls (options becoming correct, creates, the remaining updates such as isCorrect=false, deletes); clinical_case_required is no longer a readiness message; READY_CHANGE_REFUSED carries the READY hint shown when a 422 has no client explanation.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,6 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import { BUILDER_COPY } from "./builder-copy";
 import { emptyDoc, sameRichText } from "./builder-rich-text";
 import type { RichDoc } from "./builder-rich-text";
 import type { BuilderMedia, BuilderQuestion, QuestionType, ReadinessIssue } from "./evaluation-builder.entity";
@@ -38,6 +39,8 @@ export const QUESTION_ERROR_MESSAGES = {
   tooManyOptions: `Una pregunta admite como máximo ${MAX_OPTIONS_PER_QUESTION} opciones.`,
 } as const;
 
+export const READY_CHANGE_REFUSED = "ready_change_refused";
+
 export const READINESS_ISSUE_MESSAGES: Readonly<Record<string, string>> = {
   no_questions: "La evaluación necesita al menos una pregunta.",
   points_not_positive: "Los puntos de la pregunta deben ser mayores que cero.",
@@ -45,7 +48,8 @@ export const READINESS_ISSUE_MESSAGES: Readonly<Record<string, string>> = {
   single_correct_option_required: "Marca solo una opción correcta.",
   true_false_two_options_required: "Una pregunta de verdadero o falso debe tener exactamente dos opciones.",
   invalid_rubric: "La rúbrica de la simulación no es válida.",
-  clinical_case_required: "Elige el caso clínico de la simulación.",
+  // Client fallback after a 422 the client validation cannot explain (the backend sends no issues).
+  [READY_CHANGE_REFUSED]: BUILDER_COPY.readyHint,
 };
 
 function readinessDetail(detail: string): string {
@@ -315,6 +319,26 @@ export function planQuestionSave(question: BuilderQuestion, draft: QuestionDraft
     deletes: question.options.filter((option) => !draftIds.has(option.id)).map((option) => option.id),
     reorder: orderAfterCreatesAndDeletes(question, draft).join("|") !== finalOrder.join("|"),
   };
+}
+
+export type OptionSaveStep =
+  | { kind: "create", option: OptionDraft }
+  | { kind: "update", update: OptionUpdate }
+  | { kind: "delete", optionId: string };
+
+// Execution order of the option calls: options that become correct, then the creates, then the other updates
+// (including the ones that set isCorrect=false), then the deletes. A READY MULTIPLE_CHOICE whose only correct
+// answer moves to a new option therefore never passes through zero correct answers.
+export function optionSaveSteps(plan: QuestionSavePlan): OptionSaveStep[] {
+  const becomesCorrect = plan.updates.filter((update) => update.changes.isCorrect === true);
+  const others = plan.updates.filter((update) => update.changes.isCorrect !== true);
+
+  return [
+    ...becomesCorrect.map((update): OptionSaveStep => ({ kind: "update", update })),
+    ...plan.creates.map((option): OptionSaveStep => ({ kind: "create", option })),
+    ...others.map((update): OptionSaveStep => ({ kind: "update", update })),
+    ...plan.deletes.map((optionId): OptionSaveStep => ({ kind: "delete", optionId })),
+  ];
 }
 
 export function isPlanEmpty(plan: QuestionSavePlan): boolean {

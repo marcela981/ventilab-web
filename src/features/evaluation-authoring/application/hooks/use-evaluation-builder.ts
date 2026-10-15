@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useEvaluationBuilder
-* Descripción: State and actions of the evaluation builder. Holds a local draft over the evaluation loaded from `GET /api/evaluations/{id}` (null id: a new evaluation): the metadata form, the edited questions (prompt, points, explanation, options) and the edited scenario contents; dirty is true while any of them differs from the backend. save() validates and persists only the changed parts: creating sends `POST /api/evaluations` and replaces the route with the editor of the new evaluation; editing sends the metadata PATCH, one PATCH per edited scenario and, per edited question, its PATCH plus the option POST/PATCH/DELETE calls and `PUT .../options/order` when the order changed. Each part is saved independently: a failed part keeps its draft (created options keep their new ids) and its message is shown on its card; a 409 evaluation.has_submitted_attempts raises the structure-locked banner and a 422 re-reads the readiness issues to show them on the questions. Structural actions apply at once: add or delete questions and scenarios, the drag-and-drop reorders (`PUT .../questions/order` and `PUT .../scenarios/order`, shown optimistically and reverted with a toast on failure) and duplicate (opens the copy). Mutations are single-flight and refresh every authoring key. Depends on React, next/router, @shared/api-client, the design-system toast, the authoring services, mappers, entities and hooks. v1.1 (A3 + A2 review): the question PATCH is split into its text part (prompt, explanation) and its structural part (points, clinical case, rubric), so texts still save when attempts exist; options created by a save get their backend id merged into the current draft by client key (on success and on failure), so edits typed during the save survive and nothing is created twice; after a 409 has_submitted_attempts the structural edits of every draft are dropped (texts kept) with a toast, instead of repeating the 409 on every save; a 422 on a save shows the client READY validation of the drafts on the affected questions (the backend rolls the change back and sends no issues); markReady runs the client READY validation (issues shown on the cards) and then sends `PATCH .../status` READY, re-reading the readiness issues on a 422; markDraft returns a READY evaluation to DRAFT; deleting the only question of a READY evaluation is refused with the READY hint.
-* Versión: 1.1
+* Descripción: State and actions of the evaluation builder. Holds a local draft over the evaluation loaded from `GET /api/evaluations/{id}` (null id: a new evaluation): the metadata form, the edited questions (prompt, points, explanation, options) and the edited scenario contents; dirty is true while any of them differs from the backend. save() validates and persists only the changed parts: creating sends `POST /api/evaluations` and replaces the route with the editor of the new evaluation; editing sends the metadata PATCH, one PATCH per edited scenario and, per edited question, its PATCH plus the option POST/PATCH/DELETE calls and `PUT .../options/order` when the order changed. Each part is saved independently: a failed part keeps its draft (created options keep their new ids) and its message is shown on its card; a 409 evaluation.has_submitted_attempts raises the structure-locked banner and a 422 re-reads the readiness issues to show them on the questions. Structural actions apply at once: add or delete questions and scenarios, the drag-and-drop reorders (`PUT .../questions/order` and `PUT .../scenarios/order`, shown optimistically and reverted with a toast on failure) and duplicate (opens the copy). Mutations are single-flight and refresh every authoring key. Depends on React, next/router, @shared/api-client, the design-system toast, the authoring services, mappers, entities and hooks. v1.1 (A3 + A2 review): the question PATCH is split into its text part (prompt, explanation) and its structural part (points, clinical case, rubric), so texts still save when attempts exist; options created by a save get their backend id merged into the current draft by client key (on success and on failure), so edits typed during the save survive and nothing is created twice; after a 409 has_submitted_attempts the structural edits of every draft are dropped (texts kept) with a toast, instead of repeating the 409 on every save; a 422 on a save shows the client READY validation of the drafts on the affected questions (the backend rolls the change back and sends no issues); markReady runs the client READY validation (issues shown on the cards) and then sends `PATCH .../status` READY, re-reading the readiness issues on a 422; markDraft returns a READY evaluation to DRAFT; deleting the only question of a READY evaluation is refused with the READY hint. v1.2 (A3 review S1): the option calls of a question follow optionSaveSteps (creates before the updates that set isCorrect=false); when a 422 on a save has no client READY issue to show, the READY hint is shown on the refused questions (or the evaluation) instead of nothing.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -41,7 +41,9 @@ import {
   hasQuestionErrors,
   isQuestionDraftDirty,
   newQuestionBody,
+  optionSaveSteps,
   planQuestionSave,
+  READY_CHANGE_REFUSED,
   stripStructuralEdits,
   validateQuestionDraft,
   withCreatedOptionIds,
@@ -99,22 +101,21 @@ async function saveQuestionDraft(evaluationId: string, question: BuilderQuestion
     await updateQuestion(evaluationId, question.id, plan.structure);
   }
 
-  for (const option of plan.creates) {
-    const id = await addOption(evaluationId, question.id, {
-      content: option.content.trim(),
-      isCorrect: option.isCorrect,
-      ...(option.mediaId ? { mediaId: option.mediaId } : {}),
-    });
+  for (const step of optionSaveSteps(plan)) {
+    if (step.kind === "create") {
+      const { option } = step;
+      const id = await addOption(evaluationId, question.id, {
+        content: option.content.trim(),
+        isCorrect: option.isCorrect,
+        ...(option.mediaId ? { mediaId: option.mediaId } : {}),
+      });
 
-    createdIds.set(option.key, id);
-  }
-
-  for (const update of plan.updates) {
-    await updateOption(evaluationId, question.id, update.id, update.changes);
-  }
-
-  for (const optionId of plan.deletes) {
-    await removeOption(evaluationId, question.id, optionId);
+      createdIds.set(option.key, id);
+    } else if (step.kind === "update") {
+      await updateOption(evaluationId, question.id, step.update.id, step.update.changes);
+    } else {
+      await removeOption(evaluationId, question.id, step.optionId);
+    }
   }
 
   if (plan.reorder) {
@@ -421,8 +422,11 @@ export function useEvaluationBuilder(evaluationId: string | null): UseEvaluation
       const failed = new Set(summary.invalidQuestionIds);
       const issues = validateEvaluationReadiness(readinessQuestionsFrom(evaluation, savedDrafts))
         .filter((issue) => issue.questionId === null || failed.has(issue.questionId));
+      // Nothing the client can explain: fall back to the READY hint on the refused questions.
+      const refused = summary.invalidQuestionIds.length > 0 ? summary.invalidQuestionIds : [null];
+      const fallback = refused.map((questionId): ReadinessIssue => ({ code: READY_CHANGE_REFUSED, questionId, details: [] }));
 
-      setClientIssues(issues);
+      setClientIssues(issues.length > 0 ? issues : fallback);
       setShowIssues(true);
     } else {
       setClientIssues([]);

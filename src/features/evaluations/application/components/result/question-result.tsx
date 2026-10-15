@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: QuestionResult
-* Descripción: One question of a published attempt on the result page: position and earned points over the question points, the student's answer rendered with QuestionView in read-only mode, the option review of choice questions (correct options highlighted, the student's selection marked as correct or incorrect, option feedback when the teacher wrote it), the teacher explanation as rich text, the rubric criteria of SIMULATION questions and the AI feedback of the question. Only used for published attempts, the only case where correctness, explanation, rubric and earned score exist. Depends on MUI icons, the question components, RichTextView, RubricCriteriaTable, FeedbackBlock, the entities and the attempt result CSS Module.
-* Versión: 1.0
+* Descripción: One question of a published attempt on the result page: position and earned points over the question points, the student's answer rendered with QuestionView in read-only mode, the option review of choice questions (correct options highlighted, the student's selection marked as correct or incorrect, option feedback when the teacher wrote it), the teacher explanation as rich text, the rubric criteria of SIMULATION questions and the AI feedback of the question. Only used for published attempts, the only case where correctness, explanation, rubric and earned score exist. Depends on MUI icons, the question components, RichTextView, RubricCriteriaTable, FeedbackBlock, the entities and the attempt result CSS Module. v1.1 (A3 review S4): passes pollingStopped to the question FeedbackBlock.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -77,9 +77,10 @@ export type QuestionResultProps = {
   index: number
   total: number
   feedback: FeedbackItem | null
+  pollingStopped?: boolean | undefined
 };
 
-export function QuestionResult({ question, index, total, feedback }: QuestionResultProps) {
+export function QuestionResult({ question, index, total, feedback, pollingStopped = false }: QuestionResultProps) {
   const title = QUESTION_RESULT_COPY.title(index + 1, total);
 
   return (
@@ -97,7 +98,7 @@ export function QuestionResult({ question, index, total, feedback }: QuestionRes
         </div>
       ) : null}
       {question.type === "SIMULATION" ? <RubricCriteriaTable rubric={question.rubric} /> : null}
-      <FeedbackBlock item={feedback} title={QUESTION_RESULT_COPY.feedback} />
+      <FeedbackBlock item={feedback} title={QUESTION_RESULT_COPY.feedback} pollingStopped={pollingStopped} />
     </section>
   );
 }

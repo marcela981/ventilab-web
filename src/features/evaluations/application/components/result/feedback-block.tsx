@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: FeedbackBlock
-* Descripción: AI feedback of one question or of the whole attempt on the result page, by status: PENDING shows a labelled skeleton ("Generando retroalimentación…"), READY renders the content as rich text (markdown through RichTextView) with the shared "¿Te fue útil?" widget (ai-ratings GRADE_FEEDBACK target = feedback item id) and, for DETERMINISTIC items, the discreet label "Retroalimentación automática"; FAILED shows a discreet message. Renders nothing without an item. Depends on MUI Skeleton, @shared/ai-rating, the RichTextView, the attempt feedback entities and the attempt result CSS Module.
-* Versión: 1.0
+* Descripción: AI feedback of one question or of the whole attempt on the result page, by status: PENDING shows a labelled skeleton ("Generando retroalimentación…"), READY renders the content as rich text (markdown through RichTextView) with the shared "¿Te fue útil?" widget (ai-ratings GRADE_FEEDBACK target = feedback item id) and, for DETERMINISTIC items, the discreet label "Retroalimentación automática"; FAILED shows a discreet message. Renders nothing without an item. Depends on MUI Skeleton, @shared/ai-rating, the RichTextView, the attempt feedback entities and the attempt result CSS Module. v1.1 (A3 review S4): optional pollingStopped adds the "recarga la página" hint to a PENDING item once the backup polling gave up.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,14 +21,17 @@ export const FEEDBACK_COPY = {
   generating: "Generando retroalimentación…",
   failed: "No fue posible generar la retroalimentación de esta pregunta.",
   deterministic: "Retroalimentación automática",
+  pollingStopped: "La retroalimentación está tardando más de lo normal. Recarga la página para consultarla de nuevo.",
 } as const;
 
 export type FeedbackBlockProps = {
   item: FeedbackItem | null
   title: string
+  // The backup polling gave up while this item was still pending.
+  pollingStopped?: boolean | undefined
 };
 
-export function FeedbackBlock({ item, title }: FeedbackBlockProps) {
+export function FeedbackBlock({ item, title, pollingStopped = false }: FeedbackBlockProps) {
   if (!item) {
     return null;
   }
@@ -37,6 +40,7 @@ export function FeedbackBlock({ item, title }: FeedbackBlockProps) {
     return (
       <div className={cx(styles.feedback)} role="status" aria-busy="true" aria-label={`${title}: ${FEEDBACK_COPY.generating}`}>
         <p className={cx(styles.feedbackHint)}>{FEEDBACK_COPY.generating}</p>
+        {pollingStopped ? <p className={cx(styles.feedbackHint)} role="alert">{FEEDBACK_COPY.pollingStopped}</p> : null}
         <Skeleton variant="text" width="90%" aria-hidden="true" />
         <Skeleton variant="text" width="70%" aria-hidden="true" />
       </div>

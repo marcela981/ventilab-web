@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: SimulationQuestionFields
-* Descripción: SIMULATION part of a question card in the evaluation builder: the clinical case of the practice (ClinicalCaseSelector over the published cases) and its rubric (RubricEditor on the backend schema). Both are structural: they are disabled once the structure is locked and saved in the structural question PATCH. Depends on @shared/lib, the clinical case selector, the rubric editor, the builder entities and the simulation CSS Module. v1.1 (A3): replaces the A2 read-only placeholder with the editable case selector and rubric editor.
-* Versión: 1.1
+* Descripción: SIMULATION part of a question card in the evaluation builder: the clinical case of the practice (ClinicalCaseSelector over the published cases) and its rubric (RubricEditor on the backend schema). Both are structural: they are disabled once the structure is locked and saved in the structural question PATCH. Depends on @shared/lib, the clinical case selector, the rubric editor, the builder entities and the simulation CSS Module. v1.1 (A3): replaces the A2 read-only placeholder with the editable case selector and rubric editor. v1.2 (A3 review W2): without a clinical case it shows the non-blocking hint "Se recomienda vincular un caso clínico".
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,6 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import Alert from "@mui/material/Alert";
 import { cx } from "@shared/lib/class-names";
 import { BUILDER_COPY } from "../../entities/builder-copy";
 import type { RubricDraft } from "../../entities/simulation-rubric.entity";
@@ -34,6 +35,8 @@ export function SimulationQuestionFields({ clinicalCaseId, rubric, rubricIssues,
   return (
     <section className={cx(styles.section)} aria-label={BUILDER_COPY.simulationTitle}>
       <ClinicalCaseSelector value={clinicalCaseId} disabled={locked} onChange={(id) => onChange({ clinicalCaseId: id })} />
+      {/* Advisory only: the backend does not require a clinical case for READY. */}
+      {clinicalCaseId === null ? <Alert severity="info">{BUILDER_COPY.simulationCaseRecommended}</Alert> : null}
       <RubricEditor rubric={rubric} issues={rubricIssues} disabled={locked} newKey={newKey} onChange={(next) => onChange({ rubric: next })} />
     </section>
   );

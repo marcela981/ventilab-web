@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AttemptResultPage
-* Descripción: Page /evaluations/[evaluationId]/attempts/[attemptId]/result: the result of one attempt of the signed-in student. Loads the attempt (`GET /api/evaluation-attempts/{attemptId}`); an attempt still IN_PROGRESS goes back to the player. Unpublished attempts show only their state ("Enviado" for SUBMITTED, "Pendiente de calificación" for PENDING_REVIEW or a GRADED grade not yet published) and what happens next, without reading correctness, explanation, rubric or earned score. Published attempts show the grade (es-CO, colored by `passed` from the API), the score, the overall AI feedback and every question (QuestionResult). The AI feedback (`GET .../feedback`, only once published) is refreshed by the socket: `notification:new` of type FEEDBACK_READY for this attempt revalidates the feedback, `grade:published` for this attempt revalidates the attempt and the feedback; spaced polling in useAttemptFeedback is the backup while items are pending. Links back to the list and to the evaluation intro. Depends on next/head, next/link, next/router, the design-system components, @shared/lib, @shared/realtime, the evaluations hooks, entities and components, and the attempt result CSS Module.
-* Versión: 1.0
+* Descripción: Page /evaluations/[evaluationId]/attempts/[attemptId]/result: the result of one attempt of the signed-in student. Loads the attempt (`GET /api/evaluation-attempts/{attemptId}`); an attempt still IN_PROGRESS goes back to the player. Unpublished attempts show only their state ("Enviado" for SUBMITTED, "Pendiente de calificación" for PENDING_REVIEW or a GRADED grade not yet published) and what happens next, without reading correctness, explanation, rubric or earned score. Published attempts show the grade (es-CO, colored by `passed` from the API), the score, the overall AI feedback and every question (QuestionResult). The AI feedback (`GET .../feedback`, only once published) is refreshed by the socket: `notification:new` of type FEEDBACK_READY for this attempt revalidates the feedback, `grade:published` for this attempt revalidates the attempt and the feedback; spaced polling in useAttemptFeedback is the backup while items are pending. Links back to the list and to the evaluation intro. Depends on next/head, next/link, next/router, the design-system components, @shared/lib, @shared/realtime, the evaluations hooks, entities and components, and the attempt result CSS Module. v1.1 (A3 review S4): passes the polling-stopped flag to the pending feedback blocks.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -96,16 +96,17 @@ type PublishedResultProps = {
   attempt: AttemptDetail
   feedback: AttemptFeedback | null
   feedbackFailed: boolean
+  pollingStopped: boolean
 };
 
-function PublishedResult({ attempt, feedback, feedbackFailed }: PublishedResultProps) {
+function PublishedResult({ attempt, feedback, feedbackFailed, pollingStopped }: PublishedResultProps) {
   const total = attempt.questions.length;
 
   return (
     <>
       {attempt.result ? <ResultSummary result={attempt.result} /> : null}
       {feedbackFailed ? <p className={cx(styles.feedbackHint)}>{RESULT_COPY.feedbackUnavailable}</p> : null}
-      <FeedbackBlock item={feedback?.overall ?? null} title={RESULT_COPY.overallFeedback} />
+      <FeedbackBlock item={feedback?.overall ?? null} title={RESULT_COPY.overallFeedback} pollingStopped={pollingStopped} />
       {attempt.questions.map((question, index) => (
         <QuestionResult
           key={question.id}
@@ -113,6 +114,7 @@ function PublishedResult({ attempt, feedback, feedbackFailed }: PublishedResultP
           index={index}
           total={total}
           feedback={findQuestionFeedback(feedback, question.id)}
+          pollingStopped={pollingStopped}
         />
       ))}
     </>
@@ -181,6 +183,7 @@ export function AttemptResultPage({ evaluationId, attemptId }: AttemptResultPage
               attempt={attempt}
               feedback={feedbackQuery.feedback}
               feedbackFailed={feedbackQuery.feedback === null && feedbackQuery.error !== null}
+              pollingStopped={feedbackQuery.pollingStopped}
             />
           ) : <UnpublishedResult attempt={attempt} />}
         </>

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Builder question draft tests
-* Descripción: Unit tests of the question draft rules of the evaluation builder: radio semantics of the correct answer for SINGLE_CHOICE and TRUE_FALSE and checkbox semantics for MULTIPLE_CHOICE, moving options, validation (points, option text), the save plan (question PATCH with only the changed fields, option creates, PATCHes with the newly correct ones first, deletes and the reorder flag), the dirty check and the body of a new TRUE_FALSE question. Depends on vitest and the builder entities. v1.1 (A3): the plan splits the text PATCH from the structural PATCH and covers the clinical case and the rubric of a SIMULATION question; an option created by a failed save (id set, client key kept) is neither recreated nor reordered; stripStructuralEdits keeps only the texts; withCreatedOptionIds merges created ids by key; SIMULATION rubric errors block the draft; backend rubric details are translated in readiness messages.
-* Versión: 1.1
+* Descripción: Unit tests of the question draft rules of the evaluation builder: radio semantics of the correct answer for SINGLE_CHOICE and TRUE_FALSE and checkbox semantics for MULTIPLE_CHOICE, moving options, validation (points, option text), the save plan (question PATCH with only the changed fields, option creates, PATCHes with the newly correct ones first, deletes and the reorder flag), the dirty check and the body of a new TRUE_FALSE question. Depends on vitest and the builder entities. v1.1 (A3): the plan splits the text PATCH from the structural PATCH and covers the clinical case and the rubric of a SIMULATION question; an option created by a failed save (id set, client key kept) is neither recreated nor reordered; stripStructuralEdits keeps only the texts; withCreatedOptionIds merges created ids by key; SIMULATION rubric errors block the draft; backend rubric details are translated in readiness messages. v1.2 (A3 review S1): optionSaveSteps runs the creates before the updates that set isCorrect=false.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,6 +15,7 @@ import {
   isQuestionDraftDirty,
   moveOptionDraft,
   newQuestionBody,
+  optionSaveSteps,
   planQuestionSave,
   questionDraftFrom,
   QUESTION_ERROR_MESSAGES,
@@ -92,6 +93,27 @@ describe("validateQuestionDraft", () => {
     };
 
     expect(validateQuestionDraft("SIMULATION", invalid).rubric).toEqual(["Criterio 1: el valor esperado debe estar entre el mínimo y el máximo."]);
+  });
+});
+
+describe("optionSaveSteps", () => {
+  it("runs newly correct updates, then creates, then the other updates, then deletes", () => {
+    const created = { key: "new-1", id: null, content: "10", isCorrect: true, mediaId: null, media: null };
+    const steps = optionSaveSteps({
+      text: null,
+      structure: null,
+      creates: [created],
+      updates: [
+        { id: "o1", changes: { isCorrect: false } },
+        { id: "o2", changes: { content: "8 cmH2O" } },
+        { id: "o3", changes: { isCorrect: true } },
+      ],
+      deletes: ["o4"],
+      reorder: false,
+    });
+
+    expect(steps.map((step) => (step.kind === "create" ? `create:${step.option.key}` : step.kind === "update" ? `update:${step.update.id}` : `delete:${step.optionId}`)))
+      .toEqual(["update:o3", "create:new-1", "update:o1", "update:o2", "delete:o4"]);
   });
 });
 

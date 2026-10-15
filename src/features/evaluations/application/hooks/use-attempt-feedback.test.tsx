@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useAttemptFeedback tests
-* Descripción: Hook tests of the backup feedback polling with vitest fake timers and an msw backend counting the feedback requests: while an item is PENDING it refetches after 10 s and then 20 s, it stops once nothing is pending, unmounting clears the pending poll, and a failed first read (404 race right after publication) is retried on the same schedule until the feedback arrives. Depends on vitest, Testing Library, msw, SWR and the evaluations test helpers. v1.1 (A3 review follow-up): a permanent error (403) is not polled and a persistent 404 is polled at most FEEDBACK_ERROR_MAX_POLLS times.
-* Versión: 1.1
+* Descripción: Hook tests of the backup feedback polling with vitest fake timers and an msw backend counting the feedback requests: while an item is PENDING it refetches after 10 s and then 20 s, it stops once nothing is pending, unmounting clears the pending poll, and a failed first read (404 race right after publication) is retried on the same schedule until the feedback arrives. Depends on vitest, Testing Library, msw, SWR and the evaluations test helpers. v1.1 (A3 review follow-up): a permanent error (403) is not polled and a persistent 404 is polled at most FEEDBACK_ERROR_MAX_POLLS times. v1.2 (A3 review S4): a feedback that stays PENDING is polled at most FEEDBACK_PENDING_MAX_POLLS times and then reports pollingStopped.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,7 +17,7 @@ import { SWRConfig } from "swr";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { StudentGradeFeedbackDTO } from "../../api/dtos/evaluations.dto";
 import { apiUrl, envelope, errorResponse } from "../pages/evaluations-test-helpers";
-import { FEEDBACK_ERROR_MAX_POLLS, useAttemptFeedback } from "./use-attempt-feedback";
+import { FEEDBACK_ERROR_MAX_POLLS, FEEDBACK_PENDING_MAX_POLLS, useAttemptFeedback } from "./use-attempt-feedback";
 
 const server = setupServer();
 let requests = 0;
@@ -168,5 +168,23 @@ describe("useAttemptFeedback", () => {
     }
 
     expect(requests).toBe(1 + FEEDBACK_ERROR_MAX_POLLS);
+  });
+
+  it("stops polling a feedback that stays pending after the total cap and reports it", async() => {
+    const { result } = renderFeedback();
+
+    await waitFor(() => {
+      expect(result.current.feedback).not.toBeNull();
+    });
+    expect(result.current.pollingStopped).toBe(false);
+
+    for (let poll = 0; poll < FEEDBACK_PENDING_MAX_POLLS + 3; poll += 1) {
+      await advance(60_000);
+    }
+
+    expect(requests).toBe(1 + FEEDBACK_PENDING_MAX_POLLS);
+    await waitFor(() => {
+      expect(result.current.pollingStopped).toBe(true);
+    });
   });
 });

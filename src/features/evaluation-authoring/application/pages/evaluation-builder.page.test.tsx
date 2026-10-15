@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationBuilderPage tests
-* Descripción: Renders the evaluation builder against a mocked backend (msw) with a mocked next/router (with route events), a textarea standing in for the lazy Tiptap editor and a pass-through @hello-pangea/dnd that exposes onDragEnd: creating validates, applies the type defaults, posts the evaluation and replaces the route with its editor; editing tracks "Cambios sin guardar", arms beforeunload and the route-change confirmation, and saves only the changed metadata with PATCH; a choice question saves its prompt and points with PATCH and its correct answer with option PATCHes (radio semantics); questions are added and deleted; a drag sends the batch `PUT .../questions/order` (and `.../scenarios/order`) and a refused reorder restores the previous order with a toast; structureLocked and a 409 has_submitted_attempts show the banner whose "Duplicar" opens the copy; a 422 shows its message and the reloaded readiness issues on the question. Depends on vitest, Testing Library, msw and the authoring test helpers. v1.1 (A3 + A2 review): the question texts and its points go in separate PATCHes; a 409 on the structural PATCH keeps the saved texts and drops the structural edits; a 422 shows the client READY validation on the question (the mocked detail does not change); an option created while its text is edited keeps that edit and is not created twice; the refused reorder is shown optimistically while the PUT is pending; "Marcar como lista" validates on the client (issues on the cards, no request), sends `PATCH .../status` READY and shows the reloaded issues on a 422; a READY evaluation disables single-correct answers and adding questions and returns to DRAFT; a SIMULATION question picks a published clinical case and edits its rubric, invalid rubrics block the save.
-* Versión: 1.1
+* Descripción: Renders the evaluation builder against a mocked backend (msw) with a mocked next/router (with route events), a textarea standing in for the lazy Tiptap editor and a pass-through @hello-pangea/dnd that exposes onDragEnd: creating validates, applies the type defaults, posts the evaluation and replaces the route with its editor; editing tracks "Cambios sin guardar", arms beforeunload and the route-change confirmation, and saves only the changed metadata with PATCH; a choice question saves its prompt and points with PATCH and its correct answer with option PATCHes (radio semantics); questions are added and deleted; a drag sends the batch `PUT .../questions/order` (and `.../scenarios/order`) and a refused reorder restores the previous order with a toast; structureLocked and a 409 has_submitted_attempts show the banner whose "Duplicar" opens the copy; a 422 shows its message and the reloaded readiness issues on the question. Depends on vitest, Testing Library, msw and the authoring test helpers. v1.1 (A3 + A2 review): the question texts and its points go in separate PATCHes; a 409 on the structural PATCH keeps the saved texts and drops the structural edits; a 422 shows the client READY validation on the question (the mocked detail does not change); an option created while its text is edited keeps that edit and is not created twice; the refused reorder is shown optimistically while the PUT is pending; "Marcar como lista" validates on the client (issues on the cards, no request), sends `PATCH .../status` READY and shows the reloaded issues on a 422; a READY evaluation disables single-correct answers and adding questions and returns to DRAFT; a SIMULATION question picks a published clinical case and edits its rubric, invalid rubrics block the save. v1.2 (A3 review W2/S1/S2): a SIMULATION question without a clinical case shows the non-blocking recommendation and can still be marked READY; the case title filter says it covers this page only; a 422 on a save with no client READY issue shows the READY hint on the question.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -400,6 +400,28 @@ describe("EvaluationBuilderPage — simulation", () => {
     }]);
    });
 
+  it("recommends a clinical case without blocking READY and says the title filter covers this page only", async() => {
+    detail = evaluationDetailDto("e1", {
+      questions: [questionDto("q1", 0, {
+        type: "SIMULATION",
+        clinicalCaseId: null,
+        rubric: { criteria: [{ parameter: "peep", expectedValue: 8 }] },
+      })],
+    });
+    renderWithProviders(<EvaluationBuilderPage evaluationId="e1" />);
+
+    const card = await findCard(1);
+
+    expect(within(card).getByText(BUILDER_COPY.simulationCaseRecommended)).toBeInTheDocument();
+    expect(within(card).getByText(BUILDER_COPY.simulationCaseFilterHelp)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: BUILDER_COPY.markReady }));
+
+    await waitFor(() => {
+      expect(bodiesOf("PATCH", /\/status$/)).toEqual([{ status: "READY" }]);
+    });
+  });
+
   it("offers no range for a text parameter", async() => {
     detail = simulationDetail();
     renderWithProviders(<EvaluationBuilderPage evaluationId="e1" />);
@@ -644,6 +666,26 @@ describe("EvaluationBuilderPage — edit", () => {
 
     expect(await within(card).findByText("Marca al menos una opción correcta.")).toBeInTheDocument();
     expect(within(card).getAllByText(AUTHORING_ERROR_MESSAGES["evaluation.not_ready"]).length).toBeGreaterThan(0);
+  });
+
+  it("falls back to the READY hint when a 422 on a save has no client explanation", async() => {
+    detail = evaluationDetailDto("e1", {
+      status: "READY",
+      questions: [questionDto("q1", 0, {
+        type: "MULTIPLE_CHOICE",
+        options: [optionDto("o1", 0, { isCorrect: true }), optionDto("o2", 1, { isCorrect: true })],
+      })],
+    });
+    server.use(http.patch(apiUrl("/api/evaluations/:id/questions/:questionId/options/:optionId"), () => errorResponse("evaluation.not_ready", 422)));
+    renderWithProviders(<EvaluationBuilderPage evaluationId="e1" />);
+
+    const card = await findCard(1);
+
+    // Still one correct option: the client READY validation finds nothing.
+    fireEvent.click(within(card).getByRole("checkbox", { name: BUILDER_COPY.correctOption(1) }));
+    fireEvent.click(screen.getByRole("button", { name: BUILDER_COPY.save }));
+
+    expect(await within(card).findByText(BUILDER_COPY.readyHint)).toBeInTheDocument();
   });
 
   it("keeps an option text typed while the option is being created and does not create it twice", async() => {
