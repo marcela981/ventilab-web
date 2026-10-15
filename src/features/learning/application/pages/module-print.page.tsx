@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ModulePrintPage
-* Descripción: Print view of a whole module (/learn/modules/[moduleId]/print, TEACHER and ADMIN) built from exactly ONE request (GET /api/modules/{id}/full; no tree, lessons or progress queries). It renders a cover (title, description, difficulty, estimated time, lesson count and the print date; the payload has no level or section names), then every lesson in order starting on a new printed page (break-before: page) with its Pages and blocks in order through the shared ContentBlocks in print mode (KaTeX equations, images fitted to the page width, videos as a visible link with their URL), and the Pages without a lesson at the end. "Descargar PDF" opens the browser print dialog (window.print(); the user picks "Guardar como PDF") and is hidden when printing, like the "Volver al módulo" link. Loading skeleton, 404 not-found state and error state with retry. ContentBlocks is a lazy chunk (C1 code splitting). Depends on MUI, next/head, next/link, @shared/design-system, @shared/lib, useModuleFull, the learning URLs and error messages and the print CSS Module. v1.1 (L7 follow-up): "Descargar PDF" is disabled (with a "Preparando…" hint) until the lazy content blocks of every printed page have rendered: a ReadySignal rendered next to ContentBlocks inside each page's Suspense reports the page once the chunk resolved, so the dialog never prints skeletons. A module without pages is ready at once.
-* Versión: 1.1
+* Descripción: Print view of a whole module (/learn/modules/[moduleId]/print, TEACHER and ADMIN) built from exactly ONE request (GET /api/modules/{id}/full; no tree, lessons or progress queries). It renders a cover (title, description, difficulty, estimated time, lesson count and the print date; the payload has no level or section names), then every lesson in order starting on a new printed page (break-before: page) with its Pages and blocks in order through the shared ContentBlocks in print mode (KaTeX equations, images fitted to the page width, videos as a visible link with their URL), and the Pages without a lesson at the end. "Descargar PDF" opens the browser print dialog (window.print(); the user picks "Guardar como PDF") and is hidden when printing, like the "Volver al módulo" link. Loading skeleton, 404 not-found state and error state with retry. ContentBlocks is a lazy chunk (C1 code splitting). Depends on MUI, next/head, next/link, @shared/design-system, @shared/lib, useModuleFull, the learning URLs and error messages and the print CSS Module. v1.1 (L7 follow-up): "Descargar PDF" is disabled (with a "Preparando…" hint) until the lazy content blocks of every printed page have rendered: a ReadySignal rendered next to ContentBlocks inside each page's Suspense reports the page once the chunk resolved, so the dialog never prints skeletons. A module without pages is ready at once. v1.2 (C3 follow-up): a page whose content blocks fail (render error or chunk load error) counts as settled: a local boundary shows "No se pudo cargar el contenido de esta página…" in place of the blocks and reports the page as failed, so "Descargar PDF" is enabled and the toolbar warns that some pages will print without their content (previously the button stayed disabled forever).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,10 +15,10 @@ import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import Button from "@mui/material/Button";
 import Head from "next/head";
 import Link from "next/link";
-import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { Component, lazy, Suspense, useCallback, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { EmptyState } from "@shared/design-system/components/empty-state";
 import { ErrorState } from "@shared/design-system/components/error-state";
-import { RouteErrorBoundary } from "@shared/design-system/components/route-error-boundary";
 import { CardSkeleton } from "@shared/design-system/components/skeleton";
 import { cx } from "@shared/lib/class-names";
 import { retryImport } from "@shared/lib/retry-import";
@@ -52,36 +52,73 @@ const COPY = {
   unassignedTitle: "Páginas sin lección",
   loadingPage: "Cargando la página…",
   preparing: "Preparando el contenido para imprimir…",
+  pageFailed: "No se pudo cargar el contenido de esta página. Recarga la vista para intentarlo de nuevo.",
+  somePagesFailed: "Algunas páginas no se pudieron cargar y se imprimirán sin su contenido.",
 } as const;
 
 const PRINT_DATE_FORMAT = new Intl.DateTimeFormat("es", { dateStyle: "long" });
 
+type PageSettled = (id: string, failed: boolean) => void;
+
 // Rendered after ContentBlocks inside the same Suspense: it only commits once the lazy chunk has resolved.
-function ReadySignal({ id, onReady }: { id: string, onReady: (id: string) => void }) {
+// In the boundary fallback it reports the page as settled with a failure.
+function ReadySignal({ id, failed, onSettled }: { id: string, failed: boolean, onSettled: PageSettled }) {
   useEffect(() => {
-    onReady(id);
-  }, [id, onReady]);
+    onSettled(id, failed);
+  }, [id, failed, onSettled]);
 
   return null;
 }
 
-type PrintedPageProps = {
-  page: PrintPage
-  onReady: (id: string) => void
+type PrintedPageBoundaryProps = {
+  id: string
+  onSettled: PageSettled
+  children: ReactNode
 };
 
-function PrintedPage({ page, onReady }: PrintedPageProps) {
+// Catches render and chunk load errors of one page's blocks; a failed page is settled, so printing is not blocked.
+class PrintedPageBoundary extends Component<PrintedPageBoundaryProps, { failed: boolean }> {
+  public override state = { failed: false };
+
+  public static getDerivedStateFromError(): { failed: boolean } {
+    return { failed: true };
+  }
+
+  public override componentDidCatch(error: unknown) {
+    console.error("Print page content failed to render:", error);
+  }
+
+  public override render() {
+    if (!this.state.failed) {
+      return this.props.children;
+    }
+
+    return (
+      <>
+        <p className={cx(styles.hint)} role="alert">{COPY.pageFailed}</p>
+        <ReadySignal id={this.props.id} failed onSettled={this.props.onSettled} />
+      </>
+    );
+  }
+}
+
+type PrintedPageProps = {
+  page: PrintPage
+  onSettled: PageSettled
+};
+
+function PrintedPage({ page, onSettled }: PrintedPageProps) {
   const titleId = `print-page-${page.id}`;
 
   return (
     <article className={cx(styles.page)} aria-labelledby={titleId}>
       <h3 id={titleId} className={cx(styles.pageTitle)}>{page.title}</h3>
-      <RouteErrorBoundary resetKey={page.id}>
+      <PrintedPageBoundary key={page.id} id={page.id} onSettled={onSettled}>
         <Suspense fallback={<CardSkeleton label={COPY.loadingPage} />}>
           <ContentBlocks blocks={page.blocks} mode="print" />
-          <ReadySignal id={page.id} onReady={onReady} />
+          <ReadySignal id={page.id} failed={false} onSettled={onSettled} />
         </Suspense>
-      </RouteErrorBoundary>
+      </PrintedPageBoundary>
     </article>
   );
 }
@@ -106,11 +143,19 @@ function allPageIds(content: PrintModule): string[] {
 }
 
 function ModuleDocument({ content }: { content: PrintModule }) {
-  const [readyIds, setReadyIds] = useState<ReadonlySet<string>>(() => new Set());
-  const markReady = useCallback((id: string) => {
-    setReadyIds((current) => (current.has(id) ? current : new Set(current).add(id)));
+  // Page id -> failed. A page is settled once its blocks rendered or its boundary caught a failure.
+  const [settled, setSettled] = useState<ReadonlyMap<string, boolean>>(() => new Map());
+  const markSettled = useCallback<PageSettled>((id, failed) => {
+    setSettled((current) => (current.get(id) === failed ? current : new Map(current).set(id, failed)));
   }, []);
-  const ready = allPageIds(content).every((id) => readyIds.has(id));
+  const pageIds = allPageIds(content);
+  const ready = pageIds.every((id) => settled.has(id));
+  const someFailed = pageIds.some((id) => settled.get(id) === true);
+  let hint: string = COPY.preparing;
+
+  if (ready) {
+    hint = someFailed ? COPY.somePagesFailed : COPY.downloadHint;
+  }
 
   return (
     <>
@@ -119,7 +164,7 @@ function ModuleDocument({ content }: { content: PrintModule }) {
           <ArrowBackIcon fontSize="small" aria-hidden />
           {COPY.backToModule}
         </Link>
-        <span className={cx(styles.hint)} aria-live="polite">{ready ? COPY.downloadHint : COPY.preparing}</span>
+        <span className={cx(styles.hint)} aria-live="polite">{hint}</span>
         <Button variant="contained" startIcon={<PictureAsPdfIcon />} disabled={!ready} onClick={() => window.print()}>
           {COPY.download}
         </Button>
@@ -129,13 +174,13 @@ function ModuleDocument({ content }: { content: PrintModule }) {
         <section key={lesson.id} className={cx(styles.lesson)} aria-labelledby={`print-lesson-${lesson.id}`}>
           <h2 id={`print-lesson-${lesson.id}`} className={cx(styles.lessonTitle)}>{lesson.title}</h2>
           {lesson.pages.length === 0 ? <p className={cx(styles.hint)}>{COPY.emptyLesson}</p> : null}
-          {lesson.pages.map((page) => <PrintedPage key={page.id} page={page} onReady={markReady} />)}
+          {lesson.pages.map((page) => <PrintedPage key={page.id} page={page} onSettled={markSettled} />)}
         </section>
       ))}
       {content.unassignedPages.length > 0 ? (
         <section className={cx(styles.lesson)} aria-labelledby="print-unassigned">
           <h2 id="print-unassigned" className={cx(styles.lessonTitle)}>{COPY.unassignedTitle}</h2>
-          {content.unassignedPages.map((page) => <PrintedPage key={page.id} page={page} onReady={markReady} />)}
+          {content.unassignedPages.map((page) => <PrintedPage key={page.id} page={page} onSettled={markSettled} />)}
         </section>
       ) : null}
     </>

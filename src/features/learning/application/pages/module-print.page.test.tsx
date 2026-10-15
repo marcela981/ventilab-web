@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ModulePrintPage tests
-* Descripción: Integration tests of the module print view against msw: exactly one backend request (GET /api/modules/{id}/full, counted over every request), the cover with title, description and lesson count, lessons in `order` each starting a printed page (break class), their Pages and blocks in order with ContentBlocks in print mode (a video becomes a visible link with its URL), unassigned Pages at the end, "Descargar PDF" calling window.print, the 404 not-found state and the error state with retry. Depends on vitest, Testing Library, msw and the learning test helpers. v1.1 (L7 follow-up): "Descargar PDF" stays disabled until the lazy content blocks of every printed page have rendered (a fresh page module with a gated content-blocks chunk proves the disabled state deterministically).
-* Versión: 1.1
+* Descripción: Integration tests of the module print view against msw: exactly one backend request (GET /api/modules/{id}/full, counted over every request), the cover with title, description and lesson count, lessons in `order` each starting a printed page (break class), their Pages and blocks in order with ContentBlocks in print mode (a video becomes a visible link with its URL), unassigned Pages at the end, "Descargar PDF" calling window.print, the 404 not-found state and the error state with retry. Depends on vitest, Testing Library, msw and the learning test helpers. v1.1 (L7 follow-up): "Descargar PDF" stays disabled until the lazy content blocks of every printed page have rendered (a fresh page module with a gated content-blocks chunk proves the disabled state deterministically). v1.2 (C3 follow-up): when the content blocks of a page fail (render error or chunk error caught by the page boundary), that page counts as settled: it shows its error message, the toolbar warns that some pages failed and "Descargar PDF" is enabled instead of staying disabled forever.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -180,6 +180,33 @@ describe("ModulePrintPage", () => {
       vi.resetModules();
     }
   });
+
+  it("enables Descargar PDF and warns when the content blocks of a page fail", async() => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    vi.resetModules();
+    vi.doMock("@shared/rich-content/blocks/content-blocks", () => ({
+      ContentBlocks: () => {
+        throw new Error("render failed");
+      },
+    }));
+
+    try {
+      const { ModulePrintPage: FreshModulePrintPage } = await import("./module-print.page");
+
+      renderWithSession(<FreshModulePrintPage moduleId="m1" />, "TEACHER");
+      const button = await screen.findByRole("button", { name: "Descargar PDF" }, { timeout: 5000 });
+
+      await waitFor(() => expect(button).toBeEnabled(), { timeout: 5000 });
+      expect(screen.getAllByText("No se pudo cargar el contenido de esta página. Recarga la vista para intentarlo de nuevo.")).toHaveLength(3);
+      expect(screen.getByText("Algunas páginas no se pudieron cargar y se imprimirán sin su contenido.")).toBeInTheDocument();
+      expect(screen.queryByText("Preparando el contenido para imprimir…")).not.toBeInTheDocument();
+    } finally {
+      vi.doUnmock("@shared/rich-content/blocks/content-blocks");
+      vi.resetModules();
+      consoleError.mockRestore();
+    }
+  }, 20_000);
 
   it("shows the not-found state when the module does not exist", async() => {
     server.use(http.get(apiUrl("/api/modules/:id/full"), () => errorResponse("modules.module_not_found", 404)));

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useScopeConversation tests
-* Descripción: Tests of the scope conversation lookup against msw: the conversation found in the listing stays selected (id and messages) while the listing revalidates, and a definitive new listing result replaces it. Depends on vitest, Testing Library, msw and the learning test helpers. v1.1 (L7 follow-up): discriminating case: the revalidated listing page 1 no longer contains the conversation and announces a second page (a non-definitive result); while page 2 is pending the conversation must stay selected (an implementation that derives the id from the latest listing data, stale or fresh, drops it to null here).
-* Versión: 1.1
+* Descripción: Tests of the scope conversation lookup against msw: the conversation found in the listing stays selected (id and messages) while the listing revalidates, and a definitive new listing result replaces it. Depends on vitest, Testing Library, msw and the learning test helpers. v1.1 (L7 follow-up): discriminating case: the revalidated listing page 1 no longer contains the conversation and announces a second page (a non-definitive result); while page 2 is pending the conversation must stay selected (an implementation that derives the id from the latest listing data, stale or fresh, drops it to null here). v1.2 (C3 follow-up): the final wait is discriminating: a passive observer of the page-2 listing key (no fetch of its own) rendered in the same hook reports when the page-2 result has been applied, and only then the kept conversation is asserted.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,6 +14,8 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import type { ReactNode } from "react";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { useApiQuery } from "@shared/api-client/use-api-query";
+import { CONVERSATION_LOOKUP_LIMIT, CONVERSATIONS_PATH } from "../../api/services/tutor.service";
 import { apiUrl, envelope, SessionWrapper } from "../pages/learning-test-helpers";
 import { useScopeConversation } from "./use-scope-conversation";
 
@@ -40,6 +42,22 @@ afterEach(() => {
 afterAll(() => {
   server.close();
 });
+
+// Same SWR key as the lookup of listing page 2; it never fetches by itself, it only mirrors that cache entry
+// in the same render as useScopeConversation, so `page2Applied` and the conversation come from one snapshot.
+const PASSIVE_OBSERVER = {
+  revalidateOnMount: false,
+  revalidateIfStale: false,
+  revalidateOnFocus: false,
+  revalidateOnReconnect: false,
+} as const;
+
+function useLessonLookupWithPage2Observer() {
+  const conversation = useScopeConversation("LESSON", "l1");
+  const page2 = useApiQuery(CONVERSATIONS_PATH, { query: { scope: "LESSON", page: 2, limit: CONVERSATION_LOOKUP_LIMIT } }, PASSIVE_OBSERVER);
+
+  return { ...conversation, page2Applied: page2.data !== undefined && !page2.isValidating };
+}
 
 function Wrapper({ children }: { children: ReactNode }) {
   return <SessionWrapper role="STUDENT">{children}</SessionWrapper>;
@@ -126,10 +144,11 @@ describe("useScopeConversation", () => {
       }))),
     );
 
-    const { result } = renderHook(() => useScopeConversation("LESSON", "l1"), { wrapper: Wrapper });
+    const { result } = renderHook(useLessonLookupWithPage2Observer, { wrapper: Wrapper });
 
     await waitFor(() => expect(result.current.messages).toHaveLength(1));
     expect(result.current.conversationId).toBe("c-l1");
+    expect(result.current.page2Applied).toBe(false);
 
     revalidating = true;
     act(() => {
@@ -141,12 +160,15 @@ describe("useScopeConversation", () => {
     expect(listRequests).toEqual(["1", "1", "2"]);
     expect(result.current.conversationId).toBe("c-l1");
     expect(result.current.messages).toHaveLength(1);
+    expect(result.current.page2Applied).toBe(false);
 
     await act(async() => {
       gate.release?.();
     });
 
-    await waitFor(() => expect(listRequests).toHaveLength(3));
+    // Discriminating wait: the page-2 result is in the cache and rendered before the assertions below.
+    await waitFor(() => expect(result.current.page2Applied).toBe(true));
+    expect(listRequests).toEqual(["1", "1", "2"]);
     expect(result.current.conversationId).toBe("c-l1");
     expect(result.current.messages).toHaveLength(1);
   });
