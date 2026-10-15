@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluations error messages
-* Descripción: Spanish message for any failure of a student evaluations request: the evaluation error codes the student endpoints can return (backend evaluation.errors.ts mapped in common/presentation/errors-map.ts: not_open 403, max_attempts_reached 409, attempt_deadline_passed 409, attempt_not_in_progress 409, attempt_read_only 409, answer_invalid 422, assignment_closed 409, evaluation/assignment/attempt/question/option not found 404, grade_feedback_not_available 404), then fallbacks by status (403, 404, 409, 400/422, 429 with Retry-After, 5xx), timeout, network and unknown errors. Depends on the api-client errors.
-* Versión: 1.0
+* Descripción: Spanish message for any failure of a student evaluations request: the evaluation error codes the student endpoints can return (backend evaluation.errors.ts mapped in common/presentation/errors-map.ts: not_open 403, max_attempts_reached 409, attempt_deadline_passed 409, attempt_not_in_progress 409, attempt_read_only 409, answer_invalid 422, assignment_closed 409, evaluation/assignment/attempt/question/option not found 404, grade_feedback_not_available 404), then fallbacks by status (403, 404, 409, 400/422, 429 with Retry-After, 5xx), timeout, network and unknown errors. Depends on the api-client errors. v1.1 (A3 review follow-up): isRetryableEvaluationError tells transient failures (network, timeout, 429, 5xx) from permanent ones.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -89,4 +89,14 @@ export function getEvaluationErrorMessage(error: unknown): string {
   }
 
   return STATUS_MESSAGES[apiError.status] ?? EVALUATION_FALLBACK_MESSAGES.unknown;
+}
+
+// Transient failures worth retrying automatically: no connection, timeout, rate limit or server error.
+export function isRetryableEvaluationError(error: unknown): boolean {
+  const apiError = toApiError(error);
+
+  return apiError.code === CLIENT_ERROR_CODES.networkUnavailable
+    || apiError.code === CLIENT_ERROR_CODES.networkTimeout
+    || apiError.status === 429
+    || apiError.status >= 500;
 }

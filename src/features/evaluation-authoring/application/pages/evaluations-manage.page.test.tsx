@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationsManagePage tests
-* Descripción: Renders /evaluations/manage against a mocked backend (msw) with a mocked next/router: the first page lists title, type, status, questions, activations and the update date with the row actions; the type and status filters and the debounced title search become query params of `GET /api/evaluations` (back to page 1), the next page asks for page 2; "Duplicar" posts the duplicate and opens the editor of the copy; "Archivar" asks for confirmation and sends `PATCH .../status` ARCHIVED; a 409 invalid_status_transition shows its Spanish message; read-only rows have no actions; an empty list offers "Nueva evaluación". Depends on vitest, Testing Library, msw and the authoring test helpers.
-* Versión: 1.0
+* Descripción: Renders /evaluations/manage against a mocked backend (msw) with a mocked next/router: the first page lists title, type, status, questions, activations and the update date with the row actions; the type and status filters and the debounced title search become query params of `GET /api/evaluations` (back to page 1), the next page asks for page 2; "Duplicar" posts the duplicate and opens the editor of the copy; "Archivar" asks for confirmation and sends `PATCH .../status` ARCHIVED; a 409 invalid_status_transition shows its Spanish message; read-only rows have no actions; an empty list offers "Nueva evaluación". Depends on vitest, Testing Library, msw and the authoring test helpers. v1.1 (A3 review follow-up): archiving the only row of the last page steps back to the previous page.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,6 +27,9 @@ const router = vi.hoisted(() => ({
 vi.mock("next/router", () => ({ useRouter: () => router }));
 
 const server = setupServer();
+
+// Some tests run several list round trips; slow under a parallel run on a small machine.
+vi.setConfig({ testTimeout: 20_000 });
 let evaluations: EvaluationSummaryDTO[];
 let total: number;
 let listQueries: URLSearchParams[] = [];
@@ -154,6 +157,48 @@ describe("EvaluationsManagePage", () => {
       expect(statusBodies).toEqual([{ id: "e2", body: { status: "ARCHIVED" } }]);
     });
     expect(await screen.findByText("«Examen final» se archivó.")).toBeInTheDocument();
+  });
+
+  it("steps back to the last available page after archiving the only row of the last page", async() => {
+    const firstPage = Array.from({ length: 10 }, (_, index) => evaluationSummaryDto(`p${index}`, { title: `Evaluación ${index}` }));
+    let lastRow: EvaluationSummaryDTO[] = [evaluationSummaryDto("last", { title: "Última evaluación", status: "DRAFT" })];
+
+    total = 11;
+    server.use(
+      http.get(apiUrl("/api/evaluations"), ({ request }) => {
+        const params = new URL(request.url).searchParams;
+        const requestedPage = Number(params.get("page") ?? 1);
+
+        listQueries.push(params);
+
+        return HttpResponse.json(envelope(requestedPage === 1 ? firstPage : lastRow, {
+          total,
+          pages: Math.max(1, Math.ceil(total / 10)),
+          page: requestedPage,
+          limit: 10,
+        }));
+      }),
+      http.patch(apiUrl("/api/evaluations/:id/status"), async({ params, request }) => {
+        statusBodies.push({ id: String(params.id), body: await request.json() });
+        lastRow = [];
+        total = 10;
+
+        return HttpResponse.json(envelope(null));
+      }),
+    );
+    renderWithProviders(<EvaluationsManagePage />);
+    await screen.findByRole("table", { name: "Evaluaciones" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Página siguiente" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Archivar «Última evaluación»" }));
+    fireEvent.click(within(await screen.findByRole("dialog", { name: "¿Archivar la evaluación?" })).getByRole("button", { name: "Archivar" }));
+
+    await waitFor(() => {
+      expect(lastQuery()).toMatchObject({ page: "1" });
+    });
+    // Two list round trips (the empty last page, then the step back) plus the closing confirm dialog.
+    expect(await screen.findByRole("row", { name: /Evaluación 0/ }, { timeout: 5000 })).toBeInTheDocument();
+    expect(screen.queryByText("Ninguna evaluación coincide con los filtros")).not.toBeInTheDocument();
   });
 
   it("shows the Spanish message of a 409 when archiving fails", async() => {

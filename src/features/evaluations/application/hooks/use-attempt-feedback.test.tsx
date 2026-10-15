@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useAttemptFeedback tests
-* Descripción: Hook tests of the backup feedback polling with vitest fake timers and an msw backend counting the feedback requests: while an item is PENDING it refetches after 10 s and then 20 s, it stops once nothing is pending, unmounting clears the pending poll, and a failed first read (404 race right after publication) is retried on the same schedule until the feedback arrives. Depends on vitest, Testing Library, msw, SWR and the evaluations test helpers.
-* Versión: 1.0
+* Descripción: Hook tests of the backup feedback polling with vitest fake timers and an msw backend counting the feedback requests: while an item is PENDING it refetches after 10 s and then 20 s, it stops once nothing is pending, unmounting clears the pending poll, and a failed first read (404 race right after publication) is retried on the same schedule until the feedback arrives. Depends on vitest, Testing Library, msw, SWR and the evaluations test helpers. v1.1 (A3 review follow-up): a permanent error (403) is not polled and a persistent 404 is polled at most FEEDBACK_ERROR_MAX_POLLS times.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,11 +17,12 @@ import { SWRConfig } from "swr";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { StudentGradeFeedbackDTO } from "../../api/dtos/evaluations.dto";
 import { apiUrl, envelope, errorResponse } from "../pages/evaluations-test-helpers";
-import { useAttemptFeedback } from "./use-attempt-feedback";
+import { FEEDBACK_ERROR_MAX_POLLS, useAttemptFeedback } from "./use-attempt-feedback";
 
 const server = setupServer();
 let requests = 0;
 let failNext = 0;
+let failStatus = 404;
 let feedback: StudentGradeFeedbackDTO;
 
 const item = (status: "PENDING" | "READY") =>
@@ -49,6 +50,7 @@ beforeEach(() => {
   vi.useFakeTimers({ shouldAdvanceTime: true });
   requests = 0;
   failNext = 0;
+  failStatus = 404;
   feedback = { attemptId: "at1", overall: null, questions: [item("PENDING")] };
   server.use(
     http.get(apiUrl("/api/evaluation-attempts/:attemptId/feedback"), () => {
@@ -57,7 +59,7 @@ beforeEach(() => {
       if (failNext > 0) {
         failNext -= 1;
 
-        return errorResponse("evaluation.feedback_not_found", 404);
+        return errorResponse(failStatus === 404 ? "evaluation.feedback_not_found" : "common.forbidden", failStatus);
       }
 
       return HttpResponse.json(envelope(feedback));
@@ -136,5 +138,35 @@ describe("useAttemptFeedback", () => {
 
     await advance(120_000);
     expect(requests).toBe(2);
+  });
+
+  it("does not poll after a permanent error", async() => {
+    failNext = 1;
+    failStatus = 403;
+
+    const { result } = renderFeedback();
+
+    await waitFor(() => {
+      expect(result.current.error).not.toBeNull();
+    });
+    await advance(600_000);
+
+    expect(requests).toBe(1);
+  });
+
+  it("stops polling a persistent 404 after the maximum number of polls", async() => {
+    failNext = Number.POSITIVE_INFINITY;
+
+    const { result } = renderFeedback();
+
+    await waitFor(() => {
+      expect(result.current.error).not.toBeNull();
+    });
+
+    for (let poll = 0; poll < FEEDBACK_ERROR_MAX_POLLS + 3; poll += 1) {
+      await advance(60_000);
+    }
+
+    expect(requests).toBe(1 + FEEDBACK_ERROR_MAX_POLLS);
   });
 });

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationsManagePage
-* Descripción: Staff page /evaluations/manage (teachers and admins): lists the evaluations the caller can author from `GET /api/evaluations` with server filters and pagination: type, status (draft and ready by default, or one status, archived included), title search debounced 300 ms, sorted by last update, 10/25/50 per page (changing a filter returns to the first page). The module filter narrows only the loaded page on the client (the API has no module filter). "Nueva evaluación" links to /evaluations/manage/new. Row actions: Editar and Activaciones link to their routes, Duplicar (`POST .../duplicate`) shows a toast and opens the editor of the copy, Archivar asks for confirmation and sends `PATCH .../status` ARCHIVED. Mutations are single-flight and refresh every authoring key; failures (409 invalid_status_transition, 403, 422…) show the Spanish message of the authoring error map as a toast. Loading, error with retry, empty and no-match states. Depends on MUI, next/head, next/link, next/router, the design-system components, @shared/lib, the authoring hooks, entities, components and CSS Module.
-* Versión: 1.0
+* Descripción: Staff page /evaluations/manage (teachers and admins): lists the evaluations the caller can author from `GET /api/evaluations` with server filters and pagination: type, status (draft and ready by default, or one status, archived included), title search debounced 300 ms, sorted by last update, 10/25/50 per page (changing a filter returns to the first page). The module filter narrows only the loaded page on the client (the API has no module filter). "Nueva evaluación" links to /evaluations/manage/new. Row actions: Editar and Activaciones link to their routes, Duplicar (`POST .../duplicate`) shows a toast and opens the editor of the copy, Archivar asks for confirmation and sends `PATCH .../status` ARCHIVED. Mutations are single-flight and refresh every authoring key; failures (409 invalid_status_transition, 403, 422…) show the Spanish message of the authoring error map as a toast. Loading, error with retry, empty and no-match states. Depends on MUI, next/head, next/link, next/router, the design-system components, @shared/lib, the authoring hooks, entities, components and CSS Module. v1.1 (A3 review follow-up): when the requested page comes back empty beyond the last page (for example after archiving the only row of the last page) the list steps back to the last available page instead of showing the no-match state.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -104,6 +104,13 @@ export function EvaluationsManagePage() {
   const visible = useMemo(() => (page ? filterByModule(page.items, filters.moduleId) : []), [page, filters.moduleId]);
   const modules = useMemo(() => (page ? moduleOptions(page.items) : []), [page]);
   const filtered = hasFilters(filters);
+  // The server answered the requested page with no rows: it is beyond the last page (a mutation shrank the list).
+  const outOfRange = page !== null && page.page === pageIndex + 1 && pageIndex > 0 && page.items.length === 0;
+
+  if (outOfRange) {
+    // Adjusting state while rendering (React's documented pattern): the next query asks for the last available page.
+    setPageIndex(Math.max(0, Math.min(pageIndex - 1, page.pages - 1)));
+  }
 
   const changeFilters = (next: EvaluationListFilters) => {
     setFilters(next);
@@ -143,7 +150,7 @@ export function EvaluationsManagePage() {
   };
 
   const renderList = () => {
-    if (!page) {
+    if (!page || outOfRange) {
       return null;
     }
 

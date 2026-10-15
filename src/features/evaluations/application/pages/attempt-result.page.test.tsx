@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AttemptResultPage tests
-* Descripción: Covers the attempt result page against an msw backend: an IN_PROGRESS attempt goes back to the player; unpublished attempts (SUBMITTED, PENDING_REVIEW) show only their state, render no question detail and never request the feedback; a published attempt shows the es-CO grade with the pass/fail class from `passed`, per-question earned points, the correct option, the teacher explanation and the simulation rubric; the AI feedback goes from the PENDING skeleton to READY after a FEEDBACK_READY notification for the attempt (and ignores other attempts), and DETERMINISTIC items carry the "Retroalimentación automática" label with the rating widget. Depends on Vitest, Testing Library, msw and the evaluations test helpers. v1.1 (E3 review): the "other attempt is ignored" check now waits before comparing the request count and then proves exactly one extra request for this attempt; a failed first feedback read shows the unavailable message; a rubric that repeats a parameter renders every row.
-* Versión: 1.1
+* Descripción: Covers the attempt result page against an msw backend: an IN_PROGRESS attempt goes back to the player; unpublished attempts (SUBMITTED, PENDING_REVIEW) show only their state, render no question detail and never request the feedback; a published attempt shows the es-CO grade with the pass/fail class from `passed`, per-question earned points, the correct option, the teacher explanation and the simulation rubric; the AI feedback goes from the PENDING skeleton to READY after a FEEDBACK_READY notification for the attempt (and ignores other attempts), and DETERMINISTIC items carry the "Retroalimentación automática" label with the rating widget. Depends on Vitest, Testing Library, msw and the evaluations test helpers. v1.1 (E3 review): the "other attempt is ignored" check now waits before comparing the request count and then proves exactly one extra request for this attempt; a failed first feedback read shows the unavailable message; a rubric that repeats a parameter renders every row. v1.2 (A3 review follow-up): the FEEDBACK_READY notification for another attempt is checked deterministically through a spy on the SWR fetcher (SWR calls it synchronously on revalidation) instead of a wall-clock sleep.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,6 +14,7 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { StudentAttemptDetailDTO, StudentGradeFeedbackDTO } from "../../api/dtos/evaluations.dto";
+import { ATTEMPT_FEEDBACK_PATH } from "../../api/services/evaluations.service";
 import { AttemptResultPage } from "./attempt-result.page";
 import {
   apiUrl,
@@ -33,6 +34,27 @@ const router = vi.hoisted(() => ({
 }));
 
 vi.mock("next/router", () => ({ useRouter: () => router }));
+
+// SWR invokes the fetcher synchronously when a key is revalidated, so this spy observes a reload
+// at the moment the socket event is handled, without waiting for the network.
+const fetcherSpy = vi.hoisted(() => ({ calls: [] as unknown[] }));
+
+vi.mock("@shared/api-client/swr-config", async(importOriginal) => {
+  const actual = await importOriginal<typeof import("@shared/api-client/swr-config")>();
+
+  return {
+    ...actual,
+    apiFetcher: (key: Parameters<typeof actual.apiFetcher>[0]) => {
+      fetcherSpy.calls.push(key);
+
+      return actual.apiFetcher(key);
+    },
+  };
+});
+
+function feedbackFetches(): number {
+  return fetcherSpy.calls.filter((key) => Array.isArray(key) && key[0] === ATTEMPT_FEEDBACK_PATH).length;
+}
 
 const server = setupServer();
 const LAZY = { timeout: 5000 };
@@ -209,6 +231,7 @@ describe("AttemptResultPage", () => {
       questions: [feedbackItem("f1", "q1", "READY", "DETERMINISTIC", "La PEEP correcta era 10 cmH2O.")],
     };
     const requestsBefore = feedbackRequests;
+    const fetchesBefore = feedbackFetches();
 
     socket.emit("notification:new", {
       id: "n1",
@@ -219,11 +242,8 @@ describe("AttemptResultPage", () => {
       readAt: null,
       data: { attemptId: "other" } as unknown as Record<string, never>,
     });
-    // Give a (wrong) reload time to reach the handler before comparing.
-    await new Promise((resolve) => {
-      setTimeout(resolve, 150);
-    });
-    expect(feedbackRequests).toBe(requestsBefore);
+    // A (wrong) reload would have called the fetcher synchronously inside the emit.
+    expect(feedbackFetches()).toBe(fetchesBefore);
 
     socket.emit("notification:new", {
       id: "n2",
@@ -234,6 +254,8 @@ describe("AttemptResultPage", () => {
       readAt: null,
       data: { attemptId: "at1", evaluationId: "e1" } as unknown as Record<string, never>,
     });
+    // The matching notification reloads at once, which proves the spy observes reloads.
+    expect(feedbackFetches()).toBe(fetchesBefore + 1);
 
     expect(await screen.findByText("Buen manejo general de la ventilación.", {}, LAZY)).toBeInTheDocument();
     expect(await screen.findByText("La PEEP correcta era 10 cmH2O.", {}, LAZY)).toBeInTheDocument();
