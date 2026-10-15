@@ -58,6 +58,13 @@
     "pages/evaluations/manage/[evaluationId]/assignments.tsx",
     "pages/grading/index.tsx",
     "pages/grading/attempts/[attemptId].tsx",
-    "pages/grading/evaluations/[evaluationId].tsx"
+    "pages/grading/evaluations/[evaluationId].tsx",
+    "pages/evaluation/index.tsx",
+    "pages/evaluation/[activityId].tsx",
+    "pages/evaluation/manage/index.tsx",
+    "pages/evaluation/manage/new.tsx",
+    "pages/evaluation/manage/[activityId]/edit.tsx",
+    "pages/evaluation/grade/index.tsx",
+    "pages/evaluation/grade/[activityId].tsx"
   ]
 }

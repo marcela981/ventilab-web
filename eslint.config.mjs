@@ -38,7 +38,9 @@
  *   v3.15 (G2 grading): pages/grading/attempts/[attemptId].tsx entra en NEW_PAGE_FILES.
  *   v3.16 (G3 grading): nuevo módulo compartido src/shared/charts y la ruta delgada
  *   pages/grading/evaluations/[evaluationId].tsx entra en NEW_PAGE_FILES.
- * Versión: 3.16
+ *   v3.17 (R1 evaluations): las rutas legadas pages/evaluation/** pasan a ser redirecciones
+ *   delgadas .tsx a las rutas nuevas y entran en NEW_PAGE_FILES.
+ * Versión: 3.17
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -87,6 +89,13 @@ const NEW_PAGE_FILES = [
   "pages/grading/index.tsx",
   "pages/grading/attempts/[[]attemptId[]].tsx",
   "pages/grading/evaluations/[[]evaluationId[]].tsx",
+  "pages/evaluation/index.tsx",
+  "pages/evaluation/[[]activityId[]].tsx",
+  "pages/evaluation/manage/index.tsx",
+  "pages/evaluation/manage/new.tsx",
+  "pages/evaluation/manage/[[]activityId[]]/edit.tsx",
+  "pages/evaluation/grade/index.tsx",
+  "pages/evaluation/grade/[[]activityId[]].tsx",
 ];
 
 const NEW_CODE_FILES = [
