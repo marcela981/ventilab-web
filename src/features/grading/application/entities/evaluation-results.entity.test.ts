@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation results entities tests
-* Descripción: Verifies the pure formatting rules of the results page: grades in es-CO with one decimal ("—" when missing), rates as es-CO percentages, histogram labels such as "3,0–3,5", the approximate publish estimate (graded attempts of the group's assignments, or graded minus published attempts, never below 0) and the group options taken from the assignments. Depends on vitest and the evaluation results entities.
-* Versión: 1.0
+* Descripción: Verifies the pure formatting rules of the results page: grades in es-CO with one decimal ("—" when missing), rates as es-CO percentages, histogram labels such as "3,0–3,5" and the group options taken from the assignments. Depends on vitest and the evaluation results entities. v1.1 (G3 review S3): the rate is asserted against literal es-CO strings (Intl gives "75%", no space) instead of a reimplementation of the formatter; publishEstimate tests removed with the function.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,11 +16,8 @@ import {
   formatRate,
   formatStatGrade,
   MISSING_STAT,
-  publishEstimate,
 } from "./evaluation-results.entity";
 import type { EvaluationAssignment } from "./evaluation-results.entity";
-
-const percent = (value: number) => new Intl.NumberFormat("es-CO", { style: "percent", maximumFractionDigits: 1 }).format(value);
 
 function assignment(id: string, groupId: string, groupName: string, graded: number): EvaluationAssignment {
   return {
@@ -38,27 +35,14 @@ describe("evaluation results formatting", () => {
   it("formats grades and rates in es-CO", () => {
     expect(formatStatGrade(3.62)).toBe("3,6");
     expect(formatStatGrade(null)).toBe(MISSING_STAT);
-    expect(formatRate(0.75)).toBe(percent(0.75));
-    expect(formatRate(0.75)).toMatch(/^75\s?%$/);
+    expect(formatRate(0.75)).toBe("75%");
+    expect(formatRate(0.625)).toBe("62,5%");
     expect(formatRate(null)).toBe(MISSING_STAT);
   });
 
   it("labels the API histogram buckets", () => {
     expect(formatHistogramLabel({ from: 3, to: 3.5 })).toBe("3,0–3,5");
     expect(formatHistogramLabel({ from: 4.5, to: 5 })).toBe("4,5–5,0");
-  });
-});
-
-describe("publishEstimate", () => {
-  it("uses graded minus published attempts for every group, never below 0", () => {
-    expect(publishEstimate({ gradedCount: 20, publishedCount: 12 }, null)).toEqual({ count: 8, approximate: true });
-    expect(publishEstimate({ gradedCount: 3, publishedCount: 5 }, null)).toEqual({ count: 0, approximate: true });
-  });
-
-  it("uses the graded attempts of the group's assignments", () => {
-    const group = [assignment("a1", "g1", "UCI A", 4), assignment("a2", "g1", "UCI A", 2)];
-
-    expect(publishEstimate({ gradedCount: 20, publishedCount: 0 }, group)).toEqual({ count: 6, approximate: true });
   });
 });
 

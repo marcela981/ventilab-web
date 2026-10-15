@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationResultsPage tests
-* Descripción: Page tests of /grading/evaluations/[evaluationId] through MSW with @shared/charts mocked: the KPIs are the API statistics formatted in es-CO (grades with one decimal, pass rate as a percentage, passing grade from the API); the histogram chart receives the API buckets with their es-CO labels and counts and the difficulty chart the API indices by question; without attempts an empty state replaces KPIs and charts; the per-student section always explains the API gap and, for a chosen group, lists the published grades of the evaluation from the group dashboard; the bulk publish confirmation shows the approximate number of students (graded minus published for all groups, the group's graded attempts for one group), posts {evaluationId} or {evaluationId, groupId} only after confirming and toasts the publishedCount of the response. Depends on vitest, Testing Library, msw, the results page, its copy and entities and the grading test helpers.
-* Versión: 1.0
+* Descripción: Page tests of /grading/evaluations/[evaluationId] through MSW with @shared/charts mocked: the KPIs are the API statistics formatted in es-CO (grades with one decimal, pass rate as a percentage, passing grade from the API); the histogram chart receives the API buckets with their es-CO labels and counts and the difficulty chart the API indices by question; without attempts an empty state replaces KPIs and charts; the per-student section always explains the API gap and, for a chosen group, lists the published grades of the evaluation from the group dashboard; the bulk publish confirmation states the scope only (no client-side count), posts {evaluationId} or {evaluationId, groupId} only after confirming and toasts the publishedCount of the response. Depends on vitest, Testing Library, msw, the results page, its copy and entities and the grading test helpers. v1.1 (G3 review): the pass rate is asserted as the literal es-CO string "75%"; the KPIs carry the every-group scope note; the confirmation has no estimate and the button stays enabled when every graded attempt is already published; after a publish the stats-delay note appears and the stats are requested again once after STATS_REFRESH_DELAY_MS, and the timer is cleared on unmount.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,8 +14,7 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { EvaluationAnalyticsDTO, EvaluationAssignmentDTO, GroupDashboardDTO } from "../../api/dtos/grading.dto";
-import { formatRate } from "../entities/evaluation-results.entity";
-import { EvaluationResultsPage, RESULTS_COPY } from "./evaluation-results.page";
+import { EvaluationResultsPage, RESULTS_COPY, STATS_REFRESH_DELAY_MS } from "./evaluation-results.page";
 import { apiUrl, envelope, renderGradingPage } from "./grading-test-helpers";
 
 vi.setConfig({ testTimeout: 20_000 });
@@ -37,6 +36,7 @@ let stats: EvaluationAnalyticsDTO;
 let assignments: EvaluationAssignmentDTO[];
 let publishBodies: unknown[];
 let publishedCount: number;
+let statsRequests: number;
 
 function statsDto(overrides: Partial<EvaluationAnalyticsDTO> = {}): EvaluationAnalyticsDTO {
   return {
@@ -113,8 +113,13 @@ beforeEach(() => {
   assignments = [assignmentDto("a1", "g1", "UCI A", 6), assignmentDto("a2", "g2", "Urgencias", 3)];
   publishBodies = [];
   publishedCount = 8;
+  statsRequests = 0;
   server.use(
-    http.get(apiUrl("/api/analytics/evaluations/:evaluationId/stats"), () => HttpResponse.json(envelope(stats))),
+    http.get(apiUrl("/api/analytics/evaluations/:evaluationId/stats"), () => {
+      statsRequests += 1;
+
+      return HttpResponse.json(envelope(stats));
+    }),
     http.get(apiUrl("/api/evaluation-assignments"), ({ request }) => {
       const url = new URL(request.url);
 
@@ -131,6 +136,7 @@ beforeEach(() => {
 
 afterEach(() => {
   server.resetHandlers();
+  vi.restoreAllMocks();
 });
 
 afterAll(() => {
@@ -161,13 +167,14 @@ describe("EvaluationResultsPage — statistics", () => {
 
     expect(kpi(RESULTS_COPY.average)).toBe("3,6");
     expect(kpi(RESULTS_COPY.median)).toBe("3,7");
-    expect(kpi(RESULTS_COPY.passRate)).toBe(formatRate(0.75));
+    expect(kpi(RESULTS_COPY.passRate)).toBe("75%");
     expect(kpi(RESULTS_COPY.passingGrade)).toBe("3,0");
     expect(kpi(RESULTS_COPY.minGrade)).toBe("1,4");
     expect(kpi(RESULTS_COPY.maxGrade)).toBe("5,0");
     expect(kpi(RESULTS_COPY.totalAttempts)).toBe("24");
     expect(kpi(RESULTS_COPY.gradedCount)).toBe("20");
     expect(kpi(RESULTS_COPY.publishedCount)).toBe("12");
+    expect(screen.getByText(RESULTS_COPY.kpiScope)).toBeInTheDocument();
   });
 
   it("hands the API histogram buckets and question indices to the charts", async() => {
@@ -234,7 +241,7 @@ describe("EvaluationResultsPage — groups and students", () => {
 });
 
 describe("EvaluationResultsPage — bulk publish", () => {
-  it("confirms with the approximate count for every group and posts only the evaluation", async() => {
+  it("confirms with the scope only for every group and posts only the evaluation", async() => {
     renderPage();
     await loaded();
 
@@ -244,7 +251,7 @@ describe("EvaluationResultsPage — bulk publish", () => {
     const dialog = await screen.findByRole("dialog", { name: RESULTS_COPY.publishTitle });
 
     expect(within(dialog).getByText(RESULTS_COPY.publishScopeAll)).toBeInTheDocument();
-    expect(within(dialog).getByText(RESULTS_COPY.publishNotify("8"))).toBeInTheDocument();
+    expect(within(dialog).queryByText(/aprox/)).not.toBeInTheDocument();
     expect(publishBodies).toEqual([]);
 
     fireEvent.click(within(dialog).getByRole("button", { name: RESULTS_COPY.publishConfirm }));
@@ -253,7 +260,7 @@ describe("EvaluationResultsPage — bulk publish", () => {
     expect(await screen.findByText(RESULTS_COPY.published(8))).toBeInTheDocument();
   });
 
-  it("publishes one group with its graded attempts as the count", async() => {
+  it("publishes one group and toasts the API count", async() => {
     publishedCount = 1;
     renderPage();
     await loaded();
@@ -265,12 +272,63 @@ describe("EvaluationResultsPage — bulk publish", () => {
     const dialog = await screen.findByRole("dialog", { name: RESULTS_COPY.publishTitle });
 
     expect(within(dialog).getByText(RESULTS_COPY.publishScopeGroup("Urgencias"))).toBeInTheDocument();
-    expect(within(dialog).getByText(RESULTS_COPY.publishNotify("3"))).toBeInTheDocument();
 
     fireEvent.click(within(dialog).getByRole("button", { name: RESULTS_COPY.publishConfirm }));
 
     await waitFor(() => expect(publishBodies).toEqual([{ evaluationId: "ev-1", groupId: "g2" }]));
     expect(await screen.findByText(RESULTS_COPY.published(1))).toBeInTheDocument();
+  });
+
+  it("keeps the button enabled when every graded attempt is already published", async() => {
+    stats = statsDto({ gradedCount: 12, publishedCount: 12 });
+    publishedCount = 0;
+    renderPage();
+    await loaded();
+
+    await waitFor(() => expect(publishButton()).toBeEnabled());
+    fireEvent.click(publishButton());
+    fireEvent.click(within(await screen.findByRole("dialog", { name: RESULTS_COPY.publishTitle })).getByRole("button", { name: RESULTS_COPY.publishConfirm }));
+
+    expect(await screen.findByText(RESULTS_COPY.published(0))).toBeInTheDocument();
+  });
+
+  it("warns about the stats delay and revalidates the stats once after the backend cache window", async() => {
+    const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
+    const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
+    const { unmount } = renderPage();
+    await loaded();
+
+    expect(screen.queryByText(RESULTS_COPY.statsDelay)).not.toBeInTheDocument();
+    await waitFor(() => expect(publishButton()).toBeEnabled());
+    fireEvent.click(publishButton());
+    fireEvent.click(within(await screen.findByRole("dialog", { name: RESULTS_COPY.publishTitle })).getByRole("button", { name: RESULTS_COPY.publishConfirm }));
+
+    expect(await screen.findByText(RESULTS_COPY.statsDelay)).toBeInTheDocument();
+
+    const refreshCall = setTimeoutSpy.mock.calls.findIndex(([, delay]) => delay === STATS_REFRESH_DELAY_MS);
+
+    expect(refreshCall).toBeGreaterThanOrEqual(0);
+
+    const requestsBefore = statsRequests;
+    const refresh = setTimeoutSpy.mock.calls[refreshCall]?.[0] as () => void;
+
+    refresh();
+    await waitFor(() => expect(statsRequests).toBe(requestsBefore + 1));
+
+    // A second publish re-arms the timer; unmounting clears the pending one.
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    await waitFor(() => expect(publishButton()).toBeEnabled());
+    fireEvent.click(publishButton());
+    fireEvent.click(within(await screen.findByRole("dialog", { name: RESULTS_COPY.publishTitle })).getByRole("button", { name: RESULTS_COPY.publishConfirm }));
+    await waitFor(() => expect(setTimeoutSpy.mock.calls.filter(([, delay]) => delay === STATS_REFRESH_DELAY_MS)).toHaveLength(2));
+
+    const refreshIndexes = setTimeoutSpy.mock.calls.flatMap(([, delay], index) => (delay === STATS_REFRESH_DELAY_MS ? [index] : []));
+    const pendingIndex = refreshIndexes[refreshIndexes.length - 1] ?? -1;
+    const pendingTimer = setTimeoutSpy.mock.results[pendingIndex]?.value;
+
+    unmount();
+
+    expect(clearTimeoutSpy).toHaveBeenCalledWith(pendingTimer);
   });
 
   it("links back to the grading queue", async() => {

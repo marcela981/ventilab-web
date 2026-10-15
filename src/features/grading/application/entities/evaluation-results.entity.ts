@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation results entities
-* Descripción: View models and pure formatting rules of the staff results page /grading/evaluations/[evaluationId]: the evaluation statistics exactly as the API computes them (counts, average, median, minimum, maximum, pass rate, passing grade, 0.5 grade histogram and per-question item analysis), the assignments of the evaluation per group with their attempt counts, and the published grade of each student of a group. Nothing here computes a statistic: it only formats API values (grades in es-CO with one decimal, rates as es-CO percentages, histogram labels such as "3,0–3,5") and picks the API count shown in the bulk-publish confirmation (the graded attempts of the group's assignment, or the graded minus published attempts of the evaluation), always marked as approximate because attempts are not students. Depends on @shared/lib/format.
-* Versión: 1.0
+* Descripción: View models and pure formatting rules of the staff results page /grading/evaluations/[evaluationId]: the evaluation statistics exactly as the API computes them (counts, average, median, minimum, maximum, pass rate, passing grade, 0.5 grade histogram and per-question item analysis), the assignments of the evaluation per group with their attempt counts, and the published grade of each student of a group. Nothing here computes a statistic: it only formats API values (grades in es-CO with one decimal, rates as es-CO percentages, histogram labels such as "3,0–3,5"). Depends on @shared/lib/format. v1.1 (G3 review W1/S1): publishEstimate removed; the bulk-publish confirmation states the scope only and the count comes from the API response.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -100,25 +100,6 @@ export function formatHistogramLabel(bin: Pick<HistogramBin, "from" | "to">): st
 
 export function questionLabel(stat: Pick<QuestionStat, "order">): string {
   return `Pregunta ${stat.order}`;
-}
-
-export type PublishEstimate = {
-  count: number
-  // Always true: the API counts attempts, not the students that will be notified.
-  approximate: true
-};
-
-// The best API number for the confirmation: the graded attempts of the group's assignments (null = every group), or, for every group,
-// the graded attempts of the evaluation minus the ones already published (two API counts, never below 0).
-export function publishEstimate(
-  stats: Pick<EvaluationStats, "gradedCount" | "publishedCount">,
-  groupAssignments: readonly EvaluationAssignment[] | null,
-): PublishEstimate {
-  const count = groupAssignments
-    ? groupAssignments.reduce((total, assignment) => total + assignment.attemptCounts.graded, 0)
-    : stats.gradedCount - stats.publishedCount;
-
-  return { count: Math.max(0, count), approximate: true };
 }
 
 // Groups of the evaluation for the group filter, one per group, sorted by name.
