@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useUnsavedChangesGuard tests
-* Descripción: Hook tests of the unsaved-changes guard with a mocked next/router (route events and beforePopState): the browser Back button asks for confirmation through beforePopState, a cancel keeps the current URL and stops Next.js, an accepted one is not asked again on routeChangeStart; allowNextNavigation lets exactly one navigation through and its bypass ends when that navigation completes or, when no navigation starts, after the timeout. Depends on vitest, Testing Library and the guard hook. v1.1 (A3 review W1/S3): a cancelled Back pushes a history state for the current page (as = router.asPath, url = route pathname with query), and the bypass of an accepted Back ends on hashChangeComplete or after the timeout.
-* Versión: 1.1
+* Descripción: Hook tests of the unsaved-changes guard with a mocked next/router (route events and beforePopState): the browser Back button asks for confirmation through beforePopState, a cancel keeps the current URL and stops Next.js, an accepted one is not asked again on routeChangeStart; allowNextNavigation lets exactly one navigation through and its bypass ends when that navigation completes or, when no navigation starts, after the timeout. Depends on vitest, Testing Library and the guard hook. v1.1 (A3 review W1/S3): a cancelled Back pushes a history state for the current page (as = router.asPath, url = route pathname with query), and the bypass of an accepted Back ends on hashChangeComplete or after the timeout. v1.2 (A4 review S6): the pushed state does not reuse the destination key or options.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,7 +11,7 @@
 
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ALLOW_NAVIGATION_TIMEOUT_MS, routeHref, useUnsavedChangesGuard } from "./use-unsaved-changes-guard";
+import { ALLOW_NAVIGATION_TIMEOUT_MS, currentPageHistoryState, routeHref, useUnsavedChangesGuard } from "./use-unsaved-changes-guard";
 
 type PopStateHandler = (state: unknown) => boolean;
 
@@ -69,7 +69,10 @@ describe("useUnsavedChangesGuard", () => {
     renderGuard();
 
     // During popstate history.state already belongs to the destination page.
-    window.history.replaceState({ __N: true, url: "/evaluations/manage", as: "/evaluations/manage", key: "k1" }, "");
+    window.history.replaceState(
+      { __N: true, url: "/evaluations/manage", as: "/evaluations/manage", key: "k1", options: { shallow: true, scroll: false } },
+      "",
+    );
 
     expect(router.popState?.({})).toBe(false);
     expect(pushState).toHaveBeenCalledTimes(1);
@@ -80,7 +83,10 @@ describe("useUnsavedChangesGuard", () => {
       __N: true,
       as: router.asPath,
       url: "/evaluations/manage/[evaluationId]/edit?evaluationId=e1",
+      options: {},
     });
+    // The destination key and options are not reused.
+    expect((pushed as Record<string, unknown>).key).not.toBe("k1");
 
     expect(router.popState?.({})).toBe(true);
     // The accepted Back navigation is not asked again when Next.js starts it.
@@ -147,6 +153,19 @@ describe("useUnsavedChangesGuard", () => {
     });
 
     expect(() => fire("routeChangeStart")).toThrow();
+  });
+});
+
+describe("currentPageHistoryState", () => {
+  it("builds a fresh Next-compatible state for the current page", () => {
+    expect(currentPageHistoryState("/x/[id]", { id: "1" }, "/x/1", "abc")).toEqual({
+      __N: true,
+      url: "/x/[id]?id=1",
+      as: "/x/1",
+      options: {},
+      key: "abc",
+    });
+    expect(currentPageHistoryState("/x", {}, "/x").key).toMatch(/^[a-z0-9]+$/);
   });
 });
 

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AssignmentsTable
-* Descripción: Table of the activations of an evaluation: group name, window formatted in America/Bogota, the state derived by the backend (Próxima, Activa, Cerrada) as a colored badge, the attempt total with its breakdown (in progress, pending review, graded) and the row actions: "Cerrar ahora" for upcoming and active activations and "Eliminar" for an upcoming activation without attempts. The actions only request confirmation; the page runs them. Depends on MUI, @shared/lib, the assignment entities and copy and the assignments CSS Module.
-* Versión: 1.0
+* Descripción: Table of the activations of an evaluation: group name, window formatted in America/Bogota, the state derived by the backend (Próxima, Activa, Cerrada) as a colored badge, the attempt total with its breakdown (in progress, pending review, graded) and the row actions: "Cerrar ahora" for upcoming and active activations and "Eliminar" for an upcoming activation without attempts. The actions only request confirmation; the page runs them. Depends on MUI, @shared/lib, the assignment entities and copy and the assignments CSS Module. v1.1 (A4 review C1/W3): the actions are shown on every row (the list is already scoped to the groups of the caller; the backend answers 403 assignment_forbidden otherwise), and "Eliminar" is offered for any activation without attempts.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -36,14 +36,12 @@ const STATE_CLASSES: Readonly<Record<AssignmentState, string | undefined>> = {
 
 export type AssignmentsTableProps = {
   assignments: readonly EvaluationAssignment[]
-  // The caller can manage the evaluation (otherwise no actions).
-  canManage: boolean
   disabled: boolean
   onClose: (assignment: EvaluationAssignment) => void
   onDelete: (assignment: EvaluationAssignment) => void
 };
 
-export function AssignmentsTable({ assignments, canManage, disabled, onClose, onDelete }: AssignmentsTableProps) {
+export function AssignmentsTable({ assignments, disabled, onClose, onDelete }: AssignmentsTableProps) {
   const columns = ASSIGNMENTS_COPY.columns;
 
   return (
@@ -55,7 +53,7 @@ export function AssignmentsTable({ assignments, canManage, disabled, onClose, on
             <TableCell>{columns.window}</TableCell>
             <TableCell>{columns.state}</TableCell>
             <TableCell align="right">{columns.attempts}</TableCell>
-            {canManage ? <TableCell align="right">{columns.actions}</TableCell> : null}
+            <TableCell align="right">{columns.actions}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -79,33 +77,31 @@ export function AssignmentsTable({ assignments, canManage, disabled, onClose, on
                     {ASSIGNMENTS_COPY.attemptBreakdown(counts.inProgress, counts.pendingReview, counts.graded)}
                   </span>
                 </TableCell>
-                {canManage ? (
-                  <TableCell align="right">
-                    <div className={cx(styles.rowActions)}>
-                      {canCloseAssignment(assignment) ? (
-                        <Button
-                          size="small"
-                          disabled={disabled}
-                          aria-label={ASSIGNMENTS_COPY.closeNowFor(assignment.groupName)}
-                          onClick={() => onClose(assignment)}
-                        >
-                          {ASSIGNMENTS_COPY.closeNow}
-                        </Button>
-                      ) : null}
-                      {canDeleteAssignment(assignment) ? (
-                        <Button
-                          size="small"
-                          color="error"
-                          disabled={disabled}
-                          aria-label={ASSIGNMENTS_COPY.deleteFor(assignment.groupName)}
-                          onClick={() => onDelete(assignment)}
-                        >
-                          {ASSIGNMENTS_COPY.delete}
-                        </Button>
-                      ) : null}
-                    </div>
-                  </TableCell>
-                ) : null}
+                <TableCell align="right">
+                  <div className={cx(styles.rowActions)}>
+                    {canCloseAssignment(assignment) ? (
+                      <Button
+                        size="small"
+                        disabled={disabled}
+                        aria-label={ASSIGNMENTS_COPY.closeNowFor(assignment.groupName)}
+                        onClick={() => onClose(assignment)}
+                      >
+                        {ASSIGNMENTS_COPY.closeNow}
+                      </Button>
+                    ) : null}
+                    {canDeleteAssignment(assignment) ? (
+                      <Button
+                        size="small"
+                        color="error"
+                        disabled={disabled}
+                        aria-label={ASSIGNMENTS_COPY.deleteFor(assignment.groupName)}
+                        onClick={() => onDelete(assignment)}
+                      >
+                        {ASSIGNMENTS_COPY.delete}
+                      </Button>
+                    ) : null}
+                  </div>
+                </TableCell>
               </TableRow>
             );
           })}

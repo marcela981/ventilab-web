@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationAssignmentsPage tests
-* Descripción: Page tests through MSW: the list with group, Bogota window, derived state and attempts; "Activar" disabled with its reason for a DRAFT evaluation; the activation dialog payload (selected groups and the Bogota window as UTC ISO), the end-before-start validation that sends nothing, the 403 permissions message inside the dialog; "Cerrar ahora" asks for confirmation and then posts the close request. Depends on vitest, Testing Library, MSW, the authoring test helpers and the page.
-* Versión: 1.0
+* Descripción: Page tests through MSW: the list with group, Bogota window, derived state and attempts; "Activar" disabled with its reason for a DRAFT evaluation; the activation dialog payload (selected groups and the Bogota window as UTC ISO), the end-before-start validation that sends nothing, the 403 permissions message inside the dialog; "Cerrar ahora" asks for confirmation and then posts the close request. Depends on vitest, Testing Library, MSW, the authoring test helpers and the page. v1.1 (A4 review C1/W2/W3/S4): a teacher who is not the author can activate a READY evaluation and sees the row actions; a student cannot activate; delete is offered for a closed activation without attempts; a failed close reloads the list; an end in the past is rejected. Date is faked at 2026-10-15 so the "end in the future" rule is stable.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -29,6 +29,8 @@ let assignments: EvaluationAssignmentDTO[];
 let activationBodies: unknown[];
 let closed: string[];
 let activationFailure: { code: string, status: number } | null;
+let closeFailure: { code: string, status: number } | null;
+let listRequests: number;
 
 function assignmentDto(id: string, groupName: string, overrides: Partial<EvaluationAssignmentDTO> = {}): EvaluationAssignmentDTO {
   return {
@@ -80,9 +82,16 @@ beforeEach(() => {
   activationBodies = [];
   closed = [];
   activationFailure = null;
+  closeFailure = null;
+  listRequests = 0;
+  vi.useFakeTimers({ toFake: ["Date"], now: new Date("2026-10-15T12:00:00.000Z") });
   server.use(
     http.get(apiUrl("/api/evaluations/:id"), () => HttpResponse.json(envelope(detail))),
-    http.get(apiUrl("/api/evaluations/:id/assignments"), () => HttpResponse.json(envelope(assignments))),
+    http.get(apiUrl("/api/evaluations/:id/assignments"), () => {
+      listRequests += 1;
+
+      return HttpResponse.json(envelope(assignments));
+    }),
     http.get(apiUrl("/api/groups"), () => HttpResponse.json(envelope(groupsResponse))),
     http.post(apiUrl("/api/evaluations/:id/assignments"), async({ request }) => {
       activationBodies.push(await request.json());
@@ -96,6 +105,10 @@ beforeEach(() => {
     http.post(apiUrl("/api/evaluations/:id/assignments/:assignmentId/close"), ({ params }) => {
       closed.push(String(params.assignmentId));
 
+      if (closeFailure) {
+        return errorResponse(closeFailure.code, closeFailure.status);
+      }
+
       return HttpResponse.json(envelope(null));
     }),
   );
@@ -103,6 +116,7 @@ beforeEach(() => {
 
 afterEach(() => {
   server.resetHandlers();
+  vi.useRealTimers();
 });
 
 afterAll(() => {
@@ -142,6 +156,27 @@ describe("EvaluationAssignmentsPage", () => {
     expect(within(rows[2] as HTMLElement).queryByRole("button", { name: /Cerrar ahora/ })).not.toBeInTheDocument();
     expect(within(rows[0] as HTMLElement).getByRole("button", { name: ASSIGNMENTS_COPY.deleteFor("Neonatos") })).toBeInTheDocument();
     expect(within(rows[1] as HTMLElement).queryByRole("button", { name: /Eliminar/ })).not.toBeInTheDocument();
+    // A closed activation without attempts can still be deleted (backend rule: no attempts).
+    expect(within(rows[2] as HTMLElement).getByRole("button", { name: ASSIGNMENTS_COPY.deleteFor("Anestesia") })).toBeInTheDocument();
+  });
+
+  it("lets a teacher who is not the author activate a READY evaluation and act on the rows", async() => {
+    detail = evaluationDetailDto("e1", { status: "READY", canManage: false, createdById: "teacher-2" });
+    renderWithProviders(<EvaluationAssignmentsPage evaluationId="e1" />, "TEACHER");
+
+    const activate = await screen.findByRole("button", { name: ASSIGNMENTS_COPY.activate });
+
+    await waitFor(() => expect(activate).toBeEnabled());
+    expect(screen.queryByRole("link", { name: ASSIGNMENTS_COPY.edit })).not.toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: ASSIGNMENTS_COPY.closeNowFor("UCI 2026-2") })).toBeInTheDocument();
+    expect(screen.queryByText(ASSIGNMENTS_COPY.notStaff)).not.toBeInTheDocument();
+  });
+
+  it("does not let a non-staff viewer activate", async() => {
+    renderWithProviders(<EvaluationAssignmentsPage evaluationId="e1" />, "STUDENT");
+
+    expect(await screen.findByText(ASSIGNMENTS_COPY.notStaff)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: ASSIGNMENTS_COPY.activate })).toBeDisabled();
   });
 
   it("disables Activar with the reason when the evaluation is not READY", async() => {
@@ -182,6 +217,17 @@ describe("EvaluationAssignmentsPage", () => {
     expect(activationBodies).toHaveLength(0);
   });
 
+  it("does not send an activation that already ended", async() => {
+    const dialog = await openDialog();
+
+    fireEvent.click(await within(dialog).findByRole("checkbox", { name: /UCI 2026-2/ }));
+    fillWindow(dialog, "2026-10-01T10:00", "2026-10-14T10:00");
+    fireEvent.click(within(dialog).getByRole("button", { name: ASSIGNMENTS_COPY.dialog.submit }));
+
+    expect(await within(dialog).findByText(ACTIVATION_ERRORS.endNotFuture)).toBeInTheDocument();
+    expect(activationBodies).toHaveLength(0);
+  });
+
   it("shows the permissions message on a 403", async() => {
     activationFailure = { code: "FORBIDDEN", status: 403 };
     const dialog = await openDialog();
@@ -205,5 +251,19 @@ describe("EvaluationAssignmentsPage", () => {
 
     await waitFor(() => expect(closed).toEqual(["a1"]));
     expect(await screen.findByText(ASSIGNMENTS_COPY.closed("UCI 2026-2"))).toBeInTheDocument();
+  });
+
+  it("reloads the list when closing fails because the row is stale", async() => {
+    closeFailure = { code: "evaluation.assignment_closed", status: 409 };
+    renderWithProviders(<EvaluationAssignmentsPage evaluationId="e1" />);
+
+    fireEvent.click(await screen.findByRole("button", { name: ASSIGNMENTS_COPY.closeNowFor("UCI 2026-2") }));
+    const confirm = await screen.findByRole("dialog", { name: ASSIGNMENTS_COPY.closeTitle });
+    const before = listRequests;
+
+    fireEvent.click(within(confirm).getByRole("button", { name: ASSIGNMENTS_COPY.closeConfirm }));
+
+    expect(await screen.findByText("Esta activación ya está cerrada.")).toBeInTheDocument();
+    await waitFor(() => expect(listRequests).toBeGreaterThan(before));
   });
 });

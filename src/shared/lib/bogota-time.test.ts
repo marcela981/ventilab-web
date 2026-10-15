@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Bogota local time helpers tests
-* Descripción: Verifies the conversion of datetime-local values read in America/Bogota (UTC-5, no daylight saving time) to UTC ISO instants and back, including the day, month, year and leap-day boundaries, values that cross midnight UTC, and the rejection of malformed or impossible dates. Depends on vitest and bogota-time.ts.
-* Versión: 1.0
+* Descripción: Verifies the conversion of datetime-local values read in America/Bogota (UTC-5, no daylight saving time) to UTC ISO instants and back, including the day, month, year and leap-day boundaries, values that cross midnight UTC, and the rejection of malformed or impossible dates. Depends on vitest and bogota-time.ts. v1.1 (A4 review S5): optional seconds.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -34,6 +34,13 @@ describe("bogotaLocalToUtcIso", () => {
     expect(bogotaLocalToUtcIso("2027-02-29T10:00")).toBeNull();
     expect(bogotaLocalToUtcIso("2026-04-31T10:00")).toBeNull();
     expect(bogotaLocalToUtcIso("2026-10-15T24:00")).toBeNull();
+  });
+
+  it("accepts optional seconds and rejects impossible ones", () => {
+    expect(bogotaLocalToUtcIso("2026-10-15T08:30:45")).toBe("2026-10-15T13:30:45.000Z");
+    expect(bogotaLocalToUtcIso("2026-10-15T08:30:00")).toBe("2026-10-15T13:30:00.000Z");
+    expect(bogotaLocalToUtcIso("2026-10-15T08:30:60")).toBeNull();
+    expect(bogotaLocalToUtcIso("2026-10-15T08:30:4")).toBeNull();
   });
 
   it("rejects malformed values", () => {

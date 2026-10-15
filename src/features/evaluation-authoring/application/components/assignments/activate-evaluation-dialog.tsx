@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ActivateEvaluationDialog
-* Descripción: Dialog "Activar evaluación" of the activations page: a checklist of the active student groups the caller manages (admins: every group; `GET /api/groups`), and the start and end date-time of the window as native datetime-local fields read in America/Bogota (UTC-5). Defaults to the next full hour for one week. On submit it validates (at least one group, valid dates, end after start) and sends the body with the window converted to UTC ISO; a failure from the backend (403, 409, 422 mapped to Spanish by the page) stays visible in the dialog. Mounted only while open, so every opening starts from a fresh form. Depends on MUI, the design-system components, @shared/lib, the assignment entities and copy, the staff groups hook and the assignments CSS Module.
-* Versión: 1.0
+* Descripción: Dialog "Activar evaluación" of the activations page: a checklist of the active student groups the caller manages (admins: every group; `GET /api/groups`), and the start and end date-time of the window as native datetime-local fields read in America/Bogota (UTC-5). Defaults to the next full hour for one week. On submit it validates (at least one group, valid dates, end after start) and sends the body with the window converted to UTC ISO; a failure from the backend (403, 409, 422 mapped to Spanish by the page) stays visible in the dialog. Mounted only while open, so every opening starts from a fresh form. Depends on MUI, the design-system components, @shared/lib, the assignment entities and copy, the staff groups hook and the assignments CSS Module. v1.1 (A4 review S4): the validation receives the submit instant (or the injected `now`) and rejects an end that is not in the future.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -52,8 +52,9 @@ export function ActivateEvaluationDialog({ pending, onSubmit, onClose, now }: Ac
   };
 
   const submit = async() => {
-    const nextErrors = validateActivation(form);
-    const body = toActivationBody(form);
+    const submittedAt = now ?? new Date();
+    const nextErrors = validateActivation(form, submittedAt);
+    const body = toActivationBody(form, submittedAt);
 
     setErrors(nextErrors);
 

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationAssignmentsPage
-* Descripción: Staff page /evaluations/manage/[evaluationId]/assignments. Header with the evaluation title and status, "Volver a la lista", "Editar evaluación" and "Activar"; "Activar" is enabled only for a READY evaluation the caller can manage, otherwise the reason is shown (the backend answers 409 evaluation.not_activatable). "Activar" opens the ActivateEvaluationDialog (groups and Bogota window) and sends `POST /api/evaluations/{id}/assignments`; its failures (403 permissions, 409 overlap/not activatable, 422 window or group) stay in the dialog in Spanish. Below, the activations from `GET /api/evaluations/{id}/assignments` with group, window, state and attempts; "Cerrar ahora" asks for confirmation and sends `POST .../assignments/{assignmentId}/close`, "Eliminar" (upcoming without attempts) asks for confirmation and sends `DELETE .../assignments/{assignmentId}`; results show as toasts. Mutations are single-flight and refresh the authoring keys. Loading, error with retry and empty states. Depends on MUI, next/head, next/link, the design-system components, @shared/lib, the authoring hooks, service, entities, components and the assignments CSS Module.
-* Versión: 1.0
+* Descripción: Staff page /evaluations/manage/[evaluationId]/assignments. Header with the evaluation title and status, "Volver a la lista", "Editar evaluación" and "Activar"; "Activar" is enabled only for a READY evaluation the caller can manage, otherwise the reason is shown (the backend answers 409 evaluation.not_activatable). "Activar" opens the ActivateEvaluationDialog (groups and Bogota window) and sends `POST /api/evaluations/{id}/assignments`; its failures (403 permissions, 409 overlap/not activatable, 422 window or group) stay in the dialog in Spanish. Below, the activations from `GET /api/evaluations/{id}/assignments` with group, window, state and attempts; "Cerrar ahora" asks for confirmation and sends `POST .../assignments/{assignmentId}/close`, "Eliminar" (upcoming without attempts) asks for confirmation and sends `DELETE .../assignments/{assignmentId}`; results show as toasts. Mutations are single-flight and refresh the authoring keys. Loading, error with retry and empty states. Depends on MUI, next/head, next/link, the design-system components, @shared/lib, the authoring hooks, service, entities, components and the assignments CSS Module. v1.1 (A4 review C1/W2/W3): assignments are gated by group scope, not by authorship. "Activar" is enabled for a READY evaluation whenever the viewer is staff (TEACHER or ADMIN, read from the session), since READY evaluations are a shared bank; "Cerrar ahora" and "Eliminar" are shown on every listed row (the list is already scoped to the groups of the caller) and a 403 assignment_forbidden from the backend is shown as its message. canManage only gates "Editar evaluación". "Eliminar" is offered for any activation without attempts. A failed close or delete reloads the activations so a stale row (not found, already closed, now with attempts) is refreshed. Also depends on @shared/session.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -23,6 +23,7 @@ import { PageHeader } from "@shared/design-system/components/page-header";
 import { ListSkeleton } from "@shared/design-system/components/skeleton";
 import { useToast } from "@shared/design-system/components/use-toast";
 import { cx } from "@shared/lib/class-names";
+import { useSession } from "@shared/session/use-session";
 import { activateEvaluation, closeAssignment, deleteAssignment } from "../../api/services/evaluation-authoring.service";
 import { ActivateEvaluationDialog } from "../components/assignments/activate-evaluation-dialog";
 import { AssignmentsTable } from "../components/assignments/assignments-table";
@@ -45,6 +46,7 @@ type PendingAction = { kind: "close" | "delete", assignment: EvaluationAssignmen
 
 export function EvaluationAssignmentsPage({ evaluationId }: EvaluationAssignmentsPageProps) {
   const toast = useToast();
+  const { hasRole } = useSession();
   const detail = useEvaluationDetail(evaluationId);
   const list = useEvaluationAssignments(evaluationId);
   const { pending, run } = useAuthoringMutation(getAssignmentErrorMessage);
@@ -52,8 +54,10 @@ export function EvaluationAssignmentsPage({ evaluationId }: EvaluationAssignment
   const [action, setAction] = useState<PendingAction | null>(null);
 
   const { evaluation } = detail;
+  // Authorship only matters for editing; activations are scoped by group on the backend.
   const canManage = evaluation?.canManage ?? false;
-  const activatable = evaluation !== null && canManage && canActivate(evaluation.status);
+  const isStaff = hasRole("TEACHER", "ADMIN");
+  const activatable = evaluation !== null && isStaff && canActivate(evaluation.status);
 
   const activate = async(body: ActivationBody): Promise<string | null> => {
     const outcome = await run(() => activateEvaluation(evaluationId, body));
@@ -84,6 +88,8 @@ export function EvaluationAssignmentsPage({ evaluationId }: EvaluationAssignment
     } else if (outcome.status === "error") {
       setAction(null);
       toast.error(outcome.message);
+      // The row may be stale (assignment_not_found, assignment_closed, assignment_has_attempts).
+      void list.reload();
     }
   };
 
@@ -126,7 +132,6 @@ export function EvaluationAssignmentsPage({ evaluationId }: EvaluationAssignment
       <div className={cx(styles.results)}>
         <AssignmentsTable
           assignments={list.assignments}
-          canManage={canManage}
           disabled={pending}
           onClose={(assignment) => setAction({ kind: "close", assignment })}
           onDelete={(assignment) => setAction({ kind: "delete", assignment })}
@@ -140,8 +145,8 @@ export function EvaluationAssignmentsPage({ evaluationId }: EvaluationAssignment
       return null;
     }
 
-    if (!canManage) {
-      return <Alert severity="info">{ASSIGNMENTS_COPY.notManageable}</Alert>;
+    if (!isStaff) {
+      return <Alert severity="info">{ASSIGNMENTS_COPY.notStaff}</Alert>;
     }
 
     return canActivate(evaluation.status) ? null : <Alert severity="info">{ASSIGNMENTS_COPY.notActivatable}</Alert>;

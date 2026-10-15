@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation assignments copy
-* Descripción: Spanish UI copy of the activations page /evaluations/manage/[evaluationId]/assignments: header, the not-activatable reason, the activations table, the close-now and delete confirmations, the activation dialog (groups, Bogota date-time fields) and the success toasts. No dependencies.
-* Versión: 1.0
+* Descripción: Spanish UI copy of the activations page /evaluations/manage/[evaluationId]/assignments: header, the not-activatable reason, the activations table, the close-now and delete confirmations, the activation dialog (groups, Bogota date-time fields) and the success toasts. No dependencies. v1.1 (A4 review C1): notStaff replaces notManageable (activations depend on the role and the group scope, not on authorship).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,7 +20,7 @@ export const ASSIGNMENTS_COPY = {
   activate: "Activar",
   status: (label: string) => `Estado: ${label}`,
   notActivatable: "Solo una evaluación en estado «Lista» se puede activar. Márcala como lista en el editor.",
-  notManageable: "No puedes gestionar esta evaluación.",
+  notStaff: "Solo docentes y administradores pueden activar evaluaciones.",
   loading: "Cargando la evaluación…",
   loadErrorTitle: "No se pudo cargar la evaluación",
   listLoading: "Cargando las activaciones…",

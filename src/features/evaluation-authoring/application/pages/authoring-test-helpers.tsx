@@ -15,6 +15,9 @@ import type { ReactElement } from "react";
 import { SWRConfig } from "swr";
 import { ToastProvider } from "@shared/design-system/components/toast-provider";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
+import { SessionContext } from "@shared/session/session-context";
+import type { SessionContextValue } from "@shared/session/session-context";
+import type { Role } from "@shared/session/session.entity";
 import type {
   EvaluationDetailDTO,
   EvaluationOptionDTO,
@@ -67,10 +70,30 @@ export function evaluationSummaryDto(id: string, overrides: Partial<EvaluationSu
   };
 }
 
-export function renderWithProviders(ui: ReactElement) {
+function sessionValue(role: Role): SessionContextValue {
+  const user = { id: `${role.toLowerCase()}-1`, email: "user@ventylab.demo", name: "Usuario", image: null, role };
+
+  return {
+    status: "authenticated",
+    user,
+    role,
+    permissions: [],
+    error: null,
+    hasRole: (...roles) => roles.includes(role),
+    hasPermission: () => false,
+    establishSession: () => Promise.resolve(user),
+    signOut: () => Promise.resolve(),
+    reloadSession: () => Promise.resolve(user),
+    handleRoleChanged: () => Promise.resolve(false),
+  };
+}
+
+export function renderWithProviders(ui: ReactElement, role: Role = "TEACHER") {
   return render(
     <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false }}>
-      <ToastProvider>{ui}</ToastProvider>
+      <SessionContext.Provider value={sessionValue(role)}>
+        <ToastProvider>{ui}</ToastProvider>
+      </SessionContext.Provider>
     </SWRConfig>,
   );
 }

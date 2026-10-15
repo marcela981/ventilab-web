@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Bogota local time helpers
-* Descripción: Pure conversions between the value of a native datetime-local input ("YYYY-MM-DDTHH:mm"), read as wall-clock time in America/Bogota, and the UTC ISO instant the API expects. Bogota is UTC-5 all year (no daylight saving time), so the offset is fixed and the result does not depend on the time zone of the browser. Invalid or impossible values (31 de febrero, 24:00) return null. Also builds the datetime-local value of an instant (the default window of the activation dialog). No dependencies.
-* Versión: 1.0
+* Descripción: Pure conversions between the value of a native datetime-local input ("YYYY-MM-DDTHH:mm"), read as wall-clock time in America/Bogota, and the UTC ISO instant the API expects. Bogota is UTC-5 all year (no daylight saving time), so the offset is fixed and the result does not depend on the time zone of the browser. Invalid or impossible values (31 de febrero, 24:00) return null. Also builds the datetime-local value of an instant (the default window of the activation dialog). No dependencies. v1.1 (A4 review S5): accepts optional seconds ("YYYY-MM-DDTHH:mm:ss"), which datetime-local inputs emit when a step below one minute is used.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,11 +13,11 @@
 export const BOGOTA_OFFSET_MINUTES = -5 * 60;
 
 const MINUTE_MS = 60_000;
-const LOCAL_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/;
+const LOCAL_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/;
 
 const pad = (value: number, length = 2): string => String(value).padStart(length, "0");
 
-// "2026-10-15T19:00" in Bogota -> "2026-10-16T00:00:00.000Z".
+// "2026-10-15T19:00" (or "2026-10-15T19:00:30") in Bogota -> "2026-10-16T00:00:00.000Z" (":30.000Z").
 export function bogotaLocalToUtcIso(local: string): string | null {
   const match = LOCAL_PATTERN.exec(local.trim());
 
@@ -25,8 +25,9 @@ export function bogotaLocalToUtcIso(local: string): string | null {
     return null;
   }
 
-  const [year, month, day, hour, minute] = match.slice(1).map(Number) as [number, number, number, number, number];
-  const wallClockMs = Date.UTC(year, month - 1, day, hour, minute);
+  const [year, month, day, hour, minute] = match.slice(1, 6).map(Number) as [number, number, number, number, number];
+  const second = match[6] === undefined ? 0 : Number(match[6]);
+  const wallClockMs = Date.UTC(year, month - 1, day, hour, minute, second);
   const check = new Date(wallClockMs);
 
   // Date.UTC rolls 2026-02-31 over to March: reject anything that does not round-trip.
@@ -36,6 +37,7 @@ export function bogotaLocalToUtcIso(local: string): string | null {
     || check.getUTCDate() !== day
     || check.getUTCHours() !== hour
     || check.getUTCMinutes() !== minute
+    || check.getUTCSeconds() !== second
   ) {
     return null;
   }

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useUnsavedChangesGuard
-* Descripción: Warns before leaving a page with unsaved changes: while dirty, the browser beforeunload prompt is armed and every Next.js client navigation (router.events routeChangeStart) asks window.confirm with the given message; a cancel emits routeChangeError and aborts the navigation by throwing, the documented Pages Router pattern. Returns allowNextNavigation, used right before a navigation the page starts itself after saving (for example the redirect to the editor after creating). Depends on React and next/router. v1.1 (A2 review): the browser Back/Forward buttons are guarded with router.beforePopState (a cancel puts the current URL back in the history and stops Next.js; an accepted one is not asked again on routeChangeStart); the bypass of allowNextNavigation ends when the navigation completes or fails, or after ALLOW_NAVIGATION_TIMEOUT_MS when no navigation started, so it never skips the guard of a later navigation. v1.2 (A3 review W1/S3): a cancelled Back/Forward pushes a Next-compatible history state for the current page (url = route pathname with its query, as = router.asPath) instead of the destination state, so a later Forward routes correctly; the bypass of an accepted Back/Forward also ends after ALLOW_NAVIGATION_TIMEOUT_MS, and every bypass ends on hashChangeComplete too.
-* Versión: 1.2
+* Descripción: Warns before leaving a page with unsaved changes: while dirty, the browser beforeunload prompt is armed and every Next.js client navigation (router.events routeChangeStart) asks window.confirm with the given message; a cancel emits routeChangeError and aborts the navigation by throwing, the documented Pages Router pattern. Returns allowNextNavigation, used right before a navigation the page starts itself after saving (for example the redirect to the editor after creating). Depends on React and next/router. v1.1 (A2 review): the browser Back/Forward buttons are guarded with router.beforePopState (a cancel puts the current URL back in the history and stops Next.js; an accepted one is not asked again on routeChangeStart); the bypass of allowNextNavigation ends when the navigation completes or fails, or after ALLOW_NAVIGATION_TIMEOUT_MS when no navigation started, so it never skips the guard of a later navigation. v1.2 (A3 review W1/S3): a cancelled Back/Forward pushes a Next-compatible history state for the current page (url = route pathname with its query, as = router.asPath) instead of the destination state, so a later Forward routes correctly; the bypass of an accepted Back/Forward also ends after ALLOW_NAVIGATION_TIMEOUT_MS, and every bypass ends on hashChangeComplete too. v1.3 (A4 review S6): the pushed state no longer spreads the destination entry (its `key` and `options` belonged to another page); it carries a fresh key, like Next.js does on pushState, and empty options.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -32,11 +32,20 @@ export function routeHref(pathname: string, query: RouterQuery): string {
   return search ? `${pathname}?${search}` : pathname;
 }
 
-// window.history.state belongs to the destination during popstate: rebuild one for the current page.
-export function currentPageHistoryState(state: unknown, pathname: string, query: RouterQuery, asPath: string): Record<string, unknown> {
-  const base = typeof state === "object" && state !== null ? state as Record<string, unknown> : {};
+// Same shape as the scroll-restoration key Next.js creates for every pushed entry.
+export function createHistoryKey(): string {
+  return Math.random().toString(36).slice(2, 10);
+}
 
-  return { ...base, __N: true, url: routeHref(pathname, query), as: asPath };
+// window.history.state belongs to the destination during popstate: build a fresh one for the current page.
+// Next.js reads `options.shallow` on popstate, so `options` must be an object.
+export function currentPageHistoryState(
+  pathname: string,
+  query: RouterQuery,
+  asPath: string,
+  key: string = createHistoryKey(),
+): Record<string, unknown> {
+  return { __N: true, url: routeHref(pathname, query), as: asPath, options: {}, key };
 }
 
 export function useUnsavedChangesGuard(dirty: boolean, message: string): { allowNextNavigation: () => void } {
@@ -109,7 +118,7 @@ export function useUnsavedChangesGuard(dirty: boolean, message: string): { allow
       }
 
       window.history.pushState(
-        currentPageHistoryState(window.history.state, router.pathname, router.query, router.asPath),
+        currentPageHistoryState(router.pathname, router.query, router.asPath),
         "",
         router.asPath,
       );
