@@ -1,0 +1,76 @@
+{
+  "generatedBy": "scripts/sync-sim-engine.mjs",
+  "source": "ventylab-server",
+  "note": "GENERATED - do not edit. Hashes of the LF-normalised backend sources.",
+  "sourceHash": "6db5f7bb5e3566ed5ed94f8f2baf1464b1aa1c2a8eff29cdd6d2f92901d4dc98",
+  "files": [
+    {
+      "path": "src/common/domain/ventilator/ventilator-limits.ts",
+      "sha256": "74508abea26cba30f066eab89416f86e105f784ed0908ffe0ec4297ffdbbefe7"
+    },
+    {
+      "path": "src/features/simulation/domain/engine/alarms.ts",
+      "sha256": "cb1e95236b5864ae87b5ea350c18f62cf7fa07400d1fdd59df8ca67ed2de4bf7"
+    },
+    {
+      "path": "src/features/simulation/domain/engine/cycle-metrics.ts",
+      "sha256": "5187ada1e47c7a0530530b5799ac5277840985cc6409e11d8847ef0fab282ede"
+    },
+    {
+      "path": "src/features/simulation/domain/engine/engine-math.ts",
+      "sha256": "4aaa5e682b39e7d4743b3f78804cdbf8f177df46266cb7a96fc8d4f08c7726d3"
+    },
+    {
+      "path": "src/features/simulation/domain/engine/engine-version.ts",
+      "sha256": "db876934208abe6c3b4eb0f5d1fe6d94cf7b7b165ec35eba4399b1cf17cbfb0c"
+    },
+    {
+      "path": "src/features/simulation/domain/engine/engine.errors.ts",
+      "sha256": "0e90b1d60a53f4f043b9d2f85c33d39fb8c9ce428fb61aa5732fa30e115c539d"
+    },
+    {
+      "path": "src/features/simulation/domain/engine/engine.types.ts",
+      "sha256": "974a07804b495745cfd3b52040cd9a619d4d7ffbaff8ae6131322479d4fb8399"
+    },
+    {
+      "path": "src/features/simulation/domain/engine/gas-exchange.ts",
+      "sha256": "044325007208b7893093aef67826812142edb01f454faf606aed06c0dfcf7292"
+    },
+    {
+      "path": "src/features/simulation/domain/engine/hemodynamics.ts",
+      "sha256": "cf995e9b0690f88377679630a1e2bfa6c3b4cbe7152b69bf3ced5a686893d0af"
+    },
+    {
+      "path": "src/features/simulation/domain/engine/index.ts",
+      "sha256": "0eccc3568371e59adfadf3e7f976c8064afc3da85db06e20427aecbfff6240f0"
+    },
+    {
+      "path": "src/features/simulation/domain/engine/patient-effort.ts",
+      "sha256": "74f1cc70651b33958f8ef1d7c89031b8b3fd65844f5120068de2610a994c3e24"
+    },
+    {
+      "path": "src/features/simulation/domain/engine/prng.ts",
+      "sha256": "5baa0cd30faa19110dc36eb7e5f3edeae5548dba4e950013b2c7c46fa0d13f3e"
+    },
+    {
+      "path": "src/features/simulation/domain/engine/respiratory-mechanics.ts",
+      "sha256": "b3235af4f899e9561d595b8aeca04341f80f3fcc219cf2b720458470d3f9232f"
+    },
+    {
+      "path": "src/features/simulation/domain/engine/simulation.ts",
+      "sha256": "eba0ae2e797c036101b6ab7a27e609098697375bcbf28bc60ee07320d512ef2a"
+    },
+    {
+      "path": "src/features/simulation/domain/engine/targets.ts",
+      "sha256": "a9ee62413d211e0504a4e610442005e456051599a20cde595b4275da2444753f"
+    },
+    {
+      "path": "src/features/simulation/domain/engine/ventilation-modes.ts",
+      "sha256": "39a8727f0560018b53179129dc661ae8f42e5ac22cd942f06599703a8e15b393"
+    },
+    {
+      "path": "src/features/simulation/domain/engine/ventilator-limits.ts",
+      "sha256": "a15d9c1cf6f492b12cf163ea24d64259d48a0fd7d986ced2d19f49e9ae7b005c"
+    }
+  ]
+}

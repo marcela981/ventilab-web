@@ -3,8 +3,11 @@
 * Descripción: Verifies the pure simulation loop: simulated time follows wall time × multiplier with a carried
 *   remainder, a long gap is caught up in bounded chunks without losing or inventing time, pause stops time, the
 *   multiplier change converts elapsed time at the previous rate, and events are applied at their exact simulated
-*   time (matching the engine replay). Uses a manual clock. Depends on vitest and the vendored engine.
-* Versión: 1.0
+*   time (matching the engine replay). v1.1: a paused loop keeps its backlog without stepping and catches it up after
+*   resume, a multiplier change does not rescale a pending backlog, events at the same time keep FIFO order, a
+*   scheduled event inside a multi-tick catch-up lands at its exact time, and non-finite event times are rejected.
+*   Uses a manual clock. Depends on vitest and the vendored engine.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -104,12 +107,57 @@ describe("createSimLoop time base", () => {
     clock.advance(1000);
     loop.pause();
     clock.advance(5000);
-    expect(loop.tick().simTimeMs).toBe(1000);
+
+    const paused = loop.tick();
+
+    // The second before the pause is owed but not stepped while paused.
+    expect(paused.simTimeMs).toBe(0);
+    expect(paused.backlogMs).toBe(1000);
     expect(loop.status).toBe("paused");
 
     loop.resume();
     clock.advance(500);
     expect(loop.tick().simTimeMs).toBe(1500);
+  });
+
+  it("keeps a backlog larger than one tick while paused and catches it all up after resume", () => {
+    const { clock, loop } = setup({ maxCatchUpMsPerTick: 2000 });
+
+    loop.start();
+    clock.advance(10_000);
+    expect(loop.tick().simTimeMs).toBe(2000);
+
+    loop.pause();
+    clock.advance(5000);
+
+    for (let i = 0; i < 5; i += 1) {
+      const batch = loop.tick();
+
+      expect(batch.simTimeMs).toBe(2000);
+      expect(batch.backlogMs).toBe(8000);
+      expect(batch.samples).toHaveLength(0);
+    }
+
+    loop.resume();
+
+    const batches = tickUntilCaughtUp(loop);
+
+    expect(batches.at(-1)?.simTimeMs).toBe(10_000);
+    expect(batches.at(-1)?.backlogMs).toBe(0);
+  });
+
+  it("does not rescale a pending backlog when the multiplier changes", () => {
+    const { clock, loop } = setup({ maxCatchUpMsPerTick: 2000 });
+
+    loop.start();
+    clock.advance(10_000);
+    expect(loop.tick().backlogMs).toBe(8000);
+
+    loop.setMultiplier(4);
+    expect(loop.tick().backlogMs).toBe(6000);
+
+    clock.advance(1000); // 4000 ms more at the new multiplier
+    expect(tickUntilCaughtUp(loop).at(-1)?.simTimeMs).toBe(14_000);
   });
 
   it("converts the time elapsed before a multiplier change at the previous multiplier", () => {
@@ -156,6 +204,65 @@ describe("createSimLoop events", () => {
     expect(batches.at(-1)?.simTimeMs).toBe(3000);
     expect(batches.at(-1)?.metrics).toEqual(expected.final);
   });
+
+  it("applies two events scheduled at the same simulated time in FIFO order", () => {
+    const { clock, loop } = setup();
+
+    loop.start();
+    loop.queueEvent({ type: "PARAM_CHANGE", simTimeMs: 1500, changes: { peepCmH2O: 8 } });
+    loop.queueEvent({ type: "RECONNECT", simTimeMs: 1500 });
+    loop.queueEvent({ type: "PARAM_CHANGE", simTimeMs: 1500, changes: { peepCmH2O: 6 } });
+    loop.queueEvent({ type: "PARAM_CHANGE", simTimeMs: 1200, changes: { fio2: 0.5 } });
+    clock.advance(2000);
+
+    expect(tickUntilCaughtUp(loop).flatMap((batch) => batch.appliedEvents)).toEqual([
+      { type: "PARAM_CHANGE", simTimeMs: 1200, changes: { fio2: 0.5 } },
+      { type: "PARAM_CHANGE", simTimeMs: 1500, changes: { peepCmH2O: 8 } },
+      { type: "RECONNECT", simTimeMs: 1500 },
+      { type: "PARAM_CHANGE", simTimeMs: 1500, changes: { peepCmH2O: 6 } },
+    ]);
+  });
+
+  it("applies a scheduled event at its exact time inside a multi-tick catch-up", () => {
+    const { clock, loop } = setup({ maxCatchUpMsPerTick: 2000 });
+    const changes = { peepCmH2O: 9 };
+
+    loop.start();
+    loop.queueEvent({ type: "PARAM_CHANGE", simTimeMs: 5555, changes });
+    clock.advance(10_000);
+
+    const batches = tickUntilCaughtUp(loop);
+    const expected = replay(buildTestCase(), SEED, [{ type: "PARAM_CHANGE", simTimeMs: 5555, changes }], 10_000);
+    const tickWithEvent = batches.findIndex((batch) => batch.appliedEvents.length > 0);
+
+    expect(batches).toHaveLength(5);
+    expect(tickWithEvent).toBe(2); // the tick that advances 4000 → 6000 ms
+    expect(batches[tickWithEvent]?.appliedEvents).toEqual([{ type: "PARAM_CHANGE", simTimeMs: 5555, changes }]);
+    expect(batches.at(-1)?.simTimeMs).toBe(10_000);
+    expect(batches.at(-1)?.metrics).toEqual(expected.final);
+  });
+
+  it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+    "rejects an event whose simTimeMs is %s and keeps applying later events",
+    (simTimeMs) => {
+      const { clock, loop } = setup();
+      const bad = { type: "RECONNECT", simTimeMs } as const;
+
+      loop.start();
+      loop.queueEvent(bad);
+      loop.queueEvent({ type: "PARAM_CHANGE", simTimeMs: 500, changes: { fio2: 0.5 } });
+      clock.advance(1000);
+
+      const batches = tickUntilCaughtUp(loop);
+
+      expect(batches.flatMap((batch) => batch.rejectedEvents)).toEqual([
+        { event: bad, message: "simTimeMs must be a finite number" },
+      ]);
+      expect(batches.flatMap((batch) => batch.appliedEvents)).toEqual([
+        { type: "PARAM_CHANGE", simTimeMs: 500, changes: { fio2: 0.5 } },
+      ]);
+    },
+  );
 
   it("stamps an unscheduled event with the current simulated time", () => {
     const { clock, loop } = setup();

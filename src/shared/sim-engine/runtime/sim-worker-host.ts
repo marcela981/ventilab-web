@@ -3,8 +3,10 @@
 * Descripción: Worker-side command handler, kept apart from sim.worker.ts so it can be tested without a real Worker.
 *   It receives protocol commands, owns one simulation loop, ticks it on a timer at about 30 Hz while the loop is
 *   active and posts batches (only when they carry data or a status change), plus ready and error messages. The
-*   message port, the timer functions and the clock are injected. Depends on protocol.ts, sim-loop.ts and the engine.
-* Versión: 1.0
+*   message port, the timer functions and the clock are injected. v1.1: start arms the timer only when the loop is
+*   running afterwards (a stopped loop answers with an error asking for a new init), and init always clears the
+*   previous timer and loop first. Depends on protocol.ts, sim-loop.ts and the engine.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -80,6 +82,7 @@ export function createSimWorkerHost(deps: SimWorkerHostDeps): SimWorkerHost {
     switch (command.type) {
       case "init":
         stopTimer();
+        loop = null;
         loop = createSimLoop(command.engineCase, command.seed, {
           ...command.options,
           ...(deps.clock ? { clock: deps.clock } : {}),
@@ -87,10 +90,21 @@ export function createSimWorkerHost(deps: SimWorkerHostDeps): SimWorkerHost {
         lastPostedStatus = "idle";
         deps.post({ type: "ready", engineVersion: ENGINE_VERSION });
         break;
-      case "start":
-        requireLoop(command).start();
-        startTimer();
+      case "start": {
+        const target = requireLoop(command);
+
+        target.start();
+
+        if (target.status === "stopped") {
+          throw new Error("The simulation is stopped; send init to start a new one");
+        }
+
+        // A paused loop keeps its timer; start only arms it for a running loop.
+        if (target.status === "running") {
+          startTimer();
+        }
         break;
+      }
       case "pause":
         requireLoop(command).pause();
         flush();

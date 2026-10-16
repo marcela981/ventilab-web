@@ -1,9 +1,10 @@
 /*
 * Funcionalidad: Simulation worker protocol tests
 * Descripción: Verifies that every command and worker message survives a structured clone round trip and is still
-*   recognised by its type guard, and that malformed messages are rejected. Depends on vitest, the protocol and the
+*   recognised by its type guard, and that malformed messages are rejected (v1.1: including non-finite or negative event times, a non-finite seed
+*   and invalid init options). Depends on vitest, the protocol and the
 *   simulation loop (to produce a real batch).
-* Versión: 1.0
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -67,8 +68,49 @@ describe("simulation worker protocol", () => {
     expect(isSimCommand({ type: "setMultiplier", multiplier: 3 })).toBe(false);
     expect(isSimCommand({ type: "applyEvent", event: { type: "PARAM_CHANGE" } })).toBe(false);
     expect(isSimCommand({ type: "applyEvent", event: { type: "RECONNECT", simTimeMs: "soon" } })).toBe(false);
+    expect(isSimCommand({ type: "applyEvent", event: { type: "RECONNECT", simTimeMs: Number.NaN } })).toBe(false);
+    expect(isSimCommand({ type: "applyEvent", event: { type: "RECONNECT", simTimeMs: Number.POSITIVE_INFINITY } })).toBe(
+      false,
+    );
+    expect(isSimCommand({ type: "applyEvent", event: { type: "RECONNECT", simTimeMs: -1 } })).toBe(false);
+    expect(isSimCommand({ type: "applyEvent", event: { type: "RECONNECT", simTimeMs: 0 } })).toBe(true);
     expect(isSimWorkerMessage({ type: "batch", batch: { simTimeMs: 1 } })).toBe(false);
     expect(isSimWorkerMessage({ type: "ready" })).toBe(false);
     expect(isSimWorkerMessage("ready")).toBe(false);
+  });
+
+  it("rejects an init with a non-finite seed or invalid options", () => {
+    const init = (fields: Record<string, unknown>) => ({ type: "init", engineCase: buildTestCase(), seed: 1, ...fields });
+
+    expect(isSimCommand(init({}))).toBe(true);
+    expect(isSimCommand(init({ seed: Number.NaN }))).toBe(false);
+    expect(isSimCommand(init({ seed: Number.POSITIVE_INFINITY }))).toBe(false);
+    expect(isSimCommand(init({ seed: "1" }))).toBe(false);
+    expect(isSimCommand(init({ options: 5 }))).toBe(false);
+    expect(isSimCommand(init({ options: { multiplier: 3 } }))).toBe(false);
+    expect(isSimCommand(init({ options: { multiplier: "2" } }))).toBe(false);
+    expect(isSimCommand(init({ options: { fixedStepMs: Number.NaN } }))).toBe(false);
+    expect(isSimCommand(init({ options: { maxCatchUpMsPerTick: Number.POSITIVE_INFINITY } }))).toBe(false);
+    expect(isSimCommand(init({ options: { metricsEveryMs: "1000" } }))).toBe(false);
+    expect(isSimCommand(init({ options: { engineOptions: 1 } }))).toBe(false);
+    expect(isSimCommand(init({ options: { engineOptions: { sampleRateHz: Number.NaN } } }))).toBe(false);
+    expect(isSimCommand(init({ options: { engineOptions: { waveformCapacity: Number.POSITIVE_INFINITY } } }))).toBe(
+      false,
+    );
+    expect(isSimCommand(init({ options: { engineOptions: { timeMultiplier: 3 } } }))).toBe(false);
+    expect(isSimCommand(init({ options: { engineOptions: { noise: "yes" } } }))).toBe(false);
+    expect(
+      isSimCommand(
+        init({
+          options: {
+            multiplier: 4,
+            fixedStepMs: 10,
+            maxCatchUpMsPerTick: 2000,
+            metricsEveryMs: 1000,
+            engineOptions: { sampleRateHz: 50, noise: false, timeMultiplier: 2, waveformCapacity: 1000 },
+          },
+        }),
+      ),
+    ).toBe(true);
   });
 });

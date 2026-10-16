@@ -3,8 +3,10 @@
 * Descripción: Typed messages exchanged between the main thread and the simulation Web Worker. Commands go from the
 *   main thread to the worker (init, start, pause, resume, setMultiplier, applyEvent, stop); the worker answers with
 *   ready, batch and error messages. Includes runtime type guards so each side can reject malformed messages. Every
-*   message is plain structured-cloneable data. Depends on the engine types and the simulation loop types.
-* Versión: 1.0
+*   message is plain structured-cloneable data. v1.1: event times must be finite and non-negative, and init requires a
+*   finite seed, an allowed multiplier and finite numeric options. Depends on the engine types and the simulation
+*   loop types.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -46,8 +48,45 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function isOptionalFinite(value: unknown): boolean {
+  return value === undefined || isFiniteNumber(value);
+}
+
+function isOptionalMultiplier(value: unknown): boolean {
+  return value === undefined || (typeof value === "number" && TIME_MULTIPLIERS.includes(value));
+}
+
+function isEngineOptions(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    isOptionalFinite(value.sampleRateHz) &&
+    isOptionalFinite(value.waveformCapacity) &&
+    isOptionalMultiplier(value.timeMultiplier) &&
+    (value.noise === undefined || typeof value.noise === "boolean")
+  );
+}
+
+function isInitOptions(value: unknown): boolean {
+  if (value === undefined) {
+    return true;
+  }
+
+  return (
+    isRecord(value) &&
+    (value.engineOptions === undefined || isEngineOptions(value.engineOptions)) &&
+    isOptionalMultiplier(value.multiplier) &&
+    isOptionalFinite(value.fixedStepMs) &&
+    isOptionalFinite(value.maxCatchUpMsPerTick) &&
+    isOptionalFinite(value.metricsEveryMs)
+  );
+}
+
 function isEventInput(value: unknown): value is SimEventInput {
-  if (!isRecord(value) || (value.simTimeMs !== undefined && typeof value.simTimeMs !== "number")) {
+  if (!isRecord(value) || (value.simTimeMs !== undefined && !(isFiniteNumber(value.simTimeMs) && value.simTimeMs >= 0))) {
     return false;
   }
 
@@ -61,14 +100,14 @@ export function isSimCommand(value: unknown): value is SimCommand {
 
   switch (value.type) {
     case "init":
-      return isRecord(value.engineCase) && typeof value.seed === "number";
+      return isRecord(value.engineCase) && isFiniteNumber(value.seed) && isInitOptions(value.options);
     case "start":
     case "pause":
     case "resume":
     case "stop":
       return true;
     case "setMultiplier":
-      return typeof value.multiplier === "number" && TIME_MULTIPLIERS.includes(value.multiplier);
+      return value.multiplier !== undefined && isOptionalMultiplier(value.multiplier);
     case "applyEvent":
       return isEventInput(value.event);
     default:

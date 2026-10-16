@@ -2,8 +2,10 @@
 * Funcionalidad: Simulation worker host tests
 * Descripción: Drives the worker-side command handler with a fake port, fake timers and a manual clock: init posts
 *   ready, start schedules the ~30 Hz batch timer, ticks post batches only when they carry data, pause and stop flush,
-*   and malformed or out-of-order commands become error messages. Depends on vitest and the sim-engine runtime.
-* Versión: 1.0
+*   and malformed or out-of-order commands become error messages. v1.1: start after stop does not re-arm the timer
+*   (typed error instead), and a re-init while running clears the previous timer. Depends on vitest and the
+*   sim-engine runtime.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -102,5 +104,43 @@ describe("createSimWorkerHost", () => {
 
     expect(posted[0]).toEqual({ type: "error", message: "Malformed simulation command" });
     expect(posted[1]).toMatchObject({ type: "error", command: "start" });
+  });
+
+  it("does not re-arm the timer on start after stop and asks for a new init", () => {
+    const { posted, timers, host } = setup();
+
+    host.handle({ type: "init", engineCase: buildTestCase(), seed: 3 });
+    host.handle({ type: "start" });
+    host.handle({ type: "stop" });
+    host.handle({ type: "start" });
+
+    expect(timers).toHaveLength(1);
+    expect(timers.every((timer) => timer.cleared)).toBe(true);
+    expect(posted.at(-1)).toEqual({
+      type: "error",
+      message: "The simulation is stopped; send init to start a new one",
+      command: "start",
+    });
+  });
+
+  it("clears the running timer on a re-init and starts a fresh one", () => {
+    const { clock, posted, timers, host } = setup();
+
+    host.handle({ type: "init", engineCase: buildTestCase(), seed: 3 });
+    host.handle({ type: "start" });
+    clock.advance(1000);
+    timers[0]?.handler();
+
+    host.handle({ type: "init", engineCase: buildTestCase(), seed: 4 });
+    expect(timers[0]?.cleared).toBe(true);
+    expect(posted.at(-1)).toEqual({ type: "ready", engineVersion: ENGINE_VERSION });
+
+    host.handle({ type: "start" });
+    expect(timers).toHaveLength(2);
+    expect(timers[1]?.cleared).toBe(false);
+
+    clock.advance(200);
+    timers[1]?.handler();
+    expect(batches(posted).at(-1)?.simTimeMs).toBe(200);
   });
 });

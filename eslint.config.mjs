@@ -52,7 +52,10 @@
  *   motor (engine/**, generada por scripts/sync-sim-engine.mjs) se ignora como el cliente OpenAPI
  *   generado. Regla preventiva: src/shared/ventilator-console no puede importar @shared/sim-engine
  *   ni @features/*.
- * Versión: 3.25
+ *   v3.26 (T1 fix simulation): src/shared/ventilator-console entra en NEW_SHARED_MODULES (código
+ *   nuevo: prohibición de sx/style/styled y fronteras shared→shared); su override solo agrega a la
+ *   prohibición de imports de estilo la de @shared/sim-engine y @features/*.
+ * Versión: 3.26
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -65,7 +68,7 @@ import boundaries from "eslint-plugin-boundaries";
 import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
 
-const NEW_SHARED_MODULES = "api-client,realtime,session,design-system,layouts,rich-content,waveforms,charts,ai-rating,media-upload,ai-conversation,lib,sim-engine";
+const NEW_SHARED_MODULES = "api-client,realtime,session,design-system,layouts,rich-content,waveforms,charts,ai-rating,media-upload,ai-conversation,lib,sim-engine,ventilator-console";
 const NEW_FEATURES = "auth,profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat";
 const SOURCE_EXT = "{js,jsx,ts,tsx,mjs,cjs}";
 // auth/ still holds legacy files at its root and in components/, so only its template
@@ -229,6 +232,8 @@ const eslintConfig = [
   },
   {
     // The generic console stays engine- and feature-agnostic: features adapt the engine to it.
+    // It is new shared code (NEW_SHARED_MODULES), so the style-ban syntax rule already applies; this
+    // override only replaces no-restricted-imports, so it repeats the style-ban paths and patterns.
     files: [`src/shared/ventilator-console/**/*.${SOURCE_EXT}`],
     rules: {
       "no-restricted-imports": [

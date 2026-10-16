@@ -6,8 +6,10 @@
 *   tick and the remainder carries to the next tick. Queued engine events (PARAM_CHANGE, RECONNECT) are applied at
 *   their exact simulated time, as the engine replay does. Each tick returns a batch with the drained waveform
 *   samples, metrics (about once per simulated second or after an event) and the current alarms. The clock is
-*   injectable for tests. Depends on src/shared/sim-engine/engine.
-* Versión: 1.0
+*   injectable for tests. v1.1: the engine is stepped only while running, so a backlog owed before a pause is kept
+*   (not drained) and caught up after resume; the backlog has no cap by design; an event with a non-finite simTimeMs
+*   is rejected. Depends on src/shared/sim-engine/engine.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -267,6 +269,12 @@ export function createSimLoop(engineCase: EngineCase, seed: number, options: Sim
         return;
       }
 
+      if (input.simTimeMs !== undefined && !Number.isFinite(input.simTimeMs)) {
+        rejected.push({ event: input, message: "simTimeMs must be a finite number" });
+
+        return;
+      }
+
       if (input.simTimeMs === undefined || input.simTimeMs <= state.simTimeMs) {
         applyNow(input);
 
@@ -282,7 +290,8 @@ export function createSimLoop(engineCase: EngineCase, seed: number, options: Sim
     tick() {
       accrueWallTime();
 
-      if (status !== "stopped") {
+      // Only a running loop steps: a backlog owed before a pause is kept and caught up after resume.
+      if (status === "running") {
         const steps = Math.min(Math.floor(accumulatorMs / fixedStepMs), maxStepsPerTick);
 
         if (steps > 0) {
