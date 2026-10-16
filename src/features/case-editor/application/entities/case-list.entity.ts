@@ -5,9 +5,10 @@
 *   every status unless filtered), the row read model and the row status. The list summary has no status and no
 *   expert-validation flag (BACKEND GAP: only GET /definition has them, and fetching it per row is not done), so a row
 *   knows its status only while the list is filtered by one status, and there is no validation filter or badge. The
-*   status actions offered per known status (unknown: publish and archive). Depends on the case editor config and
-*   DTOs.
-* Versión: 1.0
+*   status actions offered per known status. Depends on the case editor config and DTOs.
+*   v1.1 (review of 50ed812): an unknown status (unfiltered list) offers no status action; the page asks to filter by
+*   status to publish or archive, since the change could otherwise target a case already in that status.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -77,8 +78,15 @@ export type StatusAction = "publish" | "archive";
 
 export const STATUS_ACTION_TARGET: Readonly<Record<StatusAction, CaseStatus>> = { publish: "PUBLISHED", archive: "ARCHIVED" };
 
-/** Status changes offered for a row: a draft can be published or archived, a published case archived, an archived one published again. */
+/**
+ * Status changes offered for a row: a draft can be published or archived, a published case archived, an archived one
+ * published again. An unknown status (the unfiltered list) offers none.
+ */
 export function statusActionsFor(status: CaseStatus | null): StatusAction[] {
+  if (status === null) {
+    return [];
+  }
+
   if (status === "PUBLISHED") {
     return ["archive"];
   }

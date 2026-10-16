@@ -10,7 +10,9 @@
 *   event, curve and rubric rows are unique per editor. `updateDraft` is a stable functional update for the memoized
 *   heavy sections (configure console, rubric). Depends on React, the api-client query hook, the case editor
 *   service, draft entity, error mapping and mutation hook.
-* Versión: 1.0
+*   v1.1 (review of 50ed812): saving a stored case equal to its baseline sends nothing (`unchanged`), because every
+*   PUT clears the expert validation.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -41,6 +43,8 @@ export type CaseEditorDeps = {
 export type SaveOutcome =
   | { status: "created", caseId: string }
   | { status: "saved" }
+  /** A stored case without changes: nothing was sent. */
+  | { status: "unchanged" }
   | { status: "invalid" }
   | { status: "error" }
   | { status: "busy" };
@@ -108,8 +112,13 @@ export function useCaseEditor(caseId: string | null, deps: CaseEditorDeps = {}):
   }, []);
 
   const save = useCallback(async(): Promise<SaveOutcome> => {
-    if (!draft || !mapping) {
+    if (!draft || !mapping || !state) {
       return { status: "busy" };
+    }
+
+    // A PUT always clears the expert validation: an unchanged stored case is never sent.
+    if (caseId && sameDraft(state.baseline, draft)) {
+      return { status: "unchanged" };
     }
 
     setSubmitted(true);
@@ -146,7 +155,7 @@ export function useCaseEditor(caseId: string | null, deps: CaseEditorDeps = {}):
     setState((current) => (current ? { ...current, baseline: draft } : current));
 
     return caseId ? { status: "saved" } : { status: "created", caseId: outcome.value };
-  }, [caseId, deps.create, deps.replace, draft, mapping, run]);
+  }, [caseId, deps.create, deps.replace, draft, mapping, run, state]);
 
   const reload = useCallback(async() => {
     await definitionQuery.mutate();

@@ -5,8 +5,8 @@
 *   shadow), responsive form grids, grouped fieldsets, row editors of the recruitment curve and the scheduled events,
 *   the Markdown editor with its preview, the stored facts and status badge of the header, the save state indicator
 *   (warning tone while dirty) and the frame of the configure-mode console. Tokens only (var(--vl-*), var(--mui-*));
-*   no hex/rgb literals.
-* Versión: 1.0
+*   no hex/rgb literals. v1.1: the warning note shown while console edits are not applied (`.saveBlocked`).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -247,6 +247,11 @@
 .saveState[data-dirty="true"] {
   color: var(--vl-color-warning);
   font-weight: 500;
+}
+
+.saveBlocked {
+  font: var(--mui-font-body2);
+  color: var(--vl-color-warning);
 }
 
 .consoleFrame {

@@ -3,8 +3,9 @@
 * Descripción: Verifies the EXAM countdown hook: the expiry fires at the exact time left (one setTimeout re-armed on
 *   every tick) instead of at the next interval tick, a tab that becomes visible ticks at once (a background tab
 *   throttles the timers), a deadline already past expires at mount, and the expiry runs exactly once. Depends on
-*   vitest and Testing Library (renderHook) with fake timers.
-* Versión: 1.0
+*   vitest and Testing Library (renderHook) with fake timers. v1.1: a deadline weeks away never arms a timer longer
+*   than one tick.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,6 +15,7 @@
 
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { DEADLINE_TICK_MS } from "../config/sim-exam.config";
 import { useExamDeadline } from "./use-exam-deadline";
 
 const START_MS = Date.parse("2026-10-16T14:00:00.000Z");
@@ -53,6 +55,25 @@ describe("useExamDeadline", () => {
       vi.advanceTimersByTime(5000);
     });
     expect(onExpire).toHaveBeenCalledTimes(1);
+  });
+
+  it("never arms a timer longer than one tick (a delay above 2^31-1 ms would fire at once)", () => {
+    const onExpire = vi.fn();
+    const timeout = vi.spyOn(globalThis, "setTimeout");
+    const farAway = START_MS + 30 * 24 * 3600 * 1000;
+
+    renderHook(() => useExamDeadline({ deadline: new Date(farAway).toISOString(), onExpire }));
+
+    act(() => {
+      vi.advanceTimersByTime(3 * DEADLINE_TICK_MS);
+    });
+
+    const delays = timeout.mock.calls.map((call) => Number(call[1] ?? 0));
+
+    expect(delays.length).toBeGreaterThan(0);
+    expect(Math.max(...delays)).toBeLessThanOrEqual(DEADLINE_TICK_MS);
+    expect(onExpire).not.toHaveBeenCalled();
+    timeout.mockRestore();
   });
 
   it("ticks when the tab becomes visible again (throttled background timers)", () => {

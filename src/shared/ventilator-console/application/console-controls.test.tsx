@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ConsoleControls tests
-* Descripción: Renders the ventilator console controls in jsdom: only the parameters of the current mode, pending edits highlighted with "Pendiente" that emit nothing but the optional proposal, CONFIRMAR emitting the diff once, CANCELAR and Escape emitting nothing, keyboard/wheel adjustment clamped to the injected limits, a mode change that stays pending until confirmed, the configure variant wording and the read-only state. v1.2: +/- and the arrow keys are disabled for a parameter without a valid step grid. Depends on Vitest and Testing Library.
-* Versión: 1.2
+* Descripción: Renders the ventilator console controls in jsdom: only the parameters of the current mode, pending edits highlighted with "Pendiente" that emit nothing but the optional proposal, CONFIRMAR emitting the diff once, CANCELAR and Escape emitting nothing, keyboard/wheel adjustment clamped to the injected limits, a mode change that stays pending until confirmed, the configure variant wording and the read-only state. v1.2: +/- and the arrow keys are disabled for a parameter without a valid step grid. v1.3: `onPendingChange` reports pending transitions (edit, cancel, confirm) and false on unmount. Depends on Vitest and Testing Library.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -59,6 +59,46 @@ describe("ConsoleControls", () => {
     ]);
     expect(screen.getByText("0–20 cmH2O")).toBeInTheDocument();
     expect(screen.queryByRole("spinbutton", { name: "Presión inspiratoria" })).not.toBeInTheDocument();
+  });
+
+  it("reports whether unconfirmed edits are pending (edit, cancel, confirm, unmount)", () => {
+    const onPendingChange = vi.fn();
+    const props: Partial<ConsoleControlsProps> = { onPendingChange };
+
+    renderControls(props);
+    expect(onPendingChange).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Aumentar PEEP" }));
+    expect(onPendingChange).toHaveBeenLastCalledWith(true);
+    fireEvent.click(screen.getByRole("button", { name: "Aumentar PEEP" }));
+    // A second edit keeps it pending: no new report.
+    expect(onPendingChange).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+    expect(onPendingChange).toHaveBeenLastCalledWith(false);
+
+    fireEvent.click(screen.getByRole("button", { name: "Aumentar PEEP" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
+    expect(onPendingChange).toHaveBeenLastCalledWith(false);
+    expect(onPendingChange).toHaveBeenCalledTimes(4);
+  });
+
+  it("reports no pending edits when it unmounts with some", () => {
+    const onPendingChange = vi.fn();
+    const props: ConsoleControlsProps = {
+      settings: { current: { peep: 5 }, applied: { peep: 5 } },
+      mode: { current: "CPAP", options: [{ id: "CPAP", label: "CPAP" }] },
+      limits: { peep: { min: 0, max: 20, step: 1, unit: "cmH2O" } },
+      readOnly: false,
+      onConfirm: vi.fn(),
+      onPendingChange,
+    };
+    const view = render(<ConsoleControls {...props} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Aumentar PEEP" }));
+    expect(onPendingChange).toHaveBeenLastCalledWith(true);
+    view.unmount();
+    expect(onPendingChange).toHaveBeenLastCalledWith(false);
   });
 
   it("keeps an edit pending without emitting it, then confirms once with the diff", () => {

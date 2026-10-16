@@ -13,7 +13,11 @@
 *   components, @shared/lib, the case editor hooks, entities, config, sections and CSS Module.
 *   v1.1 (T12): the tools context also carries the current draft (local preview) and `onDeleted`, which leaves for
 *   the case list without the unsaved-changes prompt; `renderCaseEditorTools` renders the T12 tools for the route.
-* Versión: 1.1
+*   v1.2 (review of 50ed812): editing a stored case, "Guardar" is disabled while nothing changed (a PUT always clears
+*   the expert validation); configure-console edits not applied yet count as unsaved (status, exit guard, tools) and
+*   block the save with "Aplica o descarta los cambios del ventilador"; after a failed save the first field with an
+*   error takes the focus.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,7 +31,7 @@ import Button from "@mui/material/Button";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { ErrorState } from "@shared/design-system/components/error-state";
 import { LoadingState } from "@shared/design-system/components/loading-state";
@@ -82,6 +86,7 @@ export const CASE_EDITOR_COPY = {
   ready: "Simulación",
   readyYes: "Listo para simular",
   readyNo: "Faltan bloques para simular",
+  consolePending: "Aplica o descarta los cambios del ventilador",
   replaceNote: "Guardar reemplaza la definición y borra la validación por experto. Si el caso ya tiene sesiones, duplícalo para cambiarlo.",
 } as const;
 
@@ -137,10 +142,17 @@ export function CaseEditorPage({ caseId, renderTools, deps }: CaseEditorPageProp
   const router = useRouter();
   const toast = useToast();
   const editor = useCaseEditor(caseId, deps);
-  const { allowNextNavigation } = useUnsavedChangesGuard(editor.dirty, CASE_EDITOR_COPY.leaveWarning);
+  // Console edits not applied yet are unsaved changes too: they guard the exit and block the save.
+  const [consolePending, setConsolePending] = useState(false);
+  const dirty = editor.dirty || consolePending;
+  const { allowNextNavigation } = useUnsavedChangesGuard(dirty, CASE_EDITOR_COPY.leaveWarning);
   const { draft, errors, definition } = editor;
   const counts = errorCounts(errors);
   const creating = caseId === null;
+  // Every PUT clears the expert validation, so an unchanged stored case is never sent.
+  const canSave = draft !== null && !editor.saving && !consolePending && (creating || editor.dirty);
+  const sectionsRef = useRef<HTMLDivElement>(null);
+  const [focusRequest, setFocusRequest] = useState(0);
   const { updateDraft } = editor;
   const setVentilator = useCallback((ventilator: VentilatorSettings | null) => updateDraft((current) => ({ ...current, ventilator })), [updateDraft]);
   const setRubric = useCallback((rubric: OutcomeRubricDraft | null) => updateDraft((current) => ({ ...current, rubric })), [updateDraft]);
@@ -150,10 +162,23 @@ export function CaseEditorPage({ caseId, renderTools, deps }: CaseEditorPageProp
     void router.replace(CASES_URL);
   }, [allowNextNavigation, router]);
 
+  // After a failed save the first field with an error (document order = section order) takes the focus.
+  useEffect(() => {
+    if (focusRequest > 0) {
+      sectionsRef.current?.querySelector<HTMLElement>("[aria-invalid=\"true\"]")?.focus();
+    }
+  }, [focusRequest]);
+
   const save = async() => {
+    if (!canSave) {
+      return;
+    }
+
     const outcome = await editor.save();
 
-    if (outcome.status === "created") {
+    if (outcome.status === "invalid" || outcome.status === "error") {
+      setFocusRequest((request) => request + 1);
+    } else if (outcome.status === "created") {
       toast.success(CASE_EDITOR_COPY.created);
       // The new case is saved: its editor route must not ask about unsaved changes.
       allowNextNavigation();
@@ -192,15 +217,21 @@ export function CaseEditorPage({ caseId, renderTools, deps }: CaseEditorPageProp
             </ol>
           </nav>
           {caseId && definition && renderTools
-            ? renderTools({ caseId, definition, draft, dirty: editor.dirty, onDeleted: leaveAfterDelete })
+            ? renderTools({ caseId, definition, draft, dirty, onDeleted: leaveAfterDelete })
             : null}
         </aside>
-        <div className={cx(styles.sections)}>
+        <div className={cx(styles.sections)} ref={sectionsRef}>
           {editor.pageError ? <Alert severity="error">{editor.pageError}</Alert> : null}
           <GeneralSection {...sectionProps} />
           <PatientSection {...sectionProps} />
           <MechanicsSection {...sectionProps} newKey={editor.newKey} />
-          <VentilatorSection settings={draft.ventilator} error={errors.initialVentilatorSettings} onChange={setVentilator} disabled={editor.saving} />
+          <VentilatorSection
+            settings={draft.ventilator}
+            error={errors.initialVentilatorSettings}
+            onChange={setVentilator}
+            onPendingChange={setConsolePending}
+            disabled={editor.saving}
+          />
           <EventsSection {...sectionProps} newKey={editor.newKey} />
           <TargetsSection {...sectionProps} />
           <RubricSection
@@ -216,11 +247,12 @@ export function CaseEditorPage({ caseId, renderTools, deps }: CaseEditorPageProp
     );
   }
 
-  const status = editor.dirty ? CASE_EDITOR_COPY.unsaved : creating ? CASE_EDITOR_COPY.notSaved : CASE_EDITOR_COPY.saved;
+  const status = dirty ? CASE_EDITOR_COPY.unsaved : creating ? CASE_EDITOR_COPY.notSaved : CASE_EDITOR_COPY.saved;
   const actions = (
     <div className={cx(styles.headerActions)}>
-      <span className={cx(styles.saveState)} data-dirty={editor.dirty} role="status">{status}</span>
-      <Button variant="contained" disabled={!draft || editor.saving} onClick={() => void save()}>
+      <span className={cx(styles.saveState)} data-dirty={dirty} role="status">{status}</span>
+      {consolePending ? <span className={cx(styles.saveBlocked)} role="note">{CASE_EDITOR_COPY.consolePending}</span> : null}
+      <Button variant="contained" disabled={!canSave} onClick={() => void save()}>
         {editor.saving ? CASE_EDITOR_COPY.saving : CASE_EDITOR_COPY.save}
       </Button>
     </div>

@@ -7,7 +7,8 @@
 *   history). `allowNextNavigation` lets exactly one navigation the page starts itself pass (the editor route of a
 *   case just created), ending when it settles or after ALLOW_NAVIGATION_TIMEOUT_MS. Same behavior as the evaluation
 *   builder guard (features may not import each other). Depends on React and next/router.
-* Versión: 1.0
+*   v1.1: documents the development-only unhandled rejection reported when a cancelled exit aborts the route change.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -109,7 +110,10 @@ export function useUnsavedChangesGuard(dirty: boolean, message: string): { allow
 
       if (!window.confirm(message)) {
         router.events.emit("routeChangeError", new Error(ROUTE_CHANGE_ABORTED), url, { shallow: false });
-        // Next.js aborts a navigation when a routeChangeStart handler throws.
+        // Next.js aborts a navigation when a routeChangeStart handler throws. In development the Next.js error overlay
+        // reports this throw (and the rejected router.push of a <Link>) as an unhandled rejection; that is expected for
+        // a cancelled exit, not a bug (a production build shows no overlay; at most a console message). There is no
+        // public non-throwing abort API in the Pages Router.
         throw ROUTE_CHANGE_ABORTED;
       }
     };

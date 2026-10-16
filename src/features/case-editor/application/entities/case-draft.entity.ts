@@ -12,7 +12,9 @@
 *   (`events[2].simTimeMs`) maps back to its row. Also the event and curve operations, the predicted body weight
 *   (engine predictedBodyWeightKg, Devine) and the dirty comparison. Depends on the sim-engine and rubric-editor
 *   public APIs, the case editor config, ranges and DTOs.
-* Versión: 1.0
+*   v1.1 (review of 50ed812): a stored event time is read in seconds as ms / 1000 (no float noise such as
+*   0.7000000000000001) and `parseNumber` accepts only plain decimals (`/^-?\d+([.,]\d+)?$/`).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -141,6 +143,8 @@ export type UpsertMapping = {
   curveKeys: readonly string[]
 };
 
+const MS_PER_SECOND = 1000;
+
 const EMPTY_EVENT_PARAMS: Record<CaseEventParameter, string> = {
   resistanceFactor: "",
   complianceFactor: "",
@@ -220,7 +224,8 @@ function readEvent(raw: unknown, index: number): CaseEventDraft {
 
   return {
     key: `event-${index}`,
-    timeSeconds: timeMs === null ? "" : String(timeMs * EVENT_TIME_SCALE),
+    // Divide by the whole number of ms per second: 700 × 0.001 would read 0.7000000000000001.
+    timeSeconds: timeMs === null ? "" : String(timeMs / MS_PER_SECOND),
     type,
     params: {
       resistanceFactor: numberText(event.resistanceFactor),
@@ -291,11 +296,17 @@ export function caseDraftFromDefinition(definition: ClinicalCaseDefinitionDTO): 
 
 // ---- building the body --------------------------------------------------------------------------------------------
 
-/** A number for a typed text ("," accepted as the decimal separator); NaN when empty or not numeric. */
-export function parseNumber(value: string): number {
-  const trimmed = value.trim().replace(",", ".");
+/** A plain decimal number: optional minus, digits, and optionally "," or "." followed by digits. */
+const PLAIN_DECIMAL = /^-?\d+([.,]\d+)?$/;
 
-  return trimmed === "" ? Number.NaN : Number(trimmed);
+/**
+ * A number for a typed text ("," accepted as the decimal separator); NaN when empty or not a plain decimal. Forms
+ * that Number() would also read ("1e3", "0x10", "Infinity", ".5", "5.") are rejected.
+ */
+export function parseNumber(value: string): number {
+  const trimmed = value.trim();
+
+  return PLAIN_DECIMAL.test(trimmed) ? Number(trimmed.replace(",", ".")) : Number.NaN;
 }
 
 function isBlank(value: string): boolean {

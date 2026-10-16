@@ -8,7 +8,9 @@
 *   v1.1 (review of eb3c21b): a background tab throttles the interval, so the hook also ticks when the tab becomes
 *   visible (`visibilitychange`) and keeps one `setTimeout` armed for the exact time left (re-armed on every tick), so
 *   the expiry does not wait for the next interval tick.
-* Versión: 1.1
+*   v1.2 (review of e45841f): that timer is clamped to DEADLINE_TICK_MS (a delay above 2^31-1 ms overflows and fires
+*   at once); every tick re-arms it, so the expiry is still exact.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -69,8 +71,9 @@ export function useExamDeadline({ deadline, serverOffsetMs = 0, onExpire, now }:
         return;
       }
 
-      // One timer for the exact time left, so the expiry never waits for the next interval tick.
-      exact = setTimeout(tick, ms);
+      // One timer for the exact time left, so the expiry never waits for the next interval tick. Clamped to one tick:
+      // a delay above 2^31-1 ms (about 24.8 days) overflows and would fire at once, re-arming in a tight loop.
+      exact = setTimeout(tick, Math.min(ms, DEADLINE_TICK_MS));
     };
 
     const onVisibility = (): void => {

@@ -10,7 +10,9 @@
 *   only its block and is memoized, so typing elsewhere in the case does not re-render the console. Depends on MUI,
 *   the shared ventilator console, the sim-engine and its console binding, the design-system FormField, the draft
 *   entity, the section frame and the CSS Module.
-* Versión: 1.0
+*   v1.1 (review of 50ed812): `onPendingChange` forwards the console report of edits not applied yet, so the page
+*   counts them as unsaved and blocks the save until they are applied or discarded.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -57,10 +59,16 @@ const NATIVE_SELECT = { select: { native: true }, inputLabel: { shrink: true } }
 /** No engine in the editor: the curves never receive samples. */
 const NO_FRAMES: ConsoleFrameSource = { sourceId: "case-editor", subscribe: () => () => undefined };
 
-export function buildConfigureAdapter(settings: VentilatorSettings, onConfirm: (confirmation: ConsoleConfirmation) => void, disabled = false): VentilatorConsoleAdapter {
+export function buildConfigureAdapter(
+  settings: VentilatorSettings,
+  onConfirm: (confirmation: ConsoleConfirmation) => void,
+  disabled = false,
+  onPendingChange?: (pending: boolean) => void,
+): VentilatorConsoleAdapter {
   const values = toConsoleSettings(settings);
 
   return {
+    ...(onPendingChange ? { onPendingChange } : {}),
     frames: NO_FRAMES,
     settings: { current: values, applied: values },
     mode: { current: settings.mode, options: MODE_OPTIONS },
@@ -79,15 +87,22 @@ export type VentilatorSectionProps = {
   settings: VentilatorSettings | null
   error: string | undefined
   onChange: (settings: VentilatorSettings | null) => void
+  /** Console edits not applied yet ("Aplicar"): the page counts them as unsaved. */
+  onPendingChange?: ((pending: boolean) => void) | undefined
   disabled: boolean
 };
 
-function VentilatorSectionView({ settings, error, onChange, disabled }: VentilatorSectionProps) {
+function VentilatorSectionView({ settings, error, onChange, onPendingChange, disabled }: VentilatorSectionProps) {
   const adapter = useMemo(
     () => (settings
-      ? buildConfigureAdapter(settings, (confirmation) => onChange(mergeVentilatorChanges(settings, toSettingsChanges(confirmation))), disabled)
+      ? buildConfigureAdapter(
+        settings,
+        (confirmation) => onChange(mergeVentilatorChanges(settings, toSettingsChanges(confirmation))),
+        disabled,
+        onPendingChange,
+      )
       : null),
-    [disabled, onChange, settings],
+    [disabled, onChange, onPendingChange, settings],
   );
   const applicability = settings ? applicabilityFor(settings) : undefined;
 

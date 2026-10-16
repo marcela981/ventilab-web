@@ -11,7 +11,9 @@
 *   hooks, entities, config, tools components and CSS Module. v1.1 (T12): per row "Probar" (the server test run of the
 *   stored case in a dialog) and "Eliminar" (confirmed; a 409 for a case in use offers "Archivar" instead). Expert
 *   validation stays in the editor: the list summary has no validated flag (BACKEND GAP).
-* Versión: 1.1
+*   v1.2 (review of 50ed812): "Publicar"/"Archivar" appear only while the list is filtered by one status (the summary
+*   has no status, BACKEND GAP); the unfiltered list says to filter by status to publish or archive.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -68,7 +70,7 @@ export const CASE_LIST_COPY = {
   all: "Todos",
   allFeminine: "Todas",
   validationNote: "La validación por experto no se puede filtrar ni mostrar en la lista: el listado no informa ese dato. Se ve al abrir el caso.",
-  statusNote: "Filtra por estado para ver el estado de cada caso.",
+  statusNote: "Filtra por estado para ver el estado de cada caso. Filtra por estado para publicar o archivar.",
   loading: "Cargando casos clínicos…",
   loadErrorTitle: "No se pudieron cargar los casos clínicos",
   emptyTitle: "Aún no hay casos clínicos",

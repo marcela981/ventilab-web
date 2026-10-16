@@ -7,7 +7,10 @@
 *   live PBW, stored status and validation), tracks "Cambios sin guardar", arms beforeunload and the route-change
 *   confirmation, and saves with PUT; a 422 range violation lands on its field and a 409 with sessions shows the page
 *   message. Depends on vitest, Testing Library, msw and the case editor test helpers.
-* Versión: 1.0
+*   v1.1 (review of 50ed812): an unchanged stored case cannot be saved; a console edit not applied yet shows as
+*   unsaved, arms beforeunload and blocks the save with its note until cancelled; the first invalid field takes the
+*   focus. These run inside the existing mounts (no extra full-editor render: the page tests are the slow ones).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -96,7 +99,8 @@ const SECTION_OF_LABEL: Readonly<Record<string, string>> = {
   "Espacio muerto (VD)": "mechanics",
 };
 const field = (label: string) => within(section(SECTION_OF_LABEL[label] ?? "general")).getByLabelText(new RegExp(`^${escape(label)}`));
-const clickSave = () => fireEvent.click(screen.getByText("Guardar", { selector: "button" }));
+const saveButton = () => screen.getByText("Guardar", { selector: "button" });
+const clickSave = () => fireEvent.click(saveButton());
 
 function type(label: string, value: string): void {
   fireEvent.change(field(label), { target: { value } });
@@ -118,6 +122,8 @@ describe("CaseEditorPage — new case", () => {
     expect(await screen.findByText("Revisa los campos marcados antes de guardar.")).toBeInTheDocument();
     expect(field("Título")).toHaveAttribute("aria-invalid", "true");
     expect(field("Edad (años)")).toHaveAttribute("aria-invalid", "true");
+    // The first field with an error takes the focus.
+    await waitFor(() => expect(field("Título")).toHaveFocus());
 
     const index = screen.getByLabelText("Secciones del caso");
 
@@ -211,8 +217,28 @@ describe("CaseEditorPage — existing case", () => {
     expect(screen.getByText(CASE_EDITOR_COPY.saved)).toBeInTheDocument();
     expect(field("Distensibilidad estática (C)")).toHaveValue("30");
     expect(screen.getAllByText(/Rango plausible: 5–150 mL\/cmH2O/).length).toBeGreaterThan(0);
+    // A PUT always clears the expert validation: nothing changed, nothing to save.
+    expect(saveButton()).toBeDisabled();
+
+    // A console edit not applied yet counts as unsaved and blocks the save until it is applied or discarded.
+    const ventilator = section("ventilator");
+
+    fireEvent.click(within(ventilator).getByRole("button", { name: "Aumentar PEEP" }));
+    expect(screen.getByText(CASE_EDITOR_COPY.unsaved)).toBeInTheDocument();
+    expect(screen.getByText(CASE_EDITOR_COPY.consolePending)).toBeInTheDocument();
+    expect(saveButton()).toBeDisabled();
+
+    const pendingUnload = new Event("beforeunload", { cancelable: true });
+
+    window.dispatchEvent(pendingUnload);
+    expect(pendingUnload.defaultPrevented).toBe(true);
+    fireEvent.click(within(ventilator).getByRole("button", { name: "Cancelar" }));
+    expect(screen.getByText(CASE_EDITOR_COPY.saved)).toBeInTheDocument();
+    expect(screen.queryByText(CASE_EDITOR_COPY.consolePending)).not.toBeInTheDocument();
+    expect(saveButton()).toBeDisabled();
 
     type("Título", "SDRA grave en paciente obeso");
+    expect(saveButton()).toBeEnabled();
     expect(screen.getByText(CASE_EDITOR_COPY.unsaved)).toBeInTheDocument();
 
     const unload = new Event("beforeunload", { cancelable: true });
@@ -242,6 +268,7 @@ describe("CaseEditorPage — existing case", () => {
     renderWithProviders(<CaseEditorPage caseId="c1" />);
 
     await screen.findByDisplayValue("SDRA en paciente obeso");
+    type("Título", "SDRA grave");
     clickSave();
 
     expect(await screen.findByText(/El servidor rechazó un valor fuera del rango/)).toBeInTheDocument();

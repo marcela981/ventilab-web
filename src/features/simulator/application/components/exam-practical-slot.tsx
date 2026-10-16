@@ -14,7 +14,10 @@
 *   v1.1 (review of eb3c21b): the linked session comes from the player answer, else from `question.answer` (what the
 *   attempt stores once the student is back); a settled history lookup that does not list the linked session is an
 *   error state with "Reintentar" instead of an endless "Comprobando…".
-* Versión: 1.1
+*   v1.2 (review of e45841f): the session lookup turns off SWR `keepPreviousData` (on app-wide), so the list of a
+*   previous session id is never read as "not found" for the new one, and a missing session counts as settled only
+*   when the lookup is not validating.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -82,6 +85,9 @@ export const EXAM_SLOT_COPY = {
   retry: "Reintentar",
   noAttempt: "La parte práctica solo se puede iniciar desde un intento en curso.",
 } as const;
+
+// The lookup is keyed by the linked session id: data of a previous id must never stand in for the current one.
+const SESSION_LOOKUP_CONFIG = { keepPreviousData: false } as const;
 
 const numberFormat = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 2 });
 const dateFormat = new Intl.DateTimeFormat("es-CO", { dateStyle: "medium", timeStyle: "short" });
@@ -197,7 +203,11 @@ export function ExamPracticalSlot({ question, answer, onChange, readOnly = false
   const sessionId = answer?.simulationSessionId ?? question.answer?.simulationSessionId ?? null;
   const rules = readRubricRules(question.rubric);
   const attemptQuery = useApiQuery(attemptId ? EXAM_ATTEMPT_PATH : null, { params: { attemptId: attemptId ?? "" } });
-  const sessionQuery = useApiQuery(sessionId ? SIMULATION_SESSION_HISTORY_PATH : null, { query: singleSessionQuery(sessionId ?? "") });
+  const sessionQuery = useApiQuery(
+    sessionId ? SIMULATION_SESSION_HISTORY_PATH : null,
+    { query: singleSessionQuery(sessionId ?? "") },
+    SESSION_LOOKUP_CONFIG,
+  );
   const sessionStatus = sessionQuery.data?.data.find((item) => item.id === sessionId)?.status ?? null;
   const slot = practicalSlotState(sessionId, sessionStatus);
   const practical = useExamPractical({
@@ -236,7 +246,7 @@ export function ExamPracticalSlot({ question, answer, onChange, readOnly = false
     // Settled without the linked session (or failed): an error with a retry, never an endless "Comprobando…".
     const failure = sessionQuery.error
       ? `${EXAM_SLOT_COPY.statusFailed} ${getSimulatorErrorMessage(sessionQuery.error)}`
-      : sessionQuery.data ? `${EXAM_SLOT_COPY.statusFailed} ${EXAM_SLOT_COPY.sessionNotFound}` : null;
+      : sessionQuery.data && !sessionQuery.isValidating ? `${EXAM_SLOT_COPY.statusFailed} ${EXAM_SLOT_COPY.sessionNotFound}` : null;
 
     status = failure ? (
       <div className={cx(styles.actions)}>

@@ -7,9 +7,11 @@
 *   …") or ends with it ("… at/en {field}"), so the path is read from there. The DTO paths with an index
 *   (`events[2].simTimeMs`, `mechanics.recruitmentCurve[0].peepCmH2O`) are mapped back to the row keys of the draft
 *   in DTO order; the initial ventilator settings and the rubric errors land on their whole section. Other known codes
-*   (403, 404, 409 with sessions, network) get their own message. Depends on the api-client error type.
+*   (403, 404, 409 with sessions, network) get their own message. Depends on the api-client error type and the case editor config.
 *   v1.1 (T12): the messages of a case in use (delete 409) and of a case the engine cannot simulate (test run).
-* Versión: 1.1
+*   v1.2 (review of 50ed812): `isRenderedFieldId` knows the field ids the editor renders with an error slot; a server
+*   path mapped to any other id (or to a row that no longer exists) falls back to the page message with the detail.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,6 +20,16 @@
 */
 
 import { CLIENT_ERROR_CODES, toApiError } from "@shared/api-client/api-error";
+import {
+  EVENT_PARAMETER_FIELDS,
+  EVENT_TIME_FIELD,
+  INITIAL_STATE_FIELDS,
+  MECHANICS_FIELDS,
+  PATIENT_FIELDS,
+  RECRUITMENT_FIELDS,
+  TARGET_MAX_FIELDS,
+  TARGET_RANGE_FIELDS,
+} from "../config/case-editor.config";
 
 export const RANGE_VIOLATION_CODE = "clinical-cases.physiological_range_violation";
 export const INVALID_DEFINITION_CODE = "clinical-cases.invalid_definition";
@@ -116,13 +128,67 @@ export function toDraftFieldId(path: string, keys: RowKeys): string | null {
   return path;
 }
 
+/** Field ids that do not depend on a row: the fields every editor renders with an error slot. */
+const STATIC_FIELD_IDS: ReadonlySet<string> = new Set([
+  "title",
+  "summary",
+  "description",
+  "mainDiagnosis",
+  "educationalGoal",
+  "history.presentIllness",
+  "patientSex",
+  ...Object.values(PATIENT_FIELDS).map((field) => field.path),
+  ...MECHANICS_FIELDS.map((field) => field.path),
+  ...INITIAL_STATE_FIELDS.map((field) => field.path),
+  ...Object.values(TARGET_RANGE_FIELDS).flatMap((field) => [`${field.path}.min`, `${field.path}.max`]),
+  ...Object.values(TARGET_MAX_FIELDS).map((field) => field.path),
+  "initialVentilatorSettings",
+  "defaultRubric",
+]);
+
+const EVENT_FIELD_SUFFIXES: ReadonlySet<string> = new Set(["", `.${EVENT_TIME_FIELD.path}`, ".type", ...Object.keys(EVENT_PARAMETER_FIELDS).map((key) => `.${key}`)]);
+const CURVE_FIELD_SUFFIXES: ReadonlySet<string> = new Set(Object.values(RECRUITMENT_FIELDS).map((field) => `.${field.path}`));
+
+function rowSuffix(fieldId: string, prefix: string, keys: readonly string[]): string | null {
+  const key = keys.find((candidate) => fieldId === `${prefix}${candidate}` || fieldId.startsWith(`${prefix}${candidate}.`));
+
+  return key === undefined ? null : fieldId.slice(`${prefix}${key}`.length);
+}
+
+/** Whether the editor renders an error slot for this draft field id (rows only for the current row keys). */
+export function isRenderedFieldId(fieldId: string, keys: RowKeys): boolean {
+  if (STATIC_FIELD_IDS.has(fieldId)) {
+    return true;
+  }
+
+  const eventSuffix = rowSuffix(fieldId, "events.", keys.eventKeys);
+
+  if (eventSuffix !== null) {
+    return EVENT_FIELD_SUFFIXES.has(eventSuffix);
+  }
+
+  const curveSuffix = rowSuffix(fieldId, "mechanics.recruitmentCurve.", keys.curveKeys);
+
+  return curveSuffix !== null && CURVE_FIELD_SUFFIXES.has(curveSuffix);
+}
+
 export type ServerFieldError = { field: string | null, message: string };
 
-/** The save error as a field error (null field: a page-level message). */
+/**
+ * The save error as a field error (null field: a page-level message). A path the editor does not render (a block it
+ * does not edit, a row that is gone) falls back to the page message with the server detail, so it is never lost.
+ */
 export function mapSaveError(error: unknown, keys: RowKeys): ServerFieldError {
   const apiError = toApiError(error);
   const path = serverErrorPath(apiError.code, apiError.message);
   const message = getCaseEditorErrorMessage(apiError);
 
-  return { field: path === null ? null : toDraftFieldId(path, keys), message: path === null ? message : `${message} ${apiError.message}` };
+  if (path === null) {
+    return { field: null, message };
+  }
+
+  const field = toDraftFieldId(path, keys);
+  const detailed = `${message} ${apiError.message}`;
+
+  return { field: field !== null && isRenderedFieldId(field, keys) ? field : null, message: detailed };
 }

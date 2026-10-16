@@ -7,7 +7,8 @@
 *   confirmation and send PATCH /status with the target status (a failure shows its toast); empty and error states
 *   with retry. Depends on vitest, Testing Library, msw and the case editor test helpers.
 *   v1.1 (T12): the row test run in a dialog and the delete with the 409 → archive alternative.
-* Versión: 1.1
+*   v1.2: no status action in the unfiltered list (hint instead); the status tests filter by "Borrador" first.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -61,6 +62,13 @@ function listHandler(seen: Seen, total = 2) {
   });
 }
 
+/** Publish/archive are offered only while the list is filtered by one status. */
+async function filterByDraft(): Promise<void> {
+  await screen.findByText("Caso c1a");
+  fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "DRAFT" } });
+  await screen.findByRole("columnheader", { name: "Estado" });
+}
+
 describe("CaseListPage", () => {
   it("sends the filters as server query params and shows the status column only when filtered by status", async() => {
     const seen: Seen = [];
@@ -71,6 +79,9 @@ describe("CaseListPage", () => {
     expect(await screen.findByText("Caso c1a")).toBeInTheDocument();
     expect(screen.queryByRole("columnheader", { name: "Estado" })).not.toBeInTheDocument();
     expect(screen.getByText(/La validación por experto no se puede filtrar ni mostrar/)).toBeInTheDocument();
+    // The status of a row is unknown here: no publish/archive, a hint to filter instead.
+    expect(screen.getByText(/Filtra por estado para publicar o archivar/)).toBeInTheDocument();
+    expect(within((screen.getByText("Caso c1a")).closest("tr") as HTMLElement).queryByRole("button", { name: "Publicar" })).not.toBeInTheDocument();
     expect(seen[0]?.get("status")).toBeNull();
     expect(seen[0]?.get("sortOrder")).toBe("desc");
 
@@ -138,6 +149,7 @@ describe("CaseListPage", () => {
       }),
     );
     renderWithProviders(<CaseListPage />);
+    await filterByDraft();
 
     const row = (await screen.findByText("Caso c1a")).closest("tr") as HTMLElement;
 
@@ -172,6 +184,7 @@ describe("CaseListPage", () => {
       }),
     );
     renderWithProviders(<CaseListPage />);
+    await filterByDraft();
 
     const row = (await screen.findByText("Caso c1b")).closest("tr") as HTMLElement;
 

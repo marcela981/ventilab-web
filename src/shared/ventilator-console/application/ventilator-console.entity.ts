@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator console contract
-* Descripción: Types of the generic ventilator console adapter (the props model a consumer builds from a simulator worker, a replay or a real ventilator): a frame source that streams batches of pressure/flow/volume samples, the current and applied settings, the ventilation mode, the numeric monitoring metrics keyed by console metric id, the patient vitals with a short trend, the active alarms with priority, the control permission, the parameter limits injected by the consumer, the change callbacks (optional propose while pending, confirm with the mode + parameter diff, optional cancel), the optional alarm limits with their change callback, an optional adapter-provided alarm history and the optional capabilities (maneuvers). The console never hardcodes limits or knows the data origin. Depends only on the console config ids. v1.2: the frame source declares an optional `sourceId` (resubscribe/clear only when it changes) and `sampleRateHz` (ring capacity), sample times are monotonic non-decreasing per source, and the adapter may provide normal `ranges` that take precedence over the console range props.
-* Versión: 1.2
+* Descripción: Types of the generic ventilator console adapter (the props model a consumer builds from a simulator worker, a replay or a real ventilator): a frame source that streams batches of pressure/flow/volume samples, the current and applied settings, the ventilation mode, the numeric monitoring metrics keyed by console metric id, the patient vitals with a short trend, the active alarms with priority, the control permission, the parameter limits injected by the consumer, the change callbacks (optional propose while pending, confirm with the mode + parameter diff, optional cancel), the optional alarm limits with their change callback, an optional adapter-provided alarm history and the optional capabilities (maneuvers). The console never hardcodes limits or knows the data origin. Depends only on the console config ids. v1.2: the frame source declares an optional `sourceId` (resubscribe/clear only when it changes) and `sampleRateHz` (ring capacity), sample times are monotonic non-decreasing per source, and the adapter may provide normal `ranges` that take precedence over the console range props. v1.3: optional `onPendingChange(pending)` reports whether the built-in controls hold unconfirmed edits.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -156,6 +156,8 @@ export type VentilatorConsoleAdapter = {
   /** The only callback that applies a change; called once per CONFIRMAR. */
   onConfirm: (confirmation: ConsoleConfirmation) => void
   onCancel?: () => void
+  /** Whether the built-in controls hold unconfirmed edits (reported on change, false on unmount). */
+  onPendingChange?: (pending: boolean) => void
   /** Without limits the alarm limits panel is hidden; without the callback it is read-only. */
   alarmLimits?: readonly ConsoleAlarmLimit[]
   onAlarmLimitsChange?: (changes: readonly ConsoleAlarmLimitChange[]) => void

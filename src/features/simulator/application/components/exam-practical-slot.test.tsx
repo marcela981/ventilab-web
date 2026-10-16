@@ -9,7 +9,8 @@
 *   read-only mode, and the exam start routine itself (POST body, stored EXAM record with the exam context and the
 *   server clock offset, exam return record). Depends on vitest, Testing Library, msw and the simulator test helpers.
 *   v1.1 (review of eb3c21b): one explicit PUT on success (no player onChange), onChange only when the save fails, a double click starts one session, the link read from question.answer on return, and a settled lookup without the session shows an error with retry.
-* Versión: 1.1
+*   v1.2 (review of e45841f): a new linked session id under the app-wide keepPreviousData never shows a false "not found".
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,9 +18,11 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
+import type { ReactNode } from "react";
+import { SWRConfig } from "swr";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AttemptAnswer, AttemptQuestion } from "@features/evaluations";
 import type { StartedSession } from "../entities/simulator.entity";
@@ -243,6 +246,54 @@ describe("ExamPracticalSlot", () => {
     fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
 
     expect(await screen.findByRole("button", { name: "Continuar parte práctica" })).toBeInTheDocument();
+  });
+
+  it("a new linked session id never shows the previous lookup as \"not found\" (global keepPreviousData)", async() => {
+    let releaseS9: () => void = () => undefined;
+    const s9Ready = new Promise<void>((resolve) => {
+      releaseS9 = resolve;
+    });
+
+    server.use(caseHandler(), attemptHandler(), http.get(apiUrl("/api/simulation/sessions/history"), async({ request }) => {
+      const ids = new URL(request.url).searchParams.getAll("ids").join(",");
+
+      if (ids.includes("s9")) {
+        await s9Ready;
+
+        return HttpResponse.json(envelope([sessionDto("s9", { mode: "EXAM", status: "ENDED", attemptId: "a1", questionId: "q1" })]));
+      }
+
+      return HttpResponse.json(envelope([sessionDto("s1", { mode: "EXAM", status: "ACTIVE", attemptId: "a1", questionId: "q1" })]));
+    }));
+
+    const examReturn = createExamReturnStore(memoryStorageGetter());
+    const deps = { loadStart: () => Promise.reject(new Error("unused")), saveAnswer: vi.fn(() => Promise.resolve()), examReturn };
+    const slotFor = (sessionId: string) => (
+      <ExamPracticalSlot
+        question={buildQuestion()}
+        answer={{ selectedOptionIds: [], textAnswer: null, simulationSessionId: sessionId }}
+        onChange={vi.fn()}
+        deps={deps}
+      />
+    );
+    // The app-wide SWR config keeps the previous data across a key change.
+    const KeepPrevious = ({ children }: { children: ReactNode }) => (
+      <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false, keepPreviousData: true }}>
+        {children}
+      </SWRConfig>
+    );
+    const view = render(slotFor("s1"), { wrapper: KeepPrevious });
+
+    expect(await screen.findByRole("button", { name: "Continuar parte práctica" })).toBeInTheDocument();
+
+    view.rerender(slotFor("s9"));
+    // While s9 loads, the s1 list is still the data: it must not read as "s9 not found".
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(screen.queryByText(/No se encontró la sesión vinculada/)).not.toBeInTheDocument();
+
+    releaseS9();
+    expect(await screen.findByText("Parte práctica completada")).toBeInTheDocument();
+    expect(screen.queryByText(/No se encontró la sesión vinculada/)).not.toBeInTheDocument();
   });
 
   it("stays on the exam with the message when the answer cannot be saved", async() => {

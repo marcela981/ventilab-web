@@ -32,7 +32,9 @@
 *   leaves, and once the deadline is reached the student's end leaves on ANY outcome (error or busy included), so a
 *   failed end can no longer strand the student; the countdown offset of an EXAM rebuilt without its exam context
 *   (continue path) comes from the bootstrap (attempt `serverNow`), and the exam return record reaches the bootstrap.
-* Versión: 1.6
+*   v1.7 (review of e45841f): the deadline decides on the end-in-flight ref only (never a stale `session.ending`); a
+*   rejected router.push resets the leave guard and falls back to `window.location.assign(url)`.
+* Versión: 1.7
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -292,10 +294,19 @@ function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnd
 
     if (onEnded) {
       await onEnded(sessionId);
-    } else if (exam) {
-      await router.push(examReturnUrlOf(record, examReturn ?? examReturnStore));
-    } else {
-      await router.push(buildSessionResultUrl(sessionId));
+
+      return;
+    }
+
+    const url = exam ? examReturnUrlOf(record, examReturn ?? examReturnStore) : buildSessionResultUrl(sessionId);
+
+    try {
+      await router.push(url);
+    } catch {
+      // A rejected client navigation (aborted, chunk load failure) must not strand the student on an ended session:
+      // allow a later leave and fall back to a full page load.
+      leftRef.current = false;
+      window.location.assign(url);
     }
   };
 
@@ -306,11 +317,12 @@ function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnd
     setDeadlineReached(true);
     setConfirming(false);
 
-    // The student's end is in flight: whatever its outcome, leave once it settles.
+    // The student's end is in flight: whatever its outcome, leave once it settles. Decided on the ref only: this
+    // callback can run from a render closure whose `session.ending` is already stale.
     const inFlight = endInFlightRef.current;
 
-    if (inFlight || session.ending) {
-      void (inFlight ?? Promise.resolve()).finally(() => leave());
+    if (inFlight) {
+      void inFlight.finally(() => leave());
 
       return;
     }

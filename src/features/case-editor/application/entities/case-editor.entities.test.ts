@@ -8,7 +8,9 @@
 *   comparison, the event and curve operations, the list query and row status, and the server error mapping (422
 *   range and 400 definition paths read from the message, indices mapped to row keys, sections for ventilator and
 *   rubric, page-level message otherwise). Depends on vitest and the case editor entities.
-* Versión: 1.0
+*   v1.1 (review of 50ed812): no status action for an unknown status, a server path the editor does not render falls
+*   back to the page message, event times in seconds without float noise, plain-decimal parsing.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,7 +23,7 @@ import { ApiError } from "@shared/api-client/api-error";
 import { CLINICAL_CASE_PHYSIOLOGICAL_RANGES, predictedBodyWeightKg } from "@shared/sim-engine";
 import { MECHANICS_FIELDS } from "../config/case-editor.config";
 import { definitionDto } from "../pages/case-editor-test-helpers";
-import { mapSaveError, serverErrorPath, toDraftFieldId } from "./case-editor-errors";
+import { isRenderedFieldId, mapSaveError, serverErrorPath, toDraftFieldId } from "./case-editor-errors";
 import {
   addCurvePoint,
   addEvent,
@@ -30,6 +32,7 @@ import {
   draftPredictedBodyWeightKg,
   emptyCaseDraft,
   eventsInTimeOrder,
+  parseNumber,
   removeEvent,
   sameDraft,
   sortDraftEvents,
@@ -208,7 +211,9 @@ describe("case list", () => {
   it("knows a row status only while filtered by one, and offers the status changes", () => {
     expect(toCaseListRow(caseItemDto("c1"), "").status).toBeNull();
     expect(toCaseListRow(caseItemDto("c1"), "ARCHIVED").status).toBe("ARCHIVED");
-    expect(statusActionsFor(null)).toEqual(["publish", "archive"]);
+    // Unfiltered view: the stored status is unknown, so no status change is offered (the page shows a hint).
+    expect(statusActionsFor(null)).toEqual([]);
+    expect(statusActionsFor("DRAFT")).toEqual(["publish", "archive"]);
     expect(statusActionsFor("PUBLISHED")).toEqual(["archive"]);
     expect(statusActionsFor("ARCHIVED")).toEqual(["publish"]);
   });
@@ -237,5 +242,49 @@ describe("server field errors", () => {
 
     expect(mapSaveError(rangeError, keys)).toMatchObject({ field: "patientWeight" });
     expect(mapSaveError(conflict, keys)).toEqual({ field: null, message: "El caso ya tiene sesiones de simulación: duplícalo para cambiar su definición." });
+  });
+
+  it("falls back to the page message when the mapped field is not one the editor renders", () => {
+    const unknownField = new ApiError({ status: 422, code: "clinical-cases.physiological_range_violation", message: "labData.lactate = 40 is outside 0-30 mmol/L" });
+    const rendered = new ApiError({ status: 422, code: "clinical-cases.physiological_range_violation", message: "events[1].resistanceFactor = 9 is outside 1-5" });
+
+    expect(mapSaveError(unknownField, keys)).toEqual({
+      field: null,
+      message: "El servidor rechazó un valor fuera del rango fisiológicamente plausible. labData.lactate = 40 is outside 0-30 mmol/L",
+    });
+    expect(mapSaveError(rendered, keys)).toMatchObject({ field: "events.e-b.resistanceFactor" });
+    expect(isRenderedFieldId("mechanics.deadSpaceMl", keys)).toBe(true);
+    expect(isRenderedFieldId("targets.spo2Percent.min", keys)).toBe(true);
+    expect(isRenderedFieldId("targets.plateauPressureMaxCmH2O", keys)).toBe(true);
+    expect(isRenderedFieldId("events.e-a", keys)).toBe(true);
+    expect(isRenderedFieldId("mechanics.recruitmentCurve.p-a.peepCmH2O", keys)).toBe(true);
+    expect(isRenderedFieldId("mechanics.recruitmentCurve.p-z.peepCmH2O", keys)).toBe(false);
+    expect(isRenderedFieldId("mechanics.unknown", keys)).toBe(false);
+  });
+});
+
+describe("review fixes (e45841f / 50ed812)", () => {
+  it("reads an event time in whole seconds without float noise", () => {
+    const draft = caseDraftFromDefinition(definitionDto("c1", {
+      events: [
+        { simTimeMs: 700, type: "SECRETIONS", resistanceFactor: 1.5 },
+        { simTimeMs: 300_000, type: "SECRETIONS", resistanceFactor: 1.5 },
+        { simTimeMs: 1_100, type: "SECRETIONS", resistanceFactor: 1.5 },
+      ],
+    }));
+
+    expect(draft.events.map((event) => event.timeSeconds)).toEqual(["0.7", "300", "1.1"]);
+  });
+
+  it("accepts only plain decimal numbers (comma or dot), nothing Number() would also read", () => {
+    expect(parseNumber("1,5")).toBe(1.5);
+    expect(parseNumber(" -2.25 ")).toBe(-2.25);
+    expect(parseNumber("40")).toBe(40);
+    expect(parseNumber("1e3")).toBeNaN();
+    expect(parseNumber("0x10")).toBeNaN();
+    expect(parseNumber("Infinity")).toBeNaN();
+    expect(parseNumber(".5")).toBeNaN();
+    expect(parseNumber("5.")).toBeNaN();
+    expect(parseNumber("")).toBeNaN();
   });
 });
