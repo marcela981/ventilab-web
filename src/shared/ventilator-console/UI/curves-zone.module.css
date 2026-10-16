@@ -1,0 +1,111 @@
+/*
+* Funcionalidad: Console curves zone styles
+* Descripción: Curves area of the ventilator console: toolbar of pressed-state toggle groups (sweep/scroll, time window, loops) and the freeze button, the frozen hint, and the plot row where the stacked sweep canvas takes the remaining width beside an optional loop canvas (stacked under it below 1024 px). Sizes the canvases through --vl-sweep-height / --vl-loop-height. Console and design-system tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.zone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-3);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2) var(--vl-space-4);
+}
+
+.group {
+  display: inline-flex;
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+  overflow: hidden;
+}
+
+.toggle,
+.freeze {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+  min-height: var(--vl-space-6);
+  padding: 0 var(--vl-space-3);
+  font: var(--mui-font-button);
+  color: var(--vl-console-text-muted);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.toggle + .toggle {
+  border-left: 1px solid var(--vl-console-border);
+}
+
+.toggle[aria-pressed="true"] {
+  color: var(--vl-console-text);
+  background: var(--vl-console-pending-bg);
+}
+
+.freeze {
+  color: var(--vl-console-text);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.freeze[aria-pressed="true"] {
+  background: var(--vl-console-pending-bg);
+  border-color: var(--vl-console-pending);
+}
+
+.toggle:focus-visible,
+.freeze:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-console-focus-ring);
+  outline-offset: calc(var(--vl-focus-ring-width) * -1);
+}
+
+.hint {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.plots {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--vl-space-3);
+}
+
+.withLoop {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
+.sweep {
+  --vl-sweep-height: calc(var(--vl-space-8) * 7);
+}
+
+.loop {
+  --vl-loop-height: calc(var(--vl-space-8) * 4);
+  align-self: start;
+}
+
+@media (max-width: 1279.98px) {
+  .sweep {
+    --vl-sweep-height: calc(var(--vl-space-8) * 6);
+  }
+}
+
+@media (max-width: 1023.98px) {
+  .withLoop {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
