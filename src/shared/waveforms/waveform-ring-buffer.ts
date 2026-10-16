@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Waveform ring buffer
-* Descripción: Fixed-capacity ring per channel (Float32Array) plus a Float64Array time axis for live waveform streams. Single and batch push, chronological reads (all, time window, since a write sequence), clear with a generation counter so renderers can detect resets. Generic over channel names; no dependency on the simulation engine. v1.1: binary search for the window start and end, plus `createWindow` / `readWindowInto` / `readSinceInto` that reuse a preallocated window so a render frame allocates nothing (a window's arrays may be longer than `length`).
-* Versión: 1.1
+* Descripción: Fixed-capacity ring per channel (Float32Array) plus a Float64Array time axis for live waveform streams. Single and batch push, chronological reads (all, time window, since a write sequence), clear with a generation counter so renderers can detect resets. Generic over channel names; no dependency on the simulation engine. v1.1: binary search for the window start and end, plus `createWindow` / `readWindowInto` / `readSinceInto` that reuse a preallocated window so a render frame allocates nothing (a window's arrays may be longer than `length`). v1.2: times are monotonic non-decreasing per source; `push` treats a time going backwards as a clock reset and clears the ring (new generation) before storing the sample, so the binary search always sees sorted times.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,7 +9,10 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-/** One sample at time `tMs` (milliseconds) with one value per channel. Missing channels are stored as NaN. */
+/**
+ * One sample at time `tMs` (milliseconds) with one value per channel. Missing channels are stored as NaN. `tMs` must be
+ * monotonic non-decreasing within one stream; a backwards time resets the ring (see `WaveformRingBuffer.push`).
+ */
 export type WaveformFrame<C extends string> = {
   tMs: number
   values: Partial<Record<C, number>>
@@ -28,6 +31,7 @@ export type WaveformRingBufferOptions<C extends string> = {
   capacity: number
 };
 
+/** Ring of samples whose times are monotonic non-decreasing; a backwards time clears it (clock reset). */
 export class WaveformRingBuffer<C extends string> {
   public readonly channels: readonly C[];
   public readonly capacity: number;
@@ -68,7 +72,18 @@ export class WaveformRingBuffer<C extends string> {
     return this.written === 0 ? null : this.timeAt(this.written - 1);
   }
 
+  /**
+   * Appends one sample. Times must be monotonic non-decreasing per source (the window reads binary-search them); a time
+   * that goes backwards is taken as a clock reset (source restart, device reboot): the ring is cleared first, which
+   * bumps `generation` so painters repaint in full, and the sample starts the new stream.
+   */
   public push(frame: WaveformFrame<C>): void {
+    const latest = this.latestTime;
+
+    if (latest !== null && frame.tMs < latest) {
+      this.clear();
+    }
+
     const slot = this.written % this.capacity;
     this.times[slot] = frame.tMs;
 

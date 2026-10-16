@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentilatorConsole tests
-* Descripción: Renders the generic console from a fake adapter in jsdom (no 2D context): the curves, numeric monitoring and patient zones, "—" for metrics the source does not provide, out-of-range highlight with icon text and range overrides, only the vitals the adapter provides with their sparkline, the curves toolbar (window, loop toggle, freeze with the measurement cursor), frame batches pushed into the ring buffer, unsubscribe on unmount, the read-only flag passed to the slots, the built-in alarms bar and controls for omitted slots (hidden with null) and the maneuvers slot gated by the adapter capability. Depends on Vitest and Testing Library.
-* Versión: 1.1
+* Descripción: Renders the generic console from a fake adapter in jsdom (no 2D context): the curves, numeric monitoring and patient zones, "—" for metrics the source does not provide, out-of-range highlight with icon text and range overrides (adapter ranges over props), only the vitals the adapter provides with their sparkline, the curves toolbar (window, loop toggle, freeze with the measurement cursor), frame batches pushed into the ring buffer, unsubscribe on unmount, the read-only flag passed to the slots, the built-in alarms bar and controls for omitted slots (hidden with null) and the maneuvers slot gated by the adapter capability. Depends on Vitest and Testing Library.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -133,6 +133,15 @@ describe("VentilatorConsole", () => {
 
     expect(within(tileOf("Ppico")).queryByText("Alto")).not.toBeInTheDocument();
     expect(within(tileOf("Pplat")).getByText("Alto")).toBeInTheDocument();
+  });
+
+  it("lets adapter ranges take precedence over the range props, with null disabling the highlight", () => {
+    const { adapter } = makeAdapter({ ranges: { metrics: { peakPressure: null }, patient: { spo2: { min: 80 } } } });
+    render(<VentilatorConsole adapter={adapter} metricRanges={{ peakPressure: { max: 30 }, plateauPressure: { max: 20 } }} />);
+
+    expect(tileOf("Ppico")).not.toHaveAttribute("data-status", "high");
+    expect(within(tileOf("Pplat")).getByText("Alto")).toBeInTheDocument();
+    expect(within(tileOf("SpO2")).queryByText("Bajo")).not.toBeInTheDocument();
   });
 
   it("shows only the vitals the adapter provides, each with a trend sparkline", () => {

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentilatorConsole
-* Descripción: Generic ventilator console screen composed from an adapter (it does not know whether data comes from the simulator, a replay or a real ventilator): header with the current mode and a read-only badge, an alarms slot across the top, numeric monitoring in the left column, the curves zone (and the patient monitor below it) in the centre and the mode/controls slots on the right, like a bedside ventilator. Slots accept a node or a render function that receives the adapter and the read-only flag; an omitted alarms slot renders the AlarmsBar and an omitted controls slot renders ConsoleControls (mode selector + pending→confirm parameters) from the adapter, while `null` hides them. An optional maneuvers slot renders only when the adapter declares the maneuvers capability. `variant` switches the controls between a running ventilator ("Confirmar") and the case editor configuration ("Aplicar"). Uses the dark console surface tokens; below 1024 px the zones stack and a Spanish notice recommends a horizontal tablet or a computer. Depends on React, the console zones, the controls and alarms bar, useConsoleWaveforms and the console layout styles.
-* Versión: 1.1
+* Descripción: Generic ventilator console screen composed from an adapter (it does not know whether data comes from the simulator, a replay or a real ventilator): header with the current mode and a read-only badge, an alarms slot across the top, numeric monitoring in the left column, the curves zone (and the patient monitor below it) in the centre and the mode/controls slots on the right, like a bedside ventilator. Slots accept a node or a render function that receives the adapter and the read-only flag; an omitted alarms slot renders the AlarmsBar and an omitted controls slot renders ConsoleControls (mode selector + pending→confirm parameters) from the adapter, while `null` hides them. An optional maneuvers slot renders only when the adapter declares the maneuvers capability. `variant` switches the controls between a running ventilator ("Confirmar") and the case editor configuration ("Aplicar"). Uses the dark console surface tokens; below 1024 px the zones stack and a Spanish notice recommends a horizontal tablet or a computer. Depends on React, the console zones, the controls and alarms bar, useConsoleWaveforms and the console layout styles. v1.2: normal ranges merge per key as config defaults < range props < `adapter.ranges`; the curves keep their subscription across adapter rebuilds for the same frame source (see useConsoleWaveforms).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -43,7 +43,10 @@ export type ConsoleSlot = ReactNode | ((context: ConsoleSlotContext) => ReactNod
 
 export type VentilatorConsoleProps = {
   adapter: VentilatorConsoleAdapter
-  /** Overrides of the metric normal ranges; `null` disables the highlight for that metric. */
+  /**
+   * Overrides of the metric normal ranges (teaching defaults in the config); `null` disables the highlight for that
+   * metric. `adapter.ranges` takes precedence per key.
+   */
   metricRanges?: RangeOverrides<ConsoleMetricId>
   patientRanges?: RangeOverrides<PatientVitalId>
   /** Optional heading content, e.g. the case name and PBW. */
@@ -67,6 +70,11 @@ export type VentilatorConsoleProps = {
   beeperFactory?: AlarmBeeperFactory
   className?: string
 };
+
+/** Per key, the adapter (source) ranges win over the props, which win over the config defaults. */
+function mergeRanges<K extends string>(props: RangeOverrides<K> | undefined, source: RangeOverrides<K> | undefined): RangeOverrides<K> | undefined {
+  return source ? { ...props, ...source } : props;
+}
 
 function renderSlot(slot: ConsoleSlot | undefined, context: ConsoleSlotContext): ReactNode {
   return typeof slot === "function" ? slot(context) : slot;
@@ -134,10 +142,10 @@ export function VentilatorConsole({
         {readOnly ? <span className={cx(styles.readOnly)}>{CONSOLE_COPY.readOnly}</span> : null}
       </header>
       {alarms ? <div className={cx(styles.alarms)}>{alarms}</div> : null}
-      <NumericMonitor metrics={adapter.metrics} ranges={metricRanges} className={cx(styles.metrics)} />
+      <NumericMonitor metrics={adapter.metrics} ranges={mergeRanges(metricRanges, adapter.ranges?.metrics)} className={cx(styles.metrics)} />
       <div className={cx(styles.centre)}>
         <CurvesZone buffer={buffer} />
-        <PatientMonitor patient={adapter.patient} ranges={patientRanges} />
+        <PatientMonitor patient={adapter.patient} ranges={mergeRanges(patientRanges, adapter.ranges?.patient)} />
       </div>
       {mode || controls || maneuvers ? (
         <aside className={cx(styles.controls)} aria-label={CONSOLE_COPY.controls}>

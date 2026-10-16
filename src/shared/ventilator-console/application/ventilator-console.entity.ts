@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator console contract
-* Descripción: Types of the generic ventilator console adapter (the props model a consumer builds from a simulator worker, a replay or a real ventilator): a frame source that streams batches of pressure/flow/volume samples, the current and applied settings, the ventilation mode, the numeric monitoring metrics keyed by console metric id, the patient vitals with a short trend, the active alarms with priority, the control permission, the parameter limits injected by the consumer, the change callbacks (optional propose while pending, confirm with the mode + parameter diff, optional cancel), the optional alarm limits with their change callback, an optional adapter-provided alarm history and the optional capabilities (maneuvers). The console never hardcodes limits or knows the data origin. Depends only on the console config ids.
-* Versión: 1.1
+* Descripción: Types of the generic ventilator console adapter (the props model a consumer builds from a simulator worker, a replay or a real ventilator): a frame source that streams batches of pressure/flow/volume samples, the current and applied settings, the ventilation mode, the numeric monitoring metrics keyed by console metric id, the patient vitals with a short trend, the active alarms with priority, the control permission, the parameter limits injected by the consumer, the change callbacks (optional propose while pending, confirm with the mode + parameter diff, optional cancel), the optional alarm limits with their change callback, an optional adapter-provided alarm history and the optional capabilities (maneuvers). The console never hardcodes limits or knows the data origin. Depends only on the console config ids. v1.2: the frame source declares an optional `sourceId` (resubscribe/clear only when it changes) and `sampleRateHz` (ring capacity), sample times are monotonic non-decreasing per source, and the adapter may provide normal `ranges` that take precedence over the console range props.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,9 +9,12 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import type { ConsoleMetricId, PatientVitalId } from "./config/console.config";
+import type { ConsoleMetricId, NormalRange, PatientVitalId } from "./config/console.config";
 
-/** One waveform sample: time in ms, pressure in cmH2O, flow in L/min, volume in mL. */
+/**
+ * One waveform sample: time in ms, pressure in cmH2O, flow in L/min, volume in mL. `tMs` is monotonic non-decreasing
+ * per source; a time that goes backwards is treated as a clock reset (the console clears the curves and starts over).
+ */
 export type ConsoleSample = {
   tMs: number
   pressure: number
@@ -23,9 +26,27 @@ export type ConsoleSampleBatch = { samples: readonly ConsoleSample[] };
 
 export type ConsoleFrameListener = (batch: ConsoleSampleBatch) => void;
 
-/** Push stream of waveform batches. The returned function unsubscribes. */
+/**
+ * Push stream of waveform batches. The returned function unsubscribes. Sample times are monotonic non-decreasing per
+ * source. The console subscribes once per data source: it resubscribes (and clears the curves) only when `sourceId`
+ * changes or, without `sourceId`, when the `subscribe` function identity changes. Keep the source stable per data
+ * origin (or give it a `sourceId`); rebuilding the adapter object every render then keeps the curves.
+ */
 export type ConsoleFrameSource = {
   subscribe: (listener: ConsoleFrameListener) => () => void
+  /** Identity of the data source (e.g. the session or replay id); a new value clears the curves and resubscribes. */
+  sourceId?: string
+  /** Samples per second of the stream (default 50); sizes the curve ring as twice the largest window. */
+  sampleRateHz?: number
+};
+
+/** Normal-range overrides keyed by value id; `null` disables the out-of-range highlight for that value. */
+export type ConsoleRangeOverrides<K extends string> = Readonly<Partial<Record<K, NormalRange | null>>>;
+
+/** Source-provided normal ranges (e.g. per clinical case); they take precedence over the console range props. */
+export type ConsoleRanges = {
+  metrics?: ConsoleRangeOverrides<ConsoleMetricId>
+  patient?: ConsoleRangeOverrides<PatientVitalId>
 };
 
 /** Parameter values keyed by the consumer's parameter id (e.g. `peep`), in the units of `limits`. */
@@ -141,4 +162,6 @@ export type VentilatorConsoleAdapter = {
   /** When provided it replaces the history the console derives from the alarm updates. */
   alarmHistory?: readonly ConsoleAlarmEvent[]
   capabilities?: ConsoleCapabilities
+  /** Normal ranges from the source; per key they override the console range props, which override the config defaults. */
+  ranges?: ConsoleRanges
 };

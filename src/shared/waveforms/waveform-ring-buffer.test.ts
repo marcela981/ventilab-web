@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: WaveformRingBuffer tests
-* Descripción: Covers the fixed-capacity Float32 ring: single and batch push, wrap-around ordering after overflow, time-window reads, sequence-based incremental reads, clear/generation and snapshot copies. Depends on Vitest only.
-* Versión: 1.0
+* Descripción: Covers the fixed-capacity Float32 ring: single and batch push, wrap-around ordering after overflow, time-window reads, sequence-based incremental reads, clear/generation, the clock reset on a backwards time (repeated times allowed) and snapshot copies. Depends on Vitest only.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -154,6 +154,29 @@ describe("WaveformRingBuffer", () => {
     const small = makeBuffer(2).createWindow();
 
     expect(() => buffer.readWindowInto(small, 0)).toThrow(RangeError);
+  });
+
+  it("treats a time that goes backwards as a clock reset: clears, bumps the generation and keeps window reads sorted", () => {
+    const buffer = makeBuffer(8);
+    pushRange(buffer, 1, 5);
+    const generation = buffer.generation;
+
+    buffer.push({ tMs: 15, values: { pressure: 100, flow: -100 } });
+    buffer.push({ tMs: 25, values: { pressure: 101, flow: -101 } });
+
+    expect(buffer.generation).toBe(generation + 1);
+    expect(buffer.writeCount).toBe(2);
+    expect(Array.from(buffer.readAll().t)).toEqual([15, 25]);
+    expect(Array.from(buffer.readWindow(20).values.pressure)).toEqual([101]);
+  });
+
+  it("accepts repeated times without a reset (non-decreasing, not strictly increasing)", () => {
+    const buffer = makeBuffer(4);
+    buffer.push({ tMs: 10, values: { pressure: 1 } });
+    buffer.push({ tMs: 10, values: { pressure: 2 } });
+
+    expect(buffer.generation).toBe(0);
+    expect(buffer.size).toBe(2);
   });
 
   it("returns copies that do not change when more data arrives", () => {

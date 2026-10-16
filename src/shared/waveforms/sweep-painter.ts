@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Sweep painter
-* Descripción: Canvas painting for SweepCanvas, outside React. Stacked lanes (one per channel) with gridlines, tick values and a label with units; sweep mode paints incrementally (only the new segment plus the erase bar ahead of the head, O(new samples)) and repaints in full on resize, reset, wrap with auto-range or catch-up; scroll mode repaints the window when new data arrives. Frozen snapshots and the measurement cursor are painted from a captured window. Colors come from CSS custom properties of the canvas. Depends on the ring buffer, waveform-geometry and use-waveform-renderer. v1.1: the chrome (background, grid, labels) is rendered once per full repaint (or range change) into an offscreen canvas and incremental frames copy only the erase spans from it, with a direct-paint fallback where no offscreen canvas exists; reads go into a reused window and the last point is copied in place, so live frames allocate no sample arrays; in sweep mode a frozen snapshot starts after the erase gap.
-* Versión: 1.1
+* Descripción: Canvas painting for SweepCanvas, outside React. Stacked lanes (one per channel) with gridlines, tick values and a label with units; sweep mode paints incrementally (only the new segment plus the erase bar ahead of the head, O(new samples)) and repaints in full on resize, reset, wrap with auto-range or catch-up; scroll mode repaints the window when new data arrives. Frozen snapshots and the measurement cursor are painted from a captured window. Colors come from CSS custom properties of the canvas. Depends on the ring buffer, waveform-geometry and use-waveform-renderer. v1.1: the chrome (background, grid, labels) is rendered once per full repaint (or range change) into an offscreen canvas and incremental frames copy only the erase spans from it, with a direct-paint fallback where no offscreen canvas exists; reads go into a reused window and the last point is copied in place, so live frames allocate no sample arrays; in sweep mode a frozen snapshot starts after the erase gap. v1.2: span copies clamp the source rectangle to the chrome layer backing store (fractional DPR rounding never reads outside it).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -181,7 +181,7 @@ function paintChromeArea<C extends string>(ctx: CanvasRenderingContext2D, scene:
 }
 
 /** Offscreen copy of the chrome (background, grid, labels) at the backing-store resolution. */
-type ChromeLayer = { canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, dpr: number };
+export type ChromeLayer = { canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, dpr: number };
 
 /** An offscreen canvas for the chrome, or null where the environment cannot provide one. */
 function createChromeLayer(frame: WaveformRenderFrame): ChromeLayer | null {
@@ -210,18 +210,30 @@ function renderChromeLayer<C extends string>(layer: ChromeLayer, frame: Waveform
   paintChromeArea(layer.ctx, scene);
 }
 
-/** Copies the chrome layer to the canvas: everything, or only the given horizontal spans. */
-function blitChrome(ctx: CanvasRenderingContext2D, layer: ChromeLayer, layout: SweepLayout, spans?: ReadonlyArray<[number, number]>): void {
+/** Copies the chrome layer to the canvas: everything, or only the given horizontal spans (exported for tests). */
+export function blitChrome(ctx: CanvasRenderingContext2D, layer: ChromeLayer, layout: SweepLayout, spans?: ReadonlyArray<[number, number]>): void {
   if (!spans) {
     ctx.drawImage(layer.canvas, 0, 0, layout.width, layout.height);
 
     return;
   }
 
+  const sourceWidth = layer.canvas.width;
+  const sourceHeight = layer.canvas.height;
+
   for (const [start, end] of spans) {
-    const width = end - start;
-    ctx.clearRect(start, 0, width, layout.height);
-    ctx.drawImage(layer.canvas, start * layer.dpr, 0, width * layer.dpr, layer.canvas.height, start, 0, width, layout.height);
+    // Fractional DPR rounding can push the scaled span past the backing store; clamp the source rectangle to it.
+    const sourceStart = Math.max(0, start * layer.dpr);
+    const sourceEnd = Math.min(sourceWidth, end * layer.dpr);
+
+    if (sourceEnd <= sourceStart || sourceHeight <= 0) {
+      continue;
+    }
+
+    const destStart = sourceStart / layer.dpr;
+    const destWidth = (sourceEnd - sourceStart) / layer.dpr;
+    ctx.clearRect(destStart, 0, destWidth, layout.height);
+    ctx.drawImage(layer.canvas, sourceStart, 0, sourceEnd - sourceStart, sourceHeight, destStart, 0, destWidth, layout.height);
   }
 }
 

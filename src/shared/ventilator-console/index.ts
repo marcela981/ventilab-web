@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator console module (public API)
-* Descripción: Public surface of the generic ventilator console (engine- and feature-agnostic): the VentilatorConsole screen and its zones (curves, numeric monitor, patient monitor), the adapter contract a consumer implements, the console-owned metric/vital/curve config and the pure format helpers (T3), plus the mode selector and pending→confirm/cancel parameter controls with their pure reducer and mode→parameter table, and the alarms bar with priority sorting, 2-minute silence, optional sound, session history and alarm limits (T4).
-* Versión: 1.1
+* Descripción: Public surface of the generic ventilator console (engine- and feature-agnostic): the VentilatorConsole screen and its zones (curves, numeric monitor, patient monitor), the adapter contract a consumer implements, the console-owned metric/vital/curve config and the pure format helpers (T3), plus the mode selector and pending→confirm/cancel parameter controls with their pure reducer and mode→parameter table, and the alarms bar with priority sorting, 2-minute silence, optional sound, session history and alarm limits (T4). v1.2: frame source `sourceId`/`sampleRateHz`, adapter `ranges` and the sample-rate based ring capacity.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,7 +15,9 @@ export {
   CONSOLE_METRIC_IDS,
   CONSOLE_METRICS,
   CONSOLE_WINDOW_SECONDS,
+  consoleBufferCapacity,
   CURVE_IDS,
+  DEFAULT_CONSOLE_SAMPLE_RATE_HZ,
   DEFAULT_CONSOLE_WINDOW_SECONDS,
   PATIENT_TREND_POINTS,
   PATIENT_VITAL_IDS,
@@ -109,6 +111,8 @@ export type {
   ConsoleParameterChange,
   ConsolePatient,
   ConsolePermissions,
+  ConsoleRangeOverrides,
+  ConsoleRanges,
   ConsoleSample,
   ConsoleSampleBatch,
   ConsoleSettings,

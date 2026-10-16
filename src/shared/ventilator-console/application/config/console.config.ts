@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator console config
-* Descripción: Console-owned static configuration of the generic ventilator console: the numeric monitoring metric ids and the patient vital ids with their Spanish labels, units, decimals and default normal ranges (used for the out-of-range highlight and overridable through props), the three curve channels with their console color tokens, the time-window options and the waveform ring capacity. It knows nothing about the simulation engine or a physical ventilator; adapters deliver values already in these units.
-* Versión: 1.0
+* Descripción: Console-owned static configuration of the generic ventilator console: the numeric monitoring metric ids and the patient vital ids with their Spanish labels, units, decimals and default normal ranges (used for the out-of-range highlight and overridable through props), the three curve channels with their console color tokens, the time-window options and the waveform ring capacity. It knows nothing about the simulation engine or a physical ventilator; adapters deliver values already in these units. v1.1: the ring capacity is computed from the frame source sample rate (default 50 Hz) as twice the largest window; the default normal ranges are teaching defaults that adapters or consumers override (`null` disables the highlight).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -42,7 +42,10 @@ export const CONSOLE_METRIC_IDS = [
 
 export type ConsoleMetricId = (typeof CONSOLE_METRIC_IDS)[number];
 
-/** Teaching defaults for an adult on lung-protective ventilation; consumers override them per case. */
+/**
+ * Teaching defaults for an adult on lung-protective ventilation, a deliberate front-end exception (no backend source):
+ * the adapter (`ranges`) or the consumer (`metricRanges` / `patientRanges`) overrides them per case; `null` disables the highlight.
+ */
 export const CONSOLE_METRICS: Readonly<Record<ConsoleMetricId, ValueDefinition>> = {
   peakPressure: { label: "Ppico", description: "Presión pico", unit: "cmH2O", decimals: 0, format: "number", normalRange: { max: 35 } },
   plateauPressure: { label: "Pplat", description: "Presión meseta", unit: "cmH2O", decimals: 0, format: "number", normalRange: { max: 30 } },
@@ -86,8 +89,21 @@ export const CONSOLE_WINDOW_SECONDS = [5, 10, 20, 30] as const;
 
 export const DEFAULT_CONSOLE_WINDOW_SECONDS = 10;
 
-/** 60 s at 50 Hz: twice the largest window, so a frozen loop or a scroll window never runs out. */
-export const CONSOLE_BUFFER_CAPACITY = 3_000;
+/** Sample rate assumed when the frame source does not declare `sampleRateHz` (the simulation worker streams 50 Hz). */
+export const DEFAULT_CONSOLE_SAMPLE_RATE_HZ = 50;
+
+/**
+ * Ring capacity for a sample rate: twice the largest window, so a frozen loop or a scroll window never runs out.
+ * A missing, non-finite or non-positive rate falls back to the default rate.
+ */
+export function consoleBufferCapacity(sampleRateHz: number | undefined): number {
+  const rate = sampleRateHz !== undefined && Number.isFinite(sampleRateHz) && sampleRateHz > 0 ? sampleRateHz : DEFAULT_CONSOLE_SAMPLE_RATE_HZ;
+
+  return Math.ceil(rate * Math.max(...CONSOLE_WINDOW_SECONDS) * 2);
+}
+
+/** Capacity at the default rate (60 s at 50 Hz = 3000 samples). */
+export const CONSOLE_BUFFER_CAPACITY = consoleBufferCapacity(DEFAULT_CONSOLE_SAMPLE_RATE_HZ);
 
 /** How many trend points a patient sparkline keeps when the adapter sends more. */
 export const PATIENT_TREND_POINTS = 60;
