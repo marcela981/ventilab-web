@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AiChatProvider
-* Descripción: Global state of the AI assistant drawer, mounted once in pages/_app.js above the pages so it survives navigation: whether the drawer is open, the conversation of its free chat (null = a new chat; set by onConversationCreated after the first send) and a panel key that remounts the chat panel for "Nueva conversación". The drawer (ChatPanel, markdown, KaTeX) is loaded through React.lazy + retryImport only when it is first opened and stays mounted afterwards, so the state of the chat persists across closes; it only renders for an authenticated backend session, and the state resets when the session user changes. On the /assistant routes (the full-page chat) the drawer closes and its panel remounts, so a later open reloads the conversation from the server instead of showing a stale thread. This module stays tiny for the app shell bundle: no markdown, KaTeX or ChatPanel import at module level. Depends on React, next/router, @shared/session, @shared/lib/retry-import and the AI chat routes (ASSISTANT_URL).
-* Versión: 1.0
+* Descripción: Global state of the AI assistant drawer, mounted once in pages/_app.js above the pages so it survives navigation: whether the drawer is open, the conversation of its free chat (null = a new chat; set by onConversationCreated after the first send) and a panel key that remounts the chat panel for "Nueva conversación". The drawer (ChatPanel, markdown, KaTeX) is loaded through React.lazy + retryImport only when it is first opened and stays mounted afterwards, so the state of the chat persists across closes; it only renders for an authenticated backend session, and the state resets when the session user changes. On the /assistant routes (the full-page chat) the drawer closes and its panel remounts, so a later open reloads the conversation from the server instead of showing a stale thread. v1.1 (A3 review R3-drawer-load-failure-silent): if the drawer chunk fails to import or the drawer throws while rendering, the provider closes and unmounts it (the launcher's aria-expanded/aria-controls stay truthful), shows the "No se pudo abrir el asistente. Inténtalo de nuevo." error toast of the shared ToastProvider (when present) and creates a new lazy component, so the next click retries the load. This module stays tiny for the app shell bundle: no markdown, KaTeX or ChatPanel import at module level. Depends on React, next/router, @shared/session, the design-system toast context, @shared/lib/retry-import and the AI chat routes (ASSISTANT_URL).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,7 +11,8 @@
 
 import { useRouter } from "next/router";
 import { Component, createContext, lazy, Suspense, useCallback, useContext, useMemo, useState } from "react";
-import type { ReactNode } from "react";
+import type { ComponentType, LazyExoticComponent, ReactNode } from "react";
+import { ToastContext } from "@shared/design-system/components/use-toast";
 import { retryImport } from "@shared/lib/retry-import";
 import { useSession } from "@shared/session/use-session";
 import { ASSISTANT_URL } from "../config/ai-chat.routes";
@@ -42,24 +43,30 @@ export function useAiChat(): AiChatContextValue | null {
   return useContext(AiChatContext);
 }
 
-function NoDrawer() {
-  return null;
+// TODO(i18n): move to an ai-chat namespace in src/i18n.
+export const AI_CHAT_LOAD_ERROR = "No se pudo abrir el asistente. Inténtalo de nuevo.";
+
+type LazyDrawer = LazyExoticComponent<ComponentType>;
+
+// React.lazy caches its result (also a rejection), so every retry after a failure needs a new lazy component.
+function createLazyDrawer(): LazyDrawer {
+  return lazy(() => retryImport(() => import("./ai-chat-drawer")).then((module) => ({ default: module.AiChatDrawer })));
 }
 
-const LazyAiChatDrawer = lazy(() =>
-  retryImport(() => import("./ai-chat-drawer"))
-    .then((module) => ({ default: module.AiChatDrawer }))
-    .catch(() => ({ default: NoDrawer })),
-);
-
+type DrawerBoundaryProps = { children: ReactNode, onError: () => void };
 type DrawerBoundaryState = { failed: boolean };
 
-// The drawer is optional chrome: a render failure inside it must never break the page.
-class DrawerErrorBoundary extends Component<{ children: ReactNode }, DrawerBoundaryState> {
+// The drawer is optional chrome: an import or render failure inside it must never break the page. It reports the
+// failure so the provider closes the drawer; the boundary unmounts with it, so the next open starts clean.
+class DrawerErrorBoundary extends Component<DrawerBoundaryProps, DrawerBoundaryState> {
   override state: DrawerBoundaryState = { failed: false };
 
   static getDerivedStateFromError(): DrawerBoundaryState {
     return { failed: true };
+  }
+
+  override componentDidCatch() {
+    this.props.onError();
   }
 
   override render() {
@@ -93,6 +100,9 @@ export function AiChatProvider({ children }: AiChatProviderProps) {
   const [ownerId, setOwnerId] = useState<string | null>(userId);
   const isAssistantRoute = isAssistantPath(router.pathname);
   const [wasAssistantRoute, setWasAssistantRoute] = useState(isAssistantRoute);
+  const [Drawer, setDrawer] = useState<LazyDrawer>(() => createLazyDrawer());
+  // Optional: without a ToastProvider the failure only closes the drawer.
+  const toast = useContext(ToastContext);
 
   // Another user (or none) took the session: the previous chat must not leak (state update during render).
   if (ownerId !== userId) {
@@ -119,6 +129,14 @@ export function AiChatProvider({ children }: AiChatProviderProps) {
     setState((current) => ({ ...current, conversationId: null, panelKey: current.panelKey + 1 }));
   }, []);
 
+  // The drawer chunk failed to load or the drawer failed to render: close it (truthful launcher aria state),
+  // unmount it, say so, and prepare a new lazy component so the next open retries.
+  const handleDrawerFailure = useCallback(() => {
+    setState((current) => ({ ...current, open: false, loaded: false }));
+    setDrawer(() => createLazyDrawer());
+    toast?.error(AI_CHAT_LOAD_ERROR);
+  }, [toast]);
+
   const drawerMounted = authenticated && state.loaded;
   const value = useMemo<AiChatContextValue>(() => ({
     open: authenticated && state.open,
@@ -136,9 +154,9 @@ export function AiChatProvider({ children }: AiChatProviderProps) {
     <AiChatContext.Provider value={value}>
       {children}
       {drawerMounted ? (
-        <DrawerErrorBoundary>
+        <DrawerErrorBoundary onError={handleDrawerFailure}>
           <Suspense fallback={null}>
-            <LazyAiChatDrawer />
+            <Drawer />
           </Suspense>
         </DrawerErrorBoundary>
       ) : null}
