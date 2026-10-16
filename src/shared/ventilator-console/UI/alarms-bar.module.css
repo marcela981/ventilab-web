@@ -1,0 +1,202 @@
+/*
+* Funcionalidad: Alarms bar styles
+* Descripción: Styles of the ventilator console alarms bar on the dark console surface: active alarms with the priority fill tokens (high/medium/low) plus icon and text, the silence/sound/history/limits action buttons, and the history and alarm limits disclosure panels. Console and design-system tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-2) var(--vl-space-3);
+  color: var(--vl-console-text);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2) var(--vl-space-4);
+}
+
+.list {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.none {
+  flex: 1 1 auto;
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-console-text-muted);
+}
+
+.alarm {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+  padding: var(--vl-space-1) var(--vl-space-2);
+  font: var(--mui-font-body2);
+  border-radius: var(--vl-radius-md);
+}
+
+.alarm[data-priority="high"] {
+  color: var(--vl-console-on-alarm-high);
+  background: var(--vl-console-alarm-high);
+}
+
+.alarm[data-priority="medium"] {
+  color: var(--vl-console-on-alarm-medium);
+  background: var(--vl-console-alarm-medium);
+}
+
+.alarm[data-priority="low"] {
+  color: var(--vl-console-on-alarm-low);
+  background: var(--vl-console-alarm-low);
+}
+
+.icon {
+  font-size: var(--vl-space-4);
+}
+
+.priority {
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-1);
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+  min-height: var(--vl-space-6);
+  padding: 0 var(--vl-space-2);
+  font: var(--mui-font-button);
+  color: var(--vl-console-text);
+  background: transparent;
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+  cursor: pointer;
+}
+
+.action[aria-pressed="true"],
+.action[aria-expanded="true"] {
+  background: var(--vl-console-pending-bg);
+  border-color: var(--vl-console-pending);
+}
+
+.action:disabled {
+  color: var(--vl-console-text-muted);
+  cursor: not-allowed;
+}
+
+.primary:not(:disabled) {
+  color: var(--vl-console-bg);
+  background: var(--vl-console-pending);
+  border-color: var(--vl-console-pending);
+}
+
+.action:focus-visible,
+.limitInput:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-console-focus-ring);
+  outline-offset: var(--vl-focus-ring-width);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-2);
+  background: var(--vl-console-surface-raised);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.panelTitle {
+  margin: 0;
+  font: var(--mui-font-subtitle2);
+}
+
+.hint {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.history,
+.limitList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  max-height: calc(var(--vl-space-8) * 5);
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.event,
+.limitRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+  font: var(--mui-font-body2);
+}
+
+.event[data-kind="clear"] {
+  color: var(--vl-console-text-muted);
+}
+
+.time {
+  font-variant-numeric: tabular-nums;
+}
+
+.kind {
+  min-width: calc(var(--vl-space-8) * 1.25);
+}
+
+.limitLabel {
+  min-width: calc(var(--vl-space-8) * 3);
+}
+
+.limitInput,
+.limitValue {
+  width: calc(var(--vl-space-8) * 2);
+  padding: var(--vl-space-1);
+  font: var(--mui-font-body2);
+  color: var(--vl-console-text);
+  background: var(--vl-console-bg);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-sm);
+}
+
+.limitRow[data-pending="true"] .limitInput {
+  border-color: var(--vl-console-pending);
+}
+
+.limitRange {
+  color: var(--vl-console-text-muted);
+}
+
+.panelActions {
+  display: flex;
+  gap: var(--vl-space-2);
+}

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator console contract
-* Descripción: Types of the generic ventilator console adapter (the props model a consumer builds from a simulator worker, a replay or a real ventilator): a frame source that streams batches of pressure/flow/volume samples, the current and applied settings, the ventilation mode, the numeric monitoring metrics keyed by console metric id, the patient vitals with a short trend, the active alarms with priority, the control permission, the parameter limits injected by the consumer and the change callbacks (propose, confirm, cancel; used by the controls in T4). The console never hardcodes limits or knows the data origin. Depends only on the console config ids.
-* Versión: 1.0
+* Descripción: Types of the generic ventilator console adapter (the props model a consumer builds from a simulator worker, a replay or a real ventilator): a frame source that streams batches of pressure/flow/volume samples, the current and applied settings, the ventilation mode, the numeric monitoring metrics keyed by console metric id, the patient vitals with a short trend, the active alarms with priority, the control permission, the parameter limits injected by the consumer, the change callbacks (optional propose while pending, confirm with the mode + parameter diff, optional cancel), the optional alarm limits with their change callback, an optional adapter-provided alarm history and the optional capabilities (maneuvers). The console never hardcodes limits or knows the data origin. Depends only on the console config ids.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -85,6 +85,42 @@ export type ConsoleParameterChange = {
   value: number
 };
 
+/** What CONFIRMAR (or "Aplicar" in configure mode) emits: the pending mode (`null` = unchanged) and the changed parameters. */
+export type ConsoleConfirmation = {
+  mode: string | null
+  changes: readonly ConsoleParameterChange[]
+};
+
+export type ConsoleAlarmEventKind = "onset" | "clear";
+
+/** One entry of the session alarm history; `atMs` is in the console clock (wall ms) unless the adapter provides the history. */
+export type ConsoleAlarmEvent = {
+  id: string
+  alarmId: string
+  type: string
+  priority: ConsoleAlarmPriority
+  message: string
+  kind: ConsoleAlarmEventKind
+  atMs: number
+};
+
+/** One adjustable alarm threshold, with its own bounds supplied by the consumer. */
+export type ConsoleAlarmLimit = ParameterLimit & {
+  id: string
+  label: string
+  value: number
+};
+
+export type ConsoleAlarmLimitChange = { id: string, value: number };
+
+export type ConsoleCapabilities = {
+  /**
+   * The source supports hold maneuvers (inspiratory/expiratory pause). Only then does the console render its optional
+   * `maneuversSlot`. The simulation engine has none, so the simulator adapter leaves it unset and no hold buttons appear.
+   */
+  maneuvers?: boolean
+};
+
 export type VentilatorConsoleAdapter = {
   frames: ConsoleFrameSource
   settings: ConsoleSettings
@@ -94,7 +130,15 @@ export type VentilatorConsoleAdapter = {
   alarms: readonly ConsoleAlarm[]
   permissions: ConsolePermissions
   limits: ConsoleLimits
-  onProposeChange: (change: ConsoleParameterChange) => void
-  onConfirm: () => void
-  onCancel: () => void
+  /** Optional preview of a pending (unconfirmed) value; never a change to apply. */
+  onProposeChange?: (change: ConsoleParameterChange) => void
+  /** The only callback that applies a change; called once per CONFIRMAR. */
+  onConfirm: (confirmation: ConsoleConfirmation) => void
+  onCancel?: () => void
+  /** Without limits the alarm limits panel is hidden; without the callback it is read-only. */
+  alarmLimits?: readonly ConsoleAlarmLimit[]
+  onAlarmLimitsChange?: (changes: readonly ConsoleAlarmLimitChange[]) => void
+  /** When provided it replaces the history the console derives from the alarm updates. */
+  alarmHistory?: readonly ConsoleAlarmEvent[]
+  capabilities?: ConsoleCapabilities
 };

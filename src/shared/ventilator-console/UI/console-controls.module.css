@@ -1,0 +1,192 @@
+/*
+* Funcionalidad: Console controls styles
+* Descripción: Styles of the ventilator console mode selector, parameter controls and confirm bar on the dark console surface: pressed mode buttons, parameter rows with the value, the +/- stepper, the pending highlight (pending token + "Pendiente" text), the selected outline, the limit range and the CONFIRMAR/CANCELAR bar. Console and design-system tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  color: var(--vl-console-text);
+}
+
+.modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-1);
+}
+
+.mode,
+.step,
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vl-space-1);
+  min-height: var(--vl-space-6);
+  padding: 0 var(--vl-space-2);
+  font: var(--mui-font-button);
+  color: var(--vl-console-text);
+  background: transparent;
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+  cursor: pointer;
+}
+
+.mode[aria-pressed="true"] {
+  background: var(--vl-console-surface-raised);
+  border-color: var(--vl-console-text-muted);
+}
+
+.mode[data-pending="true"] {
+  background: var(--vl-console-pending-bg);
+  border-color: var(--vl-console-pending);
+}
+
+.mode:disabled,
+.step:disabled,
+.action:disabled {
+  color: var(--vl-console-text-muted);
+  cursor: not-allowed;
+}
+
+.mode:focus-visible,
+.step:focus-visible,
+.action:focus-visible,
+.value:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-console-focus-ring);
+  outline-offset: var(--vl-focus-ring-width);
+}
+
+.parameters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.parameter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "value stepper"
+    "meta meta";
+  gap: var(--vl-space-1) var(--vl-space-2);
+  padding: var(--vl-space-2);
+  background: var(--vl-console-surface-raised);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.parameter[data-selected="true"] {
+  border-color: var(--vl-console-text-muted);
+}
+
+.parameter[data-pending="true"] {
+  background: var(--vl-console-pending-bg);
+  border-color: var(--vl-console-pending);
+}
+
+.value {
+  grid-area: value;
+  display: flex;
+  align-items: baseline;
+  gap: var(--vl-space-2);
+  min-width: 0;
+  border-radius: var(--vl-radius-sm);
+  cursor: ns-resize;
+}
+
+.value[aria-disabled="true"] {
+  cursor: default;
+}
+
+.label {
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.number {
+  font: var(--mui-font-h6);
+  font-variant-numeric: tabular-nums;
+}
+
+.parameter[data-pending="true"] .number {
+  color: var(--vl-console-pending);
+}
+
+.unit {
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.stepper {
+  grid-area: stepper;
+  display: inline-flex;
+  gap: var(--vl-space-1);
+}
+
+.step {
+  min-width: var(--vl-space-6);
+  padding: 0;
+}
+
+.meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.pendingTag {
+  padding: 0 var(--vl-space-1);
+  font: var(--mui-font-caption);
+  color: var(--vl-console-pending);
+  border: 1px solid var(--vl-console-pending);
+  border-radius: var(--vl-radius-pill);
+}
+
+.range {
+  margin-left: auto;
+}
+
+.hint,
+.status {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.confirmBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+  padding-top: var(--vl-space-2);
+  border-top: 1px solid var(--vl-console-border);
+}
+
+.status {
+  flex: 1 1 100%;
+}
+
+.action {
+  flex: 1 1 0;
+}
+
+.primary:not(:disabled) {
+  color: var(--vl-console-bg);
+  background: var(--vl-console-pending);
+  border-color: var(--vl-console-pending);
+}

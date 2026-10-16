@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentilatorConsole
-* Descripción: Generic ventilator console screen composed from an adapter (it does not know whether data comes from the simulator, a replay or a real ventilator): header with the current mode and a read-only badge, an alarms slot across the top, numeric monitoring in the left column, the curves zone (and the patient monitor below it) in the centre and the mode/controls slots on the right, like a bedside ventilator. Slots accept a node or a render function that receives the adapter and the read-only flag (used by the T4 controls and alarms bar). Uses the dark console surface tokens; below 1024 px the zones stack and a Spanish notice recommends a horizontal tablet or a computer. Depends on React, the console zones, useConsoleWaveforms and the console layout styles.
-* Versión: 1.0
+* Descripción: Generic ventilator console screen composed from an adapter (it does not know whether data comes from the simulator, a replay or a real ventilator): header with the current mode and a read-only badge, an alarms slot across the top, numeric monitoring in the left column, the curves zone (and the patient monitor below it) in the centre and the mode/controls slots on the right, like a bedside ventilator. Slots accept a node or a render function that receives the adapter and the read-only flag; an omitted alarms slot renders the AlarmsBar and an omitted controls slot renders ConsoleControls (mode selector + pending→confirm parameters) from the adapter, while `null` hides them. An optional maneuvers slot renders only when the adapter declares the maneuvers capability. `variant` switches the controls between a running ventilator ("Confirmar") and the case editor configuration ("Aplicar"). Uses the dark console surface tokens; below 1024 px the zones stack and a Spanish notice recommends a horizontal tablet or a computer. Depends on React, the console zones, the controls and alarms bar, useConsoleWaveforms and the console layout styles.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,7 +12,12 @@
 import type { ReactNode } from "react";
 import { cx } from "@shared/lib/class-names";
 import type { ConsoleMetricId, PatientVitalId } from "./config/console.config";
+import type { ModeParameterTable } from "./config/console-controls.config";
+import { AlarmsBar } from "./alarms-bar";
+import { ConsoleControls } from "./console-controls";
+import type { ConsoleVariant } from "./console-controls";
 import type { RangeOverrides } from "./console-format";
+import type { AlarmBeeperFactory, ConsoleClock } from "./use-console-alarms";
 import { CurvesZone } from "./curves-zone";
 import { NumericMonitor } from "./numeric-monitor";
 import { PatientMonitor } from "./patient-monitor";
@@ -43,14 +48,32 @@ export type VentilatorConsoleProps = {
   patientRanges?: RangeOverrides<PatientVitalId>
   /** Optional heading content, e.g. the case name and PBW. */
   header?: ReactNode
+  /** Omitted: the built-in AlarmsBar; `null`: no alarms bar. */
   alarmsSlot?: ConsoleSlot
   modeSlot?: ConsoleSlot
+  /** Omitted: the built-in ConsoleControls (mode selector included); `null`: no controls. */
   controlsSlot?: ConsoleSlot
+  /**
+   * Hold maneuvers (inspiratory/expiratory pause). Rendered only when `adapter.capabilities.maneuvers` is true. The
+   * simulation engine has no pause maneuvers, so the simulator never declares it and the console shows no hold buttons;
+   * the console implements none itself.
+   */
+  maneuversSlot?: ConsoleSlot
+  variant?: ConsoleVariant
+  /** Mode → parameter applicability override for the built-in controls (e.g. SIMV with pressure mandatory breaths). */
+  applicability?: ModeParameterTable
+  /** Injectable clock and beeper for the built-in alarms bar (tests, replay). */
+  clock?: ConsoleClock
+  beeperFactory?: AlarmBeeperFactory
   className?: string
 };
 
 function renderSlot(slot: ConsoleSlot | undefined, context: ConsoleSlotContext): ReactNode {
   return typeof slot === "function" ? slot(context) : slot;
+}
+
+function renderSlotOr(slot: ConsoleSlot | undefined, context: ConsoleSlotContext, fallback: () => ReactNode): ReactNode {
+  return slot === undefined ? fallback() : renderSlot(slot, context);
 }
 
 export function VentilatorConsole({
@@ -61,15 +84,43 @@ export function VentilatorConsole({
   alarmsSlot,
   modeSlot,
   controlsSlot,
+  maneuversSlot,
+  variant = "live",
+  applicability,
+  clock,
+  beeperFactory,
   className,
 }: VentilatorConsoleProps) {
   const buffer = useConsoleWaveforms(adapter.frames);
   const readOnly = !adapter.permissions.canControl;
   const context: ConsoleSlotContext = { adapter, readOnly };
   const modeLabel = adapter.mode.options.find((option) => option.id === adapter.mode.current)?.label ?? adapter.mode.current;
-  const alarms = renderSlot(alarmsSlot, context);
+  const alarms = renderSlotOr(alarmsSlot, context, () => (
+    <AlarmsBar
+      alarms={adapter.alarms}
+      history={adapter.alarmHistory}
+      limits={adapter.alarmLimits}
+      onLimitsChange={adapter.onAlarmLimitsChange}
+      readOnly={readOnly}
+      clock={clock}
+      beeperFactory={beeperFactory}
+    />
+  ));
   const mode = renderSlot(modeSlot, context);
-  const controls = renderSlot(controlsSlot, context);
+  const controls = renderSlotOr(controlsSlot, context, () => (
+    <ConsoleControls
+      settings={adapter.settings}
+      mode={adapter.mode}
+      limits={adapter.limits}
+      readOnly={readOnly}
+      variant={variant}
+      onConfirm={adapter.onConfirm}
+      onCancel={adapter.onCancel}
+      onProposeChange={adapter.onProposeChange}
+      {...(applicability ? { applicability } : {})}
+    />
+  ));
+  const maneuvers = adapter.capabilities?.maneuvers === true ? renderSlot(maneuversSlot, context) : null;
 
   return (
     <section className={cx(styles.console, className)} aria-label={CONSOLE_COPY.label} data-readonly={readOnly}>
@@ -88,10 +139,11 @@ export function VentilatorConsole({
         <CurvesZone buffer={buffer} />
         <PatientMonitor patient={adapter.patient} ranges={patientRanges} />
       </div>
-      {mode || controls ? (
+      {mode || controls || maneuvers ? (
         <aside className={cx(styles.controls)} aria-label={CONSOLE_COPY.controls}>
           {mode}
           {controls}
+          {maneuvers}
         </aside>
       ) : null}
     </section>

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentilatorConsole tests
-* Descripción: Renders the generic console from a fake adapter in jsdom (no 2D context): the curves, numeric monitoring and patient zones, "—" for metrics the source does not provide, out-of-range highlight with icon text and range overrides, only the vitals the adapter provides with their sparkline, the curves toolbar (window, loop toggle, freeze with the measurement cursor), frame batches pushed into the ring buffer, unsubscribe on unmount, and the read-only flag passed to the slots. Depends on Vitest and Testing Library.
-* Versión: 1.0
+* Descripción: Renders the generic console from a fake adapter in jsdom (no 2D context): the curves, numeric monitoring and patient zones, "—" for metrics the source does not provide, out-of-range highlight with icon text and range overrides, only the vitals the adapter provides with their sparkline, the curves toolbar (window, loop toggle, freeze with the measurement cursor), frame batches pushed into the ring buffer, unsubscribe on unmount, the read-only flag passed to the slots, the built-in alarms bar and controls for omitted slots (hidden with null) and the maneuvers slot gated by the adapter capability. Depends on Vitest and Testing Library.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -79,8 +79,35 @@ describe("VentilatorConsole", () => {
     expect(within(consoleRegion).getByRole("region", { name: "Monitorización" })).toBeInTheDocument();
     expect(within(consoleRegion).getByRole("region", { name: "Paciente" })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Curvas de presión, flujo y volumen" })).toBeInTheDocument();
-    expect(screen.getByText("Volumen control (VCV)")).toBeInTheDocument();
+    expect(screen.getByText("Modo").parentElement).toHaveTextContent("Volumen control (VCV)");
     expect(screen.getByRole("note")).toHaveTextContent("tablet en horizontal");
+  });
+
+  it("renders the built-in alarms bar and controls when the slots are omitted, and hides them with null", () => {
+    const { adapter } = makeAdapter();
+    const { rerender } = render(<VentilatorConsole adapter={adapter} />);
+    const controls = screen.getByRole("complementary", { name: "Controles" });
+
+    expect(screen.getByRole("region", { name: "Alarmas" })).toBeInTheDocument();
+    expect(within(controls).getByRole("group", { name: "Modo ventilatorio" })).toBeInTheDocument();
+    fireEvent.click(within(controls).getByRole("button", { name: "Aumentar PEEP" }));
+    fireEvent.click(within(controls).getByRole("button", { name: "Confirmar" }));
+    expect(adapter.onConfirm).toHaveBeenCalledWith({ mode: null, changes: [{ parameter: "peep", value: 6 }] });
+
+    rerender(<VentilatorConsole adapter={adapter} alarmsSlot={null} controlsSlot={null} />);
+    expect(screen.queryByRole("region", { name: "Alarmas" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("complementary", { name: "Controles" })).not.toBeInTheDocument();
+  });
+
+  it("renders the maneuvers slot only when the adapter declares the capability", () => {
+    const maneuvers = <p>maniobras</p>;
+    const { adapter } = makeAdapter();
+    const { rerender } = render(<VentilatorConsole adapter={adapter} maneuversSlot={maneuvers} />);
+
+    expect(screen.queryByText("maniobras")).not.toBeInTheDocument();
+
+    rerender(<VentilatorConsole adapter={{ ...adapter, capabilities: { maneuvers: true } }} maneuversSlot={maneuvers} />);
+    expect(screen.getByText("maniobras")).toBeInTheDocument();
   });
 
   it("shows every metric with its unit and a dash for the ones the source does not provide", () => {

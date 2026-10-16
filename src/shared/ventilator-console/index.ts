@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator console module (public API)
-* Descripción: Public surface of the generic ventilator console (engine- and feature-agnostic): the VentilatorConsole screen and its zones (curves, numeric monitor, patient monitor), the adapter contract a consumer implements, the console-owned metric/vital/curve config and the pure format helpers. T3 part 1; the mode selector, pending→confirm controls and alarms bar arrive in T4 through the console slots.
-* Versión: 1.0
+* Descripción: Public surface of the generic ventilator console (engine- and feature-agnostic): the VentilatorConsole screen and its zones (curves, numeric monitor, patient monitor), the adapter contract a consumer implements, the console-owned metric/vital/curve config and the pure format helpers (T3), plus the mode selector and pending→confirm/cancel parameter controls with their pure reducer and mode→parameter table, and the alarms bar with priority sorting, 2-minute silence, optional sound, session history and alarm limits (T4).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -31,6 +31,47 @@ export type {
   ValueFormat,
 } from "./application/config/console.config";
 export {
+  ALARM_HISTORY_MAX_EVENTS,
+  ALARM_PRIORITY_COPY,
+  ALARM_PRIORITY_ORDER,
+  ALARM_SILENCE_MS,
+  CONSOLE_PARAMETER_IDS,
+  CONSOLE_PARAMETERS,
+  DEFAULT_ALARM_PRIORITIES,
+  getParametersForMode,
+  MODE_PARAMETERS,
+  resolveAlarmPriority,
+} from "./application/config/console-controls.config";
+export type {
+  ConsoleParameterDefinition,
+  ConsoleParameterId,
+  ModeParameterTable,
+} from "./application/config/console-controls.config";
+export { ALARM_LIMITS_COPY, AlarmLimitsPanel } from "./application/alarm-limits-panel";
+export type { AlarmLimitsPanelProps } from "./application/alarm-limits-panel";
+export { ALARMS_COPY, AlarmsBar } from "./application/alarms-bar";
+export type { AlarmsBarProps } from "./application/alarms-bar";
+export { diffAlarms, formatCountdown, formatEventTime, sortAlarms } from "./application/console-alarms";
+export { CONTROLS_COPY, ConsoleControls } from "./application/console-controls";
+export type { ConsoleControlsProps, ConsoleVariant } from "./application/console-controls";
+export {
+  buildConfirmation,
+  clampToLimit,
+  controlsReducer,
+  INITIAL_CONTROLS_STATE,
+  keyToAdjustment,
+  stepDecimals,
+} from "./application/console-controls.reducer";
+export type { Adjustment, ControlsAction, ControlsState } from "./application/console-controls.reducer";
+export {
+  createWebAudioBeeper,
+  SYSTEM_CLOCK,
+  useAlarmHistory,
+  useAlarmSilence,
+  useAlarmSound,
+} from "./application/use-console-alarms";
+export type { AlarmBeeper, AlarmBeeperFactory, AlarmSilence, AlarmSound, ConsoleClock } from "./application/use-console-alarms";
+export {
   evaluateRange,
   formatConsoleValue,
   MISSING_VALUE,
@@ -52,7 +93,13 @@ export { CONSOLE_COPY, VentilatorConsole } from "./application/ventilator-consol
 export type { ConsoleSlot, ConsoleSlotContext, VentilatorConsoleProps } from "./application/ventilator-console";
 export type {
   ConsoleAlarm,
+  ConsoleAlarmEvent,
+  ConsoleAlarmEventKind,
+  ConsoleAlarmLimit,
+  ConsoleAlarmLimitChange,
   ConsoleAlarmPriority,
+  ConsoleCapabilities,
+  ConsoleConfirmation,
   ConsoleFrameListener,
   ConsoleFrameSource,
   ConsoleLimits,
