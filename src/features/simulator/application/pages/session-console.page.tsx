@@ -20,7 +20,12 @@
 *   the worker or sends events. "Recargar sesión" first settles the old event queue (the new boot reads a settled
 *   outbox) and, after TIME_AHEAD_REFUSALS_BEFORE_NO_FAST_FORWARD consecutive time-ahead refusals, rebuilds without
 *   fast-forward, so it cannot loop. The assist answers live in the page, so they survive a resync.
-* Versión: 1.3
+*   v1.4 (T9 EXAM flow): an EXAM session shows a countdown to the attempt deadline on the server clock (offset stored
+*   by the exam slot); at the deadline it stops stepping, flushes the pending events within DEADLINE_FLUSH_TIMEOUT_MS,
+*   posts /end and returns to the exam attempt (also when the end fails). "Finalizar sesión" in EXAM returns to the
+*   exam the same way (record exam context, else the exam return record, else the evaluations list); `onEnded` still
+*   overrides it. The assistance policy comes from the host prop or the record exam context (unknown = fail safe).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -41,15 +46,20 @@ import { CasePanel } from "../components/case-panel";
 import { DivergenceDialog } from "../components/divergence-dialog";
 import { TimeControls } from "../components/time-controls";
 import { EVENT_PENDING_WARNING_COUNT, TIME_AHEAD_REFUSALS_BEFORE_NO_FAST_FORWARD } from "../config/sim-console.config";
+import { DEADLINE_FLUSH_TIMEOUT_MS, DEADLINE_WARNING_MS } from "../config/sim-exam.config";
 import { simulationModeLabel } from "../entities/simulator.entity";
 import type { AssistancePolicyValue, AssistTurn } from "../entities/sim-assist.entity";
+import { formatCountdown } from "../entities/sim-exam.entity";
 import { checkEngineVersion } from "../entities/sim-session.entity";
-import type { SessionBoot } from "../entities/sim-session.entity";
+import type { SessionBoot, SessionRecord } from "../entities/sim-session.entity";
 import type { SimulationMode } from "../config/simulator.config";
-import { buildSessionResultUrl, SIMULATOR_URL } from "../config/simulator.routes";
+import { buildExamAttemptUrl, buildSessionResultUrl, EVALUATIONS_LIST_URL, SIMULATOR_URL } from "../config/simulator.routes";
+import { useExamDeadline } from "../hooks/use-exam-deadline";
 import { useSessionBootstrap } from "../hooks/use-session-bootstrap";
 import { useSimSession } from "../hooks/use-sim-session";
 import type { DivergenceCause, SimSessionDeps } from "../hooks/use-sim-session";
+import { examReturnStore } from "../session/exam-return-store";
+import type { ExamReturnStore } from "../session/exam-return-store";
 import type { BootstrapDeps } from "../session/session-bootstrap";
 import { sessionTabClaimer } from "../session/session-tab-claim";
 import type { TabClaimResult } from "../session/session-tab-claim";
@@ -79,6 +89,8 @@ export const SESSION_PAGE_COPY = {
   otherTab: "Esta sesión ya está abierta en otra pestaña",
   otherTabHint: "Continúa en la otra pestaña. Esta queda en solo lectura: no ejecuta la simulación ni envía cambios.",
   claiming: "Comprobando si la sesión está abierta en otra pestaña…",
+  examTimeLeft: "Tiempo restante del examen",
+  deadlineReached: "Se alcanzó la fecha límite del examen. Guardando la parte práctica y volviendo al examen…",
 } as const;
 
 type ClaimFn = (sessionId: string) => Promise<TabClaimResult>;
@@ -153,12 +165,15 @@ export type SessionConsolePageProps = {
     session?: SimSessionDeps | undefined
     /** One-tab claim of the session (default: Web Locks with a BroadcastChannel fallback). */
     claimTab?: ClaimFn | undefined
+    /** Exam return record fallback of an EXAM session without its exam context. */
+    examReturn?: ExamReturnStore | undefined
   } | undefined
 };
 
 type RunningProps = Omit<SessionConsolePageProps, "deps"> & {
   boot: SessionBoot
   sessionDeps?: SimSessionDeps | undefined
+  examReturn?: ExamReturnStore | undefined
   /** Rebuilds the session from the server (divergence), after the old queue settled. */
   onResync: (cause: DivergenceCause | null) => void
   assistHistory: readonly AssistTurn[]
@@ -180,19 +195,84 @@ function PendingEventsIndicator({ count }: { count: number }) {
   );
 }
 
-function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnded, sessionDeps, onResync, assistHistory, onAssistAnswered }: RunningProps) {
+/** Where an ended EXAM session returns: the attempt of its exam context, of the exam return record, or the list. */
+export function examReturnUrlOf(record: SessionRecord, store: ExamReturnStore): string {
+  if (record.exam) {
+    return record.exam.returnUrl;
+  }
+
+  const recorded = store.read(record.id);
+
+  return recorded ? buildExamAttemptUrl(recorded.evaluationId, recorded.attemptId) : EVALUATIONS_LIST_URL;
+}
+
+function ExamCountdown({ remainingMs }: { remainingMs: number | null }) {
+  if (remainingMs === null) {
+    return null;
+  }
+
+  return (
+    <p className={cx(styles.countdown)} data-tone={remainingMs <= DEADLINE_WARNING_MS ? "warning" : "info"} role="timer">
+      <span className={cx(styles.clockLabel)}>{SESSION_PAGE_COPY.examTimeLeft}</span>
+      <span className={cx(styles.clockValue)}>{formatCountdown(remainingMs)}</span>
+    </p>
+  );
+}
+
+function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnded, sessionDeps, examReturn, onResync, assistHistory, onAssistAnswered }: RunningProps) {
   const router = useRouter();
   const { record } = boot;
+  const exam = record.mode === "EXAM";
   const version = checkEngineVersion(record.mode, record.engineVersion);
   const blocked = version.status === "blocked";
   const session = useSimSession({ boot, blocked, deps: sessionDeps });
   const [confirming, setConfirming] = useState(false);
   const [endError, setEndError] = useState<string | null>(null);
   const [resyncing, setResyncing] = useState(false);
+  const [deadlineReached, setDeadlineReached] = useState(false);
+  const leftRef = useRef(false);
   const paused = session.status === "paused";
-  const controllable = session.status === "running" || session.status === "paused";
+  const controllable = (session.status === "running" || session.status === "paused") && !deadlineReached;
   // The assist never pauses the simulation; it closes (and aborts) once the end starts.
   const assistActive = controllable && !session.ending && !session.diverged;
+  // A host policy wins; otherwise the one the exam slot stored with the session (unknown = fail safe in EXAM).
+  const policy = assistancePolicy !== undefined ? assistancePolicy : record.exam?.assistancePolicy ?? null;
+
+  // One navigation away, whoever ends the session first (the student or the deadline).
+  const leave = async(): Promise<void> => {
+    if (leftRef.current) {
+      return;
+    }
+
+    leftRef.current = true;
+
+    if (onEnded) {
+      await onEnded(sessionId);
+    } else if (exam) {
+      await router.push(examReturnUrlOf(record, examReturn ?? examReturnStore));
+    } else {
+      await router.push(buildSessionResultUrl(sessionId));
+    }
+  };
+
+  // Deadline: stop stepping (pause), flush the pending events within a bound, POST /end, then back to the exam even
+  // if the end failed (the attempt is closed by the server anyway). A student end already in flight finishes alone.
+  const onDeadline = (): void => {
+    setDeadlineReached(true);
+    setConfirming(false);
+
+    if (session.ending) {
+      return;
+    }
+
+    void session.end({ flushTimeoutMs: DEADLINE_FLUSH_TIMEOUT_MS }).then(() => leave());
+  };
+
+  const remainingMs = useExamDeadline({
+    deadline: exam ? record.expiresAt : null,
+    serverOffsetMs: record.exam?.serverOffsetMs,
+    onExpire: onDeadline,
+  });
 
   // The new boot reads the outbox: let the old queue settle first.
   const resync = () => {
@@ -218,18 +298,14 @@ function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnd
 
     if (outcome.status === "ended") {
       setConfirming(false);
-
-      if (onEnded) {
-        await onEnded(sessionId);
-      } else {
-        await router.push(buildSessionResultUrl(sessionId));
-      }
+      await leave();
     }
   };
 
   const banners = (
     <>
       {version.status === "warning" ? <p className={cx(styles.banner)} data-tone="warning" role="status">{version.message}</p> : null}
+      {deadlineReached ? <p className={cx(styles.banner)} data-tone="warning" role="alert">{SESSION_PAGE_COPY.deadlineReached}</p> : null}
       {session.workerError ? <p className={cx(styles.banner)} data-tone="error" role="alert">{session.workerError}</p> : null}
       {endError ? <p className={cx(styles.banner)} data-tone="error" role="alert">{endError}</p> : null}
       {session.changeError ? (
@@ -270,6 +346,7 @@ function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnd
           onPause={session.pause}
           onResume={session.resume}
         />
+        <ExamCountdown remainingMs={remainingMs} />
         <div className={cx(styles.sessionActions)}>
           <PendingEventsIndicator count={session.pendingEvents} />
           {renderAssist
@@ -278,7 +355,7 @@ function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnd
               <AssistLauncher
                 sessionId={sessionId}
                 mode={record.mode}
-                policy={assistancePolicy}
+                policy={policy}
                 active={assistActive}
                 history={assistHistory}
                 onAnswered={onAssistAnswered}
@@ -287,7 +364,7 @@ function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnd
           <button
             type="button"
             className={cx(styles.endButton)}
-            disabled={!controllable || session.ending}
+            disabled={!controllable || session.ending || deadlineReached}
             onClick={() => setConfirming(true)}
           >
             {session.ending ? SESSION_PAGE_COPY.ending : SESSION_PAGE_COPY.end}
@@ -399,6 +476,7 @@ export function SessionConsolePage({ sessionId, renderAssist, assistancePolicy, 
         assistancePolicy={assistancePolicy}
         onEnded={onEnded}
         sessionDeps={deps?.session}
+        examReturn={deps?.examReturn}
         onResync={onResync}
         assistHistory={assistHistory}
         onAssistAnswered={onAssistAnswered}

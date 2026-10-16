@@ -9,8 +9,8 @@
 *   boot carries the wall-clock backlog and the unsent events of this tab. v1.2 (T8): the replay read model keeps the
 *   current server engine version, the mismatch flag and the server warning. v1.3 (review of 524aedf): the state read
 *   model carries the server clock reading of its response (HTTP Date header + client time at the response), used to
-*   resume EXAM on the server clock instead of the client clock.
-* Versión: 1.3
+*   resume EXAM on the server clock instead of the client clock. v1.4 (T9): the record may carry the exam context.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,6 +22,7 @@ import { ENGINE_VERSION } from "@shared/sim-engine";
 import type { EngineCase, ParamChangeEvent, VentilatorSettings } from "@shared/sim-engine";
 import { DEFAULT_TIME_MULTIPLIER, TIME_MULTIPLIERS } from "../config/simulator.config";
 import type { SimulationMode, TimeMultiplier } from "../config/simulator.config";
+import type { SessionExamContext } from "./sim-exam.entity";
 
 export type SessionRecord = {
   id: string
@@ -37,6 +38,8 @@ export type SessionRecord = {
   caseId: string
   /** true from the start response until the console first boots it: no event can exist yet. */
   fresh: boolean
+  /** EXAM only: the attempt/question linkage, return URL and assistance policy written by the exam slot (T9). */
+  exam?: SessionExamContext | null | undefined
 };
 
 export type RecordedSessionEvent = {

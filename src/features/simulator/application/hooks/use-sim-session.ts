@@ -28,7 +28,9 @@
 *   time ahead of the server bound) from any other refusal, so the page can stop fast-forwarding after a repeated one;
 *   `settle()` stops the queue timers and waits (at most RESYNC_SETTLE_TIMEOUT_MS) for its flush before a resync, so
 *   the new boot reads a settled outbox. The page-hide keepalive is best effort (the outbox is the guarantee).
-* Versión: 1.3
+*   v1.4 (T9): `end({ flushTimeoutMs })` bounds the flush of the pending events (EXAM deadline): POST /end goes out
+*   once the flush settles or the time runs out.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -123,6 +125,14 @@ export type SimSessionDeps = {
 
 export type EndSessionOutcome = { status: "ended" } | { status: "error", message: string } | { status: "busy" };
 
+export type EndSessionOptions = {
+  /**
+   * Bounds the flush of the pending events (EXAM deadline): after this many ms POST /end goes out anyway and the
+   * unsent events stay in the outbox. Without it the flush runs its normal retry cycle.
+   */
+  flushTimeoutMs?: number | undefined
+};
+
 export type SimSessionView = {
   adapter: VentilatorConsoleAdapter | null
   applicability: ModeParameterTable | undefined
@@ -148,7 +158,7 @@ export type SimSessionView = {
   pause: () => void
   resume: () => void
   setMultiplier: (multiplier: TimeMultiplier) => void
-  end: () => Promise<EndSessionOutcome>
+  end: (options?: EndSessionOptions) => Promise<EndSessionOutcome>
 };
 
 export type UseSimSessionOptions = {
@@ -223,6 +233,18 @@ function waitForAcknowledgements(pendingCount: number, waiters: Set<() => void>,
 
     handle = timers.setTimeout(release, EVENT_ACK_TIMEOUT_MS);
     waiters.add(release);
+  });
+}
+
+/** Waits for the flush, at most `timeoutMs`; a failed or late flush is not an error (the outbox keeps the events). */
+function flushWithin(flush: Promise<unknown>, timeoutMs: number, timers: QueueTimers = defaultTimers): Promise<void> {
+  return new Promise((resolve) => {
+    const handle = timers.setTimeout(resolve, timeoutMs);
+
+    void flush.catch(() => undefined).then(() => {
+      timers.clearTimeout(handle);
+      resolve();
+    });
   });
 }
 
@@ -572,7 +594,7 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     setRuntime((previous) => (previous.boot === boot ? { ...previous, multiplier } : previous));
   }, [boot, isFree, multiplierOptions]);
 
-  const end = useCallback(async(): Promise<EndSessionOutcome> => {
+  const end = useCallback(async(options: EndSessionOptions = {}): Promise<EndSessionOutcome> => {
     const client = clientRef.current;
     const queue = queueRef.current;
 
@@ -600,7 +622,13 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
 
       // The pause flushes a batch with the outstanding acknowledgements; only acknowledged changes are sent.
       await waitForAcknowledgements(pendingRef.current.length, ackWaitersRef.current, timers);
-      await queue.flush();
+
+      if (options.flushTimeoutMs === undefined) {
+        await queue.flush();
+      } else {
+        await flushWithin(queue.flush(), options.flushTimeoutMs, timers);
+      }
+
       await endSession(sessionId, simTimeMs);
       client.send({ type: "stop" });
       (depsRef.current.store ?? sessionStore).forget(sessionId);

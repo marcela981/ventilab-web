@@ -61,7 +61,12 @@
  *   NEW_PAGE_FILES.
  *   v3.29 (T8 simulation): las rutas delgadas pages/simulator/sessions/[sessionId]/result.tsx y
  *   replay.tsx entran en NEW_PAGE_FILES.
- * Versión: 3.29
+ *   v3.30 (T9 simulation): nuevo tipo de elemento `composition` (COMPOSITION_FILES): raíces de
+ *   composición de una feature que pueden importar un módulo de otra feature por su ruta directa.
+ *   Solo src/features/simulator/composition/register-exam-practical-slot.ts, que registra el
+ *   renderer del examen en el registro de evaluations sin arrastrar el barrel de evaluations a _app;
+ *   el legado (pages/_app.js) puede importarlo.
+ * Versión: 3.30
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -127,6 +132,12 @@ const NEW_PAGE_FILES = [
   "pages/simulator/sessions/[[]sessionId[]]/index.tsx",
   "pages/simulator/sessions/[[]sessionId[]]/result.tsx",
   "pages/simulator/sessions/[[]sessionId[]]/replay.tsx",
+];
+
+// Composition roots inside a feature: the only feature files that may import another feature's
+// module by its direct path (to keep a registration out of the other feature's barrel). Keep it short.
+const COMPOSITION_FILES = [
+  "src/features/simulator/composition/register-exam-practical-slot.ts",
 ];
 
 const NEW_CODE_FILES = [
@@ -197,6 +208,7 @@ const eslintConfig = [
       // First match wins: new-code elements are declared before the legacy catch-all.
       "boundaries/elements": [
         { type: "shared", mode: "full", pattern: `src/shared/{${NEW_SHARED_MODULES}}/**/*` },
+        { type: "composition", mode: "full", pattern: COMPOSITION_FILES },
         {
           type: "feature-index",
           mode: "full",
@@ -223,7 +235,8 @@ const eslintConfig = [
           default: "disallow",
           message: "${file.type} must not import ${dependency.type} (new-code architecture boundaries)",
           rules: [
-            { from: "legacy", allow: ["legacy", "shared", "feature-index", "feature"] },
+            { from: "legacy", allow: ["legacy", "shared", "feature-index", "feature", "composition"] },
+            { from: "composition", allow: ["shared", "feature-index", "feature"] },
             { from: "shared", allow: ["shared"] },
             { from: "feature-index", allow: ["shared", "feature-index", ["feature", { feature: "${from.feature}" }]] },
             { from: "feature", allow: ["shared", "feature-index", ["feature", { feature: "${from.feature}" }]] },

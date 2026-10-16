@@ -5,8 +5,9 @@
 *   resume after a reload without asking the server for the seed and the case. It is a per-viewer convenience only:
 *   every storage read and write is wrapped in try/catch (private windows, blocked storage, quota) and a stored value
 *   is checked before use, so the console works without it. Depends on the session entities and the console config.
-*   v1.1: the record keeps the session `startedAt` (null for entries stored before it existed).
-* Versión: 1.1
+*   v1.1: the record keeps the session `startedAt` (null for entries stored before it existed). v1.2 (T9): the
+*   record keeps the validated exam context of an EXAM session (dropped when malformed).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,6 +17,7 @@
 
 import { SESSION_STORAGE_PREFIX } from "../config/sim-console.config";
 import { SIMULATION_MODE_LABELS } from "../config/simulator.config";
+import { parseExamContext } from "../entities/sim-exam.entity";
 import { isEngineCase, toTimeMultiplier } from "../entities/sim-session.entity";
 import type { SessionRecord } from "../entities/sim-session.entity";
 
@@ -62,6 +64,8 @@ function parseRecord(raw: string | null, sessionId: string): SessionRecord | nul
       return null;
     }
 
+    const exam = parseExamContext(candidate.exam);
+
     return {
       id: candidate.id,
       mode: candidate.mode as SessionRecord["mode"],
@@ -73,6 +77,7 @@ function parseRecord(raw: string | null, sessionId: string): SessionRecord | nul
       engineCase: candidate.engineCase,
       caseId: candidate.caseId,
       fresh: candidate.fresh === true,
+      ...(exam ? { exam } : {}),
     };
   } catch {
     return null;

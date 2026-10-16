@@ -17,8 +17,10 @@
 *   and its replacement by a host renderAssist. v1.4 (review of 524aedf + bc8a596): the tab claim is injected; a tab
 *   that cannot claim the session shows the read-only notice and never boots or starts the worker; repeated time-ahead
 *   refusals make "Recargar sesión" resume without fast-forward (EXAM on the server clock first); settle() waits for
-*   the in-flight send before a resync.
-* Versión: 1.4
+*   the in-flight send before a resync. v1.5 (T9): the EXAM flow — countdown, deadline (pause → flush → end →
+*   back to the exam, in that order, also when the end fails), the bounded flush at the deadline, "Finalizar sesión"
+*   back to the exam (exam context or exam return record) and the assistance policy stored with the exam.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -37,6 +39,8 @@ import type { ConsoleSampleBatch } from "@shared/ventilator-console";
 import type { SessionReplay, SessionState } from "../entities/sim-session.entity";
 import { useSimSession } from "../hooks/use-sim-session";
 import { createEventOutbox } from "../session/event-outbox";
+import { createExamReturnStore } from "../session/exam-return-store";
+import type { ExamReturnStore } from "../session/exam-return-store";
 import type { TabClaimResult } from "../session/session-tab-claim";
 import { createSessionStore } from "../session/session-store";
 import type { SessionStore } from "../session/session-store";
@@ -111,6 +115,7 @@ type RenderOptions = {
   claimTab?: (sessionId: string) => Promise<TabClaimResult>
   props?: Partial<SessionConsolePageProps>
   storage?: ReturnType<typeof createMemoryStorage>
+  examReturn?: ExamReturnStore
 };
 
 const claimedTab = () => Promise.resolve<TabClaimResult>({ status: "claimed", release: () => undefined });
@@ -143,6 +148,7 @@ function renderPage(options: RenderOptions = {}): Harness {
         },
         session: { createWorker, sendEvents, sendKeepalive, endSession, outbox, createEventId: () => "evt-1" },
         claimTab: options.claimTab ?? claimedTab,
+        examReturn: options.examReturn ?? createExamReturnStore(() => null),
       }}
       {...options.props}
     />,
@@ -546,6 +552,136 @@ describe("SessionConsolePage", () => {
     expect(await screen.findByText("No se puede reanudar esta sesión en este navegador")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Ver resultado" })).toHaveAttribute("href", "/simulator/sessions/s1/result");
     expect(screen.getByRole("link", { name: "Volver al simulador" })).toHaveAttribute("href", "/simulator");
+  });
+});
+
+describe("SessionConsolePage — EXAM flow (T9)", () => {
+  const EXAM_CONTEXT = {
+    attemptId: "a1",
+    questionId: "q1",
+    evaluationId: "e1",
+    returnUrl: "/evaluations/e1/attempts/a1",
+    assistancePolicy: null,
+    serverOffsetMs: 0,
+  };
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const order = (mock: { mock: { invocationCallOrder: number[] } }) => mock.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY;
+
+  it("counts down to the deadline and, when it expires, stops, flushes, ends and returns to the exam", async() => {
+    vi.useFakeTimers({ toFake: ["Date", "setInterval", "clearInterval"], shouldAdvanceTime: true });
+
+    const expiresAt = new Date(Date.now() + 60_000).toISOString();
+    const { worker, sendEvents, endSession } = renderPage({ record: { mode: "EXAM", expiresAt, exam: EXAM_CONTEXT } });
+
+    await startRunning(worker);
+    expect(screen.getByRole("timer")).toHaveTextContent("Tiempo restante del examen");
+    expect(screen.getByRole("timer")).toHaveTextContent(/[01]:\d\d/);
+    // EXAM: fixed multiplier and no pause.
+    expect(screen.queryByRole("button", { name: "Pausar" })).not.toBeInTheDocument();
+    expect(screen.getByText("Velocidad fija ×1 (examen, sin pausa)")).toBeInTheDocument();
+
+    increasePeep();
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
+    act(() => {
+      vi.advanceTimersByTime(61_000);
+    });
+
+    expect(await screen.findByText(/Se alcanzó la fecha límite del examen/)).toBeInTheDocument();
+    await waitFor(() => expect(sentOfType(worker, "pause")).toHaveLength(1));
+    expect(endSession).not.toHaveBeenCalled();
+
+    act(() => worker.emit({
+      type: "batch",
+      batch: buildBatch({ simTimeMs: 4400, status: "paused", confirmedEvents: [{ id: "evt-1", effectiveSimTimeMs: 4321 }] }),
+    }));
+
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/evaluations/e1/attempts/a1"));
+    expect(sendEvents).toHaveBeenCalledWith("s1", [
+      { id: "evt-1", simTimeMs: 4321, type: "PARAM_CHANGE", payload: { changes: { peepCmH2O: 6 } } },
+    ]);
+    expect(endSession).toHaveBeenCalledWith("s1", 4400);
+    expect(order(sendEvents)).toBeLessThan(order(endSession));
+    expect(order(endSession)).toBeLessThan(order(router.push));
+    expect(sentOfType(worker, "stop")).toHaveLength(1);
+    expect(router.push).toHaveBeenCalledTimes(1);
+  });
+
+  it("at the deadline the flush is bounded: POST /end goes out even if the events never reach the server", async() => {
+    vi.useFakeTimers({ toFake: ["Date", "setInterval", "clearInterval"], shouldAdvanceTime: true });
+
+    const expiresAt = new Date(Date.now() + 10_000).toISOString();
+    const { worker, sendEvents, endSession } = renderPage({ record: { mode: "EXAM", expiresAt, exam: EXAM_CONTEXT } });
+
+    sendEvents.mockImplementation(() => new Promise(() => undefined));
+    await startRunning(worker);
+    increasePeep();
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
+    act(() => {
+      vi.advanceTimersByTime(11_000);
+    });
+    await waitFor(() => expect(sentOfType(worker, "pause")).toHaveLength(1));
+    act(() => worker.emit({
+      type: "batch",
+      batch: buildBatch({ simTimeMs: 4400, status: "paused", confirmedEvents: [{ id: "evt-1", effectiveSimTimeMs: 4321 }] }),
+    }));
+
+    await waitFor(() => expect(sendEvents).toHaveBeenCalled());
+    // DEADLINE_FLUSH_TIMEOUT_MS (5 s, real time here) later the end goes out anyway.
+    await waitFor(() => expect(endSession).toHaveBeenCalledWith("s1", 4400), { timeout: 9000 });
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/evaluations/e1/attempts/a1"));
+  });
+
+  it("returns to the exam after the deadline even when the end fails", async() => {
+    vi.useFakeTimers({ toFake: ["Date", "setInterval", "clearInterval"], shouldAdvanceTime: true });
+
+    const expiresAt = new Date(Date.now() + 5000).toISOString();
+    const { worker, endSession } = renderPage({ record: { mode: "EXAM", expiresAt, exam: EXAM_CONTEXT } });
+
+    endSession.mockImplementation(() => Promise.reject(new ApiError({ status: 409, code: "simulation.session_not_active", message: "closed" })));
+    await startRunning(worker);
+    act(() => {
+      vi.advanceTimersByTime(6000);
+    });
+    await waitFor(() => expect(sentOfType(worker, "pause")).toHaveLength(1));
+    act(() => worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 4400, status: "paused" }) }));
+
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/evaluations/e1/attempts/a1"));
+  });
+
+  it("\"Finalizar sesión\" in EXAM returns to the exam attempt instead of the result", async() => {
+    const { worker } = renderPage({ record: { mode: "EXAM", exam: EXAM_CONTEXT } });
+
+    await startRunning(worker);
+    await endThroughDialog(worker);
+
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/evaluations/e1/attempts/a1"));
+    expect(router.push).not.toHaveBeenCalledWith("/simulator/sessions/s1/result");
+  });
+
+  it("without an exam context, EXAM returns through the exam return record", async() => {
+    const storage = createMemoryStorage();
+    const examReturn = createExamReturnStore(() => storage);
+
+    examReturn.save("s1", { evaluationId: "e7", attemptId: "a7" });
+
+    const { worker } = renderPage({ record: { mode: "EXAM" }, examReturn });
+
+    await startRunning(worker);
+    await endThroughDialog(worker);
+
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/evaluations/e7/attempts/a7"));
+  });
+
+  it("the assist follows the policy stored with the exam: DISABLED keeps it disabled with its reason", async() => {
+    const { worker } = renderPage({ record: { mode: "EXAM", exam: { ...EXAM_CONTEXT, assistancePolicy: "DISABLED" } } });
+
+    await startRunning(worker);
+    expect(screen.getByRole("button", { name: "Asesoría IA" })).toBeDisabled();
+    expect(screen.getByText("La asesoría de IA está desactivada en este examen.")).toBeInTheDocument();
   });
 });
 

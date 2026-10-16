@@ -1,0 +1,104 @@
+/*
+* Funcionalidad: Exam practical slot styles
+* Descripción: CSS Module of the SIMULATION question slot of the exam (T9) on the light surface of the attempt
+*   player: the slot card, the case facts, the rubric rules table with a horizontal scroll wrapper, the policy and
+*   deadline lines, the status line (in progress / completed) and the action row. Design-system tokens only; no hex
+*   or rgb values.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.slot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-4);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+}
+
+.title,
+.subtitle {
+  margin: 0;
+}
+
+.title {
+  font: var(--mui-font-h6);
+}
+
+.subtitle {
+  font: var(--mui-font-subtitle2);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--vl-space-1) var(--vl-space-3);
+  margin: 0;
+  font: var(--mui-font-body2);
+}
+
+.facts dt {
+  color: var(--vl-color-text-muted);
+}
+
+.facts dd {
+  margin: 0;
+}
+
+.muted {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--mui-font-body2);
+}
+
+.table th,
+.table td {
+  padding: var(--vl-space-2) var(--vl-space-3);
+  border-bottom: 1px solid var(--vl-color-border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table thead th {
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-color-text-muted);
+}
+
+.status {
+  margin: 0;
+  font: var(--mui-font-subtitle2);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-3);
+}
+
+.link {
+  color: var(--vl-color-link);
+  text-decoration: none;
+}
+
+.link:hover,
+.link:focus-visible {
+  text-decoration: underline;
+}

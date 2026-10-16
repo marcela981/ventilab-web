@@ -20,8 +20,9 @@
 *   client clock that runs ahead can no longer produce events the server refuses (403, time ahead). Without a Date
 *   header (CORS hides it unless exposed) there is no fast-forward (backlog 0). FREE resumes at the last known time
 *   (backlog 0); only EXAM fast-forwards, capped by `expiresAt`. `fastForward: false` (a reload after repeated
-*   time-ahead refusals) also gives backlog 0, so "Recargar sesión" cannot loop.
-* Versión: 1.2
+*   time-ahead refusals) also gives backlog 0, so "Recargar sesión" cannot loop. v1.3 (T9): a rebuilt record keeps
+*   the exam context of the stored one.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -174,6 +175,8 @@ export async function bootstrapSession(sessionId: string, deps: BootstrapDeps): 
     engineCase: replay.engineCase,
     caseId: stored?.caseId ?? replay.engineCase.id,
     fresh: false,
+    // The exam linkage only exists in this tab's record (no session endpoint carries it).
+    exam: stored?.exam ?? null,
   };
   const startAtSimTimeMs = Math.max(0, state.simTimeMs, lastEventMs);
 

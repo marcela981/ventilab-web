@@ -6,8 +6,9 @@
 *   replay, the seek debounce, the event mark labels, the tolerance of the determinism check and the sessionStorage
 *   prefix of the exam return link (written by the exam flow). The playback speeds are a UI constant on purpose: they
 *   only change how fast this browser replays a recording (nothing is sent), so the session time multiplier of the
-*   contract does not bound them. v1.1: local replay timeout and the mark list collapse threshold. No dependencies.
-* Versión: 1.1
+*   contract does not bound them. v1.1: local replay timeout and the mark list collapse threshold. v1.2 (T9): labels
+*   of the outcome rubric limit criteria (plateau, driving pressure, tidal volume, auto-PEEP). No dependencies.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,6 +23,10 @@ export const CRITERION_LABELS: Readonly<Record<string, string>> = {
   TIME_IN_RANGE: "Tiempo en rango",
   SAFETY_VIOLATIONS: "Violaciones de seguridad",
   AI_ASSIST_USAGE: "Uso de la asesoría IA",
+  PLATEAU_PRESSURE_LIMIT: "Límite de presión meseta",
+  DRIVING_PRESSURE_LIMIT: "Límite de presión de distensión",
+  TIDAL_VOLUME_LIMIT: "Límite de volumen corriente",
+  AUTO_PEEP_LIMIT: "Límite de auto-PEEP",
 };
 
 export const TIME_TO_STABILIZE_CRITERION = "TIME_TO_STABILIZE";
