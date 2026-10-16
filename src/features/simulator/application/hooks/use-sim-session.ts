@@ -18,7 +18,13 @@
 *   the PARAM_CHANGE enqueued for the backend, with that effective time and the same id (local run == server replay).
 *   A rejected event shows the change error, rolls the displayed setting back and is never enqueued. end() waits (at
 *   most EVENT_ACK_TIMEOUT_MS) for the pending acknowledgements before flushing; an unacknowledged change is not sent.
-* Versión: 1.1
+*   v1.2 (review of 8efd9e4): an event the server refuses is a divergence (`diverged`, the page blocks and offers a
+*   reload that resumes from the server); the unacknowledged queue is mirrored to sessionStorage (event outbox) and the
+*   unsent events of a reload are sent before the simulation starts; page hide sends the queue with a keepalive fetch
+*   (beforeunload no longer flushes); init carries the wall-clock backlog of the boot; end() posts the simulated time
+*   of the first paused batch (fallback: the latest batch after EVENT_ACK_TIMEOUT_MS); metrics re-render at most every
+*   UI_REFRESH_INTERVAL_MS (a trailing refresh keeps the last snapshot); `pendingEvents` counts the unsent events.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -37,7 +43,11 @@ import type {
   ModeParameterTable,
   VentilatorConsoleAdapter,
 } from "@shared/ventilator-console";
-import { appendSimulationEvents, endSimulationSession } from "../../api/services/simulation-sessions.service";
+import {
+  appendSimulationEvents,
+  endSimulationSession,
+  sendSimulationEventsKeepalive,
+} from "../../api/services/simulation-sessions.service";
 import { EVENT_ACK_TIMEOUT_MS, UI_REFRESH_INTERVAL_MS } from "../config/sim-console.config";
 import { TIME_MULTIPLIERS } from "../config/simulator.config";
 import type { TimeMultiplier } from "../config/simulator.config";
@@ -45,6 +55,8 @@ import type { ClientSessionEvent, SessionBoot } from "../entities/sim-session.en
 import { getSimulatorErrorMessage } from "../entities/simulator-error-messages";
 import { createEventQueue } from "../session/event-queue";
 import type { EventQueue, QueueTimers } from "../session/event-queue";
+import { eventOutbox } from "../session/event-outbox";
+import type { EventOutbox } from "../session/event-outbox";
 import {
   appendTrends,
   applicabilityFor,
@@ -86,6 +98,9 @@ export type SimSessionDeps = {
   /** Wall clock for the UI refresh throttle. */
   now?: () => number
   store?: SessionStore
+  outbox?: EventOutbox
+  /** Page-hide flush that outlives the page (keepalive fetch). */
+  sendKeepalive?: (sessionId: string, events: readonly ClientSessionEvent[]) => void
 };
 
 export type EndSessionOutcome = { status: "ended" } | { status: "error", message: string } | { status: "busy" };
@@ -102,6 +117,10 @@ export type SimSessionView = {
   changeError: string | null
   dismissChangeError: () => void
   syncError: string | null
+  /** The server refused an event: the local run no longer matches the server (reload to resume from the server). */
+  diverged: boolean
+  /** Events waiting to be acknowledged by the server. */
+  pendingEvents: number
   workerError: string | null
   ending: boolean
   pause: () => void
@@ -185,6 +204,21 @@ function waitForAcknowledgements(pendingCount: number, waiters: Set<() => void>,
   });
 }
 
+/** Resolves with the simulated time of the next paused batch, or with `fallback()` after EVENT_ACK_TIMEOUT_MS. */
+function waitForPausedBatch(waiters: Set<(simTimeMs: number) => void>, fallback: () => number, timers: QueueTimers = defaultTimers): Promise<number> {
+  return new Promise((resolve) => {
+    let handle: unknown = null;
+    const release = (simTimeMs: number): void => {
+      waiters.delete(release);
+      timers.clearTimeout(handle);
+      resolve(simTimeMs);
+    };
+
+    handle = timers.setTimeout(() => release(fallback()), EVENT_ACK_TIMEOUT_MS);
+    waiters.add(release);
+  });
+}
+
 type LiveState = {
   metrics: EngineMetrics | null
   alarms: readonly ConsoleAlarm[]
@@ -213,6 +247,8 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
   const [runtime, setRuntime] = useState<SessionRuntime>(() => runtimeFor(boot));
   const [changeError, setChangeError] = useState<string | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [diverged, setDiverged] = useState(false);
+  const [pendingEvents, setPendingEvents] = useState(0);
   const [workerError, setWorkerError] = useState<string | null>(null);
   const [ending, setEnding] = useState(false);
 
@@ -233,6 +269,7 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
   const ackedRef = useRef<VentilatorSettings | null>(null);
   const pendingRef = useRef<PendingSettingsEvent[]>([]);
   const ackWaitersRef = useRef(new Set<() => void>());
+  const pausedWaitersRef = useRef(new Set<(simTimeMs: number) => void>());
   const latestSimRef = useRef(0);
   const statusRef = useRef<SimSessionStatus>("starting");
   const endingRef = useRef(false);
@@ -258,15 +295,26 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     }
 
     const send = current.sendEvents ?? appendSimulationEvents;
+    const outbox = current.outbox ?? eventOutbox;
     const queue = createEventQueue<ClientSessionEvent>({
       send: (events) => send(session.id, events),
       ...(current.queueTimers ? { timers: current.queueTimers } : {}),
-      onRejected: (error) => setSyncError(SIM_SESSION_COPY.syncFailed(getSimulatorErrorMessage(error))),
+      // A refused event never reaches the server replay: the local run has diverged from it.
+      onRejected: (error) => {
+        setSyncError(SIM_SESSION_COPY.syncFailed(getSimulatorErrorMessage(error)));
+        setDiverged(true);
+      },
+      onChange: (events) => {
+        outbox.save(session.id, events);
+        setPendingEvents(events.length);
+      },
     });
     let metrics: EngineMetrics | null = null;
     let alarms: readonly ConsoleAlarm[] = [];
     let trends: PatientTrends = {};
     let lastUiMs = Number.NEGATIVE_INFINITY;
+    let trailingRefresh: ReturnType<typeof setTimeout> | null = null;
+    let disposed = false;
 
     clientRef.current = client;
     queueRef.current = queue;
@@ -280,6 +328,10 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     const ackWaiters = ackWaitersRef.current;
     const releaseAckWaiters = (): void => {
       [...ackWaiters].forEach((release) => release());
+    };
+    const pausedWaiters = pausedWaitersRef.current;
+    const releasePausedWaiters = (simTimeMs: number): void => {
+      [...pausedWaiters].forEach((release) => release(simTimeMs));
     };
 
     const handleAcknowledgements = (batch: SimBatch): void => {
@@ -321,6 +373,10 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
 
       statusRef.current = batch.status;
 
+      if (batch.status === "paused") {
+        releasePausedWaiters(batch.simTimeMs);
+      }
+
       if (batch.metrics) {
         metrics = batch.metrics;
         alarms = toConsoleAlarms(batch.alarms, batch.simTimeMs, alarms);
@@ -329,24 +385,62 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
 
       const wallMs = now();
 
-      if (batch.metrics || statusChanged || wallMs - lastUiMs >= UI_REFRESH_INTERVAL_MS) {
-        lastUiMs = wallMs;
+      // A status change shows at once; metrics and the clock at most every UI_REFRESH_INTERVAL_MS.
+      if (statusChanged || wallMs - lastUiMs >= UI_REFRESH_INTERVAL_MS) {
+        publish(wallMs);
+      } else if (batch.metrics && trailingRefresh === null) {
+        // A snapshot inside the throttle window is shown at its end, even if no other batch arrives.
+        trailingRefresh = setTimeout(() => {
+          trailingRefresh = null;
 
-        const live: LiveState = { metrics, alarms, trends, simTimeMs: batch.simTimeMs, status: batch.status };
-
-        setRuntime((previous) => (previous.boot === boot ? { ...previous, live } : previous));
+          if (!disposed) {
+            publish(now());
+          }
+        }, Math.max(0, UI_REFRESH_INTERVAL_MS - (wallMs - lastUiMs)));
       }
+    };
+
+    function publish(wallMs: number): void {
+      lastUiMs = wallMs;
+
+      if (trailingRefresh !== null) {
+        clearTimeout(trailingRefresh);
+        trailingRefresh = null;
+      }
+
+      const live: LiveState = { metrics, alarms, trends, simTimeMs: latestSimRef.current, status: statusRef.current };
+
+      setRuntime((previous) => (previous.boot === boot ? { ...previous, live } : previous));
+    }
+
+    // Unsent events of a reload go first, so a new event can never carry an earlier time than one in flight.
+    boot.pendingEvents.forEach((event) => queue.enqueue(event));
+
+    const startSimulation = (): void => {
+      if (boot.pendingEvents.length === 0) {
+        client.send({ type: "start" });
+
+        return;
+      }
+
+      // Whatever the outcome, the events stay first in the queue; the simulation starts after this attempt.
+      void queue.flush().catch(() => undefined).then(() => {
+        if (!disposed) {
+          client.send({ type: "start" });
+        }
+      });
     };
 
     const unsubscribe = client.subscribe((message) => {
       if (message.type === "ready") {
-        client.send({ type: "start" });
+        startSimulation();
       } else if (message.type === "batch") {
         handleBatch(message.batch);
       } else {
         setWorkerError(SIM_SESSION_COPY.workerFailed);
         // No acknowledgement will come from a failed worker: an end in progress must not wait for it.
         releaseAckWaiters();
+        releasePausedWaiters(latestSimRef.current);
       }
     });
 
@@ -359,21 +453,31 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
         multiplier: session.timeMultiplier,
         initialEvents: boot.initialEvents,
         startAtSimTimeMs: boot.startAtSimTimeMs,
+        initialBacklogMs: boot.initialBacklogMs,
       },
     });
 
     const flushBestEffort = (): void => {
       void queue.flush().catch(() => undefined);
     };
+    // axios cannot outlive the page: a keepalive fetch carries the queue (idempotent ids; the outbox keeps a copy).
+    const flushOnPageHide = (): void => {
+      (current.sendKeepalive ?? sendSimulationEventsKeepalive)(session.id, queue.snapshot());
+    };
 
-    window.addEventListener("pagehide", flushBestEffort);
-    window.addEventListener("beforeunload", flushBestEffort);
+    window.addEventListener("pagehide", flushOnPageHide);
 
     return () => {
-      window.removeEventListener("pagehide", flushBestEffort);
-      window.removeEventListener("beforeunload", flushBestEffort);
+      disposed = true;
+      window.removeEventListener("pagehide", flushOnPageHide);
+
+      if (trailingRefresh !== null) {
+        clearTimeout(trailingRefresh);
+      }
+
       unsubscribe();
       releaseAckWaiters();
+      releasePausedWaiters(latestSimRef.current);
       flushBestEffort();
       queue.dispose();
       client.terminate();
@@ -455,17 +559,28 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     const wasRunning = statusRef.current === "running";
     const endSession = depsRef.current.endSession ?? endSimulationSession;
 
+    const timers = depsRef.current.queueTimers;
+
     endingRef.current = true;
     setEnding(true);
+
+    // The end time is the one of the first paused batch (the worker stops there), not a running batch before it.
+    const pausedAt = statusRef.current === "paused"
+      ? Promise.resolve(latestSimRef.current)
+      : waitForPausedBatch(pausedWaitersRef.current, () => latestSimRef.current, timers);
+
     client.send({ type: "pause" });
 
     try {
+      const simTimeMs = await pausedAt;
+
       // The pause flushes a batch with the outstanding acknowledgements; only acknowledged changes are sent.
-      await waitForAcknowledgements(pendingRef.current.length, ackWaitersRef.current, depsRef.current.queueTimers);
+      await waitForAcknowledgements(pendingRef.current.length, ackWaitersRef.current, timers);
       await queue.flush();
-      await endSession(sessionId, latestSimRef.current);
+      await endSession(sessionId, simTimeMs);
       client.send({ type: "stop" });
       (depsRef.current.store ?? sessionStore).forget(sessionId);
+      (depsRef.current.outbox ?? eventOutbox).clear(sessionId);
 
       return { status: "ended" };
     } catch (error) {
@@ -523,6 +638,8 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     changeError,
     dismissChangeError: () => setChangeError(null),
     syncError,
+    diverged,
+    pendingEvents,
     workerError,
     ending,
     pause,

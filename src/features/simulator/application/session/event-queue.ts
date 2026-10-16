@@ -9,7 +9,10 @@
 *   `flush()` (end, deadline, page hide) sends everything now with a bounded number of attempts and returns a promise
 *   that rejects with the last retryable error while keeping the events queued. Timers and the send function are
 *   injected for tests. Depends on the api-client error type and the console config.
-* Versión: 1.0
+*   v1.1: a refused batch of more than one event is re-sent one event at a time, so only the offending event is
+*   dropped (and reported); `onChange` reports every change of the unacknowledged events (the caller mirrors them to
+*   sessionStorage) and `snapshot()` returns them (keepalive flush on page hide).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -40,8 +43,10 @@ export type EventQueueOptions<E> = {
   flushAttempts?: number
   maxBatchSize?: number
   isRetryable?: (error: unknown) => boolean
-  /** A batch the server refused (4xx): it is dropped from the queue and never re-sent. */
+  /** An event the server refused (4xx) on its own: it is dropped from the queue and never re-sent. */
   onRejected?: (error: unknown, events: readonly E[]) => void
+  /** Called with the unacknowledged events (in-flight included) after every enqueue, acknowledgement or drop. */
+  onChange?: (pending: readonly E[]) => void
 };
 
 export type EventQueue<E> = {
@@ -50,6 +55,8 @@ export type EventQueue<E> = {
   flush: () => Promise<void>
   /** Events not yet acknowledged, in-flight included. */
   pendingCount: () => number
+  /** A copy of the events not yet acknowledged, in order. */
+  snapshot: () => readonly E[]
   /** Stops the timers; queued events stay readable through pendingCount. */
   dispose: () => void
 };
@@ -80,11 +87,17 @@ export function createEventQueue<E>(options: EventQueueOptions<E>): EventQueue<E
   const isRetryable = options.isRetryable ?? isRetryableSendError;
 
   const queue: E[] = [];
+  // Events at the head still to be sent one by one after their batch was refused.
+  let isolated = 0;
   let failures = 0;
   let timer: unknown = null;
   let disposed = false;
   // Every send goes through this chain, so two flushes never send the same head concurrently.
   let chain: Promise<void> = Promise.resolve();
+
+  function notifyChange(): void {
+    options.onChange?.([...queue]);
+  }
 
   function clearTimer(): void {
     if (timer !== null) {
@@ -115,16 +128,26 @@ export function createEventQueue<E>(options: EventQueueOptions<E>): EventQueue<E
     let tries = 0;
 
     while (queue.length > 0) {
-      const batch = queue.slice(0, maxBatch);
+      const batch = queue.slice(0, isolated > 0 ? 1 : maxBatch);
 
       try {
         await options.send(batch);
         queue.splice(0, batch.length);
+        isolated = Math.max(0, isolated - batch.length);
         failures = 0;
         tries = 0;
+        notifyChange();
       } catch (error) {
         if (!isRetryable(error)) {
-          queue.splice(0, batch.length);
+          if (batch.length > 1) {
+            // Find the offending event: the same events go out again, one per request.
+            isolated = batch.length;
+            continue;
+          }
+
+          queue.splice(0, 1);
+          isolated = Math.max(0, isolated - 1);
+          notifyChange();
           options.onRejected?.(error, batch);
           continue;
         }
@@ -161,10 +184,12 @@ export function createEventQueue<E>(options: EventQueueOptions<E>): EventQueue<E
   return {
     enqueue(event) {
       queue.push(event);
+      notifyChange();
       schedule(intervalMs);
     },
     flush: () => run(flushAttempts),
     pendingCount: () => queue.length,
+    snapshot: () => [...queue],
     dispose() {
       disposed = true;
       clearTimer();

@@ -9,8 +9,9 @@
 *   v1.2 (T6): initial events + start time replay a session at creation (equal to the engine replay, no re-streamed
 *   output, later events stay scheduled). v1.3: an event with a client id is confirmed in the next batch with the
 *   simulated time the loop really applied it, and replaying it at that time gives the same run; a rejected event keeps
-*   its id and is never confirmed. Uses a manual clock. Depends on vitest and the vendored engine.
-* Versión: 1.3
+*   its id and is never confirmed. Uses a manual clock. Depends on vitest and the vendored engine. v1.4: an initial
+*   backlog (wall-clock resume) is owed until start and then caught up in bounded, streamed chunks.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -361,6 +362,35 @@ describe("createSimLoop initial state (session resume)", () => {
   it("rejects a negative or non-finite start time", () => {
     expect(() => createSimLoop(buildTestCase(), SEED, { startAtSimTimeMs: -1 })).toThrow(RangeError);
     expect(() => createSimLoop(buildTestCase(), SEED, { startAtSimTimeMs: Number.NaN })).toThrow(RangeError);
+  });
+
+  it("catches up an initial backlog after start through the bounded per-tick chunks, streaming it", () => {
+    const events = [{ type: "PARAM_CHANGE" as const, simTimeMs: 1000, changes: { peepCmH2O: 8 } }];
+    const clock = createManualClock(0);
+    const loop = createSimLoop(buildTestCase(), SEED, {
+      clock,
+      initialEvents: events,
+      startAtSimTimeMs: 2000,
+      initialBacklogMs: 5000,
+      maxCatchUpMsPerTick: 2000,
+    });
+
+    // Nothing is stepped before start: the backlog is owed, not invented.
+    expect(loop.simTimeMs).toBe(2000);
+    expect(loop.tick().backlogMs).toBe(5000);
+
+    loop.start();
+
+    const batches = tickUntilCaughtUp(loop);
+
+    expect(batches.map((batch) => batch.simTimeMs)).toEqual([4000, 6000, 7000]);
+    expect(batches.some((batch) => batch.samples.length > 0)).toBe(true);
+    expect(batches.at(-1)?.metrics).toEqual(replay(buildTestCase(), SEED, events, 7000).final);
+  });
+
+  it("rejects a negative or non-finite initial backlog", () => {
+    expect(() => createSimLoop(buildTestCase(), SEED, { initialBacklogMs: -1 })).toThrow(RangeError);
+    expect(() => createSimLoop(buildTestCase(), SEED, { initialBacklogMs: Number.POSITIVE_INFINITY })).toThrow(RangeError);
   });
 });
 

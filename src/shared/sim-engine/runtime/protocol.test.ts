@@ -4,8 +4,9 @@
 *   recognised by its type guard, and that malformed messages are rejected (v1.1: including non-finite or negative event times, a non-finite seed
 *   and invalid init options). Depends on vitest, the protocol and the
 *   simulation loop (to produce a real batch). v1.2 (T6): init resume options (initial events, start time). v1.3: an event
-*   id is optional and must be a non-empty string of at most 64 characters.
-* Versión: 1.3
+*   id is optional and must be a non-empty string of at most 64 characters. v1.4: the initial backlog must be finite and
+*   non-negative.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -138,5 +139,11 @@ describe("init resume options (v1.2)", () => {
     expect(isSimCommand(init({ initialEvents: [{ type: "PARAM_CHANGE", simTimeMs: -5, changes: {} }] }))).toBe(false);
     expect(isSimCommand(init({ startAtSimTimeMs: -1 }))).toBe(false);
     expect(isSimCommand(init({ startAtSimTimeMs: Number.POSITIVE_INFINITY }))).toBe(false);
+  });
+
+  it("accepts a finite non-negative initial backlog only", () => {
+    expect(isSimCommand(roundTrip(init({ startAtSimTimeMs: 2000, initialBacklogMs: 5000 })))).toBe(true);
+    expect(isSimCommand(init({ initialBacklogMs: -1 }))).toBe(false);
+    expect(isSimCommand(init({ initialBacklogMs: Number.NaN }))).toBe(false);
   });
 });

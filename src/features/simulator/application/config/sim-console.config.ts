@@ -5,8 +5,9 @@
 *   VENTILATOR_LIMITS, never from here; FiO2 is shown in % with scale 100), the Spanish labels of the engine alarm
 *   codes, target ids, modes and patient sex, the event queue timings (flush every 3 s, exponential backoff 1 s → 30 s,
 *   at most 50 events per request), the UI refresh throttle and the sessionStorage key prefix. Depends on the
-*   ventilator console and sim-engine public types. v1.1: the acknowledgement wait on end (2 s).
-* Versión: 1.1
+*   ventilator console and sim-engine public types. v1.1: the acknowledgement wait on end (2 s). v1.2: the outbox
+*   sessionStorage prefix and the pending-events warning threshold.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -92,3 +93,7 @@ export const UI_REFRESH_INTERVAL_MS = 250;
 export const EVENT_ACK_TIMEOUT_MS = 2000;
 
 export const SESSION_STORAGE_PREFIX = "ventylab.simulator.session.";
+/** sessionStorage mirror of the events the server has not acknowledged yet (resent after a reload). */
+export const EVENT_OUTBOX_STORAGE_PREFIX = "ventylab.simulator.outbox.";
+/** Above this many unsent events the console warns that the connection may be failing (events are never dropped). */
+export const EVENT_PENDING_WARNING_COUNT = 50;

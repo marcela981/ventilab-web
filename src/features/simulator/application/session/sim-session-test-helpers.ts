@@ -3,8 +3,9 @@
 * Descripción: Test doubles of the running session (T6): an engine case, a session record and boot data, a fake
 *   simulation worker client that records the commands it receives and lets a test emit ready/batch/error messages
 *   (jsdom has no Worker), a batch builder and an in-memory storage. Used only by tests. Depends on the sim-engine
-*   public types and the session entities. v1.1: batches carry an empty `confirmedEvents` list by default.
-* Versión: 1.1
+*   public types and the session entities. v1.1: batches carry an empty `confirmedEvents` list by default. v1.2:
+*   records carry `startedAt` (null) and boots an empty backlog and no pending events.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -51,6 +52,7 @@ export function buildRecord(overrides: Partial<SessionRecord> = {}): SessionReco
     engineVersion: "1.0.0",
     timeMultiplier: 1,
     expiresAt: null,
+    startedAt: null,
     engineCase: buildEngineCase(),
     caseId: "case-1",
     fresh: false,
@@ -59,7 +61,7 @@ export function buildRecord(overrides: Partial<SessionRecord> = {}): SessionReco
 }
 
 export function buildBoot(overrides: Partial<SessionRecord> = {}, boot: Partial<Omit<SessionBoot, "record">> = {}): SessionBoot {
-  return { record: buildRecord(overrides), initialEvents: [], startAtSimTimeMs: 0, ...boot };
+  return { record: buildRecord(overrides), initialEvents: [], startAtSimTimeMs: 0, initialBacklogMs: 0, pendingEvents: [], ...boot };
 }
 
 export function buildBatch(overrides: Partial<SimBatch> = {}): SimBatch {

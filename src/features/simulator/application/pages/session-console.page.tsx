@@ -9,8 +9,11 @@
 *   with retry, result and catalog links). Extension points: `renderAssist` is the slot for the AI assist (T7) and
 *   `onEnded` replaces the navigation to the result (T9 returns to the exam); the mode and deadline come from the
 *   session. Dependencies are injectable for tests. Depends on next/router, the design system, the ventilator
-*   console, the simulator hooks, components and CSS.
-* Versión: 1.0
+*   console, the simulator hooks, components and CSS. v1.1: a refused event opens the blocking divergence dialog
+*   ("Recargar sesión" re-runs the bootstrap, which resumes from the server) instead of a banner, and the session bar
+*   shows "N eventos pendientes de envío" while events wait for the server (with a connection hint above the
+*   warning threshold).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,7 +30,9 @@ import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
 import { cx } from "@shared/lib/class-names";
 import { VentilatorConsole } from "@shared/ventilator-console";
 import { CasePanel } from "../components/case-panel";
+import { DivergenceDialog } from "../components/divergence-dialog";
 import { TimeControls } from "../components/time-controls";
+import { EVENT_PENDING_WARNING_COUNT } from "../config/sim-console.config";
 import { simulationModeLabel } from "../entities/simulator.entity";
 import { checkEngineVersion } from "../entities/sim-session.entity";
 import type { SessionBoot } from "../entities/sim-session.entity";
@@ -58,6 +63,8 @@ export const SESSION_PAGE_COPY = {
   endFailed: (detail: string) => `No se pudo finalizar la sesión: ${detail} La sesión sigue activa; inténtalo de nuevo.`,
   versionBlocked: "Examen bloqueado",
   dismiss: "Cerrar",
+  pendingEvents: (count: number) => (count === 1 ? "1 evento pendiente de envío" : `${count} eventos pendientes de envío`),
+  pendingEventsWarning: "Revisa tu conexión: los cambios se guardan aquí y se enviarán al recuperarla.",
 } as const;
 
 export type AssistSlotContext = {
@@ -75,9 +82,29 @@ export type SessionConsolePageProps = {
   deps?: { bootstrap?: Partial<BootstrapDeps> | undefined, session?: SimSessionDeps | undefined } | undefined
 };
 
-type RunningProps = Omit<SessionConsolePageProps, "deps"> & { boot: SessionBoot, sessionDeps?: SimSessionDeps | undefined };
+type RunningProps = Omit<SessionConsolePageProps, "deps"> & {
+  boot: SessionBoot
+  sessionDeps?: SimSessionDeps | undefined
+  /** Rebuilds the session from the server (divergence). */
+  onResync: () => void
+};
 
-function RunningSession({ boot, sessionId, renderAssist, onEnded, sessionDeps }: RunningProps) {
+function PendingEventsIndicator({ count }: { count: number }) {
+  if (count === 0) {
+    return null;
+  }
+
+  const warn = count >= EVENT_PENDING_WARNING_COUNT;
+
+  return (
+    <p className={cx(styles.pendingEvents)} data-tone={warn ? "warning" : "info"} role="status">
+      {SESSION_PAGE_COPY.pendingEvents(count)}
+      {warn ? ` — ${SESSION_PAGE_COPY.pendingEventsWarning}` : null}
+    </p>
+  );
+}
+
+function RunningSession({ boot, sessionId, renderAssist, onEnded, sessionDeps, onResync }: RunningProps) {
   const router = useRouter();
   const { record } = boot;
   const version = checkEngineVersion(record.mode, record.engineVersion);
@@ -115,7 +142,6 @@ function RunningSession({ boot, sessionId, renderAssist, onEnded, sessionDeps }:
     <>
       {version.status === "warning" ? <p className={cx(styles.banner)} data-tone="warning" role="status">{version.message}</p> : null}
       {session.workerError ? <p className={cx(styles.banner)} data-tone="error" role="alert">{session.workerError}</p> : null}
-      {session.syncError ? <p className={cx(styles.banner)} data-tone="error" role="alert">{session.syncError}</p> : null}
       {endError ? <p className={cx(styles.banner)} data-tone="error" role="alert">{endError}</p> : null}
       {session.changeError ? (
         <p className={cx(styles.banner)} data-tone="warning" role="alert">
@@ -156,6 +182,7 @@ function RunningSession({ boot, sessionId, renderAssist, onEnded, sessionDeps }:
           onResume={session.resume}
         />
         <div className={cx(styles.sessionActions)}>
+          <PendingEventsIndicator count={session.pendingEvents} />
           {renderAssist ? renderAssist({ sessionId, mode: record.mode, simTimeMs: session.simTimeMs }) : null}
           <button
             type="button"
@@ -193,6 +220,7 @@ function RunningSession({ boot, sessionId, renderAssist, onEnded, sessionDeps }:
         onConfirm={() => void finish()}
         onCancel={() => setConfirming(false)}
       />
+      <DivergenceDialog open={session.diverged} detail={session.syncError} onReload={onResync} />
     </>
   );
 }
@@ -233,6 +261,7 @@ export function SessionConsolePage({ sessionId, renderAssist, onEnded, deps }: S
         renderAssist={renderAssist}
         onEnded={onEnded}
         sessionDeps={deps?.session}
+        onResync={retry}
       />
     );
   }

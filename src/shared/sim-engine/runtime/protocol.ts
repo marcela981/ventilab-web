@@ -7,8 +7,9 @@
 *   finite seed, an allowed multiplier and finite numeric options. Depends on the engine types and the simulation
 *   loop types. v1.2 (T6): init may carry `initialEvents` (each with a finite non-negative simTimeMs) and a finite
 *   non-negative `startAtSimTimeMs` to resume a session. v1.3: an event may carry a client `id` (non-empty string of
-*   at most 64 characters, as the backend allows); batches report its confirmation with the effective time.
-* Versión: 1.3
+*   at most 64 characters, as the backend allows); batches report its confirmation with the effective time. v1.4:
+*   init may carry a finite non-negative `initialBacklogMs` (wall-clock resume).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -31,6 +32,8 @@ export interface SimInitOptions {
   /** Stored session events to replay while catching up to startAtSimTimeMs (resume). */
   readonly initialEvents?: readonly SimEventInput[];
   readonly startAtSimTimeMs?: number;
+  /** Simulated milliseconds owed by the wall clock at init, caught up after start (wall-clock resume). */
+  readonly initialBacklogMs?: number;
 }
 
 export type SimCommand =
@@ -88,6 +91,7 @@ function isInitOptions(value: unknown): boolean {
     isOptionalFinite(value.maxCatchUpMsPerTick) &&
     isOptionalFinite(value.metricsEveryMs) &&
     (value.startAtSimTimeMs === undefined || isNonNegativeFinite(value.startAtSimTimeMs)) &&
+    (value.initialBacklogMs === undefined || isNonNegativeFinite(value.initialBacklogMs)) &&
     (value.initialEvents === undefined ||
       (Array.isArray(value.initialEvents) &&
         value.initialEvents.every((event: unknown) => isEventInput(event) && isRecord(event) && isNonNegativeFinite(event.simTimeMs))))

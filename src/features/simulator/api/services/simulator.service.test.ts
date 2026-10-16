@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Simulator services tests
-* Descripción: Tests of the simulator API services against msw: the case definition GET by id (URI-encoded), the FREE session start (POST body exactly {mode, caseId, timeMultiplier}, response mapped to a started session), the catalog query (server-side filters, null filters omitted), the ids query of the history titles and the history query (optional filters omitted), the list item → card mapping (no badge without a boolean flag) and the history duration. v1.1: the catalog query always carries status=PUBLISHED. Depends on Vitest, msw and the simulator test helpers.
-* Versión: 1.1
+* Descripción: Tests of the simulator API services against msw: the case definition GET by id (URI-encoded), the FREE session start (POST body exactly {mode, caseId, timeMultiplier}, response mapped to a started session), the catalog query (server-side filters, null filters omitted), the ids query of the history titles and the history query (optional filters omitted), the list item → card mapping (no badge without a boolean flag) and the history duration. v1.1: the catalog query always carries status=PUBLISHED. v1.2: the keepalive page-hide POST of the events (Bearer token, contract body, nothing sent for an empty list) and the session start read from the history ids filter. Depends on Vitest, msw, the token storage and the simulator test helpers.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,12 +11,19 @@
 
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
+import { waitFor } from "@testing-library/react";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { clearTokens, setAccessToken } from "@shared/api-client/token-storage";
 import { buildCatalogQuery, NO_CATALOG_FILTERS } from "../../application/entities/simulator.entity";
 import { apiUrl, caseItemDto, envelope, errorResponse, sessionDto, startedSessionDto } from "../../application/pages/simulator-test-helpers";
 import { toCaseCard, toSessionHistoryItem } from "../mappers/simulator.mapper";
 import { clinicalCasesByIdsQuery, clinicalCasesQuery, fetchCaseDefinition } from "./clinical-cases.service";
-import { sessionHistoryQuery, startSimulationSession } from "./simulation-sessions.service";
+import {
+  fetchSessionStartedAt,
+  sendSimulationEventsKeepalive,
+  sessionHistoryQuery,
+  startSimulationSession,
+} from "./simulation-sessions.service";
 
 const server = setupServer();
 
@@ -33,6 +40,38 @@ afterAll(() => {
 });
 
 describe("simulator services", () => {
+  it("sends the page-hide events with a keepalive POST carrying the Bearer token and the contract body", async() => {
+    const requests: Array<{ auth: string | null, body: unknown }> = [];
+    const event = { id: "e1", simTimeMs: 4321, type: "PARAM_CHANGE" as const, payload: { changes: { peepCmH2O: 8 } } };
+
+    setAccessToken("token-1");
+    server.use(http.post(apiUrl("/api/simulation/sessions/s%201/events"), async({ request }) => {
+      requests.push({ auth: request.headers.get("authorization"), body: await request.json() });
+
+      return HttpResponse.json(envelope({ accepted: 1, duplicates: 0, lastSimTimeMs: 4321 }));
+    }));
+
+    sendSimulationEventsKeepalive("s 1", [event]);
+    sendSimulationEventsKeepalive("s 1", []);
+
+    await waitFor(() => expect(requests).toHaveLength(1));
+    expect(requests[0]).toEqual({ auth: "Bearer token-1", body: { events: [event] } });
+    clearTokens();
+  });
+
+  it("reads the session start from the history ids filter", async() => {
+    const queries: string[] = [];
+
+    server.use(http.get(apiUrl("/api/simulation/sessions/history"), ({ request }) => {
+      queries.push(new URL(request.url).search);
+
+      return HttpResponse.json(envelope([sessionDto("s1", { startedAt: "2026-10-15T10:00:00.000Z" })]));
+    }));
+
+    expect(await fetchSessionStartedAt("s1")).toBe("2026-10-15T10:00:00.000Z");
+    expect(new URLSearchParams(queries[0]).get("ids")).toBe("s1");
+  });
+
   it("starts a FREE session with the exact contract body and maps the response", async() => {
     const bodies: unknown[] = [];
 

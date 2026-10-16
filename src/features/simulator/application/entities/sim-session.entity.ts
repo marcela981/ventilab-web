@@ -5,8 +5,9 @@
 *   the worker starts from (recorded PARAM_CHANGE events + start time), the client event sent to
 *   POST /simulation/sessions/{id}/events, the engine version check (FREE: warning; EXAM: block before the worker
 *   starts) and the guards that turn the opaque `case` object and the time multiplier of the contract into engine
-*   types. Depends on the sim-engine public API and the simulator config.
-* Versión: 1.0
+*   types. Depends on the sim-engine public API and the simulator config. v1.1: the record keeps `startedAt` and the
+*   boot carries the wall-clock backlog and the unsent events of this tab.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,6 +27,8 @@ export type SessionRecord = {
   engineVersion: string
   timeMultiplier: TimeMultiplier
   expiresAt: string | null
+  /** Wall-clock start of the session (ISO), from the start response or the history; null when unknown. */
+  startedAt: string | null
   engineCase: EngineCase
   /** Clinical case id (the engine case id is the clinical case id). */
   caseId: string
@@ -56,19 +59,25 @@ export type SessionState = {
   expiresAt: string | null
 };
 
-/** What the worker starts from: the session, the events already stored and the simulated time to resume at. */
-export type SessionBoot = {
-  record: SessionRecord
-  initialEvents: readonly ParamChangeEvent[]
-  startAtSimTimeMs: number
-};
-
 /** One client event of POST /simulation/sessions/{id}/events; the id is the idempotency key. */
 export type ClientSessionEvent = {
   id: string
   simTimeMs: number
   type: "PARAM_CHANGE"
   payload: { changes: Partial<VentilatorSettings> }
+};
+
+/**
+ * What the worker starts from: the session, the events to replay (stored on the server plus the unsent ones of this
+ * tab) and the simulated time to resume at, plus the simulated time the wall clock still owes (caught up by the
+ * loop through its normal backlog) and the unsent events to send before the simulation starts.
+ */
+export type SessionBoot = {
+  record: SessionRecord
+  initialEvents: readonly ParamChangeEvent[]
+  startAtSimTimeMs: number
+  initialBacklogMs: number
+  pendingEvents: readonly ClientSessionEvent[]
 };
 
 export type EngineVersionCheck =

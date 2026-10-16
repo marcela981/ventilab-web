@@ -4,8 +4,9 @@
 *   acknowledged and later events sent in the next request, exponential backoff on network and 5xx failures with
 *   the same ids on re-send, no retry on a 4xx (reported and dropped), flush() for the end (resolves when empty,
 *   rejects after its attempts while keeping the events) and overlapping flushes without loss or duplicate sends.
-*   Depends on vitest and the api-client error type.
-* Versión: 1.0
+*   Depends on vitest and the api-client error type. v1.1: a refused batch is re-sent event by event (only the
+*   offending event is dropped) and onChange/snapshot report the unacknowledged events.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -148,6 +149,45 @@ describe("createEventQueue", () => {
     queue.enqueue({ id: "b" });
     await queue.flush();
     expect(calls).toEqual([["a"], ["b"]]);
+  });
+
+  it("re-sends a refused batch one event at a time so only the offending event is dropped", async() => {
+    const { queue, calls, onRejected } = setup((events) => (
+      events.some((event) => event.id === "b") ? Promise.reject(clientError()) : Promise.resolve()
+    ));
+
+    queue.enqueue({ id: "a" });
+    queue.enqueue({ id: "b" });
+    queue.enqueue({ id: "c" });
+    await queue.flush();
+
+    expect(calls).toEqual([["a", "b", "c"], ["a"], ["b"], ["c"]]);
+    expect(onRejected).toHaveBeenCalledTimes(1);
+    expect(onRejected.mock.calls[0]?.[1]).toEqual([{ id: "b" }]);
+    expect(queue.pendingCount()).toBe(0);
+
+    // Back to normal batches once the isolated events are settled.
+    queue.enqueue({ id: "d" });
+    queue.enqueue({ id: "e" });
+    await queue.flush();
+    expect(calls.at(-1)).toEqual(["d", "e"]);
+  });
+
+  it("reports every change of the unacknowledged events and exposes a snapshot", async() => {
+    const changes: string[][] = [];
+    const queue = createEventQueue<TestEvent>({
+      send: () => Promise.resolve(),
+      onChange: (pending) => changes.push(pending.map((event) => event.id)),
+    });
+
+    queue.enqueue({ id: "a" });
+    queue.enqueue({ id: "b" });
+    expect(queue.snapshot()).toEqual([{ id: "a" }, { id: "b" }]);
+    await queue.flush();
+
+    expect(changes).toEqual([["a"], ["a", "b"], []]);
+    expect(queue.snapshot()).toEqual([]);
+    queue.dispose();
   });
 
   it("flush() sends immediately on end and resolves once the queue is empty", async() => {

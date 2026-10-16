@@ -5,8 +5,9 @@
 *   unavailable state and a retry. A result that arrives after the session id changed or the component unmounted is
 *   ignored, and the in-flight request is reused when the effect re-runs for the same key (React StrictMode), so a
 *   fresh record is booted once. The fetchers and the store are injectable for tests. Depends on the session bootstrap, the session store
-*   and the sessions service.
-* Versión: 1.0
+*   and the sessions service. v1.1: also passes the history `startedAt` reader, the event outbox mirror and the
+*   wall clock (wall-clock resume, unsent events after a reload).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,7 +16,8 @@
 */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { fetchSessionReplay, fetchSessionState } from "../../api/services/simulation-sessions.service";
+import { fetchSessionReplay, fetchSessionStartedAt, fetchSessionState } from "../../api/services/simulation-sessions.service";
+import { eventOutbox } from "../session/event-outbox";
 import { bootstrapSession } from "../session/session-bootstrap";
 import type { BootstrapDeps, BootstrapResult } from "../session/session-bootstrap";
 import { sessionStore } from "../session/session-store";
@@ -55,6 +57,9 @@ export function useSessionBootstrap(sessionId: string | null, deps?: Partial<Boo
           store: injected.store ?? sessionStore,
           fetchReplay: injected.fetchReplay ?? fetchSessionReplay,
           fetchState: injected.fetchState ?? fetchSessionState,
+          fetchStartedAt: injected.fetchStartedAt ?? fetchSessionStartedAt,
+          outbox: injected.outbox ?? eventOutbox,
+          now: injected.now ?? Date.now,
         }),
       };
     }

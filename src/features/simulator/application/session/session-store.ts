@@ -5,7 +5,8 @@
 *   resume after a reload without asking the server for the seed and the case. It is a per-viewer convenience only:
 *   every storage read and write is wrapped in try/catch (private windows, blocked storage, quota) and a stored value
 *   is checked before use, so the console works without it. Depends on the session entities and the console config.
-* Versión: 1.0
+*   v1.1: the record keeps the session `startedAt` (null for entries stored before it existed).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -68,6 +69,7 @@ function parseRecord(raw: string | null, sessionId: string): SessionRecord | nul
       engineVersion: candidate.engineVersion,
       timeMultiplier: toTimeMultiplier(candidate.timeMultiplier),
       expiresAt: typeof candidate.expiresAt === "string" ? candidate.expiresAt : null,
+      startedAt: typeof candidate.startedAt === "string" ? candidate.startedAt : null,
       engineCase: candidate.engineCase,
       caseId: candidate.caseId,
       fresh: candidate.fresh === true,

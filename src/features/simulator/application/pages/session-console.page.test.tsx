@@ -9,8 +9,11 @@
 *   without React state. Background-tab catch-up is covered by the T1 sim-loop tests. Depends on vitest, Testing
 *   Library, msw and the simulator test helpers. v1.1: the worker receives the event with its id and no time; it is
 *   enqueued only after the batch acknowledgement, with the effective time; end waits for a pending acknowledgement;
-*   a rejected change shows an error, rolls the setting back and is never sent.
-* Versión: 1.1
+*   a rejected change shows an error, rolls the setting back and is never sent. v1.2: the end time is the first paused
+*   batch; a refused event opens the blocking divergence dialog and its reload rebuilds from the server; the outbox
+*   mirror, the pending indicator and the keepalive page-hide send; unsent events of a reload are replayed and sent
+*   before start; metric re-renders are throttled with a trailing refresh; init carries the boot backlog.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -23,13 +26,15 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@shared/api-client/api-error";
-import type { SimCommand } from "@shared/sim-engine";
+import { replay } from "@shared/sim-engine";
+import type { SimBatch, SimCommand } from "@shared/sim-engine";
 import type { ConsoleSampleBatch } from "@shared/ventilator-console";
 import type { SessionReplay } from "../entities/sim-session.entity";
 import { useSimSession } from "../hooks/use-sim-session";
+import { createEventOutbox } from "../session/event-outbox";
 import { createSessionStore } from "../session/session-store";
 import type { SessionStore } from "../session/session-store";
-import { buildBatch, buildBoot, buildEngineCase, buildRecord, createFakeWorker } from "../session/sim-session-test-helpers";
+import { buildBatch, buildBoot, buildEngineCase, buildRecord, createFakeWorker, createMemoryStorage } from "../session/sim-session-test-helpers";
 import type { FakeWorker } from "../session/sim-session-test-helpers";
 import { SessionConsolePage } from "./session-console.page";
 import type { SessionConsolePageProps } from "./session-console.page";
@@ -84,17 +89,29 @@ afterEach(() => {
 type Harness = {
   worker: FakeWorker
   store: SessionStore
+  storage: ReturnType<typeof createMemoryStorage>
   createWorker: ReturnType<typeof vi.fn>
   sendEvents: ReturnType<typeof vi.fn>
+  sendKeepalive: ReturnType<typeof vi.fn>
   endSession: ReturnType<typeof vi.fn>
   fetchReplay: ReturnType<typeof vi.fn>
 };
 
-function renderPage(options: { record?: Parameters<typeof buildRecord>[0] | null, replay?: () => Promise<SessionReplay>, props?: Partial<SessionConsolePageProps> } = {}): Harness {
+type RenderOptions = {
+  record?: Parameters<typeof buildRecord>[0] | null
+  replay?: () => Promise<SessionReplay>
+  props?: Partial<SessionConsolePageProps>
+  storage?: ReturnType<typeof createMemoryStorage>
+};
+
+function renderPage(options: RenderOptions = {}): Harness {
   const worker = createFakeWorker();
   const store = createSessionStore(() => null);
+  const storage = options.storage ?? createMemoryStorage();
+  const outbox = createEventOutbox(() => storage);
   const createWorker = vi.fn(() => worker);
   const sendEvents = vi.fn(() => Promise.resolve({ accepted: 1, duplicates: 0, lastSimTimeMs: 0 }));
+  const sendKeepalive = vi.fn();
   const endSession = vi.fn(() => Promise.resolve());
   const fetchReplay = vi.fn(options.replay ?? (() => Promise.reject(new Error("no replay"))));
 
@@ -108,16 +125,18 @@ function renderPage(options: { record?: Parameters<typeof buildRecord>[0] | null
       deps={{
         bootstrap: {
           store,
+          outbox,
           fetchReplay,
           fetchState: () => Promise.resolve({ id: "s1", status: "ACTIVE", simTimeMs: 6000, expiresAt: null }),
+          fetchStartedAt: () => Promise.resolve(null),
         },
-        session: { createWorker, sendEvents, endSession, createEventId: () => "evt-1" },
+        session: { createWorker, sendEvents, sendKeepalive, endSession, outbox, createEventId: () => "evt-1" },
       }}
       {...options.props}
     />,
   );
 
-  return { worker, store, createWorker, sendEvents, endSession, fetchReplay };
+  return { worker, store, storage, createWorker, sendEvents, sendKeepalive, endSession, fetchReplay };
 }
 
 function sentOfType<T extends SimCommand["type"]>(worker: FakeWorker, type: T): Array<Extract<SimCommand, { type: T }>> {
@@ -134,10 +153,15 @@ async function startRunning(worker: FakeWorker, simTimeMs = 4321): Promise<void>
 
 const increasePeep = () => fireEvent.click(screen.getByRole("button", { name: "Aumentar PEEP" }));
 
-async function endThroughDialog(): Promise<void> {
+/** Confirms the end and answers the pause with a paused batch at `pausedAtMs` (the end time). */
+async function endThroughDialog(worker: FakeWorker, pausedAtMs = 4400): Promise<void> {
   fireEvent.click(screen.getByRole("button", { name: "Finalizar sesión" }));
   fireEvent.click(await screen.findByRole("button", { name: "Finalizar" }));
+  await waitFor(() => expect(sentOfType(worker, "pause").length).toBeGreaterThan(0));
+  act(() => worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: pausedAtMs, status: "paused" }) }));
 }
+
+const peepRaise = (id: string, simTimeMs: number) => ({ id, simTimeMs, type: "PARAM_CHANGE" as const, payload: { changes: { peepCmH2O: 6 } } });
 
 describe("SessionConsolePage", () => {
   it("initialises the worker from a fresh record with the session multiplier and starts it when ready", async() => {
@@ -197,14 +221,19 @@ describe("SessionConsolePage", () => {
       type: "batch",
       batch: buildBatch({ simTimeMs: 4354, status: "running", confirmedEvents: [{ id: "evt-1", effectiveSimTimeMs: 4321 }] }),
     }));
-    await endThroughDialog();
+    // A running batch after the pause request does not decide the end time: the first paused batch does.
+    fireEvent.click(screen.getByRole("button", { name: "Finalizar sesión" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Finalizar" }));
+    await waitFor(() => expect(sentOfType(worker, "pause")).toHaveLength(1));
+    act(() => worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 4380, status: "running" }) }));
+    act(() => worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 4400, status: "paused" }) }));
 
     await waitFor(() => expect(router.push).toHaveBeenCalledWith("/simulator/sessions/s1/result"));
     expect(sendEvents).toHaveBeenCalledTimes(1);
     expect(sendEvents).toHaveBeenCalledWith("s1", [
       { id: "evt-1", simTimeMs: 4321, type: "PARAM_CHANGE", payload: { changes: { peepCmH2O: 8 } } },
     ]);
-    expect(endSession).toHaveBeenCalledWith("s1", 4354);
+    expect(endSession).toHaveBeenCalledWith("s1", 4400);
     expect(sentOfType(worker, "stop")).toHaveLength(1);
   });
 
@@ -214,7 +243,8 @@ describe("SessionConsolePage", () => {
     await startRunning(worker);
     increasePeep();
     fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
-    await endThroughDialog();
+    fireEvent.click(screen.getByRole("button", { name: "Finalizar sesión" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Finalizar" }));
 
     await waitFor(() => expect(sentOfType(worker, "pause")).toHaveLength(1));
     expect(sendEvents).not.toHaveBeenCalled();
@@ -252,7 +282,7 @@ describe("SessionConsolePage", () => {
 
     expect(await screen.findByText(/no se aplicó/i)).toBeInTheDocument();
     expect(peep()).toHaveAttribute("aria-valuenow", "5");
-    await endThroughDialog();
+    await endThroughDialog(worker);
     await waitFor(() => expect(router.push).toHaveBeenCalled());
     expect(sendEvents).not.toHaveBeenCalled();
   });
@@ -264,7 +294,7 @@ describe("SessionConsolePage", () => {
     increasePeep();
     fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
     increasePeep();
-    await endThroughDialog();
+    await endThroughDialog(worker);
 
     await waitFor(() => expect(router.push).toHaveBeenCalled());
     expect(sentOfType(worker, "applyEvent")).toHaveLength(0);
@@ -276,7 +306,7 @@ describe("SessionConsolePage", () => {
 
     endSession.mockRejectedValueOnce(new ApiError({ code: "common.unknown", message: "", status: 500 }));
     await startRunning(worker);
-    await endThroughDialog();
+    await endThroughDialog(worker);
 
     expect(await screen.findByText(/No se pudo finalizar la sesión/)).toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
@@ -327,6 +357,97 @@ describe("SessionConsolePage", () => {
     expect(screen.getByText("La velocidad máxima se eligió al iniciar la práctica en el catálogo; aquí solo puedes bajarla.")).toBeInTheDocument();
   });
 
+  it("a refused event blocks the console as a divergence; reloading rebuilds the session from the server", async() => {
+    const { worker, sendEvents, fetchReplay, createWorker } = renderPage({
+      replay: () => Promise.resolve({ id: "s1", seed: 42, engineVersion: "1.0.0", timeMultiplier: 1, engineCase: buildEngineCase(), events: [] }),
+    });
+
+    sendEvents.mockRejectedValue(new ApiError({ code: "simulation.invalid_settings", message: "", status: 422 }));
+    await startRunning(worker);
+    increasePeep();
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
+    act(() => worker.emit({
+      type: "batch",
+      batch: buildBatch({ simTimeMs: 4354, status: "running", confirmedEvents: [{ id: "evt-1", effectiveSimTimeMs: 4321 }] }),
+    }));
+
+    const dialog = await screen.findByRole("alertdialog", { name: "La sesión local y la del servidor divergieron" }, { timeout: 6000 });
+
+    expect(dialog).toBeInTheDocument();
+    expect(fetchReplay).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Recargar sesión" }));
+    await waitFor(() => expect(fetchReplay).toHaveBeenCalledTimes(1));
+    // The console is rebuilt (a new worker) and the dialog is gone.
+    await waitFor(() => expect(createWorker).toHaveBeenCalledTimes(2));
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+  });
+
+  it("mirrors unsent events to sessionStorage, shows them as pending and sends them with keepalive on page hide", async() => {
+    const { worker, sendEvents, sendKeepalive, storage } = renderPage();
+    let release: () => void = () => undefined;
+
+    sendEvents.mockImplementation(() => new Promise((resolve) => {
+      release = () => resolve({ accepted: 1, duplicates: 0, lastSimTimeMs: 4321 });
+    }));
+    await startRunning(worker);
+    increasePeep();
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
+    act(() => worker.emit({
+      type: "batch",
+      batch: buildBatch({ simTimeMs: 4354, status: "running", confirmedEvents: [{ id: "evt-1", effectiveSimTimeMs: 4321 }] }),
+    }));
+
+    expect(await screen.findByText("1 evento pendiente de envío")).toBeInTheDocument();
+    expect(JSON.parse(storage.data.get("ventylab.simulator.outbox.s1") ?? "[]")).toEqual([peepRaise("evt-1", 4321)]);
+
+    act(() => {
+      window.dispatchEvent(new Event("pagehide"));
+    });
+    expect(sendKeepalive).toHaveBeenCalledWith("s1", [peepRaise("evt-1", 4321)]);
+
+    await waitFor(() => expect(sendEvents).toHaveBeenCalled(), { timeout: 6000 });
+    act(() => release());
+    await waitFor(() => expect(screen.queryByText("1 evento pendiente de envío")).not.toBeInTheDocument());
+    expect(storage.data.has("ventylab.simulator.outbox.s1")).toBe(false);
+  });
+
+  it("after a reload, replays and sends the unsent events (minus the stored ones) before starting the simulation", async() => {
+    const storage = createMemoryStorage();
+
+    storage.setItem("ventylab.simulator.outbox.s1", JSON.stringify([peepRaise("e1", 3000), peepRaise("e2", 5000)]));
+
+    const sendOrder: string[] = [];
+    const { worker, sendEvents } = renderPage({
+      record: null,
+      storage,
+      replay: () => Promise.resolve({
+        id: "s1",
+        seed: 9,
+        engineVersion: "1.0.0",
+        timeMultiplier: 1,
+        engineCase: buildEngineCase(),
+        events: [{ id: "e1", type: "PARAM_CHANGE", simTimeMs: 3000, payload: { changes: { peepCmH2O: 6 } } }],
+      }),
+    });
+
+    sendEvents.mockImplementation((_id: string, events: Array<{ id: string }>) => {
+      sendOrder.push(`send:${events.map((event) => event.id).join(",")}`);
+
+      return Promise.resolve({ accepted: 1, duplicates: 0, lastSimTimeMs: 5000 });
+    });
+
+    await waitFor(() => expect(sentOfType(worker, "init")).toHaveLength(1));
+    expect(sentOfType(worker, "init")[0]?.options?.initialEvents).toEqual([
+      { type: "PARAM_CHANGE", simTimeMs: 3000, changes: { peepCmH2O: 6 } },
+      { type: "PARAM_CHANGE", simTimeMs: 5000, changes: { peepCmH2O: 6 } },
+    ]);
+    act(() => worker.emit({ type: "ready", engineVersion: "1.0.0" }));
+    expect(sentOfType(worker, "start")).toHaveLength(0);
+
+    await waitFor(() => expect(sentOfType(worker, "start")).toHaveLength(1));
+    expect(sendOrder).toEqual(["send:e2"]);
+  });
+
   it("explains that the session cannot be resumed when the server cannot rebuild it", async() => {
     renderPage({ record: null });
 
@@ -362,5 +483,45 @@ describe("useSimSession frame source", () => {
     expect(renders).toBe(before);
     expect(result.current.adapter?.frames).toBe(source);
     expect(source).toMatchObject({ sourceId: "s1", sampleRateHz: 50 });
+  });
+
+  it("throttles metric re-renders to the UI refresh interval and still shows the last snapshot", async() => {
+    const worker = createFakeWorker();
+    const boot = buildBoot();
+    let wallMs = 0;
+    let renders = 0;
+    const { result } = renderHook(() => {
+      renders += 1;
+
+      return useSimSession({ boot, blocked: false, deps: { createWorker: () => worker, now: () => wallMs } });
+    });
+    const { final } = replay(buildEngineCase(), 42, [], 2000);
+    const metrics: NonNullable<SimBatch["metrics"]> = final;
+
+    act(() => worker.emit({ type: "batch", batch: buildBatch({ status: "running", simTimeMs: 0 }) }));
+
+    const before = renders;
+
+    wallMs = 100;
+    act(() => worker.emit({ type: "batch", batch: buildBatch({ status: "running", simTimeMs: 1000, metrics }) }));
+    wallMs = 200;
+    act(() => worker.emit({ type: "batch", batch: buildBatch({ status: "running", simTimeMs: 2000, metrics }) }));
+    expect(renders).toBe(before);
+
+    // The trailing refresh at the end of the window shows the latest snapshot once.
+    await waitFor(() => expect(result.current.simTimeMs).toBe(2000));
+    expect(renders).toBe(before + 1);
+  });
+
+  it("passes the wall-clock backlog of the boot to the worker init", () => {
+    const worker = createFakeWorker();
+
+    renderHook(() => useSimSession({
+      boot: buildBoot({}, { startAtSimTimeMs: 6000, initialBacklogMs: 54_000 }),
+      blocked: false,
+      deps: { createWorker: () => worker },
+    }));
+
+    expect(sentOfType(worker, "init")[0]?.options).toMatchObject({ startAtSimTimeMs: 6000, initialBacklogMs: 54_000 });
   });
 });

@@ -15,8 +15,9 @@
 *   confirmed in the next batch as {id, effectiveSimTimeMs} with the simulated time the engine really applied it, so
 *   the caller records that exact time (local run == server replay); a rejected event keeps its id and is never
 *   confirmed, and the stored events replayed at resume are not confirmed again. Depends on
-*   src/shared/sim-engine/engine.
-* Versión: 1.3
+*   src/shared/sim-engine/engine. v1.4: `initialBacklogMs` seeds the accumulator (wall-clock resume after a reload):
+*   it is owed until start and then caught up in the usual bounded chunks, streamed like any other catch-up.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -104,6 +105,11 @@ export interface SimLoopOptions {
   readonly initialEvents?: readonly SimEventInput[];
   /** Simulated time the loop starts from (resume); the engine is stepped there at creation. Default 0. */
   readonly startAtSimTimeMs?: number;
+  /**
+   * Simulated milliseconds already owed at creation (wall-clock resume): caught up after start through the normal
+   * bounded backlog, so the catch-up is stepped and streamed, never invented. Default 0.
+   */
+  readonly initialBacklogMs?: number;
 }
 
 export interface SimLoop {
@@ -164,6 +170,12 @@ export function createSimLoop(engineCase: EngineCase, seed: number, options: Sim
     throw new RangeError("startAtSimTimeMs must be a finite non-negative number");
   }
 
+  const initialBacklogMs = options.initialBacklogMs ?? 0;
+
+  if (!Number.isFinite(initialBacklogMs) || initialBacklogMs < 0) {
+    throw new RangeError("initialBacklogMs must be a finite non-negative number");
+  }
+
   // At least one fixed step per tick, so a misconfigured bound can never stall the loop.
   const maxStepsPerTick = Math.max(1, Math.floor(maxCatchUpMs / fixedStepMs));
   const state: EngineState = createSimulation(engineCase, seed, options.engineOptions ?? {});
@@ -171,7 +183,7 @@ export function createSimLoop(engineCase: EngineCase, seed: number, options: Sim
   let status: SimLoopStatus = "idle";
   let multiplier: TimeMultiplier = options.multiplier ?? 1;
   let lastWallMs = 0;
-  let accumulatorMs = 0;
+  let accumulatorMs = initialBacklogMs;
   let nextMetricsAtMs = 0;
   let eventOrder = 0;
   let scheduled: ScheduledEvent[] = [];

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useStartPractice
-* Descripción: Starts a FREE practice of a clinical case (POST /api/simulation/sessions with mode FREE, the case id and the time multiplier, default ×1 from the contract) and navigates to the session console /simulator/sessions/[id]. One start at a time (a second call while pending returns busy); the pending case id drives the card's loading state and a failure is reported per case with its Spanish message. A started session revalidates the session history. v1.1 (T6): the start response is saved in the session store (fresh record with mode FREE and the clinical case id) before navigating, so the console boots without asking the server. v1.2: only the POST belongs to the start error; once the session exists, a failed navigation is logged and the start still succeeds (the session can be resumed from "Mis sesiones"). Depends on next/router, SWR, the sessions service, the simulator routes, config and error messages.
-* Versión: 1.2
+* Descripción: Starts a FREE practice of a clinical case (POST /api/simulation/sessions with mode FREE, the case id and the time multiplier, default ×1 from the contract) and navigates to the session console /simulator/sessions/[id]. One start at a time (a second call while pending returns busy); the pending case id drives the card's loading state and a failure is reported per case with its Spanish message. A started session revalidates the session history. v1.1 (T6): the start response is saved in the session store (fresh record with mode FREE and the clinical case id) before navigating, so the console boots without asking the server. v1.2: only the POST belongs to the start error; once the session exists, a failed navigation is logged and the start still succeeds (the session can be resumed from "Mis sesiones"). v1.3: the stored record keeps `startedAt` (wall-clock resume after a reload). Depends on next/router, SWR, the sessions service, the simulator routes, config and error messages.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -75,6 +75,7 @@ export function useStartPractice(): UseStartPracticeResult {
           engineVersion: session.engineVersion,
           timeMultiplier: toTimeMultiplier(session.timeMultiplier),
           expiresAt: session.expiresAt,
+          startedAt: session.startedAt,
           engineCase: session.engineCase,
           caseId,
           fresh: true,
