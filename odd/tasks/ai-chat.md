@@ -59,7 +59,8 @@ Route per task: D = delegated writer, I = inline.
 
 ## Progress / evidence
 - Phase 1 audit: `odd/ai-chat-audit.md` (2026-10-15).
-- Commits on master: 34a2180 (S1), 3edc4ca (S2), b113e10, 293b66a (A1), f1d51bf (A2), 16d5def (A3), e64b306, plus the closing docs commit.
+- Commits on master: 34a2180 (S1), 3edc4ca (S2), b113e10, 293b66a (A1), f1d51bf (A2), 16d5def (A3), e64b306, 903a31d (docs), 5401359, and the ready-flag fix.
+- Closing review slice 16d5def..903a31d: APPROVED and acknowledged. Its WARNING (a failure after load showed "No se pudo abrir") was fixed in 5401359, which was reviewed, APPROVED and acknowledged. Its own WARNING (the ready flag is not cleared when the drawer unmounts for another reason, such as a session change) and its SUGGESTION were fixed in the last commit. That last commit was not re-reviewed: it is a 10-line follow-up, under the slice budget. Its tests pass, but the session-change path is covered only by code reasoning.
 
 ## Next step
 The author:

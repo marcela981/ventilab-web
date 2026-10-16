@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AiChatProvider
-* Descripción: Global state of the AI assistant drawer, mounted once in pages/_app.js above the pages so it survives navigation: whether the drawer is open, the conversation of its free chat (null = a new chat; set by onConversationCreated after the first send) and a panel key that remounts the chat panel for "Nueva conversación". The drawer (ChatPanel, markdown, KaTeX) is loaded through React.lazy + retryImport only when it is first opened and stays mounted afterwards, so the state of the chat persists across closes; it only renders for an authenticated backend session, and the state resets when the session user changes. On the /assistant routes (the full-page chat) the drawer closes and its panel remounts, so a later open reloads the conversation from the server instead of showing a stale thread. v1.1 (A3 review R3-drawer-load-failure-silent): if the drawer chunk fails to import or the drawer throws while rendering, the provider closes and unmounts it (the launcher's aria-expanded/aria-controls stay truthful), shows the "No se pudo abrir el asistente. Inténtalo de nuevo." error toast of the shared ToastProvider (when present) and creates a new lazy component, so the next click retries the load. v1.2 (closing review R3-failure-after-successful-load): a failure after the drawer had already rendered shows a runtime message ("El asistente tuvo un problema y se cerró. Puedes volver a abrirlo.") instead of the open-failure one; the conversation id survives, so the next open reloads it from the server. This module stays tiny for the app shell bundle: no markdown, KaTeX or ChatPanel import at module level. Depends on React, next/router, @shared/session, the design-system toast context, @shared/lib/retry-import and the AI chat routes (ASSISTANT_URL).
-* Versión: 1.2
+* Descripción: Global state of the AI assistant drawer, mounted once in pages/_app.js above the pages so it survives navigation: whether the drawer is open, the conversation of its free chat (null = a new chat; set by onConversationCreated after the first send) and a panel key that remounts the chat panel for "Nueva conversación". The drawer (ChatPanel, markdown, KaTeX) is loaded through React.lazy + retryImport only when it is first opened and stays mounted afterwards, so the state of the chat persists across closes; it only renders for an authenticated backend session, and the state resets when the session user changes. On the /assistant routes (the full-page chat) the drawer closes and its panel remounts, so a later open reloads the conversation from the server instead of showing a stale thread. v1.1 (A3 review R3-drawer-load-failure-silent): if the drawer chunk fails to import or the drawer throws while rendering, the provider closes and unmounts it (the launcher's aria-expanded/aria-controls stay truthful), shows the "No se pudo abrir el asistente. Inténtalo de nuevo." error toast of the shared ToastProvider (when present) and creates a new lazy component, so the next click retries the load. v1.2 (closing review R3-failure-after-successful-load): a failure after the drawer had already rendered shows a runtime message ("El asistente tuvo un problema y se cerró. Puedes volver a abrirlo.") instead of the open-failure one (v1.3: the ready flag is cleared whenever the drawer unmounts); the conversation id survives, so the next open reloads it from the server. This module stays tiny for the app shell bundle: no markdown, KaTeX or ChatPanel import at module level. Depends on React, next/router, @shared/session, the design-system toast context, @shared/lib/retry-import and the AI chat routes (ASSISTANT_URL).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -77,10 +77,12 @@ class DrawerErrorBoundary extends Component<DrawerBoundaryProps, DrawerBoundaryS
 
 // Rendered after the drawer inside its Suspense boundary: it only mounts once the drawer chunk resolved and the
 // drawer rendered, so it tells a failure while opening apart from a later failure.
-function DrawerReady({ onReady }: { onReady: () => void }) {
+function DrawerReady({ onReady, onGone }: { onReady: () => void, onGone: () => void }) {
   useEffect(() => {
     onReady();
-  }, [onReady]);
+
+    return onGone;
+  }, [onReady, onGone]);
 
   return null;
 }
@@ -118,6 +120,9 @@ export function AiChatProvider({ children }: AiChatProviderProps) {
   const drawerReadyRef = useRef(false);
   const markDrawerReady = useCallback(() => {
     drawerReadyRef.current = true;
+  }, []);
+  const clearDrawerReady = useCallback(() => {
+    drawerReadyRef.current = false;
   }, []);
 
   // Another user (or none) took the session: the previous chat must not leak (state update during render).
@@ -176,7 +181,7 @@ export function AiChatProvider({ children }: AiChatProviderProps) {
         <DrawerErrorBoundary onError={handleDrawerFailure}>
           <Suspense fallback={null}>
             <Drawer />
-            <DrawerReady onReady={markDrawerReady} />
+            <DrawerReady onReady={markDrawerReady} onGone={clearDrawerReady} />
           </Suspense>
         </DrawerErrorBoundary>
       ) : null}

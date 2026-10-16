@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AiChatProvider load-failure tests
-* Descripción: Failure paths of the lazily loaded AI assistant drawer (A3 review R3-drawer-load-failure-silent): when the drawer chunk fails to import, or the drawer throws while rendering, the provider closes it again (the launcher's aria-expanded goes back to false and it drops aria-controls), shows the "No se pudo abrir el asistente. Inténtalo de nuevo." error toast, and the next click on the launcher retries the load and opens the drawer. retryImport and the drawer module are mocked so each test decides whether the import or the render fails. v1.1 (closing review R3-failure-after-successful-load, R3-no-toast-provider-branch-untested): a failure after the drawer already loaded shows the runtime message instead of the open-failure one, and without a ToastProvider a failure only closes the drawer and the next click still retries. Depends on vitest, Testing Library, a mocked next/router, the session context and the shared ToastProvider.
-* Versión: 1.1
+* Descripción: Failure paths of the lazily loaded AI assistant drawer (A3 review R3-drawer-load-failure-silent): when the drawer chunk fails to import, or the drawer throws while rendering, the provider closes it again (the launcher's aria-expanded goes back to false and it drops aria-controls), shows the "No se pudo abrir el asistente. Inténtalo de nuevo." error toast, and the next click on the launcher retries the load and opens the drawer. retryImport and the drawer module are mocked so each test decides whether the import or the render fails. v1.1 (closing review R3-failure-after-successful-load, R3-no-toast-provider-branch-untested): a failure after the drawer already loaded shows the runtime message instead of the open-failure one, and without a ToastProvider a failure only closes the drawer and the next click still retries. v1.2: after a runtime failure, a later failure while opening shows the open-failure message again. Depends on vitest, Testing Library, a mocked next/router, the session context and the shared ToastProvider.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -143,6 +143,11 @@ describe("AiChatProvider drawer load failures", () => {
 
     expect(await screen.findByText(AI_CHAT_RUNTIME_ERROR)).toBeInTheDocument();
     expect(screen.queryByText(AI_CHAT_LOAD_ERROR)).not.toBeInTheDocument();
+    await waitFor(() => expect(launcher()).toHaveAttribute("aria-expanded", "false"));
+
+    // The ready flag was cleared: a failure on the next open is an open failure again.
+    fireEvent.click(launcher());
+    expect(await screen.findByText(AI_CHAT_LOAD_ERROR)).toBeInTheDocument();
     await waitFor(() => expect(launcher()).toHaveAttribute("aria-expanded", "false"));
 
     control.failRender = false;
