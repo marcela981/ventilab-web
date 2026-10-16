@@ -12,8 +12,10 @@
 *   console, the simulator hooks, components and CSS. v1.1: a refused event opens the blocking divergence dialog
 *   ("Recargar sesión" re-runs the bootstrap, which resumes from the server) instead of a banner, and the session bar
 *   shows "N eventos pendientes de envío" while events wait for the server (with a connection hint above the
-*   warning threshold).
-* Versión: 1.1
+*   warning threshold). v1.2 (T7): the session bar renders the built-in "Asesoría IA" launcher (lazy side panel)
+*   unless `renderAssist` replaces it; `assistancePolicy` lets the host pass the rubric policy (unknown = fail safe);
+*   the assist is active only while the session runs or is paused and not ending or diverged.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -29,11 +31,13 @@ import type { ReactNode } from "react";
 import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
 import { cx } from "@shared/lib/class-names";
 import { VentilatorConsole } from "@shared/ventilator-console";
+import { AssistLauncher } from "../components/assist-launcher";
 import { CasePanel } from "../components/case-panel";
 import { DivergenceDialog } from "../components/divergence-dialog";
 import { TimeControls } from "../components/time-controls";
 import { EVENT_PENDING_WARNING_COUNT } from "../config/sim-console.config";
 import { simulationModeLabel } from "../entities/simulator.entity";
+import type { AssistancePolicyValue } from "../entities/sim-assist.entity";
 import { checkEngineVersion } from "../entities/sim-session.entity";
 import type { SessionBoot } from "../entities/sim-session.entity";
 import type { SimulationMode } from "../config/simulator.config";
@@ -71,12 +75,16 @@ export type AssistSlotContext = {
   sessionId: string
   mode: SimulationMode
   simTimeMs: number
+  /** false while the session is starting, ending or ended. */
+  active: boolean
 };
 
 export type SessionConsolePageProps = {
   sessionId: string
-  /** Slot for the AI assist (T7); nothing is rendered without it. */
+  /** Replaces the built-in AI assist launcher (T7); a function returning null hides it. */
   renderAssist?: ((context: AssistSlotContext) => ReactNode) | undefined
+  /** Rubric assistance policy when the host knows it (T9 exam flow); unknown = fail safe (EXAM disabled). */
+  assistancePolicy?: AssistancePolicyValue | null | undefined
   /** Replaces the navigation to the result after a successful end (T9: return to the exam). */
   onEnded?: ((sessionId: string) => void | Promise<void>) | undefined
   deps?: { bootstrap?: Partial<BootstrapDeps> | undefined, session?: SimSessionDeps | undefined } | undefined
@@ -104,7 +112,7 @@ function PendingEventsIndicator({ count }: { count: number }) {
   );
 }
 
-function RunningSession({ boot, sessionId, renderAssist, onEnded, sessionDeps, onResync }: RunningProps) {
+function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnded, sessionDeps, onResync }: RunningProps) {
   const router = useRouter();
   const { record } = boot;
   const version = checkEngineVersion(record.mode, record.engineVersion);
@@ -114,6 +122,8 @@ function RunningSession({ boot, sessionId, renderAssist, onEnded, sessionDeps, o
   const [endError, setEndError] = useState<string | null>(null);
   const paused = session.status === "paused";
   const controllable = session.status === "running" || session.status === "paused";
+  // The assist never pauses the simulation; it closes (and aborts) once the end starts.
+  const assistActive = controllable && !session.ending && !session.diverged;
 
   const finish = async() => {
     setEndError(null);
@@ -183,7 +193,9 @@ function RunningSession({ boot, sessionId, renderAssist, onEnded, sessionDeps, o
         />
         <div className={cx(styles.sessionActions)}>
           <PendingEventsIndicator count={session.pendingEvents} />
-          {renderAssist ? renderAssist({ sessionId, mode: record.mode, simTimeMs: session.simTimeMs }) : null}
+          {renderAssist
+            ? renderAssist({ sessionId, mode: record.mode, simTimeMs: session.simTimeMs, active: assistActive })
+            : <AssistLauncher sessionId={sessionId} mode={record.mode} policy={assistancePolicy} active={assistActive} />}
           <button
             type="button"
             className={cx(styles.endButton)}
@@ -225,7 +237,7 @@ function RunningSession({ boot, sessionId, renderAssist, onEnded, sessionDeps, o
   );
 }
 
-export function SessionConsolePage({ sessionId, renderAssist, onEnded, deps }: SessionConsolePageProps) {
+export function SessionConsolePage({ sessionId, renderAssist, assistancePolicy, onEnded, deps }: SessionConsolePageProps) {
   const { state, retry } = useSessionBootstrap(sessionId, deps?.bootstrap);
   const mode = state.status === "ready" ? state.boot.record.mode : null;
 
@@ -259,6 +271,7 @@ export function SessionConsolePage({ sessionId, renderAssist, onEnded, deps }: S
         boot={state.boot}
         sessionId={sessionId}
         renderAssist={renderAssist}
+        assistancePolicy={assistancePolicy}
         onEnded={onEnded}
         sessionDeps={deps?.session}
         onResync={retry}

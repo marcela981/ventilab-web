@@ -1,0 +1,104 @@
+/*
+* Funcionalidad: Simulator AI assist panel styles
+* Descripción: CSS Module of the AI assist side panel of the running console (T7): a light surface fixed to the right
+*   edge over the dark console (full width on narrow screens, 28rem from 600 px), a header with the close button, the
+*   scrollable list of answers and the current stream, and the question form with its counter and actions. Design
+*   tokens (--vl-color-*, --vl-space-*, --vl-radius-*, --vl-shadow-*, --vl-z-*) only; no hex or rgb values.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--vl-z-drawer);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  color: var(--vl-color-text);
+  background: var(--vl-color-surface);
+  border-left: 1px solid var(--vl-color-border);
+  box-shadow: var(--vl-shadow-4);
+}
+
+@media (min-width: 600px) {
+  .panel {
+    width: 28rem;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-3) var(--vl-space-4);
+  border-bottom: 1px solid var(--vl-color-border);
+}
+
+.title {
+  margin: 0;
+  font: var(--mui-font-h6);
+  color: var(--vl-color-text);
+}
+
+.body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  min-height: 0;
+  padding: var(--vl-space-3) var(--vl-space-4);
+  overflow-y: auto;
+}
+
+.intro,
+.note {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.turn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.error {
+  flex-shrink: 0;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-3) var(--vl-space-4);
+  border-top: 1px solid var(--vl-color-border);
+}
+
+.formFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+}
+
+.counter {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-muted);
+}
+
+.actions {
+  display: flex;
+  gap: var(--vl-space-2);
+  margin-left: auto;
+}

@@ -12,8 +12,10 @@
 *   a rejected change shows an error, rolls the setting back and is never sent. v1.2: the end time is the first paused
 *   batch; a refused event opens the blocking divergence dialog and its reload rebuilds from the server; the outbox
 *   mirror, the pending indicator and the keepalive page-hide send; unsent events of a reload are replayed and sent
-*   before start; metric re-renders are throttled with a trailing refresh; init carries the boot backlog.
-* Versión: 1.2
+*   before start; metric re-renders are throttled with a trailing refresh; init carries the boot backlog. v1.3 (T7):
+*   the built-in "Asesoría IA" launcher (enabled only while running, EXAM without a policy disabled with its reason)
+*   and its replacement by a host renderAssist.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -446,6 +448,30 @@ describe("SessionConsolePage", () => {
 
     await waitFor(() => expect(sentOfType(worker, "start")).toHaveLength(1));
     expect(sendOrder).toEqual(["send:e2"]);
+  });
+
+  it("shows the built-in AI assist launcher, enabled only while the session runs; renderAssist replaces it", async() => {
+    const { worker } = renderPage();
+
+    expect(await screen.findByRole("button", { name: "Asesoría IA" })).toBeDisabled();
+    await startRunning(worker);
+    expect(screen.getByRole("button", { name: "Asesoría IA" })).toBeEnabled();
+  });
+
+  it("an EXAM session without a known assistance policy keeps the assist disabled with the reason", async() => {
+    const { worker } = renderPage({ record: { mode: "EXAM" }, props: { renderAssist: undefined } });
+
+    await startRunning(worker);
+    expect(screen.getByRole("button", { name: "Asesoría IA" })).toBeDisabled();
+    expect(screen.getByText("No se pudo verificar la política de asesoría")).toBeInTheDocument();
+  });
+
+  it("a host renderAssist replaces the built-in launcher", async() => {
+    const { worker } = renderPage({ props: { renderAssist: ({ active }) => <span>{active ? "slot activo" : "slot inactivo"}</span> } });
+
+    await startRunning(worker);
+    expect(screen.getByText("slot activo")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Asesoría IA" })).not.toBeInTheDocument();
   });
 
   it("explains that the session cannot be resumed when the server cannot rebuild it", async() => {

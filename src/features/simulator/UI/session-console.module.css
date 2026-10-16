@@ -4,8 +4,9 @@
 *   (simulated clock, speed and pause controls, AI assist slot, "Finalizar sesión"), the warning/error banners, the
 *   engine-version block and notices, and the collapsible case panel with the live objectives. Console tokens
 *   (--vl-console-*) and the shared spacing, radius and focus tokens only; no hex or rgb values. The case panel moves
-*   under the console below 1280 px. v1.1: the pending-events indicator of the session bar.
-* Versión: 1.1
+*   under the console below 1280 px. v1.1: the pending-events indicator of the session bar. v1.2: the reason shown
+*   next to a disabled "Asesoría IA" button.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -186,6 +187,12 @@
 
 .pendingEvents[data-tone="warning"] {
   color: var(--vl-console-pending);
+}
+
+.assistReason {
+  max-width: 18rem;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
 }
 
 .sessionLayout {
