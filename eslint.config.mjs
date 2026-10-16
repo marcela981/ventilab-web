@@ -66,7 +66,9 @@
  *   Solo src/features/simulator/composition/register-exam-practical-slot.ts, que registra el
  *   renderer del examen en el registro de evaluations sin arrastrar el barrel de evaluations a _app;
  *   el legado (pages/_app.js) puede importarlo.
- * Versión: 3.30
+ *   v3.31 (T10 simulation): src/shared/rubric-editor entra en NEW_SHARED_MODULES (editores de rúbrica
+ *   de parámetros y de resultados).
+ * Versión: 3.31
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -79,7 +81,7 @@ import boundaries from "eslint-plugin-boundaries";
 import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
 
-const NEW_SHARED_MODULES = "api-client,realtime,session,design-system,layouts,rich-content,waveforms,charts,ai-rating,media-upload,ai-conversation,lib,sim-engine,ventilator-console";
+const NEW_SHARED_MODULES = "api-client,realtime,session,design-system,layouts,rich-content,waveforms,charts,ai-rating,media-upload,ai-conversation,lib,sim-engine,ventilator-console,rubric-editor";
 const NEW_FEATURES = "auth,profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat,simulator";
 const SOURCE_EXT = "{js,jsx,ts,tsx,mjs,cjs}";
 // auth/ still holds legacy files at its root and in components/, so only its template

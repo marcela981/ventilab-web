@@ -1,0 +1,98 @@
+/*
+* Funcionalidad: Rubric editor styles
+* Descripción: Layout of the shared rubric editors. The parameter rubric classes (group, pager, criteria, criterion,
+*   parameterField, valueField, priorityField, issues) moved unchanged from the evaluation-authoring simulation styles;
+*   the outcome rubric adds the rubric-level row, the per-criterion actions and the weight total with its warning.
+*   Criterion rows wrap on narrow screens. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.criteria {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.criterion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--vl-space-2);
+}
+
+.parameterField {
+  flex: 1 1 12rem;
+}
+
+.valueField {
+  flex: 0 1 8rem;
+}
+
+.priorityField {
+  flex: 0 1 9rem;
+}
+
+.issues {
+  margin: 0;
+  padding-left: var(--vl-space-4);
+  font: var(--mui-font-caption);
+  color: var(--vl-color-error);
+}
+
+/* Outcome rubric */
+
+.settings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+}
+
+.settingField {
+  flex: 1 1 14rem;
+}
+
+.thresholdField {
+  flex: 1 1 14rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+}
+
+.total {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.totalWarning {
+  color: var(--vl-color-error);
+}

@@ -33,6 +33,7 @@
     "src/shared/lib/**/*",
     "src/shared/sim-engine/**/*",
     "src/shared/ventilator-console/**/*",
+    "src/shared/rubric-editor/**/*",
     "src/features/auth/api/**/*",
     "src/features/auth/application/**/*",
     "src/features/auth/index.ts",

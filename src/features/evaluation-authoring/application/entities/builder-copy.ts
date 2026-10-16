@@ -1,13 +1,15 @@
 /*
 * Funcionalidad: Builder copy
-* Descripción: Spanish UI copy of the evaluation builder (/evaluations/manage/new and /evaluations/manage/[id]/edit): page titles, metadata form labels, the question and scenario editors, the unsaved-changes indicator and guard, save results, the structure-locked banner and the delete confirmations. Shared by the builder hook, components and page. No dependencies. v1.1 (A3): copy of the SIMULATION editor (clinical case selector and rubric editor), the READY and DRAFT status actions, the client readiness check, the READY-evaluation hints and the structural edits dropped after a 409. v1.2 (A4): the "Vista previa como estudiante" action and its loading label. v1.3 (A3 review W2/S2): the clinical case filter reads "Filtrar por título" with the hint "Filtra solo esta página", and the non-blocking "Se recomienda vincular un caso clínico" hint of SIMULATION questions. v1.4 (S1): upload copy of the statement media and the option images (replaces the "próximamente" placeholder).
-* Versión: 1.4
+* Descripción: Spanish UI copy of the evaluation builder (/evaluations/manage/new and /evaluations/manage/[id]/edit): page titles, metadata form labels, the question and scenario editors, the unsaved-changes indicator and guard, save results, the structure-locked banner and the delete confirmations. Shared by the builder hook, components and page. Depends on @shared/rubric-editor (rubric copy). v1.1 (A3): copy of the SIMULATION editor (clinical case selector and rubric editor), the READY and DRAFT status actions, the client readiness check, the READY-evaluation hints and the structural edits dropped after a 409. v1.2 (A4): the "Vista previa como estudiante" action and its loading label. v1.3 (A3 review W2/S2): the clinical case filter reads "Filtrar por título" with the hint "Filtra solo esta página", and the non-blocking "Se recomienda vincular un caso clínico" hint of SIMULATION questions. v1.4 (S1): upload copy of the statement media and the option images (replaces the "próximamente" placeholder). v1.5 (T10 simulation): the rubric editor copy (`rubric*` keys, same texts) lives in @shared/rubric-editor and is spread back into BUILDER_COPY.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
 * Institución: Universidad del Valle
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
+
+import { PARAMETER_RUBRIC_COPY } from "@shared/rubric-editor";
 
 // TODO(i18n): move to an evaluation-authoring namespace in src/i18n.
 export const BUILDER_COPY = {
@@ -126,19 +128,8 @@ export const BUILDER_COPY = {
   simulationCasesPrevious: "Casos anteriores",
   simulationCasesNext: "Más casos",
   simulationCaseUnavailable: (id: string) => `Caso no disponible (${id})`,
-  rubricTitle: "Rúbrica",
-  rubricHelp: "Cada criterio compara un parámetro del ventilador con el valor esperado; el rango es opcional y solo para parámetros numéricos.",
-  rubricEmpty: "La rúbrica no tiene criterios. Agrega al menos uno para poder marcar la evaluación como lista.",
-  rubricParameter: (position: number) => `Parámetro del criterio ${position}`,
-  rubricExpected: (position: number) => `Valor esperado del criterio ${position}`,
-  rubricMin: (position: number) => `Mínimo del criterio ${position}`,
-  rubricMax: (position: number) => `Máximo del criterio ${position}`,
-  rubricPriority: (position: number) => `Prioridad del criterio ${position}`,
-  rubricRemove: (position: number) => `Quitar el criterio ${position}`,
-  rubricChooseParameter: "Elige un parámetro",
-  rubricAdd: "Agregar criterio",
-  rubricJustification: "Justificación (opcional)",
-  rubricIssues: "Problemas de la rúbrica",
+  // Rubric editor copy, shared with @shared/rubric-editor (same keys and texts).
+  ...PARAMETER_RUBRIC_COPY,
   // Status
   statusLabel: (label: string) => `Estado: ${label}`,
   markReady: "Marcar como lista (READY)",

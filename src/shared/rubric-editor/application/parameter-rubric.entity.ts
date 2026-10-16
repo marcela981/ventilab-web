@@ -1,7 +1,9 @@
 /*
-* Funcionalidad: Simulation rubric (builder)
-* Descripción: Pure rules of the rubric of a SIMULATION question, mirroring the backend value object (ventylab-server src/features/evaluation/domain/value-objects/simulation-rubric.ts): `{criteria:[{parameter, expectedValue, min?, max?, priority?}], justification?}` with numeric parameters tidalVolume, respiratoryRate, peep, fio2, maxPressure and text parameters ventilationMode, iERatio; at least one criterion, no duplicated parameter, min and max together or neither with min <= expectedValue <= max, no range on text parameters, priority CRITICO, IMPORTANTE or OPCIONAL (default OPCIONAL), justification a string. validateSimulationRubric applies the same rules in the same order and returns typed issues with Spanish messages; parseBackendRubricError translates the English details the backend sends in a readiness issue. Also the editable draft of the rubric (strings per field, stable client keys), its conversion to the value sent to the backend and back, and the Spanish labels. The backend rubric has no weights, thresholds or AI-assist policy, so none are offered. No dependencies.
-* Versión: 1.0
+* Funcionalidad: Parameter rubric (shared rubric-editor)
+* Descripción: Pure rules of the rubric of a SIMULATION question, mirroring the backend value object (ventylab-server src/features/evaluation/domain/value-objects/simulation-rubric.ts): `{criteria:[{parameter, expectedValue, min?, max?, priority?}], justification?}` with numeric parameters tidalVolume, respiratoryRate, peep, fio2, maxPressure and text parameters ventilationMode, iERatio; at least one criterion, no duplicated parameter, min and max together or neither with min <= expectedValue <= max, no range on text parameters, priority CRITICO, IMPORTANTE or OPCIONAL (default OPCIONAL), justification a string. validateSimulationRubric applies the same rules in the same order and returns typed issues with Spanish messages; parseBackendRubricError translates the English details the backend sends in a readiness issue. Also the editable draft of the rubric (strings per field, stable client keys), its conversion to the value sent to the backend and back, and the Spanish labels. The backend rubric has no weights, thresholds or AI-assist policy, so none are offered. No dependencies. v1.1 (T10 simulation): promoted unchanged from
+*   evaluation-authoring (`application/entities/simulation-rubric.entity.ts`) to `@shared/rubric-editor`; the builder
+*   re-imports it from there.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,7 +22,7 @@ export const RUBRIC_PARAMETERS: readonly RubricParameter[] = [...RUBRIC_NUMERIC_
 export const RUBRIC_PRIORITIES: readonly RubricPriority[] = ["CRITICO", "IMPORTANTE", "OPCIONAL"];
 export const DEFAULT_RUBRIC_PRIORITY: RubricPriority = "OPCIONAL";
 
-// TODO(i18n): move to an evaluation-authoring namespace in src/i18n.
+// TODO(i18n): move to a rubric-editor namespace in src/i18n.
 export const RUBRIC_PARAMETER_LABELS: Readonly<Record<RubricParameter, string>> = {
   tidalVolume: "Volumen tidal (mL)",
   respiratoryRate: "Frecuencia respiratoria (rpm)",

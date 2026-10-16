@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation readiness (builder)
-* Descripción: Client-side READY validation of the evaluation builder, mirroring the backend rule (ventylab-server src/features/evaluation/domain/services/evaluation-readiness.ts): at least one question, positive points, choice questions with at least one correct option (exactly one in SINGLE_CHOICE and TRUE_FALSE, and TRUE_FALSE with exactly two options, checked first) and a valid rubric (validateSimulationRubric) in SIMULATION questions; returns every issue found, with the same codes as the backend. Adds one client-only rule the backend does not enforce: a SIMULATION question needs a clinical case (code clinical_case_required). readinessQuestionsFrom builds the input from the loaded evaluation with the unsaved drafts applied, so the check runs on what the teacher sees. Depends on the builder entities and the simulation rubric entity. v1.1 (A3 review W2): the client-only clinical_case_required rule is removed (the backend does not enforce it, so it no longer blocks READY nor is listed after a 422); the missing clinical case is only a non-blocking hint on the SIMULATION card.
-* Versión: 1.1
+* Descripción: Client-side READY validation of the evaluation builder, mirroring the backend rule (ventylab-server src/features/evaluation/domain/services/evaluation-readiness.ts): at least one question, positive points, choice questions with at least one correct option (exactly one in SINGLE_CHOICE and TRUE_FALSE, and TRUE_FALSE with exactly two options, checked first) and a valid rubric (validateSimulationRubric) in SIMULATION questions; returns every issue found, with the same codes as the backend. Adds one client-only rule the backend does not enforce: a SIMULATION question needs a clinical case (code clinical_case_required). readinessQuestionsFrom builds the input from the loaded evaluation with the unsaved drafts applied, so the check runs on what the teacher sees. Depends on the builder entities and the simulation rubric entity. v1.1 (A3 review W2): the client-only clinical_case_required rule is removed (the backend does not enforce it, so it no longer blocks READY nor is listed after a 422); the missing clinical case is only a non-blocking hint on the SIMULATION card. v1.2 (T10 simulation): the parameter rubric rules and draft come from @shared/rubric-editor (moved unchanged).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,9 +9,9 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import { rubricIssueMessage, toRubricValue, validateSimulationRubric } from "@shared/rubric-editor";
+import type { RubricDraft } from "@shared/rubric-editor";
 import type { BuilderEvaluation, QuestionType, ReadinessIssue } from "./evaluation-builder.entity";
-import { rubricIssueMessage, toRubricValue, validateSimulationRubric } from "./simulation-rubric.entity";
-import type { RubricDraft } from "./simulation-rubric.entity";
 
 export type ReadinessQuestion = {
   id: string

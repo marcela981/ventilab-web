@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation readiness tests
-* Descripción: Unit tests of the client READY validation of the builder against the backend rule it mirrors: no questions, non-positive points, choice questions without a correct option, SINGLE_CHOICE and TRUE_FALSE with two correct options, TRUE_FALSE without exactly two options (reported alone), a valid MULTIPLE_CHOICE with several correct options, SIMULATION with an invalid rubric (Spanish details) and the client-only clinical case rule, and readinessQuestionsFrom applying the unsaved drafts. Depends on vitest and the builder entities. v1.1 (A3 review W2): a SIMULATION question without a clinical case raises no readiness issue (the backend does not require it).
-* Versión: 1.1
+* Descripción: Unit tests of the client READY validation of the builder against the backend rule it mirrors: no questions, non-positive points, choice questions without a correct option, SINGLE_CHOICE and TRUE_FALSE with two correct options, TRUE_FALSE without exactly two options (reported alone), a valid MULTIPLE_CHOICE with several correct options, SIMULATION with an invalid rubric (Spanish details) and the client-only clinical case rule, and readinessQuestionsFrom applying the unsaved drafts. Depends on vitest and the builder entities. v1.1 (A3 review W2): a SIMULATION question without a clinical case raises no readiness issue (the backend does not require it). v1.2 (T10 simulation): `emptyRubricDraft` comes from @shared/rubric-editor.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,10 +10,10 @@
 */
 
 import { describe, expect, it } from "vitest";
+import { emptyRubricDraft } from "@shared/rubric-editor";
 import type { BuilderEvaluation, BuilderQuestion } from "./evaluation-builder.entity";
 import { readinessQuestionsFrom, validateEvaluationReadiness } from "./evaluation-readiness.entity";
 import type { ReadinessQuestion } from "./evaluation-readiness.entity";
-import { emptyRubricDraft } from "./simulation-rubric.entity";
 
 const correct = (...flags: boolean[]) => flags.map((isCorrect) => ({ isCorrect }));
 

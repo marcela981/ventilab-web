@@ -1,7 +1,8 @@
 /*
-* Funcionalidad: Simulation rubric tests
-* Descripción: Unit tests of the builder rubric rules against the backend value object they mirror: a valid rubric (numeric range, text parameter, default priority, justification), every rejection in the backend order (not an object, empty criteria, unsupported and duplicated parameter, invalid priority, empty text value, range on a text parameter, non-numeric value, half range, inverted range, value outside the range, non-string justification) with its Spanish message, the translation of the English backend details, and the draft round trip (strings to numbers, empty draft as no rubric, text parameters drop their range, a new criterion picks an unused parameter). Depends on vitest and the simulation rubric entity.
-* Versión: 1.0
+* Funcionalidad: Parameter rubric tests
+* Descripción: Unit tests of the builder rubric rules against the backend value object they mirror: a valid rubric (numeric range, text parameter, default priority, justification), every rejection in the backend order (not an object, empty criteria, unsupported and duplicated parameter, invalid priority, empty text value, range on a text parameter, non-numeric value, half range, inverted range, value outside the range, non-string justification) with its Spanish message, the translation of the English backend details, and the draft round trip (strings to numbers, empty draft as no rubric, text parameters drop their range, a new criterion picks an unused parameter). Depends on vitest and the parameter rubric entity. v1.1 (T10 simulation): moved unchanged with the entity
+*   to `@shared/rubric-editor`.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,8 +21,8 @@ import {
   toRubricValue,
   updateCriterionDraft,
   validateSimulationRubric,
-} from "./simulation-rubric.entity";
-import type { RubricIssueCode } from "./simulation-rubric.entity";
+} from "./parameter-rubric.entity";
+import type { RubricIssueCode } from "./parameter-rubric.entity";
 
 const codes = (raw: unknown): Array<[RubricIssueCode, number | null]> =>
   validateSimulationRubric(raw).issues.map((issue) => [issue.code, issue.index]);
