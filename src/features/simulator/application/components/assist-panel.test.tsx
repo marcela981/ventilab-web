@@ -7,7 +7,9 @@
 *   DISABLED), a penalty policy asks for confirmation before every request, a 429 quota shows the standard quota
 *   message, provider errors before and during the stream show the standard messages, and an inactive session closes
 *   the panel. Depends on vitest, Testing Library, msw, the shared SSE test helpers and the simulator test helpers.
-* Versión: 1.0
+*   v1.1 (review of bc8a596): a longer wait for the first streamed text (deltas commit per animation frame, which lags
+*   under full-suite load), the question given back after a failure before the stream, and host-kept answers listed.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -96,7 +98,8 @@ describe("AI assist panel", () => {
     stream.push(deltaFrame("La presión pico "));
     stream.push(deltaFrame("supera el límite."));
 
-    expect(await within(panel).findByText("La presión pico supera el límite.")).toBeInTheDocument();
+    // Deltas commit once per animation frame; under full-suite load rAF can lag, so allow a longer wait.
+    expect(await within(panel).findByText("La presión pico supera el límite.", undefined, { timeout: 10_000 })).toBeInTheDocument();
     expect(bodies).toEqual([{ language: "es", question: "¿Por qué suena la alarma?" }]);
     expect(within(panel).getByText("¿Por qué suena la alarma?")).toBeInTheDocument();
 
@@ -214,6 +217,41 @@ describe("AI assist panel", () => {
     server.use(http.post(ASSIST_URL, () => sseResponse([deltaFrame("Parcial."), errorFrame("ai-tutor.stream_failed", "boom")])));
     requestAssist();
     expect(await within(panel).findByText(AI_STREAM_ERROR_MESSAGES.failed)).toBeInTheDocument();
+  });
+
+  it("gives the question back when the request fails before the stream starts", async() => {
+    server.use(http.post(ASSIST_URL, () => HttpResponse.json(
+      { success: false, message: "down", data: null, code: "ai.providers_unavailable", timestamp: "", traceId: "t", pagination: null },
+      { status: 503 },
+    )));
+    renderLauncher();
+
+    const panel = await openPanel();
+    const field = within(panel).getByLabelText("Pregunta (opcional)");
+
+    fireEvent.change(field, { target: { value: "¿Subo la PEEP?" } });
+    requestAssist();
+
+    expect(await within(panel).findByText(AI_STREAM_ERROR_MESSAGES.providerUnavailable)).toBeInTheDocument();
+    await waitFor(() => expect(field).toHaveValue("¿Subo la PEEP?"));
+  });
+
+  it("lists the answers the host keeps (they survive a console resync)", async() => {
+    const onAnswered = vi.fn();
+
+    renderWithSwr(
+      <AssistLauncher
+        sessionId="s1"
+        mode="FREE"
+        active
+        history={[{ aiHelpEventId: "help-9", aiCallId: "call-9", source: "LLM", question: "", answer: "Respuesta guardada." }]}
+        onAnswered={onAnswered}
+      />,
+    );
+
+    const panel = await openPanel();
+
+    await waitFor(() => expect(within(panel).getByRole("list", { name: "Asesorías de esta sesión" })).toHaveTextContent("Respuesta guardada."), { timeout: 10_000 });
   });
 
   it("closes the panel when the session stops being active", async() => {

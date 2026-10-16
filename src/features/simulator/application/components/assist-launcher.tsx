@@ -6,8 +6,9 @@
 *   so the AI pieces stay out of the console chunk. It keeps the answers of this session, so they stay listed when
 *   the panel is closed and reopened. When the session stops being active (ending, ended) the panel closes, which
 *   unmounts it and aborts a running stream. Depends on React, the assist entities, the lazy panel and the console
-*   CSS Module.
-* Versión: 1.0
+*   CSS Module. v1.1 (review of bc8a596): the host may keep the answers (`history` + `onAnswered`), so they survive a
+*   console resync; without them the launcher keeps them as before.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -35,23 +36,29 @@ export type AssistLauncherProps = {
   policy?: AssistancePolicyValue | null | undefined
   /** false while the session is starting, ending or ended: the panel closes and the button is disabled. */
   active: boolean
+  /** Answers kept by the host (e.g. above a console that remounts on a resync); omitted: kept by the launcher. */
+  history?: readonly AssistTurn[] | undefined
+  onAnswered?: ((turn: AssistTurn) => void) | undefined
 };
 
-export function AssistLauncher({ sessionId, mode, policy: policyValue, active }: AssistLauncherProps) {
+export function AssistLauncher({ sessionId, mode, policy: policyValue, active, history: hostHistory, onAnswered: hostOnAnswered }: AssistLauncherProps) {
   const policy = resolveAssistPolicy(mode, policyValue);
   const [open, setOpen] = useState(false);
-  const [history, setHistory] = useState<AssistTurn[]>([]);
+  const [ownHistory, setOwnHistory] = useState<AssistTurn[]>([]);
   const panelId = useId();
   const reasonId = useId();
+  const controlled = hostHistory !== undefined && hostOnAnswered !== undefined;
+  const history = controlled ? hostHistory : ownHistory;
 
   // The session stopped (ending or ended): close the panel, which aborts a running answer.
   if (!active && open) {
     setOpen(false);
   }
 
-  const onAnswered = useCallback((turn: AssistTurn) => {
-    setHistory((current) => (current.some((item) => item.aiHelpEventId === turn.aiHelpEventId) ? current : [...current, turn]));
+  const onOwnAnswered = useCallback((turn: AssistTurn) => {
+    setOwnHistory((current) => (current.some((item) => item.aiHelpEventId === turn.aiHelpEventId) ? current : [...current, turn]));
   }, []);
+  const onAnswered = controlled ? hostOnAnswered : onOwnAnswered;
   const onClose = useCallback(() => setOpen(false), []);
 
   return (

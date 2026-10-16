@@ -10,8 +10,9 @@
 *   reset time, provider unavailable, interrupted, failed) through getAssistErrorMessage. The request never pauses the
 *   simulation; unmounting the panel (closed, session ended) aborts the stream. Depends on React, MUI,
 *   @shared/ai-conversation, @shared/ai-rating, the design-system confirm dialog, the assist service, config and
-*   entities, and the panel CSS Module.
-* Versión: 1.0
+*   entities, and the panel CSS Module. v1.1 (review of bc8a596): a request that fails before the stream starts gives
+*   the typed question back to the field.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -105,10 +106,17 @@ export function AssistPanel({ id, sessionId, policy, history, onAnswered, onClos
   }, [asked, done, onAnswered, recorded, stream.text]);
 
   const send = () => {
+    const typed = question;
+
     setConfirming(false);
-    setAsked(question.trim());
+    setAsked(typed.trim());
     setQuestion("");
-    void stream.start(assistStreamRequest(sessionId, question));
+    void stream.start(assistStreamRequest(sessionId, typed)).then((outcome) => {
+      // Refused before any frame (quota, provider down, network): give the question back, unless a new one was typed.
+      if (outcome.status === "error" && !outcome.streamStarted) {
+        setQuestion((current) => (current === "" ? typed : current));
+      }
+    });
   };
 
   const submit = (event: FormEvent<HTMLFormElement>) => {

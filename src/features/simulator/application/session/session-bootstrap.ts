@@ -14,7 +14,14 @@
 *   starts at the last known state (last event, pending event or /state time) and catches up the rest as an initial
 *   backlog, so no state is invented. `startedAt` comes from the store (start response) or, after a lost store, from
 *   the history `ids` filter; without it the resume keeps the last known time.
-* Versión: 1.1
+*   v1.2 (review of 524aedf): the fast-forward never trusts the client clock. "now" is the server time of the /state
+*   response (HTTP Date header) corrected by the elapsed client time since that response (skew = serverNow −
+*   clientNowAtResponse), and the target stays RESUME_SAFETY_MARGIN_WALL_MS × multiplier behind the server bound, so a
+*   client clock that runs ahead can no longer produce events the server refuses (403, time ahead). Without a Date
+*   header (CORS hides it unless exposed) there is no fast-forward (backlog 0). FREE resumes at the last known time
+*   (backlog 0); only EXAM fast-forwards, capped by `expiresAt`. `fastForward: false` (a reload after repeated
+*   time-ahead refusals) also gives backlog 0, so "Recargar sesión" cannot loop.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -24,7 +31,8 @@
 
 import type { ParamChangeEvent } from "@shared/sim-engine";
 import { isEngineCase, toEngineEvents, toTimeMultiplier } from "../entities/sim-session.entity";
-import type { ClientSessionEvent, SessionBoot, SessionRecord, SessionReplay, SessionState } from "../entities/sim-session.entity";
+import { RESUME_SAFETY_MARGIN_WALL_MS } from "../config/sim-console.config";
+import type { ClientSessionEvent, ServerClock, SessionBoot, SessionRecord, SessionReplay, SessionState } from "../entities/sim-session.entity";
 import { getSimulatorErrorMessage } from "../entities/simulator-error-messages";
 import type { EventOutbox } from "./event-outbox";
 import type { SessionStore } from "./session-store";
@@ -42,8 +50,10 @@ export type BootstrapDeps = {
   /** Session start from the history, used when the store does not have it. */
   fetchStartedAt?: ((sessionId: string) => Promise<string | null>) | undefined
   outbox?: EventOutbox | undefined
-  /** Wall clock (epoch ms). */
+  /** Client clock (epoch ms), only used to measure the time elapsed since the /state response. */
   now?: (() => number) | undefined
+  /** false: resume at the last known time (no fast-forward), e.g. after repeated time-ahead refusals. Default true. */
+  fastForward?: boolean | undefined
 };
 
 export type BootstrapResult =
@@ -57,23 +67,37 @@ export type ResumeInput = {
   startedAt: string | null
   expiresAt: string | null
   multiplier: number
-  nowMs: number
+  /** Current server time (epoch ms); null when unknown (no fast-forward). */
+  serverNowMs: number | null
 };
 
+/** Current server time: the server clock of a response plus the client time elapsed since it; null without one. */
+export function estimateServerNowMs(clock: ServerClock | null | undefined, clientNowMs: number): number | null {
+  if (!clock || !Number.isFinite(clock.serverNowMs) || !Number.isFinite(clock.clientNowMs)) {
+    return null;
+  }
+
+  const skewMs = clock.serverNowMs - clock.clientNowMs;
+
+  // Never estimate a server time earlier than the reading itself (a client clock moved backwards).
+  return Math.max(clock.serverNowMs, clientNowMs + skewMs);
+}
+
 /**
- * Simulated time the wall clock owes beyond the last known state: (now − startedAt) × multiplier, capped by the
- * deadline. 0 when the start is unknown or the clock is behind the last known time.
+ * Simulated time the server clock owes beyond the last known state: (serverNow − startedAt) × multiplier, capped by
+ * the deadline, minus the safety margin. 0 when the start or the server time is unknown, or the target is behind the
+ * last known time.
  */
-export function resumeBacklogMs({ lastKnownMs, startedAt, expiresAt, multiplier, nowMs }: ResumeInput): number {
+export function resumeBacklogMs({ lastKnownMs, startedAt, expiresAt, multiplier, serverNowMs }: ResumeInput): number {
   const startMs = startedAt === null ? Number.NaN : Date.parse(startedAt);
 
-  if (!Number.isFinite(startMs)) {
+  if (!Number.isFinite(startMs) || serverNowMs === null || !Number.isFinite(serverNowMs)) {
     return 0;
   }
 
   const deadlineMs = expiresAt === null ? Number.NaN : Date.parse(expiresAt);
-  const wallEndMs = Number.isFinite(deadlineMs) ? Math.min(nowMs, deadlineMs) : nowMs;
-  const targetMs = Math.max(0, wallEndMs - startMs) * multiplier;
+  const wallEndMs = Number.isFinite(deadlineMs) ? Math.min(serverNowMs, deadlineMs) : serverNowMs;
+  const targetMs = (Math.max(0, wallEndMs - startMs) - RESUME_SAFETY_MARGIN_WALL_MS) * multiplier;
 
   return Math.max(0, Math.floor(targetMs - lastKnownMs));
 }
@@ -161,12 +185,13 @@ export async function bootstrapSession(sessionId: string, deps: BootstrapDeps): 
       record,
       initialEvents,
       startAtSimTimeMs,
-      initialBacklogMs: resumeBacklogMs({
+      // FREE (and a no-fast-forward reload) resumes at the last known time; EXAM follows the server clock.
+      initialBacklogMs: record.mode !== "EXAM" || deps.fastForward === false ? 0 : resumeBacklogMs({
         lastKnownMs: startAtSimTimeMs,
         startedAt,
         expiresAt: state.expiresAt,
         multiplier: timeMultiplier,
-        nowMs: (deps.now ?? Date.now)(),
+        serverNowMs: estimateServerNowMs(state.serverClock, (deps.now ?? Date.now)()),
       }),
       pendingEvents,
     },

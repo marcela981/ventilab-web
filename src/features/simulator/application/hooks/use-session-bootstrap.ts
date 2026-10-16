@@ -6,8 +6,10 @@
 *   ignored, and the in-flight request is reused when the effect re-runs for the same key (React StrictMode), so a
 *   fresh record is booted once. The fetchers and the store are injectable for tests. Depends on the session bootstrap, the session store
 *   and the sessions service. v1.1: also passes the history `startedAt` reader, the event outbox mirror and the
-*   wall clock (wall-clock resume, unsent events after a reload).
-* Versión: 1.1
+*   wall clock (wall-clock resume, unsent events after a reload). v1.2 (review of 524aedf): `retry({ fastForward })`
+*   lets the page rebuild a session without fast-forward (after repeated time-ahead refusals); a null session id
+*   (tab not claimed yet, or claimed by another tab) loads nothing.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -24,9 +26,14 @@ import { sessionStore } from "../session/session-store";
 
 export type SessionBootstrapState = { status: "loading" } | BootstrapResult;
 
+export type RetryOptions = {
+  /** false: the next boot resumes at the last known time (no fast-forward). Default true. */
+  fastForward?: boolean | undefined
+};
+
 export type UseSessionBootstrapResult = {
   state: SessionBootstrapState
-  retry: () => void
+  retry: (options?: RetryOptions) => void
 };
 
 type Loaded = { key: string, result: BootstrapResult };
@@ -35,6 +42,7 @@ export function useSessionBootstrap(sessionId: string | null, deps?: Partial<Boo
   const [attempt, setAttempt] = useState(0);
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const depsRef = useRef(deps);
+  const fastForwardRef = useRef(true);
   const pendingRef = useRef<{ key: string, promise: Promise<BootstrapResult> } | null>(null);
   const key = sessionId ? `${sessionId}#${attempt}` : null;
 
@@ -60,6 +68,7 @@ export function useSessionBootstrap(sessionId: string | null, deps?: Partial<Boo
           fetchStartedAt: injected.fetchStartedAt ?? fetchSessionStartedAt,
           outbox: injected.outbox ?? eventOutbox,
           now: injected.now ?? Date.now,
+          fastForward: fastForwardRef.current && injected.fastForward !== false,
         }),
       };
     }
@@ -75,7 +84,10 @@ export function useSessionBootstrap(sessionId: string | null, deps?: Partial<Boo
     };
   }, [key, sessionId]);
 
-  const retry = useCallback(() => setAttempt((value) => value + 1), []);
+  const retry = useCallback((options?: RetryOptions) => {
+    fastForwardRef.current = options?.fastForward !== false;
+    setAttempt((value) => value + 1);
+  }, []);
   const state: SessionBootstrapState = loaded && loaded.key === key ? loaded.result : { status: "loading" };
 
   return { state, retry };

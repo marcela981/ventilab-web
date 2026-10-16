@@ -6,7 +6,10 @@
 *   version check (FREE warning, EXAM block). Depends on vitest and the session modules. v1.1: wall-clock resume
 *   (backlog from startedAt × multiplier, deadline cap, startedAt from the history, fallback without it) and the
 *   outbox (unsent events re-enqueued minus the stored ids, cleared for an ended session, corrupted entries ignored).
-* Versión: 1.1
+*   v1.2 (review of 524aedf): the resume uses the server clock (Date header skew), never the client clock alone: a
+*   skewed client clock stays under the server cap, no Date header means no fast-forward, FREE resumes at the last
+*   known time, the safety margin and the no-fast-forward reload after a repeated time-ahead refusal.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -126,37 +129,117 @@ describe("bootstrapSession", () => {
     expect(result.status === "ready" ? result.boot.startAtSimTimeMs : null).toBe(15_000);
   });
 
-  it("resumes on the wall clock: the loop starts at the last known state and owes the rest as a backlog", async() => {
+  it("EXAM resumes on the server clock: the loop starts at the last known state and owes the rest minus the margin", async() => {
     const store = createSessionStore(() => null);
     const startedAt = "2026-10-15T10:00:00.000Z";
+    const serverNowMs = Date.parse(startedAt) + 60_000;
 
-    store.save(buildRecord({ startedAt }));
+    store.save(buildRecord({ mode: "EXAM", startedAt }));
 
     const result = await bootstrapSession("s1", {
       store,
       fetchReplay: () => Promise.resolve(replayOf()),
-      fetchState: () => Promise.resolve(stateOf()),
-      // 60 s after the start at ×2 = 120 s simulated; the last known time is 12 s.
+      // The client clock agrees with the server here.
+      fetchState: () => Promise.resolve(stateOf({ serverClock: { serverNowMs, clientNowMs: serverNowMs } })),
+      now: () => serverNowMs,
+    });
+
+    // 60 s after the start at ×2 = 120 s simulated, minus the 2 s × 2 safety margin; the last known time is 12 s.
+    expect(result.status === "ready" ? result.boot : null).toMatchObject({ startAtSimTimeMs: 12_000, initialBacklogMs: 104_000 });
+  });
+
+  it("a client clock ahead of the server never pushes the resume past the server cap", async() => {
+    const store = createSessionStore(() => null);
+    const startedAt = "2026-10-15T10:00:00.000Z";
+    const serverNowMs = Date.parse(startedAt) + 60_000;
+    // The client clock runs ten minutes ahead of the server.
+    const clientNowMs = serverNowMs + 600_000;
+
+    store.save(buildRecord({ mode: "EXAM", startedAt }));
+
+    const result = await bootstrapSession("s1", {
+      store,
+      fetchReplay: () => Promise.resolve(replayOf()),
+      fetchState: () => Promise.resolve(stateOf({ serverClock: { serverNowMs, clientNowMs } })),
+      now: () => clientNowMs,
+    });
+    const boot = result.status === "ready" ? result.boot : null;
+    // Server bound for an event: elapsed server time × multiplier (+ tolerance, ignored here).
+    const capMs = (serverNowMs - Date.parse(startedAt)) * 2;
+
+    expect(boot).not.toBeNull();
+    expect((boot?.startAtSimTimeMs ?? 0) + (boot?.initialBacklogMs ?? 0)).toBeLessThanOrEqual(capMs);
+  });
+
+  it("without a server Date header the resume does not fast-forward", async() => {
+    const startedAt = "2026-10-15T10:00:00.000Z";
+    const store = createSessionStore(() => null);
+
+    store.save(buildRecord({ mode: "EXAM", startedAt }));
+
+    const result = await bootstrapSession("s1", {
+      store,
+      fetchReplay: () => Promise.resolve(replayOf()),
+      fetchState: () => Promise.resolve(stateOf({ serverClock: null })),
       now: () => Date.parse(startedAt) + 60_000,
     });
 
-    expect(result.status === "ready" ? result.boot : null).toMatchObject({ startAtSimTimeMs: 12_000, initialBacklogMs: 108_000 });
+    expect(result.status === "ready" ? result.boot : null).toMatchObject({ startAtSimTimeMs: 12_000, initialBacklogMs: 0 });
   });
 
-  it("caps the wall-clock resume at the deadline and reads startedAt from the history without the store", async() => {
+  it("FREE resumes at the last known time, without a wall-clock fast-forward", async() => {
     const startedAt = "2026-10-15T10:00:00.000Z";
+    const serverNowMs = Date.parse(startedAt) + 60_000;
+    const store = createSessionStore(() => null);
+
+    store.save(buildRecord({ mode: "FREE", startedAt }));
+
+    const result = await bootstrapSession("s1", {
+      store,
+      fetchReplay: () => Promise.resolve(replayOf()),
+      fetchState: () => Promise.resolve(stateOf({ serverClock: { serverNowMs, clientNowMs: serverNowMs } })),
+      now: () => serverNowMs,
+    });
+
+    expect(result.status === "ready" ? result.boot : null).toMatchObject({ startAtSimTimeMs: 12_000, initialBacklogMs: 0 });
+  });
+
+  it("a reload that asks for no fast-forward (repeated time-ahead refusal) resumes with backlog 0", async() => {
+    const startedAt = "2026-10-15T10:00:00.000Z";
+    const serverNowMs = Date.parse(startedAt) + 60_000;
+    const store = createSessionStore(() => null);
+
+    store.save(buildRecord({ mode: "EXAM", startedAt }));
+
+    const result = await bootstrapSession("s1", {
+      store,
+      fetchReplay: () => Promise.resolve(replayOf()),
+      fetchState: () => Promise.resolve(stateOf({ serverClock: { serverNowMs, clientNowMs: serverNowMs } })),
+      now: () => serverNowMs,
+      fastForward: false,
+    });
+
+    expect(result.status === "ready" ? result.boot.initialBacklogMs : null).toBe(0);
+  });
+
+  it("caps the EXAM resume at the deadline and reads startedAt from the history without the store", async() => {
+    const startedAt = "2026-10-15T10:00:00.000Z";
+    const serverNowMs = Date.parse(startedAt) + 600_000;
     const fetchStartedAt = vi.fn(() => Promise.resolve(startedAt));
     const result = await bootstrapSession("s1", {
       store: createSessionStore(() => null),
       fetchReplay: () => Promise.resolve(replayOf()),
-      fetchState: () => Promise.resolve(stateOf({ expiresAt: "2026-10-15T10:00:30.000Z" })),
+      fetchState: () => Promise.resolve(stateOf({
+        expiresAt: "2026-10-15T10:00:30.000Z",
+        serverClock: { serverNowMs, clientNowMs: serverNowMs },
+      })),
       fetchStartedAt,
-      now: () => Date.parse(startedAt) + 600_000,
+      now: () => serverNowMs,
     });
 
     expect(fetchStartedAt).toHaveBeenCalledWith("s1");
-    // Deadline 30 s after the start at ×2 = 60 s simulated.
-    expect(result.status === "ready" ? result.boot : null).toMatchObject({ startAtSimTimeMs: 12_000, initialBacklogMs: 48_000 });
+    // Deadline 30 s after the start at ×2 = 60 s simulated, minus the 4 s margin.
+    expect(result.status === "ready" ? result.boot : null).toMatchObject({ startAtSimTimeMs: 12_000, initialBacklogMs: 44_000 });
     expect(result.status === "ready" ? result.boot.record.startedAt : null).toBe(startedAt);
   });
 
@@ -164,7 +247,7 @@ describe("bootstrapSession", () => {
     const result = await bootstrapSession("s1", {
       store: createSessionStore(() => null),
       fetchReplay: () => Promise.resolve(replayOf()),
-      fetchState: () => Promise.resolve(stateOf()),
+      fetchState: () => Promise.resolve(stateOf({ expiresAt: "2026-10-15T15:00:00.000Z", serverClock: { serverNowMs: Date.now(), clientNowMs: Date.now() } })),
       fetchStartedAt: () => Promise.reject(new Error("offline")),
       now: () => Date.now(),
     });

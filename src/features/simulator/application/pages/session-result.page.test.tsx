@@ -6,8 +6,8 @@
 *   count, no breakdown), the local evolution charts (charts module stubbed) built from a replay run in the worker, the
 *   discreet note when the local final metrics differ from the server ones (server values kept), the EXAM rubric
 *   breakdown with "Volver al examen" (recorded attempt or the evaluations list) and the 404 state. Depends on vitest,
-*   Testing Library, msw, the engine replay and the simulator test helpers.
-* Versión: 1.0
+*   Testing Library, msw, the engine replay and the simulator test helpers. v1.1: the evolution charts are line charts.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,8 +27,10 @@ import type { FakeWorker } from "../session/sim-session-test-helpers";
 import { SessionResultPage } from "./session-result.page";
 import { apiUrl, envelope, errorResponse, renderWithSwr, replayDto, sessionDto, summaryDto } from "./simulator-test-helpers";
 
+// The evolution uses line charts; a bar chart in the result would show up as a different figure.
 vi.mock("@shared/charts", () => ({
-  BarChart: ({ title, labels }: { title: string, labels: readonly string[] }) => <figure aria-label={title}>{labels.join(" ")}</figure>,
+  LineChart: ({ title, labels }: { title: string, labels: readonly string[] }) => <figure aria-label={title} data-chart="line">{labels.join(" ")}</figure>,
+  BarChart: ({ title }: { title: string }) => <figure aria-label={title} data-chart="bar" />,
 }));
 
 const ENGINE_CASE = buildEngineCase();
@@ -117,8 +119,8 @@ describe("SessionResultPage", () => {
     expect(screen.queryByText("Desglose de la rúbrica (servidor)")).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Volver al examen" })).not.toBeInTheDocument();
 
-    expect(await screen.findByRole("figure", { name: "SpO2 (%)" })).toBeInTheDocument();
-    expect(screen.getByRole("figure", { name: "PaCO2 (mmHg)" })).toBeInTheDocument();
+    expect(await screen.findByRole("figure", { name: "SpO2 (%)" })).toHaveAttribute("data-chart", "line");
+    expect(screen.getByRole("figure", { name: "PaCO2 (mmHg)" })).toHaveAttribute("data-chart", "line");
     expect(screen.queryByRole("note")).not.toBeInTheDocument();
 
     const request = workers[0]?.sent.find((command) => command.type === "replay");

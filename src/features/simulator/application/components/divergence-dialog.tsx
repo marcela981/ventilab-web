@@ -3,8 +3,9 @@
 * Descripción: Blocking dialog shown when the server refused an event of the running session: the local simulation no
 *   longer matches the server replay (the source of the official score), so the student cannot keep working on it.
 *   It cannot be dismissed (no close, Escape or backdrop) and offers only "Recargar sesión", which rebuilds the
-*   session from the server replay. Depends on MUI.
-* Versión: 1.0
+*   session from the server replay. Depends on MUI. v1.1 (review of 524aedf): the server detail joins the dialog
+*   description (`aria-describedby`).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -37,19 +38,21 @@ export type DivergenceDialogProps = {
 export function DivergenceDialog({ open, detail, onReload }: DivergenceDialogProps) {
   const titleId = useId();
   const descriptionId = useId();
+  const detailId = useId();
 
   return (
     <Dialog
       open={open}
       disableEscapeKeyDown
       aria-labelledby={titleId}
-      aria-describedby={descriptionId}
+      // The server detail is part of the description, so a screen reader announces why the session diverged.
+      aria-describedby={detail ? `${descriptionId} ${detailId}` : descriptionId}
       slotProps={{ paper: { role: "alertdialog" } }}
     >
       <DialogTitle id={titleId}>{DIVERGENCE_COPY.title}</DialogTitle>
       <DialogContent>
         <DialogContentText id={descriptionId}>{DIVERGENCE_COPY.description}</DialogContentText>
-        {detail ? <DialogContentText>{detail}</DialogContentText> : null}
+        {detail ? <DialogContentText id={detailId}>{detail}</DialogContentText> : null}
       </DialogContent>
       <DialogActions>
         <Button variant="contained" onClick={onReload} autoFocus>{DIVERGENCE_COPY.reload}</Button>

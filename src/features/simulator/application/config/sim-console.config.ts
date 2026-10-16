@@ -6,8 +6,9 @@
 *   codes, target ids, modes and patient sex, the event queue timings (flush every 3 s, exponential backoff 1 s → 30 s,
 *   at most 50 events per request), the UI refresh throttle and the sessionStorage key prefix. Depends on the
 *   ventilator console and sim-engine public types. v1.1: the acknowledgement wait on end (2 s). v1.2: the outbox
-*   sessionStorage prefix and the pending-events warning threshold.
-* Versión: 1.2
+*   sessionStorage prefix and the pending-events warning threshold. v1.3 (review of 524aedf): the resume safety margin,
+*   the time-ahead refusal threshold, the keepalive chunk limits, the resync settle wait and the tab-claim probe.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -97,3 +98,19 @@ export const SESSION_STORAGE_PREFIX = "ventylab.simulator.session.";
 export const EVENT_OUTBOX_STORAGE_PREFIX = "ventylab.simulator.outbox.";
 /** Above this many unsent events the console warns that the connection may be failing (events are never dropped). */
 export const EVENT_PENDING_WARNING_COUNT = 50;
+
+/**
+ * Wall-clock safety margin of the EXAM resume (multiplied by the session multiplier): the resume stays this far behind
+ * the server bound `elapsed × multiplier + tolerance`. The tolerance is a server setting not exposed in the contract,
+ * so the margin is a conservative 2 s instead of a fraction of it.
+ */
+export const RESUME_SAFETY_MARGIN_WALL_MS = 2000;
+/** Consecutive time-ahead refusals after which "Recargar sesión" resumes without fast-forward (backlog 0). */
+export const TIME_AHEAD_REFUSALS_BEFORE_NO_FAST_FORWARD = 2;
+/** Page-hide keepalive limits: browsers cap the in-flight keepalive bodies at 64 KiB in total. */
+export const KEEPALIVE_MAX_EVENTS = 50;
+export const KEEPALIVE_MAX_BYTES = 60 * 1024;
+/** Longest wait, before a resync, for the old event queue to settle (the new boot reads the outbox it writes). */
+export const RESYNC_SETTLE_TIMEOUT_MS = 3000;
+/** BroadcastChannel fallback of the tab claim: how long a new tab waits for another tab to answer. */
+export const TAB_CLAIM_PROBE_MS = 250;

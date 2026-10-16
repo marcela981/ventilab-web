@@ -5,7 +5,9 @@
 *   categories and a visually hidden table for screen readers (provided by the chart). A metric with no value in any
 *   sampled snapshot is left out. The charts are informative; the official result is the server summary. Depends on
 *   @shared/charts, the result entities, the time format of the time controls and the result CSS Module.
-* Versión: 1.0
+*   v1.1: one shared LineChart per metric (a line over the evenly sampled simulated times; a missing value is a gap)
+*   instead of bars, which read as a trend.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,7 +16,7 @@
 */
 
 import { useMemo } from "react";
-import { BarChart } from "@shared/charts";
+import { LineChart } from "@shared/charts";
 import { cx } from "@shared/lib/class-names";
 import type { Evolution } from "../entities/sim-result.entity";
 import { formatSimTime } from "./time-controls";
@@ -44,7 +46,7 @@ export function EvolutionCharts({ evolution }: { evolution: Evolution }) {
   return (
     <div className={cx(styles.charts)}>
       {charts.map((item) => (
-        <BarChart
+        <LineChart
           key={item.id}
           className={cx(styles.chart)}
           title={`${item.label} (${item.unit})`}

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Simulator services tests
-* Descripción: Tests of the simulator API services against msw: the case definition GET by id (URI-encoded), the FREE session start (POST body exactly {mode, caseId, timeMultiplier}, response mapped to a started session), the catalog query (server-side filters, null filters omitted), the ids query of the history titles and the history query (optional filters omitted), the list item → card mapping (no badge without a boolean flag) and the history duration. v1.1: the catalog query always carries status=PUBLISHED. v1.2: the keepalive page-hide POST of the events (Bearer token, contract body, nothing sent for an empty list) and the session start read from the history ids filter. Depends on Vitest, msw, the token storage and the simulator test helpers.
-* Versión: 1.2
+* Descripción: Tests of the simulator API services against msw: the case definition GET by id (URI-encoded), the FREE session start (POST body exactly {mode, caseId, timeMultiplier}, response mapped to a started session), the catalog query (server-side filters, null filters omitted), the ids query of the history titles and the history query (optional filters omitted), the list item → card mapping (no badge without a boolean flag) and the history duration. v1.1: the catalog query always carries status=PUBLISHED. v1.2: the keepalive page-hide POST of the events (Bearer token, contract body, nothing sent for an empty list) and the session start read from the history ids filter. v1.3: keepalive chunks (≤ 50 events, < 60 KiB, in order, one POST each) and the server clock of GET /state read from its Date header (none without it). Depends on Vitest, msw, the token storage and the simulator test helpers.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,7 +19,10 @@ import { apiUrl, caseItemDto, envelope, errorResponse, sessionDto, startedSessio
 import { toCaseCard, toSessionHistoryItem } from "../mappers/simulator.mapper";
 import { clinicalCasesByIdsQuery, clinicalCasesQuery, fetchCaseDefinition } from "./clinical-cases.service";
 import {
+  chunkKeepaliveBodies,
   fetchSessionStartedAt,
+  fetchSessionState,
+  readServerClock,
   sendSimulationEventsKeepalive,
   sessionHistoryQuery,
   startSimulationSession,
@@ -57,6 +60,63 @@ describe("simulator services", () => {
     await waitFor(() => expect(requests).toHaveLength(1));
     expect(requests[0]).toEqual({ auth: "Bearer token-1", body: { events: [event] } });
     clearTokens();
+  });
+
+  it("splits the keepalive queue into requests of at most 50 events and under 60 KiB each, in order", () => {
+    const event = (index: number, padding = 0) => ({
+      id: `e${index}${"x".repeat(padding)}`.slice(0, 64),
+      simTimeMs: index,
+      type: "PARAM_CHANGE" as const,
+      payload: { changes: { peepCmH2O: 5 }, note: "y".repeat(padding) } as unknown as { changes: { peepCmH2O: number } },
+    });
+    const many = Array.from({ length: 120 }, (_, index) => event(index));
+    const bodies = chunkKeepaliveBodies(many);
+    const sizes = bodies.map((body) => (JSON.parse(body) as { events: unknown[] }).events.length);
+
+    expect(sizes).toEqual([50, 50, 20]);
+    expect(bodies.flatMap((body) => (JSON.parse(body) as { events: Array<{ id: string }> }).events.map((item) => item.id)))
+      .toEqual(many.map((item) => item.id));
+
+    // Large events: every body stays under the byte limit.
+    const large = Array.from({ length: 10 }, (_, index) => event(index, 20_000));
+    const largeBodies = chunkKeepaliveBodies(large);
+
+    expect(largeBodies.length).toBeGreaterThan(1);
+    largeBodies.forEach((body) => expect(new TextEncoder().encode(body).length).toBeLessThan(60 * 1024));
+    expect(largeBodies.flatMap((body) => (JSON.parse(body) as { events: unknown[] }).events)).toHaveLength(10);
+  });
+
+  it("sends one keepalive POST per chunk", async() => {
+    let requests = 0;
+
+    server.use(http.post(apiUrl("/api/simulation/sessions/s1/events"), () => {
+      requests += 1;
+
+      return HttpResponse.json(envelope({ accepted: 1, duplicates: 0, lastSimTimeMs: 0 }));
+    }));
+
+    sendSimulationEventsKeepalive("s1", Array.from({ length: 51 }, (_, index) => (
+      { id: `e${index}`, simTimeMs: index, type: "PARAM_CHANGE" as const, payload: { changes: {} } }
+    )));
+
+    await waitFor(() => expect(requests).toBe(2));
+  });
+
+  it("reads the server clock of GET /state from its Date header, and none without it", async() => {
+    const dto = { id: "s1", status: "ACTIVE", simTimeMs: 6000, expiresAt: null };
+
+    server.use(http.get(apiUrl("/api/simulation/sessions/s1/state"), () => HttpResponse.json(envelope(dto), {
+      headers: { Date: "Thu, 15 Oct 2026 10:01:00 GMT" },
+    })));
+
+    expect(await fetchSessionState("s1", () => 123)).toEqual({
+      ...dto,
+      serverClock: { serverNowMs: Date.parse("2026-10-15T10:01:00.000Z"), clientNowMs: 123 },
+    });
+
+    server.use(http.get(apiUrl("/api/simulation/sessions/s1/state"), () => HttpResponse.json(envelope(dto))));
+    expect((await fetchSessionState("s1")).serverClock).toBeNull();
+    expect(readServerClock("not a date", 1)).toBeNull();
   });
 
   it("reads the session start from the history ids filter", async() => {

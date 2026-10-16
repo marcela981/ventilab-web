@@ -15,7 +15,12 @@
 *   warning threshold). v1.2 (T7): the session bar renders the built-in "Asesoría IA" launcher (lazy side panel)
 *   unless `renderAssist` replaces it; `assistancePolicy` lets the host pass the rubric policy (unknown = fail safe);
 *   the assist is active only while the session runs or is paused and not ending or diverged.
-* Versión: 1.2
+*   v1.3 (review of 524aedf + bc8a596): the page first claims the session for this tab (Web Locks, BroadcastChannel
+*   fallback); a tab that cannot claim it shows "Esta sesión ya está abierta en otra pestaña" and never boots, starts
+*   the worker or sends events. "Recargar sesión" first settles the old event queue (the new boot reads a settled
+*   outbox) and, after TIME_AHEAD_REFUSALS_BEFORE_NO_FAST_FORWARD consecutive time-ahead refusals, rebuilds without
+*   fast-forward, so it cannot loop. The assist answers live in the page, so they survive a resync.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,7 +31,7 @@
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
 import { cx } from "@shared/lib/class-names";
@@ -35,17 +40,19 @@ import { AssistLauncher } from "../components/assist-launcher";
 import { CasePanel } from "../components/case-panel";
 import { DivergenceDialog } from "../components/divergence-dialog";
 import { TimeControls } from "../components/time-controls";
-import { EVENT_PENDING_WARNING_COUNT } from "../config/sim-console.config";
+import { EVENT_PENDING_WARNING_COUNT, TIME_AHEAD_REFUSALS_BEFORE_NO_FAST_FORWARD } from "../config/sim-console.config";
 import { simulationModeLabel } from "../entities/simulator.entity";
-import type { AssistancePolicyValue } from "../entities/sim-assist.entity";
+import type { AssistancePolicyValue, AssistTurn } from "../entities/sim-assist.entity";
 import { checkEngineVersion } from "../entities/sim-session.entity";
 import type { SessionBoot } from "../entities/sim-session.entity";
 import type { SimulationMode } from "../config/simulator.config";
 import { buildSessionResultUrl, SIMULATOR_URL } from "../config/simulator.routes";
 import { useSessionBootstrap } from "../hooks/use-session-bootstrap";
 import { useSimSession } from "../hooks/use-sim-session";
-import type { SimSessionDeps } from "../hooks/use-sim-session";
+import type { DivergenceCause, SimSessionDeps } from "../hooks/use-sim-session";
 import type { BootstrapDeps } from "../session/session-bootstrap";
+import { sessionTabClaimer } from "../session/session-tab-claim";
+import type { TabClaimResult } from "../session/session-tab-claim";
 import styles from "../../UI/session-console.module.css";
 
 // TODO(i18n): move to a simulator namespace in src/i18n.
@@ -69,7 +76,61 @@ export const SESSION_PAGE_COPY = {
   dismiss: "Cerrar",
   pendingEvents: (count: number) => (count === 1 ? "1 evento pendiente de envío" : `${count} eventos pendientes de envío`),
   pendingEventsWarning: "Revisa tu conexión: los cambios se guardan aquí y se enviarán al recuperarla.",
+  otherTab: "Esta sesión ya está abierta en otra pestaña",
+  otherTabHint: "Continúa en la otra pestaña. Esta queda en solo lectura: no ejecuta la simulación ni envía cambios.",
+  claiming: "Comprobando si la sesión está abierta en otra pestaña…",
 } as const;
+
+type ClaimFn = (sessionId: string) => Promise<TabClaimResult>;
+
+const defaultClaim: ClaimFn = (sessionId) => sessionTabClaimer.claim(sessionId);
+
+const NO_TURNS: readonly AssistTurn[] = [];
+
+type TabClaimState = { sessionId: string, status: "claimed" | "taken" } | null;
+
+/** Claims the session for this tab while the page is mounted; "pending" until the claim resolves. */
+function useTabClaim(sessionId: string, claim: ClaimFn): "pending" | "claimed" | "taken" {
+  const [state, setState] = useState<TabClaimState>(null);
+  const claimRef = useRef(claim);
+
+  useEffect(() => {
+    claimRef.current = claim;
+  });
+
+  useEffect(() => {
+    let active = true;
+    const held: { release: (() => void) | null } = { release: null };
+
+    void claimRef.current(sessionId).then((result) => {
+      if (result.status === "claimed") {
+        if (!active) {
+          result.release();
+
+          return;
+        }
+
+        held.release = result.release;
+      }
+
+      if (active) {
+        setState({ sessionId, status: result.status });
+      }
+    }, () => {
+      // A failing claim must not block the student: fail open.
+      if (active) {
+        setState({ sessionId, status: "claimed" });
+      }
+    });
+
+    return () => {
+      active = false;
+      held.release?.();
+    };
+  }, [sessionId]);
+
+  return state?.sessionId === sessionId ? state.status : "pending";
+}
 
 export type AssistSlotContext = {
   sessionId: string
@@ -87,14 +148,21 @@ export type SessionConsolePageProps = {
   assistancePolicy?: AssistancePolicyValue | null | undefined
   /** Replaces the navigation to the result after a successful end (T9: return to the exam). */
   onEnded?: ((sessionId: string) => void | Promise<void>) | undefined
-  deps?: { bootstrap?: Partial<BootstrapDeps> | undefined, session?: SimSessionDeps | undefined } | undefined
+  deps?: {
+    bootstrap?: Partial<BootstrapDeps> | undefined
+    session?: SimSessionDeps | undefined
+    /** One-tab claim of the session (default: Web Locks with a BroadcastChannel fallback). */
+    claimTab?: ClaimFn | undefined
+  } | undefined
 };
 
 type RunningProps = Omit<SessionConsolePageProps, "deps"> & {
   boot: SessionBoot
   sessionDeps?: SimSessionDeps | undefined
-  /** Rebuilds the session from the server (divergence). */
-  onResync: () => void
+  /** Rebuilds the session from the server (divergence), after the old queue settled. */
+  onResync: (cause: DivergenceCause | null) => void
+  assistHistory: readonly AssistTurn[]
+  onAssistAnswered: (turn: AssistTurn) => void
 };
 
 function PendingEventsIndicator({ count }: { count: number }) {
@@ -112,7 +180,7 @@ function PendingEventsIndicator({ count }: { count: number }) {
   );
 }
 
-function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnded, sessionDeps, onResync }: RunningProps) {
+function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnded, sessionDeps, onResync, assistHistory, onAssistAnswered }: RunningProps) {
   const router = useRouter();
   const { record } = boot;
   const version = checkEngineVersion(record.mode, record.engineVersion);
@@ -120,10 +188,21 @@ function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnd
   const session = useSimSession({ boot, blocked, deps: sessionDeps });
   const [confirming, setConfirming] = useState(false);
   const [endError, setEndError] = useState<string | null>(null);
+  const [resyncing, setResyncing] = useState(false);
   const paused = session.status === "paused";
   const controllable = session.status === "running" || session.status === "paused";
   // The assist never pauses the simulation; it closes (and aborts) once the end starts.
   const assistActive = controllable && !session.ending && !session.diverged;
+
+  // The new boot reads the outbox: let the old queue settle first.
+  const resync = () => {
+    if (resyncing) {
+      return;
+    }
+
+    setResyncing(true);
+    void session.settle().finally(() => onResync(session.divergenceCause));
+  };
 
   const finish = async() => {
     setEndError(null);
@@ -195,7 +274,16 @@ function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnd
           <PendingEventsIndicator count={session.pendingEvents} />
           {renderAssist
             ? renderAssist({ sessionId, mode: record.mode, simTimeMs: session.simTimeMs, active: assistActive })
-            : <AssistLauncher sessionId={sessionId} mode={record.mode} policy={assistancePolicy} active={assistActive} />}
+            : (
+              <AssistLauncher
+                sessionId={sessionId}
+                mode={record.mode}
+                policy={assistancePolicy}
+                active={assistActive}
+                history={assistHistory}
+                onAnswered={onAssistAnswered}
+              />
+            )}
           <button
             type="button"
             className={cx(styles.endButton)}
@@ -232,18 +320,55 @@ function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnd
         onConfirm={() => void finish()}
         onCancel={() => setConfirming(false)}
       />
-      <DivergenceDialog open={session.diverged} detail={session.syncError} onReload={onResync} />
+      <DivergenceDialog open={session.diverged} detail={session.syncError} onReload={resync} />
     </>
   );
 }
 
 export function SessionConsolePage({ sessionId, renderAssist, assistancePolicy, onEnded, deps }: SessionConsolePageProps) {
-  const { state, retry } = useSessionBootstrap(sessionId, deps?.bootstrap);
+  const claim = useTabClaim(sessionId, deps?.claimTab ?? defaultClaim);
+  // Only the tab that drives the session boots it (a duplicated tab copies its sessionStorage).
+  const { state, retry } = useSessionBootstrap(claim === "claimed" ? sessionId : null, deps?.bootstrap);
+  // Per session (a client-side navigation to another session keeps this component mounted).
+  const [refusalState, setRefusalState] = useState({ sessionId, count: 0 });
+  const timeAheadRefusals = refusalState.sessionId === sessionId ? refusalState.count : 0;
+  // Kept above the remounted console, so the answers survive a resync.
+  const [assistState, setAssistState] = useState<{ sessionId: string, turns: readonly AssistTurn[] }>({ sessionId, turns: [] });
+  const assistHistory = assistState.sessionId === sessionId ? assistState.turns : NO_TURNS;
   const mode = state.status === "ready" ? state.boot.record.mode : null;
+
+  const onAssistAnswered = useCallback((turn: AssistTurn) => {
+    setAssistState((current) => {
+      const turns = current.sessionId === sessionId ? current.turns : NO_TURNS;
+
+      return turns.some((item) => item.aiHelpEventId === turn.aiHelpEventId) ? current : { sessionId, turns: [...turns, turn] };
+    });
+  }, [sessionId]);
+
+  const onResync = (cause: DivergenceCause | null) => {
+    const refusals = cause === "time_ahead" ? timeAheadRefusals + 1 : 0;
+
+    setRefusalState({ sessionId, count: refusals });
+    // A repeated time-ahead refusal means the fast-forward overshoots the server: resume at the last known time.
+    retry({ fastForward: refusals < TIME_AHEAD_REFUSALS_BEFORE_NO_FAST_FORWARD });
+  };
 
   let body: ReactNode;
 
-  if (state.status === "loading") {
+  if (claim === "taken") {
+    body = (
+      <section className={cx(styles.notice)} role="alert">
+        <h2 className={cx(styles.blockedTitle)}>{SESSION_PAGE_COPY.otherTab}</h2>
+        <p>{SESSION_PAGE_COPY.otherTabHint}</p>
+        <div className={cx(styles.noticeActions)}>
+          <Link href={buildSessionResultUrl(sessionId)} className={cx(styles.link)}>{SESSION_PAGE_COPY.viewResult}</Link>
+          <Link href={SIMULATOR_URL} className={cx(styles.link)}>{SESSION_PAGE_COPY.backToCatalog}</Link>
+        </div>
+      </section>
+    );
+  } else if (claim === "pending") {
+    body = <p className={cx(styles.consoleMuted)} role="status">{SESSION_PAGE_COPY.claiming}</p>;
+  } else if (state.status === "loading") {
     body = <p className={cx(styles.consoleMuted)} role="status">{SESSION_PAGE_COPY.loading}</p>;
   } else if (state.status === "ended") {
     body = (
@@ -258,7 +383,7 @@ export function SessionConsolePage({ sessionId, renderAssist, assistancePolicy, 
         <h2 className={cx(styles.blockedTitle)}>{state.title}</h2>
         <p>{state.message}</p>
         <div className={cx(styles.noticeActions)}>
-          <button type="button" className={cx(styles.timeButton)} onClick={retry}>{SESSION_PAGE_COPY.retry}</button>
+          <button type="button" className={cx(styles.timeButton)} onClick={() => retry()}>{SESSION_PAGE_COPY.retry}</button>
           <Link href={buildSessionResultUrl(sessionId)} className={cx(styles.link)}>{SESSION_PAGE_COPY.viewResult}</Link>
           <Link href={SIMULATOR_URL} className={cx(styles.link)}>{SESSION_PAGE_COPY.backToCatalog}</Link>
         </div>
@@ -274,7 +399,9 @@ export function SessionConsolePage({ sessionId, renderAssist, assistancePolicy, 
         assistancePolicy={assistancePolicy}
         onEnded={onEnded}
         sessionDeps={deps?.session}
-        onResync={retry}
+        onResync={onResync}
+        assistHistory={assistHistory}
+        onAssistAnswered={onAssistAnswered}
       />
     );
   }

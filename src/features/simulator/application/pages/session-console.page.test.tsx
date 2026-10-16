@@ -14,8 +14,11 @@
 *   mirror, the pending indicator and the keepalive page-hide send; unsent events of a reload are replayed and sent
 *   before start; metric re-renders are throttled with a trailing refresh; init carries the boot backlog. v1.3 (T7):
 *   the built-in "Asesoría IA" launcher (enabled only while running, EXAM without a policy disabled with its reason)
-*   and its replacement by a host renderAssist.
-* Versión: 1.3
+*   and its replacement by a host renderAssist. v1.4 (review of 524aedf + bc8a596): the tab claim is injected; a tab
+*   that cannot claim the session shows the read-only notice and never boots or starts the worker; repeated time-ahead
+*   refusals make "Recargar sesión" resume without fast-forward (EXAM on the server clock first); settle() waits for
+*   the in-flight send before a resync.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -31,9 +34,10 @@ import { ApiError } from "@shared/api-client/api-error";
 import { replay } from "@shared/sim-engine";
 import type { SimBatch, SimCommand } from "@shared/sim-engine";
 import type { ConsoleSampleBatch } from "@shared/ventilator-console";
-import type { SessionReplay } from "../entities/sim-session.entity";
+import type { SessionReplay, SessionState } from "../entities/sim-session.entity";
 import { useSimSession } from "../hooks/use-sim-session";
 import { createEventOutbox } from "../session/event-outbox";
+import type { TabClaimResult } from "../session/session-tab-claim";
 import { createSessionStore } from "../session/session-store";
 import type { SessionStore } from "../session/session-store";
 import { buildBatch, buildBoot, buildEngineCase, buildRecord, createFakeWorker, createMemoryStorage } from "../session/sim-session-test-helpers";
@@ -102,9 +106,14 @@ type Harness = {
 type RenderOptions = {
   record?: Parameters<typeof buildRecord>[0] | null
   replay?: () => Promise<SessionReplay>
+  state?: () => Promise<SessionState>
+  startedAt?: string | null
+  claimTab?: (sessionId: string) => Promise<TabClaimResult>
   props?: Partial<SessionConsolePageProps>
   storage?: ReturnType<typeof createMemoryStorage>
 };
+
+const claimedTab = () => Promise.resolve<TabClaimResult>({ status: "claimed", release: () => undefined });
 
 function renderPage(options: RenderOptions = {}): Harness {
   const worker = createFakeWorker();
@@ -129,10 +138,11 @@ function renderPage(options: RenderOptions = {}): Harness {
           store,
           outbox,
           fetchReplay,
-          fetchState: () => Promise.resolve({ id: "s1", status: "ACTIVE", simTimeMs: 6000, expiresAt: null }),
-          fetchStartedAt: () => Promise.resolve(null),
+          fetchState: options.state ?? (() => Promise.resolve({ id: "s1", status: "ACTIVE", simTimeMs: 6000, expiresAt: null })),
+          fetchStartedAt: () => Promise.resolve(options.startedAt ?? null),
         },
         session: { createWorker, sendEvents, sendKeepalive, endSession, outbox, createEventId: () => "evt-1" },
+        claimTab: options.claimTab ?? claimedTab,
       }}
       {...options.props}
     />,
@@ -384,6 +394,62 @@ describe("SessionConsolePage", () => {
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
   });
 
+  it("time-ahead refusals: the first reload fast-forwards on the server clock, a repeated one resumes with backlog 0", async() => {
+    const nowMs = Date.now();
+    const { worker, sendEvents, fetchReplay } = renderPage({
+      record: null,
+      startedAt: new Date(nowMs - 60_000).toISOString(),
+      state: () => Promise.resolve({
+        id: "s1",
+        status: "ACTIVE",
+        simTimeMs: 6000,
+        expiresAt: new Date(nowMs + 3_600_000).toISOString(),
+        serverClock: { serverNowMs: nowMs, clientNowMs: nowMs },
+      }),
+      replay: () => Promise.resolve({ id: "s1", seed: 42, engineVersion: "1.0.0", timeMultiplier: 1, engineCase: buildEngineCase(), events: [] }),
+    });
+
+    sendEvents.mockRejectedValue(new ApiError({ code: "simulation.event_time_ahead", message: "", status: 403 }));
+
+    const refuseAndReload = async(boots: number): Promise<void> => {
+      await waitFor(() => expect(sentOfType(worker, "init")).toHaveLength(boots));
+      act(() => {
+        worker.emit({ type: "ready", engineVersion: "1.0.0" });
+        worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 6000, status: "running" }) });
+      });
+      increasePeep();
+      fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
+      act(() => worker.emit({
+        type: "batch",
+        batch: buildBatch({ simTimeMs: 6100, status: "running", confirmedEvents: [{ id: "evt-1", effectiveSimTimeMs: 6050 }] }),
+      }));
+      await screen.findByRole("alertdialog", { name: "La sesión local y la del servidor divergieron" }, { timeout: 6000 });
+      fireEvent.click(screen.getByRole("button", { name: "Recargar sesión" }));
+      await waitFor(() => expect(fetchReplay).toHaveBeenCalledTimes(boots + 1));
+    };
+
+    await refuseAndReload(1);
+    await refuseAndReload(2);
+    await waitFor(() => expect(sentOfType(worker, "init")).toHaveLength(3));
+
+    const backlogs = sentOfType(worker, "init").map((command) => command.options?.initialBacklogMs);
+
+    // EXAM boot and first reload: (60 s − 2 s margin) × 1 − 6 s; the repeated refusal resumes without fast-forward.
+    expect(backlogs[0]).toBeGreaterThan(50_000);
+    expect(backlogs[1]).toBeGreaterThan(50_000);
+    expect(backlogs[2]).toBe(0);
+  }, 40_000);
+
+  it("a second tab of the same session shows a read-only notice and never starts the worker", async() => {
+    const { createWorker, sendEvents, fetchReplay } = renderPage({ claimTab: () => Promise.resolve({ status: "taken" }) });
+
+    expect(await screen.findByText("Esta sesión ya está abierta en otra pestaña")).toBeInTheDocument();
+    expect(createWorker).not.toHaveBeenCalled();
+    expect(fetchReplay).not.toHaveBeenCalled();
+    expect(sendEvents).not.toHaveBeenCalled();
+    expect(screen.queryByRole("button", { name: "Finalizar sesión" })).not.toBeInTheDocument();
+  });
+
   it("mirrors unsent events to sessionStorage, shows them as pending and sends them with keepalive on page hide", async() => {
     const { worker, sendEvents, sendKeepalive, storage } = renderPage();
     let release: () => void = () => undefined;
@@ -537,6 +603,38 @@ describe("useSimSession frame source", () => {
     // The trailing refresh at the end of the window shows the latest snapshot once.
     await waitFor(() => expect(result.current.simTimeMs).toBe(2000));
     expect(renders).toBe(before + 1);
+  });
+
+  it("settle() stops the queue and waits for the in-flight send, so a resync reads a settled outbox", async() => {
+    const worker = createFakeWorker();
+    const storage = createMemoryStorage();
+    let release: () => void = () => undefined;
+    const sendEvents = vi.fn(() => new Promise((resolve) => {
+      release = () => resolve({ accepted: 1, duplicates: 0, lastSimTimeMs: 1000 });
+    }));
+    const boot = buildBoot();
+    const deps = { createWorker: () => worker, sendEvents, createEventId: () => "evt-1", outbox: createEventOutbox(() => storage) };
+    const { result } = renderHook(() => useSimSession({ boot, blocked: false, deps }));
+
+    act(() => {
+      worker.emit({ type: "ready", engineVersion: "1.0.0" });
+      worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 1000, status: "running" }) });
+    });
+    act(() => result.current.adapter?.onConfirm({ mode: null, changes: [{ parameter: "peep", value: 6 }] }));
+    act(() => worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 1033, confirmedEvents: [{ id: "evt-1", effectiveSimTimeMs: 1000 }] }) }));
+    expect(storage.data.has("ventylab.simulator.outbox.s1")).toBe(true);
+
+    let settled = false;
+    const settling = result.current.settle().then(() => {
+      settled = true;
+    });
+
+    await waitFor(() => expect(sendEvents).toHaveBeenCalledTimes(1));
+    expect(settled).toBe(false);
+    act(() => release());
+    await settling;
+    expect(settled).toBe(true);
+    expect(storage.data.has("ventylab.simulator.outbox.s1")).toBe(false);
   });
 
   it("passes the wall-clock backlog of the boot to the worker init", () => {

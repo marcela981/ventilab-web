@@ -24,7 +24,11 @@
 *   (beforeunload no longer flushes); init carries the wall-clock backlog of the boot; end() posts the simulated time
 *   of the first paused batch (fallback: the latest batch after EVENT_ACK_TIMEOUT_MS); metrics re-render at most every
 *   UI_REFRESH_INTERVAL_MS (a trailing refresh keeps the last snapshot); `pendingEvents` counts the unsent events.
-* Versión: 1.2
+*   v1.3 (review of 524aedf): `divergenceCause` tells a time-ahead refusal (403 other than an access denial: simulated
+*   time ahead of the server bound) from any other refusal, so the page can stop fast-forwarding after a repeated one;
+*   `settle()` stops the queue timers and waits (at most RESYNC_SETTLE_TIMEOUT_MS) for its flush before a resync, so
+*   the new boot reads a settled outbox. The page-hide keepalive is best effort (the outbox is the guarantee).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -33,6 +37,7 @@
 */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toApiError } from "@shared/api-client/api-error";
 import { createSimWorker, DEFAULT_SAMPLE_RATE_HZ } from "@shared/sim-engine";
 import type { EngineMetrics, SimBatch, SimLoopStatus, SimWorkerClient, VentilatorSettings } from "@shared/sim-engine";
 import type {
@@ -48,7 +53,7 @@ import {
   endSimulationSession,
   sendSimulationEventsKeepalive,
 } from "../../api/services/simulation-sessions.service";
-import { EVENT_ACK_TIMEOUT_MS, UI_REFRESH_INTERVAL_MS } from "../config/sim-console.config";
+import { EVENT_ACK_TIMEOUT_MS, RESYNC_SETTLE_TIMEOUT_MS, UI_REFRESH_INTERVAL_MS } from "../config/sim-console.config";
 import { TIME_MULTIPLIERS } from "../config/simulator.config";
 import type { TimeMultiplier } from "../config/simulator.config";
 import type { ClientSessionEvent, SessionBoot } from "../entities/sim-session.entity";
@@ -89,6 +94,19 @@ export const SIM_SESSION_COPY = {
 
 export type SimSessionStatus = SimLoopStatus | "starting";
 
+export type DivergenceCause = "time_ahead" | "other";
+
+/**
+ * POST /events answers 403 when the session is not the caller's or when the event simulated time is ahead of
+ * elapsed × multiplier + tolerance (contract). The owner cannot change during a session, so any other 403 is a
+ * time-ahead refusal.
+ */
+export function divergenceCauseOf(error: unknown): DivergenceCause {
+  const { status, code } = toApiError(error);
+
+  return status === 403 && code !== "simulation.session_access_denied" ? "time_ahead" : "other";
+}
+
 export type SimSessionDeps = {
   createWorker?: () => SimWorkerClient | null
   sendEvents?: (sessionId: string, events: readonly ClientSessionEvent[]) => Promise<unknown>
@@ -119,6 +137,10 @@ export type SimSessionView = {
   syncError: string | null
   /** The server refused an event: the local run no longer matches the server (reload to resume from the server). */
   diverged: boolean
+  /** Why the last event was refused: its simulated time was ahead of the server bound, or anything else. */
+  divergenceCause: DivergenceCause | null
+  /** Stops the event queue and waits (bounded) for its last flush; call before rebuilding the session. */
+  settle: () => Promise<void>
   /** Events waiting to be acknowledged by the server. */
   pendingEvents: number
   workerError: string | null
@@ -248,6 +270,7 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
   const [changeError, setChangeError] = useState<string | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [diverged, setDiverged] = useState(false);
+  const [divergenceCause, setDivergenceCause] = useState<DivergenceCause | null>(null);
   const [pendingEvents, setPendingEvents] = useState(0);
   const [workerError, setWorkerError] = useState<string | null>(null);
   const [ending, setEnding] = useState(false);
@@ -302,6 +325,7 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
       // A refused event never reaches the server replay: the local run has diverged from it.
       onRejected: (error) => {
         setSyncError(SIM_SESSION_COPY.syncFailed(getSimulatorErrorMessage(error)));
+        setDivergenceCause(divergenceCauseOf(error));
         setDiverged(true);
       },
       onChange: (events) => {
@@ -596,6 +620,25 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     }
   }, [sessionId]);
 
+  const settle = useCallback(async(): Promise<void> => {
+    const queue = queueRef.current;
+
+    if (!queue) {
+      return;
+    }
+
+    queue.dispose();
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<void>((resolve) => {
+      timer = setTimeout(resolve, RESYNC_SETTLE_TIMEOUT_MS);
+    });
+
+    // The flush joins the send already in flight (sends are serialised); the outbox keeps whatever stays unsent.
+    await Promise.race([queue.flush().catch(() => undefined), timeout]);
+    clearTimeout(timer);
+  }, []);
+
   const { applied, live, multiplier } = runtime;
 
   const adapter = useMemo<VentilatorConsoleAdapter | null>(() => {
@@ -639,6 +682,8 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     dismissChangeError: () => setChangeError(null),
     syncError,
     diverged,
+    divergenceCause,
+    settle,
     pendingEvents,
     workerError,
     ending,

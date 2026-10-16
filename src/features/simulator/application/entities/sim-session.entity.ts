@@ -7,8 +7,10 @@
 *   starts) and the guards that turn the opaque `case` object and the time multiplier of the contract into engine
 *   types. Depends on the sim-engine public API and the simulator config. v1.1: the record keeps `startedAt` and the
 *   boot carries the wall-clock backlog and the unsent events of this tab. v1.2 (T8): the replay read model keeps the
-*   current server engine version, the mismatch flag and the server warning.
-* Versión: 1.2
+*   current server engine version, the mismatch flag and the server warning. v1.3 (review of 524aedf): the state read
+*   model carries the server clock reading of its response (HTTP Date header + client time at the response), used to
+*   resume EXAM on the server clock instead of the client clock.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -56,11 +58,19 @@ export type SessionReplay = {
   warning?: string | null | undefined
 };
 
+/** Server time read from a response (HTTP Date header) and the client clock when that response arrived. */
+export type ServerClock = {
+  serverNowMs: number
+  clientNowMs: number
+};
+
 export type SessionState = {
   id: string
   status: string
   simTimeMs: number
   expiresAt: string | null
+  /** null/undefined when the response exposed no usable Date header (e.g. CORS without Access-Control-Expose-Headers). */
+  serverClock?: ServerClock | null | undefined
 };
 
 /** One client event of POST /simulation/sessions/{id}/events; the id is the idempotency key. */
