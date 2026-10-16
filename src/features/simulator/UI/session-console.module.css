@@ -1,0 +1,346 @@
+/*
+* Funcionalidad: Simulation session console styles
+* Descripción: CSS Module of the running session page (T6): the full-width dark console surface, the session bar
+*   (simulated clock, speed and pause controls, AI assist slot, "Finalizar sesión"), the warning/error banners, the
+*   engine-version block and notices, and the collapsible case panel with the live objectives. Console tokens
+*   (--vl-console-*) and the shared spacing, radius and focus tokens only; no hex or rgb values. The case panel moves
+*   under the console below 1280 px.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.sessionPage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  width: 100%;
+  min-height: 100%;
+  padding: var(--vl-space-3);
+  color: var(--vl-console-text);
+  background: var(--vl-console-bg);
+  border-radius: var(--vl-radius-lg);
+}
+
+.sessionHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-3);
+}
+
+.sessionTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+  color: var(--vl-console-text);
+}
+
+.modeTag,
+.liveTag,
+.pausedTag {
+  display: inline-block;
+  padding: 0 var(--vl-space-2);
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text);
+  background: var(--vl-console-surface-raised);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-pill);
+}
+
+.modeTag[data-mode="EXAM"],
+.pausedTag {
+  color: var(--vl-console-pending);
+  border-color: var(--vl-console-pending);
+}
+
+.sessionBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-2) var(--vl-space-3);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.timeControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-3);
+}
+
+.clock {
+  display: flex;
+  align-items: baseline;
+  gap: var(--vl-space-2);
+  margin: 0;
+}
+
+.clockLabel,
+.timeHint,
+.caseMuted,
+.consoleMuted {
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.timeHint,
+.caseMuted,
+.consoleMuted {
+  margin: 0;
+}
+
+.clockValue {
+  font: var(--mui-font-h5);
+  font-variant-numeric: tabular-nums;
+  color: var(--vl-console-text);
+}
+
+.speed {
+  display: inline-flex;
+  gap: var(--vl-space-1);
+}
+
+.speedButton,
+.timeButton,
+.endButton,
+.bannerAction,
+.caseToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+  padding: var(--vl-space-1) var(--vl-space-3);
+  font: var(--mui-font-button);
+  color: var(--vl-console-text);
+  background: var(--vl-console-surface-raised);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-sm);
+  cursor: pointer;
+}
+
+.speedButton[aria-pressed="true"] {
+  color: var(--vl-console-bg);
+  background: var(--vl-console-text);
+}
+
+.endButton {
+  color: var(--vl-console-on-alarm-high);
+  background: var(--vl-console-alarm-high);
+  border-color: var(--vl-console-alarm-high);
+}
+
+.speedButton:disabled,
+.timeButton:disabled,
+.endButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.speedButton:focus-visible,
+.timeButton:focus-visible,
+.endButton:focus-visible,
+.bannerAction:focus-visible,
+.caseToggle:focus-visible,
+.link:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-console-focus-ring);
+  outline-offset: var(--vl-focus-ring-width);
+}
+
+.sessionActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.banner {
+  margin: 0;
+  padding: var(--vl-space-2) var(--vl-space-3);
+  font: var(--mui-font-body2);
+  color: var(--vl-console-text);
+  background: var(--vl-console-pending-bg);
+  border: 1px solid var(--vl-console-pending);
+  border-radius: var(--vl-radius-md);
+}
+
+.banner[data-tone="error"] {
+  background: var(--vl-console-out-of-range-bg);
+  border-color: var(--vl-console-alarm-high);
+}
+
+.bannerAction {
+  padding: 0 var(--vl-space-2);
+}
+
+.sessionLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--vl-space-3);
+  align-items: start;
+}
+
+.consoleArea {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  min-width: 0;
+}
+
+.blocked,
+.notice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-4);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.blocked {
+  border-color: var(--vl-console-alarm-high);
+}
+
+.blocked p,
+.notice p {
+  margin: 0;
+  font: var(--mui-font-body2);
+}
+
+.blockedTitle {
+  margin: 0;
+  font: var(--mui-font-subtitle2);
+}
+
+.noticeActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-3);
+}
+
+.link {
+  font: var(--mui-font-button);
+  color: var(--vl-console-text);
+  text-decoration: underline;
+}
+
+.casePanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  width: calc(var(--vl-space-8) * 7);
+  max-height: calc(100vh - var(--vl-space-8) * 3);
+  overflow-y: auto;
+  padding: var(--vl-space-3);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.casePanel[data-open="false"] {
+  width: auto;
+}
+
+.caseBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.caseHeading {
+  margin: var(--vl-space-2) 0 0;
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-console-text);
+}
+
+.caseTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+}
+
+.caseText,
+.caseRich {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-console-text);
+}
+
+.caseFacts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--vl-space-1) var(--vl-space-3);
+  margin: 0;
+  font: var(--mui-font-body2);
+}
+
+.caseFacts dt {
+  color: var(--vl-console-text-muted);
+}
+
+.caseFacts dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.objectives {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.objective {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0 var(--vl-space-2);
+  padding: var(--vl-space-2);
+  font: var(--mui-font-caption);
+  background: var(--vl-console-surface-raised);
+  border-left: var(--vl-space-1) solid var(--vl-console-border);
+  border-radius: var(--vl-radius-sm);
+}
+
+.objective[data-status="MET"] {
+  border-left-color: var(--vl-console-curve-volume);
+}
+
+.objective[data-status="UNMET"] {
+  border-left-color: var(--vl-console-out-of-range);
+}
+
+.objectiveLabel {
+  font: var(--mui-font-subtitle2);
+}
+
+.objectiveTarget,
+.objectiveValue {
+  color: var(--vl-console-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.objectiveStatus {
+  grid-column: 2;
+  grid-row: 1;
+  text-align: right;
+}
+
+@media (max-width: 1279.98px) {
+  .sessionLayout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .casePanel,
+  .casePanel[data-open="false"] {
+    width: 100%;
+    max-height: none;
+  }
+}

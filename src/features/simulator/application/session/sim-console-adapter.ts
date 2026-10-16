@@ -1,0 +1,401 @@
+/*
+* Funcionalidad: Simulation → console adapter mapping
+* Descripción: Pure functions that translate the worker output and the session case into the generic ventilator
+*   console contract: waveform samples ({tMs, pressure, flow, volume}), the 12 console metrics from the engine cycle
+*   metrics and ventilation summary (FiO2 from the applied settings), the patient vitals and their trends, the alarms
+*   (priority from the engine severity, then the console default map; onset time kept while active), the applied
+*   settings in console units, the parameter limits from the vendored VENTILATOR_LIMITS (the only source of min/max;
+*   only the trigger in use gets a limit), the SIMV applicability when its mandatory breaths are pressure controlled,
+*   the normal ranges from the case targets, the confirmed console changes as engine setting changes plus their local
+*   validation (the same merge + validateVentilatorSettings the engine and the backend run), the live objectives and
+*   the patient summary with the predicted body weight (engine predictedBodyWeightKg, Devine). Depends on the
+*   sim-engine and ventilator-console public APIs and the console config.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+import {
+  EngineValidationError,
+  predictedBodyWeightKg,
+  resolveVentilatorSettings,
+  validateVentilatorSettings,
+  VENTILATION_MODES,
+  VENTILATOR_LIMITS,
+} from "@shared/sim-engine";
+import type {
+  Alarm,
+  EngineCase,
+  EngineMetrics,
+  EngineTargets,
+  EngineVentilationMode,
+  NumericRange,
+  TargetStatus,
+  TargetStatusValue,
+  VentilatorSettings,
+  WaveformSample,
+} from "@shared/sim-engine";
+import {
+  CONSOLE_PARAMETER_IDS,
+  CONSOLE_PARAMETERS,
+  MODE_PARAMETERS,
+  PATIENT_TREND_POINTS,
+  resolveAlarmPriority,
+} from "@shared/ventilator-console";
+import type {
+  ConsoleAlarm,
+  ConsoleAlarmPriority,
+  ConsoleConfirmation,
+  ConsoleLimits,
+  ConsoleMetrics,
+  ConsoleModeOption,
+  ConsoleParameterId,
+  ConsolePatient,
+  ConsoleRanges,
+  ConsoleSample,
+  ConsoleSettingValues,
+  ModeParameterTable,
+  NormalRange,
+  ParameterLimit,
+  PatientVitalId,
+} from "@shared/ventilator-console";
+import { ALARM_LABELS, MODE_LABELS, OBJECTIVE_DEFINITIONS, PARAMETER_SETTINGS, SEX_LABELS } from "../config/sim-console.config";
+
+/** Rounds away binary noise of the scale conversions (0.21 × 100 = 21.000000000000004). */
+function tidy(value: number): number {
+  return Math.round(value * 1e6) / 1e6;
+}
+
+export function toConsoleSamples(samples: readonly WaveformSample[]): ConsoleSample[] {
+  return samples.map((sample) => ({
+    tMs: sample.simTimeMs,
+    pressure: sample.pressureCmH2O,
+    flow: sample.flowLpm,
+    volume: sample.volumeMl,
+  }));
+}
+
+export function toConsoleMetrics(metrics: EngineMetrics | null, settings: VentilatorSettings): ConsoleMetrics {
+  const cycle = metrics?.lastCycle ?? null;
+
+  return {
+    peakPressure: cycle?.peakPressureCmH2O ?? null,
+    plateauPressure: cycle?.plateauPressureCmH2O ?? null,
+    totalPeep: cycle?.totalPeepCmH2O ?? null,
+    autoPeep: cycle?.autoPeepCmH2O ?? null,
+    drivingPressure: cycle?.drivingPressureCmH2O ?? null,
+    exhaledTidalVolume: cycle?.exhaledTidalVolumeMl ?? null,
+    tidalVolumePerKg: cycle?.tidalVolumePerKgPbw ?? null,
+    minuteVolume: metrics?.ventilation.minuteVolumeLpm ?? null,
+    totalRespiratoryRate: metrics?.ventilation.totalRespiratoryRateBpm ?? null,
+    // The engine reports Ti/Te, which the console shows as 1:x.
+    ieRatio: cycle && cycle.ieRatio > 0 ? cycle.ieRatio : null,
+    fio2: tidy(settings.fio2 * 100),
+    mechanicalPower: cycle?.mechanicalPowerJPerMin ?? null,
+  };
+}
+
+export type PatientValues = ConsolePatient["values"];
+
+export function toPatientValues(metrics: EngineMetrics | null): PatientValues {
+  if (metrics === null) {
+    return {};
+  }
+
+  return {
+    spo2: metrics.gasExchange.spo2Percent,
+    pao2: metrics.gasExchange.pao2MmHg,
+    paco2: metrics.gasExchange.paco2MmHg,
+    ph: metrics.gasExchange.ph,
+    map: metrics.hemodynamics.meanArterialPressureMmHg,
+  };
+}
+
+export type PatientTrends = Readonly<Partial<Record<PatientVitalId, readonly number[]>>>;
+
+/** Appends the new vitals to their trends, keeping the newest PATIENT_TREND_POINTS values. */
+export function appendTrends(trends: PatientTrends, values: PatientValues, maxPoints: number = PATIENT_TREND_POINTS): PatientTrends {
+  const next: Partial<Record<PatientVitalId, readonly number[]>> = { ...trends };
+
+  (Object.keys(values) as PatientVitalId[]).forEach((id) => {
+    const value = values[id];
+
+    if (typeof value === "number" && Number.isFinite(value)) {
+      next[id] = [...(trends[id] ?? []), value].slice(-maxPoints);
+    }
+  });
+
+  return next;
+}
+
+function priorityOf(alarm: Alarm): ConsoleAlarmPriority {
+  if (alarm.severity === "HIGH") {
+    return "high";
+  }
+
+  return alarm.severity === "MEDIUM" ? "medium" : resolveAlarmPriority(alarm.code);
+}
+
+function formatAlarmNumber(value: number): string {
+  return Number.isFinite(value) ? String(Math.round(value * 10) / 10) : "—";
+}
+
+/** Engine alarms as console alarms; an alarm still active keeps its onset time (simulated ms). */
+export function toConsoleAlarms(alarms: readonly Alarm[], simTimeMs: number, previous: readonly ConsoleAlarm[] = []): ConsoleAlarm[] {
+  const since = new Map(previous.map((alarm) => [alarm.id, alarm.since]));
+
+  return alarms.map((alarm) => ({
+    id: alarm.code,
+    type: alarm.code,
+    priority: priorityOf(alarm),
+    message: `${ALARM_LABELS[alarm.code] ?? alarm.code}: ${formatAlarmNumber(alarm.value)} (límite ${formatAlarmNumber(alarm.threshold)})`,
+    since: since.get(alarm.code) ?? simTimeMs,
+  }));
+}
+
+export function toConsoleSettings(settings: VentilatorSettings): ConsoleSettingValues {
+  const values: Record<string, number> = {};
+
+  CONSOLE_PARAMETER_IDS.forEach((id) => {
+    const { key, scale } = PARAMETER_SETTINGS[id];
+
+    values[id] = tidy(settings[key] * scale);
+  });
+
+  return values;
+}
+
+function triggerApplies(id: ConsoleParameterId, settings: VentilatorSettings): boolean {
+  if (id === "flowTrigger") {
+    return settings.triggerType === "FLOW";
+  }
+
+  return id !== "pressureTrigger" || settings.triggerType === "PRESSURE";
+}
+
+/** Limits in console units from the vendored ventilator limits; the unused trigger gets none, so it is hidden. */
+export function buildConsoleLimits(settings: VentilatorSettings): ConsoleLimits {
+  const limits: Record<string, ParameterLimit> = {};
+
+  CONSOLE_PARAMETER_IDS.forEach((id) => {
+    if (triggerApplies(id, settings)) {
+      const { key, scale, step, unit } = PARAMETER_SETTINGS[id];
+      const limit = VENTILATOR_LIMITS[key];
+
+      limits[id] = { min: tidy(limit.min * scale), max: tidy(limit.max * scale), step, unit };
+    }
+  });
+
+  return limits;
+}
+
+export const MODE_OPTIONS: readonly ConsoleModeOption[] = VENTILATION_MODES.map((mode) => ({ id: mode, label: MODE_LABELS[mode] }));
+
+/** SIMV with pressure-controlled mandatory breaths edits Pinsp instead of Vt and the pause. */
+export function applicabilityFor(settings: VentilatorSettings): ModeParameterTable | undefined {
+  if (settings.simvMandatoryType !== "PCV") {
+    return undefined;
+  }
+
+  const simv = (MODE_PARAMETERS.SIMV ?? []).filter((id) => id !== "tidalVolume" && id !== "inspiratoryPause");
+
+  return { ...MODE_PARAMETERS, SIMV: ["inspiratoryPressure", ...simv] };
+}
+
+function isVentilationMode(value: string): value is EngineVentilationMode {
+  return (VENTILATION_MODES as readonly string[]).includes(value);
+}
+
+function isConsoleParameter(value: string): value is ConsoleParameterId {
+  return (CONSOLE_PARAMETER_IDS as readonly string[]).includes(value);
+}
+
+/** A CONFIRMAR as engine setting changes (display units converted back); unknown ids are ignored. */
+export function toSettingsChanges(confirmation: ConsoleConfirmation): Partial<VentilatorSettings> {
+  const changes: Partial<Record<keyof VentilatorSettings, unknown>> = {};
+
+  if (confirmation.mode !== null && isVentilationMode(confirmation.mode)) {
+    changes.mode = confirmation.mode;
+  }
+
+  confirmation.changes.forEach(({ parameter, value }) => {
+    if (isConsoleParameter(parameter) && Number.isFinite(value)) {
+      const { key, scale } = PARAMETER_SETTINGS[parameter];
+
+      changes[key] = tidy(value / scale);
+    }
+  });
+
+  return changes as Partial<VentilatorSettings>;
+}
+
+// TODO(i18n): move to a simulator namespace in src/i18n.
+export const CHANGE_COPY = {
+  timing: "No se aplicó el cambio: con esa combinación el tiempo espiratorio queda demasiado corto. Ajusta Ti, la pausa o la FR.",
+  outOfRange: (label: string) => `No se aplicó el cambio: ${label} queda fuera de los límites del ventilador con la combinación elegida.`,
+  invalid: "No se aplicó el cambio: la combinación de parámetros no es válida.",
+} as const;
+
+function labelOfSetting(field: string): string {
+  const id = CONSOLE_PARAMETER_IDS.find((parameter) => PARAMETER_SETTINGS[parameter].key === field);
+
+  return id ? CONSOLE_PARAMETERS[id].description : field;
+}
+
+export type ChangeValidation = { ok: true } | { ok: false, message: string };
+
+/** The engine and the backend merge the changes into the applied settings and validate the result; so does the client. */
+export function validateSettingsChange(applied: VentilatorSettings, changes: Partial<VentilatorSettings>): ChangeValidation {
+  try {
+    validateVentilatorSettings(resolveVentilatorSettings({ ...applied, ...changes }));
+
+    return { ok: true };
+  } catch (error) {
+    if (error instanceof EngineValidationError) {
+      if (error.code === "INVALID_TIMING") {
+        return { ok: false, message: CHANGE_COPY.timing };
+      }
+
+      if (error.code === "OUT_OF_RANGE") {
+        return { ok: false, message: CHANGE_COPY.outOfRange(labelOfSetting(error.field)) };
+      }
+    }
+
+    return { ok: false, message: CHANGE_COPY.invalid };
+  }
+}
+
+function fromRange(range: NumericRange | undefined): NormalRange | undefined {
+  return range ? { min: range.min, max: range.max } : undefined;
+}
+
+function fromMax(max: number | undefined): NormalRange | undefined {
+  return max === undefined ? undefined : { max };
+}
+
+function compact<K extends string>(entries: Readonly<Record<K, NormalRange | undefined>>): Partial<Record<K, NormalRange>> {
+  const result: Partial<Record<K, NormalRange>> = {};
+
+  (Object.keys(entries) as K[]).forEach((key) => {
+    const value = entries[key];
+
+    if (value) {
+      result[key] = value;
+    }
+  });
+
+  return result;
+}
+
+/** The case targets as console normal ranges; they override the console teaching defaults per key. */
+export function rangesFromTargets(targets: EngineTargets): ConsoleRanges {
+  return {
+    metrics: compact({
+      plateauPressure: fromMax(targets.plateauPressureMaxCmH2O),
+      drivingPressure: fromMax(targets.drivingPressureMaxCmH2O),
+      tidalVolumePerKg: fromRange(targets.tidalVolumePerKgPbw),
+      autoPeep: fromMax(targets.autoPeepMaxCmH2O),
+    }),
+    patient: compact({
+      spo2: fromRange(targets.spo2Percent),
+      paco2: fromRange(targets.paco2MmHg),
+      ph: fromRange(targets.ph),
+    }),
+  };
+}
+
+export type ObjectiveRow = {
+  id: TargetStatus["id"]
+  label: string
+  /** Target as text, e.g. "88–95 %" or "≤ 30 cmH2O". */
+  target: string
+  value: string
+  status: TargetStatusValue
+};
+
+function formatNumber(value: number, decimals: number): string {
+  return value.toFixed(decimals);
+}
+
+function targetText(status: Pick<TargetStatus, "min" | "max">, decimals: number, unit: string): string {
+  const suffix = unit ? ` ${unit}` : "";
+
+  if (status.min !== null && status.max !== null) {
+    return `${formatNumber(status.min, decimals)}–${formatNumber(status.max, decimals)}${suffix}`;
+  }
+
+  return status.max === null ? "—" : `≤ ${formatNumber(status.max, decimals)}${suffix}`;
+}
+
+function caseTargetStatuses(targets: EngineTargets): TargetStatus[] {
+  const rows: TargetStatus[] = [];
+  const range = (id: TargetStatus["id"], value: NumericRange | undefined) => {
+    if (value) {
+      rows.push({ id, status: "UNKNOWN", value: null, min: value.min, max: value.max });
+    }
+  };
+  const max = (id: TargetStatus["id"], value: number | undefined) => {
+    if (value !== undefined) {
+      rows.push({ id, status: "UNKNOWN", value: null, min: null, max: value });
+    }
+  };
+
+  range("SPO2", targets.spo2Percent);
+  range("PACO2", targets.paco2MmHg);
+  range("PH", targets.ph);
+  max("PLATEAU_PRESSURE", targets.plateauPressureMaxCmH2O);
+  max("DRIVING_PRESSURE", targets.drivingPressureMaxCmH2O);
+  range("TIDAL_VOLUME_PER_KG_PBW", targets.tidalVolumePerKgPbw);
+  max("AUTO_PEEP", targets.autoPeepMaxCmH2O);
+
+  return rows;
+}
+
+/**
+ * Live objectives: the engine evaluates the case targets in the worker on every metrics snapshot; before the first
+ * snapshot every target is listed as unknown. This is a local, real-time reading — never a grade.
+ */
+export function buildObjectives(targets: EngineTargets, statuses: readonly TargetStatus[] | null): ObjectiveRow[] {
+  const source = statuses && statuses.length > 0 ? statuses : caseTargetStatuses(targets);
+
+  return source.map((status) => {
+    const definition = OBJECTIVE_DEFINITIONS[status.id];
+
+    return {
+      id: status.id,
+      label: definition.label,
+      target: targetText(status, definition.decimals, definition.unit),
+      value: status.value === null ? "—" : `${formatNumber(status.value, definition.decimals)}${definition.unit ? ` ${definition.unit}` : ""}`,
+      status: status.status,
+    };
+  });
+}
+
+export type PatientSummary = {
+  sexLabel: string
+  heightCm: number
+  /** Predicted body weight (Devine), kg with one decimal. */
+  predictedBodyWeightKg: number
+};
+
+export function patientSummary(engineCase: EngineCase): PatientSummary {
+  const { sex, heightCm } = engineCase.patient;
+
+  return {
+    sexLabel: SEX_LABELS[sex],
+    heightCm,
+    predictedBodyWeightKg: Math.round(predictedBodyWeightKg(sex, heightCm) * 10) / 10,
+  };
+}
+
+/** Settings the session starts with: the case initial settings over the engine defaults. */
+export function initialSettingsOf(engineCase: EngineCase): VentilatorSettings {
+  return resolveVentilatorSettings(engineCase.initialSettings);
+}
+
+export function applyChanges(settings: VentilatorSettings, events: readonly { changes: Partial<VentilatorSettings> }[]): VentilatorSettings {
+  return events.reduce<VentilatorSettings>((current, event) => ({ ...current, ...event.changes }), settings);
+}

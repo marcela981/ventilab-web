@@ -6,8 +6,9 @@
 *   time (matching the engine replay). v1.1: a paused loop keeps its backlog without stepping and catches it up after
 *   resume, a multiplier change does not rescale a pending backlog, events at the same time keep FIFO order, a
 *   scheduled event inside a multi-tick catch-up lands at its exact time, and non-finite event times are rejected.
-*   Uses a manual clock. Depends on vitest and the vendored engine.
-* Versión: 1.1
+*   v1.2 (T6): initial events + start time replay a session at creation (equal to the engine replay, no re-streamed
+*   output, later events stay scheduled). Uses a manual clock. Depends on vitest and the vendored engine.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -303,5 +304,60 @@ describe("createSimLoop events", () => {
 
     clock.advance(500);
     expect(loop.tick().metrics?.simTimeMs).toBe(1000);
+  });
+});
+
+describe("createSimLoop initial state (session resume)", () => {
+  it("replays the initial events up to startAtSimTimeMs at init, matching the engine replay", () => {
+    const clock = createManualClock(1000);
+    const events = [
+      { type: "PARAM_CHANGE" as const, simTimeMs: 1500, changes: { peepCmH2O: 8 } },
+      { type: "PARAM_CHANGE" as const, simTimeMs: 2500, changes: { fio2: 0.6 } },
+    ];
+    const loop = createSimLoop(buildTestCase(), SEED, { clock, initialEvents: events, startAtSimTimeMs: 4000 });
+    const expected = replay(buildTestCase(), SEED, events, 4000);
+
+    expect(loop.simTimeMs).toBe(4000);
+
+    const first = loop.tick();
+
+    expect(first.simTimeMs).toBe(4000);
+    // Catch-up output is not streamed: no samples and no re-reported events.
+    expect(first.samples).toHaveLength(0);
+    expect(first.appliedEvents).toHaveLength(0);
+    expect(first.metrics).toEqual(expected.final);
+  });
+
+  it("continues deterministically from the resumed time like an uninterrupted run", () => {
+    const events = [{ type: "PARAM_CHANGE" as const, simTimeMs: 1200, changes: { respiratoryRateBpm: 16 } }];
+    const clock = createManualClock(0);
+    const loop = createSimLoop(buildTestCase(), SEED, { clock, initialEvents: events, startAtSimTimeMs: 2000 });
+
+    loop.start();
+    clock.advance(1000);
+
+    const batches = tickUntilCaughtUp(loop);
+    const expected = replay(buildTestCase(), SEED, events, 3000);
+
+    expect(batches.at(-1)?.simTimeMs).toBe(3000);
+    expect(batches.at(-1)?.metrics).toEqual(expected.final);
+  });
+
+  it("keeps an initial event later than the start time scheduled at its exact time", () => {
+    const events = [{ type: "PARAM_CHANGE" as const, simTimeMs: 2500, changes: { peepCmH2O: 10 } }];
+    const clock = createManualClock(0);
+    const loop = createSimLoop(buildTestCase(), SEED, { clock, initialEvents: events, startAtSimTimeMs: 2000 });
+
+    loop.start();
+    clock.advance(1000);
+
+    const applied = tickUntilCaughtUp(loop).flatMap((batch) => batch.appliedEvents);
+
+    expect(applied).toEqual([{ type: "PARAM_CHANGE", simTimeMs: 2500, changes: { peepCmH2O: 10 } }]);
+  });
+
+  it("rejects a negative or non-finite start time", () => {
+    expect(() => createSimLoop(buildTestCase(), SEED, { startAtSimTimeMs: -1 })).toThrow(RangeError);
+    expect(() => createSimLoop(buildTestCase(), SEED, { startAtSimTimeMs: Number.NaN })).toThrow(RangeError);
   });
 });

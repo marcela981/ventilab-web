@@ -3,8 +3,8 @@
 * Descripción: Verifies that every command and worker message survives a structured clone round trip and is still
 *   recognised by its type guard, and that malformed messages are rejected (v1.1: including non-finite or negative event times, a non-finite seed
 *   and invalid init options). Depends on vitest, the protocol and the
-*   simulation loop (to produce a real batch).
-* Versión: 1.1
+*   simulation loop (to produce a real batch). v1.2 (T6): init resume options (initial events, start time).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -112,5 +112,26 @@ describe("simulation worker protocol", () => {
         }),
       ),
     ).toBe(true);
+  });
+});
+
+describe("init resume options (v1.2)", () => {
+  const init = (options: unknown) => ({ type: "init", engineCase: buildTestCase(), seed: 1, options });
+
+  it("accepts initial events with times and a start time", () => {
+    const command = init({
+      initialEvents: [{ type: "PARAM_CHANGE", simTimeMs: 100, changes: { peepCmH2O: 8 } }],
+      startAtSimTimeMs: 2000,
+    });
+
+    expect(isSimCommand(roundTrip(command))).toBe(true);
+  });
+
+  it("rejects malformed initial events or start time", () => {
+    expect(isSimCommand(init({ initialEvents: {} }))).toBe(false);
+    expect(isSimCommand(init({ initialEvents: [{ type: "PARAM_CHANGE" }] }))).toBe(false);
+    expect(isSimCommand(init({ initialEvents: [{ type: "PARAM_CHANGE", simTimeMs: -5, changes: {} }] }))).toBe(false);
+    expect(isSimCommand(init({ startAtSimTimeMs: -1 }))).toBe(false);
+    expect(isSimCommand(init({ startAtSimTimeMs: Number.POSITIVE_INFINITY }))).toBe(false);
   });
 });

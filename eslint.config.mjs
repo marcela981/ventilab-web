@@ -57,7 +57,9 @@
  *   prohibición de imports de estilo la de @shared/sim-engine y @features/*.
  *   v3.27 (T5 simulation): nueva feature src/features/simulator (sin legado) y su ruta delgada
  *   pages/simulator/index.tsx.
- * Versión: 3.27
+ *   v3.28 (T6 simulation): la ruta delgada pages/simulator/sessions/[sessionId]/index.tsx entra en
+ *   NEW_PAGE_FILES.
+ * Versión: 3.28
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -120,6 +122,7 @@ const NEW_PAGE_FILES = [
   "pages/assistant/index.tsx",
   "pages/assistant/[[]conversationId[]].tsx",
   "pages/simulator/index.tsx",
+  "pages/simulator/sessions/[[]sessionId[]]/index.tsx",
 ];
 
 const NEW_CODE_FILES = [

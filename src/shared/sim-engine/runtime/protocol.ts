@@ -5,8 +5,9 @@
 *   ready, batch and error messages. Includes runtime type guards so each side can reject malformed messages. Every
 *   message is plain structured-cloneable data. v1.1: event times must be finite and non-negative, and init requires a
 *   finite seed, an allowed multiplier and finite numeric options. Depends on the engine types and the simulation
-*   loop types.
-* Versión: 1.1
+*   loop types. v1.2 (T6): init may carry `initialEvents` (each with a finite non-negative simTimeMs) and a finite
+*   non-negative `startAtSimTimeMs` to resume a session.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,6 +27,9 @@ export interface SimInitOptions {
   readonly fixedStepMs?: number;
   readonly maxCatchUpMsPerTick?: number;
   readonly metricsEveryMs?: number;
+  /** Stored session events to replay while catching up to startAtSimTimeMs (resume). */
+  readonly initialEvents?: readonly SimEventInput[];
+  readonly startAtSimTimeMs?: number;
 }
 
 export type SimCommand =
@@ -81,12 +85,20 @@ function isInitOptions(value: unknown): boolean {
     isOptionalMultiplier(value.multiplier) &&
     isOptionalFinite(value.fixedStepMs) &&
     isOptionalFinite(value.maxCatchUpMsPerTick) &&
-    isOptionalFinite(value.metricsEveryMs)
+    isOptionalFinite(value.metricsEveryMs) &&
+    (value.startAtSimTimeMs === undefined || isNonNegativeFinite(value.startAtSimTimeMs)) &&
+    (value.initialEvents === undefined ||
+      (Array.isArray(value.initialEvents) &&
+        value.initialEvents.every((event: unknown) => isEventInput(event) && isRecord(event) && isNonNegativeFinite(event.simTimeMs))))
   );
 }
 
+function isNonNegativeFinite(value: unknown): boolean {
+  return isFiniteNumber(value) && value >= 0;
+}
+
 function isEventInput(value: unknown): value is SimEventInput {
-  if (!isRecord(value) || (value.simTimeMs !== undefined && !(isFiniteNumber(value.simTimeMs) && value.simTimeMs >= 0))) {
+  if (!isRecord(value) || (value.simTimeMs !== undefined && !isNonNegativeFinite(value.simTimeMs))) {
     return false;
   }
 

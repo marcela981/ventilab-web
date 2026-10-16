@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Simulator feature (public API)
-* Descripción: Public surface of the simulator feature (T5, part 1): the /simulator catalog page with the "Mis sesiones" history, the URL builders of the simulator routes, the contract-derived time multipliers and labels, the entity types and the hooks a later task or another feature may reuse (catalog, history, start practice). Pages and other features import only this index. Depends on the simulator application layer.
-* Versión: 1.0
+* Descripción: Public surface of the simulator feature (T5, part 1): the /simulator catalog page with the "Mis sesiones" history, the URL builders of the simulator routes, the contract-derived time multipliers and labels, the entity types and the hooks a later task or another feature may reuse (catalog, history, start practice). v1.1 (T6): the running session console page (/simulator/sessions/[sessionId]) with its AI assist slot and end hook, the session store (an exam start may record its session for the console) and the session hooks. Pages and other features import only this index. Depends on the simulator application layer.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -47,3 +47,10 @@ export type { SessionHistoryRow, UseSessionHistoryResult } from "./application/h
 export { useStartPractice } from "./application/hooks/use-start-practice";
 export type { StartPracticeOutcome, UseStartPracticeResult } from "./application/hooks/use-start-practice";
 export { SimulatorCatalogPage } from "./application/pages/simulator-catalog.page";
+export { SESSION_PAGE_COPY, SessionConsolePage } from "./application/pages/session-console.page";
+export type { AssistSlotContext, SessionConsolePageProps } from "./application/pages/session-console.page";
+export type { SessionRecord } from "./application/entities/sim-session.entity";
+export { sessionStore } from "./application/session/session-store";
+export type { SessionStore } from "./application/session/session-store";
+export { useSimSession } from "./application/hooks/use-sim-session";
+export type { SimSessionView } from "./application/hooks/use-sim-session";

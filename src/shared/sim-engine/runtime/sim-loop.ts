@@ -8,8 +8,11 @@
 *   samples, metrics (about once per simulated second or after an event) and the current alarms. The clock is
 *   injectable for tests. v1.1: the engine is stepped only while running, so a backlog owed before a pause is kept
 *   (not drained) and caught up after resume; the backlog has no cap by design; an event with a non-finite simTimeMs
-*   is rejected. Depends on src/shared/sim-engine/engine.
-* Versión: 1.1
+*   is rejected. v1.2 (T6 session resume): `initialEvents` + `startAtSimTimeMs` replay a session's stored events up
+*   to a start time at creation, so a reloaded console catches up deterministically (same result as the engine
+*   replay); the catch-up waveform and the already-stored events are not re-streamed, and an initial event later
+*   than the start time stays scheduled. Depends on src/shared/sim-engine/engine.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -77,6 +80,10 @@ export interface SimLoopOptions {
   readonly fixedStepMs?: number;
   readonly maxCatchUpMsPerTick?: number;
   readonly metricsEveryMs?: number;
+  /** Events already recorded for the session (resume): applied at their simTimeMs while catching up. */
+  readonly initialEvents?: readonly SimEventInput[];
+  /** Simulated time the loop starts from (resume); the engine is stepped there at creation. Default 0. */
+  readonly startAtSimTimeMs?: number;
 }
 
 export interface SimLoop {
@@ -131,6 +138,12 @@ export function createSimLoop(engineCase: EngineCase, seed: number, options: Sim
 
   const maxCatchUpMs = positiveOr(options.maxCatchUpMsPerTick, DEFAULT_MAX_CATCH_UP_MS_PER_TICK, "maxCatchUpMsPerTick");
   const metricsEveryMs = positiveOr(options.metricsEveryMs, DEFAULT_METRICS_EVERY_MS, "metricsEveryMs");
+  const startAtSimTimeMs = options.startAtSimTimeMs ?? 0;
+
+  if (!Number.isFinite(startAtSimTimeMs) || startAtSimTimeMs < 0) {
+    throw new RangeError("startAtSimTimeMs must be a finite non-negative number");
+  }
+
   // At least one fixed step per tick, so a misconfigured bound can never stall the loop.
   const maxStepsPerTick = Math.max(1, Math.floor(maxCatchUpMs / fixedStepMs));
   const state: EngineState = createSimulation(engineCase, seed, options.engineOptions ?? {});
@@ -222,7 +235,7 @@ export function createSimLoop(engineCase: EngineCase, seed: number, options: Sim
     return batch;
   }
 
-  return {
+  const loop: SimLoop = {
     get status() {
       return status;
     },
@@ -307,4 +320,16 @@ export function createSimLoop(engineCase: EngineCase, seed: number, options: Sim
       status = "stopped";
     },
   };
+
+  if (options.initialEvents !== undefined || startAtSimTimeMs > 0) {
+    // Resume: events at or before the start time are applied during the catch-up, later ones stay scheduled.
+    (options.initialEvents ?? []).forEach((event) => loop.queueEvent(event));
+    advanceTo(startAtSimTimeMs);
+    // The catch-up output is not streamed: the waveform is discarded and the stored events are not re-reported.
+    getWaveformBuffer(state);
+    applied = [];
+    metricsDue = true;
+  }
+
+  return loop;
 }
