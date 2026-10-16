@@ -7,7 +7,10 @@
 *   failure is a toast. Each outcome reports "deleted" or "archived" to the host and shows a success toast; the case
 *   queries are refreshed by the mutation hook. Depends on the design-system dialogs and toast, the case editor
 *   service, the case tools entity and the case mutation hook.
-* Versión: 1.0
+*   v1.1 (review of ffe9297): a case already ARCHIVED (status known to the host) is not offered "Archivar": a toast
+*   says it is in use and already archived; a delete refreshes only the list (no 404 re-read of the definition in the
+*   editor); the dialogs keep the last target text during their exit transition.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,7 +21,8 @@
 import { useState } from "react";
 import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
 import { useToast } from "@shared/design-system/components/use-toast";
-import { changeClinicalCaseStatus, deleteClinicalCase } from "../../api/services/case-editor.service";
+import { CASES_PATH, changeClinicalCaseStatus, deleteClinicalCase } from "../../api/services/case-editor.service";
+import type { CaseStatus } from "../config/case-editor.config";
 import { isCaseInUseError } from "../entities/case-tools.entity";
 import { useCaseMutation } from "../hooks/use-case-mutation";
 
@@ -33,9 +37,11 @@ export const DELETE_CASE_COPY = {
   cancel: "Cancelar",
   deleted: (title: string) => `«${title}» se eliminó.`,
   archived: (title: string) => `«${title}» se archivó.`,
+  inUseArchived: (title: string) => `«${title}» está en uso y no se puede eliminar; ya está archivado, así que los estudiantes no lo ven.`,
 } as const;
 
-export type DeleteCaseTarget = { id: string, title: string };
+/** `status`: the stored status when the host knows it (an ARCHIVED case in use is not offered "Archivar"). */
+export type DeleteCaseTarget = { id: string, title: string, status?: CaseStatus | null | undefined };
 
 export type DeleteCaseOutcome = "deleted" | "archived";
 
@@ -50,6 +56,17 @@ export function DeleteCaseFlow({ target, onClose, onDone }: DeleteCaseFlowProps)
   const toast = useToast();
   const { pending, run } = useCaseMutation();
   const [inUse, setInUse] = useState<DeleteCaseTarget | null>(null);
+  // The last target stays readable while the dialog plays its exit transition (the host already cleared it).
+  const [shown, setShown] = useState<DeleteCaseTarget | null>(target);
+  const [shownInUse, setShownInUse] = useState<DeleteCaseTarget | null>(inUse);
+
+  if (target !== null && (target.id !== shown?.id || target.title !== shown.title)) {
+    setShown(target);
+  }
+
+  if (inUse !== null && inUse.id !== shownInUse?.id) {
+    setShownInUse(inUse);
+  }
 
   const close = () => {
     setInUse(null);
@@ -61,7 +78,8 @@ export function DeleteCaseFlow({ target, onClose, onDone }: DeleteCaseFlowProps)
       return;
     }
 
-    const outcome = await run(() => deleteClinicalCase(target.id));
+    // Only the list is refreshed: the editor must not re-read the definition of a case that no longer exists.
+    const outcome = await run(() => deleteClinicalCase(target.id), [CASES_PATH]);
 
     if (outcome.status === "busy") {
       return;
@@ -71,6 +89,10 @@ export function DeleteCaseFlow({ target, onClose, onDone }: DeleteCaseFlowProps)
       toast.success(DELETE_CASE_COPY.deleted(target.title));
       close();
       onDone?.("deleted", target);
+    } else if (isCaseInUseError(outcome.error) && target.status === "ARCHIVED") {
+      // Archiving is the only way out, and it is already archived.
+      toast.info(DELETE_CASE_COPY.inUseArchived(target.title));
+      close();
     } else if (isCaseInUseError(outcome.error)) {
       setInUse(target);
     } else {
@@ -106,7 +128,7 @@ export function DeleteCaseFlow({ target, onClose, onDone }: DeleteCaseFlowProps)
       <ConfirmDialog
         open={target !== null && inUse === null}
         title={DELETE_CASE_COPY.confirmTitle}
-        description={target ? DELETE_CASE_COPY.confirmDescription(target.title) : undefined}
+        description={shown ? DELETE_CASE_COPY.confirmDescription(shown.title) : undefined}
         confirmLabel={DELETE_CASE_COPY.confirm}
         cancelLabel={DELETE_CASE_COPY.cancel}
         destructive
@@ -117,7 +139,7 @@ export function DeleteCaseFlow({ target, onClose, onDone }: DeleteCaseFlowProps)
       <ConfirmDialog
         open={inUse !== null}
         title={DELETE_CASE_COPY.inUseTitle}
-        description={inUse ? DELETE_CASE_COPY.inUseDescription(inUse.title) : undefined}
+        description={shownInUse ? DELETE_CASE_COPY.inUseDescription(shownInUse.title) : undefined}
         confirmLabel={DELETE_CASE_COPY.archive}
         cancelLabel={DELETE_CASE_COPY.cancel}
         isPending={pending}

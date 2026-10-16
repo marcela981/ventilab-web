@@ -12,7 +12,8 @@
 *   stored case in a dialog) and "Eliminar" (confirmed; a 409 for a case in use offers "Archivar" instead). Expert
 *   validation stays in the editor: the list summary has no validated flag (BACKEND GAP).
 *   v1.2 (review of 50ed812): "Publicar"/"Archivar" appear only while the list is filtered by one status (the summary
-*   has no status, BACKEND GAP); the unfiltered list says to filter by status to publish or archive.
+*   has no status, BACKEND GAP); the unfiltered list says to filter by status to publish or archive. The delete flow
+*   receives the row status when known (an archived case in use is not offered "Archivar").
 * Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -365,7 +366,7 @@ export function CaseListPage() {
         caseTitle={testing?.title ?? ""}
         onClose={() => setTesting(null)}
       />
-      <DeleteCaseFlow target={deleting ? { id: deleting.id, title: deleting.title } : null} onClose={() => setDeleting(null)} />
+      <DeleteCaseFlow target={deleting ? { id: deleting.id, title: deleting.title, status: deleting.status } : null} onClose={() => setDeleting(null)} />
     </div>
   );
 }

@@ -9,7 +9,9 @@
 *   the definition (the stored facts update); a deletion calls `onDeleted` so the host can leave the editor. Depends
 *   on MUI, the design-system dialog and toast, @shared/lib, @shared/session, the case editor service, the tools
 *   dialogs, the case mutation hook and the case tools CSS Module.
-* Versión: 1.0
+*   v1.1 (review of ffe9297): the delete flow receives the stored status (an archived case in use is not offered
+*   "Archivar").
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,6 +28,7 @@ import { useSession } from "@shared/session/use-session";
 import type { ClinicalCaseDefinitionDTO } from "../../api/dtos/case-editor.dto";
 import type { runClinicalCaseTest } from "../../api/services/case-editor.service";
 import { validateClinicalCase } from "../../api/services/case-editor.service";
+import type { CaseStatus } from "../config/case-editor.config";
 import type { CaseDraft } from "../entities/case-draft.entity";
 import type { CasePreviewDeps } from "../hooks/use-case-preview";
 import { useCaseMutation } from "../hooks/use-case-mutation";
@@ -154,7 +157,7 @@ export function CaseEditorTools({ caseId, definition, draft, dirty, onDeleted, t
       />
       <CasePreviewDialog open={open === "preview"} caseId={caseId} draft={draft} onClose={close} deps={previewDeps} />
       <DeleteCaseFlow
-        target={open === "delete" ? { id: caseId, title: definition.title } : null}
+        target={open === "delete" ? { id: caseId, title: definition.title, status: definition.status as CaseStatus } : null}
         onClose={close}
         onDone={deleted}
       />

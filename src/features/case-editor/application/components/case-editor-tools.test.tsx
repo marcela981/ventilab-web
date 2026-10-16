@@ -7,7 +7,9 @@
 *   delete (a 409 for a case in use offers "Archivar" and archives with PATCH /status; a plain delete calls
 *   onDeleted); and the local preview (the draft runs in the worker without any request; an incomplete draft lists
 *   what is missing). Depends on Vitest, Testing Library, msw, the session context and the case editor test helpers.
-* Versión: 1.0
+*   v1.1 (review of ffe9297): the test run aborts on close and its dialog is described; a failed archive after the
+*   409 is an error; an archived case in use is not offered "Archivar".
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,6 +20,7 @@
 import { configure, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
+import { useState } from "react";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SimCommand, SimWorkerClient, SimWorkerListener } from "@shared/sim-engine";
 import { SessionContext } from "@shared/session/session-context";
@@ -29,7 +32,7 @@ import { TEST_RUN_COPY } from "../entities/case-tools.entity";
 import { apiUrl, definitionDto, envelope, errorResponse, renderWithProviders } from "../pages/case-editor-test-helpers";
 import { CASE_TOOLS_COPY, CaseEditorTools } from "./case-editor-tools";
 import { CASE_PREVIEW_COPY, PREVIEW_BLOCK_LABELS } from "./case-preview-dialog";
-import { CASE_TEST_RUN_COPY } from "./case-test-run";
+import { CASE_TEST_RUN_COPY, CaseTestRunDialog } from "./case-test-run";
 import { DELETE_CASE_COPY } from "./delete-case-flow";
 
 vi.mock("@shared/charts", () => ({
@@ -233,6 +236,35 @@ describe("CaseEditorTools — server test run", () => {
     expect(await within(dialog).findByText(CASE_ERROR_COPY.engineNotReady)).toBeInTheDocument();
     expect(within(dialog).getByRole("button", { name: CASE_TEST_RUN_COPY.run })).toBeEnabled();
   });
+
+  it("aborts the run in flight when the dialog closes, and describes the dialog", async() => {
+    const signals: AbortSignal[] = [];
+    const service = vi.fn((_caseId: string, _body: unknown, signal?: AbortSignal) => {
+      if (signal) {
+        signals.push(signal);
+      }
+
+      return new Promise<never>(() => undefined);
+    });
+
+    function Host() {
+      const [open, setOpen] = useState(true);
+
+      return <CaseTestRunDialog open={open} caseId="c1" caseTitle="Caso" onClose={() => setOpen(false)} service={service} />;
+    }
+
+    renderWithProviders(<Host />);
+
+    const dialog = await dialogNamed(CASE_TEST_RUN_COPY.title("Caso"));
+
+    expect(dialog).toHaveAccessibleDescription(CASE_TEST_RUN_COPY.description);
+    fireEvent.click(within(dialog).getByRole("button", { name: CASE_TEST_RUN_COPY.run }));
+    expect(service).toHaveBeenCalledTimes(1);
+    expect(signals[0]?.aborted).toBe(false);
+    fireEvent.click(within(dialog).getByRole("button", { name: CASE_TEST_RUN_COPY.close }));
+
+    await waitFor(() => expect(signals[0]?.aborted).toBe(true));
+  });
 });
 
 describe("CaseEditorTools — delete", () => {
@@ -271,6 +303,45 @@ describe("CaseEditorTools — delete", () => {
     fireEvent.click(within(await dialogNamed(DELETE_CASE_COPY.confirmTitle)).getByRole("button", { name: DELETE_CASE_COPY.confirm }));
 
     await waitFor(() => expect(onDeleted).toHaveBeenCalledTimes(1));
+  });
+
+  it("shows a failed archive after the 409 as an error and stays in the editor", async() => {
+    server.use(
+      http.delete(apiUrl("/api/clinical-cases/c1"), () => errorResponse("clinical-cases.clinical_case_in_use", 409)),
+      http.patch(apiUrl("/api/clinical-cases/c1/status"), () => errorResponse("common.internal", 500)),
+    );
+
+    const { tools, onDeleted } = setup();
+
+    fireEvent.click(within(tools).getByRole("button", { name: CASE_TOOLS_COPY.remove }));
+    fireEvent.click(within(await dialogNamed(DELETE_CASE_COPY.confirmTitle)).getByRole("button", { name: DELETE_CASE_COPY.confirm }));
+    fireEvent.click(within(await dialogNamed(DELETE_CASE_COPY.inUseTitle)).getByRole("button", { name: DELETE_CASE_COPY.archive }));
+
+    expect(await screen.findByText(CASE_ERROR_COPY.generic)).toBeInTheDocument();
+    expect(screen.queryByText(DELETE_CASE_COPY.archived("SDRA en paciente obeso"))).not.toBeInTheDocument();
+    expect(onDeleted).not.toHaveBeenCalled();
+  });
+
+  it("does not offer to archive a case in use that is already archived", async() => {
+    let patches = 0;
+
+    server.use(
+      http.delete(apiUrl("/api/clinical-cases/c1"), () => errorResponse("clinical-cases.clinical_case_in_use", 409)),
+      http.patch(apiUrl("/api/clinical-cases/c1/status"), () => {
+        patches += 1;
+
+        return HttpResponse.json(envelope(null));
+      }),
+    );
+
+    const { tools } = setup({ definition: definitionDto("c1", { status: "ARCHIVED" }) });
+
+    fireEvent.click(within(tools).getByRole("button", { name: CASE_TOOLS_COPY.remove }));
+    fireEvent.click(within(await dialogNamed(DELETE_CASE_COPY.confirmTitle)).getByRole("button", { name: DELETE_CASE_COPY.confirm }));
+
+    expect(await screen.findByText(DELETE_CASE_COPY.inUseArchived("SDRA en paciente obeso"))).toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: DELETE_CASE_COPY.inUseTitle })).not.toBeInTheDocument();
+    expect(patches).toBe(0);
   });
 });
 

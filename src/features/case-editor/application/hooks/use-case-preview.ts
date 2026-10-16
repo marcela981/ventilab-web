@@ -12,7 +12,9 @@
 *   terminated on unmount or when the case changes; without Worker support the status is "unsupported". The worker
 *   factory is injectable for tests. Depends on React, the sim-engine runtime and console binding, and the
 *   ventilator-console types.
-* Versión: 1.0
+*   v1.1 (review of ffe9297): a worker error is sticky until restart (later batches of that run are ignored), and a
+*   change is validated against the applied settings plus every change still waiting for its acknowledgement.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -158,7 +160,14 @@ export function useCasePreview(engineCase: EngineCase | null, deps: CasePreviewD
 
     clientRef.current = client;
 
+    // A worker error ends this run: later batches are ignored and the status stays "error" until a restart.
+    let failed = false;
+
     const handleBatch = (batch: SimBatch): void => {
+      if (failed) {
+        return;
+      }
+
       hub.emit(batch);
 
       let applied = appliedRef.current;
@@ -184,7 +193,7 @@ export function useCasePreview(engineCase: EngineCase | null, deps: CasePreviewD
       update((current) => ({
         ...current,
         applied,
-        status,
+        status: current.status === "error" ? "error" : status,
         live: nextLive(current.live, batch),
         changeError: refused ? PREVIEW_HOOK_COPY.refused : current.changeError,
       }));
@@ -196,6 +205,8 @@ export function useCasePreview(engineCase: EngineCase | null, deps: CasePreviewD
       } else if (message.type === "batch") {
         handleBatch(message.batch);
       } else if (message.type === "error") {
+        failed = true;
+        pending.clear();
         update((current) => ({ ...current, status: "error", error: PREVIEW_HOOK_COPY.workerFailed }));
       }
     });
@@ -219,7 +230,10 @@ export function useCasePreview(engineCase: EngineCase | null, deps: CasePreviewD
       return;
     }
 
-    const message = validationMessage(current, changes);
+    // The worker applies the changes still waiting for an acknowledgement first: validate on top of them, so a
+    // combination they make invalid shows its specific message here instead of a generic refusal later.
+    const expected = [...pendingRef.current.values()].reduce<VentilatorSettings>((settings, pending) => ({ ...settings, ...pending }), current);
+    const message = validationMessage(expected, changes);
 
     if (message) {
       setStored((previous) => ({ ...previous, changeError: message }));

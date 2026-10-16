@@ -15,7 +15,9 @@
 *   shown as an invalid row ("Tipo desconocido: …" selected and disabled, error on the type) until a known type is
 *   chosen, whatever `showIssues` says. A weight of 0 shows what it means for the grade, and a total that is not 100
 *   shows at least 2 decimals (more when needed to see the difference).
-* Versión: 1.1
+*   v1.2 (review of b23709c): every announcement is a new node (nonce key), so an identical text is announced again;
+*   a pending focus request is dropped when the host does not render the expected reordered or reduced list.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -89,7 +91,8 @@ function formatWeightTotal(total: number, ok: boolean): string {
 }
 
 type CriterionAction = "up" | "down" | "remove";
-type FocusTarget = { key: string, action: CriterionAction } | { key: null, action: "add" };
+/** `expected`: the list the host must render for the focus to move (identity of the value passed to onChange). */
+type FocusTarget = ({ key: string, action: CriterionAction } | { key: null, action: "add" }) & { expected: OutcomeRubricDraft };
 
 const OPPOSITE_ARROW: Readonly<Record<CriterionAction, CriterionAction>> = { up: "down", down: "up", remove: "remove" };
 
@@ -123,7 +126,8 @@ export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false,
   const listRef = useRef<HTMLOListElement | null>(null);
   const addRef = useRef<HTMLButtonElement | null>(null);
   const pendingFocus = useRef<FocusTarget | null>(null);
-  const [announcement, setAnnouncement] = useState("");
+  const [announcement, setAnnouncement] = useState<{ text: string, nonce: number }>({ text: "", nonce: 0 });
+  const announce = (text: string) => setAnnouncement((current) => ({ text, nonce: current.nonce + 1 }));
   const issues: KeyedIssue[] = showIssues ? outcomeRubricDraftIssues(value) : [];
   const used = usedOutcomeTypes(value);
   const canAdd = !disabled && value.criteria.length < OUTCOME_CRITERION_TYPES.length;
@@ -135,6 +139,8 @@ export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false,
 
   // Restores the focus once the host renders the reordered or reduced list (the moved or removed row unmounts or
   // moves its focused button otherwise, and the focus falls back to the body).
+  // The request is dropped when the host rendered something other than the expected list (it ignored or changed
+  // the reorder/removal), so a stale request never steals the focus on a later edit.
   useEffect(() => {
     const target = pendingFocus.current;
 
@@ -143,6 +149,10 @@ export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false,
     }
 
     pendingFocus.current = null;
+
+    if (target.expected !== value) {
+      return;
+    }
 
     if (target.key === null) {
       addRef.current?.focus();
@@ -161,17 +171,18 @@ export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false,
       return;
     }
 
-    pendingFocus.current = { key, action: offset < 0 ? "up" : "down" };
-    setAnnouncement(OUTCOME_RUBRIC_COPY.moved(index + offset + 1, count));
+    pendingFocus.current = { key, action: offset < 0 ? "up" : "down", expected: next };
+    announce(OUTCOME_RUBRIC_COPY.moved(index + offset + 1, count));
     onChange(next);
   };
 
   const remove = (key: string, index: number) => {
     const neighbour = value.criteria[index + 1] ?? value.criteria[index - 1];
+    const next = removeOutcomeCriterion(value, key);
 
-    pendingFocus.current = neighbour ? { key: neighbour.key, action: "remove" } : { key: null, action: "add" };
-    setAnnouncement(neighbour ? OUTCOME_RUBRIC_COPY.removed(index + 1) : OUTCOME_RUBRIC_COPY.removedLast(index + 1));
-    onChange(removeOutcomeCriterion(value, key));
+    pendingFocus.current = neighbour ? { key: neighbour.key, action: "remove", expected: next } : { key: null, action: "add", expected: next };
+    announce(neighbour ? OUTCOME_RUBRIC_COPY.removed(index + 1) : OUTCOME_RUBRIC_COPY.removedLast(index + 1));
+    onChange(next);
   };
 
   return (
@@ -325,7 +336,10 @@ export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false,
           {rubricLevel.map((issue) => <li key={issue.code}>{outcomeRubricIssueMessage(issue)}</li>)}
         </ul>
       ) : null}
-      <p className={cx(styles.visuallyHidden)} role="status" aria-label={OUTCOME_RUBRIC_COPY.announcements}>{announcement}</p>
+      <p className={cx(styles.visuallyHidden)} role="status" aria-label={OUTCOME_RUBRIC_COPY.announcements}>
+        {/* A new node per announcement: a screen reader re-reads identical text only when the content node changes. */}
+        {announcement.text ? <span key={announcement.nonce} data-announcement={announcement.nonce}>{announcement.text}</span> : null}
+      </p>
     </fieldset>
   );
 }

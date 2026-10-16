@@ -7,7 +7,8 @@
 *   (and hidden with showIssues off), the policy and passing score, and the disabled state. Depends on Vitest,
 *   Testing Library and the rubric-editor module. v1.1 (review of 4134725): focus after reorder and removal with the
 *   live announcement, the invalid row of an unknown stored type, the weight 0 hint and the total with 2 decimals.
-* Versión: 1.1
+*   v1.2 (review of b23709c): an identical announcement is a new node; a refused reorder never moves the focus later.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -230,6 +231,50 @@ describe("OutcomeRubricEditor focus and announcements", () => {
     fireEvent.click(button(OUTCOME_RUBRIC_COPY.remove(1)));
     expect(button(OUTCOME_RUBRIC_COPY.add)).toHaveFocus();
     expect(announcer()).toHaveTextContent("Criterio 1 eliminado. La rúbrica no tiene criterios.");
+  });
+
+  it("announces an identical text again with a new node", () => {
+    render(<Host initial={THREE} />);
+
+    fireEvent.click(button(OUTCOME_RUBRIC_COPY.remove(2)));
+
+    const first = within(announcer()).getByText("Criterio 2 eliminado.");
+
+    fireEvent.click(button(OUTCOME_RUBRIC_COPY.remove(2)));
+
+    const second = within(announcer()).getByText("Criterio 2 eliminado.");
+
+    expect(second).not.toBe(first);
+    expect(second.getAttribute("data-announcement")).not.toBe(first.getAttribute("data-announcement"));
+  });
+
+  it("drops the focus request when the host does not render the reordered list", () => {
+    // A host that refuses reorders but accepts other edits.
+    function RefusingHost() {
+      const [value, setValue] = useState(THREE);
+
+      return (
+        <OutcomeRubricEditor
+          value={value}
+          newKey={() => "k"}
+          onChange={(next) => {
+            if (next.criteria.map((criterion) => criterion.key).join() === value.criteria.map((criterion) => criterion.key).join()) {
+              setValue(next);
+            }
+          }}
+        />
+      );
+    }
+
+    render(<RefusingHost />);
+    fireEvent.click(button(OUTCOME_RUBRIC_COPY.moveDown(1)));
+    expect(typeOf(1).value).toBe("TARGETS_REACHED");
+
+    const policy = screen.getByLabelText(OUTCOME_RUBRIC_COPY.assistancePolicy) as HTMLSelectElement;
+
+    policy.focus();
+    fireEvent.change(policy, { target: { value: "ALLOWED_WITH_PENALTY" } });
+    expect(policy).toHaveFocus();
   });
 });
 

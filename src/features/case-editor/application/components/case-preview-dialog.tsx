@@ -8,8 +8,8 @@
 *   sex and height, mechanics, initial ventilator settings, initial state) or asks to fix the draft errors first; a
 *   worker failure or a browser without workers shows an error. The worker lives only while the dialog is open.
 *   Depends on MUI, @shared/lib, @shared/ventilator-console, the case draft and case tools entities, the preview hook
-*   and the case tools CSS Module.
-* Versión: 1.0
+*   and the case tools CSS Module. v1.1 (review of ffe9297): the dialog is described by its description paragraph.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -115,15 +115,16 @@ export type CasePreviewDialogProps = {
 
 export function CasePreviewDialog({ open, caseId, draft, onClose, deps }: CasePreviewDialogProps) {
   const titleId = useId();
+  const descriptionId = useId();
   // The dialog is modal, so the draft (and the engine case, which restarts the worker when it changes) stays put while open.
   const source = useMemo(() => (open ? previewSourceOf(caseId, draft) : null), [caseId, draft, open]);
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xl" aria-labelledby={titleId}>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xl" aria-labelledby={titleId} aria-describedby={descriptionId}>
       <DialogTitle id={titleId}>{CASE_PREVIEW_COPY.title}</DialogTitle>
       <DialogContent>
         <div className={cx(styles.dialogBody)}>
-          <p className={cx(styles.note)}>{CASE_PREVIEW_COPY.description}</p>
+          <p className={cx(styles.note)} id={descriptionId}>{CASE_PREVIEW_COPY.description}</p>
           {source?.kind === "errors" ? <Alert severity="warning">{CASE_PREVIEW_COPY.draftErrors(source.count)}</Alert> : null}
           {source?.kind === "missing" ? (
             <Alert severity="warning">

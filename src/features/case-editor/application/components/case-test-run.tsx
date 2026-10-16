@@ -9,7 +9,9 @@
 *   intervention (unsaved draft changes are not included; the contract has no draft test run) and computes no score.
 *   Depends on MUI, the design-system components, @shared/charts, @shared/lib, the case tools entity, the test-run
 *   hook and the case tools CSS Module.
-* Versión: 1.0
+*   v1.1 (review of ffe9297): the dialog is described by the panel description (aria-describedby) and keeps the last
+*   case title during its exit transition.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -92,9 +94,11 @@ export type CaseTestRunPanelProps = {
   /** The editor has unsaved changes: the run ignores them. */
   dirty?: boolean | undefined
   service?: typeof runClinicalCaseTest | undefined
+  /** Id of the description paragraph, for the aria-describedby of a host dialog. */
+  descriptionId?: string | undefined
 };
 
-export function CaseTestRunPanel({ caseId, dirty = false, service }: CaseTestRunPanelProps) {
+export function CaseTestRunPanel({ caseId, dirty = false, service, descriptionId }: CaseTestRunPanelProps) {
   const { state, run } = useCaseTestRun(caseId, service);
   const [form, setForm] = useState<TestRunForm>({ seconds: String(TEST_RUN_LIMITS.defaultSeconds), seed: "" });
   const [errors, setErrors] = useState<TestRunFormErrors>({});
@@ -117,7 +121,7 @@ export function CaseTestRunPanel({ caseId, dirty = false, service }: CaseTestRun
 
   return (
     <div className={cx(styles.dialogBody)}>
-      <p className={cx(styles.note)}>{CASE_TEST_RUN_COPY.description}</p>
+      <p className={cx(styles.note)} id={descriptionId}>{CASE_TEST_RUN_COPY.description}</p>
       {dirty ? <Alert severity="info">{CASE_TEST_RUN_COPY.dirtyNote}</Alert> : null}
       <form className={cx(styles.form)} onSubmit={submit} noValidate>
         <FormField
@@ -176,12 +180,19 @@ export type CaseTestRunDialogProps = {
 /** The panel in a dialog; closing unmounts it, which aborts a run in flight. */
 export function CaseTestRunDialog({ open, caseId, caseTitle, dirty, onClose, service }: CaseTestRunDialogProps) {
   const titleId = useId();
+  const descriptionId = useId();
+  // The host clears the title on close: keep the last one while the dialog plays its exit transition.
+  const [shownTitle, setShownTitle] = useState(caseTitle);
+
+  if (open && caseTitle !== shownTitle) {
+    setShownTitle(caseTitle);
+  }
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg" aria-labelledby={titleId}>
-      <DialogTitle id={titleId}>{CASE_TEST_RUN_COPY.title(caseTitle)}</DialogTitle>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg" aria-labelledby={titleId} {...(open ? { "aria-describedby": descriptionId } : {})}>
+      <DialogTitle id={titleId}>{CASE_TEST_RUN_COPY.title(shownTitle)}</DialogTitle>
       <DialogContent>
-        {open ? <CaseTestRunPanel caseId={caseId} dirty={dirty} service={service} /> : null}
+        {open ? <CaseTestRunPanel caseId={caseId} dirty={dirty} service={service} descriptionId={descriptionId} /> : null}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{CASE_TEST_RUN_COPY.close}</Button>

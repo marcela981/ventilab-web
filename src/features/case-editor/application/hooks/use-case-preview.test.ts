@@ -6,8 +6,9 @@
 *   PARAM_CHANGE and shows it as applied only after the worker acknowledges it, refuses an invalid combination before
 *   the worker, reports a refused change and a worker error, pauses, resumes, restarts with a new worker, terminates
 *   the worker on unmount and reports a browser without Worker support. Depends on Vitest, Testing Library and the
-*   sim-engine types.
-* Versión: 1.0
+*   sim-engine types. v1.1: a batch after a worker error keeps the error, the validation includes the changes waiting
+*   for an acknowledgement, and a late batch of the previous worker is ignored after a restart.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -193,6 +194,47 @@ describe("useCasePreview", () => {
     expect(workers[1]?.sent[0]).toMatchObject({ type: "init" });
     expect(result.current.status).toBe("starting");
     expect(result.current.error).toBeNull();
+  });
+
+  it("keeps the error status when a batch arrives after a worker error, until restart", () => {
+    const { result, workers } = setup();
+    const worker = workers[0];
+
+    act(() => worker?.emit({ type: "batch", batch: batch() }));
+    act(() => worker?.emit({ type: "error", message: "boom" }));
+    act(() => worker?.emit({ type: "batch", batch: batch({ simTimeMs: 3000 }) }));
+
+    expect(result.current.status).toBe("error");
+    expect(result.current.error).toBe(PREVIEW_HOOK_COPY.workerFailed);
+    expect(result.current.adapter?.permissions.canControl).toBe(false);
+  });
+
+  it("validates a change against the applied settings plus the changes still waiting for the worker", () => {
+    const { result, workers } = setup();
+    const worker = workers[0];
+
+    act(() => worker?.emit({ type: "batch", batch: batch() }));
+    // Ti 2.5 s is valid at the applied 14 /min; it is sent but not acknowledged yet.
+    act(() => result.current.adapter?.onConfirm({ mode: null, changes: [{ parameter: "inspiratoryTime", value: 2.5 }] }));
+    expect(worker?.sent.at(-1)).toMatchObject({ type: "applyEvent" });
+
+    const before = worker?.sent.length ?? 0;
+
+    // 25 /min alone is valid with the applied Ti 1 s, but not with the pending Ti 2.5 s.
+    act(() => result.current.adapter?.onConfirm({ mode: null, changes: [{ parameter: "respiratoryRate", value: 25 }] }));
+    expect(worker?.sent.length).toBe(before);
+    expect(result.current.changeError).toBe(PREVIEW_HOOK_COPY.timing);
+  });
+
+  it("ignores a late batch of the previous worker after a restart", () => {
+    const { result, workers } = setup();
+    const first = workers[0];
+
+    act(() => result.current.restart());
+    act(() => first?.emit({ type: "batch", batch: batch({ simTimeMs: 9000, status: "paused" }) }));
+
+    expect(result.current.status).toBe("starting");
+    expect(result.current.simTimeMs).toBe(0);
   });
 
   it("stops and terminates the worker on unmount, and runs nothing without a case", () => {

@@ -5,8 +5,9 @@
 *   the metrics timeline (sampled, gaps for missing values, rounded), the engine case of the local preview built from
 *   the upsert body like the backend simulation case mapper (shunt curve or basal shunt, settings, events, targets;
 *   null with the missing blocks when the profile is incomplete), and the "case in use" conflict of a delete. Depends
-*   on vitest, the api-client error type and the case tools entity.
-* Versión: 1.0
+*   on vitest, the api-client error type and the case tools entity. v1.1: "in use" by code (status only without a
+*   code) and the preview initial settings filtered to number and string values.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,6 +23,7 @@ import {
   isCaseInUseError,
   parseTestRunForm,
   previewEngineCase,
+  previewInitialSettings,
   TEST_RUN_COPY,
   testRunSeries,
 } from "./case-tools.entity";
@@ -185,7 +187,15 @@ describe("local preview engine case", () => {
 describe("delete conflict", () => {
   it("recognises the case-in-use refusal", () => {
     expect(isCaseInUseError(new ApiError({ code: "clinical-cases.clinical_case_in_use", message: "", status: 409 }))).toBe(true);
-    expect(isCaseInUseError(new ApiError({ code: "common.conflict", message: "", status: 409 }))).toBe(true);
+    // Another coded 409 is not "in use"; a 409 without a code falls back to the status.
+    expect(isCaseInUseError(new ApiError({ code: "common.conflict", message: "", status: 409 }))).toBe(false);
+    expect(isCaseInUseError(new ApiError({ code: "common.unknown", message: "", status: 409 }))).toBe(true);
     expect(isCaseInUseError(new ApiError({ code: "clinical-cases.clinical_case_not_found", message: "", status: 404 }))).toBe(false);
+  });
+});
+
+describe("preview initial settings", () => {
+  it("keeps only number and string values, like the backend mapper", () => {
+    expect(previewInitialSettings({ mode: "VCV", peepCmH2O: 8, fio2: null, extra: { a: 1 }, flag: true })).toEqual({ mode: "VCV", peepCmH2O: 8 });
   });
 });

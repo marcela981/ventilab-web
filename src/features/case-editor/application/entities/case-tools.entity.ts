@@ -9,7 +9,9 @@
 *   missing blocks when the simulation profile is incomplete); and the "case in use" conflict of a delete (409, the
 *   backend suggests archiving). No official score is computed here. Depends on the api-client error type, the
 *   sim-engine types and the case editor DTOs.
-* Versión: 1.0
+*   v1.1 (review of ffe9297): "in use" is decided by the code `clinical-cases.clinical_case_in_use` (the 409 status
+*   only without a code); the preview initial settings keep only number and string values, like the backend mapper.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,7 +19,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { toApiError } from "@shared/api-client/api-error";
+import { CLIENT_ERROR_CODES, toApiError } from "@shared/api-client/api-error";
 import type { CaseEvent, EngineCase, ShuntCurvePoint, VentilatorSettings } from "@shared/sim-engine";
 import type { ClinicalCaseTestRunRequestDTO, UpsertClinicalCaseDTO } from "../../api/dtos/case-editor.dto";
 
@@ -149,7 +151,19 @@ export type PreviewBlock = "patientSex" | "patientHeightCm" | "mechanics" | "ini
 export type PreviewEngineCase = { engineCase: EngineCase | null, missing: readonly PreviewBlock[] };
 
 /**
- * The engine case the backend would simulate for this body (`SimulationCaseMapper.toDefinition`): the recruitment
+ * The initial settings kept to their number and string values, as the backend `SimulationCaseMapper._initialSettings`
+ * does (a null or nested value never reaches the engine).
+ */
+export function previewInitialSettings(settings: object): Partial<VentilatorSettings> {
+  return Object.fromEntries(
+    Object.entries(settings).filter(([, value]) => typeof value === "number" || typeof value === "string"),
+  ) as Partial<VentilatorSettings>;
+}
+
+/**
+ * The engine case the backend would simulate for this body (`SimulationCaseMapper.toDefinition`). It is built from
+ * the UNSAVED draft body, not from the server-normalised snapshot of a stored case, so it previews what the author is
+ * editing (the server test run covers the stored case). The recruitment
  * curve as the shunt curve (or one point at PEEP 0 with the basal shunt), the initial settings as given, the events
  * and the targets (empty when absent). Null with the missing blocks when the simulation profile is incomplete.
  */
@@ -212,7 +226,7 @@ export function previewEngineCase(caseId: string, body: UpsertClinicalCaseDTO): 
       },
       hemodynamics: mechanics.hemodynamics,
       deterioration: mechanics.deterioration,
-      initialSettings: { ...initialVentilatorSettings } as Partial<VentilatorSettings>,
+      initialSettings: previewInitialSettings(initialVentilatorSettings),
       events: (body.events ?? []).map((event): CaseEvent => ({ ...event })),
       targets: body.targets ?? {},
     },
@@ -221,9 +235,14 @@ export function previewEngineCase(caseId: string, body: UpsertClinicalCaseDTO): 
 
 // ---- delete -------------------------------------------------------------------------------------------------------
 
-/** The delete was refused because the case is used (sessions, attempts or questions): archiving is the way out. */
+/**
+ * The delete was refused because the case is used (sessions, attempts or questions): archiving is the way out. The
+ * code decides; the 409 status counts only when the error carries no code (another 409 is not "in use").
+ */
 export function isCaseInUseError(error: unknown): boolean {
   const apiError = toApiError(error);
 
-  return apiError.code === CASE_IN_USE_CODE || apiError.status === 409;
+  const hasCode = apiError.code !== "" && apiError.code !== CLIENT_ERROR_CODES.unknown;
+
+  return hasCode ? apiError.code === CASE_IN_USE_CODE : apiError.status === 409;
 }
