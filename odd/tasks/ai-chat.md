@@ -38,8 +38,31 @@ Route per task: D = delegated writer, I = inline.
 - [x] A1 (D) [commit 293b66a; review slice 3edc4ca..293b66a (incl. b113e10), medium, granted, APPROVED + acknowledged; 3 WARNINGs (recover wrong conversation, stale text ref on stop, non-404 load error stuck loading) fixed in A2] ai-chat api + application: conversations service (list/detail/rename/delete/create FREE/send), hooks (conversation list with scope filter + pagination + client title filter, chat session with retry/abort/off-topic/quota), suggestions config, nav + routes entries.
 - [x] A2 (D) [commit f1d51bf; review slice 293b66a..f1d51bf medium, granted, APPROVED + acknowledged; WARNINGs new-chat no-op, page not clamped + SUGGESTION copy timer after unmount fixed in A3] `/assistant` and `/assistant/[conversationId]` pages: list (filter, search, inline rename, delete confirm, origin + "Ir a la lección" link), conversation view (streaming, stop, interrupted + retry, auto-scroll + "Ir al final", copy, ai-rating, empty state with suggestions, disclaimer, error/off-topic states), mobile split, 404 view.
 - [x] A3 (D) [commit 16d5def; review slice f1d51bf..16d5def medium, granted, APPROVED + acknowledged; WARNING drawer load-failure silent → follow-up fix] AiChatProvider in the layout + launcher button in the AppShell top bar + dynamic drawer (full screen on mobile), persists across navigation, expand to `/assistant/[id]`, focus management.
-- [ ] V1 (I) Verification: typecheck, lint, tests, greps, build + bundle comparison; parity notes; docs.
-- [ ] P2 Remove legacy AI chat components — ONLY with the author's approval.
+- [x] A3-fix (D) Drawer import/render failure closes the drawer, shows a toast and allows a retry. Commit e64b306 (assess under_budget; reviewed in the closing slice).
+- [x] V1 (I) Evidence in `odd/ai-chat-verification.md`, master e64b306:
+  - typecheck 0 errors and lint 0 errors;
+  - vitest 1193/1196, where the 3 failures are load-timeout flakes that pass when run alone;
+  - greps clean;
+  - build OK.
+  - Bundle (gzip KiB, compared with the audit baseline):
+
+    | Route | Now | Baseline | Delta |
+    |---|---|---|---|
+    | /_app | 285.5 | 282.9 | +2.6 |
+    | /learn | 340.7 | 336.7 | +4.0 |
+    | lesson | 340.8 | 336.8 | +4.0 |
+    | /assistant | 339.5 | new | |
+
+    Of the delta, about 1.8 KiB is ai-chat: provider, launcher, top-bar slot and route constant, which the launcher requirement makes unavoidable. The rest comes from shared chunks that also changed with the evaluations commits made after the baseline build. The drawer, ChatPanel, react-markdown and KaTeX sit only in async chunks. **The strict "≤ baseline" check is NOT met** for `/_app` and `/learn*`; the author has to accept the launcher's cost.
+- [ ] E2E (Playwright not installed; no fake-AI runtime), the manual keyboard walk-through and the visual review (no dev server): PENDING, done manually by the author.
+- [ ] P2 Remove legacy AI chat components (`src/features/ensenanza/shared/components/ai/*`, `TutorAIPopup`, `AITopicExpander`, GeminiProvider) — ONLY with the author's approval. None of them can be reached today, so no redirect was needed. The parity checklist is in `odd/ai-chat-audit.md` section f. `AIServiceManager` stays because the simulator still uses it.
 
 ## Progress / evidence
 - Phase 1 audit: `odd/ai-chat-audit.md` (2026-10-15).
+- Commits on master: 34a2180 (S1), 3edc4ca (S2), b113e10, 293b66a (A1), f1d51bf (A2), 16d5def (A3), e64b306, plus the closing docs commit.
+
+## Next step
+The author:
+1. accepts or rejects the launcher's +~1.8 KiB gzip on `/_app`;
+2. runs the manual E2E, keyboard and visual checks (scenarios listed in the original prompt);
+3. approves P2 (legacy removal).
