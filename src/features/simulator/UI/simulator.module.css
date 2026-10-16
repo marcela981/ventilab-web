@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Simulator catalog styles
-* Descripción: Styles of the simulator catalog page with the same visual identity as the other features (evaluations): page column, filter bar, responsive card grid, case card (header chips, validated badge, details list, footer action and error), the "Mis sesiones" table with a horizontal scroll wrapper on narrow screens, the row status text and links, and the pagers. Design-system tokens only.
-* Versión: 1.0
+* Descripción: Styles of the simulator catalog page with the same visual identity as the other features (evaluations): page column, filter bar, responsive card grid, case card (header chips, validated badge, details list, footer action and error), the "Mis sesiones" table with a horizontal scroll wrapper on narrow screens, the row status text and links, and the pagers. v1.1: the card time-multiplier select and the history titles notice. Design-system tokens only.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -114,6 +114,11 @@
   margin-top: auto;
 }
 
+.speed {
+  min-width: 14rem;
+  max-width: 100%;
+}
+
 .cardError {
   margin: 0;
   font: var(--mui-font-body2);
@@ -185,4 +190,14 @@
 
 .pager {
   align-self: center;
+}
+
+.notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-error);
 }

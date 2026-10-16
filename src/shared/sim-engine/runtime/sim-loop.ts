@@ -11,8 +11,12 @@
 *   is rejected. v1.2 (T6 session resume): `initialEvents` + `startAtSimTimeMs` replay a session's stored events up
 *   to a start time at creation, so a reloaded console catches up deterministically (same result as the engine
 *   replay); the catch-up waveform and the already-stored events are not re-streamed, and an initial event later
-*   than the start time stays scheduled. Depends on src/shared/sim-engine/engine.
-* Versión: 1.2
+*   than the start time stays scheduled. v1.3: an event may carry a client `id`; every applied event with an id is
+*   confirmed in the next batch as {id, effectiveSimTimeMs} with the simulated time the engine really applied it, so
+*   the caller records that exact time (local run == server replay); a rejected event keeps its id and is never
+*   confirmed, and the stored events replayed at resume are not confirmed again. Depends on
+*   src/shared/sim-engine/engine.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -47,14 +51,28 @@ export interface SimClock {
 
 export type SimLoopStatus = "idle" | "running" | "paused" | "stopped";
 
-/** An engine event as the UI requests it: without simTimeMs it is applied at the current simulated time. */
+/**
+ * An engine event as the UI requests it: without simTimeMs it is applied at the current simulated time. The optional
+ * client id is echoed back in the batch confirmation (or the rejection) of the event.
+ */
 export type SimEventInput =
-  | { readonly type: "PARAM_CHANGE"; readonly changes: Partial<VentilatorSettings>; readonly simTimeMs?: number }
-  | { readonly type: "RECONNECT"; readonly simTimeMs?: number };
+  | {
+      readonly type: "PARAM_CHANGE";
+      readonly changes: Partial<VentilatorSettings>;
+      readonly simTimeMs?: number;
+      readonly id?: string;
+    }
+  | { readonly type: "RECONNECT"; readonly simTimeMs?: number; readonly id?: string };
 
 export interface RejectedSimEvent {
   readonly event: SimEventInput;
   readonly message: string;
+}
+
+/** An event with a client id that the engine applied, with the simulated time it really took effect. */
+export interface SimEventConfirmation {
+  readonly id: string;
+  readonly effectiveSimTimeMs: number;
 }
 
 export interface SimBatch {
@@ -70,6 +88,8 @@ export interface SimBatch {
   readonly alarms: readonly Alarm[];
   /** Events applied in this tick, stamped with the simulated time they took effect. */
   readonly appliedEvents: readonly EngineEvent[];
+  /** Applied events that carried a client id, with their effective simulated time. */
+  readonly confirmedEvents: readonly SimEventConfirmation[];
   readonly rejectedEvents: readonly RejectedSimEvent[];
 }
 
@@ -157,6 +177,7 @@ export function createSimLoop(engineCase: EngineCase, seed: number, options: Sim
   let scheduled: ScheduledEvent[] = [];
   let latestAlarms: readonly Alarm[] = [];
   let applied: EngineEvent[] = [];
+  let confirmed: SimEventConfirmation[] = [];
   let rejected: RejectedSimEvent[] = [];
   let metricsDue = true;
 
@@ -179,6 +200,10 @@ export function createSimLoop(engineCase: EngineCase, seed: number, options: Sim
       applyEvent(state, event);
       applied.push(event);
       metricsDue = true;
+
+      if (input.id !== undefined) {
+        confirmed.push({ id: input.id, effectiveSimTimeMs: event.simTimeMs });
+      }
     } catch (error) {
       rejected.push({ event: input, message: error instanceof Error ? error.message : String(error) });
     }
@@ -226,10 +251,12 @@ export function createSimLoop(engineCase: EngineCase, seed: number, options: Sim
       metrics,
       alarms: latestAlarms,
       appliedEvents: applied,
+      confirmedEvents: confirmed,
       rejectedEvents: rejected,
     };
 
     applied = [];
+    confirmed = [];
     rejected = [];
 
     return batch;
@@ -328,6 +355,7 @@ export function createSimLoop(engineCase: EngineCase, seed: number, options: Sim
     // The catch-up output is not streamed: the waveform is discarded and the stored events are not re-reported.
     getWaveformBuffer(state);
     applied = [];
+    confirmed = [];
     metricsDue = true;
   }
 

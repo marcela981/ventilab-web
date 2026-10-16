@@ -7,8 +7,10 @@
 *   the FREE engine-version warning versus the EXAM block (no worker), the EXAM time controls without pause, the
 *   playback multiplier capped by the session multiplier, the unavailable message and the frame source pushing samples
 *   without React state. Background-tab catch-up is covered by the T1 sim-loop tests. Depends on vitest, Testing
-*   Library, msw and the simulator test helpers.
-* Versión: 1.0
+*   Library, msw and the simulator test helpers. v1.1: the worker receives the event with its id and no time; it is
+*   enqueued only after the batch acknowledgement, with the effective time; end waits for a pending acknowledgement;
+*   a rejected change shows an error, rolls the setting back and is never sent.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -176,7 +178,7 @@ describe("SessionConsolePage", () => {
     expect(screen.getByRole("spinbutton", { name: "Presión positiva al final de la espiración" })).toHaveAttribute("aria-valuenow", "10");
   });
 
-  it("pending → CONFIRMAR creates exactly one PARAM_CHANGE event with id and simTimeMs, sent on end", async() => {
+  it("pending → CONFIRMAR sends one PARAM_CHANGE with its id and no time; it is enqueued with the acknowledged time", async() => {
     const { worker, sendEvents, endSession } = renderPage();
 
     await startRunning(worker);
@@ -188,9 +190,13 @@ describe("SessionConsolePage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
 
     expect(sentOfType(worker, "applyEvent")).toEqual([
-      { type: "applyEvent", event: { type: "PARAM_CHANGE", changes: { peepCmH2O: 8 }, simTimeMs: 4321 } },
+      { type: "applyEvent", event: { type: "PARAM_CHANGE", changes: { peepCmH2O: 8 }, id: "evt-1" } },
     ]);
 
+    act(() => worker.emit({
+      type: "batch",
+      batch: buildBatch({ simTimeMs: 4354, status: "running", confirmedEvents: [{ id: "evt-1", effectiveSimTimeMs: 4321 }] }),
+    }));
     await endThroughDialog();
 
     await waitFor(() => expect(router.push).toHaveBeenCalledWith("/simulator/sessions/s1/result"));
@@ -198,8 +204,57 @@ describe("SessionConsolePage", () => {
     expect(sendEvents).toHaveBeenCalledWith("s1", [
       { id: "evt-1", simTimeMs: 4321, type: "PARAM_CHANGE", payload: { changes: { peepCmH2O: 8 } } },
     ]);
-    expect(endSession).toHaveBeenCalledWith("s1", 4321);
+    expect(endSession).toHaveBeenCalledWith("s1", 4354);
     expect(sentOfType(worker, "stop")).toHaveLength(1);
+  });
+
+  it("end waits for the acknowledgement of a change the worker has not confirmed yet", async() => {
+    const { worker, sendEvents } = renderPage();
+
+    await startRunning(worker);
+    increasePeep();
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
+    await endThroughDialog();
+
+    await waitFor(() => expect(sentOfType(worker, "pause")).toHaveLength(1));
+    expect(sendEvents).not.toHaveBeenCalled();
+
+    act(() => worker.emit({
+      type: "batch",
+      batch: buildBatch({ simTimeMs: 4321, status: "paused", confirmedEvents: [{ id: "evt-1", effectiveSimTimeMs: 4321 }] }),
+    }));
+
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/simulator/sessions/s1/result"));
+    expect(sendEvents).toHaveBeenCalledWith("s1", [
+      { id: "evt-1", simTimeMs: 4321, type: "PARAM_CHANGE", payload: { changes: { peepCmH2O: 6 } } },
+    ]);
+  });
+
+  it("a change the worker rejects shows an error, rolls the setting back and is never sent", async() => {
+    const { worker, sendEvents } = renderPage();
+
+    await startRunning(worker);
+    increasePeep();
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
+
+    const peep = () => screen.getByRole("spinbutton", { name: "Presión positiva al final de la espiración" });
+
+    expect(peep()).toHaveAttribute("aria-valuenow", "6");
+
+    act(() => worker.emit({
+      type: "batch",
+      batch: buildBatch({
+        simTimeMs: 4354,
+        status: "running",
+        rejectedEvents: [{ event: { type: "PARAM_CHANGE", id: "evt-1", changes: { peepCmH2O: 6 } }, message: "rejected" }],
+      }),
+    }));
+
+    expect(await screen.findByText(/no se aplicó/i)).toBeInTheDocument();
+    expect(peep()).toHaveAttribute("aria-valuenow", "5");
+    await endThroughDialog();
+    await waitFor(() => expect(router.push).toHaveBeenCalled());
+    expect(sendEvents).not.toHaveBeenCalled();
   });
 
   it("CANCELAR (or a pending edit never confirmed) produces no event", async() => {
@@ -269,6 +324,7 @@ describe("SessionConsolePage", () => {
     act(() => worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 5000, status: "paused" }) }));
     fireEvent.click(screen.getByRole("button", { name: "Reanudar" }));
     expect(sentOfType(worker, "resume")).toHaveLength(1);
+    expect(screen.getByText("La velocidad máxima se eligió al iniciar la práctica en el catálogo; aquí solo puedes bajarla.")).toBeInTheDocument();
   });
 
   it("explains that the session cannot be resumed when the server cannot rebuild it", async() => {

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ConsoleControls tests
-* Descripción: Renders the ventilator console controls in jsdom: only the parameters of the current mode, pending edits highlighted with "Pendiente" that emit nothing but the optional proposal, CONFIRMAR emitting the diff once, CANCELAR and Escape emitting nothing, keyboard/wheel adjustment clamped to the injected limits, a mode change that stays pending until confirmed, the configure variant wording and the read-only state. Depends on Vitest and Testing Library.
-* Versión: 1.1
+* Descripción: Renders the ventilator console controls in jsdom: only the parameters of the current mode, pending edits highlighted with "Pendiente" that emit nothing but the optional proposal, CONFIRMAR emitting the diff once, CANCELAR and Escape emitting nothing, keyboard/wheel adjustment clamped to the injected limits, a mode change that stays pending until confirmed, the configure variant wording and the read-only state. v1.2: +/- and the arrow keys are disabled for a parameter without a valid step grid. Depends on Vitest and Testing Library.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -197,6 +197,25 @@ describe("ConsoleControls", () => {
 
     expect(onConfirm).toHaveBeenCalledWith({ mode: null, changes: [{ parameter: "peep", value: 4 }] });
     expect(screen.queryByRole("button", { name: "Confirmar" })).not.toBeInTheDocument();
+  });
+
+  it("disables +/- and the arrow keys for a parameter without a valid step grid", () => {
+    const { onProposeChange } = renderControls({
+      limits: {
+        tidalVolume: { min: 200, max: 800, step: 10, unit: "mL" },
+        respiratoryRate: { min: 5, max: 40, step: 1, unit: "rpm" },
+        peep: { min: 0, max: 20, step: 0, unit: "cmH2O" },
+        fio2: { min: 0.21, max: 1, step: 0.01, unit: "" },
+        inspiratoryPressure: { min: 5, max: 40, step: 1, unit: "cmH2O" },
+      },
+    });
+
+    expect(screen.getByRole("button", { name: "Aumentar PEEP" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Disminuir PEEP" })).toBeDisabled();
+
+    fireEvent.keyDown(peep(), { key: "ArrowUp" });
+    expect(peep()).toHaveAttribute("aria-valuenow", "5");
+    expect(onProposeChange).not.toHaveBeenCalled();
   });
 
   it("disables every control in read-only and shows the values only", () => {

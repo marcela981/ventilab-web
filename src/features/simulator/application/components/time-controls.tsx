@@ -4,8 +4,8 @@
 *   contract values of TIME_MULTIPLIERS; a value above the session multiplier is disabled because the server bounds
 *   the simulated time by wall time × session multiplier) plus pause/resume. EXAM: the fixed multiplier as text and no
 *   pause. Native buttons with aria-pressed on the dark console surface. Depends on MUI icons, the simulator config
-*   and the simulator CSS.
-* Versión: 1.0
+*   and the simulator CSS. v1.1: the limit hint says the top speed was chosen when the practice started (catalog).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -29,7 +29,7 @@ export const TIME_CONTROLS_COPY = {
   resume: "Reanudar",
   paused: "En pausa",
   fixed: (label: string) => `Velocidad fija ${label} (examen, sin pausa)`,
-  limited: "Las velocidades mayores que la de la sesión no están disponibles.",
+  limited: "La velocidad máxima se eligió al iniciar la práctica en el catálogo; aquí solo puedes bajarla.",
 } as const;
 
 /** 0:42 · 12:05 · 1:02:03. */

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Console controls reducer
-* Descripción: Pure state of the real-device control pattern of the ventilator console: the selected parameter, the pending (unconfirmed) parameter values and the pending mode. Adjustments step or set a value clamped and snapped to the injected limit; a value back at the applied one stops being pending; a mode change makes the mode pending and drops pending values of parameters that no longer apply; reset clears everything (after confirm or cancel). Also the keyboard mapping (arrows, PageUp/PageDown ×10, Home/End) and the confirmation diff. Emits nothing itself: the component calls onConfirm with buildConfirmation, which ignores values and a mode the source already applied. A step that is zero, negative or not finite disables snapping; steps in exponent form keep their precision. Depends only on the console contract types.
-* Versión: 1.1
+* Descripción: Pure state of the real-device control pattern of the ventilator console: the selected parameter, the pending (unconfirmed) parameter values and the pending mode. Adjustments step or set a value clamped and snapped to the injected limit; a value back at the applied one stops being pending; a mode change makes the mode pending and drops pending values of parameters that no longer apply; reset clears everything (after confirm or cancel). Also the keyboard mapping (arrows, PageUp/PageDown ×10, Home/End) and the confirmation diff. Emits nothing itself: the component calls onConfirm with buildConfirmation, which ignores values and a mode the source already applied. A step that is zero, negative or not finite disables snapping; steps in exponent form keep their precision. v1.2: without a valid step grid the step keys (arrows, PageUp/PageDown) map to nothing and a step adjustment leaves the state unchanged; hasStepGrid is exported. Depends only on the console contract types.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -32,7 +32,8 @@ export type Adjustment = { kind: "steps", steps: number } | { kind: "value", val
 
 const PAGE_STEPS = 10;
 
-function hasStepGrid(step: number): boolean {
+/** A step that can be added to a value: finite and positive. */
+export function hasStepGrid(step: number): boolean {
   return Number.isFinite(step) && step > 0;
 }
 
@@ -64,17 +65,19 @@ export function clampToLimit(value: number, limit: ParameterLimit): number {
 }
 
 export function keyToAdjustment(key: string, limit: ParameterLimit): Adjustment | null {
+  const stepping = hasStepGrid(limit.step);
+
   switch (key) {
     case "ArrowUp":
     case "ArrowRight":
-      return { kind: "steps", steps: 1 };
+      return stepping ? { kind: "steps", steps: 1 } : null;
     case "ArrowDown":
     case "ArrowLeft":
-      return { kind: "steps", steps: -1 };
+      return stepping ? { kind: "steps", steps: -1 } : null;
     case "PageUp":
-      return { kind: "steps", steps: PAGE_STEPS };
+      return stepping ? { kind: "steps", steps: PAGE_STEPS } : null;
     case "PageDown":
-      return { kind: "steps", steps: -PAGE_STEPS };
+      return stepping ? { kind: "steps", steps: -PAGE_STEPS } : null;
     case "Home":
       return { kind: "value", value: limit.min };
     case "End":
@@ -96,6 +99,11 @@ export function controlsReducer(state: ControlsState, action: ControlsAction): C
     case "select":
       return { ...state, selected: action.parameter };
     case "adjust": {
+      // Without a step grid there is nothing to step by (Home/End and typed values still set it).
+      if (!hasStepGrid(action.limit.step)) {
+        return state;
+      }
+
       const from = state.pendingValues[action.parameter] ?? action.base;
       const value = clampToLimit(from + action.steps * action.limit.step, action.limit);
 

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AlarmLimitsPanel
-* Descripción: Panel of the ventilator console alarms bar to view and adjust the alarm thresholds the consumer passes in (each with its own min/max/step/unit). Edits are a local draft of the raw typed text (an empty field is allowed while editing), clamped to each limit's bounds and step only on blur and on "Aplicar límites", which emits only the changed valid thresholds through onChange (an empty or invalid draft keeps the threshold); "Descartar" drops the draft. Without onChange (or in read-only) the values are shown only. Depends on React, the controls reducer clamp and the alarms bar styles.
-* Versión: 1.1
+* Descripción: Panel of the ventilator console alarms bar to view and adjust the alarm thresholds the consumer passes in (each with its own min/max/step/unit). Edits are a local draft of the raw typed text (an empty field is allowed while editing), clamped to each limit's bounds and step only on blur and on "Aplicar límites", which emits only the changed valid thresholds through onChange (an empty or invalid draft keeps the threshold); "Descartar" drops the draft. Without onChange (or in read-only) the values are shown only. v1.2: a field left empty is cleared from the draft on blur, so it shows the current value again. Depends on React, the controls reducer clamp and the alarms bar styles.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -52,6 +52,14 @@ export function AlarmLimitsPanel({ limits, onChange, readOnly }: AlarmLimitsPane
 
   const settle = (limit: ConsoleAlarmLimit) => {
     const raw = draft[limit.id];
+
+    // An emptied field shows the current value again instead of staying blank.
+    if (raw !== undefined && raw.trim() === "") {
+      setDraft((current) => Object.fromEntries(Object.entries(current).filter(([id]) => id !== limit.id)));
+
+      return;
+    }
+
     const value = raw === undefined ? null : parseDraft(raw, limit);
 
     if (value !== null) {

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Simulator services tests
-* Descripción: Tests of the simulator API services against msw: the case definition GET by id (URI-encoded), the FREE session start (POST body exactly {mode, caseId, timeMultiplier}, response mapped to a started session), the catalog query (server-side filters, null filters omitted), the ids query of the history titles and the history query (optional filters omitted), the list item → card mapping (no badge without a boolean flag) and the history duration. Depends on Vitest, msw and the simulator test helpers.
-* Versión: 1.0
+* Descripción: Tests of the simulator API services against msw: the case definition GET by id (URI-encoded), the FREE session start (POST body exactly {mode, caseId, timeMultiplier}, response mapped to a started session), the catalog query (server-side filters, null filters omitted), the ids query of the history titles and the history query (optional filters omitted), the list item → card mapping (no badge without a boolean flag) and the history duration. v1.1: the catalog query always carries status=PUBLISHED. Depends on Vitest, msw and the simulator test helpers.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -70,13 +70,14 @@ describe("simulator services", () => {
     expect(ids).toEqual(["c/1"]);
   });
 
-  it("builds the catalog query with server-side filters and omits null filters", () => {
-    expect(clinicalCasesQuery(buildCatalogQuery(NO_CATALOG_FILTERS, 1, 24))).toEqual({ page: 1, limit: 24 });
+  it("builds the catalog query of published cases with server-side filters and omits null filters", () => {
+    expect(clinicalCasesQuery(buildCatalogQuery(NO_CATALOG_FILTERS, 1, 24))).toEqual({ page: 1, limit: 24, status: "PUBLISHED" });
     expect(clinicalCasesQuery(buildCatalogQuery({ pathology: "EPOC", difficulty: "ADVANCED" }, 2, 24))).toEqual({
       page: 2,
       limit: 24,
       pathology: "EPOC",
       difficulty: "ADVANCED",
+      status: "PUBLISHED",
     });
   });
 

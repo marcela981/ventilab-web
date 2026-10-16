@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: SessionHistory
-* Descripción: "Mis sesiones" section of the simulator: a table of the user's simulation sessions (case, mode, start date, duration, result as score % plus status) with links to the result and replay pages of a finished session and to the console of a session still running; loading skeleton, error with retry, empty state with a hint, and a pager when the history has more than one page. Depends on MUI Pagination and icons, next/link, the design-system states, the date format helper, useSessionHistory, the simulator entities, routes and styles.
-* Versión: 1.0
+* Descripción: "Mis sesiones" section of the simulator: a table of the user's simulation sessions (case, mode, start date, duration, result as score % plus status) with links to the result and replay pages of a finished session and to the console of a session still running; loading skeleton, error with retry, empty state with a hint, and a pager when the history has more than one page. v1.1: a case title shows "Cargando caso…" while the titles load, a dash plus a retryable alert when they failed, and "Caso no disponible" only when they loaded without that case. Depends on MUI Button, Pagination and icons, next/link, the design-system states, the date format helper, useSessionHistory, the simulator entities, routes and styles.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,6 +10,7 @@
 */
 
 import HistoryIcon from "@mui/icons-material/History";
+import Button from "@mui/material/Button";
 import Pagination from "@mui/material/Pagination";
 import Link from "next/link";
 import { EmptyState } from "@shared/design-system/components/empty-state";
@@ -29,6 +30,10 @@ export const SESSION_HISTORY_COPY = {
   caption: "Tus sesiones de simulación, de la más reciente a la más antigua.",
   columns: { case: "Caso", mode: "Modo", date: "Fecha", duration: "Duración", result: "Resultado", actions: "Acciones" },
   unknownCase: "Caso no disponible",
+  loadingCase: "Cargando caso…",
+  titleUnavailable: "—",
+  titlesError: "No se pudieron cargar los nombres de los casos.",
+  retry: "Reintentar",
   inProgress: "En curso",
   result: "Ver resultado",
   replay: "Ver repetición",
@@ -61,8 +66,27 @@ function SessionActions({ session }: { session: SessionHistoryRow }) {
   );
 }
 
+type TitleState = { loading: boolean, failed: boolean };
+
+/** "No disponible" only when the titles loaded without this case; a placeholder while loading or after a failure. */
+function CaseTitle({ title, state }: { title: string | null, state: TitleState }) {
+  if (title !== null) {
+    return <>{title}</>;
+  }
+
+  if (state.loading) {
+    return <span className={cx(styles.muted)}>{SESSION_HISTORY_COPY.loadingCase}</span>;
+  }
+
+  return (
+    <span className={cx(styles.muted)}>{state.failed ? SESSION_HISTORY_COPY.titleUnavailable : SESSION_HISTORY_COPY.unknownCase}</span>
+  );
+}
+
 export function SessionHistory() {
-  const { sessions, page, setPage, pagination, isLoading, error, reload } = useSessionHistory();
+  const { sessions, page, setPage, pagination, isLoading, error, reload, titlesLoading, titlesError, reloadTitles } =
+    useSessionHistory();
+  const titleState: TitleState = { loading: titlesLoading, failed: titlesError !== null };
   const pages = pagination?.pages ?? 1;
 
   if (!sessions && isLoading) {
@@ -85,6 +109,14 @@ export function SessionHistory() {
 
   return (
     <div className={cx(styles.panel)}>
+      {titlesError === null ? null : (
+        <p className={cx(styles.notice)} role="alert">
+          {SESSION_HISTORY_COPY.titlesError}
+          <Button size="small" onClick={() => void reloadTitles()}>
+            {SESSION_HISTORY_COPY.retry}
+          </Button>
+        </p>
+      )}
       <div className={cx(styles.tableWrapper)}>
         <table className={cx(styles.table)}>
           <caption>{SESSION_HISTORY_COPY.caption}</caption>
@@ -102,7 +134,7 @@ export function SessionHistory() {
             {sessions.map((session) => (
               <tr key={session.id}>
                 <th scope="row">
-                  {session.caseTitle ?? <span className={cx(styles.muted)}>{SESSION_HISTORY_COPY.unknownCase}</span>}
+                  <CaseTitle title={session.caseTitle} state={titleState} />
                 </th>
                 <td>{simulationModeLabel(session.mode)}</td>
                 <td>

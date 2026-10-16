@@ -3,8 +3,8 @@
 * Descripción: Test doubles of the running session (T6): an engine case, a session record and boot data, a fake
 *   simulation worker client that records the commands it receives and lets a test emit ready/batch/error messages
 *   (jsdom has no Worker), a batch builder and an in-memory storage. Used only by tests. Depends on the sim-engine
-*   public types and the session entities.
-* Versión: 1.0
+*   public types and the session entities. v1.1: batches carry an empty `confirmedEvents` list by default.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -72,6 +72,7 @@ export function buildBatch(overrides: Partial<SimBatch> = {}): SimBatch {
     metrics: null,
     alarms: [],
     appliedEvents: [],
+    confirmedEvents: [],
     rejectedEvents: [],
     ...overrides,
   };

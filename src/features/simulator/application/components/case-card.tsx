@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: CaseCard
-* Descripción: Card of a clinical case in the simulator catalog: title, summary (the case description), difficulty chip, pathology chip, a "Validado por experto" badge only when the data says the case is validated, main diagnosis and patient data, and the "Iniciar práctica" button with its loading state and the start error of this case. Depends on MUI Chip and icons, the design-system AsyncButton, the simulator entities and styles.
-* Versión: 1.0
+* Descripción: Card of a clinical case in the simulator catalog: title, summary (the case description), difficulty chip, pathology chip, a "Validado por experto" badge only when the data says the case is validated, main diagnosis and patient data, and the "Iniciar práctica" button with its loading state and the start error of this case. v1.1: a small native select picks the session time multiplier (TIME_MULTIPLIERS of the contract, default ×1) sent with the start, because the backend bounds the session's simulated time by wall time × that multiplier. Depends on MUI Chip, TextField and icons, the design-system AsyncButton, the simulator entities and styles.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,9 +12,12 @@
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import Chip from "@mui/material/Chip";
-import { useId } from "react";
+import TextField from "@mui/material/TextField";
+import { useId, useState } from "react";
 import { AsyncButton } from "@shared/design-system/components/async-button";
 import { cx } from "@shared/lib/class-names";
+import { DEFAULT_TIME_MULTIPLIER, TIME_MULTIPLIER_LABELS, TIME_MULTIPLIERS } from "../config/simulator.config";
+import type { TimeMultiplier } from "../config/simulator.config";
 import { difficultyLabel, pathologyLabel } from "../entities/simulator.entity";
 import type { CaseCard as CaseCardModel } from "../entities/simulator.entity";
 import styles from "../../UI/simulator.module.css";
@@ -26,6 +29,10 @@ export const CASE_CARD_COPY = {
   patient: "Paciente",
   patientData: (age: number, weight: number) => `${age} años · ${weight} kg`,
   start: "Iniciar práctica",
+  speed: "Velocidad del tiempo simulado",
+  speedOption: (multiplier: TimeMultiplier) =>
+    multiplier === 1 ? `${TIME_MULTIPLIER_LABELS[multiplier]} (tiempo real)` : TIME_MULTIPLIER_LABELS[multiplier],
+  speedHint: "Es el máximo de la sesión: durante la práctica podrás bajarla, pero no subirla.",
   difficulty: (label: string) => `Dificultad: ${label}`,
   pathology: (label: string) => `Patología: ${label}`,
 } as const;
@@ -36,12 +43,13 @@ export type CaseCardProps = {
   /** Another case is starting: this button waits. */
   disabled: boolean
   error: string | null
-  onStart: (caseId: string) => void
+  onStart: (caseId: string, timeMultiplier: TimeMultiplier) => void
 };
 
 export function CaseCard({ clinicalCase, pending, disabled, error, onStart }: CaseCardProps) {
   const titleId = useId();
   const errorId = useId();
+  const [timeMultiplier, setTimeMultiplier] = useState<TimeMultiplier>(DEFAULT_TIME_MULTIPLIER);
   const difficulty = difficultyLabel(clinicalCase.difficulty);
   const pathology = pathologyLabel(clinicalCase.pathology);
 
@@ -68,13 +76,36 @@ export function CaseCard({ clinicalCase, pending, disabled, error, onStart }: Ca
         <dd>{CASE_CARD_COPY.patientData(clinicalCase.patientAge, clinicalCase.patientWeight)}</dd>
       </dl>
       <div className={cx(styles.cardFooter)}>
+        <TextField
+          select
+          size="small"
+          className={cx(styles.speed)}
+          label={CASE_CARD_COPY.speed}
+          helperText={CASE_CARD_COPY.speedHint}
+          value={String(timeMultiplier)}
+          disabled={pending || disabled}
+          onChange={(event) => {
+            const next = TIME_MULTIPLIERS.find((multiplier) => String(multiplier) === event.target.value);
+
+            if (next !== undefined) {
+              setTimeMultiplier(next);
+            }
+          }}
+          slotProps={{ select: { native: true }, inputLabel: { shrink: true } }}
+        >
+          {TIME_MULTIPLIERS.map((multiplier) => (
+            <option key={multiplier} value={String(multiplier)}>
+              {CASE_CARD_COPY.speedOption(multiplier)}
+            </option>
+          ))}
+        </TextField>
         <AsyncButton
           variant="contained"
           startIcon={<PlayArrowIcon />}
           loading={pending}
           disabled={disabled}
           aria-describedby={error === null ? undefined : errorId}
-          onClick={() => onStart(clinicalCase.id)}
+          onClick={() => onStart(clinicalCase.id, timeMultiplier)}
         >
           {CASE_CARD_COPY.start}
         </AsyncButton>

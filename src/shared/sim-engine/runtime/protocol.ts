@@ -6,8 +6,9 @@
 *   message is plain structured-cloneable data. v1.1: event times must be finite and non-negative, and init requires a
 *   finite seed, an allowed multiplier and finite numeric options. Depends on the engine types and the simulation
 *   loop types. v1.2 (T6): init may carry `initialEvents` (each with a finite non-negative simTimeMs) and a finite
-*   non-negative `startAtSimTimeMs` to resume a session.
-* Versión: 1.2
+*   non-negative `startAtSimTimeMs` to resume a session. v1.3: an event may carry a client `id` (non-empty string of
+*   at most 64 characters, as the backend allows); batches report its confirmation with the effective time.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -97,8 +98,19 @@ function isNonNegativeFinite(value: unknown): boolean {
   return isFiniteNumber(value) && value >= 0;
 }
 
+/** Longest client event id the backend accepts. */
+const MAX_EVENT_ID_LENGTH = 64;
+
+function isEventId(value: unknown): boolean {
+  return typeof value === "string" && value.length > 0 && value.length <= MAX_EVENT_ID_LENGTH;
+}
+
 function isEventInput(value: unknown): value is SimEventInput {
   if (!isRecord(value) || (value.simTimeMs !== undefined && !isNonNegativeFinite(value.simTimeMs))) {
+    return false;
+  }
+
+  if (value.id !== undefined && !isEventId(value.id)) {
     return false;
   }
 

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useCaseCatalog
-* Descripción: Catalog of published clinical cases for the simulator (GET /api/clinical-cases). Owns the pathology and difficulty filters and the page; the filters are server-side query params of the endpoint (no client-side filtering), and changing a filter goes back to page 1. Exposes the mapped case cards, the server pagination, loading/error and a reload. Depends on useApiQuery, the clinical cases service, the simulator mapper, entities and config.
-* Versión: 1.0
+* Descripción: Catalog of published clinical cases for the simulator (GET /api/clinical-cases). Owns the pathology and difficulty filters and the page; the filters are server-side query params of the endpoint (no client-side filtering), and changing a filter goes back to page 1. Exposes the mapped case cards, the server pagination, loading/error and a reload. v1.1: the query always asks for PUBLISHED cases (staff would otherwise get drafts and archived cases), and the page is clamped when the server reports fewer pages. Depends on useApiQuery, the clinical cases service, the simulator mapper, entities and config.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -39,6 +39,12 @@ export function useCaseCatalog(pageSize: number = CATALOG_PAGE_SIZE): UseCaseCat
   const cases = useMemo(() => (data ? data.data.map(toCaseCard) : null), [data]);
   const raw = data?.pagination;
   const pagination = raw ? { page: raw.page, pages: raw.pages, limit: raw.limit, total: raw.total } : null;
+  const lastPage = raw ? Math.max(1, raw.pages) : null;
+
+  // Fewer pages than the current one (cases unpublished meanwhile): move to the last page during render.
+  if (lastPage !== null && page > lastPage) {
+    setPage(lastPage);
+  }
 
   const setFilters = useCallback((next: CatalogFilters) => {
     setFilterState(next);

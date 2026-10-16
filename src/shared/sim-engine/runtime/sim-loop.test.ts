@@ -7,8 +7,10 @@
 *   resume, a multiplier change does not rescale a pending backlog, events at the same time keep FIFO order, a
 *   scheduled event inside a multi-tick catch-up lands at its exact time, and non-finite event times are rejected.
 *   v1.2 (T6): initial events + start time replay a session at creation (equal to the engine replay, no re-streamed
-*   output, later events stay scheduled). Uses a manual clock. Depends on vitest and the vendored engine.
-* Versión: 1.2
+*   output, later events stay scheduled). v1.3: an event with a client id is confirmed in the next batch with the
+*   simulated time the loop really applied it, and replaying it at that time gives the same run; a rejected event keeps
+*   its id and is never confirmed. Uses a manual clock. Depends on vitest and the vendored engine.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -359,5 +361,50 @@ describe("createSimLoop initial state (session resume)", () => {
   it("rejects a negative or non-finite start time", () => {
     expect(() => createSimLoop(buildTestCase(), SEED, { startAtSimTimeMs: -1 })).toThrow(RangeError);
     expect(() => createSimLoop(buildTestCase(), SEED, { startAtSimTimeMs: Number.NaN })).toThrow(RangeError);
+  });
+});
+
+describe("createSimLoop event confirmation", () => {
+  it("confirms an event queued between batches with the exact simulated time the loop applied it", () => {
+    const changes = { peepCmH2O: 9 };
+    const { clock, loop } = setup();
+
+    loop.start();
+    clock.advance(1000);
+    loop.tick();
+    // Wall time passes but the loop has not ticked yet: the event takes effect at the loop's own time.
+    clock.advance(17);
+    loop.queueEvent({ type: "PARAM_CHANGE", id: "evt-1", changes });
+
+    const batch = loop.tick();
+
+    expect(batch.confirmedEvents).toEqual([{ id: "evt-1", effectiveSimTimeMs: 1000 }]);
+
+    clock.advance(1983);
+
+    const last = tickUntilCaughtUp(loop).at(-1);
+    const expected = replay(buildTestCase(), SEED, [{ type: "PARAM_CHANGE", simTimeMs: 1000, changes }], 3000);
+
+    expect(last?.simTimeMs).toBe(3000);
+    expect(last?.metrics).toEqual(expected.final);
+  });
+
+  it("reports a rejected event with its id and never confirms it", () => {
+    const { loop } = setup();
+
+    loop.start();
+    loop.queueEvent({ type: "PARAM_CHANGE", id: "evt-2", changes: { peepCmH2O: 99 } });
+
+    const batch = loop.tick();
+
+    expect(batch.confirmedEvents).toEqual([]);
+    expect(batch.rejectedEvents[0]?.event.id).toBe("evt-2");
+  });
+
+  it("does not confirm the stored events replayed at resume", () => {
+    const events = [{ type: "PARAM_CHANGE" as const, id: "stored", simTimeMs: 500, changes: { peepCmH2O: 8 } }];
+    const loop = createSimLoop(buildTestCase(), SEED, { clock: createManualClock(0), initialEvents: events, startAtSimTimeMs: 1000 });
+
+    expect(loop.tick().confirmedEvents).toEqual([]);
   });
 });

@@ -3,8 +3,9 @@
 * Descripción: Verifies that every command and worker message survives a structured clone round trip and is still
 *   recognised by its type guard, and that malformed messages are rejected (v1.1: including non-finite or negative event times, a non-finite seed
 *   and invalid init options). Depends on vitest, the protocol and the
-*   simulation loop (to produce a real batch). v1.2 (T6): init resume options (initial events, start time).
-* Versión: 1.2
+*   simulation loop (to produce a real batch). v1.2 (T6): init resume options (initial events, start time). v1.3: an event
+*   id is optional and must be a non-empty string of at most 64 characters.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -74,6 +75,10 @@ describe("simulation worker protocol", () => {
     );
     expect(isSimCommand({ type: "applyEvent", event: { type: "RECONNECT", simTimeMs: -1 } })).toBe(false);
     expect(isSimCommand({ type: "applyEvent", event: { type: "RECONNECT", simTimeMs: 0 } })).toBe(true);
+    expect(isSimCommand({ type: "applyEvent", event: { type: "RECONNECT", id: "evt-1" } })).toBe(true);
+    expect(isSimCommand({ type: "applyEvent", event: { type: "RECONNECT", id: 7 } })).toBe(false);
+    expect(isSimCommand({ type: "applyEvent", event: { type: "RECONNECT", id: "" } })).toBe(false);
+    expect(isSimCommand({ type: "applyEvent", event: { type: "RECONNECT", id: "x".repeat(65) } })).toBe(false);
     expect(isSimWorkerMessage({ type: "batch", batch: { simTimeMs: 1 } })).toBe(false);
     expect(isSimWorkerMessage({ type: "ready" })).toBe(false);
     expect(isSimWorkerMessage("ready")).toBe(false);

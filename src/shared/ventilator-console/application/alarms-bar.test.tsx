@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AlarmsBar tests
-* Descripción: Tests of the ventilator console alarms bar and its pure helpers: sorting by priority with a non-color indicator (icon + priority text), the 2-minute silence countdown driven by fake timers (alarms stay visible), the sound toggle off by default and beeping only after the user enables it, the session history derived from adapter updates (onset and clear) and the alarm limits panel (apply emits only changed thresholds; read-only without a callback). Depends on Vitest and Testing Library.
-* Versión: 1.1
+* Descripción: Tests of the ventilator console alarms bar and its pure helpers: sorting by priority with a non-color indicator (icon + priority text), the 2-minute silence countdown driven by fake timers (alarms stay visible), the sound toggle off by default and beeping only after the user enables it, the session history derived from adapter updates (onset and clear) and the alarm limits panel (apply emits only changed thresholds; read-only without a callback). v1.2: an emptied limit draft is cleared on blur (the current value is shown again). Depends on Vitest and Testing Library.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -172,6 +172,21 @@ describe("AlarmsBar", () => {
     fireEvent.change(rate, { target: { value: "" } });
     fireEvent.click(screen.getByRole("button", { name: "Aplicar límites" }));
     expect(onLimitsChange).toHaveBeenCalledWith([{ id: "highPressure", value: 10 }]);
+  });
+
+  it("restores the current value when an emptied limit loses focus", () => {
+    render(<AlarmsBar alarms={[]} readOnly={false} limits={LIMITS} onLimitsChange={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Límites" }));
+    const rate = screen.getByLabelText("FR alta");
+    const before = (rate as HTMLInputElement).value;
+
+    fireEvent.change(rate, { target: { value: "" } });
+    expect(rate).toHaveValue(null);
+    fireEvent.blur(rate);
+
+    expect((rate as HTMLInputElement).value).toBe(before);
+    expect(screen.getByRole("button", { name: "Aplicar límites" })).toBeDisabled();
   });
 
   it("keeps one live region mounted so the first alarm is announced", () => {

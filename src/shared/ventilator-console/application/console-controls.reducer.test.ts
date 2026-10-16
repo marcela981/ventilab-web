@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Console controls reducer tests
-* Descripción: Unit tests of the pure pending→confirm/cancel controls of the ventilator console: step adjustment with clamping and step snapping to the injected limits, keyboard mapping (arrows, PageUp/PageDown ×10, Home/End), the confirmation diff (only changed parameters, the pending mode), the reset after confirm or cancel, the mode change that drops the pending values of parameters that no longer apply, and the console-owned mode→parameter applicability filter. Depends on Vitest.
-* Versión: 1.1
+* Descripción: Unit tests of the pure pending→confirm/cancel controls of the ventilator console: step adjustment with clamping and step snapping to the injected limits, keyboard mapping (arrows, PageUp/PageDown ×10, Home/End), the confirmation diff (only changed parameters, the pending mode), the reset after confirm or cancel, the mode change that drops the pending values of parameters that no longer apply, and the console-owned mode→parameter applicability filter. v1.2: without a valid step grid the step keys map to nothing and a step adjustment is a no-op (Home/End still work). Depends on Vitest.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -68,6 +68,21 @@ describe("keyToAdjustment", () => {
     expect(keyToAdjustment("Home", PEEP)).toEqual({ kind: "value", value: 0 });
     expect(keyToAdjustment("End", PEEP)).toEqual({ kind: "value", value: 20 });
     expect(keyToAdjustment("a", PEEP)).toBeNull();
+  });
+
+  it("maps no step key when the parameter has no valid step grid, but keeps Home/End", () => {
+    for (const step of [0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
+      const limit = { ...PEEP, step };
+
+      expect(["ArrowUp", "ArrowDown", "PageUp", "PageDown"].map((key) => keyToAdjustment(key, limit))).toEqual([null, null, null, null]);
+      expect(keyToAdjustment("End", limit)).toEqual({ kind: "value", value: 20 });
+    }
+  });
+
+  it("ignores a step adjustment without a valid step grid", () => {
+    const state = controlsReducer(INITIAL_CONTROLS_STATE, { type: "adjust", parameter: "peep", steps: 1, base: 5, limit: { ...PEEP, step: 0 } });
+
+    expect(state).toBe(INITIAL_CONTROLS_STATE);
   });
 });
 

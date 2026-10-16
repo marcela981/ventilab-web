@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ConsoleControls
-* Descripción: Mode selector and parameter controls of the generic ventilator console, in the real-device pattern. The modes come from the adapter options; each mode shows only its applicable parameters (console table, filtered by the injected limits). Select a parameter, then adjust it with the +/- buttons, the mouse wheel over the selected value (a zero vertical delta is ignored) or the keyboard (arrows = step, PageUp/PageDown = 10 steps, Home/End = min/max); the value and a mode change stay PENDING (pending token + "Pendiente" text) until CONFIRMAR (or "Aplicar" in the configure variant) emits the diff once through onConfirm; CANCELAR or Escape revert and emit nothing. Pending edits only call the optional onProposeChange. Limits are shown and enforced from the `limits` prop only. A pending value or mode the source has already applied stops being pending, so the tags and the emitted diff always agree. Read-only disables everything and shows the values. Depends on React, MUI icons, the controls reducer, the controls config and the controls styles.
-* Versión: 1.1
+* Descripción: Mode selector and parameter controls of the generic ventilator console, in the real-device pattern. The modes come from the adapter options; each mode shows only its applicable parameters (console table, filtered by the injected limits). Select a parameter, then adjust it with the +/- buttons, the mouse wheel over the selected value (a zero vertical delta is ignored) or the keyboard (arrows = step, PageUp/PageDown = 10 steps, Home/End = min/max); the value and a mode change stay PENDING (pending token + "Pendiente" text) until CONFIRMAR (or "Aplicar" in the configure variant) emits the diff once through onConfirm; CANCELAR or Escape revert and emit nothing. Pending edits only call the optional onProposeChange. Limits are shown and enforced from the `limits` prop only. A pending value or mode the source has already applied stops being pending, so the tags and the emitted diff always agree. Read-only disables everything and shows the values. v1.2: a parameter without a valid step grid (zero, negative or non-finite step) disables +/-, the wheel and the step keys. Depends on React, MUI icons, the controls reducer, the controls config and the controls styles.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,6 +22,7 @@ import {
   INITIAL_CONTROLS_STATE,
   keyToAdjustment,
   pendingModeOf,
+  hasStepGrid,
   stepDecimals,
 } from "./console-controls.reducer";
 import type { Adjustment, ControlsAction } from "./console-controls.reducer";
@@ -91,13 +92,15 @@ type ParameterControlProps = {
 function ParameterControl({ id, definition, limit, value, applied, pending, selected, disabled, onAdjust, onSelect }: ParameterControlProps) {
   const valueRef = useRef<HTMLDivElement>(null);
   const formatted = formatValue(value, limit);
+  // Without a valid step grid +/-, the wheel and the step keys have nothing to step by.
+  const stepping = hasStepGrid(limit.step);
 
   // React registers wheel listeners as passive, so a native one is needed to keep the page from scrolling.
   useEffect(() => {
     const node = valueRef.current;
 
     // Only a selected control captures the wheel, so scrolling past an unselected one still scrolls the page.
-    if (node === null || disabled || !selected) {
+    if (node === null || disabled || !selected || !stepping) {
       return undefined;
     }
 
@@ -112,7 +115,7 @@ function ParameterControl({ id, definition, limit, value, applied, pending, sele
     node.addEventListener("wheel", onWheel, { passive: false });
 
     return () => node.removeEventListener("wheel", onWheel);
-  }, [disabled, selected, onAdjust]);
+  }, [disabled, selected, stepping, onAdjust]);
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const adjustment = keyToAdjustment(event.key, limit);
@@ -150,7 +153,7 @@ function ParameterControl({ id, definition, limit, value, applied, pending, sele
           type="button"
           className={cx(styles.step)}
           aria-label={CONTROLS_COPY.decrease(definition.label)}
-          disabled={disabled || value <= limit.min}
+          disabled={disabled || !stepping || value <= limit.min}
           onClick={() => onAdjust({ kind: "steps", steps: -1 })}
         >
           <RemoveIcon aria-hidden />
@@ -159,7 +162,7 @@ function ParameterControl({ id, definition, limit, value, applied, pending, sele
           type="button"
           className={cx(styles.step)}
           aria-label={CONTROLS_COPY.increase(definition.label)}
-          disabled={disabled || value >= limit.max}
+          disabled={disabled || !stepping || value >= limit.max}
           onClick={() => onAdjust({ kind: "steps", steps: 1 })}
         >
           <AddIcon aria-hidden />

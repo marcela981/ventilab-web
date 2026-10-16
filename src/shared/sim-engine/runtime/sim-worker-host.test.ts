@@ -3,9 +3,9 @@
 * Descripción: Drives the worker-side command handler with a fake port, fake timers and a manual clock: init posts
 *   ready, start schedules the ~30 Hz batch timer, ticks post batches only when they carry data, pause and stop flush,
 *   and malformed or out-of-order commands become error messages. v1.1: start after stop does not re-arm the timer
-*   (typed error instead), and a re-init while running clears the previous timer. Depends on vitest and the
-*   sim-engine runtime.
-* Versión: 1.1
+*   (typed error instead), and a re-init while running clears the previous timer. v1.2: an event confirmation is posted
+*   even when the batch carries nothing else. Depends on vitest and the sim-engine runtime.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -94,6 +94,20 @@ describe("createSimWorkerHost", () => {
     expect(batches(posted).flatMap((batch) => batch.appliedEvents)).toEqual([
       { type: "PARAM_CHANGE", simTimeMs: 200, changes: { peepCmH2O: 7 } },
     ]);
+  });
+
+  it("posts the confirmation of an event applied while paused", () => {
+    const { clock, posted, timers, host } = setup();
+
+    host.handle({ type: "init", engineCase: buildTestCase(), seed: 3 });
+    host.handle({ type: "start" });
+    clock.advance(300);
+    timers[0]?.handler();
+    host.handle({ type: "pause" });
+    host.handle({ type: "applyEvent", event: { type: "PARAM_CHANGE", id: "evt-9", changes: { peepCmH2O: 7 } } });
+    host.handle({ type: "stop" });
+
+    expect(batches(posted).flatMap((batch) => batch.confirmedEvents)).toEqual([{ id: "evt-9", effectiveSimTimeMs: 300 }]);
   });
 
   it("answers malformed and premature commands with an error", () => {

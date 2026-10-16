@@ -4,8 +4,10 @@
 *   metrics (including FiO2 in % from the settings and the I:E ratio), vitals and trends, alarms (engine severity,
 *   onset kept while active), settings and limits from the vendored VENTILATOR_LIMITS (trigger in use only), SIMV
 *   applicability, confirmed changes back to engine units, local validation, ranges from the case targets, the live
-*   objectives and the PBW (Devine) patient summary. Depends on vitest, the engine replay and the adapter.
-* Versión: 1.0
+*   objectives and the PBW (Devine) patient summary. v1.1: an event confirmed between batches by a real sim loop is
+*   enqueued with exactly the effective time the loop used; a rejected event is never enqueued. Depends on vitest,
+*   the engine replay, the sim loop and the adapter.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,7 +16,7 @@
 */
 
 import { describe, expect, it } from "vitest";
-import { replay, resolveVentilatorSettings, VENTILATOR_LIMITS } from "@shared/sim-engine";
+import { createSimLoop, replay, resolveVentilatorSettings, VENTILATOR_LIMITS } from "@shared/sim-engine";
 import type { Alarm } from "@shared/sim-engine";
 import {
   appendTrends,
@@ -23,6 +25,7 @@ import {
   buildObjectives,
   patientSummary,
   rangesFromTargets,
+  reconcileEvents,
   toConsoleAlarms,
   toConsoleMetrics,
   toConsoleSamples,
@@ -164,5 +167,52 @@ describe("case data", () => {
       predictedBodyWeightKg: 70.6,
     });
     expect(patientSummary(buildEngineCase({ patient: { sex: "FEMALE", heightCm: 160 } })).predictedBodyWeightKg).toBe(52.4);
+  });
+});
+
+describe("event acknowledgement", () => {
+  function runningLoop() {
+    let nowMs = 0;
+    const clock = { now: () => nowMs };
+    const loop = createSimLoop(buildEngineCase(), 42, { clock });
+
+    loop.start();
+    nowMs += 1000;
+    loop.tick();
+    // Wall time moves on, but the event takes effect at the loop's own simulated time.
+    nowMs += 21;
+
+    return loop;
+  }
+
+  it("enqueues an event confirmed between batches with exactly the effective time the loop used", () => {
+    const loop = runningLoop();
+    const changes = { peepCmH2O: 8 };
+
+    loop.queueEvent({ type: "PARAM_CHANGE", id: "evt-1", changes });
+
+    const batch = loop.tick();
+    const result = reconcileEvents([{ id: "evt-1", changes }], batch);
+
+    expect(result.confirmed).toEqual([
+      { id: "evt-1", simTimeMs: batch.appliedEvents[0]?.simTimeMs, type: "PARAM_CHANGE", payload: { changes } },
+    ]);
+    expect(result.confirmed[0]?.simTimeMs).toBe(1000);
+    expect(result.rejectedIds).toEqual([]);
+    expect(result.pending).toEqual([]);
+  });
+
+  it("never enqueues a rejected event and keeps the events still waiting", () => {
+    const loop = runningLoop();
+
+    loop.queueEvent({ type: "PARAM_CHANGE", id: "bad", changes: { peepCmH2O: 99 } });
+
+    const batch = loop.tick();
+    const waiting = { id: "later", changes: { fio2: 0.5 } };
+    const result = reconcileEvents([{ id: "bad", changes: { peepCmH2O: 99 } }, waiting], batch);
+
+    expect(result.confirmed).toEqual([]);
+    expect(result.rejectedIds).toEqual(["bad"]);
+    expect(result.pending).toEqual([waiting]);
   });
 });

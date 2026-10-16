@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useStartPractice
-* Descripción: Starts a FREE practice of a clinical case (POST /api/simulation/sessions with mode FREE, the case id and the time multiplier, default ×1 from the contract) and navigates to the session console /simulator/sessions/[id]. One start at a time (a second call while pending returns busy); the pending case id drives the card's loading state and a failure is reported per case with its Spanish message. A started session revalidates the session history. v1.1 (T6): the start response is saved in the session store (fresh record with mode FREE and the clinical case id) before navigating, so the console boots without asking the server. Depends on next/router, SWR, the sessions service, the simulator routes, config and error messages.
-* Versión: 1.1
+* Descripción: Starts a FREE practice of a clinical case (POST /api/simulation/sessions with mode FREE, the case id and the time multiplier, default ×1 from the contract) and navigates to the session console /simulator/sessions/[id]. One start at a time (a second call while pending returns busy); the pending case id drives the card's loading state and a failure is reported per case with its Spanish message. A started session revalidates the session history. v1.1 (T6): the start response is saved in the session store (fresh record with mode FREE and the clinical case id) before navigating, so the console boots without asking the server. v1.2: only the POST belongs to the start error; once the session exists, a failed navigation is logged and the start still succeeds (the session can be resumed from "Mis sesiones"). Depends on next/router, SWR, the sessions service, the simulator routes, config and error messages.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -51,9 +51,22 @@ export function useStartPractice(): UseStartPracticeResult {
     setPendingCaseId(caseId);
     setError(null);
 
-    try {
-      const session = await startSimulationSession({ mode: "FREE", caseId, timeMultiplier });
+    let session: StartedSession;
 
+    // Only the POST can fail the start.
+    try {
+      session = await startSimulationSession({ mode: "FREE", caseId, timeMultiplier });
+    } catch (caught) {
+      const message = getSimulatorErrorMessage(caught);
+
+      setError({ caseId, message });
+      pendingRef.current = false;
+      setPendingCaseId(null);
+
+      return { status: "error", message };
+    }
+
+    try {
       if (isEngineCase(session.engineCase)) {
         sessionStore.save({
           id: session.id,
@@ -71,17 +84,15 @@ export function useStartPractice(): UseStartPracticeResult {
       // The session exists; a failed refresh only leaves the history stale.
       await invalidateApiQueries(mutate, [SIMULATION_SESSION_HISTORY_PATH]).catch(() => undefined);
       await router.push(buildSessionUrl(session.id));
-
-      return { status: "success", session };
     } catch (caught) {
-      const message = getSimulatorErrorMessage(caught);
-      setError({ caseId, message });
-
-      return { status: "error", message };
+      // The session exists (it can be resumed from "Mis sesiones"): a navigation failure is not a start failure.
+      console.warn("The simulation session started but the console could not be opened:", caught);
     } finally {
       pendingRef.current = false;
       setPendingCaseId(null);
     }
+
+    return { status: "success", session };
   }, [mutate, router]);
 
   return { pendingCaseId, error, start };

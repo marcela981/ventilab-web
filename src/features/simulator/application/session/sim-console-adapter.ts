@@ -9,8 +9,10 @@
 *   the normal ranges from the case targets, the confirmed console changes as engine setting changes plus their local
 *   validation (the same merge + validateVentilatorSettings the engine and the backend run), the live objectives and
 *   the patient summary with the predicted body weight (engine predictedBodyWeightKg, Devine). Depends on the
-*   sim-engine and ventilator-console public APIs and the console config.
-* Versión: 1.0
+*   sim-engine and ventilator-console public APIs and the console config. v1.1: `reconcileEvents` turns the worker
+*   acknowledgements of a batch into client session events stamped with the effective engine time, and drops the
+*   rejected ones.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -33,6 +35,7 @@ import type {
   EngineTargets,
   EngineVentilationMode,
   NumericRange,
+  SimBatch,
   TargetStatus,
   TargetStatusValue,
   VentilatorSettings,
@@ -63,6 +66,7 @@ import type {
   PatientVitalId,
 } from "@shared/ventilator-console";
 import { ALARM_LABELS, MODE_LABELS, OBJECTIVE_DEFINITIONS, PARAMETER_SETTINGS, SEX_LABELS } from "../config/sim-console.config";
+import type { ClientSessionEvent } from "../entities/sim-session.entity";
 
 /** Rounds away binary noise of the scale conversions (0.21 × 100 = 21.000000000000004). */
 function tidy(value: number): number {
@@ -398,4 +402,46 @@ export function initialSettingsOf(engineCase: EngineCase): VentilatorSettings {
 
 export function applyChanges(settings: VentilatorSettings, events: readonly { changes: Partial<VentilatorSettings> }[]): VentilatorSettings {
   return events.reduce<VentilatorSettings>((current, event) => ({ ...current, ...event.changes }), settings);
+}
+
+/** A confirmed console change sent to the worker and still waiting for its acknowledgement. */
+export type PendingSettingsEvent = { id: string, changes: Partial<VentilatorSettings> };
+
+export type EventReconciliation = {
+  /** Acknowledged events, stamped with the time the engine really applied them, ready for the backend queue. */
+  confirmed: ClientSessionEvent[]
+  /** Ids the engine rejected: surfaced as an error and never sent to the backend. */
+  rejectedIds: string[]
+  /** Events still waiting for an acknowledgement, in send order. */
+  pending: PendingSettingsEvent[]
+};
+
+/**
+ * Matches the worker acknowledgements of one batch with the pending events: a confirmed event becomes a client
+ * session event with its effective simTimeMs (so the server replay applies it exactly when the local run did); a
+ * rejected one is dropped. Acknowledgements for unknown ids are ignored.
+ */
+export function reconcileEvents(
+  pending: readonly PendingSettingsEvent[],
+  batch: Pick<SimBatch, "confirmedEvents" | "rejectedEvents">,
+): EventReconciliation {
+  const byId = new Map(pending.map((event) => [event.id, event]));
+  const confirmed: ClientSessionEvent[] = [];
+  const rejectedIds: string[] = [];
+
+  batch.confirmedEvents.forEach(({ id, effectiveSimTimeMs }) => {
+    const event = byId.get(id);
+
+    if (event) {
+      confirmed.push({ id, simTimeMs: effectiveSimTimeMs, type: "PARAM_CHANGE", payload: { changes: event.changes } });
+      byId.delete(id);
+    }
+  });
+  batch.rejectedEvents.forEach(({ event: input }) => {
+    if (input.id !== undefined && byId.delete(input.id)) {
+      rejectedIds.push(input.id);
+    }
+  });
+
+  return { confirmed, rejectedIds, pending: pending.filter((event) => byId.has(event.id)) };
 }

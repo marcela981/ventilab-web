@@ -5,8 +5,9 @@
 *   active and posts batches (only when they carry data or a status change), plus ready and error messages. The
 *   message port, the timer functions and the clock are injected. v1.1: start arms the timer only when the loop is
 *   running afterwards (a stopped loop answers with an error asking for a new init), and init always clears the
-*   previous timer and loop first. Depends on protocol.ts, sim-loop.ts and the engine.
-* Versión: 1.1
+*   previous timer and loop first. v1.2: a batch carrying event confirmations is always posted. Depends on
+*   protocol.ts, sim-loop.ts and the engine.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -34,6 +35,7 @@ function carriesData(batch: SimBatch, previousStatus: SimLoopStatus): boolean {
     batch.samples.length > 0 ||
     batch.metrics !== null ||
     batch.appliedEvents.length > 0 ||
+    batch.confirmedEvents.length > 0 ||
     batch.rejectedEvents.length > 0 ||
     batch.status !== previousStatus
   );

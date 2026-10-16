@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: SimulatorCatalogPage
-* Descripción: /simulator screen for every authenticated role. Tab "Casos clínicos": the published clinical cases as a card grid with server-side pathology/difficulty filters, a pager, and "Iniciar práctica" per card (creates a FREE session and opens its console). Tab "Mis sesiones": the user's session history (mounted only when the tab is open, so its requests run on demand). Loading, error with retry and empty states (with a filter hint) follow the other features. Depends on MUI Tabs and Pagination, next/head, the design-system states, the catalog components, the session history and the simulator hooks and styles.
-* Versión: 1.0
+* Descripción: /simulator screen for every authenticated role. Tab "Casos clínicos": the published clinical cases as a card grid with server-side pathology/difficulty filters, a pager, and "Iniciar práctica" per card (creates a FREE session and opens its console). Tab "Mis sesiones": the user's session history (mounted on the first visit of the tab, so its requests run on demand). Loading, error with retry and empty states (with a filter hint) follow the other features. v1.1: both tab panels are always rendered with the inactive one `hidden` (every aria-controls resolves) and the history stays mounted after its first visit, so switching tabs keeps its page; the card passes the chosen time multiplier to the start; the empty copy says no case is published yet. Depends on MUI Tabs and Pagination, next/head, the design-system states, the catalog components, the session history and the simulator hooks and styles.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -40,7 +40,8 @@ export const CATALOG_PAGE_COPY = {
   listLabel: "Casos clínicos disponibles",
   loading: "Cargando casos clínicos…",
   loadErrorTitle: "No se pudieron cargar los casos clínicos",
-  empty: "No hay casos clínicos publicados.",
+  empty: "Todavía no hay casos clínicos publicados.",
+  emptyHint: "Los casos aparecerán aquí cuando un docente los publique.",
   emptyFiltered: "Ningún caso coincide con los filtros.",
   emptyFilteredHint: "Prueba con otra patología o dificultad.",
   pager: "Páginas del catálogo",
@@ -69,7 +70,7 @@ function CatalogPanel() {
         <EmptyState
           icon={<MonitorHeartIcon />}
           title={filtered ? CATALOG_PAGE_COPY.emptyFiltered : CATALOG_PAGE_COPY.empty}
-          description={filtered ? CATALOG_PAGE_COPY.emptyFilteredHint : undefined}
+          description={filtered ? CATALOG_PAGE_COPY.emptyFilteredHint : CATALOG_PAGE_COPY.emptyHint}
         />
       ) : null}
       {cases && cases.length > 0 ? (
@@ -81,7 +82,7 @@ function CatalogPanel() {
                 pending={practice.pendingCaseId === clinicalCase.id}
                 disabled={practice.pendingCaseId !== null && practice.pendingCaseId !== clinicalCase.id}
                 error={practice.error?.caseId === clinicalCase.id ? practice.error.message : null}
-                onStart={(caseId) => void practice.start(caseId)}
+                onStart={(caseId, timeMultiplier) => void practice.start(caseId, timeMultiplier)}
               />
             </li>
           ))}
@@ -102,6 +103,11 @@ function CatalogPanel() {
 
 export function SimulatorCatalogPage() {
   const [tab, setTab] = useState<SimulatorTab>("catalog");
+  const [historyVisited, setHistoryVisited] = useState(false);
+
+  if (tab === "history" && !historyVisited) {
+    setHistoryVisited(true);
+  }
   const baseId = useId();
   const tabId = (value: SimulatorTab) => `${baseId}-tab-${value}`;
   const panelId = (value: SimulatorTab) => `${baseId}-panel-${value}`;
@@ -116,8 +122,13 @@ export function SimulatorCatalogPage() {
         <Tab value="catalog" label={CATALOG_PAGE_COPY.catalogTab} id={tabId("catalog")} aria-controls={panelId("catalog")} />
         <Tab value="history" label={CATALOG_PAGE_COPY.historyTab} id={tabId("history")} aria-controls={panelId("history")} />
       </Tabs>
-      <div role="tabpanel" id={panelId(tab)} aria-labelledby={tabId(tab)}>
-        {tab === "catalog" ? <CatalogPanel /> : <SessionHistory />}
+      {/* Both panels are always rendered (every aria-controls resolves) and the inactive one is hidden; the history
+          mounts on its first visit (requests on demand) and then stays mounted, so it keeps its page. */}
+      <div role="tabpanel" id={panelId("catalog")} aria-labelledby={tabId("catalog")} hidden={tab !== "catalog"}>
+        <CatalogPanel />
+      </div>
+      <div role="tabpanel" id={panelId("history")} aria-labelledby={tabId("history")} hidden={tab !== "history"}>
+        {historyVisited ? <SessionHistory /> : null}
       </div>
     </div>
   );

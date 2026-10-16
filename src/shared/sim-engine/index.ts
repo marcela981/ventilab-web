@@ -3,8 +3,8 @@
 * Descripción: Barrel of the shared simulation engine module. Exposes the vendored engine types, ENGINE_VERSION,
 *   errors, ventilator limits and modes, alarm defaults, replay and the PBW / mechanical power helpers, plus the
 *   runtime: the fixed-step simulation loop, the worker protocol and the SSR-safe worker factory. Features consume
-*   this barrel only; src/shared/ventilator-console must not import it.
-* Versión: 1.0
+*   this barrel only; src/shared/ventilator-console must not import it. v1.1: exports the event confirmation type.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -42,6 +42,7 @@ export {
   type RejectedSimEvent,
   type SimBatch,
   type SimClock,
+  type SimEventConfirmation,
   type SimEventInput,
   type SimLoop,
   type SimLoopOptions,

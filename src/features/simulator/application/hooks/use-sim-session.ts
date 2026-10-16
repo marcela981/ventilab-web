@@ -13,7 +13,12 @@
 *   session multiplier and has no pause. end() pauses the worker, flushes the events, calls POST /end and only then
 *   stops the worker; a failure keeps the session and resumes it. Events are also flushed on pagehide/beforeunload and
 *   on unmount (best effort). Dependencies (worker factory, HTTP calls, ids, timers, clock) are injectable for tests.
-* Versión: 1.0
+*   v1.1 (determinism): CONFIRMAR sends the event to the worker with its client id and NO time; the worker applies it
+*   at its own current simulated time and acknowledges {id, effectiveSimTimeMs} in the next batch, and only then is
+*   the PARAM_CHANGE enqueued for the backend, with that effective time and the same id (local run == server replay).
+*   A rejected event shows the change error, rolls the displayed setting back and is never enqueued. end() waits (at
+*   most EVENT_ACK_TIMEOUT_MS) for the pending acknowledgements before flushing; an unacknowledged change is not sent.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -33,7 +38,7 @@ import type {
   VentilatorConsoleAdapter,
 } from "@shared/ventilator-console";
 import { appendSimulationEvents, endSimulationSession } from "../../api/services/simulation-sessions.service";
-import { UI_REFRESH_INTERVAL_MS } from "../config/sim-console.config";
+import { EVENT_ACK_TIMEOUT_MS, UI_REFRESH_INTERVAL_MS } from "../config/sim-console.config";
 import { TIME_MULTIPLIERS } from "../config/simulator.config";
 import type { TimeMultiplier } from "../config/simulator.config";
 import type { ClientSessionEvent, SessionBoot } from "../entities/sim-session.entity";
@@ -50,6 +55,7 @@ import {
   initialSettingsOf,
   MODE_OPTIONS,
   rangesFromTargets,
+  reconcileEvents,
   toConsoleAlarms,
   toConsoleMetrics,
   toConsoleSamples,
@@ -58,7 +64,7 @@ import {
   toSettingsChanges,
   validateSettingsChange,
 } from "../session/sim-console-adapter";
-import type { ObjectiveRow, PatientTrends } from "../session/sim-console-adapter";
+import type { ObjectiveRow, PatientTrends, PendingSettingsEvent } from "../session/sim-console-adapter";
 import { sessionStore } from "../session/session-store";
 import type { SessionStore } from "../session/session-store";
 
@@ -155,6 +161,30 @@ export function createClientEventId(): string {
   return `evt-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}-${fallbackCounter}`;
 }
 
+const defaultTimers: QueueTimers = {
+  setTimeout: (handler, ms) => setTimeout(handler, ms),
+  clearTimeout: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
+};
+
+/** Resolves once the pending changes are acknowledged (a waiter is released), or after EVENT_ACK_TIMEOUT_MS. */
+function waitForAcknowledgements(pendingCount: number, waiters: Set<() => void>, timers: QueueTimers = defaultTimers): Promise<void> {
+  if (pendingCount === 0) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    let handle: unknown = null;
+    const release = (): void => {
+      waiters.delete(release);
+      timers.clearTimeout(handle);
+      resolve();
+    };
+
+    handle = timers.setTimeout(release, EVENT_ACK_TIMEOUT_MS);
+    waiters.add(release);
+  });
+}
+
 type LiveState = {
   metrics: EngineMetrics | null
   alarms: readonly ConsoleAlarm[]
@@ -199,6 +229,10 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
   const clientRef = useRef<SimWorkerClient | null>(null);
   const queueRef = useRef<EventQueue<ClientSessionEvent> | null>(null);
   const appliedRef = useRef<VentilatorSettings | null>(null);
+  // Settings the worker acknowledged, and the changes sent but not acknowledged yet (applied = acked + pending).
+  const ackedRef = useRef<VentilatorSettings | null>(null);
+  const pendingRef = useRef<PendingSettingsEvent[]>([]);
+  const ackWaitersRef = useRef(new Set<() => void>());
   const latestSimRef = useRef(0);
   const statusRef = useRef<SimSessionStatus>("starting");
   const endingRef = useRef(false);
@@ -237,17 +271,51 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     clientRef.current = client;
     queueRef.current = queue;
     appliedRef.current = applyChanges(initialSettingsOf(session.engineCase), boot.initialEvents);
+    ackedRef.current = appliedRef.current;
+    pendingRef.current = [];
     latestSimRef.current = boot.startAtSimTimeMs;
     statusRef.current = "starting";
     endingRef.current = false;
 
-    const handleBatch = (batch: SimBatch): void => {
-      latestSimRef.current = batch.simTimeMs;
-      hub.emit(batch);
+    const ackWaiters = ackWaitersRef.current;
+    const releaseAckWaiters = (): void => {
+      [...ackWaiters].forEach((release) => release());
+    };
+
+    const handleAcknowledgements = (batch: SimBatch): void => {
+      const acked = ackedRef.current;
+
+      if (acked === null || (batch.confirmedEvents.length === 0 && batch.rejectedEvents.length === 0)) {
+        return;
+      }
+
+      const result = reconcileEvents(pendingRef.current, batch);
+
+      // Enqueued only now, with the time the engine really applied the change.
+      result.confirmed.forEach((event) => queue.enqueue(event));
+      ackedRef.current = applyChanges(acked, result.confirmed.map((event) => event.payload));
+      pendingRef.current = result.pending;
 
       if (batch.rejectedEvents.length > 0) {
         setChangeError(CHANGE_COPY.invalid);
       }
+
+      if (result.rejectedIds.length > 0) {
+        const rolledBack = applyChanges(ackedRef.current, result.pending);
+
+        appliedRef.current = rolledBack;
+        setRuntime((previous) => (previous.boot === boot ? { ...previous, applied: rolledBack } : previous));
+      }
+
+      if (pendingRef.current.length === 0) {
+        releaseAckWaiters();
+      }
+    };
+
+    const handleBatch = (batch: SimBatch): void => {
+      latestSimRef.current = batch.simTimeMs;
+      hub.emit(batch);
+      handleAcknowledgements(batch);
 
       const statusChanged = batch.status !== statusRef.current;
 
@@ -277,6 +345,8 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
         handleBatch(message.batch);
       } else {
         setWorkerError(SIM_SESSION_COPY.workerFailed);
+        // No acknowledgement will come from a failed worker: an end in progress must not wait for it.
+        releaseAckWaiters();
       }
     });
 
@@ -303,6 +373,7 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
       window.removeEventListener("pagehide", flushBestEffort);
       window.removeEventListener("beforeunload", flushBestEffort);
       unsubscribe();
+      releaseAckWaiters();
       flushBestEffort();
       queue.dispose();
       client.terminate();
@@ -334,11 +405,11 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
       return;
     }
 
-    const simTimeMs = latestSimRef.current;
-    const createId = depsRef.current.createEventId ?? createClientEventId;
+    const id = (depsRef.current.createEventId ?? createClientEventId)();
 
-    client.send({ type: "applyEvent", event: { type: "PARAM_CHANGE", changes, simTimeMs } });
-    queue.enqueue({ id: createId(), simTimeMs, type: "PARAM_CHANGE", payload: { changes } });
+    // No time: the worker applies it at its own simulated time and acknowledges that time with this id.
+    client.send({ type: "applyEvent", event: { type: "PARAM_CHANGE", changes, id } });
+    pendingRef.current = [...pendingRef.current, { id, changes }];
 
     const next = { ...applied, ...changes };
 
@@ -389,6 +460,8 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     client.send({ type: "pause" });
 
     try {
+      // The pause flushes a batch with the outstanding acknowledgements; only acknowledged changes are sent.
+      await waitForAcknowledgements(pendingRef.current.length, ackWaitersRef.current, depsRef.current.queueTimers);
       await queue.flush();
       await endSession(sessionId, latestSimRef.current);
       client.send({ type: "stop" });
