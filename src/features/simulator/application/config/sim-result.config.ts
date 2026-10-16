@@ -6,8 +6,8 @@
 *   replay, the seek debounce, the event mark labels, the tolerance of the determinism check and the sessionStorage
 *   prefix of the exam return link (written by the exam flow). The playback speeds are a UI constant on purpose: they
 *   only change how fast this browser replays a recording (nothing is sent), so the session time multiplier of the
-*   contract does not bound them. No dependencies.
-* Versión: 1.0
+*   contract does not bound them. v1.1: local replay timeout and the mark list collapse threshold. No dependencies.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -70,6 +70,15 @@ export const EVENT_MARK_KINDS: Readonly<Record<string, TimelineMarkKind>> = {
 
 /** Relative tolerance of the local-versus-server final metrics comparison (the engine is deterministic). */
 export const DETERMINISM_TOLERANCE = 1e-6;
+
+/**
+ * Longest wait for a local engine replay in the worker before it is shown as a retryable error. A long session
+ * replays in a few seconds on a recent laptop; the margin covers slow devices.
+ */
+export const LOCAL_REPLAY_TIMEOUT_MS = 60_000;
+
+/** Above this many marks the replay mark list is collapsed behind a disclosure. */
+export const MARK_LIST_COLLAPSE_THRESHOLD = 30;
 
 /** sessionStorage key prefix of the exam return link of a session (the exam flow writes it). */
 export const EXAM_RETURN_STORAGE_PREFIX = "ventylab.simulator.exam-return.";

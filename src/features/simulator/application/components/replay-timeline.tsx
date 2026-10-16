@@ -5,8 +5,9 @@
 *   calls a debounced seek) over an SVG strip of event marks positioned by time (parameter changes, AI assist,
 *   alarm acknowledgements, case events, alarm onsets; color by kind) plus an accessible list of the same marks that
 *   jump to their time. The marks are positioned through SVG percentage attributes, never inline styles. Depends on
-*   React, the result config, the replay entities, the time format and the replay CSS Module.
-* Versión: 1.0
+*   React, the result config, the replay entities, the time format and the replay CSS Module. v1.1: past
+*   MARK_LIST_COLLAPSE_THRESHOLD marks the list is collapsed behind a native disclosure.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,7 +17,7 @@
 
 import { useId } from "react";
 import { cx } from "@shared/lib/class-names";
-import { REPLAY_SPEEDS } from "../config/sim-result.config";
+import { MARK_LIST_COLLAPSE_THRESHOLD, REPLAY_SPEEDS } from "../config/sim-result.config";
 import type { ReplaySpeed } from "../config/sim-result.config";
 import type { TimelineMark } from "../entities/sim-replay.entity";
 import type { ReplayPlaybackStatus } from "../hooks/use-replay-session";
@@ -35,6 +36,7 @@ export const REPLAY_TIMELINE_COPY = {
   position: "Posición de la repetición",
   events: "Eventos de la sesión",
   noEvents: "La sesión no registró eventos.",
+  showEvents: (count: number) => `Eventos de la sesión (${count})`,
   jumpTo: (time: string, label: string) => `${time} — ${label}`,
 } as const;
 
@@ -128,23 +130,43 @@ export function ReplayTimeline({
           onChange={(event) => onScrub(Number(event.target.value))}
         />
       </div>
-      {marks.length === 0 ? <p className={cx(styles.hint)}>{REPLAY_TIMELINE_COPY.noEvents}</p> : (
-        <ol className={cx(styles.markList)} aria-label={REPLAY_TIMELINE_COPY.events}>
-          {marks.map((mark) => (
-            <li key={mark.id}>
-              <button
-                type="button"
-                className={cx(styles.markButton)}
-                data-kind={mark.kind}
-                disabled={disabled}
-                onClick={() => onJump(mark.simTimeMs)}
-              >
-                {REPLAY_TIMELINE_COPY.jumpTo(formatSimTime(mark.simTimeMs), mark.label)}
-              </button>
-            </li>
-          ))}
-        </ol>
-      )}
+      <MarkList marks={marks} disabled={disabled} onJump={onJump} />
     </section>
+  );
+}
+
+function MarkList({ marks, disabled, onJump }: Pick<ReplayTimelineProps, "marks" | "disabled" | "onJump">) {
+  if (marks.length === 0) {
+    return <p className={cx(styles.hint)}>{REPLAY_TIMELINE_COPY.noEvents}</p>;
+  }
+
+  const list = (
+    <ol className={cx(styles.markList)} aria-label={REPLAY_TIMELINE_COPY.events}>
+      {marks.map((mark) => (
+        <li key={mark.id}>
+          <button
+            type="button"
+            className={cx(styles.markButton)}
+            data-kind={mark.kind}
+            disabled={disabled}
+            onClick={() => onJump(mark.simTimeMs)}
+          >
+            {REPLAY_TIMELINE_COPY.jumpTo(formatSimTime(mark.simTimeMs), mark.label)}
+          </button>
+        </li>
+      ))}
+    </ol>
+  );
+
+  // A long session can record hundreds of marks: past the threshold the list is collapsed (the bar still shows all).
+  if (marks.length <= MARK_LIST_COLLAPSE_THRESHOLD) {
+    return list;
+  }
+
+  return (
+    <details className={cx(styles.markDisclosure)}>
+      <summary className={cx(styles.markSummary)}>{REPLAY_TIMELINE_COPY.showEvents(marks.length)}</summary>
+      {list}
+    </details>
   );
 }

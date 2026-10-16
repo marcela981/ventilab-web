@@ -6,7 +6,8 @@
 *   the local replay final metrics with the server `finalMetrics` (a discreet note when they differ; the server values
 *   are never replaced) and the evolution series of key metrics built from the local replay timeline. The score is
 *   always the server's; nothing here computes a grade. Depends on the sim-engine public types and the result config.
-* Versión: 1.0
+*   v1.1: the comparison is `unavailable` without a server simTimeMs or when no clinical field was compared.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -145,14 +146,17 @@ function serverTargetStatuses(server: Record<string, unknown>): Map<string, stri
 
 /**
  * Compares the final metrics of the local replay with the server `finalMetrics`. Fields the server object does not
- * carry are skipped; `unavailable` when the server value is not an object. The result is informative only.
+ * carry are skipped. `unavailable` when the server value is not an object, when it has no `simTimeMs` (the two runs
+ * cannot be lined up) or when no clinical field besides the time could be compared: a "match" over nothing would
+ * claim a determinism check that never happened. The result is informative only.
  */
 export function compareFinalMetrics(local: EngineMetrics, server: unknown, tolerance: number = DETERMINISM_TOLERANCE): MetricsComparison {
-  if (!isRecord(server)) {
+  if (!isRecord(server) || typeof readPath(server, "simTimeMs") !== "number") {
     return { status: "unavailable" };
   }
 
   const differences: MetricDifference[] = [];
+  let compared = 0;
 
   COMPARED_FIELDS.forEach(({ field, read }) => {
     const serverValue = readPath(server, field);
@@ -160,6 +164,10 @@ export function compareFinalMetrics(local: EngineMetrics, server: unknown, toler
 
     if (serverValue === undefined) {
       return;
+    }
+
+    if (field !== "simTimeMs") {
+      compared += 1;
     }
 
     const equal = serverValue === null || localValue === null
@@ -176,12 +184,22 @@ export function compareFinalMetrics(local: EngineMetrics, server: unknown, toler
   local.targets.forEach((target) => {
     const serverStatus = serverTargets.get(target.id);
 
-    if (serverStatus !== undefined && serverStatus !== target.status) {
+    if (serverStatus === undefined) {
+      return;
+    }
+
+    compared += 1;
+
+    if (serverStatus !== target.status) {
       differences.push({ field: `targets.${target.id}`, local: target.status, server: serverStatus });
     }
   });
 
-  return differences.length === 0 ? { status: "match" } : { status: "mismatch", differences };
+  if (differences.length > 0) {
+    return { status: "mismatch", differences };
+  }
+
+  return compared === 0 ? { status: "unavailable" } : { status: "match" };
 }
 
 export type EvolutionSeries = {

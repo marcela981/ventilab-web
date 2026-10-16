@@ -11,7 +11,9 @@
 *   generation, so the console curves restart. The adapter has canControl=false and a no-op onConfirm: no control
 *   emits and no event ever reaches the backend. Dependencies (worker factory, timers, clock) are injectable for
 *   tests. Depends on React, the sim-engine and ventilator-console public APIs, the console mapping and the configs.
-* Versión: 1.0
+*   v1.1: the seek generation is kept in a ref across source changes (a new source never reuses a frame source id)
+*   and every init, the first one included, publishes a fresh "starting" playback.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -157,6 +159,7 @@ export function useReplaySession(source: ReplaySource | null, deps: ReplaySessio
   const speedRef = useRef<ReplaySpeed>(DEFAULT_REPLAY_SPEED);
   const statusRef = useRef<ReplayPlaybackStatus>("starting");
   const debounceRef = useRef<unknown>(null);
+  const generationRef = useRef(0);
 
   useEffect(() => {
     depsRef.current = deps;
@@ -177,7 +180,9 @@ export function useReplaySession(source: ReplaySource | null, deps: ReplaySessio
       return () => clearTimeout(timer);
     }
 
-    let generation = 0;
+    // The generation lives in a ref, so a new source (or a StrictMode re-run) never reuses a frame source id: the
+    // console curves and the playback state of a previous run can never show for the new one.
+    let generation = generationRef.current;
     let hub = createFrameHub(replaySourceId(source.sessionId, generation));
     // Inits sent and not answered yet: batches of a superseded loop are ignored until the last ready.
     let pendingInits = 0;
@@ -201,9 +206,9 @@ export function useReplaySession(source: ReplaySource | null, deps: ReplaySessio
       setPlayback(snapshot);
     };
 
-    // `notify` is false for the first init, sent from this effect: the initial state already says "starting".
-    const init = (startAtSimTimeMs: number, notify: boolean = true): void => {
+    const init = (startAtSimTimeMs: number): void => {
       generation += 1;
+      generationRef.current = generation;
       pendingInits += 1;
       hub = createFrameHub(replaySourceId(source.sessionId, generation));
       metrics = null;
@@ -211,10 +216,8 @@ export function useReplaySession(source: ReplaySource | null, deps: ReplaySessio
       trends = {};
       simTimeMs = startAtSimTimeMs;
       statusRef.current = "starting";
-
-      if (notify) {
-        publish("starting");
-      }
+      // Every init (including the first one of a new source) publishes a fresh "starting" playback at its time.
+      publish("starting");
 
       client.send({
         type: "init",
@@ -282,8 +285,7 @@ export function useReplaySession(source: ReplaySource | null, deps: ReplaySessio
 
     clientRef.current = client;
     initRef.current = init;
-    // Generation 0 is the initial state; the first init is generation 1 (shown with its first batch).
-    init(0, false);
+    init(0);
 
     return () => {
       unsubscribe();

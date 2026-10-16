@@ -7,8 +7,8 @@
 *   runs to the simulated time the server scored with the session multiplier, so it reproduces the server replay; it
 *   runs in the worker through useLocalReplay. The determinism check compares its final metrics with the server
 *   `finalMetrics` and never replaces them. Depends on the api-client query hook, the simulator services, mappers,
-*   entities and useLocalReplay.
-* Versión: 1.0
+*   entities and useLocalReplay. v1.1: `modeUnknown` when the history lookup failed or does not list the session.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -43,6 +43,8 @@ export type UseSessionResult = {
   replayError: ApiError | null
   /** Mode and exam linkage of the session; null while loading or when the history does not list it. */
   examLink: SessionExamLink | null
+  /** True once the history lookup failed or settled without the session: the mode cannot be determined. */
+  modeUnknown: boolean
   local: LocalReplayState
   /** Local replay final metrics vs the server finalMetrics; null until the local replay is ready. */
   comparison: MetricsComparison | null
@@ -96,6 +98,7 @@ export function useSessionResult(sessionId: string, deps: LocalReplayDeps = {}):
     replay,
     replayError: replayQuery.error ?? null,
     examLink,
+    modeUnknown: examLink === null && (infoQuery.error !== undefined || infoQuery.data !== undefined),
     local,
     comparison,
   };

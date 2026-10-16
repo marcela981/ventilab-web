@@ -5,8 +5,9 @@
 *   fields, unavailable without an object, missing server fields skipped), the evolution sampling, the rubric criteria
 *   lookups, the summary mapper (unknown targets dropped, opaque breakdown items checked), the exam return URL and
 *   store, the replay length, the event and alarm marks positioned by time and the engine version warning. Depends on
-*   vitest, the engine replay and the simulator entities, mappers and stores.
-* Versión: 1.0
+*   vitest, the engine replay and the simulator entities, mappers and stores. v1.1: the comparison is unavailable
+*   without simTimeMs or with nothing clinical compared.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -49,9 +50,18 @@ describe("compareFinalMetrics", () => {
     );
   });
 
-  it("is unavailable without an object and skips the fields the server omits", () => {
+  it("is unavailable without an object, without simTimeMs or when nothing clinical was compared", () => {
     expect(compareFinalMetrics(REPLAY.final, null)).toEqual({ status: "unavailable" });
-    expect(compareFinalMetrics(REPLAY.final, { simTimeMs: REPLAY.final.simTimeMs })).toEqual({ status: "match" });
+    expect(compareFinalMetrics(REPLAY.final, {})).toEqual({ status: "unavailable" });
+    expect(compareFinalMetrics(REPLAY.final, { simTimeMs: REPLAY.final.simTimeMs })).toEqual({ status: "unavailable" });
+    expect(compareFinalMetrics(REPLAY.final, { gasExchange: { spo2Percent: REPLAY.final.gasExchange.spo2Percent } })).toEqual({ status: "unavailable" });
+  });
+
+  it("skips the fields the server omits and compares the rest", () => {
+    const partial = { simTimeMs: REPLAY.final.simTimeMs, gasExchange: { spo2Percent: REPLAY.final.gasExchange.spo2Percent } };
+
+    expect(compareFinalMetrics(REPLAY.final, partial)).toEqual({ status: "match" });
+    expect(compareFinalMetrics(REPLAY.final, { ...partial, simTimeMs: REPLAY.final.simTimeMs + 1000 }).status).toBe("mismatch");
   });
 });
 

@@ -6,8 +6,10 @@
 *   re-initialises the worker once at the target time with a new seek generation, the event marks positioned by time
 *   (recorded events and the alarm onsets of the worker timeline), the read-only console (no control enabled, nothing
 *   applied), the engine version mismatch banner and the 403 state. Depends on vitest, Testing Library, msw, the
-*   engine replay and the simulator test helpers.
-* Versión: 1.0
+*   engine replay and the simulator test helpers. v1.1: two overlapping seeks start once after the second ready, the
+*   playback length stays frozen across a /state revalidation, a failed /state retries before the last-event
+*   fallback (with a note) and a long mark list collapses.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,13 +17,16 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { act, configure, fireEvent, screen, waitFor } from "@testing-library/react";
+import { act, configure, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
+import { useEffect } from "react";
+import { useSWRConfig } from "swr";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { replay } from "@shared/sim-engine";
 import type { EngineMetrics, SimCommand } from "@shared/sim-engine";
 import type { QueueTimers } from "../session/event-queue";
+import { ReplayTimeline } from "../components/replay-timeline";
 import { buildBatch, buildEngineCase, createFakeWorker } from "../session/sim-session-test-helpers";
 import type { FakeWorker } from "../session/sim-session-test-helpers";
 import { SessionReplayPage } from "./session-replay.page";
@@ -104,9 +109,22 @@ function createWorkerDouble(): FakeWorker {
   return worker;
 }
 
-type RenderOptions = { mismatch?: boolean };
+type RenderOptions = { mismatch?: boolean, stateSimTimeMs?: () => number };
 
-function renderPage({ mismatch = false }: RenderOptions = {}) {
+let revalidateAll: () => Promise<unknown> = async() => undefined;
+
+/** Captures the SWR cache mutate of the test wrapper, so a test can revalidate every query. */
+function RevalidateProbe() {
+  const { mutate } = useSWRConfig();
+
+  useEffect(() => {
+    revalidateAll = () => mutate(() => true);
+  }, [mutate]);
+
+  return null;
+}
+
+function renderPage({ mismatch = false, stateSimTimeMs = () => 8000 }: RenderOptions = {}) {
   server.use(
     http.get(apiUrl("/api/simulation/sessions/s1/replay"), () => HttpResponse.json(envelope(replayDto({
       case: ENGINE_CASE,
@@ -116,7 +134,7 @@ function renderPage({ mismatch = false }: RenderOptions = {}) {
     http.get(apiUrl("/api/simulation/sessions/s1/state"), () => HttpResponse.json(envelope({
       id: "s1",
       status: "ENDED",
-      simTimeMs: 8000,
+      simTimeMs: stateSimTimeMs(),
       expiresAt: null,
       settings: {},
       metrics: {},
@@ -134,7 +152,12 @@ function renderPage({ mismatch = false }: RenderOptions = {}) {
 
     return worker;
   });
-  const view = renderWithSwr(<SessionReplayPage sessionId="s1" deps={{ createWorker, timers, now: () => 0 }} />);
+  const view = renderWithSwr(
+    <>
+      <RevalidateProbe />
+      <SessionReplayPage sessionId="s1" deps={{ createWorker, timers, now: () => 0 }} />
+    </>,
+  );
   const playback = () => workers.find((worker) => worker.sent.some((command) => command.type === "init"));
   const inits = () => (playback()?.sent ?? []).filter((command) => command.type === "init");
 
@@ -259,6 +282,84 @@ describe("SessionReplayPage", () => {
     renderPage({ mismatch: true });
 
     expect(await screen.findByText("La sesión usa el motor 0.9.0 y el servidor el 1.0.0.")).toBeInTheDocument();
+  });
+
+  it("starts exactly once after the second ready of two overlapping seeks", async() => {
+    const { playback, inits } = renderPage();
+
+    await waitFor(() => expect(playback()).toBeDefined());
+    act(() => playback()?.emit({ type: "ready", engineVersion: "1.0.0" }));
+    fireEvent.click(await screen.findByRole("button", { name: "0:02 — Cambio de parámetros (1)" }));
+    fireEvent.click(screen.getByRole("button", { name: "0:04 — Asesoría IA" }));
+
+    expect(inits()).toHaveLength(3);
+
+    const startsAfter = (from: number) => (playback()?.sent ?? []).slice(from).filter((command) => command.type === "start").length;
+    const mark = playback()?.sent.length ?? 0;
+
+    act(() => playback()?.emit({ type: "ready", engineVersion: "1.0.0" }));
+    expect(startsAfter(mark)).toBe(0);
+
+    act(() => playback()?.emit({ type: "ready", engineVersion: "1.0.0" }));
+    expect(startsAfter(mark)).toBe(1);
+  });
+
+  it("keeps the playback length once settled when /state revalidates", async() => {
+    let stateTime = 8000;
+    const { playback, inits, workers } = renderPage({ stateSimTimeMs: () => stateTime });
+
+    await waitFor(() => expect(playback()).toBeDefined());
+    stateTime = 9000;
+    await act(async() => {
+      await revalidateAll();
+    });
+
+    expect(inits()).toHaveLength(1);
+    expect(inits()[0]).toMatchObject({ options: { endAtSimTimeMs: 8000 } });
+    expect(workers.filter((worker) => worker.sent.some((command) => command.type === "init"))).toHaveLength(1);
+  });
+
+  it("offers a retry when /state fails and falls back to the last event only after it, with a note", async() => {
+    let stateCalls = 0;
+
+    server.use(
+      http.get(apiUrl("/api/simulation/sessions/s1/replay"), () => HttpResponse.json(envelope(replayDto({ case: ENGINE_CASE, events: RECORDED })))),
+      http.get(apiUrl("/api/simulation/sessions/s1/state"), () => {
+        stateCalls += 1;
+
+        return errorResponse("common.internal_error", 500);
+      }),
+    );
+
+    const createWorker = vi.fn(() => createWorkerDouble());
+
+    renderWithSwr(<SessionReplayPage sessionId="s1" deps={{ createWorker, timers: createManualTimers(), now: () => 0 }} />);
+
+    expect(await screen.findByText("No se pudo leer la duración de la sesión")).toBeInTheDocument();
+    expect(createWorker).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
+
+    expect(await screen.findByText(/la repetición termina en el último evento registrado/)).toHaveAttribute("role", "note");
+    expect(stateCalls).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText("0:00 / 0:04")).toBeInTheDocument();
+  });
+
+  it("collapses a long list of marks behind a disclosure", () => {
+    const marks = Array.from({ length: 31 }, (_value, index) => ({
+      id: `m${index}`, kind: "param" as const, simTimeMs: index * 1000, position: index, label: "Cambio de parámetros",
+    }));
+    const noop = () => undefined;
+    const { container, rerender } = render(
+      <ReplayTimeline status="paused" simTimeMs={0} durationMs={40_000} speed={1} marks={marks} onPlay={noop} onPause={noop} onSpeedChange={noop} onScrub={noop} onJump={noop} />,
+    );
+
+    expect(container.querySelector("details")).not.toBeNull();
+    expect(screen.getByText("Eventos de la sesión (31)").tagName).toBe("SUMMARY");
+    expect(container.querySelectorAll("line")).toHaveLength(31);
+
+    rerender(<ReplayTimeline status="paused" simTimeMs={0} durationMs={40_000} speed={1} marks={marks.slice(0, 30)} onPlay={noop} onPause={noop} onSpeedChange={noop} onScrub={noop} onJump={noop} />);
+    expect(container.querySelector("details")).toBeNull();
   });
 
   it("shows the access-denied state from the backend", async() => {

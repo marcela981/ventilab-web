@@ -5,8 +5,9 @@
 *   past it), the protocol guards of setPlaybackRate, the replay request and the replayResult response, the worker
 *   host round trip of a replay request (same result as the engine replay, typed error with the request id) and the
 *   main-thread replay client (resolves on its own request id, rejects on its error, ignores other ids). Depends on
-*   vitest, the engine replay and the sim-engine runtime.
-* Versión: 1.0
+*   vitest, the engine replay and the sim-engine runtime. v1.1: an event exactly at the end and start == end against
+*   the engine replay(untilMs); the client ignores other requests' and commands' errors, times out and aborts.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,7 +15,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { replay } from "../engine/simulation";
 import type { EngineEvent } from "../engine/engine.types";
 import type { SimWorkerClient, SimWorkerListener } from "./create-sim-worker";
@@ -89,6 +90,53 @@ describe("sim loop replay mode", () => {
     expect(last.simTimeMs).toBe(4000);
     expect(last.metrics?.gasExchange).toEqual(expected.gasExchange);
     expect(last.metrics?.lastCycle).toEqual(expected.lastCycle);
+  });
+
+  function playToEnd(loop: ReturnType<typeof createSimLoop>, clock: ReturnType<typeof createManualClock>) {
+    loop.start();
+
+    let last = loop.tick();
+    let metrics = last.metrics;
+    const applied = [...last.appliedEvents];
+
+    while (last.status === "running") {
+      clock.advance(100);
+      last = loop.tick();
+      metrics = last.metrics ?? metrics;
+      applied.push(...last.appliedEvents);
+    }
+
+    return { last, metrics, applied };
+  }
+
+  it("applies an event recorded exactly at endAtSimTimeMs, as the engine replay(untilMs) does", () => {
+    const atEnd: EngineEvent[] = [{ type: "PARAM_CHANGE", simTimeMs: 3000, changes: { peepCmH2O: 10 } }];
+    const clock = createManualClock();
+    const loop = createSimLoop(buildTestCase(), 4, { clock, playbackRate: 8, initialEvents: atEnd, endAtSimTimeMs: 3000 });
+    const { last, metrics, applied } = playToEnd(loop, clock);
+    const expected = replay(buildTestCase(), 4, atEnd, 3000);
+
+    expect(last.simTimeMs).toBe(3000);
+    expect(last.status).toBe("paused");
+    // The scheduled event is applied at the very end, never skipped and never past it.
+    expect(applied.map((event) => event.simTimeMs)).toEqual([3000]);
+    expect(metrics).toEqual(expected.final);
+  });
+
+  it("starting at the end shows the engine replay(untilMs) state and never steps", () => {
+    const clock = createManualClock();
+    const loop = createSimLoop(buildTestCase(), 6, { clock, playbackRate: 8, initialEvents: EVENTS, startAtSimTimeMs: 2500, endAtSimTimeMs: 2500 });
+
+    loop.start();
+    clock.advance(1000);
+
+    const batch = loop.tick();
+    const expected = replay(buildTestCase(), 6, EVENTS, 2500).final;
+
+    expect(batch.simTimeMs).toBe(2500);
+    expect(batch.status).toBe("paused");
+    expect(batch.samples).toEqual([]);
+    expect(batch.metrics).toEqual(expected);
   });
 });
 
@@ -199,7 +247,7 @@ describe("requestWorkerReplay", () => {
     expect(listeners.size).toBe(0);
   });
 
-  it("rejects on an error for its request id or a worker failure", async() => {
+  it("rejects on an error for its request id or a replay error without an id", async() => {
     const first = createClientDouble();
     const failing = requestWorkerReplay(first.client, request, "a");
 
@@ -207,9 +255,60 @@ describe("requestWorkerReplay", () => {
     await expect(failing).rejects.toThrow("boom");
 
     const second = createClientDouble();
-    const crashed = requestWorkerReplay(second.client, request, "b");
+    const anonymous = requestWorkerReplay(second.client, request, { requestId: "b" });
 
-    second.emit({ type: "error", message: "The simulation worker failed" });
-    await expect(crashed).rejects.toThrow("The simulation worker failed");
+    second.emit({ type: "error", message: "replay refused", command: "replay" });
+    await expect(anonymous).rejects.toThrow("replay refused");
+  });
+
+  it("ignores the errors of other requests and other commands", async() => {
+    const { client, emit, listeners } = createClientDouble();
+    const result = replay(buildTestCase(), 3, [], 2000);
+    const pending = requestWorkerReplay(client, request, { requestId: "mine" });
+
+    emit({ type: "error", message: "other replay", command: "replay", requestId: "theirs" });
+    emit({ type: "error", message: "start after stop", command: "start" });
+    emit({ type: "error", message: "Malformed simulation command" });
+    expect(listeners.size).toBe(1);
+
+    emit({ type: "replayResult", requestId: "mine", result });
+    await expect(pending).resolves.toBe(result);
+  });
+
+  it("rejects after timeoutMs and unsubscribes", async() => {
+    vi.useFakeTimers();
+
+    try {
+      const { client, listeners } = createClientDouble();
+      const pending = requestWorkerReplay(client, request, { requestId: "slow", timeoutMs: 500 });
+      const settled = pending.catch((error: unknown) => error);
+
+      vi.advanceTimersByTime(499);
+      expect(listeners.size).toBe(1);
+      vi.advanceTimersByTime(1);
+
+      const error = await settled;
+
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).name).toBe("WorkerReplayTimeout");
+      expect(listeners.size).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("rejects when aborted (before or while waiting) and unsubscribes", async() => {
+    const { client, sent, listeners } = createClientDouble();
+    const controller = new AbortController();
+    const pending = requestWorkerReplay(client, request, { requestId: "c", signal: controller.signal, timeoutMs: 10_000 });
+
+    controller.abort();
+    await expect(pending).rejects.toMatchObject({ name: "WorkerReplayAborted" });
+    expect(listeners.size).toBe(0);
+
+    const before = sent.length;
+
+    await expect(requestWorkerReplay(client, request, { signal: controller.signal })).rejects.toMatchObject({ name: "WorkerReplayAborted" });
+    expect(sent).toHaveLength(before);
   });
 });

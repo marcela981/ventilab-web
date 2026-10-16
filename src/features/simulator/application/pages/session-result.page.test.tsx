@@ -7,7 +7,9 @@
 *   discreet note when the local final metrics differ from the server ones (server values kept), the EXAM rubric
 *   breakdown with "Volver al examen" (recorded attempt or the evaluations list) and the 404 state. Depends on vitest,
 *   Testing Library, msw, the engine replay and the simulator test helpers. v1.1: the evolution charts are line charts.
-* Versión: 1.1
+*   v1.2: the breakdown in any mode, the mode-unknown note (history failed or not listing the session), no retry for
+*   404 but a retry for 5xx, and the local replay timeout with a retry in a new worker.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,7 +17,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
@@ -113,10 +115,11 @@ describe("SessionResultPage", () => {
     expect(spo2).toHaveTextContent("88–95 %");
     expect(spo2).toHaveTextContent("Cumplido");
     expect(screen.getByRole("rowheader", { name: "Presión meseta" }).closest("tr")).toHaveTextContent("No cumplido");
-    expect(screen.getByText("Tiempo hasta estabilizar").nextElementSibling).toHaveTextContent("42 s");
-    expect(screen.getByText("Violaciones de seguridad").nextElementSibling).toHaveTextContent("3,5 s fuera de los límites de seguridad");
+    expect(screen.getByText("Tiempo hasta estabilizar", { selector: "dt" }).nextElementSibling).toHaveTextContent("42 s");
+    expect(screen.getByText("Violaciones de seguridad", { selector: "dt" }).nextElementSibling).toHaveTextContent("3,5 s fuera de los límites de seguridad");
     expect(screen.getByText("Solicitudes de asesoría IA").nextElementSibling).toHaveTextContent("2");
-    expect(screen.queryByText("Desglose de la rúbrica (servidor)")).not.toBeInTheDocument();
+    // The summary carries a breakdown, so it is shown whatever the mode.
+    expect(screen.getByRole("heading", { name: "Desglose de la rúbrica (servidor)" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Volver al examen" })).not.toBeInTheDocument();
 
     expect(await screen.findByRole("figure", { name: "SpO2 (%)" })).toHaveAttribute("data-chart", "line");
@@ -176,5 +179,60 @@ describe("SessionResultPage", () => {
 
     expect(await screen.findByText("No se encontró la sesión de simulación.")).toBeInTheDocument();
     expect(screen.getByText("No se pudo cargar el resultado")).toBeInTheDocument();
+    // A missing session does not appear by retrying.
+    expect(screen.queryByRole("button", { name: /reintentar/i })).not.toBeInTheDocument();
+  });
+
+  it("offers a retry for a server error of the summary", async() => {
+    server.use(
+      http.get(apiUrl("/api/simulation/sessions/s1/summary"), () => errorResponse("common.internal_error", 500)),
+      http.get(apiUrl("/api/simulation/sessions/s1/replay"), () => errorResponse("common.internal_error", 500)),
+      http.get(apiUrl("/api/simulation/sessions/history"), () => HttpResponse.json(envelope([]))),
+    );
+    renderWithSwr(<SessionResultPage sessionId="s1" deps={{ createWorker: () => createReplayingWorker() }} />);
+
+    expect(await screen.findByRole("button", { name: /reintentar/i })).toBeInTheDocument();
+  });
+
+  it("shows the breakdown and an explicit mode-unknown note when the history fails", async() => {
+    installHandlers();
+    server.use(http.get(apiUrl("/api/simulation/sessions/history"), () => errorResponse("common.internal_error", 500)));
+    renderWithSwr(<SessionResultPage sessionId="s1" deps={{ createWorker: () => createReplayingWorker() }} />);
+
+    expect(await screen.findByRole("heading", { name: "Desglose de la rúbrica (servidor)" })).toBeInTheDocument();
+    expect(await screen.findByText(/^Modo no determinado/)).toHaveAttribute("role", "note");
+    expect(screen.queryByRole("link", { name: "Volver al examen" })).not.toBeInTheDocument();
+  });
+
+  it("shows the mode-unknown note when the history does not list the session (a teacher reading it)", async() => {
+    installHandlers();
+    server.use(http.get(apiUrl("/api/simulation/sessions/history"), () => HttpResponse.json(envelope([]))));
+    renderWithSwr(<SessionResultPage sessionId="s1" deps={{ createWorker: () => createReplayingWorker() }} />);
+
+    expect(await screen.findByText(/^Modo no determinado/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Desglose de la rúbrica (servidor)" })).toBeInTheDocument();
+  });
+
+  it("times out a silent local replay with a retry that runs it in a new worker", async() => {
+    installHandlers();
+
+    const silent: FakeWorker[] = [];
+    const createWorker = vi.fn(() => {
+      const worker = silent.length === 0 ? createFakeWorker() : createReplayingWorker();
+
+      silent.push(worker);
+
+      return worker;
+    });
+
+    renderWithSwr(<SessionResultPage sessionId="s1" deps={{ createWorker, replayTimeoutMs: 50 }} />);
+
+    expect(await screen.findByText("La reconstrucción de la evolución tardó demasiado en este navegador.")).toBeInTheDocument();
+    expect(silent[0]?.terminated).toBe(true);
+
+    fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
+
+    expect(await screen.findByRole("figure", { name: "SpO2 (%)" })).toBeInTheDocument();
+    expect(createWorker).toHaveBeenCalledTimes(2);
   });
 });

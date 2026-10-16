@@ -9,8 +9,10 @@
 *   metrics differ from the server ones (the server values are never replaced). Loading, error (403/404 messages with
 *   retry) states and links to the replay and the catalog. The worker factory and the exam return store are
 *   injectable for tests. Depends on next/head, next/link, the design system, the simulator hooks, entities,
-*   components and CSS Modules.
-* Versión: 1.0
+*   components and CSS Modules. v1.1: the server breakdown is shown whenever the summary carries one (any mode, so
+*   teachers see it too), an explicit "modo no determinado" note when the mode is unknown, no retry for 403/404 and a
+*   retryable local evolution (timeout or failure).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -82,6 +84,9 @@ export const RESULT_PAGE_COPY = {
   evolutionRunning: "Reconstruyendo la evolución en este navegador…",
   evolutionUnsupported: "Este navegador no puede reconstruir la evolución (sin soporte de Web Workers).",
   evolutionFailed: "No se pudo reconstruir la evolución de la sesión en este navegador.",
+  evolutionTimedOut: "La reconstrucción de la evolución tardó demasiado en este navegador.",
+  retry: "Reintentar",
+  modeUnknown: "Modo no determinado: no se pudo saber si esta sesión fue de práctica libre o de examen.",
   evolutionUnavailable: "No hay datos de repetición disponibles para esta sesión.",
   mismatch: "La repetición local no coincide del todo con el resultado del servidor. El resultado oficial es el del servidor.",
   viewReplay: "Ver repetición",
@@ -249,6 +254,7 @@ export function SessionResultPage({ sessionId, deps }: SessionResultPageProps) {
   const result = useSessionResult(sessionId, deps);
   const { summary, examLink, local, comparison } = result;
   const exam = examLink?.mode === "EXAM";
+  const { modeUnknown } = result;
   const evolution = useMemo(
     () => (local.status === "ready" ? buildEvolution(local.result.metricsTimeline, local.result.final) : null),
     [local],
@@ -258,7 +264,16 @@ export function SessionResultPage({ sessionId, deps }: SessionResultPageProps) {
   let body;
 
   if (!summary && result.error) {
-    body = <ErrorState title={RESULT_PAGE_COPY.loadError} description={getSimulatorErrorMessage(result.error)} onRetry={() => void result.reload()} />;
+    // A missing session or a denied access does not change by retrying.
+    const retryable = result.error.status !== 403 && result.error.status !== 404;
+
+    body = (
+      <ErrorState
+        title={RESULT_PAGE_COPY.loadError}
+        description={getSimulatorErrorMessage(result.error)}
+        {...(retryable ? { onRetry: () => void result.reload() } : {})}
+      />
+    );
   } else if (!summary) {
     body = <LoadingState label={RESULT_PAGE_COPY.loading} />;
   } else {
@@ -269,7 +284,12 @@ export function SessionResultPage({ sessionId, deps }: SessionResultPageProps) {
     } else if (local.status === "unsupported") {
       evolutionBody = <p className={cx(styles.muted)}>{RESULT_PAGE_COPY.evolutionUnsupported}</p>;
     } else if (local.status === "error") {
-      evolutionBody = <p className={cx(styles.muted)}>{RESULT_PAGE_COPY.evolutionFailed}</p>;
+      evolutionBody = (
+        <div className={cx(styles.retryRow)}>
+          <p className={cx(styles.muted)}>{local.timedOut ? RESULT_PAGE_COPY.evolutionTimedOut : RESULT_PAGE_COPY.evolutionFailed}</p>
+          <button type="button" className={cx(styles.textButton)} onClick={local.retry}>{RESULT_PAGE_COPY.retry}</button>
+        </div>
+      );
     } else if (result.replayError || (result.replay && local.status === "idle")) {
       evolutionBody = <p className={cx(styles.muted)}>{RESULT_PAGE_COPY.evolutionUnavailable}</p>;
     } else {
@@ -280,7 +300,8 @@ export function SessionResultPage({ sessionId, deps }: SessionResultPageProps) {
       <>
         <ServerScore summary={summary} />
         <Objectives summary={summary} />
-        {exam ? <Breakdown breakdown={summary.breakdown} /> : null}
+        {/* The server breakdown is shown whenever the summary carries one (teachers too), and always for EXAM. */}
+        {exam || summary.breakdown.length > 0 ? <Breakdown breakdown={summary.breakdown} /> : null}
         <section className={cx(styles.card)} aria-labelledby="result-evolution-title">
           <h2 id="result-evolution-title" className={cx(styles.cardTitle)}>{RESULT_PAGE_COPY.evolution}</h2>
           <p className={cx(styles.muted)}>{RESULT_PAGE_COPY.evolutionNote}</p>
@@ -297,6 +318,8 @@ export function SessionResultPage({ sessionId, deps }: SessionResultPageProps) {
         <title>{RESULT_PAGE_COPY.documentTitle}</title>
       </Head>
       <PageHeader title={RESULT_PAGE_COPY.title} {...(examLink ? { subtitle: simulationModeLabel(examLink.mode) } : {})} />
+      {/* BACKEND GAP: the mode only comes from the own-session history; without it, never assume FREE silently. */}
+      {modeUnknown ? <p className={cx(styles.note)} role="note">{RESULT_PAGE_COPY.modeUnknown}</p> : null}
       {body}
       <nav className={cx(styles.links)}>
         {returnUrl ? (

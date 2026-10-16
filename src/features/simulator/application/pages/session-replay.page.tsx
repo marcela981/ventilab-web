@@ -9,8 +9,10 @@
 *   immediate jumps from the mark list. A banner warns when the recorded engine version differs from the current one or
 *   from this browser's. Nothing is ever sent to the backend. The worker factory and timers are injectable for tests.
 *   Depends on next/head, next/link, the api-client query hook, the design system, the ventilator console, the
-*   simulator hooks, entities, components and CSS Modules.
-* Versión: 1.0
+*   simulator hooks, entities, components and CSS Modules. v1.1: the playback length is frozen once settled (a /state
+*   revalidation never restarts the replay); a failed /state offers a retry first and falls back to the last recorded
+*   event only after it (or at once for 403/404), with a visible note.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,7 +22,7 @@
 
 import Head from "next/head";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { ApiError } from "@shared/api-client/api-error";
 import { useApiQuery } from "@shared/api-client/use-api-query";
@@ -52,6 +54,8 @@ export const REPLAY_PAGE_COPY = {
   invalidCase: "El servidor no devolvió un caso que este navegador pueda reproducir.",
   retry: "Reintentar",
   starting: "Preparando la repetición…",
+  stateFailed: "No se pudo leer la duración de la sesión",
+  estimatedLength: "No se pudo leer la duración de la sesión: la repetición termina en el último evento registrado y puede quedar más corta que la sesión real.",
   viewResult: "Ver resultado",
   backToCatalog: "Volver al simulador",
 } as const;
@@ -69,7 +73,7 @@ function errorMessage(error: ApiError): string {
   return error.status === 404 ? REPLAY_PAGE_COPY.notFound : getSimulatorErrorMessage(error);
 }
 
-function buildSource(sessionId: string, replay: SessionReplay | null, serverSimTimeMs: number | null): ReplaySource | null {
+function buildSource(sessionId: string, replay: SessionReplay | null, durationMs: number): ReplaySource | null {
   if (!replay || !isEngineCase(replay.engineCase)) {
     return null;
   }
@@ -80,7 +84,7 @@ function buildSource(sessionId: string, replay: SessionReplay | null, serverSimT
     seed: replay.seed,
     timeMultiplier: toTimeMultiplier(replay.timeMultiplier),
     events: toEngineEvents(replay.events),
-    durationMs: replayDurationMs(serverSimTimeMs, replay.events),
+    durationMs,
   };
 }
 
@@ -140,12 +144,31 @@ export function SessionReplayPage({ sessionId, deps }: SessionReplayPageProps) {
   const stateQuery = useApiQuery(SIMULATION_SESSION_STATE_PATH, params);
   const replay = useMemo(() => (replayQuery.data ? toSessionReplay(replayQuery.data.data) : null), [replayQuery.data]);
   const serverSimTimeMs = stateQuery.data ? toSessionState(stateQuery.data.data).simTimeMs : null;
-  // The playback length must be settled before the worker starts (state loaded or failed).
-  const stateSettled = stateQuery.data !== undefined || stateQuery.error !== undefined;
+  const [stateRetried, setStateRetried] = useState(false);
+  const stateError = stateQuery.data === undefined ? stateQuery.error ?? null : null;
+  // The last recorded event is only a fallback length: used after one failed retry of GET /state (or at once when
+  // the state is denied or missing, which a retry does not change), never silently on the first failure.
+  const fallbackToEvents = stateError !== null && !stateQuery.isValidating
+    && (stateRetried || stateError.status === 403 || stateError.status === 404);
+  const candidateDurationMs = replay && (serverSimTimeMs !== null || fallbackToEvents)
+    ? replayDurationMs(serverSimTimeMs, replay.events)
+    : null;
+  // The playback length is frozen once it settles: a later revalidation of /state must not restart the replay.
+  const [frozen, setFrozen] = useState<{ sessionId: string, durationMs: number, estimated: boolean } | null>(null);
+
+  if (candidateDurationMs !== null && frozen?.sessionId !== sessionId) {
+    setFrozen({ sessionId, durationMs: candidateDurationMs, estimated: serverSimTimeMs === null });
+  }
+
+  const settled = frozen?.sessionId === sessionId ? frozen : null;
   const source = useMemo(
-    () => (stateSettled ? buildSource(sessionId, replay, serverSimTimeMs) : null),
-    [replay, serverSimTimeMs, sessionId, stateSettled],
+    () => (settled ? buildSource(sessionId, replay, settled.durationMs) : null),
+    [replay, sessionId, settled],
   );
+  const retryState = (): void => {
+    setStateRetried(true);
+    void stateQuery.mutate();
+  };
 
   let body: ReactNode;
 
@@ -162,10 +185,25 @@ export function SessionReplayPage({ sessionId, deps }: SessionReplayPageProps) {
         </div>
       </section>
     );
-  } else if (replay && stateSettled && !source) {
+  } else if (replay && settled && !source) {
     body = <section className={cx(consoleStyles.notice)} role="alert"><p>{REPLAY_PAGE_COPY.invalidCase}</p></section>;
   } else if (replay && source) {
-    body = <ReplayPlayer key={source.sessionId} source={source} replay={replay} deps={deps} />;
+    body = (
+      <>
+        {settled?.estimated ? <p className={cx(consoleStyles.banner)} data-tone="warning" role="note">{REPLAY_PAGE_COPY.estimatedLength}</p> : null}
+        <ReplayPlayer key={source.sessionId} source={source} replay={replay} deps={deps} />
+      </>
+    );
+  } else if (replay && stateError && !fallbackToEvents && !stateQuery.isValidating) {
+    body = (
+      <section className={cx(consoleStyles.notice)} role="alert">
+        <h2 className={cx(consoleStyles.blockedTitle)}>{REPLAY_PAGE_COPY.stateFailed}</h2>
+        <p>{getSimulatorErrorMessage(stateError)}</p>
+        <div className={cx(consoleStyles.noticeActions)}>
+          <button type="button" className={cx(consoleStyles.timeButton)} onClick={retryState}>{REPLAY_PAGE_COPY.retry}</button>
+        </div>
+      </section>
+    );
   } else {
     body = <p className={cx(consoleStyles.consoleMuted)} role="status">{REPLAY_PAGE_COPY.loading}</p>;
   }

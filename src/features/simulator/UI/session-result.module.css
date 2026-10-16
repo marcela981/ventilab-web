@@ -4,7 +4,8 @@
 *   catalog: page column, section cards, the server score block, the facts lists (status, times, outcomes), the
 *   objectives and rubric tables with a horizontal scroll wrapper on narrow screens, the objective status text, the
 *   discreet determinism note, the evolution chart grid and the page links. Design-system tokens only; no hex or rgb.
-* Versión: 1.0
+*   v1.1: the retry row and text button of the local evolution.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -156,6 +157,24 @@
 .link:hover,
 .link:focus-visible,
 .primaryLink:hover,
-.primaryLink:focus-visible {
+.primaryLink:focus-visible,
+.textButton:hover,
+.textButton:focus-visible {
   text-decoration: underline;
+}
+
+.retryRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-3);
+}
+
+.textButton {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--vl-color-link);
+  font: var(--mui-font-button);
+  cursor: pointer;
 }
