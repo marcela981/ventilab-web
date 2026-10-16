@@ -22,7 +22,11 @@
 *   (backlog 0); only EXAM fast-forwards, capped by `expiresAt`. `fastForward: false` (a reload after repeated
 *   time-ahead refusals) also gives backlog 0, so "Recargar sesión" cannot loop. v1.3 (T9): a rebuilt record keeps
 *   the exam context of the stored one.
-* Versión: 1.3
+*   v1.4 (review of 180a0a1): the elapsed time since the server reading is measured on a MONOTONIC clock
+*   (performance.now at the response vs. now), so a wall-clock jump cannot move the estimate. The backend CORS config
+*   does not expose `Date` (backend gap), so when /state has no server clock an EXAM resume with a known attempt reads
+*   the server time from the attempt BODY (`GET /evaluation-attempts/{id}` `serverNow`); without either, backlog 0.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -31,7 +35,7 @@
 */
 
 import type { ParamChangeEvent } from "@shared/sim-engine";
-import { isEngineCase, toEngineEvents, toTimeMultiplier } from "../entities/sim-session.entity";
+import { isEngineCase, monotonicNow, toEngineEvents, toTimeMultiplier } from "../entities/sim-session.entity";
 import { RESUME_SAFETY_MARGIN_WALL_MS } from "../config/sim-console.config";
 import type { ClientSessionEvent, ServerClock, SessionBoot, SessionRecord, SessionReplay, SessionState } from "../entities/sim-session.entity";
 import { getSimulatorErrorMessage } from "../entities/simulator-error-messages";
@@ -51,8 +55,10 @@ export type BootstrapDeps = {
   /** Session start from the history, used when the store does not have it. */
   fetchStartedAt?: ((sessionId: string) => Promise<string | null>) | undefined
   outbox?: EventOutbox | undefined
-  /** Client clock (epoch ms), only used to measure the time elapsed since the /state response. */
-  now?: (() => number) | undefined
+  /** Server clock from the exam attempt body (`serverNow`), used when /state carries none. */
+  fetchAttemptServerClock?: ((attemptId: string) => Promise<ServerClock | null>) | undefined
+  /** Monotonic client clock (ms), only used to measure the time elapsed since the server reading. */
+  monotonicNow?: (() => number) | undefined
   /** false: resume at the last known time (no fast-forward), e.g. after repeated time-ahead refusals. Default true. */
   fastForward?: boolean | undefined
 };
@@ -72,16 +78,36 @@ export type ResumeInput = {
   serverNowMs: number | null
 };
 
-/** Current server time: the server clock of a response plus the client time elapsed since it; null without one. */
-export function estimateServerNowMs(clock: ServerClock | null | undefined, clientNowMs: number): number | null {
-  if (!clock || !Number.isFinite(clock.serverNowMs) || !Number.isFinite(clock.clientNowMs)) {
+/**
+ * Current server time: the server time of a response plus the MONOTONIC time elapsed since it arrived
+ * (serverNow + (monotonicNow − monotonicAtResponse)); null without a reading. Never earlier than the reading.
+ */
+export function estimateServerNowMs(clock: ServerClock | null | undefined, monotonicNowMs: number): number | null {
+  if (!clock || !Number.isFinite(clock.serverNowMs) || !Number.isFinite(clock.monotonicAtMs) || !Number.isFinite(monotonicNowMs)) {
     return null;
   }
 
-  const skewMs = clock.serverNowMs - clock.clientNowMs;
+  return clock.serverNowMs + Math.max(0, monotonicNowMs - clock.monotonicAtMs);
+}
 
-  // Never estimate a server time earlier than the reading itself (a client clock moved backwards).
-  return Math.max(clock.serverNowMs, clientNowMs + skewMs);
+/** /state server clock, else (EXAM with a known attempt) the attempt body clock; null when neither is readable. */
+async function readResumeClock(state: SessionState, stored: SessionRecord | null, deps: BootstrapDeps): Promise<ServerClock | null> {
+  if (state.serverClock) {
+    return state.serverClock;
+  }
+
+  const attemptId = stored?.exam?.attemptId;
+
+  if (!attemptId || !deps.fetchAttemptServerClock) {
+    return null;
+  }
+
+  try {
+    return await deps.fetchAttemptServerClock(attemptId);
+  } catch {
+    // Not fatal: the resume keeps the last known simulated time.
+    return null;
+  }
 }
 
 /**
@@ -179,6 +205,9 @@ export async function bootstrapSession(sessionId: string, deps: BootstrapDeps): 
     exam: stored?.exam ?? null,
   };
   const startAtSimTimeMs = Math.max(0, state.simTimeMs, lastEventMs);
+  // FREE (and a no-fast-forward reload) resumes at the last known time; EXAM follows the server clock.
+  const fastForward = record.mode === "EXAM" && deps.fastForward !== false;
+  const clock = fastForward ? await readResumeClock(state, stored, deps) : null;
 
   deps.store.save(record);
 
@@ -188,13 +217,12 @@ export async function bootstrapSession(sessionId: string, deps: BootstrapDeps): 
       record,
       initialEvents,
       startAtSimTimeMs,
-      // FREE (and a no-fast-forward reload) resumes at the last known time; EXAM follows the server clock.
-      initialBacklogMs: record.mode !== "EXAM" || deps.fastForward === false ? 0 : resumeBacklogMs({
+      initialBacklogMs: !fastForward ? 0 : resumeBacklogMs({
         lastKnownMs: startAtSimTimeMs,
         startedAt,
         expiresAt: state.expiresAt,
         multiplier: timeMultiplier,
-        serverNowMs: estimateServerNowMs(state.serverClock, (deps.now ?? Date.now)()),
+        serverNowMs: estimateServerNowMs(clock, (deps.monotonicNow ?? monotonicNow)()),
       }),
       pendingEvents,
     },

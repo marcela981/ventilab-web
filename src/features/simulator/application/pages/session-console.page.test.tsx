@@ -20,7 +20,10 @@
 *   the in-flight send before a resync. v1.5 (T9): the EXAM flow — countdown, deadline (pause → flush → end →
 *   back to the exam, in that order, also when the end fails), the bounded flush at the deadline, "Finalizar sesión"
 *   back to the exam (exam context or exam return record) and the assistance policy stored with the exam.
-* Versión: 1.5
+*   v1.6 (review of 180a0a1): after a settle() that timed out, a late acknowledgement of the old queue does not
+*   overwrite the outbox the new boot wrote; the time-ahead test stamps its server clock on the monotonic clock; the
+*   tab claim is released on a persisted pagehide (back/forward cache) and claimed again on its pageshow.
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -36,6 +39,7 @@ import { ApiError } from "@shared/api-client/api-error";
 import { replay } from "@shared/sim-engine";
 import type { SimBatch, SimCommand } from "@shared/sim-engine";
 import type { ConsoleSampleBatch } from "@shared/ventilator-console";
+import { RESYNC_SETTLE_TIMEOUT_MS } from "../config/sim-console.config";
 import type { SessionReplay, SessionState } from "../entities/sim-session.entity";
 import { useSimSession } from "../hooks/use-sim-session";
 import { createEventOutbox } from "../session/event-outbox";
@@ -410,7 +414,7 @@ describe("SessionConsolePage", () => {
         status: "ACTIVE",
         simTimeMs: 6000,
         expiresAt: new Date(nowMs + 3_600_000).toISOString(),
-        serverClock: { serverNowMs: nowMs, clientNowMs: nowMs },
+        serverClock: { serverNowMs: nowMs, monotonicAtMs: performance.now() },
       }),
       replay: () => Promise.resolve({ id: "s1", seed: 42, engineVersion: "1.0.0", timeMultiplier: 1, engineCase: buildEngineCase(), events: [] }),
     });
@@ -445,6 +449,42 @@ describe("SessionConsolePage", () => {
     expect(backlogs[1]).toBeGreaterThan(50_000);
     expect(backlogs[2]).toBe(0);
   }, 40_000);
+
+  it("releases the tab claim when the page may enter the back/forward cache and claims it again on restore", async() => {
+    const release = vi.fn();
+    const claimTab = vi.fn<(sessionId: string) => Promise<TabClaimResult>>()
+      .mockResolvedValueOnce({ status: "claimed", release })
+      .mockResolvedValueOnce({ status: "taken" });
+    const pageTransition = (type: "pagehide" | "pageshow", persisted: boolean): Event => {
+      const event = new Event(type);
+
+      Object.defineProperty(event, "persisted", { value: persisted });
+
+      return event;
+    };
+    const { createWorker } = renderPage({ claimTab });
+
+    await waitFor(() => expect(createWorker).toHaveBeenCalledTimes(1));
+
+    // A real unload (not persisted) keeps the claim: the browser frees the lock with the page.
+    act(() => {
+      window.dispatchEvent(pageTransition("pagehide", false));
+    });
+    expect(release).not.toHaveBeenCalled();
+
+    act(() => {
+      window.dispatchEvent(pageTransition("pagehide", true));
+    });
+    expect(release).toHaveBeenCalledTimes(1);
+
+    // Restored from the cache while another tab took the session: this tab turns read-only.
+    act(() => {
+      window.dispatchEvent(pageTransition("pageshow", true));
+    });
+    expect(claimTab).toHaveBeenCalledTimes(2);
+    expect(await screen.findByText("Esta sesión ya está abierta en otra pestaña")).toBeInTheDocument();
+    expect(release).toHaveBeenCalledTimes(1);
+  });
 
   it("a second tab of the same session shows a read-only notice and never starts the worker", async() => {
     const { createWorker, sendEvents, fetchReplay } = renderPage({ claimTab: () => Promise.resolve({ status: "taken" }) });
@@ -771,6 +811,52 @@ describe("useSimSession frame source", () => {
     await settling;
     expect(settled).toBe(true);
     expect(storage.data.has("ventylab.simulator.outbox.s1")).toBe(false);
+  });
+
+  it("after a settle() that timed out, a late acknowledgement of the old queue does not overwrite the new outbox", async() => {
+    const worker = createFakeWorker();
+    const storage = createMemoryStorage();
+    const outbox = createEventOutbox(() => storage);
+    let release: () => void = () => undefined;
+    const sendEvents = vi.fn(() => new Promise((resolve) => {
+      release = () => resolve({ accepted: 1, duplicates: 0, lastSimTimeMs: 1000 });
+    }));
+    const boot = buildBoot();
+    const deps = { createWorker: () => worker, sendEvents, createEventId: () => "evt-1", outbox };
+    const { result } = renderHook(() => useSimSession({ boot, blocked: false, deps }));
+
+    act(() => {
+      worker.emit({ type: "ready", engineVersion: "1.0.0" });
+      worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 1000, status: "running" }) });
+    });
+    act(() => result.current.adapter?.onConfirm({ mode: null, changes: [{ parameter: "peep", value: 6 }] }));
+    act(() => worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 1033, confirmedEvents: [{ id: "evt-1", effectiveSimTimeMs: 1000 }] }) }));
+
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+
+    try {
+      const settling = result.current.settle();
+
+      await vi.waitFor(() => expect(sendEvents).toHaveBeenCalledTimes(1));
+      await act(async() => {
+        await vi.advanceTimersByTimeAsync(RESYNC_SETTLE_TIMEOUT_MS);
+      });
+      await settling;
+    } finally {
+      vi.useRealTimers();
+    }
+
+    // The new boot owns the outbox now.
+    const newer = [{ id: "evt-new", simTimeMs: 2000, type: "PARAM_CHANGE" as const, payload: { changes: { fio2: 0.5 } } }];
+
+    outbox.save("s1", newer);
+    await act(async() => {
+      release();
+      await Promise.resolve();
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(outbox.read("s1")).toEqual(newer);
   });
 
   it("passes the wall-clock backlog of the boot to the worker init", () => {

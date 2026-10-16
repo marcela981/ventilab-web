@@ -8,8 +8,10 @@
 *   and a visually hidden table (caption, description, one row per label, one column per dataset) carries the same
 *   values for screen readers. Loading and error (with retry) overlays. It reuses the BarChart model, helpers and
 *   figure styles, so both charts look the same. Depends on React, chart.js (lazy), the design-system loading and
-*   error states, @shared/lib and the bar chart CSS Module.
-* Versión: 1.0
+*   error states, @shared/lib and the bar chart CSS Module. v1.1 (review of 180a0a1): the fallback table uses
+*   index-based keys (repeated labels are valid), and `formatValue` is read through a ref, so a new function identity
+*   (an inline arrow) never rebuilds the chart; the tooltip and ticks always use the latest formatter.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -132,6 +134,12 @@ export function LineChart({ title, description, className, ...input }: LineChart
   const titleId = useId();
   const format = input.formatValue ?? ((value: number) => defaultFormat.format(value));
   const { labels, datasets, categoryAxisLabel, valueAxisLabel, valueMin, valueMax, formatValue } = input;
+  // The chart reads the latest formatter through this ref, so its identity is not a rebuild dependency.
+  const formatRef = useRef(formatValue);
+
+  useEffect(() => {
+    formatRef.current = formatValue;
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -145,8 +153,9 @@ export function LineChart({ title, description, className, ...input }: LineChart
           return;
         }
 
+        const latestFormat = (value: number): string => (formatRef.current ?? ((raw: number) => defaultFormat.format(raw)))(value);
         const config = buildConfig(
-          { labels, datasets, categoryAxisLabel, valueAxisLabel, valueMin, valueMax, formatValue },
+          { labels, datasets, categoryAxisLabel, valueAxisLabel, valueMin, valueMax, formatValue: latestFormat },
           readBarChartChrome(),
         );
 
@@ -164,7 +173,7 @@ export function LineChart({ title, description, className, ...input }: LineChart
       chart?.destroy();
       chart = null;
     };
-  }, [labels, datasets, categoryAxisLabel, valueAxisLabel, valueMin, valueMax, formatValue, attempt]);
+  }, [labels, datasets, categoryAxisLabel, valueAxisLabel, valueMin, valueMax, attempt]);
 
   const retry = () => {
     setStatus("loading");
@@ -192,15 +201,15 @@ export function LineChart({ title, description, className, ...input }: LineChart
         <thead>
           <tr>
             <th scope="col">{categoryAxisLabel ?? LINE_CHART_COPY.category}</th>
-            {datasets.map((dataset) => <th key={dataset.label} scope="col">{dataset.label}</th>)}
+            {datasets.map((dataset, column) => <th key={`${column}:${dataset.label}`} scope="col">{dataset.label}</th>)}
           </tr>
         </thead>
         <tbody>
           {labels.map((label, row) => (
-            <tr key={label}>
+            <tr key={`${row}:${label}`}>
               <th scope="row">{label}</th>
-              {datasets.map((dataset) => (
-                <td key={dataset.label}>{formatBarValue(dataset.values[row] ?? null, format)}</td>
+              {datasets.map((dataset, column) => (
+                <td key={`${column}:${dataset.label}`}>{formatBarValue(dataset.values[row] ?? null, format)}</td>
               ))}
             </tr>
           ))}

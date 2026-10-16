@@ -25,7 +25,10 @@
 *   posts /end and returns to the exam attempt (also when the end fails). "Finalizar sesión" in EXAM returns to the
 *   exam the same way (record exam context, else the exam return record, else the evaluations list); `onEnded` still
 *   overrides it. The assistance policy comes from the host prop or the record exam context (unknown = fail safe).
-* Versión: 1.4
+*   v1.5 (review of 180a0a1): the tab claim is released on a `pagehide` that may enter the back/forward cache
+*   (`persisted`), because a held Web Lock makes the page ineligible for it, and claimed again on the `pageshow` that
+*   restores it (another tab that took the session meanwhile turns this one read-only).
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -101,7 +104,11 @@ const NO_TURNS: readonly AssistTurn[] = [];
 
 type TabClaimState = { sessionId: string, status: "claimed" | "taken" } | null;
 
-/** Claims the session for this tab while the page is mounted; "pending" until the claim resolves. */
+/**
+ * Claims the session for this tab while the page is mounted; "pending" until the claim resolves. A page that may enter
+ * the back/forward cache (`pagehide` with `persisted`) releases the claim, since a held Web Lock blocks the cache, and
+ * claims it again when it is restored (`pageshow` with `persisted`); the status stays until that new claim resolves.
+ */
 function useTabClaim(sessionId: string, claim: ClaimFn): "pending" | "claimed" | "taken" {
   const [state, setState] = useState<TabClaimState>(null);
   const claimRef = useRef(claim);
@@ -112,32 +119,62 @@ function useTabClaim(sessionId: string, claim: ClaimFn): "pending" | "claimed" |
 
   useEffect(() => {
     let active = true;
+    // Bumped by every claim and release, so the result of a superseded claim is released at once.
+    let generation = 0;
     const held: { release: (() => void) | null } = { release: null };
 
-    void claimRef.current(sessionId).then((result) => {
-      if (result.status === "claimed") {
-        if (!active) {
-          result.release();
+    const releaseHeld = (): void => {
+      generation += 1;
+      held.release?.();
+      held.release = null;
+    };
 
-          return;
+    const acquire = (): void => {
+      const own = generation;
+
+      void claimRef.current(sessionId).then((result) => {
+        if (result.status === "claimed") {
+          if (!active || own !== generation) {
+            result.release();
+
+            return;
+          }
+
+          held.release = result.release;
         }
 
-        held.release = result.release;
-      }
+        if (active && own === generation) {
+          setState({ sessionId, status: result.status });
+        }
+      }, () => {
+        // A failing claim must not block the student: fail open.
+        if (active && own === generation) {
+          setState({ sessionId, status: "claimed" });
+        }
+      });
+    };
 
-      if (active) {
-        setState({ sessionId, status: result.status });
+    const onPageHide = (event: PageTransitionEvent): void => {
+      if (event.persisted) {
+        releaseHeld();
       }
-    }, () => {
-      // A failing claim must not block the student: fail open.
-      if (active) {
-        setState({ sessionId, status: "claimed" });
+    };
+    const onPageShow = (event: PageTransitionEvent): void => {
+      if (event.persisted) {
+        releaseHeld();
+        acquire();
       }
-    });
+    };
+
+    acquire();
+    window.addEventListener("pagehide", onPageHide);
+    window.addEventListener("pageshow", onPageShow);
 
     return () => {
       active = false;
-      held.release?.();
+      window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("pageshow", onPageShow);
+      releaseHeld();
     };
   }, [sessionId]);
 

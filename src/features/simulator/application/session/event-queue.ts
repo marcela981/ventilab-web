@@ -12,7 +12,9 @@
 *   v1.1: a refused batch of more than one event is re-sent one event at a time, so only the offending event is
 *   dropped (and reported); `onChange` reports every change of the unacknowledged events (the caller mirrors them to
 *   sessionStorage) and `snapshot()` returns them (keepalive flush on page hide).
-* Versión: 1.1
+*   v1.2 (review of 180a0a1): a disposed queue never reports `onChange` again, so a flush still in flight after a
+*   resync settle timed out cannot overwrite the outbox the new boot writes.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -96,6 +98,11 @@ export function createEventQueue<E>(options: EventQueueOptions<E>): EventQueue<E
   let chain: Promise<void> = Promise.resolve();
 
   function notifyChange(): void {
+    // A disposed queue is detached from its owner: a late acknowledgement must not overwrite a newer outbox.
+    if (disposed) {
+      return;
+    }
+
     options.onChange?.([...queue]);
   }
 

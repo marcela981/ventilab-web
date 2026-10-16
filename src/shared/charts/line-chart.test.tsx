@@ -3,8 +3,9 @@
 * Descripción: Covers the shared LineChart with a mocked lazy loader: the visually hidden fallback table carries the
 *   title, the category and dataset headers and the formatted values ("—" when missing); one line chart is created
 *   (type line, points kept, gaps not spanned) and destroyed on unmount; a failed load shows the error state with retry.
-*   Depends on Vitest and Testing Library.
-* Versión: 1.0
+*   Depends on Vitest and Testing Library. v1.1 (review of 180a0a1): repeated labels render without key warnings, and
+*   a new inline `formatValue` does not rebuild the chart while the tooltip uses the latest one.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -89,5 +90,32 @@ describe("LineChart", () => {
     render(<LineChart title="SpO2 (%)" labels={LABELS} datasets={DATASETS} />);
 
     expect(await screen.findByText(LINE_CHART_COPY.errorTitle)).toBeInTheDocument();
+  });
+
+  it("renders repeated labels and dataset names without React key warnings", () => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    try {
+      render(<LineChart title="Vt" labels={["0:00", "0:00"]} datasets={[{ label: "Vt", values: [1, 2] }, { label: "Vt", values: [3, 4] }]} />);
+
+      expect(screen.getAllByRole("rowheader", { name: "0:00" })).toHaveLength(2);
+      expect(errors.mock.calls.some((call) => String(call[0]).includes("same key"))).toBe(false);
+    } finally {
+      errors.mockRestore();
+    }
+  });
+
+  it("does not rebuild the chart for a new formatValue function and uses the latest one", async() => {
+    const { rerender } = render(<LineChart title="SpO2 (%)" labels={LABELS} datasets={DATASETS} formatValue={(value) => `${value} a`} />);
+
+    await waitFor(() => expect(chartMock.instances).toHaveLength(1));
+    rerender(<LineChart title="SpO2 (%)" labels={LABELS} datasets={DATASETS} formatValue={(value) => `${value} b`} />);
+
+    const config = chartMock.instances[0]?.config as unknown as {
+      options: { scales: { y: { ticks: { callback: (value: number) => string } } } }
+    };
+
+    expect(chartMock.instances).toHaveLength(1);
+    expect(config.options.scales.y.ticks.callback(5)).toBe("5 b");
   });
 });

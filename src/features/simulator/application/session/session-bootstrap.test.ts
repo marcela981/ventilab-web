@@ -9,7 +9,9 @@
 *   v1.2 (review of 524aedf): the resume uses the server clock (Date header skew), never the client clock alone: a
 *   skewed client clock stays under the server cap, no Date header means no fast-forward, FREE resumes at the last
 *   known time, the safety margin and the no-fast-forward reload after a repeated time-ahead refusal.
-* Versión: 1.2
+*   v1.3 (review of 180a0a1): the elapsed time since the server reading is monotonic (a wall-clock jump does not move
+*   the resume) and, without a /state server clock, the EXAM resume reads the attempt `serverNow` body field.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -140,35 +142,83 @@ describe("bootstrapSession", () => {
       store,
       fetchReplay: () => Promise.resolve(replayOf()),
       // The client clock agrees with the server here.
-      fetchState: () => Promise.resolve(stateOf({ serverClock: { serverNowMs, clientNowMs: serverNowMs } })),
-      now: () => serverNowMs,
+      fetchState: () => Promise.resolve(stateOf({ serverClock: { serverNowMs, monotonicAtMs: 0 } })),
+      monotonicNow: () => 0,
     });
 
     // 60 s after the start at ×2 = 120 s simulated, minus the 2 s × 2 safety margin; the last known time is 12 s.
     expect(result.status === "ready" ? result.boot : null).toMatchObject({ startAtSimTimeMs: 12_000, initialBacklogMs: 104_000 });
   });
 
-  it("a client clock ahead of the server never pushes the resume past the server cap", async() => {
+  it("measures the elapsed time on the monotonic clock: a wall-clock jump does not move the resume", async() => {
     const store = createSessionStore(() => null);
     const startedAt = "2026-10-15T10:00:00.000Z";
     const serverNowMs = Date.parse(startedAt) + 60_000;
-    // The client clock runs ten minutes ahead of the server.
-    const clientNowMs = serverNowMs + 600_000;
+    // The wall clock jumps ten minutes ahead after the response; the monotonic clock advanced 10 s.
+    const wallSpy = vi.spyOn(Date, "now").mockReturnValue(serverNowMs + 600_000);
 
     store.save(buildRecord({ mode: "EXAM", startedAt }));
+
+    try {
+      const result = await bootstrapSession("s1", {
+        store,
+        fetchReplay: () => Promise.resolve(replayOf()),
+        fetchState: () => Promise.resolve(stateOf({ serverClock: { serverNowMs, monotonicAtMs: 1000 } })),
+        monotonicNow: () => 11_000,
+      });
+      const boot = result.status === "ready" ? result.boot : null;
+      // Server bound for an event: elapsed server time × multiplier (+ tolerance, ignored here).
+      const capMs = (serverNowMs + 10_000 - Date.parse(startedAt)) * 2;
+
+      // (70 s − 2 s margin) × 2 = 136 s simulated; the last known time is 12 s.
+      expect(boot).toMatchObject({ startAtSimTimeMs: 12_000, initialBacklogMs: 124_000 });
+      expect((boot?.startAtSimTimeMs ?? 0) + (boot?.initialBacklogMs ?? 0)).toBeLessThanOrEqual(capMs);
+    } finally {
+      wallSpy.mockRestore();
+    }
+  });
+
+  it("without a /state server clock, an EXAM resume reads the server time from the attempt body", async() => {
+    const store = createSessionStore(() => null);
+    const startedAt = "2026-10-15T10:00:00.000Z";
+    const serverNowMs = Date.parse(startedAt) + 60_000;
+    const fetchAttemptServerClock = vi.fn(() => Promise.resolve({ serverNowMs, monotonicAtMs: 500 }));
+
+    store.save(buildRecord({
+      mode: "EXAM",
+      startedAt,
+      exam: { attemptId: "a1", questionId: "q1", evaluationId: "e1", returnUrl: "/evaluations/e1/attempts/a1", assistancePolicy: null, serverOffsetMs: 0 },
+    }));
 
     const result = await bootstrapSession("s1", {
       store,
       fetchReplay: () => Promise.resolve(replayOf()),
-      fetchState: () => Promise.resolve(stateOf({ serverClock: { serverNowMs, clientNowMs } })),
-      now: () => clientNowMs,
+      fetchState: () => Promise.resolve(stateOf({ serverClock: null })),
+      fetchAttemptServerClock,
+      monotonicNow: () => 500,
     });
-    const boot = result.status === "ready" ? result.boot : null;
-    // Server bound for an event: elapsed server time × multiplier (+ tolerance, ignored here).
-    const capMs = (serverNowMs - Date.parse(startedAt)) * 2;
 
-    expect(boot).not.toBeNull();
-    expect((boot?.startAtSimTimeMs ?? 0) + (boot?.initialBacklogMs ?? 0)).toBeLessThanOrEqual(capMs);
+    expect(fetchAttemptServerClock).toHaveBeenCalledWith("a1");
+    expect(result.status === "ready" ? result.boot : null).toMatchObject({ startAtSimTimeMs: 12_000, initialBacklogMs: 104_000 });
+  });
+
+  it("a failed attempt clock read keeps the last known time", async() => {
+    const store = createSessionStore(() => null);
+
+    store.save(buildRecord({
+      mode: "EXAM",
+      startedAt: "2026-10-15T10:00:00.000Z",
+      exam: { attemptId: "a1", questionId: "q1", evaluationId: null, returnUrl: "/evaluations", assistancePolicy: null, serverOffsetMs: 0 },
+    }));
+
+    const result = await bootstrapSession("s1", {
+      store,
+      fetchReplay: () => Promise.resolve(replayOf()),
+      fetchState: () => Promise.resolve(stateOf({ serverClock: null })),
+      fetchAttemptServerClock: () => Promise.reject(new Error("offline")),
+    });
+
+    expect(result.status === "ready" ? result.boot.initialBacklogMs : null).toBe(0);
   });
 
   it("without a server Date header the resume does not fast-forward", async() => {
@@ -181,7 +231,7 @@ describe("bootstrapSession", () => {
       store,
       fetchReplay: () => Promise.resolve(replayOf()),
       fetchState: () => Promise.resolve(stateOf({ serverClock: null })),
-      now: () => Date.parse(startedAt) + 60_000,
+      monotonicNow: () => 0,
     });
 
     expect(result.status === "ready" ? result.boot : null).toMatchObject({ startAtSimTimeMs: 12_000, initialBacklogMs: 0 });
@@ -197,8 +247,8 @@ describe("bootstrapSession", () => {
     const result = await bootstrapSession("s1", {
       store,
       fetchReplay: () => Promise.resolve(replayOf()),
-      fetchState: () => Promise.resolve(stateOf({ serverClock: { serverNowMs, clientNowMs: serverNowMs } })),
-      now: () => serverNowMs,
+      fetchState: () => Promise.resolve(stateOf({ serverClock: { serverNowMs, monotonicAtMs: 0 } })),
+      monotonicNow: () => 0,
     });
 
     expect(result.status === "ready" ? result.boot : null).toMatchObject({ startAtSimTimeMs: 12_000, initialBacklogMs: 0 });
@@ -214,8 +264,8 @@ describe("bootstrapSession", () => {
     const result = await bootstrapSession("s1", {
       store,
       fetchReplay: () => Promise.resolve(replayOf()),
-      fetchState: () => Promise.resolve(stateOf({ serverClock: { serverNowMs, clientNowMs: serverNowMs } })),
-      now: () => serverNowMs,
+      fetchState: () => Promise.resolve(stateOf({ serverClock: { serverNowMs, monotonicAtMs: 0 } })),
+      monotonicNow: () => 0,
       fastForward: false,
     });
 
@@ -231,10 +281,10 @@ describe("bootstrapSession", () => {
       fetchReplay: () => Promise.resolve(replayOf()),
       fetchState: () => Promise.resolve(stateOf({
         expiresAt: "2026-10-15T10:00:30.000Z",
-        serverClock: { serverNowMs, clientNowMs: serverNowMs },
+        serverClock: { serverNowMs, monotonicAtMs: 0 },
       })),
       fetchStartedAt,
-      now: () => serverNowMs,
+      monotonicNow: () => 0,
     });
 
     expect(fetchStartedAt).toHaveBeenCalledWith("s1");
@@ -247,9 +297,9 @@ describe("bootstrapSession", () => {
     const result = await bootstrapSession("s1", {
       store: createSessionStore(() => null),
       fetchReplay: () => Promise.resolve(replayOf()),
-      fetchState: () => Promise.resolve(stateOf({ expiresAt: "2026-10-15T15:00:00.000Z", serverClock: { serverNowMs: Date.now(), clientNowMs: Date.now() } })),
+      fetchState: () => Promise.resolve(stateOf({ expiresAt: "2026-10-15T15:00:00.000Z", serverClock: { serverNowMs: Date.now(), monotonicAtMs: 0 } })),
       fetchStartedAt: () => Promise.reject(new Error("offline")),
-      now: () => Date.now(),
+      monotonicNow: () => 0,
     });
 
     expect(result.status === "ready" ? result.boot : null).toMatchObject({ startAtSimTimeMs: 12_000, initialBacklogMs: 0 });

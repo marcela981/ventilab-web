@@ -10,7 +10,9 @@
 *   current server engine version, the mismatch flag and the server warning. v1.3 (review of 524aedf): the state read
 *   model carries the server clock reading of its response (HTTP Date header + client time at the response), used to
 *   resume EXAM on the server clock instead of the client clock. v1.4 (T9): the record may carry the exam context.
-* Versión: 1.4
+*   v1.5 (review of 180a0a1): the server clock keeps the MONOTONIC client time of the response (`monotonicAtMs`,
+*   performance.now), so the elapsed time since a reading never follows a wall-clock jump; `monotonicNow` reads it.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -61,11 +63,17 @@ export type SessionReplay = {
   warning?: string | null | undefined
 };
 
-/** Server time read from a response (HTTP Date header) and the client clock when that response arrived. */
+/** Server time read from a response (HTTP Date header or a body field) and the monotonic client time it arrived. */
 export type ServerClock = {
   serverNowMs: number
-  clientNowMs: number
+  /** `monotonicNow()` when the response arrived; only differences of this value are meaningful. */
+  monotonicAtMs: number
 };
+
+/** Monotonic client clock (ms): performance.now, which never jumps with the wall clock; Date.now without it. */
+export function monotonicNow(): number {
+  return typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();
+}
 
 export type SessionState = {
   id: string

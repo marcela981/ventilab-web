@@ -5,8 +5,9 @@
 *   the same ids on re-send, no retry on a 4xx (reported and dropped), flush() for the end (resolves when empty,
 *   rejects after its attempts while keeping the events) and overlapping flushes without loss or duplicate sends.
 *   Depends on vitest and the api-client error type. v1.1: a refused batch is re-sent event by event (only the
-*   offending event is dropped) and onChange/snapshot report the unacknowledged events.
-* Versión: 1.1
+*   offending event is dropped) and onChange/snapshot report the unacknowledged events. v1.2 (review of 180a0a1): a
+*   disposed queue never reports onChange for a send that was still in flight.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -259,5 +260,25 @@ describe("createEventQueue", () => {
     expect(isRetryableSendError(new ApiError({ code: "common.too_many_requests", message: "", status: 429 }))).toBe(true);
     expect(isRetryableSendError(clientError())).toBe(false);
     expect([1, 2, 3, 4, 10].map((failures) => backoffDelayMs(failures, 1000, 30_000))).toEqual([1000, 2000, 4000, 8000, 30_000]);
+  });
+});
+
+describe("event queue disposal", () => {
+  it("never reports onChange after dispose, even when an in-flight send is acknowledged later", async() => {
+    const inFlight = deferred();
+    const onChange = vi.fn();
+    const queue = createEventQueue<TestEvent>({ send: () => inFlight.promise, flushIntervalMs: 3000, onChange });
+
+    queue.enqueue({ id: "a" });
+    expect(onChange).toHaveBeenCalledTimes(1);
+
+    const flushing = queue.flush();
+
+    queue.dispose();
+    inFlight.resolve();
+    await flushing;
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(queue.pendingCount()).toBe(0);
   });
 });

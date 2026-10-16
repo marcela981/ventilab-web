@@ -1,7 +1,9 @@
 /*
 * Funcionalidad: Simulator services tests
-* Descripción: Tests of the simulator API services against msw: the case definition GET by id (URI-encoded), the FREE session start (POST body exactly {mode, caseId, timeMultiplier}, response mapped to a started session), the catalog query (server-side filters, null filters omitted), the ids query of the history titles and the history query (optional filters omitted), the list item → card mapping (no badge without a boolean flag) and the history duration. v1.1: the catalog query always carries status=PUBLISHED. v1.2: the keepalive page-hide POST of the events (Bearer token, contract body, nothing sent for an empty list) and the session start read from the history ids filter. v1.3: keepalive chunks (≤ 50 events, < 60 KiB, in order, one POST each) and the server clock of GET /state read from its Date header (none without it). Depends on Vitest, msw, the token storage and the simulator test helpers.
-* Versión: 1.3
+* Descripción: Tests of the simulator API services against msw: the case definition GET by id (URI-encoded), the FREE session start (POST body exactly {mode, caseId, timeMultiplier}, response mapped to a started session), the catalog query (server-side filters, null filters omitted), the ids query of the history titles and the history query (optional filters omitted), the list item → card mapping (no badge without a boolean flag) and the history duration. v1.1: the catalog query always carries status=PUBLISHED. v1.2: the keepalive page-hide POST of the events (Bearer token, contract body, nothing sent for an empty list) and the session start read from the history ids filter. v1.3: keepalive chunks (≤ 50 events, < 60 KiB, in order, one POST each) and the server clock of GET /state read from its Date header (none without it). v1.4 (review of 180a0a1): the keepalive chunks stop at a 60 KiB running total, an
+*   oversized single event is skipped with its neighbours kept in order, and the server clock carries the monotonic
+*   response time. Depends on Vitest, msw, the token storage and the simulator test helpers.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -77,13 +79,46 @@ describe("simulator services", () => {
     expect(bodies.flatMap((body) => (JSON.parse(body) as { events: Array<{ id: string }> }).events.map((item) => item.id)))
       .toEqual(many.map((item) => item.id));
 
-    // Large events: every body stays under the byte limit.
+    // Large events with a generous total: every body stays under the per-request byte limit.
     const large = Array.from({ length: 10 }, (_, index) => event(index, 20_000));
-    const largeBodies = chunkKeepaliveBodies(large);
+    const largeBodies = chunkKeepaliveBodies(large, 50, 60 * 1024, Number.POSITIVE_INFINITY);
 
     expect(largeBodies.length).toBeGreaterThan(1);
     largeBodies.forEach((body) => expect(new TextEncoder().encode(body).length).toBeLessThan(60 * 1024));
     expect(largeBodies.flatMap((body) => (JSON.parse(body) as { events: unknown[] }).events)).toHaveLength(10);
+  });
+
+  it("stops adding keepalive chunks once their running total would pass 60 KiB (the browser total cap)", () => {
+    const event = (index: number) => ({
+      id: `e${index}`,
+      simTimeMs: index,
+      type: "PARAM_CHANGE" as const,
+      payload: { changes: { peepCmH2O: 5 }, note: "y".repeat(20_000) } as unknown as { changes: { peepCmH2O: number } },
+    });
+    const events = Array.from({ length: 10 }, (_, index) => event(index));
+    const bodies = chunkKeepaliveBodies(events);
+    const total = bodies.reduce((sum, body) => sum + new TextEncoder().encode(body).length, 0);
+    const ids = bodies.flatMap((body) => (JSON.parse(body) as { events: Array<{ id: string }> }).events.map((item) => item.id));
+
+    expect(total).toBeLessThanOrEqual(60 * 1024);
+    // A leading prefix in order; the rest stays in the outbox.
+    expect(ids.length).toBeGreaterThan(0);
+    expect(ids.length).toBeLessThan(10);
+    expect(ids).toEqual(events.slice(0, ids.length).map((item) => item.id));
+  });
+
+  it("skips an oversized single event and keeps its neighbours in order", () => {
+    const small = (id: string, simTimeMs: number) => ({ id, simTimeMs, type: "PARAM_CHANGE" as const, payload: { changes: { peepCmH2O: 5 } } });
+    const huge = {
+      id: "huge",
+      simTimeMs: 2,
+      type: "PARAM_CHANGE" as const,
+      payload: { changes: { peepCmH2O: 5 }, note: "z".repeat(70_000) } as unknown as { changes: { peepCmH2O: number } },
+    };
+    const bodies = chunkKeepaliveBodies([small("a", 1), huge, small("b", 3), small("c", 4)]);
+    const ids = bodies.flatMap((body) => (JSON.parse(body) as { events: Array<{ id: string }> }).events.map((item) => item.id));
+
+    expect(ids).toEqual(["a", "b", "c"]);
   });
 
   it("sends one keepalive POST per chunk", async() => {
@@ -111,7 +146,7 @@ describe("simulator services", () => {
 
     expect(await fetchSessionState("s1", () => 123)).toEqual({
       ...dto,
-      serverClock: { serverNowMs: Date.parse("2026-10-15T10:01:00.000Z"), clientNowMs: 123 },
+      serverClock: { serverNowMs: Date.parse("2026-10-15T10:01:00.000Z"), monotonicAtMs: 123 },
     });
 
     server.use(http.get(apiUrl("/api/simulation/sessions/s1/state"), () => HttpResponse.json(envelope(dto))));

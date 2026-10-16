@@ -8,7 +8,8 @@
 *   ventilator console and sim-engine public types. v1.1: the acknowledgement wait on end (2 s). v1.2: the outbox
 *   sessionStorage prefix and the pending-events warning threshold. v1.3 (review of 524aedf): the resume safety margin,
 *   the time-ahead refusal threshold, the keepalive chunk limits, the resync settle wait and the tab-claim probe.
-* Versión: 1.3
+*   v1.4 (review of 180a0a1): the keepalive TOTAL budget (all chunks of one page hide together).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -107,9 +108,15 @@ export const EVENT_PENDING_WARNING_COUNT = 50;
 export const RESUME_SAFETY_MARGIN_WALL_MS = 2000;
 /** Consecutive time-ahead refusals after which "Recargar sesión" resumes without fast-forward (backlog 0). */
 export const TIME_AHEAD_REFUSALS_BEFORE_NO_FAST_FORWARD = 2;
-/** Page-hide keepalive limits: browsers cap the in-flight keepalive bodies at 64 KiB in total. */
+/**
+ * Page-hide keepalive limits. Browsers cap the TOTAL of the in-flight keepalive bodies at 64 KiB (not each request),
+ * so one page hide sends chunks of ≤ KEEPALIVE_MAX_EVENTS events and < KEEPALIVE_MAX_BYTES each only while their sum
+ * stays within KEEPALIVE_MAX_TOTAL_BYTES (below 64 KiB for headers and other keepalive requests); the outbox keeps
+ * the rest.
+ */
 export const KEEPALIVE_MAX_EVENTS = 50;
 export const KEEPALIVE_MAX_BYTES = 60 * 1024;
+export const KEEPALIVE_MAX_TOTAL_BYTES = 60 * 1024;
 /** Longest wait, before a resync, for the old event queue to settle (the new boot reads the outbox it writes). */
 export const RESYNC_SETTLE_TIMEOUT_MS = 3000;
 /** BroadcastChannel fallback of the tab claim: how long a new tab waits for another tab to answer. */

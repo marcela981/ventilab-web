@@ -29,8 +29,10 @@
 *   `settle()` stops the queue timers and waits (at most RESYNC_SETTLE_TIMEOUT_MS) for its flush before a resync, so
 *   the new boot reads a settled outbox. The page-hide keepalive is best effort (the outbox is the guarantee).
 *   v1.4 (T9): `end({ flushTimeoutMs })` bounds the flush of the pending events (EXAM deadline): POST /end goes out
-*   once the flush settles or the time runs out.
-* Versión: 1.4
+*   once the flush settles or the time runs out. v1.5 (review of 180a0a1): `settle()` disposes the queue AFTER its
+*   flush settles or times out, and neither a disposed queue nor a cleaned-up effect writes the outbox again, so a
+*   late acknowledgement of the old queue cannot overwrite the outbox of the new boot.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -341,6 +343,7 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
 
     const send = current.sendEvents ?? appendSimulationEvents;
     const outbox = current.outbox ?? eventOutbox;
+    let disposed = false;
     const queue = createEventQueue<ClientSessionEvent>({
       send: (events) => send(session.id, events),
       ...(current.queueTimers ? { timers: current.queueTimers } : {}),
@@ -351,6 +354,11 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
         setDiverged(true);
       },
       onChange: (events) => {
+        // After the cleanup (a resync or unmount) this queue no longer owns the outbox.
+        if (disposed) {
+          return;
+        }
+
         outbox.save(session.id, events);
         setPendingEvents(events.length);
       },
@@ -360,7 +368,6 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     let trends: PatientTrends = {};
     let lastUiMs = Number.NEGATIVE_INFINITY;
     let trailingRefresh: ReturnType<typeof setTimeout> | null = null;
-    let disposed = false;
 
     clientRef.current = client;
     queueRef.current = queue;
@@ -655,16 +662,17 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
       return;
     }
 
-    queue.dispose();
-
     let timer: ReturnType<typeof setTimeout> | undefined;
     const timeout = new Promise<void>((resolve) => {
       timer = setTimeout(resolve, RESYNC_SETTLE_TIMEOUT_MS);
     });
 
-    // The flush joins the send already in flight (sends are serialised); the outbox keeps whatever stays unsent.
+    // The flush joins the send already in flight (sends are serialised) and its acknowledgements update the outbox.
     await Promise.race([queue.flush().catch(() => undefined), timeout]);
     clearTimeout(timer);
+    // Settled or timed out: detach the queue (no timers, no more outbox writes). A send still in flight may land on
+    // the server; its ids are idempotent and the new boot skips the ones /replay already stores.
+    queue.dispose();
   }, []);
 
   const { applied, live, multiplier } = runtime;

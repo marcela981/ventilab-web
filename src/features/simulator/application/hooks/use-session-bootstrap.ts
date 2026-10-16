@@ -8,8 +8,9 @@
 *   and the sessions service. v1.1: also passes the history `startedAt` reader, the event outbox mirror and the
 *   wall clock (wall-clock resume, unsent events after a reload). v1.2 (review of 524aedf): `retry({ fastForward })`
 *   lets the page rebuild a session without fast-forward (after repeated time-ahead refusals); a null session id
-*   (tab not claimed yet, or claimed by another tab) loads nothing.
-* Versión: 1.2
+*   (tab not claimed yet, or claimed by another tab) loads nothing. v1.3 (review of 180a0a1): a monotonic clock
+*   instead of the wall clock, and the exam attempt `serverNow` body field as the fallback server clock.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,11 +19,13 @@
 */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { fetchAttemptServerClock } from "../../api/services/exam-attempt.service";
 import { fetchSessionReplay, fetchSessionStartedAt, fetchSessionState } from "../../api/services/simulation-sessions.service";
 import { eventOutbox } from "../session/event-outbox";
 import { bootstrapSession } from "../session/session-bootstrap";
 import type { BootstrapDeps, BootstrapResult } from "../session/session-bootstrap";
 import { sessionStore } from "../session/session-store";
+import { monotonicNow } from "../entities/sim-session.entity";
 
 export type SessionBootstrapState = { status: "loading" } | BootstrapResult;
 
@@ -67,7 +70,8 @@ export function useSessionBootstrap(sessionId: string | null, deps?: Partial<Boo
           fetchState: injected.fetchState ?? fetchSessionState,
           fetchStartedAt: injected.fetchStartedAt ?? fetchSessionStartedAt,
           outbox: injected.outbox ?? eventOutbox,
-          now: injected.now ?? Date.now,
+          fetchAttemptServerClock: injected.fetchAttemptServerClock ?? fetchAttemptServerClock,
+          monotonicNow: injected.monotonicNow ?? monotonicNow,
           fastForward: fastForwardRef.current && injected.fastForward !== false,
         }),
       };
