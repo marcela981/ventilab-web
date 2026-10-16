@@ -1,0 +1,78 @@
+/*
+* Funcionalidad: SweepCanvas and LoopCanvas styles
+* Descripción: Console surface for the raw canvas renderers: sized container (overridable through `--vl-sweep-height` / `--vl-loop-height` or a consumer className), full-size canvas whose computed color and font feed the canvas text fallback, focus ring for the frozen measurement cursor, the "Congelado" badge and the cursor readout placed at `--vl-waveform-cursor-x` (set by the component) on the side given by `data-side`. Console and design-system tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.root {
+  position: relative;
+  width: 100%;
+  height: var(--vl-sweep-height, calc(var(--vl-space-8) * 4));
+  overflow: hidden;
+  background: var(--vl-console-bg);
+  border-radius: var(--vl-radius-md);
+}
+
+.loopRoot {
+  position: relative;
+  width: 100%;
+  height: var(--vl-loop-height, calc(var(--vl-space-8) * 4));
+  overflow: hidden;
+  background: var(--vl-console-bg);
+  border-radius: var(--vl-radius-md);
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: var(--vl-console-text-muted);
+  font: var(--mui-font-caption);
+  touch-action: none;
+}
+
+.canvas:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-console-focus-ring);
+  outline-offset: calc(var(--vl-focus-ring-width) * -1);
+}
+
+.badge {
+  position: absolute;
+  top: var(--vl-space-1);
+  right: var(--vl-space-2);
+  padding: 0 var(--vl-space-1);
+  font: var(--mui-font-caption);
+  color: var(--vl-console-bg);
+  background: var(--vl-console-pending);
+  border-radius: var(--vl-radius-sm);
+  pointer-events: none;
+}
+
+.readout {
+  position: absolute;
+  bottom: var(--vl-space-1);
+  left: var(--vl-waveform-cursor-x, 50%);
+  margin: 0;
+  padding: var(--vl-space-1) var(--vl-space-2);
+  font: var(--mui-font-caption);
+  white-space: nowrap;
+  color: var(--vl-console-text);
+  background: var(--vl-console-surface-raised);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-sm);
+  pointer-events: none;
+  transform: translateX(var(--vl-space-2));
+}
+
+.readout[data-side="left"] {
+  transform: translateX(calc(-100% - var(--vl-space-2)));
+}
+
+.readout:empty {
+  display: none;
+}
