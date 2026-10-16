@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ConsoleControls tests
 * Descripción: Renders the ventilator console controls in jsdom: only the parameters of the current mode, pending edits highlighted with "Pendiente" that emit nothing but the optional proposal, CONFIRMAR emitting the diff once, CANCELAR and Escape emitting nothing, keyboard/wheel adjustment clamped to the injected limits, a mode change that stays pending until confirmed, the configure variant wording and the read-only state. Depends on Vitest and Testing Library.
-* Versión: 1.0
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -108,10 +108,69 @@ describe("ConsoleControls", () => {
     expect(screen.getByRole("button", { name: "Aumentar PEEP" })).toBeDisabled();
 
     fireEvent.keyDown(peep(), { key: "Home" });
+    fireEvent.click(peep());
     fireEvent.wheel(peep(), { deltaY: 100 });
     expect(peep()).toHaveAttribute("aria-valuenow", "0");
     fireEvent.wheel(peep(), { deltaY: -100 });
     expect(peep()).toHaveAttribute("aria-valuenow", "1");
+  });
+
+  it("adjusts with the wheel only when the control is selected and ignores a zero delta", () => {
+    renderControls();
+    const rate = () => screen.getByRole("spinbutton", { name: "Frecuencia respiratoria" });
+
+    fireEvent.wheel(rate(), { deltaY: -100 });
+    expect(rate()).toHaveAttribute("aria-valuenow", "14");
+
+    fireEvent.click(rate());
+    fireEvent.wheel(rate(), { deltaY: 0 });
+    expect(rate()).toHaveAttribute("aria-valuenow", "14");
+    fireEvent.wheel(rate(), { deltaY: -100 });
+    expect(rate()).toHaveAttribute("aria-valuenow", "15");
+  });
+
+  it("drops the pending tag when the applied value catches up with the pending one", () => {
+    const props = {
+      mode: { current: "VCV", options: [{ id: "VCV", label: "VCV" }] },
+      limits: { peep: { min: 0, max: 20, step: 1, unit: "cmH2O" } },
+      readOnly: false,
+      onConfirm: vi.fn(),
+    };
+    const { rerender } = render(<ConsoleControls {...props} settings={{ current: { peep: 5 }, applied: { peep: 5 } }} />);
+
+    fireEvent.keyDown(peep(), { key: "ArrowUp" });
+    expect(peep().closest("li")).toHaveAttribute("data-pending", "true");
+
+    rerender(<ConsoleControls {...props} settings={{ current: { peep: 6 }, applied: { peep: 6 } }} />);
+
+    expect(peep().closest("li")).toHaveAttribute("data-pending", "false");
+    expect(within(peep().closest("li") as HTMLElement).queryByText("Pendiente")).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Sin cambios pendientes");
+    expect(screen.getByRole("button", { name: "Confirmar" })).toBeDisabled();
+  });
+
+  it("does not emit a pending mode once it is the applied mode", () => {
+    const base = {
+      settings: { current: { peep: 5 }, applied: { peep: 5 } },
+      limits: { peep: { min: 0, max: 20, step: 1, unit: "cmH2O" } },
+      readOnly: false,
+    };
+    const options = [
+      { id: "VCV", label: "VCV" },
+      { id: "PCV", label: "PCV" },
+    ];
+    const onConfirm = vi.fn();
+    const { rerender } = render(<ConsoleControls {...base} mode={{ current: "VCV", options }} onConfirm={onConfirm} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /PCV/ }));
+    rerender(<ConsoleControls {...base} mode={{ current: "PCV", options }} onConfirm={onConfirm} />);
+
+    expect(screen.getByRole("button", { name: /PCV/ })).not.toHaveTextContent("Pendiente");
+    expect(screen.getByRole("button", { name: "Confirmar" })).toBeDisabled();
+
+    fireEvent.keyDown(peep(), { key: "ArrowUp" });
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
+    expect(onConfirm).toHaveBeenCalledWith({ mode: null, changes: [{ parameter: "peep", value: 6 }] });
   });
 
   it("makes a mode change pending and applies it only on confirm", () => {

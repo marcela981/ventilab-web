@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AlarmLimitsPanel
-* Descripción: Panel of the ventilator console alarms bar to view and adjust the alarm thresholds the consumer passes in (each with its own min/max/step/unit). Edits are a local draft clamped to each limit's bounds; "Aplicar límites" emits only the changed thresholds through onChange, "Descartar" drops the draft. Without onChange (or in read-only) the values are shown only. Depends on React, the controls reducer clamp and the alarms bar styles.
-* Versión: 1.0
+* Descripción: Panel of the ventilator console alarms bar to view and adjust the alarm thresholds the consumer passes in (each with its own min/max/step/unit). Edits are a local draft of the raw typed text (an empty field is allowed while editing), clamped to each limit's bounds and step only on blur and on "Aplicar límites", which emits only the changed valid thresholds through onChange (an empty or invalid draft keeps the threshold); "Descartar" drops the draft. Without onChange (or in read-only) the values are shown only. Depends on React, the controls reducer clamp and the alarms bar styles.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -30,18 +30,32 @@ export type AlarmLimitsPanelProps = {
   readOnly: boolean
 };
 
+/** The clamped value of a raw draft, or `null` while it is empty or not a number (the threshold is kept). */
+function parseDraft(raw: string, limit: ConsoleAlarmLimit): number | null {
+  const parsed = Number(raw);
+
+  return raw.trim() === "" || !Number.isFinite(parsed) ? null : clampToLimit(parsed, limit);
+}
+
 export function AlarmLimitsPanel({ limits, onChange, readOnly }: AlarmLimitsPanelProps) {
-  const [draft, setDraft] = useState<Readonly<Record<string, number>>>({});
+  // Raw strings while editing, so the user can clear the field and type digit by digit; clamped on blur and on apply.
+  const [draft, setDraft] = useState<Readonly<Record<string, string>>>({});
   const editable = !readOnly && onChange !== undefined;
-  const changes = limits
-    .filter((limit) => draft[limit.id] !== undefined && draft[limit.id] !== limit.value)
-    .map((limit) => ({ id: limit.id, value: draft[limit.id] ?? limit.value }));
+  const changes = limits.flatMap((limit) => {
+    const raw = draft[limit.id];
+    const value = raw === undefined ? null : parseDraft(raw, limit);
 
-  const update = (limit: ConsoleAlarmLimit, raw: string) => {
-    const parsed = Number(raw);
+    return value === null || value === limit.value ? [] : [{ id: limit.id, value }];
+  });
 
-    if (raw.trim() !== "" && Number.isFinite(parsed)) {
-      setDraft((current) => ({ ...current, [limit.id]: clampToLimit(parsed, limit) }));
+  const update = (limit: ConsoleAlarmLimit, raw: string) => setDraft((current) => ({ ...current, [limit.id]: raw }));
+
+  const settle = (limit: ConsoleAlarmLimit) => {
+    const raw = draft[limit.id];
+    const value = raw === undefined ? null : parseDraft(raw, limit);
+
+    if (value !== null) {
+      setDraft((current) => ({ ...current, [limit.id]: String(value) }));
     }
   };
 
@@ -56,11 +70,12 @@ export function AlarmLimitsPanel({ limits, onChange, readOnly }: AlarmLimitsPane
       {editable ? null : <p className={cx(styles.hint)}>{ALARM_LIMITS_COPY.readOnly}</p>}
       <ul className={cx(styles.limitList)}>
         {limits.map((limit) => {
-          const value = draft[limit.id] ?? limit.value;
+          const raw = draft[limit.id];
+          const parsed = raw === undefined ? null : parseDraft(raw, limit);
           const inputId = `alarm-limit-${limit.id}`;
 
           return (
-            <li key={limit.id} className={cx(styles.limitRow)} data-pending={draft[limit.id] !== undefined && value !== limit.value}>
+            <li key={limit.id} className={cx(styles.limitRow)} data-pending={parsed !== null && parsed !== limit.value}>
               <label htmlFor={inputId} className={cx(styles.limitLabel)}>
                 {limit.label}
               </label>
@@ -72,12 +87,13 @@ export function AlarmLimitsPanel({ limits, onChange, readOnly }: AlarmLimitsPane
                   min={limit.min}
                   max={limit.max}
                   step={limit.step}
-                  value={value}
+                  value={raw ?? String(limit.value)}
                   onChange={(event) => update(limit, event.target.value)}
+                  onBlur={() => settle(limit)}
                 />
               ) : (
                 <output id={inputId} className={cx(styles.limitValue)}>
-                  {value}
+                  {limit.value}
                 </output>
               )}
               <span className={cx(styles.limitRange)}>{ALARM_LIMITS_COPY.range(limit)}</span>

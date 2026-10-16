@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AlarmsBar
-* Descripción: Top alarms bar of the generic ventilator console. Shows the active alarms sorted by priority (high > medium > low), each with a priority color token, an icon and the priority text (never color alone); a 2-minute silence button with a visible countdown that mutes the sound only; an optional sound toggle, off by default, that beeps per new high/medium alarm; the session alarm history (derived inside the console from the adapter alarm updates, or the adapter's own history when provided) and the alarm limits panel, both as disclosure panels. Depends on React, MUI icons, the alarm helpers and hooks, AlarmLimitsPanel and the alarms bar styles.
-* Versión: 1.0
+* Descripción: Top alarms bar of the generic ventilator console. Shows the active alarms sorted by priority (high > medium > low), each with a priority color token, an icon and the priority text (never color alone); one live region kept mounted around the list and the "Sin alarmas activas" text so the first alarm is announced; a 2-minute silence button with a visible countdown that mutes the sound only (its accessible name combines the state and the action); an optional sound toggle, off by default, that beeps per new high/medium alarm and once when a silence runs out while a high/medium alarm is still active; the session alarm history (derived inside the console from the adapter alarm updates, or the adapter's own history when provided) and the alarm limits panel, both as disclosure panels. Depends on React, MUI icons, the alarm helpers and hooks, AlarmLimitsPanel and the alarms bar styles.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -39,6 +39,8 @@ export const ALARMS_COPY = {
   silence: "Silenciar 2 min",
   silenced: (countdown: string) => `Silenciado ${countdown}`,
   resumeSound: "Reactivar sonido",
+  /** Accessible name of the silenced button: its state and its action. */
+  silencedLabel: (countdown: string) => `Silenciado ${countdown} — Reactivar sonido`,
   soundOn: "Sonido activado",
   soundOff: "Sonido desactivado",
   history: "Historial de alarmas",
@@ -85,7 +87,7 @@ export function AlarmsBar({
   const [panel, setPanel] = useState<Panel>("none");
   const derivedHistory = useAlarmHistory(alarms, clock);
   const silence = useAlarmSilence(clock);
-  const sound = useAlarmSound(alarms, silence.silenced, beeperFactory);
+  const sound = useAlarmSound(alarms, silence.silenced, beeperFactory, silence.expirations);
   const events = history ?? derivedHistory;
   const sorted = sortAlarms(alarms);
   const hasLimits = limits !== undefined && limits.length > 0;
@@ -94,22 +96,32 @@ export function AlarmsBar({
   return (
     <section className={cx(styles.bar)} aria-label={ALARMS_COPY.title} data-silenced={silence.silenced}>
       <div className={cx(styles.row)}>
-        {sorted.length === 0 ? (
-          <p className={cx(styles.none)}>{ALARMS_COPY.none}</p>
-        ) : (
-          <ul className={cx(styles.list)} aria-live="assertive">
-            {sorted.map((alarm) => (
-              <li key={alarm.id} className={cx(styles.alarm)} data-priority={alarm.priority}>
-                <PriorityIcon priority={alarm.priority} />
-                <span className={cx(styles.priority)}>{ALARM_PRIORITY_COPY[alarm.priority]}</span>
-                <span className={cx(styles.message)}>{alarm.message}</span>
-              </li>
-            ))}
-          </ul>
-        )}
+        {/* One live region stays mounted around both states, so the first alarm after "none" is announced. */}
+        <div className={cx(styles.live)} aria-live="assertive">
+          {sorted.length === 0 ? (
+            <p className={cx(styles.none)}>{ALARMS_COPY.none}</p>
+          ) : (
+            <ul className={cx(styles.list)}>
+              {sorted.map((alarm) => (
+                <li key={alarm.id} className={cx(styles.alarm)} data-priority={alarm.priority}>
+                  <PriorityIcon priority={alarm.priority} />
+                  <span className={cx(styles.priority)}>{ALARM_PRIORITY_COPY[alarm.priority]}</span>
+                  <span className={cx(styles.message)}>{alarm.message}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         <div className={cx(styles.actions)}>
           {silence.silenced ? (
-            <button type="button" className={cx(styles.action)} aria-pressed onClick={silence.resume} title={ALARMS_COPY.resumeSound}>
+            <button
+              type="button"
+              className={cx(styles.action)}
+              aria-pressed
+              aria-label={ALARMS_COPY.silencedLabel(formatCountdown(silence.remainingMs))}
+              onClick={silence.resume}
+              title={ALARMS_COPY.resumeSound}
+            >
               <NotificationsOffIcon className={cx(styles.icon)} aria-hidden />
               {ALARMS_COPY.silenced(formatCountdown(silence.remainingMs))}
             </button>

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AlarmsBar tests
 * Descripción: Tests of the ventilator console alarms bar and its pure helpers: sorting by priority with a non-color indicator (icon + priority text), the 2-minute silence countdown driven by fake timers (alarms stay visible), the sound toggle off by default and beeping only after the user enables it, the session history derived from adapter updates (onset and clear) and the alarm limits panel (apply emits only changed thresholds; read-only without a callback). Depends on Vitest and Testing Library.
-* Versión: 1.0
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -70,13 +70,13 @@ describe("AlarmsBar", () => {
     render(<AlarmsBar alarms={[HIGH]} readOnly={false} clock={clock} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Silenciar 2 min" }));
-    expect(screen.getByRole("button", { name: "Silenciado 2:00" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Silenciado 2:00 — Reactivar sonido" })).toHaveAttribute("aria-pressed", "true");
 
     act(() => {
       advance(61_000);
       vi.advanceTimersByTime(61_000);
     });
-    expect(screen.getByRole("button", { name: "Silenciado 0:59" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Silenciado 0:59 — Reactivar sonido" })).toBeInTheDocument();
     expect(screen.getByText("Presión alta")).toBeInTheDocument();
 
     act(() => {
@@ -138,6 +138,95 @@ describe("AlarmsBar", () => {
     rerender(<AlarmsBar alarms={[]} readOnly={false} limits={LIMITS} />);
     expect(screen.getByText("Solo consulta: la fuente no permite cambiar los límites.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Aplicar límites" })).not.toBeInTheDocument();
+  });
+
+  it("lets the user type a limit digit by digit and clamps only on apply", () => {
+    const onLimitsChange = vi.fn();
+    render(<AlarmsBar alarms={[]} readOnly={false} limits={LIMITS} onLimitsChange={onLimitsChange} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Límites" }));
+    const input = screen.getByLabelText("Presión alta");
+
+    // Mimics typing: clear the field, then "3", "35" (an intermediate "3" is below the minimum of 10).
+    for (const value of ["4", "", "3", "35"]) {
+      fireEvent.change(input, { target: { value } });
+      expect(input).toHaveValue(value === "" ? null : Number(value));
+    }
+
+    fireEvent.click(screen.getByRole("button", { name: "Aplicar límites" }));
+    expect(onLimitsChange).toHaveBeenCalledWith([{ id: "highPressure", value: 35 }]);
+  });
+
+  it("clamps an out-of-range draft on blur and ignores an empty draft", () => {
+    const onLimitsChange = vi.fn();
+    render(<AlarmsBar alarms={[]} readOnly={false} limits={LIMITS} onLimitsChange={onLimitsChange} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Límites" }));
+    const pressure = screen.getByLabelText("Presión alta");
+    const rate = screen.getByLabelText("FR alta");
+
+    fireEvent.change(pressure, { target: { value: "3" } });
+    fireEvent.blur(pressure);
+    expect(pressure).toHaveValue(10);
+
+    fireEvent.change(rate, { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: "Aplicar límites" }));
+    expect(onLimitsChange).toHaveBeenCalledWith([{ id: "highPressure", value: 10 }]);
+  });
+
+  it("keeps one live region mounted so the first alarm is announced", () => {
+    const { rerender } = render(<AlarmsBar alarms={[]} readOnly={false} />);
+    const live = screen.getByText("Sin alarmas activas").closest("[aria-live]");
+
+    expect(live).not.toBeNull();
+    rerender(<AlarmsBar alarms={[HIGH]} readOnly={false} />);
+
+    expect(screen.getByText("Presión alta").closest("[aria-live]")).toBe(live);
+    expect(live).toHaveAttribute("aria-live", "assertive");
+  });
+
+  it("beeps once when the silence expires while a high or medium alarm is active", () => {
+    vi.useFakeTimers();
+    const { clock, advance } = fakeClock();
+    const beep = vi.fn();
+    const factory = () => ({ beep, close: vi.fn() });
+    const { rerender } = render(<AlarmsBar alarms={[]} readOnly={false} clock={clock} beeperFactory={factory} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Sonido desactivado" }));
+    fireEvent.click(screen.getByRole("button", { name: "Silenciar 2 min" }));
+    rerender(<AlarmsBar alarms={[HIGH]} readOnly={false} clock={clock} beeperFactory={factory} />);
+    expect(beep).not.toHaveBeenCalled();
+
+    act(() => {
+      advance(121_000);
+      vi.advanceTimersByTime(121_000);
+    });
+    expect(beep).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      advance(5_000);
+      vi.advanceTimersByTime(5_000);
+    });
+    expect(beep).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not beep when the silence expires with only low alarms or after a manual resume", () => {
+    vi.useFakeTimers();
+    const { clock, advance } = fakeClock();
+    const beep = vi.fn();
+    const factory = () => ({ beep, close: vi.fn() });
+    render(<AlarmsBar alarms={[LOW]} readOnly={false} clock={clock} beeperFactory={factory} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Sonido desactivado" }));
+    fireEvent.click(screen.getByRole("button", { name: "Silenciar 2 min" }));
+    act(() => {
+      advance(121_000);
+      vi.advanceTimersByTime(121_000);
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Silenciar 2 min" }));
+    fireEvent.click(screen.getByRole("button", { name: /Reactivar sonido/ }));
+    expect(beep).not.toHaveBeenCalled();
   });
 
   it("hides the limits panel when the consumer passes no limits", () => {

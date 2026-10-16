@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Alarms bar styles
-* Descripción: Styles of the ventilator console alarms bar on the dark console surface: active alarms with the priority fill tokens (high/medium/low) plus icon and text, the silence/sound/history/limits action buttons, and the history and alarm limits disclosure panels. Console and design-system tokens only.
-* Versión: 1.0
+* Descripción: Styles of the ventilator console alarms bar on the dark console surface: active alarms with the priority fill tokens (high/medium/low) plus icon and text, the silence/sound/history/limits action buttons, and the history and alarm limits disclosure panels, plus the persistent live region around the alarm list. Console and design-system tokens only.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -25,6 +25,13 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--vl-space-2) var(--vl-space-4);
+}
+
+/* Persistent live region that wraps the alarm list or the "none" text. */
+.live {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .list {

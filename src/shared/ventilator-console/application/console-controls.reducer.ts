@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Console controls reducer
-* Descripción: Pure state of the real-device control pattern of the ventilator console: the selected parameter, the pending (unconfirmed) parameter values and the pending mode. Adjustments step or set a value clamped and snapped to the injected limit; a value back at the applied one stops being pending; a mode change makes the mode pending and drops pending values of parameters that no longer apply; reset clears everything (after confirm or cancel). Also the keyboard mapping (arrows, PageUp/PageDown ×10, Home/End) and the confirmation diff. Emits nothing itself: the component calls onConfirm with buildConfirmation. Depends only on the console contract types.
-* Versión: 1.0
+* Descripción: Pure state of the real-device control pattern of the ventilator console: the selected parameter, the pending (unconfirmed) parameter values and the pending mode. Adjustments step or set a value clamped and snapped to the injected limit; a value back at the applied one stops being pending; a mode change makes the mode pending and drops pending values of parameters that no longer apply; reset clears everything (after confirm or cancel). Also the keyboard mapping (arrows, PageUp/PageDown ×10, Home/End) and the confirmation diff. Emits nothing itself: the component calls onConfirm with buildConfirmation, which ignores values and a mode the source already applied. A step that is zero, negative or not finite disables snapping; steps in exponent form keep their precision. Depends only on the console contract types.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -32,15 +32,31 @@ export type Adjustment = { kind: "steps", steps: number } | { kind: "value", val
 
 const PAGE_STEPS = 10;
 
-/** Decimals of a step (0.01 → 2); used to round and to format values. */
-export function stepDecimals(step: number): number {
-  const [, fraction] = String(step).split(".");
-
-  return fraction?.length ?? 0;
+function hasStepGrid(step: number): boolean {
+  return Number.isFinite(step) && step > 0;
 }
 
-/** Clamps to [min, max] and snaps to the step grid that starts at `min`, rounded to the step precision. */
+/** Decimals of a step (0.01 → 2, 1e-7 → 7, 2.5e-7 → 8); used to round and to format values. 0 without a step grid. */
+export function stepDecimals(step: number): number {
+  if (!hasStepGrid(step)) {
+    return 0;
+  }
+
+  const [mantissa = "", exponent = "0"] = String(step).toLowerCase().split("e");
+  const fraction = mantissa.split(".")[1]?.length ?? 0;
+
+  return Math.max(0, fraction - Number(exponent));
+}
+
+/**
+ * Clamps to [min, max] and snaps to the step grid that starts at `min`, rounded to the step precision.
+ * A step that is zero, negative or not finite means "no snapping": the value is only clamped.
+ */
 export function clampToLimit(value: number, limit: ParameterLimit): number {
+  if (!hasStepGrid(limit.step)) {
+    return Math.min(limit.max, Math.max(limit.min, value));
+  }
+
   const snapped = limit.min + Math.round((value - limit.min) / limit.step) * limit.step;
   const clamped = Math.min(limit.max, Math.max(limit.min, snapped));
 
@@ -99,15 +115,24 @@ export function controlsReducer(state: ControlsState, action: ControlsAction): C
   }
 }
 
-/** The diff CONFIRMAR emits, or `null` when nothing is pending. */
-export function buildConfirmation(state: ControlsState, applied: ConsoleSettingValues): ConsoleConfirmation | null {
+/** The effective pending mode: `null` when none is pending or it already is the applied mode. */
+export function pendingModeOf(state: ControlsState, appliedMode: string): string | null {
+  return state.pendingMode === null || state.pendingMode === appliedMode ? null : state.pendingMode;
+}
+
+/**
+ * The diff CONFIRMAR emits, or `null` when nothing is pending. Values equal to the applied ones and a pending
+ * mode equal to the applied mode are not changes (the source may have applied them in the meantime).
+ */
+export function buildConfirmation(state: ControlsState, applied: ConsoleSettingValues, appliedMode: string): ConsoleConfirmation | null {
+  const mode = pendingModeOf(state, appliedMode);
   const changes = Object.entries(state.pendingValues)
     .filter(([parameter, value]) => applied[parameter] !== value)
     .map(([parameter, value]) => ({ parameter, value }));
 
-  if (changes.length === 0 && state.pendingMode === null) {
+  if (changes.length === 0 && mode === null) {
     return null;
   }
 
-  return { mode: state.pendingMode, changes };
+  return { mode, changes };
 }

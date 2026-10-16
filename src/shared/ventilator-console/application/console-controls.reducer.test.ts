@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Console controls reducer tests
 * Descripción: Unit tests of the pure pending→confirm/cancel controls of the ventilator console: step adjustment with clamping and step snapping to the injected limits, keyboard mapping (arrows, PageUp/PageDown ×10, Home/End), the confirmation diff (only changed parameters, the pending mode), the reset after confirm or cancel, the mode change that drops the pending values of parameters that no longer apply, and the console-owned mode→parameter applicability filter. Depends on Vitest.
-* Versión: 1.0
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,6 +17,7 @@ import {
   controlsReducer,
   INITIAL_CONTROLS_STATE,
   keyToAdjustment,
+  stepDecimals,
 } from "./console-controls.reducer";
 import type { ControlsState } from "./console-controls.reducer";
 import type { ConsoleLimits, ParameterLimit } from "./ventilator-console.entity";
@@ -41,6 +42,20 @@ describe("clampToLimit", () => {
     expect(clampToLimit(5.4, PEEP)).toBe(5);
     expect(clampToLimit(0.21 + 0.01 * 3, FIO2)).toBe(0.24);
     expect(clampToLimit(1.5, FIO2)).toBe(1);
+  });
+
+  it("only clamps (no snapping) when the step is zero, negative or not finite", () => {
+    expect(clampToLimit(5.37, { ...PEEP, step: 0 })).toBe(5.37);
+    expect(clampToLimit(5.37, { ...PEEP, step: -1 })).toBe(5.37);
+    expect(clampToLimit(25, { ...PEEP, step: Number.NaN })).toBe(20);
+    expect(clampToLimit(-1, { ...PEEP, step: Number.POSITIVE_INFINITY })).toBe(0);
+  });
+
+  it("keeps the precision of a step written in exponent form", () => {
+    expect(stepDecimals(1e-7)).toBe(7);
+    expect(stepDecimals(2.5e-7)).toBe(8);
+    expect(stepDecimals(1e21)).toBe(0);
+    expect(clampToLimit(3.2e-7, { min: 0, max: 1e-5, step: 1e-7, unit: "" })).toBe(3e-7);
   });
 });
 
@@ -84,8 +99,16 @@ describe("controlsReducer", () => {
   it("builds a confirmation with only the changed parameters and the pending mode", () => {
     const state: ControlsState = { selected: "peep", pendingValues: { peep: 8, fio2: 0.4 }, pendingMode: "PCV" };
 
-    expect(buildConfirmation(state, { peep: 5, fio2: 0.4 })).toEqual({ mode: "PCV", changes: [{ parameter: "peep", value: 8 }] });
-    expect(buildConfirmation(INITIAL_CONTROLS_STATE, { peep: 5 })).toBeNull();
+    expect(buildConfirmation(state, { peep: 5, fio2: 0.4 }, "VCV")).toEqual({ mode: "PCV", changes: [{ parameter: "peep", value: 8 }] });
+    expect(buildConfirmation(INITIAL_CONTROLS_STATE, { peep: 5 }, "VCV")).toBeNull();
+  });
+
+  it("treats a pending mode equal to the applied mode as no mode change", () => {
+    const modeOnly: ControlsState = { selected: null, pendingValues: {}, pendingMode: "PCV" };
+    const withValue: ControlsState = { selected: null, pendingValues: { peep: 8 }, pendingMode: "PCV" };
+
+    expect(buildConfirmation(modeOnly, { peep: 5 }, "PCV")).toBeNull();
+    expect(buildConfirmation(withValue, { peep: 5 }, "PCV")).toEqual({ mode: null, changes: [{ parameter: "peep", value: 8 }] });
   });
 
   it("resets everything after confirm or cancel", () => {

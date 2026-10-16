@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ConsoleControls
-* Descripción: Mode selector and parameter controls of the generic ventilator console, in the real-device pattern. The modes come from the adapter options; each mode shows only its applicable parameters (console table, filtered by the injected limits). Select a parameter, then adjust it with the +/- buttons, the mouse wheel over the value or the keyboard (arrows = step, PageUp/PageDown = 10 steps, Home/End = min/max); the value and a mode change stay PENDING (pending token + "Pendiente" text) until CONFIRMAR (or "Aplicar" in the configure variant) emits the diff once through onConfirm; CANCELAR or Escape revert and emit nothing. Pending edits only call the optional onProposeChange. Limits are shown and enforced from the `limits` prop only. Read-only disables everything and shows the values. Depends on React, MUI icons, the controls reducer, the controls config and the controls styles.
-* Versión: 1.0
+* Descripción: Mode selector and parameter controls of the generic ventilator console, in the real-device pattern. The modes come from the adapter options; each mode shows only its applicable parameters (console table, filtered by the injected limits). Select a parameter, then adjust it with the +/- buttons, the mouse wheel over the selected value (a zero vertical delta is ignored) or the keyboard (arrows = step, PageUp/PageDown = 10 steps, Home/End = min/max); the value and a mode change stay PENDING (pending token + "Pendiente" text) until CONFIRMAR (or "Aplicar" in the configure variant) emits the diff once through onConfirm; CANCELAR or Escape revert and emit nothing. Pending edits only call the optional onProposeChange. Limits are shown and enforced from the `limits` prop only. A pending value or mode the source has already applied stops being pending, so the tags and the emitted diff always agree. Read-only disables everything and shows the values. Depends on React, MUI icons, the controls reducer, the controls config and the controls styles.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,7 +16,14 @@ import type { KeyboardEvent } from "react";
 import { cx } from "@shared/lib/class-names";
 import { CONSOLE_PARAMETERS, getParametersForMode, MODE_PARAMETERS } from "./config/console-controls.config";
 import type { ConsoleParameterDefinition, ModeParameterTable } from "./config/console-controls.config";
-import { buildConfirmation, controlsReducer, INITIAL_CONTROLS_STATE, keyToAdjustment, stepDecimals } from "./console-controls.reducer";
+import {
+  buildConfirmation,
+  controlsReducer,
+  INITIAL_CONTROLS_STATE,
+  keyToAdjustment,
+  pendingModeOf,
+  stepDecimals,
+} from "./console-controls.reducer";
 import type { Adjustment, ControlsAction } from "./console-controls.reducer";
 import type {
   ConsoleConfirmation,
@@ -89,18 +96,23 @@ function ParameterControl({ id, definition, limit, value, applied, pending, sele
   useEffect(() => {
     const node = valueRef.current;
 
-    if (node === null || disabled) {
+    // Only a selected control captures the wheel, so scrolling past an unselected one still scrolls the page.
+    if (node === null || disabled || !selected) {
       return undefined;
     }
 
     const onWheel = (event: WheelEvent) => {
+      if (event.deltaY === 0) {
+        return;
+      }
+
       event.preventDefault();
       onAdjust({ kind: "steps", steps: event.deltaY < 0 ? 1 : -1 });
     };
     node.addEventListener("wheel", onWheel, { passive: false });
 
     return () => node.removeEventListener("wheel", onWheel);
-  }, [disabled, onAdjust]);
+  }, [disabled, selected, onAdjust]);
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const adjustment = keyToAdjustment(event.key, limit);
@@ -176,9 +188,10 @@ export function ConsoleControls({
   className,
 }: ConsoleControlsProps) {
   const [state, dispatch] = useReducer(controlsReducer, INITIAL_CONTROLS_STATE);
-  const effectiveMode = state.pendingMode ?? mode.current;
+  const pendingMode = pendingModeOf(state, mode.current);
+  const effectiveMode = pendingMode ?? mode.current;
   const visible = getParametersForMode(effectiveMode, limits, applicability);
-  const confirmation = buildConfirmation(state, settings.applied);
+  const confirmation = buildConfirmation(state, settings.applied, mode.current);
   const pendingCount = confirmation === null ? 0 : confirmation.changes.length + (confirmation.mode === null ? 0 : 1);
 
   const baseOf = (parameter: string, limit: ParameterLimit): number =>
@@ -241,7 +254,7 @@ export function ConsoleControls({
             type="button"
             className={cx(styles.mode)}
             aria-pressed={effectiveMode === option.id}
-            data-pending={state.pendingMode === option.id}
+            data-pending={pendingMode === option.id}
             disabled={readOnly}
             onClick={() =>
               run({
@@ -253,7 +266,7 @@ export function ConsoleControls({
             }
           >
             {option.label}
-            {state.pendingMode === option.id ? <span className={cx(styles.pendingTag)}>{CONTROLS_COPY.pending}</span> : null}
+            {pendingMode === option.id ? <span className={cx(styles.pendingTag)}>{CONTROLS_COPY.pending}</span> : null}
           </button>
         ))}
       </div>
@@ -272,6 +285,8 @@ export function ConsoleControls({
 
               const base = baseOf(parameter, limit);
               const pendingValue = state.pendingValues[parameter];
+              // A value the source already applied is not pending, so the tag and the confirmation diff agree.
+              const pending = pendingValue !== undefined && pendingValue !== settings.applied[parameter];
 
               return (
                 <ParameterControl
@@ -281,7 +296,7 @@ export function ConsoleControls({
                   limit={limit}
                   value={pendingValue ?? base}
                   applied={settings.applied[parameter]}
-                  pending={pendingValue !== undefined}
+                  pending={pending}
                   selected={state.selected === parameter}
                   disabled={readOnly}
                   onAdjust={(adjustment) => adjust(parameter, limit, adjustment)}
