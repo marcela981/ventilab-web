@@ -6,8 +6,10 @@
 *   weight, missing threshold, negative penalty, missing or non-positive window, weights not adding up to 100 and the
 *   1e-6 tolerance), the threshold units per type, the Spanish messages, and the draft helpers (round trip with
 *   inapplicable fields dropped, "," decimals, add with the first unused type, type change clearing fields, move and
-*   remove, weight total). Depends on vitest and the outcome rubric entity.
-* Versión: 1.0
+*   remove, weight total). Depends on vitest and the outcome rubric entity. v1.1 (review of 4134725): an unknown stored
+*   type is kept and reported as type_invalid until a known type is chosen; AI_ASSIST_USAGE free uses must be whole;
+*   the weight 0 hint per type.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -25,12 +27,13 @@ import {
   outcomeRubricDraftIssues,
   outcomeRubricIssueMessage,
   outcomeWeightTotal,
+  outcomeWeightZeroHint,
   removeOutcomeCriterion,
   toOutcomeRubricValue,
   updateOutcomeCriterion,
   validateOutcomeRubric,
 } from "./outcome-rubric.entity";
-import type { OutcomeRubric, OutcomeRubricIssueCode } from "./outcome-rubric.entity";
+import type { OutcomeCriterionType, OutcomeRubric, OutcomeRubricIssueCode } from "./outcome-rubric.entity";
 
 const VALID: OutcomeRubric = {
   assistancePolicy: "ALLOWED_WITH_PENALTY",
@@ -181,5 +184,57 @@ describe("outcome rubric draft", () => {
     expect(removeOutcomeCriterion(draft, first?.key ?? "").criteria).toHaveLength(3);
     expect(outcomeWeightTotal(draft)).toBe(100);
     expect(outcomeWeightTotal(updateOutcomeCriterion(draft, first?.key ?? "", { weight: "abc" }))).toBe(60);
+  });
+});
+
+describe("outcome rubric draft with an unknown stored type", () => {
+  const stored = withCriteria([{ type: "LEGACY_SCORE", weight: 100, threshold: 1 }]);
+
+  it("keeps the raw type and reports type_invalid instead of turning it into TARGETS_REACHED", () => {
+    const draft = outcomeRubricDraftFrom(stored);
+    const [criterion] = draft.criteria;
+
+    expect(criterion?.unknownType).toBe("LEGACY_SCORE");
+    expect(outcomeRubricDraftIssues(draft).map((issue) => [issue.code, issue.field, issue.key])).toEqual([
+      ["type_invalid", "type", criterion?.key],
+    ]);
+    expect(toOutcomeRubricValue(draft)).toBeNull();
+  });
+
+  it("becomes valid once the author picks a known type", () => {
+    const draft = outcomeRubricDraftFrom(stored);
+    const key = draft.criteria[0]?.key ?? "";
+    const fixed = updateOutcomeCriterion(draft, key, { type: "TARGETS_REACHED" });
+
+    expect(fixed.criteria[0]?.unknownType).toBeUndefined();
+    expect(toOutcomeRubricValue(fixed)?.criteria).toEqual([{ type: "TARGETS_REACHED", weight: 100, threshold: 1 }]);
+  });
+
+  it("keeps the unknown type when another field changes", () => {
+    const draft = outcomeRubricDraftFrom(stored);
+    const key = draft.criteria[0]?.key ?? "";
+
+    expect(updateOutcomeCriterion(draft, key, { weight: "90" }).criteria[0]?.unknownType).toBe("LEGACY_SCORE");
+  });
+});
+
+describe("outcome rubric weight 0 hint", () => {
+  const criterion = (type: OutcomeCriterionType, weight: string, penaltyPoints = "") => ({
+    key: "k", type, weight, threshold: "1", windowMinutes: "", penaltyPoints,
+  });
+
+  it("gives no hint for a weight other than 0", () => {
+    expect(outcomeWeightZeroHint(criterion("TARGETS_REACHED", "10"))).toBeNull();
+    expect(outcomeWeightZeroHint(criterion("TARGETS_REACHED", ""))).toBeNull();
+  });
+
+  it("says an outcome criterion of weight 0 does not count for the grade", () => {
+    expect(outcomeWeightZeroHint(criterion("TIME_IN_RANGE", "0"))).toBe("Peso 0: este criterio no cuenta para la nota.");
+    expect(outcomeWeightZeroHint(criterion("AI_ASSIST_USAGE", "0"))).toBe("Peso 0: este criterio no cuenta para la nota.");
+  });
+
+  it("explains that the penalty still applies to the AI assist and the safety limits", () => {
+    expect(outcomeWeightZeroHint(criterion("AI_ASSIST_USAGE", "0,0", "5"))).toBe("Peso 0: cada uso penalizado resta la penalización.");
+    expect(outcomeWeightZeroHint(criterion("PLATEAU_PRESSURE_LIMIT", "0"))).toBe("Peso 0: el límite se sigue vigilando y su penalización se aplica.");
   });
 });

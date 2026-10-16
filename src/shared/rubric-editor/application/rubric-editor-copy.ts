@@ -4,8 +4,9 @@
 *   rubric editor, moved unchanged (same keys and texts) from the evaluation builder copy, which spreads it back into
 *   BUILDER_COPY. OUTCOME_RUBRIC_COPY is the copy of the outcome rubric editor of a clinical case `defaultRubric`
 *   (assistance policy, passing score, criteria with weight, threshold, window and penalty, reorder, the weight total
-*   and its warning). No dependencies.
-* Versión: 1.0
+*   and its warning). No dependencies. v1.1 (review of 4134725): the live announcements of a reorder or removal and the
+*   copy of a criterion with an unknown stored type.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -50,4 +51,11 @@ export const OUTCOME_RUBRIC_COPY = {
   weightTotal: (total: string, expected: number) => `Suma de los pesos: ${total} de ${expected}`,
   weightTotalWarning: (expected: number) => `Los pesos deben sumar exactamente ${expected}; el servidor rechaza la rúbrica si no.`,
   issues: "Problemas de la rúbrica",
+  announcements: "Avisos de la rúbrica",
+  moved: (position: number, count: number) => `Criterio movido a la posición ${position} de ${count}.`,
+  removed: (position: number) => `Criterio ${position} eliminado.`,
+  removedLast: (position: number) => `Criterio ${position} eliminado. La rúbrica no tiene criterios.`,
+  unknownTypeOption: (raw: string) => `Tipo desconocido: ${raw}`,
+  unknownTypeError: (raw: string) => `El tipo guardado «${raw}» no existe; elige un tipo de criterio.`,
+  unknownThreshold: (position: number) => `Umbral (criterio ${position})`,
 } as const;

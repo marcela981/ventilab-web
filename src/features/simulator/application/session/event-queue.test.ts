@@ -6,8 +6,9 @@
 *   rejects after its attempts while keeping the events) and overlapping flushes without loss or duplicate sends.
 *   Depends on vitest and the api-client error type. v1.1: a refused batch is re-sent event by event (only the
 *   offending event is dropped) and onChange/snapshot report the unacknowledged events. v1.2 (review of 180a0a1): a
-*   disposed queue never reports onChange for a send that was still in flight.
-* Versión: 1.2
+*   disposed queue never reports onChange for a send that was still in flight. v1.3 (review of 8cbd3de): an enqueue
+*   after dispose is an explicit no-op with one development warning.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -280,5 +281,28 @@ describe("event queue disposal", () => {
 
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(queue.pendingCount()).toBe(0);
+  });
+
+  it("ignores an enqueue after dispose: nothing is queued, sent or reported, and it warns once", async() => {
+    vi.useFakeTimers();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const send = vi.fn(() => Promise.resolve());
+    const onChange = vi.fn();
+    const queue = createEventQueue<TestEvent>({ send, flushIntervalMs: 3000, onChange });
+
+    queue.dispose();
+    queue.enqueue({ id: "late-1" });
+    queue.enqueue({ id: "late-2" });
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    expect(queue.pendingCount()).toBe(0);
+    expect(queue.snapshot()).toEqual([]);
+    expect(send).not.toHaveBeenCalled();
+    expect(onChange).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0]?.[0])).toContain("disposed");
+
+    warn.mockRestore();
+    vi.useRealTimers();
   });
 });

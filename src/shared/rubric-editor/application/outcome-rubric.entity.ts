@@ -15,7 +15,11 @@
 *   draft drops them for other types. Also the editable draft (strings per field, stable client keys), its conversion
 *   from and to the stored value, add/update/remove/move helpers, the weight total and the Spanish labels and
 *   messages. No dependencies.
-* Versión: 1.0
+*   v1.1 (review of 4134725): a stored criterion with an unknown type keeps that raw type in the draft
+*   (`unknownType`) and is reported as `type_invalid` until the author picks a known type (it was silently turned into
+*   TARGETS_REACHED); `outcomeWeightZeroHint` explains what a weight of 0 means for each type, following the session
+*   scoring conversion; the AI_ASSIST_USAGE integer rule is documented as a deliberate tightening of the backend.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -204,6 +208,9 @@ function thresholdInRange(type: OutcomeCriterionType, threshold: number): boolea
     case "TIME_IN_RANGE":
       return threshold > 0 && threshold <= 100;
     case "AI_ASSIST_USAGE":
+      // Deliberately stricter than the backend: the save-time validator accepts any finite threshold ≥ 0, but the
+      // session scoring floors it (`Math.floor`) into whole free uses, so 1.5 would silently mean 1. The editor
+      // therefore only accepts integers (tracked in odd/tasks/simulation.md, T10-fix).
       return Number.isInteger(threshold);
     default:
       return threshold > 0;
@@ -303,6 +310,11 @@ export function validateOutcomeRubric(raw: unknown): OutcomeRubricIssue[] {
 export type OutcomeCriterionDraft = {
   key: string
   type: OutcomeCriterionType
+  /**
+   * The raw stored type when it is not a known type. While set, `type` is only a placeholder: the criterion is
+   * validated with the raw value (type_invalid), so the author must pick a known type before saving.
+   */
+  unknownType?: string
   weight: string
   threshold: string
   /** Kept only for TIME_IN_RANGE. */
@@ -325,7 +337,7 @@ function fieldText(value: unknown): string {
   return typeof value === "number" || typeof value === "string" ? String(value) : "";
 }
 
-/** The editable draft of a stored rubric; unknown types become the first type and are reported on validation. */
+/** The editable draft of a stored rubric; an unknown type is kept in `unknownType` and reported on validation. */
 export function outcomeRubricDraftFrom(raw: unknown): OutcomeRubricDraft {
   if (!isRecord(raw)) {
     return emptyOutcomeRubricDraft();
@@ -338,16 +350,22 @@ export function outcomeRubricDraftFrom(raw: unknown): OutcomeRubricDraft {
     passingScore: fieldText(raw.passingScore),
     criteria: criteria.map((item: unknown, index: number) => {
       const criterion = isRecord(item) ? item : {};
-      const type = isOutcomeCriterionType(criterion.type) ? criterion.type : OUTCOME_CRITERION_TYPES[0] as OutcomeCriterionType;
-
-      return {
+      const known = isOutcomeCriterionType(criterion.type);
+      const type = known ? criterion.type as OutcomeCriterionType : OUTCOME_CRITERION_TYPES[0] as OutcomeCriterionType;
+      const draftCriterion: OutcomeCriterionDraft = {
         key: `outcome-criterion-${index}`,
         type,
         weight: fieldText(criterion.weight),
         threshold: fieldText(criterion.threshold),
-        windowMinutes: criterionUsesWindow(type) ? fieldText(criterion.windowMinutes) : "",
-        penaltyPoints: criterionUsesPenalty(type) ? fieldText(criterion.penaltyPoints) : "",
+        windowMinutes: known && criterionUsesWindow(type) ? fieldText(criterion.windowMinutes) : "",
+        penaltyPoints: known && criterionUsesPenalty(type) ? fieldText(criterion.penaltyPoints) : "",
       };
+
+      if (!known) {
+        draftCriterion.unknownType = fieldText(criterion.type);
+      }
+
+      return draftCriterion;
     }),
   };
 }
@@ -361,7 +379,7 @@ export function parseRubricNumber(value: string): number {
 
 function toCriterionRaw(criterion: OutcomeCriterionDraft): Record<string, unknown> {
   const raw: Record<string, unknown> = {
-    type: criterion.type,
+    type: criterion.unknownType ?? criterion.type,
     weight: parseRubricNumber(criterion.weight),
     threshold: parseRubricNumber(criterion.threshold),
   };
@@ -409,9 +427,14 @@ export function outcomeWeightTotal(draft: OutcomeRubricDraft): number {
   }, 0);
 }
 
+/** The known types the criteria use (a criterion with an unknown stored type uses none). */
+export function usedOutcomeTypes(draft: OutcomeRubricDraft): Set<OutcomeCriterionType> {
+  return new Set(draft.criteria.filter((criterion) => criterion.unknownType === undefined).map((criterion) => criterion.type));
+}
+
 /** Appends a criterion of the first unused type; the draft is returned unchanged when every type is used. */
 export function addOutcomeCriterion(draft: OutcomeRubricDraft, key: string): OutcomeRubricDraft {
-  const used = new Set(draft.criteria.map((criterion) => criterion.type));
+  const used = usedOutcomeTypes(draft);
   const type = OUTCOME_CRITERION_TYPES.find((candidate) => !used.has(candidate));
 
   if (!type) {
@@ -424,7 +447,7 @@ export function addOutcomeCriterion(draft: OutcomeRubricDraft, key: string): Out
   };
 }
 
-/** Updates one criterion; a new type clears the window and penalty fields it does not use. */
+/** Updates one criterion; a new type clears the unknown stored type and the window and penalty fields it does not use. */
 export function updateOutcomeCriterion(
   draft: OutcomeRubricDraft,
   key: string,
@@ -437,13 +460,18 @@ export function updateOutcomeCriterion(
         return criterion;
       }
 
-      const next = { ...criterion, ...changes };
-
-      return {
-        ...next,
-        windowMinutes: criterionUsesWindow(next.type) ? next.windowMinutes : "",
-        penaltyPoints: criterionUsesPenalty(next.type) ? next.penaltyPoints : "",
+      const { unknownType, ...rest } = { ...criterion, ...changes };
+      const next: OutcomeCriterionDraft = {
+        ...rest,
+        windowMinutes: criterionUsesWindow(rest.type) ? rest.windowMinutes : "",
+        penaltyPoints: criterionUsesPenalty(rest.type) ? rest.penaltyPoints : "",
       };
+
+      if (unknownType !== undefined && changes.type === undefined) {
+        next.unknownType = unknownType;
+      }
+
+      return next;
     }),
   };
 }
@@ -469,4 +497,28 @@ export function moveOutcomeCriterion(draft: OutcomeRubricDraft, key: string, off
   }
 
   return { ...draft, criteria };
+}
+
+/**
+ * What a weight of 0 means for a criterion, following the session scoring conversion
+ * (`simulation-session-rubric.ts`): an outcome criterion of weight 0 is skipped; AI_ASSIST_USAGE of weight 0 still
+ * counts with penaltyPoints × 4 as its weight when it has a penalty (skipped otherwise); a safety limit of weight 0
+ * still sets its limit and penalty in the grouped safety criterion. Null when the weight is not 0.
+ */
+export function outcomeWeightZeroHint(criterion: OutcomeCriterionDraft): string | null {
+  if (criterion.unknownType !== undefined || parseRubricNumber(criterion.weight) !== 0) {
+    return null;
+  }
+
+  if (SAFETY_LIMIT_TYPES.includes(criterion.type)) {
+    return "Peso 0: el límite se sigue vigilando y su penalización se aplica.";
+  }
+
+  const penalty = parseRubricNumber(criterion.penaltyPoints);
+
+  if (criterion.type === "AI_ASSIST_USAGE" && Number.isFinite(penalty) && penalty > 0) {
+    return "Peso 0: cada uso penalizado resta la penalización.";
+  }
+
+  return "Peso 0: este criterio no cuenta para la nota.";
 }

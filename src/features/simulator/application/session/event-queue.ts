@@ -14,7 +14,11 @@
 *   sessionStorage) and `snapshot()` returns them (keepalive flush on page hide).
 *   v1.2 (review of 180a0a1): a disposed queue never reports `onChange` again, so a flush still in flight after a
 *   resync settle timed out cannot overwrite the outbox the new boot writes.
-* Versión: 1.2
+*   v1.3 (review of 8cbd3de): an `enqueue` after `dispose` is an explicit no-op (the event is not queued, sent or
+*   reported) with a single `console.warn` outside production, instead of an event silently parked in a queue that
+*   never sends it. The owner disposes a queue only when its session is over or replaced; a late event belongs to the
+*   new queue.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -59,7 +63,10 @@ export type EventQueue<E> = {
   pendingCount: () => number
   /** A copy of the events not yet acknowledged, in order. */
   snapshot: () => readonly E[]
-  /** Stops the timers; queued events stay readable through pendingCount. */
+  /**
+   * Stops the timers; queued events stay readable through pendingCount. Afterwards `enqueue` is a no-op (dev warning
+   * once) and `onChange` is never called again.
+   */
   dispose: () => void
 };
 
@@ -94,6 +101,7 @@ export function createEventQueue<E>(options: EventQueueOptions<E>): EventQueue<E
   let failures = 0;
   let timer: unknown = null;
   let disposed = false;
+  let warnedLateEnqueue = false;
   // Every send goes through this chain, so two flushes never send the same head concurrently.
   let chain: Promise<void> = Promise.resolve();
 
@@ -190,6 +198,15 @@ export function createEventQueue<E>(options: EventQueueOptions<E>): EventQueue<E
 
   return {
     enqueue(event) {
+      if (disposed) {
+        if (!warnedLateEnqueue && process.env.NODE_ENV !== "production") {
+          warnedLateEnqueue = true;
+          console.warn("[event-queue] enqueue on a disposed queue ignored: the event is not queued or sent.", event);
+        }
+
+        return;
+      }
+
       queue.push(event);
       notifyChange();
       schedule(intervalMs);

@@ -9,7 +9,13 @@
 *   (rubric-level ones in an alert list) when `showIssues` is on. `value`/`onChange` keep the draft in the host;
 *   `disabled` locks every control. Depends on MUI, the design-system FormField, @shared/lib, the outcome rubric
 *   entity, the rubric editor copy and the rubric editor CSS Module.
-* Versión: 1.0
+*   v1.1 (review of 4134725): after a reorder the focus stays on the moved criterion (its arrow in the same direction,
+*   or the other one at an edge); after a removal it goes to the next criterion, else the previous one, else the add
+*   button; both are announced in a visually hidden `role="status"` region. A criterion with an unknown stored type is
+*   shown as an invalid row ("Tipo desconocido: …" selected and disabled, error on the type) until a known type is
+*   chosen, whatever `showIssues` says. A weight of 0 shows what it means for the grade, and a total that is not 100
+*   shows at least 2 decimals (more when needed to see the difference).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,6 +28,7 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import CloseIcon from "@mui/icons-material/Close";
 import Button from "@mui/material/Button";
+import { useEffect, useRef, useState } from "react";
 import IconButton from "@mui/material/IconButton";
 import { FormField } from "@shared/design-system/components/form-field";
 import { cx } from "@shared/lib/class-names";
@@ -39,8 +46,10 @@ import {
   outcomeRubricDraftIssues,
   outcomeRubricIssueMessage,
   outcomeWeightTotal,
+  outcomeWeightZeroHint,
   removeOutcomeCriterion,
   updateOutcomeCriterion,
+  usedOutcomeTypes,
   weightTotalMatches,
 } from "./outcome-rubric.entity";
 import type {
@@ -56,6 +65,41 @@ import styles from "../UI/rubric-editor.module.css";
 
 const NATIVE_SELECT = { select: { native: true }, inputLabel: { shrink: true } } as const;
 const totalFormat = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 2 });
+const MAX_TOTAL_DIGITS = 6;
+
+/** The weight total; when it is not 100, at least 2 decimals and as many more as needed to tell it from 100. */
+function formatWeightTotal(total: number, ok: boolean): string {
+  if (ok) {
+    return totalFormat.format(total);
+  }
+
+  let formatted = "";
+
+  for (let digits = 2; digits <= MAX_TOTAL_DIGITS; digits += 1) {
+    const format = new Intl.NumberFormat("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: digits });
+
+    formatted = format.format(total);
+
+    if (formatted !== format.format(OUTCOME_RUBRIC_TOTAL_WEIGHT)) {
+      return formatted;
+    }
+  }
+
+  return formatted;
+}
+
+type CriterionAction = "up" | "down" | "remove";
+type FocusTarget = { key: string, action: CriterionAction } | { key: null, action: "add" };
+
+const OPPOSITE_ARROW: Readonly<Record<CriterionAction, CriterionAction>> = { up: "down", down: "up", remove: "remove" };
+
+function criterionControl(list: HTMLOListElement | null, key: string, action: CriterionAction): HTMLButtonElement | null {
+  const item = Array.from(list?.children ?? []).find((child) => child instanceof HTMLElement && child.dataset.criterionKey === key);
+  const find = (candidate: CriterionAction) => item?.querySelector<HTMLButtonElement>(`[data-action="${candidate}"]`) ?? null;
+  const preferred = find(action);
+
+  return preferred && !preferred.disabled ? preferred : find(OPPOSITE_ARROW[action]);
+}
 
 export type OutcomeRubricEditorProps = {
   value: OutcomeRubricDraft
@@ -76,16 +120,59 @@ function fieldError(issues: readonly KeyedIssue[], key: string | null, field: Ou
 }
 
 export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false, showIssues = true }: OutcomeRubricEditorProps) {
+  const listRef = useRef<HTMLOListElement | null>(null);
+  const addRef = useRef<HTMLButtonElement | null>(null);
+  const pendingFocus = useRef<FocusTarget | null>(null);
+  const [announcement, setAnnouncement] = useState("");
   const issues: KeyedIssue[] = showIssues ? outcomeRubricDraftIssues(value) : [];
-  const used = new Set(value.criteria.map((criterion) => criterion.type));
+  const used = usedOutcomeTypes(value);
   const canAdd = !disabled && value.criteria.length < OUTCOME_CRITERION_TYPES.length;
   const total = outcomeWeightTotal(value);
   const totalOk = weightTotalMatches(total);
   const rubricLevel = issues.filter((issue) => issue.key === null && issue.field === "criteria");
   const last = value.criteria.length - 1;
+  const count = value.criteria.length;
+
+  // Restores the focus once the host renders the reordered or reduced list (the moved or removed row unmounts or
+  // moves its focused button otherwise, and the focus falls back to the body).
+  useEffect(() => {
+    const target = pendingFocus.current;
+
+    if (target === null) {
+      return;
+    }
+
+    pendingFocus.current = null;
+
+    if (target.key === null) {
+      addRef.current?.focus();
+    } else {
+      criterionControl(listRef.current, target.key, target.action)?.focus();
+    }
+  }, [value]);
 
   const update = (criterion: OutcomeCriterionDraft, changes: Partial<Omit<OutcomeCriterionDraft, "key">>) =>
     onChange(updateOutcomeCriterion(value, criterion.key, changes));
+
+  const move = (key: string, index: number, offset: -1 | 1) => {
+    const next = moveOutcomeCriterion(value, key, offset);
+
+    if (next === value) {
+      return;
+    }
+
+    pendingFocus.current = { key, action: offset < 0 ? "up" : "down" };
+    setAnnouncement(OUTCOME_RUBRIC_COPY.moved(index + offset + 1, count));
+    onChange(next);
+  };
+
+  const remove = (key: string, index: number) => {
+    const neighbour = value.criteria[index + 1] ?? value.criteria[index - 1];
+
+    pendingFocus.current = neighbour ? { key: neighbour.key, action: "remove" } : { key: null, action: "add" };
+    setAnnouncement(neighbour ? OUTCOME_RUBRIC_COPY.removed(index + 1) : OUTCOME_RUBRIC_COPY.removedLast(index + 1));
+    onChange(removeOutcomeCriterion(value, key));
+  };
 
   return (
     <fieldset className={cx(styles.group)}>
@@ -116,26 +203,28 @@ export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false,
           onChange={(event) => onChange({ ...value, passingScore: event.target.value })}
         />
       </div>
-      <ol className={cx(styles.criteria)} aria-label={OUTCOME_RUBRIC_COPY.criteria}>
+      <ol ref={listRef} className={cx(styles.criteria)} aria-label={OUTCOME_RUBRIC_COPY.criteria}>
         {value.criteria.map((criterion, index) => {
           const position = index + 1;
-          const { key, type } = criterion;
+          const { key, type, unknownType } = criterion;
+          const weightHint = outcomeWeightZeroHint(criterion);
 
           return (
-            <li key={key} className={cx(styles.criterion)}>
+            <li key={key} data-criterion-key={key} className={cx(styles.criterion, unknownType !== undefined && styles.criterionInvalid)}>
               <FormField
                 select
                 label={OUTCOME_RUBRIC_COPY.type(position)}
-                value={type}
+                value={unknownType === undefined ? type : ""}
                 disabled={disabled}
                 size="small"
                 className={cx(styles.parameterField)}
-                error={fieldError(issues, key, "type")}
+                error={unknownType === undefined ? fieldError(issues, key, "type") : OUTCOME_RUBRIC_COPY.unknownTypeError(unknownType)}
                 onChange={(event) => update(criterion, { type: event.target.value as OutcomeCriterionType })}
                 slotProps={NATIVE_SELECT}
               >
+                {unknownType === undefined ? null : <option value="" disabled>{OUTCOME_RUBRIC_COPY.unknownTypeOption(unknownType)}</option>}
                 {OUTCOME_CRITERION_TYPES.map((candidate) => (
-                  <option key={candidate} value={candidate} disabled={candidate !== type && used.has(candidate)}>
+                  <option key={candidate} value={candidate} disabled={(unknownType !== undefined || candidate !== type) && used.has(candidate)}>
                     {OUTCOME_CRITERION_LABELS[candidate]}
                   </option>
                 ))}
@@ -148,19 +237,22 @@ export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false,
                 inputMode="decimal"
                 className={cx(styles.valueField)}
                 error={fieldError(issues, key, "weight")}
+                helperText={weightHint ?? undefined}
                 onChange={(event) => update(criterion, { weight: event.target.value })}
               />
               <FormField
-                label={OUTCOME_RUBRIC_COPY.threshold(position, OUTCOME_THRESHOLD_LABELS[type])}
+                label={unknownType === undefined
+                  ? OUTCOME_RUBRIC_COPY.threshold(position, OUTCOME_THRESHOLD_LABELS[type])
+                  : OUTCOME_RUBRIC_COPY.unknownThreshold(position)}
                 value={criterion.threshold}
                 disabled={disabled}
                 size="small"
                 inputMode="decimal"
                 className={cx(styles.thresholdField)}
-                error={fieldError(issues, key, "threshold", type)}
+                error={fieldError(issues, key, "threshold", unknownType === undefined ? type : undefined)}
                 onChange={(event) => update(criterion, { threshold: event.target.value })}
               />
-              {criterionUsesWindow(type) ? (
+              {unknownType === undefined && criterionUsesWindow(type) ? (
                 <FormField
                   label={OUTCOME_RUBRIC_COPY.windowMinutes(position)}
                   value={criterion.windowMinutes}
@@ -172,7 +264,7 @@ export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false,
                   onChange={(event) => update(criterion, { windowMinutes: event.target.value })}
                 />
               ) : null}
-              {criterionUsesPenalty(type) ? (
+              {unknownType === undefined && criterionUsesPenalty(type) ? (
                 <FormField
                   label={OUTCOME_RUBRIC_COPY.penaltyPoints(position)}
                   value={criterion.penaltyPoints}
@@ -188,24 +280,27 @@ export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false,
                 <IconButton
                   size="small"
                   aria-label={OUTCOME_RUBRIC_COPY.moveUp(position)}
+                  data-action="up"
                   disabled={disabled || index === 0}
-                  onClick={() => onChange(moveOutcomeCriterion(value, key, -1))}
+                  onClick={() => move(key, index, -1)}
                 >
                   <ArrowUpwardIcon fontSize="small" />
                 </IconButton>
                 <IconButton
                   size="small"
                   aria-label={OUTCOME_RUBRIC_COPY.moveDown(position)}
+                  data-action="down"
                   disabled={disabled || index === last}
-                  onClick={() => onChange(moveOutcomeCriterion(value, key, 1))}
+                  onClick={() => move(key, index, 1)}
                 >
                   <ArrowDownwardIcon fontSize="small" />
                 </IconButton>
                 <IconButton
                   size="small"
                   aria-label={OUTCOME_RUBRIC_COPY.remove(position)}
+                  data-action="remove"
                   disabled={disabled}
-                  onClick={() => onChange(removeOutcomeCriterion(value, key))}
+                  onClick={() => remove(key, index)}
                 >
                   <CloseIcon fontSize="small" />
                 </IconButton>
@@ -215,12 +310,12 @@ export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false,
         })}
       </ol>
       <div>
-        <Button size="small" startIcon={<AddIcon />} disabled={!canAdd} onClick={() => onChange(addOutcomeCriterion(value, newKey()))}>
+        <Button ref={addRef} size="small" startIcon={<AddIcon />} disabled={!canAdd} onClick={() => onChange(addOutcomeCriterion(value, newKey()))}>
           {OUTCOME_RUBRIC_COPY.add}
         </Button>
       </div>
       <p className={cx(styles.total)} role="status">
-        {OUTCOME_RUBRIC_COPY.weightTotal(totalFormat.format(total), OUTCOME_RUBRIC_TOTAL_WEIGHT)}
+        {OUTCOME_RUBRIC_COPY.weightTotal(formatWeightTotal(total, totalOk || value.criteria.length === 0), OUTCOME_RUBRIC_TOTAL_WEIGHT)}
       </p>
       {value.criteria.length > 0 && !totalOk ? (
         <p className={cx(styles.total, styles.totalWarning)}>{OUTCOME_RUBRIC_COPY.weightTotalWarning(OUTCOME_RUBRIC_TOTAL_WEIGHT)}</p>
@@ -230,6 +325,7 @@ export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false,
           {rubricLevel.map((issue) => <li key={issue.code}>{outcomeRubricIssueMessage(issue)}</li>)}
         </ul>
       ) : null}
+      <p className={cx(styles.visuallyHidden)} role="status" aria-label={OUTCOME_RUBRIC_COPY.announcements}>{announcement}</p>
     </fieldset>
   );
 }

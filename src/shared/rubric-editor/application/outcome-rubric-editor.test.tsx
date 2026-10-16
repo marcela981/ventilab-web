@@ -5,8 +5,9 @@
 *   fields (window only for TIME_IN_RANGE, penalty only for the safety limits and AI assist usage, the threshold label
 *   with its unit), reorder and remove, the weight total with its warning, the validation messages on their fields
 *   (and hidden with showIssues off), the policy and passing score, and the disabled state. Depends on Vitest,
-*   Testing Library and the rubric-editor module.
-* Versión: 1.0
+*   Testing Library and the rubric-editor module. v1.1 (review of 4134725): focus after reorder and removal with the
+*   live announcement, the invalid row of an unknown stored type, the weight 0 hint and the total with 2 decimals.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -57,6 +58,20 @@ const STORED = outcomeRubricDraftFrom({
   criteria: [
     { type: "TARGETS_REACHED", weight: 60, threshold: 1 },
     { type: "TIME_IN_RANGE", weight: 40, threshold: 80, windowMinutes: 5 },
+  ],
+});
+
+const totalText = () => screen.getByText(/Suma de los pesos/);
+const announcer = () => screen.getByRole("status", { name: OUTCOME_RUBRIC_COPY.announcements });
+const button = (name: string) => screen.getByRole("button", { name });
+
+const THREE = outcomeRubricDraftFrom({
+  assistancePolicy: "DISABLED",
+  passingScore: 70,
+  criteria: [
+    { type: "TARGETS_REACHED", weight: 40, threshold: 1 },
+    { type: "TIME_TO_STABILIZE", weight: 30, threshold: 300 },
+    { type: "TIME_IN_RANGE", weight: 30, threshold: 80, windowMinutes: 5 },
   ],
 });
 
@@ -125,12 +140,12 @@ describe("OutcomeRubricEditor", () => {
   it("shows the weight total and warns when it is not 100", () => {
     render(<Host initial={STORED} />);
 
-    expect(screen.getByRole("status")).toHaveTextContent("Suma de los pesos: 100 de 100");
+    expect(totalText()).toHaveTextContent("Suma de los pesos: 100 de 100");
     expect(screen.queryByText(OUTCOME_RUBRIC_COPY.weightTotalWarning(100))).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText(OUTCOME_RUBRIC_COPY.weight(2)), { target: { value: "30,5" } });
 
-    expect(screen.getByRole("status")).toHaveTextContent("Suma de los pesos: 90,5 de 100");
+    expect(totalText()).toHaveTextContent("Suma de los pesos: 90,50 de 100");
     expect(screen.getByText(OUTCOME_RUBRIC_COPY.weightTotalWarning(100))).toBeInTheDocument();
   });
 
@@ -176,5 +191,89 @@ describe("OutcomeRubricEditor", () => {
     expect(screen.getByRole("button", { name: OUTCOME_RUBRIC_COPY.add })).toBeDisabled();
     expect(screen.getByRole("button", { name: OUTCOME_RUBRIC_COPY.remove(1) })).toBeDisabled();
     expect(screen.getByRole("button", { name: OUTCOME_RUBRIC_COPY.moveDown(1) })).toBeDisabled();
+  });
+});
+
+describe("OutcomeRubricEditor focus and announcements", () => {
+  it("keeps the focus on the moved criterion and announces its new position", () => {
+    render(<Host initial={THREE} />);
+
+    button(OUTCOME_RUBRIC_COPY.moveDown(1)).focus();
+    fireEvent.click(button(OUTCOME_RUBRIC_COPY.moveDown(1)));
+
+    expect(typeOf(2).value).toBe("TARGETS_REACHED");
+    expect(button(OUTCOME_RUBRIC_COPY.moveDown(2))).toHaveFocus();
+    expect(announcer()).toHaveTextContent("Criterio movido a la posición 2 de 3.");
+  });
+
+  it("moves the focus to the other arrow when the moved criterion reaches an edge", () => {
+    render(<Host initial={THREE} />);
+
+    fireEvent.click(button(OUTCOME_RUBRIC_COPY.moveUp(2)));
+
+    expect(typeOf(1).value).toBe("TIME_TO_STABILIZE");
+    expect(button(OUTCOME_RUBRIC_COPY.moveDown(1))).toHaveFocus();
+    expect(announcer()).toHaveTextContent("Criterio movido a la posición 1 de 3.");
+  });
+
+  it("focuses the next criterion after a removal, else the previous one, else the add button", () => {
+    render(<Host initial={THREE} />);
+
+    fireEvent.click(button(OUTCOME_RUBRIC_COPY.remove(2)));
+    expect(typeOf(2).value).toBe("TIME_IN_RANGE");
+    expect(button(OUTCOME_RUBRIC_COPY.remove(2))).toHaveFocus();
+    expect(announcer()).toHaveTextContent("Criterio 2 eliminado.");
+
+    fireEvent.click(button(OUTCOME_RUBRIC_COPY.remove(2)));
+    expect(button(OUTCOME_RUBRIC_COPY.remove(1))).toHaveFocus();
+
+    fireEvent.click(button(OUTCOME_RUBRIC_COPY.remove(1)));
+    expect(button(OUTCOME_RUBRIC_COPY.add)).toHaveFocus();
+    expect(announcer()).toHaveTextContent("Criterio 1 eliminado. La rúbrica no tiene criterios.");
+  });
+});
+
+describe("OutcomeRubricEditor review fixes", () => {
+  it("shows an unknown stored type as an invalid row the author must fix", () => {
+    let latest: OutcomeRubricDraft | null = null;
+    const stored = outcomeRubricDraftFrom({
+      assistancePolicy: "DISABLED",
+      passingScore: 70,
+      criteria: [{ type: "LEGACY_SCORE", weight: 100, threshold: 1 }],
+    });
+
+    render(<Host initial={stored} onValue={(value) => { latest = value; }} />);
+
+    const select = typeOf(1);
+
+    expect(select.value).toBe("");
+    expect(within(select).getByRole("option", { name: "Tipo desconocido: LEGACY_SCORE" })).toBeDisabled();
+    expect(within(select).getByRole("option", { name: "Objetivos alcanzados" })).not.toBeDisabled();
+    expect(select).toHaveAttribute("aria-invalid", "true");
+    expect(select).toHaveAccessibleDescription("El tipo guardado «LEGACY_SCORE» no existe; elige un tipo de criterio.");
+    expect(toOutcomeRubricValue(stored)).toBeNull();
+
+    fireEvent.change(select, { target: { value: "TARGETS_REACHED" } });
+
+    expect(typeOf(1)).not.toHaveAttribute("aria-invalid", "true");
+    expect(latest === null ? null : toOutcomeRubricValue(latest)).not.toBeNull();
+  });
+
+  it("hints that a criterion of weight 0 does not count for the grade", () => {
+    render(<Host initial={STORED} />);
+
+    const weight = screen.getByLabelText(OUTCOME_RUBRIC_COPY.weight(1));
+
+    expect(weight).not.toHaveAccessibleDescription();
+    fireEvent.change(weight, { target: { value: "0" } });
+    expect(weight).toHaveAccessibleDescription("Peso 0: este criterio no cuenta para la nota.");
+  });
+
+  it("shows two decimals, or more when needed, while the total is not 100", () => {
+    render(<Host initial={STORED} />);
+
+    fireEvent.change(screen.getByLabelText(OUTCOME_RUBRIC_COPY.weight(2)), { target: { value: "39,999" } });
+
+    expect(totalText()).toHaveTextContent("Suma de los pesos: 99,999 de 100");
   });
 });

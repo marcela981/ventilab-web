@@ -11,7 +11,8 @@
 *   error states, @shared/lib and the bar chart CSS Module. v1.1 (review of 180a0a1): the fallback table uses
 *   index-based keys (repeated labels are valid), and `formatValue` is read through a ref, so a new function identity
 *   (an inline arrow) never rebuilds the chart; the tooltip and ticks always use the latest formatter.
-* Versión: 1.1
+*   v1.2 (review of 8cbd3de): documented that a formatter change alone does not redraw the chart (see the ref).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -134,7 +135,11 @@ export function LineChart({ title, description, className, ...input }: LineChart
   const titleId = useId();
   const format = input.formatValue ?? ((value: number) => defaultFormat.format(value));
   const { labels, datasets, categoryAxisLabel, valueAxisLabel, valueMin, valueMax, formatValue } = input;
-  // The chart reads the latest formatter through this ref, so its identity is not a rebuild dependency.
+  // The chart reads the latest formatter through this ref, so its identity is not a rebuild dependency. Trade-off:
+  // a formatter whose OUTPUT changes (e.g. another unit) without any data/axis change does not redraw by itself: the
+  // tooltip uses it on the next hover, but the axis ticks keep the old text until the next rebuild (new labels,
+  // datasets, axis labels or bounds). A consumer that switches formats must also pass new data or remount the chart
+  // (e.g. a `key`). This keeps inline arrows from rebuilding the chart on every render.
   const formatRef = useRef(formatValue);
 
   useEffect(() => {

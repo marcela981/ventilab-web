@@ -4,7 +4,9 @@
 *   parameterField, valueField, priorityField, issues) moved unchanged from the evaluation-authoring simulation styles;
 *   the outcome rubric adds the rubric-level row, the per-criterion actions and the weight total with its warning.
 *   Criterion rows wrap on narrow screens. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
-* Versión: 1.0
+*   v1.1 (review of 4134725): the marked row of a criterion with an unknown stored type and the visually hidden live
+*   region of the reorder/removal announcements.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -95,4 +97,21 @@
 
 .totalWarning {
   color: var(--vl-color-error);
+}
+
+.criterionInvalid {
+  padding-left: var(--vl-space-2);
+  border-left: 3px solid var(--vl-color-error);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
