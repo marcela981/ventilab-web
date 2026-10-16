@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentyLab app-level design tokens
-* Descripción: Global --vl-* tokens (spacing scale, radii, shadows, z-index, transitions, focus ring, semantic color aliases) layered on top of the MUI cssVariables theme (--mui-*). Imported ONLY from pages/_app.js. CSS Modules consume var(--vl-*) / var(--mui-*) and never hex/rgb literals. Depends on src/shared/design-system/theme (it emits the --mui-* variables on :root).
-* Versión: 1.0
+* Descripción: Global --vl-* tokens (spacing scale, radii, shadows, z-index, transitions, focus ring, semantic color aliases) layered on top of the MUI cssVariables theme (--mui-*). Imported ONLY from pages/_app.js. CSS Modules consume var(--vl-*) / var(--mui-*) and never hex/rgb literals. Depends on src/shared/design-system/theme (it emits the --mui-* variables on :root). v1.1 (T1 simulation): adds the --vl-console-* variant, a dark high-contrast surface for the ventilator console (surfaces, border, grid, text, per-curve colors, alarm priorities with their on-colors, pending and out-of-range highlights), derived from the identity palette with var()/color-mix only.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -86,6 +86,42 @@
    * The existing primary color is NOT changed.
    */
   --vl-color-link: color-mix(in srgb, var(--mui-palette-primary-main) 60%, var(--mui-palette-common-black));
+
+  /*
+   * === VENTILATOR CONSOLE VARIANT ===
+   * Dark high-contrast surface used by src/shared/ventilator-console regardless of the
+   * app color scheme (bedside ventilators are dark). Every value derives from the identity
+   * palette: the navy background.contrast as the base, white mixes for text and lines.
+   * Contrast on --vl-console-bg (WCAG, computed): text 18.6:1, text-muted 9.4:1, pressure 8.6:1,
+   * flow 6.7:1, volume 8.5:1. Alarm fills carry navy text: high 5.1:1, medium 8.6:1, low 7.2:1.
+   */
+  --vl-console-bg: var(--mui-palette-background-contrast);
+  --vl-console-surface: color-mix(in srgb, var(--mui-palette-common-white) 5%, var(--vl-console-bg));
+  --vl-console-surface-raised: color-mix(in srgb, var(--mui-palette-common-white) 10%, var(--vl-console-bg));
+  --vl-console-border: color-mix(in srgb, var(--mui-palette-common-white) 22%, var(--vl-console-bg));
+  --vl-console-grid: color-mix(in srgb, var(--mui-palette-common-white) 10%, var(--vl-console-bg));
+  --vl-console-text: var(--mui-palette-common-white);
+  --vl-console-text-muted: color-mix(in srgb, var(--mui-palette-common-white) 70%, var(--vl-console-bg));
+  --vl-console-focus-ring: var(--mui-palette-common-white);
+
+  /* Curves: pressure warm, flow green, volume light blue (one hue per channel). */
+  --vl-console-curve-pressure: var(--mui-palette-warning-main);
+  --vl-console-curve-flow: var(--mui-palette-success-main);
+  --vl-console-curve-volume: color-mix(in srgb, var(--mui-palette-secondary-main) 70%, var(--mui-palette-common-white));
+
+  /* Alarm priorities (fill) and the text drawn on top of each fill. */
+  --vl-console-alarm-high: var(--mui-palette-error-main);
+  --vl-console-on-alarm-high: var(--vl-console-bg);
+  --vl-console-alarm-medium: var(--mui-palette-warning-main);
+  --vl-console-on-alarm-medium: var(--vl-console-bg);
+  --vl-console-alarm-low: var(--mui-palette-info-main);
+  --vl-console-on-alarm-low: var(--vl-console-bg);
+
+  /* A control value edited but not yet confirmed, and a value outside its allowed range. */
+  --vl-console-pending: var(--mui-palette-primary-main);
+  --vl-console-pending-bg: color-mix(in srgb, var(--mui-palette-primary-main) 20%, var(--vl-console-bg));
+  --vl-console-out-of-range: var(--mui-palette-error-main);
+  --vl-console-out-of-range-bg: color-mix(in srgb, var(--mui-palette-error-main) 20%, var(--vl-console-bg));
 }
 
 /*

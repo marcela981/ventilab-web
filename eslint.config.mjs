@@ -48,7 +48,11 @@
  *   v3.23 (S1): nuevo módulo compartido src/shared/media-upload (subida de archivos multimedia).
  *   v3.24 (A1 ai-chat): nueva feature src/features/ai-chat (sin legado) y sus rutas delgadas
  *   pages/assistant/index.tsx y pages/assistant/[conversationId].tsx.
- * Versión: 3.24
+ *   v3.25 (T1 simulation): nuevo módulo compartido src/shared/sim-engine; su copia vendorizada del
+ *   motor (engine/**, generada por scripts/sync-sim-engine.mjs) se ignora como el cliente OpenAPI
+ *   generado. Regla preventiva: src/shared/ventilator-console no puede importar @shared/sim-engine
+ *   ni @features/*.
+ * Versión: 3.25
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -61,7 +65,7 @@ import boundaries from "eslint-plugin-boundaries";
 import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
 
-const NEW_SHARED_MODULES = "api-client,realtime,session,design-system,layouts,rich-content,waveforms,charts,ai-rating,media-upload,ai-conversation,lib";
+const NEW_SHARED_MODULES = "api-client,realtime,session,design-system,layouts,rich-content,waveforms,charts,ai-rating,media-upload,ai-conversation,lib,sim-engine";
 const NEW_FEATURES = "auth,profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat";
 const SOURCE_EXT = "{js,jsx,ts,tsx,mjs,cjs}";
 // auth/ still holds legacy files at its root and in components/, so only its template
@@ -163,6 +167,7 @@ const eslintConfig = [
       "public/**",
       "next-env.d.ts",
       "src/shared/api-client/generated/**",
+      "src/shared/sim-engine/engine/**",
     ],
   },
   ...nextCoreWebVitals,
@@ -220,6 +225,29 @@ const eslintConfig = [
     rules: {
       "no-restricted-syntax": ["error", ...STYLE_BAN_SYNTAX],
       "no-restricted-imports": ["error", STYLE_BAN_IMPORTS],
+    },
+  },
+  {
+    // The generic console stays engine- and feature-agnostic: features adapt the engine to it.
+    files: [`src/shared/ventilator-console/**/*.${SOURCE_EXT}`],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: STYLE_BAN_IMPORTS.paths,
+          patterns: [
+            ...STYLE_BAN_IMPORTS.patterns,
+            {
+              group: ["@shared/sim-engine", "@shared/sim-engine/*", "**/sim-engine", "**/sim-engine/**"],
+              message: "shared/ventilator-console must not import sim-engine; the feature adapter connects them.",
+            },
+            {
+              group: ["@features/*", "**/features/**"],
+              message: "shared/ventilator-console must not import features.",
+            },
+          ],
+        },
+      ],
     },
   },
 ];
