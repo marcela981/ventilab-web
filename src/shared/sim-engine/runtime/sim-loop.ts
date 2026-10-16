@@ -17,7 +17,11 @@
 *   confirmed, and the stored events replayed at resume are not confirmed again. Depends on
 *   src/shared/sim-engine/engine. v1.4: `initialBacklogMs` seeds the accumulator (wall-clock resume after a reload):
 *   it is owed until start and then caught up in the usual bounded chunks, streamed like any other catch-up.
-* Versión: 1.4
+*   v1.5 (T8 replay mode): `playbackRate` (any positive finite speed, default 1, changed with setPlaybackRate) scales
+*   the wall→sim rate on top of the multiplier, so a local replay can play ×8 with no backend cap; `endAtSimTimeMs`
+*   bounds the run: the loop never steps past it and pauses there (backlog dropped). The recorded events of a replay
+*   are the scheduled `initialEvents`.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -110,16 +114,23 @@ export interface SimLoopOptions {
    * bounded backlog, so the catch-up is stepped and streamed, never invented. Default 0.
    */
   readonly initialBacklogMs?: number;
+  /** Local playback speed (replay): simulated ms per wall ms on top of the multiplier. Default 1. */
+  readonly playbackRate?: number;
+  /** Replay end: the loop never steps past it and pauses when it gets there. */
+  readonly endAtSimTimeMs?: number;
 }
 
 export interface SimLoop {
   readonly status: SimLoopStatus;
   readonly simTimeMs: number;
   readonly multiplier: TimeMultiplier;
+  readonly playbackRate: number;
   start(): void;
   pause(): void;
   resume(): void;
   setMultiplier(multiplier: TimeMultiplier): void;
+  /** Changes the local playback speed (replay); time elapsed so far is converted at the previous speed. */
+  setPlaybackRate(rate: number): void;
   /** Queues an event; it is applied now, or when the simulation reaches its simTimeMs. */
   queueEvent(event: SimEventInput): void;
   /** Advances the simulation for the wall time elapsed since the last tick and drains a batch. */
@@ -176,12 +187,19 @@ export function createSimLoop(engineCase: EngineCase, seed: number, options: Sim
     throw new RangeError("initialBacklogMs must be a finite non-negative number");
   }
 
+  const endAtSimTimeMs = options.endAtSimTimeMs;
+
+  if (endAtSimTimeMs !== undefined && (!Number.isFinite(endAtSimTimeMs) || endAtSimTimeMs < 0)) {
+    throw new RangeError("endAtSimTimeMs must be a finite non-negative number");
+  }
+
   // At least one fixed step per tick, so a misconfigured bound can never stall the loop.
   const maxStepsPerTick = Math.max(1, Math.floor(maxCatchUpMs / fixedStepMs));
   const state: EngineState = createSimulation(engineCase, seed, options.engineOptions ?? {});
 
   let status: SimLoopStatus = "idle";
   let multiplier: TimeMultiplier = options.multiplier ?? 1;
+  let playbackRate = positiveOr(options.playbackRate, 1, "playbackRate");
   let lastWallMs = 0;
   let accumulatorMs = initialBacklogMs;
   let nextMetricsAtMs = 0;
@@ -201,7 +219,7 @@ export function createSimLoop(engineCase: EngineCase, seed: number, options: Sim
 
     const now = clock.now();
 
-    accumulatorMs += Math.max(0, now - lastWallMs) * multiplier;
+    accumulatorMs += Math.max(0, now - lastWallMs) * multiplier * playbackRate;
     lastWallMs = now;
   }
 
@@ -284,6 +302,9 @@ export function createSimLoop(engineCase: EngineCase, seed: number, options: Sim
     get multiplier() {
       return multiplier;
     },
+    get playbackRate() {
+      return playbackRate;
+    },
     start() {
       if (status !== "idle") {
         return;
@@ -313,6 +334,12 @@ export function createSimLoop(engineCase: EngineCase, seed: number, options: Sim
       // Time elapsed so far is converted at the previous multiplier.
       accrueWallTime();
       multiplier = next;
+    },
+    setPlaybackRate(rate: number) {
+      const next = positiveOr(rate, playbackRate, "playbackRate");
+
+      accrueWallTime();
+      playbackRate = next;
     },
     queueEvent(input: SimEventInput) {
       if (status === "stopped") {
@@ -347,8 +374,17 @@ export function createSimLoop(engineCase: EngineCase, seed: number, options: Sim
         const steps = Math.min(Math.floor(accumulatorMs / fixedStepMs), maxStepsPerTick);
 
         if (steps > 0) {
-          advanceTo(state.simTimeMs + steps * fixedStepMs);
-          accumulatorMs -= steps * fixedStepMs;
+          const fromMs = state.simTimeMs;
+          const targetMs = endAtSimTimeMs === undefined ? fromMs + steps * fixedStepMs : Math.min(fromMs + steps * fixedStepMs, endAtSimTimeMs);
+
+          advanceTo(targetMs);
+          accumulatorMs -= Math.max(0, targetMs - fromMs);
+        }
+
+        // Replay end: stop there; nothing is owed past the end of the recording.
+        if (endAtSimTimeMs !== undefined && state.simTimeMs >= endAtSimTimeMs) {
+          status = "paused";
+          accumulatorMs = 0;
         }
       }
 

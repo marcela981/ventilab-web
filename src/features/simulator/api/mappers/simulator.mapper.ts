@@ -1,7 +1,9 @@
 /*
 * Funcionalidad: Simulator mappers
 * Descripción: Maps the simulator backend DTOs to the feature entities: a clinical case list item to a catalog card, the start-session response to a started session and a history DTO to a history row with its duration. The list summary has no expert-validation flag (backend gap); the card reads one only if a future payload carries it as a boolean, otherwise it stays null and no badge is shown. v1.1 (T6): the session replay and state read models used to resume a session (the opaque `case` stays unknown until the entity guard checks it). Depends on the simulator DTOs and entities.
-* Versión: 1.1
+*   v1.2 (T8): the replay keeps its engine version fields; the session summary (score, rubric breakdown, final
+*   targets with known ids only) and the exam link of a history DTO.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,6 +11,9 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import type { TargetStatus } from "@shared/sim-engine";
+import { OBJECTIVE_DEFINITIONS } from "../../application/config/sim-console.config";
+import type { ScoreCriterion, SessionExamLink, SessionSummary } from "../../application/entities/sim-result.entity";
 import { sessionDurationMs } from "../../application/entities/simulator.entity";
 import type { SessionReplay, SessionState } from "../../application/entities/sim-session.entity";
 import type { CaseCard, SessionHistoryItem, StartedSession } from "../../application/entities/simulator.entity";
@@ -17,6 +22,7 @@ import type {
   SimulationSessionDTO,
   SimulationSessionReplayDTO,
   SimulationSessionStateDTO,
+  SimulationSessionSummaryDTO,
   StartedSimulationSessionDTO,
 } from "../dtos/simulator.dto";
 
@@ -74,9 +80,75 @@ export function toSessionReplay(dto: SimulationSessionReplayDTO): SessionReplay 
     timeMultiplier: dto.timeMultiplier,
     engineCase: dto.case,
     events: dto.events.map((event) => ({ id: event.id, type: event.type, simTimeMs: event.simTimeMs, payload: event.payload })),
+    currentEngineVersion: dto.currentEngineVersion,
+    engineVersionMismatch: dto.engineVersionMismatch,
+    warning: dto.warning,
   };
 }
 
 export function toSessionState(dto: SimulationSessionStateDTO): SessionState {
   return { id: dto.id, status: dto.status, simTimeMs: dto.simTimeMs, expiresAt: dto.expiresAt };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function numberOrNull(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function isTargetId(value: unknown): value is TargetStatus["id"] {
+  return typeof value === "string" && Object.prototype.hasOwnProperty.call(OBJECTIVE_DEFINITIONS, value);
+}
+
+function isTargetStatusValue(value: unknown): value is TargetStatus["status"] {
+  return value === "MET" || value === "UNMET" || value === "UNKNOWN";
+}
+
+// The contract types `targets` and `breakdown` items as plain objects: each one is checked before use.
+function toTargetStatus(value: unknown): TargetStatus[] {
+  if (!isRecord(value) || !isTargetId(value.id) || !isTargetStatusValue(value.status)) {
+    return [];
+  }
+
+  return [{ id: value.id, status: value.status, value: numberOrNull(value.value), min: numberOrNull(value.min), max: numberOrNull(value.max) }];
+}
+
+function toScoreCriterion(value: unknown): ScoreCriterion[] {
+  if (!isRecord(value) || typeof value.criterion !== "string") {
+    return [];
+  }
+
+  return [{
+    criterion: value.criterion,
+    weight: numberOrNull(value.weight),
+    value: numberOrNull(value.value),
+    threshold: numberOrNull(value.threshold),
+    points: numberOrNull(value.points),
+    weightedPoints: numberOrNull(value.weightedPoints),
+    justification: typeof value.justification === "string" ? value.justification : "",
+  }];
+}
+
+export function toSessionSummary(dto: SimulationSessionSummaryDTO): SessionSummary {
+  const targets: readonly unknown[] = dto.targets;
+  const breakdown: readonly unknown[] = dto.breakdown;
+
+  return {
+    id: dto.id,
+    status: dto.status,
+    engineVersion: dto.engineVersion,
+    simTimeMs: dto.simTimeMs,
+    durationMs: dto.durationMs,
+    finalMetrics: dto.finalMetrics,
+    targets: targets.flatMap(toTargetStatus),
+    score: dto.score,
+    breakdown: breakdown.flatMap(toScoreCriterion),
+    aiHelpCount: dto.aiHelpCount,
+  };
+}
+
+export function toSessionExamLink(dto: SimulationSessionDTO): SessionExamLink {
+  return { mode: dto.mode, attemptId: dto.attemptId, questionId: dto.questionId };
 }

@@ -6,8 +6,10 @@
 *   message port, the timer functions and the clock are injected. v1.1: start arms the timer only when the loop is
 *   running afterwards (a stopped loop answers with an error asking for a new init), and init always clears the
 *   previous timer and loop first. v1.2: a batch carrying event confirmations is always posted. Depends on
-*   protocol.ts, sim-loop.ts and the engine.
-* Versión: 1.2
+*   protocol.ts, sim-loop.ts and the engine. v1.3 (T8): `setPlaybackRate` changes the replay speed of the loop and
+*   `replay` runs the engine replay synchronously in the worker (independent of the loop) and posts `replayResult`
+*   with the request id; a refused replay posts an error carrying the same request id.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,6 +18,7 @@
 */
 
 import { ENGINE_VERSION } from "../engine/engine-version";
+import { replay } from "../engine/simulation";
 import { isSimCommand, SIM_BATCH_RATE_HZ, type SimCommand, type SimWorkerMessage } from "./protocol";
 import { createSimLoop, type SimBatch, type SimClock, type SimLoop, type SimLoopStatus } from "./sim-loop";
 
@@ -120,6 +123,15 @@ export function createSimWorkerHost(deps: SimWorkerHostDeps): SimWorkerHost {
       case "applyEvent":
         requireLoop(command).queueEvent(command.event);
         break;
+      case "setPlaybackRate":
+        requireLoop(command).setPlaybackRate(command.rate);
+        break;
+      case "replay": {
+        const { engineCase, seed, events, untilMs, options } = command.request;
+
+        deps.post({ type: "replayResult", requestId: command.requestId, result: replay(engineCase, seed, events, untilMs, options) });
+        break;
+      }
       case "stop":
         requireLoop(command).stop();
         flush();
@@ -143,6 +155,7 @@ export function createSimWorkerHost(deps: SimWorkerHostDeps): SimWorkerHost {
           type: "error",
           message: error instanceof Error ? error.message : String(error),
           command: message.type,
+          ...(message.type === "replay" ? { requestId: message.requestId } : {}),
         });
       }
     },

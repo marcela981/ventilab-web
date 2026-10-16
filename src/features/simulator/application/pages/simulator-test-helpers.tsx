@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Simulator test helpers
-* Descripción: Shared fixtures of the simulator tests: backend URL builder, success envelope (with optional pagination), error response, ClinicalCaseListItemDTO / SimulationSessionDTO / StartedSimulationSessionDTO factories typed from the generated contract, an isolated SWR cache wrapper (no dedupe, no retries) and a render helper that uses it. Test-only code. Depends on msw, SWR, Testing Library and the backend origin.
-* Versión: 1.0
+* Descripción: Shared fixtures of the simulator tests: backend URL builder, success envelope (with optional pagination), error response, ClinicalCaseListItemDTO / SimulationSessionDTO / StartedSimulationSessionDTO factories typed from the generated contract, an isolated SWR cache wrapper (no dedupe, no retries) and a render helper that uses it. Test-only code. Depends on msw, SWR, Testing Library and the backend origin. v1.1 (T8): SimulationSessionSummaryDTO and SimulationSessionReplayDTO factories (the contract types their opaque objects as `Record<string, never>`, so the factories cast them).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,6 +18,8 @@ import type {
   ClinicalCaseListItemDTO,
   ClinicalCaseSummaryDTO,
   SimulationSessionDTO,
+  SimulationSessionReplayDTO,
+  SimulationSessionSummaryDTO,
   StartedSimulationSessionDTO,
 } from "../../api/dtos/simulator.dto";
 
@@ -90,6 +92,39 @@ export function startedSessionDto(id: string, overrides: Partial<StartedSimulati
     case: {},
     ...overrides,
   };
+}
+
+type OpaqueOverrides<T, K extends keyof T> = Partial<Omit<T, K>> & { [P in K]?: unknown };
+
+export function summaryDto(overrides: OpaqueOverrides<SimulationSessionSummaryDTO, "targets" | "breakdown" | "finalMetrics"> = {}): SimulationSessionSummaryDTO {
+  return {
+    id: "s1",
+    status: "ENDED",
+    engineVersion: "1.0.0",
+    simTimeMs: 8000,
+    durationMs: 9000,
+    finalMetrics: {},
+    targets: [],
+    score: 0.82,
+    breakdown: [],
+    aiHelpCount: 0,
+    ...overrides,
+  } as SimulationSessionSummaryDTO;
+}
+
+export function replayDto(overrides: OpaqueOverrides<SimulationSessionReplayDTO, "case" | "events"> = {}): SimulationSessionReplayDTO {
+  return {
+    id: "s1",
+    case: {},
+    seed: 42,
+    events: [],
+    engineVersion: "1.0.0",
+    timeMultiplier: 1,
+    currentEngineVersion: "1.0.0",
+    engineVersionMismatch: false,
+    warning: null,
+    ...overrides,
+  } as SimulationSessionReplayDTO;
 }
 
 export function SwrWrapper({ children }: { children: ReactNode }) {

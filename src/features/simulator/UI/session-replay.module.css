@@ -1,0 +1,172 @@
+/*
+* Funcionalidad: Simulation session replay styles
+* Descripción: CSS Module of the replay transport (T8) on the dark console surface: play/pause and speed buttons
+*   (pressed state), the speed hint and the simulated clock, the time bar (native range input over an SVG strip of
+*   event marks colored by kind) and the list of event marks. Console tokens (--vl-console-*) and the shared
+*   spacing, radius and focus tokens only; no hex or rgb values.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.transport {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-2) var(--vl-space-3);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-3);
+}
+
+.button,
+.speedButton,
+.markButton {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--vl-space-1) var(--vl-space-3);
+  font: var(--mui-font-button);
+  color: var(--vl-console-text);
+  background: var(--vl-console-surface-raised);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-sm);
+  cursor: pointer;
+}
+
+.speed {
+  display: inline-flex;
+  gap: var(--vl-space-1);
+}
+
+.speedButton[aria-pressed="true"] {
+  color: var(--vl-console-bg);
+  background: var(--vl-console-text);
+}
+
+.button:disabled,
+.speedButton:disabled,
+.markButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.button:focus-visible,
+.speedButton:focus-visible,
+.markButton:focus-visible,
+.range:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-console-focus-ring);
+  outline-offset: var(--vl-focus-ring-width);
+}
+
+.hint,
+.clockLabel {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.clock {
+  display: flex;
+  align-items: baseline;
+  gap: var(--vl-space-2);
+  margin: 0 0 0 auto;
+}
+
+.clockValue {
+  font: var(--mui-font-h6);
+  font-variant-numeric: tabular-nums;
+  color: var(--vl-console-text);
+}
+
+.track {
+  position: relative;
+  height: 2rem;
+}
+
+.marks {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.mark {
+  stroke: var(--vl-console-text-muted);
+  stroke-width: 2;
+}
+
+.mark[data-kind="param"] {
+  stroke: var(--vl-console-curve-pressure);
+}
+
+.mark[data-kind="assist"] {
+  stroke: var(--vl-console-pending);
+}
+
+.mark[data-kind="alarm"] {
+  stroke: var(--vl-console-alarm-high);
+}
+
+.mark[data-kind="alarmAck"] {
+  stroke: var(--vl-console-alarm-medium);
+}
+
+.mark[data-kind="caseEvent"] {
+  stroke: var(--vl-console-curve-volume);
+}
+
+.range {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  accent-color: var(--vl-console-text);
+  background: transparent;
+}
+
+.markList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.markButton {
+  padding: 0 var(--vl-space-2);
+  font: var(--mui-font-caption);
+  border-inline-start: 3px solid var(--vl-console-text-muted);
+}
+
+.markButton[data-kind="param"] {
+  border-inline-start-color: var(--vl-console-curve-pressure);
+}
+
+.markButton[data-kind="assist"] {
+  border-inline-start-color: var(--vl-console-pending);
+}
+
+.markButton[data-kind="alarm"] {
+  border-inline-start-color: var(--vl-console-alarm-high);
+}
+
+.markButton[data-kind="alarmAck"] {
+  border-inline-start-color: var(--vl-console-alarm-medium);
+}
+
+.markButton[data-kind="caseEvent"] {
+  border-inline-start-color: var(--vl-console-curve-volume);
+}

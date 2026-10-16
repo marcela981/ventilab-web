@@ -8,8 +8,11 @@
 *   loop types. v1.2 (T6): init may carry `initialEvents` (each with a finite non-negative simTimeMs) and a finite
 *   non-negative `startAtSimTimeMs` to resume a session. v1.3: an event may carry a client `id` (non-empty string of
 *   at most 64 characters, as the backend allows); batches report its confirmation with the effective time. v1.4:
-*   init may carry a finite non-negative `initialBacklogMs` (wall-clock resume).
-* Versión: 1.4
+*   init may carry a finite non-negative `initialBacklogMs` (wall-clock resume). v1.5 (T8 replay): init may carry a
+*   positive `playbackRate` (at most MAX_PLAYBACK_RATE) and a non-negative `endAtSimTimeMs`; `setPlaybackRate` changes
+*   the local playback speed; `replay` asks the worker to run the engine replay (case, seed, events, untilMs, replay
+*   options) off the main thread and is answered by `replayResult` with the same request id (an error carries it too).
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,11 +20,13 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import type { EngineCase, EngineOptions, TimeMultiplier } from "../engine/engine.types";
+import type { EngineCase, EngineEvent, EngineOptions, ReplayOptions, ReplayResult, TimeMultiplier } from "../engine/engine.types";
 import type { SimBatch, SimEventInput } from "./sim-loop";
 
 /** Approximate rate at which the worker posts batches. */
 export const SIM_BATCH_RATE_HZ = 30;
+/** Highest local playback speed a replay may request. */
+export const MAX_PLAYBACK_RATE = 16;
 
 export interface SimInitOptions {
   readonly engineOptions?: EngineOptions;
@@ -34,6 +39,19 @@ export interface SimInitOptions {
   readonly startAtSimTimeMs?: number;
   /** Simulated milliseconds owed by the wall clock at init, caught up after start (wall-clock resume). */
   readonly initialBacklogMs?: number;
+  /** Local playback speed of a replay (simulated ms per wall ms on top of the multiplier). */
+  readonly playbackRate?: number;
+  /** Replay end: the loop pauses there. */
+  readonly endAtSimTimeMs?: number;
+}
+
+/** Engine replay run in the worker: the same arguments as the engine `replay`. */
+export interface SimReplayRequest {
+  readonly engineCase: EngineCase;
+  readonly seed: number;
+  readonly events: readonly EngineEvent[];
+  readonly untilMs: number;
+  readonly options?: ReplayOptions;
 }
 
 export type SimCommand =
@@ -43,12 +61,21 @@ export type SimCommand =
   | { readonly type: "resume" }
   | { readonly type: "setMultiplier"; readonly multiplier: TimeMultiplier }
   | { readonly type: "applyEvent"; readonly event: SimEventInput }
+  | { readonly type: "setPlaybackRate"; readonly rate: number }
+  | { readonly type: "replay"; readonly requestId: string; readonly request: SimReplayRequest }
   | { readonly type: "stop" };
 
 export type SimWorkerMessage =
   | { readonly type: "ready"; readonly engineVersion: string }
   | { readonly type: "batch"; readonly batch: SimBatch }
-  | { readonly type: "error"; readonly message: string; readonly command?: SimCommand["type"] };
+  | { readonly type: "replayResult"; readonly requestId: string; readonly result: ReplayResult }
+  | {
+      readonly type: "error";
+      readonly message: string;
+      readonly command?: SimCommand["type"];
+      /** Set when the failed command was a replay request. */
+      readonly requestId?: string;
+    };
 
 const TIME_MULTIPLIERS: readonly number[] = [1, 2, 4];
 
@@ -92,6 +119,8 @@ function isInitOptions(value: unknown): boolean {
     isOptionalFinite(value.metricsEveryMs) &&
     (value.startAtSimTimeMs === undefined || isNonNegativeFinite(value.startAtSimTimeMs)) &&
     (value.initialBacklogMs === undefined || isNonNegativeFinite(value.initialBacklogMs)) &&
+    (value.playbackRate === undefined || isPlaybackRate(value.playbackRate)) &&
+    (value.endAtSimTimeMs === undefined || isNonNegativeFinite(value.endAtSimTimeMs)) &&
     (value.initialEvents === undefined ||
       (Array.isArray(value.initialEvents) &&
         value.initialEvents.every((event: unknown) => isEventInput(event) && isRecord(event) && isNonNegativeFinite(event.simTimeMs))))
@@ -100,6 +129,37 @@ function isInitOptions(value: unknown): boolean {
 
 function isNonNegativeFinite(value: unknown): boolean {
   return isFiniteNumber(value) && value >= 0;
+}
+
+function isPlaybackRate(value: unknown): boolean {
+  return isFiniteNumber(value) && value > 0 && value <= MAX_PLAYBACK_RATE;
+}
+
+function isEngineEvent(value: unknown): boolean {
+  if (!isRecord(value) || !isNonNegativeFinite(value.simTimeMs)) {
+    return false;
+  }
+
+  return value.type === "RECONNECT" || (value.type === "PARAM_CHANGE" && isRecord(value.changes));
+}
+
+function isReplayRequest(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    isRecord(value.engineCase) &&
+    isFiniteNumber(value.seed) &&
+    isNonNegativeFinite(value.untilMs) &&
+    Array.isArray(value.events) &&
+    value.events.every(isEngineEvent) &&
+    (value.options === undefined ||
+      (isEngineOptions(value.options) &&
+        isRecord(value.options) &&
+        (value.options.metricsIntervalMs === undefined || isPositiveFinite(value.options.metricsIntervalMs))))
+  );
+}
+
+function isPositiveFinite(value: unknown): boolean {
+  return isFiniteNumber(value) && value > 0;
 }
 
 /** Longest client event id the backend accepts. */
@@ -138,6 +198,10 @@ export function isSimCommand(value: unknown): value is SimCommand {
       return value.multiplier !== undefined && isOptionalMultiplier(value.multiplier);
     case "applyEvent":
       return isEventInput(value.event);
+    case "setPlaybackRate":
+      return isPlaybackRate(value.rate);
+    case "replay":
+      return isEventId(value.requestId) && isReplayRequest(value.request);
     default:
       return false;
   }
@@ -153,6 +217,13 @@ export function isSimWorkerMessage(value: unknown): value is SimWorkerMessage {
       return typeof value.engineVersion === "string";
     case "batch":
       return isRecord(value.batch) && typeof value.batch.simTimeMs === "number" && Array.isArray(value.batch.samples);
+    case "replayResult":
+      return (
+        typeof value.requestId === "string" &&
+        isRecord(value.result) &&
+        isRecord(value.result.final) &&
+        Array.isArray(value.result.metricsTimeline)
+      );
     case "error":
       return typeof value.message === "string";
     default:

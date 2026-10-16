@@ -79,6 +79,8 @@
     "pages/assistant/index.tsx",
     "pages/assistant/[conversationId].tsx",
     "pages/simulator/index.tsx",
-    "pages/simulator/sessions/[sessionId]/index.tsx"
+    "pages/simulator/sessions/[sessionId]/index.tsx",
+    "pages/simulator/sessions/[sessionId]/result.tsx",
+    "pages/simulator/sessions/[sessionId]/replay.tsx"
   ]
 }

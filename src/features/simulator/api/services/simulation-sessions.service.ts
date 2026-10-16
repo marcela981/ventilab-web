@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Simulation sessions service
-* Descripción: Engine-based simulation session endpoints, all present in openapi/openapi.json: start a session POST /api/simulation/sessions ({mode, caseId, timeMultiplier, attemptId?, questionId?}; the server fixes the seed and the engine version) and the paginated session history GET /api/simulation/sessions/history (own sessions by default; page, limit, caseId, mode and status filters). v1.1 (T6): POST /{id}/events (client events with idempotent ids; the server counts duplicates), GET /{id}/replay and GET /{id}/state (resume after a reload) and POST /{id}/end ({simTimeMs?}). Summary and assist are added by later tasks. v1.2: a keepalive `fetch` of POST /{id}/events for the page-hide flush (same origin, Bearer token and cookies as the axios client) and the session `startedAt` read from the history `ids` filter. Depends on the api-client request helpers and token storage, the backend origin, the simulator DTOs and mappers.
-* Versión: 1.2
+* Descripción: Engine-based simulation session endpoints, all present in openapi/openapi.json: start a session POST /api/simulation/sessions ({mode, caseId, timeMultiplier, attemptId?, questionId?}; the server fixes the seed and the engine version) and the paginated session history GET /api/simulation/sessions/history (own sessions by default; page, limit, caseId, mode and status filters). v1.1 (T6): POST /{id}/events (client events with idempotent ids; the server counts duplicates), GET /{id}/replay and GET /{id}/state (resume after a reload) and POST /{id}/end ({simTimeMs?}). Summary and assist are added by later tasks. v1.2: a keepalive `fetch` of POST /{id}/events for the page-hide flush (same origin, Bearer token and cookies as the axios client) and the session `startedAt` read from the history `ids` filter. Depends on the api-client request helpers and token storage, the backend origin, the simulator DTOs and mappers. v1.3 (T8): the GET /{id}/summary path (read through useApiQuery by the result page) and the history query of one session (its mode and exam linkage).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -28,6 +28,12 @@ export const SIMULATION_SESSION_EVENTS_PATH = "/api/simulation/sessions/{id}/eve
 export const SIMULATION_SESSION_REPLAY_PATH = "/api/simulation/sessions/{id}/replay";
 export const SIMULATION_SESSION_STATE_PATH = "/api/simulation/sessions/{id}/state";
 export const SIMULATION_SESSION_END_PATH = "/api/simulation/sessions/{id}/end";
+export const SIMULATION_SESSION_SUMMARY_PATH = "/api/simulation/sessions/{id}/summary";
+
+/** History query of one own session (`ids` filter): its mode, attempt and question. */
+export function singleSessionQuery(sessionId: string): SimulationSessionsQueryDTO {
+  return { ids: sessionId, limit: 1, page: 1 };
+}
 
 export type SessionHistoryQuery = Pick<SimulationSessionsQueryDTO, "caseId" | "mode" | "status"> & { page: number, limit: number };
 
@@ -95,7 +101,7 @@ export function sendSimulationEventsKeepalive(sessionId: string, events: readonl
 
 /** Wall-clock start of one own session, from the history (`ids` filter); null when it is not listed. */
 export async function fetchSessionStartedAt(sessionId: string): Promise<string | null> {
-  const result = await apiGet(SIMULATION_SESSION_HISTORY_PATH, { query: { ids: sessionId, limit: 1, page: 1 } });
+  const result = await apiGet(SIMULATION_SESSION_HISTORY_PATH, { query: singleSessionQuery(sessionId) });
 
   return result.data.find((session) => session.id === sessionId)?.startedAt ?? null;
 }

@@ -59,7 +59,9 @@
  *   pages/simulator/index.tsx.
  *   v3.28 (T6 simulation): la ruta delgada pages/simulator/sessions/[sessionId]/index.tsx entra en
  *   NEW_PAGE_FILES.
- * Versión: 3.28
+ *   v3.29 (T8 simulation): las rutas delgadas pages/simulator/sessions/[sessionId]/result.tsx y
+ *   replay.tsx entran en NEW_PAGE_FILES.
+ * Versión: 3.29
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -123,6 +125,8 @@ const NEW_PAGE_FILES = [
   "pages/assistant/[[]conversationId[]].tsx",
   "pages/simulator/index.tsx",
   "pages/simulator/sessions/[[]sessionId[]]/index.tsx",
+  "pages/simulator/sessions/[[]sessionId[]]/result.tsx",
+  "pages/simulator/sessions/[[]sessionId[]]/replay.tsx",
 ];
 
 const NEW_CODE_FILES = [

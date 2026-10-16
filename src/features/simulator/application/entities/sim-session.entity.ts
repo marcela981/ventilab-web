@@ -6,8 +6,9 @@
 *   POST /simulation/sessions/{id}/events, the engine version check (FREE: warning; EXAM: block before the worker
 *   starts) and the guards that turn the opaque `case` object and the time multiplier of the contract into engine
 *   types. Depends on the sim-engine public API and the simulator config. v1.1: the record keeps `startedAt` and the
-*   boot carries the wall-clock backlog and the unsent events of this tab.
-* Versión: 1.1
+*   boot carries the wall-clock backlog and the unsent events of this tab. v1.2 (T8): the replay read model keeps the
+*   current server engine version, the mismatch flag and the server warning.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -50,6 +51,9 @@ export type SessionReplay = {
   timeMultiplier: number
   engineCase: unknown
   events: readonly RecordedSessionEvent[]
+  currentEngineVersion?: string | undefined
+  engineVersionMismatch?: boolean | undefined
+  warning?: string | null | undefined
 };
 
 export type SessionState = {

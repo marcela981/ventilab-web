@@ -1,0 +1,161 @@
+/*
+* Funcionalidad: Simulation session result styles
+* Descripción: CSS Module of the session result page (T8) on the light surface, with the visual identity of the
+*   catalog: page column, section cards, the server score block, the facts lists (status, times, outcomes), the
+*   objectives and rubric tables with a horizontal scroll wrapper on narrow screens, the objective status text, the
+*   discreet determinism note, the evolution chart grid and the page links. Design-system tokens only; no hex or rgb.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-5);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.cardTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+}
+
+.score {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--vl-space-3);
+  margin: 0;
+}
+
+.scoreLabel {
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-color-text-muted);
+}
+
+.scoreValue {
+  font: var(--mui-font-h4);
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--vl-space-1) var(--vl-space-3);
+  margin: 0;
+  font: var(--mui-font-body2);
+}
+
+.facts dt {
+  color: var(--vl-color-text-muted);
+}
+
+.facts dd {
+  margin: 0;
+}
+
+.outcomes {
+  padding-top: var(--vl-space-3);
+  border-top: 1px solid var(--vl-color-border);
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text);
+}
+
+.table th,
+.table td {
+  padding: var(--vl-space-2) var(--vl-space-3);
+  border-top: 1px solid var(--vl-color-border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table thead th {
+  border-top: 0;
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-color-text-muted);
+}
+
+.status[data-status="MET"] {
+  color: var(--vl-color-success);
+}
+
+.status[data-status="UNMET"] {
+  color: var(--vl-color-error);
+}
+
+.note {
+  margin: 0;
+  padding: var(--vl-space-2) var(--vl-space-3);
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-muted);
+  border-inline-start: 3px solid var(--vl-color-border);
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  gap: var(--vl-space-4);
+}
+
+.chart {
+  min-width: 0;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-4);
+}
+
+.link,
+.primaryLink {
+  color: var(--vl-color-link);
+  text-decoration: none;
+}
+
+.primaryLink {
+  font: var(--mui-font-button);
+}
+
+.link:hover,
+.link:focus-visible,
+.primaryLink:hover,
+.primaryLink:focus-visible {
+  text-decoration: underline;
+}

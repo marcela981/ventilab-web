@@ -4,7 +4,8 @@
 *   errors, ventilator limits and modes, alarm defaults, replay and the PBW / mechanical power helpers, plus the
 *   runtime: the fixed-step simulation loop, the worker protocol and the SSR-safe worker factory. Features consume
 *   this barrel only; src/shared/ventilator-console must not import it. v1.1: exports the event confirmation type.
-* Versión: 1.1
+*   v1.2 (T8): the replay request types, MAX_PLAYBACK_RATE and requestWorkerReplay (engine replay in the worker).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -51,9 +52,11 @@ export {
 export {
   isSimCommand,
   isSimWorkerMessage,
+  MAX_PLAYBACK_RATE,
   SIM_BATCH_RATE_HZ,
   type SimCommand,
   type SimInitOptions,
+  type SimReplayRequest,
   type SimWorkerMessage,
 } from "./runtime/protocol";
 export {
@@ -63,3 +66,4 @@ export {
   type SimWorkerListener,
   type WorkerLike,
 } from "./runtime/create-sim-worker";
+export { requestWorkerReplay } from "./runtime/replay-client";
