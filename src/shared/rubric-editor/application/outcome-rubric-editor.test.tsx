@@ -8,7 +8,8 @@
 *   Testing Library and the rubric-editor module. v1.1 (review of 4134725): focus after reorder and removal with the
 *   live announcement, the invalid row of an unknown stored type, the weight 0 hint and the total with 2 decimals.
 *   v1.2 (review of b23709c): an identical announcement is a new node; a refused reorder never moves the focus later.
-* Versión: 1.2
+*   v1.3 (final review): a host that renders a clone of the reordered or reduced list still gets the focus restored.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -246,6 +247,23 @@ describe("OutcomeRubricEditor focus and announcements", () => {
 
     expect(second).not.toBe(first);
     expect(second.getAttribute("data-announcement")).not.toBe(first.getAttribute("data-announcement"));
+  });
+
+  it("restores the focus when the host renders a clone of the reordered or reduced list", () => {
+    // A host that stores a copy of what it receives (normalisation, immutable store), never the same object.
+    function CloningHost() {
+      const [value, setValue] = useState(THREE);
+
+      return <OutcomeRubricEditor value={value} newKey={() => "k"} onChange={(next) => setValue(structuredClone(next))} />;
+    }
+
+    render(<CloningHost />);
+    fireEvent.click(button(OUTCOME_RUBRIC_COPY.moveDown(1)));
+    expect(typeOf(2).value).toBe("TARGETS_REACHED");
+    expect(button(OUTCOME_RUBRIC_COPY.moveDown(2))).toHaveFocus();
+
+    fireEvent.click(button(OUTCOME_RUBRIC_COPY.remove(2)));
+    expect(button(OUTCOME_RUBRIC_COPY.remove(2))).toHaveFocus();
   });
 
   it("drops the focus request when the host does not render the reordered list", () => {

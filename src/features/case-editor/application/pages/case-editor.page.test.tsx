@@ -10,7 +10,9 @@
 *   v1.1 (review of 50ed812): an unchanged stored case cannot be saved; a console edit not applied yet shows as
 *   unsaved, arms beforeunload and blocks the save with its note until cancelled; the first invalid field takes the
 *   focus. These run inside the existing mounts (no extra full-editor render: the page tests are the slow ones).
-* Versión: 1.1
+*   v1.2 (final review): the console note reads "Aplica o cancela los cambios del ventilador"; a failed save with no
+*   invalid field (409 with sessions) focuses the page error alert.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -220,12 +222,12 @@ describe("CaseEditorPage — existing case", () => {
     // A PUT always clears the expert validation: nothing changed, nothing to save.
     expect(saveButton()).toBeDisabled();
 
-    // A console edit not applied yet counts as unsaved and blocks the save until it is applied or discarded.
+    // A console edit not applied yet counts as unsaved and blocks the save until it is applied or cancelled.
     const ventilator = section("ventilator");
 
     fireEvent.click(within(ventilator).getByRole("button", { name: "Aumentar PEEP" }));
     expect(screen.getByText(CASE_EDITOR_COPY.unsaved)).toBeInTheDocument();
-    expect(screen.getByText(CASE_EDITOR_COPY.consolePending)).toBeInTheDocument();
+    expect(screen.getByText("Aplica o cancela los cambios del ventilador")).toBeInTheDocument();
     expect(saveButton()).toBeDisabled();
 
     const pendingUnload = new Event("beforeunload", { cancelable: true });
@@ -282,7 +284,10 @@ describe("CaseEditorPage — existing case", () => {
     answer = errorResponse("clinical-cases.clinical_case_has_simulation_sessions", 409);
     clickSave();
 
-    expect(await screen.findByText("El caso ya tiene sesiones de simulación: duplícalo para cambiar su definición.")).toBeInTheDocument();
+    const pageMessage = await screen.findByText("El caso ya tiene sesiones de simulación: duplícalo para cambiar su definición.");
+
+    // No field is invalid: the page error takes the focus so a screen reader user hears why the save failed.
+    await waitFor(() => expect(pageMessage.closest("[role=\"alert\"]")).toHaveFocus());
   });
 
   it("shows the load error with a retry", async() => {

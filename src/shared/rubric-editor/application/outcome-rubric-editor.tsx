@@ -17,7 +17,9 @@
 *   shows at least 2 decimals (more when needed to see the difference).
 *   v1.2 (review of b23709c): every announcement is a new node (nonce key), so an identical text is announced again;
 *   a pending focus request is dropped when the host does not render the expected reordered or reduced list.
-* Versión: 1.2
+*   v1.3 (final review): the expected list is compared by its ordered criterion keys, not by object identity, so a
+*   host that renders a copy of the value it received still gets the focus restored.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -91,8 +93,17 @@ function formatWeightTotal(total: number, ok: boolean): string {
 }
 
 type CriterionAction = "up" | "down" | "remove";
-/** `expected`: the list the host must render for the focus to move (identity of the value passed to onChange). */
-type FocusTarget = ({ key: string, action: CriterionAction } | { key: null, action: "add" }) & { expected: OutcomeRubricDraft };
+/**
+ * `expected`: the ordered criterion keys the host must render for the focus to move (the keys of the value passed to
+ * onChange; a host may render a copy of that value).
+ */
+type FocusTarget = ({ key: string, action: CriterionAction } | { key: null, action: "add" }) & { expected: readonly string[] };
+
+const criterionKeys = (draft: OutcomeRubricDraft): string[] => draft.criteria.map((criterion) => criterion.key);
+
+function sameKeys(a: readonly string[], b: readonly string[]): boolean {
+  return a.length === b.length && a.every((key, index) => key === b[index]);
+}
 
 const OPPOSITE_ARROW: Readonly<Record<CriterionAction, CriterionAction>> = { up: "down", down: "up", remove: "remove" };
 
@@ -150,7 +161,7 @@ export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false,
 
     pendingFocus.current = null;
 
-    if (target.expected !== value) {
+    if (!sameKeys(target.expected, criterionKeys(value))) {
       return;
     }
 
@@ -171,7 +182,7 @@ export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false,
       return;
     }
 
-    pendingFocus.current = { key, action: offset < 0 ? "up" : "down", expected: next };
+    pendingFocus.current = { key, action: offset < 0 ? "up" : "down", expected: criterionKeys(next) };
     announce(OUTCOME_RUBRIC_COPY.moved(index + offset + 1, count));
     onChange(next);
   };
@@ -180,7 +191,9 @@ export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false,
     const neighbour = value.criteria[index + 1] ?? value.criteria[index - 1];
     const next = removeOutcomeCriterion(value, key);
 
-    pendingFocus.current = neighbour ? { key: neighbour.key, action: "remove", expected: next } : { key: null, action: "add", expected: next };
+    const expected = criterionKeys(next);
+
+    pendingFocus.current = neighbour ? { key: neighbour.key, action: "remove", expected } : { key: null, action: "add", expected };
     announce(neighbour ? OUTCOME_RUBRIC_COPY.removed(index + 1) : OUTCOME_RUBRIC_COPY.removedLast(index + 1));
     onChange(next);
   };

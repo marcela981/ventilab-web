@@ -34,7 +34,8 @@
 *   (continue path) comes from the bootstrap (attempt `serverNow`), and the exam return record reaches the bootstrap.
 *   v1.7 (review of e45841f): the deadline decides on the end-in-flight ref only (never a stale `session.ending`); a
 *   rejected router.push resets the leave guard and falls back to `window.location.assign(url)`.
-* Versión: 1.7
+*   v1.8 (final review): a cancelled router.push (the Pages Router resolves `false`) takes the same fallback.
+* Versión: 1.8
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -301,7 +302,13 @@ function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnd
     const url = exam ? examReturnUrlOf(record, examReturn ?? examReturnStore) : buildSessionResultUrl(sessionId);
 
     try {
-      await router.push(url);
+      // The Pages Router resolves `false` (it does not reject) when the navigation is cancelled.
+      const navigated = await router.push(url);
+
+      if (!navigated) {
+        leftRef.current = false;
+        window.location.assign(url);
+      }
     } catch {
       // A rejected client navigation (aborted, chunk load failure) must not strand the student on an ended session:
       // allow a later leave and fall back to a full page load.

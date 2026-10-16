@@ -24,7 +24,8 @@
 *   overwrite the outbox the new boot wrote; the time-ahead test stamps its server clock on the monotonic clock; the
 *   tab claim is released on a persisted pagehide (back/forward cache) and claimed again on its pageshow.
 *   v1.7 (review of eb3c21b): a deadline during the student's failing end returns to the exam with one end and one navigation; a deadline already past at mount posts /end before the worker boots and never starts it; an EXAM rebuilt without its exam context counts down on the attempt server clock.
-* Versión: 1.7
+*   v1.8 (final review): a cancelled router.push (resolves false) falls back to a full page load.
+* Versión: 1.8
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -322,6 +323,19 @@ describe("SessionConsolePage", () => {
     await waitFor(() => expect(router.push).toHaveBeenCalled());
     expect(sentOfType(worker, "applyEvent")).toHaveLength(0);
     expect(sendEvents).not.toHaveBeenCalled();
+  });
+
+  it("a cancelled client navigation (push resolves false) falls back to a full page load", async() => {
+    // jsdom's window.location.assign cannot be stubbed; its "Not implemented: navigation" report proves the call.
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const { worker } = renderPage();
+
+    router.push.mockResolvedValueOnce(false);
+    await startRunning(worker);
+    await endThroughDialog(worker);
+
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/simulator/sessions/s1/result"));
+    await waitFor(() => expect(consoleError.mock.calls.some((call) => /navigation/i.test(String(call[0])))).toBe(true));
   });
 
   it("keeps the session and shows the error when the end fails", async() => {

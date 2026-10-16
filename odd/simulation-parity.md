@@ -11,7 +11,7 @@ Status legend: **ported** (available in the new feature), **dropped** (intention
 | `/simulador` (`pages/simulador/index.js`) | **kept legacy** (decision 11) | Not redirected: it is the only UI of the physical ventilator (reservation, connection, MQTT/Socket.io live data). Nav entry relabelled "Ventilador real" (students). The engine simulator is "Simulador" → `/simulator` (every role); "Casos clínicos" → `/simulator/cases` (teachers and admins). |
 | Other legacy simulator or clinical-case pages | none exist | The audit and a search of `pages/` find no other legacy simulator or case route (`pages/dashboard/index.js` is a dashboard redirect to `/simulador`, outside this feature). No redirect page was needed. |
 
-Legacy links that still point at `/simulador` and are outside this feature's edit surface: `src/shared/components/Sidebar.jsx:49` and `src/features/admin/components/panel/PanelSidebar.jsx:268` (legacy sidebars, label "Simulador"), `src/shared/utils/redirectByRole.js:25-33` (legacy landing route) and `pages/dashboard/index.js`. They stay valid because `/simulador` is kept; relabel or repoint them during P2.
+Legacy links that still point at `/simulador` and are outside this feature's edit surface: `src/shared/components/Sidebar.jsx:49` and `src/features/admin/components/panel/PanelSidebar.jsx:268` (legacy sidebars, label "Simulador"), `src/shared/utils/redirectByRole.js:25-33` (legacy landing route), `pages/dashboard/index.js` and `src/lib/auth-config.js:65` (`/simulador` in `PROTECTED_ROUTES`). They stay valid because `/simulador` is kept; relabel or repoint them during P2.
 
 ## Capabilities (audit section g)
 
@@ -74,7 +74,7 @@ No browser, servers or Playwright were available; every item below is covered on
 4. "Asesoría IA": a real SSE answer, "Detener", the rating, the lazy chunk.
 5. Result and replay: line charts, scrubbing feel, marks, the version banner.
 6. Exam: the practical part inside the attempt player, start → console → deadline expiry → return to the attempt with the question restored; a cross-origin `Date` header.
-7. Case editor: sticky index, the configure console inside the light page, "Guardar" disabled until a change, the "Aplica o descarta los cambios del ventilador" note, a real 422 from the backend, the unsaved-changes prompt (in dev the Next.js overlay shows the aborted route change as an unhandled rejection: expected).
+7. Case editor: sticky index, the configure console inside the light page, "Guardar" disabled until a change, the "Aplica o cancela los cambios del ventilador" note, a real 422 from the backend, the unsaved-changes prompt (in dev the Next.js overlay shows the aborted route change as an unhandled rejection: expected).
 8. Case tools: server test run charts, local preview console, "Marcar como validado", delete of a case in use → "Archivar".
 9. Nav: students see "Simulador" (`/simulator`) and "Ventilador real" (`/simulador`); teachers and admins see "Simulador" and "Casos clínicos".
 10. `/simulador` still works for the physical ventilator (reservation, connection, live data).

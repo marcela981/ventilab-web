@@ -17,7 +17,9 @@
 *   the expert validation); configure-console edits not applied yet count as unsaved (status, exit guard, tools) and
 *   block the save with "Aplica o descarta los cambios del ventilador"; after a failed save the first field with an
 *   error takes the focus.
-* Versión: 1.2
+*   v1.3 (final review): the note reads "Aplica o cancela los cambios del ventilador" (the console button is
+*   "Cancelar"); after a failed save with no invalid field the page error alert takes the focus.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -86,7 +88,7 @@ export const CASE_EDITOR_COPY = {
   ready: "Simulación",
   readyYes: "Listo para simular",
   readyNo: "Faltan bloques para simular",
-  consolePending: "Aplica o descarta los cambios del ventilador",
+  consolePending: "Aplica o cancela los cambios del ventilador",
   replaceNote: "Guardar reemplaza la definición y borra la validación por experto. Si el caso ya tiene sesiones, duplícalo para cambiarlo.",
 } as const;
 
@@ -152,6 +154,7 @@ export function CaseEditorPage({ caseId, renderTools, deps }: CaseEditorPageProp
   // Every PUT clears the expert validation, so an unchanged stored case is never sent.
   const canSave = draft !== null && !editor.saving && !consolePending && (creating || editor.dirty);
   const sectionsRef = useRef<HTMLDivElement>(null);
+  const pageErrorRef = useRef<HTMLDivElement>(null);
   const [focusRequest, setFocusRequest] = useState(0);
   const { updateDraft } = editor;
   const setVentilator = useCallback((ventilator: VentilatorSettings | null) => updateDraft((current) => ({ ...current, ventilator })), [updateDraft]);
@@ -162,10 +165,13 @@ export function CaseEditorPage({ caseId, renderTools, deps }: CaseEditorPageProp
     void router.replace(CASES_URL);
   }, [allowNextNavigation, router]);
 
-  // After a failed save the first field with an error (document order = section order) takes the focus.
+  // After a failed save the first field with an error (document order = section order) takes the focus, else the
+  // page error alert (a server error that maps to no field).
   useEffect(() => {
     if (focusRequest > 0) {
-      sectionsRef.current?.querySelector<HTMLElement>("[aria-invalid=\"true\"]")?.focus();
+      const target = sectionsRef.current?.querySelector<HTMLElement>("[aria-invalid=\"true\"]") ?? pageErrorRef.current;
+
+      target?.focus();
     }
   }, [focusRequest]);
 
@@ -221,7 +227,7 @@ export function CaseEditorPage({ caseId, renderTools, deps }: CaseEditorPageProp
             : null}
         </aside>
         <div className={cx(styles.sections)} ref={sectionsRef}>
-          {editor.pageError ? <Alert severity="error">{editor.pageError}</Alert> : null}
+          {editor.pageError ? <Alert severity="error" ref={pageErrorRef} tabIndex={-1}>{editor.pageError}</Alert> : null}
           <GeneralSection {...sectionProps} />
           <PatientSection {...sectionProps} />
           <MechanicsSection {...sectionProps} newKey={editor.newKey} />
