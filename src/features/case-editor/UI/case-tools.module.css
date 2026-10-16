@@ -1,0 +1,125 @@
+/*
+* Funcionalidad: Case tools styles
+* Descripción: Layout of the case editor tools (T12): the tools card of the editor sidebar (expert validation badge
+*   and action, test run, local preview, delete), the test-run form, its summary and the grid of line charts, and the
+*   local preview dialog (status bar, controls and the dark console frame, which scrolls horizontally on narrow
+*   screens). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.tools {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+}
+
+.toolsTitle {
+  margin: 0;
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-color-text);
+}
+
+.toolGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--vl-space-1);
+}
+
+.validationRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text);
+}
+
+.badge {
+  display: inline-flex;
+  padding: 0 var(--vl-space-2);
+  border: 1px solid currentColor;
+  border-radius: var(--vl-radius-pill);
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-muted);
+}
+
+.badge[data-validated="true"] {
+  color: var(--vl-color-success);
+}
+
+.note {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-muted);
+}
+
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--vl-space-3);
+}
+
+.formField {
+  flex: 1 1 10rem;
+}
+
+.formActions {
+  display: flex;
+  align-items: center;
+  min-height: 2.5rem;
+}
+
+.dialogBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+}
+
+.summary {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text);
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: var(--vl-space-3);
+}
+
+.previewBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.previewTime {
+  margin-right: auto;
+  font: var(--mui-font-body2);
+  font-variant-numeric: tabular-nums;
+  color: var(--vl-color-text-muted);
+}
+
+.missing {
+  margin: 0;
+  padding-left: var(--vl-space-4);
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text);
+}
+
+.consoleFrame {
+  overflow-x: auto;
+  border-radius: var(--vl-radius-md);
+}

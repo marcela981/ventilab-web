@@ -35,7 +35,9 @@
 *   v1.6 (review of eb3c21b): `end()` on a session whose worker is not booted (no worker, blocked, or still
 *   "starting", e.g. an EXAM deadline already past at mount) no longer answers `busy`: it flushes the queued events
 *   (bounded like the normal end), posts /end at the last known simulated time, stops the worker and never starts it.
-* Versión: 1.6
+*   v1.7 (T12): the frame hub moved unchanged to `@shared/sim-engine/console-binding` (`createConsoleFrameHub`), which
+*   the case editor local preview also uses.
+* Versión: 1.7
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -45,13 +47,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toApiError } from "@shared/api-client/api-error";
-import { createSimWorker, DEFAULT_SAMPLE_RATE_HZ } from "@shared/sim-engine";
+import { createSimWorker } from "@shared/sim-engine";
+import { createConsoleFrameHub } from "@shared/sim-engine/console-binding";
 import type { EngineMetrics, SimBatch, SimLoopStatus, SimWorkerClient, VentilatorSettings } from "@shared/sim-engine";
 import type {
   ConsoleAlarm,
   ConsoleConfirmation,
-  ConsoleFrameListener,
-  ConsoleFrameSource,
   ModeParameterTable,
   VentilatorConsoleAdapter,
 } from "@shared/ventilator-console";
@@ -82,7 +83,6 @@ import {
   reconcileEvents,
   toConsoleAlarms,
   toConsoleMetrics,
-  toConsoleSamples,
   toConsoleSettings,
   toPatientValues,
   toSettingsChanges,
@@ -172,33 +172,6 @@ export type UseSimSessionOptions = {
   blocked: boolean
   deps?: SimSessionDeps | undefined
 };
-
-type FrameHub = { source: ConsoleFrameSource, emit: (batch: SimBatch) => void };
-
-function createFrameHub(sourceId: string): FrameHub {
-  const listeners = new Set<ConsoleFrameListener>();
-
-  return {
-    source: {
-      sourceId,
-      sampleRateHz: DEFAULT_SAMPLE_RATE_HZ,
-      subscribe(listener) {
-        listeners.add(listener);
-
-        return () => {
-          listeners.delete(listener);
-        };
-      },
-    },
-    emit(batch) {
-      if (batch.samples.length > 0 && listeners.size > 0) {
-        const samples = toConsoleSamples(batch.samples);
-
-        listeners.forEach((listener) => listener({ samples }));
-      }
-    },
-  };
-}
 
 let fallbackCounter = 0;
 
@@ -309,7 +282,7 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
 
   const record = boot?.record ?? null;
   const sessionId = record?.id ?? null;
-  const hub = useMemo(() => (sessionId ? createFrameHub(sessionId) : null), [sessionId]);
+  const hub = useMemo(() => (sessionId ? createConsoleFrameHub(sessionId) : null), [sessionId]);
 
   const depsRef = useRef(deps);
   const clientRef = useRef<SimWorkerClient | null>(null);

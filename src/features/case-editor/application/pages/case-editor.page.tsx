@@ -11,7 +11,9 @@
 *   `renderTools` is the slot for T12 (test-run, local preview, expert validation, delete → archive), rendered under
 *   the index. Loading and load-error states. Depends on MUI, next/head, next/link, next/router, the design-system
 *   components, @shared/lib, the case editor hooks, entities, config, sections and CSS Module.
-* Versión: 1.0
+*   v1.1 (T12): the tools context also carries the current draft (local preview) and `onDeleted`, which leaves for
+*   the case list without the unsaved-changes prompt; `renderCaseEditorTools` renders the T12 tools for the route.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -39,8 +41,9 @@ import { CASE_SECTIONS, sectionAnchor, sectionOfField } from "../config/case-edi
 import type { CaseSectionId } from "../config/case-editor-sections";
 import { STATUS_LABELS } from "../config/case-editor.config";
 import { buildCaseEditUrl, CASES_URL } from "../config/case-editor.routes";
+import { CaseEditorTools } from "../components/case-editor-tools";
 import { getCaseEditorErrorMessage } from "../entities/case-editor-errors";
-import type { FieldErrors } from "../entities/case-draft.entity";
+import type { CaseDraft, FieldErrors } from "../entities/case-draft.entity";
 import { EventsSection } from "../components/events-section";
 import { GeneralSection } from "../components/general-section";
 import { MechanicsSection } from "../components/mechanics-section";
@@ -85,8 +88,17 @@ export const CASE_EDITOR_COPY = {
 export type CaseEditorToolsContext = {
   caseId: string
   definition: ClinicalCaseDefinitionDTO
+  /** The current draft, unsaved changes included. */
+  draft: CaseDraft
   dirty: boolean
+  /** The stored case no longer exists: leaves for the case list without asking about unsaved changes. */
+  onDeleted: () => void
 };
+
+/** The T12 tools (expert validation, server test run, local preview, delete → archive) for the `renderTools` slot. */
+export function renderCaseEditorTools(context: CaseEditorToolsContext): ReactNode {
+  return <CaseEditorTools {...context} />;
+}
 
 export type CaseEditorPageProps = {
   /** null: a new case. */
@@ -133,6 +145,11 @@ export function CaseEditorPage({ caseId, renderTools, deps }: CaseEditorPageProp
   const setVentilator = useCallback((ventilator: VentilatorSettings | null) => updateDraft((current) => ({ ...current, ventilator })), [updateDraft]);
   const setRubric = useCallback((rubric: OutcomeRubricDraft | null) => updateDraft((current) => ({ ...current, rubric })), [updateDraft]);
 
+  const leaveAfterDelete = useCallback(() => {
+    allowNextNavigation();
+    void router.replace(CASES_URL);
+  }, [allowNextNavigation, router]);
+
   const save = async() => {
     const outcome = await editor.save();
 
@@ -174,7 +191,9 @@ export function CaseEditorPage({ caseId, renderTools, deps }: CaseEditorPageProp
               ))}
             </ol>
           </nav>
-          {caseId && definition && renderTools ? renderTools({ caseId, definition, dirty: editor.dirty }) : null}
+          {caseId && definition && renderTools
+            ? renderTools({ caseId, definition, draft, dirty: editor.dirty, onDeleted: leaveAfterDelete })
+            : null}
         </aside>
         <div className={cx(styles.sections)}>
           {editor.pageError ? <Alert severity="error">{editor.pageError}</Alert> : null}

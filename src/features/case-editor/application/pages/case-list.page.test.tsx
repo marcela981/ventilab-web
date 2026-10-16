@@ -6,7 +6,8 @@
 *   the next page; "Duplicar" posts /duplicate and opens the editor of the copy; "Publicar" and "Archivar" ask for
 *   confirmation and send PATCH /status with the target status (a failure shows its toast); empty and error states
 *   with retry. Depends on vitest, Testing Library, msw and the case editor test helpers.
-* Versión: 1.0
+*   v1.1 (T12): the row test run in a dialog and the delete with the 409 → archive alternative.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,6 +21,12 @@ import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { apiUrl, caseItemDto, envelope, errorResponse, renderWithProviders } from "./case-editor-test-helpers";
 import { CaseListPage } from "./case-list.page";
+import { CASE_TEST_RUN_COPY } from "../components/case-test-run";
+import { DELETE_CASE_COPY } from "../components/delete-case-flow";
+
+vi.mock("@shared/charts", () => ({
+  LineChart: ({ title }: { title: string }) => <figure aria-label={title} />,
+}));
 
 const router = vi.hoisted(() => ({ push: vi.fn(() => Promise.resolve(true)) }));
 
@@ -201,5 +208,71 @@ describe("CaseListPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /Reintentar/ }));
 
     expect(await screen.findByText("Caso c9")).toBeInTheDocument();
+  });
+
+  it("runs the server test of a row in a dialog", async() => {
+    const runs: string[] = [];
+
+    server.use(
+      listHandler([]),
+      http.post(apiUrl("/api/clinical-cases/:caseId/test-run"), ({ params }) => {
+        runs.push(String(params.caseId));
+
+        return HttpResponse.json(envelope({
+          engineVersion: "1.0.0",
+          seconds: 300,
+          seed: 3,
+          metricsTimeline: [{ simTimeMs: 1000, gasExchange: { spo2Percent: 91 } }, { simTimeMs: 2000, gasExchange: { spo2Percent: 92 } }],
+        }));
+      }),
+    );
+    renderWithProviders(<CaseListPage />);
+
+    const row = await screen.findByRole("group", { name: "Acciones de Caso c1a" });
+
+    fireEvent.click(within(row).getByRole("button", { name: "Probar" }));
+
+    const dialog = await screen.findByRole("dialog", { name: CASE_TEST_RUN_COPY.title("Caso c1a") });
+
+    fireEvent.click(within(dialog).getByRole("button", { name: CASE_TEST_RUN_COPY.run }));
+
+    expect(await within(dialog).findByText(CASE_TEST_RUN_COPY.summary("1.0.0", 300, 3))).toBeInTheDocument();
+    expect(within(dialog).getByRole("figure", { name: "SpO2 (%)" })).toBeInTheDocument();
+    expect(runs).toEqual(["c1a"]);
+  });
+
+  it("deletes a row after a confirmation, and offers to archive a case in use", async() => {
+    const deleted: string[] = [];
+    const archived: string[] = [];
+
+    server.use(
+      listHandler([]),
+      http.delete(apiUrl("/api/clinical-cases/:caseId"), ({ params }) => {
+        deleted.push(String(params.caseId));
+
+        return params.caseId === "c1a"
+          ? errorResponse("clinical-cases.clinical_case_in_use", 409)
+          : HttpResponse.json(envelope(null));
+      }),
+      http.patch(apiUrl("/api/clinical-cases/:caseId/status"), ({ params }) => {
+        archived.push(String(params.caseId));
+
+        return HttpResponse.json(envelope(null));
+      }),
+    );
+    renderWithProviders(<CaseListPage />);
+
+    fireEvent.click(within(await screen.findByRole("group", { name: "Acciones de Caso c1b" })).getByRole("button", { name: "Eliminar" }));
+    fireEvent.click(within(await screen.findByRole("dialog", { name: DELETE_CASE_COPY.confirmTitle })).getByRole("button", { name: DELETE_CASE_COPY.confirm }));
+    expect(await screen.findByText(DELETE_CASE_COPY.deleted("Caso c1b"))).toBeInTheDocument();
+
+    // The closing dialog hides the page from the accessibility tree until its exit transition ends.
+    fireEvent.click(within(await screen.findByRole("group", { name: "Acciones de Caso c1a" })).getByRole("button", { name: "Eliminar" }));
+    fireEvent.click(within(await screen.findByRole("dialog", { name: DELETE_CASE_COPY.confirmTitle })).getByRole("button", { name: DELETE_CASE_COPY.confirm }));
+    fireEvent.click(within(await screen.findByRole("dialog", { name: DELETE_CASE_COPY.inUseTitle })).getByRole("button", { name: DELETE_CASE_COPY.archive }));
+
+    // The toasts queue one at a time (the deletion one may still be showing), so the request is the evidence here.
+    await waitFor(() => expect(archived).toEqual(["c1a"]));
+    expect(deleted).toEqual(["c1b", "c1a"]);
   });
 });

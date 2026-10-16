@@ -10,7 +10,8 @@
 *   the time-ahead refusal threshold, the keepalive chunk limits, the resync settle wait and the tab-claim probe.
 *   v1.4 (review of 180a0a1): the keepalive TOTAL budget (all chunks of one page hide together).
 *   v1.5 (T11): the parameter settings and mode labels moved to `@shared/sim-engine/console-binding` (re-exported).
-* Versión: 1.5
+*   v1.6 (T12): the alarm labels moved there too (re-exported), for the case editor local preview.
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,21 +19,11 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import type { AlarmCode, PatientSex, TargetId } from "@shared/sim-engine";
+import type { PatientSex, TargetId } from "@shared/sim-engine";
 
 // Moved unchanged to the shared engine ↔ console binding (the case editor shows the same controls).
-export { MODE_LABELS, PARAMETER_SETTINGS } from "@shared/sim-engine/console-binding";
+export { ALARM_LABELS, MODE_LABELS, PARAMETER_SETTINGS } from "@shared/sim-engine/console-binding";
 export type { ParameterSetting } from "@shared/sim-engine/console-binding";
-
-export const ALARM_LABELS = {
-  HIGH_PRESSURE: "Presión alta",
-  LOW_TIDAL_VOLUME: "Volumen corriente bajo",
-  HIGH_TIDAL_VOLUME: "Volumen corriente alto",
-  APNEA: "Apnea",
-  HIGH_RESPIRATORY_RATE: "Frecuencia respiratoria alta",
-  AUTO_PEEP: "Auto-PEEP",
-  DISCONNECTION: "Desconexión",
-} as const satisfies Record<AlarmCode, string>;
 
 export type ObjectiveDefinition = { label: string, unit: string, decimals: number };
 

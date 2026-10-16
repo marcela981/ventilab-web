@@ -13,7 +13,9 @@
 *   acknowledgements of a batch into client session events stamped with the effective engine time, and drops the
 *   rejected ones. v1.2 (T11): the settings ↔ console mapping (settings, limits, mode options, SIMV applicability,
 *   confirmation → changes) moved to `@shared/sim-engine/console-binding` and is re-exported here unchanged.
-* Versión: 1.2
+*   v1.3 (T12): the engine output mapping (samples, metrics, vitals, trends, alarms, target ranges) moved there too
+*   and is re-exported here unchanged, for the case editor local preview.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,124 +29,29 @@ import {
   resolveVentilatorSettings,
   validateVentilatorSettings,
 } from "@shared/sim-engine";
-import { tidy } from "@shared/sim-engine/console-binding";
 import type {
-  Alarm,
   EngineCase,
-  EngineMetrics,
   EngineTargets,
   NumericRange,
   SimBatch,
   TargetStatus,
   TargetStatusValue,
   VentilatorSettings,
-  WaveformSample,
 } from "@shared/sim-engine";
-import {
-  CONSOLE_PARAMETER_IDS,
-  CONSOLE_PARAMETERS,
-  PATIENT_TREND_POINTS,
-  resolveAlarmPriority,
-} from "@shared/ventilator-console";
-import type {
-  ConsoleAlarm,
-  ConsoleAlarmPriority,
-  ConsoleMetrics,
-  ConsolePatient,
-  ConsoleRanges,
-  ConsoleSample,
-  NormalRange,
-  PatientVitalId,
-} from "@shared/ventilator-console";
-import { ALARM_LABELS, OBJECTIVE_DEFINITIONS, PARAMETER_SETTINGS, SEX_LABELS } from "../config/sim-console.config";
+import { CONSOLE_PARAMETER_IDS, CONSOLE_PARAMETERS } from "@shared/ventilator-console";
+import { OBJECTIVE_DEFINITIONS, PARAMETER_SETTINGS, SEX_LABELS } from "../config/sim-console.config";
 import type { ClientSessionEvent } from "../entities/sim-session.entity";
 
-export function toConsoleSamples(samples: readonly WaveformSample[]): ConsoleSample[] {
-  return samples.map((sample) => ({
-    tMs: sample.simTimeMs,
-    pressure: sample.pressureCmH2O,
-    flow: sample.flowLpm,
-    volume: sample.volumeMl,
-  }));
-}
-
-export function toConsoleMetrics(metrics: EngineMetrics | null, settings: VentilatorSettings): ConsoleMetrics {
-  const cycle = metrics?.lastCycle ?? null;
-
-  return {
-    peakPressure: cycle?.peakPressureCmH2O ?? null,
-    plateauPressure: cycle?.plateauPressureCmH2O ?? null,
-    totalPeep: cycle?.totalPeepCmH2O ?? null,
-    autoPeep: cycle?.autoPeepCmH2O ?? null,
-    drivingPressure: cycle?.drivingPressureCmH2O ?? null,
-    exhaledTidalVolume: cycle?.exhaledTidalVolumeMl ?? null,
-    tidalVolumePerKg: cycle?.tidalVolumePerKgPbw ?? null,
-    minuteVolume: metrics?.ventilation.minuteVolumeLpm ?? null,
-    totalRespiratoryRate: metrics?.ventilation.totalRespiratoryRateBpm ?? null,
-    // The engine reports Ti/Te, which the console shows as 1:x.
-    ieRatio: cycle && cycle.ieRatio > 0 ? cycle.ieRatio : null,
-    fio2: tidy(settings.fio2 * 100),
-    mechanicalPower: cycle?.mechanicalPowerJPerMin ?? null,
-  };
-}
-
-export type PatientValues = ConsolePatient["values"];
-
-export function toPatientValues(metrics: EngineMetrics | null): PatientValues {
-  if (metrics === null) {
-    return {};
-  }
-
-  return {
-    spo2: metrics.gasExchange.spo2Percent,
-    pao2: metrics.gasExchange.pao2MmHg,
-    paco2: metrics.gasExchange.paco2MmHg,
-    ph: metrics.gasExchange.ph,
-    map: metrics.hemodynamics.meanArterialPressureMmHg,
-  };
-}
-
-export type PatientTrends = Readonly<Partial<Record<PatientVitalId, readonly number[]>>>;
-
-/** Appends the new vitals to their trends, keeping the newest PATIENT_TREND_POINTS values. */
-export function appendTrends(trends: PatientTrends, values: PatientValues, maxPoints: number = PATIENT_TREND_POINTS): PatientTrends {
-  const next: Partial<Record<PatientVitalId, readonly number[]>> = { ...trends };
-
-  (Object.keys(values) as PatientVitalId[]).forEach((id) => {
-    const value = values[id];
-
-    if (typeof value === "number" && Number.isFinite(value)) {
-      next[id] = [...(trends[id] ?? []), value].slice(-maxPoints);
-    }
-  });
-
-  return next;
-}
-
-function priorityOf(alarm: Alarm): ConsoleAlarmPriority {
-  if (alarm.severity === "HIGH") {
-    return "high";
-  }
-
-  return alarm.severity === "MEDIUM" ? "medium" : resolveAlarmPriority(alarm.code);
-}
-
-function formatAlarmNumber(value: number): string {
-  return Number.isFinite(value) ? String(Math.round(value * 10) / 10) : "—";
-}
-
-/** Engine alarms as console alarms; an alarm still active keeps its onset time (simulated ms). */
-export function toConsoleAlarms(alarms: readonly Alarm[], simTimeMs: number, previous: readonly ConsoleAlarm[] = []): ConsoleAlarm[] {
-  const since = new Map(previous.map((alarm) => [alarm.id, alarm.since]));
-
-  return alarms.map((alarm) => ({
-    id: alarm.code,
-    type: alarm.code,
-    priority: priorityOf(alarm),
-    message: `${ALARM_LABELS[alarm.code] ?? alarm.code}: ${formatAlarmNumber(alarm.value)} (límite ${formatAlarmNumber(alarm.threshold)})`,
-    since: since.get(alarm.code) ?? simTimeMs,
-  }));
-}
+// Moved unchanged to the shared engine ↔ console binding (the case editor local preview uses the same mapping).
+export {
+  appendTrends,
+  rangesFromTargets,
+  toConsoleAlarms,
+  toConsoleMetrics,
+  toConsoleSamples,
+  toPatientValues,
+} from "@shared/sim-engine/console-binding";
+export type { PatientTrends, PatientValues } from "@shared/sim-engine/console-binding";
 
 // Moved unchanged to the shared engine ↔ console binding (the case editor uses the same controls).
 export {
@@ -189,45 +96,6 @@ export function validateSettingsChange(applied: VentilatorSettings, changes: Par
 
     return { ok: false, message: CHANGE_COPY.invalid };
   }
-}
-
-function fromRange(range: NumericRange | undefined): NormalRange | undefined {
-  return range ? { min: range.min, max: range.max } : undefined;
-}
-
-function fromMax(max: number | undefined): NormalRange | undefined {
-  return max === undefined ? undefined : { max };
-}
-
-function compact<K extends string>(entries: Readonly<Record<K, NormalRange | undefined>>): Partial<Record<K, NormalRange>> {
-  const result: Partial<Record<K, NormalRange>> = {};
-
-  (Object.keys(entries) as K[]).forEach((key) => {
-    const value = entries[key];
-
-    if (value) {
-      result[key] = value;
-    }
-  });
-
-  return result;
-}
-
-/** The case targets as console normal ranges; they override the console teaching defaults per key. */
-export function rangesFromTargets(targets: EngineTargets): ConsoleRanges {
-  return {
-    metrics: compact({
-      plateauPressure: fromMax(targets.plateauPressureMaxCmH2O),
-      drivingPressure: fromMax(targets.drivingPressureMaxCmH2O),
-      tidalVolumePerKg: fromRange(targets.tidalVolumePerKgPbw),
-      autoPeep: fromMax(targets.autoPeepMaxCmH2O),
-    }),
-    patient: compact({
-      spo2: fromRange(targets.spo2Percent),
-      paco2: fromRange(targets.paco2MmHg),
-      ph: fromRange(targets.ph),
-    }),
-  };
 }
 
 export type ObjectiveRow = {

@@ -44,6 +44,10 @@ The legacy `/simulador` streams backend Socket.io data and has no confirmation p
 - The clinical case contract has no media field and a signed media URL expires (and students only get one for media used by published content), so the case clinical history cannot embed uploaded images or videos (T11).
 - The generated OpenAPI types of the definition blocks (`mechanics`, `history`, `targets`, `initialState`, `initialVentilatorSettings`, `defaultRubric`, `labData`) and of the upsert `labData` are opaque objects (`Record<string, never>`); the editor reads them defensively and casts `labData` back (T11).
 - Teacher replay access is enforced only by the backend, and is unverified from the spec.
+- The test-run request bounds (seconds 1–1800, seed 0–2147483646) live only in the backend DTO (`MIN/MAX_TEST_RUN_SECONDS`, `MAX_SEED`); the generated OpenAPI types carry no minimum/maximum, so the editor mirrors them as constants (T12).
+- `ClinicalCaseTestRunDTO.metricsTimeline` is typed as an opaque object array (`Record<string, never>[]`); the test-run charts read the engine metrics fields defensively (T12).
+- The test run only runs the STORED case (no draft body), so unsaved changes need a save first; the local preview covers the draft in the browser (T12, refines the earlier "no test-run for an unsaved draft").
+- No endpoint lists a validated flag per case (list summary) nor reverts an expert validation; the list cannot show or validate, the editor validates only the stored version (disabled while dirty, since a save clears it) (T12).
 - Neither `/replay` nor `/state` (nor the start response) carries the session `mode`; after a lost session store the console infers EXAM from a non-null `expiresAt` (T6).
 - The session `timeMultiplier` is fixed at start and the backend bounds every event `simTimeMs` by `wall elapsed × timeMultiplier + tolerance`, so the client playback multiplier can never exceed the session multiplier; since the T5 fix the catalog card picks the session multiplier (×1/×2/×4, default ×1) at start, and the console FREE selector offers only values ≤ it (T6).
 - The generated OpenAPI type of `SimulationEventInputDTO.payload` is an empty object (`Record<string, never>`); the front casts the documented `{changes}` payload (T6).
@@ -72,7 +76,7 @@ The legacy `/simulador` streams backend Socket.io data and has no confirmation p
 - [x] T9 (D) simulator: PracticalQuestionSlot renderer registration + EXAM flow (deadline, no pause).
 - [x] T10 (D) `shared/rubric-editor` promotion + outcome rubric editor.
 - [x] T11 (D) case-editor: list + sectioned editor + save/dirty guard.
-- [ ] T12 (D) case-editor: test-run, local preview, expert validation, delete 409 → archive.
+- [x] T12 (D) case-editor: test-run, local preview, expert validation, delete 409 → archive.
 - [ ] T13 (D) legacy redirects, nav, parity doc, final verification (typecheck, lint, test, greps, build + bundle).
 - [ ] P2 Legacy removal: ONLY with the author's approval.
 
@@ -228,5 +232,18 @@ The legacy `/simulador` streams backend Socket.io data and has no confirmation p
   - Event queue v1.3: an `enqueue` after `dispose` is an explicit no-op (not queued, sent or reported) with one `console.warn` outside production.
   - LineChart v1.2: documented that a formatter change alone does not redraw the axis ticks (the formatter is read through a ref; a consumer that switches formats passes new data or a `key`).
 
+- T12 (delegated writer, 2026-10-16; route: delegated (writer trigger: 2+ non-trivial files, shared move + new feature components); one `feat(case-editor)` commit after `b23709c`; the review-fix unit above is `b23709c`):
+  - Shared move (behaviour unchanged): the engine output ↔ console mapping (`toConsoleSamples`, `toConsoleMetrics`, `toPatientValues`, `appendTrends`, `toConsoleAlarms`, `rangesFromTargets`, `ALARM_LABELS`) and the use-sim-session frame hub (`createConsoleFrameHub`) moved to `src/shared/sim-engine/console-binding/frame-binding.ts` (console-binding v1.1); `sim-console-adapter` v1.3 and `sim-console.config` v1.6 re-export them, `use-sim-session` v1.7 imports the hub. Not a `git mv`: only part of each file moved (as T11 did for the settings binding).
+  - Service v1.1 (all paths from the generated types): `DELETE /api/clinical-cases/{caseId}`, `PATCH /api/clinical-cases/{caseId}/expert-validation` (no body, `clinical-cases:validate`), `POST /api/clinical-cases/{caseId}/test-run` (`{seconds, seed?}`, slow timeout, abortable). Error copy v1.1: `clinical-cases.clinical_case_in_use`, `simulation.case_not_ready`.
+  - Pure `case-tools.entity.ts`: test-run form (whole seconds 1–1800, default 300; optional whole seed ≤ 2147483646), chart series from the metrics timeline (SpO2, PaCO2, pH, Pplat, driving pressure, Vt/kg PBW, MAP; sampled to 30 points, gaps for missing values), `previewEngineCase` mirroring the backend `SimulationCaseMapper.toDefinition` (missing blocks listed), `isCaseInUseError`, `formatSimClock`.
+  - `CaseTestRunPanel`/`CaseTestRunDialog`: form with validation, loading, error alert, summary (engine version, seconds, seed) + one shared `LineChart` per metric; a note when the editor is dirty (the run uses the stored case). No score on the client.
+  - Local preview (`useCasePreview` + `CasePreviewDialog`): the draft (`toUpsertCase` → engine case) runs in the simulation Web Worker (`createSimWorker`, fixed seed 1), no session and no request; `VentilatorConsole variant="live"` with live waveforms, metrics, vitals, alarms and the case target ranges; console changes go to the worker only (validated first, applied on acknowledgement), never to the draft; pause/resume/restart; a draft with errors or missing blocks explains why; no Worker → error. State keyed by the frame hub (no setState in effect bodies).
+  - Expert validation (`CaseEditorTools`): badge from `/definition` + "Marcar como validado" only with `clinical-cases:validate` (`useSession().hasPermission`), confirm dialog, disabled while dirty; the definition refreshes through the mutation invalidation.
+  - Delete (`DeleteCaseFlow`, editor tools and list rows): destructive confirm → DELETE; 409 in use → "No se puede eliminar el caso" with "Archivar" (PATCH /status ARCHIVED); a deletion in the editor leaves for the list without the unsaved prompt (`onDeleted` in the tools context, page v1.1). List v1.1: "Probar" and "Eliminar" per row (no validation there: no flag in the summary).
+  - Wiring: `renderCaseEditorTools` exported from the feature; `pages/simulator/cases/[id]/edit.tsx` v1.1 passes it to the `renderTools` slot (the editor page tests keep rendering without tools/session).
+  - Checks: `npm run typecheck` exit 0; `npm run lint` exit 0; `npx vitest run src/shared/rubric-editor src/shared/charts src/shared/sim-engine src/shared/ventilator-console src/features/simulator src/features/case-editor` 42 files / 443 tests green (new: case tools entity 10, preview hook 6, editor tools 10, list page +2). One intermediate failure fixed: the list delete test waited for the archive toast, which queues behind the deletion toast (FIFO host); it now asserts the PATCH. Unit A (`b23709c`): the same three checks green (39 files / 415 tests), RED observed first for the 7 editor and the event-queue tests (the entity tests were written with the code).
+  - Deviations: the tools are tested in isolation (`case-editor-tools.test.tsx`), not through the slow full editor page; the test-run chart builder is feature-local (the simulator `buildEvolution` stays in its feature and has other metrics); tests were written with the code (entity and hook green on the first run, not RED first); the preview dialog test checks the worker init, the console render with live batches is covered by the hook test.
+  - Pending (manual): browser check of the dialogs, the live preview console and the charts; a real 409 delete and test-run against the backend.
+
 ## Next step
-T12.
+T13.

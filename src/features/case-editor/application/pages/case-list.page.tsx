@@ -7,9 +7,11 @@
 *   is filtered by one status, since the summary has no status either. Row actions: Editar (editor route), Duplicar
 *   (POST /duplicate, then the editor of the copy), Publicar and Archivar (PATCH /status, each confirmed). "Nuevo
 *   caso" opens /simulator/cases/new. Loading, error with retry, empty and no-match states; failures show a toast.
-*   Test-run, delete and expert validation arrive with T12. Depends on MUI, next/head, next/link, next/router, the
-*   design-system components, @shared/lib, the case editor hooks, entities, config and CSS Module.
-* Versión: 1.0
+*   Depends on MUI, next/head, next/link, next/router, the design-system components, @shared/lib, the case editor
+*   hooks, entities, config, tools components and CSS Module. v1.1 (T12): per row "Probar" (the server test run of the
+*   stored case in a dialog) and "Eliminar" (confirmed; a 409 for a case in use offers "Archivar" instead). Expert
+*   validation stays in the editor: the list summary has no validated flag (BACKEND GAP).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -34,6 +36,8 @@ import { PageHeader } from "@shared/design-system/components/page-header";
 import { useToast } from "@shared/design-system/components/use-toast";
 import { cx } from "@shared/lib/class-names";
 import { changeClinicalCaseStatus, duplicateClinicalCase } from "../../api/services/case-editor.service";
+import { CaseTestRunDialog } from "../components/case-test-run";
+import { DeleteCaseFlow } from "../components/delete-case-flow";
 import {
   CASE_DIFFICULTIES,
   CASE_PATHOLOGIES,
@@ -81,6 +85,8 @@ export const CASE_LIST_COPY = {
   duplicate: "Duplicar",
   publish: "Publicar",
   archive: "Archivar",
+  testRun: "Probar",
+  remove: "Eliminar",
   actionsFor: (title: string) => `Acciones de ${title}`,
   duplicated: (title: string) => `Se creó una copia de «${title}».`,
   publishTitle: "¿Publicar el caso?",
@@ -164,9 +170,11 @@ type TableProps = {
   busy: boolean
   onDuplicate: (row: CaseListRow) => void
   onStatus: (row: CaseListRow, action: StatusAction) => void
+  onTestRun: (row: CaseListRow) => void
+  onDelete: (row: CaseListRow) => void
 };
 
-function CasesTable({ rows, showStatus, busy, onDuplicate, onStatus }: TableProps) {
+function CasesTable({ rows, showStatus, busy, onDuplicate, onStatus, onTestRun, onDelete }: TableProps) {
   return (
     <div className={cx(styles.tableContainer)}>
       <table className={cx(styles.table)}>
@@ -202,7 +210,8 @@ function CasesTable({ rows, showStatus, busy, onDuplicate, onStatus }: TableProp
                       {ACTION_COPY[action].label}
                     </Button>
                   ))}
-                  {/* T12 slot: test-run, expert validation and delete (409 → archive). */}
+                  <Button size="small" onClick={() => onTestRun(row)}>{CASE_LIST_COPY.testRun}</Button>
+                  <Button size="small" color="error" disabled={busy} onClick={() => onDelete(row)}>{CASE_LIST_COPY.remove}</Button>
                 </div>
               </td>
             </tr>
@@ -221,6 +230,8 @@ export function CaseListPage() {
   const list = useCaseList();
   const { pending, run } = useCaseMutation();
   const [confirming, setConfirming] = useState<PendingStatus | null>(null);
+  const [testing, setTesting] = useState<CaseListRow | null>(null);
+  const [deleting, setDeleting] = useState<CaseListRow | null>(null);
   const { rows, pagination } = list;
   const filtered = hasCaseListFilters(list.filters);
 
@@ -288,6 +299,8 @@ export function CaseListPage() {
               busy={pending}
               onDuplicate={(row) => void duplicate(row)}
               onStatus={(row, action) => setConfirming({ row, action })}
+              onTestRun={setTesting}
+              onDelete={setDeleting}
             />
             <TablePagination
               component="div"
@@ -344,6 +357,13 @@ export function CaseListPage() {
         onConfirm={() => void changeStatus()}
         onCancel={() => setConfirming(null)}
       />
+      <CaseTestRunDialog
+        open={testing !== null}
+        caseId={testing?.id ?? ""}
+        caseTitle={testing?.title ?? ""}
+        onClose={() => setTesting(null)}
+      />
+      <DeleteCaseFlow target={deleting ? { id: deleting.id, title: deleting.title } : null} onClose={() => setDeleting(null)} />
     </div>
   );
 }

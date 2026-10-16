@@ -8,7 +8,8 @@
 *   (`events[2].simTimeMs`, `mechanics.recruitmentCurve[0].peepCmH2O`) are mapped back to the row keys of the draft
 *   in DTO order; the initial ventilator settings and the rubric errors land on their whole section. Other known codes
 *   (403, 404, 409 with sessions, network) get their own message. Depends on the api-client error type.
-* Versión: 1.0
+*   v1.1 (T12): the messages of a case in use (delete 409) and of a case the engine cannot simulate (test run).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -32,6 +33,8 @@ export const CASE_ERROR_COPY = {
   generic: "No se pudo completar la acción. Inténtalo de nuevo.",
   notSimulationReady: "El caso no está listo para simular: completa la mecánica, los ajustes iniciales del ventilador y el estado inicial.",
   validation: "Revisa los datos del caso: el servidor no los aceptó.",
+  engineNotReady: "El motor no puede simular el caso guardado: revisa la mecánica, los ajustes iniciales y el estado inicial, y guarda.",
+  inUse: "El caso está en uso (sesiones, intentos o preguntas de evaluación) y no se puede eliminar.",
 } as const;
 
 const CODE_MESSAGES: Readonly<Record<string, string>> = {
@@ -40,6 +43,8 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   "clinical-cases.clinical_case_has_simulation_sessions": CASE_ERROR_COPY.hasSessions,
   "clinical-cases.clinical_case_not_found": CASE_ERROR_COPY.notFound,
   "clinical-cases.clinical_case_not_simulation_ready": CASE_ERROR_COPY.notSimulationReady,
+  "clinical-cases.clinical_case_in_use": CASE_ERROR_COPY.inUse,
+  "simulation.case_not_ready": CASE_ERROR_COPY.engineNotReady,
   [CLIENT_ERROR_CODES.networkUnavailable]: CASE_ERROR_COPY.network,
   [CLIENT_ERROR_CODES.networkTimeout]: CASE_ERROR_COPY.network,
 };
