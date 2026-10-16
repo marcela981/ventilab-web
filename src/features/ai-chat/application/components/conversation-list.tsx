@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ConversationList
-* Descripción: The caller's AI conversations (GET /api/tutor/conversations, server pages of 20): a scope filter (Todas | Libre | Lección | Módulo | Página, sent as `scope`, back to page 1), a title filter clearly labelled as filtering only the loaded conversations (BACKEND GAP: no search), the list of ConversationListItem (link, scope chip, date, active highlight, inline rename, origin link) and a pager when there is more than one page. Deleting asks for confirmation (ConfirmDialog) and reports onDeleted(id) so the host can leave a deleted open conversation; rename and delete failures show inline. "Nueva conversación" is offered at the top. Loading, error with retry and empty states (none yet / no match). Depends on React, MUI, @shared/design-system, the AI chat entity, useConversationList, useConversationActions, ConversationListItem and the assistant CSS Module.
-* Versión: 1.0
+* Descripción: The caller's AI conversations (GET /api/tutor/conversations, server pages of 20): a scope filter (Todas | Libre | Lección | Módulo | Página, sent as `scope`, back to page 1), a title filter clearly labelled as filtering only the loaded conversations (BACKEND GAP: no search), the list of ConversationListItem (link, scope chip, date, active highlight, inline rename, origin link) and a pager when there is more than one page. Deleting asks for confirmation (ConfirmDialog) and reports onDeleted(id) so the host can leave a deleted open conversation; rename and delete failures show inline. "Nueva conversación" is offered at the top. Loading, error with retry and empty states (none yet / no match). Depends on React, MUI, @shared/design-system, the AI chat entity, useConversationList, useConversationActions, ConversationListItem and the assistant CSS Module. v1.1 (A3, review R3-page-not-clamped): the page is clamped to the server page count when it shrinks (deleting the only conversation of the last page, a smaller scope); while out of range the list shows its loading skeleton, never the "Aún no tienes conversaciones" empty state. The title filter does not change the page: it only filters the loaded page (BACKEND GAP).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -73,6 +73,15 @@ export function ConversationList({ activeId, onNewConversation, onDeleted, class
   const list = useConversationList({ scope: scope === "ALL" ? undefined : scope, page, titleFilter });
   const actions = useConversationActions();
   const pages = list.pagination?.pages ?? 1;
+  // The server page count shrank (e.g. the only conversation of the last page was deleted): the requested
+  // page no longer exists, so the list moves to the last existing one instead of showing it as empty.
+  const lastPage = list.pagination ? Math.max(1, list.pagination.pages) : null;
+  const outOfRange = lastPage !== null && page > lastPage;
+
+  // State update during render: the out-of-range page is replaced before the screen shows it.
+  if (outOfRange) {
+    setPage(lastPage);
+  }
 
   const changeScope = (next: ScopeFilter | null) => {
     if (next !== null) {
@@ -105,7 +114,7 @@ export function ConversationList({ activeId, onNewConversation, onDeleted, class
 
   let content: ReactNode;
 
-  if (list.isLoading) {
+  if (list.isLoading || outOfRange) {
     content = <ListSkeleton rows={4} label={CONVERSATION_LIST_COPY.loading} />;
   } else if (list.error) {
     content = (

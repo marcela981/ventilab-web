@@ -1,0 +1,25 @@
+/*
+* Funcionalidad: AI chat drawer styles
+* Descripción: Paper of the global AI assistant drawer: full screen (whole viewport width and height) on phones, a 28rem side panel from 600px up. The ChatPanel inside fills its height. Tokens only (var(--vl-*) / var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.paper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  background: var(--vl-color-surface);
+}
+
+@media (min-width: 600px) {
+  .paper {
+    width: 28rem;
+  }
+}

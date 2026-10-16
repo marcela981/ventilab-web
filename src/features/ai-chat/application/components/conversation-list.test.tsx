@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ConversationList tests
-* Descripción: Behaviour of the assistant conversation list against msw: the scope toggle sends `scope` and returns to page 1, the title filter only keeps matching loaded conversations, inline rename saves with Enter (PATCH {title}) and Esc cancels without a request, delete asks for confirmation before DELETE and reports the deleted id, and a LESSON conversation shows its "Ir a la lección" link resolved from the lesson read. Depends on Testing Library, msw and the AI chat test helpers.
-* Versión: 1.0
+* Descripción: Behaviour of the assistant conversation list against msw: the scope toggle sends `scope` and returns to page 1, the title filter only keeps matching loaded conversations, inline rename saves with Enter (PATCH {title}) and Esc cancels without a request, delete asks for confirmation before DELETE and reports the deleted id, and a LESSON conversation shows its "Ir a la lección" link resolved from the lesson read. v1.1 (A3, review R3-page-not-clamped): deleting the only conversation of the last page moves the list back to the last existing page. Depends on Testing Library, msw and the AI chat test helpers.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -151,6 +151,43 @@ describe("ConversationList", () => {
     expect(deleted).toEqual(["c1"]);
     await waitFor(() => expect(screen.queryByRole("link", { name: /PEEP en SDRA/ })).not.toBeInTheDocument());
   });
+
+  it("moves back to the last existing page after deleting the only conversation of the last page", async() => {
+    conversations = Array.from({ length: 21 }, (_unused, index) => conversationDto(`c${index + 1}`, { title: `Conversación ${index + 1}` }));
+    server.use(
+      http.get(LIST_URL, ({ request }) => {
+        const url = new URL(request.url);
+        const page = Number(url.searchParams.get("page") ?? "1");
+        const limit = Number(url.searchParams.get("limit") ?? "20");
+        const pages = Math.max(1, Math.ceil(conversations.length / limit));
+
+        listQueries.push(url.search);
+
+        return HttpResponse.json(envelope(conversations.slice((page - 1) * limit, page * limit), { page, pages, limit, total: conversations.length }));
+      }),
+      http.delete(ITEM_URL, ({ params }) => {
+        conversations = conversations.filter((conversation) => conversation.id !== params.conversationId);
+
+        return HttpResponse.json(envelope(null));
+      }),
+    );
+
+    renderList();
+
+    expect(await screen.findByRole("link", { name: /Conversación 1(?![0-9])/ })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /page 2/ }));
+    expect(await screen.findByRole("link", { name: /Conversación 21/ })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Eliminar «Conversación 21»" }));
+    fireEvent.click(within(await screen.findByRole("dialog", { name: "¿Eliminar la conversación?" })).getByRole("button", { name: "Eliminar" }));
+
+    // Page 2 no longer exists: the list goes back to page 1 instead of claiming there are no conversations
+    // (delete, page 2 revalidation and the page 1 read happen in sequence, hence the longer wait).
+    expect(await screen.findByRole("link", { name: /Conversación 1(?![0-9])/ }, { timeout: 4000 })).toBeInTheDocument();
+    expect(screen.queryByText("Aún no tienes conversaciones")).not.toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "Páginas de conversaciones" })).not.toBeInTheDocument();
+    // Renders two full server pages and three sequential reads: slower than the default budget under a full run.
+  }, 15000);
 
   it("shows the learning origin link of a LESSON conversation", async() => {
     conversations = [conversationDto("c3", { title: "Pregunta de lección", scope: "LESSON", refId: "l1" })];

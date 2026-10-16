@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: CopyMessageButton
-* Descripción: "Copiar" action of a complete assistant answer: writes the answer text to the clipboard (navigator.clipboard.writeText) and confirms with "Copiado" for a few seconds (or "No se pudo copiar" when the clipboard is unavailable or refused); the label change is announced through a polite live region. Depends on React, MUI and the chat panel CSS Module.
-* Versión: 1.0
+* Descripción: "Copiar" action of a complete assistant answer: writes the answer text to the clipboard (navigator.clipboard.writeText) and confirms with "Copiado" for a few seconds (or "No se pudo copiar" when the clipboard is unavailable or refused); the label change is announced through a polite live region. Depends on React, MUI and the chat panel CSS Module. v1.1 (A3, review R3-copy-timer-after-unmount): a mounted guard ignores a clipboard write that resolves after unmount (no state update, no feedback timer).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -34,11 +34,19 @@ export type CopyMessageButtonProps = {
 export function CopyMessageButton({ text }: CopyMessageButtonProps) {
   const [state, setState] = useState<CopyState>("idle");
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // False once unmounted: a clipboard write that resolves later must not update state or schedule a timer.
+  const mountedRef = useRef(false);
 
-  useEffect(() => () => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
   }, []);
 
   const copy = async() => {
@@ -51,6 +59,10 @@ export function CopyMessageButton({ text }: CopyMessageButtonProps) {
       }
     } catch {
       next = "failed";
+    }
+
+    if (!mountedRef.current) {
+      return;
     }
 
     setState(next);

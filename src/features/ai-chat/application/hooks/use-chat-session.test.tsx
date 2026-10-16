@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useChatSession tests
-* Descripción: Behaviour of the AI chat state machine against msw with real SSE bodies: the FREE conversation is created lazily by the first send (POST /api/tutor/conversations, never on mount), the answer streams and `done` adopts conversationId, aiCallId, messageId and sources and revalidates the listing; later sends go to /{id}/messages; stop keeps the partial text as interrupted; retry resends the last user message; the fixed off-topic reply is flagged; a 429 quota error shows the local reset time and cannot be retried; a mid-stream error can be retried; a first FREE turn stopped before `done` re-reads the newest FREE conversation to adopt it; an existing conversation seeds the thread from its detail; moving the page to the adopted id keeps the thread and opening another conversation resets it. Depends on Testing Library, msw, the shared SSE test helpers and the AI chat test helpers. v1.1 (A2 review fixes): a newest FREE conversation older than the stopped turn is not adopted; a stop after a delta arrived but before its animation frame flushed still recovers the created conversation; a 500 on the detail is load-error, blocks sending and recovers on reload. Stops settle outside act because the session waits for the aborted render.
-* Versión: 1.1
+* Descripción: Behaviour of the AI chat state machine against msw with real SSE bodies: the FREE conversation is created lazily by the first send (POST /api/tutor/conversations, never on mount), the answer streams and `done` adopts conversationId, aiCallId, messageId and sources and revalidates the listing; later sends go to /{id}/messages; stop keeps the partial text as interrupted; retry resends the last user message; the fixed off-topic reply is flagged; a 429 quota error shows the local reset time and cannot be retried; a mid-stream error can be retried; a first FREE turn stopped before `done` re-reads the newest FREE conversation to adopt it; an existing conversation seeds the thread from its detail; moving the page to the adopted id keeps the thread and opening another conversation resets it. Depends on Testing Library, msw, the shared SSE test helpers and the AI chat test helpers. v1.1 (A2 review fixes): a newest FREE conversation older than the stopped turn is not adopted; a stop after a delta arrived but before its animation frame flushed still recovers the created conversation; a 500 on the detail is load-error, blocks sending and recovers on reload. v1.2 (A3): stops settle inside act again, since the session reads `streamStarted` from the aborted stream outcome instead of waiting for the aborted render.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -175,14 +175,10 @@ describe("useChatSession", () => {
     await waitFor(() => expect(result.current.messages[1]?.content).toBe("El volumen tidal es"));
     expect(result.current.messages[1]?.status).toBe("streaming");
 
-    act(() => {
+    await act(async() => {
       result.current.stop();
       // msw does not cancel the body read on abort: closing it lets the aborted read loop end.
       stream.close();
-    });
-    // The session reads "received" once the aborted phase is rendered: let it render outside act.
-    await waitFor(() => expect(result.current.messages[1]?.status).toBe("interrupted"));
-    await act(async() => {
       await sending;
     });
 
@@ -322,14 +318,10 @@ describe("useChatSession", () => {
     stream.push(deltaFrame("Empieza"));
     await waitFor(() => expect(result.current.messages[1]?.content).toBe("Empieza"));
 
-    act(() => {
+    await act(async() => {
       result.current.stop();
       // msw does not cancel the body read on abort: closing it lets the aborted read loop end.
       stream.close();
-    });
-    // The session reads "received" once the aborted phase is rendered: let it render outside act.
-    await waitFor(() => expect(result.current.messages[1]?.status).toBe("interrupted"));
-    await act(async() => {
       await sending;
     });
 
@@ -351,14 +343,10 @@ describe("useChatSession", () => {
     });
     await waitFor(() => expect(result.current.isStreaming).toBe(true));
 
-    act(() => {
+    await act(async() => {
       result.current.stop();
       // msw does not cancel the body read on abort: closing it lets the aborted read loop end.
       stream.close();
-    });
-    // The session reads "received" once the aborted phase is rendered: let it render outside act.
-    await waitFor(() => expect(result.current.messages[1]?.status).toBe("interrupted"));
-    await act(async() => {
       await sending;
     });
 
@@ -428,13 +416,9 @@ describe("useChatSession", () => {
     stream.push(deltaFrame("Empieza"));
     await waitFor(() => expect(result.current.messages[1]?.content).toBe("Empieza"));
 
-    act(() => {
+    await act(async() => {
       result.current.stop();
       stream.close();
-    });
-    // The session reads "received" once the aborted phase is rendered: let it render outside act.
-    await waitFor(() => expect(result.current.messages[1]?.status).toBe("interrupted"));
-    await act(async() => {
       await sending;
     });
 
@@ -472,13 +456,9 @@ describe("useChatSession", () => {
     await waitFor(() => expect(raf).toHaveBeenCalled());
     expect(result.current.messages[1]?.content).toBe("");
 
-    act(() => {
+    await act(async() => {
       result.current.stop();
       stream.close();
-    });
-    // The session reads "received" once the aborted phase is rendered: let it render outside act.
-    await waitFor(() => expect(result.current.messages[1]?.status).toBe("interrupted"));
-    await act(async() => {
       await sending;
     });
 

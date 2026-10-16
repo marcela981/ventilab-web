@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: _app — raíz de la aplicación Next.js
-* Descripción: Árbol de providers globales para VentyLab. Incluye WarmupProvider para detección y notificación de cold starts del backend en Render free tier. Usa el tema MUI con cssVariables de src/shared/design-system/theme (Roboto self-hosted vía next/font) e importa los CSS globales (App.css legacy + tokens.css del design system); el CSS global solo se importa aquí. v2.2: monta ApiSWRProvider (config SWR estándar de @shared/api-client, caché por defecto) y el warm-up llama GET /health del backend con el cliente tipado (antes httpSlow.get('/api/health') duplicaba el prefijo: /api/api/health). v2.3: monta el AuthProvider de @shared/session (sesión del backend para código nuevo, importado como BackendSessionProvider para no chocar con el AuthProvider legacy) dentro de ApiSWRProvider; no cambia NextAuth ni el AuthContext legacy y no navega por sí mismo. v2.4: monta el RealtimeProvider de @shared/realtime (socket autenticado del código nuevo, solo con sesión de backend) dentro de BackendSessionProvider; el SocketProvider legacy no cambia. v2.5: per-page layouts: si la página exporta getLayout(page) (resolvePageLayout de @shared/layouts/get-layout), se renderiza Component.getLayout(<Component />) sin el shell legacy (Sidebar/ErrorBoundary por página; el layout nuevo trae su propio RouteErrorBoundary); las páginas sin getLayout conservan exactamente el envoltorio legacy anterior. Los layouts se importan desde las páginas que los usan, nunca desde _app. v2.6: monta una sola vez el ToastProvider global del design system (useToast del código nuevo) dentro del ThemeProvider, alrededor del contenido de la página; el NotificationProvider legacy no cambia. v2.7 (G1 grading): monta el NavBadgeProvider de @shared/layouts/nav-badges (contadores de las insignias de navegación del AppShell) dentro de RealtimeProvider y, dentro de él, GradingPendingBadgeSync del barrel de @features/grading, que alimenta la insignia "Calificar" con los intentos pendientes solo para docentes y administradores (carga su código de peticiones de forma diferida). _app es la raíz de composición: shared no puede importar features, así que la feature alimenta el registro compartido desde aquí. v2.8 (G1 review S6/W2): GradingPendingBadgeSync se importa por su ruta directa (application/components/lazy-grading-pending-badge-sync), no por el barrel de la feature; la sincronización solo consulta la cola mientras el AppShell está montado (registro de visibilidad de nav-badges).
-* Versión: 2.8
+* Descripción: Árbol de providers globales para VentyLab. Incluye WarmupProvider para detección y notificación de cold starts del backend en Render free tier. Usa el tema MUI con cssVariables de src/shared/design-system/theme (Roboto self-hosted vía next/font) e importa los CSS globales (App.css legacy + tokens.css del design system); el CSS global solo se importa aquí. v2.2: monta ApiSWRProvider (config SWR estándar de @shared/api-client, caché por defecto) y el warm-up llama GET /health del backend con el cliente tipado (antes httpSlow.get('/api/health') duplicaba el prefijo: /api/api/health). v2.3: monta el AuthProvider de @shared/session (sesión del backend para código nuevo, importado como BackendSessionProvider para no chocar con el AuthProvider legacy) dentro de ApiSWRProvider; no cambia NextAuth ni el AuthContext legacy y no navega por sí mismo. v2.4: monta el RealtimeProvider de @shared/realtime (socket autenticado del código nuevo, solo con sesión de backend) dentro de BackendSessionProvider; el SocketProvider legacy no cambia. v2.5: per-page layouts: si la página exporta getLayout(page) (resolvePageLayout de @shared/layouts/get-layout), se renderiza Component.getLayout(<Component />) sin el shell legacy (Sidebar/ErrorBoundary por página; el layout nuevo trae su propio RouteErrorBoundary); las páginas sin getLayout conservan exactamente el envoltorio legacy anterior. Los layouts se importan desde las páginas que los usan, nunca desde _app. v2.6: monta una sola vez el ToastProvider global del design system (useToast del código nuevo) dentro del ThemeProvider, alrededor del contenido de la página; el NotificationProvider legacy no cambia. v2.7 (G1 grading): monta el NavBadgeProvider de @shared/layouts/nav-badges (contadores de las insignias de navegación del AppShell) dentro de RealtimeProvider y, dentro de él, GradingPendingBadgeSync del barrel de @features/grading, que alimenta la insignia "Calificar" con los intentos pendientes solo para docentes y administradores (carga su código de peticiones de forma diferida). _app es la raíz de composición: shared no puede importar features, así que la feature alimenta el registro compartido desde aquí. v2.8 (G1 review S6/W2): GradingPendingBadgeSync se importa por su ruta directa (application/components/lazy-grading-pending-badge-sync), no por el barrel de la feature; la sincronización solo consulta la cola mientras el AppShell está montado (registro de visibilidad de nav-badges). v2.9 (A3 ai-chat): monta AiChatProvider (estado del drawer global del asistente IA, sobrevive a la navegación; el drawer con ChatPanel/markdown/KaTeX se carga de forma diferida al abrirlo por primera vez) dentro de ToastProvider, y dentro de él TopBarActionsProvider de @shared/layouts/top-bar-actions con AiChatLauncher como acción de la barra superior del AppShell; ambos se importan por su ruta directa, no por el barrel de la feature.
+* Versión: 2.9
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -33,9 +33,15 @@ import { resolvePageLayout } from '@shared/layouts/get-layout';
 import { ToastProvider } from '@shared/design-system/components/toast-provider';
 // Direct module import: the layouts index would pull the AppShell and every layout into the app shell.
 import { NavBadgeProvider } from '@shared/layouts/nav-badges';
+// Direct module import: the layouts index would pull the AppShell and every layout into the app shell.
+import { TopBarActionsProvider } from '@shared/layouts/top-bar-actions';
 // Feature barrel: the badge sync lazy-loads its request code for staff only, so the app shell stays small.
 // Direct module path (not the grading barrel) so _app only pulls the small badge entry.
 import { GradingPendingBadgeSync } from '@features/grading/application/components/lazy-grading-pending-badge-sync';
+// Direct module paths (not the ai-chat barrel): only the drawer state and the launcher button land in the app
+// shell; the drawer and the conversation UI load on the first open.
+import { AiChatProvider } from '@features/ai-chat/application/components/ai-chat-provider';
+import { AiChatLauncher } from '@features/ai-chat/application/components/ai-chat-launcher';
 import { PatientDataProvider } from '../src/features/simulador/simuladorPaciente/contexto/PatientDataContext';
 import { SocketProvider } from '../src/shared/contexts/SocketContext';
 import { SidebarContext } from '../src/shared/contexts/SidebarContext';
@@ -152,6 +158,8 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
               <ThemeProvider theme={theme}>
                 <NotificationProvider>
                   <ToastProvider>
+                  <AiChatProvider>
+                  <TopBarActionsProvider actions={<AiChatLauncher />}>
                   <PatientDataProvider>
                     <CssBaseline />
                     {/* Pages with getLayout: their own layout, no legacy shell */}
@@ -190,6 +198,8 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
                       </SidebarContext.Provider>
                     )}
                   </PatientDataProvider>
+                  </TopBarActionsProvider>
+                  </AiChatProvider>
                   </ToastProvider>
                 </NotificationProvider>
               </ThemeProvider>

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AppShell
-* Descripción: Authenticated application chrome for new pages: skip link to the main region, a permanent navigation drawer on desktop (>= md) and a temporary drawer opened from the header on mobile, the role-filtered navigation from nav.config (useSession role, active item = longest matching route with aria-current), a header with the app name, a small realtime status chip when the new socket is disconnected or unauthorized, and a user menu (avatar = the session user's image, initials as fallback, v1.1 T11a) whose "Cerrar sesión" calls signOut() from the session (the route guard then redirects to login). Page content renders inside RouteErrorBoundary, reset on route change. It does not guard by itself: the Student/Teacher/Admin layouts wrap it in RequireAuth/RequireRole. Plain Spanish copy (TODO(i18n), see nav.config). v1.2 (G1 grading): a navigation item with a `badgeKey` shows its count from the nav-badges registry as an MUI Badge on the icon (hidden at 0) plus a visually hidden "N pendientes" text for screen readers. Depends on MUI, next/link, next/router, @shared/session, @shared/realtime context, @shared/design-system components and the nav-badges registry. v1.3 (G1 review W2): registers itself as the nav-badge host (useNavBadgeHost) so badge feeders only poll while the shell is on screen.
-* Versión: 1.3
+* Descripción: Authenticated application chrome for new pages: skip link to the main region, a permanent navigation drawer on desktop (>= md) and a temporary drawer opened from the header on mobile, the role-filtered navigation from nav.config (useSession role, active item = longest matching route with aria-current), a header with the app name, a small realtime status chip when the new socket is disconnected or unauthorized, and a user menu (avatar = the session user's image, initials as fallback, v1.1 T11a) whose "Cerrar sesión" calls signOut() from the session (the route guard then redirects to login). Page content renders inside RouteErrorBoundary, reset on route change. It does not guard by itself: the Student/Teacher/Admin layouts wrap it in RequireAuth/RequireRole. Plain Spanish copy (TODO(i18n), see nav.config). v1.2 (G1 grading): a navigation item with a `badgeKey` shows its count from the nav-badges registry as an MUI Badge on the icon (hidden at 0) plus a visually hidden "N pendientes" text for screen readers. Depends on MUI, next/link, next/router, @shared/session, @shared/realtime context, @shared/design-system components and the nav-badges registry. v1.3 (G1 review W2): registers itself as the nav-badge host (useNavBadgeHost) so badge feeders only poll while the shell is on screen. v1.4 (A3 ai-chat): renders the actions registered in the top-bar-actions slot (useTopBarActions, e.g. the AI assistant launcher contributed from pages/_app.js) between the realtime chip and the user menu.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -39,6 +39,7 @@ import { useSession } from "@shared/session/use-session";
 import { useNavBadgeCounts, useNavBadgeHost } from "./nav-badges";
 import type { NavBadgeCounts } from "./nav-badges";
 import { findActiveHref, getNavItems } from "./nav.config";
+import { useTopBarActions } from "./top-bar-actions";
 import type { NavItem } from "./nav.config";
 import styles from "./UI/app-shell.module.css";
 
@@ -143,6 +144,7 @@ export function AppShell({ children }: AppShellProps) {
   const userMenuId = useId();
   const items = getNavItems(role);
   const badges = useNavBadgeCounts();
+  const topBarActions = useTopBarActions();
 
   useNavBadgeHost();
   const activeHref = findActiveHref(items, router.pathname);
@@ -184,6 +186,7 @@ export function AppShell({ children }: AppShellProps) {
               {APP_NAME}
             </Typography>
             <RealtimeIndicator />
+            {topBarActions}
             <IconButton
               aria-label="Abrir menú de usuario"
               aria-haspopup="true"

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AssistantPage (AssistantScreen)
-* Descripción: Screen of /assistant and /assistant/[conversationId]. Desktop (≥ 900px): two columns, the ConversationList on the left and the ChatPanel on the right (a new chat when no conversation is open). Mobile: list and conversation are separate screens; /assistant shows the list ("Nueva conversación" opens an empty chat in place, with a back button), /assistant/[id] shows the conversation with a "Volver a las conversaciones" link. When the first send creates the conversation the URL moves to /assistant/[id] with a shallow router.replace whose href stays on the /assistant page (`{pathname: "/assistant", query: {conversationId}}` as `/assistant/[id]`), so the same ChatPanel keeps its thread. "Nueva conversación" and deleting the open conversation go to /assistant. An unknown conversation (missing or another user's) renders the not-found view of the ChatPanel. Depends on React, next/head, next/link, next/router, MUI, @shared/design-system, the AI chat entity, ConversationList, ChatPanel and the assistant CSS Module.
-* Versión: 1.0
+* Descripción: Screen of /assistant and /assistant/[conversationId]. Desktop (≥ 900px): two columns, the ConversationList on the left and the ChatPanel on the right (a new chat when no conversation is open). Mobile: list and conversation are separate screens; /assistant shows the list ("Nueva conversación" opens an empty chat in place, with a back button), /assistant/[id] shows the conversation with a "Volver a las conversaciones" link. When the first send creates the conversation the URL moves to /assistant/[id] with a shallow router.replace whose href stays on the /assistant page (`{pathname: "/assistant", query: {conversationId}}` as `/assistant/[id]`), so the same ChatPanel keeps its thread. "Nueva conversación" and deleting the open conversation go to /assistant. An unknown conversation (missing or another user's) renders the not-found view of the ChatPanel. Depends on React, next/head, next/link, next/router, MUI, @shared/design-system, the AI chat entity, ConversationList, ChatPanel and the assistant CSS Module. v1.1 (A3, review R3-new-chat-noop): "Nueva conversación" on /assistant without an open conversation remounts the ChatPanel (key counter), so a thread that never adopted a conversation (a stopped or failed first turn) is cleared instead of continuing as a follow-up.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -40,13 +40,19 @@ export function AssistantPage({ conversationId }: AssistantPageProps) {
   const activeId = conversationId ?? null;
   // Mobile only: "Nueva conversación" on /assistant shows the empty chat instead of the list.
   const [composing, setComposing] = useState(false);
+  // Remounts the ChatPanel of /assistant, so "Nueva conversación" always gives an empty chat even when the
+  // current thread never adopted a conversation (a stopped or failed first turn keeps the URL at /assistant).
+  const [newChatKey, setNewChatKey] = useState(0);
   const showChatOnMobile = activeId !== null || composing;
 
   const openNew = useCallback(() => {
     setComposing(true);
 
     if (activeId !== null) {
+      // Leaving the conversation: the panel resets itself when its conversationId becomes null.
       void router.push(ASSISTANT_URL);
+    } else {
+      setNewChatKey((current) => current + 1);
     }
   }, [activeId, router]);
 
@@ -86,6 +92,7 @@ export function AssistantPage({ conversationId }: AssistantPageProps) {
             )}
           </div>
           <ChatPanel
+            key={newChatKey}
             conversationId={activeId}
             onConversationCreated={handleCreated}
             onNewConversation={openNew}

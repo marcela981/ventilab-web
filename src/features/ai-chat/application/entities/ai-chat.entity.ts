@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI chat entity
-* Descripción: Domain types and pure rules of the AI assistant. Types: conversation scope (FREE | LESSON | MODULE | PAGE), conversation summary and detail, chat message (local or server id, role, content, status complete | streaming | interrupted | error, kind answer | off-topic, aiCallId and server messageId for ratings, optional sources) and the classified chat error. Rules: off-topic detection by exact trimmed match of the mirrored backend reply (BACKEND GAP: no explicit signal), the client title filter (case and accent insensitive, over loaded items only), rename title normalization (collapsed whitespace, 1–120 characters), error classification over the shared getAiErrorMessage (quota with the local reset time, provider unavailable, interrupted, not found, failed) and the assistant conversation URL. The learning deep link lives in conversation-origin.ts so the chat session does not pull the learning feature in. Depends on the shared AI conversation and api-client errors and the AI chat config.
-* Versión: 1.0
+* Descripción: Domain types and pure rules of the AI assistant. Types: conversation scope (FREE | LESSON | MODULE | PAGE), conversation summary and detail, chat message (local or server id, role, content, status complete | streaming | interrupted | error, kind answer | off-topic, aiCallId and server messageId for ratings, optional sources) and the classified chat error. Rules: off-topic detection by exact trimmed match of the mirrored backend reply (BACKEND GAP: no explicit signal), the client title filter (case and accent insensitive, over loaded items only), rename title normalization (collapsed whitespace, 1–120 characters), error classification over the shared getAiErrorMessage (quota with the local reset time, provider unavailable, interrupted, not found, failed) and the assistant conversation URL. The learning deep link lives in conversation-origin.ts so the chat session does not pull the learning feature in. Depends on the shared AI conversation and api-client errors and the AI chat config. v1.1 (A3): ASSISTANT_URL and buildConversationUrl moved to config/ai-chat.routes (re-exported here) so the drawer provider stays out of the shared conversation UI.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -112,8 +112,5 @@ export function classifyChatError(error: unknown, now?: number): ChatError {
   return { kind: "failed", message, retryable: true, retryAfterSeconds: null };
 }
 
-export const ASSISTANT_URL = "/assistant";
-
-export function buildConversationUrl(conversationId: string): string {
-  return `${ASSISTANT_URL}/${encodeURIComponent(conversationId)}`;
-}
+// The route builders live in a dependency-free module (used by the app-shell drawer provider).
+export { ASSISTANT_URL, buildConversationUrl } from "../config/ai-chat.routes";

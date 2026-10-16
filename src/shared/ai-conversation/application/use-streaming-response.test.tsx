@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useStreamingResponse tests
-* Descripción: Tests of the generic AI answer stream hook against msw serving real text/event-stream bodies: deltas accumulate and `done` resolves with its metadata (extra fields and sources included), an `event: error` frame and a 429 before the stream become ApiError state, abort keeps the partial text (also the text still buffered for the next frame) and ignores later frames, a new start after a lost connection resets the state, a start while another stream runs aborts it without leaking its buffered or late text, reset returns to idle, deltas are committed once per animation frame, and unmounting aborts. Depends on vitest, Testing Library, msw and the shared SSE test helpers.
-* Versión: 1.1
+* Descripción: Tests of the generic AI answer stream hook against msw serving real text/event-stream bodies: deltas accumulate and `done` resolves with its metadata (extra fields and sources included), an `event: error` frame and a 429 before the stream become ApiError state, abort keeps the partial text (also the text still buffered for the next frame) and ignores later frames, a new start after a lost connection resets the state, a start while another stream runs aborts it without leaking its buffered or late text, reset returns to idle, deltas are committed once per animation frame, unmounting aborts, and the aborted outcome reports whether any frame arrived (streamStarted, true even for a delta still buffered for the next frame). Depends on vitest, Testing Library, msw and the shared SSE test helpers.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -149,7 +149,7 @@ describe("useStreamingResponse", () => {
     stream.push(deltaFrame(" y parte dos"));
     stream.push(doneFrame(DONE));
     await act(async() => {
-      await expect(outcome).resolves.toEqual({ status: "aborted" });
+      await expect(outcome).resolves.toEqual({ status: "aborted", streamStarted: true });
     });
     expect(result.current.text).toBe("Parte uno");
     expect(result.current.done).toBeNull();
@@ -245,7 +245,7 @@ describe("useStreamingResponse", () => {
     first.push(deltaFrame(" tardía"));
     first.push(doneFrame(DONE));
     await act(async() => {
-      await expect(firstOutcome).resolves.toEqual({ status: "aborted" });
+      await expect(firstOutcome).resolves.toEqual({ status: "aborted", streamStarted: true });
     });
     act(() => frames.runFrame());
     expect(result.current.text).toBe("");
@@ -285,7 +285,7 @@ describe("useStreamingResponse", () => {
     stream.push(deltaFrame(" y parte dos"));
     stream.push(doneFrame(DONE));
     await act(async() => {
-      await expect(outcome).resolves.toEqual({ status: "aborted" });
+      await expect(outcome).resolves.toEqual({ status: "aborted", streamStarted: true });
     });
     act(() => frames.runFrame());
     expect(result.current).toMatchObject({ status: "idle", text: "", done: null, error: null });
@@ -304,6 +304,31 @@ describe("useStreamingResponse", () => {
     expect(result.current).toMatchObject({ status: "idle", text: "", done: null, error: null });
   });
 
+  it("reports streamStarted false when aborted before any frame arrived", async() => {
+    const stream = controlledStream();
+    let requested = false;
+
+    server.use(http.post(URL, () => {
+      requested = true;
+
+      return stream.response();
+    }));
+    const { result } = renderHook(() => useStreamingResponse());
+    let outcome: Promise<unknown> = Promise.resolve();
+
+    act(() => {
+      outcome = result.current.start(REQUEST);
+    });
+    await waitFor(() => expect(requested).toBe(true));
+
+    act(() => result.current.abort());
+    stream.push(deltaFrame("tarde"));
+    await act(async() => {
+      await expect(outcome).resolves.toEqual({ status: "aborted", streamStarted: false });
+    });
+    expect(result.current.text).toBe("");
+  });
+
   it("aborts the running stream on unmount", async() => {
     const stream = controlledStream();
 
@@ -319,6 +344,6 @@ describe("useStreamingResponse", () => {
 
     unmount();
     stream.push(doneFrame(DONE));
-    await expect(outcome).resolves.toEqual({ status: "aborted" });
+    await expect(outcome).resolves.toEqual({ status: "aborted", streamStarted: true });
   });
 });

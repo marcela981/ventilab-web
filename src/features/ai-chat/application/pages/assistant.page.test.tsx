@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AssistantPage tests
-* Descripción: Behaviour of the /assistant screen against msw: an unknown conversation id (missing or of another user, 404) renders the not-found view (its "Nueva conversación" goes to /assistant), and the first send of a new chat replaces the URL shallowly with /assistant/[id] while keeping the /assistant page (href with the conversationId query). Depends on Testing Library, msw, a mocked next/router and next/link and the AI chat test helpers.
-* Versión: 1.0
+* Descripción: Behaviour of the /assistant screen against msw: an unknown conversation id (missing or of another user, 404) renders the not-found view (its "Nueva conversación" goes to /assistant), and the first send of a new chat replaces the URL shallowly with /assistant/[id] while keeping the /assistant page (href with the conversationId query). v1.1 (A3, review R3-new-chat-noop): "Nueva conversación" on /assistant always gives an empty chat, also after a first turn that never adopted a conversation. Depends on Testing Library, msw, a mocked next/router and next/link and the AI chat test helpers.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -88,5 +88,29 @@ describe("AssistantPage", () => {
       { shallow: true },
     ));
     expect(router.replace).toHaveBeenCalledTimes(1);
+  });
+
+  it("starts an empty chat from \"Nueva conversación\" after a first turn that never adopted a conversation", async() => {
+    // The first turn is cut mid-stream and the recovery finds no conversation (the listing is empty).
+    server.use(http.post(LIST_URL, () => sseResponse([deltaFrame("Respuesta cortada")])));
+
+    render(<SwrWrapper><AssistantPage /></SwrWrapper>);
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Escribe tu pregunta" }), { target: { value: "¿Qué es la PEEP?" } });
+    fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
+
+    // The answer may also be mirrored in a live region, so match every occurrence.
+    expect((await screen.findAllByText("Respuesta cortada")).length).toBeGreaterThan(0);
+    expect(screen.queryByText("¿En qué te puedo ayudar?")).not.toBeInTheDocument();
+
+    // The list header action (the first "Nueva conversación").
+    const startNew = screen.getAllByRole("button", { name: "Nueva conversación" })[0];
+
+    fireEvent.click(startNew as HTMLElement);
+
+    expect(await screen.findByText("¿En qué te puedo ayudar?")).toBeInTheDocument();
+    expect(screen.queryAllByText("Respuesta cortada")).toHaveLength(0);
+    expect(screen.queryAllByText("¿Qué es la PEEP?")).toHaveLength(0);
+    expect(router.push).not.toHaveBeenCalled();
   });
 });
