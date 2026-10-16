@@ -55,7 +55,9 @@
  *   v3.26 (T1 fix simulation): src/shared/ventilator-console entra en NEW_SHARED_MODULES (código
  *   nuevo: prohibición de sx/style/styled y fronteras shared→shared); su override solo agrega a la
  *   prohibición de imports de estilo la de @shared/sim-engine y @features/*.
- * Versión: 3.26
+ *   v3.27 (T5 simulation): nueva feature src/features/simulator (sin legado) y su ruta delgada
+ *   pages/simulator/index.tsx.
+ * Versión: 3.27
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -69,12 +71,12 @@ import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
 
 const NEW_SHARED_MODULES = "api-client,realtime,session,design-system,layouts,rich-content,waveforms,charts,ai-rating,media-upload,ai-conversation,lib,sim-engine,ventilator-console";
-const NEW_FEATURES = "auth,profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat";
+const NEW_FEATURES = "auth,profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat,simulator";
 const SOURCE_EXT = "{js,jsx,ts,tsx,mjs,cjs}";
 // auth/ still holds legacy files at its root and in components/, so only its template
 // layers count as new code. profile/ (legacy removed in T10), groups/, learning/ and
 // content-editor/ have no legacy, so the whole folder is new code.
-const LEGACY_FREE_FEATURES = "profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat";
+const LEGACY_FREE_FEATURES = "profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat,simulator";
 const NEW_FEATURE_FILES = [
   `src/features/auth/{api,application}/**/*.${SOURCE_EXT}`,
   `src/features/{${NEW_FEATURES}}/index.ts`,
@@ -117,6 +119,7 @@ const NEW_PAGE_FILES = [
   "pages/evaluation/grade/[[]activityId[]].tsx",
   "pages/assistant/index.tsx",
   "pages/assistant/[[]conversationId[]].tsx",
+  "pages/simulator/index.tsx",
 ];
 
 const NEW_CODE_FILES = [
@@ -197,7 +200,7 @@ const eslintConfig = [
           type: "feature",
           mode: "full",
           pattern: [
-            `src/features/{auth,profile,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat}/{api,application,UI}/**/*`,
+            `src/features/{auth,profile,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat,simulator}/{api,application,UI}/**/*`,
             `src/features/(groups)/**/*`,
           ],
           capture: ["feature"],

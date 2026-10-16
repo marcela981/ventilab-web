@@ -1,0 +1,188 @@
+/*
+* Funcionalidad: Simulator catalog styles
+* Descripción: Styles of the simulator catalog page with the same visual identity as the other features (evaluations): page column, filter bar, responsive card grid, case card (header chips, validated badge, details list, footer action and error), the "Mis sesiones" table with a horizontal scroll wrapper on narrow screens, the row status text and links, and the pagers. Design-system tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--vl-space-3);
+}
+
+.filter {
+  min-width: 14rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: var(--vl-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  height: 100%;
+  padding: var(--vl-space-5);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.cardHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.cardTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+}
+
+.summary {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.validated {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+  padding: var(--vl-space-1) var(--vl-space-2);
+  border: 1px solid currentColor;
+  border-radius: var(--vl-radius-pill);
+  font: var(--mui-font-caption);
+  color: var(--vl-color-success);
+}
+
+.validatedIcon {
+  font-size: 1rem;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--vl-space-1) var(--vl-space-3);
+  margin: 0;
+  font: var(--mui-font-body2);
+}
+
+.details dt {
+  color: var(--vl-color-text-muted);
+}
+
+.details dd {
+  margin: 0;
+}
+
+.cardFooter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--vl-space-2);
+  margin-top: auto;
+}
+
+.cardError {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-error);
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text);
+}
+
+.table caption {
+  padding: var(--vl-space-3) var(--vl-space-4);
+  text-align: start;
+  color: var(--vl-color-text-muted);
+}
+
+.table th,
+.table td {
+  padding: var(--vl-space-3) var(--vl-space-4);
+  border-top: 1px solid var(--vl-color-border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table th {
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-color-text-muted);
+}
+
+.muted {
+  color: var(--vl-color-text-muted);
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.score {
+  font: var(--mui-font-subtitle2);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-3);
+}
+
+.link {
+  color: var(--vl-color-link);
+  text-decoration: none;
+}
+
+.link:hover,
+.link:focus-visible {
+  text-decoration: underline;
+}
+
+.pager {
+  align-self: center;
+}
