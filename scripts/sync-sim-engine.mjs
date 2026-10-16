@@ -14,10 +14,14 @@
 *   v1.1: escribe también engine/SOURCE.json (generado, determinista) con el SHA-256 de cada archivo fuente del
 *   backend (normalizado a LF) y un hash combinado, para que la deriva sea visible en el diff; --check compara
 *   TODOS los archivos de engine/ (no solo .ts), así que cualquier archivo sobrante se reporta como stale.
+*   v1.2 (T11 case-editor): vendoriza también los rangos fisiológicos de los casos clínicos
+*   (src/features/clinical-cases/domain/clinical-case-physiological-ranges.ts, sin dependencias) en
+*   engine/clinical-cases/, la fuente única de los rangos que muestra el editor de casos (el backend
+*   rechaza con 422 los valores fuera de ellos).
 *   Uso: node scripts/sync-sim-engine.mjs        (escribe la copia)
 *        node scripts/sync-sim-engine.mjs --check (sale con código 1 si la copia difiere del backend)
 *   Depende solo de node:fs y node:path.
-* Versión: 1.1
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -34,6 +38,10 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const BACKEND_SRC = path.resolve(ROOT, "..", "ventylab-server", "src");
 const ENGINE_SRC = path.join(BACKEND_SRC, "features", "simulation", "domain", "engine");
 const LIMITS_SRC = path.join(BACKEND_SRC, "common", "domain", "ventilator", "ventilator-limits.ts");
+// Physiological ranges of the clinical case definition (no imports): the case editor shows them next to each field.
+const RANGES_BACKEND_REL = "src/features/clinical-cases/domain/clinical-case-physiological-ranges.ts";
+const RANGES_SRC = path.join(BACKEND_SRC, "features", "clinical-cases", "domain", "clinical-case-physiological-ranges.ts");
+const RANGES_OUTPUT_REL = "clinical-cases/clinical-case-physiological-ranges.ts";
 const OUTPUT_DIR = path.join(ROOT, "src", "shared", "sim-engine", "engine");
 // The shared limits land under engine/common/ so the engine's own ventilator-limits.ts keeps its name.
 const LIMITS_OUTPUT_REL = "common/ventilator-limits.ts";
@@ -183,6 +191,12 @@ async function buildVendoredFiles() {
     content: toLf(await readFile(LIMITS_SRC, "utf8")),
   });
 
+  sources.push({
+    outputRel: RANGES_OUTPUT_REL,
+    backendRel: RANGES_BACKEND_REL,
+    content: toLf(await readFile(RANGES_SRC, "utf8")),
+  });
+
   const typeExportsByFile = new Map(sources.map((file) => [file.outputRel, typeOnlyExports(file.content)]));
   const output = new Map();
 
@@ -253,7 +267,7 @@ async function write(expected) {
 }
 
 async function main() {
-  if (!(await exists(ENGINE_SRC)) || !(await exists(LIMITS_SRC))) {
+  if (!(await exists(ENGINE_SRC)) || !(await exists(LIMITS_SRC)) || !(await exists(RANGES_SRC))) {
     throw new Error(`Backend engine not found at ${ENGINE_SRC} (the ventylab-server repo must sit next to ventilab-web)`);
   }
 

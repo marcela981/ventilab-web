@@ -1,0 +1,274 @@
+/*
+* Funcionalidad: Case editor styles
+* Descripción: Layout of the case editor (/simulator/cases/new and /simulator/cases/[id]/edit): a sticky side index
+*   next to the stacked sections on wide screens (one column below 900 px), section panels (border, radius, surface,
+*   shadow), responsive form grids, grouped fieldsets, row editors of the recruitment curve and the scheduled events,
+*   the Markdown editor with its preview, the stored facts and status badge of the header, the save state indicator
+*   (warning tone while dirty) and the frame of the configure-mode console. Tokens only (var(--vl-*), var(--mui-*));
+*   no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  width: 100%;
+  max-width: 90rem;
+  margin: 0 auto;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: var(--vl-space-4);
+  align-items: start;
+}
+
+.sidebar {
+  position: sticky;
+  top: var(--vl-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+}
+
+.index {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  margin: 0;
+  padding: var(--vl-space-2);
+  list-style: none;
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+}
+
+.indexLink {
+  display: flex;
+  flex-direction: column;
+  padding: var(--vl-space-1) var(--vl-space-2);
+  border-radius: var(--vl-radius-sm);
+  color: var(--vl-color-text);
+  text-decoration: none;
+}
+
+.indexLink:hover {
+  background: var(--vl-color-hover);
+  text-decoration: underline;
+}
+
+.indexErrors {
+  font: var(--mui-font-caption);
+  color: var(--vl-color-error);
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  min-width: 0;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-4);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+  scroll-margin-top: var(--vl-space-4);
+}
+
+.sectionTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+  color: var(--vl-color-text);
+}
+
+.muted {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: var(--vl-space-3);
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  margin: 0;
+  padding: var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.groupTitle {
+  padding: 0 var(--vl-space-1);
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-color-text);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  gap: var(--vl-space-3);
+  align-items: start;
+}
+
+.eventRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.fieldError {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-color-error);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+}
+
+.markdownEditor {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--vl-space-3);
+}
+
+.preview {
+  min-height: 100%;
+  padding: var(--vl-space-3);
+  border: 1px dashed var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+  overflow-wrap: anywhere;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--vl-space-1) var(--vl-space-3);
+  margin: 0;
+}
+
+.facts dt {
+  font-weight: 500;
+  color: var(--vl-color-text);
+}
+
+.facts dd {
+  margin: 0;
+  color: var(--vl-color-text);
+}
+
+.headerFacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-1) var(--vl-space-3);
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.headerFacts dt::after {
+  content: ":";
+}
+
+.headerFacts dd {
+  margin: 0 var(--vl-space-3) 0 0;
+  color: var(--vl-color-text);
+}
+
+.badge {
+  display: inline-flex;
+  padding: 0 var(--vl-space-2);
+  border: 1px solid currentColor;
+  border-radius: var(--vl-radius-pill);
+  font: var(--mui-font-caption);
+}
+
+.badge[data-status="DRAFT"] {
+  color: var(--vl-color-warning);
+}
+
+.badge[data-status="PUBLISHED"] {
+  color: var(--vl-color-success);
+}
+
+.badge[data-status="ARCHIVED"] {
+  color: var(--vl-color-text-muted);
+}
+
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-3);
+  align-items: center;
+}
+
+.saveState {
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.saveState[data-dirty="true"] {
+  color: var(--vl-color-warning);
+  font-weight: 500;
+}
+
+.consoleFrame {
+  overflow-x: auto;
+  border-radius: var(--vl-radius-md);
+}
+
+.layout :focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    position: static;
+  }
+
+  .markdownEditor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -11,8 +11,9 @@
 *   the patient summary with the predicted body weight (engine predictedBodyWeightKg, Devine). Depends on the
 *   sim-engine and ventilator-console public APIs and the console config. v1.1: `reconcileEvents` turns the worker
 *   acknowledgements of a batch into client session events stamped with the effective engine time, and drops the
-*   rejected ones.
-* Versión: 1.1
+*   rejected ones. v1.2 (T11): the settings ↔ console mapping (settings, limits, mode options, SIMV applicability,
+*   confirmation → changes) moved to `@shared/sim-engine/console-binding` and is re-exported here unchanged.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -25,15 +26,13 @@ import {
   predictedBodyWeightKg,
   resolveVentilatorSettings,
   validateVentilatorSettings,
-  VENTILATION_MODES,
-  VENTILATOR_LIMITS,
 } from "@shared/sim-engine";
+import { tidy } from "@shared/sim-engine/console-binding";
 import type {
   Alarm,
   EngineCase,
   EngineMetrics,
   EngineTargets,
-  EngineVentilationMode,
   NumericRange,
   SimBatch,
   TargetStatus,
@@ -44,34 +43,21 @@ import type {
 import {
   CONSOLE_PARAMETER_IDS,
   CONSOLE_PARAMETERS,
-  MODE_PARAMETERS,
   PATIENT_TREND_POINTS,
   resolveAlarmPriority,
 } from "@shared/ventilator-console";
 import type {
   ConsoleAlarm,
   ConsoleAlarmPriority,
-  ConsoleConfirmation,
-  ConsoleLimits,
   ConsoleMetrics,
-  ConsoleModeOption,
-  ConsoleParameterId,
   ConsolePatient,
   ConsoleRanges,
   ConsoleSample,
-  ConsoleSettingValues,
-  ModeParameterTable,
   NormalRange,
-  ParameterLimit,
   PatientVitalId,
 } from "@shared/ventilator-console";
-import { ALARM_LABELS, MODE_LABELS, OBJECTIVE_DEFINITIONS, PARAMETER_SETTINGS, SEX_LABELS } from "../config/sim-console.config";
+import { ALARM_LABELS, OBJECTIVE_DEFINITIONS, PARAMETER_SETTINGS, SEX_LABELS } from "../config/sim-console.config";
 import type { ClientSessionEvent } from "../entities/sim-session.entity";
-
-/** Rounds away binary noise of the scale conversions (0.21 × 100 = 21.000000000000004). */
-function tidy(value: number): number {
-  return Math.round(value * 1e6) / 1e6;
-}
 
 export function toConsoleSamples(samples: readonly WaveformSample[]): ConsoleSample[] {
   return samples.map((sample) => ({
@@ -160,81 +146,14 @@ export function toConsoleAlarms(alarms: readonly Alarm[], simTimeMs: number, pre
   }));
 }
 
-export function toConsoleSettings(settings: VentilatorSettings): ConsoleSettingValues {
-  const values: Record<string, number> = {};
-
-  CONSOLE_PARAMETER_IDS.forEach((id) => {
-    const { key, scale } = PARAMETER_SETTINGS[id];
-
-    values[id] = tidy(settings[key] * scale);
-  });
-
-  return values;
-}
-
-function triggerApplies(id: ConsoleParameterId, settings: VentilatorSettings): boolean {
-  if (id === "flowTrigger") {
-    return settings.triggerType === "FLOW";
-  }
-
-  return id !== "pressureTrigger" || settings.triggerType === "PRESSURE";
-}
-
-/** Limits in console units from the vendored ventilator limits; the unused trigger gets none, so it is hidden. */
-export function buildConsoleLimits(settings: VentilatorSettings): ConsoleLimits {
-  const limits: Record<string, ParameterLimit> = {};
-
-  CONSOLE_PARAMETER_IDS.forEach((id) => {
-    if (triggerApplies(id, settings)) {
-      const { key, scale, step, unit } = PARAMETER_SETTINGS[id];
-      const limit = VENTILATOR_LIMITS[key];
-
-      limits[id] = { min: tidy(limit.min * scale), max: tidy(limit.max * scale), step, unit };
-    }
-  });
-
-  return limits;
-}
-
-export const MODE_OPTIONS: readonly ConsoleModeOption[] = VENTILATION_MODES.map((mode) => ({ id: mode, label: MODE_LABELS[mode] }));
-
-/** SIMV with pressure-controlled mandatory breaths edits Pinsp instead of Vt and the pause. */
-export function applicabilityFor(settings: VentilatorSettings): ModeParameterTable | undefined {
-  if (settings.simvMandatoryType !== "PCV") {
-    return undefined;
-  }
-
-  const simv = (MODE_PARAMETERS.SIMV ?? []).filter((id) => id !== "tidalVolume" && id !== "inspiratoryPause");
-
-  return { ...MODE_PARAMETERS, SIMV: ["inspiratoryPressure", ...simv] };
-}
-
-function isVentilationMode(value: string): value is EngineVentilationMode {
-  return (VENTILATION_MODES as readonly string[]).includes(value);
-}
-
-function isConsoleParameter(value: string): value is ConsoleParameterId {
-  return (CONSOLE_PARAMETER_IDS as readonly string[]).includes(value);
-}
-
-/** A CONFIRMAR as engine setting changes (display units converted back); unknown ids are ignored. */
-export function toSettingsChanges(confirmation: ConsoleConfirmation): Partial<VentilatorSettings> {
-  const changes: Partial<Record<keyof VentilatorSettings, unknown>> = {};
-
-  if (confirmation.mode !== null && isVentilationMode(confirmation.mode)) {
-    changes.mode = confirmation.mode;
-  }
-
-  confirmation.changes.forEach(({ parameter, value }) => {
-    if (isConsoleParameter(parameter) && Number.isFinite(value)) {
-      const { key, scale } = PARAMETER_SETTINGS[parameter];
-
-      changes[key] = tidy(value / scale);
-    }
-  });
-
-  return changes as Partial<VentilatorSettings>;
-}
+// Moved unchanged to the shared engine ↔ console binding (the case editor uses the same controls).
+export {
+  applicabilityFor,
+  buildConsoleLimits,
+  MODE_OPTIONS,
+  toConsoleSettings,
+  toSettingsChanges,
+} from "@shared/sim-engine/console-binding";
 
 // TODO(i18n): move to a simulator namespace in src/i18n.
 export const CHANGE_COPY = {

@@ -9,7 +9,8 @@
 *   sessionStorage prefix and the pending-events warning threshold. v1.3 (review of 524aedf): the resume safety margin,
 *   the time-ahead refusal threshold, the keepalive chunk limits, the resync settle wait and the tab-claim probe.
 *   v1.4 (review of 180a0a1): the keepalive TOTAL budget (all chunks of one page hide together).
-* Versión: 1.4
+*   v1.5 (T11): the parameter settings and mode labels moved to `@shared/sim-engine/console-binding` (re-exported).
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,43 +18,11 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import type { AlarmCode, EngineVentilationMode, NumericSettingKey, PatientSex, TargetId } from "@shared/sim-engine";
-import type { ConsoleParameterId } from "@shared/ventilator-console";
+import type { AlarmCode, PatientSex, TargetId } from "@shared/sim-engine";
 
-export type ParameterSetting = {
-  /** Engine setting the console parameter edits. */
-  key: NumericSettingKey
-  /** Display value = engine value × scale (FiO2 fraction → %). */
-  scale: number
-  /** Step of the control in display units (a UI choice; the bounds come from the vendored limits). */
-  step: number
-  /** Display unit in Spanish. */
-  unit: string
-};
-
-export const PARAMETER_SETTINGS: Readonly<Record<ConsoleParameterId, ParameterSetting>> = {
-  tidalVolume: { key: "tidalVolumeMl", scale: 1, step: 10, unit: "mL" },
-  inspiratoryPressure: { key: "inspiratoryPressureCmH2O", scale: 1, step: 1, unit: "cmH2O" },
-  pressureSupport: { key: "pressureSupportCmH2O", scale: 1, step: 1, unit: "cmH2O" },
-  respiratoryRate: { key: "respiratoryRateBpm", scale: 1, step: 1, unit: "rpm" },
-  peep: { key: "peepCmH2O", scale: 1, step: 1, unit: "cmH2O" },
-  fio2: { key: "fio2", scale: 100, step: 1, unit: "%" },
-  inspiratoryTime: { key: "inspiratoryTimeS", scale: 1, step: 0.1, unit: "s" },
-  inspiratoryPause: { key: "inspiratoryPauseS", scale: 1, step: 0.1, unit: "s" },
-  flowTrigger: { key: "flowTriggerLpm", scale: 1, step: 0.5, unit: "L/min" },
-  pressureTrigger: { key: "pressureTriggerCmH2O", scale: 1, step: 0.5, unit: "cmH2O" },
-  cycleOff: { key: "cycleOffPercent", scale: 1, step: 5, unit: "%" },
-  apneaTime: { key: "apneaTimeS", scale: 1, step: 5, unit: "s" },
-};
-
-// TODO(i18n): move the labels to a simulator namespace in src/i18n.
-export const MODE_LABELS = {
-  VCV: "VCV — Volumen control",
-  PCV: "PCV — Presión control",
-  PSV: "PSV — Presión de soporte",
-  CPAP: "CPAP",
-  SIMV: "SIMV",
-} as const satisfies Record<EngineVentilationMode, string>;
+// Moved unchanged to the shared engine ↔ console binding (the case editor shows the same controls).
+export { MODE_LABELS, PARAMETER_SETTINGS } from "@shared/sim-engine/console-binding";
+export type { ParameterSetting } from "@shared/sim-engine/console-binding";
 
 export const ALARM_LABELS = {
   HIGH_PRESSURE: "Presión alta",

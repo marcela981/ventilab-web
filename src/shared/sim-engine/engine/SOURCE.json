@@ -2,11 +2,15 @@
   "generatedBy": "scripts/sync-sim-engine.mjs",
   "source": "ventylab-server",
   "note": "GENERATED - do not edit. Hashes of the LF-normalised backend sources.",
-  "sourceHash": "6db5f7bb5e3566ed5ed94f8f2baf1464b1aa1c2a8eff29cdd6d2f92901d4dc98",
+  "sourceHash": "5dd1af1f98c25957ca807e791c911fc6efecb8c81c7c79afdd23e071dc79fd95",
   "files": [
     {
       "path": "src/common/domain/ventilator/ventilator-limits.ts",
       "sha256": "74508abea26cba30f066eab89416f86e105f784ed0908ffe0ec4297ffdbbefe7"
+    },
+    {
+      "path": "src/features/clinical-cases/domain/clinical-case-physiological-ranges.ts",
+      "sha256": "f8458f2a3192e66e8211694b1079f528b5374f34d16aa759dd9cf3c6eaf951de"
     },
     {
       "path": "src/features/simulation/domain/engine/alarms.ts",

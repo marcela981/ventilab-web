@@ -1,0 +1,123 @@
+/*
+* Funcionalidad: Case list styles
+* Descripción: Layout of the staff case list (/simulator/cases): centered column, filter bar, notes, results panel
+*   (border, radius, surface, shadow) with a scrollable table, the case title and secondary line, the row actions and
+*   the status badge colored with the semantic tokens (draft warning, published success, archived muted). Tokens only
+*   (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-3);
+}
+
+.filters > * {
+  flex: 1 1 12rem;
+}
+
+.note {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.results {
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+  overflow: hidden;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: var(--vl-space-2) var(--vl-space-3);
+  border-bottom: 1px solid var(--vl-color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.table thead th {
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-color-text-muted);
+}
+
+.table tbody th {
+  font-weight: 400;
+}
+
+.caseTitle {
+  display: block;
+  font-weight: 500;
+  color: var(--vl-color-text);
+}
+
+.secondary {
+  display: block;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-1);
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--vl-space-1) var(--vl-space-2);
+  border: 1px solid currentColor;
+  border-radius: var(--vl-radius-pill);
+  font: var(--mui-font-caption);
+  white-space: nowrap;
+}
+
+.statusBadge[data-status="DRAFT"] {
+  color: var(--vl-color-warning);
+}
+
+.statusBadge[data-status="PUBLISHED"] {
+  color: var(--vl-color-success);
+}
+
+.statusBadge[data-status="ARCHIVED"] {
+  color: var(--vl-color-text-muted);
+}
+
+.filters :focus-visible,
+.results :focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}

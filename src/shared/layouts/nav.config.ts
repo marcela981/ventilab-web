@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Navigation config
-* Descripción: Typed main-navigation items of the AppShell. Every item points to an EXISTING route of the session route table (routes.config) and lists the roles that see it (a test asserts each route exists and admits those roles). v1.1 (T11a): "Mi grupo" (/my-group, students) and "Grupos" (/groups, teachers and admins). v1.2 (T0 learning): "Aprender" (/learn, every role; teachers and admins preview the student viewer) and "Contenido" (/content, teachers and admins); the legacy "Aprendizaje" (/teaching) entry stays until the legacy routes redirect (R1). v1.3 (S0 evaluations): the legacy evaluation items are replaced by "Evaluaciones" (/evaluations, every role), "Gestionar evaluaciones" (/evaluations/manage) and "Calificar" (/grading), both for teachers and admins. getNavItems filters by role; findActiveHref picks the longest matching item for the current Next pathname. v1.4 (G1 grading): an item may name a `badgeKey` (nav-badges registry); "Calificar" shows the gradingPending count. v1.5 (A1 ai-chat): "Asistente IA" (/assistant, every role). v1.6 (T5 simulation): "Simulador" (/simulator, every role); the legacy /simulador entry is untouched until T13 renames it. Labels are plain Spanish because the i18next setup (src/i18n) is outside the new-code modules; TODO(i18n): move them to an i18next namespace. Depends on MUI icons and the session route table and entities.
-* Versión: 1.6
+* Descripción: Typed main-navigation items of the AppShell. Every item points to an EXISTING route of the session route table (routes.config) and lists the roles that see it (a test asserts each route exists and admits those roles). v1.1 (T11a): "Mi grupo" (/my-group, students) and "Grupos" (/groups, teachers and admins). v1.2 (T0 learning): "Aprender" (/learn, every role; teachers and admins preview the student viewer) and "Contenido" (/content, teachers and admins); the legacy "Aprendizaje" (/teaching) entry stays until the legacy routes redirect (R1). v1.3 (S0 evaluations): the legacy evaluation items are replaced by "Evaluaciones" (/evaluations, every role), "Gestionar evaluaciones" (/evaluations/manage) and "Calificar" (/grading), both for teachers and admins. getNavItems filters by role; findActiveHref picks the longest matching item for the current Next pathname. v1.4 (G1 grading): an item may name a `badgeKey` (nav-badges registry); "Calificar" shows the gradingPending count. v1.5 (A1 ai-chat): "Asistente IA" (/assistant, every role). v1.6 (T5 simulation): "Simulador" (/simulator, every role); the legacy /simulador entry is untouched until T13 renames it. v1.7 (T11 simulation): "Casos clínicos" (/simulator/cases, teachers and admins). Labels are plain Spanish because the i18next setup (src/i18n) is outside the new-code modules; TODO(i18n): move them to an i18next namespace. Depends on MUI icons and the session route table and entities.
+* Versión: 1.7
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,6 +12,7 @@
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import AnalyticsIcon from "@mui/icons-material/Analytics";
 import AssignmentIcon from "@mui/icons-material/Assignment";
+import BiotechIcon from "@mui/icons-material/Biotech";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
@@ -60,6 +61,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/groups", label: "Grupos", icon: GroupWorkIcon, roles: STAFF },
   { href: "/content", label: "Contenido", icon: LibraryBooksIcon, roles: STAFF },
   { href: "/evaluations/manage", label: "Gestionar evaluaciones", icon: EditNoteIcon, roles: STAFF },
+  { href: "/simulator/cases", label: "Casos clínicos", icon: BiotechIcon, roles: STAFF },
   { href: "/grading", label: "Calificar", icon: GradingIcon, roles: STAFF, badgeKey: "gradingPending" },
   { href: "/panel/admin", label: "Administración", icon: AdminPanelSettingsIcon, roles: ADMIN },
   { href: "/panel/settings", label: "Configuración", icon: SettingsIcon, roles: ADMIN },

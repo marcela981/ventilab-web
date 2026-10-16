@@ -46,6 +46,7 @@
     "src/features/grading/**/*",
     "src/features/ai-chat/**/*",
     "src/features/simulator/**/*",
+    "src/features/case-editor/**/*",
     "pages/auth/login/index.tsx",
     "pages/profile/index.tsx",
     "pages/my-group/index.tsx",
@@ -82,6 +83,9 @@
     "pages/simulator/index.tsx",
     "pages/simulator/sessions/[sessionId]/index.tsx",
     "pages/simulator/sessions/[sessionId]/result.tsx",
-    "pages/simulator/sessions/[sessionId]/replay.tsx"
+    "pages/simulator/sessions/[sessionId]/replay.tsx",
+    "pages/simulator/cases/index.tsx",
+    "pages/simulator/cases/new.tsx",
+    "pages/simulator/cases/[id]/edit.tsx"
   ]
 }

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Navigation config tests
-* Descripción: Verifies that every nav item points to an existing route of routes.config that its roles can reach, that items are filtered by role, and that the active item is the longest matching route. v1.1 (T11a): students get /my-group, teachers and admins get /groups. v1.2 (T0 learning): every role gets /learn, only teachers and admins get /content. v1.3 (S0 evaluations): every role gets /evaluations, only teachers and admins get /evaluations/manage and /grading, the legacy /evaluation items are gone and /evaluations/manage wins over /evaluations as the active item. v1.4 (G1 grading): only "Calificar" names a badge key (gradingPending). v1.5 (A1 ai-chat): every role gets "Asistente IA" (/assistant), active on its conversation pages. v1.6 (T5 simulation): every role gets "Simulador" (/simulator), active on its session pages. Depends on vitest and the session route table.
-* Versión: 1.6
+* Descripción: Verifies that every nav item points to an existing route of routes.config that its roles can reach, that items are filtered by role, and that the active item is the longest matching route. v1.1 (T11a): students get /my-group, teachers and admins get /groups. v1.2 (T0 learning): every role gets /learn, only teachers and admins get /content. v1.3 (S0 evaluations): every role gets /evaluations, only teachers and admins get /evaluations/manage and /grading, the legacy /evaluation items are gone and /evaluations/manage wins over /evaluations as the active item. v1.4 (G1 grading): only "Calificar" names a badge key (gradingPending). v1.5 (A1 ai-chat): every role gets "Asistente IA" (/assistant), active on its conversation pages. v1.6 (T5 simulation): every role gets "Simulador" (/simulator), active on its session pages. v1.7 (T11 simulation): only teachers and admins get "Casos clínicos" (/simulator/cases), which wins over /simulator as the active item on the case editor pages. Depends on vitest and the session route table.
+* Versión: 1.7
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -89,6 +89,20 @@ describe("simulator navigation", () => {
 
       expect(items.find((item) => item.href === "/simulator")?.label).toBe("Simulador");
       expect(findActiveHref(items, "/simulator/sessions/[sessionId]/replay")).toBe("/simulator");
+    }
+  });
+});
+
+describe("case editor navigation", () => {
+  it("shows Casos clínicos (/simulator/cases) to teachers and admins only, active on the editor pages", () => {
+    expect(getNavItems("STUDENT").map((item) => item.href)).not.toContain("/simulator/cases");
+
+    for (const role of ["TEACHER", "ADMIN"] as const) {
+      const items = getNavItems(role);
+
+      expect(items.find((item) => item.href === "/simulator/cases")?.label).toBe("Casos clínicos");
+      expect(findActiveHref(items, "/simulator/cases/[id]/edit")).toBe("/simulator/cases");
+      expect(findActiveHref(items, "/simulator/sessions/[sessionId]")).toBe("/simulator");
     }
   });
 });

@@ -5,7 +5,9 @@
 *   runtime: the fixed-step simulation loop, the worker protocol and the SSR-safe worker factory. Features consume
 *   this barrel only; src/shared/ventilator-console must not import it. v1.1: exports the event confirmation type.
 *   v1.2 (T8): the replay request types, MAX_PLAYBACK_RATE and requestWorkerReplay (engine replay in the worker).
-* Versión: 1.2
+*   v1.3 (T11): the vendored clinical case physiological ranges (the backend 422 bounds the case editor shows). The
+*   engine settings ↔ console binding is a separate deep entry (`@shared/sim-engine/console-binding`).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -32,6 +34,11 @@ export {
   type VentilatorLimit,
 } from "./engine/ventilator-limits";
 export { DEFAULT_ALARM_THRESHOLDS } from "./engine/alarms";
+export {
+  CLINICAL_CASE_PHYSIOLOGICAL_RANGES,
+  type PhysiologicalParameter,
+  type PhysiologicalRange,
+} from "./engine/clinical-cases/clinical-case-physiological-ranges";
 export { mechanicalPowerJPerMin, predictedBodyWeightKg } from "./engine/cycle-metrics";
 export { DEFAULT_SAMPLE_RATE_HZ, INTERNAL_STEP_MS, replay } from "./engine/simulation";
 
