@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Waveform geometry
-* Descripción: Pure drawing math shared by SweepCanvas and LoopCanvas: sweep position, time/value to pixel mapping (sweep and scroll layouts), pixel to time for the measurement cursor, nearest-sample binary search, auto-range, round tick steps, stacked lanes, x/y loop extraction from a ring window and the cursor readout text. No DOM or canvas access, so it is unit-tested in jsdom.
-* Versión: 1.0
+* Descripción: Pure drawing math shared by SweepCanvas and LoopCanvas: sweep position, time/value to pixel mapping (sweep and scroll layouts), pixel to time for the measurement cursor, nearest-sample binary search, auto-range, round tick steps, stacked lanes, x/y loop extraction from a ring window and the cursor readout text. No DOM or canvas access, so it is unit-tested in jsdom. v1.1: loop extraction keeps a NaN gap marker for pen lifts and can write into scratch buffers (views via `subarray`).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -192,26 +192,48 @@ export function computeLanes(height: number, count: number, gap: number): Lane[]
   return Array.from({ length: count }, (_, index) => ({ y: index * (laneHeight + gap), height: laneHeight }));
 }
 
-/** Pairs channel `xKey` against `yKey` (e.g. volume vs pressure for a P-V loop), skipping non-finite samples. */
-export function extractLoop<C extends string>(window: WaveformWindow<C>, xKey: C, yKey: C): LoopPoints {
-  const x = new Float32Array(window.length);
-  const y = new Float32Array(window.length);
+/**
+ * Pairs channel `xKey` against `yKey` (e.g. volume vs pressure for a P-V loop). A run of non-finite
+ * samples between finite ones becomes one NaN gap marker, where a painter must lift the pen
+ * (leading and trailing gaps are dropped). With `scratch` (at least `window.length` long) the
+ * points are written there and returned as views, so nothing is allocated.
+ */
+export function extractLoop<C extends string>(
+  window: WaveformWindow<C>,
+  xKey: C,
+  yKey: C,
+  scratch?: { x: Float32Array, y: Float32Array },
+): LoopPoints {
+  const reuse = scratch && scratch.x.length >= window.length && scratch.y.length >= window.length;
+  const x = reuse ? scratch.x : new Float32Array(window.length);
+  const y = reuse ? scratch.y : new Float32Array(window.length);
   const xs = window.values[xKey];
   const ys = window.values[yKey];
   let length = 0;
+  let gap = false;
 
   for (let i = 0; i < window.length; i += 1) {
     const xv = xs[i] ?? Number.NaN;
     const yv = ys[i] ?? Number.NaN;
 
-    if (Number.isFinite(xv) && Number.isFinite(yv)) {
-      x[length] = xv;
-      y[length] = yv;
-      length += 1;
+    if (!Number.isFinite(xv) || !Number.isFinite(yv)) {
+      gap = length > 0;
+      continue;
     }
+
+    if (gap) {
+      x[length] = Number.NaN;
+      y[length] = Number.NaN;
+      length += 1;
+      gap = false;
+    }
+
+    x[length] = xv;
+    y[length] = yv;
+    length += 1;
   }
 
-  return { x: x.slice(0, length), y: y.slice(0, length), length };
+  return { x: x.subarray(0, length), y: y.subarray(0, length), length };
 }
 
 export function formatCursorReadout(tMs: number, entries: readonly CursorReadoutEntry[]): string {

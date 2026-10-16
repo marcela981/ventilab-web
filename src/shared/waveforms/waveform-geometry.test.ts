@@ -150,19 +150,36 @@ describe("computeLanes", () => {
 });
 
 describe("extractLoop", () => {
-  it("pairs x and y channels of a window and skips non-finite samples", () => {
+  it("pairs x and y channels and marks one pen-lift gap per run of non-finite samples", () => {
     const buffer = new WaveformRingBuffer<"volume" | "pressure">({ channels: ["volume", "pressure"], capacity: 8 });
     buffer.pushBatch([
-      { tMs: 0, values: { volume: 0, pressure: 5 } },
+      { tMs: 0, values: { volume: Number.NaN, pressure: 1 } },
+      { tMs: 5, values: { volume: 0, pressure: 5 } },
       { tMs: 10, values: { volume: 100, pressure: Number.NaN } },
+      { tMs: 15, values: { volume: Number.NaN, pressure: Number.NaN } },
       { tMs: 20, values: { volume: 200, pressure: 15 } },
     ]);
 
     const loop = extractLoop(buffer.readAll(), "volume", "pressure");
 
-    expect(loop.length).toBe(2);
-    expect(Array.from(loop.x)).toEqual([0, 200]);
-    expect(Array.from(loop.y)).toEqual([5, 15]);
+    expect(loop.length).toBe(3);
+    expect(Array.from(loop.x)).toEqual([0, Number.NaN, 200]);
+    expect(Array.from(loop.y)).toEqual([5, Number.NaN, 15]);
+  });
+
+  it("writes into scratch buffers and returns views, not copies", () => {
+    const buffer = new WaveformRingBuffer<"volume" | "pressure">({ channels: ["volume", "pressure"], capacity: 8 });
+    buffer.pushBatch([
+      { tMs: 0, values: { volume: 1, pressure: 2 } },
+      { tMs: 10, values: { volume: 3, pressure: 4 } },
+    ]);
+    const scratch = { x: new Float32Array(8), y: new Float32Array(8) };
+
+    const loop = extractLoop(buffer.readAll(), "volume", "pressure", scratch);
+
+    expect(loop.x.buffer).toBe(scratch.x.buffer);
+    expect(loop.y.buffer).toBe(scratch.y.buffer);
+    expect(Array.from(loop.x)).toEqual([1, 3]);
   });
 });
 

@@ -117,6 +117,45 @@ describe("WaveformRingBuffer", () => {
     expect(buffer.generation).toBe(generation + 1);
   });
 
+  it("finds the window start by binary search after many wraps", () => {
+    const buffer = makeBuffer(64);
+    pushRange(buffer, 0, 1_000);
+
+    const window = buffer.readWindow(9_755, 9_800);
+
+    expect(Array.from(window.t)).toEqual([9_760, 9_770, 9_780, 9_790, 9_800]);
+    expect(buffer.readWindow(0).length).toBe(64);
+    expect(buffer.readWindow(20_000).length).toBe(0);
+  });
+
+  it("reads a window and a sequence range into a preallocated window without allocating", () => {
+    const buffer = makeBuffer(4);
+    const target = buffer.createWindow();
+    const { t, values } = target;
+    pushRange(buffer, 1, 6);
+
+    const window = buffer.readWindowInto(target, 40);
+
+    expect(window).toBe(target);
+    expect(window.t).toBe(t);
+    expect(window.values.pressure).toBe(values.pressure);
+    expect(window.length).toBe(3);
+    expect(Array.from(window.t.subarray(0, window.length))).toEqual([40, 50, 60]);
+    expect(window.firstSequence).toBe(3);
+
+    buffer.readSinceInto(target, 5);
+
+    expect(Array.from(target.values.flow.subarray(0, target.length))).toEqual([-6]);
+  });
+
+  it("rejects a preallocated window smaller than the range", () => {
+    const buffer = makeBuffer(4);
+    pushRange(buffer, 1, 4);
+    const small = makeBuffer(2).createWindow();
+
+    expect(() => buffer.readWindowInto(small, 0)).toThrow(RangeError);
+  });
+
   it("returns copies that do not change when more data arrives", () => {
     const buffer = makeBuffer(2);
     pushRange(buffer, 1, 2);

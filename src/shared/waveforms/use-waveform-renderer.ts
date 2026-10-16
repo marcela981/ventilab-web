@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useWaveformRenderer
-* Descripción: Canvas plumbing shared by SweepCanvas and LoopCanvas: a requestAnimationFrame loop throttled to a target fps, devicePixelRatio-aware backing store sized by a ResizeObserver, and a `full` flag that tells the frame callback when it must repaint everything (first frame, resize, DPR change, explicit invalidate). Also resolves canvas colors and fonts from CSS custom properties of the canvas element. Depends on React only; degrades to a no-op when there is no 2D context (jsdom).
-* Versión: 1.0
+* Descripción: Canvas plumbing shared by SweepCanvas and LoopCanvas: a requestAnimationFrame loop throttled to a target fps, devicePixelRatio-aware backing store sized by a ResizeObserver, and a `full` flag that tells the frame callback when it must repaint everything (first frame, resize, DPR change, explicit invalidate). Also resolves canvas colors and fonts from CSS custom properties of the canvas element. Depends on React only; degrades to a no-op when there is no 2D context (jsdom). v1.1: a theme change (`data-theme` on <html> or `prefers-color-scheme`) forces a full repaint so painters re-read their palette, and `onResize` reports the canvas CSS size.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,21 +26,38 @@ export type WaveformRenderFrame = {
 
 export type WaveformRendererOptions = {
   onFrame: (frame: WaveformRenderFrame) => void
+  /** Called with the canvas CSS size after every backing-store resize. */
+  onResize?: ((width: number, height: number) => void) | undefined
   fps?: number | undefined
 };
+
+/** Marks the canvas dirty when the app theme (`data-theme` on <html>) or the OS color scheme changes. */
+function watchTheme(onChange: () => void): () => void {
+  const observer = typeof MutationObserver === "function" ? new MutationObserver(onChange) : null;
+  observer?.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  const media = typeof window.matchMedia === "function" ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+  media?.addEventListener("change", onChange);
+
+  return () => {
+    observer?.disconnect();
+    media?.removeEventListener("change", onChange);
+  };
+}
 
 export type WaveformRenderer = {
   canvasRef: RefObject<HTMLCanvasElement | null>
   invalidate: () => void
 };
 
-export function useWaveformRenderer({ onFrame, fps = DEFAULT_WAVEFORM_FPS }: WaveformRendererOptions): WaveformRenderer {
+export function useWaveformRenderer({ onFrame, onResize, fps = DEFAULT_WAVEFORM_FPS }: WaveformRendererOptions): WaveformRenderer {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const onFrameRef = useRef(onFrame);
+  const onResizeRef = useRef(onResize);
   const dirtyRef = useRef(true);
 
   useLayoutEffect(() => {
     onFrameRef.current = onFrame;
+    onResizeRef.current = onResize;
   });
 
   const invalidate = useCallback(() => {
@@ -71,6 +88,7 @@ export function useWaveformRenderer({ onFrame, fps = DEFAULT_WAVEFORM_FPS }: Wav
       canvas.height = Math.max(1, Math.round(height * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       dirtyRef.current = true;
+      onResizeRef.current?.(width, height);
     };
 
     const tick = (now: number): void => {
@@ -99,11 +117,15 @@ export function useWaveformRenderer({ onFrame, fps = DEFAULT_WAVEFORM_FPS }: Wav
     resize();
     const observer = typeof ResizeObserver === "function" ? new ResizeObserver(resize) : null;
     observer?.observe(canvas);
+    const unwatchTheme = watchTheme(() => {
+      dirtyRef.current = true;
+    });
     handle = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(handle);
       observer?.disconnect();
+      unwatchTheme();
     };
   }, [fps]);
 

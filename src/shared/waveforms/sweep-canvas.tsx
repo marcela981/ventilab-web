@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: SweepCanvas
-* Descripción: Raw canvas renderer for N stacked live waveform channels read from a WaveformRingBuffer (not React state), in sweep (erase bar) or scroll mode, with a configurable window and fixed or auto y-ranges. `frozen` captures a snapshot and stops consuming data; on the frozen trace a measurement cursor follows the pointer or the arrow keys (the canvas becomes a slider) and an aria-live readout lists the time and every channel value with units. Depends on React, the sweep painter, waveform-geometry and the console tokens.
-* Versión: 1.0
+* Descripción: Raw canvas renderer for N stacked live waveform channels read from a WaveformRingBuffer (not React state), in sweep (erase bar) or scroll mode, with a configurable window and fixed or auto y-ranges. `frozen` captures a snapshot and stops consuming data; on the frozen trace a measurement cursor follows the pointer or the arrow keys (the canvas becomes a slider) and a visual readout lists the time and every channel value with units. Depends on React, the sweep painter, waveform-geometry and the console tokens. v1.1: the readout is no longer aria-live (the slider's aria-valuetext and aria-describedby carry it), PageUp/PageDown move 10 % of the window, the readout is re-placed on resize while frozen, and a sweep-mode snapshot starts after the erase gap.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -38,7 +38,12 @@ type FreezeState<C extends string> = {
   cursor: number
 };
 
+type CanvasSize = { width: number, height: number };
+
 const KEY_STEPS: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowDown: -1, ArrowUp: 1 };
+const PAGE_STEPS: Record<string, number> = { PageUp: 1, PageDown: -1 };
+/** PageUp/PageDown move the cursor by this fraction of the frozen window. */
+const PAGE_FRACTION = 0.1;
 
 function clampIndex(index: number, length: number): number {
   return Math.min(Math.max(index, 0), length - 1);
@@ -57,16 +62,21 @@ export function SweepCanvas<C extends string>({
   const readoutId = useId();
   const config = useMemo<SweepConfig<C>>(() => ({ channels, windowMs: windowSeconds * 1000, mode }), [channels, windowSeconds, mode]);
   const [freeze, setFreeze] = useState<FreezeState<C>>({ frozen: false, snapshot: null, cursor: -1 });
+  const [size, setSize] = useState<CanvasSize>({ width: 0, height: 0 });
   const painterRef = useRef<SweepPainter<C> | null>(null);
   const readoutRef = useRef<HTMLParagraphElement | null>(null);
 
   if (freeze.frozen !== frozen) {
-    const snapshot = frozen ? captureFrozenSweep(buffer, config) : null;
+    const plotWidth = size.width > 0 ? computeSweepLayout(size.width, size.height, channels.length).plot.width : 0;
+    const snapshot = frozen ? captureFrozenSweep(buffer, config, plotWidth) : null;
     setFreeze({ frozen, snapshot, cursor: snapshot ? snapshot.window.length - 1 : -1 });
   }
 
   const { canvasRef, invalidate } = useWaveformRenderer({
     fps,
+    onResize: (width, height) => {
+      setSize((previous) => previous.width === width && previous.height === height ? previous : { width, height });
+    },
     onFrame: (frame) => {
       painterRef.current ??= new SweepPainter<C>();
 
@@ -85,6 +95,7 @@ export function SweepCanvas<C extends string>({
   const { snapshot, cursor } = freeze;
   const cursorTime = snapshot?.window.t[cursor];
 
+  // Re-placed whenever the cursor moves or the canvas resizes while frozen (`size` comes from the renderer).
   useEffect(() => {
     const readout = readoutRef.current;
     const canvas = canvasRef.current;
@@ -98,7 +109,7 @@ export function SweepCanvas<C extends string>({
     const x = timeToX(cursorTime, config, snapshot.latestMs, plot);
     readout.style.setProperty("--vl-waveform-cursor-x", `${x.toFixed(1)}px`);
     readout.setAttribute("data-side", x > rect.width / 2 ? "left" : "right");
-  }, [canvasRef, config, snapshot, cursorTime]);
+  }, [canvasRef, config, snapshot, cursorTime, size]);
 
   const moveCursor = (index: number): void => {
     setFreeze((previous) => previous.snapshot && previous.snapshot.window.length > 0
@@ -123,9 +134,12 @@ export function SweepCanvas<C extends string>({
     }
 
     const step = KEY_STEPS[event.key];
+    const page = PAGE_STEPS[event.key];
 
     if (step !== undefined) {
       moveCursor(cursor + step * (event.shiftKey ? 10 : 1));
+    } else if (page !== undefined) {
+      moveCursor(cursor + page * Math.max(1, Math.round(snapshot.window.length * PAGE_FRACTION)));
     } else if (event.key === "Home") {
       moveCursor(0);
     } else if (event.key === "End") {
@@ -165,7 +179,8 @@ export function SweepCanvas<C extends string>({
     <div className={cx(styles.root, className)}>
       <canvas ref={canvasRef} className={styles.canvas} {...cursorProps} />
       {snapshot ? <span className={styles.badge}>Congelado</span> : null}
-      <p ref={readoutRef} id={readoutId} className={styles.readout} aria-live="polite">
+      {/* Not aria-live: the slider's aria-valuetext already announces it, and pointermove would flood a live region. */}
+      <p ref={readoutRef} id={readoutId} className={styles.readout}>
         {readout}
       </p>
     </div>

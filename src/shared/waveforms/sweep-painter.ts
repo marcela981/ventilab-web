@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Sweep painter
-* Descripción: Canvas painting for SweepCanvas, outside React. Stacked lanes (one per channel) with gridlines, tick values and a label with units; sweep mode paints incrementally (only the new segment plus the erase bar ahead of the head, O(new samples)) and repaints in full on resize, reset, wrap with auto-range or catch-up; scroll mode repaints the window when new data arrives. Frozen snapshots and the measurement cursor are painted from a captured window. Colors come from CSS custom properties of the canvas. Depends on the ring buffer, waveform-geometry and use-waveform-renderer.
-* Versión: 1.0
+* Descripción: Canvas painting for SweepCanvas, outside React. Stacked lanes (one per channel) with gridlines, tick values and a label with units; sweep mode paints incrementally (only the new segment plus the erase bar ahead of the head, O(new samples)) and repaints in full on resize, reset, wrap with auto-range or catch-up; scroll mode repaints the window when new data arrives. Frozen snapshots and the measurement cursor are painted from a captured window. Colors come from CSS custom properties of the canvas. Depends on the ring buffer, waveform-geometry and use-waveform-renderer. v1.1: the chrome (background, grid, labels) is rendered once per full repaint (or range change) into an offscreen canvas and incremental frames copy only the erase spans from it, with a direct-paint fallback where no offscreen canvas exists; reads go into a reused window and the last point is copied in place, so live frames allocate no sample arrays; in sweep mode a frozen snapshot starts after the erase gap.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -89,9 +89,24 @@ export function resolveRanges<C extends string>(channels: readonly SweepChannel<
   return channels.map((channel) => channel.range ?? computeAutoRange(window.values[channel.key], window.length, AUTO_RANGE_FALLBACK));
 }
 
-export function captureFrozenSweep<C extends string>(buffer: WaveformRingBuffer<C>, config: SweepConfig<C>): FrozenSweep<C> {
+/** Time hidden under the sweep erase bar for a plot `plotWidth` px wide (0 in scroll mode or before layout). */
+export function sweepGapMs<C extends string>(config: SweepConfig<C>, plotWidth: number): number {
+  return config.mode === "sweep" && plotWidth > 0 ? (SWEEP_LAYOUT.eraseGapPx / plotWidth) * config.windowMs : 0;
+}
+
+/**
+ * Copies the visible window when the display freezes. In sweep mode it starts after the erase gap
+ * (`latest - window + gap`), so the measurement cursor can only land on samples that are drawn.
+ */
+export function captureFrozenSweep<C extends string>(
+  buffer: WaveformRingBuffer<C>,
+  config: SweepConfig<C>,
+  plotWidth = 0,
+): FrozenSweep<C> {
   const latestMs = buffer.latestTime ?? 0;
-  const window = buffer.latestTime === null ? buffer.readAll() : buffer.readWindow(latestMs - config.windowMs);
+  const window = buffer.latestTime === null
+    ? buffer.readAll()
+    : buffer.readWindow(latestMs - config.windowMs + sweepGapMs(config, plotWidth));
 
   return { window, latestMs, ranges: resolveRanges(config.channels, window) };
 }
@@ -165,7 +180,52 @@ function paintChromeArea<C extends string>(ctx: CanvasRenderingContext2D, scene:
   });
 }
 
-/** Paints background, grid and labels, optionally only inside the given horizontal spans. */
+/** Offscreen copy of the chrome (background, grid, labels) at the backing-store resolution. */
+type ChromeLayer = { canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, dpr: number };
+
+/** An offscreen canvas for the chrome, or null where the environment cannot provide one. */
+function createChromeLayer(frame: WaveformRenderFrame): ChromeLayer | null {
+  try {
+    const canvas = frame.canvas.ownerDocument.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    return ctx && typeof ctx.drawImage === "function" ? { canvas, ctx, dpr: 1 } : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Redraws the chrome into the layer, sized like the visible canvas backing store. */
+function renderChromeLayer<C extends string>(layer: ChromeLayer, frame: WaveformRenderFrame, scene: SweepScene<C>): void {
+  const width = Math.max(1, frame.canvas.width);
+  const height = Math.max(1, frame.canvas.height);
+
+  if (layer.canvas.width !== width || layer.canvas.height !== height) {
+    layer.canvas.width = width;
+    layer.canvas.height = height;
+  }
+
+  layer.dpr = width / Math.max(1, scene.layout.width);
+  layer.ctx.setTransform(layer.dpr, 0, 0, layer.dpr, 0, 0);
+  paintChromeArea(layer.ctx, scene);
+}
+
+/** Copies the chrome layer to the canvas: everything, or only the given horizontal spans. */
+function blitChrome(ctx: CanvasRenderingContext2D, layer: ChromeLayer, layout: SweepLayout, spans?: ReadonlyArray<[number, number]>): void {
+  if (!spans) {
+    ctx.drawImage(layer.canvas, 0, 0, layout.width, layout.height);
+
+    return;
+  }
+
+  for (const [start, end] of spans) {
+    const width = end - start;
+    ctx.clearRect(start, 0, width, layout.height);
+    ctx.drawImage(layer.canvas, start * layer.dpr, 0, width * layer.dpr, layer.canvas.height, start, 0, width, layout.height);
+  }
+}
+
+/** Fallback without a chrome layer: paints the chrome directly, clipped to the spans when given. */
 function paintChrome<C extends string>(
   ctx: CanvasRenderingContext2D,
   scene: SweepScene<C>,
@@ -185,6 +245,10 @@ function paintChrome<C extends string>(
     paintChromeArea(ctx, scene);
     ctx.restore();
   }
+}
+
+function sameRanges(a: readonly WaveformRange[], b: readonly WaveformRange[]): boolean {
+  return a.length === b.length && a.every((range, index) => range.min === b[index]?.min && range.max === b[index]?.max);
 }
 
 /** Strokes each channel in its lane. A backwards jump in x (sweep wrap) or a NaN lifts the pen. */
@@ -281,29 +345,37 @@ function paintCursor<C extends string>(ctx: CanvasRenderingContext2D, scene: Swe
   });
 }
 
-function lastPoint<C extends string>(window: WaveformWindow<C>, channels: readonly SweepChannel<C>[]): Point<C> | null {
+/** Copies the last sample of `window` into the reused `target`; false when the window is empty. */
+function copyLastPoint<C extends string>(window: WaveformWindow<C>, channels: readonly SweepChannel<C>[], target: Point<C>): boolean {
   const index = window.length - 1;
   const t = window.t[index];
 
-  if (t === undefined) {
-    return null;
+  if (index < 0 || t === undefined) {
+    return false;
   }
 
-  const values = Object.fromEntries(
-    channels.map((channel) => [channel.key, window.values[channel.key][index] ?? Number.NaN]),
-  ) as Record<C, number>;
+  target.t = t;
 
-  return { t, values };
+  for (const channel of channels) {
+    target.values[channel.key] = window.values[channel.key][index] ?? Number.NaN;
+  }
+
+  return true;
 }
 
-/** Holds the incremental state of one SweepCanvas between frames. */
+/** Holds the incremental state of one SweepCanvas between frames, including its reused buffers. */
 export class SweepPainter<C extends string> {
   private generation = -1;
   private sequence = 0;
   private cycle = -1;
-  private prev: Point<C> | null = null;
+  private readonly prev: Point<C> = { t: 0, values: {} as Record<C, number> };
+  private hasPrev = false;
   private ranges: WaveformRange[] = [];
   private palette: SweepPalette | null = null;
+  private window: WaveformWindow<C> | null = null;
+  private chrome: ChromeLayer | null = null;
+  private chromeReady = false;
+  private chromeRanges: WaveformRange[] = [];
 
   public paintLive(frame: WaveformRenderFrame, buffer: WaveformRingBuffer<C>, config: SweepConfig<C>): void {
     const layout = computeSweepLayout(frame.width, frame.height, config.channels.length);
@@ -314,20 +386,20 @@ export class SweepPainter<C extends string> {
       return;
     }
 
-    const gapMs = config.mode === "sweep" ? (SWEEP_LAYOUT.eraseGapPx / layout.plot.width) * config.windowMs : 0;
+    const gapMs = sweepGapMs(config, layout.plot.width);
     const cycle = latest === null ? -1 : Math.floor(latest / config.windowMs);
     const autoWrapped = cycle !== this.cycle && config.channels.some((channel) => !channel.range);
-    const caughtUp = latest !== null && this.prev !== null && latest - this.prev.t >= config.windowMs - gapMs;
+    const caughtUp = latest !== null && this.hasPrev && latest - this.prev.t >= config.windowMs - gapMs;
 
-    if (frame.full || !this.palette || config.mode === "scroll" || latest === null || !this.prev
+    if (frame.full || !this.palette || config.mode === "scroll" || latest === null || !this.hasPrev
       || buffer.generation !== this.generation || autoWrapped || caughtUp) {
       this.paintFull(frame, layout, buffer, config, gapMs);
 
       return;
     }
 
-    const fresh = buffer.readSince(this.sequence);
-    const freshLatest = fresh.t[fresh.length - 1];
+    const fresh = buffer.readSinceInto(this.scratchWindow(buffer), this.sequence);
+    const freshLatest = fresh.length > 0 ? fresh.t[fresh.length - 1] : undefined;
 
     if (freshLatest === undefined) {
       return;
@@ -340,7 +412,13 @@ export class SweepPainter<C extends string> {
       SWEEP_LAYOUT.eraseGapPx,
       layout.plot,
     );
-    paintChrome(frame.ctx, scene, spans);
+
+    if (this.chrome && this.chromeReady) {
+      blitChrome(frame.ctx, this.chrome, layout, spans);
+    } else {
+      paintChrome(frame.ctx, scene, spans);
+    }
+
     paintTrace(frame.ctx, scene, fresh, Number.NEGATIVE_INFINITY, this.prev);
     this.track(buffer, fresh, config, cycle);
   }
@@ -351,11 +429,10 @@ export class SweepPainter<C extends string> {
     }
 
     const layout = computeSweepLayout(frame.width, frame.height, config.channels.length);
-    const gapMs = config.mode === "sweep" ? (SWEEP_LAYOUT.eraseGapPx / layout.plot.width) * config.windowMs : 0;
     this.palette = readPalette(frame, config.channels);
     const scene: SweepScene<C> = { config, layout, palette: this.palette, ranges: snapshot.ranges, latestMs: snapshot.latestMs };
-    paintChrome(frame.ctx, scene);
-    paintTrace(frame.ctx, scene, snapshot.window, snapshot.latestMs - config.windowMs + gapMs);
+    this.drawChrome(frame, scene, true);
+    paintTrace(frame.ctx, scene, snapshot.window, snapshot.latestMs - config.windowMs + sweepGapMs(config, layout.plot.width));
 
     if (cursorIndex >= 0) {
       paintCursor(frame.ctx, scene, snapshot.window, cursorIndex);
@@ -372,19 +449,56 @@ export class SweepPainter<C extends string> {
     gapMs: number,
   ): void {
     const latest = buffer.latestTime;
-    const window = latest === null ? buffer.readAll() : buffer.readWindow(latest - config.windowMs + gapMs);
-    this.palette = frame.full || !this.palette ? readPalette(frame, config.channels) : this.palette;
-    this.ranges = resolveRanges(config.channels, window);
-    const scene: SweepScene<C> = { config, layout, palette: this.palette, ranges: this.ranges, latestMs: latest ?? 0 };
-    paintChrome(frame.ctx, scene);
+    const window = buffer.readWindowInto(
+      this.scratchWindow(buffer),
+      latest === null ? Number.NEGATIVE_INFINITY : latest - config.windowMs + gapMs,
+    );
+    // The palette is re-read only on a full repaint (resize, theme change, invalidate), never per frame.
+    const palette = frame.full || !this.palette ? readPalette(frame, config.channels) : this.palette;
+    const ranges = resolveRanges(config.channels, window);
+    const rebuildChrome = palette !== this.palette || !sameRanges(ranges, this.chromeRanges);
+    this.palette = palette;
+    this.ranges = ranges;
+    const scene: SweepScene<C> = { config, layout, palette, ranges, latestMs: latest ?? 0 };
+    this.drawChrome(frame, scene, rebuildChrome);
     paintTrace(frame.ctx, scene, window, Number.NEGATIVE_INFINITY);
     this.track(buffer, window, config, latest === null ? -1 : Math.floor(latest / config.windowMs));
+  }
+
+  /**
+   * Full-canvas chrome. With an offscreen layer the chrome is rendered there only when `rebuild`
+   * (full repaint or new ranges) and then copied; incremental frames copy just the erase spans.
+   */
+  private drawChrome(frame: WaveformRenderFrame, scene: SweepScene<C>, rebuild: boolean): void {
+    this.chrome ??= createChromeLayer(frame);
+
+    if (!this.chrome) {
+      paintChrome(frame.ctx, scene);
+
+      return;
+    }
+
+    if (rebuild || !this.chromeReady) {
+      renderChromeLayer(this.chrome, frame, scene);
+      this.chromeRanges = scene.ranges;
+      this.chromeReady = true;
+    }
+
+    blitChrome(frame.ctx, this.chrome, scene.layout);
+  }
+
+  private scratchWindow(buffer: WaveformRingBuffer<C>): WaveformWindow<C> {
+    if (this.window?.t.length !== buffer.capacity) {
+      this.window = buffer.createWindow();
+    }
+
+    return this.window;
   }
 
   private track(buffer: WaveformRingBuffer<C>, window: WaveformWindow<C>, config: SweepConfig<C>, cycle: number): void {
     this.generation = buffer.generation;
     this.sequence = buffer.writeCount;
     this.cycle = cycle;
-    this.prev = lastPoint(window, config.channels);
+    this.hasPrev = copyLastPoint(window, config.channels, this.prev);
   }
 }
