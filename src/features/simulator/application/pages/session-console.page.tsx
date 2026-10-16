@@ -28,7 +28,11 @@
 *   v1.5 (review of 180a0a1): the tab claim is released on a `pagehide` that may enter the back/forward cache
 *   (`persisted`), because a held Web Lock makes the page ineligible for it, and claimed again on the `pageshow` that
 *   restores it (another tab that took the session meanwhile turns this one read-only).
-* Versión: 1.5
+*   v1.6 (review of eb3c21b): a deadline that fires while the student's end is in flight waits for that end and then
+*   leaves, and once the deadline is reached the student's end leaves on ANY outcome (error or busy included), so a
+*   failed end can no longer strand the student; the countdown offset of an EXAM rebuilt without its exam context
+*   (continue path) comes from the bootstrap (attempt `serverNow`), and the exam return record reaches the bootstrap.
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -268,6 +272,9 @@ function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnd
   const [resyncing, setResyncing] = useState(false);
   const [deadlineReached, setDeadlineReached] = useState(false);
   const leftRef = useRef(false);
+  // Read by the student's end after its await (its render closure predates the deadline).
+  const deadlineRef = useRef(false);
+  const endInFlightRef = useRef<Promise<unknown> | null>(null);
   const paused = session.status === "paused";
   const controllable = (session.status === "running" || session.status === "paused") && !deadlineReached;
   // The assist never pauses the simulation; it closes (and aborts) once the end starts.
@@ -295,10 +302,16 @@ function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnd
   // Deadline: stop stepping (pause), flush the pending events within a bound, POST /end, then back to the exam even
   // if the end failed (the attempt is closed by the server anyway). A student end already in flight finishes alone.
   const onDeadline = (): void => {
+    deadlineRef.current = true;
     setDeadlineReached(true);
     setConfirming(false);
 
-    if (session.ending) {
+    // The student's end is in flight: whatever its outcome, leave once it settles.
+    const inFlight = endInFlightRef.current;
+
+    if (inFlight || session.ending) {
+      void (inFlight ?? Promise.resolve()).finally(() => leave());
+
       return;
     }
 
@@ -307,7 +320,7 @@ function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnd
 
   const remainingMs = useExamDeadline({
     deadline: exam ? record.expiresAt : null,
-    serverOffsetMs: record.exam?.serverOffsetMs,
+    serverOffsetMs: record.exam?.serverOffsetMs ?? boot.serverOffsetMs,
     onExpire: onDeadline,
   });
 
@@ -324,7 +337,21 @@ function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnd
   const finish = async() => {
     setEndError(null);
 
-    const outcome = await session.end();
+    const pending = session.end();
+
+    endInFlightRef.current = pending;
+
+    const outcome = await pending.finally(() => {
+      endInFlightRef.current = null;
+    });
+
+    // Past the deadline the student never stays: the server closes the attempt anyway.
+    if (deadlineRef.current) {
+      setConfirming(false);
+      await leave();
+
+      return;
+    }
 
     if (outcome.status === "error") {
       setEndError(SESSION_PAGE_COPY.endFailed(outcome.message));
@@ -442,7 +469,7 @@ function RunningSession({ boot, sessionId, renderAssist, assistancePolicy, onEnd
 export function SessionConsolePage({ sessionId, renderAssist, assistancePolicy, onEnded, deps }: SessionConsolePageProps) {
   const claim = useTabClaim(sessionId, deps?.claimTab ?? defaultClaim);
   // Only the tab that drives the session boots it (a duplicated tab copies its sessionStorage).
-  const { state, retry } = useSessionBootstrap(claim === "claimed" ? sessionId : null, deps?.bootstrap);
+  const { state, retry } = useSessionBootstrap(claim === "claimed" ? sessionId : null, { examReturn: deps?.examReturn, ...deps?.bootstrap });
   // Per session (a client-side navigation to another session keeps this component mounted).
   const [refusalState, setRefusalState] = useState({ sessionId, count: 0 });
   const timeAheadRefusals = refusalState.sessionId === sessionId ? refusalState.count : 0;

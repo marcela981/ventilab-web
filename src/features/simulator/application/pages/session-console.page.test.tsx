@@ -23,7 +23,8 @@
 *   v1.6 (review of 180a0a1): after a settle() that timed out, a late acknowledgement of the old queue does not
 *   overwrite the outbox the new boot wrote; the time-ahead test stamps its server clock on the monotonic clock; the
 *   tab claim is released on a persisted pagehide (back/forward cache) and claimed again on its pageshow.
-* Versión: 1.6
+*   v1.7 (review of eb3c21b): a deadline during the student's failing end returns to the exam with one end and one navigation; a deadline already past at mount posts /end before the worker boots and never starts it; an EXAM rebuilt without its exam context counts down on the attempt server clock.
+* Versión: 1.7
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -690,6 +691,90 @@ describe("SessionConsolePage — EXAM flow (T9)", () => {
     act(() => worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 4400, status: "paused" }) }));
 
     await waitFor(() => expect(router.push).toHaveBeenCalledWith("/evaluations/e1/attempts/a1"));
+  });
+
+  it("a deadline during the student's failing end still returns to the exam (no stranded student)", async() => {
+    vi.useFakeTimers({ toFake: ["Date", "setInterval", "clearInterval"], shouldAdvanceTime: true });
+
+    const expiresAt = new Date(Date.now() + 60_000).toISOString();
+    const { worker, endSession } = renderPage({ record: { mode: "EXAM", expiresAt, exam: EXAM_CONTEXT } });
+
+    endSession.mockImplementation(() => Promise.reject(new Error("offline")));
+    await startRunning(worker);
+    fireEvent.click(screen.getByRole("button", { name: "Finalizar sesión" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Finalizar" }));
+    await waitFor(() => expect(sentOfType(worker, "pause")).toHaveLength(1));
+
+    // The deadline fires while the student's end waits for its paused batch.
+    act(() => {
+      vi.advanceTimersByTime(61_000);
+    });
+    expect(await screen.findByText(/Se alcanzó la fecha límite del examen/)).toBeInTheDocument();
+    act(() => worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 4400, status: "paused" }) }));
+
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/evaluations/e1/attempts/a1"));
+    // One end only (the deadline joined the student's), one navigation.
+    expect(endSession).toHaveBeenCalledTimes(1);
+    expect(router.push).toHaveBeenCalledTimes(1);
+  });
+
+  it("a deadline already past at mount ends the session before the worker boots and returns to the exam", async() => {
+    const expiresAt = new Date(Date.now() - 1000).toISOString();
+    const { worker, endSession } = renderPage({ record: { mode: "EXAM", expiresAt, exam: EXAM_CONTEXT } });
+
+    await waitFor(() => expect(endSession).toHaveBeenCalledWith("s1", 0));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/evaluations/e1/attempts/a1"));
+    // The worker that boots afterwards is never started.
+    act(() => worker.emit({ type: "ready", engineVersion: "1.0.0" }));
+    expect(sentOfType(worker, "start")).toHaveLength(0);
+    expect(sentOfType(worker, "stop")).toHaveLength(1);
+  });
+
+  it("an EXAM rebuilt without its exam context counts down on the attempt server clock", async() => {
+    vi.useFakeTimers({ toFake: ["Date", "setInterval", "clearInterval"], shouldAdvanceTime: true });
+
+    const storage = createMemoryStorage();
+    const examReturn = createExamReturnStore(() => storage);
+    const serverNowMs = Date.now() + 10 * 60_000;
+    // On the server clock the deadline is 2 minutes away; on the (10 min late) client clock it would be 12.
+    const expiresAt = new Date(serverNowMs + 120_000).toISOString();
+
+    examReturn.save("s1", { evaluationId: "e1", attemptId: "a1" });
+    server.use(http.get(apiUrl("/api/evaluation-attempts/a1"), () => HttpResponse.json(envelope({
+      id: "a1",
+      assignmentId: null,
+      attemptNumber: 1,
+      status: "IN_PROGRESS",
+      startedAt: new Date(serverNowMs - 60_000).toISOString(),
+      submittedAt: null,
+      deadlineAt: expiresAt,
+      serverNow: new Date(serverNowMs).toISOString(),
+      published: false,
+      evaluation: { id: "e1", title: "Parcial", type: "EXAM", description: null },
+      scenarios: [],
+      questions: [],
+    }))));
+
+    const { worker } = renderPage({
+      record: null,
+      examReturn,
+      replay: () => Promise.resolve({
+        id: "s1",
+        seed: 7,
+        engineVersion: "1.0.0",
+        currentEngineVersion: "1.0.0",
+        engineVersionMismatch: false,
+        warning: null,
+        timeMultiplier: 1,
+        engineCase: buildEngineCase(),
+        events: [],
+      }),
+      state: () => Promise.resolve({ id: "s1", status: "ACTIVE", simTimeMs: 6000, expiresAt, serverClock: null }),
+    });
+
+    await startRunning(worker, 6000);
+    expect(screen.getByRole("timer")).toHaveTextContent(/[12]:\d\d/);
+    expect(screen.getByRole("timer")).not.toHaveTextContent(/1[12]:\d\d/);
   });
 
   it("\"Finalizar sesión\" in EXAM returns to the exam attempt instead of the result", async() => {

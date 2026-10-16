@@ -26,7 +26,10 @@
 *   (performance.now at the response vs. now), so a wall-clock jump cannot move the estimate. The backend CORS config
 *   does not expose `Date` (backend gap), so when /state has no server clock an EXAM resume with a known attempt reads
 *   the server time from the attempt BODY (`GET /evaluation-attempts/{id}` `serverNow`); without either, backlog 0.
-* Versión: 1.4
+*   v1.5 (review of eb3c21b): an EXAM rebuilt without its exam context (the "Continuar parte práctica" path writes
+*   only the exam return record) takes the attempt from that record, so the resume can read the attempt clock, and
+*   the boot carries the server clock offset (server now − client wall clock) for the countdown.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -40,6 +43,7 @@ import { RESUME_SAFETY_MARGIN_WALL_MS } from "../config/sim-console.config";
 import type { ClientSessionEvent, ServerClock, SessionBoot, SessionRecord, SessionReplay, SessionState } from "../entities/sim-session.entity";
 import { getSimulatorErrorMessage } from "../entities/simulator-error-messages";
 import type { EventOutbox } from "./event-outbox";
+import type { ExamReturnStore } from "./exam-return-store";
 import type { SessionStore } from "./session-store";
 
 // TODO(i18n): move to a simulator namespace in src/i18n.
@@ -59,6 +63,10 @@ export type BootstrapDeps = {
   fetchAttemptServerClock?: ((attemptId: string) => Promise<ServerClock | null>) | undefined
   /** Monotonic client clock (ms), only used to measure the time elapsed since the server reading. */
   monotonicNow?: (() => number) | undefined
+  /** Client wall clock (ms), only used to turn the server clock into the countdown offset. Default Date.now. */
+  wallNow?: (() => number) | undefined
+  /** Exam return record: the attempt of an EXAM rebuilt without its exam context. */
+  examReturn?: ExamReturnStore | undefined
   /** false: resume at the last known time (no fast-forward), e.g. after repeated time-ahead refusals. Default true. */
   fastForward?: boolean | undefined
 };
@@ -91,12 +99,10 @@ export function estimateServerNowMs(clock: ServerClock | null | undefined, monot
 }
 
 /** /state server clock, else (EXAM with a known attempt) the attempt body clock; null when neither is readable. */
-async function readResumeClock(state: SessionState, stored: SessionRecord | null, deps: BootstrapDeps): Promise<ServerClock | null> {
+async function readResumeClock(state: SessionState, attemptId: string | null, deps: BootstrapDeps): Promise<ServerClock | null> {
   if (state.serverClock) {
     return state.serverClock;
   }
-
-  const attemptId = stored?.exam?.attemptId;
 
   if (!attemptId || !deps.fetchAttemptServerClock) {
     return null;
@@ -206,8 +212,13 @@ export async function bootstrapSession(sessionId: string, deps: BootstrapDeps): 
   };
   const startAtSimTimeMs = Math.max(0, state.simTimeMs, lastEventMs);
   // FREE (and a no-fast-forward reload) resumes at the last known time; EXAM follows the server clock.
-  const fastForward = record.mode === "EXAM" && deps.fastForward !== false;
-  const clock = fastForward ? await readResumeClock(state, stored, deps) : null;
+  const exam = record.mode === "EXAM";
+  const fastForward = exam && deps.fastForward !== false;
+  // Without its exam context (continue path), the attempt comes from the exam return record and the offset is measured.
+  const needsOffset = exam && !stored?.exam;
+  const attemptId = stored?.exam?.attemptId ?? (needsOffset ? deps.examReturn?.read(sessionId)?.attemptId ?? null : null);
+  const clock = fastForward || needsOffset ? await readResumeClock(state, attemptId, deps) : null;
+  const serverNowMs = estimateServerNowMs(clock, (deps.monotonicNow ?? monotonicNow)());
 
   deps.store.save(record);
 
@@ -222,9 +233,10 @@ export async function bootstrapSession(sessionId: string, deps: BootstrapDeps): 
         startedAt,
         expiresAt: state.expiresAt,
         multiplier: timeMultiplier,
-        serverNowMs: estimateServerNowMs(clock, (deps.monotonicNow ?? monotonicNow)()),
+        serverNowMs,
       }),
       pendingEvents,
+      ...(needsOffset && serverNowMs !== null ? { serverOffsetMs: Math.round(serverNowMs - (deps.wallNow ?? Date.now)()) } : {}),
     },
   };
 }

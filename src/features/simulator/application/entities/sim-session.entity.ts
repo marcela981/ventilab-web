@@ -12,7 +12,8 @@
 *   resume EXAM on the server clock instead of the client clock. v1.4 (T9): the record may carry the exam context.
 *   v1.5 (review of 180a0a1): the server clock keeps the MONOTONIC client time of the response (`monotonicAtMs`,
 *   performance.now), so the elapsed time since a reading never follows a wall-clock jump; `monotonicNow` reads it.
-* Versión: 1.5
+*   v1.6 (review of eb3c21b): the boot may carry the server clock offset of an EXAM rebuilt without its exam context.
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -103,6 +104,11 @@ export type SessionBoot = {
   startAtSimTimeMs: number
   initialBacklogMs: number
   pendingEvents: readonly ClientSessionEvent[]
+  /**
+   * Server clock minus client wall clock (ms) measured at the boot, for an EXAM rebuilt without its exam context (the
+   * "Continuar" path of another tab or a lost store); undefined otherwise (the record exam context has its own).
+   */
+  serverOffsetMs?: number | undefined
 };
 
 export type EngineVersionCheck =

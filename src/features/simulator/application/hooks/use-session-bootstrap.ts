@@ -10,7 +10,9 @@
 *   lets the page rebuild a session without fast-forward (after repeated time-ahead refusals); a null session id
 *   (tab not claimed yet, or claimed by another tab) loads nothing. v1.3 (review of 180a0a1): a monotonic clock
 *   instead of the wall clock, and the exam attempt `serverNow` body field as the fallback server clock.
-* Versión: 1.3
+*   v1.4 (review of eb3c21b): passes the exam return record and the wall clock (server offset of an EXAM rebuilt
+*   without its exam context).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,6 +24,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchAttemptServerClock } from "../../api/services/exam-attempt.service";
 import { fetchSessionReplay, fetchSessionStartedAt, fetchSessionState } from "../../api/services/simulation-sessions.service";
 import { eventOutbox } from "../session/event-outbox";
+import { examReturnStore } from "../session/exam-return-store";
 import { bootstrapSession } from "../session/session-bootstrap";
 import type { BootstrapDeps, BootstrapResult } from "../session/session-bootstrap";
 import { sessionStore } from "../session/session-store";
@@ -72,6 +75,8 @@ export function useSessionBootstrap(sessionId: string | null, deps?: Partial<Boo
           outbox: injected.outbox ?? eventOutbox,
           fetchAttemptServerClock: injected.fetchAttemptServerClock ?? fetchAttemptServerClock,
           monotonicNow: injected.monotonicNow ?? monotonicNow,
+          wallNow: injected.wallNow ?? Date.now,
+          examReturn: injected.examReturn ?? examReturnStore,
           fastForward: fastForwardRef.current && injected.fastForward !== false,
         }),
       };

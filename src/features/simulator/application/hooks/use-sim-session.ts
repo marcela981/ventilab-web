@@ -32,7 +32,10 @@
 *   once the flush settles or the time runs out. v1.5 (review of 180a0a1): `settle()` disposes the queue AFTER its
 *   flush settles or times out, and neither a disposed queue nor a cleaned-up effect writes the outbox again, so a
 *   late acknowledgement of the old queue cannot overwrite the outbox of the new boot.
-* Versión: 1.5
+*   v1.6 (review of eb3c21b): `end()` on a session whose worker is not booted (no worker, blocked, or still
+*   "starting", e.g. an EXAM deadline already past at mount) no longer answers `busy`: it flushes the queued events
+*   (bounded like the normal end), posts /end at the last known simulated time, stops the worker and never starts it.
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -478,7 +481,7 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
 
       // Whatever the outcome, the events stay first in the queue; the simulation starts after this attempt.
       void queue.flush().catch(() => undefined).then(() => {
-        if (!disposed) {
+        if (!disposed && !endingRef.current) {
           client.send({ type: "start" });
         }
       });
@@ -486,7 +489,10 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
 
     const unsubscribe = client.subscribe((message) => {
       if (message.type === "ready") {
-        startSimulation();
+        // An end that went out before the worker booted (deadline already past) must not start the simulation.
+        if (!endingRef.current) {
+          startSimulation();
+        }
       } else if (message.type === "batch") {
         handleBatch(message.batch);
       } else {
@@ -601,12 +607,53 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     setRuntime((previous) => (previous.boot === boot ? { ...previous, multiplier } : previous));
   }, [boot, isFree, multiplierOptions]);
 
+  /**
+   * End of a session whose worker never booted (no worker, blocked by the engine version, or still starting): nothing
+   * is stepping, so the queued events (a reload's outbox) are flushed and /end goes out at the last known time.
+   */
+  const endBeforeBoot = useCallback(async(
+    id: string,
+    client: SimWorkerClient | null,
+    queue: EventQueue<ClientSessionEvent> | null,
+    options: EndSessionOptions,
+  ): Promise<EndSessionOutcome> => {
+    const endSession = depsRef.current.endSession ?? endSimulationSession;
+
+    endingRef.current = true;
+    setEnding(true);
+
+    try {
+      if (queue) {
+        await (options.flushTimeoutMs === undefined
+          ? queue.flush()
+          : flushWithin(queue.flush(), options.flushTimeoutMs, depsRef.current.queueTimers));
+      }
+
+      await endSession(id, Math.max(latestSimRef.current, boot?.startAtSimTimeMs ?? 0));
+      client?.send({ type: "stop" });
+      (depsRef.current.store ?? sessionStore).forget(id);
+      (depsRef.current.outbox ?? eventOutbox).clear(id);
+
+      return { status: "ended" };
+    } catch (error) {
+      endingRef.current = false;
+
+      return { status: "error", message: getSimulatorErrorMessage(error) };
+    } finally {
+      setEnding(false);
+    }
+  }, [boot]);
+
   const end = useCallback(async(options: EndSessionOptions = {}): Promise<EndSessionOutcome> => {
     const client = clientRef.current;
     const queue = queueRef.current;
 
-    if (!sessionId || !client || !queue || endingRef.current) {
+    if (!sessionId || endingRef.current) {
       return { status: "busy" };
+    }
+
+    if (!client || !queue || statusRef.current === "starting") {
+      return endBeforeBoot(sessionId, client, queue, options);
     }
 
     const wasRunning = statusRef.current === "running";
@@ -653,7 +700,7 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     } finally {
       setEnding(false);
     }
-  }, [sessionId]);
+  }, [endBeforeBoot, sessionId]);
 
   const settle = useCallback(async(): Promise<void> => {
     const queue = queueRef.current;

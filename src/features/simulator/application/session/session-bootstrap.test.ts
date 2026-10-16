@@ -11,7 +11,8 @@
 *   known time, the safety margin and the no-fast-forward reload after a repeated time-ahead refusal.
 *   v1.3 (review of 180a0a1): the elapsed time since the server reading is monotonic (a wall-clock jump does not move
 *   the resume) and, without a /state server clock, the EXAM resume reads the attempt `serverNow` body field.
-* Versión: 1.3
+*   v1.4 (review of eb3c21b): an EXAM rebuilt without its exam context takes the attempt of the exam return record and carries the countdown offset; a stored exam context keeps its own.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -24,9 +25,17 @@ import { ApiError } from "@shared/api-client/api-error";
 import { checkEngineVersion } from "../entities/sim-session.entity";
 import type { SessionReplay, SessionState } from "../entities/sim-session.entity";
 import { createEventOutbox } from "./event-outbox";
+import { createExamReturnStore } from "./exam-return-store";
 import { bootstrapSession, BOOTSTRAP_COPY } from "./session-bootstrap";
 import { createSessionStore } from "./session-store";
 import { buildEngineCase, buildRecord, createMemoryStorage } from "./sim-session-test-helpers";
+
+/** One storage per store (a new storage per access would forget every write). */
+function memoryGetter() {
+  const storage = createMemoryStorage();
+
+  return () => storage;
+}
 
 function replayOf(overrides: Partial<SessionReplay> = {}): SessionReplay {
   return {
@@ -200,6 +209,53 @@ describe("bootstrapSession", () => {
 
     expect(fetchAttemptServerClock).toHaveBeenCalledWith("a1");
     expect(result.status === "ready" ? result.boot : null).toMatchObject({ startAtSimTimeMs: 12_000, initialBacklogMs: 104_000 });
+  });
+
+  it("an EXAM rebuilt without its exam context reads the attempt clock of the exam return record for the countdown offset", async() => {
+    const store = createSessionStore(() => null);
+    const startedAt = "2026-10-15T10:00:00.000Z";
+    const serverNowMs = Date.parse(startedAt) + 60_000;
+    const fetchAttemptServerClock = vi.fn(() => Promise.resolve({ serverNowMs, monotonicAtMs: 500 }));
+    const examReturn = createExamReturnStore(memoryGetter());
+
+    examReturn.save("s1", { evaluationId: "e1", attemptId: "a7" });
+
+    const result = await bootstrapSession("s1", {
+      store,
+      fetchReplay: () => Promise.resolve(replayOf()),
+      // A non-null deadline marks the rebuilt record as EXAM (no stored mode).
+      fetchState: () => Promise.resolve(stateOf({ serverClock: null, expiresAt: "2026-10-15T11:00:00.000Z" })),
+      fetchStartedAt: () => Promise.resolve(startedAt),
+      fetchAttemptServerClock,
+      examReturn,
+      monotonicNow: () => 1500,
+      // The client wall clock runs 4 s behind the server (1 s elapsed since the reading).
+      wallNow: () => serverNowMs + 1000 - 4000,
+    });
+
+    expect(fetchAttemptServerClock).toHaveBeenCalledWith("a7");
+    expect(result.status === "ready" ? result.boot.record.mode : null).toBe("EXAM");
+    expect(result.status === "ready" ? result.boot.serverOffsetMs : null).toBe(4000);
+  });
+
+  it("an EXAM with its exam context keeps the stored offset (no boot offset)", async() => {
+    const store = createSessionStore(() => null);
+
+    store.save(buildRecord({
+      mode: "EXAM",
+      exam: { attemptId: "a1", questionId: "q1", evaluationId: "e1", returnUrl: "/evaluations/e1/attempts/a1", assistancePolicy: null, serverOffsetMs: 250 },
+    }));
+
+    const result = await bootstrapSession("s1", {
+      store,
+      fetchReplay: () => Promise.resolve(replayOf()),
+      fetchState: () => Promise.resolve(stateOf({ serverClock: null })),
+      fetchAttemptServerClock: () => Promise.resolve({ serverNowMs: 1, monotonicAtMs: 0 }),
+      monotonicNow: () => 0,
+    });
+
+    expect(result.status === "ready" ? result.boot.serverOffsetMs : "missing").toBeUndefined();
+    expect(result.status === "ready" ? result.boot.record.exam?.serverOffsetMs : null).toBe(250);
   });
 
   it("a failed attempt clock read keeps the last known time", async() => {

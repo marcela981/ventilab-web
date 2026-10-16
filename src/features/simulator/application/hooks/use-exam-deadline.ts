@@ -5,7 +5,10 @@
 *   calls `onExpire` exactly once when it reaches zero (also at once when the deadline has already passed). Returns
 *   the milliseconds left, or null without a deadline. The clock is injectable for tests. Depends on React, the exam
 *   entities and config.
-* Versión: 1.0
+*   v1.1 (review of eb3c21b): a background tab throttles the interval, so the hook also ticks when the tab becomes
+*   visible (`visibilitychange`) and keeps one `setTimeout` armed for the exact time left (re-armed on every tick), so
+*   the expiry does not wait for the next interval tick.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -41,6 +44,7 @@ export function useExamDeadline({ deadline, serverOffsetMs = 0, onExpire, now }:
     }
 
     let expired = false;
+    let exact: ReturnType<typeof setTimeout> | null = null;
 
     const tick = (): void => {
       const ms = deadlineRemainingMs(deadline, (nowRef.current ?? Date.now)(), serverOffsetMs);
@@ -51,9 +55,27 @@ export function useExamDeadline({ deadline, serverOffsetMs = 0, onExpire, now }:
 
       setRemaining({ deadline, ms });
 
-      if (ms <= 0 && !expired) {
-        expired = true;
-        onExpireRef.current();
+      if (exact !== null) {
+        clearTimeout(exact);
+        exact = null;
+      }
+
+      if (ms <= 0) {
+        if (!expired) {
+          expired = true;
+          onExpireRef.current();
+        }
+
+        return;
+      }
+
+      // One timer for the exact time left, so the expiry never waits for the next interval tick.
+      exact = setTimeout(tick, ms);
+    };
+
+    const onVisibility = (): void => {
+      if (document.visibilityState === "visible") {
+        tick();
       }
     };
 
@@ -61,7 +83,17 @@ export function useExamDeadline({ deadline, serverOffsetMs = 0, onExpire, now }:
 
     const handle = setInterval(tick, DEADLINE_TICK_MS);
 
-    return () => clearInterval(handle);
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      clearInterval(handle);
+
+      if (exact !== null) {
+        clearTimeout(exact);
+      }
+
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [deadline, serverOffsetMs]);
 
   return deadline !== null && remaining?.deadline === deadline ? remaining.ms : null;

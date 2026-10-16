@@ -8,7 +8,11 @@
 *   práctica" saves the link again (idempotent) and opens the console of the existing session. A busy guard prevents a
 *   second session from a double click. Dependencies are injectable for tests. Depends on next/router, the exam
 *   attempt service, the exam return store, the routes and the simulator error messages.
-* Versión: 1.0
+*   v1.1 (review of eb3c21b): a successful explicit PUT navigates WITHOUT handing the answer to the player (`onChange`
+*   would schedule a second, debounced PUT of the same link that, resent stale after the deadline, could get a
+*   spurious 409); the answer goes to the player only when the save (or the navigation) fails, so the slot keeps
+*   "Continuar parte práctica". On return the attempt is read again and the slot reads `question.answer`.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -91,7 +95,11 @@ export function useExamPractical(options: UseExamPracticalOptions): UseExamPract
     }
   }, []);
 
-  const saveAndOpen = useCallback(async(sessionId: string): Promise<void> => {
+  /**
+   * Saves the link with an explicit PUT and opens the console. `onSaveFailed` runs when the student stays on the exam
+   * (failed save or navigation), so the player keeps the link and the slot offers "Continuar".
+   */
+  const saveAndOpen = useCallback(async(sessionId: string, onStay?: () => void): Promise<void> => {
     if (!attemptId) {
       return;
     }
@@ -99,6 +107,7 @@ export function useExamPractical(options: UseExamPracticalOptions): UseExamPract
     try {
       await (deps?.saveAnswer ?? saveExamSimulationAnswer)(attemptId, question.id, sessionId);
     } catch (caught) {
+      onStay?.();
       setError(EXAM_PRACTICAL_COPY.saveFailed(getSimulatorErrorMessage(caught)));
 
       return;
@@ -108,6 +117,7 @@ export function useExamPractical(options: UseExamPracticalOptions): UseExamPract
       await router.push(buildSessionUrl(sessionId));
     } catch (caught) {
       // The session and the answer exist: "Continuar parte práctica" opens it again.
+      onStay?.();
       console.warn("The exam simulation session could not be opened:", caught);
     }
   }, [attemptId, deps, question.id, router]);
@@ -136,9 +146,8 @@ export function useExamPractical(options: UseExamPracticalOptions): UseExamPract
       return;
     }
 
-    // The player keeps the answer (and autosaves it); the explicit save below makes sure it is stored before leaving.
-    onChange({ ...(answer ?? EMPTY_ANSWER), simulationSessionId: session.id });
-    await saveAndOpen(session.id);
+    // Saved explicitly before leaving; the player only gets the link when the student stays on the exam (one PUT).
+    await saveAndOpen(session.id, () => onChange({ ...(answer ?? EMPTY_ANSWER), simulationSessionId: session.id }));
   }), [answer, assistancePolicy, attemptId, deps, evaluationId, onChange, question.clinicalCaseId, question.id, returnUrl, run, saveAndOpen]);
 
   const continueSession = useCallback((sessionId: string) => run(async() => {

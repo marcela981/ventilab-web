@@ -5,13 +5,16 @@
 *   the rubric rules when the question exposes them (criteria, weights, thresholds, passing score, assistance policy and
 *   its penalty points; a student only gets the rubric once the grade is published, so before that a note says so),
 *   the attempt deadline (GET /evaluation-attempts/{id}) and the question points. Actions: "Iniciar parte práctica"
-*   (EXAM session → onChange → saved answer → console), "Continuar parte práctica" for a linked ACTIVE session and
+*   (EXAM session → saved answer → console), "Continuar parte práctica" for a linked ACTIVE session and
 *   "Parte práctica completada" with a link to its result once the session is over (status from the history `ids`
 *   filter). The attempt and evaluation ids come from the attempt route; without an attempt (authoring preview) or in
 *   read-only mode no session can be started. No grade is computed here. Depends on next/router, next/link, MUI
 *   Button/Alert, the api-client query hook, the simulator services, entities, hooks and CSS Module; the evaluations
 *   feature only through its public types.
-* Versión: 1.0
+*   v1.1 (review of eb3c21b): the linked session comes from the player answer, else from `question.answer` (what the
+*   attempt stores once the student is back); a settled history lookup that does not list the linked session is an
+*   error state with "Reintentar" instead of an endless "Comprobando…".
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -75,6 +78,7 @@ export const EXAM_SLOT_COPY = {
   viewResult: "Ver resultado de la parte práctica",
   checking: "Comprobando el estado de la parte práctica…",
   statusFailed: "No se pudo comprobar el estado de la parte práctica.",
+  sessionNotFound: "No se encontró la sesión vinculada a esta pregunta.",
   retry: "Reintentar",
   noAttempt: "La parte práctica solo se puede iniciar desde un intento en curso.",
 } as const;
@@ -229,9 +233,14 @@ export function ExamPracticalSlot({ question, answer, onChange, readOnly = false
       </div>
     );
   } else if (slot.status === "checking") {
-    status = sessionQuery.error ? (
+    // Settled without the linked session (or failed): an error with a retry, never an endless "Comprobando…".
+    const failure = sessionQuery.error
+      ? `${EXAM_SLOT_COPY.statusFailed} ${getSimulatorErrorMessage(sessionQuery.error)}`
+      : sessionQuery.data ? `${EXAM_SLOT_COPY.statusFailed} ${EXAM_SLOT_COPY.sessionNotFound}` : null;
+
+    status = failure ? (
       <div className={cx(styles.actions)}>
-        <p className={cx(styles.muted)} role="alert">{`${EXAM_SLOT_COPY.statusFailed} ${getSimulatorErrorMessage(sessionQuery.error)}`}</p>
+        <p className={cx(styles.muted)} role="alert">{failure}</p>
         <Button variant="text" onClick={() => void sessionQuery.mutate()}>{EXAM_SLOT_COPY.retry}</Button>
       </div>
     ) : <p className={cx(styles.muted)} role="status">{EXAM_SLOT_COPY.checking}</p>;

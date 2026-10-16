@@ -8,7 +8,8 @@
 *   an ACTIVE session (no new session), "Parte práctica completada" with the result link for an ended one, the
 *   read-only mode, and the exam start routine itself (POST body, stored EXAM record with the exam context and the
 *   server clock offset, exam return record). Depends on vitest, Testing Library, msw and the simulator test helpers.
-* Versión: 1.0
+*   v1.1 (review of eb3c21b): one explicit PUT on success (no player onChange), onChange only when the save fails, a double click starts one session, the link read from question.answer on return, and a settled lookup without the session shows an error with retry.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,6 +22,7 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AttemptAnswer, AttemptQuestion } from "@features/evaluations";
+import type { StartedSession } from "../entities/simulator.entity";
 import { createExamReturnStore } from "../session/exam-return-store";
 import { startExamSession } from "../session/exam-session-start";
 import { createSessionStore } from "../session/session-store";
@@ -170,7 +172,7 @@ describe("ExamPracticalSlot", () => {
     expect(screen.getByText(/durante el examen la asesoría queda desactivada/)).toBeInTheDocument();
   });
 
-  it("creates the EXAM session, hands the answer to the player, saves it and only then opens the console", async() => {
+  it("creates the EXAM session, saves the answer with one explicit PUT and only then opens the console (no player onChange)", async() => {
     server.use(caseHandler(), attemptHandler());
 
     const { start, onChange, saveAnswer } = renderSlot({ question: buildQuestion({ rubric: RUBRIC }) });
@@ -186,14 +188,61 @@ describe("ExamPracticalSlot", () => {
       returnUrl: "/evaluations/e1/attempts/a1",
       assistancePolicy: "ALLOWED_WITH_PENALTY",
     });
-    expect(onChange).toHaveBeenCalledWith({ selectedOptionIds: [], textAnswer: null, simulationSessionId: "s9" });
+    // The player autosave would PUT the same link again (and a stale resend after the deadline could get a 409).
+    expect(onChange).not.toHaveBeenCalled();
+    expect(saveAnswer).toHaveBeenCalledTimes(1);
     expect(saveAnswer).toHaveBeenCalledWith("a1", "q1", "s9");
 
     const order = (mock: { mock: { invocationCallOrder: number[] } }) => mock.mock.invocationCallOrder[0] ?? 0;
 
-    expect(order(start)).toBeLessThan(order(onChange));
-    expect(order(onChange)).toBeLessThan(order(saveAnswer));
+    expect(order(start)).toBeLessThan(order(saveAnswer));
     expect(order(saveAnswer)).toBeLessThan(order(router.push));
+  });
+
+  it("a double click starts exactly one session", async() => {
+    server.use(caseHandler(), attemptHandler());
+
+    let resolveStart: (value: StartedSession) => void = () => undefined;
+    const start = vi.fn(() => new Promise<StartedSession>((resolve) => {
+      resolveStart = resolve;
+    }));
+    const saveAnswer = vi.fn(() => Promise.resolve());
+
+    renderSlot({ deps: { loadStart: () => Promise.resolve(start), saveAnswer, examReturn: createExamReturnStore(memoryStorageGetter()) } });
+
+    const button = await screen.findByRole("button", { name: "Iniciar parte práctica" });
+
+    fireEvent.click(button);
+    fireEvent.click(button);
+    await waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+    resolveStart({ id: "s9", seed: 1, engineVersion: "1.0.0", startedAt: "", expiresAt: null, timeMultiplier: 1, engineCase: buildEngineCase() });
+
+    await waitFor(() => expect(router.push).toHaveBeenCalledTimes(1));
+    expect(start).toHaveBeenCalledTimes(1);
+    expect(saveAnswer).toHaveBeenCalledTimes(1);
+  });
+
+  it("reads the linked session from question.answer when the student is back (no player answer)", async() => {
+    server.use(caseHandler(), attemptHandler(), historyHandler("ACTIVE"));
+    renderSlot({ answer: null, question: buildQuestion({ answer: { selectedOptionIds: [], textAnswer: null, simulationSessionId: "s9" } }) });
+
+    expect(await screen.findByRole("button", { name: "Continuar parte práctica" })).toBeInTheDocument();
+  });
+
+  it("a settled history lookup without the linked session is an error with a retry, not an endless check", async() => {
+    let calls = 0;
+
+    server.use(caseHandler(), attemptHandler(), http.get(apiUrl("/api/simulation/sessions/history"), () => {
+      calls += 1;
+
+      return HttpResponse.json(envelope(calls === 1 ? [] : [sessionDto("s9", { mode: "EXAM", status: "ACTIVE", attemptId: "a1", questionId: "q1" })]));
+    }));
+    renderSlot({ answer: { selectedOptionIds: [], textAnswer: null, simulationSessionId: "s9" } });
+
+    expect(await screen.findByText(/No se encontró la sesión vinculada a esta pregunta/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
+
+    expect(await screen.findByRole("button", { name: "Continuar parte práctica" })).toBeInTheDocument();
   });
 
   it("stays on the exam with the message when the answer cannot be saved", async() => {
@@ -206,6 +255,18 @@ describe("ExamPracticalSlot", () => {
 
     expect(await screen.findByText(/no se pudo guardar en tu examen/)).toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
+  });
+
+  it("hands the link to the player only when the save fails, so the slot keeps \"Continuar\"", async() => {
+    server.use(caseHandler(), attemptHandler());
+
+    const saveAnswer = vi.fn(() => Promise.reject(new Error("offline")));
+    const { onChange } = renderSlot({ deps: { loadStart: () => Promise.resolve(() => Promise.resolve({ id: "s9", seed: 1, engineVersion: "1.0.0", startedAt: "", expiresAt: null, timeMultiplier: 1, engineCase: {} })), saveAnswer } });
+
+    fireEvent.click(await screen.findByRole("button", { name: "Iniciar parte práctica" }));
+
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith({ selectedOptionIds: [], textAnswer: null, simulationSessionId: "s9" }));
+    expect(onChange).toHaveBeenCalledTimes(1);
   });
 
   it("continues an ACTIVE session instead of creating a new one", async() => {
