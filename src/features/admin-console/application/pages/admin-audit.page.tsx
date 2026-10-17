@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AdminAuditPage
-* Descripción: Page /admin/audit (ADMIN): paginated audit log of `GET /api/audit` with actor, action, target type and id, "Desde"/"Hasta" days in America/Bogota (sent as an ISO range, `to` exclusive) and sort order, all kept in the URL (shareable). A row opens the detail dialog (changed fields only, target history). "Exportar CSV" downloads `GET /api/audit/export` with the same filters and shows a notice when the server truncated the file (X-Export-Truncated). A new filter or page never shows the previous rows (no keepPreviousData); an error is shown whenever the request fails; a page beyond the last one (old URL) is moved to the last page. Depends on MUI, next/head, next/router, React, the design-system components, the admin console components, entities, hooks, service and CSS Module.
-* Versión: 1.0
+* Descripción: Page /admin/audit (ADMIN): paginated audit log of `GET /api/audit` with actor, action, target type and id, "Desde"/"Hasta" days in America/Bogota (sent as an ISO range, `to` exclusive) and sort order, all kept in the URL (shareable). A row opens the detail dialog (changed fields only, target history). "Exportar CSV" downloads `GET /api/audit/export` with the same filters and shows a notice when the server truncated the file (X-Export-Truncated). A new filter or page never shows the previous rows (no keepPreviousData); an error is shown whenever the request fails; a page beyond the last one (old URL) is moved to the last page. v1.1 (review): changing the filters (not the page) clears the CSV truncation notice, so it only describes the export of the current filters. Depends on MUI, next/head, next/router, React, the design-system components, the admin console components, entities, hooks, service and CSS Module.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -63,8 +63,14 @@ export function AdminAuditPage() {
   const { entries, pagination } = list;
   const filtered = hasAuditFilters(filters);
 
-  const setFilters = (next: AuditFiltersValue) => {
+  const replaceQuery = (next: AuditFiltersValue) => {
     void router.replace({ pathname: router.pathname, query: toAuditFiltersQuery(next) }, undefined, { shallow: true });
+  };
+
+  const setFilters = (next: AuditFiltersValue) => {
+    // New filters mean a different export: the previous truncation notice no longer applies.
+    csv.reset();
+    replaceQuery(next);
   };
 
   useEffect(() => {
@@ -123,7 +129,7 @@ export function AdminAuditPage() {
           pages={pagination.pages}
           total={pagination.total}
           limit={pagination.limit}
-          onChange={(page) => setFilters({ ...filters, page })}
+          onChange={(page) => replaceQuery({ ...filters, page })}
         />
       </div>
     );

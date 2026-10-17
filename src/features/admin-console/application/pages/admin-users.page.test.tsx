@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin users page tests
-* Descripción: /admin/users with msw: the rows of `GET /api/users` with the URL filters sent as the query and a filter change written back to the URL; the own account keeps its actions disabled with the reason; the role dialog shows the warning of its effects and sends `PATCH /api/users/{id}/role`; a superadmin 403 shows "Esta cuenta está protegida (superadministrador) y no se puede modificar." inside the dialog; deactivating asks for confirmation before `PATCH /api/users/{id}/status` and a superadmin 403 there becomes an error toast. Depends on vitest, msw, Testing Library and the admin console test helpers. v1.1 (O4a review): with the app keepPreviousData default a role filter change shows the loading state instead of the previous rows and a 500 shows the error; a page beyond the last one moves to the last page; Escape does not close the role dialog while its PATCH is pending.
-* Versión: 1.1
+* Descripción: /admin/users with msw: the rows of `GET /api/users` with the URL filters sent as the query and a filter change written back to the URL; the own account keeps its actions disabled with the reason; the role dialog shows the warning of its effects and sends `PATCH /api/users/{id}/role`; a superadmin 403 shows "Esta cuenta está protegida (superadministrador) y no se puede modificar." inside the dialog; deactivating asks for confirmation before `PATCH /api/users/{id}/status` and a superadmin 403 there becomes an error toast. Depends on vitest, msw, Testing Library and the admin console test helpers. v1.1 (O4a review): with the app keepPreviousData default a role filter change shows the loading state instead of the previous rows and a 500 shows the error; a page beyond the last one moves to the last page; Escape does not close the role dialog while its PATCH is pending. v1.2 (review): an in-range empty page (total > 0) shows the empty-page state with the pagination instead of a stuck skeleton.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -40,6 +40,7 @@ let mutations: { path: string, body: unknown }[];
 let mutationStatus: number;
 let listStatus: number;
 let listTotal: number;
+let listPages: number;
 let releaseList: (() => void) | null;
 let holdList: boolean;
 let releaseMutation: (() => void) | null;
@@ -55,6 +56,7 @@ beforeEach(() => {
   mutationStatus = 200;
   listStatus = 200;
   listTotal = 3;
+  listPages = 1;
   releaseList = null;
   holdList = false;
   releaseMutation = null;
@@ -78,7 +80,7 @@ beforeEach(() => {
       }
 
       if (Number(params.get("page")) > 1) {
-        return HttpResponse.json(envelope([], { total: listTotal, pages: 1, page: Number(params.get("page")), limit: 20 }));
+        return HttpResponse.json(envelope([], { total: listTotal, pages: listPages, page: Number(params.get("page")), limit: 20 }));
       }
 
       return HttpResponse.json(envelope([
@@ -242,6 +244,19 @@ describe("AdminUsersPage", () => {
 
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith({ pathname: "/admin/users", query: {} }, undefined, { shallow: true }));
     expect(screen.queryByText(ADMIN_USERS_COPY.emptyTitle)).not.toBeInTheDocument();
+  });
+
+  it("shows the empty-page state with the pagination, not a stuck skeleton, on an in-range empty page", async() => {
+    listTotal = 45;
+    listPages = 3;
+    router.query = { page: "2" };
+    renderAdminConsole(<AdminUsersPage />);
+
+    expect(await screen.findByText(ADMIN_USERS_COPY.emptyPageTitle)).toBeInTheDocument();
+    expect(screen.queryByLabelText(ADMIN_USERS_COPY.loading)).not.toBeInTheDocument();
+    expect(screen.getByText("21–40 de 45")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Página anterior" })).toBeEnabled();
+    expect(router.replace).not.toHaveBeenCalled();
   });
 
   it("keeps the role dialog open on Escape while the change is pending", async() => {

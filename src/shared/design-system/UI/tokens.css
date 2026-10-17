@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentyLab app-level design tokens
-* Descripción: Global --vl-* tokens (spacing scale, radii, shadows, z-index, transitions, focus ring, semantic color aliases) layered on top of the MUI cssVariables theme (--mui-*). Imported ONLY from pages/_app.js. CSS Modules consume var(--vl-*) / var(--mui-*) and never hex/rgb literals. Depends on src/shared/design-system/theme (it emits the --mui-* variables on :root). v1.1 (T1 simulation): adds the --vl-console-* variant, a dark high-contrast surface for the ventilator console (surfaces, border, grid, text, per-curve colors, alarm priorities with their on-colors, pending and out-of-range highlights), derived from the identity palette with var()/color-mix only. v1.2 (O4b admin-console): --vl-color-status-{ok,degraded,down,idle} and their -bg tints for service health badges, mapped to the success, warning and error aliases (idle to the muted text).
-* Versión: 1.2
+* Descripción: Global --vl-* tokens (spacing scale, radii, shadows, z-index, transitions, focus ring, semantic color aliases) layered on top of the MUI cssVariables theme (--mui-*). Imported ONLY from pages/_app.js. CSS Modules consume var(--vl-*) / var(--mui-*) and never hex/rgb literals. Depends on src/shared/design-system/theme (it emits the --mui-* variables on :root). v1.1 (T1 simulation): adds the --vl-console-* variant, a dark high-contrast surface for the ventilator console (surfaces, border, grid, text, per-curve colors, alarm priorities with their on-colors, pending and out-of-range highlights), derived from the identity palette with var()/color-mix only. v1.2 (O4b admin-console): --vl-color-status-{ok,degraded,down,idle} and their -bg tints for service health badges, mapped to the success, warning and error aliases (idle to the muted text). v1.3 (review): the status ok/degraded/down text tokens are darkened (55% mix with the primary text color) so badge and probe-result text reaches WCAG AA (>=4.5:1) on their tints and on the surface.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -78,10 +78,15 @@
   --vl-color-warning: var(--mui-palette-warning-main);
   --vl-color-error: var(--mui-palette-error-main);
   --vl-color-info: var(--mui-palette-info-main);
-  /* Service health states (system status): mapped to the semantic colors above. */
-  --vl-color-status-ok: var(--vl-color-success);
-  --vl-color-status-degraded: var(--vl-color-warning);
-  --vl-color-status-down: var(--vl-color-error);
+  /*
+   * Service health states (system status), used as TEXT on their -bg tints and on the surface.
+   * The raw success/warning/error mains reach only ~2.2-3.7:1 there (fails WCAG AA), so each one
+   * is mixed 55% with the primary text color: about 5.9:1 (ok), 5.1:1 (degraded) and 7.2:1 (down)
+   * on its tint, and higher on the plain surface. The app ships only the light color scheme.
+   */
+  --vl-color-status-ok: color-mix(in srgb, var(--vl-color-success) 55%, var(--vl-color-text));
+  --vl-color-status-degraded: color-mix(in srgb, var(--vl-color-warning) 55%, var(--vl-color-text));
+  --vl-color-status-down: color-mix(in srgb, var(--vl-color-error) 55%, var(--vl-color-text));
   --vl-color-status-idle: var(--vl-color-text-muted);
   --vl-color-status-ok-bg: color-mix(in srgb, var(--vl-color-success) 12%, var(--vl-color-surface));
   --vl-color-status-degraded-bg: color-mix(in srgb, var(--vl-color-warning) 14%, var(--vl-color-surface));

@@ -11,7 +11,10 @@
  * Descripción: v1.1 (O5 operation): ROLE_DASHBOARDS (getDashboardUrl / getPostLoginRedirect) points to the
  *   migrated role homes (student /me; teacher, admin and superuser /teacher), the same as DEFAULT_ROUTE_BY_ROLE of
  *   @shared/session, instead of the non-existent /dashboard/* pages.
- * Versión: 1.1
+ *   v1.2 (review): ROLE_DASHBOARDS is derived from DEFAULT_ROUTE_BY_ROLE (imported from
+ *   @shared/session/routes.config, as redirectByRole.js does) instead of a hardcoded copy; the legacy superuser
+ *   key maps to the ADMIN home.
+ * Versión: 1.2
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -21,6 +24,7 @@
  * =============================================================================
  */
 
+import { DEFAULT_ROUTE_BY_ROLE } from '@shared/session/routes.config';
 import { ROLES, ROLE_DISPLAY_NAMES, getRoleDisplayName } from './roles';
 
 // Re-export role constants for backwards compatibility
@@ -36,12 +40,12 @@ export const USER_ROLES = ROLES;
  * Role-based Dashboard Routes
  * Maps user roles to their respective dashboard pages
  */
-// Keep aligned with DEFAULT_ROUTE_BY_ROLE (src/shared/session/routes.config.ts).
+// Derived from DEFAULT_ROUTE_BY_ROLE (src/shared/session/routes.config.ts); the legacy superuser role uses the ADMIN home.
 export const ROLE_DASHBOARDS = {
-  [ROLES.STUDENT]: '/me',
-  [ROLES.TEACHER]: '/teacher',
-  [ROLES.ADMIN]: '/teacher',
-  [ROLES.SUPERUSER]: '/teacher',
+  [ROLES.STUDENT]: DEFAULT_ROUTE_BY_ROLE.STUDENT,
+  [ROLES.TEACHER]: DEFAULT_ROUTE_BY_ROLE.TEACHER,
+  [ROLES.ADMIN]: DEFAULT_ROUTE_BY_ROLE.ADMIN,
+  [ROLES.SUPERUSER]: DEFAULT_ROUTE_BY_ROLE.ADMIN,
 };
 
 /**

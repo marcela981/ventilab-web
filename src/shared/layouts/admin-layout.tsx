@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AdminLayout
-* Descripción: Layout for administration pages: AppShell inside RequireRole with the roles of the `/panel/admin` route in routes.config (ADMIN); other roles are redirected to their landing route by the guard. withAdminLayout is the getLayout helper for pages. Depends on @shared/session and AppShell. v1.1 (O5 operation): the role set comes from ROUTES["/admin/users"] (same roles as the legacy entry), so the legacy /panel entries can be removed later.
-* Versión: 1.1
+* Descripción: Layout for administration pages: AppShell inside RequireRole with the roles of ROUTES["/admin/users"] in routes.config (ADMIN); other roles are redirected to their landing route by the guard. withAdminLayout is the getLayout helper for pages. Depends on @shared/session and AppShell. v1.1 (O5 operation): the role set comes from ROUTES["/admin/users"] (same roles as the legacy entry), so the legacy /panel entries can be removed later. v1.2 (review): the description now names ROUTES["/admin/users"] as the source of the roles (it still named the legacy /panel route).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje

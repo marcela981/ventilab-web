@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher dashboard entity tests
-* Descripción: Pure rules of the teacher dashboard: the risk highlight (only a published evaluation with passed === false, never a threshold invented on the client), row filter by name or email, sort by an API value with missing values last, sort toggling, distinct evaluation options, group reservation and student attempt selection, the progress tree nesting in curriculum order, the per-student module series, the timeline windows (default, previous, date inputs with their errors) and the error messages (403 no access, Retry-After). v1.1 (O3 review): latest published attempt per evaluation for the risk rule, modules without a level kept in a last bucket. Depends on vitest, the api-client errors and the teacher dashboard entities.
-* Versión: 1.1
+* Descripción: Pure rules of the teacher dashboard: the risk highlight (only a published evaluation with passed === false, never a threshold invented on the client), row filter by name or email, sort by an API value with missing values last, sort toggling, distinct evaluation options, group reservation and student attempt selection, the progress tree nesting in curriculum order, the per-student module series, the timeline windows (default, previous, date inputs with their errors) and the error messages (403 no access, Retry-After). v1.1 (O3 review): latest published attempt per evaluation for the risk rule, modules without a level kept in a last bucket. v1.2 (review): attempts ordered by attemptNumber first (publishedAt only as tiebreak), so attempt 1 re-published after a passed attempt 2 is not at risk. Depends on vitest, the api-client errors and the teacher dashboard entities.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -76,6 +76,15 @@ describe("assessStudentRisk", () => {
       .toEqual({ atRisk: true, failedEvaluationTitles: ["Parcial"] });
     expect(assessStudentRisk({ evaluations: [attempt(1, true, "2026-10-05T00:00:00.000Z"), attempt(2, false, "2026-10-05T00:00:00.000Z")] }).atRisk)
       .toBe(true);
+  });
+
+  it("orders attempts by attemptNumber first, so a re-published earlier failure never hides a later pass", () => {
+    const attempt = (attemptNumber: number, passed: boolean, publishedAt: string) => ({ ...grade("e1", "Parcial", passed), attemptNumber, publishedAt });
+
+    expect(assessStudentRisk({ evaluations: [attempt(2, true, "2026-10-05T00:00:00.000Z"), attempt(1, false, "2026-10-09T00:00:00.000Z")] }))
+      .toEqual({ atRisk: false, failedEvaluationTitles: [] });
+    expect(assessStudentRisk({ evaluations: [attempt(1, false, "2026-10-09T00:00:00.000Z"), attempt(2, true, "2026-10-05T00:00:00.000Z")] }).atRisk)
+      .toBe(false);
   });
 });
 

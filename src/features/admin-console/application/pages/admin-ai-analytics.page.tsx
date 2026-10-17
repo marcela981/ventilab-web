@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AdminAiAnalyticsPage
-* Descripción: Page /admin/ai (ADMIN): AI usage and quality from the API only. Filters in the URL (Bogota days from/to sent as an ISO range with `to` exclusive, use case, provider, model; prompt version and rated output type for the ratings). Telemetry (`GET /api/admin/ai-telemetry/stats`): total cards and lazy per-day charts (calls, latency and time to first token p50/p95, error and fallback rates, tokens, cost) straight from `days[]`. Ratings (`GET /api/admin/ai-ratings/stats`): table of groups with helpful rate and QUEST dimension means, plus a lazy chart of the helpful rate per group. CSV buttons download `/api/admin/ai-telemetry/export.csv` and `/api/admin/ai-ratings/export.csv` with the same filters (notice when X-Export-Truncated). New filters never show the previous result (no keepPreviousData) and every failure is shown. No metric is computed on the client. Depends on MUI, next/head, next/router, React, @shared/lib, the design-system components, the admin console components, entities, hooks, service and CSS Module.
-* Versión: 1.0
+* Descripción: Page /admin/ai (ADMIN): AI usage and quality from the API only. Filters in the URL (Bogota days from/to sent as an ISO range with `to` exclusive, use case, provider, model; prompt version and rated output type for the ratings). Telemetry (`GET /api/admin/ai-telemetry/stats`): total cards and lazy per-day charts (calls, latency and time to first token p50/p95, error and fallback rates, tokens, cost) straight from `days[]`. Ratings (`GET /api/admin/ai-ratings/stats`): table of groups with helpful rate and QUEST dimension means, plus a lazy chart of the helpful rate per group. CSV buttons download `/api/admin/ai-telemetry/export.csv` and `/api/admin/ai-ratings/export.csv` with the same filters (notice when X-Export-Truncated). New filters never show the previous result (no keepPreviousData) and every failure is shown. No metric is computed on the client. v1.1 (review): changing the filters clears both CSV truncation notices, so they only describe exports of the current filters. Depends on MUI, next/head, next/router, React, @shared/lib, the design-system components, the admin console components, entities, hooks, service and CSS Module.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -72,6 +72,9 @@ export function AdminAiAnalyticsPage() {
   const ratingsCsv = useCsvExport();
 
   const setFilters = (next: AiFiltersValue) => {
+    // New filters mean different exports: the previous truncation notices no longer apply.
+    telemetryCsv.reset();
+    ratingsCsv.reset();
     void router.replace({ pathname: router.pathname, query: toAiFiltersQuery(next) }, undefined, { shallow: true });
   };
 

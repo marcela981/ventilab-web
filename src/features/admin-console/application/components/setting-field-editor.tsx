@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: SettingFieldEditor
-* Descripción: Renders the field tree built by buildSettingField, recursively, on the draft value of one setting: number → text input with decimal keyboard and its limits as help (the typed text is kept while it does not parse, and validation reports it); boolean → switch; text; select (allowed values); multi-select → checkboxes of the allowed values; list → one input per entry with add/remove; group → fieldset with its children; provider chain → ProviderChainEditor; JSON → multiline input validated as JSON. Each input shows the error of its path (client limits or a server 422). Depends on MUI, the design-system form field, @shared/lib, the admin console entities, the provider chain editor and CSS Module. v1.1 (O4a review): emptying an optional number (record-like settings such as `ai.quotas`) removes its key from the draft instead of leaving an invalid number; parseNumberInput accepts one decimal separator ("." or ",") and rejects several separators, mixed "."/"," and a comma used as thousands grouping ("1,000") instead of coercing them.
-* Versión: 1.1
+* Descripción: Renders the field tree built by buildSettingField, recursively, on the draft value of one setting: number → text input with decimal keyboard and its limits as help (the typed text is kept while it does not parse, and validation reports it); boolean → switch; text; select (allowed values); multi-select → checkboxes of the allowed values; list → one input per entry with add/remove; group → fieldset with its children; provider chain → ProviderChainEditor; JSON → multiline input validated as JSON. Each input shows the error of its path (client limits or a server 422). Depends on MUI, the design-system form field, @shared/lib, the admin console entities, the provider chain editor and CSS Module. v1.1 (O4a review): emptying an optional number (record-like settings such as `ai.quotas`) removes its key from the draft instead of leaving an invalid number; parseNumberInput accepts one decimal separator ("." or ",") and rejects several separators, mixed "."/"," and a comma used as thousands grouping ("1,000") instead of coercing them. v1.2 (review): dot thousands grouping ("1.000", "12.500", as es-CO users write a thousand) is rejected the same way, so both ",ddd" and ".ddd" grouped forms with a non-zero integer part show the number error; "1.5", "1,5", "0.125" and "0,125" stay valid.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -60,8 +60,9 @@ type EditorProps<F extends SettingField> = {
   onChange: (root: unknown) => void
 };
 
-// A comma followed by groups of three digits after a non-zero integer part ("1,000", "12,500") reads as thousands grouping: ambiguous, so it is rejected.
-const THOUSANDS_GROUPING = /^-?[1-9]\d{0,2}(,\d{3})+$/;
+// A comma or a dot followed by groups of three digits after a non-zero integer part ("1,000", "12,500", "1.000", "12.500")
+// reads as thousands grouping (es-CO writes a thousand as "1.000"): ambiguous, so it is rejected. "0.125"/"0,125" stay decimals.
+const THOUSANDS_GROUPING = /^-?[1-9]\d{0,2}([.,]\d{3})+$/;
 
 export function parseNumberInput(text: string): number {
   const trimmed = text.trim();

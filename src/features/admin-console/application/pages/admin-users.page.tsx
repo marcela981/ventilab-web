@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AdminUsersPage
-* Descripción: Page /admin/users (ADMIN): paginated users of `GET /api/users` with search (name, email or exact id; the API has no student code), role, group (`GET /api/groups`) and account status filters, all kept in the URL (?page&search&role&groupId&isActive, shareable). "Cambiar rol" opens the role dialog with the warning of its effects (`PATCH /api/users/{id}/role`); "Desactivar"/"Activar" asks for confirmation (`PATCH /api/users/{id}/status`). A backend 403 on a superadmin shows "Esta cuenta está protegida (superadministrador) y no se puede modificar." in the dialog or as a toast; the admin's own row is disabled because the backend refuses changes to one's own account. Depends on MUI, next/head, next/router, React, the design-system components, the session, the admin console hooks, components, entities and CSS Module. v1.1 (O4a review): a new filter or page never shows the previous rows (no keepPreviousData, loading state instead); an error is shown whenever the request fails; a page beyond the last one (old URL) is moved to the last page.
-* Versión: 1.1
+* Descripción: Page /admin/users (ADMIN): paginated users of `GET /api/users` with search (name, email or exact id; the API has no student code), role, group (`GET /api/groups`) and account status filters, all kept in the URL (?page&search&role&groupId&isActive, shareable). "Cambiar rol" opens the role dialog with the warning of its effects (`PATCH /api/users/{id}/role`); "Desactivar"/"Activar" asks for confirmation (`PATCH /api/users/{id}/status`). A backend 403 on a superadmin shows "Esta cuenta está protegida (superadministrador) y no se puede modificar." in the dialog or as a toast; the admin's own row is disabled because the backend refuses changes to one's own account. Depends on MUI, next/head, next/router, React, the design-system components, the session, the admin console hooks, components, entities and CSS Module. v1.1 (O4a review): a new filter or page never shows the previous rows (no keepPreviousData, loading state instead); an error is shown whenever the request fails; a page beyond the last one (old URL) is moved to the last page. v1.2 (review): an empty page with total > 0 never sticks on the loading skeleton: only a page beyond the last one waits for the clamp; an in-range empty page (rows removed meanwhile, or pages out of sync) shows the empty-page state with the pagination visible so the admin can move.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -45,6 +45,8 @@ export const ADMIN_USERS_COPY = {
   loading: "Cargando usuarios…",
   loadErrorTitle: "No se pudieron cargar los usuarios",
   emptyTitle: "No hay usuarios",
+  emptyPageTitle: "Esta página no tiene usuarios",
+  emptyPageDescription: "Usa la paginación para ir a otra página.",
   noMatchTitle: "Ningún usuario coincide con los filtros",
   noMatchDescription: "Cambia la búsqueda, el rol, el grupo o el estado.",
   clearFilters: "Limpiar filtros",
@@ -128,6 +130,20 @@ export function AdminUsersPage() {
     }
   };
 
+  const renderPagination = (page: NonNullable<typeof pagination>) => (
+    <TablePagination
+      component="div"
+      count={page.total}
+      page={Math.max(0, Math.min(filters.page, Math.max(1, page.pages)) - 1)}
+      rowsPerPage={page.limit}
+      rowsPerPageOptions={[page.limit]}
+      onPageChange={(_event, next) => setFilters({ ...filters, page: next + 1 })}
+      labelRowsPerPage={ADMIN_USERS_COPY.rowsPerPage}
+      labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count}`}
+      getItemAriaLabel={(type) => PAGE_BUTTON_LABELS[type]}
+    />
+  );
+
   const renderList = () => {
     if (users.error) {
       return (
@@ -145,8 +161,18 @@ export function AdminUsersPage() {
 
     if (rows.length === 0) {
       if (pagination.total > 0) {
-        // Out-of-range page: the effect above moves to the last page.
-        return <ListSkeleton rows={5} label={ADMIN_USERS_COPY.loading} />;
+        if (filters.page > pagination.pages) {
+          // Out-of-range page: the effect above moves to the last page.
+          return <ListSkeleton rows={5} label={ADMIN_USERS_COPY.loading} />;
+        }
+
+        // In-range page with no rows (rows removed meanwhile, pages out of sync): never a stuck skeleton.
+        return (
+          <div className={cx(styles.results)}>
+            <EmptyState title={ADMIN_USERS_COPY.emptyPageTitle} description={ADMIN_USERS_COPY.emptyPageDescription} />
+            {renderPagination(pagination)}
+          </div>
+        );
       }
 
       return filtered ? (
@@ -168,17 +194,7 @@ export function AdminUsersPage() {
           onChangeRole={setRoleTarget}
           onChangeStatus={setStatusTarget}
         />
-        <TablePagination
-          component="div"
-          count={pagination.total}
-          page={Math.max(0, Math.min(filters.page, Math.max(1, pagination.pages)) - 1)}
-          rowsPerPage={pagination.limit}
-          rowsPerPageOptions={[pagination.limit]}
-          onPageChange={(_event, next) => setFilters({ ...filters, page: next + 1 })}
-          labelRowsPerPage={ADMIN_USERS_COPY.rowsPerPage}
-          labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count}`}
-          getItemAriaLabel={(type) => PAGE_BUTTON_LABELS[type]}
-        />
+        {renderPagination(pagination)}
       </div>
     );
   };

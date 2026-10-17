@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: RoleHomeRedirect tests
-* Descripción: The role-aware entry redirect waits while the session loads, then sends each role to its home (STUDENT /me, TEACHER /teacher, ADMIN /teacher) and an anonymous visitor to the login page, only once. Depends on vitest, Testing Library, next/router (mocked) and the session modules.
-* Versión: 1.0
+* Descripción: The role-aware entry redirect waits while the session loads, then sends each role to its home (STUDENT /me, TEACHER /teacher, ADMIN /teacher) and an anonymous visitor to the login page, only once. Depends on vitest, Testing Library, next/router (mocked) and the session modules. v1.1 (review): an authenticated session without a role goes to the login page (/auth/login), and a loading session that becomes authenticated redirects exactly once.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -71,5 +71,25 @@ describe("RoleHomeRedirect", () => {
 
     expect(router.replace).toHaveBeenCalledTimes(1);
     expect(router.replace).toHaveBeenCalledWith(LOGIN_PATH);
+  });
+
+  it("sends an authenticated session without a role to the login page", () => {
+    renderWith(sessionValue("authenticated", null));
+
+    expect(LOGIN_PATH).toBe("/auth/login");
+    expect(router.replace).toHaveBeenCalledTimes(1);
+    expect(router.replace).toHaveBeenCalledWith("/auth/login");
+  });
+
+  it("redirects exactly once when a loading session becomes authenticated", () => {
+    const { rerender } = renderWith(sessionValue("loading"));
+
+    expect(router.replace).not.toHaveBeenCalled();
+
+    rerender(<SessionContext.Provider value={sessionValue("authenticated", "TEACHER")}><RoleHomeRedirect /></SessionContext.Provider>);
+    rerender(<SessionContext.Provider value={sessionValue("authenticated", "TEACHER")}><RoleHomeRedirect /></SessionContext.Provider>);
+
+    expect(router.replace).toHaveBeenCalledTimes(1);
+    expect(router.replace).toHaveBeenCalledWith("/teacher");
   });
 });
