@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Console monitor styles
-* Descripción: Numeric monitoring and patient monitor zones of the ventilator console: titled panel, two-column tile grid (three columns below 1024 px, where the zone spans the full width), value tiles with label, large value and unit, the out-of-range state (token border and background plus the icon-and-text flag) and the trend sparkline stroke. Console and design-system tokens only.
-* Versión: 1.0
+* Descripción: Numeric monitoring and patient monitor zones of the ventilator console: titled panel, two-column tile grid (three columns below 1024 px, where the zone spans the full width), value tiles with label, large value and unit, the out-of-range state (token border and background plus the icon-and-text flag) and the trend sparkline stroke. v1.1: the "derivada" label of a value computed from the curves. Console and design-system tokens only.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -113,4 +113,15 @@
   .grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+}
+
+/* Derived value: a small outlined label, readable without color. */
+.derived span {
+  display: inline-block;
+  padding: 0 var(--vl-space-1);
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+  border: 1px dashed var(--vl-console-border);
+  border-radius: var(--vl-radius-pill);
+  cursor: help;
 }

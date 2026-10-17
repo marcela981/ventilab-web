@@ -1,0 +1,293 @@
+/*
+* Funcionalidad: Lab live console styles
+* Descripción: Styles of /lab/live: the access screens (busy, nothing reserved) on the regular surface, and the full-width dark console session (header with the reservation window and countdown, device and latency indicators, connection banners) with the --vl-console-* tokens like the simulator console page. Latency levels: success / medium alarm / high alarm theme colors. Theme CSS variables only. v1.1 (T7): the operator control bar (banner by control kind, actions). v1.2 (T9): the control loss notice inside the bar and the revoked modal text (reason, next holder). v1.3 (T10): the recording bar (toggle, hint, error) and the REC mark of the console header (blinking dot, still with reduced motion).
+* Versión: 1.3
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.consolePage {
+  width: 100%;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-5);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.cardTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+}
+
+.muted {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.label {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+}
+
+.session {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  width: 100%;
+  min-height: 100%;
+  padding: var(--vl-space-3);
+  color: var(--vl-console-text);
+  background: var(--vl-console-bg);
+  border-radius: var(--vl-radius-lg);
+}
+
+.sessionBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-2) var(--vl-space-3);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.sessionTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+  color: var(--vl-console-text);
+}
+
+.sessionWindow,
+.indicatorLabel {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.indicators {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-4);
+}
+
+.indicator {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  margin: 0;
+}
+
+.indicatorValue {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+  font-variant-numeric: tabular-nums;
+  color: var(--vl-console-text);
+}
+
+.deviceTag {
+  display: inline-block;
+  padding: 0 var(--vl-space-2);
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+  background: var(--vl-console-surface-raised);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-pill);
+}
+
+.deviceTag[data-online="true"] {
+  color: var(--mui-palette-success-main);
+  border-color: var(--mui-palette-success-main);
+}
+
+.latency[data-level="ok"] {
+  color: var(--mui-palette-success-main);
+}
+
+.latency[data-level="warning"] {
+  color: var(--vl-console-alarm-medium);
+}
+
+.latency[data-level="critical"] {
+  color: var(--vl-console-alarm-high);
+}
+
+.banner {
+  margin: 0;
+  padding: var(--vl-space-2) var(--vl-space-3);
+  font: var(--mui-font-body2);
+  color: var(--vl-console-pending);
+  background: var(--vl-console-pending-bg);
+  border: 1px solid var(--vl-console-pending);
+  border-radius: var(--vl-radius-md);
+}
+
+.banner[data-tone="error"] {
+  color: var(--vl-console-alarm-high);
+  border-color: var(--vl-console-alarm-high);
+}
+
+.controlBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2) var(--vl-space-3);
+  padding: var(--vl-space-2) var(--vl-space-3);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.controlBanner {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+  color: var(--vl-console-text-muted);
+}
+
+.controlBar[data-control="self"] .controlBanner {
+  color: var(--mui-palette-success-main);
+}
+
+.controlBar[data-control="other"] .controlBanner {
+  color: var(--vl-console-pending);
+}
+
+.controlBar[data-control="free"] .controlBanner {
+  color: var(--vl-console-text);
+}
+
+.controlActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  margin-left: auto;
+}
+
+.controlBar .banner {
+  flex-basis: 100%;
+}
+
+.lossNotice {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-1) var(--vl-space-3);
+  padding: var(--vl-space-2) var(--vl-space-3);
+  background: var(--vl-console-pending-bg);
+  border: 1px solid var(--vl-console-pending);
+  border-radius: var(--vl-radius-md);
+}
+
+.lossText {
+  flex-basis: 100%;
+  margin: 0;
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-console-pending);
+}
+
+.lossHint {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-console-text);
+}
+
+.revokedText {
+  margin: 0 0 var(--vl-space-2);
+  font: var(--mui-font-body1);
+}
+
+.revokedDetail {
+  margin: 0 0 var(--vl-space-2);
+  font: var(--mui-font-body2);
+  color: var(--mui-palette-text-secondary);
+}
+
+.revokedError {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--mui-palette-error-main);
+}
+
+.recordingBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2) var(--vl-space-3);
+  padding: var(--vl-space-2) var(--vl-space-3);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.recordingHint {
+  flex: 1 1 16rem;
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.recordingBar .banner {
+  display: flex;
+  flex-basis: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+}
+
+.rec {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+  padding: 0 var(--vl-space-2);
+  font: var(--mui-font-caption);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--vl-console-alarm-high);
+  border: 1px solid var(--vl-console-alarm-high);
+  border-radius: var(--vl-radius-pill);
+}
+
+.recDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--vl-console-alarm-high);
+  border-radius: 50%;
+  animation: rec-blink 1.2s steps(2, start) infinite;
+}
+
+@keyframes rec-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recDot {
+    animation: none;
+  }
+}

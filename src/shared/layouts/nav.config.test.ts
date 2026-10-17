@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: Navigation config tests
-* Descripción: Verifies that every nav item points to an existing route of routes.config that its roles can reach, that items are filtered by role, and that the active item is the longest matching route. v1.1 (T11a): students get /my-group, teachers and admins get /groups. v1.2 (T0 learning): every role gets /learn, only teachers and admins get /content. v1.3 (S0 evaluations): every role gets /evaluations, only teachers and admins get /evaluations/manage and /grading, the legacy /evaluation items are gone and /evaluations/manage wins over /evaluations as the active item. v1.4 (G1 grading): only "Calificar" names a badge key (gradingPending). v1.5 (A1 ai-chat): every role gets "Asistente IA" (/assistant), active on its conversation pages. v1.6 (T5 simulation): every role gets "Simulador" (/simulator), active on its session pages. v1.7 (T11 simulation): only teachers and admins get "Casos clínicos" (/simulator/cases), which wins over /simulator as the active item on the case editor pages. v1.8 (T13 simulation): the legacy /simulador is "Ventilador real", so students see exactly one "Simulador" (/simulator). Depends on vitest and the session route table.
-* Versión: 1.8
+* Descripción: Verifies that every nav item points to an existing route of routes.config that its roles can reach, that items are filtered by role, and that the active item is the longest matching route. v1.1 (T11a): students get /my-group, teachers and admins get /groups. v1.2 (T0 learning): every role gets /learn, only teachers and admins get /content. v1.3 (S0 evaluations): every role gets /evaluations, only teachers and admins get /evaluations/manage and /grading, the legacy /evaluation items are gone and /evaluations/manage wins over /evaluations as the active item. v1.4 (G1 grading): only "Calificar" names a badge key (gradingPending). v1.5 (A1 ai-chat): every role gets "Asistente IA" (/assistant), active on its conversation pages. v1.6 (T5 simulation): every role gets "Simulador" (/simulator), active on its session pages. v1.7 (T11 simulation): only teachers and admins get "Casos clínicos" (/simulator/cases), which wins over /simulator as the active item on the case editor pages. v1.8 (T13 simulation): the legacy /simulador is "Ventilador real", so students see exactly one "Simulador" (/simulator). Depends on vitest and the session route table. v1.9 (T12 ventilator-lab): the legacy /simulador
+  "Ventilador real" item is replaced by "Laboratorio" (/lab, every role, device indicator), active on every lab page.
+* Versión: 1.9
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -92,12 +93,31 @@ describe("simulator navigation", () => {
     }
   });
 
-  it("keeps the legacy /simulador as \"Ventilador real\" (physical ventilator), never as a second Simulador", () => {
-    const student = getNavItems("STUDENT");
+  it("has a single Simulador item: the legacy /simulador entry is gone (T12 ventilator-lab)", () => {
+    for (const role of ["STUDENT", "TEACHER", "ADMIN"] as const) {
+      const items = getNavItems(role);
 
-    expect(student.find((item) => item.href === "/simulador")?.label).toBe("Ventilador real");
-    expect(student.filter((item) => item.label === "Simulador").map((item) => item.href)).toEqual(["/simulator"]);
-    expect(findActiveHref(student, "/simulador")).toBe("/simulador");
+      expect(items.filter((item) => item.label === "Simulador").map((item) => item.href)).toEqual(["/simulator"]);
+      expect(items.some((item) => item.href === "/simulador")).toBe(false);
+    }
+  });
+});
+
+describe("lab navigation (T12 ventilator-lab)", () => {
+  it("shows Laboratorio (/lab) with the device indicator to every role, active on every lab page", () => {
+    for (const role of ["STUDENT", "TEACHER", "ADMIN"] as const) {
+      const items = getNavItems(role);
+      const lab = items.find((item) => item.href === "/lab");
+
+      expect(lab).toMatchObject({ label: "Laboratorio", indicator: "ventilatorDevice" });
+      for (const page of ["/lab", "/lab/reservations", "/lab/live", "/lab/recordings/[recordingId]"]) {
+        expect(findActiveHref(items, page)).toBe("/lab");
+      }
+    }
+  });
+
+  it("gives the indicator to the lab item only", () => {
+    expect(NAV_ITEMS.filter((item) => item.indicator !== undefined).map((item) => item.href)).toEqual(["/lab"]);
   });
 });
 

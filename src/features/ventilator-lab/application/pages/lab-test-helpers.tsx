@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator lab test helpers
-* Descripción: Shared fixtures of the ventilator lab tests: backend URL and envelopes, reservation DTO builders (full and limited projections), a platform setting builder, a fake socket that records emitted messages and dispatches server events inside act, and a render wrapper with an isolated SWR cache, a session of the given role and permissions and the realtime context. Test-only module; depends on Testing Library, msw, SWR and the session and realtime contexts.
-* Versión: 1.0
+* Descripción: Shared fixtures of the ventilator lab tests: backend URL and envelopes, reservation DTO builders (full and limited projections), a platform setting builder, a fake socket that records emitted messages and dispatches server events inside act, and a render wrapper with an isolated SWR cache, a session of the given role and permissions and the realtime context. v1.1 (T2): group, caller groups and user DTO builders for the reservation holders. v1.2 (T3): the wrapper provides the design-system toasts (a given ToastApi spy or the real ToastProvider) and a realtime status control to change the socket status after render. v1.3 (T2 review fix / T4): renderLabHook accepts initialProps (rerender with new hook props) and the session user id can be read through sessionUserId. Test-only module; depends on Testing Library, msw, SWR and the session and realtime contexts.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,15 +11,27 @@
 
 import { act, render, renderHook } from "@testing-library/react";
 import { HttpResponse } from "msw";
+import { useMemo, useSyncExternalStore } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { SWRConfig } from "swr";
+import { ToastProvider } from "@shared/design-system/components/toast-provider";
+import { ToastContext } from "@shared/design-system/components/use-toast";
+import type { ToastApi } from "@shared/design-system/components/use-toast";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
 import { RealtimeContext } from "@shared/realtime/realtime-context";
 import type { RealtimeEventMap, RealtimeEventName, RealtimeSocket, RealtimeStatus } from "@shared/realtime/realtime.entity";
 import { SessionContext } from "@shared/session/session-context";
 import type { SessionContextValue } from "@shared/session/session-context";
 import type { Permission, Role } from "@shared/session/session.entity";
-import type { PlatformSettingDTO, ReservationDetailDTO, ReservationSummaryDTO } from "../../api/dtos/lab.dto";
+import type {
+  GroupDTO,
+  GroupMembershipDTO,
+  MyGroupsDTO,
+  PlatformSettingDTO,
+  ReservationDetailDTO,
+  ReservationSummaryDTO,
+  UserDTO,
+} from "../../api/dtos/lab.dto";
 
 export const apiUrl = (path: string): string => `${BACKEND_ORIGIN}${path}`;
 
@@ -83,6 +95,52 @@ export function settingDto(key: string, value: unknown): PlatformSettingDTO {
   };
 }
 
+export function myGroupsDto(memberships: GroupMembershipDTO[]): MyGroupsDTO {
+  return { studentGroup: null, memberships };
+}
+
+export function groupDto(id: string, name: string, overrides: Partial<GroupDTO> = {}): GroupDTO {
+  return {
+    id,
+    name,
+    description: null,
+    type: "STUDENT",
+    parentGroupId: null,
+    depth: 0,
+    simulatorLeaderId: null,
+    isActive: true,
+    maxStudents: null,
+    enrollmentCode: null,
+    semester: null,
+    academicYear: null,
+    createdBy: null,
+    createdAt: "2026-02-01T10:00:00.000Z",
+    updatedAt: "2026-02-01T10:00:00.000Z",
+    leader: null,
+    creator: null,
+    parentGroup: null,
+    subGroups: [],
+    membersCount: 0,
+    subGroupsCount: 0,
+    ...overrides,
+  };
+}
+
+export function userDto(id: string, name: string | null, overrides: Partial<UserDTO> = {}): UserDTO {
+  return {
+    id,
+    email: `${id}@ventylab.demo`,
+    name,
+    role: "STUDENT",
+    image: null,
+    isActive: true,
+    emailVerified: null,
+    createdAt: "2026-02-01T10:00:00.000Z",
+    updatedAt: "2026-02-01T10:00:00.000Z",
+    ...overrides,
+  };
+}
+
 type Listener = (payload: never) => void;
 
 export type FakeSocket = {
@@ -124,15 +182,48 @@ export function createFakeSocket(): FakeSocket {
   };
 }
 
+export type RealtimeStatusControl = {
+  get: () => RealtimeStatus
+  subscribe: (listener: () => void) => () => void
+  /** Changes the socket status of the rendered tree (inside act). */
+  set: (status: RealtimeStatus) => void
+};
+
+export function createRealtimeStatusControl(initial: RealtimeStatus): RealtimeStatusControl {
+  let status = initial;
+  const listeners = new Set<() => void>();
+
+  return {
+    get: () => status,
+    subscribe: (listener) => {
+      listeners.add(listener);
+
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    set: (next) => {
+      act(() => {
+        status = next;
+        listeners.forEach((listener) => listener());
+      });
+    },
+  };
+}
+
 export type LabRenderOptions = {
   role?: Role
   permissions?: readonly Permission[]
   socket?: FakeSocket
   realtimeStatus?: RealtimeStatus
+  /** Overrides realtimeStatus with a status that can change after render. */
+  realtimeControl?: RealtimeStatusControl
+  /** Spy toasts; the real ToastProvider otherwise. */
+  toast?: ToastApi
 };
 
 function sessionValue(role: Role, permissions: readonly Permission[]): SessionContextValue {
-  const user = { id: `${role.toLowerCase()}-1`, email: "user@ventylab.demo", name: "Usuario", image: null, role };
+  const user = { id: sessionUserId(role), email: "user@ventylab.demo", name: "Usuario", image: null, role };
 
   return {
     status: "authenticated",
@@ -149,18 +240,26 @@ function sessionValue(role: Role, permissions: readonly Permission[]): SessionCo
   };
 }
 
-function createWrapper({ role = "STUDENT", permissions = [], socket, realtimeStatus }: LabRenderOptions) {
+function createWrapper({ role = "STUDENT", permissions = [], socket, realtimeStatus, realtimeControl, toast }: LabRenderOptions) {
   const session = sessionValue(role, permissions);
-  const realtime = {
-    socket: socket?.socket ?? null,
-    status: realtimeStatus ?? (socket ? "authenticated" as const : "idle" as const),
-  };
+  const control = realtimeControl ?? createRealtimeStatusControl(realtimeStatus ?? (socket ? "authenticated" : "idle"));
+
+  function Toasts({ children }: { children: ReactNode }) {
+    return toast
+      ? <ToastContext.Provider value={toast}>{children}</ToastContext.Provider>
+      : <ToastProvider>{children}</ToastProvider>;
+  }
 
   return function Wrapper({ children }: { children: ReactNode }) {
+    const status = useSyncExternalStore(control.subscribe, control.get, control.get);
+    const realtime = useMemo(() => ({ socket: socket?.socket ?? null, status }), [status]);
+
     return (
       <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false }}>
         <SessionContext.Provider value={session}>
-          <RealtimeContext.Provider value={realtime}>{children}</RealtimeContext.Provider>
+          <RealtimeContext.Provider value={realtime}>
+            <Toasts>{children}</Toasts>
+          </RealtimeContext.Provider>
         </SessionContext.Provider>
       </SWRConfig>
     );
@@ -171,6 +270,12 @@ export function renderLab(ui: ReactElement, options: LabRenderOptions = {}) {
   return render(ui, { wrapper: createWrapper(options) });
 }
 
-export function renderLabHook<T>(hook: () => T, options: LabRenderOptions = {}) {
-  return renderHook(hook, { wrapper: createWrapper(options) });
+export function renderLabHook<T, P = undefined>(
+  hook: (props: P) => T,
+  { initialProps, ...options }: LabRenderOptions & { initialProps?: P } = {},
+) {
+  return renderHook(hook, { wrapper: createWrapper(options), initialProps: initialProps as P });
 }
+
+/** Id of the session user the wrapper creates for a role ("student-1", "teacher-1", "admin-1"). */
+export const sessionUserId = (role: Role): string => `${role.toLowerCase()}-1`;

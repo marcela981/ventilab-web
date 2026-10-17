@@ -14,8 +14,11 @@
 *   en src/shared/sim-engine/engine/common/ventilator-limits.ts (scripts/sync-sim-engine.mjs).
 *   Uso: node scripts/sync-lab-settings.mjs        (escribe la copia)
 *        node scripts/sync-lab-settings.mjs --check (sale con código 1 si la copia difiere del backend)
+*   v1.1 (T7): además vendoriza constantes del backend que NO son ajustes de plataforma ni se exponen por la API
+*   (VENDORED_LAB_BACKEND_DEFAULTS): la gracia de presencia del operador (VENTILATOR_OPERATOR_GRACE_SECONDS), de la
+*   que el frontend deriva el intervalo del heartbeat del control.
 *   Depende solo de node:fs y node:path.
-* Versión: 1.0
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -51,6 +54,11 @@ const SETTINGS = [
   ["commands.safety.maxIeRatio", "VENTILATOR_SAFETY_MAX_IE_RATIO"],
 ];
 
+// Backend constants that are not platform settings and are not exposed by the API (env only).
+const BACKEND_CONSTANTS = [
+  ["control.operatorGraceSeconds", "VENTILATOR_OPERATOR_GRACE_SECONDS"],
+];
+
 const CHECK = process.argv.includes("--check");
 
 async function exists(file) {
@@ -78,11 +86,12 @@ function readDefault(source, variable) {
 
 function build(source) {
   const lines = SETTINGS.map(([key, variable]) => `  "${key}": ${readDefault(source, variable)}, // ${variable}`);
+  const constants = BACKEND_CONSTANTS.map(([key, variable]) => `  "${key}": ${readDefault(source, variable)}, // ${variable}`);
 
   return `/*
 * Funcionalidad: Vendored lab setting defaults
-* Descripción: GENERATED — do not edit; run node scripts/sync-lab-settings.mjs. Default value of each lab platform setting, extracted from the class defaults of EnvironmentVariables in ventylab-server/${ENV_BACKEND_REL} (the backend reads these settings from those variables). Used only when the caller may not read GET /api/platform-settings (settings:manage); the backend stays the authority and its 4xx responses are shown.
-* Versión: 1.0
+* Descripción: GENERATED — do not edit; run node scripts/sync-lab-settings.mjs. Default value of each lab platform setting, extracted from the class defaults of EnvironmentVariables in ventylab-server/${ENV_BACKEND_REL} (the backend reads these settings from those variables). Used only when the caller may not read GET /api/platform-settings (settings:manage); the backend stays the authority and its 4xx responses are shown. VENDORED_LAB_BACKEND_DEFAULTS: backend constants that are neither platform settings nor exposed by the API.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -95,6 +104,10 @@ ${lines.join("\n")}
 } as const;
 
 export type LabSettingKey = keyof typeof VENDORED_LAB_SETTING_DEFAULTS;
+
+export const VENDORED_LAB_BACKEND_DEFAULTS = {
+${constants.join("\n")}
+} as const;
 `;
 }
 
@@ -114,14 +127,14 @@ async function main() {
       process.exit(1);
     }
 
-    console.log(`[sync-lab-settings] Vendored lab setting defaults are up to date (${SETTINGS.length} keys).`);
+    console.log(`[sync-lab-settings] Vendored lab setting defaults are up to date (${SETTINGS.length} keys, ${BACKEND_CONSTANTS.length} constants).`);
 
     return;
   }
 
   await mkdir(path.dirname(OUTPUT), { recursive: true });
   await writeFile(OUTPUT, expected, "utf8");
-  console.log(`[sync-lab-settings] Wrote ${SETTINGS.length} keys to ${OUTPUT_REL}`);
+  console.log(`[sync-lab-settings] Wrote ${SETTINGS.length} keys and ${BACKEND_CONSTANTS.length} constants to ${OUTPUT_REL}`);
 }
 
 main().catch((error) => {

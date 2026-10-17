@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Lab entities tests
-* Descripción: Lab settings resolution (vendored defaults without the platform settings list; server values per key with a per-key fallback to the defaults) and the upcoming reservations selection and status labels. Depends on vitest and the lab entities.
-* Versión: 1.0
+* Descripción: Lab settings resolution (vendored defaults without the platform settings list; server values per key with a per-key fallback to the defaults) and the upcoming reservations selection (v1.1: only SCHEDULED reservations are upcoming) and status labels. Depends on vitest and the lab entities.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -64,6 +64,17 @@ describe("upcomingReservations", () => {
 
     expect(upcomingReservations(list, now, "active").map(({ id }) => id)).toEqual(["soon", "late"]);
     expect(upcomingReservations(list, now).map(({ id }) => id)).toEqual(["active", "soon", "late"]);
+  });
+
+  it("keeps only scheduled reservations (cancelled, preempted or completed ones are not upcoming)", () => {
+    const now = new Date("2026-10-16T15:00:00.000Z");
+    const withStatus = (id: string, status: string): LabReservation => ({
+      ...limited(id, "2026-10-16T16:00:00.000Z", "2026-10-16T17:00:00.000Z"),
+      status,
+    });
+    const list = [withStatus("ok", "SCHEDULED"), withStatus("c", "CANCELLED"), withStatus("p", "PREEMPTED"), withStatus("d", "COMPLETED")];
+
+    expect(upcomingReservations(list, now).map(({ id }) => id)).toEqual(["ok"]);
   });
 
   it("labels the known statuses in Spanish and keeps unknown ones", () => {

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ConsoleControls
-* Descripción: Mode selector and parameter controls of the generic ventilator console, in the real-device pattern. The modes come from the adapter options; each mode shows only its applicable parameters (console table, filtered by the injected limits). Select a parameter, then adjust it with the +/- buttons, the mouse wheel over the selected value (a zero vertical delta is ignored) or the keyboard (arrows = step, PageUp/PageDown = 10 steps, Home/End = min/max); the value and a mode change stay PENDING (pending token + "Pendiente" text) until CONFIRMAR (or "Aplicar" in the configure variant) emits the diff once through onConfirm; CANCELAR or Escape revert and emit nothing. Pending edits only call the optional onProposeChange. Limits are shown and enforced from the `limits` prop only. A pending value or mode the source has already applied stops being pending, so the tags and the emitted diff always agree. Read-only disables everything and shows the values. v1.2: a parameter without a valid step grid (zero, negative or non-finite step) disables +/-, the wheel and the step keys. v1.3: optional `onPendingChange(pending)` reports when unconfirmed edits appear or go away (also false on unmount with pending edits), so a host such as the case editor can count them as unsaved. Depends on React, MUI icons, the controls reducer, the controls config and the controls styles.
-* Versión: 1.3
+* Descripción: Mode selector and parameter controls of the generic ventilator console, in the real-device pattern. The modes come from the adapter options; each mode shows only its applicable parameters (console table, filtered by the injected limits). Select a parameter, then adjust it with the +/- buttons, the mouse wheel over the selected value (a zero vertical delta is ignored) or the keyboard (arrows = step, PageUp/PageDown = 10 steps, Home/End = min/max); the value and a mode change stay PENDING (pending token + "Pendiente" text) until CONFIRMAR (or "Aplicar" in the configure variant) emits the diff once through onConfirm; CANCELAR or Escape revert and emit nothing. Pending edits only call the optional onProposeChange. Limits are shown and enforced from the `limits` prop only. A pending value or mode the source has already applied stops being pending, so the tags and the emitted diff always agree. Read-only disables everything and shows the values. v1.2: a parameter without a valid step grid (zero, negative or non-finite step) disables +/-, the wheel and the step keys. v1.3: optional `onPendingChange(pending)` reports when unconfirmed edits appear or go away (also false on unmount with pending edits), so a host such as the case editor can count them as unsaved. v1.4 (generic, optional): `settings.inFlight` tags a parameter whose confirmed change the source has not applied yet ("Enviando", "Esperando confirmación del equipo", "Rechazado") while the control keeps showing the applied value, and blocks re-editing it while sending/awaiting; a parameter the source does not report shows "—" (no invented value); v1.5: such a parameter cannot be adjusted at all (+/-, wheel and every key disabled) until the source reports it, so CONFIRMAR never sends a value derived from the limit minimum; `readOnlyReason` is shown under the controls and describes every disabled control (aria-describedby). Depends on React, MUI icons, the controls reducer, the controls config and the controls styles. v1.6 (generic, optional): `pendingResetKey` — when it changes the unconfirmed edits are dropped without emitting anything.
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,7 +11,7 @@
 
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import { useEffect, useReducer, useRef } from "react";
+import { useEffect, useId, useReducer, useRef } from "react";
 import type { KeyboardEvent } from "react";
 import { cx } from "@shared/lib/class-names";
 import { CONSOLE_PARAMETERS, getParametersForMode, MODE_PARAMETERS } from "./config/console-controls.config";
@@ -28,6 +28,7 @@ import {
 import type { Adjustment, ControlsAction } from "./console-controls.reducer";
 import type {
   ConsoleConfirmation,
+  ConsoleInFlight,
   ConsoleLimits,
   ConsoleMode,
   ConsoleParameterChange,
@@ -55,7 +56,21 @@ export const CONTROLS_COPY = {
   noPending: "Sin cambios pendientes",
   configureHint: "Configuración del caso: los valores se aplican al guardar, sin un ventilador en marcha.",
   keyboardHint: "Flechas: un paso · RePág/AvPág: 10 pasos · Inicio/Fin: mínimo/máximo · Esc: cancelar",
+  unknownValue: "—",
+  unknownValueText: "Sin valor informado",
+  inFlight: {
+    sending: "Enviando",
+    awaiting: "Esperando confirmación del equipo",
+    rejected: "Rechazado",
+  },
 } as const;
+
+/** Tag text of a change in flight, with the source reason when there is one. */
+export function inFlightText(flight: ConsoleInFlight): string {
+  const label = CONTROLS_COPY.inFlight[flight.status];
+
+  return flight.message ? `${label}: ${flight.message}` : label;
+}
 
 export type ConsoleControlsProps = {
   settings: ConsoleSettings
@@ -68,6 +83,10 @@ export type ConsoleControlsProps = {
   onProposeChange?: ((change: ConsoleParameterChange) => void) | undefined
   /** Called when unconfirmed edits appear (true) or go away (false: confirmed, cancelled, applied or unmounted). */
   onPendingChange?: ((pending: boolean) => void) | undefined
+  /** Why the controls are read-only; shown and referenced by every disabled control. */
+  readOnlyReason?: string | undefined
+  /** v1.6: a change of this value drops the unconfirmed edits (nothing is emitted); omitted, edits are kept. */
+  pendingResetKey?: string | number | undefined
   /** Labels per parameter id; defaults to the console definitions. */
   parameters?: Readonly<Record<string, ConsoleParameterDefinition>>
   applicability?: ModeParameterTable
@@ -82,20 +101,45 @@ type ParameterControlProps = {
   id: string
   definition: ConsoleParameterDefinition
   limit: ParameterLimit
-  value: number
+  /** `null`: the source reports no value and nothing is pending. */
+  value: number | null
   applied: number | undefined
   pending: boolean
+  inFlight: ConsoleInFlight | undefined
   selected: boolean
   disabled: boolean
+  describedBy: string | undefined
   onAdjust: (adjustment: Adjustment) => void
   onSelect: () => void
 };
 
-function ParameterControl({ id, definition, limit, value, applied, pending, selected, disabled, onAdjust, onSelect }: ParameterControlProps) {
+/** A change being sent or awaiting the source cannot be edited again until it resolves. */
+function blocksEditing(flight: ConsoleInFlight | undefined): boolean {
+  return flight !== undefined && flight.status !== "rejected";
+}
+
+function ParameterControl({
+  id,
+  definition,
+  limit,
+  value: shown,
+  applied,
+  pending,
+  inFlight,
+  selected,
+  disabled: readOnly,
+  describedBy,
+  onAdjust,
+  onSelect,
+}: ParameterControlProps) {
   const valueRef = useRef<HTMLDivElement>(null);
-  const formatted = formatValue(value, limit);
-  // Without a valid step grid +/-, the wheel and the step keys have nothing to step by.
-  const stepping = hasStepGrid(limit.step);
+  const disabled = readOnly || blocksEditing(inFlight);
+  const known = shown !== null;
+  const value = shown ?? limit.min;
+  const formatted = known ? formatValue(value, limit) : CONTROLS_COPY.unknownValue;
+  // Without a valid step grid +/-, the wheel and the step keys have nothing to step by. Without a reported value
+  // there is no base either: stepping from the limit minimum would propose a value the source never reported.
+  const stepping = known && hasStepGrid(limit.step);
 
   // React registers wheel listeners as passive, so a native one is needed to keep the page from scrolling.
   useEffect(() => {
@@ -120,7 +164,7 @@ function ParameterControl({ id, definition, limit, value, applied, pending, sele
   }, [disabled, selected, stepping, onAdjust]);
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const adjustment = keyToAdjustment(event.key, limit);
+    const adjustment = known ? keyToAdjustment(event.key, limit) : null;
 
     if (adjustment !== null && !disabled) {
       event.preventDefault();
@@ -129,19 +173,26 @@ function ParameterControl({ id, definition, limit, value, applied, pending, sele
   };
 
   return (
-    <li className={cx(styles.parameter)} data-pending={pending} data-selected={selected} data-parameter={id}>
+    <li
+      className={cx(styles.parameter)}
+      data-pending={pending}
+      data-selected={selected}
+      data-parameter={id}
+      data-in-flight={inFlight?.status}
+    >
       <div
         ref={valueRef}
         className={cx(styles.value)}
         role="spinbutton"
         tabIndex={disabled ? -1 : 0}
         aria-label={definition.description}
-        aria-valuenow={value}
+        aria-valuenow={known ? value : undefined}
         aria-valuemin={limit.min}
         aria-valuemax={limit.max}
-        aria-valuetext={`${formatted} ${limit.unit}`.trim()}
+        aria-valuetext={known ? `${formatted} ${limit.unit}`.trim() : CONTROLS_COPY.unknownValueText}
         aria-readonly={disabled}
         aria-disabled={disabled}
+        aria-describedby={describedBy}
         onKeyDown={onKeyDown}
         onClick={disabled ? undefined : onSelect}
         onFocus={disabled ? undefined : onSelect}
@@ -155,6 +206,7 @@ function ParameterControl({ id, definition, limit, value, applied, pending, sele
           type="button"
           className={cx(styles.step)}
           aria-label={CONTROLS_COPY.decrease(definition.label)}
+          aria-describedby={describedBy}
           disabled={disabled || !stepping || value <= limit.min}
           onClick={() => onAdjust({ kind: "steps", steps: -1 })}
         >
@@ -164,6 +216,7 @@ function ParameterControl({ id, definition, limit, value, applied, pending, sele
           type="button"
           className={cx(styles.step)}
           aria-label={CONTROLS_COPY.increase(definition.label)}
+          aria-describedby={describedBy}
           disabled={disabled || !stepping || value >= limit.max}
           onClick={() => onAdjust({ kind: "steps", steps: 1 })}
         >
@@ -172,6 +225,9 @@ function ParameterControl({ id, definition, limit, value, applied, pending, sele
       </div>
       <p className={cx(styles.meta)}>
         {pending ? <span className={cx(styles.pendingTag)}>{CONTROLS_COPY.pending}</span> : null}
+        {inFlight ? (
+          <span className={cx(styles.inFlightTag)} data-status={inFlight.status}>{inFlightText(inFlight)}</span>
+        ) : null}
         {pending && applied !== undefined ? <span>{CONTROLS_COPY.applied(formatValue(applied, limit))}</span> : null}
         <span className={cx(styles.range)}>{CONTROLS_COPY.range(limit)}</span>
       </p>
@@ -189,6 +245,8 @@ export function ConsoleControls({
   onCancel,
   onProposeChange,
   onPendingChange,
+  readOnlyReason,
+  pendingResetKey,
   parameters = CONSOLE_PARAMETERS,
   applicability = MODE_PARAMETERS,
   className,
@@ -201,6 +259,8 @@ export function ConsoleControls({
   const pendingCount = confirmation === null ? 0 : confirmation.changes.length + (confirmation.mode === null ? 0 : 1);
   const hasPending = pendingCount > 0;
   const onPendingChangeRef = useRef(onPendingChange);
+  const reasonId = useId();
+  const describedBy = readOnly && readOnlyReason ? reasonId : undefined;
   const reportedPendingRef = useRef(false);
 
   useEffect(() => {
@@ -223,8 +283,18 @@ export function ConsoleControls({
     }
   }, []);
 
-  const baseOf = (parameter: string, limit: ParameterLimit): number =>
-    settings.applied[parameter] ?? settings.current[parameter] ?? limit.min;
+  // v1.6: a new reset key drops the unconfirmed edits (the first render only records it).
+  const resetKeyRef = useRef(pendingResetKey);
+
+  useEffect(() => {
+    if (resetKeyRef.current !== pendingResetKey) {
+      resetKeyRef.current = pendingResetKey;
+      dispatch({ type: "reset" });
+    }
+  }, [pendingResetKey]);
+
+  // No reported value means no base: such a parameter cannot be adjusted (no invented starting value).
+  const baseOf = (parameter: string): number | undefined => settings.applied[parameter] ?? settings.current[parameter];
 
   const run = (action: ControlsAction) => {
     if (readOnly) {
@@ -240,7 +310,12 @@ export function ConsoleControls({
   };
 
   const adjust = (parameter: string, limit: ParameterLimit, adjustment: Adjustment) => {
-    const base = baseOf(parameter, limit);
+    const base = baseOf(parameter);
+
+    if (base === undefined) {
+      return;
+    }
+
     run(
       adjustment.kind === "steps"
         ? { type: "adjust", parameter, steps: adjustment.steps, base, limit }
@@ -285,6 +360,7 @@ export function ConsoleControls({
             aria-pressed={effectiveMode === option.id}
             data-pending={pendingMode === option.id}
             disabled={readOnly}
+            aria-describedby={describedBy}
             onClick={() =>
               run({
                 type: "selectMode",
@@ -299,6 +375,7 @@ export function ConsoleControls({
           </button>
         ))}
       </div>
+      {describedBy ? <p id={describedBy} className={cx(styles.hint)}>{readOnlyReason}</p> : null}
       {variant === "configure" ? <p className={cx(styles.hint)}>{CONTROLS_COPY.configureHint}</p> : null}
       <section aria-label={CONTROLS_COPY.parameters}>
         {visible.length === 0 ? (
@@ -312,7 +389,7 @@ export function ConsoleControls({
                 return null;
               }
 
-              const base = baseOf(parameter, limit);
+              const reported = settings.applied[parameter] ?? settings.current[parameter];
               const pendingValue = state.pendingValues[parameter];
               // A value the source already applied is not pending, so the tag and the confirmation diff agree.
               const pending = pendingValue !== undefined && pendingValue !== settings.applied[parameter];
@@ -323,11 +400,13 @@ export function ConsoleControls({
                   id={parameter}
                   definition={parameters[parameter] ?? { label: parameter, description: parameter }}
                   limit={limit}
-                  value={pendingValue ?? base}
+                  value={pendingValue ?? reported ?? null}
                   applied={settings.applied[parameter]}
                   pending={pending}
+                  inFlight={settings.inFlight?.[parameter]}
                   selected={state.selected === parameter}
                   disabled={readOnly}
+                  describedBy={describedBy}
                   onAdjust={(adjustment) => adjust(parameter, limit, adjustment)}
                   onSelect={() => dispatch({ type: "select", parameter })}
                 />
@@ -341,10 +420,22 @@ export function ConsoleControls({
         <p className={cx(styles.status)} role="status">
           {pendingCount > 0 ? CONTROLS_COPY.pendingCount(pendingCount) : CONTROLS_COPY.noPending}
         </p>
-        <button type="button" className={cx(styles.action, styles.primary)} disabled={readOnly || confirmation === null} onClick={confirm}>
+        <button
+          type="button"
+          className={cx(styles.action, styles.primary)}
+          disabled={readOnly || confirmation === null}
+          aria-describedby={describedBy}
+          onClick={confirm}
+        >
           {CONTROLS_COPY.confirm[variant]}
         </button>
-        <button type="button" className={cx(styles.action)} disabled={readOnly || confirmation === null} onClick={cancel}>
+        <button
+          type="button"
+          className={cx(styles.action)}
+          disabled={readOnly || confirmation === null}
+          aria-describedby={describedBy}
+          onClick={cancel}
+        >
           {CONTROLS_COPY.cancel}
         </button>
       </div>

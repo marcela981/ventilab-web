@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Console controls styles
-* Descripción: Styles of the ventilator console mode selector, parameter controls and confirm bar on the dark console surface: pressed mode buttons, parameter rows with the value, the +/- stepper, the pending highlight (pending token + "Pendiente" text), the selected outline, the limit range and the CONFIRMAR/CANCELAR bar. Console and design-system tokens only.
-* Versión: 1.0
+* Descripción: Styles of the ventilator console mode selector, parameter controls and confirm bar on the dark console surface: pressed mode buttons, parameter rows with the value, the +/- stepper, the pending highlight (pending token + "Pendiente" text), the selected outline, the limit range and the CONFIRMAR/CANCELAR bar. Console and design-system tokens only. v1.1: the in-flight tag of a confirmed change the source has not applied yet (rejected in the out-of-range token).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -189,4 +189,19 @@
   color: var(--vl-console-bg);
   background: var(--vl-console-pending);
   border-color: var(--vl-console-pending);
+}
+
+/* Confirmed change the source has not applied yet; the text names the state, the border only reinforces it. */
+.inFlightTag {
+  padding: 0 var(--vl-space-1);
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text);
+  border: 1px dashed var(--vl-console-pending);
+  border-radius: var(--vl-radius-pill);
+}
+
+.inFlightTag[data-status="rejected"] {
+  color: var(--vl-console-out-of-range);
+  border-style: solid;
+  border-color: var(--vl-console-out-of-range);
 }

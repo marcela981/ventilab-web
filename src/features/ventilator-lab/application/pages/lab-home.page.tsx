@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Lab summary page
-* Descripción: Summary of the ventilator lab (/lab): device status (online or "sin datos" with the reason, from the broadcast ventilator:connected / ventilator:disconnected events; no room join), the reservation active right now (a caller the backend lets control the ventilator gets "Entrar a la consola" to /lab/live; anyone else sees the occupancy as the backend describes it, never a name the backend did not send) and the upcoming reservations of the user and the user's group with a link to /lab/reservations. Loading skeletons, retryable errors and empty states as in the other features; the reservation reads are revalidated on ventilator:availability and reservation:preempted. Depends on MUI, next/link, next/head, the design-system states, the date format helper, the lab hooks, entities, routes and styles.
-* Versión: 1.0
+* Descripción: Summary of the ventilator lab (/lab): device status (online or "sin datos" with the reason, from the broadcast ventilator:connected / ventilator:disconnected events; no room join), the reservation active right now (a caller the backend lets control the ventilator gets "Entrar a la consola" to /lab/live; anyone else sees the occupancy as the backend describes it, never a name the backend did not send) and the upcoming reservations of the user and the user's group with a link to /lab/reservations. Loading skeletons, retryable errors and empty states as in the other features; the reservation reads are revalidated on ventilator:availability and reservation:preempted. v1.1 (T2): the holder line comes from the shared reservationHolderText. v1.2 (T3): usePreemptionNotice (realtime toast for the holder of a preempted reservation). Depends on MUI, next/link, next/head, the design-system states, the date format helper, the lab hooks, entities, routes and styles.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -24,11 +24,12 @@ import { cx } from "@shared/lib/class-names";
 import { formatDateRange } from "@shared/lib/format";
 import { LAB_LIVE_URL, LAB_RESERVATIONS_URL } from "../config/lab.routes";
 import { getLabErrorMessage } from "../entities/lab-error-messages";
-import { reservationStatusLabel, upcomingReservations } from "../entities/reservation.entity";
-import type { CurrentReservation, LabReservation } from "../entities/reservation.entity";
+import { reservationHolderText, reservationStatusLabel, upcomingReservations } from "../entities/reservation.entity";
+import type { CurrentReservation } from "../entities/reservation.entity";
 import { useDeviceStatus } from "../hooks/use-device-status";
 import type { DeviceNoDataReason } from "../hooks/use-device-status";
 import { useCurrentReservation, useMyReservations } from "../hooks/use-lab-reservations";
+import { usePreemptionNotice } from "../hooks/use-preemption-notice";
 import { useReservationsRealtime } from "../hooks/use-reservations-realtime";
 import styles from "../../UI/lab-home.module.css";
 
@@ -53,7 +54,6 @@ export const LAB_HOME_COPY = {
   free: "El ventilador está libre en este momento.",
   enterConsole: "Entrar a la consola",
   occupied: "Ventilador en uso",
-  groupHolder: (group: string) => `Grupo ${group}`,
   upcomingTitle: "Mis próximas reservas",
   upcomingHint: "Tus reservas y las de tu grupo que todavía no terminan.",
   upcomingLoading: "Cargando tus reservas…",
@@ -63,18 +63,6 @@ export const LAB_HOME_COPY = {
   upcomingListLabel: "Próximas reservas",
   toReservations: "Ver calendario y reservar",
 } as const;
-
-function holderLabel(reservation: LabReservation): string | null {
-  if (reservation.visibility === "limited") {
-    return reservation.occupancyLabel;
-  }
-
-  if (reservation.holderType === "GROUP" && reservation.groupName) {
-    return LAB_HOME_COPY.groupHolder(reservation.groupName);
-  }
-
-  return reservation.holderName;
-}
 
 function DeviceStatusCard() {
   const status = useDeviceStatus();
@@ -105,7 +93,7 @@ function ActiveReservationBody({ current }: { current: CurrentReservation }) {
     return <p className={cx(styles.muted)}>{LAB_HOME_COPY.free}</p>;
   }
 
-  const holder = holderLabel(reservation);
+  const holder = reservationHolderText(reservation);
 
   return (
     <div className={cx(styles.active)}>
@@ -170,7 +158,7 @@ function UpcomingReservationsCard({ activeId }: { activeId: string | null }) {
       {upcoming && upcoming.length > 0 ? (
         <ul className={cx(styles.list)} aria-label={LAB_HOME_COPY.upcomingListLabel}>
           {upcoming.map((reservation) => {
-            const holder = holderLabel(reservation);
+            const holder = reservationHolderText(reservation);
 
             return (
               <li key={reservation.id} className={cx(styles.item)}>
@@ -188,6 +176,7 @@ function UpcomingReservationsCard({ activeId }: { activeId: string | null }) {
 
 export function LabHomePage() {
   useReservationsRealtime();
+  usePreemptionNotice();
   const current = useCurrentReservation();
   const activeId = current.data?.reservation?.id ?? null;
 

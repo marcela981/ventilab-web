@@ -1,12 +1,14 @@
 /*
- * Funcionalidad: SimuladorPage
- * Descripción: Página principal del simulador de ventilador. La reserva y la
- *   conexión al ventilador físico se gobiernan con la FSM useConexionVentilador,
- *   compartida vía ConexionVentiladorProvider; su tab vive dentro del dashboard
- *   (tab "Conexión"). Aquí solo se renderiza VentilatorDashboardWrapper, que lee
- *   del contexto si la sesión está sobre un ventilador real. v2.1: el root lleva
- *   la clase global `vl-legacy-dark` (página diseñada oscura; ver src/index.css).
- * Versión: 2.1
+ * Funcionalidad: Legacy /simulador redirect
+ * Descripción: v3.0 (T12 ventilator-lab): the legacy real-ventilator page (reservation, connection tab and live data
+ *   of the physical ventilator in one dashboard) is replaced by the lab: this route now only redirects, on the
+ *   server, to /lab (temporary redirect, legacyLabRedirect of @features/ventilator-lab). The legacy components under
+ *   src/features/simulador stay in the code until P2 (removal only with the author's approval). Before v3.0 this page
+ *   rendered LearningProgressProvider > ConexionVentiladorProvider > VentilatorDashboardWrapper. v3.1 (T12 review fix
+ *   S2): imports legacyLabRedirect by its direct module path (application/config/legacy-redirects), not the whole
+ *   feature barrel, so the route's server bundle does not pull the lab pages (this legacy page file may import a feature
+ *   module path under the eslint boundaries, like pages/_app.js does).
+ * Versión: 3.1
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -15,42 +17,10 @@
  * Contacto: marcela.mazo@correounivalle.edu.co
  */
 
-import React from 'react';
-import { LearningProgressProvider } from '@/features/progress/LearningProgressContext';
-import {
-  ConexionVentiladorProvider,
-  useConexionVentiladorContext,
-} from '@/features/simulador/conexion/contexto/ConexionVentiladorContext';
-import { VentilatorDashboardWrapper } from '@/features/simulador/simuladorVentilador/dashboard/componentes/VentilatorDashboardWrapper';
-import styles from '@/features/simulador/ui/SimuladorPage.module.css';
+import { legacyLabRedirect } from '@features/ventilator-lab/application/config/legacy-redirects';
 
-// =============================================================================
-// Inner component — hooks require a React function component scope
-// =============================================================================
+export const getServerSideProps = async () => legacyLabRedirect("/simulador");
 
-function SimuladorContent() {
-  // El estado de reserva/conexión es la única fuente de verdad de la FSM.
-  const { tieneReserva } = useConexionVentiladorContext();
-
-  return (
-    <div className={`${styles.layout} vl-legacy-dark`}>
-      <main className={styles.main}>
-        <VentilatorDashboardWrapper isRealVentilator={tieneReserva} />
-      </main>
-    </div>
-  );
-}
-
-// =============================================================================
-// Page export
-// =============================================================================
-
-export default function SimuladorPage() {
-  return (
-    <LearningProgressProvider>
-      <ConexionVentiladorProvider>
-        <SimuladorContent />
-      </ConexionVentiladorProvider>
-    </LearningProgressProvider>
-  );
+export default function LegacySimuladorRedirect() {
+  return null;
 }

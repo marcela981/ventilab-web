@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Console curves zone
-* Descripción: Curves area of the ventilator console: one SweepCanvas with stacked pressure (cmH2O), flow (L/min) and volume (mL) lanes colored by the console curve tokens, plus a toolbar with the sweep/scroll toggle, the time-window selector, the freeze button (the frozen trace exposes the measurement cursor) and the P-V / F-V loop toggle rendered by LoopCanvas. Reads the waveform ring buffer directly. Depends on React, MUI icons, @shared/waveforms and the console config.
-* Versión: 1.0
+* Descripción: Curves area of the ventilator console: one SweepCanvas with stacked pressure (cmH2O), flow (L/min) and volume (mL) lanes colored by the console curve tokens, plus a toolbar with the sweep/scroll toggle, the time-window selector, the freeze button (the frozen trace exposes the measurement cursor) and the P-V / F-V loop toggle rendered by LoopCanvas. Reads the waveform ring buffer directly. v1.1: an optional frame-source `status`; with `no-data` the last curves stay greyed under an overlay (role status) with the source message or a generic default, and the zone exposes `data-source-status`. Depends on React, MUI icons, @shared/waveforms and the console config.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,8 +15,9 @@ import { useState } from "react";
 import { cx } from "@shared/lib/class-names";
 import { LoopCanvas, SweepCanvas } from "@shared/waveforms";
 import type { LoopAxis, SweepChannel, WaveformDisplayMode, WaveformRingBuffer } from "@shared/waveforms";
-import { CONSOLE_CURVES, CONSOLE_WINDOW_SECONDS, DEFAULT_CONSOLE_WINDOW_SECONDS } from "./config/console.config";
+import { CONSOLE_CURVES, CONSOLE_NO_DATA_MESSAGE, CONSOLE_WINDOW_SECONDS, DEFAULT_CONSOLE_WINDOW_SECONDS } from "./config/console.config";
 import type { CurveId } from "./config/console.config";
+import type { ConsoleFrameStatus } from "./ventilator-console.entity";
 import styles from "../UI/curves-zone.module.css";
 
 // TODO(i18n): move to an i18next namespace once src/i18n is in scope.
@@ -74,6 +75,10 @@ const LOOP_OPTIONS: ReadonlyArray<{ id: LoopKind, label: string }> = [
 
 export type CurvesZoneProps = {
   buffer: WaveformRingBuffer<CurveId>
+  /** Frame-source status (default `live`); `no-data` greys the curves under an overlay. */
+  status?: ConsoleFrameStatus | undefined
+  /** Overlay text while there is no data (default CONSOLE_NO_DATA_MESSAGE). */
+  statusMessage?: string | undefined
   className?: string
 };
 
@@ -104,7 +109,7 @@ function ToggleGroup<T extends string | number>({ label, options, value, onChang
 
 const WINDOW_OPTIONS = CONSOLE_WINDOW_SECONDS.map((seconds) => ({ id: seconds as number, label: `${seconds} s` }));
 
-export function CurvesZone({ buffer, className }: CurvesZoneProps) {
+export function CurvesZone({ buffer, status = "live", statusMessage, className }: CurvesZoneProps) {
   const [mode, setMode] = useState<WaveformDisplayMode>("sweep");
   const [windowSeconds, setWindowSeconds] = useState<number>(DEFAULT_CONSOLE_WINDOW_SECONDS);
   const [frozen, setFrozen] = useState(false);
@@ -112,7 +117,7 @@ export function CurvesZone({ buffer, className }: CurvesZoneProps) {
   const loopSetup = loop === "none" ? null : LOOPS[loop];
 
   return (
-    <section className={cx(styles.zone, className)} aria-label={CURVES_COPY.title}>
+    <section className={cx(styles.zone, className)} aria-label={CURVES_COPY.title} data-source-status={status}>
       <div className={cx(styles.toolbar)}>
         <ToggleGroup label={CURVES_COPY.displayMode} options={DISPLAY_MODES} value={mode} onChange={setMode} />
         <ToggleGroup label={CURVES_COPY.window} options={WINDOW_OPTIONS} value={windowSeconds} onChange={setWindowSeconds} />
@@ -129,6 +134,9 @@ export function CurvesZone({ buffer, className }: CurvesZoneProps) {
       </div>
       {frozen ? <p className={cx(styles.hint)}>{CURVES_COPY.freezeHint}</p> : null}
       <div className={cx(styles.plots, loopSetup ? styles.withLoop : undefined)}>
+        {status === "no-data" ? (
+          <p className={cx(styles.overlay)} role="status">{statusMessage ?? CONSOLE_NO_DATA_MESSAGE}</p>
+        ) : null}
         <SweepCanvas
           buffer={buffer}
           channels={SWEEP_CHANNELS}

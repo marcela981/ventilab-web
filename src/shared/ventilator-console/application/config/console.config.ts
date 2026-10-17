@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator console config
-* Descripción: Console-owned static configuration of the generic ventilator console: the numeric monitoring metric ids and the patient vital ids with their Spanish labels, units, decimals and default normal ranges (used for the out-of-range highlight and overridable through props), the three curve channels with their console color tokens, the time-window options and the waveform ring capacity. It knows nothing about the simulation engine or a physical ventilator; adapters deliver values already in these units. v1.1: the ring capacity is computed from the frame source sample rate (default 50 Hz) as twice the largest window; the default normal ranges are teaching defaults that adapters or consumers override (`null` disables the highlight).
-* Versión: 1.1
+* Descripción: Console-owned static configuration of the generic ventilator console: the numeric monitoring metric ids and the patient vital ids with their Spanish labels, units, decimals and default normal ranges (used for the out-of-range highlight and overridable through props), the three curve channels with their console color tokens, the time-window options and the waveform ring capacity. It knows nothing about the simulation engine or a physical ventilator; adapters deliver values already in these units. v1.1: the ring capacity is computed from the frame source sample rate (default 50 Hz) as twice the largest window; the default normal ranges are teaching defaults that adapters or consumers override (`null` disables the highlight). v1.2: a generic `pco2` vital (PCO2 in mmHg, for sources that report a CO2 partial pressure without saying whether it is arterial or end-tidal); a source that does not provide it never shows it; the generic no-data message of a frame source without data.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -61,7 +61,7 @@ export const CONSOLE_METRICS: Readonly<Record<ConsoleMetricId, ValueDefinition>>
   mechanicalPower: { label: "Potencia", description: "Potencia mecánica", unit: "J/min", decimals: 1, format: "number", normalRange: { max: 17 } },
 };
 
-export const PATIENT_VITAL_IDS = ["spo2", "pao2", "paco2", "ph", "map"] as const;
+export const PATIENT_VITAL_IDS = ["spo2", "pao2", "paco2", "ph", "map", "pco2"] as const;
 
 export type PatientVitalId = (typeof PATIENT_VITAL_IDS)[number];
 
@@ -71,6 +71,8 @@ export const PATIENT_VITALS: Readonly<Record<PatientVitalId, ValueDefinition>> =
   paco2: { label: "PaCO2", description: "Presión arterial de CO2", unit: "mmHg", decimals: 0, format: "number", normalRange: { min: 35, max: 45 } },
   ph: { label: "pH", description: "pH arterial", unit: "", decimals: 2, format: "number", normalRange: { min: 7.35, max: 7.45 } },
   map: { label: "PAM", description: "Presión arterial media", unit: "mmHg", decimals: 0, format: "number", normalRange: { min: 65, max: 110 } },
+  // Not labelled arterial or end-tidal: the source does not say which one it measures, so no default range is assumed.
+  pco2: { label: "PCO2", description: "Presión parcial de CO2 informada por la fuente", unit: "mmHg", decimals: 0, format: "number", normalRange: null },
 };
 
 export const CURVE_IDS = ["pressure", "flow", "volume"] as const;
@@ -104,6 +106,10 @@ export function consoleBufferCapacity(sampleRateHz: number | undefined): number 
 
 /** Capacity at the default rate (60 s at 50 Hz = 3000 samples). */
 export const CONSOLE_BUFFER_CAPACITY = consoleBufferCapacity(DEFAULT_CONSOLE_SAMPLE_RATE_HZ);
+
+/** Default overlay text and read-only reason while a frame source reports `no-data`. */
+// TODO(i18n): move to an i18next namespace once src/i18n is in scope.
+export const CONSOLE_NO_DATA_MESSAGE = "Sin datos de la fuente: las curvas están detenidas.";
 
 /** How many trend points a patient sparkline keeps when the adapter sends more. */
 export const PATIENT_TREND_POINTS = 60;

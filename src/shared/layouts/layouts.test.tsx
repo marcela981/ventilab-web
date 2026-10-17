@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Layouts and AppShell tests
-* Descripción: Verifies the guard behavior of the Student/Teacher/Admin layouts (redirect to login, wrong role to its landing route, content for the right role), the public layout without auth, and the AppShell (role-filtered nav, skip link, sign-out through the session, realtime status indicator, route error boundary). v1.1 (T11a): the user avatar shows the session image with the initials as fallback, and the student-only layout sends other roles to their landing route. Depends on vitest, Testing Library, next/router and next/link (mocked) and the session/realtime contexts.
-* Versión: 1.1
+* Descripción: Verifies the guard behavior of the Student/Teacher/Admin layouts (redirect to login, wrong role to its landing route, content for the right role), the public layout without auth, and the AppShell (role-filtered nav, skip link, sign-out through the session, realtime status indicator, route error boundary). v1.1 (T11a): the user avatar shows the session image with the initials as fallback, and the student-only layout sends other roles to their landing route. v1.2 (T12 ventilator-lab): the Laboratorio item shows the device indicator. v1.3 (T12 review fix W1): the shell shows no indicator nobody fed (no invented device state), shows the one a feeder sets in the nav-indicators registry (tone + text) and declares the keys of the role's navigation as visible. Depends on vitest, Testing Library, next/router and next/link (mocked) and the session/realtime contexts.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,6 +18,8 @@ import type { Role, SessionStatus } from "@shared/session/session.entity";
 import { SessionContext } from "@shared/session/session-context";
 import type { SessionContextValue } from "@shared/session/session-context";
 import { AppShell } from "./app-shell";
+import { NavIndicatorProvider, useNavIndicatorVisible, useSetNavIndicator } from "./nav-indicators";
+import type { NavIndicator } from "./nav-indicators";
 import { AdminLayout } from "./admin-layout";
 import { PublicLayout } from "./public-layout";
 import { StudentLayout, StudentOnlyLayout, withStudentLayout } from "./student-layout";
@@ -213,6 +215,54 @@ describe("AppShell", () => {
     renderWith(sessionValue("authenticated", "STUDENT"), <AppShell>{content}</AppShell>, "authenticated");
 
     expect(screen.queryByText("Sin conexión en tiempo real")).not.toBeInTheDocument();
+  });
+
+  it("shows the Laboratorio item without any indicator nobody fed (T12 review fix W1)", () => {
+    renderWith(sessionValue("authenticated", "STUDENT"), <AppShell>{content}</AppShell>, "authenticated");
+
+    const nav = screen.getByRole("navigation", { name: "Navegación principal" });
+    const lab = within(nav).getByRole("link", { name: /Laboratorio/ });
+    expect(lab).toHaveAttribute("href", "/lab");
+    expect(lab).not.toHaveTextContent("Equipo sin datos");
+    expect(lab.querySelector("[data-indicator-tone]")).toBeNull();
+    expect(within(nav).queryByRole("link", { name: /Ventilador real/ })).not.toBeInTheDocument();
+  });
+
+  it("shows the indicator a feeder sets and declares its key visible (T12 review fix W1)", () => {
+    const online: NavIndicator = { tone: "positive", text: "Equipo en línea" };
+
+    function Feeder() {
+      const feed = useSetNavIndicator("ventilatorDevice");
+      const visible = useNavIndicatorVisible("ventilatorDevice");
+
+      return (
+        <div>
+          <output data-testid="visible">{String(visible)}</output>
+          <button type="button" onClick={() => feed(online)}>feed</button>
+          <button type="button" onClick={() => feed(null)}>clear</button>
+        </div>
+      );
+    }
+
+    renderWith(
+      sessionValue("authenticated", "STUDENT"),
+      <NavIndicatorProvider>
+        <Feeder />
+        <AppShell>{content}</AppShell>
+      </NavIndicatorProvider>,
+      "authenticated",
+    );
+
+    expect(screen.getByTestId("visible")).toHaveTextContent("true");
+    fireEvent.click(screen.getByRole("button", { name: "feed" }));
+
+    const nav = screen.getByRole("navigation", { name: "Navegación principal" });
+    const lab = within(nav).getByRole("link", { name: /Laboratorio/ });
+    expect(lab).toHaveTextContent("Equipo en línea");
+    expect(lab.querySelector("[data-indicator-tone='positive']")).not.toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "clear" }));
+    expect(lab.querySelector("[data-indicator-tone]")).toBeNull();
   });
 
   it("keeps the shell when the page throws and shows a retry", () => {

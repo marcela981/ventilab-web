@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator console module (public API)
-* Descripción: Public surface of the generic ventilator console (engine- and feature-agnostic): the VentilatorConsole screen and its zones (curves, numeric monitor, patient monitor), the adapter contract a consumer implements, the console-owned metric/vital/curve config and the pure format helpers (T3), plus the mode selector and pending→confirm/cancel parameter controls with their pure reducer and mode→parameter table, and the alarms bar with priority sorting, 2-minute silence, optional sound, session history and alarm limits (T4). v1.2: frame source `sourceId`/`sampleRateHz`, adapter `ranges` and the sample-rate based ring capacity. v1.3: `pendingModeOf` and `buildConfirmation(state, applied, appliedMode)`.
-* Versión: 1.3
+* Descripción: Public surface of the generic ventilator console (engine- and feature-agnostic): the VentilatorConsole screen and its zones (curves, numeric monitor, patient monitor), the adapter contract a consumer implements, the console-owned metric/vital/curve config and the pure format helpers (T3), plus the mode selector and pending→confirm/cancel parameter controls with their pure reducer and mode→parameter table, and the alarms bar with priority sorting, 2-minute silence, optional sound, session history and alarm limits (T4). v1.2: frame source `sourceId`/`sampleRateHz`, adapter `ranges` and the sample-rate based ring capacity. v1.3: `pendingModeOf` and `buildConfirmation(state, applied, appliedMode)`. v1.4: exports the generic source-state contract (frame status, in-flight settings, metric provenance helpers, value tile and in-flight copy).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,6 +14,7 @@ export {
   CONSOLE_CURVES,
   CONSOLE_METRIC_IDS,
   CONSOLE_METRICS,
+  CONSOLE_NO_DATA_MESSAGE,
   CONSOLE_WINDOW_SECONDS,
   consoleBufferCapacity,
   CURVE_IDS,
@@ -54,7 +55,7 @@ export type { AlarmLimitsPanelProps } from "./application/alarm-limits-panel";
 export { ALARMS_COPY, AlarmsBar } from "./application/alarms-bar";
 export type { AlarmsBarProps } from "./application/alarms-bar";
 export { diffAlarms, formatCountdown, formatEventTime, sortAlarms } from "./application/console-alarms";
-export { CONTROLS_COPY, ConsoleControls } from "./application/console-controls";
+export { CONTROLS_COPY, ConsoleControls, inFlightText } from "./application/console-controls";
 export type { ConsoleControlsProps, ConsoleVariant } from "./application/console-controls";
 export {
   buildConfirmation,
@@ -90,7 +91,7 @@ export type { NumericMonitorProps } from "./application/numeric-monitor";
 export { PATIENT_MONITOR_COPY, PatientMonitor } from "./application/patient-monitor";
 export type { PatientMonitorProps } from "./application/patient-monitor";
 export { pushConsoleBatch, useConsoleWaveforms } from "./application/use-console-waveforms";
-export { ValueTile } from "./application/value-tile";
+export { VALUE_TILE_COPY, ValueTile } from "./application/value-tile";
 export type { ValueTileProps } from "./application/value-tile";
 export { CONSOLE_COPY, VentilatorConsole } from "./application/ventilator-console";
 export type { ConsoleSlot, ConsoleSlotContext, VentilatorConsoleProps } from "./application/ventilator-console";
@@ -105,8 +106,13 @@ export type {
   ConsoleConfirmation,
   ConsoleFrameListener,
   ConsoleFrameSource,
+  ConsoleFrameStatus,
+  ConsoleInFlight,
+  ConsoleInFlightStatus,
   ConsoleLimits,
+  ConsoleMetricReading,
   ConsoleMetrics,
+  ConsoleMetricValue,
   ConsoleMode,
   ConsoleModeOption,
   ConsoleParameterChange,
@@ -121,3 +127,4 @@ export type {
   ParameterLimit,
   VentilatorConsoleAdapter,
 } from "./application/ventilator-console.entity";
+export { isDerivedMetric, metricNumber } from "./application/ventilator-console.entity";

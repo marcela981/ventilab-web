@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Lab hooks tests
-* Descripción: useLabSettings (admin reads the platform settings, other roles get the vendored defaults without any request, a failed read keeps the defaults), useDeviceStatus (unknown until an event, connected/disconnected with reason, telemetry proves online, staff seed from the system status, realtime offline) without emitting ventilator:join, and useReservationsRealtime (ventilator:availability and reservation:preempted refetch the current reservation). Depends on vitest, msw, Testing Library and the lab test helpers.
-* Versión: 1.0
+* Descripción: useLabSettings (admin reads the platform settings, other roles get the vendored defaults without any request, a failed read keeps the defaults), useDeviceStatus (unknown until an event, connected/disconnected with reason, telemetry proves online, staff seed from the system status, realtime offline; v1.1: the seed is not trusted after a reconnect until revalidated) without emitting ventilator:join, and useReservationsRealtime (ventilator:availability and reservation:preempted refetch the current reservation). v1.2 (T9 review fix W1): useCurrentReservation.read() rejects on a failed read (never the stale cache). Depends on vitest, msw, Testing Library and the lab test helpers.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,11 +9,11 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { waitFor } from "@testing-library/react";
+import { act, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { apiUrl, createFakeSocket, envelope, errorResponse, renderLabHook, settingDto } from "../pages/lab-test-helpers";
+import { apiUrl, createFakeSocket, createRealtimeStatusControl, envelope, errorResponse, renderLabHook, settingDto } from "../pages/lab-test-helpers";
 import { useDeviceStatus } from "./use-device-status";
 import { useCurrentReservation } from "./use-lab-reservations";
 import { useLabSettings } from "./use-lab-settings";
@@ -111,6 +111,79 @@ describe("useDeviceStatus", () => {
     expect(result.current).toEqual({ kind: "no-data", reason: "broker_disconnected", since: 5 });
   });
 
+  it("does not trust the pre-disconnect seed after a reconnect until it is revalidated", async() => {
+    let release: () => void = () => undefined;
+    let requests = 0;
+
+    server.use(http.get(apiUrl("/api/system/status"), async() => {
+      requests += 1;
+
+      if (requests > 1) {
+        await new Promise<void>((resolve) => {
+          release = resolve;
+        });
+      }
+
+      return HttpResponse.json(systemStatus(true));
+    }));
+
+    const socket = createFakeSocket();
+    const realtimeControl = createRealtimeStatusControl("authenticated");
+    const { result } = renderLabHook(() => useDeviceStatus(), {
+      role: "TEACHER",
+      permissions: ["system:status"],
+      socket,
+      realtimeControl,
+    });
+
+    await waitFor(() => expect(result.current).toEqual({ kind: "online", since: null }));
+
+    realtimeControl.set("disconnected");
+    expect(result.current).toEqual({ kind: "no-data", reason: "realtime_offline", since: null });
+
+    realtimeControl.set("authenticated");
+    expect(result.current).toEqual({ kind: "no-data", reason: "unknown", since: null });
+    await waitFor(() => expect(requests).toBe(2));
+    expect(result.current).toEqual({ kind: "no-data", reason: "unknown", since: null });
+
+    act(() => release());
+    await waitFor(() => expect(result.current).toEqual({ kind: "online", since: null }));
+  });
+
+  it("does not trust a seed read before the first authentication until it is revalidated (T3 review fix S1)", async() => {
+    let release: () => void = () => undefined;
+    let requests = 0;
+
+    server.use(http.get(apiUrl("/api/system/status"), async() => {
+      requests += 1;
+
+      if (requests > 1) {
+        await new Promise<void>((resolve) => {
+          release = resolve;
+        });
+      }
+
+      return HttpResponse.json(systemStatus(true));
+    }));
+
+    const socket = createFakeSocket();
+    const realtimeControl = createRealtimeStatusControl("connecting");
+    const { result } = renderLabHook(() => useDeviceStatus(), {
+      role: "TEACHER",
+      permissions: ["system:status"],
+      socket,
+      realtimeControl,
+    });
+
+    await waitFor(() => expect(requests).toBe(1));
+    realtimeControl.set("authenticated");
+    await waitFor(() => expect(requests).toBe(2));
+    expect(result.current).toEqual({ kind: "no-data", reason: "unknown", since: null });
+
+    act(() => release());
+    await waitFor(() => expect(result.current).toEqual({ kind: "online", since: null }));
+  });
+
   it("reports the realtime connection as offline while the socket is not authenticated", () => {
     const socket = createFakeSocket();
     const { result } = renderLabHook(() => useDeviceStatus(), { socket, realtimeStatus: "disconnected" });
@@ -153,5 +226,20 @@ describe("useReservationsRealtime", () => {
     });
     await waitFor(() => expect(requests).toBe(3));
     expect(socket.emitted).toEqual([]);
+  });
+});
+
+describe("useCurrentReservation.read (T9 review fix W1)", () => {
+  it("resolves with the fresh answer and rejects on a failed read instead of the cached one", async() => {
+    server.use(http.get(apiUrl("/api/reservations/current"), () => HttpResponse.json(envelope({ reservation: null, canControl: false }))));
+    const { result } = renderLabHook(() => useCurrentReservation(), { socket: createFakeSocket() });
+
+    await waitFor(() => expect(result.current.data).toEqual({ reservation: null, canControl: false }));
+    await expect(result.current.read()).resolves.toEqual({ reservation: null, canControl: false });
+
+    server.use(http.get(apiUrl("/api/reservations/current"), () => errorResponse("common.unknown", 500)));
+    await expect(result.current.read()).rejects.toMatchObject({ status: 500 });
+    // The cached data is still what the page shows; it simply never decides the next action.
+    expect(result.current.data).toEqual({ reservation: null, canControl: false });
   });
 });

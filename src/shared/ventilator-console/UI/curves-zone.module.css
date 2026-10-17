@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Console curves zone styles
-* Descripción: Curves area of the ventilator console: toolbar of pressed-state toggle groups (sweep/scroll, time window, loops) and the freeze button, the frozen hint, and the plot row where the stacked sweep canvas takes the remaining width beside an optional loop canvas (stacked under it below 1024 px). Sizes the canvases through --vl-sweep-height / --vl-loop-height. Console and design-system tokens only.
-* Versión: 1.0
+* Descripción: Curves area of the ventilator console: toolbar of pressed-state toggle groups (sweep/scroll, time window, loops) and the freeze button, the frozen hint, and the plot row where the stacked sweep canvas takes the remaining width beside an optional loop canvas (stacked under it below 1024 px). Sizes the canvases through --vl-sweep-height / --vl-loop-height. Console and design-system tokens only. v1.1: the no-data overlay over greyed (grayscale, dimmed) curves.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -80,6 +80,7 @@
 }
 
 .plots {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--vl-space-3);
@@ -108,4 +109,25 @@
   .withLoop {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* No data from the source: the last curves stay visible but greyed, under a centred message. */
+.zone[data-source-status="no-data"] .plots > :not(.overlay) {
+  filter: grayscale(1);
+  opacity: 0.45;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: var(--vl-space-4);
+  font: var(--mui-font-subtitle1);
+  color: var(--vl-console-text);
+  text-align: center;
+  pointer-events: none;
 }

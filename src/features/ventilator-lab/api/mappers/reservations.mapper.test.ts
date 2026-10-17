@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Reservations mapper tests
-* Descripción: The mapper switches on `visibility`: the full projection keeps the holder and group exactly as the backend returns them, the limited one keeps only the window, status and occupancy label (Spanish text for the known keys, the backend label for the group key and unknown keys); the current reservation keeps the backend control flag. Depends on vitest and the mapper.
-* Versión: 1.0
+* Descripción: The mapper switches on `visibility`: the full projection keeps the holder and group exactly as the backend returns them, the limited one keeps only the window, status and occupancy label (Spanish text for the known keys, the backend label for the group key and unknown keys); the current reservation keeps the backend control flag. v1.1 (T4): the holder user, holder group and creator ids of a full reservation. Depends on vitest and the mapper.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -32,6 +32,9 @@ describe("toLabReservation", () => {
       holderRole: "STUDENT",
       holderName: null,
       groupName: "Grupo A",
+      holderUserId: null,
+      groupId: "g1",
+      createdById: null,
       purpose: "Práctica",
       preemptedReason: null,
     });
@@ -45,6 +48,16 @@ describe("toLabReservation", () => {
 
     expect(named.visibility === "full" && named.holderName).toBe("Ana Gómez");
     expect(unnamed.visibility === "full" && unnamed.holderName).toBe("ana@ventylab.demo");
+  });
+
+  it("keeps the holder user, holder group and creator ids of a full reservation (cancel permission)", () => {
+    const reservation = toLabReservation(detailDto("r4", {
+      holderType: "GROUP",
+      group: { id: "g7", name: "Grupo B" },
+      createdBy: { id: "u9", name: "Luis", identifier: "luis@ventylab.demo", role: "STUDENT" },
+    }));
+
+    expect(reservation).toMatchObject({ holderUserId: "u1", groupId: "g7", createdById: "u9" });
   });
 
   it("maps the student and teacher label keys to Spanish and never reads names from a limited reservation", () => {

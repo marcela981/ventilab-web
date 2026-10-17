@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Lab reservation entities
-* Descripción: Client-side reservation model of the ventilator lab. A reservation is either `full` (own or group reservations, and every reservation for teachers and admins: holder and group as returned by the backend) or `limited` (other people's reservations seen by a student: window, status and the occupancy label only, never names). Also the Spanish status labels, the occupancy labels of the backend label keys and the pure selection of the upcoming reservations shown in the summary. No dependencies.
-* Versión: 1.0
+* Descripción: Client-side reservation model of the ventilator lab. A reservation is either `full` (own or group reservations, and every reservation for teachers and admins: holder and group as returned by the backend) or `limited` (other people's reservations seen by a student: window, status and the occupancy label only, never names). Also the Spanish status labels, the occupancy labels of the backend label keys and the pure selection of the upcoming reservations shown in the summary. v1.1 (T2): reservationHolderText, the holder line shared by the summary and the calendar (the backend occupancy label for limited reservations; the group or holder name as returned for full ones). v1.2 (T0+T1 review fix): upcoming reservations keep only SCHEDULED ones (cancelled, preempted and completed reservations are not upcoming). v1.3 (T4): full reservations keep the backend ids of the holder user, the holder group and the creator (never shown; used only to mirror the backend cancel permission). No dependencies.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -25,6 +25,10 @@ export type FullReservation = {
   /** Name of the holder user as returned by the backend (its identifier when the name is empty), or null. */
   holderName: string | null
   groupName: string | null
+  /** Backend ids (not shown): holder user, holder group and creator, or null when not sent. */
+  holderUserId: string | null
+  groupId: string | null
+  createdById: string | null
   purpose: string | null
   preemptedReason: string | null
 };
@@ -64,19 +68,39 @@ export const OCCUPANCY_LABELS: Readonly<Record<string, string>> = {
   "reservations.labels.teacher": "Reservado por un docente",
 };
 
+export const groupHolderLabel = (group: string): string => `Grupo ${group}`;
+
+/** Who holds the reservation, only with what the backend returned for the caller role; null when nothing was sent. */
+export function reservationHolderText(reservation: LabReservation): string | null {
+  if (reservation.visibility === "limited") {
+    return reservation.occupancyLabel;
+  }
+
+  if (reservation.holderType === "GROUP" && reservation.groupName) {
+    return groupHolderLabel(reservation.groupName);
+  }
+
+  return reservation.holderName;
+}
+
 export function reservationStatusLabel(status: string): string {
   return Object.prototype.hasOwnProperty.call(RESERVATION_STATUS_LABELS, status)
     ? RESERVATION_STATUS_LABELS[status as ReservationStatus]
     : status;
 }
 
-/** Reservations of the user that have not ended, without the active one, ordered by start. */
+/** Backend status of a reservation that still holds its window (ReservationLifecycleStatus SCHEDULED). */
+export const UPCOMING_STATUS: ReservationStatus = "SCHEDULED";
+
+/** Scheduled reservations of the user that have not ended, without the active one, ordered by start. */
 export function upcomingReservations(
   reservations: readonly LabReservation[],
   now: Date,
   excludeId: string | null = null,
 ): LabReservation[] {
   return reservations
-    .filter((reservation) => reservation.id !== excludeId && new Date(reservation.endsAt).getTime() > now.getTime())
+    .filter((reservation) => reservation.status === UPCOMING_STATUS
+      && reservation.id !== excludeId
+      && new Date(reservation.endsAt).getTime() > now.getTime())
     .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
 }

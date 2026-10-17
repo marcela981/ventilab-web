@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Navigation config
-* Descripción: Typed main-navigation items of the AppShell. Every item points to an EXISTING route of the session route table (routes.config) and lists the roles that see it (a test asserts each route exists and admits those roles). v1.1 (T11a): "Mi grupo" (/my-group, students) and "Grupos" (/groups, teachers and admins). v1.2 (T0 learning): "Aprender" (/learn, every role; teachers and admins preview the student viewer) and "Contenido" (/content, teachers and admins); the legacy "Aprendizaje" (/teaching) entry stays until the legacy routes redirect (R1). v1.3 (S0 evaluations): the legacy evaluation items are replaced by "Evaluaciones" (/evaluations, every role), "Gestionar evaluaciones" (/evaluations/manage) and "Calificar" (/grading), both for teachers and admins. getNavItems filters by role; findActiveHref picks the longest matching item for the current Next pathname. v1.4 (G1 grading): an item may name a `badgeKey` (nav-badges registry); "Calificar" shows the gradingPending count. v1.5 (A1 ai-chat): "Asistente IA" (/assistant, every role). v1.6 (T5 simulation): "Simulador" (/simulator, every role); the legacy /simulador entry is untouched until T13 renames it. v1.7 (T11 simulation): "Casos clínicos" (/simulator/cases, teachers and admins). v1.8 (T13 simulation): the legacy /simulador entry is relabelled "Ventilador real" (sensors icon): it stays as the only UI of the physical ventilator and is not redirected. Labels are plain Spanish because the i18next setup (src/i18n) is outside the new-code modules; TODO(i18n): move them to an i18next namespace. Depends on MUI icons and the session route table and entities.
-* Versión: 1.8
+* Descripción: Typed main-navigation items of the AppShell. Every item points to an EXISTING route of the session route table (routes.config) and lists the roles that see it (a test asserts each route exists and admits those roles). v1.1 (T11a): "Mi grupo" (/my-group, students) and "Grupos" (/groups, teachers and admins). v1.2 (T0 learning): "Aprender" (/learn, every role; teachers and admins preview the student viewer) and "Contenido" (/content, teachers and admins); the legacy "Aprendizaje" (/teaching) entry stays until the legacy routes redirect (R1). v1.3 (S0 evaluations): the legacy evaluation items are replaced by "Evaluaciones" (/evaluations, every role), "Gestionar evaluaciones" (/evaluations/manage) and "Calificar" (/grading), both for teachers and admins. getNavItems filters by role; findActiveHref picks the longest matching item for the current Next pathname. v1.4 (G1 grading): an item may name a `badgeKey` (nav-badges registry); "Calificar" shows the gradingPending count. v1.5 (A1 ai-chat): "Asistente IA" (/assistant, every role). v1.6 (T5 simulation): "Simulador" (/simulator, every role); the legacy /simulador entry is untouched until T13 renames it. v1.7 (T11 simulation): "Casos clínicos" (/simulator/cases, teachers and admins). v1.8 (T13 simulation): the legacy /simulador entry is relabelled "Ventilador real" (sensors icon): it stays as the only UI of the physical ventilator and is not redirected. v1.9 (T12 ventilator-lab): the legacy "Ventilador real" (/simulador, students) item is replaced by "Laboratorio" (/lab, every role: the backend lets every role book and operate) with the `ventilatorDevice` indicator (online / sin datos, nav-indicators); /simulador now redirects to /lab. An item may name an `indicator` (nav-indicators). v1.10 (T12 review fix W1): the indicator is only a key of the generic nav-indicators registry; the ventilator-lab feature feeds it (online / sin datos only when reported, nothing when unknown). Labels are plain Spanish because the i18next setup (src/i18n) is outside the new-code modules; TODO(i18n): move them to an i18next namespace. Depends on MUI icons and the session route table and entities.
+* Versión: 1.10
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -32,6 +32,7 @@ import type { SvgIconComponent } from "@mui/icons-material";
 import type { RoutePath } from "@shared/session/routes.config";
 import type { Role } from "@shared/session/session.entity";
 import type { NavBadgeKey } from "./nav-badges";
+import type { NavIndicatorKey } from "./nav-indicators";
 
 export type NavItem = {
   href: RoutePath
@@ -40,6 +41,8 @@ export type NavItem = {
   roles: readonly Role[]
   // Count shown as a badge on the item, fed by a feature through the nav-badges registry.
   badgeKey?: NavBadgeKey
+  // Small status shown on the item (nav-indicators), e.g. the physical ventilator state.
+  indicator?: NavIndicatorKey
 };
 
 const STUDENT: readonly Role[] = ["STUDENT"];
@@ -51,8 +54,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/dashboard", label: "Inicio", icon: HomeIcon, roles: STUDENT },
   { href: "/teaching", label: "Aprendizaje", icon: SchoolIcon, roles: STUDENT },
   { href: "/learn", label: "Aprender", icon: MenuBookIcon, roles: EVERYONE },
-  // Legacy route kept on purpose: it is the only UI of the physical ventilator (decision 11), so it is not redirected.
-  { href: "/simulador", label: "Ventilador real", icon: SensorsIcon, roles: STUDENT },
+  { href: "/lab", label: "Laboratorio", icon: SensorsIcon, roles: EVERYONE, indicator: "ventilatorDevice" },
   { href: "/simulator", label: "Simulador", icon: MonitorHeartIcon, roles: EVERYONE },
   { href: "/evaluations", label: "Evaluaciones", icon: AssignmentIcon, roles: EVERYONE },
   { href: "/assistant", label: "Asistente IA", icon: SmartToyIcon, roles: EVERYONE },

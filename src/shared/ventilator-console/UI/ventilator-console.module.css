@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentilatorConsole layout styles
-* Descripción: Dark console surface and responsive grid of the generic ventilator console, in the bedside-ventilator arrangement: alarms across the top, numeric monitoring in the left column, curves and patient monitor in the centre, mode and controls on the right. ≥1280 px is the main layout, 1024–1279 px a compact one, and below 1024 px the zones stack and the small-screen notice appears. Console and design-system tokens only.
-* Versión: 1.0
+* Descripción: Dark console surface and responsive grid of the generic ventilator console, in the bedside-ventilator arrangement: alarms across the top, numeric monitoring in the left column, curves and patient monitor in the centre, mode and controls on the right. ≥1280 px is the main layout, 1024–1279 px a compact one, and below 1024 px the zones stack and the small-screen notice appears. Console and design-system tokens only. v1.1: the read-only state groups the badge with its reason.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -69,6 +69,19 @@
   color: var(--vl-console-text);
   border: 1px solid var(--vl-console-border);
   border-radius: var(--vl-radius-pill);
+}
+
+.readOnlyState {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+  margin: 0;
+}
+
+.readOnlyReason {
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
 }
 
 .alarms {

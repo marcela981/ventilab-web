@@ -1,0 +1,141 @@
+/*
+* Funcionalidad: Live console command panel styles
+* Descripción: Styles of the command panel under the live console (notice by tone, pause reason, hint and the
+*   "Comandos recientes" list with a status tag per command) on the dark console surface tokens (--vl-console-*). No
+*   colour literals. Used by command-panel.tsx and live-console.tsx. v1.1 (T8 review fix 2, W5): `.useReported` block
+*   (explanation + «Usar los valores que informa el equipo»).
+* Versión: 1.1
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  width: 100%;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-3);
+  color: var(--vl-console-text);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.title {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+  color: var(--vl-console-text);
+}
+
+.hint,
+.muted,
+.meta {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.busy {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-console-pending);
+}
+
+.useReported {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.notice {
+  padding: var(--vl-space-2) var(--vl-space-3);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-console-surface-raised);
+}
+
+.notice[data-tone="error"] {
+  color: var(--vl-console-alarm-high);
+  border-color: var(--vl-console-alarm-high);
+}
+
+.notice[data-tone="warning"] {
+  color: var(--vl-console-alarm-medium);
+  border-color: var(--vl-console-alarm-medium);
+}
+
+.notice[data-tone="info"] {
+  color: var(--mui-palette-success-main);
+  border-color: var(--mui-palette-success-main);
+}
+
+.noticeText {
+  margin: 0;
+  font: var(--mui-font-body2);
+}
+
+.noticeDetails {
+  margin: var(--vl-space-1) 0 0;
+  padding-left: var(--vl-space-4);
+  font: var(--mui-font-body2);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--vl-space-1) var(--vl-space-2);
+  padding: var(--vl-space-2);
+  background: var(--vl-console-surface-raised);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-sm);
+}
+
+.status {
+  padding: 0 var(--vl-space-2);
+  font: var(--mui-font-caption);
+  color: var(--vl-console-pending);
+  border: 1px solid var(--vl-console-pending);
+  border-radius: var(--vl-radius-pill);
+}
+
+.status[data-status="ACKED"],
+.status[data-status="APPLIED"] {
+  color: var(--mui-palette-success-main);
+  border-color: var(--mui-palette-success-main);
+}
+
+.status[data-status="REJECTED"],
+.status[data-status="TIMEOUT"] {
+  color: var(--vl-console-alarm-medium);
+  border-color: var(--vl-console-alarm-medium);
+}
+
+.summary {
+  font: var(--mui-font-body2);
+  font-variant-numeric: tabular-nums;
+}
+
+.reason {
+  font: var(--mui-font-body2);
+  color: var(--vl-console-alarm-medium);
+}

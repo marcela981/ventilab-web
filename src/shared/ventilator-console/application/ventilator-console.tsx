@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentilatorConsole
-* Descripción: Generic ventilator console screen composed from an adapter (it does not know whether data comes from the simulator, a replay or a real ventilator): header with the current mode and a read-only badge, an alarms slot across the top, numeric monitoring in the left column, the curves zone (and the patient monitor below it) in the centre and the mode/controls slots on the right, like a bedside ventilator. Slots accept a node or a render function that receives the adapter and the read-only flag; an omitted alarms slot renders the AlarmsBar and an omitted controls slot renders ConsoleControls (mode selector + pending→confirm parameters) from the adapter, while `null` hides them. An optional maneuvers slot renders only when the adapter declares the maneuvers capability. `variant` switches the controls between a running ventilator ("Confirmar") and the case editor configuration ("Aplicar"). Uses the dark console surface tokens; below 1024 px the zones stack and a Spanish notice recommends a horizontal tablet or a computer. Depends on React, the console zones, the controls and alarms bar, useConsoleWaveforms and the console layout styles. v1.2: normal ranges merge per key as config defaults < range props < `adapter.ranges`; the curves keep their subscription across adapter rebuilds for the same frame source (see useConsoleWaveforms). v1.3: the built-in controls report pending edits through `adapter.onPendingChange`.
-* Versión: 1.3
+* Descripción: Generic ventilator console screen composed from an adapter (it does not know whether data comes from the simulator, a replay or a real ventilator): header with the current mode and a read-only badge, an alarms slot across the top, numeric monitoring in the left column, the curves zone (and the patient monitor below it) in the centre and the mode/controls slots on the right, like a bedside ventilator. Slots accept a node or a render function that receives the adapter and the read-only flag; an omitted alarms slot renders the AlarmsBar and an omitted controls slot renders ConsoleControls (mode selector + pending→confirm parameters) from the adapter, while `null` hides them. An optional maneuvers slot renders only when the adapter declares the maneuvers capability. `variant` switches the controls between a running ventilator ("Confirmar") and the case editor configuration ("Aplicar"). Uses the dark console surface tokens; below 1024 px the zones stack and a Spanish notice recommends a horizontal tablet or a computer. Depends on React, the console zones, the controls and alarms bar, useConsoleWaveforms and the console layout styles. v1.2: normal ranges merge per key as config defaults < range props < `adapter.ranges`; the curves keep their subscription across adapter rebuilds for the same frame source (see useConsoleWaveforms). v1.3: the built-in controls report pending edits through `adapter.onPendingChange`. v1.4 (generic source state): `capabilities.patientMonitor: false` hides the patient monitor zone; a frame source with `status: "no-data"` greys the curves under an overlay and makes the console read-only (the slots receive `readOnly: true`) until it is live again; the read-only reason (`permissions.readOnlyReason`, else the no-data message) is shown next to the "Solo lectura" badge and describes the built-in disabled controls. v1.5: the built-in controls receive `permissions.pendingResetKey` (drop unconfirmed edits when it changes).
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,6 +11,7 @@
 
 import type { ReactNode } from "react";
 import { cx } from "@shared/lib/class-names";
+import { CONSOLE_NO_DATA_MESSAGE } from "./config/console.config";
 import type { ConsoleMetricId, PatientVitalId } from "./config/console.config";
 import type { ModeParameterTable } from "./config/console-controls.config";
 import { AlarmsBar } from "./alarms-bar";
@@ -36,7 +37,10 @@ export const CONSOLE_COPY = {
 
 export type ConsoleSlotContext = {
   adapter: VentilatorConsoleAdapter
+  /** No control permission, or the frame source has no data. */
   readOnly: boolean
+  /** Why the console is read-only, when known. */
+  readOnlyReason?: string | undefined
 };
 
 export type ConsoleSlot = ReactNode | ((context: ConsoleSlotContext) => ReactNode);
@@ -100,8 +104,12 @@ export function VentilatorConsole({
   className,
 }: VentilatorConsoleProps) {
   const buffer = useConsoleWaveforms(adapter.frames);
-  const readOnly = !adapter.permissions.canControl;
-  const context: ConsoleSlotContext = { adapter, readOnly };
+  const noData = adapter.frames.status === "no-data";
+  const readOnly = !adapter.permissions.canControl || noData;
+  const noDataMessage = adapter.frames.statusMessage ?? CONSOLE_NO_DATA_MESSAGE;
+  const readOnlyReason = readOnly ? adapter.permissions.readOnlyReason ?? (noData ? noDataMessage : undefined) : undefined;
+  const context: ConsoleSlotContext = { adapter, readOnly, readOnlyReason };
+  const showPatientMonitor = adapter.capabilities?.patientMonitor !== false;
   const modeLabel = adapter.mode.options.find((option) => option.id === adapter.mode.current)?.label ?? adapter.mode.current;
   const alarms = renderSlotOr(alarmsSlot, context, () => (
     <AlarmsBar
@@ -126,6 +134,8 @@ export function VentilatorConsole({
       onCancel={adapter.onCancel}
       onProposeChange={adapter.onProposeChange}
       onPendingChange={adapter.onPendingChange}
+      readOnlyReason={readOnlyReason}
+      pendingResetKey={adapter.permissions.pendingResetKey}
       {...(applicability ? { applicability } : {})}
     />
   ));
@@ -140,13 +150,20 @@ export function VentilatorConsole({
           <span className={cx(styles.modeLabel)}>{CONSOLE_COPY.mode}</span>
           <span className={cx(styles.modeValue)}>{modeLabel}</span>
         </p>
-        {readOnly ? <span className={cx(styles.readOnly)}>{CONSOLE_COPY.readOnly}</span> : null}
+        {readOnly ? (
+          <p className={cx(styles.readOnlyState)}>
+            <span className={cx(styles.readOnly)}>{CONSOLE_COPY.readOnly}</span>
+            {readOnlyReason ? <span className={cx(styles.readOnlyReason)}>{readOnlyReason}</span> : null}
+          </p>
+        ) : null}
       </header>
       {alarms ? <div className={cx(styles.alarms)}>{alarms}</div> : null}
       <NumericMonitor metrics={adapter.metrics} ranges={mergeRanges(metricRanges, adapter.ranges?.metrics)} className={cx(styles.metrics)} />
       <div className={cx(styles.centre)}>
-        <CurvesZone buffer={buffer} />
-        <PatientMonitor patient={adapter.patient} ranges={mergeRanges(patientRanges, adapter.ranges?.patient)} />
+        <CurvesZone buffer={buffer} status={adapter.frames.status} statusMessage={noDataMessage} />
+        {showPatientMonitor ? (
+          <PatientMonitor patient={adapter.patient} ranges={mergeRanges(patientRanges, adapter.ranges?.patient)} />
+        ) : null}
       </div>
       {mode || controls || maneuvers ? (
         <aside className={cx(styles.controls)} aria-label={CONSOLE_COPY.controls}>

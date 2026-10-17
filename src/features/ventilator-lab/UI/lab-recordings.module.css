@@ -1,0 +1,228 @@
+/*
+* Funcionalidad: Lab recordings styles
+* Descripción: Styles of /lab/recordings (range navigation, the note about what can be listed, the list of reservations with a possible recording) on the regular surface, and of /lab/recordings/[recordingId]: the full-width dark playback session with the --vl-console-* tokens (header with the recording date, the subsampling note, the read-only console) and the transport (play / pause, speed buttons, time bar, clock). Theme CSS variables only. v1.1 (T11 review fix S1): the time bar wraps the range over an SVG track
+  marking the recording gaps, and the gap list text.
+* Versión: 1.1
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.consolePage {
+  width: 100%;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-5);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.cardTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+}
+
+.muted {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.rangeBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+  width: 100%;
+}
+
+.rangeLabel {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+}
+
+.rangeActions {
+  display: flex;
+  gap: var(--vl-space-2);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.itemMain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.itemWindow {
+  font: var(--mui-font-subtitle1);
+}
+
+.itemActions {
+  display: flex;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.session {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  width: 100%;
+  min-height: 100%;
+  padding: var(--vl-space-3);
+  color: var(--vl-console-text);
+  background: var(--vl-console-bg);
+  border-radius: var(--vl-radius-lg);
+}
+
+.sessionBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-2) var(--vl-space-3);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.sessionTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+  color: var(--vl-console-text);
+}
+
+.sessionMeta,
+.subsampled {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.subsampled {
+  padding: var(--vl-space-1) var(--vl-space-2);
+  background: var(--vl-console-surface-raised);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-pill);
+}
+
+.transport {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-2) var(--vl-space-3);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.speed {
+  display: flex;
+  gap: var(--vl-space-1);
+}
+
+.speedButton {
+  min-width: 3rem;
+  padding: var(--vl-space-1) var(--vl-space-2);
+  font: var(--mui-font-button);
+  color: var(--vl-console-text);
+  background: var(--vl-console-surface-raised);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-sm);
+  cursor: pointer;
+}
+
+.speedButton[aria-pressed="true"] {
+  color: var(--vl-console-focus-ring);
+  border-color: var(--vl-console-focus-ring);
+}
+
+.speedButton:focus-visible,
+.range:focus-visible {
+  outline: 2px solid var(--vl-console-focus-ring);
+  outline-offset: 2px;
+}
+
+.timeline {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1 1 12rem;
+  min-width: 8rem;
+}
+
+.range {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  accent-color: var(--vl-console-focus-ring);
+}
+
+.gapTrack {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.gapMark {
+  fill: var(--vl-console-alarm-medium);
+  opacity: 0.45;
+}
+
+.gapList {
+  flex: 1 1 100%;
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.clock {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+  font-variant-numeric: tabular-nums;
+  color: var(--vl-console-text);
+}

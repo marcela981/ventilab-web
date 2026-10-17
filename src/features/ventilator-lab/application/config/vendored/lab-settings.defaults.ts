@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Vendored lab setting defaults
-* Descripción: GENERATED — do not edit; run node scripts/sync-lab-settings.mjs. Default value of each lab platform setting, extracted from the class defaults of EnvironmentVariables in ventylab-server/src/common/infrastructure/config/env.validation.ts (the backend reads these settings from those variables). Used only when the caller may not read GET /api/platform-settings (settings:manage); the backend stays the authority and its 4xx responses are shown.
-* Versión: 1.0
+* Descripción: GENERATED — do not edit; run node scripts/sync-lab-settings.mjs. Default value of each lab platform setting, extracted from the class defaults of EnvironmentVariables in ventylab-server/src/common/infrastructure/config/env.validation.ts (the backend reads these settings from those variables). Used only when the caller may not read GET /api/platform-settings (settings:manage); the backend stays the authority and its 4xx responses are shown. VENDORED_LAB_BACKEND_DEFAULTS: backend constants that are neither platform settings nor exposed by the API.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,3 +26,7 @@ export const VENDORED_LAB_SETTING_DEFAULTS = {
 } as const;
 
 export type LabSettingKey = keyof typeof VENDORED_LAB_SETTING_DEFAULTS;
+
+export const VENDORED_LAB_BACKEND_DEFAULTS = {
+  "control.operatorGraceSeconds": 15, // VENTILATOR_OPERATOR_GRACE_SECONDS
+} as const;

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Reservations mapper
-* Descripción: Maps the role projections of the backend reservations to the lab entities by `visibility`: "full" keeps the holder name (its identifier when the name is empty) and group name exactly as returned; "limited" keeps only the window, status and occupancy label (the Spanish text of the known label keys; the backend `label` for the group key, which carries the group name, and for unknown keys). Names are never built on the client. Depends on the lab DTOs and the reservation entities.
-* Versión: 1.0
+* Descripción: Maps the role projections of the backend reservations to the lab entities by `visibility`: "full" keeps the holder name (its identifier when the name is empty) and group name exactly as returned; "limited" keeps only the window, status and occupancy label (the Spanish text of the known label keys; the backend `label` for the group key, which carries the group name, and for unknown keys). Names are never built on the client. v1.1 (T4): full reservations also keep the holder user, holder group and creator ids (for the cancel permission). Depends on the lab DTOs and the reservation entities.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -53,6 +53,9 @@ export function toLabReservation(dto: ReservationProjectionDTO): LabReservation 
     holderRole: dto.holderRole,
     holderName: holderName(dto),
     groupName: dto.group?.name ?? null,
+    holderUserId: dto.holder?.id ?? null,
+    groupId: dto.group?.id ?? null,
+    createdById: dto.createdBy?.id ?? null,
     purpose: dto.purpose,
     preemptedReason: dto.preemptedReason ?? null,
   };

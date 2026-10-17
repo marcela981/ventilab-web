@@ -1,0 +1,313 @@
+/*
+* Funcionalidad: Lab reservations styles
+* Descripción: Styles of the ventilator reservations page with the visual identity of the lab summary: page column, card, toolbar (navigation, range and view switch), rules text, legend swatches, the scrollable calendar table with sticky day and time headers, slot cells by state (free button, occupied with the holder on its first slot, past, outside the booking window) and the create dialog body. v1.1 (T3): occupied slots as buttons for staff (preemption) and the conflict list of the preemption dialog. v1.2 (T2 review fix / T4): the per-cell slot time of unaligned rows and the "Mis reservas" section (title, subsections, list items with window, details, status and cancel action). Design-system tokens only.
+* Versión: 1.2
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-5);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+}
+
+.navigation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-1);
+}
+
+.range {
+  margin: 0 0 0 var(--vl-space-2);
+  font: var(--mui-font-subtitle1);
+}
+
+.muted {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font: var(--mui-font-body2);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+}
+
+.swatch {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-sm);
+}
+
+.swatchFree {
+  background: var(--vl-color-surface);
+}
+
+.swatchOccupied {
+  background: var(--vl-color-selected);
+  border-color: var(--vl-color-primary);
+}
+
+.swatchPast {
+  background: var(--vl-color-hover);
+}
+
+.swatchOutside {
+  background: var(--vl-color-bg);
+  border-style: dashed;
+}
+
+.calendarScroll {
+  max-height: 36rem;
+  overflow: auto;
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.calendar {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  font: var(--mui-font-body2);
+}
+
+.timeHead,
+.dayHead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: var(--vl-space-2);
+  border-bottom: 1px solid var(--vl-color-border);
+  background: var(--vl-color-surface);
+  font: var(--mui-font-subtitle2);
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.timeHead {
+  left: 0;
+  z-index: 3;
+  width: 4rem;
+}
+
+.timeCell {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  padding: 0 var(--vl-space-2);
+  border-right: 1px solid var(--vl-color-border);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text-muted);
+  font: var(--mui-font-caption);
+  text-align: right;
+  vertical-align: top;
+}
+
+.slotCell {
+  height: 1.75rem;
+  padding: 0;
+  border-bottom: 1px solid var(--vl-color-border);
+  border-left: 1px solid var(--vl-color-border);
+}
+
+.slotFree,
+.slotOccupied,
+.slotPast,
+.slotOutside {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 1.75rem;
+  margin: 0;
+  padding: 0 var(--vl-space-1);
+  border: 0;
+}
+
+.slotFree {
+  background: var(--vl-color-surface);
+  cursor: pointer;
+}
+
+.slotFree:hover {
+  background: var(--vl-color-hover);
+}
+
+.slotFree:focus-visible {
+  outline: 2px solid var(--vl-color-primary);
+  outline-offset: -2px;
+}
+
+.slotOccupied {
+  overflow: hidden;
+  background: var(--vl-color-selected);
+  border-left: 3px solid var(--vl-color-primary);
+}
+
+.slotOccupiedStart {
+  border-top: 1px solid var(--vl-color-primary);
+}
+
+.slotHolder {
+  display: block;
+  overflow: hidden;
+  font: var(--mui-font-caption);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.slotPast {
+  background: var(--vl-color-hover);
+}
+
+.slotOutside {
+  background: var(--vl-color-bg);
+}
+
+.dialogBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding-top: var(--vl-space-1);
+}
+
+.dialogWindow {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+  text-transform: capitalize;
+}
+
+/* Occupied slot that staff may select to preempt (button reset on top of .slotOccupied). */
+.slotOccupiedSelectable {
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.slotOccupiedSelectable:hover {
+  background: var(--vl-color-hover);
+}
+
+.slotOccupiedSelectable:focus-visible {
+  outline: 2px solid var(--vl-color-primary);
+  outline-offset: -2px;
+}
+
+.conflictList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.conflictItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  padding: var(--vl-space-2) var(--vl-space-3);
+  border-left: 3px solid var(--vl-color-primary);
+  background: var(--vl-color-selected);
+}
+
+.conflictHolder {
+  font: var(--mui-font-subtitle2);
+}
+
+.slotTime {
+  display: block;
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-muted);
+}
+
+.sectionTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+}
+
+.subsectionTitle {
+  margin: var(--vl-space-2) 0 0;
+  font: var(--mui-font-subtitle1);
+}
+
+.myList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.myItem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-3) 0;
+  border-top: 1px solid var(--vl-color-border);
+}
+
+.myItem:first-child {
+  border-top: none;
+}
+
+.myItemMain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  min-width: 0;
+}
+
+.myWindow {
+  font: var(--mui-font-subtitle2);
+}
+
+.myItemActions {
+  display: flex;
+  align-items: center;
+  gap: var(--vl-space-2);
+}

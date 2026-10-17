@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator console contract
-* Descripción: Types of the generic ventilator console adapter (the props model a consumer builds from a simulator worker, a replay or a real ventilator): a frame source that streams batches of pressure/flow/volume samples, the current and applied settings, the ventilation mode, the numeric monitoring metrics keyed by console metric id, the patient vitals with a short trend, the active alarms with priority, the control permission, the parameter limits injected by the consumer, the change callbacks (optional propose while pending, confirm with the mode + parameter diff, optional cancel), the optional alarm limits with their change callback, an optional adapter-provided alarm history and the optional capabilities (maneuvers). The console never hardcodes limits or knows the data origin. Depends only on the console config ids. v1.2: the frame source declares an optional `sourceId` (resubscribe/clear only when it changes) and `sampleRateHz` (ring capacity), sample times are monotonic non-decreasing per source, and the adapter may provide normal `ranges` that take precedence over the console range props. v1.3: optional `onPendingChange(pending)` reports whether the built-in controls hold unconfirmed edits.
-* Versión: 1.3
+* Descripción: Types of the generic ventilator console adapter (the props model a consumer builds from a simulator worker, a replay or a real ventilator): a frame source that streams batches of pressure/flow/volume samples, the current and applied settings, the ventilation mode, the numeric monitoring metrics keyed by console metric id, the patient vitals with a short trend, the active alarms with priority, the control permission, the parameter limits injected by the consumer, the change callbacks (optional propose while pending, confirm with the mode + parameter diff, optional cancel), the optional alarm limits with their change callback, an optional adapter-provided alarm history and the optional capabilities (maneuvers). The console never hardcodes limits or knows the data origin. Depends only on the console config ids. v1.2: the frame source declares an optional `sourceId` (resubscribe/clear only when it changes) and `sampleRateHz` (ring capacity), sample times are monotonic non-decreasing per source, and the adapter may provide normal `ranges` that take precedence over the console range props. v1.3: optional `onPendingChange(pending)` reports whether the built-in controls hold unconfirmed edits. v1.4 (generic source state, all optional): the frame source may report `status` (`live` | `no-data`) with a `statusMessage` (no data → curves greyed under an overlay and controls disabled); `settings.inFlight` marks confirmed parameter changes the source has not applied yet (`sending` | `awaiting` | `rejected`, the displayed value stays the applied one); `permissions.readOnlyReason` explains a read-only console; a metric value may be `{ value, derived, label?, description? }` to mark it as computed from the curves and, when the source measures something narrower than the console metric (e.g. end-expiratory pressure without a hold for "PEEP total"), to relabel its tile; `capabilities.patientMonitor: false` hides the patient monitor zone. v1.5 (generic, optional): `permissions.pendingResetKey` lets the source drop the unconfirmed edits of the built-in controls.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -38,7 +38,16 @@ export type ConsoleFrameSource = {
   sourceId?: string
   /** Samples per second of the stream (default 50); sizes the curve ring as twice the largest window. */
   sampleRateHz?: number
+  /**
+   * Whether the source is delivering data (default `live`). With `no-data` the console keeps the last curves greyed
+   * under an overlay with `statusMessage` and disables the controls until the source is live again.
+   */
+  status?: ConsoleFrameStatus
+  /** Overlay text while `status` is `no-data` (the console has a generic default). */
+  statusMessage?: string
 };
+
+export type ConsoleFrameStatus = "live" | "no-data";
 
 /** Normal-range overrides keyed by value id; `null` disables the out-of-range highlight for that value. */
 export type ConsoleRangeOverrides<K extends string> = Readonly<Partial<Record<K, NormalRange | null>>>;
@@ -52,11 +61,21 @@ export type ConsoleRanges = {
 /** Parameter values keyed by the consumer's parameter id (e.g. `peep`), in the units of `limits`. */
 export type ConsoleSettingValues = Readonly<Record<string, number>>;
 
+/**
+ * A confirmed parameter change the source has not applied yet: `sending` (on its way), `awaiting` (sent, waiting for the
+ * source to report it applied) or `rejected` (with an optional reason). The console keeps showing the applied value.
+ */
+export type ConsoleInFlightStatus = "sending" | "awaiting" | "rejected";
+
+export type ConsoleInFlight = { status: ConsoleInFlightStatus, message?: string };
+
 export type ConsoleSettings = {
   /** What the operator sees, including a pending (unconfirmed) change. */
   current: ConsoleSettingValues
-  /** What the ventilator is running. */
+  /** What the ventilator is running. A parameter missing here and in `current` shows "—". */
   applied: ConsoleSettingValues
+  /** Confirmed changes in flight per parameter id; while `sending`/`awaiting` the parameter cannot be edited again. */
+  inFlight?: Readonly<Partial<Record<string, ConsoleInFlight>>>
 };
 
 export type ConsoleModeOption = { id: string, label: string };
@@ -66,8 +85,16 @@ export type ConsoleMode = {
   options: readonly ConsoleModeOption[]
 };
 
+/**
+ * A metric value with its provenance: `derived` marks a value computed from the curves (shown as "derivada"); `label`
+ * and `description` replace the console names when the source measures something narrower than the console metric.
+ */
+export type ConsoleMetricReading = { value: number | null, derived?: boolean, label?: string, description?: string };
+
+export type ConsoleMetricValue = number | null | ConsoleMetricReading;
+
 /** Metric values in the console config units; `null` or a missing key renders "—". */
-export type ConsoleMetrics = Readonly<Partial<Record<ConsoleMetricId, number | null>>>;
+export type ConsoleMetrics = Readonly<Partial<Record<ConsoleMetricId, ConsoleMetricValue>>>;
 
 export type ConsolePatient = {
   /** Only the vitals present here are shown. */
@@ -90,6 +117,13 @@ export type ConsoleAlarm = {
 export type ConsolePermissions = {
   /** false: read-only console (replay, observer, exam review). */
   canControl: boolean
+  /** Why the console is read-only; shown next to the badge and describing the disabled controls. */
+  readOnlyReason?: string
+  /**
+   * Optional (v1.5): when this value changes, the built-in controls drop their unconfirmed edits (e.g. the control of
+   * the source was taken away from the user); unchanged or omitted, edits are kept as before.
+   */
+  pendingResetKey?: string | number
 };
 
 export type ParameterLimit = {
@@ -140,6 +174,8 @@ export type ConsoleCapabilities = {
    * `maneuversSlot`. The simulation engine has none, so the simulator adapter leaves it unset and no hold buttons appear.
    */
   maneuvers?: boolean
+  /** `false`: the source has no patient monitor and the zone is hidden (no empty notice). Default true. */
+  patientMonitor?: boolean
 };
 
 export type VentilatorConsoleAdapter = {
@@ -167,3 +203,14 @@ export type VentilatorConsoleAdapter = {
   /** Normal ranges from the source; per key they override the console range props, which override the config defaults. */
   ranges?: ConsoleRanges
 };
+
+
+/** The number of a metric value (plain or with provenance). */
+export function metricNumber(value: ConsoleMetricValue | undefined): number | null | undefined {
+  return value !== null && typeof value === "object" ? value.value : value;
+}
+
+/** Whether a metric value is marked as derived from the curves. */
+export function isDerivedMetric(value: ConsoleMetricValue | undefined): boolean {
+  return value !== null && typeof value === "object" && value.derived === true;
+}
