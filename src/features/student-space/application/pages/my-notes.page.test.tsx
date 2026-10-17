@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: My notes page tests
-* Descripción: /me/notes with msw: the notes page (`GET /api/notes`, newest first) is grouped by module in curriculum order and by lesson, with the lesson and page links of the learning viewer and a trailing group for unresolved lessons; the module filter reads `GET /api/notes/modules/{moduleId}` and the section filter narrows the module options; deleting asks for confirmation and refreshes the list; an edit saved by the learning NoteComposer (stubbed: Tiptap is covered by the learning tests) updates the note in place; the module AI analysis posts the moduleId and shows the result; empty state and retryable load error. Depends on vitest, msw, Testing Library, the learning feature (partially mocked) and the student space test helpers.
-* Versión: 1.0
+* Descripción: /me/notes with msw: the notes page (`GET /api/notes`, newest first) is grouped by module in curriculum order and by lesson, with the lesson and page links of the learning viewer and a trailing group for unresolved lessons; the module filter reads `GET /api/notes/modules/{moduleId}` and the section filter narrows the module options; deleting asks for confirmation and refreshes the list; an edit saved by the learning NoteComposer (stubbed: Tiptap is covered by the learning tests) updates the note in place; the module AI analysis posts the moduleId and shows the result; empty state and retryable load error. v1.1 (O2 follow-up): deleting the only note of the last page shows the skeleton (never the empty state) while the previous page, not in the cache, loads; a failed deletion shows the server error and keeps the note; a failed refresh after a successful deletion still reports the deletion; the module analysis shows its error alert when the AI is unavailable (503). Depends on vitest, msw, Testing Library, the learning feature (partially mocked) and the student space test helpers.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,10 +11,14 @@
 
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
+import { useEffect } from "react";
 import { setupServer } from "msw/node";
+import { useSWRConfig } from "swr";
+import type { Cache } from "swr";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { NoteComposerProps } from "@features/learning";
 import type { NoteDTO } from "../../api/dtos/student-space.dto";
+import { MODULE_ANALYSIS_MESSAGES, STUDENT_SPACE_FALLBACK_MESSAGES } from "../entities/student-space-error-messages";
 import { MODULE_ANALYSIS_COPY } from "../components/module-notes-analysis";
 import { NOTES_FILTERS_COPY } from "../components/notes-filters";
 import {
@@ -57,6 +61,7 @@ let moduleRequests: string[];
 let deleted: string[];
 let analyzed: unknown[];
 let failList: boolean;
+let failDelete: boolean;
 
 const LESSONS: Record<string, ReturnType<typeof lessonDetailDto>> = {
   l1: lessonDetailDto("l1", 2, "m2", "Modos ventilatorios"),
@@ -73,6 +78,7 @@ beforeEach(() => {
   deleted = [];
   analyzed = [];
   failList = false;
+  failDelete = false;
   notes = [
     noteDto("n1", "l1", "Volumen corriente", { pageId: "p2" }),
     noteDto("n2", "l2", "Compliance pulmonar"),
@@ -108,6 +114,10 @@ beforeEach(() => {
       return HttpResponse.json(envelope([pageSummaryDto("p1", 1, lessonId), pageSummaryDto("p2", 2, lessonId)]));
     }),
     http.delete(apiUrl("/api/notes/:noteId"), ({ params }) => {
+      if (failDelete) {
+        return errorResponse("internal_error", 500);
+      }
+
       deleted.push(String(params.noteId));
       notes = notes.filter((note) => note.id !== params.noteId);
 
@@ -139,6 +149,16 @@ afterEach(() => {
 afterAll(() => {
   server.close();
 });
+
+function CacheProbe({ onCache }: { onCache: (cache: Cache) => void }) {
+  const { cache } = useSWRConfig();
+
+  useEffect(() => {
+    onCache(cache);
+  }, [cache, onCache]);
+
+  return null;
+}
 
 function moduleGroup(title: string): HTMLElement {
   return screen.getByRole("region", { name: title });
@@ -223,6 +243,18 @@ describe("MyNotesPage", () => {
     expect(screen.getByText("Resistencia de la vía aérea")).toBeInTheDocument();
   });
 
+  it("shows the module analysis error alert when the AI is unavailable", async() => {
+    server.use(http.post(apiUrl("/api/notes/analyze"), () => errorResponse("ai.unavailable", 503)));
+    renderStudentSpace(<MyNotesPage />);
+    await groupsReady();
+
+    fireEvent.click(within(moduleGroup("Fisiología")).getByRole("button", { name: MODULE_ANALYSIS_COPY.analyzeModule("Fisiología") }));
+
+    const alert = await within(moduleGroup("Fisiología")).findByRole("alert");
+
+    expect(alert).toHaveTextContent(MODULE_ANALYSIS_MESSAGES.unavailable);
+  });
+
   it("shows the empty state", async() => {
     notes = [];
     renderStudentSpace(<MyNotesPage />);
@@ -240,5 +272,91 @@ describe("MyNotesPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
     await waitFor(() => expect(listQueries.length).toBeGreaterThan(1));
     expect(await screen.findByText("Compliance pulmonar", undefined, { timeout: 5_000 })).toBeInTheDocument();
+  });
+
+  it("keeps the note and shows the server error when the deletion fails", async() => {
+    failDelete = true;
+    renderStudentSpace(<MyNotesPage />);
+    await groupsReady();
+
+    fireEvent.click(within(moduleGroup("Fisiología")).getByRole("button", { name: "Eliminar nota" }));
+    fireEvent.click(within(await screen.findByRole("dialog")).getByRole("button", { name: MY_NOTES_COPY.deleteConfirm }));
+
+    expect(await screen.findByText(STUDENT_SPACE_FALLBACK_MESSAGES.server)).toBeInTheDocument();
+    expect(screen.queryByText(MY_NOTES_COPY.deleted)).not.toBeInTheDocument();
+    expect(screen.getByText("Compliance pulmonar")).toBeInTheDocument();
+  });
+
+  it("reports the deletion even when the list refresh fails", async() => {
+    renderStudentSpace(<MyNotesPage />);
+    await groupsReady();
+
+    failList = true;
+    fireEvent.click(within(moduleGroup("Fisiología")).getByRole("button", { name: "Eliminar nota" }));
+    fireEvent.click(within(await screen.findByRole("dialog")).getByRole("button", { name: MY_NOTES_COPY.deleteConfirm }));
+
+    await waitFor(() => expect(deleted).toEqual(["n2"]));
+    expect(await screen.findByText(MY_NOTES_COPY.deleted)).toBeInTheDocument();
+    expect(await screen.findByText(MY_NOTES_COPY.staleWarning, { exact: false })).toBeInTheDocument();
+    expect(screen.getAllByText(STUDENT_SPACE_FALLBACK_MESSAGES.server, { exact: false })).toHaveLength(1);
+  });
+
+  it("shows the skeleton, not the empty state, while the page before an emptied last page loads", async() => {
+    // 21 notes: page 3 holds only "Nota 21". Page 2 is dropped from the SWR cache (as after an eviction) so it has to load.
+    notes = Array.from({ length: 21 }, (_, index) => noteDto(`p${index + 1}`, "l2", `Nota ${index + 1}`));
+    let releasePageTwo: () => void = () => undefined;
+    const pageTwoGate = new Promise<void>((resolve) => {
+      releasePageTwo = resolve;
+    });
+    let gatePageTwo = false;
+
+    server.use(http.get(apiUrl("/api/notes"), async({ request }) => {
+      const params = new URL(request.url).searchParams;
+      const pageNumber = Number(params.get("page") ?? 1);
+      const limit = Number(params.get("limit") ?? 10);
+
+      if (pageNumber === 2 && gatePageTwo) {
+        await pageTwoGate;
+      }
+
+      const pages = Math.max(1, Math.ceil(notes.length / limit));
+
+      return HttpResponse.json(envelope(notes.slice((pageNumber - 1) * limit, pageNumber * limit), { total: notes.length, pages, page: pageNumber, limit }));
+    }));
+    let swrCache: Cache | null = null;
+    const keepCache = (cache: Cache) => {
+      swrCache = cache;
+    };
+
+    renderStudentSpace(<><CacheProbe onCache={keepCache} /><MyNotesPage /></>);
+    await screen.findByText("Nota 1");
+
+    fireEvent.click(screen.getByRole("button", { name: "Página siguiente" }));
+    expect(await screen.findByText("Nota 11")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Página siguiente" }));
+    expect(await screen.findByText("Nota 21")).toBeInTheDocument();
+
+    const cache = swrCache as Cache | null;
+
+    for (const key of [...(cache?.keys() ?? [])]) {
+      const original = (cache?.get(key) as { _k?: [string, { query?: { page?: number } }] } | undefined)?._k;
+
+      if (original?.[1]?.query?.page === 2) {
+        cache?.delete(key);
+      }
+    }
+
+    gatePageTwo = true;
+
+    fireEvent.click(screen.getByRole("button", { name: "Eliminar nota" }));
+    fireEvent.click(within(await screen.findByRole("dialog")).getByRole("button", { name: MY_NOTES_COPY.deleteConfirm }));
+
+    expect(await screen.findByRole("status", { name: MY_NOTES_COPY.loading })).toBeInTheDocument();
+    expect(screen.queryByText(MY_NOTES_COPY.emptyTitle)).not.toBeInTheDocument();
+    expect(screen.queryByText("Nota 21")).not.toBeInTheDocument();
+
+    releasePageTwo();
+    expect(await screen.findByText("Nota 11")).toBeInTheDocument();
+    expect(screen.queryByText(MY_NOTES_COPY.emptyTitle)).not.toBeInTheDocument();
   });
 });

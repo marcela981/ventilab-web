@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: MyNotesPage
-* Descripción: Page /me/notes (STUDENT): every note of the caller, newest first and paginated with the envelope pagination (10/25/50): `GET /api/notes`, or `GET /api/notes/modules/{moduleId}` when a module is selected. Filters by section (narrows the modules) and module come from the learning curriculum tree. Each loaded page is grouped by module (curriculum order) and lesson; a note only carries its lessonId, so each lesson is read once (`GET /api/lessons/{id}`, LessonResolver). Notes are edited in place with the learning NoteComposer (autosave; the lesson notes of the learning viewer and the home summary refresh) and deleted after a confirmation, reusing the learning NoteItem. Each module offers "Analizar mis notas con IA" (`POST /api/notes/analyze` with moduleId) with the shared AI rating. A page emptied by a deletion moves back to the last available page. Skeleton, retryable error, stale-data warning and empty states (no notes, no notes in the module); action errors are toasts. BACKEND GAPS: no text search nor section filter in the notes endpoints; NoteDTO carries no module nor lesson title. Depends on MUI, next/head, next/link, @features/learning, the design-system states, dialog and toast, the student space hooks, entities, components and CSS Module.
-* Versión: 1.0
+* Descripción: Page /me/notes (STUDENT): every note of the caller, newest first and paginated with the envelope pagination (10/25/50): `GET /api/notes`, or `GET /api/notes/modules/{moduleId}` when a module is selected. Filters by section (narrows the modules) and module come from the learning curriculum tree. Each loaded page is grouped by module (curriculum order) and lesson; a note only carries its lessonId, so each lesson is read once (`GET /api/lessons/{id}`, LessonResolver). Notes are edited in place with the learning NoteComposer (autosave; the lesson notes of the learning viewer and the home summary refresh) and deleted after a confirmation, reusing the learning NoteItem. Each module offers "Analizar mis notas con IA" (`POST /api/notes/analyze` with moduleId) with the shared AI rating. A page emptied by a deletion moves back to the last available page. Skeleton, retryable error, stale-data warning and empty states (no notes, no notes in the module); action errors are toasts. v1.1 (O2 follow-up): while the page corrected after an out-of-range deletion loads, the skeleton is shown instead of the kept previous result (the emptied page or the deleted note); the deletion reports success as soon as `DELETE /api/notes/{id}` resolves and the cache refresh runs in the background, so a refresh failure is never shown as a failed deletion. BACKEND GAPS: no text search nor section filter in the notes endpoints; NoteDTO carries no module nor lesson title. Depends on MUI, next/head, next/link, @features/learning, the design-system states, dialog and toast, the student space hooks, entities, components and CSS Module.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -90,13 +90,23 @@ export function MyNotesPage() {
   const moduleRanks = useMemo(() => toModuleRanks(tree ? listModuleOptions(tree) : []), [tree]);
   const groups = useMemo(() => (page ? groupNotesByModule(page.items, lessons, moduleRanks) : []), [page, lessons, moduleRanks]);
   const lessonIds = useMemo(() => [...new Set(page?.items.map((note) => note.lessonId) ?? [])], [page]);
+  // Page number being loaded after a deletion emptied the last page; null while the student navigates normally.
+  const [recoveringPage, setRecoveringPage] = useState<number | null>(null);
   // The server answered the requested page with no rows: it is beyond the last page (notes were deleted meanwhile).
   const outOfRange = page !== null && page.page === pageIndex + 1 && pageIndex > 0 && page.items.length === 0;
 
   if (outOfRange) {
     // Adjusting state while rendering (React's documented pattern): the next query asks for the last available page.
-    setPageIndex(Math.max(0, Math.min(pageIndex - 1, page.pages - 1)));
+    const nextIndex = Math.max(0, Math.min(pageIndex - 1, page.pages - 1));
+
+    setPageIndex(nextIndex);
+    setRecoveringPage(nextIndex + 1);
+  } else if (recoveringPage !== null && page?.page === recoveringPage) {
+    setRecoveringPage(null);
   }
+
+  // keepPreviousData would keep the emptied page (or the deleted note) on screen while the corrected page loads: show the skeleton instead.
+  const awaitingPage = outOfRange || (recoveringPage !== null && page?.page !== recoveringPage);
 
   const resolveLesson = useCallback((lesson: NoteLessonInfo) => {
     setLessons((current) => (current[lesson.lessonId] ? current : { ...current, [lesson.lessonId]: lesson }));
@@ -105,6 +115,7 @@ export function MyNotesPage() {
   const changeSection = (next: string | null) => {
     setSectionId(next);
     setPageIndex(0);
+    setRecoveringPage(null);
 
     if (next !== null && tree && moduleId !== null && !listModuleOptions(tree, next).some((option) => option.id === moduleId)) {
       setModuleId(null);
@@ -114,6 +125,7 @@ export function MyNotesPage() {
   const changeModule = (next: string | null) => {
     setModuleId(next);
     setPageIndex(0);
+    setRecoveringPage(null);
     setEditingId(null);
   };
 
@@ -133,14 +145,18 @@ export function MyNotesPage() {
 
     try {
       await deleteNote(pendingDelete.id);
-      await afterDelete();
-      toast.success(MY_NOTES_COPY.deleted);
     } catch (deleteError) {
       toast.error(getStudentSpaceErrorMessage(deleteError));
+
+      return;
     } finally {
       setDeleting(false);
       setPendingDelete(null);
     }
+
+    toast.success(MY_NOTES_COPY.deleted);
+    // The note is already deleted: a failed refresh surfaces as the stale-data warning of the list, never as a delete error.
+    void afterDelete().catch(() => undefined);
   };
 
   const renderModuleGroup = (group: ModuleNotesGroup) => {
@@ -168,7 +184,7 @@ export function MyNotesPage() {
   };
 
   const renderNotes = () => {
-    if (!page || outOfRange) {
+    if (!page || awaitingPage) {
       return null;
     }
 
@@ -197,11 +213,13 @@ export function MyNotesPage() {
           rowsPerPageOptions={NOTES_PAGE_SIZES}
           onPageChange={(_event, next) => {
             setPageIndex(next);
+            setRecoveringPage(null);
             setEditingId(null);
           }}
           onRowsPerPageChange={(event) => {
             setPageSize(Number(event.target.value));
             setPageIndex(0);
+            setRecoveringPage(null);
             setEditingId(null);
           }}
           labelRowsPerPage={MY_NOTES_COPY.rowsPerPage}
@@ -238,7 +256,7 @@ export function MyNotesPage() {
           </Alert>
         ) : null}
         {renderNotes()}
-        {!page && isLoading ? <ListSkeleton rows={4} label={MY_NOTES_COPY.loading} /> : null}
+        {(!page && isLoading) || (awaitingPage && !error) ? <ListSkeleton rows={4} label={MY_NOTES_COPY.loading} /> : null}
         {!page && !isLoading && error ? (
           <ErrorState
             title={MY_NOTES_COPY.loadErrorTitle}

@@ -46,6 +46,7 @@ These are the last business screens still on the legacy panel. The backend alrea
 - O1 independent review (general reviewer, read-only, commit 6ff6875): no severe defects; 4 low fixes (realtime refresh also on the page, purge queued notice toasts when focus activates, lab-live focus only with the live console, "mark all read" enabled when the page shows unread items) → follow-up fix commit. Nav badge item comes in O5.
 - [x] O2 (D) student-space — commit 0695e6f, 41 files, +3572/−4. Checks: typecheck exit 0 (parent re-run), lint exit 0, vitest student-space + learning 214/214. Native review: medium, consent granted, lens `review-reliability` → **approved**, acknowledged (lineage review-78c50557395adaea, authority burned). Advisory (non-blocking): out-of-range page fallback flashes the empty state (my-notes.page.tsx:94-99), module analysis error paths untested, delete reports an error when only the cache refresh fails (my-notes.page.tsx:134-139) → follow-up fix.
   - Backend gaps: summary grades without attemptId (link to /evaluations/{id}); summary notes without moduleId/lesson title (link to /me/notes); summary sections without title; simulation sessions without case title; notes list without text search or section filter; NoteDTO without module/lesson title (one lesson read per distinct lesson); my grades without module (no module column/filter).
+- O1 review fixes — commit 169bd08 (7 files, +93/−18). typecheck/lint exit 0; vitest notifications 43/43, design-system 40/40, lab pages 62/62. Assess: medium, `under_budget` (111 lines) → stays in the slice with the next commit.
 
 ## Next step
-O1/O2 follow-up fixes, then O3 teacher-dashboard.
+O2 advisory fixes + O3 teacher-dashboard (one writer, committed separately by path).
