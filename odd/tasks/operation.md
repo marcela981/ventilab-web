@@ -31,7 +31,6 @@ These are the last business screens still on the legacy panel. The backend alrea
 ## Checklist (D = delegated writer, I = inline)
 - [x] Phase 1 audit (I + 3 explorers) → `odd/operation-audit.md`
 - [x] O0+O1 (D) registration + notifications (bell, page, deep links, toasts, focus mode) — commit 6ff6875
-- [ ] O4a (D) admin users + settings
 - [ ] O4b (D) admin audit + AI analytics + research + status
 - [ ] O5+O6 (D) navigation, role homes, redirects
 - [ ] O7 (D) parity checklist + closure inventory + verification report
@@ -50,6 +49,9 @@ These are the last business screens still on the legacy panel. The backend alrea
 - [x] O3 (D) teacher-dashboard — commit fda5105, 43 files, +4420/−2. Checks: typecheck exit 0 (parent re-run), lint 0, vitest teacher-dashboard 32/32, shared api-client 38/38. New shared helper `src/shared/api-client/api-download.ts` (CSV as text, JSON errors as ApiError). Native review: slice `0695e6f..fda5105` (4,744 lines) and `580d297..fda5105` (4,422) both refused `lens_context_budget_exceeded` after consent granted → independent reviewer.
   - Risk: only `passed === false` on a published evaluation (the dashboard row has no `passingGrade`).
   - Backend gaps: no `passingGrade` on dashboard rows; evaluation stats not filterable by group (histogram spans all the teacher's groups, the UI says so); no group-level module progress aggregate (chart per selected student); reservations calendar without `groupId` filter (rows selected over 30 days); grading queue without student filter (detail scans the first 50 group rows); dashboard grades without `attemptId`; no staff endpoint for a student's grades without a group; no staff endpoint listing a student's simulation sessions (timeline entries used); progress summary without lesson level (titles from `/api/curriculum/tree`). Not verified: whether a teacher may open a student's session replay.
+- O3 independent review: HIGH previous group's data shown after switching group (`keepPreviousData`); MEDIUM pending attempts scan capped at 50 rows; LOW-MED CSV without BOM (Excel accents); LOW modules without level dropped from the tree; judgement: risk counted any failed attempt even when a later one passed → fixes + rule refined to the latest published attempt per evaluation.
+- [x] O4a (D) admin users + settings — commit 4622078, 40 files, +4580/−2. Checks: typecheck exit 0 (parent re-run), lint 0, vitest admin-console 48/48 (form generation types/limits/origin, provider chain, 409, 422, commands double confirmation, superadmin 403, own account). Native review: 4,582 lines, consent granted, `lens_context_budget_exceeded` → independent reviewer.
+  - Backend gaps: no student code in UserDTO (search = name/email/id); superadmin known only from 403 codes `users.superadmin_*_immutable`; settings descriptions in English, no type/labels/units; `UpdatePlatformSettingDTO.value` type excludes string; 422 carries one `reason` string (path parsed client-side); dynamic-key maps (`ai.prices`, `ai.quotas`, `models`) cannot get new keys from the generic form.
 
 ## Next step
-O4a admin users + settings (writer running), then O4b.
+O3 fixes + O4b (writer running), O4a review findings after it.

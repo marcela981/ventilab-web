@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin console test helpers
-* Descripción: Shared fixtures of the admin console tests: backend URL, envelope with pagination, error response with details, DTO builders typed against the generated schema (user, group, platform setting, system status with AI providers) and a renderer that wraps the UI in a fresh SWR cache, an authenticated ADMIN session (id admin-1) and the global ToastProvider. Depends on Testing Library, msw, SWR, the design-system toast, the session context and the admin console DTOs.
-* Versión: 1.0
+* Descripción: Shared fixtures of the admin console tests: backend URL, envelope with pagination, error response with details, DTO builders typed against the generated schema (user, group, platform setting, system status with AI providers) and a renderer that wraps the UI in a fresh SWR cache, an authenticated ADMIN session (id admin-1) and the global ToastProvider. v1.1 (O4b): renderAdminConsole takes the session role (ADMIN by default, id admin-1), an optional fake socket (createFakeSocket, provided through RealtimeContext) and keepPreviousData to mirror the app SWR default. Depends on Testing Library, msw, SWR, the design-system toast, the session context and the admin console DTOs.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,12 +9,15 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { render } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
 import { HttpResponse } from "msw";
 import type { ReactElement, ReactNode } from "react";
 import { SWRConfig } from "swr";
 import { ToastProvider } from "@shared/design-system/components/toast-provider";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
+import { RealtimeContext } from "@shared/realtime/realtime-context";
+import type { RealtimeEventMap, RealtimeEventName, RealtimeSocket } from "@shared/realtime/realtime.entity";
+import type { Role } from "@shared/session/session.entity";
 import { SessionContext } from "@shared/session/session-context";
 import type { SessionContextValue } from "@shared/session/session-context";
 import type { GroupDTO, PlatformSettingDTO, SystemStatusDTO, UserDTO } from "../../api/dtos/admin-console.dto";
@@ -122,16 +125,17 @@ export function statusDto(providers: { provider: string, configured: boolean }[]
   } as unknown as SystemStatusDTO;
 }
 
-function sessionValue(): SessionContextValue {
-  const user = { id: SESSION_USER_ID, email: "admin@ventylab.demo", name: "Administradora", image: null, role: "ADMIN" as const };
+function sessionValue(role: Role): SessionContextValue {
+  const id = role === "ADMIN" ? SESSION_USER_ID : `${role.toLowerCase()}-1`;
+  const user = { id, email: `${role.toLowerCase()}@ventylab.demo`, name: "Usuaria", image: null, role };
 
   return {
     status: "authenticated",
     user,
-    role: "ADMIN",
+    role,
     permissions: [],
     error: null,
-    hasRole: (...roles) => roles.includes("ADMIN"),
+    hasRole: (...roles) => roles.includes(role),
     hasPermission: () => true,
     establishSession: () => Promise.resolve(user),
     signOut: () => Promise.resolve(),
@@ -140,14 +144,59 @@ function sessionValue(): SessionContextValue {
   };
 }
 
-export function renderAdminConsole(ui: ReactElement) {
-  const session = sessionValue();
+type Listener = (payload: never) => void;
+
+export type FakeSocket = {
+  socket: RealtimeSocket
+  dispatch: <E extends RealtimeEventName>(event: E, payload: RealtimeEventMap[E]) => void
+};
+
+/** In-memory socket: `dispatch` delivers a server event to the listeners registered through useSocketEvent. */
+export function createFakeSocket(): FakeSocket {
+  const listeners = new Map<string, Set<Listener>>();
+  const socket = {
+    on: (event: string, listener: Listener) => {
+      const set = listeners.get(event) ?? new Set<Listener>();
+
+      set.add(listener);
+      listeners.set(event, set);
+    },
+    off: (event: string, listener: Listener) => {
+      listeners.get(event)?.delete(listener);
+    },
+    emit: () => undefined,
+  };
+
+  return {
+    socket: socket as unknown as RealtimeSocket,
+    dispatch: (event, payload) => {
+      act(() => {
+        for (const listener of listeners.get(event) ?? []) {
+          (listener as (value: typeof payload) => void)(payload);
+        }
+      });
+    },
+  };
+}
+
+export type AdminConsoleRenderOptions = {
+  role?: Role
+  socket?: FakeSocket
+  // Mirrors the app SWR default (API_SWR_CONFIG keeps previous data) for the pages that must opt out of it.
+  keepPreviousData?: boolean
+};
+
+export function renderAdminConsole(ui: ReactElement, { role = "ADMIN", socket, keepPreviousData = false }: AdminConsoleRenderOptions = {}) {
+  const session = sessionValue(role);
+  const realtime = { socket: socket?.socket ?? null, status: socket ? "authenticated" as const : "idle" as const };
 
   function Wrapper({ children }: { children: ReactNode }) {
     return (
-      <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false }}>
+      <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false, keepPreviousData }}>
         <SessionContext.Provider value={session}>
-          <ToastProvider>{children}</ToastProvider>
+          <RealtimeContext.Provider value={realtime}>
+            <ToastProvider>{children}</ToastProvider>
+          </RealtimeContext.Provider>
         </SessionContext.Provider>
       </SWRConfig>
     );

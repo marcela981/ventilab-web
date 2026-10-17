@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin console error messages
-* Descripción: Spanish message for any failure of an admin console request: backend codes of users (superadmin_role_immutable and superadmin_status_immutable → "Esta cuenta está protegida (superadministrador)…", own role/status, user not found) and platform settings (version conflict, unknown setting, providers without credentials from details.providers), then fallbacks by status (403, 404, 409, 400/422, 429 with Retry-After, 5xx), timeout, network and unknown errors. isVersionConflict tells the settings cards when to offer "Recargar". Depends on the api-client errors.
-* Versión: 1.0
+* Descripción: Spanish message for any failure of an admin console request: backend codes of users (superadmin_role_immutable and superadmin_status_immutable → "Esta cuenta está protegida (superadministrador)…", own role/status, user not found) and platform settings (version conflict, unknown setting, providers without credentials from details.providers), then fallbacks by status (403, 404, 409, 400/422, 429 with Retry-After, 5xx), timeout, network and unknown errors. isVersionConflict tells the settings cards when to offer "Recargar". v1.1 (O4b): research export without anonymization key (analytics.export_not_configured), invalid audit and AI ranges, unknown or unconfigured AI provider of the probe. Depends on the api-client errors.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,6 +15,8 @@ export const SUPERADMIN_PROTECTED_MESSAGE = "Esta cuenta está protegida (supera
 export const OWN_ACCOUNT_MESSAGE = "No puedes cambiar tu propia cuenta.";
 export const VERSION_CONFLICT_CODE = "platform-settings.version_conflict";
 export const PROVIDER_NOT_CONFIGURED_CODE = "platform-settings.ai_provider_not_configured";
+export const RESEARCH_EXPORT_NOT_CONFIGURED_CODE = "analytics.export_not_configured";
+export const RESEARCH_EXPORT_NOT_CONFIGURED_MESSAGE = "La clave de anonimización no está configurada en el servidor";
 
 // TODO(i18n): move to an admin-console namespace in src/i18n.
 export const ADMIN_CONSOLE_ERROR_MESSAGES = {
@@ -28,6 +30,12 @@ export const ADMIN_CONSOLE_ERROR_MESSAGES = {
   "platform-settings.invalid_value": "El valor no es válido.",
   "platform-settings.hard_limit_exceeded": "El valor supera los límites permitidos.",
   [PROVIDER_NOT_CONFIGURED_CODE]: "La cadena incluye proveedores sin credenciales.",
+  [RESEARCH_EXPORT_NOT_CONFIGURED_CODE]: RESEARCH_EXPORT_NOT_CONFIGURED_MESSAGE,
+  "audit-log.invalid_range": "La fecha inicial debe ser anterior a la final.",
+  "ai-telemetry.invalid_range": "El rango debe empezar antes de terminar y cubrir como máximo 366 días.",
+  "ai-ratings.invalid_range": "El rango debe empezar antes de terminar y cubrir como máximo 366 días.",
+  "ai.provider_unknown": "El proveedor de IA no existe.",
+  "ai.provider_not_registered": "El proveedor de IA no tiene configuración (credenciales).",
 } as const satisfies Record<string, string>;
 
 export const ADMIN_CONSOLE_FALLBACK_MESSAGES = {
@@ -112,4 +120,19 @@ export function getAdminConsoleErrorMessage(error: unknown): string {
   }
 
   return STATUS_MESSAGES[apiError.status] ?? ADMIN_CONSOLE_FALLBACK_MESSAGES.unknown;
+}
+
+export const PROBE_RATE_LIMIT_MESSAGE = "Se alcanzó el límite de 3 pruebas por minuto.";
+
+/** Message of a failed AI provider probe: the 429 of its 3-per-minute limit names the wait of Retry-After. */
+export function getProbeErrorMessage(error: unknown): string {
+  const apiError = toApiError(error);
+
+  if (apiError.status === 429) {
+    return apiError.retryAfter === undefined
+      ? `${PROBE_RATE_LIMIT_MESSAGE} Espera un momento e inténtalo de nuevo.`
+      : `${PROBE_RATE_LIMIT_MESSAGE} Inténtalo de nuevo en ${formatWait(apiError.retryAfter)}.`;
+  }
+
+  return getAdminConsoleErrorMessage(error);
 }

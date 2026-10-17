@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Realtime contract types
-* Descripción: Socket.io event names and payloads used by new code, taken from ventylab-server/openapi/asyncapi.yaml (connection events authenticated/auth_error, the client authenticate message and the user-room events user:role-changed, notification:new, grade:published, achievement:unlocked). v1.1 (S0 evaluations): the group-room event evaluation:activated (an evaluation was assigned and opened for the group). v1.2 (T0 ventilator-lab): the ventilator events (telemetry batch, alarm, availability, join-rejected, device connected/disconnected with reason, control-changed, command-status), reservation:preempted (user and group rooms) and the client messages ventilator:join and ventilator:heartbeat (payload ignored by the backend), from the asyncapi messages and the backend payload interfaces. Payload schemas that live in openapi.json come from the generated api-client types. Type-only module; depends on the session entity and the generated schema.
-* Versión: 1.2
+* Descripción: Socket.io event names and payloads used by new code, taken from ventylab-server/openapi/asyncapi.yaml (connection events authenticated/auth_error, the client authenticate message and the user-room events user:role-changed, notification:new, grade:published, achievement:unlocked). v1.1 (S0 evaluations): the group-room event evaluation:activated (an evaluation was assigned and opened for the group). v1.2 (T0 ventilator-lab): the ventilator events (telemetry batch, alarm, availability, join-rejected, device connected/disconnected with reason, control-changed, command-status), reservation:preempted (user and group rooms) and the client messages ventilator:join and ventilator:heartbeat (payload ignored by the backend), from the asyncapi messages and the backend payload interfaces. Payload schemas that live in openapi.json come from the generated api-client types. Type-only module; depends on the session entity and the generated schema. v1.3 (O4b admin-console): system:status-changed (role rooms ADMIN and TEACHER) with the global state, previous state, changed components and checkedAt, typed from the SystemStatusDTO enums of the generated schema (payload from ventylab-server system-status.service.ts; not in asyncapi).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -112,6 +112,25 @@ export type ReservationPreemptedEvent = {
   wasActive: boolean
 };
 
+type SystemStatusSchema = components["schemas"]["SystemStatusDTO"];
+
+export type SystemComponentName = keyof SystemStatusSchema["components"];
+
+export type SystemComponentState = components["schemas"]["DatabaseStatusDTO"]["state"];
+
+export type SystemComponentChange = {
+  component: SystemComponentName
+  state: SystemComponentState
+  previousState: SystemComponentState
+};
+
+export type SystemStatusChangedEvent = {
+  state: SystemStatusSchema["state"]
+  previousState: SystemStatusSchema["state"]
+  changedComponents: SystemComponentChange[]
+  checkedAt: string
+};
+
 export type RealtimeEventMap = {
   "authenticated": { userId: string }
   "auth_error": { message: string }
@@ -129,6 +148,7 @@ export type RealtimeEventMap = {
   "ventilator:disconnected": VentilatorConnectionEvent
   "ventilator:control-changed": VentilatorControlChangedEvent
   "ventilator:command-status": VentilatorCommandStatusEvent
+  "system:status-changed": SystemStatusChangedEvent
 };
 
 export type RealtimeEventName = keyof RealtimeEventMap;
