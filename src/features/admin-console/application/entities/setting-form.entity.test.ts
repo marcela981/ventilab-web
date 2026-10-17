@@ -1,0 +1,217 @@
+/*
+* Funcionalidad: Setting form generator tests
+* Descripción: buildSettingField generates every field kind from the metadata (number with min/max/integer, boolean, string, string with allowedValues, array with allowedValues and required, plain array, object as a recursive group with per-field and inherited limits, ai.useCase.* provider chain, unmappable shapes as JSON); validateSettingValue reports the hard limits (range, integer, not a number, allowed and required values, chain length, empty model, invalid JSON) and nothing for valid values; describeLimits, diffSettingValues and mapSettingServerError (422 paths `value`, `providerChain[0]`, `models.x`, nested fields, unknown paths on the card, providers without credentials). Depends on vitest and the admin console entities.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+import { describe, expect, it } from "vitest";
+import { ApiError } from "@shared/api-client/api-error";
+import { InvalidJsonDraft, setAt } from "./platform-setting.entity";
+import {
+  buildSettingField,
+  describeLimits,
+  diffSettingValues,
+  mapSettingServerError,
+  resolveServerPath,
+  validateSettingValue,
+} from "./setting-form.entity";
+import type { GroupField, SettingField } from "./setting-form.entity";
+
+type Meta = { key: string, defaultValue: unknown, value?: unknown, limits?: Record<string, unknown> };
+
+function build({ key, defaultValue, value = defaultValue, limits = {} }: Meta): SettingField {
+  return buildSettingField({ key, defaultValue, value, limits });
+}
+
+const AI_USE_CASE: Meta = {
+  key: "ai.useCase.FREE_CHAT",
+  defaultValue: { providerChain: ["gemini"], models: { gemini: "gemini-2.0-flash" }, timeoutMs: 30000, maxOutputTokens: 1024, temperature: 0.7 },
+  limits: {
+    providerChain: { minLength: 1, maxLength: 3, requiresCredentials: true },
+    timeoutMs: { min: 1000, max: 120000, integer: true },
+    maxOutputTokens: { min: 1, max: 32768, integer: true },
+    temperature: { min: 0, max: 2, integer: false },
+  },
+};
+
+function children(field: SettingField): readonly SettingField[] {
+  expect(field.kind).toBe("group");
+
+  return (field as GroupField).children;
+}
+
+describe("buildSettingField", () => {
+  it("maps a number default to a numeric field with its limits", () => {
+    const field = build({ key: "evaluation.passingGrade", defaultValue: 3, limits: { min: 0, max: 5, integer: false } });
+
+    expect(field).toMatchObject({ kind: "number", id: "", path: [], limits: { min: 0, max: 5, integer: false } });
+  });
+
+  it("maps a boolean default to a switch", () => {
+    expect(build({ key: "ai.tutor.topicCheck.enabled", defaultValue: true })).toMatchObject({ kind: "boolean" });
+  });
+
+  it("maps a string to a text field, or to a select when the limits list the allowed values", () => {
+    expect(build({ key: "x.mode", defaultValue: "fast" })).toMatchObject({ kind: "text" });
+    expect(build({ key: "x.mode", defaultValue: "fast", limits: { allowedValues: ["fast", "slow"] } })).toMatchObject({
+      kind: "select",
+      options: ["fast", "slow"],
+    });
+  });
+
+  it("maps an array of primitives to a multi-select with allowed and required values, or to a list editor", () => {
+    expect(build({ key: "simulation.allowedTimeMultipliers", defaultValue: [1, 2], limits: { allowedValues: [1, 2, 5, 10], required: [1] } })).toMatchObject({
+      kind: "multiSelect",
+      options: [1, 2, 5, 10],
+      required: [1],
+    });
+    expect(build({ key: "x.tags", defaultValue: ["a", "b"], limits: { maxLength: 4 } })).toMatchObject({
+      kind: "list",
+      itemKind: "string",
+      limits: { minLength: null, maxLength: 4 },
+    });
+  });
+
+  it("maps an object to a recursive group with per-field limits and inherits the parent limits for dynamic keys", () => {
+    const rubric = build({
+      key: "simulation.rubric.defaultThresholds",
+      defaultValue: { targetsReached: 0.8, timeToStabilizeSeconds: 60 },
+      limits: { targetsReached: { min: 0.01, max: 1, integer: false }, timeToStabilizeSeconds: { min: 1, max: 3600, integer: false } },
+    });
+
+    expect(children(rubric).map((child) => [child.id, child.kind, child.label])).toEqual([
+      ["targetsReached", "number", "Objetivos alcanzados (fracción)"],
+      ["timeToStabilizeSeconds", "number", "Tiempo para estabilizar (s)"],
+    ]);
+    expect(children(rubric)[0]).toMatchObject({ limits: { min: 0.01, max: 1 } });
+
+    const quotas = build({
+      key: "ai.quotas",
+      defaultValue: { STUDENT: { "*": { requestsPerDay: 50 } } },
+      limits: { roles: ["STUDENT"], requestsPerDay: { min: 0, max: 100000, integer: true } },
+    });
+    const leaf = children(children(children(quotas)[0] as SettingField)[0] as SettingField)[0];
+
+    expect(leaf).toMatchObject({ id: "STUDENT.*.requestsPerDay", kind: "number", limits: { min: 0, max: 100000, integer: true } });
+  });
+
+  it("keeps keys that only the current value has", () => {
+    const field = build({ key: "ai.prices", defaultValue: { gemini: { a: { inputPer1kUsd: 0 } } }, value: { gemini: { a: { inputPer1kUsd: 0 } }, openai: { b: { inputPer1kUsd: 1 } } } });
+
+    expect(children(field).map((child) => child.id)).toEqual(["gemini", "openai"]);
+  });
+
+  it("gives ai.useCase settings the provider chain field plus the generic numeric fields", () => {
+    const field = build(AI_USE_CASE);
+
+    expect(children(field).map((child) => [child.id, child.kind])).toEqual([
+      ["providerChain", "providerChain"],
+      ["timeoutMs", "number"],
+      ["maxOutputTokens", "number"],
+      ["temperature", "number"],
+    ]);
+    expect(children(field)[0]).toMatchObject({ limits: { minLength: 1, maxLength: 3 } });
+    expect(children(field)[1]).toMatchObject({ limits: { min: 1000, max: 120000, integer: true } });
+  });
+
+  it("falls back to a JSON field for shapes it cannot map", () => {
+    expect(build({ key: "x.rules", defaultValue: [{ a: 1 }] })).toMatchObject({ kind: "json" });
+    expect(build({ key: "x.map", defaultValue: {} })).toMatchObject({ kind: "json" });
+    expect(build({ key: "x.null", defaultValue: null })).toMatchObject({ kind: "json" });
+  });
+});
+
+describe("validateSettingValue", () => {
+  const grade = build({ key: "evaluation.passingGrade", defaultValue: 3, limits: { min: 0, max: 5, integer: false } });
+  const grace = build({ key: "evaluation.submitGraceSeconds", defaultValue: 30, limits: { min: 0, max: 600, integer: true } });
+
+  it("accepts values within the limits", () => {
+    expect(validateSettingValue(grade, 4.5)).toEqual({});
+    expect(validateSettingValue(grace, 600)).toEqual({});
+  });
+
+  it("reports out of range, non integer and non numeric values on the field", () => {
+    expect(validateSettingValue(grade, 7)).toEqual({ "": "Debe estar entre 0 y 5." });
+    expect(validateSettingValue(grace, 1.5)).toEqual({ "": "Debe ser un número entero." });
+    expect(validateSettingValue(grace, Number.NaN)).toEqual({ "": "Ingresa un número." });
+  });
+
+  it("checks allowed and required values of a multi-select", () => {
+    const field = build({ key: "simulation.allowedTimeMultipliers", defaultValue: [1, 2], limits: { allowedValues: [1, 2, 5], required: [1] } });
+
+    expect(validateSettingValue(field, [1, 5])).toEqual({});
+    expect(validateSettingValue(field, [2])).toEqual({ "": "Debe incluir 1." });
+    expect(validateSettingValue(field, [1, 3])).toEqual({ "": "Elige solo valores permitidos." });
+  });
+
+  it("checks nested fields by their path", () => {
+    const field = build({ key: "simulation.rubric.defaultThresholds", defaultValue: { targetsReached: 0.8 }, limits: { targetsReached: { min: 0.01, max: 1, integer: false } } });
+
+    expect(validateSettingValue(field, { targetsReached: 2 })).toEqual({ targetsReached: "Debe estar entre 0.01 y 1." });
+  });
+
+  it("checks the chain length, repeated providers and an empty model", () => {
+    const field = build(AI_USE_CASE);
+    const value = AI_USE_CASE.defaultValue;
+
+    expect(validateSettingValue(field, value)).toEqual({});
+    expect(validateSettingValue(field, setAt(value, ["providerChain"], []))).toEqual({ providerChain: "La cadena debe tener entre 1 y 3 proveedores." });
+    expect(validateSettingValue(field, setAt(value, ["providerChain"], ["gemini", "gemini"]))).toEqual({ providerChain: "No repitas proveedores en la cadena." });
+    expect(validateSettingValue(field, setAt(value, ["models", "gemini"], " "))).toEqual({ "models.gemini": "Ingresa el modelo de este proveedor." });
+    expect(validateSettingValue(field, setAt(value, ["temperature"], 3))).toEqual({ temperature: "Debe estar entre 0 y 2." });
+  });
+
+  it("rejects a JSON field whose text does not parse", () => {
+    const field = build({ key: "x.rules", defaultValue: [{ a: 1 }] });
+
+    expect(validateSettingValue(field, new InvalidJsonDraft("{"))).toEqual({ "": "El JSON no es válido." });
+  });
+});
+
+describe("describeLimits and diffSettingValues", () => {
+  it("describes the hard limits of a field", () => {
+    expect(describeLimits(build({ key: "a.b", defaultValue: 1, limits: { min: 1, max: 60, integer: true } }))).toBe("Mín. 1, máx. 60, entero");
+    expect(describeLimits(build({ key: "a.b", defaultValue: true }))).toBe("Sin límites declarados");
+  });
+
+  it("lists every changed field with its previous value, new value and limits", () => {
+    const field = build({ key: "commands.safety.maxPeep", defaultValue: 20, limits: { min: 0, max: 30, integer: false } });
+
+    expect(diffSettingValues(field, 20, 25)).toEqual([{ id: "", label: "Valor", before: "20", after: "25", limits: "Mín. 0, máx. 30, decimal" }]);
+    expect(diffSettingValues(field, 20, 20)).toEqual([]);
+  });
+});
+
+describe("mapSettingServerError", () => {
+  const unprocessable = (code: string, details: unknown) => new ApiError({ code, message: code, status: 422, details });
+
+  it("places a scalar 422 on the root field, translated", () => {
+    const field = build({ key: "evaluation.passingGrade", defaultValue: 3, limits: { min: 0, max: 10 } });
+
+    expect(mapSettingServerError(field, unprocessable("platform-settings.hard_limit_exceeded", { key: "evaluation.passingGrade", reason: "value must be between 0 and 5" })))
+      .toEqual({ fieldErrors: { "": "Debe estar entre 0 y 5." }, cardMessage: null });
+  });
+
+  it("places chain, model and nested paths on their fields and unknown paths on the card", () => {
+    const field = build(AI_USE_CASE);
+
+    expect(resolveServerPath(field, "providerChain[0]")).toBe("providerChain");
+    expect(resolveServerPath(field, "models.gemini")).toBe("models.gemini");
+    expect(resolveServerPath(field, "models")).toBe("providerChain");
+    expect(resolveServerPath(field, "timeoutMs")).toBe("timeoutMs");
+    expect(mapSettingServerError(field, unprocessable("platform-settings.invalid_value", { key: "k", reason: "value.extra is not a known field" })))
+      .toEqual({ fieldErrors: {}, cardMessage: "No es un campo conocido." });
+  });
+
+  it("shows providers without credentials on the chain", () => {
+    const field = build(AI_USE_CASE);
+
+    expect(mapSettingServerError(field, unprocessable("platform-settings.ai_provider_not_configured", { providers: ["openai"] })))
+      .toEqual({ fieldErrors: { providerChain: "La cadena incluye proveedores sin credenciales: openai." }, cardMessage: null });
+  });
+});

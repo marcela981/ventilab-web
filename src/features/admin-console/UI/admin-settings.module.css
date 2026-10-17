@@ -1,0 +1,263 @@
+/*
+* Funcionalidad: Admin settings styles
+* Descripción: Layout of /admin/settings: category tabs, the stack of setting cards (header with key and origin chip, description, facts list, generated form, actions), fieldsets of grouped fields, checkbox options, list entries, the provider chain list with drag handle, position, model input and actions (dragging state with a raised shadow), field error text and the change lines of the ventilator commands confirmation. The origin chip carries its text (DEFAULT/OVERRIDE), never colour alone. Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+.tabs {
+  margin-bottom: var(--vl-space-3);
+  border-bottom: 1px solid var(--vl-color-border);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-4);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.cardHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardTitle {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+  font-weight: 600;
+  color: var(--vl-color-text);
+  overflow-wrap: anywhere;
+}
+
+.originChip {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--vl-space-1) var(--vl-space-2);
+  border: 1px solid currentColor;
+  border-radius: var(--vl-radius-pill);
+  font: var(--mui-font-caption);
+  white-space: nowrap;
+}
+
+.originChip[data-origin="DEFAULT"] {
+  color: var(--vl-color-text-muted);
+}
+
+.originChip[data-origin="OVERRIDE"] {
+  color: var(--vl-color-primary);
+}
+
+.description {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--vl-space-2) var(--vl-space-4);
+  margin: 0;
+}
+
+.facts dt {
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-muted);
+}
+
+.facts dd {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text);
+  overflow-wrap: anywhere;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+}
+
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  min-width: 0;
+  margin: 0;
+  padding: var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.legend {
+  padding: 0 var(--vl-space-1);
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-color-text);
+}
+
+.hint {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-muted);
+}
+
+.fieldError {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-color-error);
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-1) var(--vl-space-3);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.listItem {
+  display: flex;
+  gap: var(--vl-space-2);
+  align-items: flex-start;
+}
+
+.chain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chainItem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  align-items: center;
+  padding: var(--vl-space-2);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-surface);
+}
+
+.dragging {
+  box-shadow: var(--vl-shadow-3);
+}
+
+.handle {
+  display: inline-flex;
+  color: var(--vl-color-text-muted);
+  cursor: grab;
+}
+
+.chainPosition {
+  min-width: 1.5rem;
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-color-text-muted);
+}
+
+.chainProvider {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-1);
+  align-items: center;
+  min-width: 6rem;
+  font-weight: 500;
+  color: var(--vl-color-text);
+}
+
+.chainModel {
+  flex: 1 1 14rem;
+}
+
+.chainActions {
+  display: flex;
+  gap: var(--vl-space-1);
+}
+
+.chainAdd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  align-items: center;
+}
+
+.chainAdd > :first-child {
+  flex: 1 1 14rem;
+}
+
+.warningBadge {
+  padding: 0 var(--vl-space-1);
+  border: 1px solid currentColor;
+  border-radius: var(--vl-radius-pill);
+  font: var(--mui-font-caption);
+  color: var(--vl-color-warning);
+}
+
+.cardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+}
+
+.block {
+  display: block;
+}
+
+.change {
+  margin-top: var(--vl-space-1);
+  font-weight: 500;
+  color: var(--vl-color-text);
+}
+
+.card :focus-visible,
+.tabs :focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}

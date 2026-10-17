@@ -1,0 +1,115 @@
+/*
+* Funcionalidad: Admin console error messages
+* Descripción: Spanish message for any failure of an admin console request: backend codes of users (superadmin_role_immutable and superadmin_status_immutable → "Esta cuenta está protegida (superadministrador)…", own role/status, user not found) and platform settings (version conflict, unknown setting, providers without credentials from details.providers), then fallbacks by status (403, 404, 409, 400/422, 429 with Retry-After, 5xx), timeout, network and unknown errors. isVersionConflict tells the settings cards when to offer "Recargar". Depends on the api-client errors.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+import { CLIENT_ERROR_CODES, toApiError } from "@shared/api-client/api-error";
+
+export const SUPERADMIN_PROTECTED_MESSAGE = "Esta cuenta está protegida (superadministrador) y no se puede modificar.";
+export const OWN_ACCOUNT_MESSAGE = "No puedes cambiar tu propia cuenta.";
+export const VERSION_CONFLICT_CODE = "platform-settings.version_conflict";
+export const PROVIDER_NOT_CONFIGURED_CODE = "platform-settings.ai_provider_not_configured";
+
+// TODO(i18n): move to an admin-console namespace in src/i18n.
+export const ADMIN_CONSOLE_ERROR_MESSAGES = {
+  "users.superadmin_role_immutable": SUPERADMIN_PROTECTED_MESSAGE,
+  "users.superadmin_status_immutable": SUPERADMIN_PROTECTED_MESSAGE,
+  "users.cannot_change_own_role": OWN_ACCOUNT_MESSAGE,
+  "users.cannot_change_own_status": OWN_ACCOUNT_MESSAGE,
+  "users.user_not_found": "El usuario ya no existe. Actualiza la lista.",
+  [VERSION_CONFLICT_CODE]: "Otro administrador cambió este valor.",
+  "platform-settings.setting_not_found": "El ajuste ya no existe. Actualiza la página.",
+  "platform-settings.invalid_value": "El valor no es válido.",
+  "platform-settings.hard_limit_exceeded": "El valor supera los límites permitidos.",
+  [PROVIDER_NOT_CONFIGURED_CODE]: "La cadena incluye proveedores sin credenciales.",
+} as const satisfies Record<string, string>;
+
+export const ADMIN_CONSOLE_FALLBACK_MESSAGES = {
+  forbidden: "No tienes permiso para realizar esta acción.",
+  notFound: "El recurso solicitado ya no existe. Actualiza la página.",
+  conflict: "Otro administrador cambió este dato. Actualiza la página.",
+  invalid: "La solicitud no es válida. Revisa los datos e inténtalo de nuevo.",
+  tooManyRequests: "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.",
+  timeout: "El servidor tardó demasiado en responder. Puede estar iniciándose; inténtalo de nuevo en unos segundos.",
+  network: "No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.",
+  server: "Ocurrió un error en el servidor. Inténtalo de nuevo más tarde.",
+  unknown: "No se pudo completar la operación. Inténtalo de nuevo.",
+} as const;
+
+const STATUS_MESSAGES: Record<number, string> = {
+  400: ADMIN_CONSOLE_FALLBACK_MESSAGES.invalid,
+  403: ADMIN_CONSOLE_FALLBACK_MESSAGES.forbidden,
+  404: ADMIN_CONSOLE_FALLBACK_MESSAGES.notFound,
+  409: ADMIN_CONSOLE_FALLBACK_MESSAGES.conflict,
+  422: ADMIN_CONSOLE_FALLBACK_MESSAGES.invalid,
+};
+
+function formatWait(seconds: number): string {
+  if (seconds < 60) {
+    return `${seconds} ${seconds === 1 ? "segundo" : "segundos"}`;
+  }
+
+  const minutes = Math.ceil(seconds / 60);
+
+  return `${minutes} ${minutes === 1 ? "minuto" : "minutos"}`;
+}
+
+function isKnownCode(code: string): code is keyof typeof ADMIN_CONSOLE_ERROR_MESSAGES {
+  return Object.prototype.hasOwnProperty.call(ADMIN_CONSOLE_ERROR_MESSAGES, code);
+}
+
+function providersOf(details: unknown): string[] {
+  if (typeof details !== "object" || details === null) {
+    return [];
+  }
+
+  const providers = (details as { providers?: unknown }).providers;
+
+  return Array.isArray(providers) ? providers.filter((item): item is string => typeof item === "string") : [];
+}
+
+export function isVersionConflict(error: unknown): boolean {
+  return error !== null && error !== undefined && toApiError(error).code === VERSION_CONFLICT_CODE;
+}
+
+export function getAdminConsoleErrorMessage(error: unknown): string {
+  const apiError = toApiError(error);
+
+  if (apiError.code === PROVIDER_NOT_CONFIGURED_CODE) {
+    const providers = providersOf(apiError.details);
+
+    return providers.length > 0
+      ? `La cadena incluye proveedores sin credenciales: ${providers.join(", ")}.`
+      : ADMIN_CONSOLE_ERROR_MESSAGES[PROVIDER_NOT_CONFIGURED_CODE];
+  }
+
+  if (isKnownCode(apiError.code)) {
+    return ADMIN_CONSOLE_ERROR_MESSAGES[apiError.code];
+  }
+
+  if (apiError.code === CLIENT_ERROR_CODES.networkTimeout) {
+    return ADMIN_CONSOLE_FALLBACK_MESSAGES.timeout;
+  }
+
+  if (apiError.code === CLIENT_ERROR_CODES.networkUnavailable) {
+    return ADMIN_CONSOLE_FALLBACK_MESSAGES.network;
+  }
+
+  if (apiError.status === 429) {
+    return apiError.retryAfter === undefined
+      ? ADMIN_CONSOLE_FALLBACK_MESSAGES.tooManyRequests
+      : `Demasiadas solicitudes. Inténtalo de nuevo en ${formatWait(apiError.retryAfter)}.`;
+  }
+
+  if (apiError.status >= 500) {
+    return ADMIN_CONSOLE_FALLBACK_MESSAGES.server;
+  }
+
+  return STATUS_MESSAGES[apiError.status] ?? ADMIN_CONSOLE_FALLBACK_MESSAGES.unknown;
+}
