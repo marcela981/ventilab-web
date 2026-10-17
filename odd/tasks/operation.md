@@ -67,3 +67,6 @@ These are the last business screens still on the legacy panel. The backend alrea
 
 ## Next step
 Push; closure only after the author's explicit approval.
+
+## Final review
+- Native review of `d3231c9..2043046` (891 lines, high): consent granted → **approved**, acknowledged (lineage review-7742dd111f9e9a0a, burned). Advisory applied inline: a single dot is decimal again so "1.125" can be typed (only comma grouping and several separators are rejected); verification report rows 1–2 updated to the final-tree runs. vitest admin-console 93/93, typecheck 0, eslint 0. Advisory left as follow-up: `use-csv-export` `reset()` does not ignore an export already in flight (a stale truncated notice can reappear); `renderPagination(page)` parameter naming; the "tooLong" message hardcodes 366 days.

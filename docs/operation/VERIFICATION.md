@@ -22,8 +22,8 @@ file under `src/`. Commands run from the repository root in PowerShell.
 
 | # | Check | Status | Evidence / reason |
 | --- | --- | --- | --- |
-| 1 | Typecheck | done per block; **re-run pending** after O5/O6 and the fix pass | `npm run typecheck` exit 0 after O0+O1, O2, O3, O4a, O4b (parent re-runs, `odd/tasks/operation.md`) |
-| 2 | Lint with boundaries | done per block; **re-run pending** | `npm run lint` exit 0 on every touched folder per block |
+| 1 | Typecheck | **done** on the final tree | `npm run typecheck` exit 0 after every block and on the final tree (2026-10-17, after the final fix pass) |
+| 2 | Lint with boundaries | **done** on the final tree | `npm run lint` exit 0 on the final tree (2026-10-17) and per block |
 | 3 | Build + First Load JS ≤ baseline + charts in lazy chunks | **pending for the author** | ≈0.9–1 GB free RAM; `next build` not allowed here |
 | 4 | `sx=` / `style={` / `styled(` over `src/` | **done** (measured now) | new 0; legacy 3,374 lines in 224 files |
 | 5 | hex / `rgb(a)` in `*.module.css` over `src/` | **done** (measured now) | new 0; legacy 429 lines in 20 files |
