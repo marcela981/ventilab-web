@@ -1,0 +1,293 @@
+/*
+* Funcionalidad: Student space styles
+* Descripción: Layout of the student space: /me (responsive grid of summary cards with lists, progress bars, links and the unread counter), /me/notes (filters, module groups with the AI analysis and lesson groups with their notes) and /me/grades (type filter and the grades table). Passed and failed grades use the success and error tokens and always carry their text label (never colour alone). Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+/* /me */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--vl-space-4);
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  min-width: 0;
+  padding: var(--vl-space-4);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.cardHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--vl-color-text);
+}
+
+.subTitle {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--vl-color-text-muted);
+}
+
+.link {
+  color: var(--vl-color-link);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.link:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.listItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  padding-bottom: var(--vl-space-2);
+  border-bottom: 1px solid var(--vl-color-border);
+}
+
+.listItem:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.itemTitle {
+  overflow-wrap: anywhere;
+  color: var(--vl-color-text);
+  font-weight: 500;
+}
+
+.itemMeta {
+  font-size: 0.875rem;
+  color: var(--vl-color-text-muted);
+}
+
+.itemLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-3);
+  font-size: 0.875rem;
+}
+
+.excerpt {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--vl-color-text);
+}
+
+.progressList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.progressRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.progressHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  justify-content: space-between;
+}
+
+.progressBar {
+  height: var(--vl-space-2);
+  border-radius: var(--vl-radius-pill);
+}
+
+.counter {
+  display: flex;
+  gap: var(--vl-space-2);
+  align-items: baseline;
+}
+
+.counterValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--vl-color-primary);
+}
+
+/* Grade state: semantic colour plus text. */
+
+.gradePassed {
+  color: var(--vl-color-success);
+  font-weight: 600;
+}
+
+.gradeFailed {
+  color: var(--vl-color-error);
+  font-weight: 600;
+}
+
+/* /me/notes */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-3);
+  align-items: center;
+}
+
+.filter {
+  min-width: 14rem;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--vl-color-text-muted);
+}
+
+.moduleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-4);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.moduleTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--vl-color-text);
+}
+
+.lessonGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.lessonHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-3);
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.lessonTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--vl-color-text);
+}
+
+.noteList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.analysis {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  align-items: flex-start;
+}
+
+.analysisResult {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  width: 100%;
+  padding: var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-bg);
+}
+
+.analysisList {
+  margin: 0;
+  padding-left: var(--vl-space-5);
+}
+
+.pagination {
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+}
+
+/* /me/grades */
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.numeric {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

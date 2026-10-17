@@ -30,7 +30,7 @@ These are the last business screens still on the legacy panel. The backend alrea
 
 ## Checklist (D = delegated writer, I = inline)
 - [x] Phase 1 audit (I + 3 explorers) → `odd/operation-audit.md`
-- [ ] O0+O1 (D) registration + notifications (bell, page, deep links, toasts, focus mode)
+- [x] O0+O1 (D) registration + notifications (bell, page, deep links, toasts, focus mode) — commit 6ff6875
 - [ ] O2 (D) student-space (/me, /me/notes, /me/grades)
 - [ ] O3 (D) teacher-dashboard (/teacher, /teacher/students/[userId])
 - [ ] O4a (D) admin users + settings
@@ -42,5 +42,8 @@ These are the last business screens still on the legacy panel. The backend alrea
 ## Progress / evidence
 - Native review of the inherited range `c7c7b45..279e04d` (ventilator-lab + phase 1 docs, 181 files, 25,406 lines): consent granted per the author's standing rule; START refused with `lens_context_budget_exceeded` (no authority created). Recorded as unavailable. Operation blocks are reviewed per commit (`--base-ref <previous commit> --committed-only`).
 
+- O0+O1 (delegated: 2+ non-trivial files) — 49 files, +2521/−118. Checks: `npm run typecheck` 0 errors (parent re-run after the last edit); lint 0 errors on every touched folder; vitest notifications + design-system + session 56/56, ventilator-lab 491/491. Full `npm test` not completed (killed for low memory; earlier load timeouts in session-console, page-editor, ai-chat-drawer pass in isolation). Native review: medium, `slice_budget_reached`, consent granted, START refused `lens_context_budget_exceeded` → independent reviewer.
+  - Gaps: the backend also notifies the staff member who preempts a reservation, so that actor now sees the toast (except on /lab/live); `expectOwnPreemption` is a no-op kept for its callers (cleanup at closure); lab page headers still mention the old toast.
+
 ## Next step
-O0+O1.
+O2 student-space.
