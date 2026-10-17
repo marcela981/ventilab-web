@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student space styles
-* Descripción: Layout of the student space: /me (responsive grid of summary cards with lists, progress bars, links and the unread counter), /me/notes (filters, module groups with the AI analysis and lesson groups with their notes) and /me/grades (type filter and the grades table). Passed and failed grades use the success and error tokens and always carry their text label (never colour alone). Tokens only.
-* Versión: 1.0
+* Descripción: Layout of the student space: /me (responsive grid of summary cards with lists, progress bars, links and the unread counter), /me/notes (filters, module groups with the AI analysis and lesson groups with their notes) and /me/grades (type filter and the grades table). Passed and failed grades use the success and error tokens and always carry their text label (never colour alone). Tokens only. v1.1 (B2 closure): the /me/notes search field and the module filter of /me/grades.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -192,6 +192,11 @@
 
 .filter {
   min-width: 14rem;
+}
+
+.searchField {
+  width: 100%;
+  max-width: 32rem;
 }
 
 .hint {

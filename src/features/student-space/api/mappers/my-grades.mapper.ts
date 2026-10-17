@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: My grades mapper
-* Descripción: Maps `GET /api/my-evaluations/grades` (MyEvaluationGradeDTO[]) to MyGrade entities, copying grade, points and `passed` as the API returns them. Depends on the student space DTOs and entities.
-* Versión: 1.0
+* Descripción: Maps `GET /api/my-evaluations/grades` (MyEvaluationGradeDTO[]) to MyGrade entities, copying grade, points and `passed` as the API returns them. Depends on the student space DTOs and entities. v1.1 (B2 closure): copies moduleId and moduleTitle.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,6 +19,8 @@ export function toMyGrade(dto: MyEvaluationGradeDTO): MyGrade {
     evaluationId: dto.evaluationId,
     evaluationTitle: dto.evaluationTitle,
     evaluationType: dto.evaluationType,
+    moduleId: dto.moduleId,
+    moduleTitle: dto.moduleTitle,
     grade: dto.grade,
     passed: dto.passed,
     publishedAt: dto.publishedAt,

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: My notes page tests
-* Descripción: /me/notes with msw: the notes page (`GET /api/notes`, newest first) is grouped by module in curriculum order and by lesson, with the lesson and page links of the learning viewer and a trailing group for unresolved lessons; the module filter reads `GET /api/notes/modules/{moduleId}` and the section filter narrows the module options; deleting asks for confirmation and refreshes the list; an edit saved by the learning NoteComposer (stubbed: Tiptap is covered by the learning tests) updates the note in place; the module AI analysis posts the moduleId and shows the result; empty state and retryable load error. v1.1 (O2 follow-up): deleting the only note of the last page shows the skeleton (never the empty state) while the previous page, not in the cache, loads; a failed deletion shows the server error and keeps the note; a failed refresh after a successful deletion still reports the deletion; the module analysis shows its error alert when the AI is unavailable (503). Depends on vitest, msw, Testing Library, the learning feature (partially mocked) and the student space test helpers.
-* Versión: 1.1
+* Descripción: /me/notes with msw: the notes page (`GET /api/notes`, newest first) is grouped by module in curriculum order and by lesson with the titles sent by the API (no lesson read: `GET /api/lessons/{id}` is never requested), with the lesson and page links of the learning viewer and a trailing group for notes without module; the search (debounced), module, lesson and lesson page filters are sent to `GET /api/notes` and the curriculum section narrows the module options; a search without results shows its empty state and "Limpiar filtros" brings every note back; deleting asks for confirmation and refreshes the list; an edit saved by the learning NoteComposer (stubbed: Tiptap is covered by the learning tests) updates the note in place; the module AI analysis posts the moduleId and shows the result; empty state and retryable load error. v1.1 (O2 follow-up): deleting the only note of the last page shows the skeleton (never the empty state) while the previous page, not in the cache, loads; a failed deletion shows the server error and keeps the note; a failed refresh after a successful deletion still reports the deletion; the module analysis shows its error alert when the AI is unavailable (503). v1.2 (B2 closure): server-side search and filters, notes placed by their API labels. Depends on vitest, msw, Testing Library, the learning feature (partially mocked) and the student space test helpers.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -25,7 +25,7 @@ import {
   apiUrl,
   envelope,
   errorResponse,
-  lessonDetailDto,
+  lessonSummaryDto,
   noteDto,
   pageSummaryDto,
   renderStudentSpace,
@@ -57,16 +57,23 @@ vi.setConfig({ testTimeout: 20_000 });
 
 let notes: NoteDTO[];
 let listQueries: Record<string, string>[];
-let moduleRequests: string[];
+let lessonReads: string[];
 let deleted: string[];
 let analyzed: unknown[];
 let failList: boolean;
 let failDelete: boolean;
 
-const LESSONS: Record<string, ReturnType<typeof lessonDetailDto>> = {
-  l1: lessonDetailDto("l1", 2, "m2", "Modos ventilatorios"),
-  l2: lessonDetailDto("l2", 1, "m1", "Fisiología"),
-};
+function noteText(note: NoteDTO): string {
+  return JSON.stringify(note.content).toLowerCase();
+}
+
+// Server-side filters of GET /api/notes, as the backend applies them.
+function filterNotes(params: Record<string, string>): NoteDTO[] {
+  return notes.filter((note) => (!params.moduleId || note.moduleId === params.moduleId)
+    && (!params.lessonId || note.lessonId === params.lessonId)
+    && (!params.pageId || note.pageId === params.pageId)
+    && (!params.search || noteText(note).includes(params.search.toLowerCase())));
+}
 
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" });
@@ -74,39 +81,37 @@ beforeAll(() => {
 
 beforeEach(() => {
   listQueries = [];
-  moduleRequests = [];
+  lessonReads = [];
   deleted = [];
   analyzed = [];
   failList = false;
   failDelete = false;
   notes = [
-    noteDto("n1", "l1", "Volumen corriente", { pageId: "p2" }),
-    noteDto("n2", "l2", "Compliance pulmonar"),
+    noteDto("n1", "l1", "Volumen corriente", { pageId: "p2", moduleId: "m2", lessonTitle: "Lección l1", pageTitle: "Página p2" }),
+    noteDto("n2", "l2", "Compliance pulmonar", { moduleId: "m1", lessonTitle: "Lección l2" }),
     noteDto("n3", "l3", "Nota huérfana"),
   ];
   server.use(
     http.get(apiUrl("/api/curriculum/tree"), () => HttpResponse.json(envelope(treeDto()))),
     http.get(apiUrl("/api/notes"), ({ request }) => {
       const params = Object.fromEntries(new URL(request.url).searchParams);
+      const rows = filterNotes(params);
 
       listQueries.push(params);
 
       return failList
         ? errorResponse("internal_error", 500)
-        : HttpResponse.json(envelope(notes, { total: notes.length, pages: 1, page: 1, limit: Number(params.limit ?? 10) }));
-    }),
-    http.get(apiUrl("/api/notes/modules/:moduleId"), ({ params }) => {
-      const moduleId = String(params.moduleId);
-      const rows = notes.filter((note) => LESSONS[note.lessonId]?.moduleId === moduleId);
-
-      moduleRequests.push(moduleId);
-
-      return HttpResponse.json(envelope(rows, { total: rows.length, pages: 1, page: 1, limit: 10 }));
+        : HttpResponse.json(envelope(rows, { total: rows.length, pages: 1, page: 1, limit: Number(params.limit ?? 10) }));
     }),
     http.get(apiUrl("/api/lessons/:id"), ({ params }) => {
-      const lesson = LESSONS[String(params.id)];
+      lessonReads.push(String(params.id));
 
-      return lesson ? HttpResponse.json(envelope(lesson)) : errorResponse("lessons.not_found", 404);
+      return errorResponse("lessons.not_found", 404);
+    }),
+    http.get(apiUrl("/api/modules/:id/lessons"), ({ params }) => {
+      const moduleId = String(params.id);
+
+      return HttpResponse.json(envelope(moduleId === "m2" ? [lessonSummaryDto("l1", 1, "m2"), lessonSummaryDto("l4", 2, "m2")] : []));
     }),
     http.get(apiUrl("/api/pages"), ({ request }) => {
       const lessonId = new URL(request.url).searchParams.get("lessonId") ?? "";
@@ -174,8 +179,10 @@ function select(label: string, option: string) {
   fireEvent.click(screen.getByRole("option", { name: option }));
 }
 
+const lastQuery = (): Record<string, string> | undefined => listQueries[listQueries.length - 1];
+
 describe("MyNotesPage", () => {
-  it("groups the notes by module in curriculum order and by lesson", async() => {
+  it("groups the notes by module in curriculum order and by lesson with the API titles, without reading lessons", async() => {
     renderStudentSpace(<MyNotesPage />);
     await groupsReady();
 
@@ -185,18 +192,20 @@ describe("MyNotesPage", () => {
 
     const modes = moduleGroup("Modos ventilatorios");
 
+    expect(within(modes).getByRole("heading", { level: 3, name: "Lección l1" })).toBeInTheDocument();
     expect(within(modes).getByText("Volumen corriente")).toBeInTheDocument();
     expect(within(modes).getByRole("link", { name: "Ir a la lección Lección l1" })).toHaveAttribute("href", "/learn/modules/m2/lessons/l1/1");
     expect(await within(modes).findByRole("link", { name: "Ir a la página 2" })).toHaveAttribute("href", "/learn/modules/m2/lessons/l1/2");
     expect(within(moduleGroup(MY_NOTES_COPY.unknownModule)).getByText("Nota huérfana")).toBeInTheDocument();
+    expect(lessonReads).toEqual([]);
   });
 
-  it("reads the notes of the selected module and narrows the modules by section", async() => {
+  it("sends the module filter to the server and narrows the modules by section", async() => {
     renderStudentSpace(<MyNotesPage />);
     await groupsReady();
 
     select(NOTES_FILTERS_COPY.module, "Fisiología");
-    await waitFor(() => expect(moduleRequests).toEqual(["m1"]));
+    await waitFor(() => expect(lastQuery()).toEqual({ page: "1", limit: "10", sortOrder: "desc", moduleId: "m1" }));
     await waitFor(() => expect(screen.queryByText("Volumen corriente")).not.toBeInTheDocument());
     expect(screen.getByText("Compliance pulmonar")).toBeInTheDocument();
 
@@ -206,6 +215,46 @@ describe("MyNotesPage", () => {
     const options = screen.getAllByRole("option").map((option) => option.textContent);
 
     expect(options).toEqual([NOTES_FILTERS_COPY.allModules, "Destete"]);
+  });
+
+  it("sends the lesson and lesson page filters of the selected module", async() => {
+    renderStudentSpace(<MyNotesPage />);
+    await groupsReady();
+
+    expect(screen.getByRole("combobox", { name: NOTES_FILTERS_COPY.lesson })).toHaveAttribute("aria-disabled", "true");
+    select(NOTES_FILTERS_COPY.module, "Modos ventilatorios");
+    await waitFor(() => expect(lastQuery()?.moduleId).toBe("m2"));
+
+    await waitFor(() => expect(screen.getByRole("combobox", { name: NOTES_FILTERS_COPY.lesson })).not.toHaveAttribute("aria-disabled"));
+    fireEvent.mouseDown(screen.getByRole("combobox", { name: NOTES_FILTERS_COPY.lesson }));
+    fireEvent.click(await screen.findByRole("option", { name: "Lección l1" }));
+    await waitFor(() => expect(lastQuery()).toMatchObject({ moduleId: "m2", lessonId: "l1" }));
+
+    fireEvent.mouseDown(screen.getByRole("combobox", { name: NOTES_FILTERS_COPY.page }));
+    fireEvent.click(await screen.findByRole("option", { name: "Página p2" }));
+    await waitFor(() => expect(lastQuery()).toEqual({ page: "1", limit: "10", sortOrder: "desc", moduleId: "m2", lessonId: "l1", pageId: "p2" }));
+    expect(await screen.findByText("Volumen corriente")).toBeInTheDocument();
+    expect(screen.queryByText("Compliance pulmonar")).not.toBeInTheDocument();
+  });
+
+  it("searches on the server after a pause and shows the empty state of a search without results", async() => {
+    renderStudentSpace(<MyNotesPage />);
+    await groupsReady();
+
+    fireEvent.change(screen.getByRole("searchbox", { name: NOTES_FILTERS_COPY.search }), { target: { value: "complian" } });
+    fireEvent.change(screen.getByRole("searchbox", { name: NOTES_FILTERS_COPY.search }), { target: { value: " compliance " } });
+    await waitFor(() => expect(lastQuery()?.search).toBe("compliance"));
+    expect(listQueries.filter((query) => query.search !== undefined).map((query) => query.search)).toEqual(["compliance"]);
+    await waitFor(() => expect(screen.queryByText("Volumen corriente")).not.toBeInTheDocument());
+    expect(screen.getByText("Compliance pulmonar")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByRole("searchbox", { name: NOTES_FILTERS_COPY.search }), { target: { value: "inexistente" } });
+    expect(await screen.findByText(MY_NOTES_COPY.emptyFilteredTitle)).toBeInTheDocument();
+    expect(screen.queryByText(MY_NOTES_COPY.emptyTitle)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: MY_NOTES_COPY.clearFilters }));
+    expect(await screen.findByText("Volumen corriente")).toBeInTheDocument();
+    expect(screen.getByRole("searchbox", { name: NOTES_FILTERS_COPY.search })).toHaveValue("");
   });
 
   it("deletes a note after the confirmation", async() => {

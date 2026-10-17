@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student space mapper tests
-* Descripción: The summary mapper copies every API value as is (progress, grades, evaluations, notes, conversations, sessions, reservations) and normalises missing lists and invalid unread counts; the grades mapper keeps grade, points and `passed`; the notes mappers build the notes page from the envelope pagination (or the list length without it), the lesson info from the lesson read and the module analysis. Depends on vitest, the student space mappers and the test fixtures.
-* Versión: 1.0
+* Descripción: The summary mapper copies every API value as is (progress, grades, evaluations, notes, conversations, sessions, reservations) and normalises missing lists and invalid unread counts; the grades mapper keeps grade, points and `passed`; the notes mappers build the notes page from the envelope pagination (or the list length without it) keeping the note labels, and the module analysis. Depends on vitest, the student space mappers and the test fixtures. v1.1 (B2 closure): section titles, grade attemptId and module, note module and titles, session case title; the lesson read mapping is gone.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,18 +10,18 @@
 */
 
 import { describe, expect, it } from "vitest";
-import { gradeDto, lessonDetailDto, noteDto, summaryDto } from "../../application/pages/student-space-test-helpers";
+import { gradeDto, noteDto, summaryDto } from "../../application/pages/student-space-test-helpers";
 import type { MySummaryDTO, NotesAnalysisDTO } from "../dtos/student-space.dto";
 import { toMyGrade } from "./my-grades.mapper";
-import { toModuleNotesAnalysis, toNoteLessonInfo, toNotesPage } from "./my-notes.mapper";
+import { toModuleNotesAnalysis, toNotesPage } from "./my-notes.mapper";
 import { toStudentSummary } from "./student-summary.mapper";
 
 describe("toStudentSummary", () => {
   it("copies the API values without computing anything", () => {
     const summary = toStudentSummary(summaryDto());
 
-    expect(summary.overallProgress).toEqual({ id: null, percentage: 40, completedLessons: 4, totalLessons: 10, completed: false });
-    expect(summary.sectionProgress.map((item) => [item.id, item.percentage])).toEqual([["s1", 75], ["s2", 17]]);
+    expect(summary.overallProgress).toEqual({ id: null, title: null, percentage: 40, completedLessons: 4, totalLessons: 10, completed: false });
+    expect(summary.sectionProgress.map((item) => [item.id, item.title, item.percentage])).toEqual([["s1", "Fundamentos", 75], ["s2", null, 17]]);
     expect(summary.activeEvaluations[0]).toEqual({
       assignmentId: "as-1",
       evaluationId: "ev-1",
@@ -30,8 +30,12 @@ describe("toStudentSummary", () => {
       startsAt: "2026-10-15T13:00:00.000Z",
       endsAt: "2026-10-20T13:00:00.000Z",
     });
+    expect(summary.grades[0]).toMatchObject({ attemptId: "at-3", moduleId: "m1", moduleTitle: "Fisiología" });
     expect(summary.grades[1]).toEqual({
+      attemptId: "at-4",
       evaluationId: "ev-4",
+      moduleId: null,
+      moduleTitle: null,
       title: "Quiz de volúmenes",
       type: "QUIZ",
       attemptNumber: 2,
@@ -39,10 +43,20 @@ describe("toStudentSummary", () => {
       passed: false,
       publishedAt: "2026-10-13T15:00:00.000Z",
     });
-    expect(summary.latestNotes[0]).toEqual({ id: "n1", lessonId: "l1", pageId: null, excerpt: "La PEEP mantiene los alvéolos abiertos", updatedAt: "2026-10-16T12:00:00.000Z" });
+    expect(summary.latestNotes[0]).toEqual({
+      id: "n1",
+      lessonId: "l1",
+      pageId: null,
+      moduleId: "m2",
+      lessonTitle: "Presión positiva",
+      pageTitle: null,
+      excerpt: "La PEEP mantiene los alvéolos abiertos",
+      updatedAt: "2026-10-16T12:00:00.000Z",
+    });
     expect(summary.latestConversations[0]).toEqual({ id: "c1", title: "Dudas sobre compliance", scope: "LESSON", updatedAt: "2026-10-15T14:00:00.000Z" });
     expect(summary.latestSimulationSessions[0]).toEqual({
       id: "ss-1",
+      caseTitle: "SDRA moderado",
       mode: "FREE",
       status: "ENDED",
       score: 82,
@@ -76,12 +90,14 @@ describe("toStudentSummary", () => {
 
 describe("toMyGrade", () => {
   it("keeps grade, points and the passed flag", () => {
-    expect(toMyGrade(gradeDto("a1", { grade: 2.9, passed: false, score: 5.8, maxScore: 10 }))).toEqual({
+    expect(toMyGrade(gradeDto("a1", { grade: 2.9, passed: false, score: 5.8, maxScore: 10, moduleId: "m1", moduleTitle: "Fisiología" }))).toEqual({
       attemptId: "a1",
       attemptNumber: 1,
       evaluationId: "ev-a1",
       evaluationTitle: "Evaluación a1",
       evaluationType: "EXAM",
+      moduleId: "m1",
+      moduleTitle: "Fisiología",
       grade: 2.9,
       passed: false,
       publishedAt: "2026-10-14T15:00:00.000Z",
@@ -93,26 +109,16 @@ describe("toMyGrade", () => {
 
 describe("notes mappers", () => {
   it("builds the notes page from the envelope pagination", () => {
-    const page = toNotesPage([noteDto("n1", "l1", "Texto")], { total: 31, pages: 4, page: 2, limit: 10, next: null, previous: null } as never);
+    const page = toNotesPage([noteDto("n1", "l1", "Texto", { moduleId: "m1", lessonTitle: "Compliance", pageTitle: "Definición" })], { total: 31, pages: 4, page: 2, limit: 10, next: null, previous: null } as never);
 
     expect(page.total).toBe(31);
     expect(page.pages).toBe(4);
     expect(page.page).toBe(2);
-    expect(page.items[0]).toMatchObject({ id: "n1", lessonId: "l1", pageId: null });
+    expect(page.items[0]).toMatchObject({ id: "n1", lessonId: "l1", pageId: null, moduleId: "m1", lessonTitle: "Compliance", pageTitle: "Definición" });
   });
 
   it("falls back to the list length without pagination", () => {
     expect(toNotesPage([noteDto("n1", "l1", "a"), noteDto("n2", "l1", "b")], null)).toMatchObject({ total: 2, page: 1, pages: 1 });
-  });
-
-  it("places a lesson in its module", () => {
-    expect(toNoteLessonInfo(lessonDetailDto("l1", 3, "m2", "Modos ventilatorios"))).toEqual({
-      lessonId: "l1",
-      lessonTitle: "Lección l1",
-      lessonOrder: 3,
-      moduleId: "m2",
-      moduleTitle: "Modos ventilatorios",
-    });
   });
 
   it("maps the module analysis", () => {

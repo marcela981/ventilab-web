@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student space test helpers
-* Descripción: Shared fixtures of the student space tests: backend URL, envelope with pagination, error response, DTO builders (summary, published grade, note, lesson detail, curriculum tree, lesson Page) and a renderer that wraps the UI in a fresh SWR cache, an authenticated STUDENT session and the global ToastProvider. Fixtures are typed against the generated schema; the learning tree and Page shapes are cast because the learning DTO aliases are internal to that feature. Depends on Testing Library, msw, SWR, the design-system toast, the session context and the student space DTOs. v1.1 (B1 closure): the fixtures carry the new contract fields (section titles, grade attemptId and module, note module and titles, session case title).
-* Versión: 1.1
+* Descripción: Shared fixtures of the student space tests: backend URL, envelope with pagination, error response, DTO builders (summary, published grade, note, module lesson, curriculum tree, lesson Page) and a renderer that wraps the UI in a fresh SWR cache, an authenticated STUDENT session and the global ToastProvider. Fixtures are typed against the generated schema; the learning tree and Page shapes are cast because the learning DTO aliases are internal to that feature. Depends on Testing Library, msw, SWR, the design-system toast, the session context and the student space DTOs. v1.1 (B1 closure): the fixtures carry the new contract fields (section titles, grade attemptId and module, note module and titles, session case title). v1.2 (B2 closure): the lesson detail builder is replaced by a module lesson builder (lesson filter options).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,7 +18,7 @@ import { BACKEND_ORIGIN } from "@shared/lib/env";
 import type { Role } from "@shared/session/session.entity";
 import { SessionContext } from "@shared/session/session-context";
 import type { SessionContextValue } from "@shared/session/session-context";
-import type { LessonDetailDTO, MyEvaluationGradeDTO, MySummaryDTO, NoteDTO } from "../../api/dtos/student-space.dto";
+import type { MyEvaluationGradeDTO, MySummaryDTO, NoteDTO } from "../../api/dtos/student-space.dto";
 
 export const apiUrl = (path: string): string => `${BACKEND_ORIGIN}${path}`;
 
@@ -152,14 +152,8 @@ export function noteDto(id: string, lessonId: string, text: string, overrides: P
   };
 }
 
-export function lessonDetailDto(id: string, order: number, moduleId: string, moduleTitle: string): LessonDetailDTO {
-  return {
-    id,
-    title: `Lección ${id}`,
-    order,
-    moduleId,
-    module: { id: moduleId, title: moduleTitle, order: 1, difficulty: null, isActive: true, levelId: "lv1" },
-  } as unknown as LessonDetailDTO;
+export function lessonSummaryDto(id: string, order: number, moduleId: string) {
+  return { id, title: `Lección ${id}`, order, moduleId, pageCount: 2, isActive: true };
 }
 
 const treeModule = (id: string, order: number, title: string) => ({

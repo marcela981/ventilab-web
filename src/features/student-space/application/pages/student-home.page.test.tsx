@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student home page tests
-* Descripción: /me with msw: the whole page comes from ONE `GET /api/me/summary` request (any other request fails the test); progress bars carry the API percentage and lesson counts; evaluations, grades (es-CO grade with its passed/failed text), notes, conversations, simulation sessions (result and replay of ended sessions, resume of active ones), reservations and the unread counter link to their routes; every block shows its empty state; a failed load shows a retryable error. Depends on vitest, msw, Testing Library and the student space test helpers. v1.1 (B1 closure): the empty overall progress carries the new title field.
-* Versión: 1.1
+* Descripción: /me with msw: the whole page comes from ONE `GET /api/me/summary` request (any other request fails the test); progress bars carry the API percentage and lesson counts; evaluations, grades (es-CO grade with its passed/failed text), notes, conversations, simulation sessions (result and replay of ended sessions, resume of active ones), reservations and the unread counter link to their routes; every block shows its empty state; a failed load shows a retryable error. Depends on vitest, msw, Testing Library and the student space test helpers. v1.1 (B1 closure): the empty overall progress carries the new title field. v1.2 (B2 closure): section titles from the API (fallback "Sección N"), grades linking to the attempt result with their module, notes linking to the lesson page with lesson and page titles (plain text without module), session case titles (fallback label).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -65,7 +65,8 @@ describe("StudentHomePage", () => {
 
     const progress = block(SUMMARY_COPY.progressTitle);
 
-    expect(within(progress).getByRole("progressbar", { name: SUMMARY_COPY.progressAria("Sección 1") })).toHaveAttribute("aria-valuenow", "75");
+    expect(within(progress).getByRole("progressbar", { name: SUMMARY_COPY.progressAria("Fundamentos") })).toHaveAttribute("aria-valuenow", "75");
+    expect(within(progress).getByRole("progressbar", { name: SUMMARY_COPY.progressAria("Sección 2") })).toHaveAttribute("aria-valuenow", "17");
     expect(within(progress).getByText(SUMMARY_COPY.progressValue(40, 4, 10))).toBeInTheDocument();
     expect(within(progress).getAllByRole("link", { name: SUMMARY_COPY.openSection })[0]).toHaveAttribute("href", "/learn/s1");
 
@@ -77,6 +78,9 @@ describe("StudentHomePage", () => {
     const grades = block(SUMMARY_COPY.gradesTitle);
 
     expect(within(grades).getByText(/Nota 4,2/)).toBeInTheDocument();
+    expect(within(grades).getByRole("link", { name: SUMMARY_COPY.openResult("Taller de curvas") })).toHaveAttribute("href", "/evaluations/ev-3/attempts/at-3/result");
+    expect(within(grades).getByRole("link", { name: SUMMARY_COPY.openResult("Quiz de volúmenes") })).toHaveAttribute("href", "/evaluations/ev-4/attempts/at-4/result");
+    expect(within(grades).getByText(/^Fisiología · Taller/)).toBeInTheDocument();
     expect(within(grades).getByText("Aprobada")).toBeInTheDocument();
     expect(within(grades).getByText("No aprobada")).toBeInTheDocument();
     expect(within(grades).getByRole("link", { name: SUMMARY_COPY.gradesLink })).toHaveAttribute("href", "/me/grades");
@@ -85,6 +89,7 @@ describe("StudentHomePage", () => {
 
     expect(within(notes).getByText("La PEEP mantiene los alvéolos abiertos")).toBeInTheDocument();
     expect(within(notes).getByText("hace 2 horas")).toBeInTheDocument();
+    expect(within(notes).getByRole("link", { name: SUMMARY_COPY.openLesson("Presión positiva") })).toHaveAttribute("href", "/learn/modules/m2/lessons/l1/1");
     expect(within(notes).getByRole("link", { name: SUMMARY_COPY.notesLink })).toHaveAttribute("href", "/me/notes");
 
     expect(within(block(SUMMARY_COPY.conversationsTitle)).getByRole("link", { name: "Dudas sobre compliance" })).toHaveAttribute("href", "/assistant/c1");
@@ -95,6 +100,8 @@ describe("StudentHomePage", () => {
     expect(within(simulations).getByRole("link", { name: SUMMARY_COPY.replay })).toHaveAttribute("href", "/simulator/sessions/ss-1/replay");
     expect(within(simulations).getByRole("link", { name: SUMMARY_COPY.resume })).toHaveAttribute("href", "/simulator/sessions/ss-2");
     expect(within(simulations).getByText(/Puntaje 82/)).toBeInTheDocument();
+    expect(within(simulations).getByText("SDRA moderado")).toBeInTheDocument();
+    expect(within(simulations).getByText(SUMMARY_COPY.unknownCase)).toBeInTheDocument();
 
     expect(within(block(SUMMARY_COPY.reservationsTitle)).getByText("Práctica de PEEP")).toBeInTheDocument();
 

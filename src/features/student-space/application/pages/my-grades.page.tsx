@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: MyGradesPage
-* Descripción: Page /me/grades (STUDENT): the caller's published grades (`GET /api/my-evaluations/grades`, full list without pagination) in a table with evaluation (link to the attempt result with its feedback), type, attempt, publication date, points, grade in es-CO and the passed/failed state from the API `passed` flag (semantic colour plus text). The type filter only selects rows of the list already returned (display filtering). No average or summary is shown: the API returns none and nothing is computed on the client. BACKEND GAP: grades carry no module, so there is no module column nor module filter. List skeleton, retryable error, stale-data warning and empty states (no grades, no grades of the selected type). Depends on MUI, next/head, next/link, the design-system states and header, @shared/lib format, the student space hooks, entities, routes and the student space CSS Module.
-* Versión: 1.0
+* Descripción: Page /me/grades (STUDENT): the caller's published grades (`GET /api/my-evaluations/grades`, full list without pagination) in a table with evaluation (link to the attempt result with its feedback), module, type, attempt, publication date, points, grade in es-CO and the passed/failed state from the API `passed` flag (semantic colour plus text). The type and module filters only select rows of the list already returned (display filtering; module options are the modules of the returned grades plus "Sin módulo" when needed). No average or summary is shown: the API returns none and nothing is computed on the client. List skeleton, retryable error, stale-data warning and empty states (no grades, no grades for the selected filters). v1.1 (B2 closure): module column and module filter (the backend gap is closed). Depends on MUI, next/head, next/link, the design-system states and header, @shared/lib format, the student space hooks, entities, routes and the student space CSS Module.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -30,8 +30,15 @@ import { cx } from "@shared/lib/class-names";
 import { formatDateTime, formatGrade } from "@shared/lib/format";
 import { GradeState } from "../components/grade-state";
 import { buildAttemptResultUrl, EVALUATIONS_LIST_URL } from "../config/student-space.routes";
-import { filterGradesByType, GRADE_TYPE_FILTERS } from "../entities/my-grade.entity";
-import type { GradeTypeFilter, MyGrade } from "../entities/my-grade.entity";
+import {
+  ALL_MODULES,
+  filterGrades,
+  GRADE_TYPE_FILTERS,
+  hasGradesWithoutModule,
+  listGradeModules,
+  NO_MODULE,
+} from "../entities/my-grade.entity";
+import type { GradeModuleFilter, GradeTypeFilter, MyGrade } from "../entities/my-grade.entity";
 import { getStudentSpaceErrorMessage } from "../entities/student-space-error-messages";
 import { EVALUATION_TYPE_LABELS, labelOf } from "../entities/student-space-labels";
 import { useMyGrades } from "../hooks/use-my-grades";
@@ -44,8 +51,12 @@ export const MY_GRADES_COPY = {
   subtitle: "Calificaciones publicadas de tus exámenes, quizzes y talleres.",
   typeFilter: "Tipo de evaluación",
   allTypes: "Todos los tipos",
+  moduleFilter: "Módulo",
+  allModules: "Todos los módulos",
+  noModule: "Sin módulo",
   tableLabel: "Calificaciones publicadas",
   evaluation: "Evaluación",
+  module: "Módulo",
   type: "Tipo",
   attempt: "Intento",
   publishedAt: "Publicada",
@@ -61,8 +72,8 @@ export const MY_GRADES_COPY = {
   emptyTitle: "Todavía no tienes calificaciones publicadas",
   emptyDescription: "Cuando el docente publique la calificación de una evaluación aparecerá aquí.",
   emptyAction: "Ver mis evaluaciones",
-  emptyTypeTitle: "No tienes calificaciones de este tipo",
-  emptyTypeDescription: "Elige \"Todos los tipos\" para ver todas tus calificaciones.",
+  emptyTypeTitle: "No tienes calificaciones con estos filtros",
+  emptyTypeDescription: "Elige \"Todos los tipos\" y \"Todos los módulos\" para ver todas tus calificaciones.",
 } as const;
 
 const MISSING = "—";
@@ -82,6 +93,7 @@ function GradesTable({ grades }: { grades: readonly MyGrade[] }) {
         <TableHead>
           <TableRow>
             <TableCell>{MY_GRADES_COPY.evaluation}</TableCell>
+            <TableCell>{MY_GRADES_COPY.module}</TableCell>
             <TableCell>{MY_GRADES_COPY.type}</TableCell>
             <TableCell>{MY_GRADES_COPY.attempt}</TableCell>
             <TableCell>{MY_GRADES_COPY.publishedAt}</TableCell>
@@ -102,6 +114,7 @@ function GradesTable({ grades }: { grades: readonly MyGrade[] }) {
                   {grade.evaluationTitle}
                 </Link>
               </TableCell>
+              <TableCell>{grade.moduleTitle ?? (grade.moduleId === null ? MY_GRADES_COPY.noModule : MISSING)}</TableCell>
               <TableCell>{labelOf(EVALUATION_TYPE_LABELS, grade.evaluationType)}</TableCell>
               <TableCell className={cx(styles.numeric)}>{grade.attemptNumber}</TableCell>
               <TableCell className={cx(styles.numeric)}>{formatDateTime(grade.publishedAt)}</TableCell>
@@ -119,7 +132,10 @@ function GradesTable({ grades }: { grades: readonly MyGrade[] }) {
 export function MyGradesPage() {
   const { grades, isLoading, error, reload } = useMyGrades();
   const [type, setType] = useState<GradeTypeFilter>("ALL");
-  const rows = useMemo(() => (grades ? filterGradesByType(grades, type) : null), [grades, type]);
+  const [moduleFilter, setModuleFilter] = useState<GradeModuleFilter>(ALL_MODULES);
+  const rows = useMemo(() => (grades ? filterGrades(grades, { type, module: moduleFilter }) : null), [grades, type, moduleFilter]);
+  const modules = useMemo(() => (grades ? listGradeModules(grades) : []), [grades]);
+  const withoutModule = useMemo(() => (grades ? hasGradesWithoutModule(grades) : false), [grades]);
 
   const renderGrades = () => {
     if (!grades || !rows) {
@@ -149,6 +165,18 @@ export function MyGradesPage() {
             className={cx(styles.filter)}
           >
             {GRADE_TYPE_FILTERS.map((filter) => <MenuItem key={filter} value={filter}>{typeLabel(filter)}</MenuItem>)}
+          </TextField>
+          <TextField
+            select
+            size="small"
+            label={MY_GRADES_COPY.moduleFilter}
+            value={moduleFilter}
+            onChange={(event) => setModuleFilter(event.target.value)}
+            className={cx(styles.filter)}
+          >
+            <MenuItem value={ALL_MODULES}>{MY_GRADES_COPY.allModules}</MenuItem>
+            {modules.map((option) => <MenuItem key={option.id} value={option.id}>{option.title}</MenuItem>)}
+            {withoutModule ? <MenuItem value={NO_MODULE}>{MY_GRADES_COPY.noModule}</MenuItem> : null}
           </TextField>
         </div>
         {rows.length === 0

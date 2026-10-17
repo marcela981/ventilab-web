@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student summary mapper
-* Descripción: Maps `GET /api/me/summary` (MySummaryDTO) to the StudentSummary entity. Values are copied as the API returns them (no client-side metric); only defensive normalisations apply: missing lists become empty and an invalid unread count becomes 0. Depends on the student space DTOs and entities.
-* Versión: 1.0
+* Descripción: Maps `GET /api/me/summary` (MySummaryDTO) to the StudentSummary entity. Values are copied as the API returns them (no client-side metric); only defensive normalisations apply: missing lists become empty and an invalid unread count becomes 0. Depends on the student space DTOs and entities. v1.1 (B2 closure): copies the section titles, grade attemptId and module, note module and titles, and session case title.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -33,6 +33,7 @@ import type {
 export function toProgressItem(dto: ProgressItemDTO): ProgressItem {
   return {
     id: dto.id,
+    title: dto.title,
     percentage: dto.percentage,
     completedLessons: dto.completedLessons,
     totalLessons: dto.totalLessons,
@@ -53,7 +54,10 @@ function toEvaluation(dto: SummaryEvaluationDTO): SummaryEvaluation {
 
 function toGrade(dto: MyGradeDTO): SummaryGrade {
   return {
+    attemptId: dto.attemptId,
     evaluationId: dto.evaluationId,
+    moduleId: dto.moduleId,
+    moduleTitle: dto.moduleTitle,
     title: dto.evaluationTitle,
     type: dto.evaluationType,
     attemptNumber: dto.attemptNumber,
@@ -64,7 +68,16 @@ function toGrade(dto: MyGradeDTO): SummaryGrade {
 }
 
 function toNote(dto: MyNoteDTO): SummaryNote {
-  return { id: dto.id, lessonId: dto.lessonId, pageId: dto.pageId, excerpt: dto.excerpt, updatedAt: dto.updatedAt };
+  return {
+    id: dto.id,
+    lessonId: dto.lessonId,
+    pageId: dto.pageId,
+    moduleId: dto.moduleId,
+    lessonTitle: dto.lessonTitle,
+    pageTitle: dto.pageTitle,
+    excerpt: dto.excerpt,
+    updatedAt: dto.updatedAt,
+  };
 }
 
 function toConversation(dto: MyConversationDTO): SummaryConversation {
@@ -74,6 +87,7 @@ function toConversation(dto: MyConversationDTO): SummaryConversation {
 function toSession(dto: MySimulationSessionDTO): SummarySimulationSession {
   return {
     id: dto.id,
+    caseTitle: dto.caseTitle,
     mode: dto.mode,
     status: dto.status,
     score: dto.score,

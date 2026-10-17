@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student home summary blocks
-* Descripción: The blocks of /me, all fed by the single `GET /api/me/summary` read and never computing a metric: learning progress (overall and per section, bars with the API percentage and lesson counts), active and upcoming evaluations (link to /evaluations/[evaluationId]), latest published grades (grade in es-CO plus "Aprobada"/"No aprobada" from the API `passed`; link to the evaluation, BACKEND GAP: no attemptId in the summary), latest notes (excerpt; link to /me/notes, BACKEND GAP: no moduleId to open the lesson page), latest AI conversations (/assistant/[id]), latest simulation sessions (result and replay of ended sessions, the session itself while active), upcoming ventilator reservations (/lab/reservations) and the unread notifications counter (/notifications). Every block has a Spanish empty state with a next step. Depends on MUI, next/link, the design-system empty state, @shared/lib format, the student space routes, labels and entities, SummaryCard and the student space CSS Module.
-* Versión: 1.0
+* Descripción: The blocks of /me, all fed by the single `GET /api/me/summary` read and never computing a metric: learning progress (overall and per section with the section title from the API, bars with the API percentage and lesson counts), active and upcoming evaluations (link to /evaluations/[evaluationId]), latest published grades (grade in es-CO plus "Aprobada"/"No aprobada" from the API `passed`, module when known; link to the attempt result with its feedback), latest notes (excerpt with lesson and page titles; link to the lesson page in the learning viewer when the module is known), latest AI conversations (/assistant/[id]), latest simulation sessions (case title; result and replay of ended sessions, the session itself while active), upcoming ventilator reservations (/lab/reservations) and the unread notifications counter (/notifications). Every block has a Spanish empty state with a next step. Depends on MUI, next/link, the design-system empty state, @shared/lib format, the student space routes, labels and entities, SummaryCard and the student space CSS Module. v1.1 (B2 closure): the backend gaps are closed (section titles, grade attempt result links and modules, note lesson links and titles, session case titles).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,8 +16,10 @@ import { cx } from "@shared/lib/class-names";
 import { formatDateRange, formatDateTime, formatGrade, formatRelativeAge } from "@shared/lib/format";
 import {
   ASSISTANT_HOME_URL,
+  buildAttemptResultUrl,
   buildConversationUrl,
   buildEvaluationUrl,
+  buildLessonUrl,
   buildSectionUrl,
   buildSimulationReplayUrl,
   buildSimulationResultUrl,
@@ -71,10 +73,13 @@ export const SUMMARY_COPY = {
   gradesLink: "Ver todas mis calificaciones",
   attempt: (attemptNumber: number) => `Intento ${attemptNumber}`,
   gradeValue: (grade: string) => `Nota ${grade}`,
+  openResult: (title: string) => `Ver resultado y retroalimentación de ${title}`,
   gradesEmptyTitle: "Todavía no tienes calificaciones publicadas",
   gradesEmptyDescription: "Tus notas aparecerán aquí cuando el docente las publique.",
   notesTitle: "Últimas notas",
   notesLink: "Ver todas mis notas",
+  unknownLesson: "Lección",
+  openLesson: (title: string) => `Ir a la lección ${title}`,
   notesEmptyTitle: "Aún no has tomado notas",
   notesEmptyDescription: "Abre una lección y usa la pestaña \"Notas\" para escribir tus apuntes.",
   conversationsTitle: "Conversaciones con el asistente",
@@ -83,6 +88,7 @@ export const SUMMARY_COPY = {
   conversationsEmptyDescription: "Pregúntale al asistente de IA cuando tengas una duda de ventilación mecánica.",
   simulationsTitle: "Simulaciones recientes",
   simulationsLink: "Ir al simulador",
+  unknownCase: "Caso clínico",
   score: (value: string) => `Puntaje ${value}`,
   result: "Ver resultado",
   replay: "Ver repetición",
@@ -138,7 +144,7 @@ export function ProgressBlock({ overall, sections }: { overall: ProgressItem, se
           {sections.map((section, index) => (
             <ProgressRow
               key={section.id ?? `section-${index}`}
-              title={SUMMARY_COPY.section(index + 1)}
+              title={section.title ?? SUMMARY_COPY.section(index + 1)}
               item={section}
               href={section.id ? buildSectionUrl(section.id) : undefined}
             />
@@ -194,10 +200,21 @@ export function GradesBlock({ grades }: { grades: readonly SummaryGrade[] }) {
       ) : (
         <ul className={cx(styles.list)}>
           {grades.map((grade) => (
-            <li key={`${grade.evaluationId}-${grade.attemptNumber}`} className={cx(styles.listItem)}>
-              <Link href={buildEvaluationUrl(grade.evaluationId)} className={cx(styles.link)}>{grade.title}</Link>
+            <li key={grade.attemptId} className={cx(styles.listItem)}>
+              <Link
+                href={buildAttemptResultUrl(grade.evaluationId, grade.attemptId)}
+                aria-label={SUMMARY_COPY.openResult(grade.title)}
+                className={cx(styles.link)}
+              >
+                {grade.title}
+              </Link>
               <span className={cx(styles.itemMeta)}>
-                {`${labelOf(EVALUATION_TYPE_LABELS, grade.type)} · ${SUMMARY_COPY.attempt(grade.attemptNumber)} · ${formatDateTime(grade.publishedAt)}`}
+                {[
+                  grade.moduleTitle,
+                  labelOf(EVALUATION_TYPE_LABELS, grade.type),
+                  SUMMARY_COPY.attempt(grade.attemptNumber),
+                  formatDateTime(grade.publishedAt),
+                ].filter(Boolean).join(" · ")}
               </span>
               <span>
                 {`${SUMMARY_COPY.gradeValue(formatGrade(grade.grade))} · `}
@@ -211,6 +228,20 @@ export function GradesBlock({ grades }: { grades: readonly SummaryGrade[] }) {
   );
 }
 
+function NoteLessonLink({ note }: { note: SummaryNote }) {
+  const title = [note.lessonTitle ?? SUMMARY_COPY.unknownLesson, note.pageTitle].filter(Boolean).join(" · ");
+
+  return note.moduleId ? (
+    <Link
+      href={buildLessonUrl(note.moduleId, note.lessonId)}
+      aria-label={SUMMARY_COPY.openLesson(note.lessonTitle ?? SUMMARY_COPY.unknownLesson)}
+      className={cx(styles.link)}
+    >
+      {title}
+    </Link>
+  ) : <span className={cx(styles.itemTitle)}>{title}</span>;
+}
+
 export function NotesBlock({ notes, now }: { notes: readonly SummaryNote[], now?: Date | undefined }) {
   return (
     <SummaryCard title={SUMMARY_COPY.notesTitle} link={{ href: MY_NOTES_URL, label: SUMMARY_COPY.notesLink }}>
@@ -220,6 +251,7 @@ export function NotesBlock({ notes, now }: { notes: readonly SummaryNote[], now?
         <ul className={cx(styles.list)}>
           {notes.map((note) => (
             <li key={note.id} className={cx(styles.listItem)}>
+              <NoteLessonLink note={note} />
               <p className={cx(styles.excerpt)}>{note.excerpt}</p>
               <time dateTime={note.updatedAt} className={cx(styles.itemMeta)}>{formatRelativeAge(note.updatedAt, now)}</time>
             </li>
@@ -270,7 +302,8 @@ export function SimulationsBlock({ sessions }: { sessions: readonly SummarySimul
         <ul className={cx(styles.list)}>
           {sessions.map((session) => (
             <li key={session.id} className={cx(styles.listItem)}>
-              <span className={cx(styles.itemTitle)}>{sessionMeta(session)}</span>
+              <span className={cx(styles.itemTitle)}>{session.caseTitle ?? SUMMARY_COPY.unknownCase}</span>
+              <span className={cx(styles.itemMeta)}>{sessionMeta(session)}</span>
               <span className={cx(styles.itemLinks)}>
                 {session.endedAt === null ? (
                   <Link href={buildSimulationSessionUrl(session.id)} className={cx(styles.link)}>{SUMMARY_COPY.resume}</Link>

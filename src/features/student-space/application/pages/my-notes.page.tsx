@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: MyNotesPage
-* Descripción: Page /me/notes (STUDENT): every note of the caller, newest first and paginated with the envelope pagination (10/25/50): `GET /api/notes`, or `GET /api/notes/modules/{moduleId}` when a module is selected. Filters by section (narrows the modules) and module come from the learning curriculum tree. Each loaded page is grouped by module (curriculum order) and lesson; a note only carries its lessonId, so each lesson is read once (`GET /api/lessons/{id}`, LessonResolver). Notes are edited in place with the learning NoteComposer (autosave; the lesson notes of the learning viewer and the home summary refresh) and deleted after a confirmation, reusing the learning NoteItem. Each module offers "Analizar mis notas con IA" (`POST /api/notes/analyze` with moduleId) with the shared AI rating. A page emptied by a deletion moves back to the last available page. Skeleton, retryable error, stale-data warning and empty states (no notes, no notes in the module); action errors are toasts. v1.1 (O2 follow-up): while the page corrected after an out-of-range deletion loads, the skeleton is shown instead of the kept previous result (the emptied page or the deleted note); the deletion reports success as soon as `DELETE /api/notes/{id}` resolves and the cache refresh runs in the background, so a refresh failure is never shown as a failed deletion. BACKEND GAPS: no text search nor section filter in the notes endpoints; NoteDTO carries no module nor lesson title. Depends on MUI, next/head, next/link, @features/learning, the design-system states, dialog and toast, the student space hooks, entities, components and CSS Module.
-* Versión: 1.1
+* Descripción: Page /me/notes (STUDENT): every note of the caller, newest first and paginated with the envelope pagination (10/25/50) from `GET /api/notes`, searched and filtered on the server: text search (`search`, debounced), module (`moduleId`), lesson (`lessonId`) and lesson page (`pageId`); the curriculum section only narrows the module options (learning curriculum tree). Each loaded page is grouped by module (curriculum order, title from the tree) and lesson (title sent with each note), so no lesson is read to place a note. Notes are edited in place with the learning NoteComposer (autosave; the lesson notes of the learning viewer and the home summary refresh) and deleted after a confirmation, reusing the learning NoteItem; each lesson links to its page in the learning viewer. Each module offers "Analizar mis notas con IA" (`POST /api/notes/analyze` with moduleId) with the shared AI rating. A page emptied by a deletion moves back to the last available page. Skeleton, retryable error, stale-data warning and empty states (no notes at all; no notes matching the search or filters, with "Limpiar filtros"); action errors are toasts. v1.1 (O2 follow-up): while the page corrected after an out-of-range deletion loads, the skeleton is shown instead of the kept previous result (the emptied page or the deleted note); the deletion reports success as soon as `DELETE /api/notes/{id}` resolves and the cache refresh runs in the background, so a refresh failure is never shown as a failed deletion. v1.2 (B2 closure): server-side search and module, lesson and page filters on one endpoint; the per-lesson reads (LessonResolver) and the per-module endpoint are gone. Depends on MUI, next/head, next/link, @features/learning, the design-system states, dialog and toast, the student space hooks, entities, components and CSS Module.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,7 +16,7 @@ import TablePagination from "@mui/material/TablePagination";
 import Head from "next/head";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
-import { deleteNote, LEARN_HOME_URL, useCurriculumTree } from "@features/learning";
+import { deleteNote, LEARN_HOME_URL, useCurriculumTree, useLessonPages, useModuleLessons } from "@features/learning";
 import type { Note } from "@features/learning";
 import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
 import { EmptyState } from "@shared/design-system/components/empty-state";
@@ -26,18 +26,19 @@ import { ListSkeleton } from "@shared/design-system/components/skeleton";
 import { useToast } from "@shared/design-system/components/use-toast";
 import { cx } from "@shared/lib/class-names";
 import { LessonNotesGroup } from "../components/lesson-notes-group";
-import { LessonResolver } from "../components/lesson-resolver";
 import { ModuleNotesAnalysis } from "../components/module-notes-analysis";
 import { NotesFilters } from "../components/notes-filters";
 import {
   groupNotesByModule,
+  hasNotesFilters,
   listModuleOptions,
   NOTES_PAGE_SIZES,
-  toModuleRanks,
+  NOTES_SEARCH_DEBOUNCE_MS,
   toNotesQuery,
 } from "../entities/my-notes.entity";
-import type { ModuleNotesGroup, NoteLessonInfo } from "../entities/my-notes.entity";
+import type { ModuleNotesGroup, NotesFilterValues } from "../entities/my-notes.entity";
 import { getStudentSpaceErrorMessage } from "../entities/student-space-error-messages";
+import { useDebouncedValue } from "../hooks/use-debounced-value";
 import { useMyNotes } from "../hooks/use-my-notes";
 import { useNoteChanges } from "../hooks/use-note-changes";
 import styles from "../../UI/student-space.module.css";
@@ -48,6 +49,7 @@ export const MY_NOTES_COPY = {
   title: "Mis notas",
   subtitle: "Todas tus notas de las lecciones, agrupadas por módulo y lección.",
   unknownModule: "Lecciones sin módulo identificado",
+  moduleFallback: "Módulo",
   loading: "Cargando tus notas…",
   loadErrorTitle: "No se pudieron cargar tus notas",
   staleWarning: "No se pudieron actualizar tus notas. Los datos mostrados pueden estar desactualizados.",
@@ -55,8 +57,9 @@ export const MY_NOTES_COPY = {
   emptyTitle: "Aún no has tomado notas",
   emptyDescription: "Abre una lección y usa la pestaña \"Notas\" para escribir tus apuntes; aquí podrás revisarlos todos.",
   emptyAction: "Ir al aprendizaje",
-  emptyModuleTitle: "No tienes notas en este módulo",
-  emptyModuleDescription: "Elige otro módulo o \"Todos los módulos\".",
+  emptyFilteredTitle: "No hay notas que coincidan",
+  emptyFilteredDescription: "Prueba con otra palabra o quita algún filtro.",
+  clearFilters: "Limpiar filtros",
   deleteTitle: "Eliminar nota",
   deleteDescription: "La nota se eliminará de forma permanente. Esta acción no se puede deshacer.",
   deleteConfirm: "Eliminar",
@@ -74,22 +77,38 @@ const PAGE_BUTTON_LABELS: Record<"first" | "last" | "next" | "previous", string>
 export function MyNotesPage() {
   const toast = useToast();
   const { tree } = useCurriculumTree();
+  const [searchInput, setSearchInput] = useState("");
   const [sectionId, setSectionId] = useState<string | null>(null);
   const [moduleId, setModuleId] = useState<string | null>(null);
+  const [lessonId, setLessonId] = useState<string | null>(null);
+  const [pageId, setPageId] = useState<string | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(NOTES_PAGE_SIZES[0] ?? 10);
-  const [lessons, setLessons] = useState<Record<string, NoteLessonInfo>>({});
   const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Note | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const query = useMemo(() => toNotesQuery(pageIndex, pageSize), [pageIndex, pageSize]);
-  const { page, isLoading, error, reload, replaceNote } = useMyNotes(moduleId, query);
+  const search = useDebouncedValue(searchInput.trim(), NOTES_SEARCH_DEBOUNCE_MS);
+  // Search that the current page index belongs to: a new debounced search starts again at the first page.
+  const [pagedSearch, setPagedSearch] = useState(search);
+
+  if (pagedSearch !== search) {
+    // Adjusting state while rendering (React's documented pattern).
+    setPagedSearch(search);
+    setPageIndex(0);
+  }
+
+  const filters = useMemo<NotesFilterValues>(() => ({ search, moduleId, lessonId, pageId }), [search, moduleId, lessonId, pageId]);
+  const query = useMemo(() => toNotesQuery(pageIndex, pageSize, filters), [pageIndex, pageSize, filters]);
+  const { page, isLoading, error, reload, replaceNote } = useMyNotes(query);
   const { afterEdit, afterDelete } = useNoteChanges();
+  const { lessons } = useModuleLessons(moduleId);
+  const { pages: lessonPages } = useLessonPages(lessonId);
   const sections = useMemo(() => (tree ? tree.sections.map((section) => ({ id: section.id, title: section.title })) : []), [tree]);
   const moduleOptions = useMemo(() => (tree ? listModuleOptions(tree, sectionId) : []), [tree, sectionId]);
-  const moduleRanks = useMemo(() => toModuleRanks(tree ? listModuleOptions(tree) : []), [tree]);
-  const groups = useMemo(() => (page ? groupNotesByModule(page.items, lessons, moduleRanks) : []), [page, lessons, moduleRanks]);
-  const lessonIds = useMemo(() => [...new Set(page?.items.map((note) => note.lessonId) ?? [])], [page]);
+  const allModules = useMemo(() => (tree ? listModuleOptions(tree) : []), [tree]);
+  const lessonOptions = useMemo(() => (lessons ?? []).map((lesson) => ({ id: lesson.id, title: lesson.title })), [lessons]);
+  const pageOptions = useMemo(() => (lessonPages ?? []).map((lessonPage) => ({ id: lessonPage.id, title: lessonPage.title })), [lessonPages]);
+  const groups = useMemo(() => (page ? groupNotesByModule(page.items, allModules) : []), [page, allModules]);
   // Page number being loaded after a deletion emptied the last page; null while the student navigates normally.
   const [recoveringPage, setRecoveringPage] = useState<number | null>(null);
   // The server answered the requested page with no rows: it is beyond the last page (notes were deleted meanwhile).
@@ -108,25 +127,48 @@ export function MyNotesPage() {
   // keepPreviousData would keep the emptied page (or the deleted note) on screen while the corrected page loads: show the skeleton instead.
   const awaitingPage = outOfRange || (recoveringPage !== null && page?.page !== recoveringPage);
 
-  const resolveLesson = useCallback((lesson: NoteLessonInfo) => {
-    setLessons((current) => (current[lesson.lessonId] ? current : { ...current, [lesson.lessonId]: lesson }));
-  }, []);
+  const restart = () => {
+    setPageIndex(0);
+    setRecoveringPage(null);
+    setEditingId(null);
+  };
 
   const changeSection = (next: string | null) => {
     setSectionId(next);
-    setPageIndex(0);
-    setRecoveringPage(null);
+    restart();
 
     if (next !== null && tree && moduleId !== null && !listModuleOptions(tree, next).some((option) => option.id === moduleId)) {
       setModuleId(null);
+      setLessonId(null);
+      setPageId(null);
     }
   };
 
   const changeModule = (next: string | null) => {
     setModuleId(next);
-    setPageIndex(0);
-    setRecoveringPage(null);
-    setEditingId(null);
+    setLessonId(null);
+    setPageId(null);
+    restart();
+  };
+
+  const changeLesson = (next: string | null) => {
+    setLessonId(next);
+    setPageId(null);
+    restart();
+  };
+
+  const changePage = (next: string | null) => {
+    setPageId(next);
+    restart();
+  };
+
+  const clearFilters = () => {
+    setSearchInput("");
+    setSectionId(null);
+    setModuleId(null);
+    setLessonId(null);
+    setPageId(null);
+    restart();
   };
 
   const handleSaved = useCallback((note: Note) => {
@@ -160,7 +202,7 @@ export function MyNotesPage() {
   };
 
   const renderModuleGroup = (group: ModuleNotesGroup) => {
-    const title = group.moduleTitle ?? MY_NOTES_COPY.unknownModule;
+    const title = group.moduleTitle ?? (group.moduleId ? MY_NOTES_COPY.moduleFallback : MY_NOTES_COPY.unknownModule);
 
     return (
       <section key={group.moduleId ?? "unknown"} aria-label={title} className={cx(styles.moduleGroup)}>
@@ -169,9 +211,7 @@ export function MyNotesPage() {
         {group.lessons.map((lessonGroup) => (
           <LessonNotesGroup
             key={lessonGroup.lessonId}
-            lessonId={lessonGroup.lessonId}
-            lesson={lessonGroup.lesson}
-            notes={lessonGroup.notes}
+            group={lessonGroup}
             editingId={editingId}
             onEdit={(note) => setEditingId(note.id)}
             onDelete={(note) => setPendingDelete(note)}
@@ -189,8 +229,13 @@ export function MyNotesPage() {
     }
 
     if (page.items.length === 0) {
-      return moduleId ? (
-        <EmptyState icon={<NoteAltOutlinedIcon />} title={MY_NOTES_COPY.emptyModuleTitle} description={MY_NOTES_COPY.emptyModuleDescription} />
+      return hasNotesFilters(filters) ? (
+        <EmptyState
+          icon={<NoteAltOutlinedIcon />}
+          title={MY_NOTES_COPY.emptyFilteredTitle}
+          description={MY_NOTES_COPY.emptyFilteredDescription}
+          action={<Button variant="outlined" onClick={clearFilters}>{MY_NOTES_COPY.clearFilters}</Button>}
+        />
       ) : (
         <EmptyState
           icon={<NoteAltOutlinedIcon />}
@@ -218,9 +263,7 @@ export function MyNotesPage() {
           }}
           onRowsPerPageChange={(event) => {
             setPageSize(Number(event.target.value));
-            setPageIndex(0);
-            setRecoveringPage(null);
-            setEditingId(null);
+            restart();
           }}
           labelRowsPerPage={MY_NOTES_COPY.rowsPerPage}
           labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count}`}
@@ -238,15 +281,22 @@ export function MyNotesPage() {
       <PageHeader title={MY_NOTES_COPY.title} subtitle={MY_NOTES_COPY.subtitle} />
       <div className={cx(styles.content)}>
         <NotesFilters
+          search={searchInput}
           sections={sections}
           modules={moduleOptions}
+          lessons={lessonOptions}
+          pages={pageOptions}
           sectionId={sectionId}
           moduleId={moduleId}
+          lessonId={lessonId}
+          pageId={pageId}
           disabled={!tree}
+          onSearchChange={setSearchInput}
           onSectionChange={changeSection}
           onModuleChange={changeModule}
+          onLessonChange={changeLesson}
+          onPageChange={changePage}
         />
-        {lessonIds.map((lessonId) => <LessonResolver key={lessonId} lessonId={lessonId} onResolved={resolveLesson} />)}
         {page && error ? (
           <Alert
             severity="warning"

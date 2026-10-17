@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student summary entity
-* Descripción: Domain shape of the student home (`GET /api/me/summary`): learning progress (overall and per section, values exactly as the API computes them), active and upcoming evaluations, latest published grades, notes, AI conversations, simulation sessions, upcoming ventilator reservations and the unread notifications count. Nothing here is computed on the client. BACKEND GAPS: summary grades carry no attemptId (no direct link to the attempt result), notes carry no moduleId nor lesson title (no direct link to the lesson page), section progress carries no section title and simulation sessions carry no case title. No dependencies.
-* Versión: 1.0
+* Descripción: Domain shape of the student home (`GET /api/me/summary`): learning progress (overall and per section, values exactly as the API computes them), active and upcoming evaluations, latest published grades, notes, AI conversations, simulation sessions, upcoming ventilator reservations and the unread notifications count. Nothing here is computed on the client. No dependencies. v1.1 (B2 closure): section progress carries its title, grades their attemptId and module, notes their module, lesson and page titles, and simulation sessions their case title (the backend gaps are closed).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,8 +10,9 @@
 */
 
 export type ProgressItem = {
-  // Section id; null for the overall progress.
+  // Section id and title; null for the overall progress (the title is also null when the API has none).
   id: string | null
+  title: string | null
   percentage: number
   completedLessons: number
   totalLessons: number
@@ -28,7 +29,10 @@ export type SummaryEvaluation = {
 };
 
 export type SummaryGrade = {
+  attemptId: string
   evaluationId: string
+  moduleId: string | null
+  moduleTitle: string | null
   title: string
   type: string
   attemptNumber: number
@@ -41,6 +45,9 @@ export type SummaryNote = {
   id: string
   lessonId: string
   pageId: string | null
+  moduleId: string | null
+  lessonTitle: string | null
+  pageTitle: string | null
   excerpt: string
   updatedAt: string
 };
@@ -54,6 +61,7 @@ export type SummaryConversation = {
 
 export type SummarySimulationSession = {
   id: string
+  caseTitle: string | null
   mode: string
   status: string
   score: number | null

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student space entity tests
-* Descripción: Pure rules of the student space: module options in curriculum order (all sections plus unsectioned levels, or one section), the notes page query, grouping of a notes page by module (curriculum rank) and lesson (lesson order) with a trailing group for unresolved lessons, the grade type filter (row selection only) and the labels fallback. Depends on vitest and the student space entities. v1.1 (B1 closure): the note fixture carries the new label fields.
-* Versión: 1.1
+* Descripción: Pure rules of the student space: module options in curriculum order (all sections plus unsectioned levels, or one section), the notes page query with the server-side filters, grouping of a notes page by module (curriculum rank, title from the tree) and lesson (API order, title from the note) with a trailing group for notes without module, the grade type and module filters (row selection only) and the grade module options and the labels fallback. Depends on vitest and the student space entities. v1.1 (B1 closure): the note fixture carries the new label fields. v1.2 (B2 closure): notes grouped by their API labels, notes query filters, grade module filter.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,10 +11,9 @@
 
 import { describe, expect, it } from "vitest";
 import type { CurriculumLevel, CurriculumTree, Note } from "@features/learning";
-import { filterGradesByType } from "./my-grade.entity";
+import { ALL_MODULES, filterGrades, filterGradesByType, hasGradesWithoutModule, listGradeModules, NO_MODULE } from "./my-grade.entity";
 import type { MyGrade } from "./my-grade.entity";
-import { groupNotesByModule, listModuleOptions, toModuleRanks, toNotesQuery } from "./my-notes.entity";
-import type { NoteLessonInfo } from "./my-notes.entity";
+import { groupNotesByModule, hasNotesFilters, listModuleOptions, NO_NOTES_FILTERS, toNotesQuery } from "./my-notes.entity";
 import { EVALUATION_TYPE_LABELS, labelOf } from "./student-space-labels";
 
 function level(id: string, sectionId: string | null, moduleIds: string[]): CurriculumLevel {
@@ -48,12 +47,8 @@ const TREE: CurriculumTree = {
   unsectionedLevels: [level("lv9", null, ["m9"])],
 };
 
-function note(id: string, lessonId: string): Note {
-  return { id, lessonId, pageId: null, moduleId: null, lessonTitle: null, pageTitle: null, content: {}, createdAt: "", updatedAt: "" };
-}
-
-function lesson(lessonId: string, lessonOrder: number, moduleId: string): NoteLessonInfo {
-  return { lessonId, lessonTitle: `Lección ${lessonId}`, lessonOrder, moduleId, moduleTitle: `Módulo ${moduleId}` };
+function note(id: string, lessonId: string, moduleId: string | null, lessonTitle: string | null = `Lección ${lessonId}`): Note {
+  return { id, lessonId, pageId: null, moduleId, lessonTitle, pageTitle: null, content: {}, createdAt: "", updatedAt: "" };
 }
 
 describe("listModuleOptions", () => {
@@ -67,51 +62,77 @@ describe("listModuleOptions", () => {
 });
 
 describe("toNotesQuery", () => {
-  it("asks for a one-based page, newest first", () => {
+  it("asks for a one-based page, newest first, without filters", () => {
     expect(toNotesQuery(2, 25)).toEqual({ page: 3, limit: 25, sortOrder: "desc" });
+  });
+
+  it("sends the trimmed search and the selected filters only", () => {
+    expect(toNotesQuery(0, 10, { search: "  peep ", moduleId: "m1", lessonId: "l1", pageId: null }))
+      .toEqual({ page: 1, limit: 10, sortOrder: "desc", search: "peep", moduleId: "m1", lessonId: "l1" });
+    expect(toNotesQuery(0, 10, { ...NO_NOTES_FILTERS, search: "   ", pageId: "p2" })).toEqual({ page: 1, limit: 10, sortOrder: "desc", pageId: "p2" });
+  });
+
+  it("knows when a filter is active", () => {
+    expect(hasNotesFilters(NO_NOTES_FILTERS)).toBe(false);
+    expect(hasNotesFilters({ ...NO_NOTES_FILTERS, search: " " })).toBe(false);
+    expect(hasNotesFilters({ ...NO_NOTES_FILTERS, search: "x" })).toBe(true);
+    expect(hasNotesFilters({ ...NO_NOTES_FILTERS, moduleId: "m1" })).toBe(true);
   });
 });
 
 describe("groupNotesByModule", () => {
-  it("groups by module rank and lesson order and keeps the API order of notes", () => {
-    const notes = [note("a", "l3"), note("b", "l1"), note("c", "lx"), note("d", "l2"), note("e", "l1")];
-    const lessons = { l1: lesson("l1", 2, "m2"), l2: lesson("l2", 1, "m2"), l3: lesson("l3", 1, "m1") };
-    const groups = groupNotesByModule(notes, lessons, toModuleRanks(listModuleOptions(TREE)));
+  it("groups by module rank with the tree title and by lesson in API order", () => {
+    const notes = [note("a", "l3", "m1"), note("b", "l1", "m2"), note("c", "lx", null, null), note("d", "l2", "m2"), note("e", "l1", "m2")];
+    const groups = groupNotesByModule(notes, listModuleOptions(TREE));
 
-    expect(groups.map((group) => group.moduleId)).toEqual(["m1", "m2", null]);
-    expect(groups[1]?.lessons.map((item) => item.lessonId)).toEqual(["l2", "l1"]);
-    expect(groups[1]?.lessons[1]?.notes.map((item) => item.id)).toEqual(["b", "e"]);
-    expect(groups[2]).toEqual({ moduleId: null, moduleTitle: null, lessons: [{ lessonId: "lx", lesson: null, notes: [note("c", "lx")] }] });
+    expect(groups.map((group) => [group.moduleId, group.moduleTitle])).toEqual([["m1", "Módulo m1"], ["m2", "Módulo m2"], [null, null]]);
+    expect(groups[1]?.lessons.map((item) => [item.lessonId, item.lessonTitle])).toEqual([["l1", "Lección l1"], ["l2", "Lección l2"]]);
+    expect(groups[1]?.lessons[0]?.notes.map((item) => item.id)).toEqual(["b", "e"]);
+    expect(groups[2]).toEqual({ moduleId: null, moduleTitle: null, lessons: [{ lessonId: "lx", lessonTitle: null, moduleId: null, notes: [notes[2]] }] });
   });
 
-  it("puts modules missing from the curriculum after the known ones", () => {
-    const groups = groupNotesByModule([note("a", "l1"), note("b", "l2")], { l1: lesson("l1", 1, "zz"), l2: lesson("l2", 1, "m3") }, toModuleRanks(listModuleOptions(TREE)));
+  it("puts modules missing from the curriculum after the known ones, without a title", () => {
+    const groups = groupNotesByModule([note("a", "l1", "zz"), note("b", "l2", "m3")], listModuleOptions(TREE));
 
-    expect(groups.map((group) => group.moduleId)).toEqual(["m3", "zz"]);
+    expect(groups.map((group) => [group.moduleId, group.moduleTitle])).toEqual([["m3", "Módulo m3"], ["zz", null]]);
   });
 });
 
-describe("filterGradesByType", () => {
-  const grade = (attemptId: string, evaluationType: MyGrade["evaluationType"]): MyGrade => ({
+describe("grade filters", () => {
+  const grade = (attemptId: string, evaluationType: MyGrade["evaluationType"], moduleId: string | null, moduleTitle: string | null): MyGrade => ({
     attemptId,
     attemptNumber: 1,
     evaluationId: "ev",
     evaluationTitle: "Ev",
     evaluationType,
+    moduleId,
+    moduleTitle,
     grade: 4,
     passed: true,
     publishedAt: "",
     score: null,
     maxScore: null,
   });
-  const grades = [grade("a", "EXAM"), grade("b", "QUIZ"), grade("c", "EXAM")];
+  const grades = [grade("a", "EXAM", "m2", "Modos"), grade("b", "QUIZ", "m1", "Fisiología"), grade("c", "EXAM", null, null), grade("d", "QUIZ", "m2", "Modos")];
 
   it("selects the rows of one type", () => {
     expect(filterGradesByType(grades, "EXAM").map((item) => item.attemptId)).toEqual(["a", "c"]);
   });
 
-  it("keeps every row for all types", () => {
-    expect(filterGradesByType(grades, "ALL")).toHaveLength(3);
+  it("keeps every row for all types and modules", () => {
+    expect(filterGrades(grades, { type: "ALL", module: ALL_MODULES })).toHaveLength(4);
+  });
+
+  it("selects the rows of one module, or the ones without module, combined with the type", () => {
+    expect(filterGrades(grades, { type: "ALL", module: "m2" }).map((item) => item.attemptId)).toEqual(["a", "d"]);
+    expect(filterGrades(grades, { type: "QUIZ", module: "m2" }).map((item) => item.attemptId)).toEqual(["d"]);
+    expect(filterGrades(grades, { type: "ALL", module: NO_MODULE }).map((item) => item.attemptId)).toEqual(["c"]);
+  });
+
+  it("lists the distinct modules by title and detects grades without module", () => {
+    expect(listGradeModules(grades)).toEqual([{ id: "m1", title: "Fisiología" }, { id: "m2", title: "Modos" }]);
+    expect(hasGradesWithoutModule(grades)).toBe(true);
+    expect(hasGradesWithoutModule(grades.filter((item) => item.moduleId !== null))).toBe(false);
   });
 });
 
