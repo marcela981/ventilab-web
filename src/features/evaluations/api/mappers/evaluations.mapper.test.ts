@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluations mappers tests
-* Descripción: Verifies the DTO → entity mapping of the student evaluations feature: items without an evaluation summary are dropped, attempts are sorted and carry a result only when published with a grade, descriptions become text or Tiptap doc RichText, the attempt start keeps the attempt id, and the attempt detail sorts scenarios, questions and options while copying correctness, explanation, rubric and earned score only when the backend sends them. Depends on vitest, the mappers and the test helpers. v1.1 (E3): toAttemptFeedback keeps the overall item (or null) and the per-question items.
-* Versión: 1.1
+* Descripción: Verifies the DTO → entity mapping of the student evaluations feature: items without an evaluation summary are dropped, attempts are sorted and carry a result only when published with a grade, descriptions become text or Tiptap doc RichText, the attempt start keeps the attempt id, and the attempt detail sorts scenarios, questions and options while copying correctness, explanation, rubric and earned score only when the backend sends them. Depends on vitest, the mappers and the test helpers. v1.1 (E3): toAttemptFeedback keeps the overall item (or null) and the per-question items. v1.2 (B1 closure): the published grade fixture carries the new moduleId and moduleTitle fields.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -88,6 +88,8 @@ describe("toMyGrade and toAttemptStart", () => {
       maxScore: 10,
       publishedAt: "2026-10-14T15:00:00.000Z",
       legacy: false,
+      moduleId: "m1",
+      moduleTitle: "Fisiología",
     })).toEqual({
       attemptId: "at1",
       attemptNumber: 1,

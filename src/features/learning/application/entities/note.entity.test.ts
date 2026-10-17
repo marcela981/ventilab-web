@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Note entity tests
-* Descripción: Unit tests of the note rules (text detection in a Tiptap document, anchor pageId to 1-based page number, newest-first upsert and removal) and of the AI analysis error messages (422, 502, 503, fallback). Depends on vitest and the api-client errors.
-* Versión: 1.0
+* Descripción: Unit tests of the note rules (text detection in a Tiptap document, anchor pageId to 1-based page number, newest-first upsert and removal) and of the AI analysis error messages (422, 502, 503, fallback). Depends on vitest and the api-client errors. v1.1 (B1 closure): the note fixture carries the new label fields.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,6 +19,9 @@ const note = (id: string, updatedAt = "2026-10-14T00:00:00.000Z"): Note => ({
   id,
   lessonId: "l1",
   pageId: null,
+  moduleId: "m1",
+  lessonTitle: null,
+  pageTitle: null,
   content: EMPTY_NOTE_DOC,
   createdAt: "2026-10-14T00:00:00.000Z",
   updatedAt,

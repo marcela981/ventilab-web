@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LessonNotesPanel tests
-* Descripción: Integration tests of the lesson notes panel against msw handlers of /api/notes: the caller's notes render with a page indicator that links to the anchored page (disabled when the page is unknown), a new note anchored to the current page sends its pageId, editing PATCHes the note, delete asks for confirmation before the DELETE, the AI analysis renders summary, key concepts, gaps, suggestions and the rating widget, and 429/503 show their messages. The lazy Tiptap editor is replaced by a textarea (the autosave rules are covered by use-note-autosave.test). v1.1 (L5/L6): a failed delete closes the dialog, keeps the note and shows a dismissible error alert. Depends on vitest, Testing Library, msw and the learning test helpers.
-* Versión: 1.1
+* Descripción: Integration tests of the lesson notes panel against msw handlers of /api/notes: the caller's notes render with a page indicator that links to the anchored page (disabled when the page is unknown), a new note anchored to the current page sends its pageId, editing PATCHes the note, delete asks for confirmation before the DELETE, the AI analysis renders summary, key concepts, gaps, suggestions and the rating widget, and 429/503 show their messages. The lazy Tiptap editor is replaced by a textarea (the autosave rules are covered by use-note-autosave.test). v1.1 (L5/L6): a failed delete closes the dialog, keeps the note and shows a dismissible error alert. Depends on vitest, Testing Library, msw and the learning test helpers. v1.2 (B1 closure): the note fixture carries the new moduleId, lessonTitle and pageTitle fields.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -38,7 +38,17 @@ const PAGES: LessonPage[] = [
 const textDoc = (text: string) => ({ type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text }] }] });
 
 function noteDto(id: string, text: string, pageId: string | null): NoteDTO {
-  return { id, lessonId: "l1", pageId, content: textDoc(text), createdAt: "2026-10-14T00:00:00.000Z", updatedAt: "2026-10-14T00:00:00.000Z" };
+  return {
+    id,
+    lessonId: "l1",
+    pageId,
+    moduleId: "m1",
+    lessonTitle: "Lección l1",
+    pageTitle: null,
+    content: textDoc(text),
+    createdAt: "2026-10-14T00:00:00.000Z",
+    updatedAt: "2026-10-14T00:00:00.000Z",
+  };
 }
 
 let store: NoteDTO[] = [];

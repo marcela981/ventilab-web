@@ -481,6 +481,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/ai/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get AI providers
+         * @description Every known AI provider with whether its credentials are configured on the server (credentials are never returned) and the models known to the AI feature (price table and current use case settings), to fill the AI settings forms; no provider is called
+         *
+         *     **Required access:** bearer token holding `settings:manage`; minimum role ADMIN.
+         */
+        get: operations["getAiProviders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/statistics": {
         parameters: {
             query?: never;
@@ -647,7 +669,7 @@ export interface paths {
         };
         /**
          * Get evaluation statistics
-         * @description Average, median, histogram in 0.5 buckets on the 0–5 scale and pass rate over graded attempts, plus the difficulty index and correct rate of each question. Teachers only see evaluations assigned to a group they manage; cached 60 s
+         * @description Average, median, histogram in 0.5 buckets on the 0–5 scale and pass rate over graded attempts, plus the difficulty index and correct rate of each question. Teachers only see evaluations assigned to a group they manage; groupId limits the statistics to the attempts of that group's assignments (teachers must manage or supervise the group, otherwise 403; unknown group 404); cached 60 s
          *
          *     **Required access:** bearer token holding `analytics:read`; minimum role TEACHER.
          */
@@ -669,7 +691,7 @@ export interface paths {
         };
         /**
          * Get a group dashboard
-         * @description One row per student: progress by section, level and module, counted grade per evaluation and average, simulation sessions (count, average score, average time to stabilize), AI usage per use case with the percentage of useful ratings and ventilator hours. Teachers only see groups they created or supervise; cached 60 s
+         * @description One row per student: progress by section, level and module, counted grade per evaluation and average, simulation sessions (count, average score, average time to stabilize), AI usage per use case with the percentage of useful ratings, ventilator hours and risk (atRisk, riskReasons, failedEvaluationIds) under the current risk thresholds; plus the current passing grade, the thresholds and the per-module progress aggregate of the group. Teachers only see groups they created or supervise; cached 60 s
          *
          *     **Required access:** bearer token holding `analytics:read`; minimum role TEACHER.
          */
@@ -713,11 +735,33 @@ export interface paths {
         };
         /**
          * Export the anonymized research dataset
-         * @description Long-format RFC 4180 CSV (participant, group, domain, item, metric, value) with progress, grades, simulation scores, AI ratings and AI telemetry of the students of STUDENT groups. User and group identifiers are replaced by HMAC-SHA256 with ANALYTICS_EXPORT_SALT; no names, emails or original identifiers are exported
+         * @description Long-format RFC 4180 CSV (participant, group, domain, item, metric, value) with progress, grades, simulation scores, AI ratings and AI telemetry of the students of STUDENT groups. User and group identifiers are replaced by HMAC-SHA256 with ANALYTICS_EXPORT_SALT; no names, emails or original identifiers are exported. Column meanings: GET /api/analytics/research/export/dictionary
          *
          *     **Required access:** bearer token holding `analytics:research-export`; minimum role ADMIN.
          */
         get: operations["exportResearchDataset"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/analytics/research/export/dictionary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the research export data dictionary
+         * @description Every column of GET /api/analytics/research/export.csv in file order, with its value type, Spanish description and an example; built from the same column definition the CSV writer uses
+         *
+         *     **Required access:** bearer token holding `analytics:research-export`; minimum role ADMIN.
+         */
+        get: operations["getResearchExportDictionary"];
         put?: never;
         post?: never;
         delete?: never;
@@ -770,6 +814,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/audit/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get audit log catalog
+         * @description Values to build the audit log filters: every action of the audit action catalog, the target entity types present in the log, and the export row limit
+         *
+         *     **Required access:** bearer token holding `audit:read`; minimum role ADMIN.
+         */
+        get: operations["getAuditLogCatalog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/audit/export": {
         parameters: {
             query?: never;
@@ -779,7 +845,7 @@ export interface paths {
         };
         /**
          * Export audit log as CSV
-         * @description One RFC 4180 row per audit entry matching the filters, oldest first, capped at the export row limit; cells starting with =, +, -, @ are prefixed against formula injection; the X-Export-Truncated header is "true" when rows were left out
+         * @description One RFC 4180 row per audit entry matching the filters, oldest first, capped at the export row limit of 50000 rows (also returned as exportRowLimit by GET /api/audit/catalog); cells starting with =, +, -, @ are prefixed against formula injection; the X-Export-Truncated header is "true" when rows were left out
          *
          *     **Required access:** bearer token holding `audit:read`; minimum role ADMIN.
          */
@@ -806,6 +872,28 @@ export interface paths {
          *     **Required access:** bearer token holding `audit:read`; minimum role ADMIN.
          */
         get: operations["getTargetHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/audit/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get audit entry
+         * @description One audit entry by its ID
+         *
+         *     **Required access:** bearer token holding `audit:read`; minimum role ADMIN.
+         */
+        get: operations["getAuditLogEntry"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2100,11 +2188,55 @@ export interface paths {
         };
         /**
          * Get grading queue
-         * @description PENDING_REVIEW attempts of students in the STUDENT groups the caller created or supervises (legacy attempts without assignment: evaluations the caller created; admins: all), oldest first; expired attempts in progress of the filtered evaluations/groups are closed first (at most 50 per request)
+         * @description PENDING_REVIEW attempts of students in the STUDENT groups the caller created or supervises (legacy attempts without assignment: evaluations the caller created; admins: all), optionally filtered by evaluation, group and student, oldest first; expired attempts in progress of the filtered evaluations/groups/student are closed first (at most 50 per request)
          *
          *     **Required access:** bearer token holding `evaluations:grade`; minimum role TEACHER.
          */
         get: operations["getQueue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/evaluation-grading/queue/count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Count the grading queue
+         * @description Number of PENDING_REVIEW attempts with the same scope and filters (evaluation, group, student) as the grading queue; expired attempts in progress matching the filters are closed first (at most 50 per request)
+         *
+         *     **Required access:** bearer token holding `evaluations:grade`; minimum role TEACHER.
+         */
+        get: operations["getQueueCount"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/evaluation-grading/students/{userId}/grades": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a student's grades
+         * @description Published grades of a student with attempt, evaluation, module, grade on the 0.0–5.0 scale, pass flag and publication date. Admins see every grade; a teacher must create or supervise a STUDENT group of the student (403 otherwise) and only sees the grades of their grading scope (assignments of those groups, legacy attempts of evaluations they created)
+         *
+         *     **Required access:** bearer token holding `evaluations:grade`; minimum role TEACHER.
+         */
+        get: operations["getStudentGrades"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2647,7 +2779,7 @@ export interface paths {
         };
         /**
          * Get groups
-         * @description Lists groups ordered by depth and name. Admins see every group; teachers see the student groups they created or supervise and the teacher groups they belong to; myGroups=true applies that teacher scope to admins too
+         * @description Lists groups ordered by depth and name. Admins see every group; teachers see the student groups they created or supervise and the teacher groups they belong to; myGroups=true applies that teacher scope to admins too. When the list is scoped to the requester (teachers, or myGroups=true), each student group carries relation MANAGED (created by the requester) or SUPERVISED (supervised by a teacher group of the requester)
          *
          *     **Required access:** bearer token holding `groups:read`; minimum role TEACHER.
          */
@@ -3745,7 +3877,7 @@ export interface paths {
         };
         /**
          * Get my notes
-         * @description Paginated list of the caller's own notes, newest first
+         * @description Paginated list of the caller's own notes, newest first, optionally filtered by text (case-insensitive), lesson, module or page
          *
          *     **Required access:** bearer token holding `notes:read_own`; minimum role STUDENT.
          */
@@ -4850,7 +4982,7 @@ export interface paths {
         };
         /**
          * Reservations calendar
-         * @description Reservations overlapping [from, to) (at most 31 days). Students get other people's reservations as { id, startsAt, endsAt, status, label } only
+         * @description Reservations overlapping [from, to) (at most 31 days), optionally only those held by groupId (admins: any group; teachers: groups they manage or supervise; students: their own group; otherwise 403). Students get other people's reservations as { id, startsAt, endsAt, status, label } only
          *
          *     **Required access:** bearer token holding `reservations:read`; minimum role STUDENT.
          */
@@ -6194,7 +6326,7 @@ export interface paths {
         };
         /**
          * Get users
-         * @description Retrieves a paginated list of users filtered by search term (name, email or exact ID), role, group and account status
+         * @description Retrieves a paginated list of users filtered by search term (case-insensitive name, email or student code, or exact ID), role, group and account status; each user carries its student code and whether it is the superadmin
          *
          *     **Required access:** bearer token holding `users:list`; minimum role TEACHER.
          */
@@ -6367,6 +6499,28 @@ export interface paths {
         patch: operations["changeUserStatus"];
         trace?: never;
     };
+    "/api/users/{id}/student-code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Change user student code
+         * @description Sets (trimmed, 1 to 32 letters, digits or hyphens) or removes (null) the institutional student code of a user; the code is unique and the change is audited with its previous and new value
+         *
+         *     **Required access:** bearer token holding `users:update_status`; minimum role ADMIN.
+         */
+        patch: operations["changeUserStudentCode"];
+        trace?: never;
+    };
     "/api/ventilator/commands": {
         parameters: {
             query?: never;
@@ -6484,7 +6638,7 @@ export interface paths {
          * Ventilator telemetry metrics
          * @description In-memory pipeline metrics: messages and batches per second, invalid and lost messages, volatile emits and p50/p95/p99 of processing, total (including the batching wait), flush and device-to-server latency
          *
-         *     **Required access:** bearer token holding `ventilator:metrics`; minimum role ADMIN.
+         *     **Required access:** bearer token holding `ventilator:metrics`; minimum role TEACHER.
          */
         get: operations["getTelemetryMetrics"];
         put?: never;
@@ -6506,7 +6660,7 @@ export interface paths {
          * Export ventilator telemetry latency samples as CSV
          * @description One RFC 4180 row per retained latency sample: kind,valueMs,recordedAt
          *
-         *     **Required access:** bearer token holding `ventilator:metrics`; minimum role ADMIN.
+         *     **Required access:** bearer token holding `ventilator:metrics`; minimum role TEACHER.
          */
         get: operations["exportTelemetryMetricsCsv"];
         put?: never;
@@ -6530,7 +6684,7 @@ export interface paths {
          * Reset ventilator telemetry metrics
          * @description Clears counters, rates and latency buffers
          *
-         *     **Required access:** bearer token holding `ventilator:metrics`; minimum role ADMIN.
+         *     **Required access:** bearer token holding `ventilator:metrics_reset`; minimum role ADMIN.
          */
         post: operations["resetTelemetryMetrics"];
         delete?: never;
@@ -7162,6 +7316,26 @@ export interface components {
              * @example respiratory-physiology
              */
             prerequisiteId: string;
+        };
+        AdminAiProviderDTO: {
+            /**
+             * @description Whether the provider credentials are configured on the server (the credentials are never returned)
+             * @example true
+             */
+            configured: boolean;
+            /**
+             * @description Models known to the AI feature for this provider: models of the price table and models referenced by the current use case settings, sorted
+             * @example [
+             *       "gemini-2.0-flash",
+             *       "gemini-2.5-flash"
+             *     ]
+             */
+            models: string[];
+            /**
+             * @description Provider ID (gemini, openai, anthropic or custom)
+             * @example gemini
+             */
+            provider: string;
         };
         AdminChangeUserRoleDTO: {
             /**
@@ -8378,6 +8552,29 @@ export interface components {
             /** @description Selected option per question */
             answers: components["schemas"]["QuizAnswerDTO"][];
         };
+        AuditLogCatalogDTO: {
+            /**
+             * @description Every action of the audit action catalog, sorted
+             * @example [
+             *       "user_role_changed",
+             *       "user_status_changed"
+             *     ]
+             */
+            actions: string[];
+            /**
+             * @description Maximum number of rows of one CSV export (GET /api/audit/export)
+             * @example 50000
+             */
+            exportRowLimit: number;
+            /**
+             * @description Target entity types present in the audit log, sorted
+             * @example [
+             *       "page",
+             *       "user"
+             *     ]
+             */
+            targetTypes: string[];
+        };
         AuditLogEntryDTO: {
             /**
              * @description Action performed
@@ -8836,6 +9033,13 @@ export interface components {
              * @example false
              */
             isActive: boolean;
+        };
+        ChangeUserStudentCodeDTO: {
+            /**
+             * @description Institutional student code (trimmed; letters, digits and hyphens), unique per user; null removes it
+             * @example 2026-0001
+             */
+            studentCode: string | null;
         };
         ClinicalCaseAttemptsDTO: {
             /** @description Attempts, most recent first */
@@ -10922,10 +11126,15 @@ export interface components {
              */
             code: string;
             /**
-             * @description Structured details some errors return so the client can act (for example conflicting records); null otherwise
+             * @description Structured details some errors return so the client can act (for example conflicting records); validation errors and errors with a field detail carry `errors`; null otherwise
              * @example null
              */
-            data: unknown;
+            data: ({
+                /** @description One entry per failing field, with its translated message */
+                errors?: components["schemas"]["FieldError"][];
+            } & {
+                [key: string]: unknown;
+            }) | null;
             /**
              * @description Translated message (an array of messages for validation errors)
              * @example Resource not found
@@ -10958,6 +11167,54 @@ export interface components {
             /** @description Ventilator configuration chosen by the student */
             configuration: components["schemas"]["VentilatorConfigurationDTO"];
         };
+        EvaluationActivatedNotificationDTO: {
+            /**
+             * @description Body shown to the user
+             * @example Ya puedes consultar tu calificación: 8 de 10 puntos (aprobada).
+             */
+            body: string;
+            /**
+             * Format: date-time
+             * @description When the notification was created
+             * @example 2026-10-11T14:00:00.000Z
+             */
+            createdAt: string;
+            /** @description References of the assigned evaluation */
+            data: components["schemas"]["EvaluationActivatedNotificationDataDTO"] | null;
+            /**
+             * @description Notification ID
+             * @example 01932e9f-1234-7abc-9def-1a2b3c4d5e6f
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description When the notification was read (null while unread)
+             * @example null
+             */
+            readAt: string | null;
+            /**
+             * @description Title shown to the user
+             * @example Calificación publicada
+             */
+            title: string;
+            /**
+             * @description Notification type (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "EVALUATION_ACTIVATED";
+        };
+        EvaluationActivatedNotificationDataDTO: {
+            /**
+             * @description ID of the assignment of the evaluation to the group
+             * @example 01932e9f-3456-7abc-9def-1a2b3c4d5e6f
+             */
+            assignmentId: string;
+            /**
+             * @description ID of the assigned evaluation
+             * @example 01932e9f-2345-7abc-9def-1a2b3c4d5e6f
+             */
+            evaluationId: string;
+        };
         EvaluationAnalyticsDTO: {
             /**
              * @description Average grade
@@ -10974,6 +11231,11 @@ export interface components {
              * @example 20
              */
             gradedCount: number;
+            /**
+             * @description Group the statistics are limited to (groupId query), null for the whole requester scope
+             * @example null
+             */
+            groupId: string | null;
             /** @description Grade histogram in 0.5 buckets on the 0–5 scale */
             histogram: components["schemas"]["GradeHistogramBucketDTO"][];
             /**
@@ -11738,6 +12000,72 @@ export interface components {
              */
             title?: string;
         };
+        FeedbackReadyNotificationDTO: {
+            /**
+             * @description Body shown to the user
+             * @example Ya puedes consultar tu calificación: 8 de 10 puntos (aprobada).
+             */
+            body: string;
+            /**
+             * Format: date-time
+             * @description When the notification was created
+             * @example 2026-10-11T14:00:00.000Z
+             */
+            createdAt: string;
+            /** @description References of the ready feedback */
+            data: components["schemas"]["FeedbackReadyNotificationDataDTO"] | null;
+            /**
+             * @description Notification ID
+             * @example 01932e9f-1234-7abc-9def-1a2b3c4d5e6f
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description When the notification was read (null while unread)
+             * @example null
+             */
+            readAt: string | null;
+            /**
+             * @description Title shown to the user
+             * @example Calificación publicada
+             */
+            title: string;
+            /**
+             * @description Notification type (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "FEEDBACK_READY";
+        };
+        FeedbackReadyNotificationDataDTO: {
+            /**
+             * @description ID of the attempt the feedback belongs to
+             * @example 01932e9f-5678-7abc-9def-1a2b3c4d5e6f
+             */
+            attemptId: string;
+            /**
+             * @description ID of the evaluation
+             * @example 01932e9f-2345-7abc-9def-1a2b3c4d5e6f
+             */
+            evaluationId: string;
+            /**
+             * @description ID of the generated feedback
+             * @example 01932e9f-6789-7abc-9def-1a2b3c4d5e6f
+             */
+            feedbackId: string;
+        };
+        /** @description Error of one field: the request body path (nested objects with dots, array items with [index]) or, for platform settings, the setting key followed by the path inside its value */
+        FieldError: {
+            /**
+             * @description Path of the failing field
+             * @example items[0].quantity
+             */
+            field: string;
+            /**
+             * @description Translated message of the field error
+             * @example quantity must be an integer
+             */
+            message: string;
+        };
         FieldOverridesDTO: {
             /**
              * @description Overridden content
@@ -11930,6 +12258,54 @@ export interface components {
              * @example 3.5
              */
             to: number;
+        };
+        GradePublishedNotificationDTO: {
+            /**
+             * @description Body shown to the user
+             * @example Ya puedes consultar tu calificación: 8 de 10 puntos (aprobada).
+             */
+            body: string;
+            /**
+             * Format: date-time
+             * @description When the notification was created
+             * @example 2026-10-11T14:00:00.000Z
+             */
+            createdAt: string;
+            /** @description References of the published grade */
+            data: components["schemas"]["GradePublishedNotificationDataDTO"] | null;
+            /**
+             * @description Notification ID
+             * @example 01932e9f-1234-7abc-9def-1a2b3c4d5e6f
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description When the notification was read (null while unread)
+             * @example null
+             */
+            readAt: string | null;
+            /**
+             * @description Title shown to the user
+             * @example Calificación publicada
+             */
+            title: string;
+            /**
+             * @description Notification type (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "GRADE_PUBLISHED";
+        };
+        GradePublishedNotificationDataDTO: {
+            /**
+             * @description ID of the graded attempt
+             * @example 01932e9f-5678-7abc-9def-1a2b3c4d5e6f
+             */
+            attemptId: string;
+            /**
+             * @description ID of the graded evaluation
+             * @example 01932e9f-2345-7abc-9def-1a2b3c4d5e6f
+             */
+            evaluationId: string;
         };
         GradeSubmissionDTO: {
             /**
@@ -12139,6 +12515,13 @@ export interface components {
              */
             userId: string;
         };
+        GradingQueueCountDTO: {
+            /**
+             * @description PENDING_REVIEW attempts matching the queue scope and filters
+             * @example 7
+             */
+            pending: number;
+        };
         GradingQueueItemDTO: {
             /**
              * @description Assignment ID (null for legacy attempts)
@@ -12287,6 +12670,12 @@ export interface components {
              */
             parentGroupId: string | null;
             /**
+             * @description Relation of the requester with this STUDENT group when the list is scoped to the requester (teachers, or myGroups=true): MANAGED if they created it, SUPERVISED if a teacher group they belong to supervises it; null otherwise
+             * @example MANAGED
+             * @enum {string|null}
+             */
+            relation?: "MANAGED" | "SUPERVISED" | null;
+            /**
              * @description Semester
              * @example 2026-2
              */
@@ -12332,6 +12721,15 @@ export interface components {
              * @example Group A
              */
             groupName: string;
+            /** @description Progress per published module aggregated over the group's students */
+            moduleSummary: components["schemas"]["GroupModuleSummaryDTO"][];
+            /**
+             * @description Current passing grade (0–5 scale) used for the pass flags
+             * @example 3
+             */
+            passingGrade: number;
+            /** @description Current risk thresholds (platform settings analytics.risk.*) */
+            riskThresholds: components["schemas"]["RiskThresholdsDTO"];
             /** @description One row per student member */
             students: components["schemas"]["StudentDashboardRowDTO"][];
         };
@@ -12405,6 +12803,12 @@ export interface components {
              * @example null
              */
             parentGroupId: string | null;
+            /**
+             * @description Relation of the requester with this STUDENT group when the list is scoped to the requester (teachers, or myGroups=true): MANAGED if they created it, SUPERVISED if a teacher group they belong to supervises it; null otherwise
+             * @example MANAGED
+             * @enum {string|null}
+             */
+            relation?: "MANAGED" | "SUPERVISED" | null;
             /**
              * @description Semester
              * @example 2026-2
@@ -12540,6 +12944,33 @@ export interface components {
              * @enum {string}
              */
             memberRole: "LEADER" | "MEMBER";
+        };
+        GroupModuleSummaryDTO: {
+            /**
+             * @description Average module progress of the group's students (students without progress count as 0), 0–100
+             * @example 62.5
+             */
+            averageProgressPct: number;
+            /**
+             * @description Students who completed every published lesson of the module
+             * @example 4
+             */
+            completedCount: number;
+            /**
+             * @description Module identifier
+             * @example cm5x2k9a00000abcd1234efgh
+             */
+            moduleId: string;
+            /**
+             * @description Module title
+             * @example Ventilation basics
+             */
+            moduleTitle: string | null;
+            /**
+             * @description Students of the group
+             * @example 25
+             */
+            studentCount: number;
         };
         GroupNameDTO: {
             /**
@@ -15124,6 +15555,16 @@ export interface components {
              */
             maxScore: number | null;
             /**
+             * @description Module the evaluation belongs to (null when it is not tied to a module)
+             * @example cm5module01
+             */
+            moduleId: string | null;
+            /**
+             * @description Title of the module the evaluation belongs to
+             * @example Ventilation basics
+             */
+            moduleTitle: string | null;
+            /**
              * @description Whether the grade reaches the passing grade
              * @example true
              */
@@ -15177,6 +15618,11 @@ export interface components {
         };
         MyGradeDTO: {
             /**
+             * @description Graded attempt identifier
+             * @example cm5x2k9a00000abcd1234efgh
+             */
+            attemptId: string;
+            /**
              * @description Attempt number
              * @example 1
              */
@@ -15201,6 +15647,16 @@ export interface components {
              * @example 4.2
              */
             grade: number;
+            /**
+             * @description Module the evaluation belongs to (null when it is not tied to a module)
+             * @example cm5x2k9a00000abcd1234efgh
+             */
+            moduleId: string | null;
+            /**
+             * @description Title of the module the evaluation belongs to
+             * @example Ventilation basics
+             */
+            moduleTitle: string | null;
             /**
              * @description Whether the grade reaches the passing grade
              * @example true
@@ -15235,10 +15691,25 @@ export interface components {
              */
             lessonId: string;
             /**
+             * @description Title of the note's lesson
+             * @example PEEP basics
+             */
+            lessonTitle: string | null;
+            /**
+             * @description Module of the note's lesson
+             * @example cm5x2k9a00000abcd1234efgh
+             */
+            moduleId: string | null;
+            /**
              * @description Page identifier
              * @example cm5x2k9a00000abcd1234efgh
              */
             pageId: string | null;
+            /**
+             * @description Title of the page (content section) the note refers to; null without a page
+             * @example Alveolar recruitment
+             */
+            pageTitle: string | null;
             /**
              * @description Last update
              * @example 2026-10-11T15:04:05.000Z
@@ -15289,6 +15760,11 @@ export interface components {
              * @example cm5x2k9a00000abcd1234efgh
              */
             caseId: string;
+            /**
+             * @description Clinical case title (null when the case no longer exists)
+             * @example Normal lung
+             */
+            caseTitle: string | null;
             /**
              * @description End time
              * @example 2026-10-11T15:04:05.000Z
@@ -15402,10 +15878,25 @@ export interface components {
              */
             lessonId: string;
             /**
+             * @description Title of the note's lesson
+             * @example PEEP basics
+             */
+            lessonTitle: string | null;
+            /**
+             * @description Module of the note's lesson (null when the lesson cannot be resolved)
+             * @example cm5x2k9a00000abcd1234mnop
+             */
+            moduleId: string | null;
+            /**
              * @description Page of the lesson the note refers to
              * @example cm5x2k9a00000abcd1234wxyz
              */
             pageId: string | null;
+            /**
+             * @description Title of the page (content section) the note refers to; null without a page
+             * @example Alveolar recruitment
+             */
+            pageTitle: string | null;
             /**
              * Format: date-time
              * @description Last update timestamp
@@ -15486,13 +15977,13 @@ export interface components {
              */
             createdAt: string;
             /**
-             * @description Deep-link references (record IDs) for the client to build the target route
+             * @description Deep-link references (record IDs) for the client to build the target route; its shape depends on type
              * @example {
              *       "attemptId": "01932e9f-5678-7abc-9def-1a2b3c4d5e6f",
              *       "evaluationId": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f"
              *     }
              */
-            data: Record<string, never> | null;
+            data: (components["schemas"]["ReservationPreemptedNotificationDataDTO"] | components["schemas"]["ReservationCancelledNotificationDataDTO"] | components["schemas"]["EvaluationActivatedNotificationDataDTO"] | components["schemas"]["GradePublishedNotificationDataDTO"] | components["schemas"]["FeedbackReadyNotificationDataDTO"] | components["schemas"]["RoleChangedNotificationDataDTO"] | components["schemas"]["VentilatorOfflineNotificationDataDTO"]) | null;
             /**
              * @description Notification ID
              * @example 01932e9f-1234-7abc-9def-1a2b3c4d5e6f
@@ -15510,7 +16001,7 @@ export interface components {
              */
             title: string;
             /**
-             * @description Notification type
+             * @description Notification type; it decides the shape of data
              * @example GRADE_PUBLISHED
              * @enum {string}
              */
@@ -16306,15 +16797,15 @@ export interface components {
              * @example telemetry
              * @enum {string}
              */
-            category: "ai" | "evaluation" | "simulation" | "reservations" | "telemetry" | "commands";
+            category: "ai" | "evaluation" | "analytics" | "simulation" | "reservations" | "telemetry" | "commands";
             /**
              * @description Default value, from the server configuration or code
              * @example 33
              */
             defaultValue: number | boolean | string | unknown[] | Record<string, never>;
             /**
-             * @description What the setting controls
-             * @example Interval at which buffered telemetry frames are sent to clients
+             * @description What the setting controls, in Spanish
+             * @example Intervalo con el que se envían a los clientes los fotogramas de telemetría acumulados; un cambio reprograma el temporizador sin reiniciar
              */
             description: string;
             /**
@@ -16322,6 +16813,13 @@ export interface components {
              * @example telemetry.flushIntervalMs
              */
             key: string;
+            /** @description Keys of a map-like setting (or of its map field) a form can add or remove; null for other settings */
+            keySchema: components["schemas"]["PlatformSettingKeySchemaDTO"] | null;
+            /**
+             * @description Short name of the setting, in Spanish
+             * @example Intervalo de envío de telemetría
+             */
+            label: string;
             /**
              * @description Hard limits no value may exceed (ranges, allowed values, required credentials)
              * @example {
@@ -16339,6 +16837,17 @@ export interface components {
              * @enum {string}
              */
             origin: "DEFAULT" | "OVERRIDE";
+            /**
+             * @description Type of the value, so a generic form can pick its input
+             * @example integer
+             * @enum {string}
+             */
+            type: "integer" | "number" | "boolean" | "string" | "string-list" | "integer-list" | "map" | "object";
+            /**
+             * @description Unit of the value, in Spanish; null when it has none
+             * @example milisegundos
+             */
+            unit: string | null;
             /**
              * @description When the override was last changed
              * @example 2026-10-11T12:00:00.000Z
@@ -16359,6 +16868,54 @@ export interface components {
              * @example 0
              */
             version: number;
+        };
+        PlatformSettingKeySchemaDTO: {
+            /**
+             * @description Keys a form may add (for AI provider maps, the providers the AI feature registers); null when any key is accepted
+             * @example [
+             *       "gemini",
+             *       "openai",
+             *       "anthropic",
+             *       "custom"
+             *     ]
+             */
+            allowedKeys: string[] | null;
+            /**
+             * @description Label of the map keys, in Spanish
+             * @example Proveedor
+             */
+            keyLabel: string;
+            /**
+             * @description Field of the value that holds the map (null when the whole value is the map)
+             * @example null
+             */
+            path: string | null;
+            /** @description Key schema of the nested map when valueType is map; null otherwise */
+            valueKeySchema: components["schemas"]["PlatformSettingKeySchemaDTO"] | null;
+            /**
+             * @description Hard limits of the value under each key (per field for object values); null when the value is a nested map
+             * @example {
+             *       "inputPer1kUsd": {
+             *         "integer": false,
+             *         "max": 1,
+             *         "min": 0
+             *       },
+             *       "outputPer1kUsd": {
+             *         "integer": false,
+             *         "max": 1,
+             *         "min": 0
+             *       }
+             *     }
+             */
+            valueLimits: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * @description Type of the value under each key
+             * @example map
+             * @enum {string}
+             */
+            valueType: "integer" | "number" | "boolean" | "string" | "string-list" | "integer-list" | "map" | "object";
         };
         PlatformStatisticsDTO: {
             /**
@@ -16607,6 +17164,11 @@ export interface components {
              * @example 40
              */
             percentage: number;
+            /**
+             * @description Section, level or module title (overall progress has none)
+             * @example Ventilation basics
+             */
+            title: string | null;
             /**
              * @description Published lessons
              * @example 10
@@ -17224,6 +17786,72 @@ export interface components {
              */
             stepIds: string[];
         };
+        ResearchExportColumnDTO: {
+            /**
+             * @description CSV column name, in file order
+             * @example participant
+             */
+            column: string;
+            /**
+             * @description Meaning of the column and its allowed values (Spanish)
+             * @example Seudónimo del estudiante: HMAC-SHA256 del identificador de usuario
+             */
+            description: string;
+            /**
+             * @description Example value (null when the column has none)
+             * @example progress
+             */
+            example: string | null;
+            /**
+             * @description Value type of the column
+             * @example string
+             * @enum {string}
+             */
+            type: "string" | "number";
+        };
+        ReservationCancelledNotificationDTO: {
+            /**
+             * @description Body shown to the user
+             * @example Ya puedes consultar tu calificación: 8 de 10 puntos (aprobada).
+             */
+            body: string;
+            /**
+             * Format: date-time
+             * @description When the notification was created
+             * @example 2026-10-11T14:00:00.000Z
+             */
+            createdAt: string;
+            /** @description References of the cancelled reservation */
+            data: components["schemas"]["ReservationCancelledNotificationDataDTO"] | null;
+            /**
+             * @description Notification ID
+             * @example 01932e9f-1234-7abc-9def-1a2b3c4d5e6f
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description When the notification was read (null while unread)
+             * @example null
+             */
+            readAt: string | null;
+            /**
+             * @description Title shown to the user
+             * @example Calificación publicada
+             */
+            title: string;
+            /**
+             * @description Notification type (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "RESERVATION_CANCELLED";
+        };
+        ReservationCancelledNotificationDataDTO: {
+            /**
+             * @description ID of the cancelled reservation
+             * @example 01932e9f-1234-7abc-9def-1a2b3c4d5e6f
+             */
+            reservationId: string;
+        };
         ReservationDTO: {
             /**
              * @description Reservation end (ms epoch)
@@ -17350,6 +17978,54 @@ export interface components {
              */
             role: string;
         };
+        ReservationPreemptedNotificationDTO: {
+            /**
+             * @description Body shown to the user
+             * @example Ya puedes consultar tu calificación: 8 de 10 puntos (aprobada).
+             */
+            body: string;
+            /**
+             * Format: date-time
+             * @description When the notification was created
+             * @example 2026-10-11T14:00:00.000Z
+             */
+            createdAt: string;
+            /** @description References of the preempted reservation */
+            data: components["schemas"]["ReservationPreemptedNotificationDataDTO"] | null;
+            /**
+             * @description Notification ID
+             * @example 01932e9f-1234-7abc-9def-1a2b3c4d5e6f
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description When the notification was read (null while unread)
+             * @example null
+             */
+            readAt: string | null;
+            /**
+             * @description Title shown to the user
+             * @example Calificación publicada
+             */
+            title: string;
+            /**
+             * @description Notification type (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "RESERVATION_PREEMPTED";
+        };
+        ReservationPreemptedNotificationDataDTO: {
+            /**
+             * @description ID of the reservation that replaced it
+             * @example 01932e9f-9999-7abc-9def-1a2b3c4d5e6f
+             */
+            replacedByReservationId: string;
+            /**
+             * @description ID of the preempted reservation
+             * @example 01932e9f-1234-7abc-9def-1a2b3c4d5e6f
+             */
+            reservationId: string;
+        };
         ReservationSummaryDTO: {
             /**
              * @description End of the reservation (ISO 8601)
@@ -17423,6 +18099,71 @@ export interface components {
              * @example 01932e9f-1234-7abc-9def-1a2b3c4d5e6f
              */
             id: string;
+        };
+        RiskThresholdsDTO: {
+            /**
+             * @description Days without activity after which a student is at risk (0 disables the rule)
+             * @example 0
+             */
+            inactivityDays: number;
+            /**
+             * @description Failed evaluations a student may have before being at risk (0: any failed evaluation flags the student)
+             * @example 0
+             */
+            maxFailedEvaluations: number;
+            /**
+             * @description Overall progress percentage below which a student is at risk (0 disables the rule)
+             * @example 0
+             */
+            minProgressPct: number;
+        };
+        RoleChangedNotificationDTO: {
+            /**
+             * @description Body shown to the user
+             * @example Ya puedes consultar tu calificación: 8 de 10 puntos (aprobada).
+             */
+            body: string;
+            /**
+             * Format: date-time
+             * @description When the notification was created
+             * @example 2026-10-11T14:00:00.000Z
+             */
+            createdAt: string;
+            /** @description Previous and new role of the user */
+            data: components["schemas"]["RoleChangedNotificationDataDTO"] | null;
+            /**
+             * @description Notification ID
+             * @example 01932e9f-1234-7abc-9def-1a2b3c4d5e6f
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description When the notification was read (null while unread)
+             * @example null
+             */
+            readAt: string | null;
+            /**
+             * @description Title shown to the user
+             * @example Calificación publicada
+             */
+            title: string;
+            /**
+             * @description Notification type (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "ROLE_CHANGED";
+        };
+        RoleChangedNotificationDataDTO: {
+            /**
+             * @description Role after the change
+             * @example TEACHER
+             */
+            newRole: string;
+            /**
+             * @description Role before the change
+             * @example STUDENT
+             */
+            previousRole: string;
         };
         RolePermissionsDTO: {
             /**
@@ -17999,6 +18740,11 @@ export interface components {
              * @example engine-normal-lung
              */
             caseId: string;
+            /**
+             * @description Clinical case title (null when the case no longer exists)
+             * @example Normal lung
+             */
+            caseTitle: string | null;
             /**
              * @description Session end
              * @example null
@@ -18936,12 +19682,30 @@ export interface components {
             /** @description AI usage per use case */
             aiUsage: components["schemas"]["StudentAiUsageDTO"][];
             /**
+             * @description Whether any risk rule of the dashboard thresholds applies to the student
+             * @example true
+             */
+            atRisk: boolean;
+            /**
              * @description Student email
              * @example ana@example.com
              */
             email: string;
+            /**
+             * @description Evaluations whose latest published attempt (highest attempt number) is failed
+             * @example [
+             *       "cm5x2k9a00000abcd1234efgh"
+             *     ]
+             */
+            failedEvaluationIds: string[];
             /** @description Published grades */
             grades: components["schemas"]["StudentGradesDTO"];
+            /**
+             * Format: date-time
+             * @description Latest learning activity of the student (page view or lesson progress update, simulation session start or end), null without recorded activity
+             * @example 2026-10-01T14:30:00.000Z
+             */
+            lastActivityAt: string | null;
             /**
              * @description Student name
              * @example Ana Gómez
@@ -18949,6 +19713,13 @@ export interface components {
             name: string | null;
             /** @description Learning progress */
             progress: components["schemas"]["AnalyticsStudentProgressDTO"];
+            /**
+             * @description Risk rules that apply: FAILED_EVALUATIONS (failed latest attempts above maxFailedEvaluations), LOW_PROGRESS (overall progress below minProgressPct), INACTIVE (lastActivityAt older than inactivityDays; never applies without recorded activity)
+             * @example [
+             *       "FAILED_EVALUATIONS"
+             *     ]
+             */
+            riskReasons: ("FAILED_EVALUATIONS" | "LOW_PROGRESS" | "INACTIVE")[];
             /** @description Simulation sessions */
             simulation: components["schemas"]["StudentSimulationDTO"];
             /**
@@ -20527,10 +21298,10 @@ export interface components {
         };
         UpdatePlatformSettingDTO: {
             /**
-             * @description New value; its type and shape depend on the setting (number, boolean, array or object, see the setting limits)
+             * @description New value; its type and shape depend on the setting (see its type, limits and keySchema); the setting registry validates it per key
              * @example 50
              */
-            value: number | boolean | unknown[] | Record<string, never>;
+            value: number | boolean | string | unknown[] | Record<string, never>;
             /**
              * @description Version of the setting the change is based on (0 while it uses its default)
              * @example 0
@@ -20825,6 +21596,11 @@ export interface components {
              */
             isActive: boolean;
             /**
+             * @description Whether the user is the configured superadmin (SUPERADMIN_EMAIL), whose role and status cannot change
+             * @example false
+             */
+            isSuperadmin: boolean;
+            /**
              * @description User's full name
              * @example Ana María Pérez
              */
@@ -20835,6 +21611,11 @@ export interface components {
              * @enum {string}
              */
             role: "STUDENT" | "TEACHER" | "ADMIN";
+            /**
+             * @description Institutional student code set by an admin (unique, letters, digits and hyphens)
+             * @example 2026-0001
+             */
+            studentCode: string | null;
             /**
              * Format: date-time
              * @description Last update timestamp
@@ -21069,6 +21850,54 @@ export interface components {
              * @example 2026-10-10T12:00:00.000Z
              */
             since?: string | null;
+        };
+        VentilatorOfflineNotificationDTO: {
+            /**
+             * @description Body shown to the user
+             * @example Ya puedes consultar tu calificación: 8 de 10 puntos (aprobada).
+             */
+            body: string;
+            /**
+             * Format: date-time
+             * @description When the notification was created
+             * @example 2026-10-11T14:00:00.000Z
+             */
+            createdAt: string;
+            /** @description Active reservation and disconnection reason */
+            data: components["schemas"]["VentilatorOfflineNotificationDataDTO"] | null;
+            /**
+             * @description Notification ID
+             * @example 01932e9f-1234-7abc-9def-1a2b3c4d5e6f
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description When the notification was read (null while unread)
+             * @example null
+             */
+            readAt: string | null;
+            /**
+             * @description Title shown to the user
+             * @example Calificación publicada
+             */
+            title: string;
+            /**
+             * @description Notification type (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "VENTILATOR_OFFLINE";
+        };
+        VentilatorOfflineNotificationDataDTO: {
+            /**
+             * @description Reason reported for the disconnection
+             * @example heartbeat_timeout
+             */
+            reason: string;
+            /**
+             * @description ID of the active reservation during which the ventilator went offline
+             * @example 01932e9f-1234-7abc-9def-1a2b3c4d5e6f
+             */
+            reservationId: string;
         };
         VentilatorStatusDTO: {
             /** @description Active alarms */
@@ -23048,6 +23877,64 @@ export interface operations {
             };
         };
     };
+    getAiProviders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description AI providers retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: components["schemas"]["AdminAiProviderDTO"][];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     getStatistics: {
         parameters: {
             query?: never;
@@ -23581,7 +24468,10 @@ export interface operations {
     };
     getEvaluationAnalytics: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Only attempts of the assignments of this STUDENT group; teachers must manage or supervise it */
+                groupId?: string;
+            };
             header?: never;
             path: {
                 evaluationId: string;
@@ -23601,7 +24491,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Validation error or malformed request */
+            /** @description Validation error */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -23619,7 +24509,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Forbidden or evaluation outside the requester scope */
+            /** @description Forbidden, evaluation or group outside the requester scope */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -23628,7 +24518,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Evaluation not found */
+            /** @description Evaluation or group not found */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -23888,6 +24778,64 @@ export interface operations {
             };
         };
     };
+    getResearchExportDictionary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Research export dictionary retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: components["schemas"]["ResearchExportColumnDTO"][];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     getStudentTimeline: {
         parameters: {
             query?: {
@@ -24075,6 +25023,64 @@ export interface operations {
             };
         };
     };
+    getAuditLogCatalog: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Audit log catalog retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: components["schemas"]["AuditLogCatalogDTO"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     exportAuditLogs: {
         parameters: {
             query?: {
@@ -24222,6 +25228,84 @@ export interface operations {
                 };
             };
             /** @description The resource does not exist or is not visible to the caller */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getAuditLogEntry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Audit entry retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: components["schemas"]["AuditLogEntryDTO"];
+                    };
+                };
+            };
+            /** @description Validation error or malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Audit entry not found */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -28999,6 +30083,8 @@ export interface operations {
                 evaluationId?: string;
                 /** @description Filter by STUDENT group */
                 groupId?: string;
+                /** @description Filter by student */
+                studentId?: string;
             };
             header?: never;
             path?: never;
@@ -29037,6 +30123,158 @@ export interface operations {
             };
             /** @description Forbidden */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getQueueCount: {
+        parameters: {
+            query?: {
+                /** @description Filter by evaluation */
+                evaluationId?: string;
+                /** @description Filter by STUDENT group */
+                groupId?: string;
+                /** @description Filter by student */
+                studentId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pending count retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: components["schemas"]["GradingQueueCountDTO"];
+                    };
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getStudentGrades: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Grades retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: components["schemas"]["MyEvaluationGradeDTO"][];
+                    };
+                };
+            };
+            /** @description Validation error or malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden or student outside the caller's groups */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The resource does not exist or is not visible to the caller */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -36379,6 +37617,14 @@ export interface operations {
                 createdAtTo?: string;
                 /** @description Sort direction */
                 sortOrder?: "asc" | "desc";
+                /** @description Filter by note text (partial match, case-insensitive) */
+                search?: string;
+                /** @description Only notes of this lesson */
+                lessonId?: string;
+                /** @description Only notes of the lessons of this module */
+                moduleId?: string;
+                /** @description Only notes of this page (content section) */
+                pageId?: string;
             };
             header?: never;
             path?: never;
@@ -37067,14 +38313,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Notifications retrieved successfully */
+            /** @description Notifications retrieved successfully; each item is discriminated by type */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["APIResponseEnvelope"] & {
-                        data: components["schemas"]["NotificationDTO"][];
+                        data: (components["schemas"]["ReservationPreemptedNotificationDTO"] | components["schemas"]["ReservationCancelledNotificationDTO"] | components["schemas"]["EvaluationActivatedNotificationDTO"] | components["schemas"]["GradePublishedNotificationDTO"] | components["schemas"]["FeedbackReadyNotificationDTO"] | components["schemas"]["RoleChangedNotificationDTO"] | components["schemas"]["VentilatorOfflineNotificationDTO"])[];
                     };
                 };
             };
@@ -37294,14 +38540,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Notification marked as read */
+            /** @description Notification marked as read; discriminated by type */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["APIResponseEnvelope"] & {
-                        data: components["schemas"]["NotificationDTO"];
+                        data: components["schemas"]["ReservationPreemptedNotificationDTO"] | components["schemas"]["ReservationCancelledNotificationDTO"] | components["schemas"]["EvaluationActivatedNotificationDTO"] | components["schemas"]["GradePublishedNotificationDTO"] | components["schemas"]["FeedbackReadyNotificationDTO"] | components["schemas"]["RoleChangedNotificationDTO"] | components["schemas"]["VentilatorOfflineNotificationDTO"];
                     };
                 };
             };
@@ -38731,7 +39977,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Only settings of this category */
-                category?: "ai" | "evaluation" | "simulation" | "reservations" | "telemetry" | "commands";
+                category?: "ai" | "evaluation" | "analytics" | "simulation" | "reservations" | "telemetry" | "commands";
             };
             header?: never;
             path?: never;
@@ -40772,6 +42018,8 @@ export interface operations {
                 from: string;
                 /** @description End of the range (ISO 8601, at most 31 days after from) */
                 to: string;
+                /** @description Only reservations held by this group; admins may pass any group, teachers a group they manage or supervise, students their own group */
+                groupId?: string;
             };
             header?: never;
             path?: never;
@@ -40808,7 +42056,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden or group outside the requester scope */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -46933,6 +48181,97 @@ export interface operations {
             };
             /** @description User not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    changeUserStudentCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeUserStudentCodeDTO"];
+            };
+        };
+        responses: {
+            /** @description Student code changed successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: null;
+                    };
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description User not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The student code is already assigned to another user */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

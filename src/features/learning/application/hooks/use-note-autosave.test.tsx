@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useNoteAutosave tests
-* Descripción: Unit tests of the debounced note autosave with fake timers and a mocked notes service (no Tiptap: the editor value is a plain Tiptap JSON object): a typing burst sends one PATCH with the latest document, a new note is created once (POST with the anchor pageId) and later edits PATCH it without racing the POST, empty new notes are never created, a failed save shows the error status and retries, and a pending edit is flushed on unmount. v1.1 (L5/L6): an edit left pending by a failed save gets one final save attempt on unmount. Depends on vitest and Testing Library.
-* Versión: 1.1
+* Descripción: Unit tests of the debounced note autosave with fake timers and a mocked notes service (no Tiptap: the editor value is a plain Tiptap JSON object): a typing burst sends one PATCH with the latest document, a new note is created once (POST with the anchor pageId) and later edits PATCH it without racing the POST, empty new notes are never created, a failed save shows the error status and retries, and a pending edit is flushed on unmount. v1.1 (L5/L6): an edit left pending by a failed save gets one final save attempt on unmount. Depends on vitest and Testing Library. v1.2 (B1 closure): the note fixture carries the new label fields.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -28,6 +28,9 @@ const note = (id: string, content: NoteDoc, pageId: string | null = null): Note 
   id,
   lessonId: "l1",
   pageId,
+  moduleId: "m1",
+  lessonTitle: null,
+  pageTitle: null,
   content,
   createdAt: "2026-10-14T00:00:00.000Z",
   updatedAt: "2026-10-14T00:00:00.000Z",

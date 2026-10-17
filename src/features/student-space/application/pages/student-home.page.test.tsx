@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student home page tests
-* Descripción: /me with msw: the whole page comes from ONE `GET /api/me/summary` request (any other request fails the test); progress bars carry the API percentage and lesson counts; evaluations, grades (es-CO grade with its passed/failed text), notes, conversations, simulation sessions (result and replay of ended sessions, resume of active ones), reservations and the unread counter link to their routes; every block shows its empty state; a failed load shows a retryable error. Depends on vitest, msw, Testing Library and the student space test helpers.
-* Versión: 1.0
+* Descripción: /me with msw: the whole page comes from ONE `GET /api/me/summary` request (any other request fails the test); progress bars carry the API percentage and lesson counts; evaluations, grades (es-CO grade with its passed/failed text), notes, conversations, simulation sessions (result and replay of ended sessions, resume of active ones), reservations and the unread counter link to their routes; every block shows its empty state; a failed load shows a retryable error. Depends on vitest, msw, Testing Library and the student space test helpers. v1.1 (B1 closure): the empty overall progress carries the new title field.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -106,7 +106,7 @@ describe("StudentHomePage", () => {
 
   it("shows the empty state of every block", async() => {
     summary = summaryDto({
-      progress: { overall: { id: null, percentage: 0, completedLessons: 0, totalLessons: 0, completed: false }, sections: [] },
+      progress: { overall: { id: null, title: null, percentage: 0, completedLessons: 0, totalLessons: 0, completed: false }, sections: [] },
       activeEvaluations: [],
       upcomingEvaluations: [],
       grades: [],

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator lab test helpers
-* Descripción: Shared fixtures of the ventilator lab tests: backend URL and envelopes, reservation DTO builders (full and limited projections), a platform setting builder, a fake socket that records emitted messages and dispatches server events inside act, and a render wrapper with an isolated SWR cache, a session of the given role and permissions and the realtime context. v1.1 (T2): group, caller groups and user DTO builders for the reservation holders. v1.2 (T3): the wrapper provides the design-system toasts (a given ToastApi spy or the real ToastProvider) and a realtime status control to change the socket status after render. v1.3 (T2 review fix / T4): renderLabHook accepts initialProps (rerender with new hook props) and the session user id can be read through sessionUserId. Test-only module; depends on Testing Library, msw, SWR and the session and realtime contexts.
-* Versión: 1.3
+* Descripción: Shared fixtures of the ventilator lab tests: backend URL and envelopes, reservation DTO builders (full and limited projections), a platform setting builder, a fake socket that records emitted messages and dispatches server events inside act, and a render wrapper with an isolated SWR cache, a session of the given role and permissions and the realtime context. v1.1 (T2): group, caller groups and user DTO builders for the reservation holders. v1.2 (T3): the wrapper provides the design-system toasts (a given ToastApi spy or the real ToastProvider) and a realtime status control to change the socket status after render. v1.3 (T2 review fix / T4): renderLabHook accepts initialProps (rerender with new hook props) and the session user id can be read through sessionUserId. v1.4 (B1 closure): the setting and user builders carry the new contract fields (setting label, type, unit and keySchema; user isSuperadmin and studentCode). Test-only module; depends on Testing Library, msw, SWR and the session and realtime contexts.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -85,6 +85,10 @@ export function settingDto(key: string, value: unknown): PlatformSettingDTO {
     key,
     category: "reservations",
     description: key,
+    label: key,
+    type: "integer",
+    unit: null,
+    keySchema: null,
     value: value as number,
     defaultValue: value as number,
     origin: "OVERRIDE",
@@ -134,6 +138,8 @@ export function userDto(id: string, name: string | null, overrides: Partial<User
     role: "STUDENT",
     image: null,
     isActive: true,
+    isSuperadmin: false,
+    studentCode: null,
     emailVerified: null,
     createdAt: "2026-02-01T10:00:00.000Z",
     updatedAt: "2026-02-01T10:00:00.000Z",

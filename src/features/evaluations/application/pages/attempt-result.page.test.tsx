@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AttemptResultPage tests
-* Descripción: Covers the attempt result page against an msw backend: an IN_PROGRESS attempt goes back to the player; unpublished attempts (SUBMITTED, PENDING_REVIEW) show only their state, render no question detail and never request the feedback; a published attempt shows the es-CO grade with the pass/fail class from `passed`, per-question earned points, the correct option, the teacher explanation and the simulation rubric; the AI feedback goes from the PENDING skeleton to READY after a FEEDBACK_READY notification for the attempt (and ignores other attempts), and DETERMINISTIC items carry the "Retroalimentación automática" label with the rating widget. Depends on Vitest, Testing Library, msw and the evaluations test helpers. v1.1 (E3 review): the "other attempt is ignored" check now waits before comparing the request count and then proves exactly one extra request for this attempt; a failed first feedback read shows the unavailable message; a rubric that repeats a parameter renders every row. v1.2 (A3 review follow-up): the FEEDBACK_READY notification for another attempt is checked deterministically through a spy on the SWR fetcher (SWR calls it synchronously on revalidation) instead of a wall-clock sleep.
-* Versión: 1.2
+* Descripción: Covers the attempt result page against an msw backend: an IN_PROGRESS attempt goes back to the player; unpublished attempts (SUBMITTED, PENDING_REVIEW) show only their state, render no question detail and never request the feedback; a published attempt shows the es-CO grade with the pass/fail class from `passed`, per-question earned points, the correct option, the teacher explanation and the simulation rubric; the AI feedback goes from the PENDING skeleton to READY after a FEEDBACK_READY notification for the attempt (and ignores other attempts), and DETERMINISTIC items carry the "Retroalimentación automática" label with the rating widget. Depends on Vitest, Testing Library, msw and the evaluations test helpers. v1.1 (E3 review): the "other attempt is ignored" check now waits before comparing the request count and then proves exactly one extra request for this attempt; a failed first feedback read shows the unavailable message; a rubric that repeats a parameter renders every row. v1.2 (A3 review follow-up): the FEEDBACK_READY notification for another attempt is checked deterministically through a spy on the SWR fetcher (SWR calls it synchronously on revalidation) instead of a wall-clock sleep. v1.3 (B1 closure): the FEEDBACK_READY notifications carry the typed FeedbackReady data of the contract (no cast).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -240,7 +240,7 @@ describe("AttemptResultPage", () => {
       body: "",
       createdAt: "2026-10-14T16:00:00.000Z",
       readAt: null,
-      data: { attemptId: "other" } as unknown as Record<string, never>,
+      data: { attemptId: "other", evaluationId: "e1", feedbackId: "f0" },
     });
     // A (wrong) reload would have called the fetcher synchronously inside the emit.
     expect(feedbackFetches()).toBe(fetchesBefore);
@@ -252,7 +252,7 @@ describe("AttemptResultPage", () => {
       body: "",
       createdAt: "2026-10-14T16:00:00.000Z",
       readAt: null,
-      data: { attemptId: "at1", evaluationId: "e1" } as unknown as Record<string, never>,
+      data: { attemptId: "at1", evaluationId: "e1", feedbackId: "f1" },
     });
     // The matching notification reloads at once, which proves the spy observes reloads.
     expect(feedbackFetches()).toBe(fetchesBefore + 1);

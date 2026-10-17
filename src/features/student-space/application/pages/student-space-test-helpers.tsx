@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student space test helpers
-* Descripción: Shared fixtures of the student space tests: backend URL, envelope with pagination, error response, DTO builders (summary, published grade, note, lesson detail, curriculum tree, lesson Page) and a renderer that wraps the UI in a fresh SWR cache, an authenticated STUDENT session and the global ToastProvider. Fixtures are typed against the generated schema; the learning tree and Page shapes are cast because the learning DTO aliases are internal to that feature. Depends on Testing Library, msw, SWR, the design-system toast, the session context and the student space DTOs.
-* Versión: 1.0
+* Descripción: Shared fixtures of the student space tests: backend URL, envelope with pagination, error response, DTO builders (summary, published grade, note, lesson detail, curriculum tree, lesson Page) and a renderer that wraps the UI in a fresh SWR cache, an authenticated STUDENT session and the global ToastProvider. Fixtures are typed against the generated schema; the learning tree and Page shapes are cast because the learning DTO aliases are internal to that feature. Depends on Testing Library, msw, SWR, the design-system toast, the session context and the student space DTOs. v1.1 (B1 closure): the fixtures carry the new contract fields (section titles, grade attemptId and module, note module and titles, session case title).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -39,8 +39,9 @@ export const errorResponse = (code: string, status: number) => HttpResponse.json
   { status },
 );
 
-const progress = (id: string | null, percentage: number, completedLessons: number, totalLessons: number) => ({
+const progress = (id: string | null, percentage: number, completedLessons: number, totalLessons: number, title: string | null = null) => ({
   id,
+  title,
   percentage,
   completedLessons,
   totalLessons,
@@ -49,7 +50,7 @@ const progress = (id: string | null, percentage: number, completedLessons: numbe
 
 export function summaryDto(overrides: Partial<MySummaryDTO> = {}): MySummaryDTO {
   return {
-    progress: { overall: progress(null, 40, 4, 10), sections: [progress("s1", 75, 3, 4), progress("s2", 17, 1, 6)] },
+    progress: { overall: progress(null, 40, 4, 10), sections: [progress("s1", 75, 3, 4, "Fundamentos"), progress("s2", 17, 1, 6, null)] },
     activeEvaluations: [{
       assignmentId: "as-1",
       evaluationId: "ev-1",
@@ -67,14 +68,45 @@ export function summaryDto(overrides: Partial<MySummaryDTO> = {}): MySummaryDTO 
       endsAt: null,
     }],
     grades: [
-      { evaluationId: "ev-3", evaluationTitle: "Taller de curvas", evaluationType: "WORKSHOP", attemptNumber: 1, grade: 4.2, passed: true, publishedAt: "2026-10-14T15:00:00.000Z" },
-      { evaluationId: "ev-4", evaluationTitle: "Quiz de volúmenes", evaluationType: "QUIZ", attemptNumber: 2, grade: 2.5, passed: false, publishedAt: "2026-10-13T15:00:00.000Z" },
+      {
+        attemptId: "at-3",
+        evaluationId: "ev-3",
+        evaluationTitle: "Taller de curvas",
+        evaluationType: "WORKSHOP",
+        attemptNumber: 1,
+        grade: 4.2,
+        passed: true,
+        publishedAt: "2026-10-14T15:00:00.000Z",
+        moduleId: "m1",
+        moduleTitle: "Fisiología",
+      },
+      {
+        attemptId: "at-4",
+        evaluationId: "ev-4",
+        evaluationTitle: "Quiz de volúmenes",
+        evaluationType: "QUIZ",
+        attemptNumber: 2,
+        grade: 2.5,
+        passed: false,
+        publishedAt: "2026-10-13T15:00:00.000Z",
+        moduleId: null,
+        moduleTitle: null,
+      },
     ],
-    latestNotes: [{ id: "n1", lessonId: "l1", pageId: null, excerpt: "La PEEP mantiene los alvéolos abiertos", updatedAt: "2026-10-16T12:00:00.000Z" }],
+    latestNotes: [{
+      id: "n1",
+      lessonId: "l1",
+      pageId: null,
+      moduleId: "m2",
+      lessonTitle: "Presión positiva",
+      pageTitle: null,
+      excerpt: "La PEEP mantiene los alvéolos abiertos",
+      updatedAt: "2026-10-16T12:00:00.000Z",
+    }],
     latestConversations: [{ id: "c1", title: "Dudas sobre compliance", scope: "LESSON", refId: "l1", updatedAt: "2026-10-15T14:00:00.000Z" }],
     latestSimulationSessions: [
-      { id: "ss-1", caseId: "case-1", mode: "FREE", status: "ENDED", score: 82, startedAt: "2026-10-12T14:00:00.000Z", endedAt: "2026-10-12T14:30:00.000Z" },
-      { id: "ss-2", caseId: "case-2", mode: "EXAM", status: "ACTIVE", score: null, startedAt: "2026-10-16T13:00:00.000Z", endedAt: null },
+      { id: "ss-1", caseId: "case-1", caseTitle: "SDRA moderado", mode: "FREE", status: "ENDED", score: 82, startedAt: "2026-10-12T14:00:00.000Z", endedAt: "2026-10-12T14:30:00.000Z" },
+      { id: "ss-2", caseId: "case-2", caseTitle: null, mode: "EXAM", status: "ACTIVE", score: null, startedAt: "2026-10-16T13:00:00.000Z", endedAt: null },
     ],
     upcomingReservations: [{ id: "r1", startsAt: "2026-10-17T14:00:00.000Z", endsAt: "2026-10-17T15:00:00.000Z", purpose: "Práctica de PEEP", holderType: "USER", groupId: null }],
     unreadNotifications: 3,
@@ -92,6 +124,8 @@ export function gradeDto(attemptId: string, overrides: Partial<MyEvaluationGrade
     grade: 4.5,
     legacy: false,
     maxScore: 10,
+    moduleId: null,
+    moduleTitle: null,
     passed: true,
     publishedAt: "2026-10-14T15:00:00.000Z",
     score: 9,
@@ -108,6 +142,9 @@ export function noteDto(id: string, lessonId: string, text: string, overrides: P
     id,
     lessonId,
     pageId: null,
+    moduleId: null,
+    lessonTitle: null,
+    pageTitle: null,
     content: textDoc(text),
     createdAt: "2026-10-15T12:00:00.000Z",
     updatedAt: "2026-10-15T12:00:00.000Z",

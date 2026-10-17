@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: My notes mapper
-* Descripción: Maps one page of the caller's notes (NoteDTO[] plus the envelope pagination) to a NotesPage of learning Note entities, the lesson read (`GET /api/lessons/{id}` → LessonDetailDTO) to the NoteLessonInfo that places a note in its module, and the module notes analysis (NotesAnalysisDTO) to the learning NotesAnalysis entity. Depends on the api-client types, the learning public types and the student space DTOs and entities.
-* Versión: 1.0
+* Descripción: Maps one page of the caller's notes (NoteDTO[] plus the envelope pagination) to a NotesPage of learning Note entities, the lesson read (`GET /api/lessons/{id}` → LessonDetailDTO) to the NoteLessonInfo that places a note in its module, and the module notes analysis (NotesAnalysisDTO) to the learning NotesAnalysis entity. Depends on the api-client types, the learning public types and the student space DTOs and entities. v1.1 (B1 closure): a note keeps the moduleId, lessonTitle and pageTitle labels of the API.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,6 +19,9 @@ export function toMyNote(dto: NoteDTO): Note {
     id: dto.id,
     lessonId: dto.lessonId,
     pageId: dto.pageId,
+    moduleId: dto.moduleId,
+    lessonTitle: dto.lessonTitle,
+    pageTitle: dto.pageTitle,
     content: dto.content,
     createdAt: dto.createdAt,
     updatedAt: dto.updatedAt,

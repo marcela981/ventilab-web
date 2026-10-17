@@ -12,6 +12,7 @@
     "typecheck": "tsc -p tsconfig.strict.json --noEmit",
     "test": "vitest run",
     "generate:api": "node ./scripts/generate-api.mjs",
+    "check:api": "node ./scripts/check-api-contract.mjs",
     "validate:lessons": "node ./scripts/validate-lessons.mjs",
     "validate:lessons:fix": "node ./scripts/validate-lessons.mjs --fix",
     "validate:curriculum": "node ./scripts/validate-curriculum.mjs",

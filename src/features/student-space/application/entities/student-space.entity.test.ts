@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student space entity tests
-* Descripción: Pure rules of the student space: module options in curriculum order (all sections plus unsectioned levels, or one section), the notes page query, grouping of a notes page by module (curriculum rank) and lesson (lesson order) with a trailing group for unresolved lessons, the grade type filter (row selection only) and the labels fallback. Depends on vitest and the student space entities.
-* Versión: 1.0
+* Descripción: Pure rules of the student space: module options in curriculum order (all sections plus unsectioned levels, or one section), the notes page query, grouping of a notes page by module (curriculum rank) and lesson (lesson order) with a trailing group for unresolved lessons, the grade type filter (row selection only) and the labels fallback. Depends on vitest and the student space entities. v1.1 (B1 closure): the note fixture carries the new label fields.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -49,7 +49,7 @@ const TREE: CurriculumTree = {
 };
 
 function note(id: string, lessonId: string): Note {
-  return { id, lessonId, pageId: null, content: {}, createdAt: "", updatedAt: "" };
+  return { id, lessonId, pageId: null, moduleId: null, lessonTitle: null, pageTitle: null, content: {}, createdAt: "", updatedAt: "" };
 }
 
 function lesson(lessonId: string, lessonOrder: number, moduleId: string): NoteLessonInfo {

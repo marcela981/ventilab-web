@@ -98,7 +98,7 @@
         }
       },
       "UnprocessableError": {
-        "summary": "The request is well-formed but violates a business rule",
+        "summary": "The request is well-formed but violates a business rule; errors with a field detail add it to data.errors",
         "value": {
           "code": "ai-ratings.invalid_score",
           "data": null,
@@ -113,7 +113,18 @@
         "summary": "Validation error or malformed request",
         "value": {
           "code": "validation_error",
-          "data": null,
+          "data": {
+            "errors": [
+              {
+                "field": "name",
+                "message": "name must be a string"
+              },
+              {
+                "field": "items[0].quantity",
+                "message": "quantity must be an integer"
+              }
+            ]
+          },
           "message": [
             "name must be a string"
           ],
@@ -1019,6 +1030,37 @@
         },
         "required": [
           "prerequisiteId"
+        ],
+        "type": "object"
+      },
+      "AdminAiProviderDTO": {
+        "properties": {
+          "configured": {
+            "description": "Whether the provider credentials are configured on the server (the credentials are never returned)",
+            "example": true,
+            "type": "boolean"
+          },
+          "models": {
+            "description": "Models known to the AI feature for this provider: models of the price table and models referenced by the current use case settings, sorted",
+            "example": [
+              "gemini-2.0-flash",
+              "gemini-2.5-flash"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "provider": {
+            "description": "Provider ID (gemini, openai, anthropic or custom)",
+            "example": "gemini",
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider",
+          "configured",
+          "models"
         ],
         "type": "object"
       },
@@ -2956,6 +2998,43 @@
         ],
         "type": "object"
       },
+      "AuditLogCatalogDTO": {
+        "properties": {
+          "actions": {
+            "description": "Every action of the audit action catalog, sorted",
+            "example": [
+              "user_role_changed",
+              "user_status_changed"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "exportRowLimit": {
+            "description": "Maximum number of rows of one CSV export (GET /api/audit/export)",
+            "example": 50000,
+            "type": "number"
+          },
+          "targetTypes": {
+            "description": "Target entity types present in the audit log, sorted",
+            "example": [
+              "page",
+              "user"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "actions",
+          "targetTypes",
+          "exportRowLimit"
+        ],
+        "type": "object"
+      },
       "AuditLogEntryDTO": {
         "properties": {
           "action": {
@@ -3727,6 +3806,25 @@
         },
         "required": [
           "isActive"
+        ],
+        "type": "object"
+      },
+      "ChangeUserStudentCodeDTO": {
+        "properties": {
+          "studentCode": {
+            "description": "Institutional student code (trimmed; letters, digits and hyphens), unique per user; null removes it",
+            "example": "2026-0001",
+            "maxLength": 32,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9-]+$",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "studentCode"
         ],
         "type": "object"
       },
@@ -7001,7 +7099,25 @@
             "type": "string"
           },
           "data": {
-            "description": "Structured details some errors return so the client can act (for example conflicting records); null otherwise",
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "properties": {
+                  "errors": {
+                    "description": "One entry per failing field, with its translated message",
+                    "items": {
+                      "$ref": "#/components/schemas/FieldError"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Structured details some errors return so the client can act (for example conflicting records); validation errors and errors with a field detail carry `errors`; null otherwise",
             "example": null
           },
           "message": {
@@ -7077,6 +7193,92 @@
         ],
         "type": "object"
       },
+      "EvaluationActivatedNotificationDTO": {
+        "properties": {
+          "body": {
+            "description": "Body shown to the user",
+            "example": "Ya puedes consultar tu calificación: 8 de 10 puntos (aprobada).",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "When the notification was created",
+            "example": "2026-10-11T14:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EvaluationActivatedNotificationDataDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "References of the assigned evaluation"
+          },
+          "id": {
+            "description": "Notification ID",
+            "example": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          },
+          "readAt": {
+            "description": "When the notification was read (null while unread)",
+            "example": null,
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "description": "Title shown to the user",
+            "example": "Calificación publicada",
+            "type": "string"
+          },
+          "type": {
+            "description": "Notification type",
+            "enum": [
+              "EVALUATION_ACTIVATED"
+            ],
+            "example": "EVALUATION_ACTIVATED",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "body",
+          "readAt",
+          "createdAt",
+          "type",
+          "data"
+        ],
+        "type": "object"
+      },
+      "EvaluationActivatedNotificationDataDTO": {
+        "properties": {
+          "assignmentId": {
+            "description": "ID of the assignment of the evaluation to the group",
+            "example": "01932e9f-3456-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          },
+          "evaluationId": {
+            "description": "ID of the assigned evaluation",
+            "example": "01932e9f-2345-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          }
+        },
+        "required": [
+          "evaluationId",
+          "assignmentId"
+        ],
+        "type": "object"
+      },
       "EvaluationAnalyticsDTO": {
         "properties": {
           "averageGrade": {
@@ -7096,6 +7298,14 @@
             "description": "Graded attempts the grade statistics are computed on",
             "example": 20,
             "type": "number"
+          },
+          "groupId": {
+            "description": "Group the statistics are limited to (groupId query), null for the whole requester scope",
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "histogram": {
             "description": "Grade histogram in 0.5 buckets on the 0–5 scale",
@@ -7171,6 +7381,7 @@
         },
         "required": [
           "evaluationId",
+          "groupId",
           "title",
           "type",
           "totalAttempts",
@@ -8353,6 +8564,118 @@
         ],
         "type": "object"
       },
+      "FeedbackReadyNotificationDTO": {
+        "properties": {
+          "body": {
+            "description": "Body shown to the user",
+            "example": "Ya puedes consultar tu calificación: 8 de 10 puntos (aprobada).",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "When the notification was created",
+            "example": "2026-10-11T14:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FeedbackReadyNotificationDataDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "References of the ready feedback"
+          },
+          "id": {
+            "description": "Notification ID",
+            "example": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          },
+          "readAt": {
+            "description": "When the notification was read (null while unread)",
+            "example": null,
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "description": "Title shown to the user",
+            "example": "Calificación publicada",
+            "type": "string"
+          },
+          "type": {
+            "description": "Notification type",
+            "enum": [
+              "FEEDBACK_READY"
+            ],
+            "example": "FEEDBACK_READY",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "body",
+          "readAt",
+          "createdAt",
+          "type",
+          "data"
+        ],
+        "type": "object"
+      },
+      "FeedbackReadyNotificationDataDTO": {
+        "properties": {
+          "attemptId": {
+            "description": "ID of the attempt the feedback belongs to",
+            "example": "01932e9f-5678-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          },
+          "evaluationId": {
+            "description": "ID of the evaluation",
+            "example": "01932e9f-2345-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          },
+          "feedbackId": {
+            "description": "ID of the generated feedback",
+            "example": "01932e9f-6789-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          }
+        },
+        "required": [
+          "evaluationId",
+          "attemptId",
+          "feedbackId"
+        ],
+        "type": "object"
+      },
+      "FieldError": {
+        "description": "Error of one field: the request body path (nested objects with dots, array items with [index]) or, for platform settings, the setting key followed by the path inside its value",
+        "properties": {
+          "field": {
+            "description": "Path of the failing field",
+            "example": "items[0].quantity",
+            "type": "string"
+          },
+          "message": {
+            "description": "Translated message of the field error",
+            "example": "quantity must be an integer",
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "message"
+        ],
+        "type": "object"
+      },
       "FieldOverridesDTO": {
         "properties": {
           "content": {
@@ -8680,6 +9003,92 @@
           "from",
           "to",
           "count"
+        ],
+        "type": "object"
+      },
+      "GradePublishedNotificationDTO": {
+        "properties": {
+          "body": {
+            "description": "Body shown to the user",
+            "example": "Ya puedes consultar tu calificación: 8 de 10 puntos (aprobada).",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "When the notification was created",
+            "example": "2026-10-11T14:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/GradePublishedNotificationDataDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "References of the published grade"
+          },
+          "id": {
+            "description": "Notification ID",
+            "example": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          },
+          "readAt": {
+            "description": "When the notification was read (null while unread)",
+            "example": null,
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "description": "Title shown to the user",
+            "example": "Calificación publicada",
+            "type": "string"
+          },
+          "type": {
+            "description": "Notification type",
+            "enum": [
+              "GRADE_PUBLISHED"
+            ],
+            "example": "GRADE_PUBLISHED",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "body",
+          "readAt",
+          "createdAt",
+          "type",
+          "data"
+        ],
+        "type": "object"
+      },
+      "GradePublishedNotificationDataDTO": {
+        "properties": {
+          "attemptId": {
+            "description": "ID of the graded attempt",
+            "example": "01932e9f-5678-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          },
+          "evaluationId": {
+            "description": "ID of the graded evaluation",
+            "example": "01932e9f-2345-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          }
+        },
+        "required": [
+          "evaluationId",
+          "attemptId"
         ],
         "type": "object"
       },
@@ -9045,6 +9454,19 @@
         ],
         "type": "object"
       },
+      "GradingQueueCountDTO": {
+        "properties": {
+          "pending": {
+            "description": "PENDING_REVIEW attempts matching the queue scope and filters",
+            "example": 7,
+            "type": "number"
+          }
+        },
+        "required": [
+          "pending"
+        ],
+        "type": "object"
+      },
       "GradingQueueItemDTO": {
         "properties": {
           "assignmentId": {
@@ -9305,6 +9727,19 @@
               "null"
             ]
           },
+          "relation": {
+            "description": "Relation of the requester with this STUDENT group when the list is scoped to the requester (teachers, or myGroups=true): MANAGED if they created it, SUPERVISED if a teacher group they belong to supervises it; null otherwise",
+            "enum": [
+              "MANAGED",
+              "SUPERVISED",
+              null
+            ],
+            "example": "MANAGED",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "semester": {
             "description": "Semester",
             "example": "2026-2",
@@ -9391,6 +9826,26 @@
             "example": "Group A",
             "type": "string"
           },
+          "moduleSummary": {
+            "description": "Progress per published module aggregated over the group's students",
+            "items": {
+              "$ref": "#/components/schemas/GroupModuleSummaryDTO"
+            },
+            "type": "array"
+          },
+          "passingGrade": {
+            "description": "Current passing grade (0–5 scale) used for the pass flags",
+            "example": 3,
+            "type": "number"
+          },
+          "riskThresholds": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RiskThresholdsDTO"
+              }
+            ],
+            "description": "Current risk thresholds (platform settings analytics.risk.*)"
+          },
           "students": {
             "description": "One row per student member",
             "items": {
@@ -9403,6 +9858,9 @@
           "groupId",
           "groupName",
           "generatedAt",
+          "passingGrade",
+          "riskThresholds",
+          "moduleSummary",
           "students"
         ],
         "type": "object"
@@ -9535,6 +9993,19 @@
           "parentGroupId": {
             "description": "Parent group ID",
             "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "relation": {
+            "description": "Relation of the requester with this STUDENT group when the list is scoped to the requester (teachers, or myGroups=true): MANAGED if they created it, SUPERVISED if a teacher group they belong to supervises it; null otherwise",
+            "enum": [
+              "MANAGED",
+              "SUPERVISED",
+              null
+            ],
+            "example": "MANAGED",
             "type": [
               "string",
               "null"
@@ -9779,6 +10250,46 @@
           "groupType",
           "isActive",
           "memberRole"
+        ],
+        "type": "object"
+      },
+      "GroupModuleSummaryDTO": {
+        "properties": {
+          "averageProgressPct": {
+            "description": "Average module progress of the group's students (students without progress count as 0), 0–100",
+            "example": 62.5,
+            "type": "number"
+          },
+          "completedCount": {
+            "description": "Students who completed every published lesson of the module",
+            "example": 4,
+            "type": "number"
+          },
+          "moduleId": {
+            "description": "Module identifier",
+            "example": "cm5x2k9a00000abcd1234efgh",
+            "type": "string"
+          },
+          "moduleTitle": {
+            "description": "Module title",
+            "example": "Ventilation basics",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "studentCount": {
+            "description": "Students of the group",
+            "example": 25,
+            "type": "number"
+          }
+        },
+        "required": [
+          "moduleId",
+          "moduleTitle",
+          "averageProgressPct",
+          "completedCount",
+          "studentCount"
         ],
         "type": "object"
       },
@@ -13836,6 +14347,22 @@
               "null"
             ]
           },
+          "moduleId": {
+            "description": "Module the evaluation belongs to (null when it is not tied to a module)",
+            "example": "cm5module01",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "moduleTitle": {
+            "description": "Title of the module the evaluation belongs to",
+            "example": "Ventilation basics",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "passed": {
             "description": "Whether the grade reaches the passing grade",
             "example": true,
@@ -13861,6 +14388,8 @@
           "evaluationId",
           "evaluationTitle",
           "evaluationType",
+          "moduleId",
+          "moduleTitle",
           "attemptNumber",
           "score",
           "maxScore",
@@ -13943,6 +14472,11 @@
       },
       "MyGradeDTO": {
         "properties": {
+          "attemptId": {
+            "description": "Graded attempt identifier",
+            "example": "cm5x2k9a00000abcd1234efgh",
+            "type": "string"
+          },
           "attemptNumber": {
             "description": "Attempt number",
             "example": 1,
@@ -13968,6 +14502,22 @@
             "example": 4.2,
             "type": "number"
           },
+          "moduleId": {
+            "description": "Module the evaluation belongs to (null when it is not tied to a module)",
+            "example": "cm5x2k9a00000abcd1234efgh",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "moduleTitle": {
+            "description": "Title of the module the evaluation belongs to",
+            "example": "Ventilation basics",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "passed": {
             "description": "Whether the grade reaches the passing grade",
             "example": true,
@@ -13980,9 +14530,12 @@
           }
         },
         "required": [
+          "attemptId",
           "evaluationId",
           "evaluationTitle",
           "evaluationType",
+          "moduleId",
+          "moduleTitle",
           "attemptNumber",
           "grade",
           "passed",
@@ -14038,9 +14591,33 @@
             "example": "cm5x2k9a00000abcd1234efgh",
             "type": "string"
           },
+          "lessonTitle": {
+            "description": "Title of the note's lesson",
+            "example": "PEEP basics",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "moduleId": {
+            "description": "Module of the note's lesson",
+            "example": "cm5x2k9a00000abcd1234efgh",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "pageId": {
             "description": "Page identifier",
             "example": "cm5x2k9a00000abcd1234efgh",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "pageTitle": {
+            "description": "Title of the page (content section) the note refers to; null without a page",
+            "example": "Alveolar recruitment",
             "type": [
               "string",
               "null"
@@ -14056,6 +14633,9 @@
           "id",
           "lessonId",
           "pageId",
+          "moduleId",
+          "lessonTitle",
+          "pageTitle",
           "excerpt",
           "updatedAt"
         ],
@@ -14141,6 +14721,14 @@
             "example": "cm5x2k9a00000abcd1234efgh",
             "type": "string"
           },
+          "caseTitle": {
+            "description": "Clinical case title (null when the case no longer exists)",
+            "example": "Normal lung",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "endedAt": {
             "description": "End time",
             "example": "2026-10-11T15:04:05.000Z",
@@ -14181,6 +14769,7 @@
         "required": [
           "id",
           "caseId",
+          "caseTitle",
           "mode",
           "status",
           "startedAt",
@@ -14359,9 +14948,33 @@
             "example": "cm5x2k9a00000abcd1234efgh",
             "type": "string"
           },
+          "lessonTitle": {
+            "description": "Title of the note's lesson",
+            "example": "PEEP basics",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "moduleId": {
+            "description": "Module of the note's lesson (null when the lesson cannot be resolved)",
+            "example": "cm5x2k9a00000abcd1234mnop",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "pageId": {
             "description": "Page of the lesson the note refers to",
             "example": "cm5x2k9a00000abcd1234wxyz",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "pageTitle": {
+            "description": "Title of the page (content section) the note refers to; null without a page",
+            "example": "Alveolar recruitment",
             "type": [
               "string",
               "null"
@@ -14378,6 +14991,9 @@
           "id",
           "lessonId",
           "pageId",
+          "moduleId",
+          "lessonTitle",
+          "pageTitle",
           "content",
           "createdAt",
           "updatedAt"
@@ -14492,15 +15108,41 @@
             "type": "string"
           },
           "data": {
-            "description": "Deep-link references (record IDs) for the client to build the target route",
+            "anyOf": [
+              {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/ReservationPreemptedNotificationDataDTO"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ReservationCancelledNotificationDataDTO"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EvaluationActivatedNotificationDataDTO"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GradePublishedNotificationDataDTO"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FeedbackReadyNotificationDataDTO"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoleChangedNotificationDataDTO"
+                  },
+                  {
+                    "$ref": "#/components/schemas/VentilatorOfflineNotificationDataDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Deep-link references (record IDs) for the client to build the target route; its shape depends on type",
             "example": {
               "attemptId": "01932e9f-5678-7abc-9def-1a2b3c4d5e6f",
               "evaluationId": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f"
-            },
-            "type": [
-              "object",
-              "null"
-            ]
+            }
           },
           "id": {
             "description": "Notification ID",
@@ -14522,7 +15164,7 @@
             "type": "string"
           },
           "type": {
-            "description": "Notification type",
+            "description": "Notification type; it decides the shape of data",
             "enum": [
               "RESERVATION_PREEMPTED",
               "RESERVATION_CANCELLED",
@@ -15774,6 +16416,7 @@
             "enum": [
               "ai",
               "evaluation",
+              "analytics",
               "simulation",
               "reservations",
               "telemetry",
@@ -15805,13 +16448,33 @@
             ]
           },
           "description": {
-            "description": "What the setting controls",
-            "example": "Interval at which buffered telemetry frames are sent to clients",
+            "description": "What the setting controls, in Spanish",
+            "example": "Intervalo con el que se envían a los clientes los fotogramas de telemetría acumulados; un cambio reprograma el temporizador sin reiniciar",
             "type": "string"
           },
           "key": {
             "description": "Setting key",
             "example": "telemetry.flushIntervalMs",
+            "type": "string"
+          },
+          "keySchema": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PlatformSettingKeySchemaDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Keys of a map-like setting (or of its map field) a form can add or remove; null for other settings"
+          },
+          "label": {
+            "description": "Short name of the setting, in Spanish",
+            "example": "Intervalo de envío de telemetría",
             "type": "string"
           },
           "limits": {
@@ -15832,6 +16495,29 @@
             ],
             "example": "DEFAULT",
             "type": "string"
+          },
+          "type": {
+            "description": "Type of the value, so a generic form can pick its input",
+            "enum": [
+              "integer",
+              "number",
+              "boolean",
+              "string",
+              "string-list",
+              "integer-list",
+              "map",
+              "object"
+            ],
+            "example": "integer",
+            "type": "string"
+          },
+          "unit": {
+            "description": "Unit of the value, in Spanish; null when it has none",
+            "example": "milisegundos",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "updatedAt": {
             "description": "When the override was last changed",
@@ -15880,7 +16566,11 @@
         "required": [
           "key",
           "category",
+          "type",
+          "label",
+          "unit",
           "description",
+          "keySchema",
           "value",
           "defaultValue",
           "origin",
@@ -15888,6 +16578,98 @@
           "version",
           "updatedAt",
           "updatedById"
+        ],
+        "type": "object"
+      },
+      "PlatformSettingKeySchemaDTO": {
+        "properties": {
+          "allowedKeys": {
+            "description": "Keys a form may add (for AI provider maps, the providers the AI feature registers); null when any key is accepted",
+            "example": [
+              "gemini",
+              "openai",
+              "anthropic",
+              "custom"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "keyLabel": {
+            "description": "Label of the map keys, in Spanish",
+            "example": "Proveedor",
+            "type": "string"
+          },
+          "path": {
+            "description": "Field of the value that holds the map (null when the whole value is the map)",
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "valueKeySchema": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PlatformSettingKeySchemaDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Key schema of the nested map when valueType is map; null otherwise"
+          },
+          "valueLimits": {
+            "additionalProperties": true,
+            "description": "Hard limits of the value under each key (per field for object values); null when the value is a nested map",
+            "example": {
+              "inputPer1kUsd": {
+                "integer": false,
+                "max": 1,
+                "min": 0
+              },
+              "outputPer1kUsd": {
+                "integer": false,
+                "max": 1,
+                "min": 0
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "valueType": {
+            "description": "Type of the value under each key",
+            "enum": [
+              "integer",
+              "number",
+              "boolean",
+              "string",
+              "string-list",
+              "integer-list",
+              "map",
+              "object"
+            ],
+            "example": "map",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "keyLabel",
+          "allowedKeys",
+          "valueType",
+          "valueLimits",
+          "valueKeySchema"
         ],
         "type": "object"
       },
@@ -16245,6 +17027,14 @@
             "example": 40,
             "type": "number"
           },
+          "title": {
+            "description": "Section, level or module title (overall progress has none)",
+            "example": "Ventilation basics",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "totalLessons": {
             "description": "Published lessons",
             "example": 10,
@@ -16253,6 +17043,7 @@
         },
         "required": [
           "id",
+          "title",
           "percentage",
           "completedLessons",
           "totalLessons",
@@ -17243,6 +18034,124 @@
         ],
         "type": "object"
       },
+      "ResearchExportColumnDTO": {
+        "properties": {
+          "column": {
+            "description": "CSV column name, in file order",
+            "example": "participant",
+            "type": "string"
+          },
+          "description": {
+            "description": "Meaning of the column and its allowed values (Spanish)",
+            "example": "Seudónimo del estudiante: HMAC-SHA256 del identificador de usuario",
+            "type": "string"
+          },
+          "example": {
+            "description": "Example value (null when the column has none)",
+            "example": "progress",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "description": "Value type of the column",
+            "enum": [
+              "string",
+              "number"
+            ],
+            "example": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "column",
+          "type",
+          "description",
+          "example"
+        ],
+        "type": "object"
+      },
+      "ReservationCancelledNotificationDTO": {
+        "properties": {
+          "body": {
+            "description": "Body shown to the user",
+            "example": "Ya puedes consultar tu calificación: 8 de 10 puntos (aprobada).",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "When the notification was created",
+            "example": "2026-10-11T14:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReservationCancelledNotificationDataDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "References of the cancelled reservation"
+          },
+          "id": {
+            "description": "Notification ID",
+            "example": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          },
+          "readAt": {
+            "description": "When the notification was read (null while unread)",
+            "example": null,
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "description": "Title shown to the user",
+            "example": "Calificación publicada",
+            "type": "string"
+          },
+          "type": {
+            "description": "Notification type",
+            "enum": [
+              "RESERVATION_CANCELLED"
+            ],
+            "example": "RESERVATION_CANCELLED",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "body",
+          "readAt",
+          "createdAt",
+          "type",
+          "data"
+        ],
+        "type": "object"
+      },
+      "ReservationCancelledNotificationDataDTO": {
+        "properties": {
+          "reservationId": {
+            "description": "ID of the cancelled reservation",
+            "example": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reservationId"
+        ],
+        "type": "object"
+      },
       "ReservationDTO": {
         "properties": {
           "endTime": {
@@ -17472,6 +18381,92 @@
         ],
         "type": "object"
       },
+      "ReservationPreemptedNotificationDTO": {
+        "properties": {
+          "body": {
+            "description": "Body shown to the user",
+            "example": "Ya puedes consultar tu calificación: 8 de 10 puntos (aprobada).",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "When the notification was created",
+            "example": "2026-10-11T14:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReservationPreemptedNotificationDataDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "References of the preempted reservation"
+          },
+          "id": {
+            "description": "Notification ID",
+            "example": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          },
+          "readAt": {
+            "description": "When the notification was read (null while unread)",
+            "example": null,
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "description": "Title shown to the user",
+            "example": "Calificación publicada",
+            "type": "string"
+          },
+          "type": {
+            "description": "Notification type",
+            "enum": [
+              "RESERVATION_PREEMPTED"
+            ],
+            "example": "RESERVATION_PREEMPTED",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "body",
+          "readAt",
+          "createdAt",
+          "type",
+          "data"
+        ],
+        "type": "object"
+      },
+      "ReservationPreemptedNotificationDataDTO": {
+        "properties": {
+          "replacedByReservationId": {
+            "description": "ID of the reservation that replaced it",
+            "example": "01932e9f-9999-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          },
+          "reservationId": {
+            "description": "ID of the preempted reservation",
+            "example": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reservationId",
+          "replacedByReservationId"
+        ],
+        "type": "object"
+      },
       "ReservationSummaryDTO": {
         "properties": {
           "endsAt": {
@@ -17575,6 +18570,117 @@
         },
         "required": [
           "id"
+        ],
+        "type": "object"
+      },
+      "RiskThresholdsDTO": {
+        "properties": {
+          "inactivityDays": {
+            "description": "Days without activity after which a student is at risk (0 disables the rule)",
+            "example": 0,
+            "type": "number"
+          },
+          "maxFailedEvaluations": {
+            "description": "Failed evaluations a student may have before being at risk (0: any failed evaluation flags the student)",
+            "example": 0,
+            "type": "number"
+          },
+          "minProgressPct": {
+            "description": "Overall progress percentage below which a student is at risk (0 disables the rule)",
+            "example": 0,
+            "type": "number"
+          }
+        },
+        "required": [
+          "maxFailedEvaluations",
+          "minProgressPct",
+          "inactivityDays"
+        ],
+        "type": "object"
+      },
+      "RoleChangedNotificationDTO": {
+        "properties": {
+          "body": {
+            "description": "Body shown to the user",
+            "example": "Ya puedes consultar tu calificación: 8 de 10 puntos (aprobada).",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "When the notification was created",
+            "example": "2026-10-11T14:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RoleChangedNotificationDataDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Previous and new role of the user"
+          },
+          "id": {
+            "description": "Notification ID",
+            "example": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          },
+          "readAt": {
+            "description": "When the notification was read (null while unread)",
+            "example": null,
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "description": "Title shown to the user",
+            "example": "Calificación publicada",
+            "type": "string"
+          },
+          "type": {
+            "description": "Notification type",
+            "enum": [
+              "ROLE_CHANGED"
+            ],
+            "example": "ROLE_CHANGED",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "body",
+          "readAt",
+          "createdAt",
+          "type",
+          "data"
+        ],
+        "type": "object"
+      },
+      "RoleChangedNotificationDataDTO": {
+        "properties": {
+          "newRole": {
+            "description": "Role after the change",
+            "example": "TEACHER",
+            "type": "string"
+          },
+          "previousRole": {
+            "description": "Role before the change",
+            "example": "STUDENT",
+            "type": "string"
+          }
+        },
+        "required": [
+          "previousRole",
+          "newRole"
         ],
         "type": "object"
       },
@@ -18490,6 +19596,14 @@
             "example": "engine-normal-lung",
             "type": "string"
           },
+          "caseTitle": {
+            "description": "Clinical case title (null when the case no longer exists)",
+            "example": "Normal lung",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "endedAt": {
             "description": "Session end",
             "example": null,
@@ -18564,6 +19678,7 @@
           "id",
           "userId",
           "caseId",
+          "caseTitle",
           "mode",
           "attemptId",
           "questionId",
@@ -19956,10 +21071,25 @@
             },
             "type": "array"
           },
+          "atRisk": {
+            "description": "Whether any risk rule of the dashboard thresholds applies to the student",
+            "example": true,
+            "type": "boolean"
+          },
           "email": {
             "description": "Student email",
             "example": "ana@example.com",
             "type": "string"
+          },
+          "failedEvaluationIds": {
+            "description": "Evaluations whose latest published attempt (highest attempt number) is failed",
+            "example": [
+              "cm5x2k9a00000abcd1234efgh"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
           "grades": {
             "allOf": [
@@ -19968,6 +21098,15 @@
               }
             ],
             "description": "Published grades"
+          },
+          "lastActivityAt": {
+            "description": "Latest learning activity of the student (page view or lesson progress update, simulation session start or end), null without recorded activity",
+            "example": "2026-10-01T14:30:00.000Z",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "name": {
             "description": "Student name",
@@ -19984,6 +21123,21 @@
               }
             ],
             "description": "Learning progress"
+          },
+          "riskReasons": {
+            "description": "Risk rules that apply: FAILED_EVALUATIONS (failed latest attempts above maxFailedEvaluations), LOW_PROGRESS (overall progress below minProgressPct), INACTIVE (lastActivityAt older than inactivityDays; never applies without recorded activity)",
+            "example": [
+              "FAILED_EVALUATIONS"
+            ],
+            "items": {
+              "enum": [
+                "FAILED_EVALUATIONS",
+                "LOW_PROGRESS",
+                "INACTIVE"
+              ],
+              "type": "string"
+            },
+            "type": "array"
           },
           "simulation": {
             "allOf": [
@@ -20012,7 +21166,11 @@
           "grades",
           "simulation",
           "aiUsage",
-          "ventilatorHours"
+          "ventilatorHours",
+          "lastActivityAt",
+          "atRisk",
+          "riskReasons",
+          "failedEvaluationIds"
         ],
         "type": "object"
       },
@@ -22594,7 +23752,7 @@
       "UpdatePlatformSettingDTO": {
         "properties": {
           "value": {
-            "description": "New value; its type and shape depend on the setting (number, boolean, array or object, see the setting limits)",
+            "description": "New value; its type and shape depend on the setting (see its type, limits and keySchema); the setting registry validates it per key",
             "example": 50,
             "oneOf": [
               {
@@ -22602,6 +23760,9 @@
               },
               {
                 "type": "boolean"
+              },
+              {
+                "type": "string"
               },
               {
                 "items": {},
@@ -23072,6 +24233,11 @@
             "example": true,
             "type": "boolean"
           },
+          "isSuperadmin": {
+            "description": "Whether the user is the configured superadmin (SUPERADMIN_EMAIL), whose role and status cannot change",
+            "example": false,
+            "type": "boolean"
+          },
           "name": {
             "description": "User's full name",
             "example": "Ana María Pérez",
@@ -23090,6 +24256,14 @@
             "example": "STUDENT",
             "type": "string"
           },
+          "studentCode": {
+            "description": "Institutional student code set by an admin (unique, letters, digits and hyphens)",
+            "example": "2026-0001",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "updatedAt": {
             "description": "Last update timestamp",
             "example": "2024-01-20T14:45:00.000Z",
@@ -23104,6 +24278,8 @@
           "role",
           "image",
           "isActive",
+          "studentCode",
+          "isSuperadmin",
           "emailVerified",
           "createdAt",
           "updatedAt"
@@ -23440,6 +24616,92 @@
           "canTake",
           "canTakeover",
           "occupied"
+        ],
+        "type": "object"
+      },
+      "VentilatorOfflineNotificationDTO": {
+        "properties": {
+          "body": {
+            "description": "Body shown to the user",
+            "example": "Ya puedes consultar tu calificación: 8 de 10 puntos (aprobada).",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "When the notification was created",
+            "example": "2026-10-11T14:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VentilatorOfflineNotificationDataDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Active reservation and disconnection reason"
+          },
+          "id": {
+            "description": "Notification ID",
+            "example": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          },
+          "readAt": {
+            "description": "When the notification was read (null while unread)",
+            "example": null,
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "description": "Title shown to the user",
+            "example": "Calificación publicada",
+            "type": "string"
+          },
+          "type": {
+            "description": "Notification type",
+            "enum": [
+              "VENTILATOR_OFFLINE"
+            ],
+            "example": "VENTILATOR_OFFLINE",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "body",
+          "readAt",
+          "createdAt",
+          "type",
+          "data"
+        ],
+        "type": "object"
+      },
+      "VentilatorOfflineNotificationDataDTO": {
+        "properties": {
+          "reason": {
+            "description": "Reason reported for the disconnection",
+            "example": "heartbeat_timeout",
+            "type": "string"
+          },
+          "reservationId": {
+            "description": "ID of the active reservation during which the ventilator went offline",
+            "example": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reservationId",
+          "reason"
         ],
         "type": "object"
       },
@@ -27314,6 +28576,116 @@
         ]
       }
     },
+    "/api/admin/ai/providers": {
+      "get": {
+        "description": "Every known AI provider with whether its credentials are configured on the server (credentials are never returned) and the models known to the AI feature (price table and current use case settings), to fill the AI settings forms; no provider is called\n\n**Required access:** bearer token holding `settings:manage`; minimum role ADMIN.",
+        "operationId": "getAiProviders",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/AdminAiProviderDTO"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "AI providers retrieved successfully"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get AI providers",
+        "tags": [
+          "Admin"
+        ],
+        "x-min-role": "ADMIN",
+        "x-required-permissions": [
+          "settings:manage"
+        ]
+      }
+    },
     "/api/admin/statistics": {
       "get": {
         "description": "Platform-wide counts, progress metrics, recent activity and ventilator reservation status\n\n**Required access:** bearer token holding `admin-statistics:read`; minimum role TEACHER.",
@@ -28402,7 +29774,7 @@
     },
     "/api/analytics/evaluations/{evaluationId}/stats": {
       "get": {
-        "description": "Average, median, histogram in 0.5 buckets on the 0–5 scale and pass rate over graded attempts, plus the difficulty index and correct rate of each question. Teachers only see evaluations assigned to a group they manage; cached 60 s\n\n**Required access:** bearer token holding `analytics:read`; minimum role TEACHER.",
+        "description": "Average, median, histogram in 0.5 buckets on the 0–5 scale and pass rate over graded attempts, plus the difficulty index and correct rate of each question. Teachers only see evaluations assigned to a group they manage; groupId limits the statistics to the attempts of that group's assignments (teachers must manage or supervise the group, otherwise 403; unknown group 404); cached 60 s\n\n**Required access:** bearer token holding `analytics:read`; minimum role TEACHER.",
         "operationId": "getEvaluationAnalytics",
         "parameters": [
           {
@@ -28410,6 +29782,17 @@
             "name": "evaluationId",
             "required": true,
             "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only attempts of the assignments of this STUDENT group; teachers must manage or supervise it",
+            "in": "query",
+            "name": "groupId",
+            "required": false,
+            "schema": {
+              "example": "cm5x2k9a00000abcd1234efgh",
+              "maxLength": 100,
               "type": "string"
             }
           }
@@ -28453,7 +29836,7 @@
                 }
               }
             },
-            "description": "Validation error or malformed request"
+            "description": "Validation error"
           },
           "401": {
             "content": {
@@ -28483,7 +29866,7 @@
                 }
               }
             },
-            "description": "Forbidden or evaluation outside the requester scope"
+            "description": "Forbidden, evaluation or group outside the requester scope"
           },
           "404": {
             "content": {
@@ -28498,7 +29881,7 @@
                 }
               }
             },
-            "description": "Evaluation not found"
+            "description": "Evaluation or group not found"
           },
           "429": {
             "content": {
@@ -28548,7 +29931,7 @@
     },
     "/api/analytics/groups/{groupId}/dashboard": {
       "get": {
-        "description": "One row per student: progress by section, level and module, counted grade per evaluation and average, simulation sessions (count, average score, average time to stabilize), AI usage per use case with the percentage of useful ratings and ventilator hours. Teachers only see groups they created or supervise; cached 60 s\n\n**Required access:** bearer token holding `analytics:read`; minimum role TEACHER.",
+        "description": "One row per student: progress by section, level and module, counted grade per evaluation and average, simulation sessions (count, average score, average time to stabilize), AI usage per use case with the percentage of useful ratings, ventilator hours and risk (atRisk, riskReasons, failedEvaluationIds) under the current risk thresholds; plus the current passing grade, the thresholds and the per-module progress aggregate of the group. Teachers only see groups they created or supervise; cached 60 s\n\n**Required access:** bearer token holding `analytics:read`; minimum role TEACHER.",
         "operationId": "getGroupDashboard",
         "parameters": [
           {
@@ -28826,7 +30209,7 @@
     },
     "/api/analytics/research/export.csv": {
       "get": {
-        "description": "Long-format RFC 4180 CSV (participant, group, domain, item, metric, value) with progress, grades, simulation scores, AI ratings and AI telemetry of the students of STUDENT groups. User and group identifiers are replaced by HMAC-SHA256 with ANALYTICS_EXPORT_SALT; no names, emails or original identifiers are exported\n\n**Required access:** bearer token holding `analytics:research-export`; minimum role ADMIN.",
+        "description": "Long-format RFC 4180 CSV (participant, group, domain, item, metric, value) with progress, grades, simulation scores, AI ratings and AI telemetry of the students of STUDENT groups. User and group identifiers are replaced by HMAC-SHA256 with ANALYTICS_EXPORT_SALT; no names, emails or original identifiers are exported. Column meanings: GET /api/analytics/research/export/dictionary\n\n**Required access:** bearer token holding `analytics:research-export`; minimum role ADMIN.",
         "operationId": "exportResearchDataset",
         "parameters": [
           {
@@ -28950,6 +30333,116 @@
           }
         ],
         "summary": "Export the anonymized research dataset",
+        "tags": [
+          "Analytics"
+        ],
+        "x-min-role": "ADMIN",
+        "x-required-permissions": [
+          "analytics:research-export"
+        ]
+      }
+    },
+    "/api/analytics/research/export/dictionary": {
+      "get": {
+        "description": "Every column of GET /api/analytics/research/export.csv in file order, with its value type, Spanish description and an example; built from the same column definition the CSV writer uses\n\n**Required access:** bearer token holding `analytics:research-export`; minimum role ADMIN.",
+        "operationId": "getResearchExportDictionary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/ResearchExportColumnDTO"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Research export dictionary retrieved successfully"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get the research export data dictionary",
         "tags": [
           "Analytics"
         ],
@@ -29381,9 +30874,116 @@
         ]
       }
     },
+    "/api/audit/catalog": {
+      "get": {
+        "description": "Values to build the audit log filters: every action of the audit action catalog, the target entity types present in the log, and the export row limit\n\n**Required access:** bearer token holding `audit:read`; minimum role ADMIN.",
+        "operationId": "getAuditLogCatalog",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/AuditLogCatalogDTO"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Audit log catalog retrieved successfully"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get audit log catalog",
+        "tags": [
+          "Audit log"
+        ],
+        "x-min-role": "ADMIN",
+        "x-required-permissions": [
+          "audit:read"
+        ]
+      }
+    },
     "/api/audit/export": {
       "get": {
-        "description": "One RFC 4180 row per audit entry matching the filters, oldest first, capped at the export row limit; cells starting with =, +, -, @ are prefixed against formula injection; the X-Export-Truncated header is \"true\" when rows were left out\n\n**Required access:** bearer token holding `audit:read`; minimum role ADMIN.",
+        "description": "One RFC 4180 row per audit entry matching the filters, oldest first, capped at the export row limit of 50000 rows (also returned as exportRowLimit by GET /api/audit/catalog); cells starting with =, +, -, @ are prefixed against formula injection; the X-Export-Truncated header is \"true\" when rows were left out\n\n**Required access:** bearer token holding `audit:read`; minimum role ADMIN.",
         "operationId": "exportAuditLogs",
         "parameters": [
           {
@@ -29757,6 +31357,152 @@
           }
         ],
         "summary": "Get target audit history",
+        "tags": [
+          "Audit log"
+        ],
+        "x-min-role": "ADMIN",
+        "x-required-permissions": [
+          "audit:read"
+        ]
+      }
+    },
+    "/api/audit/{id}": {
+      "get": {
+        "description": "One audit entry by its ID\n\n**Required access:** bearer token holding `audit:read`; minimum role ADMIN.",
+        "operationId": "getAuditLogEntry",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/AuditLogEntryDTO"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Audit entry retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error or malformed request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "NotFoundError": {
+                    "$ref": "#/components/examples/NotFoundError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Audit entry not found"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get audit entry",
         "tags": [
           "Audit log"
         ],
@@ -39080,7 +40826,7 @@
     },
     "/api/evaluation-grading/queue": {
       "get": {
-        "description": "PENDING_REVIEW attempts of students in the STUDENT groups the caller created or supervises (legacy attempts without assignment: evaluations the caller created; admins: all), oldest first; expired attempts in progress of the filtered evaluations/groups are closed first (at most 50 per request)\n\n**Required access:** bearer token holding `evaluations:grade`; minimum role TEACHER.",
+        "description": "PENDING_REVIEW attempts of students in the STUDENT groups the caller created or supervises (legacy attempts without assignment: evaluations the caller created; admins: all), optionally filtered by evaluation, group and student, oldest first; expired attempts in progress of the filtered evaluations/groups/student are closed first (at most 50 per request)\n\n**Required access:** bearer token holding `evaluations:grade`; minimum role TEACHER.",
         "operationId": "getQueue",
         "parameters": [
           {
@@ -39171,6 +40917,16 @@
             "required": false,
             "schema": {
               "example": "cm5group01",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by student",
+            "in": "query",
+            "name": "studentId",
+            "required": false,
+            "schema": {
+              "example": "cm5student01",
               "type": "string"
             }
           }
@@ -39286,6 +41042,308 @@
           }
         ],
         "summary": "Get grading queue",
+        "tags": [
+          "Evaluation grading"
+        ],
+        "x-min-role": "TEACHER",
+        "x-required-permissions": [
+          "evaluations:grade"
+        ]
+      }
+    },
+    "/api/evaluation-grading/queue/count": {
+      "get": {
+        "description": "Number of PENDING_REVIEW attempts with the same scope and filters (evaluation, group, student) as the grading queue; expired attempts in progress matching the filters are closed first (at most 50 per request)\n\n**Required access:** bearer token holding `evaluations:grade`; minimum role TEACHER.",
+        "operationId": "getQueueCount",
+        "parameters": [
+          {
+            "description": "Filter by evaluation",
+            "in": "query",
+            "name": "evaluationId",
+            "required": false,
+            "schema": {
+              "example": "cm5evaluation01",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by STUDENT group",
+            "in": "query",
+            "name": "groupId",
+            "required": false,
+            "schema": {
+              "example": "cm5group01",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by student",
+            "in": "query",
+            "name": "studentId",
+            "required": false,
+            "schema": {
+              "example": "cm5student01",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/GradingQueueCountDTO"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Pending count retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Count the grading queue",
+        "tags": [
+          "Evaluation grading"
+        ],
+        "x-min-role": "TEACHER",
+        "x-required-permissions": [
+          "evaluations:grade"
+        ]
+      }
+    },
+    "/api/evaluation-grading/students/{userId}/grades": {
+      "get": {
+        "description": "Published grades of a student with attempt, evaluation, module, grade on the 0.0–5.0 scale, pass flag and publication date. Admins see every grade; a teacher must create or supervise a STUDENT group of the student (403 otherwise) and only sees the grades of their grading scope (assignments of those groups, legacy attempts of evaluations they created)\n\n**Required access:** bearer token holding `evaluations:grade`; minimum role TEACHER.",
+        "operationId": "getStudentGrades",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/MyEvaluationGradeDTO"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Grades retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error or malformed request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden or student outside the caller's groups"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "NotFoundError": {
+                    "$ref": "#/components/examples/NotFoundError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist or is not visible to the caller"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get a student's grades",
         "tags": [
           "Evaluation grading"
         ],
@@ -44219,7 +46277,7 @@
     },
     "/api/groups": {
       "get": {
-        "description": "Lists groups ordered by depth and name. Admins see every group; teachers see the student groups they created or supervise and the teacher groups they belong to; myGroups=true applies that teacher scope to admins too\n\n**Required access:** bearer token holding `groups:read`; minimum role TEACHER.",
+        "description": "Lists groups ordered by depth and name. Admins see every group; teachers see the student groups they created or supervise and the teacher groups they belong to; myGroups=true applies that teacher scope to admins too. When the list is scoped to the requester (teachers, or myGroups=true), each student group carries relation MANAGED (created by the requester) or SUPERVISED (supervised by a teacher group of the requester)\n\n**Required access:** bearer token holding `groups:read`; minimum role TEACHER.",
         "operationId": "getGroups",
         "parameters": [
           {
@@ -53401,7 +55459,7 @@
     },
     "/api/notes": {
       "get": {
-        "description": "Paginated list of the caller's own notes, newest first\n\n**Required access:** bearer token holding `notes:read_own`; minimum role STUDENT.",
+        "description": "Paginated list of the caller's own notes, newest first, optionally filtered by text (case-insensitive), lesson, module or page\n\n**Required access:** bearer token holding `notes:read_own`; minimum role STUDENT.",
         "operationId": "getNotes",
         "parameters": [
           {
@@ -53472,6 +55530,46 @@
                 "desc"
               ],
               "example": "desc",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by note text (partial match, case-insensitive)",
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "example": "alveoli",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only notes of this lesson",
+            "in": "query",
+            "name": "lessonId",
+            "required": false,
+            "schema": {
+              "example": "cm5x2k9a00000abcd1234efgh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only notes of the lessons of this module",
+            "in": "query",
+            "name": "moduleId",
+            "required": false,
+            "schema": {
+              "example": "cm5x2k9a00000abcd1234mnop",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only notes of this page (content section)",
+            "in": "query",
+            "name": "pageId",
+            "required": false,
+            "schema": {
+              "example": "cm5x2k9a00000abcd1234wxyz",
               "type": "string"
             }
           }
@@ -54872,7 +56970,41 @@
                       "properties": {
                         "data": {
                           "items": {
-                            "$ref": "#/components/schemas/NotificationDTO"
+                            "discriminator": {
+                              "mapping": {
+                                "EVALUATION_ACTIVATED": "#/components/schemas/EvaluationActivatedNotificationDTO",
+                                "FEEDBACK_READY": "#/components/schemas/FeedbackReadyNotificationDTO",
+                                "GRADE_PUBLISHED": "#/components/schemas/GradePublishedNotificationDTO",
+                                "RESERVATION_CANCELLED": "#/components/schemas/ReservationCancelledNotificationDTO",
+                                "RESERVATION_PREEMPTED": "#/components/schemas/ReservationPreemptedNotificationDTO",
+                                "ROLE_CHANGED": "#/components/schemas/RoleChangedNotificationDTO",
+                                "VENTILATOR_OFFLINE": "#/components/schemas/VentilatorOfflineNotificationDTO"
+                              },
+                              "propertyName": "type"
+                            },
+                            "oneOf": [
+                              {
+                                "$ref": "#/components/schemas/ReservationPreemptedNotificationDTO"
+                              },
+                              {
+                                "$ref": "#/components/schemas/ReservationCancelledNotificationDTO"
+                              },
+                              {
+                                "$ref": "#/components/schemas/EvaluationActivatedNotificationDTO"
+                              },
+                              {
+                                "$ref": "#/components/schemas/GradePublishedNotificationDTO"
+                              },
+                              {
+                                "$ref": "#/components/schemas/FeedbackReadyNotificationDTO"
+                              },
+                              {
+                                "$ref": "#/components/schemas/RoleChangedNotificationDTO"
+                              },
+                              {
+                                "$ref": "#/components/schemas/VentilatorOfflineNotificationDTO"
+                              }
+                            ]
                           },
                           "type": "array"
                         }
@@ -54886,7 +57018,7 @@
                 }
               }
             },
-            "description": "Notifications retrieved successfully"
+            "description": "Notifications retrieved successfully; each item is discriminated by type"
           },
           "400": {
             "content": {
@@ -55297,7 +57429,41 @@
                     {
                       "properties": {
                         "data": {
-                          "$ref": "#/components/schemas/NotificationDTO"
+                          "discriminator": {
+                            "mapping": {
+                              "EVALUATION_ACTIVATED": "#/components/schemas/EvaluationActivatedNotificationDTO",
+                              "FEEDBACK_READY": "#/components/schemas/FeedbackReadyNotificationDTO",
+                              "GRADE_PUBLISHED": "#/components/schemas/GradePublishedNotificationDTO",
+                              "RESERVATION_CANCELLED": "#/components/schemas/ReservationCancelledNotificationDTO",
+                              "RESERVATION_PREEMPTED": "#/components/schemas/ReservationPreemptedNotificationDTO",
+                              "ROLE_CHANGED": "#/components/schemas/RoleChangedNotificationDTO",
+                              "VENTILATOR_OFFLINE": "#/components/schemas/VentilatorOfflineNotificationDTO"
+                            },
+                            "propertyName": "type"
+                          },
+                          "oneOf": [
+                            {
+                              "$ref": "#/components/schemas/ReservationPreemptedNotificationDTO"
+                            },
+                            {
+                              "$ref": "#/components/schemas/ReservationCancelledNotificationDTO"
+                            },
+                            {
+                              "$ref": "#/components/schemas/EvaluationActivatedNotificationDTO"
+                            },
+                            {
+                              "$ref": "#/components/schemas/GradePublishedNotificationDTO"
+                            },
+                            {
+                              "$ref": "#/components/schemas/FeedbackReadyNotificationDTO"
+                            },
+                            {
+                              "$ref": "#/components/schemas/RoleChangedNotificationDTO"
+                            },
+                            {
+                              "$ref": "#/components/schemas/VentilatorOfflineNotificationDTO"
+                            }
+                          ]
                         }
                       },
                       "required": [
@@ -55309,7 +57475,7 @@
                 }
               }
             },
-            "description": "Notification marked as read"
+            "description": "Notification marked as read; discriminated by type"
           },
           "400": {
             "content": {
@@ -58025,6 +60191,7 @@
               "enum": [
                 "ai",
                 "evaluation",
+                "analytics",
                 "simulation",
                 "reservations",
                 "telemetry",
@@ -61884,7 +64051,7 @@
     },
     "/api/reservations": {
       "get": {
-        "description": "Reservations overlapping [from, to) (at most 31 days). Students get other people's reservations as { id, startsAt, endsAt, status, label } only\n\n**Required access:** bearer token holding `reservations:read`; minimum role STUDENT.",
+        "description": "Reservations overlapping [from, to) (at most 31 days), optionally only those held by groupId (admins: any group; teachers: groups they manage or supervise; students: their own group; otherwise 403). Students get other people's reservations as { id, startsAt, endsAt, status, label } only\n\n**Required access:** bearer token holding `reservations:read`; minimum role STUDENT.",
         "operationId": "getReservationsCalendar",
         "parameters": [
           {
@@ -61904,6 +64071,16 @@
             "required": true,
             "schema": {
               "example": "2026-10-19T00:00:00.000Z",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only reservations held by this group; admins may pass any group, teachers a group they manage or supervise, students their own group",
+            "in": "query",
+            "name": "groupId",
+            "required": false,
+            "schema": {
+              "example": "cm5group01",
               "type": "string"
             }
           }
@@ -61987,7 +64164,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden or group outside the requester scope"
           },
           "429": {
             "content": {
@@ -72435,7 +74612,7 @@
     },
     "/api/users": {
       "get": {
-        "description": "Retrieves a paginated list of users filtered by search term (name, email or exact ID), role, group and account status\n\n**Required access:** bearer token holding `users:list`; minimum role TEACHER.",
+        "description": "Retrieves a paginated list of users filtered by search term (case-insensitive name, email or student code, or exact ID), role, group and account status; each user carries its student code and whether it is the superadmin\n\n**Required access:** bearer token holding `users:list`; minimum role TEACHER.",
         "operationId": "getUsers",
         "parameters": [
           {
@@ -73823,6 +76000,177 @@
         ]
       }
     },
+    "/api/users/{id}/student-code": {
+      "patch": {
+        "description": "Sets (trimmed, 1 to 32 letters, digits or hyphens) or removes (null) the institutional student code of a user; the code is unique and the change is audited with its previous and new value\n\n**Required access:** bearer token holding `users:update_status`; minimum role ADMIN.",
+        "operationId": "changeUserStudentCode",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeUserStudentCodeDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "null"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Student code changed successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "NotFoundError": {
+                    "$ref": "#/components/examples/NotFoundError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "User not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ConflictError": {
+                    "$ref": "#/components/examples/ConflictError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The student code is already assigned to another user"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Change user student code",
+        "tags": [
+          "Users"
+        ],
+        "x-min-role": "ADMIN",
+        "x-required-permissions": [
+          "users:update_status"
+        ]
+      }
+    },
     "/api/ventilator/commands": {
       "get": {
         "description": "Paginated commands sent during a reservation; allowed to its holders, teachers and administrators\n\n**Required access:** bearer token holding `ventilator:control`; minimum role STUDENT.",
@@ -74813,7 +77161,7 @@
     },
     "/api/ventilator/telemetry/metrics": {
       "get": {
-        "description": "In-memory pipeline metrics: messages and batches per second, invalid and lost messages, volatile emits and p50/p95/p99 of processing, total (including the batching wait), flush and device-to-server latency\n\n**Required access:** bearer token holding `ventilator:metrics`; minimum role ADMIN.",
+        "description": "In-memory pipeline metrics: messages and batches per second, invalid and lost messages, volatile emits and p50/p95/p99 of processing, total (including the batching wait), flush and device-to-server latency\n\n**Required access:** bearer token holding `ventilator:metrics`; minimum role TEACHER.",
         "operationId": "getTelemetryMetrics",
         "parameters": [],
         "responses": {
@@ -74912,7 +77260,7 @@
         "tags": [
           "Ventilator telemetry"
         ],
-        "x-min-role": "ADMIN",
+        "x-min-role": "TEACHER",
         "x-required-permissions": [
           "ventilator:metrics"
         ]
@@ -74920,7 +77268,7 @@
     },
     "/api/ventilator/telemetry/metrics.csv": {
       "get": {
-        "description": "One RFC 4180 row per retained latency sample: kind,valueMs,recordedAt\n\n**Required access:** bearer token holding `ventilator:metrics`; minimum role ADMIN.",
+        "description": "One RFC 4180 row per retained latency sample: kind,valueMs,recordedAt\n\n**Required access:** bearer token holding `ventilator:metrics`; minimum role TEACHER.",
         "operationId": "exportTelemetryMetricsCsv",
         "parameters": [],
         "responses": {
@@ -75005,7 +77353,7 @@
         "tags": [
           "Ventilator telemetry"
         ],
-        "x-min-role": "ADMIN",
+        "x-min-role": "TEACHER",
         "x-required-permissions": [
           "ventilator:metrics"
         ]
@@ -75013,7 +77361,7 @@
     },
     "/api/ventilator/telemetry/metrics/reset": {
       "post": {
-        "description": "Clears counters, rates and latency buffers\n\n**Required access:** bearer token holding `ventilator:metrics`; minimum role ADMIN.",
+        "description": "Clears counters, rates and latency buffers\n\n**Required access:** bearer token holding `ventilator:metrics_reset`; minimum role ADMIN.",
         "operationId": "resetTelemetryMetrics",
         "parameters": [],
         "responses": {
@@ -75114,7 +77462,7 @@
         ],
         "x-min-role": "ADMIN",
         "x-required-permissions": [
-          "ventilator:metrics"
+          "ventilator:metrics_reset"
         ]
       }
     },

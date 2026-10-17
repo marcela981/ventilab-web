@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Simulator test helpers
-* Descripción: Shared fixtures of the simulator tests: backend URL builder, success envelope (with optional pagination), error response, ClinicalCaseListItemDTO / SimulationSessionDTO / StartedSimulationSessionDTO factories typed from the generated contract, an isolated SWR cache wrapper (no dedupe, no retries) and a render helper that uses it. Test-only code. Depends on msw, SWR, Testing Library and the backend origin. v1.1 (T8): SimulationSessionSummaryDTO and SimulationSessionReplayDTO factories (the contract types their opaque objects as `Record<string, never>`, so the factories cast them).
-* Versión: 1.1
+* Descripción: Shared fixtures of the simulator tests: backend URL builder, success envelope (with optional pagination), error response, ClinicalCaseListItemDTO / SimulationSessionDTO / StartedSimulationSessionDTO factories typed from the generated contract, an isolated SWR cache wrapper (no dedupe, no retries) and a render helper that uses it. Test-only code. Depends on msw, SWR, Testing Library and the backend origin. v1.1 (T8): SimulationSessionSummaryDTO and SimulationSessionReplayDTO factories (the contract types their opaque objects as `Record<string, never>`, so the factories cast them). v1.2 (B1 closure): the session factory carries the new caseTitle field.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -66,6 +66,7 @@ export function sessionDto(id: string, overrides: Partial<SimulationSessionDTO> 
     id,
     userId: "u1",
     caseId: "c1",
+    caseTitle: "Caso c1",
     mode: "FREE",
     status: "ENDED",
     engineVersion: "1.0.0",
