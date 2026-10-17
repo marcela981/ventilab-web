@@ -31,7 +31,6 @@ These are the last business screens still on the legacy panel. The backend alrea
 ## Checklist (D = delegated writer, I = inline)
 - [x] Phase 1 audit (I + 3 explorers) → `odd/operation-audit.md`
 - [x] O0+O1 (D) registration + notifications (bell, page, deep links, toasts, focus mode) — commit 6ff6875
-- [ ] O2 (D) student-space (/me, /me/notes, /me/grades)
 - [ ] O3 (D) teacher-dashboard (/teacher, /teacher/students/[userId])
 - [ ] O4a (D) admin users + settings
 - [ ] O4b (D) admin audit + AI analytics + research + status
@@ -44,6 +43,9 @@ These are the last business screens still on the legacy panel. The backend alrea
 
 - O0+O1 (delegated: 2+ non-trivial files) — 49 files, +2521/−118. Checks: `npm run typecheck` 0 errors (parent re-run after the last edit); lint 0 errors on every touched folder; vitest notifications + design-system + session 56/56, ventilator-lab 491/491. Full `npm test` not completed (killed for low memory; earlier load timeouts in session-console, page-editor, ai-chat-drawer pass in isolation). Native review: medium, `slice_budget_reached`, consent granted, START refused `lens_context_budget_exceeded` → independent reviewer.
   - Gaps: the backend also notifies the staff member who preempts a reservation, so that actor now sees the toast (except on /lab/live); `expectOwnPreemption` is a no-op kept for its callers (cleanup at closure); lab page headers still mention the old toast.
+- O1 independent review (general reviewer, read-only, commit 6ff6875): no severe defects; 4 low fixes (realtime refresh also on the page, purge queued notice toasts when focus activates, lab-live focus only with the live console, "mark all read" enabled when the page shows unread items) → follow-up fix commit. Nav badge item comes in O5.
+- [x] O2 (D) student-space — commit 0695e6f, 41 files, +3572/−4. Checks: typecheck exit 0 (parent re-run), lint exit 0, vitest student-space + learning 214/214. Native review: medium, consent granted, lens `review-reliability` → **approved**, acknowledged (lineage review-78c50557395adaea, authority burned). Advisory (non-blocking): out-of-range page fallback flashes the empty state (my-notes.page.tsx:94-99), module analysis error paths untested, delete reports an error when only the cache refresh fails (my-notes.page.tsx:134-139) → follow-up fix.
+  - Backend gaps: summary grades without attemptId (link to /evaluations/{id}); summary notes without moduleId/lesson title (link to /me/notes); summary sections without title; simulation sessions without case title; notes list without text search or section filter; NoteDTO without module/lesson title (one lesson read per distinct lesson); my grades without module (no module column/filter).
 
 ## Next step
-O2 student-space.
+O1/O2 follow-up fixes, then O3 teacher-dashboard.

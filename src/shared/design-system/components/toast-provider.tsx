@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ToastProvider
-* Descripción: Global toast host, mounted once in pages/_app.js: provides the stable useToast API and renders ONE MUI Snackbar + filled Alert for the first message of a FIFO queue. Success/info are role="status" and hide after their duration (6 s by default); errors are role="alert" and stay until closed (close button or Escape; a click elsewhere never closes a toast) or until a newer toast arrives, which replaces the visible error (it closes and the newest message follows, so later feedback never waits behind a stale error). At most 3 messages wait behind the visible one (the oldest pending ones are dropped). The next message shows after the current one finished its exit transition. Depends on React, MUI Snackbar/Alert, use-toast and UI/toast.module.css. v1.2 (O1): focus mode. The provider also supplies the FocusModeContext of use-focus-mode: a reference count of active useFocusMode(true) callers; while it is above zero a toast pushed with `{ notice: true }` is dropped (never queued), every other toast shows as before.
-* Versión: 1.2
+* Descripción: Global toast host, mounted once in pages/_app.js: provides the stable useToast API and renders ONE MUI Snackbar + filled Alert for the first message of a FIFO queue. Success/info are role="status" and hide after their duration (6 s by default); errors are role="alert" and stay until closed (close button or Escape; a click elsewhere never closes a toast) or until a newer toast arrives, which replaces the visible error (it closes and the newest message follows, so later feedback never waits behind a stale error). At most 3 messages wait behind the visible one (the oldest pending ones are dropped). The next message shows after the current one finished its exit transition. Depends on React, MUI Snackbar/Alert, use-toast and UI/toast.module.css. v1.2 (O1): focus mode. The provider also supplies the FocusModeContext of use-focus-mode: a reference count of active useFocusMode(true) callers; while it is above zero a toast pushed with `{ notice: true }` is dropped (never queued), every other toast shows as before. v1.3 (O1 review): entering focus mode (the first claim, count 0 → 1) also clears the notices already shown or waiting: queued items keep their `notice` flag, the pending notices are dropped and a visible notice closes (its exit transition then shows the next toast).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -25,11 +25,27 @@ type ToastItem = {
   severity: ToastSeverity
   message: string
   autoHideMs: number | null
+  // Pushed with `{ notice: true }`: cleared when focus mode starts.
+  notice: boolean
   // Set on a visible error when a newer toast arrives: the error closes and the newest one follows.
   replaced?: boolean
 };
 
 const MAX_PENDING_TOASTS = 3;
+
+// Focus mode started: drop the pending notices and close the visible one (it leaves through its exit transition).
+function withoutNotices(items: readonly ToastItem[]): readonly ToastItem[] {
+  const [head, ...pending] = items;
+
+  if (!head) {
+    return items;
+  }
+
+  const kept = pending.filter((item) => !item.notice);
+  const nextHead = head.notice && !head.replaced ? { ...head, replaced: true } : head;
+
+  return nextHead === head && kept.length === pending.length ? items : [nextHead, ...kept];
+}
 
 function enqueue(items: readonly ToastItem[], item: ToastItem): readonly ToastItem[] {
   const [head, ...pending] = items;
@@ -64,6 +80,10 @@ export function ToastProvider({ children }: ToastProviderProps) {
 
       focusClaims.current += 1;
 
+      if (focusClaims.current === 1) {
+        setQueue(withoutNotices);
+      }
+
       return () => {
         if (!released) {
           released = true;
@@ -86,6 +106,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
         severity,
         message,
         autoHideMs: options.autoHideMs === undefined ? DEFAULT_AUTO_HIDE_MS[severity] : options.autoHideMs,
+        notice: options.notice === true,
       };
 
       setQueue((items) => enqueue(items, item));

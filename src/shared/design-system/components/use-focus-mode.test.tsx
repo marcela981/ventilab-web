@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Focus mode tests
-* Descripción: Verifies useFocusMode with the ToastProvider: a notice toast is dropped while focus is active and shows again once every claim is released (reference-counted nested claims, `active` false claims nothing), and a non-notice toast still shows while focus is active. Depends on vitest, Testing Library and MUI.
-* Versión: 1.0
+* Descripción: Verifies useFocusMode with the ToastProvider: a notice toast is dropped while focus is active and shows again once every claim is released (reference-counted nested claims, `active` false claims nothing), and a non-notice toast still shows while focus is active. v1.1 (O1 review): a notice already visible when focus starts disappears, a visible non-notice toast stays. Depends on vitest, Testing Library and MUI.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,7 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { useLayoutEffect } from "react";
 import { describe, expect, it } from "vitest";
 import { ToastProvider } from "./toast-provider";
@@ -79,6 +79,37 @@ describe("useFocusMode", () => {
 
     act(() => toast.error("No se pudo guardar la respuesta."));
     expect(screen.getByRole("alert")).toHaveTextContent("No se pudo guardar la respuesta.");
+  });
+
+  it("closes a visible notice once focus starts and keeps a visible user-action toast", async() => {
+    const view = renderWithFocus({ first: false, second: false, inactive: false });
+
+    act(() => toast.info("Aviso previo", { notice: true }));
+    expect(screen.getByRole("status")).toHaveTextContent("Aviso previo");
+
+    view.rerender(
+      <ToastProvider>
+        <Probe />
+        <Focus />
+      </ToastProvider>,
+    );
+    await waitFor(() => expect(screen.queryByText("Aviso previo")).not.toBeInTheDocument());
+
+    view.rerender(
+      <ToastProvider>
+        <Probe />
+      </ToastProvider>,
+    );
+    act(() => toast.success("Respuesta guardada."));
+    expect(screen.getByRole("status")).toHaveTextContent("Respuesta guardada.");
+
+    view.rerender(
+      <ToastProvider>
+        <Probe />
+        <Focus />
+      </ToastProvider>,
+    );
+    expect(screen.getByRole("status")).toHaveTextContent("Respuesta guardada.");
   });
 
   it("claims nothing when called with false", () => {

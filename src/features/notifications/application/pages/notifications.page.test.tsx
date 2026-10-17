@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Notifications page tests
-* Descripción: /notifications with msw: the first page with its relative times and unread marks, pagination with the envelope total, the "Solo no leídas" toggle (unreadOnly query and its empty state), opening a notification marks it as read and navigates to its deep link, "Marcar como leída", "Eliminar" behind the confirmation, "Marcar todas como leídas" with its confirmation toast, the empty state, the load error with retry and a failed action as an error toast. Depends on vitest, msw, Testing Library, next/router (mocked) and the notifications test helpers.
-* Versión: 1.0
+* Descripción: /notifications with msw: the first page with its relative times and unread marks, pagination with the envelope total, the "Solo no leídas" toggle (unreadOnly query and its empty state), opening a notification marks it as read and navigates to its deep link, "Marcar como leída", "Eliminar" behind the confirmation, "Marcar todas como leídas" with its confirmation toast, the empty state, the load error with retry and a failed action as an error toast. v1.1 (O1 review): the page refreshes its list on `notification:new` without the bell. Depends on vitest, msw, Testing Library, next/router (mocked) and the notifications test helpers.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,7 +15,7 @@ import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { NotificationDTO } from "../../api/dtos/notifications.dto";
 import { NOTIFICATIONS_ERROR_MESSAGES } from "../entities/notifications-error-messages";
-import { apiUrl, envelope, errorResponse, notificationDto, renderNotifications } from "./notifications-test-helpers";
+import { apiUrl, createFakeSocket, envelope, errorResponse, notificationDto, renderNotifications } from "./notifications-test-helpers";
 import { NOTIFICATIONS_PAGE_COPY, NotificationsPage } from "./notifications.page";
 
 const router = { push: vi.fn(() => Promise.resolve(true)) };
@@ -200,6 +200,19 @@ describe("NotificationsPage", () => {
     expect(await screen.findByText(NOTIFICATIONS_PAGE_COPY.markAllDone)).toBeInTheDocument();
     expect(patched).toEqual(["all"]);
     await waitFor(() => expect(button).toBeDisabled());
+  });
+
+  it("refreshes the list on notification:new without the bell", async() => {
+    const socket = createFakeSocket();
+
+    renderNotifications(<NotificationsPage now={NOW} />, { socket });
+    await rows();
+
+    items = [notificationDto("n3"), ...items];
+    total = items.length;
+    socket.dispatch("notification:new", notificationDto("n3"));
+
+    expect(await screen.findByText("Calificación publicada n3")).toBeInTheDocument();
   });
 
   it("shows the empty state", async() => {

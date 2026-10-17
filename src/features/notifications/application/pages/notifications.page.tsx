@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: NotificationsPage
-* Descripción: Page /notifications (any authenticated role): the caller's notifications, newest first, paginated with the envelope pagination (10/25/50 rows), "Solo no leídas" toggle (unreadOnly), "Marcar todas como leídas", and per notification: open its deep link (marks it as read first; a failure does not block), "Marcar como leída" while unread and "Eliminar" behind a confirmation. A page emptied by a deletion or by marking with the unread filter moves back to the last available page. Skeleton, retryable error (or a stale-data warning when a refresh fails over shown data), empty states for all and for unread only; action errors are toasts. Depends on MUI, next/head, next/router, the design-system states, dialog and toast, the notifications hooks, config, entities, components and styles.
-* Versión: 1.0
+* Descripción: Page /notifications (any authenticated role): the caller's notifications, newest first, paginated with the envelope pagination (10/25/50 rows), "Solo no leídas" toggle (unreadOnly), "Marcar todas como leídas", and per notification: open its deep link (marks it as read first; a failure does not block), "Marcar como leída" while unread and "Eliminar" behind a confirmation. A page emptied by a deletion or by marking with the unread filter moves back to the last available page. Skeleton, retryable error (or a stale-data warning when a refresh fails over shown data), empty states for all and for unread only; action errors are toasts. Depends on MUI, next/head, next/router, the design-system states, dialog and toast, the notifications hooks, config, entities, components and styles. v1.1 (O1 review): also mounts useNotificationsRealtime, so the list and the count refresh on `notification:new` even when the lazy bell chunk failed to load (a second subscription next to the bell only triggers SWR-deduped revalidations).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -37,6 +37,7 @@ import type { AppNotification } from "../entities/notification.entity";
 import { getNotificationsErrorMessage } from "../entities/notifications-error-messages";
 import { useNotificationActions } from "../hooks/use-notification-actions";
 import { useNotificationsList } from "../hooks/use-notifications-list";
+import { useNotificationsRealtime } from "../hooks/use-notifications-realtime";
 import { useUnreadNotificationsCount } from "../hooks/use-unread-notifications-count";
 import styles from "../../UI/notifications.module.css";
 
@@ -92,6 +93,10 @@ export function NotificationsPage({ now }: NotificationsPageProps = {}) {
   const { page, isLoading, error, reload } = useNotificationsList(query);
   const unreadCount = useUnreadNotificationsCount(true);
   const actions = useNotificationActions();
+
+  // Live even without the bell (its lazy chunk may fail); SWR dedupes the parallel revalidations.
+  useNotificationsRealtime();
+
   // The server answered the requested page with no rows: it is beyond the last page (rows were removed meanwhile).
   const outOfRange = page !== null && page.page === pageIndex + 1 && pageIndex > 0 && page.items.length === 0;
 
