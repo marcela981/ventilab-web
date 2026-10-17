@@ -6,11 +6,14 @@
 *   text exactly as the backend returned it, the duration of the reservation window and the status, and opens
 *   /lab/recordings/[reservationId]. A visible note says what can and cannot be listed (whether it was recorded and
 *   how long the recording is are known only when opened; a student sees only their own and their group's). Skeleton,
-*   retryable error and empty states; realtime revalidation and the preemption notice as on every /lab page. Depends
+*   retryable error and empty states; realtime revalidation of the reservation reads (also on a notification-only
+*   preemption) as on every /lab page; the preemption notice is the notification toast of the notifications feature
+*   (the backend never notifies the actor). Depends
 *   on MUI, next/head, next/link, the design-system states, the slot window label, the lab routes, entities and hooks
 *   and the recordings styles. v1.1 (T11 review fix S3): a
 *   cancelled / preempted row shows the note that it has a recording only if it ended during the session.
-* Versión: 1.1
+*   v1.2 (B2 closure): header updated to the current preemption notice behaviour.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: usePreemptionNotice tests
-* Descripción: The affected holder gets one persistent info toast per preempted reservation whether reservation:preempted, a RESERVATION_PREEMPTED notification:new or both arrive (no duplicates), other notifications show nothing, and a notification-only preemption revalidates the reservation reads. v1.1 (T3 review fix): finite auto-hide, and the reservations the caller is preempting are not announced to the caller. v1.2 (O1 notifications): the toast moved to the notifications feature; the hook shows no toast at all, still revalidates the reservation reads on a notification-only preemption (not on other notifications), and expectOwnPreemption is a no-op. Depends on vitest, msw, Testing Library and the lab test helpers.
-* Versión: 1.2
+* Descripción: The affected holder gets one persistent info toast per preempted reservation whether reservation:preempted, a RESERVATION_PREEMPTED notification:new or both arrive (no duplicates), other notifications show nothing, and a notification-only preemption revalidates the reservation reads. v1.1 (T3 review fix): finite auto-hide, and the reservations the caller is preempting are not announced to the caller. v1.2 (O1 notifications): the toast moved to the notifications feature; the hook shows no toast at all, still revalidates the reservation reads on a notification-only preemption (not on other notifications), and expectOwnPreemption is a no-op. v1.3 (B2 closure): expectOwnPreemption removed (the backend does not notify the actor); notification fixtures use the typed data of the contract; a preemption already announced by reservation:preempted, or a repeated notification, is not revalidated again. Depends on vitest, msw, Testing Library and the lab test helpers.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -43,15 +43,37 @@ const preempted: RealtimeEventMap["reservation:preempted"] = {
   wasActive: false,
 };
 
-const notification = (type: RealtimeEventMap["notification:new"]["type"], reservationId: string): RealtimeEventMap["notification:new"] => ({
+const notification = (reservationId: string): RealtimeEventMap["notification:new"] => ({
   id: `n-${reservationId}`,
-  type,
+  type: "RESERVATION_PREEMPTED",
   title: "Tu reserva del ventilador fue desplazada",
   body: "Tu reserva fue reemplazada por otra reserva.",
-  data: { reservationId } as unknown as RealtimeEventMap["notification:new"]["data"],
+  data: { reservationId, replacedByReservationId: "r-new" },
   createdAt: "2026-10-16T14:00:00.000Z",
   readAt: null,
 });
+
+const gradePublished: RealtimeEventMap["notification:new"] = {
+  id: "n-grade",
+  type: "GRADE_PUBLISHED",
+  title: "Calificación publicada",
+  body: "Ya puedes consultar tu calificación.",
+  data: { evaluationId: "ev-1", attemptId: "at-1" },
+  createdAt: "2026-10-16T14:00:00.000Z",
+  readAt: null,
+};
+
+function currentReservationRequests(): { count: () => number } {
+  let requests = 0;
+
+  server.use(http.get(apiUrl("/api/reservations/current"), () => {
+    requests += 1;
+
+    return HttpResponse.json(envelope({ reservation: null, canControl: false }));
+  }));
+
+  return { count: () => requests };
+}
 
 function spyToast(): ToastApi & { info: ReturnType<typeof vi.fn> } {
   return { success: vi.fn(), error: vi.fn(), info: vi.fn() };
@@ -61,24 +83,16 @@ describe("usePreemptionNotice", () => {
   it("shows no toast: the notification toast of the notifications feature is the notice now (O1)", () => {
     const socket = createFakeSocket();
     const toast = spyToast();
-    const { result } = renderLabHook(() => usePreemptionNotice(), { socket, toast });
+    renderLabHook(() => usePreemptionNotice(), { socket, toast });
 
     socket.dispatch("reservation:preempted", preempted);
-    socket.dispatch("notification:new", notification("RESERVATION_PREEMPTED", "r1"));
+    socket.dispatch("notification:new", notification("r1"));
 
     expect(toast.info).not.toHaveBeenCalled();
-    expect(() => result.current.expectOwnPreemption(["r1"])()).not.toThrow();
   });
 
   it("revalidates the reservation reads on a notification-only preemption, not on other notifications", async() => {
-    let requests = 0;
-
-    server.use(http.get(apiUrl("/api/reservations/current"), () => {
-      requests += 1;
-
-      return HttpResponse.json(envelope({ reservation: null, canControl: false }));
-    }));
-
+    const requests = currentReservationRequests();
     const socket = createFakeSocket();
     const { result } = renderLabHook(() => {
       usePreemptionNotice();
@@ -87,10 +101,29 @@ describe("usePreemptionNotice", () => {
     }, { socket, toast: spyToast() });
 
     await waitFor(() => expect(result.current.data).not.toBeUndefined());
-    expect(requests).toBe(1);
+    expect(requests.count()).toBe(1);
 
-    socket.dispatch("notification:new", notification("GRADE_PUBLISHED", "x"));
-    socket.dispatch("notification:new", notification("RESERVATION_PREEMPTED", "r9"));
-    await waitFor(() => expect(requests).toBe(2));
+    socket.dispatch("notification:new", gradePublished);
+    socket.dispatch("notification:new", notification("r9"));
+    await waitFor(() => expect(requests.count()).toBe(2));
+  });
+
+  it("does not revalidate again for a reservation already announced", async() => {
+    const requests = currentReservationRequests();
+    const socket = createFakeSocket();
+    const { result } = renderLabHook(() => {
+      usePreemptionNotice();
+
+      return useCurrentReservation();
+    }, { socket, toast: spyToast() });
+
+    await waitFor(() => expect(result.current.data).not.toBeUndefined());
+    socket.dispatch("reservation:preempted", preempted);
+    socket.dispatch("notification:new", notification("r1"));
+    socket.dispatch("notification:new", notification("r2"));
+    socket.dispatch("notification:new", notification("r2"));
+    await waitFor(() => expect(requests.count()).toBe(2));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(requests.count()).toBe(2);
   });
 });

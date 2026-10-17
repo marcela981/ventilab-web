@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Preempt reservation dialog tests
-* Descripción: The staff preemption alert lists each overlapping reservation as the backend returned it (holder name and identifier, group, Bogota window), resends the same window with confirmPreempt and the chosen holder ("Asignarme a mí" or "Asignar a un grupo"), sends nothing on cancel and shows the backend failure (only an admin can preempt a teacher's reservation). v1.1 (T3 review fix): no exact preempted count, and the caller's own preemption is announced before the request and undone on failure. Depends on vitest, msw, Testing Library and the lab test helpers.
-* Versión: 1.1
+* Descripción: The staff preemption alert lists each overlapping reservation as the backend returned it (holder name and identifier, group, Bogota window), resends the same window with confirmPreempt and the chosen holder ("Asignarme a mí" or "Asignar a un grupo"), sends nothing on cancel and shows the backend failure (only an admin can preempt a teacher's reservation). v1.1 (T3 review fix): no exact preempted count, and the caller's own preemption is announced before the request and undone on failure. v1.2 (B2 closure): the own-preemption announcement is gone (the backend does not notify the actor). Depends on vitest, msw, Testing Library and the lab test helpers.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -118,23 +118,12 @@ describe("PreemptReservationDialog", { timeout: 20_000 }, () => {
   });
 
   it("resends the same window with confirmPreempt for the caller", async() => {
-    const undo = vi.fn();
-    let postedWhenAnnounced = -1;
-    const onPreempting = vi.fn(() => {
-      postedWhenAnnounced = posted.length;
-
-      return undo;
-    });
-    const { props, dialog } = renderDialog({ onPreempting });
+    const { props, dialog } = renderDialog();
 
     expect(within(dialog).getByRole("radio", { name: "Asignarme a mí" })).toBeChecked();
     fireEvent.click(within(dialog).getByRole("button", { name: "Desplazar y reservar" }));
 
     await waitFor(() => expect(props.onCreated).toHaveBeenCalledTimes(1));
-    // The caller's own preemption is announced before the request (the realtime event may beat the response).
-    expect(onPreempting).toHaveBeenCalledWith(["r1", "r2"]);
-    expect(postedWhenAnnounced).toBe(0);
-    expect(undo).not.toHaveBeenCalled();
     expect(posted).toEqual([{
       holderType: "USER",
       startsAt: "2026-10-16T15:00:00.000Z",
@@ -186,13 +175,11 @@ describe("PreemptReservationDialog", { timeout: 20_000 }, () => {
       pagination: null,
     }, { status: 409 })));
 
-    const undo = vi.fn();
-    const { props, dialog } = renderDialog({ onPreempting: () => undo });
+    const { props, dialog } = renderDialog();
 
     fireEvent.click(within(dialog).getByRole("button", { name: "Desplazar y reservar" }));
 
     expect(await within(dialog).findByRole("alert")).toHaveTextContent(CREATE_RESERVATION_ERROR_COPY.adminOnlyPreempt);
     expect(props.onCreated).not.toHaveBeenCalled();
-    expect(undo).toHaveBeenCalledTimes(1);
   });
 });

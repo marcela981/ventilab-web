@@ -7,14 +7,16 @@
 *   recording rate the backend reports (the source rate is not returned, so no factor is stated). States: skeleton;
 *   403 (recording_forbidden) and 404 (reservation_not_found) with their Spanish message and the way back to the list;
 *   other errors retryable; a reservation without recorded frames says so. There is no CSV export in the API, so none
-*   is offered. Preemption notice and realtime revalidation as on every /lab page. Depends on MUI, next/head,
+*   is offered. Realtime revalidation of the reservation reads (also on a notification-only preemption) as on every
+*   /lab page; the preemption notice is the notification toast of the notifications feature (the backend never
+*   notifies the actor). Depends on MUI, next/head,
 *   next/link, the design-system states, the date format helper, the lab routes, entities and hooks, the lazy player
 *   and the recordings styles. v1.1 (T11 review fix): useRecording downloads without cache (aborted when leaving,
 *   downloaded again on every visit) and indexes in chunks with the progress shown here ("Preparando la grabación…
 *   N %"); only the index reaches the lazy player (no raw frames kept). The header uses the index: the date of the
 *   first kept frame and `index.durationMs` (S4), which includes the gaps of the recording and says so with their
-*   count and total length (S1).
-* Versión: 1.1
+*   count and total length (S1). v1.2 (B2 closure): header updated to the current preemption notice behaviour.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Lab reservations page
-* Descripción: Reservations calendar of the ventilator lab (/lab/reservations): week (default) or day view in America/Bogota with previous / today / next navigation, the slot rules from useLabSettings (slot minutes, maximum duration, booking window; never hardcoded) and a legend. A free slot opens the create dialog with the durations allowed from it (up to the maximum and before the next reservation); after a booking the dialog closes, a confirmation is shown and the reads are revalidated (the backend returns data null). Occupied slots show only what the backend returned for the caller role. The calendar is revalidated on ventilator:availability and reservation:preempted, and periodically because other bookings have no realtime event. Skeleton, retryable error and the previous range kept while the next one loads. v1.1 (T3): staff (teacher/admin) may select occupied slots of the bookable range and pick durations past the next reservation; a 409 they may preempt opens the preemption dialog (confirmPreempt resend with the chosen holder) and the confirmation counts the preempted reservations; usePreemptionNotice shows the preempted holder a realtime toast. v1.2 (T4 + T2 review fix): the "Mis reservas" section (upcoming/past, cancel with confirmation); the calendar shows the skeleton or the error of the requested range instead of the previous range's data; the calendar query extends maxDurationMinutes past the end of the range so the durations of the last slots see the next day's reservations (the grid still shows only the range); the create dialog gets no duration when a reservation already covers the chosen start. v1.3 (T3/T4 review fixes): the preemption success copy states no exact count, the reservations the caller preempts are not announced to the caller (expectOwnPreemption), and the create dialog offers no duration ("Comprobando la disponibilidad…") while the calendar of the current range/settings loads. Depends on MUI, next/head, next/link, the session, the design-system states, the date format helper, the lab hooks, entities, components, routes and styles.
-* Versión: 1.3
+* Descripción: Reservations calendar of the ventilator lab (/lab/reservations): week (default) or day view in America/Bogota with previous / today / next navigation, the slot rules from useLabSettings (slot minutes, maximum duration, booking window; never hardcoded) and a legend. A free slot opens the create dialog with the durations allowed from it (up to the maximum and before the next reservation); after a booking the dialog closes, a confirmation is shown and the reads are revalidated (the backend returns data null). Occupied slots show only what the backend returned for the caller role. The calendar is revalidated on ventilator:availability and reservation:preempted, and periodically because other bookings have no realtime event. Skeleton, retryable error and the previous range kept while the next one loads. v1.1 (T3): staff (teacher/admin) may select occupied slots of the bookable range and pick durations past the next reservation; a 409 they may preempt opens the preemption dialog (confirmPreempt resend with the chosen holder) and the confirmation counts the preempted reservations; usePreemptionNotice revalidates the reads of a preempted holder (the notice is the notification toast of the notifications feature). v1.2 (T4 + T2 review fix): the "Mis reservas" section (upcoming/past, cancel with confirmation); the calendar shows the skeleton or the error of the requested range instead of the previous range's data; the calendar query extends maxDurationMinutes past the end of the range so the durations of the last slots see the next day's reservations (the grid still shows only the range); the create dialog gets no duration when a reservation already covers the chosen start. v1.3 (T3/T4 review fixes): the preemption success copy states no exact count, and the create dialog offers no duration ("Comprobando la disponibilidad…") while the calendar of the current range/settings loads. v1.4 (B2 closure): the client-side self-notification filter of a preemption (expectOwnPreemption) is gone: the backend no longer notifies the actor. Depends on MUI, next/head, next/link, the session, the design-system states, the date format helper, the lab hooks, entities, components, routes and styles.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -97,7 +97,7 @@ function rangeLabel(days: readonly Date[]): string {
 
 export function LabReservationsPage() {
   useReservationsRealtime();
-  const preemptionNotice = usePreemptionNotice();
+  usePreemptionNotice();
   const { role } = useSession();
   // Staff may book over other reservations (preemption); the backend decides which ones per role.
   const isStaff = role === "TEACHER" || role === "ADMIN";
@@ -243,7 +243,6 @@ export function LabReservationsPage() {
           settings={settings}
           onClose={() => setPreemption(null)}
           onCreated={handlePreempted}
-          onPreempting={preemptionNotice.expectOwnPreemption}
         />
       ) : null}
     </div>

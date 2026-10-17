@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Preemption entities tests
-* Descripción: The teacher-versus-teacher rule (a non-preemptable overlap with a teacher's or admin's reservation needs an admin; a student's 409 carries no roles), the create failure message that explains it, and the Spanish notice of a preempted reservation from the reservation:preempted event and from a RESERVATION_PREEMPTED notification (other notifications give none). Depends on vitest, the api-client ApiError and the lab entities.
-* Versión: 1.0
+* Descripción: The teacher-versus-teacher rule (a non-preemptable overlap with a teacher's or admin's reservation needs an admin; a student's 409 carries no roles), the create failure message that explains it, and the Spanish notice of a preempted reservation from the reservation:preempted event and from a RESERVATION_PREEMPTED notification (other notifications give none). Depends on vitest, the api-client ApiError and the lab entities. v1.1 (B2 closure): a notification whose typed data carries no reservationId gives no notice.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -95,5 +95,6 @@ describe("preemption notices", () => {
     expect(noticeFromNotification(notification)).toEqual({ reservationId: "r1", message: "Tu reserva fue reemplazada por otra reserva." });
     expect(noticeFromNotification({ ...notification, type: "GRADE_PUBLISHED" })).toBeNull();
     expect(noticeFromNotification({ ...notification, data: null })).toBeNull();
+    expect(noticeFromNotification({ ...notification, data: { evaluationId: "ev-1", attemptId: "at-1" } })).toBeNull();
   });
 });

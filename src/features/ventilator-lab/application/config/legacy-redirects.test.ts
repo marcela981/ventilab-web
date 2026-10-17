@@ -3,8 +3,9 @@
 * Descripción: T12: `/simulador` redirects (temporary) to `/lab`, and the legacy route file
 *   pages/simulador/index.js only redirects through legacyLabRedirect (no legacy dashboard, provider or component is
 *   rendered any more). Depends on Vitest and node:fs. v1.1 (T12 review fix S2): the route imports legacyLabRedirect by
-*   its direct module path, never the whole feature barrel.
-* Versión: 1.1
+*   its direct module path, never the whole feature barrel. v1.2 (B2 closure): /dashboard is role-aware since O6
+*   (RoleHomeRedirect), so the check is that it never goes through /simulador (the stale /lab expectation failed).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -36,10 +37,10 @@ describe("legacy lab redirects", () => {
     ]);
   });
 
-  it("the legacy /dashboard landing points to the lab directly", () => {
+  it("the legacy /dashboard landing goes to the role home, never through /simulador", () => {
     const source = readFileSync(join(ROOT, "pages/dashboard/index.js"), "utf8");
 
-    expect(source).toContain("router.replace('/lab')");
+    expect(source).toContain("<RoleHomeRedirect />");
     expect(source).not.toContain("'/simulador'");
   });
 });

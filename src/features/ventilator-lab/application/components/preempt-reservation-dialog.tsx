@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Preempt reservation dialog
-* Descripción: Staff alert dialog opened when a booking overlaps reservations the caller may preempt (409 reservations.conflict_preemptable): it lists each overlapping reservation exactly as the backend returned it to staff (holder name and identifier, or the group, and the Bogota window), lets the caller choose who holds the new reservation ("Asignarme a mí", "Asignar a un grupo" with the groups of useHolderOptions, or the user of the original request for an admin) and, on "Desplazar y reservar", resends the same window and purpose with confirmPreempt (the backend preempts every overlapping reservation in the same transaction and notifies their holders). Cancel sends nothing. A failure stays open with its Spanish message (for example, only an admin can preempt a teacher's reservation). v1.1 (T3 review fix): no exact preempted count in the copy (the backend preempts every overlap at confirm time) and `onPreempting` announces the caller's own preemption before the request. v1.2 (T6 review fix S1): documents why a conflict without a reservation id is not suppressed. Depends on MUI, the design-system AsyncButton, the holder and create hooks, the lab entities and the CSS Module.
-* Versión: 1.2
+* Descripción: Staff alert dialog opened when a booking overlaps reservations the caller may preempt (409 reservations.conflict_preemptable): it lists each overlapping reservation exactly as the backend returned it to staff (holder name and identifier, or the group, and the Bogota window), lets the caller choose who holds the new reservation ("Asignarme a mí", "Asignar a un grupo" with the groups of useHolderOptions, or the user of the original request for an admin) and, on "Desplazar y reservar", resends the same window and purpose with confirmPreempt (the backend preempts every overlapping reservation in the same transaction and notifies their holders). Cancel sends nothing. A failure stays open with its Spanish message (for example, only an admin can preempt a teacher's reservation). v1.1 (T3 review fix): no exact preempted count in the copy (the backend preempts every overlap at confirm time) and `onPreempting` announces the caller's own preemption before the request. v1.2 (T6 review fix S1): documents why a conflict without a reservation id is not suppressed. v1.3 (B2 closure): `onPreempting` removed: the backend no longer notifies the actor of a preemption, so the caller's own preemption needs no client-side suppression. Depends on MUI, the design-system AsyncButton, the holder and create hooks, the lab entities and the CSS Module.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -67,11 +67,6 @@ export type PreemptReservationDialogProps = {
   onClose: () => void
   /** Called once the reservation was created over the conflicting ones. */
   onCreated: () => void
-  /**
-   * Called right before the confirm request with the ids of the listed conflicts (the caller's own preemption, see
-   * usePreemptionNotice); the returned undo runs when the request fails.
-   */
-  onPreempting?: (reservationIds: readonly string[]) => () => void
 };
 
 function conflictHolder(item: ReservationConflictItem): string {
@@ -106,7 +101,6 @@ export function PreemptReservationDialog({
   settings,
   onClose,
   onCreated,
-  onPreempting,
 }: PreemptReservationDialogProps) {
   const titleId = useId();
   const descriptionId = useId();
@@ -127,11 +121,6 @@ export function PreemptReservationDialog({
     }
 
     setError(null);
-    // A conflict without a reservation id cannot be matched with the later `reservation:preempted` event (keyed by
-    // reservationId), so it is not suppressed: wrongly telling the caller about their own preemption is harmless,
-    // while suppressing by any other key (window, holder) could hide the notice of an unrelated reservation.
-    const ids = conflict.conflicts.flatMap((item) => (item.reservationId ? [item.reservationId] : []));
-    const undo = onPreempting?.(ids);
     const outcome = await submit({ ...request, holder, confirmPreempt: true });
 
     if (outcome.kind === "created") {
@@ -140,7 +129,6 @@ export function PreemptReservationDialog({
       return;
     }
 
-    undo?.();
     setError(getCreateReservationFailureMessage(outcome.error, outcome.conflict, settings));
   };
 

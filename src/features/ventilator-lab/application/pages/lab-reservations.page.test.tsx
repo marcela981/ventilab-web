@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Lab reservations page tests
-* Descripción: /lab/reservations with msw: the Bogota week of the current date and its range query, the slot rules from the lab settings (vendored defaults for a student, the platform settings for an admin), occupied slots with only the backend label for a student and the holder name for staff, past slots without a booking button, week and day navigation with new range queries, booking a free slot through the dialog (POST, confirmation, calendar revalidated because the backend returns data null), realtime revalidation on ventilator:availability and the retryable error state. v1.1 (T3): staff preemption from an occupied slot (uncapped durations, 409 alert, confirmPreempt resend, confirmation), students cannot select occupied slots, the preempted holder toast without duplicates and the calendar refresh. v1.2 (T2 review fix + T4): the range query ends maxDurationMinutes after the range (durations of the last slots see the next day's reservations), another range shows its skeleton or its error instead of the previous range's slots, a slot taken while the dialog is open leaves no duration and disables Reservar, and the "Mis reservas" section is on the page. v1.3 (T3/T4 review fixes): the caller is not told about the reservation the caller preempts, teacher over teacher gets the admin-only message, and no duration is offered while the calendar of new settings loads. v1.4 (O1 notifications): the preemption toast moved to the notifications feature; the page shows no preemption toast and still refreshes the calendar on the preemption events.
-* Versión: 1.4
+* Descripción: /lab/reservations with msw: the Bogota week of the current date and its range query, the slot rules from the lab settings (vendored defaults for a student, the platform settings for an admin), occupied slots with only the backend label for a student and the holder name for staff, past slots without a booking button, week and day navigation with new range queries, booking a free slot through the dialog (POST, confirmation, calendar revalidated because the backend returns data null), realtime revalidation on ventilator:availability and the retryable error state. v1.1 (T3): staff preemption from an occupied slot (uncapped durations, 409 alert, confirmPreempt resend, confirmation), students cannot select occupied slots, the preempted holder toast without duplicates and the calendar refresh. v1.2 (T2 review fix + T4): the range query ends maxDurationMinutes after the range (durations of the last slots see the next day's reservations), another range shows its skeleton or its error instead of the previous range's slots, a slot taken while the dialog is open leaves no duration and disables Reservar, and the "Mis reservas" section is on the page. v1.3 (T3/T4 review fixes): the caller is not told about the reservation the caller preempts, teacher over teacher gets the admin-only message, and no duration is offered while the calendar of new settings loads. v1.4 (O1 notifications): the preemption toast moved to the notifications feature; the page shows no preemption toast and still refreshes the calendar on the preemption events. v1.5 (B2 closure): no own-preemption suppression (the backend does not notify the actor); the RESERVATION_PREEMPTED notification carries its typed data.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -216,7 +216,7 @@ describe("LabReservationsPage", { timeout: 30_000 }, () => {
 
     expect(await screen.findByText(LAB_RESERVATIONS_COPY.createdWithPreemption, {}, { timeout: LOAD_TIMEOUT }))
       .toBeInTheDocument();
-    // T3 review fix W1: the caller is not told that the reservation the caller preempted "fue desplazada".
+    // The page shows no preemption notice of its own (the backend does not notify the actor; B2 closure).
     expect(screen.queryByText(/^Tu reserva del ventilador/)).not.toBeInTheDocument();
     expect(posted).toEqual([
       { holderType: "USER", startsAt: "2026-10-16T16:00:00.000Z", endsAt: "2026-10-16T17:00:00.000Z" },
@@ -308,7 +308,7 @@ describe("LabReservationsPage", { timeout: 30_000 }, () => {
       type: "RESERVATION_PREEMPTED",
       title: "Tu reserva del ventilador fue desplazada",
       body: "Tu reserva fue reemplazada por otra reserva.",
-      data: { reservationId: "r1" } as never,
+      data: { reservationId: "r1", replacedByReservationId: "r2" },
       createdAt: "2026-10-16T14:40:00.000Z",
       readAt: null,
     });
