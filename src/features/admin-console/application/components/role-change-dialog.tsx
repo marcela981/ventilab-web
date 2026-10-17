@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: RoleChangeDialog
-* Descripción: Dialog of "Cambiar rol" in /admin/users: role select (the current role preselected; confirming needs a different one) and a warning listing what the backend does on a change (leaving STUDENT removes the student groups, becoming STUDENT removes the teacher groups, the open sessions are closed and refreshed with the new role, and a ROLE_CHANGED notification is sent). A failure stays inside the dialog with the mapped message (superadmin 403 → "Esta cuenta está protegida (superadministrador) y no se puede modificar."). Depends on MUI, the design-system async button and form field and the admin console config, entities and CSS Module.
-* Versión: 1.0
+* Descripción: Dialog of "Cambiar rol" in /admin/users: role select (the current role preselected; confirming needs a different one) and a warning listing what the backend does on a change (leaving STUDENT removes the student groups, becoming STUDENT removes the teacher groups, the open sessions are closed and refreshed with the new role, and a ROLE_CHANGED notification is sent). A failure stays inside the dialog with the mapped message (superadmin 403 → "Esta cuenta está protegida (superadministrador) y no se puede modificar."). Depends on MUI, the design-system async button and form field and the admin console config, entities and CSS Module. v1.1 (O4a review): while the PATCH is pending, Escape and the backdrop do not close the dialog (the pending state lives in the dialog).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -51,24 +51,26 @@ type RoleChangeFormProps = {
   onConfirm: RoleChangeDialogProps["onConfirm"]
   onClose: () => void
   titleId: string
+  pending: boolean
+  onPendingChange: (pending: boolean) => void
 };
 
-function RoleChangeForm({ user, onConfirm, onClose, titleId }: RoleChangeFormProps) {
+function RoleChangeForm({ user, onConfirm, onClose, titleId, pending, onPendingChange }: RoleChangeFormProps) {
   const [role, setRole] = useState<UserRole>(user.role);
-  const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const effects = roleChangeEffects(user.role, role);
   const name = user.name?.trim() || user.email;
 
   const confirm = async() => {
-    setPending(true);
+    onPendingChange(true);
     setError(null);
 
     try {
       await onConfirm(user, role);
     } catch (caught) {
       setError(getAdminConsoleErrorMessage(caught));
-      setPending(false);
+    } finally {
+      onPendingChange(false);
     }
   };
 
@@ -111,10 +113,28 @@ function RoleChangeForm({ user, onConfirm, onClose, titleId }: RoleChangeFormPro
 
 export function RoleChangeDialog({ user, onConfirm, onClose }: RoleChangeDialogProps) {
   const titleId = useId();
+  const [pending, setPending] = useState(false);
+
+  // Escape and the backdrop must not close the dialog while the role change is in flight.
+  const close = () => {
+    if (!pending) {
+      onClose();
+    }
+  };
 
   return (
-    <Dialog open={user !== null} onClose={onClose} aria-labelledby={titleId} fullWidth maxWidth="sm">
-      {user ? <RoleChangeForm key={user.id} user={user} onConfirm={onConfirm} onClose={onClose} titleId={titleId} /> : null}
+    <Dialog open={user !== null} onClose={close} aria-labelledby={titleId} fullWidth maxWidth="sm">
+      {user ? (
+        <RoleChangeForm
+          key={user.id}
+          user={user}
+          onConfirm={onConfirm}
+          onClose={close}
+          titleId={titleId}
+          pending={pending}
+          onPendingChange={setPending}
+        />
+      ) : null}
     </Dialog>
   );
 }

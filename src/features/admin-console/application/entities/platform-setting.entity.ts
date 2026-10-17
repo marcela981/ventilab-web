@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Platform setting entity
-* Descripción: Client model of one platform setting (key, category, description, effective value, default value, origin DEFAULT/OVERRIDE, free-form hard limits, version, last update) and the pure value helpers the generated forms use: path ids in the backend error format (`a.b`, `list[0]`), immutable read/write by path, deep clone and deep equality of JSON values, the display format of a value (Sí/No, lists joined by commas, JSON for objects) and the marker of a JSON field whose text does not parse. Depends on the admin console config.
-* Versión: 1.0
+* Descripción: Client model of one platform setting (key, category, description, effective value, default value, origin DEFAULT/OVERRIDE, free-form hard limits, version, last update) and the pure value helpers the generated forms use: path ids in the backend error format (`a.b`, `list[0]`), immutable read/write by path, deep clone and deep equality of JSON values, the display format of a value (Sí/No, lists joined by commas, JSON for objects) and the marker of a JSON field whose text does not parse. Depends on the admin console config. v1.1 (O4a review): removeAt deletes the key of a path (immutably) so an optional entry can be omitted from the draft.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -89,6 +89,25 @@ export function setAt(root: unknown, path: SettingPath, value: unknown): unknown
   const record = isRecord(root) ? { ...root } : {};
 
   record[head] = setAt(record[head], rest, value);
+
+  return record;
+}
+
+// Removes the last key of the path from its record; a missing parent leaves the value unchanged.
+export function removeAt(root: unknown, path: SettingPath): unknown {
+  const [head, ...rest] = path;
+
+  if (head === undefined || typeof head === "number" || !isRecord(root) || !(head in root)) {
+    return root;
+  }
+
+  const record = { ...root };
+
+  if (rest.length === 0) {
+    delete record[head];
+  } else {
+    record[head] = removeAt(record[head], rest);
+  }
 
   return record;
 }

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useAdminUsers
-* Descripción: Reads one page of `GET /api/users` for the filters of the URL (search by name, email or exact id; role; group; account status; sorted by name) through useApiQuery and maps the rows and the envelope pagination. Keeps the previous page on screen while the next one loads. Depends on React, @shared/api-client and the admin console mapper, service and entity.
-* Versión: 1.0
+* Descripción: Reads one page of `GET /api/users` for the filters of the URL (search by name, email or exact id; role; group; account status; sorted by name) through useApiQuery and maps the rows and the envelope pagination. Depends on React, @shared/api-client and the admin console mapper, service and entity. v1.1 (O4a review): keepPreviousData is off (as the O4b hooks), so a new filter or page never shows the previous rows as current and an error is never hidden behind old rows.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,10 +27,11 @@ export type UseAdminUsersResult = {
   reload: () => Promise<void>
 };
 
-const KEEP_PREVIOUS = { keepPreviousData: true } as const;
+// A new filter or page must never show the previous rows as its own result.
+const NO_PREVIOUS_DATA = { keepPreviousData: false } as const;
 
 export function useAdminUsers(filters: AdminUserFilters, enabled: boolean): UseAdminUsersResult {
-  const { data, error, isLoading, mutate } = useApiQuery(enabled ? USERS_PATH : null, { query: toAdminUsersQuery(filters) }, KEEP_PREVIOUS);
+  const { data, error, isLoading, mutate } = useApiQuery(enabled ? USERS_PATH : null, { query: toAdminUsersQuery(filters) }, NO_PREVIOUS_DATA);
   const rows = useMemo(() => (data ? data.data.map(toAdminUserRow) : null), [data]);
   const raw = data?.pagination;
   const pagination = raw ? { page: raw.page, pages: raw.pages, limit: raw.limit, total: raw.total } : null;

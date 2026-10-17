@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Setting form generator tests
-* Descripción: buildSettingField generates every field kind from the metadata (number with min/max/integer, boolean, string, string with allowedValues, array with allowedValues and required, plain array, object as a recursive group with per-field and inherited limits, ai.useCase.* provider chain, unmappable shapes as JSON); validateSettingValue reports the hard limits (range, integer, not a number, allowed and required values, chain length, empty model, invalid JSON) and nothing for valid values; describeLimits, diffSettingValues and mapSettingServerError (422 paths `value`, `providerChain[0]`, `models.x`, nested fields, unknown paths on the card, providers without credentials). Depends on vitest and the admin console entities.
-* Versión: 1.0
+* Descripción: buildSettingField generates every field kind from the metadata (number with min/max/integer, boolean, string, string with allowedValues, array with allowedValues and required, plain array, object as a recursive group with per-field and inherited limits, ai.useCase.* provider chain, unmappable shapes as JSON); validateSettingValue reports the hard limits (range, integer, not a number, allowed and required values, chain length, empty model, invalid JSON) and nothing for valid values; describeLimits, diffSettingValues and mapSettingServerError (422 paths `value`, `providerChain[0]`, `models.x`, nested fields, unknown paths on the card, providers without credentials). Depends on vitest and the admin console entities. v1.1 (O4a review): record-like settings (ai.quotas optional quota numbers and entries; ai.prices optional providers/models with required prices when present) and removeAt.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,7 +11,7 @@
 
 import { describe, expect, it } from "vitest";
 import { ApiError } from "@shared/api-client/api-error";
-import { InvalidJsonDraft, setAt } from "./platform-setting.entity";
+import { InvalidJsonDraft, removeAt, setAt } from "./platform-setting.entity";
 import {
   buildSettingField,
   describeLimits,
@@ -153,6 +153,37 @@ describe("validateSettingValue", () => {
     const field = build({ key: "simulation.rubric.defaultThresholds", defaultValue: { targetsReached: 0.8 }, limits: { targetsReached: { min: 0.01, max: 1, integer: false } } });
 
     expect(validateSettingValue(field, { targetsReached: 2 })).toEqual({ targetsReached: "Debe estar entre 0.01 y 1." });
+  });
+
+  it("treats the quota numbers and entries of ai.quotas as optional (missing means unlimited)", () => {
+    const quotas = build({
+      key: "ai.quotas",
+      defaultValue: { STUDENT: { "*": { requestsPerDay: 50, tokensPerDay: 20000 } }, TEACHER: { "*": { requestsPerDay: 200 } } },
+      limits: { requestsPerDay: { min: 0, max: 100000, integer: true }, tokensPerDay: { min: 0, max: 10000000, integer: true } },
+    });
+
+    expect(validateSettingValue(quotas, { STUDENT: { "*": { requestsPerDay: 50 } } })).toEqual({});
+    expect(validateSettingValue(quotas, { STUDENT: { "*": { requestsPerDay: -1 } } })).toEqual({ "STUDENT.*.requestsPerDay": "Debe estar entre 0 y 100000." });
+    expect(validateSettingValue(quotas, { STUDENT: { "*": { tokensPerDay: Number.NaN } } })).toEqual({ "STUDENT.*.tokensPerDay": "Ingresa un número." });
+  });
+
+  it("lets ai.prices omit a provider or model of the default but needs both prices of a present model", () => {
+    const prices = build({
+      key: "ai.prices",
+      defaultValue: { gemini: { flash: { inputPer1kUsd: 0.1, outputPer1kUsd: 0.4 } }, openai: { mini: { inputPer1kUsd: 0.15, outputPer1kUsd: 0.6 } } },
+      limits: { inputPer1kUsd: { min: 0, max: 1000, integer: false }, outputPer1kUsd: { min: 0, max: 1000, integer: false } },
+    });
+
+    expect(validateSettingValue(prices, { gemini: { flash: { inputPer1kUsd: 0.1, outputPer1kUsd: 0.4 } } })).toEqual({});
+    expect(validateSettingValue(prices, { gemini: { flash: { inputPer1kUsd: 0.1 } } })).toEqual({ "gemini.flash.outputPer1kUsd": "Ingresa un número." });
+  });
+
+  it("removes a key by its path without touching the rest", () => {
+    const value = { STUDENT: { "*": { requestsPerDay: 50, tokensPerDay: 100 } } };
+
+    expect(removeAt(value, ["STUDENT", "*", "tokensPerDay"])).toEqual({ STUDENT: { "*": { requestsPerDay: 50 } } });
+    expect(removeAt(value, ["TEACHER", "*", "tokensPerDay"])).toBe(value);
+    expect(value.STUDENT["*"].tokensPerDay).toBe(100);
   });
 
   it("checks the chain length, repeated providers and an empty model", () => {

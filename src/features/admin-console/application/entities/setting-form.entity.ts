@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Setting form generator
-* Descripción: Builds the form of any platform setting from its metadata, with no hand-written form per setting (the API sends no field type, so the kind comes from `typeof defaultValue`): number → numeric field with limits.min/max/integer; boolean → switch; string → text, or select with limits.allowedValues; array of primitives → multi-select with limits.allowedValues (and limits.required) or a list editor; object → recursive group whose children come from the default (plus any key only the current value has), each child taking limits[childKey] when present and otherwise inheriting its parent's limits (so `ai.quotas` and `ai.prices` reach their per-field limits); `ai.useCase.*` → provider chain field (chain + models, limits.providerChain.minLength/maxLength) plus the generic numeric fields; anything else → JSON field. validateSettingValue mirrors only the hard limits the API shows (min/max/integer, allowed and required values, lengths) plus non-empty models of the chain providers; describeLimits renders them; diffSettingValues lists the changed fields with previous value, new value and limits (ventilator commands confirmation); mapSettingServerError places a 422 (details.reason "<path> <reason>", paths like `providerChain[0]`, `models.x`, `value`) on the field it names, translated to Spanish, or on the card when no field matches. Depends on the platform setting entity, the admin console config and error messages and the api-client errors.
-* Versión: 1.0
+* Descripción: Builds the form of any platform setting from its metadata, with no hand-written form per setting (the API sends no field type, so the kind comes from `typeof defaultValue`): number → numeric field with limits.min/max/integer; boolean → switch; string → text, or select with limits.allowedValues; array of primitives → multi-select with limits.allowedValues (and limits.required) or a list editor; object → recursive group whose children come from the default (plus any key only the current value has), each child taking limits[childKey] when present and otherwise inheriting its parent's limits (so `ai.quotas` and `ai.prices` reach their per-field limits); `ai.useCase.*` → provider chain field (chain + models, limits.providerChain.minLength/maxLength) plus the generic numeric fields; anything else → JSON field. validateSettingValue mirrors only the hard limits the API shows (min/max/integer, allowed and required values, lengths) plus non-empty models of the chain providers; describeLimits renders them; diffSettingValues lists the changed fields with previous value, new value and limits (ventilator commands confirmation); mapSettingServerError places a 422 (details.reason "<path> <reason>", paths like `providerChain[0]`, `models.x`, `value`) on the field it names, translated to Spanish, or on the card when no field matches. Depends on the platform setting entity, the admin console config and error messages and the api-client errors. v1.1 (O4a review): record-like settings (`ai.quotas`: requestsPerDay/tokensPerDay are optional and a missing role or use case is unlimited; `ai.prices`: whole replacement, so a provider or model of the default may be missing) mark their nested fields `optional`: a missing (undefined) optional field skips validation, and the editor omits the key when its input is emptied.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -24,6 +24,8 @@ type FieldBase = {
   id: string
   path: SettingPath
   label: string
+  // The key may be missing from the value (record-like settings): undefined is valid and skips validation.
+  optional?: boolean
 };
 
 export type NumberField = FieldBase & { kind: "number", limits: NumberLimits };
@@ -63,6 +65,14 @@ export type ServerErrorMapping = {
 };
 
 const AI_USE_CASE_PREFIX = "ai.useCase.";
+
+// Record-like settings whose entries may be missing from the value.
+// "all": every field below the root may be missing (ai.quotas: optional requestsPerDay/tokensPerDay, a missing role or use case is unlimited).
+// "entries": only the nested records may be missing; a present entry needs all its numbers (ai.prices: whole replacement, both prices required).
+export const RECORD_SETTINGS: Readonly<Record<string, "all" | "entries">> = {
+  "ai.quotas": "all",
+  "ai.prices": "entries",
+};
 const CHAIN_KEY = "providerChain";
 const MODELS_KEY = "models";
 const LABEL_SEPARATOR = " › ";
@@ -252,12 +262,25 @@ function buildAiUseCaseField(setting: Pick<PlatformSetting, "defaultValue" | "va
   };
 }
 
+function markOptional(field: SettingField, mode: "all" | "entries", isRoot: boolean): SettingField {
+  const optional = !isRoot && (mode === "all" || field.kind === "group");
+
+  if (field.kind === "group") {
+    return { ...field, ...(optional ? { optional } : {}), children: field.children.map((child) => markOptional(child, mode, false)) };
+  }
+
+  return optional ? { ...field, optional } : field;
+}
+
 export function buildSettingField(setting: Pick<PlatformSetting, "key" | "defaultValue" | "value" | "limits">): SettingField {
   if (isAiUseCaseSetting(setting)) {
     return buildAiUseCaseField(setting);
   }
 
-  return buildField([], SETTING_FORM_COPY.rootLabel, setting.defaultValue, setting.value, setting.limits);
+  const field = buildField([], SETTING_FORM_COPY.rootLabel, setting.defaultValue, setting.value, setting.limits);
+  const recordMode = RECORD_SETTINGS[setting.key];
+
+  return recordMode ? markOptional(field, recordMode, true) : field;
 }
 
 function rangeError(value: number, limits: NumberLimits): string | null {
@@ -367,6 +390,10 @@ export function modelErrorKey(provider: string): string {
 function collectErrors(field: SettingField, root: unknown, errors: Record<string, string>): void {
   const value = getAt(root, field.path);
   let message: string | null = null;
+
+  if (field.optional && value === undefined) {
+    return;
+  }
 
   switch (field.kind) {
     case "group":

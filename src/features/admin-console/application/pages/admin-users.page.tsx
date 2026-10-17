@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AdminUsersPage
-* Descripción: Page /admin/users (ADMIN): paginated users of `GET /api/users` with search (name, email or exact id; the API has no student code), role, group (`GET /api/groups`) and account status filters, all kept in the URL (?page&search&role&groupId&isActive, shareable). "Cambiar rol" opens the role dialog with the warning of its effects (`PATCH /api/users/{id}/role`); "Desactivar"/"Activar" asks for confirmation (`PATCH /api/users/{id}/status`). A backend 403 on a superadmin shows "Esta cuenta está protegida (superadministrador) y no se puede modificar." in the dialog or as a toast; the admin's own row is disabled because the backend refuses changes to one's own account. Depends on MUI, next/head, next/router, the design-system components, the session, the admin console hooks, components, entities and CSS Module.
-* Versión: 1.0
+* Descripción: Page /admin/users (ADMIN): paginated users of `GET /api/users` with search (name, email or exact id; the API has no student code), role, group (`GET /api/groups`) and account status filters, all kept in the URL (?page&search&role&groupId&isActive, shareable). "Cambiar rol" opens the role dialog with the warning of its effects (`PATCH /api/users/{id}/role`); "Desactivar"/"Activar" asks for confirmation (`PATCH /api/users/{id}/status`). A backend 403 on a superadmin shows "Esta cuenta está protegida (superadministrador) y no se puede modificar." in the dialog or as a toast; the admin's own row is disabled because the backend refuses changes to one's own account. Depends on MUI, next/head, next/router, React, the design-system components, the session, the admin console hooks, components, entities and CSS Module. v1.1 (O4a review): a new filter or page never shows the previous rows (no keepPreviousData, loading state instead); an error is shown whenever the request fails; a page beyond the last one (old URL) is moved to the last page.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,7 +14,7 @@ import Button from "@mui/material/Button";
 import TablePagination from "@mui/material/TablePagination";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
 import { EmptyState } from "@shared/design-system/components/empty-state";
 import { ErrorState } from "@shared/design-system/components/error-state";
@@ -90,6 +90,17 @@ export function AdminUsersPage() {
     void router.replace({ pathname: router.pathname, query: toUserFiltersQuery(next) }, undefined, { shallow: true });
   };
 
+  useEffect(() => {
+    // A page beyond the last one (shared URL, deleted users): show the last page instead of an empty list.
+    if (rows && rows.length === 0 && pagination && pagination.total > 0 && filters.page > pagination.pages) {
+      void router.replace(
+        { pathname: router.pathname, query: toUserFiltersQuery({ ...filters, page: Math.max(1, pagination.pages) }) },
+        undefined,
+        { shallow: true },
+      );
+    }
+  }, [rows, pagination, filters, router]);
+
   const confirmRole = async(row: AdminUserRow, role: UserRole) => {
     await actions.changeRole(row.id, role);
     setRoleTarget(null);
@@ -118,11 +129,26 @@ export function AdminUsersPage() {
   };
 
   const renderList = () => {
+    if (users.error) {
+      return (
+        <ErrorState
+          title={ADMIN_USERS_COPY.loadErrorTitle}
+          description={getAdminConsoleErrorMessage(users.error)}
+          onRetry={() => void users.reload()}
+        />
+      );
+    }
+
     if (!rows || !pagination) {
-      return null;
+      return users.isLoading || !router.isReady ? <ListSkeleton rows={5} label={ADMIN_USERS_COPY.loading} /> : null;
     }
 
     if (rows.length === 0) {
+      if (pagination.total > 0) {
+        // Out-of-range page: the effect above moves to the last page.
+        return <ListSkeleton rows={5} label={ADMIN_USERS_COPY.loading} />;
+      }
+
       return filtered ? (
         <EmptyState
           title={ADMIN_USERS_COPY.noMatchTitle}
@@ -170,14 +196,6 @@ export function AdminUsersPage() {
         <UsersFilters value={filters} groups={groups} groupsFailed={groupsError !== null} onChange={setFilters} />
         <p className={cx(styles.note)}>{ADMIN_USERS_COPY.searchNote}</p>
         {renderList()}
-        {!rows && (users.isLoading || !router.isReady) ? <ListSkeleton rows={5} label={ADMIN_USERS_COPY.loading} /> : null}
-        {!rows && users.error ? (
-          <ErrorState
-            title={ADMIN_USERS_COPY.loadErrorTitle}
-            description={getAdminConsoleErrorMessage(users.error)}
-            onRetry={() => void users.reload()}
-          />
-        ) : null}
       </div>
       <RoleChangeDialog user={roleTarget} onConfirm={confirmRole} onClose={() => setRoleTarget(null)} />
       <ConfirmDialog

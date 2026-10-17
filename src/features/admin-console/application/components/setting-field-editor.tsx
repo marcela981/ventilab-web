@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: SettingFieldEditor
-* Descripción: Renders the field tree built by buildSettingField, recursively, on the draft value of one setting: number → text input with decimal keyboard and its limits as help (the typed text is kept while it does not parse, and validation reports it); boolean → switch; text; select (allowed values); multi-select → checkboxes of the allowed values; list → one input per entry with add/remove; group → fieldset with its children; provider chain → ProviderChainEditor; JSON → multiline input validated as JSON. Each input shows the error of its path (client limits or a server 422). Depends on MUI, the design-system form field, @shared/lib, the admin console entities, the provider chain editor and CSS Module.
-* Versión: 1.0
+* Descripción: Renders the field tree built by buildSettingField, recursively, on the draft value of one setting: number → text input with decimal keyboard and its limits as help (the typed text is kept while it does not parse, and validation reports it); boolean → switch; text; select (allowed values); multi-select → checkboxes of the allowed values; list → one input per entry with add/remove; group → fieldset with its children; provider chain → ProviderChainEditor; JSON → multiline input validated as JSON. Each input shows the error of its path (client limits or a server 422). Depends on MUI, the design-system form field, @shared/lib, the admin console entities, the provider chain editor and CSS Module. v1.1 (O4a review): emptying an optional number (record-like settings such as `ai.quotas`) removes its key from the draft instead of leaving an invalid number; parseNumberInput accepts one decimal separator ("." or ",") and rejects several separators, mixed "."/"," and a comma used as thousands grouping ("1,000") instead of coercing them.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,7 +19,7 @@ import Switch from "@mui/material/Switch";
 import { useId, useState } from "react";
 import { FormField } from "@shared/design-system/components/form-field";
 import { cx } from "@shared/lib/class-names";
-import { formatSettingValue, getAt, InvalidJsonDraft, setAt } from "../entities/platform-setting.entity";
+import { formatSettingValue, getAt, InvalidJsonDraft, removeAt, setAt } from "../entities/platform-setting.entity";
 import type { Primitive } from "../entities/platform-setting.entity";
 import { readProviderChain, writeProviderChain } from "../entities/provider-chain.entity";
 import type { ConfiguredProvider } from "../entities/provider-chain.entity";
@@ -60,10 +60,18 @@ type EditorProps<F extends SettingField> = {
   onChange: (root: unknown) => void
 };
 
-export function parseNumberInput(text: string): number {
-  const normalized = text.trim().replace(",", ".");
+// A comma followed by groups of three digits after a non-zero integer part ("1,000", "12,500") reads as thousands grouping: ambiguous, so it is rejected.
+const THOUSANDS_GROUPING = /^-?[1-9]\d{0,2}(,\d{3})+$/;
 
-  return normalized === "" ? Number.NaN : Number(normalized);
+export function parseNumberInput(text: string): number {
+  const trimmed = text.trim();
+  const separators = trimmed.match(/[.,]/g) ?? [];
+
+  if (trimmed === "" || separators.length > 1 || THOUSANDS_GROUPING.test(trimmed)) {
+    return Number.NaN;
+  }
+
+  return Number(trimmed.replace(",", "."));
 }
 
 function numberText(value: unknown): string {
@@ -84,7 +92,10 @@ function NumberEditor({ field, root, errors, disabled, onChange }: EditorProps<N
       slotProps={DECIMAL_INPUT}
       onChange={(event) => {
         setText(event.target.value);
-        onChange(setAt(root, field.path, parseNumberInput(event.target.value)));
+        // An emptied optional number is omitted (e.g. a quota without limit), not sent as an invalid value.
+        onChange(field.optional && event.target.value.trim() === ""
+          ? removeAt(root, field.path)
+          : setAt(root, field.path, parseNumberInput(event.target.value)));
       }}
     />
   );

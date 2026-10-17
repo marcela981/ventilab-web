@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin users page tests
-* Descripción: /admin/users with msw: the rows of `GET /api/users` with the URL filters sent as the query and a filter change written back to the URL; the own account keeps its actions disabled with the reason; the role dialog shows the warning of its effects and sends `PATCH /api/users/{id}/role`; a superadmin 403 shows "Esta cuenta está protegida (superadministrador) y no se puede modificar." inside the dialog; deactivating asks for confirmation before `PATCH /api/users/{id}/status` and a superadmin 403 there becomes an error toast. Depends on vitest, msw, Testing Library and the admin console test helpers.
-* Versión: 1.0
+* Descripción: /admin/users with msw: the rows of `GET /api/users` with the URL filters sent as the query and a filter change written back to the URL; the own account keeps its actions disabled with the reason; the role dialog shows the warning of its effects and sends `PATCH /api/users/{id}/role`; a superadmin 403 shows "Esta cuenta está protegida (superadministrador) y no se puede modificar." inside the dialog; deactivating asks for confirmation before `PATCH /api/users/{id}/status` and a superadmin 403 there becomes an error toast. Depends on vitest, msw, Testing Library and the admin console test helpers. v1.1 (O4a review): with the app keepPreviousData default a role filter change shows the loading state instead of the previous rows and a 500 shows the error; a page beyond the last one moves to the last page; Escape does not close the role dialog while its PATCH is pending.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -38,6 +38,12 @@ const server = setupServer();
 let listQueries: string[];
 let mutations: { path: string, body: unknown }[];
 let mutationStatus: number;
+let listStatus: number;
+let listTotal: number;
+let releaseList: (() => void) | null;
+let holdList: boolean;
+let releaseMutation: (() => void) | null;
+let holdMutation: boolean;
 
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" });
@@ -47,21 +53,49 @@ beforeEach(() => {
   listQueries = [];
   mutations = [];
   mutationStatus = 200;
+  listStatus = 200;
+  listTotal = 3;
+  releaseList = null;
+  holdList = false;
+  releaseMutation = null;
+  holdMutation = false;
   router.query = {};
   router.replace.mockClear();
   server.use(
-    http.get(apiUrl("/api/users"), ({ request }) => {
-      listQueries.push(new URL(request.url).searchParams.toString());
+    http.get(apiUrl("/api/users"), async({ request }) => {
+      const params = new URL(request.url).searchParams;
+
+      listQueries.push(params.toString());
+
+      if (holdList) {
+        await new Promise<void>((resolve) => {
+          releaseList = resolve;
+        });
+      }
+
+      if (listStatus !== 200) {
+        return errorResponse("internal_error", listStatus);
+      }
+
+      if (Number(params.get("page")) > 1) {
+        return HttpResponse.json(envelope([], { total: listTotal, pages: 1, page: Number(params.get("page")), limit: 20 }));
+      }
 
       return HttpResponse.json(envelope([
         userDto("u1", "Ana Gómez"),
         userDto(SESSION_USER_ID, "Administradora", { role: "ADMIN" }),
         userDto("root", "Raíz", { role: "ADMIN" }),
-      ], { total: 3, pages: 1, page: 1, limit: 20 }));
+      ], { total: listTotal, pages: 1, page: 1, limit: 20 }));
     }),
     http.get(apiUrl("/api/groups"), () => HttpResponse.json(envelope([groupDto("g1", "Grupo A")]))),
     http.patch(apiUrl("/api/users/:id/:field"), async({ params, request }) => {
       mutations.push({ path: `${String(params.id)}/${String(params.field)}`, body: await request.json() });
+
+      if (holdMutation) {
+        await new Promise<void>((resolve) => {
+          releaseMutation = resolve;
+        });
+      }
 
       if (mutationStatus === 403) {
         return errorResponse(params.field === "role" ? "users.superadmin_role_immutable" : "users.superadmin_status_immutable", 403);
@@ -169,6 +203,68 @@ describe("AdminUsersPage", () => {
 
     expect(await screen.findByText(ADMIN_USERS_COPY.deactivated("Ana Gómez"))).toBeInTheDocument();
     expect(mutations).toEqual([{ path: "u1/status", body: { isActive: false } }]);
+  });
+
+  it("shows the loading state, not the previous rows, when the role filter changes", async() => {
+    const { rerender } = renderAdminConsole(<AdminUsersPage />, { keepPreviousData: true });
+
+    expect(await screen.findByText("Ana Gómez")).toBeInTheDocument();
+
+    holdList = true;
+    router.query = { role: "TEACHER" };
+    rerender(<AdminUsersPage />);
+
+    expect(await screen.findByRole("status", { name: ADMIN_USERS_COPY.loading })).toBeInTheDocument();
+    expect(screen.queryByText("Ana Gómez")).not.toBeInTheDocument();
+
+    releaseList?.();
+
+    expect(await screen.findByText("Ana Gómez")).toBeInTheDocument();
+    expect(listQueries.at(-1)).toContain("role=TEACHER");
+  });
+
+  it("shows the error of a failing request even after rows were shown", async() => {
+    const { rerender } = renderAdminConsole(<AdminUsersPage />, { keepPreviousData: true });
+
+    expect(await screen.findByText("Ana Gómez")).toBeInTheDocument();
+
+    listStatus = 500;
+    router.query = { role: "TEACHER" };
+    rerender(<AdminUsersPage />);
+
+    expect(await screen.findByText(ADMIN_USERS_COPY.loadErrorTitle)).toBeInTheDocument();
+    expect(screen.queryByText("Ana Gómez")).not.toBeInTheDocument();
+  });
+
+  it("moves a page beyond the last one to the last page", async() => {
+    router.query = { page: "5" };
+    renderAdminConsole(<AdminUsersPage />);
+
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith({ pathname: "/admin/users", query: {} }, undefined, { shallow: true }));
+    expect(screen.queryByText(ADMIN_USERS_COPY.emptyTitle)).not.toBeInTheDocument();
+  });
+
+  it("keeps the role dialog open on Escape while the change is pending", async() => {
+    holdMutation = true;
+    renderAdminConsole(<AdminUsersPage />);
+    await screen.findByText("Ana Gómez");
+
+    fireEvent.click(within(rowActions("Ana Gómez")).getByRole("button", { name: USERS_TABLE_COPY.changeRole }));
+
+    const dialog = await screen.findByRole("dialog");
+
+    fireEvent.change(within(dialog).getByLabelText("Nuevo rol"), { target: { value: "TEACHER" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cambiar rol" }));
+    await waitFor(() => expect(mutations).toHaveLength(1));
+
+    fireEvent.keyDown(dialog, { key: "Escape" });
+
+    // Closing would unmount the form (no user): the role field must still be there.
+    expect(within(screen.getByRole("dialog")).getByLabelText("Nuevo rol")).toBeInTheDocument();
+
+    releaseMutation?.();
+
+    expect(await screen.findByText("Ana Gómez ahora tiene el rol Docente.")).toBeInTheDocument();
   });
 
   it("shows the superadmin protection message as a toast when the status change is refused", async() => {

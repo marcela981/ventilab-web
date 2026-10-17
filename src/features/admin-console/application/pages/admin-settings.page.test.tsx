@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin settings page tests
-* Descripción: /admin/settings with msw: one `GET /api/platform-settings` grouped in category tabs (the tab in ?category, a change written to the URL); the reset button is disabled for a DEFAULT setting and enabled for an OVERRIDE; a value outside the client limits shows its field error and sends nothing; a 409 version conflict shows "Otro administrador cambió este valor" and "Recargar" refetches and resets the form to the new value; a 422 out of range is shown on the field it names; saving a ventilator commands setting asks for a second confirmation with the previous value, the new value and the limits before the PATCH; the AI tab offers only the providers configured in `GET /api/system/status`. Depends on vitest, msw, Testing Library and the admin console test helpers.
-* Versión: 1.0
+* Descripción: /admin/settings with msw: one `GET /api/platform-settings` grouped in category tabs (the tab in ?category, a change written to the URL); the reset button is disabled for a DEFAULT setting and enabled for an OVERRIDE; a value outside the client limits shows its field error and sends nothing; a 409 version conflict shows "Otro administrador cambió este valor" and "Recargar" refetches and resets the form to the new value; a 422 out of range is shown on the field it names; saving a ventilator commands setting asks for a second confirmation with the previous value, the new value and the limits before the PATCH; the AI tab offers only the providers configured in `GET /api/system/status`. Depends on vitest, msw, Testing Library and the admin console test helpers. v1.1 (O4a review): an ai.quotas override that omits a quota saves, and clearing a quota removes its key from the PATCH body; "1,000" in a number field shows the number error.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -102,6 +102,17 @@ afterAll(() => {
   server.close();
 });
 
+const QUOTA_LIMITS = { requestsPerDay: { min: 0, max: 100000, integer: true }, tokensPerDay: { min: 0, max: 10000000, integer: true } };
+
+function quotasSetting(value: unknown): PlatformSettingDTO {
+  return settingDto("ai.quotas", "ai", value, {
+    defaultValue: { STUDENT: { "*": { requestsPerDay: 50, tokensPerDay: 20000 } } } as unknown as PlatformSettingDTO["defaultValue"],
+    origin: "OVERRIDE",
+    version: 1,
+    limits: QUOTA_LIMITS,
+  });
+}
+
 async function card(key: string) {
   return within(await screen.findByRole("region", { name: key }));
 }
@@ -197,6 +208,48 @@ describe("AdminSettingsPage", () => {
 
     await waitFor(() => expect(patches).toEqual([{ key: "commands.safety.maxPeep", body: { value: 25, version: 0 } }]));
     expect(await screen.findByText(SETTING_CARD_COPY.saved("commands.safety.maxPeep"))).toBeInTheDocument();
+  });
+
+  it("saves an ai.quotas override that omits a quota (unlimited)", async() => {
+    settings = [...baseSettings(), quotasSetting({ STUDENT: { "*": { requestsPerDay: 50 } } })];
+    router.query = { category: "ai" };
+    renderAdminConsole(<AdminSettingsPage />);
+
+    const quotas = await card("ai.quotas");
+
+    expect(quotas.getByLabelText("Tokens por día")).toHaveValue("");
+
+    fireEvent.change(quotas.getByLabelText("Solicitudes por día"), { target: { value: "60" } });
+    fireEvent.click(quotas.getByRole("button", { name: SETTING_CARD_COPY.save }));
+
+    await waitFor(() => expect(patches).toEqual([{ key: "ai.quotas", body: { value: { STUDENT: { "*": { requestsPerDay: 60 } } }, version: 1 } }]));
+  });
+
+  it("removes a cleared quota from the PATCH body", async() => {
+    settings = [...baseSettings(), quotasSetting({ STUDENT: { "*": { requestsPerDay: 50, tokensPerDay: 20000 } } })];
+    router.query = { category: "ai" };
+    renderAdminConsole(<AdminSettingsPage />);
+
+    const quotas = await card("ai.quotas");
+
+    fireEvent.change(quotas.getByLabelText("Tokens por día"), { target: { value: "" } });
+
+    expect(quotas.queryByText("Ingresa un número.")).not.toBeInTheDocument();
+
+    fireEvent.click(quotas.getByRole("button", { name: SETTING_CARD_COPY.save }));
+
+    await waitFor(() => expect(patches).toEqual([{ key: "ai.quotas", body: { value: { STUDENT: { "*": { requestsPerDay: 50 } } }, version: 1 } }]));
+  });
+
+  it("rejects a number typed with thousands grouping", async() => {
+    router.query = { category: "evaluation" };
+    renderAdminConsole(<AdminSettingsPage />);
+
+    const grace = await card("evaluation.submitGraceSeconds");
+
+    fireEvent.change(grace.getByLabelText("Valor"), { target: { value: "1,000" } });
+
+    expect(grace.getByText("Ingresa un número.")).toBeInTheDocument();
   });
 
   it("offers only the configured AI providers in the provider chain", async() => {
