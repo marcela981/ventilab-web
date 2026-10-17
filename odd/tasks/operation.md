@@ -31,8 +31,6 @@ These are the last business screens still on the legacy panel. The backend alrea
 ## Checklist (D = delegated writer, I = inline)
 - [x] Phase 1 audit (I + 3 explorers) → `odd/operation-audit.md`
 - [x] O0+O1 (D) registration + notifications (bell, page, deep links, toasts, focus mode) — commit 6ff6875
-- [ ] O5+O6 (D) navigation, role homes, redirects
-- [ ] O7 (D) parity checklist + closure inventory + verification report
 - [ ] CLOSURE: ONLY with the author's explicit approval.
 
 ## Progress / evidence
@@ -55,6 +53,17 @@ These are the last business screens still on the legacy panel. The backend alrea
 - O3 review fixes — commit aa28ae9 (selected group's data only, possibly incomplete pending list notice, modules without level bucket, risk on the latest published attempt, CSV BOM + response headers). vitest teacher-dashboard 37/37, api-client 41/41.
 - [x] O4b (D) audit, AI analytics, research, status — commit f4655ba (with aa28ae9: 46 files, +4110/−31). Checks: typecheck exit 0 (parent re-run), lint 0, vitest admin-console 73/73, realtime 20/20. Status tokens `--vl-color-status-{ok,degraded,down,idle}` added to the design system; `system:status-changed` typed in `RealtimeEventMap`. Every O4b query uses `keepPreviousData: false`. Native review: 4,472 lines, granted, `lens_context_budget_exceeded` → independent reviewer.
   - Backend gaps: `system:status-changed` not in asyncapi/openapi (typed from server source); no catalog of audit actions/target types (free-text filters); no provider/model catalog for AI filters; AI telemetry days in UTC only; audit export row limit not exposed; no data dictionary for the research CSV; telemetry metrics ADMIN-only; probe 429 `Retry-After` not verified live.
+- O4b independent review: MED status badge/probe text contrast below 4.5:1; LOW-MED risk "latest" ordered by publishedAt before attemptNumber; LOW truncated-export notice persists after filter change; LOW one-sided AI range not validated client-side → final fix pass.
+- O4a review fixes — commit 99b7a8c (users list without stale rows, optional quota/price entries, ambiguous separators rejected, out-of-range page clamp, role dialog locked while saving). vitest admin-console 85/85.
+- [x] O5+O6 (D) navigation, role homes, redirects — commit d3231c9. Nav per role with an "Administración" section (`section` on NavItem + subheader in the AppShell), notifications item with `notificationsUnread`; `DEFAULT_ROUTE_BY_ROLE` STUDENT /me, TEACHER and ADMIN /teacher; `RoleHomeRedirect` on `/` and `/dashboard`; `redirectByRole.js` and `auth-config.js` aligned; teacher/admin layouts read roles from `/teacher` and `/admin/users`; `/panel*` pages are server redirects (`legacy-redirects.ts`), their legacy components untouched. `login.page.test.tsx` updated inline to the new homes (I). Checks: typecheck exit 0, lint 0, vitest layouts + session 164/164, auth 73/73, admin-console 85/85. Native review of `f4655ba..d3231c9` (1,127 lines, high risk `hot_path`): consent granted → **approved**, acknowledged (lineage review-4b630bd618366b76, burned). Advisory: in-range empty users page sticks on the skeleton; "1.000" dot grouping still read as 1; layout header descriptions stale; `auth-config.js` duplicates the role homes; RoleHomeRedirect untested for role null → final fix pass.
+- Final review fixes (D): status text tokens mixed with the text color (≥5:1 on their tints), risk "latest" by attemptNumber first, truncated notice reset on new runs and filter changes, one-sided AI range validated against now, in-range empty users page with pagination, dot and comma thousands grouping rejected, layout header descriptions corrected, `auth-config.js` reads `DEFAULT_ROUTE_BY_ROLE`, RoleHomeRedirect role-null and loading tests. vitest admin-console 93/93, teacher-dashboard 38/38, session 85/85, layouts 81/81, design-system 40/40.
+- [x] O7 (D) docs: `odd/operation-parity.md` (7 done, 2 partial, 2 n/a), `odd/operation-closure-inventory.md` (480 legacy code files: 235 reachable, 245 unreachable, 87 without importer; `src/features/admin/**` fully unreachable since the /panel redirects; 5 unguarded legacy pages; unused deps proposed: react-hook-form, @hookform/resolvers, zod, @eslint/eslintrc, @types/bcryptjs; 9-step closure plan), `docs/operation/VERIFICATION.md` (greps: new code 0/0/0; legacy 3,374 style lines, 429 hex/rgb lines, 441 files without header).
+  - Finding: `/achievements` probably renders nothing (`@/features/progress/components` resolves to `index.js`, `AchievementsGrid` only in `index.ts`); not checked in a browser.
+- Final tree: `npm run typecheck` exit 0, `npm run lint` exit 0 (parent run).
+
+## Pending for the author
+- `next build` + First Load JS per route vs baseline (procedure in `docs/operation/VERIFICATION.md`); full `npm test`; E2E and axe (Playwright/axe not installed — needs approval to add); screenshots gallery `docs/screenshots/` (needs a running app).
+- CLOSURE: approve the steps of `odd/operation-closure-inventory.md` explicitly.
 
 ## Next step
-O4a fixes + O5/O6 (writer running), O4b review findings after it, then O7.
+Push; closure only after the author's explicit approval.
