@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Notifications page tests
-* Descripción: /notifications with msw: the first page with its relative times and unread marks, pagination with the envelope total, the "Solo no leídas" toggle (unreadOnly query and its empty state), opening a notification marks it as read and navigates to its deep link, "Marcar como leída", "Eliminar" behind the confirmation, "Marcar todas como leídas" with its confirmation toast, the empty state, the load error with retry and a failed action as an error toast. v1.1 (O1 review): the page refreshes its list on `notification:new` without the bell. Depends on vitest, msw, Testing Library, next/router (mocked) and the notifications test helpers.
-* Versión: 1.1
+* Descripción: /notifications with msw: the first page with its relative times and unread marks, pagination with the envelope total, the "Solo no leídas" toggle (unreadOnly query and its empty state), opening a notification marks it as read and navigates to its deep link, "Marcar como leída", "Eliminar" behind the confirmation, "Marcar todas como leídas" with its confirmation toast, the empty state, the load error with retry and a failed action as an error toast. v1.1 (O1 review): the page refreshes its list on `notification:new` without the bell. Depends on vitest, msw, Testing Library, next/router (mocked) and the notifications test helpers. v1.2 (B2 closure): fixtures typed by notification variant; every deep link of the page is checked per type (grade → attempt result, reservation → lab reservations).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -49,10 +49,9 @@ beforeEach(() => {
   items = [
     notificationDto("n1"),
     notificationDto("n2", {
-      type: "ROLE_CHANGED",
+      variant: { type: "ROLE_CHANGED", data: { previousRole: "STUDENT", newRole: "TEACHER" } },
       title: "Tu rol cambió",
       body: "Tu rol en VentyLab ahora es Docente.",
-      data: null,
       readAt: "2026-10-15T10:00:00.000Z",
       createdAt: "2026-10-14T14:00:00.000Z",
     }),
@@ -161,6 +160,19 @@ describe("NotificationsPage", () => {
 
     await waitFor(() => expect(router.push).toHaveBeenCalledWith("/profile"));
     expect(patched).toEqual([]);
+  });
+
+  it("opens the lab reservations from a reservation notification", async() => {
+    items = [notificationDto("n5", {
+      variant: { type: "RESERVATION_PREEMPTED", data: { reservationId: "r1", replacedByReservationId: "r2" } },
+      title: "Tu reserva del ventilador fue desplazada",
+    })];
+    total = 1;
+    renderNotifications(<NotificationsPage now={NOW} />);
+
+    fireEvent.click(await screen.findByRole("button", { name: NOTIFICATIONS_PAGE_COPY.open("Tu reserva del ventilador fue desplazada") }));
+
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/lab/reservations"));
   });
 
   it("marks one notification as read", async() => {

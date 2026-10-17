@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Notification bell tests
-* Descripción: The bell entry renders nothing without a session; the bell menu shows the unread count in its accessible name and badge, opens the latest notifications on click, marks one as read and navigates to its deep link, only marks one without a link, marks all as read, refreshes the count on `notification:new`; NotificationToasts shows each `notification:new` title as a toast, dropped while focus mode is active. Depends on vitest, msw, Testing Library, next/router and next/link (mocked), the session context, the design-system focus mode and the notifications test helpers.
-* Versión: 1.0
+* Descripción: The bell entry renders nothing without a session; the bell menu shows the unread count in its accessible name and badge, opens the latest notifications on click, marks one as read and navigates to its deep link, only marks one without a link, marks all as read, refreshes the count on `notification:new`; NotificationToasts shows each `notification:new` title as a toast, dropped while focus mode is active. Depends on vitest, msw, Testing Library, next/router and next/link (mocked), the session context, the design-system focus mode and the notifications test helpers. v1.1 (B2 closure): the notification without a link is a typed GRADE_PUBLISHED with null data.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -57,7 +57,7 @@ beforeEach(() => {
   patched = [];
   items = [
     notificationDto("n1"),
-    notificationDto("n2", { title: "Aviso sin enlace", data: null }),
+    notificationDto("n2", { title: "Aviso sin enlace", variant: { type: "GRADE_PUBLISHED", data: null } }),
   ];
   server.use(
     http.get(apiUrl("/api/notifications/unread-count"), () => {

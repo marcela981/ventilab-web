@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Notification deep links tests
-* Descripción: Every known notification type resolves to its route with the ids of its data (URI-encoded), a type that needs ids gives null when they are missing, empty or not strings, an unknown type or a non-object data gives null, and nothing throws. Depends on vitest and the deep-link table.
-* Versión: 1.0
+* Descripción: Every notification type of the contract resolves to its route with the ids of its typed data (URI-encoded) and the routes match the route constants of the evaluations and ventilator-lab features; a type that needs ids gives null when its data is null, and a type unknown to this client gives null without throwing. Depends on vitest, the deep-link resolver and the evaluations and ventilator-lab barrels (route constants only). v1.1 (B2 closure): inputs are typed by the discriminated union (no untyped data cases), plus the parity with the feature route constants.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,52 +10,48 @@
 */
 
 import { describe, expect, it } from "vitest";
-import { NOTIFICATION_LINKS, resolveNotificationLink } from "./notification-links";
+import { buildAttemptResultUrl, EVALUATIONS_URL } from "@features/evaluations";
+import { LAB_RESERVATIONS_URL, LAB_URL } from "@features/ventilator-lab";
+import { NOTIFICATION_TYPES, resolveNotificationLink } from "./notification-links";
+import type { NotificationLinkInput } from "./notification-links";
+
+const CASES: [NotificationLinkInput, string][] = [
+  [{ type: "RESERVATION_PREEMPTED", data: { reservationId: "r1", replacedByReservationId: "r2" } }, "/lab/reservations"],
+  [{ type: "RESERVATION_CANCELLED", data: { reservationId: "r1" } }, "/lab/reservations"],
+  [{ type: "EVALUATION_ACTIVATED", data: { evaluationId: "ev-1", assignmentId: "as-1" } }, "/evaluations/ev-1"],
+  [{ type: "GRADE_PUBLISHED", data: { evaluationId: "ev-1", attemptId: "at-1" } }, "/evaluations/ev-1/attempts/at-1/result"],
+  [{ type: "FEEDBACK_READY", data: { evaluationId: "ev-1", attemptId: "at-1", feedbackId: "f1" } }, "/evaluations/ev-1/attempts/at-1/result"],
+  [{ type: "ROLE_CHANGED", data: { previousRole: "STUDENT", newRole: "TEACHER" } }, "/profile"],
+  [{ type: "VENTILATOR_OFFLINE", data: { reservationId: "r1", reason: "timeout" } }, "/lab"],
+];
 
 describe("resolveNotificationLink", () => {
   it("covers every notification type of the API", () => {
-    expect(Object.keys(NOTIFICATION_LINKS).sort()).toEqual([
-      "EVALUATION_ACTIVATED",
-      "FEEDBACK_READY",
-      "GRADE_PUBLISHED",
-      "RESERVATION_CANCELLED",
-      "RESERVATION_PREEMPTED",
-      "ROLE_CHANGED",
-      "VENTILATOR_OFFLINE",
-    ]);
+    expect(CASES.map(([input]) => input.type)).toEqual([...NOTIFICATION_TYPES]);
   });
 
-  it.each([
-    ["RESERVATION_PREEMPTED", { reservationId: "r1", replacedByReservationId: "r2" }, "/lab/reservations"],
-    ["RESERVATION_CANCELLED", { reservationId: "r1" }, "/lab/reservations"],
-    ["EVALUATION_ACTIVATED", { evaluationId: "ev-1", assignmentId: "as-1" }, "/evaluations/ev-1"],
-    ["GRADE_PUBLISHED", { evaluationId: "ev-1", attemptId: "at-1" }, "/evaluations/ev-1/attempts/at-1/result"],
-    ["FEEDBACK_READY", { evaluationId: "ev-1", attemptId: "at-1", feedbackId: "f1" }, "/evaluations/ev-1/attempts/at-1/result"],
-    ["ROLE_CHANGED", { previousRole: "STUDENT", newRole: "TEACHER" }, "/profile"],
-    ["VENTILATOR_OFFLINE", { reservationId: "r1", reason: "timeout" }, "/lab"],
-  ])("resolves %s", (type, data, expected) => {
-    expect(resolveNotificationLink({ type, data })).toBe(expected);
+  it.each(CASES)("resolves %o", (input, expected) => {
+    expect(resolveNotificationLink(input)).toBe(expected);
+  });
+
+  it("matches the route constants of the evaluations and lab features", () => {
+    expect(resolveNotificationLink({ type: "GRADE_PUBLISHED", data: { evaluationId: "e 1", attemptId: "a/1" } }))
+      .toBe(buildAttemptResultUrl("e 1", "a/1"));
+    expect(resolveNotificationLink({ type: "EVALUATION_ACTIVATED", data: { evaluationId: "e1", assignmentId: "as1" } }))
+      .toBe(`${EVALUATIONS_URL}/e1`);
+    expect(resolveNotificationLink({ type: "RESERVATION_CANCELLED", data: { reservationId: "r1" } })).toBe(LAB_RESERVATIONS_URL);
+    expect(resolveNotificationLink({ type: "VENTILATOR_OFFLINE", data: null })).toBe(LAB_URL);
   });
 
   it("encodes the ids", () => {
-    expect(resolveNotificationLink({ type: "EVALUATION_ACTIVATED", data: { evaluationId: "a/b c" } })).toBe("/evaluations/a%2Fb%20c");
+    expect(resolveNotificationLink({ type: "EVALUATION_ACTIVATED", data: { evaluationId: "a/b c", assignmentId: "as-1" } }))
+      .toBe("/evaluations/a%2Fb%20c");
   });
 
-  it.each([
-    ["EVALUATION_ACTIVATED", {}],
-    ["EVALUATION_ACTIVATED", { evaluationId: "" }],
-    ["EVALUATION_ACTIVATED", { evaluationId: 42 }],
-    ["GRADE_PUBLISHED", { evaluationId: "ev-1" }],
-    ["GRADE_PUBLISHED", { attemptId: "at-1" }],
-    ["FEEDBACK_READY", { evaluationId: "ev-1", attemptId: null }],
-  ])("gives null for %s without its ids (%o)", (type, data) => {
-    expect(resolveNotificationLink({ type, data })).toBeNull();
-  });
-
-  it("gives null for data that is not an object, for the types that need ids", () => {
-    for (const data of [null, undefined, "ev-1", 3, ["ev-1"]]) {
-      expect(resolveNotificationLink({ type: "GRADE_PUBLISHED", data })).toBeNull();
-    }
+  it("gives null for the types that need ids when data is null", () => {
+    expect(resolveNotificationLink({ type: "EVALUATION_ACTIVATED", data: null })).toBeNull();
+    expect(resolveNotificationLink({ type: "GRADE_PUBLISHED", data: null })).toBeNull();
+    expect(resolveNotificationLink({ type: "FEEDBACK_READY", data: null })).toBeNull();
   });
 
   it("still links the types that need no ids when data is null", () => {
@@ -63,9 +59,10 @@ describe("resolveNotificationLink", () => {
     expect(resolveNotificationLink({ type: "ROLE_CHANGED", data: null })).toBe("/profile");
   });
 
-  it("gives null for an unknown type and for prototype keys", () => {
-    expect(resolveNotificationLink({ type: "SOMETHING_NEW", data: { evaluationId: "ev-1" } })).toBeNull();
-    expect(resolveNotificationLink({ type: "toString", data: {} })).toBeNull();
-    expect(resolveNotificationLink({ type: "__proto__", data: {} })).toBeNull();
+  it("gives null for a type unknown to this client", () => {
+    // A runtime payload of a type added to the API after this build.
+    const future = { type: "SOMETHING_NEW", data: null } as unknown as NotificationLinkInput;
+
+    expect(resolveNotificationLink(future)).toBeNull();
   });
 });

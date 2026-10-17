@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Notifications mapper
-* Descripción: Maps the notifications DTOs to the client entities: toAppNotification (a null or non-object `data` becomes an empty object, `read` from readAt), toNotificationsPage (pagination of the envelope, falling back to one page of the received items) and toUnreadCount (a missing, negative or non-finite count is 0). Depends on the notifications DTOs, the api-client pagination type and the notification entities.
-* Versión: 1.0
+* Descripción: Maps the notifications DTOs to the client entities: toAppNotification (keeps the typed variant, `type` with its `data`, and adds `read` from readAt), toNotificationsPage (pagination of the envelope, falling back to one page of the received items) and toUnreadCount (a missing, negative or non-finite count is 0). Depends on the notifications DTOs, the api-client pagination type and the notification entities. v1.1 (B2 closure): no defensive `data` normalisation, the contract types it per notification type.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,24 +10,12 @@
 */
 
 import type { ApiPagination } from "@shared/api-client/api-types";
-import type { AppNotification, NotificationData, NotificationsPage } from "../../application/entities/notification.entity";
+import type { AppNotification, NotificationsPage } from "../../application/entities/notification.entity";
 import type { NotificationDTO, UnreadNotificationsCountDTO } from "../dtos/notifications.dto";
 
-function toData(data: unknown): NotificationData {
-  return typeof data === "object" && data !== null && !Array.isArray(data) ? { ...(data as Record<string, unknown>) } : {};
-}
-
 export function toAppNotification(dto: NotificationDTO): AppNotification {
-  return {
-    id: dto.id,
-    type: dto.type,
-    title: dto.title,
-    body: dto.body,
-    data: toData(dto.data),
-    read: dto.readAt !== null,
-    readAt: dto.readAt,
-    createdAt: dto.createdAt,
-  };
+  // The spread distributes over the variants, so the result keeps `type` and `data` paired.
+  return { ...dto, read: dto.readAt !== null };
 }
 
 export function toNotificationsPage(items: readonly NotificationDTO[], pagination: ApiPagination | null): NotificationsPage {

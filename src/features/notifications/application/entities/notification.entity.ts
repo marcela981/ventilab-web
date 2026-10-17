@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Notification entities
-* Descripción: Client model of the notifications feature: AppNotification (type kept as a string so an unknown future type still renders; `data` always an object, empty when the API sent null or a non-object; `read` derived from readAt), one page of the list with its pagination, the list query, the sizes of the bell popover and the page and the unread count polling interval. No dependencies.
-* Versión: 1.0
+* Descripción: Client model of the notifications feature: AppNotification, the discriminated union of the API notification variants (narrowing `type` types its `data`, null when the API sent none) plus `read` derived from readAt; NotificationType and NotificationOf<T>; one page of the list with its pagination, the list query, the sizes of the bell popover and the page and the unread count polling interval. Depends on the notifications DTOs (types only). v1.1 (B2 closure): typed by `type` with the generated discriminated union instead of a string type and an untyped `data` record.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,18 +9,16 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-export type NotificationData = Readonly<Record<string, unknown>>;
+import type { NotificationDTO } from "../../api/dtos/notifications.dto";
 
-export type AppNotification = {
-  id: string
-  type: string
-  title: string
-  body: string
-  data: NotificationData
-  read: boolean
-  readAt: string | null
-  createdAt: string
-};
+// Distributes over the variants so `type` keeps discriminating `data`.
+type WithReadFlag<T> = T extends unknown ? T & { read: boolean } : never;
+
+export type AppNotification = WithReadFlag<NotificationDTO>;
+
+export type NotificationType = AppNotification["type"];
+
+export type NotificationOf<T extends NotificationType> = Extract<AppNotification, { type: T }>;
 
 export type NotificationsPage = {
   items: readonly AppNotification[]

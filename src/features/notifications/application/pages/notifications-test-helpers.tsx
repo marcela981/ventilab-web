@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Notifications test helpers
-* Descripción: Shared fixtures of the notifications tests: backend URL, envelope with pagination, error response, NotificationDTO builder, a fake socket that dispatches realtime events, and a renderer that wraps the UI in a fresh SWR cache, an authenticated session, the realtime context and the global ToastProvider. Depends on Testing Library, msw, SWR, the design-system toast, the realtime and session contexts and the notifications DTOs.
-* Versión: 1.0
+* Descripción: Shared fixtures of the notifications tests: backend URL, envelope with pagination, error response, NotificationDTO builder, a fake socket that dispatches realtime events, and a renderer that wraps the UI in a fresh SWR cache, an authenticated session, the realtime context and the global ToastProvider. Depends on Testing Library, msw, SWR, the design-system toast, the realtime and session contexts and the notifications DTOs. v1.1 (B2 closure): the NotificationDTO builder takes a typed `variant` (type with its data) instead of casting the data.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,7 +21,7 @@ import type { RealtimeEventMap, RealtimeEventName, RealtimeSocket } from "@share
 import type { Role } from "@shared/session/session.entity";
 import { SessionContext } from "@shared/session/session-context";
 import type { SessionContextValue } from "@shared/session/session-context";
-import type { NotificationDTO } from "../../api/dtos/notifications.dto";
+import type { NotificationDTO, NotificationTypeDTO } from "../../api/dtos/notifications.dto";
 
 export const apiUrl = (path: string): string => `${BACKEND_ORIGIN}${path}`;
 
@@ -42,16 +42,27 @@ export const errorResponse = (code: string, status: number) => HttpResponse.json
   { status },
 );
 
-export function notificationDto(id: string, overrides: Partial<NotificationDTO> = {}): NotificationDTO {
+/** Type and data of one notification variant: the pair stays correlated when spread into a DTO. */
+export type NotificationVariant = {
+  [T in NotificationTypeDTO]: Pick<Extract<NotificationDTO, { type: T }>, "type" | "data">
+}[NotificationTypeDTO];
+
+type NotificationFields = Omit<Extract<NotificationDTO, { type: "GRADE_PUBLISHED" }>, "type" | "data">;
+
+export type NotificationDtoOverrides = Partial<NotificationFields> & { variant?: NotificationVariant };
+
+/** A GRADE_PUBLISHED notification by default; `variant` sets another type with its typed data. */
+export function notificationDto(id: string, { variant, ...overrides }: NotificationDtoOverrides = {}): NotificationDTO {
+  const pair: NotificationVariant = variant ?? { type: "GRADE_PUBLISHED", data: { evaluationId: "ev-1", attemptId: `at-${id}` } };
+
   return {
     id,
-    type: "GRADE_PUBLISHED",
     title: `Calificación publicada ${id}`,
     body: "Ya puedes consultar tu calificación: 8 de 10 puntos (aprobada).",
-    data: { evaluationId: "ev-1", attemptId: `at-${id}` } as unknown as NotificationDTO["data"],
     readAt: null,
     createdAt: "2026-10-16T13:00:00.000Z",
     ...overrides,
+    ...pair,
   };
 }
 
