@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Layouts and AppShell tests
-* Descripción: Verifies the guard behavior of the Student/Teacher/Admin layouts (redirect to login, wrong role to its landing route, content for the right role), the public layout without auth, and the AppShell (role-filtered nav, skip link, sign-out through the session, realtime status indicator, route error boundary). v1.1 (T11a): the user avatar shows the session image with the initials as fallback, and the student-only layout sends other roles to their landing route. v1.2 (T12 ventilator-lab): the Laboratorio item shows the device indicator. v1.3 (T12 review fix W1): the shell shows no indicator nobody fed (no invented device state), shows the one a feeder sets in the nav-indicators registry (tone + text) and declares the keys of the role's navigation as visible. Depends on vitest, Testing Library, next/router and next/link (mocked) and the session/realtime contexts.
-* Versión: 1.3
+* Descripción: Verifies the guard behavior of the Student/Teacher/Admin layouts (redirect to login, wrong role to its landing route, content for the right role), the public layout without auth, and the AppShell (role-filtered nav, skip link, sign-out through the session, realtime status indicator, route error boundary). v1.1 (T11a): the user avatar shows the session image with the initials as fallback, and the student-only layout sends other roles to their landing route. v1.2 (T12 ventilator-lab): the Laboratorio item shows the device indicator. v1.3 (T12 review fix W1): the shell shows no indicator nobody fed (no invented device state), shows the one a feeder sets in the nav-indicators registry (tone + text) and declares the keys of the role's navigation as visible. Depends on vitest, Testing Library, next/router and next/link (mocked) and the session/realtime contexts. v1.4 (O5 operation): role homes /me (students) and /teacher (teachers and admins); the teacher navigation starts at "Panel docente" (/teacher) and shows "Estado del sistema" but no admin-only item; the admin navigation shows the "Administración" section subheader and its items.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,8 +26,8 @@ import { StudentLayout, StudentOnlyLayout, withStudentLayout } from "./student-l
 import { TeacherLayout } from "./teacher-layout";
 
 const router = vi.hoisted(() => ({
-  pathname: "/panel",
-  asPath: "/panel",
+  pathname: "/teacher",
+  asPath: "/teacher",
   isReady: true,
   replace: vi.fn(() => Promise.resolve(true)),
 }));
@@ -73,8 +73,8 @@ function renderWith(value: SessionContextValue, ui: ReactNode, realtime?: Realti
 const content = <p>Contenido de la página</p>;
 
 beforeEach(() => {
-  router.pathname = "/panel";
-  router.asPath = "/panel";
+  router.pathname = "/teacher";
+  router.asPath = "/teacher";
   router.replace.mockClear();
 });
 
@@ -100,7 +100,7 @@ describe("authenticated layouts", () => {
   it("StudentOnlyLayout sends a teacher to the teacher landing route", () => {
     renderWith(sessionValue("authenticated", "TEACHER"), <StudentOnlyLayout>{content}</StudentOnlyLayout>);
 
-    expect(router.replace).toHaveBeenCalledWith("/panel");
+    expect(router.replace).toHaveBeenCalledWith("/teacher");
     expect(screen.queryByText("Contenido de la página")).not.toBeInTheDocument();
   });
 
@@ -113,7 +113,7 @@ describe("authenticated layouts", () => {
   it("TeacherLayout sends a student to the student landing route", () => {
     renderWith(sessionValue("authenticated", "STUDENT"), <TeacherLayout>{content}</TeacherLayout>);
 
-    expect(router.replace).toHaveBeenCalledWith("/dashboard");
+    expect(router.replace).toHaveBeenCalledWith("/me");
     expect(screen.queryByText("Contenido de la página")).not.toBeInTheDocument();
   });
 
@@ -123,15 +123,15 @@ describe("authenticated layouts", () => {
     const nav = screen.getByRole("navigation", { name: "Navegación principal" });
 
     expect(screen.getByText("Contenido de la página")).toBeInTheDocument();
-    expect(within(nav).getByRole("link", { name: /Estudiantes/ })).toHaveAttribute("href", "/panel/students");
-    expect(within(nav).queryByRole("link", { name: /Administración/ })).not.toBeInTheDocument();
-    expect(within(nav).getByRole("link", { name: /^Panel/ })).toHaveAttribute("aria-current", "page");
+    expect(within(nav).getByRole("link", { name: /Estado del sistema/ })).toHaveAttribute("href", "/admin/status");
+    expect(within(nav).queryByRole("link", { name: /Usuarios/ })).not.toBeInTheDocument();
+    expect(within(nav).getByRole("link", { name: /^Panel docente/ })).toHaveAttribute("aria-current", "page");
   });
 
   it("AdminLayout sends a teacher to the teacher landing route", () => {
     renderWith(sessionValue("authenticated", "TEACHER"), <AdminLayout>{content}</AdminLayout>);
 
-    expect(router.replace).toHaveBeenCalledWith("/panel");
+    expect(router.replace).toHaveBeenCalledWith("/teacher");
     expect(screen.queryByText("Contenido de la página")).not.toBeInTheDocument();
   });
 
@@ -141,7 +141,9 @@ describe("authenticated layouts", () => {
     const nav = screen.getByRole("navigation", { name: "Navegación principal" });
 
     expect(screen.getByText("Contenido de la página")).toBeInTheDocument();
-    expect(within(nav).getByRole("link", { name: /Administración/ })).toBeInTheDocument();
+    expect(within(nav).getByText("Administración")).toBeInTheDocument();
+    expect(within(nav).getByRole("link", { name: /Usuarios/ })).toHaveAttribute("href", "/admin/users");
+    expect(within(nav).getByRole("link", { name: /Configuración/ })).toHaveAttribute("href", "/admin/settings");
   });
 
   it("withStudentLayout wraps a page as a getLayout helper", () => {

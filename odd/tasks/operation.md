@@ -31,7 +31,6 @@ These are the last business screens still on the legacy panel. The backend alrea
 ## Checklist (D = delegated writer, I = inline)
 - [x] Phase 1 audit (I + 3 explorers) → `odd/operation-audit.md`
 - [x] O0+O1 (D) registration + notifications (bell, page, deep links, toasts, focus mode) — commit 6ff6875
-- [ ] O4b (D) admin audit + AI analytics + research + status
 - [ ] O5+O6 (D) navigation, role homes, redirects
 - [ ] O7 (D) parity checklist + closure inventory + verification report
 - [ ] CLOSURE: ONLY with the author's explicit approval.
@@ -52,6 +51,10 @@ These are the last business screens still on the legacy panel. The backend alrea
 - O3 independent review: HIGH previous group's data shown after switching group (`keepPreviousData`); MEDIUM pending attempts scan capped at 50 rows; LOW-MED CSV without BOM (Excel accents); LOW modules without level dropped from the tree; judgement: risk counted any failed attempt even when a later one passed → fixes + rule refined to the latest published attempt per evaluation.
 - [x] O4a (D) admin users + settings — commit 4622078, 40 files, +4580/−2. Checks: typecheck exit 0 (parent re-run), lint 0, vitest admin-console 48/48 (form generation types/limits/origin, provider chain, 409, 422, commands double confirmation, superadmin 403, own account). Native review: 4,582 lines, consent granted, `lens_context_budget_exceeded` → independent reviewer.
   - Backend gaps: no student code in UserDTO (search = name/email/id); superadmin known only from 403 codes `users.superadmin_*_immutable`; settings descriptions in English, no type/labels/units; `UpdatePlatformSettingDTO.value` type excludes string; 422 carries one `reason` string (path parsed client-side); dynamic-key maps (`ai.prices`, `ai.quotas`, `models`) cannot get new keys from the generic form.
+- O4a independent review: HIGH users list shows the previous filter/page as current and hides errors (`keepPreviousData`); MED-HIGH optional quota/price entries treated as required (cannot save an override omitting them nor clear them); MED "1,000" silently parsed as 1; LOW-MED out-of-range `?page=` shows a false empty state; LOW role dialog closable while the PATCH runs → fix pass with O5/O6.
+- O3 review fixes — commit aa28ae9 (selected group's data only, possibly incomplete pending list notice, modules without level bucket, risk on the latest published attempt, CSV BOM + response headers). vitest teacher-dashboard 37/37, api-client 41/41.
+- [x] O4b (D) audit, AI analytics, research, status — commit f4655ba (with aa28ae9: 46 files, +4110/−31). Checks: typecheck exit 0 (parent re-run), lint 0, vitest admin-console 73/73, realtime 20/20. Status tokens `--vl-color-status-{ok,degraded,down,idle}` added to the design system; `system:status-changed` typed in `RealtimeEventMap`. Every O4b query uses `keepPreviousData: false`. Native review: 4,472 lines, granted, `lens_context_budget_exceeded` → independent reviewer.
+  - Backend gaps: `system:status-changed` not in asyncapi/openapi (typed from server source); no catalog of audit actions/target types (free-text filters); no provider/model catalog for AI filters; AI telemetry days in UTC only; audit export row limit not exposed; no data dictionary for the research CSV; telemetry metrics ADMIN-only; probe 429 `Retry-After` not verified live.
 
 ## Next step
-O3 fixes + O4b (writer running), O4a review findings after it.
+O4a fixes + O5/O6 (writer running), O4b review findings after it, then O7.

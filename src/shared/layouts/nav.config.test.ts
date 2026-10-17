@@ -1,8 +1,8 @@
 /*
 * Funcionalidad: Navigation config tests
 * Descripción: Verifies that every nav item points to an existing route of routes.config that its roles can reach, that items are filtered by role, and that the active item is the longest matching route. v1.1 (T11a): students get /my-group, teachers and admins get /groups. v1.2 (T0 learning): every role gets /learn, only teachers and admins get /content. v1.3 (S0 evaluations): every role gets /evaluations, only teachers and admins get /evaluations/manage and /grading, the legacy /evaluation items are gone and /evaluations/manage wins over /evaluations as the active item. v1.4 (G1 grading): only "Calificar" names a badge key (gradingPending). v1.5 (A1 ai-chat): every role gets "Asistente IA" (/assistant), active on its conversation pages. v1.6 (T5 simulation): every role gets "Simulador" (/simulator), active on its session pages. v1.7 (T11 simulation): only teachers and admins get "Casos clínicos" (/simulator/cases), which wins over /simulator as the active item on the case editor pages. v1.8 (T13 simulation): the legacy /simulador is "Ventilador real", so students see exactly one "Simulador" (/simulator). Depends on vitest and the session route table. v1.9 (T12 ventilator-lab): the legacy /simulador
-  "Ventilador real" item is replaced by "Laboratorio" (/lab, every role, device indicator), active on every lab page.
-* Versión: 1.9
+  "Ventilador real" item is replaced by "Laboratorio" (/lab, every role, device indicator), active on every lab page. v1.10 (O5 operation): final navigation per role (student starts at /me with Mis notas and Mis calificaciones and no admin items; teacher starts at /teacher and sees Estado del sistema but no admin-only item; admin sees everything, the Administración section contiguous at the end), no legacy /dashboard or /panel* items, the notificationsUnread badge on Notificaciones.
+* Versión: 1.10
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,7 +12,7 @@
 
 import { describe, expect, it } from "vitest";
 import { findRoute } from "@shared/session/routes.config";
-import { findActiveHref, getNavItems, NAV_ITEMS } from "./nav.config";
+import { ADMIN_SECTION, findActiveHref, getNavItems, NAV_ITEMS } from "./nav.config";
 
 describe("NAV_ITEMS", () => {
   it.each(NAV_ITEMS.map((item) => [item.href, item]))("%s exists and is reachable by its roles", (_href, item) => {
@@ -32,34 +32,56 @@ describe("getNavItems", () => {
     expect(getNavItems(null)).toEqual([]);
   });
 
-  it("gives students the learning routes and no staff routes", () => {
+  it("gives students their space first and no staff or admin routes", () => {
     const hrefs = getNavItems("STUDENT").map((item) => item.href);
 
-    expect(hrefs).toContain("/dashboard");
-    expect(hrefs).toContain("/profile");
-    expect(hrefs).toContain("/my-group");
+    expect(hrefs[0]).toBe("/me");
+    expect(hrefs).toEqual(expect.arrayContaining(["/me/notes", "/me/grades", "/notifications", "/profile", "/my-group"]));
     expect(hrefs).not.toContain("/groups");
-    expect(hrefs.some((href) => href.startsWith("/panel"))).toBe(false);
+    expect(hrefs).not.toContain("/teacher");
+    expect(hrefs.some((href) => href.startsWith("/admin"))).toBe(false);
   });
 
-  it("gives teachers the panel but not the admin routes", () => {
+  it("gives teachers the teacher dashboard first and the system status but not the admin-only routes", () => {
     const hrefs = getNavItems("TEACHER").map((item) => item.href);
 
-    expect(hrefs).toContain("/panel");
-    expect(hrefs).toContain("/panel/students");
-    expect(hrefs).not.toContain("/panel/admin");
-    expect(hrefs).not.toContain("/dashboard");
-    expect(hrefs).toContain("/groups");
+    expect(hrefs[0]).toBe("/teacher");
+    expect(hrefs).toEqual(expect.arrayContaining(["/groups", "/grading", "/notifications", "/admin/status"]));
+    expect(hrefs).not.toContain("/admin/users");
+    expect(hrefs).not.toContain("/admin/settings");
+    expect(hrefs).not.toContain("/me");
     expect(hrefs).not.toContain("/my-group");
   });
 
-  it("gives admins the admin routes", () => {
+  it("gives admins every staff and admin route", () => {
     const hrefs = getNavItems("ADMIN").map((item) => item.href);
 
-    expect(hrefs).toContain("/panel/admin");
-    expect(hrefs).toContain("/panel/settings");
-    expect(hrefs).toContain("/groups");
-    expect(hrefs).not.toContain("/my-group");
+    expect(hrefs[0]).toBe("/teacher");
+    expect(hrefs).toEqual(expect.arrayContaining([
+      "/groups",
+      "/grading",
+      "/notifications",
+      "/admin/users",
+      "/admin/settings",
+      "/admin/audit",
+      "/admin/ai",
+      "/admin/research",
+      "/admin/status",
+    ]));
+    expect(hrefs).not.toContain("/me");
+  });
+
+  it("drops the legacy items replaced by the migration (/dashboard, /panel*)", () => {
+    expect(NAV_ITEMS.some((item) => item.href === "/dashboard" || item.href === "/panel" || item.href.startsWith("/panel/"))).toBe(false);
+  });
+
+  it("keeps the Administración section contiguous at the end", () => {
+    const sections = NAV_ITEMS.map((item) => item.section ?? null);
+    const first = sections.indexOf(ADMIN_SECTION);
+
+    expect(first).toBeGreaterThan(0);
+    expect(sections.slice(first).every((section) => section === ADMIN_SECTION)).toBe(true);
+    expect(NAV_ITEMS.filter((item) => item.href.startsWith("/admin/")).every((item) => item.section === ADMIN_SECTION)).toBe(true);
   });
 });
 
@@ -165,19 +187,24 @@ describe("findActiveHref", () => {
   const items = getNavItems("ADMIN");
 
   it("prefers the longest matching route", () => {
-    expect(findActiveHref(items, "/panel/students/[id]")).toBe("/panel/students");
-    expect(findActiveHref(items, "/panel")).toBe("/panel");
+    expect(findActiveHref(items, "/teacher/students/[userId]")).toBe("/teacher");
+    expect(findActiveHref(items, "/evaluations/manage/new")).toBe("/evaluations/manage");
+    expect(findActiveHref(getNavItems("STUDENT"), "/me/notes")).toBe("/me/notes");
+    expect(findActiveHref(getNavItems("STUDENT"), "/me")).toBe("/me");
   });
 
   it("does not match a sibling prefix", () => {
-    expect(findActiveHref(items, "/panelx")).toBeNull();
+    expect(findActiveHref(items, "/teacherx")).toBeNull();
   });
 });
 
 describe("navigation badges", () => {
-  it("only Calificar carries the gradingPending badge key", () => {
+  it("Calificar carries gradingPending and Notificaciones notificationsUnread", () => {
     const withBadges = NAV_ITEMS.filter((item) => item.badgeKey !== undefined);
 
-    expect(withBadges.map((item) => [item.href, item.badgeKey])).toEqual([["/grading", "gradingPending"]]);
+    expect(withBadges.map((item) => [item.href, item.badgeKey])).toEqual([
+      ["/grading", "gradingPending"],
+      ["/notifications", "notificationsUnread"],
+    ]);
   });
 });

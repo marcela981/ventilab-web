@@ -4,8 +4,22 @@
  * =============================================================================
  * This utility provides functions to redirect users to appropriate dashboard
  * routes based on their role after successful authentication.
+ *
+ * Funcionalidad: Role-based redirect utility (legacy, used by the NextAuth config in lib/auth.ts)
+ * Descripción: Role → landing route and safe-redirect helpers. v1.1 (O5 operation): the role homes follow the
+ *   session route table (DEFAULT_ROUTE_BY_ROLE of @shared/session: STUDENT /me, TEACHER and ADMIN /teacher)
+ *   instead of sending everyone to /simulador; an unknown role goes to / (role-aware entry page).
+ * Versión: 1.1
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
  * =============================================================================
  */
+
+import { DEFAULT_ROUTE_BY_ROLE } from '@shared/session/routes.config';
 
 /**
  * User role constants matching backend USER_ROLES
@@ -17,20 +31,18 @@ export const USER_ROLES = {
 };
 
 /**
- * Role-to-dashboard route mapping
- * Currently all roles use the main dashboard
- * TODO: Create role-specific dashboard views if needed
+ * Role-to-home route mapping (single source: the session route table)
  */
 const ROLE_DASHBOARD_MAP = {
-  [USER_ROLES.STUDENT]: '/simulador',
-  [USER_ROLES.TEACHER]: '/simulador',
-  [USER_ROLES.ADMIN]: '/simulador',
+  [USER_ROLES.STUDENT]: DEFAULT_ROUTE_BY_ROLE.STUDENT,
+  [USER_ROLES.TEACHER]: DEFAULT_ROUTE_BY_ROLE.TEACHER,
+  [USER_ROLES.ADMIN]: DEFAULT_ROUTE_BY_ROLE.ADMIN,
 };
 
 /**
- * Default dashboard route for unknown/unassigned roles
+ * Route for unknown/unassigned roles: the role-aware entry page
  */
-const DEFAULT_DASHBOARD = '/simulador';
+const DEFAULT_DASHBOARD = '/';
 
 /**
  * Get the appropriate redirect path based on user role
@@ -40,19 +52,19 @@ const DEFAULT_DASHBOARD = '/simulador';
  *
  * @example
  * // Student user
- * getRedirectPath('STUDENT') // Returns: '/dashboard/learning'
+ * getRedirectPath('STUDENT') // Returns: '/me'
  *
  * @example
  * // Teacher user
- * getRedirectPath('TEACHER') // Returns: '/dashboard/teaching'
+ * getRedirectPath('TEACHER') // Returns: '/teacher'
  *
  * @example
  * // Admin user
- * getRedirectPath('ADMIN') // Returns: '/dashboard/admin'
+ * getRedirectPath('ADMIN') // Returns: '/teacher'
  *
  * @example
  * // Unknown role
- * getRedirectPath('UNKNOWN') // Returns: '/dashboard'
+ * getRedirectPath('UNKNOWN') // Returns: '/'
  */
 export function getRedirectPath(role) {
   // Validate role parameter

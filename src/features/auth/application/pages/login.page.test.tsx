@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Login page tests
-* Descripción: Integration tests of the login page with the real backend session (AuthProvider) and MSW: local login posts the credentials and navigates to the role home or a safe returnTo, each backend error code shows its Spanish message, the Google ID token from Google Identity Services is posted to /api/auth/google, an authenticated visitor is redirected to the home of their role, the Google button is disabled without a client ID and an expired session shows a notice. v1.1: the best-effort NextAuth bridge (next-auth/react mocked): a local login signs in to NextAuth after establishSession and before the redirect, a bridge failure still redirects, and Google login never calls it (it only clears a stale NextAuth cookie). v1.2 (T9 follow-up): NextAuth session reconciliation (same user or none -> redirect; another user's session cleared -> redirect; persisting -> Spanish error, backend session signed out, no redirect, for local and Google logins), redirect loop guard (a bounced returnTo falls back to the role home; a bounced role home stops with an error and a sign-out button) and a staff-only returnTo for a student -> role home. v1.3 (T12): while a login is pending "Iniciar sesión" keeps its label, is disabled and aria-busy with a spinner (no "Iniciando sesión…" text). Depends on vitest, Testing Library, MSW, next/router (mocked) and the hard navigation helper (mocked).
-* Versión: 1.3
+* Descripción: Integration tests of the login page with the real backend session (AuthProvider) and MSW: local login posts the credentials and navigates to the role home or a safe returnTo, each backend error code shows its Spanish message, the Google ID token from Google Identity Services is posted to /api/auth/google, an authenticated visitor is redirected to the home of their role, the Google button is disabled without a client ID and an expired session shows a notice. v1.1: the best-effort NextAuth bridge (next-auth/react mocked): a local login signs in to NextAuth after establishSession and before the redirect, a bridge failure still redirects, and Google login never calls it (it only clears a stale NextAuth cookie). v1.2 (T9 follow-up): NextAuth session reconciliation (same user or none -> redirect; another user's session cleared -> redirect; persisting -> Spanish error, backend session signed out, no redirect, for local and Google logins), redirect loop guard (a bounced returnTo falls back to the role home; a bounced role home stops with an error and a sign-out button) and a staff-only returnTo for a student -> role home. v1.3 (T12): while a login is pending "Iniciar sesión" keeps its label, is disabled and aria-busy with a spinner (no "Iniciando sesión…" text). Depends on vitest, Testing Library, MSW, next/router (mocked) and the hard navigation helper (mocked). v1.4 (O5): role homes are /me for students and /teacher for staff.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -170,7 +170,7 @@ describe("LoginPage local login", () => {
     renderLogin();
     fillAndSubmit("  ana@ventylab.demo ", "VentyLab-Demo-2026");
 
-    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/dashboard"), { timeout: 5000 });
+    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/me"), { timeout: 5000 });
     expect(loginBodies).toEqual([{ email: "ana@ventylab.demo", password: "VentyLab-Demo-2026" }]);
     expect(getAccessToken()).toBe("access-1");
     expect(getRefreshToken()).toBe("refresh-1");
@@ -191,7 +191,7 @@ describe("LoginPage local login", () => {
     renderLogin();
     fillAndSubmit();
 
-    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/panel"), { timeout: 5000 });
+    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/teacher"), { timeout: 5000 });
   });
 
   it("keeps the submit label and shows a busy spinner while the login is pending", async() => {
@@ -263,7 +263,7 @@ describe("LoginPage local login", () => {
     renderLogin();
     fillAndSubmit("  ana@ventylab.demo ", "VentyLab-Demo-2026");
 
-    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/dashboard"), { timeout: 5000 });
+    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/me"), { timeout: 5000 });
     expect(nextAuth.signIn).toHaveBeenCalledTimes(1);
     expect(nextAuth.signIn).toHaveBeenCalledWith("credentials", {
       email: "ana@ventylab.demo",
@@ -284,7 +284,7 @@ describe("LoginPage local login", () => {
     renderLogin();
     fillAndSubmit();
 
-    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/dashboard"), { timeout: 5000 });
+    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/me"), { timeout: 5000 });
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     expect(warn).toHaveBeenCalledTimes(1);
     // A failed bridge clears any stale NextAuth session so legacy pages cannot show another user.
@@ -320,7 +320,7 @@ describe("LoginPage Google sign-in", () => {
 
     googleCallback?.({ credential: "google-id-token" });
 
-    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/dashboard"), { timeout: 5000 });
+    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/me"), { timeout: 5000 });
     expect(googleBodies).toEqual([{ idToken: "google-id-token" }]);
     expect(nextAuth.signIn).not.toHaveBeenCalled();
     expect(nextAuth.signOut).toHaveBeenCalledWith({ redirect: false });
@@ -358,7 +358,7 @@ describe("LoginPage with an existing session", () => {
     saveTokens("access-0", "refresh-0");
     renderLogin();
 
-    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/panel"), { timeout: 5000 });
+    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/teacher"), { timeout: 5000 });
     expect(navigation.navigateTo).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole("button", { name: /iniciar sesión/i })).not.toBeInTheDocument();
   });
@@ -369,13 +369,13 @@ describe("LoginPage with an existing session", () => {
     router.query = { returnUrl: "/teaching" };
     renderLogin();
 
-    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/dashboard"), { timeout: 5000 });
+    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/me"), { timeout: 5000 });
     expect(navigation.navigateTo).toHaveBeenCalledTimes(1);
   });
 
   it("stops redirecting and offers to sign out when the role home bounced too", async() => {
     saveTokens("access-0", "refresh-0");
-    window.sessionStorage.setItem(REDIRECT_HISTORY_KEY, JSON.stringify([{ target: "/dashboard", at: Date.now() }]));
+    window.sessionStorage.setItem(REDIRECT_HISTORY_KEY, JSON.stringify([{ target: "/me", at: Date.now() }]));
     renderLogin();
 
     expect(await screen.findByRole("alert", {}, { timeout: 5000 })).toHaveTextContent("No se pudo abrir la página de destino");
@@ -393,7 +393,7 @@ describe("LoginPage with an existing session", () => {
     renderLogin();
     fillAndSubmit();
 
-    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/dashboard"), { timeout: 5000 });
+    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/me"), { timeout: 5000 });
   });
 
   it("shows a notice when the previous session expired", async() => {
@@ -412,7 +412,7 @@ describe("LoginPage NextAuth session reconciliation", () => {
     renderLogin();
     fillAndSubmit();
 
-    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/dashboard"), { timeout: 5000 });
+    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/me"), { timeout: 5000 });
     expect(nextAuth.signOut).not.toHaveBeenCalled();
   });
 
@@ -421,7 +421,7 @@ describe("LoginPage NextAuth session reconciliation", () => {
     renderLogin();
     fillAndSubmit();
 
-    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/dashboard"), { timeout: 5000 });
+    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/me"), { timeout: 5000 });
     expect(nextAuth.signOut).toHaveBeenCalledWith({ redirect: false });
     expect(getAccessToken()).toBe("access-1");
   });

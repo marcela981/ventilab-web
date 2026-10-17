@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AppShell
-* Descripción: Authenticated application chrome for new pages: skip link to the main region, a permanent navigation drawer on desktop (>= md) and a temporary drawer opened from the header on mobile, the role-filtered navigation from nav.config (useSession role, active item = longest matching route with aria-current), a header with the app name, a small realtime status chip when the new socket is disconnected or unauthorized, and a user menu (avatar = the session user's image, initials as fallback, v1.1 T11a) whose "Cerrar sesión" calls signOut() from the session (the route guard then redirects to login). Page content renders inside RouteErrorBoundary, reset on route change. It does not guard by itself: the Student/Teacher/Admin layouts wrap it in RequireAuth/RequireRole. Plain Spanish copy (TODO(i18n), see nav.config). v1.2 (G1 grading): a navigation item with a `badgeKey` shows its count from the nav-badges registry as an MUI Badge on the icon (hidden at 0) plus a visually hidden "N pendientes" text for screen readers. Depends on MUI, next/link, next/router, @shared/session, @shared/realtime context, @shared/design-system components and the nav-badges registry. v1.3 (G1 review W2): registers itself as the nav-badge host (useNavBadgeHost) so badge feeders only poll while the shell is on screen. v1.4 (A3 ai-chat): renders the actions registered in the top-bar-actions slot (useTopBarActions, e.g. the AI assistant launcher contributed from pages/_app.js) between the realtime chip and the user menu. v1.5 (T12 ventilator-lab): a navigation item with an `indicator` shows a small status (dot + text, `data-indicator-tone`) from nav-indicators; the "Laboratorio" item shows the physical ventilator state (useVentilatorDeviceIndicator, enabled only when that item is in the role's navigation). v1.6 (T12 review fix W1): the shell no longer knows the device: it reads the generic nav-indicators registry (useNavIndicators; tone + text supplied by the feature that feeds the key, e.g. ventilator-lab from pages/_app.js) and declares the indicator keys of the role's navigation with useNavIndicatorHost; an item whose key nobody fed shows no indicator.
-* Versión: 1.6
+* Descripción: Authenticated application chrome for new pages: skip link to the main region, a permanent navigation drawer on desktop (>= md) and a temporary drawer opened from the header on mobile, the role-filtered navigation from nav.config (useSession role, active item = longest matching route with aria-current), a header with the app name, a small realtime status chip when the new socket is disconnected or unauthorized, and a user menu (avatar = the session user's image, initials as fallback, v1.1 T11a) whose "Cerrar sesión" calls signOut() from the session (the route guard then redirects to login). Page content renders inside RouteErrorBoundary, reset on route change. It does not guard by itself: the Student/Teacher/Admin layouts wrap it in RequireAuth/RequireRole. Plain Spanish copy (TODO(i18n), see nav.config). v1.2 (G1 grading): a navigation item with a `badgeKey` shows its count from the nav-badges registry as an MUI Badge on the icon (hidden at 0) plus a visually hidden "N pendientes" text for screen readers. Depends on MUI, next/link, next/router, @shared/session, @shared/realtime context, @shared/design-system components and the nav-badges registry. v1.3 (G1 review W2): registers itself as the nav-badge host (useNavBadgeHost) so badge feeders only poll while the shell is on screen. v1.4 (A3 ai-chat): renders the actions registered in the top-bar-actions slot (useTopBarActions, e.g. the AI assistant launcher contributed from pages/_app.js) between the realtime chip and the user menu. v1.5 (T12 ventilator-lab): a navigation item with an `indicator` shows a small status (dot + text, `data-indicator-tone`) from nav-indicators; the "Laboratorio" item shows the physical ventilator state (useVentilatorDeviceIndicator, enabled only when that item is in the role's navigation). v1.6 (T12 review fix W1): the shell no longer knows the device: it reads the generic nav-indicators registry (useNavIndicators; tone + text supplied by the feature that feeds the key, e.g. ventilator-lab from pages/_app.js) and declares the indicator keys of the role's navigation with useNavIndicatorHost; an item whose key nobody fed shows no indicator. v1.7 (O5 operation): a navigation item with a `section` (nav.config) gets a non-sticky subheader (ListSubheader) before the first item of its section, e.g. "Administración".
+* Versión: 1.7
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -23,13 +23,14 @@ import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
+import ListSubheader from "@mui/material/ListSubheader";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useContext, useId, useState } from "react";
+import { Fragment, useContext, useId, useState } from "react";
 import type { MouseEvent, ReactNode } from "react";
 import { RouteErrorBoundary } from "@shared/design-system/components/route-error-boundary";
 import { RealtimeContext } from "@shared/realtime/realtime-context";
@@ -82,40 +83,44 @@ function Navigation({ items, activeHref, homeHref, badges, indicators, onNavigat
       </Link>
       <Divider />
       <List>
-        {items.map((item) => {
+        {items.map((item, index) => {
           const Icon = item.icon;
+          // Items of a section are contiguous: the subheader goes before the first one.
+          const opensSection = item.section !== undefined && item.section !== items[index - 1]?.section;
           const active = item.href === activeHref;
           const current = active ? { "aria-current": "page" as const } : {};
           const count = itemBadgeCount(item, badges);
           const indicator = item.indicator ? indicators[item.indicator] : undefined;
 
           return (
-            <ListItemButton
-              key={item.href}
-              component={Link}
-              href={item.href}
-              selected={active}
-              {...current}
-              onClick={onNavigate}
-            >
-              <ListItemIcon>
-                {count > 0 ? (
-                  <Badge badgeContent={count} max={BADGE_MAX} color="error" slotProps={HIDDEN_BADGE_SLOT}>
+            <Fragment key={item.href}>
+              {opensSection ? <ListSubheader disableSticky className={cx(styles.navSection)}>{item.section}</ListSubheader> : null}
+              <ListItemButton
+                component={Link}
+                href={item.href}
+                selected={active}
+                {...current}
+                onClick={onNavigate}
+              >
+                <ListItemIcon>
+                  {count > 0 ? (
+                    <Badge badgeContent={count} max={BADGE_MAX} color="error" slotProps={HIDDEN_BADGE_SLOT}>
+                      <Icon />
+                    </Badge>
+                  ) : (
                     <Icon />
-                  </Badge>
-                ) : (
-                  <Icon />
-                )}
-              </ListItemIcon>
-              <ListItemText primary={item.label} />
-              {indicator ? (
-                <span className={styles.navIndicator} data-indicator-tone={indicator.tone}>
-                  <span className={styles.navIndicatorDot} aria-hidden="true" />
-                  {indicator.text}
-                </span>
-              ) : null}
-              {count > 0 ? <span className={styles.visuallyHidden}>{`, ${pendingText(count)}`}</span> : null}
-            </ListItemButton>
+                  )}
+                </ListItemIcon>
+                <ListItemText primary={item.label} />
+                {indicator ? (
+                  <span className={styles.navIndicator} data-indicator-tone={indicator.tone}>
+                    <span className={styles.navIndicatorDot} aria-hidden="true" />
+                    {indicator.text}
+                  </span>
+                ) : null}
+                {count > 0 ? <span className={styles.visuallyHidden}>{`, ${pendingText(count)}`}</span> : null}
+              </ListItemButton>
+            </Fragment>
           );
         })}
       </List>

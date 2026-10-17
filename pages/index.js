@@ -1,16 +1,22 @@
-// Next.js Home Page - VentyLab
-// This page redirects to dashboard, middleware handles auth protection
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
+/*
+ * Funcionalidad: Home page (/)
+ * Descripción: Role-aware entry of the app. v2.0 (O5 operation): waits for the backend session (@shared/session) and
+ *   then replaces the URL with the home of the role (STUDENT /me, TEACHER and ADMIN /teacher, DEFAULT_ROUTE_BY_ROLE),
+ *   or with the login page when there is no session (RoleHomeRedirect). Before v2.0 it replaced the URL with /dashboard
+ *   for everyone and relied on the middleware for the login. Bare layout (getLayout): no legacy shell around a redirect.
+ * Versión: 2.0
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
+ */
+import { RoleHomeRedirect } from '@shared/session/role-home-redirect';
 
 export default function Home() {
-  const router = useRouter();
-
-  useEffect(() => {
-    // Redirect to dashboard on home page load
-    // If not authenticated, middleware will redirect to login first
-    router.replace('/dashboard');
-  }, [router]);
-
-  return null; // This will not render anything as we redirect immediately
+  return <RoleHomeRedirect />;
 }
+
+// Bare layout: only the redirect, without the legacy shell.
+Home.getLayout = (page) => page;

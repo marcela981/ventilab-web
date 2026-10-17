@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Route table tests
-* Descripción: Open-redirect safety of the returnTo helper (rejects protocol-relative, absolute, javascript: and auth-page targets), login URL building, route lookup by Next pathname pattern and the default landing route per role. v1.1 (T9 follow-up): role access of concrete paths (dynamic segments, query strings) and the post-login fallback to the role home when the returnTo route is not allowed for the role. v1.2 (T11a): /my-group is student-only and /groups is staff-only. v1.3 (T11b): /groups/[groupId] is staff-only. v1.4 (T0 learning): learning routes for every role, module print view and content-editor routes for staff only. v1.5 (S0 evaluations): student evaluation routes for every role, authoring and grading routes for staff only. v1.6 (T0 ventilator-lab): the lab routes are declared for every authenticated role. v1.7 (O0 operation): /notifications for every role, the student space for students only, the teacher dashboard and /admin/status for staff, the rest of the admin console for admins only. Depends on vitest and routes.config.
-* Versión: 1.7
+* Descripción: Open-redirect safety of the returnTo helper (rejects protocol-relative, absolute, javascript: and auth-page targets), login URL building, route lookup by Next pathname pattern and the default landing route per role. v1.1 (T9 follow-up): role access of concrete paths (dynamic segments, query strings) and the post-login fallback to the role home when the returnTo route is not allowed for the role. v1.2 (T11a): /my-group is student-only and /groups is staff-only. v1.3 (T11b): /groups/[groupId] is staff-only. v1.4 (T0 learning): learning routes for every role, module print view and content-editor routes for staff only. v1.5 (S0 evaluations): student evaluation routes for every role, authoring and grading routes for staff only. v1.6 (T0 ventilator-lab): the lab routes are declared for every authenticated role. v1.7 (O0 operation): /notifications for every role, the student space for students only, the teacher dashboard and /admin/status for staff, the rest of the admin console for admins only. Depends on vitest and routes.config. v1.8 (O5 operation): role homes STUDENT /me, TEACHER and ADMIN /teacher; resolvePostLoginRoute falls back to them for the new role-restricted routes (/admin/users, /me, /teacher).
+* Versión: 1.8
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -73,6 +73,20 @@ describe("resolvePostLoginRoute", () => {
     expect(resolvePostLoginRoute("/panel/students/abc?tab=1", "STUDENT")).toBe(DEFAULT_ROUTE_BY_ROLE.STUDENT);
     expect(resolvePostLoginRoute("/panel/admin", "TEACHER")).toBe(DEFAULT_ROUTE_BY_ROLE.TEACHER);
     expect(resolvePostLoginRoute("/panel/students/abc?tab=1", "TEACHER")).toBe("/panel/students/abc?tab=1");
+  });
+});
+
+describe("role homes (O5)", () => {
+  it("lands students on /me and teachers and admins on /teacher", () => {
+    expect(DEFAULT_ROUTE_BY_ROLE).toEqual({ STUDENT: "/me", TEACHER: "/teacher", ADMIN: "/teacher" });
+  });
+
+  it("falls back to the role home for a returnTo outside the role", () => {
+    expect(resolvePostLoginRoute("/admin/users", "TEACHER")).toBe("/teacher");
+    expect(resolvePostLoginRoute("/teacher/students/u1", "STUDENT")).toBe("/me");
+    expect(resolvePostLoginRoute("/me/grades", "ADMIN")).toBe("/teacher");
+    expect(resolvePostLoginRoute(undefined, "STUDENT")).toBe("/me");
+    expect(resolvePostLoginRoute("/admin/status", "TEACHER")).toBe("/admin/status");
   });
 });
 

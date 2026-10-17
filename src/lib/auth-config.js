@@ -7,6 +7,11 @@
  * NOTE: Role definitions and permission helpers are in ./roles.js
  * This file only contains route configuration and auth error handling.
  *
+ * Funcionalidad: Legacy auth route configuration
+ * Descripción: v1.1 (O5 operation): ROLE_DASHBOARDS (getDashboardUrl / getPostLoginRedirect) points to the
+ *   migrated role homes (student /me; teacher, admin and superuser /teacher), the same as DEFAULT_ROUTE_BY_ROLE of
+ *   @shared/session, instead of the non-existent /dashboard/* pages.
+ * Versión: 1.1
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -31,11 +36,12 @@ export const USER_ROLES = ROLES;
  * Role-based Dashboard Routes
  * Maps user roles to their respective dashboard pages
  */
+// Keep aligned with DEFAULT_ROUTE_BY_ROLE (src/shared/session/routes.config.ts).
 export const ROLE_DASHBOARDS = {
-  [ROLES.STUDENT]: '/dashboard/student',
-  [ROLES.TEACHER]: '/dashboard/instructor',
-  [ROLES.ADMIN]: '/dashboard/admin',
-  [ROLES.SUPERUSER]: '/dashboard/admin',
+  [ROLES.STUDENT]: '/me',
+  [ROLES.TEACHER]: '/teacher',
+  [ROLES.ADMIN]: '/teacher',
+  [ROLES.SUPERUSER]: '/teacher',
 };
 
 /**
@@ -81,7 +87,7 @@ export const ADMIN_ROUTES = ['/admin', '/dashboard/admin'];
  * @returns {string} Dashboard URL for the role
  *
  * @example
- * const url = getDashboardUrl('student'); // '/dashboard/student'
+ * const url = getDashboardUrl('student'); // '/me'
  */
 export const getDashboardUrl = (role) => {
   const normalized = role?.toLowerCase();
