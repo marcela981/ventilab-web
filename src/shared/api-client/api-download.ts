@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Text file download helpers
-* Descripción: `apiGetText(path, options)` reads a typed GET endpoint that answers a text file (CSV exports) through the shared httpClient (Bearer token, 401 refresh, timeout category) and returns its raw content plus the file name of the Content-Disposition header when the browser can read it. A JSON error body is still parsed, so failures reject with the usual ApiError (code, status, Retry-After). `saveTextFile(file, fallbackName)` hands the content to the browser as a download (Blob + object URL + temporary anchor). Depends on axios, http-client, api-request, api-types, timeouts and api-error.
-* Versión: 1.0
+* Descripción: `apiGetText(path, options)` reads a typed GET endpoint that answers a text file (CSV exports) through the shared httpClient (Bearer token, 401 refresh, timeout category) and returns its raw content plus the file name of the Content-Disposition header when the browser can read it. A JSON error body is still parsed, so failures reject with the usual ApiError (code, status, Retry-After). `saveTextFile(file, fallbackName)` hands the content to the browser as a download (Blob + object URL + temporary anchor). v1.1 (O3 review + O4b): saveTextFile prepends a UTF-8 BOM to CSV content (withCsvBom) so Excel es-CO shows accents; apiGetText also returns the response headers (lowercase names) and isHeaderTrue reads flags such as X-Export-Truncated. Depends on axios, http-client, api-request, api-types, timeouts and api-error.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,6 +20,8 @@ import { TIMEOUTS } from "./timeouts";
 export type ApiTextFile = {
   content: string
   filename: string | null
+  /** Response headers with lowercase names (only the ones CORS exposes in the browser); absent when built by hand. */
+  headers?: Readonly<Record<string, string>>
 };
 
 type LooseOptions = CallOptions & {
@@ -28,6 +30,33 @@ type LooseOptions = CallOptions & {
 };
 
 const CSV_MIME_TYPE = "text/csv;charset=utf-8";
+const UTF8_BOM = "\uFEFF";
+
+function toHeaderRecord(headers: unknown): Record<string, string> {
+  const record: Record<string, string> = {};
+
+  if (!headers || typeof headers !== "object") {
+    return record;
+  }
+
+  for (const [name, value] of Object.entries(headers as Record<string, unknown>)) {
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      record[name.toLowerCase()] = String(value);
+    }
+  }
+
+  return record;
+}
+
+/** True when a header such as X-Export-Truncated says "true" (case-insensitive). */
+export function isHeaderTrue(file: ApiTextFile, name: string): boolean {
+  return file.headers?.[name.toLowerCase()]?.trim().toLowerCase() === "true";
+}
+
+/** CSV content with a UTF-8 BOM so spreadsheet apps (Excel es-CO) read accents; other types are left as they are. */
+export function withCsvBom(content: string, mimeType: string): string {
+  return mimeType.toLowerCase().startsWith("text/csv") && !content.startsWith(UTF8_BOM) ? `${UTF8_BOM}${content}` : content;
+}
 
 // Keeps a text body as is; an error answered as JSON is parsed so api-error can read its code.
 function parseTextBody(data: unknown, headers: unknown): unknown {
@@ -107,7 +136,11 @@ export async function apiGetText<P extends PathsWithMethod<"get">>(
     const response = await httpClient.request<unknown>(config);
     const content = typeof response.data === "string" ? response.data : "";
 
-    return { content, filename: filenameFromContentDisposition(response.headers["content-disposition"]) };
+    return {
+      content,
+      filename: filenameFromContentDisposition(response.headers["content-disposition"]),
+      headers: toHeaderRecord(response.headers),
+    };
   } catch (error) {
     if (axios.isCancel(error)) {
       throw error;
@@ -118,7 +151,7 @@ export async function apiGetText<P extends PathsWithMethod<"get">>(
 }
 
 export function saveTextFile(file: ApiTextFile, fallbackName: string, mimeType: string = CSV_MIME_TYPE): void {
-  const url = URL.createObjectURL(new Blob([file.content], { type: mimeType }));
+  const url = URL.createObjectURL(new Blob([withCsvBom(file.content, mimeType)], { type: mimeType }));
   const anchor = document.createElement("a");
 
   anchor.href = url;

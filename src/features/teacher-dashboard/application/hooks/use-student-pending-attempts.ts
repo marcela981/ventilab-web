@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useStudentPendingAttempts
-* Descripción: Attempts of one student waiting for review, to link them to the grading page: reads the first page of the group grading queue (`GET /api/evaluation-grading/queue?groupId&limit=50`, oldest first) and selects the rows of the student. The queue has no student filter (BACKEND GAP), so attempts beyond the first 50 of the group are not listed. A null group sends no request. Depends on React, @shared/api-client and the teacher dashboard mapper, service and entities.
-* Versión: 1.0
+* Descripción: Attempts of one student waiting for review, to link them to the grading page: reads the first page of the group grading queue (`GET /api/evaluation-grading/queue?groupId&limit=50`, oldest first) and selects the rows of the student. The queue has no student filter (BACKEND GAP), so attempts beyond the first 50 of the group are not listed. A null group sends no request. v1.1 (O3 review): possiblyIncomplete is true when the envelope pagination.total is greater than the rows scanned, so the UI can warn that the list may be incomplete (no paging through the whole queue). Depends on React, @shared/api-client and the teacher dashboard mapper, service and entities.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,6 +21,8 @@ export const PENDING_QUEUE_LIMIT = 50;
 
 export type UseStudentPendingAttemptsResult = {
   attempts: PendingAttempt[] | null
+  /** True when the group queue holds more attempts than the page that was scanned (envelope total vs rows). */
+  possiblyIncomplete: boolean
   isLoading: boolean
   error: ApiError | null
 };
@@ -32,5 +34,8 @@ export function useStudentPendingAttempts(groupId: string | null, userId: string
   );
   const attempts = useMemo(() => (data ? selectStudentAttempts(toPendingAttempts(data.data), userId) : null), [data, userId]);
 
-  return { attempts, isLoading, error: error ?? null };
+  const total = data?.pagination?.total ?? null;
+  const possiblyIncomplete = data !== undefined && total !== null && total > data.data.length;
+
+  return { attempts, possiblyIncomplete, isLoading, error: error ?? null };
 }

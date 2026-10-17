@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: StudentGrades
-* Descripción: Grades block of /teacher/students/[userId]. With the group the page was opened from (?groupId), it lists the published grades of the student's group dashboard row (grade, attempt, date and the passed / failed label of the API, linked to the evaluation results page because the row has no attemptId: BACKEND GAP) and the student's attempts waiting for review in the group grading queue (linked to /grading/attempts/[attemptId]). Without a group there is no staff endpoint with a student's grades (BACKEND GAP), so it explains how to see them. Depends on MUI, next/link, @shared/lib/format, the teacher dashboard hooks, entities, routes and CSS Module.
-* Versión: 1.0
+* Descripción: Grades block of /teacher/students/[userId]. With the group the page was opened from (?groupId), it lists the published grades of the student's group dashboard row (grade, attempt, date and the passed / failed label of the API, linked to the evaluation results page because the row has no attemptId: BACKEND GAP) and the student's attempts waiting for review in the group grading queue (linked to /grading/attempts/[attemptId]). Without a group there is no staff endpoint with a student's grades (BACKEND GAP), so it explains how to see them. v1.1 (O3 review): a visible note warns when the scanned page of the group queue may not hold every attempt of the student. Depends on MUI, next/link, @shared/lib/format, the teacher dashboard hooks, entities, routes and CSS Module.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -36,6 +36,7 @@ export const STUDENT_GRADES_COPY = {
   failed: "Reprobada",
   loading: "Cargando calificaciones…",
   grade: "Calificar",
+  possiblyIncomplete: "Lista posiblemente incompleta: la cola del grupo tiene más intentos de los revisados",
 } as const;
 
 export function StudentGrades({ userId, groupId }: { userId: string, groupId: string | null }) {
@@ -100,6 +101,7 @@ export function StudentGrades({ userId, groupId }: { userId: string, groupId: st
             ))}
           </ul>
         ) : null}
+        {pending.possiblyIncomplete ? <Alert severity="info">{STUDENT_GRADES_COPY.possiblyIncomplete}</Alert> : null}
       </div>
     </div>
   );

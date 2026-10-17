@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: StudentsTable
-* Descripción: Students table of /teacher from the group dashboard rows: student (link to the detail page with the group), overall progress, average grade, simulation (sessions, average score, average time to stabilize), AI usage per use case (calls and helpful percentage exactly as returned, never summed) and ventilator hours. Columns sort by their API value (TableSortLabel) and a text filter keeps the rows whose name or email matches. A row is highlighted (warning border, tint and the "En riesgo" label) when the risk rule says so; a legend explains it. Each row expands to its section, level and module progress (curriculum titles) and its published evaluations. Depends on MUI, next/link, @shared/lib/format, the teacher dashboard entities, routes and CSS Module.
-* Versión: 1.0
+* Descripción: Students table of /teacher from the group dashboard rows: student (link to the detail page with the group), overall progress, average grade, simulation (sessions, average score, average time to stabilize), AI usage per use case (calls and helpful percentage exactly as returned, never summed) and ventilator hours. Columns sort by their API value (TableSortLabel) and a text filter keeps the rows whose name or email matches. A row is highlighted (warning border, tint and the "En riesgo" label) when the risk rule says so; a legend explains it. Each row expands to its section, level and module progress (curriculum titles) and its published evaluations. v1.1 (O3 review): the legend says that only the latest published attempt of each evaluation counts. Depends on MUI, next/link, @shared/lib/format, the teacher dashboard entities, routes and CSS Module.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -46,7 +46,7 @@ import styles from "../../UI/teacher-dashboard.module.css";
 export const STUDENTS_TABLE_COPY = {
   title: "Estudiantes",
   filter: "Buscar por nombre o correo",
-  legend: "Resaltado: el estudiante reprobó al menos una evaluación publicada (dato de la API).",
+  legend: "Resaltado: en al menos una evaluación, el último intento publicado del estudiante está reprobado (dato de la API).",
   atRisk: "En riesgo",
   atRiskDetail: (titles: readonly string[]) => `Reprobó: ${titles.join(", ")}`,
   columns: {

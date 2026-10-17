@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher dashboard test helpers
-* Descripción: Shared fixtures of the teacher dashboard tests: backend URL, envelope with pagination, error response, DTO builders typed against the generated schema (group, dashboard row, evaluation stats, timeline entry, assignment, grading queue item, reservation, student, progress summary, curriculum tree) and a renderer that wraps the UI in a fresh SWR cache, an authenticated TEACHER session and the global ToastProvider. Depends on Testing Library, msw, SWR, the design-system toast, the session context and the teacher dashboard DTOs.
-* Versión: 1.0
+* Descripción: Shared fixtures of the teacher dashboard tests: backend URL, envelope with pagination, error response, DTO builders typed against the generated schema (group, dashboard row, evaluation stats, timeline entry, assignment, grading queue item, reservation, student, progress summary, curriculum tree) and a renderer that wraps the UI in a fresh SWR cache, an authenticated TEACHER session and the global ToastProvider. v1.1 (O3 review): the test SWR config keeps previous data like the app (API_SWR_CONFIG), so group switches are tested under the real default. Depends on Testing Library, msw, SWR, the design-system toast, the session context and the teacher dashboard DTOs.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -266,7 +266,7 @@ export function renderTeacherDashboard(ui: ReactElement, role: Role = "TEACHER")
 
   function Wrapper({ children }: { children: ReactNode }) {
     return (
-      <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false }}>
+      <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false, keepPreviousData: true }}>
         <SessionContext.Provider value={session}>
           <ToastProvider>{children}</ToastProvider>
         </SessionContext.Provider>

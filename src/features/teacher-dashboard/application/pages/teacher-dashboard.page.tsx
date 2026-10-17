@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: TeacherDashboardPage
-* Descripción: Page /teacher (TEACHER, ADMIN): the caller's STUDENT groups (`GET /api/groups?type=STUDENT`) in a selector whose value lives in the URL (?groupId=, shareable; the first group by default), the summary cards of the group (attempts to grade, active evaluations, upcoming reservations), the students table of `GET /api/analytics/groups/{groupId}/dashboard` (sortable, filterable, risk highlight with legend, expandable progress) and the lazy charts (grade distribution of one evaluation from the API histogram, module progress of one student). "Exportar CSV" downloads `GET /api/analytics/groups/{groupId}/export.csv`. A 403 of the analytics (another teacher's group opened by URL) shows "No tienes acceso a este grupo". No grade, average or statistic is computed here; personal notes and AI conversations of the students are never read. Depends on MUI, next/head, next/router, the design-system states and async button, the teacher dashboard hooks, components, entities and CSS Module.
-* Versión: 1.0
+* Descripción: Page /teacher (TEACHER, ADMIN): the caller's STUDENT groups (`GET /api/groups?type=STUDENT`) in a selector whose value lives in the URL (?groupId=, shareable; the first group by default), the summary cards of the group (attempts to grade, active evaluations, upcoming reservations), the students table of `GET /api/analytics/groups/{groupId}/dashboard` (sortable, filterable, risk highlight with legend, expandable progress) and the lazy charts (grade distribution of one evaluation from the API histogram, module progress of one student). "Exportar CSV" downloads `GET /api/analytics/groups/{groupId}/export.csv`. A 403 of the analytics (another teacher's group opened by URL) shows "No tienes acceso a este grupo". No grade, average or statistic is computed here; personal notes and AI conversations of the students are never read. v1.1 (O3 review): rows, error and loading branches and the CSV filename only use a dashboard whose groupId matches the selected group, so switching groups shows the loading or error state instead of the previous group. Depends on MUI, next/head, next/router, the design-system states and async button, the teacher dashboard hooks, components, entities and CSS Module.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -58,7 +58,9 @@ export function TeacherDashboardPage() {
   const urlGroupId = readGroupId(router.query.groupId);
   const { groups, isLoading: groupsLoading, error: groupsError, reload: reloadGroups } = useTeacherGroups();
   const groupId = router.isReady ? (urlGroupId ?? groups?.[0]?.id ?? null) : null;
-  const { dashboard, isLoading, error, reload } = useGroupDashboard(groupId);
+  const { dashboard: loaded, isLoading, error, reload } = useGroupDashboard(groupId);
+  // Only the dashboard of the selected group is shown: a previous group's data must never be rendered (SWR keepPreviousData).
+  const dashboard = loaded && loaded.groupId === groupId ? loaded : null;
   const cards = useGroupCards(groupId);
   const titles = useCurriculumTitles();
   const { exporting, exportCsv } = useGroupExport();

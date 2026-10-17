@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useGroupCards
-* Descripción: Data of the summary cards of /teacher for one group, each card with its own state: attempts waiting for review (`GET /api/evaluation-grading/queue?groupId&limit=1`, the count is the envelope `pagination.total`; there is no count endpoint), active evaluations (`GET /api/evaluation-assignments?groupId&state=ACTIVE`, first 5 rows and the envelope total) and upcoming ventilator reservations of the group (`GET /api/reservations?from=now&to=now+30d` calendar, the rows of the group with SCHEDULED status are selected on the client because the calendar has no groupId filter: BACKEND GAP). The reservations window is fixed when the hook mounts. Depends on React, @shared/api-client and the teacher dashboard mapper, service and entities.
-* Versión: 1.0
+* Descripción: Data of the summary cards of /teacher for one group, each card with its own state: attempts waiting for review (`GET /api/evaluation-grading/queue?groupId&limit=1`, the count is the envelope `pagination.total`; there is no count endpoint), active evaluations (`GET /api/evaluation-assignments?groupId&state=ACTIVE`, first 5 rows and the envelope total) and upcoming ventilator reservations of the group (`GET /api/reservations?from=now&to=now+30d` calendar, the rows of the group with SCHEDULED status are selected on the client because the calendar has no groupId filter: BACKEND GAP). The reservations window is fixed when the hook mounts. v1.1 (O3 review): the queue and assignments queries turn keepPreviousData off, so the cards never show another group's counts; the calendar key does not depend on the group and is filtered by groupId. Depends on React, @shared/api-client and the teacher dashboard mapper, service and entities.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -32,6 +32,8 @@ export type GroupCards = {
 export const ACTIVE_EVALUATIONS_SHOWN = 5;
 const RESERVATIONS_WINDOW_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
+/** The cards never show another group's counts while the selected group loads (the app default keeps previous data). */
+const NO_PREVIOUS_DATA = { keepPreviousData: false } as const;
 
 function reservationsWindow(): { from: string, to: string } {
   const now = Date.now();
@@ -41,10 +43,11 @@ function reservationsWindow(): { from: string, to: string } {
 
 export function useGroupCards(groupId: string | null): GroupCards {
   const [reservationRange] = useState(reservationsWindow);
-  const queue = useApiQuery(groupId ? GRADING_QUEUE_PATH : null, { query: { groupId: groupId ?? "", limit: 1 } });
+  const queue = useApiQuery(groupId ? GRADING_QUEUE_PATH : null, { query: { groupId: groupId ?? "", limit: 1 } }, NO_PREVIOUS_DATA);
   const assignments = useApiQuery(
     groupId ? ASSIGNMENTS_PATH : null,
     { query: { groupId: groupId ?? "", state: "ACTIVE", limit: ACTIVE_EVALUATIONS_SHOWN, sortOrder: "asc" } },
+    NO_PREVIOUS_DATA,
   );
   const calendar = useApiQuery(groupId ? RESERVATIONS_PATH : null, { query: reservationRange });
 

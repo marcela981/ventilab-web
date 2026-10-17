@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Curriculum titles and progress tree
-* Descripción: Titles and curriculum order of sections, levels and modules (read from `GET /api/curriculum/tree`, whose progress flags are ignored) used to label the progress items of the analytics and progress endpoints, which carry ids only. buildProgressTree nests the learning progress summary of one student (sections → levels → modules, linked by the sectionId / levelId the API returns) in curriculum order with the API percentages untouched; items missing from the tree keep a generic title and go last. toModuleProgressSeries lists one student's module percentages in curriculum order for the chart. Depends on nothing at runtime.
-* Versión: 1.0
+* Descripción: Titles and curriculum order of sections, levels and modules (read from `GET /api/curriculum/tree`, whose progress flags are ignored) used to label the progress items of the analytics and progress endpoints, which carry ids only. buildProgressTree nests the learning progress summary of one student (sections → levels → modules, linked by the sectionId / levelId the API returns) in curriculum order with the API percentages untouched; items missing from the tree keep a generic title and go last. toModuleProgressSeries lists one student's module percentages in curriculum order for the chart. v1.1 (O3 review): modules without a level (levelId null) or whose level is not in the summary are no longer dropped; they go to a last "Módulos sin nivel" bucket (a SectionNode with direct modules). Depends on nothing at runtime.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -30,6 +30,7 @@ export const UNTITLED = {
   level: "Nivel sin título",
   module: "Módulo sin título",
   unsectioned: "Niveles sin sección",
+  unleveled: "Módulos sin nivel",
 } as const;
 
 export type ProgressValues = Omit<ProgressItem, "id">;
@@ -47,7 +48,7 @@ export type LearningSummary = {
 
 export type ModuleNode = ProgressValues & { id: string, title: string };
 export type LevelNode = ProgressValues & { id: string, title: string, modules: ModuleNode[] };
-export type SectionNode = { id: string | null, title: string, progress: ProgressValues | null, levels: LevelNode[] };
+export type SectionNode = { id: string | null, title: string, progress: ProgressValues | null, levels: LevelNode[], modules: ModuleNode[] };
 
 export type ModuleProgressPoint = {
   moduleId: string
@@ -109,10 +110,19 @@ export function buildProgressTree(summary: LearningSummary, titles: CurriculumTi
       title: sectionTitle(titles, section.sectionId),
       progress: values(section),
       levels: levelsBySection.get(section.sectionId) ?? [],
+      modules: [],
     }));
   const unsectioned = levelsBySection.get("") ?? [];
+  const knownLevels = new Set(summary.levels.map((level) => level.levelId));
+  const unleveled = [...modulesByLevel.entries()]
+    .filter(([levelId]) => !knownLevels.has(levelId))
+    .flatMap(([, modules]) => modules)
+    .sort(byRank(titles.modules, (entry: ModuleNode) => entry.id));
+  const tree: SectionNode[] = unsectioned.length > 0
+    ? [...sections, { id: null, title: UNTITLED.unsectioned, progress: null, levels: unsectioned, modules: [] }]
+    : sections;
 
-  return unsectioned.length > 0 ? [...sections, { id: null, title: UNTITLED.unsectioned, progress: null, levels: unsectioned }] : sections;
+  return unleveled.length > 0 ? [...tree, { id: null, title: UNTITLED.unleveled, progress: null, levels: [], modules: unleveled }] : tree;
 }
 
 /** One student's module percentages exactly as the API returns them, in curriculum order (no aggregation). */

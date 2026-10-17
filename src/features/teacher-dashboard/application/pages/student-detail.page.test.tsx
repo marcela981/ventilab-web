@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student detail page tests
-* Descripción: /teacher/students/[userId] with msw: header from `GET /api/users/students/{id}`, progress tree from `GET /api/progress/users/{userId}/summary` in curriculum order with the curriculum titles, grades of the group of ?groupId (published grades linked to the evaluation results, only this student's pending attempts linked to /grading/attempts/[attemptId]), simulation sessions from the timeline linked to the replay, the truncated flag and "Cargar anteriores" requesting the previous window; without ?groupId the grades explain the gap; a 403 of the student shows the no-access state; neither notes nor AI conversations are requested (unhandled requests fail). Depends on vitest, msw, Testing Library and the teacher dashboard test helpers.
-* Versión: 1.0
+* Descripción: /teacher/students/[userId] with msw: header from `GET /api/users/students/{id}`, progress tree from `GET /api/progress/users/{userId}/summary` in curriculum order with the curriculum titles, grades of the group of ?groupId (published grades linked to the evaluation results, only this student's pending attempts linked to /grading/attempts/[attemptId]), simulation sessions from the timeline linked to the replay, the truncated flag and "Cargar anteriores" requesting the previous window; without ?groupId the grades explain the gap; a 403 of the student shows the no-access state; neither notes nor AI conversations are requested (unhandled requests fail). v1.1 (O3 review): the possibly-incomplete note of the pending attempts when the queue total exceeds the scanned rows. Depends on vitest, msw, Testing Library and the teacher dashboard test helpers.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -128,6 +128,20 @@ describe("StudentDetailPage", () => {
     expect(await within(grades).findByText("Taller de curvas")).toBeInTheDocument();
     expect(within(grades).getByRole("link", { name: STUDENT_GRADES_COPY.grade })).toHaveAttribute("href", "/grading/attempts/at-1");
     expect(within(grades).queryByText("Taller de otro")).not.toBeInTheDocument();
+    expect(within(grades).queryByText(STUDENT_GRADES_COPY.possiblyIncomplete)).not.toBeInTheDocument();
+  });
+
+  it("warns that the pending list may be incomplete when the queue holds more attempts than scanned", async() => {
+    server.use(http.get(apiUrl("/api/evaluation-grading/queue"), () => HttpResponse.json(envelope(
+      [queueItemDto("at-1", "u1", "Taller de curvas")],
+      { total: 120, pages: 3, page: 1, limit: 50 },
+    ))));
+    renderTeacherDashboard(<StudentDetailPage userId="u1" />);
+
+    const grades = await screen.findByRole("region", { name: STUDENT_DETAIL_COPY.gradesTitle });
+
+    expect(await within(grades).findByText(STUDENT_GRADES_COPY.possiblyIncomplete)).toBeInTheDocument();
+    expect(within(grades).getByText("Taller de curvas")).toBeInTheDocument();
   });
 
   it("lists the simulation sessions with replay links and pages the timeline backwards", async() => {

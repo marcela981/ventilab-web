@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher dashboard entity tests
-* Descripción: Pure rules of the teacher dashboard: the risk highlight (only a published evaluation with passed === false, never a threshold invented on the client), row filter by name or email, sort by an API value with missing values last, sort toggling, distinct evaluation options, group reservation and student attempt selection, the progress tree nesting in curriculum order, the per-student module series, the timeline windows (default, previous, date inputs with their errors) and the error messages (403 no access, Retry-After). Depends on vitest, the api-client errors and the teacher dashboard entities.
-* Versión: 1.0
+* Descripción: Pure rules of the teacher dashboard: the risk highlight (only a published evaluation with passed === false, never a threshold invented on the client), row filter by name or email, sort by an API value with missing values last, sort toggling, distinct evaluation options, group reservation and student attempt selection, the progress tree nesting in curriculum order, the per-student module series, the timeline windows (default, previous, date inputs with their errors) and the error messages (403 no access, Retry-After). v1.1 (O3 review): latest published attempt per evaluation for the risk rule, modules without a level kept in a last bucket. Depends on vitest, the api-client errors and the teacher dashboard entities.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -66,6 +66,17 @@ describe("assessStudentRisk", () => {
     expect(assessStudentRisk({ evaluations: [grade("e1", "Parcial", true)] })).toEqual({ atRisk: false, failedEvaluationTitles: [] });
     expect(assessStudentRisk({ evaluations: [] }).atRisk).toBe(false);
   });
+
+  it("only counts the latest published attempt of each evaluation", () => {
+    const attempt = (attemptNumber: number, passed: boolean, publishedAt: string) => ({ ...grade("e1", "Parcial", passed), attemptNumber, publishedAt });
+
+    expect(assessStudentRisk({ evaluations: [attempt(1, false, "2026-10-01T00:00:00.000Z"), attempt(2, true, "2026-10-05T00:00:00.000Z")] }))
+      .toEqual({ atRisk: false, failedEvaluationTitles: [] });
+    expect(assessStudentRisk({ evaluations: [attempt(2, false, "2026-10-05T00:00:00.000Z"), attempt(1, true, "2026-10-01T00:00:00.000Z")] }))
+      .toEqual({ atRisk: true, failedEvaluationTitles: ["Parcial"] });
+    expect(assessStudentRisk({ evaluations: [attempt(1, true, "2026-10-05T00:00:00.000Z"), attempt(2, false, "2026-10-05T00:00:00.000Z")] }).atRisk)
+      .toBe(true);
+  });
 });
 
 describe("students table rules", () => {
@@ -128,6 +139,21 @@ describe("curriculum titles", () => {
     expect(tree.map((section) => section.title)).toEqual(["Fundamentos", UNTITLED.unsectioned]);
     expect(tree[0]?.levels[0]?.modules.map((module) => [module.title, module.percentage])).toEqual([["Fisiología", 100], ["Modos", 50]]);
     expect(tree[1]?.levels[0]?.title).toBe(UNTITLED.level);
+  });
+
+  it("keeps modules without a level in a last bucket", () => {
+    const values = { percentage: 40, completedLessons: 1, totalLessons: 3, completed: false };
+    const tree = buildProgressTree({
+      overall: values,
+      sections: [{ sectionId: "s1", ...values }],
+      levels: [{ levelId: "lv1", sectionId: "s1", ...values }],
+      modules: [{ moduleId: "m1", levelId: "lv1", ...values }, { moduleId: "m2", levelId: null, ...values }, { moduleId: "m9", levelId: "lv-gone", ...values }],
+    }, TITLES);
+    const bucket = tree[tree.length - 1];
+
+    expect(bucket?.title).toBe(UNTITLED.unleveled);
+    expect(bucket?.modules.map((module) => module.title)).toEqual(["Modos", UNTITLED.module]);
+    expect(tree[0]?.levels[0]?.modules.map((module) => module.id)).toEqual(["m1"]);
   });
 
   it("lists one student's module percentages in curriculum order", () => {

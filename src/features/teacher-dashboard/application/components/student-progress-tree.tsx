@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: StudentProgressTree
-* Descripción: Progress tree of one student in /teacher/students/[userId]: overall progress, then sections → levels → modules as the learning progress summary nests them (ids linked by sectionId / levelId, labelled with the curriculum titles), each with the API percentage and completed / total lessons. The summary has no lesson level (BACKEND GAP). Depends on MUI, the teacher dashboard entities and CSS Module.
-* Versión: 1.0
+* Descripción: Progress tree of one student in /teacher/students/[userId]: overall progress, then sections → levels → modules as the learning progress summary nests them (ids linked by sectionId / levelId, labelled with the curriculum titles), each with the API percentage and completed / total lessons. The summary has no lesson level (BACKEND GAP). v1.1 (O3 review): renders the direct modules of the "Módulos sin nivel" bucket. Depends on MUI, the teacher dashboard entities and CSS Module.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -55,7 +55,7 @@ export function StudentProgressTree({ summary, titles }: { summary: LearningSumm
       {tree.length === 0 ? <p className={cx(styles.emptyText)}>{PROGRESS_TREE_COPY.empty}</p> : (
         <ul className={cx(styles.tree)}>
           {tree.map((section) => (
-            <li key={section.id ?? "unsectioned"}>
+            <li key={section.id ?? section.title}>
               {section.progress ? <ProgressLine title={section.title} progress={section.progress} /> : <span className={cx(styles.itemTitle)}>{section.title}</span>}
               {section.levels.length > 0 ? (
                 <ul className={cx(styles.treeChildren)}>
@@ -71,6 +71,15 @@ export function StudentProgressTree({ summary, titles }: { summary: LearningSumm
                           ))}
                         </ul>
                       ) : null}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              {section.modules.length > 0 ? (
+                <ul className={cx(styles.treeChildren)}>
+                  {section.modules.map((module) => (
+                    <li key={module.id}>
+                      <ProgressLine title={module.title} progress={module} />
                     </li>
                   ))}
                 </ul>

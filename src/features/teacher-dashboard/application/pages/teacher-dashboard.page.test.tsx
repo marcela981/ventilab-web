@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher dashboard page tests
-* Descripción: /teacher with msw: the first STUDENT group is shown by default (`GET /api/groups?type=STUDENT`), the group of ?groupId wins and choosing another group writes it to the URL; the cards show the envelope totals of the grading queue and the active assignments and only the scheduled reservations of the group; the students table lists the dashboard rows with API values, highlights the student with a failed published evaluation (legend and "En riesgo" label), filters by name or email and sorts by an API column; the charts receive the API histogram of the selected evaluation (charts stubbed); a 403 of the analytics shows "No tienes acceso a este grupo"; "Exportar CSV" requests the export path and hands the file to the browser. Depends on vitest, msw, Testing Library and the teacher dashboard test helpers.
-* Versión: 1.0
+* Descripción: /teacher with msw: the first STUDENT group is shown by default (`GET /api/groups?type=STUDENT`), the group of ?groupId wins and choosing another group writes it to the URL; the cards show the envelope totals of the grading queue and the active assignments and only the scheduled reservations of the group; the students table lists the dashboard rows with API values, highlights the student with a failed published evaluation (legend and "En riesgo" label), filters by name or email and sorts by an API column; the charts receive the API histogram of the selected evaluation (charts stubbed); a 403 of the analytics shows "No tienes acceso a este grupo"; "Exportar CSV" requests the export path and hands the file to the browser. v1.1 (O3 review): switching group shows the loading state and not the previous rows; a 500 on the new group shows the error. Depends on vitest, msw, Testing Library and the teacher dashboard test helpers.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -58,6 +58,7 @@ vi.setConfig({ testTimeout: 20_000 });
 const server = setupServer();
 let requests: string[];
 let dashboardStatus: number;
+let g2Gate: Promise<void> | null;
 
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" });
@@ -66,6 +67,7 @@ beforeAll(() => {
 beforeEach(() => {
   requests = [];
   dashboardStatus = 200;
+  g2Gate = null;
   router.query = {};
   router.replace.mockClear();
   server.use(
@@ -74,12 +76,20 @@ beforeEach(() => {
 
       return HttpResponse.json(envelope([groupDto("g1", "Grupo A"), groupDto("g2", "Grupo B")]));
     }),
-    http.get(apiUrl("/api/analytics/groups/:groupId/dashboard"), ({ params }) => {
+    http.get(apiUrl("/api/analytics/groups/:groupId/dashboard"), async({ params }) => {
       const groupId = String(params.groupId);
 
       requests.push(`dashboard:${groupId}`);
 
-      if (dashboardStatus !== 200) {
+      if (groupId === "g2" && g2Gate) {
+        await g2Gate;
+      }
+
+      if (groupId === "g2" && dashboardStatus === 500) {
+        return errorResponse("internal", 500);
+      }
+
+      if (dashboardStatus !== 200 && dashboardStatus !== 500) {
         return errorResponse("analytics.out_of_scope", dashboardStatus);
       }
 
@@ -239,6 +249,40 @@ describe("TeacherDashboardPage", () => {
     fireEvent.click(screen.getByRole("option", { name: /Grupo A/ }));
 
     expect(router.replace).toHaveBeenCalledWith({ pathname: "/teacher", query: { groupId: "g1" } }, undefined, { shallow: true });
+  });
+
+  it("never shows the previous group's rows while another group loads", async() => {
+    let release: () => void = () => undefined;
+
+    g2Gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    router.query = { groupId: "g1" };
+    const view = renderTeacherDashboard(<TeacherDashboardPage />);
+
+    await tableReady();
+    router.query = { groupId: "g2" };
+    view.rerender(<TeacherDashboardPage />);
+
+    expect(await screen.findByRole("status", { name: TEACHER_DASHBOARD_COPY.loadingDashboard })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Ana Gómez" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: TEACHER_DASHBOARD_COPY.export })).toBeDisabled();
+    release();
+    await tableReady();
+    expect(requests).toContain("dashboard:g2");
+  });
+
+  it("shows the error of the new group instead of the previous group's rows", async() => {
+    router.query = { groupId: "g1" };
+    const view = renderTeacherDashboard(<TeacherDashboardPage />);
+
+    await tableReady();
+    dashboardStatus = 500;
+    router.query = { groupId: "g2" };
+    view.rerender(<TeacherDashboardPage />);
+
+    expect(await screen.findByText(TEACHER_DASHBOARD_COPY.dashboardErrorTitle)).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Ana Gómez" })).not.toBeInTheDocument();
   });
 
   it("shows the no-access state when the analytics answer 403", async() => {
