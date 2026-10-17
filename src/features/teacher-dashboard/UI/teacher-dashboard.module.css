@@ -1,0 +1,336 @@
+/*
+* Funcionalidad: Teacher dashboard styles
+* Descripción: Layout of the teacher dashboard: /teacher (toolbar with the group selector and the CSV export, summary cards grid, students table with sortable headers, risk highlight and expandable detail, chart cards with their selectors) and /teacher/students/[userId] (header, progress tree, grades, simulation sessions and the windowed activity timeline). The risk highlight uses the warning token as a left border and tinted background and always carries a text label (never colour alone). Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-3);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.groupSelect {
+  min-width: 16rem;
+}
+
+.meta {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--vl-color-text-muted);
+}
+
+/* Cards */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--vl-space-4);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  min-width: 0;
+  padding: var(--vl-space-4);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--vl-color-text);
+}
+
+.bigNumber {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--vl-color-text);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.listItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  min-width: 0;
+}
+
+.itemTitle {
+  font-weight: 500;
+  color: var(--vl-color-text);
+  overflow-wrap: anywhere;
+}
+
+.itemMeta {
+  font-size: 0.8125rem;
+  color: var(--vl-color-text-muted);
+}
+
+.link {
+  color: var(--vl-color-link);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.link:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}
+
+.emptyText {
+  margin: 0;
+  color: var(--vl-color-text-muted);
+}
+
+/* Students table */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+}
+
+.sectionHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-3);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--vl-color-text);
+}
+
+.filter {
+  min-width: 16rem;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  align-items: center;
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--vl-color-text-muted);
+}
+
+.legendSwatch {
+  display: inline-block;
+  width: var(--vl-space-4);
+  height: var(--vl-space-4);
+  border-left: 4px solid var(--vl-color-warning);
+  border-radius: var(--vl-radius-sm);
+  background: color-mix(in srgb, var(--vl-color-warning) 12%, transparent);
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+}
+
+.riskRow {
+  background: color-mix(in srgb, var(--vl-color-warning) 12%, transparent);
+}
+
+.riskRow > td:first-child {
+  border-left: 4px solid var(--vl-color-warning);
+}
+
+.studentCell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  min-width: 12rem;
+}
+
+.riskLabel {
+  align-self: flex-start;
+}
+
+.progressCell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  min-width: 7rem;
+}
+
+.progressBar {
+  height: var(--vl-space-2);
+  border-radius: var(--vl-radius-pill);
+}
+
+.aiList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  margin: 0;
+  padding: 0;
+  font-size: 0.8125rem;
+  list-style: none;
+}
+
+.detailCell {
+  padding: var(--vl-space-3) var(--vl-space-4);
+  background: var(--vl-color-bg);
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--vl-space-4);
+}
+
+.subTitle {
+  margin: 0 0 var(--vl-space-2);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--vl-color-text-muted);
+}
+
+.passed {
+  color: var(--vl-color-success);
+  font-weight: 600;
+}
+
+.failed {
+  color: var(--vl-color-error);
+  font-weight: 600;
+}
+
+/* Charts */
+
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+  gap: var(--vl-space-4);
+}
+
+.chartCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  min-width: 0;
+  padding: var(--vl-space-4);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+}
+
+.chartSelect {
+  min-width: 14rem;
+}
+
+/* Student detail */
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.tree {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.treeChildren {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin: var(--vl-space-2) 0 0;
+  padding: 0 0 0 var(--vl-space-4);
+  border-left: 2px solid var(--vl-color-border);
+  list-style: none;
+}
+
+.treeRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.treeHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.rangeControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-3);
+  align-items: center;
+}
+
+.windowBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.timelineItem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-1) var(--vl-space-3);
+  align-items: baseline;
+  padding: var(--vl-space-2) 0;
+  border-bottom: 1px solid var(--vl-color-border);
+}
+
+.timelineKind {
+  font-weight: 600;
+  color: var(--vl-color-text);
+}
