@@ -48,6 +48,10 @@
     "src/features/simulator/**/*",
     "src/features/case-editor/**/*",
     "src/features/ventilator-lab/**/*",
+    "src/features/notifications/**/*",
+    "src/features/student-space/**/*",
+    "src/features/teacher-dashboard/**/*",
+    "src/features/admin-console/**/*",
     "pages/auth/login/index.tsx",
     "pages/profile/index.tsx",
     "pages/my-group/index.tsx",
@@ -92,6 +96,18 @@
     "pages/lab/reservations/index.tsx",
     "pages/lab/live/index.tsx",
     "pages/lab/recordings/index.tsx",
-    "pages/lab/recordings/[recordingId].tsx"
+    "pages/lab/recordings/[recordingId].tsx",
+    "pages/notifications/index.tsx",
+    "pages/me/index.tsx",
+    "pages/me/notes.tsx",
+    "pages/me/grades.tsx",
+    "pages/teacher/index.tsx",
+    "pages/teacher/students/[userId].tsx",
+    "pages/admin/users.tsx",
+    "pages/admin/settings.tsx",
+    "pages/admin/audit.tsx",
+    "pages/admin/ai.tsx",
+    "pages/admin/research.tsx",
+    "pages/admin/status.tsx"
   ]
 }

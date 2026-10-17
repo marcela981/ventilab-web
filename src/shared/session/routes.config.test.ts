@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Route table tests
-* Descripción: Open-redirect safety of the returnTo helper (rejects protocol-relative, absolute, javascript: and auth-page targets), login URL building, route lookup by Next pathname pattern and the default landing route per role. v1.1 (T9 follow-up): role access of concrete paths (dynamic segments, query strings) and the post-login fallback to the role home when the returnTo route is not allowed for the role. v1.2 (T11a): /my-group is student-only and /groups is staff-only. v1.3 (T11b): /groups/[groupId] is staff-only. v1.4 (T0 learning): learning routes for every role, module print view and content-editor routes for staff only. v1.5 (S0 evaluations): student evaluation routes for every role, authoring and grading routes for staff only. v1.6 (T0 ventilator-lab): the lab routes are declared for every authenticated role. Depends on vitest and routes.config.
-* Versión: 1.6
+* Descripción: Open-redirect safety of the returnTo helper (rejects protocol-relative, absolute, javascript: and auth-page targets), login URL building, route lookup by Next pathname pattern and the default landing route per role. v1.1 (T9 follow-up): role access of concrete paths (dynamic segments, query strings) and the post-login fallback to the role home when the returnTo route is not allowed for the role. v1.2 (T11a): /my-group is student-only and /groups is staff-only. v1.3 (T11b): /groups/[groupId] is staff-only. v1.4 (T0 learning): learning routes for every role, module print view and content-editor routes for staff only. v1.5 (S0 evaluations): student evaluation routes for every role, authoring and grading routes for staff only. v1.6 (T0 ventilator-lab): the lab routes are declared for every authenticated role. v1.7 (O0 operation): /notifications for every role, the student space for students only, the teacher dashboard and /admin/status for staff, the rest of the admin console for admins only. Depends on vitest and routes.config.
+* Versión: 1.7
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -119,6 +119,36 @@ describe("lab routes", () => {
     }
     for (const role of ["STUDENT", "TEACHER", "ADMIN"] as const) {
       expect(isPathAllowedForRole("/lab/recordings/r1", role)).toBe(true);
+    }
+  });
+});
+
+describe("operation routes", () => {
+  it("lets every role open the notifications page", () => {
+    expect(findRoute("/notifications")).toEqual({ access: "authenticated" });
+  });
+
+  it("restricts the student space to students", () => {
+    for (const path of ["/me", "/me/notes", "/me/grades"]) {
+      expect(isPathAllowedForRole(path, "STUDENT")).toBe(true);
+      expect(isPathAllowedForRole(path, "TEACHER")).toBe(false);
+      expect(isPathAllowedForRole(path, "ADMIN")).toBe(false);
+    }
+  });
+
+  it("restricts the teacher dashboard and the system status to teachers and admins", () => {
+    for (const path of ["/teacher", "/teacher/students/u1", "/admin/status"]) {
+      expect(isPathAllowedForRole(path, "STUDENT")).toBe(false);
+      expect(isPathAllowedForRole(path, "TEACHER")).toBe(true);
+      expect(isPathAllowedForRole(path, "ADMIN")).toBe(true);
+    }
+  });
+
+  it("restricts the rest of the admin console to admins", () => {
+    for (const path of ["/admin/users", "/admin/settings", "/admin/audit", "/admin/ai", "/admin/research"]) {
+      expect(isPathAllowedForRole(path, "STUDENT")).toBe(false);
+      expect(isPathAllowedForRole(path, "TEACHER")).toBe(false);
+      expect(isPathAllowedForRole(path, "ADMIN")).toBe(true);
     }
   });
 });

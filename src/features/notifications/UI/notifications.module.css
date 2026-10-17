@@ -1,0 +1,228 @@
+/*
+* Funcionalidad: Notifications styles
+* Descripción: Layout of the notifications feature: /notifications page (list rows with the summary and the row actions, unread rows marked by a primary edge and a dot, never by colour alone), the bell popover (header, scrollable list of item buttons, footer) and a visually hidden text helper. Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 56rem;
+  margin: 0 auto;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-3);
+  align-items: center;
+}
+
+.results {
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+  overflow: hidden;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  gap: var(--vl-space-2);
+  align-items: flex-start;
+  padding: var(--vl-space-3) var(--vl-space-4);
+  border-bottom: 1px solid var(--vl-color-border);
+  border-left: var(--vl-space-1) solid transparent;
+}
+
+.item[data-read="false"] {
+  border-left-color: var(--vl-color-primary);
+}
+
+.itemMain {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.itemLink {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: var(--vl-space-1);
+  border: 0;
+  border-radius: var(--vl-radius-md);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.itemLink:hover {
+  background: var(--vl-color-hover);
+}
+
+.itemActions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: var(--vl-space-1);
+}
+
+.summary {
+  display: flex;
+  gap: var(--vl-space-3);
+  align-items: flex-start;
+}
+
+.typeIcon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  padding-top: var(--vl-space-1);
+  color: var(--vl-color-text-muted);
+}
+
+.summary[data-read="false"] .typeIcon {
+  color: var(--vl-color-primary);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  min-width: 0;
+}
+
+.title {
+  display: flex;
+  gap: var(--vl-space-2);
+  align-items: center;
+  color: var(--vl-color-text);
+}
+
+.summary[data-read="false"] .title {
+  font-weight: 600;
+}
+
+.body {
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.bodyCompact {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.time {
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-muted);
+}
+
+.unreadDot {
+  flex: 0 0 auto;
+  width: var(--vl-space-2);
+  height: var(--vl-space-2);
+  border-radius: var(--vl-radius-pill);
+  background: var(--vl-color-primary);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.popover {
+  display: flex;
+  flex-direction: column;
+  width: min(24rem, calc(100vw - var(--vl-space-6)));
+  max-height: min(32rem, calc(100vh - var(--vl-space-8)));
+}
+
+.popoverHeader,
+.popoverFooter {
+  display: flex;
+  gap: var(--vl-space-2);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--vl-space-2) var(--vl-space-3);
+}
+
+.popoverHeader {
+  border-bottom: 1px solid var(--vl-color-border);
+}
+
+.popoverFooter {
+  justify-content: center;
+  border-top: 1px solid var(--vl-color-border);
+}
+
+.popoverList {
+  flex: 1 1 auto;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.popoverItem {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: var(--vl-space-3);
+  border: 0;
+  border-bottom: 1px solid var(--vl-color-border);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.popoverItem[data-read="false"] {
+  background: var(--vl-color-selected);
+}
+
+.popoverItem:hover {
+  background: var(--vl-color-hover);
+}
+
+.popoverMessage {
+  margin: 0;
+  padding: var(--vl-space-4) var(--vl-space-3);
+  color: var(--vl-color-text-muted);
+  text-align: center;
+}
+
+.itemLink:focus-visible,
+.popoverItem:focus-visible,
+.results :focus-visible,
+.toolbar :focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: calc(var(--vl-focus-ring-offset) * -1);
+}

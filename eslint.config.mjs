@@ -73,7 +73,12 @@
  *   v3.33 (T0 ventilator-lab): nueva feature src/features/ventilator-lab (sin legado) y sus rutas
  *   delgadas pages/lab/index.tsx, reservations/index.tsx, live/index.tsx, recordings/index.tsx y
  *   recordings/[recordingId].tsx.
- * Versión: 3.33
+ *   v3.34 (O0 operation): nuevas features src/features/notifications, student-space,
+ *   teacher-dashboard y admin-console (sin legado; la carpeta legada src/features/admin no cambia)
+ *   y sus rutas delgadas pages/notifications/index.tsx, pages/me/{index,notes,grades}.tsx,
+ *   pages/teacher/index.tsx, pages/teacher/students/[userId].tsx y
+ *   pages/admin/{users,settings,audit,ai,research,status}.tsx.
+ * Versión: 3.34
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -87,12 +92,12 @@ import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
 
 const NEW_SHARED_MODULES = "api-client,realtime,session,design-system,layouts,rich-content,waveforms,charts,ai-rating,media-upload,ai-conversation,lib,sim-engine,ventilator-console,rubric-editor";
-const NEW_FEATURES = "auth,profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat,simulator,case-editor,ventilator-lab";
+const NEW_FEATURES = "auth,profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat,simulator,case-editor,ventilator-lab,notifications,student-space,teacher-dashboard,admin-console";
 const SOURCE_EXT = "{js,jsx,ts,tsx,mjs,cjs}";
 // auth/ still holds legacy files at its root and in components/, so only its template
 // layers count as new code. profile/ (legacy removed in T10), groups/, learning/ and
 // content-editor/ have no legacy, so the whole folder is new code.
-const LEGACY_FREE_FEATURES = "profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat,simulator,case-editor,ventilator-lab";
+const LEGACY_FREE_FEATURES = "profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat,simulator,case-editor,ventilator-lab,notifications,student-space,teacher-dashboard,admin-console";
 const NEW_FEATURE_FILES = [
   `src/features/auth/{api,application}/**/*.${SOURCE_EXT}`,
   `src/features/{${NEW_FEATURES}}/index.ts`,
@@ -147,6 +152,18 @@ const NEW_PAGE_FILES = [
   "pages/lab/live/index.tsx",
   "pages/lab/recordings/index.tsx",
   "pages/lab/recordings/[[]recordingId[]].tsx",
+  "pages/notifications/index.tsx",
+  "pages/me/index.tsx",
+  "pages/me/notes.tsx",
+  "pages/me/grades.tsx",
+  "pages/teacher/index.tsx",
+  "pages/teacher/students/[[]userId[]].tsx",
+  "pages/admin/users.tsx",
+  "pages/admin/settings.tsx",
+  "pages/admin/audit.tsx",
+  "pages/admin/ai.tsx",
+  "pages/admin/research.tsx",
+  "pages/admin/status.tsx",
 ];
 
 // Composition roots inside a feature: the only feature files that may import another feature's
@@ -234,7 +251,7 @@ const eslintConfig = [
           type: "feature",
           mode: "full",
           pattern: [
-            `src/features/{auth,profile,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat,simulator,case-editor,ventilator-lab}/{api,application,UI}/**/*`,
+            `src/features/{auth,profile,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat,simulator,case-editor,ventilator-lab,notifications,student-space,teacher-dashboard,admin-console}/{api,application,UI}/**/*`,
             `src/features/(groups)/**/*`,
           ],
           capture: ["feature"],

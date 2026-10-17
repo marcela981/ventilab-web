@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: usePreemptionNotice tests
-* Descripción: The affected holder gets one persistent info toast per preempted reservation whether reservation:preempted, a RESERVATION_PREEMPTED notification:new or both arrive (no duplicates), other notifications show nothing, and a notification-only preemption revalidates the reservation reads. v1.1 (T3 review fix): finite auto-hide, and the reservations the caller is preempting are not announced to the caller. Depends on vitest, msw, Testing Library and the lab test helpers.
-* Versión: 1.1
+* Descripción: The affected holder gets one persistent info toast per preempted reservation whether reservation:preempted, a RESERVATION_PREEMPTED notification:new or both arrive (no duplicates), other notifications show nothing, and a notification-only preemption revalidates the reservation reads. v1.1 (T3 review fix): finite auto-hide, and the reservations the caller is preempting are not announced to the caller. v1.2 (O1 notifications): the toast moved to the notifications feature; the hook shows no toast at all, still revalidates the reservation reads on a notification-only preemption (not on other notifications), and expectOwnPreemption is a no-op. Depends on vitest, msw, Testing Library and the lab test helpers.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,7 +17,7 @@ import type { RealtimeEventMap } from "@shared/realtime/realtime.entity";
 import type { ToastApi } from "@shared/design-system/components/use-toast";
 import { apiUrl, createFakeSocket, envelope, renderLabHook } from "../pages/lab-test-helpers";
 import { useCurrentReservation } from "./use-lab-reservations";
-import { PREEMPTION_NOTICE_AUTO_HIDE_MS, usePreemptionNotice } from "./use-preemption-notice";
+import { usePreemptionNotice } from "./use-preemption-notice";
 
 const server = setupServer();
 
@@ -58,60 +58,19 @@ function spyToast(): ToastApi & { info: ReturnType<typeof vi.fn> } {
 }
 
 describe("usePreemptionNotice", () => {
-  it("shows one persistent toast per preempted reservation without duplicates", () => {
-    const socket = createFakeSocket();
-    const toast = spyToast();
-
-    renderLabHook(() => usePreemptionNotice(), { socket, toast });
-
-    socket.dispatch("reservation:preempted", preempted);
-    // The same reservation through the group room and through the notification.
-    socket.dispatch("reservation:preempted", preempted);
-    socket.dispatch("notification:new", notification("RESERVATION_PREEMPTED", "r1"));
-
-    expect(toast.info).toHaveBeenCalledTimes(1);
-    expect(toast.info).toHaveBeenCalledWith(expect.stringMatching(/^Tu reserva del ventilador \(.+\) fue desplazada/), { autoHideMs: PREEMPTION_NOTICE_AUTO_HIDE_MS });
-  });
-
-  it("hides the notice after a long finite time so it never blocks the toast queue (T3 review fix W3)", () => {
-    expect(Number.isFinite(PREEMPTION_NOTICE_AUTO_HIDE_MS)).toBe(true);
-    expect(PREEMPTION_NOTICE_AUTO_HIDE_MS).toBeGreaterThanOrEqual(20_000);
-  });
-
-  it("stays silent for the reservations the caller is preempting, and undoes it on failure (T3 review fix W1)", () => {
+  it("shows no toast: the notification toast of the notifications feature is the notice now (O1)", () => {
     const socket = createFakeSocket();
     const toast = spyToast();
     const { result } = renderLabHook(() => usePreemptionNotice(), { socket, toast });
 
-    result.current.expectOwnPreemption(["r1"]);
-    const undo = result.current.expectOwnPreemption(["r3"]);
-
-    undo();
     socket.dispatch("reservation:preempted", preempted);
     socket.dispatch("notification:new", notification("RESERVATION_PREEMPTED", "r1"));
-    expect(toast.info).not.toHaveBeenCalled();
 
-    socket.dispatch("reservation:preempted", { ...preempted, reservationId: "r3" });
-    expect(toast.info).toHaveBeenCalledTimes(1);
+    expect(toast.info).not.toHaveBeenCalled();
+    expect(() => result.current.expectOwnPreemption(["r1"])()).not.toThrow();
   });
 
-  it("shows the notification when it arrives first, once, and ignores other notifications", () => {
-    const socket = createFakeSocket();
-    const toast = spyToast();
-
-    renderLabHook(() => usePreemptionNotice(), { socket, toast });
-
-    socket.dispatch("notification:new", notification("GRADE_PUBLISHED", "x"));
-    expect(toast.info).not.toHaveBeenCalled();
-
-    socket.dispatch("notification:new", notification("RESERVATION_PREEMPTED", "r1"));
-    socket.dispatch("reservation:preempted", preempted);
-
-    expect(toast.info).toHaveBeenCalledTimes(1);
-    expect(toast.info).toHaveBeenCalledWith("Tu reserva fue reemplazada por otra reserva.", { autoHideMs: PREEMPTION_NOTICE_AUTO_HIDE_MS });
-  });
-
-  it("revalidates the reservation reads on a notification-only preemption", async() => {
+  it("revalidates the reservation reads on a notification-only preemption, not on other notifications", async() => {
     let requests = 0;
 
     server.use(http.get(apiUrl("/api/reservations/current"), () => {
@@ -130,6 +89,7 @@ describe("usePreemptionNotice", () => {
     await waitFor(() => expect(result.current.data).not.toBeUndefined());
     expect(requests).toBe(1);
 
+    socket.dispatch("notification:new", notification("GRADE_PUBLISHED", "x"));
     socket.dispatch("notification:new", notification("RESERVATION_PREEMPTED", "r9"));
     await waitFor(() => expect(requests).toBe(2));
   });

@@ -40,6 +40,7 @@ These are the last business screens still on the legacy panel. The backend alrea
 - [ ] CLOSURE: ONLY with the author's explicit approval.
 
 ## Progress / evidence
+- Native review of the inherited range `c7c7b45..279e04d` (ventilator-lab + phase 1 docs, 181 files, 25,406 lines): consent granted per the author's standing rule; START refused with `lens_context_budget_exceeded` (no authority created). Recorded as unavailable. Operation blocks are reviewed per commit (`--base-ref <previous commit> --committed-only`).
 
 ## Next step
 O0+O1.

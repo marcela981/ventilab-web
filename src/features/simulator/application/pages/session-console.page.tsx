@@ -35,7 +35,8 @@
 *   v1.7 (review of e45841f): the deadline decides on the end-in-flight ref only (never a stale `session.ending`); a
 *   rejected router.push resets the leave guard and falls back to `window.location.assign(url)`.
 *   v1.8 (final review): a cancelled router.push (the Pages Router resolves `false`) takes the same fallback.
-* Versión: 1.8
+*   v1.9 (O1 notifications): focus mode (useFocusMode of the design system) while an EXAM session is on screen, so notification toasts do not interrupt the exam.
+* Versión: 1.9
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -49,6 +50,7 @@ import { useRouter } from "next/router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
+import { useFocusMode } from "@shared/design-system/components/use-focus-mode";
 import { cx } from "@shared/lib/class-names";
 import { VentilatorConsole } from "@shared/ventilator-console";
 import { AssistLauncher } from "../components/assist-launcher";
@@ -496,6 +498,7 @@ export function SessionConsolePage({ sessionId, renderAssist, assistancePolicy, 
   const [assistState, setAssistState] = useState<{ sessionId: string, turns: readonly AssistTurn[] }>({ sessionId, turns: [] });
   const assistHistory = assistState.sessionId === sessionId ? assistState.turns : NO_TURNS;
   const mode = state.status === "ready" ? state.boot.record.mode : null;
+  useFocusMode(mode === "EXAM");
 
   const onAssistAnswered = useCallback((turn: AssistTurn) => {
     setAssistState((current) => {

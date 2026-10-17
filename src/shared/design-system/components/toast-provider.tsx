@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ToastProvider
-* Descripción: Global toast host, mounted once in pages/_app.js: provides the stable useToast API and renders ONE MUI Snackbar + filled Alert for the first message of a FIFO queue. Success/info are role="status" and hide after their duration (6 s by default); errors are role="alert" and stay until closed (close button or Escape; a click elsewhere never closes a toast) or until a newer toast arrives, which replaces the visible error (it closes and the newest message follows, so later feedback never waits behind a stale error). At most 3 messages wait behind the visible one (the oldest pending ones are dropped). The next message shows after the current one finished its exit transition. Depends on React, MUI Snackbar/Alert, use-toast and UI/toast.module.css.
-* Versión: 1.1
+* Descripción: Global toast host, mounted once in pages/_app.js: provides the stable useToast API and renders ONE MUI Snackbar + filled Alert for the first message of a FIFO queue. Success/info are role="status" and hide after their duration (6 s by default); errors are role="alert" and stay until closed (close button or Escape; a click elsewhere never closes a toast) or until a newer toast arrives, which replaces the visible error (it closes and the newest message follows, so later feedback never waits behind a stale error). At most 3 messages wait behind the visible one (the oldest pending ones are dropped). The next message shows after the current one finished its exit transition. Depends on React, MUI Snackbar/Alert, use-toast and UI/toast.module.css. v1.2 (O1): focus mode. The provider also supplies the FocusModeContext of use-focus-mode: a reference count of active useFocusMode(true) callers; while it is above zero a toast pushed with `{ notice: true }` is dropped (never queued), every other toast shows as before.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,9 +11,11 @@
 
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { cx } from "@shared/lib/class-names";
+import { FocusModeContext } from "./use-focus-mode";
+import type { FocusModeApi } from "./use-focus-mode";
 import { DEFAULT_AUTO_HIDE_MS, ToastContext } from "./use-toast";
 import type { ToastApi, ToastOptions, ToastSeverity } from "./use-toast";
 import styles from "./UI/toast.module.css";
@@ -53,9 +55,30 @@ export function ToastProvider({ children }: ToastProviderProps) {
   const [queue, setQueue] = useState<readonly ToastItem[]>([]);
   const [closing, setClosing] = useState(false);
   const current = queue[0];
+  // Active focus claims; a ref so claiming focus never re-renders the page tree.
+  const focusClaims = useRef(0);
+
+  const focusMode = useMemo<FocusModeApi>(() => ({
+    acquire: () => {
+      let released = false;
+
+      focusClaims.current += 1;
+
+      return () => {
+        if (!released) {
+          released = true;
+          focusClaims.current = Math.max(0, focusClaims.current - 1);
+        }
+      };
+    },
+  }), []);
 
   const api = useMemo<ToastApi>(() => {
     const push = (severity: ToastSeverity) => (message: string, options: ToastOptions = {}) => {
+      if (options.notice && focusClaims.current > 0) {
+        return;
+      }
+
       nextToastId += 1;
 
       const item: ToastItem = {
@@ -79,6 +102,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
   };
 
   return (
+    <FocusModeContext.Provider value={focusMode}>
     <ToastContext.Provider value={api}>
       {children}
       {current ? (
@@ -106,5 +130,6 @@ export function ToastProvider({ children }: ToastProviderProps) {
         </Snackbar>
       ) : null}
     </ToastContext.Provider>
+    </FocusModeContext.Provider>
   );
 }
