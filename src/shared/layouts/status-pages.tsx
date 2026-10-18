@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Status pages (404 and 500)
-* Descripción: NotFoundPage and ServerErrorPage, the content of pages/404.tsx and pages/500.tsx rendered inside the public layout: status code, Spanish title and message, document title and a link back to the home of the signed-in role (DEFAULT_ROUTE_BY_ROLE) or to the login page when there is no session. The server error page also offers "Reintentar" (reloads the page). Depends on MUI, next/head, next/link, @shared/session and UI/status-page.module.css.
-* Versión: 1.0
+* Descripción: NotFoundPage and ServerErrorPage, the content of pages/404.tsx and pages/500.tsx rendered inside the public layout: status code, Spanish title and message, document title and a link back to the home of the signed-in role (DEFAULT_ROUTE_BY_ROLE) or to the login page when there is no session. The server error page also offers "Reintentar" (reloads the page). Depends on MUI, next/head, next/link, @shared/session and UI/status-page.module.css. v1.1 (B5): document titles through formatPageTitle of @shared/lib/page-title.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,6 +15,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useId } from "react";
 import { cx } from "@shared/lib/class-names";
+import { formatPageTitle } from "@shared/lib/page-title";
 import { DEFAULT_ROUTE_BY_ROLE, LOGIN_PATH } from "@shared/session/routes.config";
 import { useSession } from "@shared/session/use-session";
 import styles from "./UI/status-page.module.css";
@@ -25,13 +26,13 @@ export const STATUS_PAGES_COPY = {
   retry: "Reintentar",
   notFound: {
     code: "404",
-    documentTitle: "Página no encontrada | VentyLab",
+    documentTitle: formatPageTitle("Página no encontrada"),
     title: "Página no encontrada",
     message: "La dirección que buscas no existe o fue movida. Revisa el enlace o vuelve a tu inicio.",
   },
   serverError: {
     code: "500",
-    documentTitle: "Error del servidor | VentyLab",
+    documentTitle: formatPageTitle("Error del servidor"),
     title: "Algo salió mal",
     message: "Ocurrió un error inesperado al cargar la página. Intenta de nuevo en unos minutos.",
   },

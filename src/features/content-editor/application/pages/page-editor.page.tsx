@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: PageEditorPage
-* Descripción: Page editor of the content editor (/content/pages/[pageId], staff only). Loads the Page and its blocks (usePageEditor), lists them in a local draft (PageBlockList: drag and drop or up/down reorder, duplicate, delete with confirmation, type-specific fields: lazy Tiptap rich text, LaTeX with KaTeX live preview, YouTube/Vimeo video with preview, image/file/video uploads, code, divider), adds blocks from the "Agregar bloque" menu and saves explicitly ("Guardar cambios": deletes, updates, creates, reorder). Shows a "Cambios sin guardar" status, disables saving while a block is invalid (and says which), maps save failures to the content editor error messages and warns before leaving with pending changes (useUnsavedChangesGuard: router and beforeunload). Depends on React, MUI, next/link, @shared/design-system, @shared/lib, the page editor hooks and components, the content tree status badge and the page editor CSS Module. v1.1 (C5): media uploads (useMediaUploads) wired into the block list; deleting a block aborts its upload and a successful save marks the session uploads as saved. v1.2 (C6): "Editar" / "Vista previa como estudiante" toggle rendering the current draft with the learning viewer's page body (StudentPreview); deleting a block releases its media (aborts the upload, deletes a finished session upload, drops its state) using the block's current state, not the dialog snapshot.
-* Versión: 1.2 (C6)
+* Descripción: Page editor of the content editor (/content/pages/[pageId], staff only). Loads the Page and its blocks (usePageEditor), lists them in a local draft (PageBlockList: drag and drop or up/down reorder, duplicate, delete with confirmation, type-specific fields: lazy Tiptap rich text, LaTeX with KaTeX live preview, YouTube/Vimeo video with preview, image/file/video uploads, code, divider), adds blocks from the "Agregar bloque" menu and saves explicitly ("Guardar cambios": deletes, updates, creates, reorder). Shows a "Cambios sin guardar" status, disables saving while a block is invalid (and says which), maps save failures to the content editor error messages and warns before leaving with pending changes (useUnsavedChangesGuard: router and beforeunload). Depends on React, MUI, next/link, @shared/design-system, @shared/lib, the page editor hooks and components, the content tree status badge and the page editor CSS Module. v1.1 (C5): media uploads (useMediaUploads) wired into the block list; deleting a block aborts its upload and a successful save marks the session uploads as saved. v1.2 (C6): "Editar" / "Vista previa como estudiante" toggle rendering the current draft with the learning viewer's page body (StudentPreview); deleting a block releases its media (aborts the upload, deletes a finished session upload, drops its state) using the block's current state, not the dialog snapshot. v1.3 (B5): document title "<page title> | Editor de página | VentyLab" ("Editor de página | VentyLab" while loading) through formatPageTitle (next/head).
+* Versión: 1.3 (B5)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,6 +19,7 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import Head from "next/head";
 import Link from "next/link";
 import { useState } from "react";
 import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
@@ -28,6 +29,7 @@ import { PageHeader } from "@shared/design-system/components/page-header";
 import { ListSkeleton } from "@shared/design-system/components/skeleton";
 import { useToast } from "@shared/design-system/components/use-toast";
 import { cx } from "@shared/lib/class-names";
+import { formatPageTitle } from "@shared/lib/page-title";
 import { getContentErrorMessage } from "../entities/content-editor-error-messages";
 import { ADDABLE_BLOCK_TYPES, blockTypeLabel } from "../entities/page-draft.entity";
 import type { DraftBlock } from "../entities/page-draft.entity";
@@ -110,6 +112,9 @@ export function PageEditorPage({ pageId }: PageEditorPageProps) {
   if (!page || !blocks) {
     return (
       <div className={cx(styles.page)}>
+        <Head>
+          <title>{formatPageTitle(COPY.subtitle)}</title>
+        </Head>
         {editor.error ? (
           <ErrorState title={COPY.loadError} description={getContentErrorMessage(editor.error)} onRetry={() => void editor.reload()} />
         ) : <ListSkeleton rows={3} label={COPY.loading} />}
@@ -119,6 +124,9 @@ export function PageEditorPage({ pageId }: PageEditorPageProps) {
 
   return (
     <div className={cx(styles.page)}>
+      <Head>
+        <title>{formatPageTitle(page.title, COPY.subtitle)}</title>
+      </Head>
       <Button component={Link} href={CONTENT_URL} startIcon={<ArrowBackIcon />} className={cx(styles.back)}>
         {COPY.back}
       </Button>
