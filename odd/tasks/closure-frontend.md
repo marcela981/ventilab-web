@@ -119,3 +119,4 @@ Delegated direct: every block spans 2+ non-trivial files.
     - Final review follow-ups: csv `reset()` race → B4.2; `renderPagination(page)` → B4.4; "tooLong" hardcoded 366 → B4.3.
     - Not bugs (left as recorded): backend gaps lists, "Pending for the author" (build/bundle, E2E/axe, screenshots) and the CLOSURE approval (done through B3).
 - [x] B4 closed: commits `94d3b8a` (B4.2), `91e81dd` (B4.3), `bc37c90` (B4.4), `0b72438` `d60bed4` `fcde4fb` `65b59d4` `08d22e1` `86e529a` `3d9815f` `8fb108c` `fbc690e` (B4.5), `cc9dd3b` (B4.6) and the docs commit of B4.7; final checks below.
+  - B4 final checks (after `9b8591a`): `npm run build` exit 0 ("Compiled successfully"); full vitest in 6 serial batches (`--maxWorkers=2`): a 79 files / 631, b 44 / 368, c 14 / 121, d 63 / 686, e 4 / 40, f (src/shared + scripts) 70 / 774 → 274 files / 2620 tests / 0 failures; `npx --yes knip@5 --no-progress --no-gitignore` empty (exit 0); typecheck 0 and lint 0 after every commit.
