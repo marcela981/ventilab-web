@@ -80,7 +80,9 @@
  *   pages/admin/{users,settings,audit,ai,research,status}.tsx.
  *   v3.35 (B3.7): pages/auth/register/index.tsx, pages/auth/access-denied/index.tsx,
  *   pages/auth/forgot-password/index.tsx y pages/teaching/index.tsx entran en NEW_PAGE_FILES.
- * Versión: 3.35
+ *   v3.36 (B3.8, D5): salen de NEW_PAGE_FILES las páginas de solo redirección borradas
+ *   (pages/teaching/** y pages/evaluation/**); las redirecciones viven en next.config.
+ * Versión: 3.36
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -113,7 +115,6 @@ const NEW_PAGE_FILES = [
   "pages/auth/register/index.tsx",
   "pages/auth/access-denied/index.tsx",
   "pages/auth/forgot-password/index.tsx",
-  "pages/teaching/index.tsx",
   "pages/profile/index.tsx",
   "pages/my-group/index.tsx",
   "pages/groups/index.tsx",
@@ -125,7 +126,6 @@ const NEW_PAGE_FILES = [
   "pages/learn/modules/[[]moduleId[]]/lessons/[[]lessonId[]]/[[]pageNumber[]].tsx",
   "pages/content/index.tsx",
   "pages/content/pages/[[]pageId[]].tsx",
-  "pages/teaching/[[]moduleId[]]/[[]lessonId[]].tsx",
   "pages/evaluations/index.tsx",
   "pages/evaluations/[[]evaluationId[]]/index.tsx",
   "pages/evaluations/[[]evaluationId[]]/attempts/[[]attemptId[]]/index.tsx",
@@ -137,13 +137,6 @@ const NEW_PAGE_FILES = [
   "pages/grading/index.tsx",
   "pages/grading/attempts/[[]attemptId[]].tsx",
   "pages/grading/evaluations/[[]evaluationId[]].tsx",
-  "pages/evaluation/index.tsx",
-  "pages/evaluation/[[]activityId[]].tsx",
-  "pages/evaluation/manage/index.tsx",
-  "pages/evaluation/manage/new.tsx",
-  "pages/evaluation/manage/[[]activityId[]]/edit.tsx",
-  "pages/evaluation/grade/index.tsx",
-  "pages/evaluation/grade/[[]activityId[]].tsx",
   "pages/assistant/index.tsx",
   "pages/assistant/[[]conversationId[]].tsx",
   "pages/simulator/index.tsx",

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Learning URL tests
-* Descripción: Unit tests of the pure learning URL builders (/learn, section, module, lesson page, print) and of the route parsers (route id and the 1-based pageNumber, which only accepts positive integers). v1.1 (L3): the module completion URL (?completed=1). v1.2 (R1): legacy /teaching lesson URLs resolve to the equivalent lesson page. Depends on vitest.
-* Versión: 1.2
+* Descripción: Unit tests of the pure learning URL builders (/learn, section, module, lesson page, print) and of the route parsers (route id and the 1-based pageNumber, which only accepts positive integers). v1.1 (L3): the module completion URL (?completed=1). v1.2 (R1): legacy /teaching lesson URLs resolve to the equivalent lesson page. Depends on vitest. v1.3 (B3.8, D5): the legacy /teaching cases moved to src/shared/session/legacy-redirects.test.ts (next.config redirect rules).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,7 +12,6 @@
 import { describe, expect, it } from "vitest";
 import {
   buildLessonPageUrl,
-  resolveLegacyLessonUrl,
   buildModuleCompletedUrl,
   buildLevelUrl,
   buildModulePrintUrl,
@@ -65,24 +64,5 @@ describe("parseRouteId", () => {
     expect(parseRouteId("")).toBeNull();
     expect(parseRouteId(undefined)).toBeNull();
     expect(parseRouteId(["a", "b"])).toBeNull();
-  });
-});
-
-describe("resolveLegacyLessonUrl (R1)", () => {
-  it("maps a legacy /teaching/[moduleId]/[lessonId] query to page 1 of the same lesson", () => {
-    expect(resolveLegacyLessonUrl({ moduleId: "module-01-inversion-fisiologica", lessonId: "module-01-inversion-fisiologica" })).toBe(
-      "/learn/modules/module-01-inversion-fisiologica/lessons/module-01-inversion-fisiologica/1",
-    );
-  });
-
-  it("encodes the ids and ignores unrelated legacy params", () => {
-    expect(resolveLegacyLessonUrl({ moduleId: "m 1", lessonId: "l/2", tab: "dashboard" })).toBe("/learn/modules/m%201/lessons/l%2F2/1");
-  });
-
-  it("returns null when an id is missing, empty or repeated", () => {
-    expect(resolveLegacyLessonUrl({ moduleId: "m1" })).toBeNull();
-    expect(resolveLegacyLessonUrl({ moduleId: "", lessonId: "l1" })).toBeNull();
-    expect(resolveLegacyLessonUrl({ moduleId: ["m1", "m2"], lessonId: "l1" })).toBeNull();
-    expect(resolveLegacyLessonUrl({})).toBeNull();
   });
 });

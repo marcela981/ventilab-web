@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator lab public API
-* Descripción: Public surface of the ventilator-lab feature (real ventilator: reservations, live console, control, commands, recordings): the lab routes, the summary page, the reservation, device status and lab settings hooks and their entity types. v1.1 (T2): the reservations page (calendar + create) and the create request and conflict types. Later tasks add the live console and recordings pages. Depends on the feature modules it re-exports. v1.2 (T5): the real-ventilator live console adapter hook and its option type. v1.3 (T6): the live console page; the adapter hook is no longer exported here, because every /lab page imports this index and the adapter statically reaches the shared ventilator console (it is loaded only through the lazy live console of /lab/live). v1.4 (T11): the recordings list and recording playback pages (the player is lazy loaded by the playback page). v1.5 (T12): the legacy /simulador redirect helper (legacyLabRedirect) used by pages/simulador/index.js.
-* Versión: 1.5
+* Descripción: Public surface of the ventilator-lab feature (real ventilator: reservations, live console, control, commands, recordings): the lab routes, the summary page, the reservation, device status and lab settings hooks and their entity types. v1.1 (T2): the reservations page (calendar + create) and the create request and conflict types. Later tasks add the live console and recordings pages. Depends on the feature modules it re-exports. v1.2 (T5): the real-ventilator live console adapter hook and its option type. v1.3 (T6): the live console page; the adapter hook is no longer exported here, because every /lab page imports this index and the adapter statically reaches the shared ventilator console (it is loaded only through the lazy live console of /lab/live). v1.4 (T11): the recordings list and recording playback pages (the player is lazy loaded by the playback page). v1.5 (T12): the legacy /simulador redirect helper (legacyLabRedirect) used by pages/simulador/index.js. v1.6 (B3.8, D5): the /simulador redirect moved to config/legacy-redirects.mjs (next.config redirects); legacyLabRedirect is gone.
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,8 +16,6 @@ export {
   LAB_RESERVATIONS_URL,
   LAB_URL,
 } from "./application/config/lab.routes";
-export { LEGACY_LAB_REDIRECTS, legacyLabRedirect } from "./application/config/legacy-redirects";
-export type { LegacyLabRedirectResult, LegacyLabRoute } from "./application/config/legacy-redirects";
 export type {
   CurrentReservation,
   FullReservation,

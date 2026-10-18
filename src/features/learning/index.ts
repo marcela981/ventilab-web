@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: learning public API
-* Descripción: Public surface of the learning feature for the thin routes under pages/learn (LearnHomePage, SectionPage, ModulePage) and for the next learning tasks (L3 viewer, L7 print): URL builders/parsers, curriculum tree and lesson hooks with the tree locators, LockedContentScreen, LearningBreadcrumb, PreviewNotice, usePreviewMode, the progress hooks, the page-view tracker and the learning error messages. v1.1 (L3): LessonViewerPage, LessonSidePanel (slots for the L4-L6 panels), the lesson navigation rules, PageContent/usePageContent and the module completion URL. v1.2 (L7): ModulePrintPage and withPrintLayout (print view without the app shell, TEACHER/ADMIN guard). v1.3 (R1): resolveLegacyLessonUrl for the legacy /teaching redirects. v1.4 (C6): LessonPageArticle (Page body renderer) for the content editor's student preview. v1.5 (O2): notes reuse for the student space /me/notes: NoteItem, NoteComposer (lazy Tiptap editor with autosave), deleteNote, LESSON_NOTES_PATH (cache key the student space refreshes after an edit), notePageNumber and the Note/NotesAnalysis types.
-* Versión: 1.5 (O2)
+* Descripción: Public surface of the learning feature for the thin routes under pages/learn (LearnHomePage, SectionPage, ModulePage) and for the next learning tasks (L3 viewer, L7 print): URL builders/parsers, curriculum tree and lesson hooks with the tree locators, LockedContentScreen, LearningBreadcrumb, PreviewNotice, usePreviewMode, the progress hooks, the page-view tracker and the learning error messages. v1.1 (L3): LessonViewerPage, LessonSidePanel (slots for the L4-L6 panels), the lesson navigation rules, PageContent/usePageContent and the module completion URL. v1.2 (L7): ModulePrintPage and withPrintLayout (print view without the app shell, TEACHER/ADMIN guard). v1.3 (R1): resolveLegacyLessonUrl for the legacy /teaching redirects. v1.4 (C6): LessonPageArticle (Page body renderer) for the content editor's student preview. v1.5 (O2): notes reuse for the student space /me/notes: NoteItem, NoteComposer (lazy Tiptap editor with autosave), deleteNote, LESSON_NOTES_PATH (cache key the student space refreshes after an edit), notePageNumber and the Note/NotesAnalysis types. v1.6 (B3.8, D5): resolveLegacyLessonUrl is gone; the /teaching redirects live in config/legacy-redirects.mjs (next.config redirects).
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -54,7 +54,6 @@ export {
   MODULE_COMPLETED_PARAM,
   parsePageNumber,
   parseRouteId,
-  resolveLegacyLessonUrl,
 } from "./application/entities/learning-urls";
 export type { LessonPage, LessonSummary, PageContent } from "./application/entities/lesson.entity";
 export { notePageNumber } from "./application/entities/note.entity";
