@@ -1,0 +1,44 @@
+/*
+* Funcionalidad: Status page styles
+* Descripción: Card, status code, title, message and action column of the 404 and 500 pages shown inside the public layout. Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--vl-space-4);
+  padding: var(--vl-space-6) var(--vl-space-5);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+  box-shadow: var(--vl-shadow-2);
+  text-align: center;
+}
+
+.code {
+  margin: 0;
+  color: var(--vl-color-primary);
+}
+
+.title {
+  color: var(--vl-color-text);
+}
+
+.message {
+  color: var(--vl-color-text-muted);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  width: 100%;
+}
