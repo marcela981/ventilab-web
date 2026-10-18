@@ -1,13 +1,13 @@
-/**
- * =============================================================================
- * i18next Configuration
- * =============================================================================
- * 
- * Configuración de i18next para internacionalización.
- * Carga traducciones desde archivos JSON estáticos.
- * 
- * @module
- */
+/*
+* Funcionalidad: i18next configuration
+* Descripción: i18next setup loaded once by pages/_app.js. Loads the static JSON translations of the `ai` namespace (es/en), Spanish by default. v1.1 (B3.4, D1): the legacy `teaching` namespace (features/ensenanza locales) is removed with the teaching hub; no live code reads it. Depends on i18next and react-i18next.
+* Versión: 1.1
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
 
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
@@ -15,24 +15,20 @@ import { initReactI18next } from 'react-i18next';
 // Importar traducciones estáticas
 import aiEs from './locales/es/ai.json';
 import aiEn from './locales/en/ai.json';
-import teachingEs from '../features/ensenanza/config/locales/es/teaching.json';
-import teachingEn from '../features/ensenanza/config/locales/en/teaching.json';
 
 i18n
   .use(initReactI18next)
   .init({
     lng: 'es',
     fallbackLng: 'es',
-    ns: ['ai', 'teaching'],
+    ns: ['ai'],
     defaultNS: 'ai',
     resources: {
       es: {
         ai: aiEs,
-        teaching: teachingEs,
       },
       en: {
         ai: aiEn,
-        teaching: teachingEn,
       },
     },
     interpolation: {
@@ -45,4 +41,3 @@ i18n
   });
 
 export default i18n;
-

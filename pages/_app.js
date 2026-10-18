@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: _app — raíz de la aplicación Next.js
-* Descripción: Árbol de providers globales para VentyLab. Incluye WarmupProvider para detección y notificación de cold starts del backend en Render free tier. Usa el tema MUI con cssVariables de src/shared/design-system/theme (Roboto self-hosted vía next/font) e importa los CSS globales (App.css legacy + tokens.css del design system); el CSS global solo se importa aquí. v2.2: monta ApiSWRProvider (config SWR estándar de @shared/api-client, caché por defecto) y el warm-up llama GET /health del backend con el cliente tipado (antes httpSlow.get('/api/health') duplicaba el prefijo: /api/api/health). v2.3: monta el AuthProvider de @shared/session (sesión del backend para código nuevo, importado como BackendSessionProvider para no chocar con el AuthProvider legacy) dentro de ApiSWRProvider; no cambia NextAuth ni el AuthContext legacy y no navega por sí mismo. v2.4: monta el RealtimeProvider de @shared/realtime (socket autenticado del código nuevo, solo con sesión de backend) dentro de BackendSessionProvider; el SocketProvider legacy no cambia. v2.5: per-page layouts: si la página exporta getLayout(page) (resolvePageLayout de @shared/layouts/get-layout), se renderiza Component.getLayout(<Component />) sin el shell legacy (Sidebar/ErrorBoundary por página; el layout nuevo trae su propio RouteErrorBoundary); las páginas sin getLayout conservan exactamente el envoltorio legacy anterior. Los layouts se importan desde las páginas que los usan, nunca desde _app. v2.6: monta una sola vez el ToastProvider global del design system (useToast del código nuevo) dentro del ThemeProvider, alrededor del contenido de la página; el NotificationProvider legacy no cambia. v2.7 (G1 grading): monta el NavBadgeProvider de @shared/layouts/nav-badges (contadores de las insignias de navegación del AppShell) dentro de RealtimeProvider y, dentro de él, GradingPendingBadgeSync del barrel de @features/grading, que alimenta la insignia "Calificar" con los intentos pendientes solo para docentes y administradores (carga su código de peticiones de forma diferida). _app es la raíz de composición: shared no puede importar features, así que la feature alimenta el registro compartido desde aquí. v2.8 (G1 review S6/W2): GradingPendingBadgeSync se importa por su ruta directa (application/components/lazy-grading-pending-badge-sync), no por el barrel de la feature; la sincronización solo consulta la cola mientras el AppShell está montado (registro de visibilidad de nav-badges). v2.9 (A3 ai-chat): monta AiChatProvider (estado del drawer global del asistente IA, sobrevive a la navegación; el drawer con ChatPanel/markdown/KaTeX se carga de forma diferida al abrirlo por primera vez) dentro de ToastProvider, y dentro de él TopBarActionsProvider de @shared/layouts/top-bar-actions con AiChatLauncher como acción de la barra superior del AppShell; ambos se importan por su ruta directa, no por el barrel de la feature. v3.0 (T9 simulation): importa por efecto la raíz de composición del simulador (register-exam-practical-slot) que registra el renderer diferido de las preguntas SIMULATION del examen en el PracticalQuestionSlot de evaluations; solo arrastra el registro y un envoltorio React.lazy, nunca la consola, el motor ni Chart.js. v3.1 (T12 ventilator-lab review fix W1): monta el NavIndicatorProvider de @shared/layouts/nav-indicators (indicadores de estado de la navegación del AppShell) dentro de NavBadgeProvider y, dentro de él, DeviceStatusNavIndicatorSync de ventilator-lab por su ruta directa, que alimenta el indicador del ítem "Laboratorio" con el estado del equipo físico (useDeviceStatus) solo mientras el AppShell lo muestra (carga su código de forma diferida). v3.2 (O1 notifications): monta, por sus rutas directas (no el barrel de la feature), NotificationsBadgeSync dentro de NavBadgeProvider (insignia "notificationsUnread" solo con sesión y AppShell visible, código diferido), NotificationToasts dentro de ToastProvider (toast informativo por notification:new marcado como aviso, que el modo foco descarta) y NotificationBell como acción de la barra superior junto a AiChatLauncher (la campana carga su popover y sus peticiones de forma diferida).
-* Versión: 3.2
+* Descripción: Árbol de providers globales para VentyLab. Incluye WarmupProvider para detección y notificación de cold starts del backend en Render free tier. Usa el tema MUI con cssVariables de src/shared/design-system/theme (Roboto self-hosted vía next/font) e importa los CSS globales (App.css legacy + tokens.css del design system); el CSS global solo se importa aquí. v2.2: monta ApiSWRProvider (config SWR estándar de @shared/api-client, caché por defecto) y el warm-up llama GET /health del backend con el cliente tipado (antes httpSlow.get('/api/health') duplicaba el prefijo: /api/api/health). v2.3: monta el AuthProvider de @shared/session (sesión del backend para código nuevo, importado como BackendSessionProvider para no chocar con el AuthProvider legacy) dentro de ApiSWRProvider; no cambia NextAuth ni el AuthContext legacy y no navega por sí mismo. v2.4: monta el RealtimeProvider de @shared/realtime (socket autenticado del código nuevo, solo con sesión de backend) dentro de BackendSessionProvider; el SocketProvider legacy no cambia. v2.5: per-page layouts: si la página exporta getLayout(page) (resolvePageLayout de @shared/layouts/get-layout), se renderiza Component.getLayout(<Component />) sin el shell legacy (Sidebar/ErrorBoundary por página; el layout nuevo trae su propio RouteErrorBoundary); las páginas sin getLayout conservan exactamente el envoltorio legacy anterior. Los layouts se importan desde las páginas que los usan, nunca desde _app. v2.6: monta una sola vez el ToastProvider global del design system (useToast del código nuevo) dentro del ThemeProvider, alrededor del contenido de la página; el NotificationProvider legacy no cambia. v2.7 (G1 grading): monta el NavBadgeProvider de @shared/layouts/nav-badges (contadores de las insignias de navegación del AppShell) dentro de RealtimeProvider y, dentro de él, GradingPendingBadgeSync del barrel de @features/grading, que alimenta la insignia "Calificar" con los intentos pendientes solo para docentes y administradores (carga su código de peticiones de forma diferida). _app es la raíz de composición: shared no puede importar features, así que la feature alimenta el registro compartido desde aquí. v2.8 (G1 review S6/W2): GradingPendingBadgeSync se importa por su ruta directa (application/components/lazy-grading-pending-badge-sync), no por el barrel de la feature; la sincronización solo consulta la cola mientras el AppShell está montado (registro de visibilidad de nav-badges). v2.9 (A3 ai-chat): monta AiChatProvider (estado del drawer global del asistente IA, sobrevive a la navegación; el drawer con ChatPanel/markdown/KaTeX se carga de forma diferida al abrirlo por primera vez) dentro de ToastProvider, y dentro de él TopBarActionsProvider de @shared/layouts/top-bar-actions con AiChatLauncher como acción de la barra superior del AppShell; ambos se importan por su ruta directa, no por el barrel de la feature. v3.0 (T9 simulation): importa por efecto la raíz de composición del simulador (register-exam-practical-slot) que registra el renderer diferido de las preguntas SIMULATION del examen en el PracticalQuestionSlot de evaluations; solo arrastra el registro y un envoltorio React.lazy, nunca la consola, el motor ni Chart.js. v3.1 (T12 ventilator-lab review fix W1): monta el NavIndicatorProvider de @shared/layouts/nav-indicators (indicadores de estado de la navegación del AppShell) dentro de NavBadgeProvider y, dentro de él, DeviceStatusNavIndicatorSync de ventilator-lab por su ruta directa, que alimenta el indicador del ítem "Laboratorio" con el estado del equipo físico (useDeviceStatus) solo mientras el AppShell lo muestra (carga su código de forma diferida). v3.2 (O1 notifications): monta, por sus rutas directas (no el barrel de la feature), NotificationsBadgeSync dentro de NavBadgeProvider (insignia "notificationsUnread" solo con sesión y AppShell visible, código diferido), NotificationToasts dentro de ToastProvider (toast informativo por notification:new marcado como aviso, que el modo foco descarta) y NotificationBell como acción de la barra superior junto a AiChatLauncher (la campana carga su popover y sus peticiones de forma diferida). v3.3 (B3.4, D4): NextAuth eliminado: sin SessionProvider; AppWarmupEffect lee el estado de la sesión del backend (useSession de @shared/session) para el warm-up.
+* Versión: 3.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,7 +11,6 @@
 
 import React, { useState } from 'react';
 import { Box, CssBaseline, ThemeProvider } from '@mui/material';
-import { SessionProvider, useSession } from 'next-auth/react';
 import { AuthProvider } from '../src/shared/contexts/AuthContext';
 import { NotificationProvider } from '../src/shared/contexts/NotificationContext';
 import { WarmupProvider, useWarmup } from '../src/shared/contexts/WarmupContext';
@@ -25,6 +24,7 @@ import { theme } from '@shared/design-system/theme';
 import { ApiSWRProvider } from '@shared/api-client/swr-config';
 // Direct module import: the session index would also pull the guards and the route table.
 import { AuthProvider as BackendSessionProvider } from '@shared/session/auth-provider';
+import { useSession } from '@shared/session/use-session';
 // Direct module import: the realtime index re-exports hooks and types the app shell does not need.
 import { RealtimeProvider } from '@shared/realtime/realtime-provider';
 // Direct module import: the layouts index would pull the AppShell and every layout into the app shell.
@@ -63,7 +63,7 @@ import '../src/i18n/i18n';
 /**
  * Dispara un GET /health del backend (ruta lenta, timeout 60 s) la primera vez que el usuario
  * llega autenticado a una página no-auth. Activa WarmupOverlay mientras espera.
- * Debe ser hijo de SessionProvider y WarmupProvider.
+ * Debe ser hijo de BackendSessionProvider (sesión del backend) y WarmupProvider.
  */
 function AppWarmupEffect({ isAuthPage }) {
   const { status } = useSession();
@@ -84,7 +84,7 @@ function AppWarmupEffect({ isAuthPage }) {
   return null;
 }
 
-function MyApp({ Component, pageProps: { session, ...pageProps } }) {
+function MyApp({ Component, pageProps }) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -153,18 +153,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
         <NotificationsBadgeSync />
         <NavIndicatorProvider>
         <DeviceStatusNavIndicatorSync />
-        {/*
-          SessionProvider: Provides NextAuth.js session to all components
-          - session: Initial session from getServerSideProps (SSR optimization)
-          - refetchInterval: Refetch session every 5 minutes to keep it updated
-          - refetchOnWindowFocus: Revalidate session when user returns to window
-        */}
         <WarmupProvider>
-        <SessionProvider
-          session={session}
-          refetchInterval={5 * 60} // 5 minutes in seconds
-          refetchOnWindowFocus={false} // Desactivado para evitar revalidaciones agresivas
-        >
           <AppWarmupEffect isAuthPage={isAuthPage} />
           <AuthProvider>
             <SocketProvider>
@@ -219,7 +208,6 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
               </ThemeProvider>
             </SocketProvider>
           </AuthProvider>
-        </SessionProvider>
         <WarmupOverlay />
         </WarmupProvider>
         </NavIndicatorProvider>

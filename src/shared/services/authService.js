@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Authentication Service (legacy)
-* Descripción: Legacy authentication operations (login, registration, NextAuth bridge token, local token/user storage) against the backend API. v1.1 (T8 coexistence): removeAuthToken clears BOTH backend tokens through clearTokens() of @shared/api-client/token-storage (so the new backend session and realtime layer are notified) plus the legacy user data; the default export no longer lists the profile/password functions removed earlier (they were undefined identifiers, a ReferenceError when the module is evaluated without tree shaking). v1.2 (T9 auth): the broken refreshToken() was removed (it POSTed /auth/refresh without the refreshToken body the contract requires and had no callers; the shared single-flight refresh of @shared/api-client is the only refresh), and getUserData() returns the backend session user snapshot (@shared/session/session-user-cache) first, so legacy pages recognise users who signed in through the new login. Depends on @/config/env, @shared/api-client/token-storage and @shared/session/session-user-cache.
-* Versión: 1.2
+* Descripción: Legacy authentication operations (login, registration, NextAuth bridge token, local token/user storage) against the backend API. v1.1 (T8 coexistence): removeAuthToken clears BOTH backend tokens through clearTokens() of @shared/api-client/token-storage (so the new backend session and realtime layer are notified) plus the legacy user data; the default export no longer lists the profile/password functions removed earlier (they were undefined identifiers, a ReferenceError when the module is evaluated without tree shaking). v1.2 (T9 auth): the broken refreshToken() was removed (it POSTed /auth/refresh without the refreshToken body the contract requires and had no callers; the shared single-flight refresh of @shared/api-client is the only refresh), and getUserData() returns the backend session user snapshot (@shared/session/session-user-cache) first, so legacy pages recognise users who signed in through the new login. v1.3 (B3.4, D4): NextAuth removed; refreshBackendTokenFromSession no longer calls the deleted /api/auth/backend-token route and always resolves null. Depends on @/config/env, @shared/api-client/token-storage and @shared/session/session-user-cache.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -430,31 +430,11 @@ export const resetPassword = async (token, newPassword) => {
 // rutas reales /users/me*).
 
 /**
- * Refresh backend JWT token from an active NextAuth session.
- * Call this when localStorage is cleared but the NextAuth cookie still exists.
- * Stores the recovered token under 'ventilab_auth_token' so getAuthToken() works.
- * @returns {Promise<string|null>} The backend token, or null on failure
+ * Formerly recovered the backend JWT from the NextAuth session (/api/auth/backend-token).
+ * NextAuth is gone (B3.4), so there is no session to recover a token from: always null.
+ * @returns {Promise<null>}
  */
-export const refreshBackendTokenFromSession = async () => {
-  try {
-    const response = await fetch('/api/auth/backend-token', {
-      method: 'GET',
-      credentials: 'include',
-      headers: { 'Cache-Control': 'no-cache' },
-    });
-    if (!response.ok) return null;
-    const data = await response.json();
-    const token = data.token || data.accessToken || data.backendToken;
-    if (token) {
-      localStorage.setItem(TOKEN_KEY, token);
-      return token;
-    }
-    return null;
-  } catch (e) {
-    console.warn('[authService] refreshBackendTokenFromSession failed:', e?.message);
-    return null;
-  }
-};
+export const refreshBackendTokenFromSession = async () => null;
 
 // ============================================================================
 // Default Export

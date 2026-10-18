@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Auth feature public API
-* Descripción: Public surface of the auth feature for pages and other features: the LoginPage component used by the thin route pages/auth/login. Logout, guards and the session itself live in @shared/session.
-* Versión: 1.0
+* Descripción: Public surface of the auth feature for pages and other features: the LoginPage and RegisterPage components used by the thin routes pages/auth/login and pages/auth/register. Logout, guards and the session itself live in @shared/session. v1.1 (B3.4, D4): exports RegisterPage.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,3 +10,4 @@
 */
 
 export { LoginPage } from "./application/pages/login.page";
+export { RegisterPage } from "./application/pages/register.page";

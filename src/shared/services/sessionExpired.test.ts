@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Legacy session-expiry handler tests
-* Descripción: Tests of the legacy handleSessionExpired as a coexistence adapter: it clears BOTH backend tokens through the shared token-storage clearTokens() (so the new backend session is notified) plus the legacy user data, and it acts only once when called twice (one NextAuth signOut, one auth:logout event, one token notification). next-auth/react is mocked; the module is re-imported per test to reset its idempotency flag. Depends on vitest and the legacy/new token modules.
-* Versión: 1.0
+* Descripción: Tests of the legacy handleSessionExpired as a coexistence adapter: it clears BOTH backend tokens through the shared token-storage clearTokens() (so the new backend session is notified) plus the legacy user data, and it acts only once when called twice (one auth:logout event, one token notification). v1.1 (B3.4, D4): NextAuth removed, no signOut mock. The module is re-imported per test to reset its idempotency flag. Depends on vitest and the legacy/new token modules.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,10 +10,6 @@
 */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-const signOut = vi.hoisted(() => vi.fn(() => Promise.resolve(undefined)));
-
-vi.mock("next-auth/react", () => ({ signOut }));
 
 async function loadModules() {
   vi.resetModules();
@@ -27,7 +23,6 @@ async function loadModules() {
 
 describe("legacy handleSessionExpired", () => {
   beforeEach(() => {
-    signOut.mockClear();
     window.localStorage.clear();
     // On the login page the handler never navigates (jsdom has no navigation).
     window.history.replaceState(null, "", "/auth/login");
@@ -72,7 +67,6 @@ describe("legacy handleSessionExpired", () => {
     expect(tokenListener).toHaveBeenCalledTimes(1);
     expect(logoutListener).toHaveBeenCalledTimes(1);
     expect(logoutListener).toHaveBeenCalledWith({ reason: "token_refresh_failed" });
-    expect(signOut).toHaveBeenCalledTimes(1);
 
     unsubscribeTokens();
     unsubscribeLogout();

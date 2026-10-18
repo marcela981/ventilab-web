@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Login page tests
-* Descripción: Integration tests of the login page with the real backend session (AuthProvider) and MSW: local login posts the credentials and navigates to the role home or a safe returnTo, each backend error code shows its Spanish message, the Google ID token from Google Identity Services is posted to /api/auth/google, an authenticated visitor is redirected to the home of their role, the Google button is disabled without a client ID and an expired session shows a notice. v1.1: the best-effort NextAuth bridge (next-auth/react mocked): a local login signs in to NextAuth after establishSession and before the redirect, a bridge failure still redirects, and Google login never calls it (it only clears a stale NextAuth cookie). v1.2 (T9 follow-up): NextAuth session reconciliation (same user or none -> redirect; another user's session cleared -> redirect; persisting -> Spanish error, backend session signed out, no redirect, for local and Google logins), redirect loop guard (a bounced returnTo falls back to the role home; a bounced role home stops with an error and a sign-out button) and a staff-only returnTo for a student -> role home. v1.3 (T12): while a login is pending "Iniciar sesión" keeps its label, is disabled and aria-busy with a spinner (no "Iniciando sesión…" text). Depends on vitest, Testing Library, MSW, next/router (mocked) and the hard navigation helper (mocked). v1.4 (O5): role homes are /me for students and /teacher for staff.
-* Versión: 1.4
+* Descripción: Integration tests of the login page with the real backend session (AuthProvider) and MSW: local login posts the credentials and navigates to the role home or a safe returnTo, each backend error code shows its Spanish message, the Google ID token from Google Identity Services is posted to /api/auth/google, an authenticated visitor is redirected to the home of their role, the Google button is disabled without a client ID and an expired session shows a notice. v1.1: the best-effort NextAuth bridge (next-auth/react mocked): a local login signs in to NextAuth after establishSession and before the redirect, a bridge failure still redirects, and Google login never calls it (it only clears a stale NextAuth cookie). v1.2 (T9 follow-up): NextAuth session reconciliation (same user or none -> redirect; another user's session cleared -> redirect; persisting -> Spanish error, backend session signed out, no redirect, for local and Google logins), redirect loop guard (a bounced returnTo falls back to the role home; a bounced role home stops with an error and a sign-out button) and a staff-only returnTo for a student -> role home. v1.3 (T12): while a login is pending "Iniciar sesión" keeps its label, is disabled and aria-busy with a spinner (no "Iniciando sesión…" text). Depends on vitest, Testing Library, MSW, next/router (mocked) and the hard navigation helper (mocked). v1.4 (O5): role homes are /me for students and /teacher for staff. v1.5 (B3.4, D4): NextAuth removed: the bridge and reconciliation tests and the next-auth/react mock are gone.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -32,15 +32,8 @@ const router = vi.hoisted(() => ({
 
 const navigation = vi.hoisted(() => ({ navigateTo: vi.fn() }));
 
-const nextAuth = vi.hoisted(() => ({
-  signIn: vi.fn<(...args: unknown[]) => Promise<unknown>>(() => Promise.resolve({ ok: true, error: null })),
-  signOut: vi.fn<(...args: unknown[]) => Promise<unknown>>(() => Promise.resolve(undefined)),
-  getSession: vi.fn<(...args: unknown[]) => Promise<unknown>>(() => Promise.resolve(null)),
-}));
-
 vi.mock("next/router", () => ({ useRouter: () => router }));
 vi.mock("../hooks/navigation", () => navigation);
-vi.mock("next-auth/react", () => nextAuth);
 
 const url = (path: string): string => `${BACKEND_ORIGIN}${path}`;
 
@@ -71,8 +64,6 @@ const errorResponse = (code: string, status: number, headers: Record<string, str
 let currentRole: Role = "STUDENT";
 let loginBodies: unknown[] = [];
 let googleBodies: unknown[] = [];
-let meCalls = 0;
-let logoutCalls = 0;
 
 const user = () => ({ id: "u1", email: "ana@ventylab.demo", name: "Ana", image: null, role: currentRole });
 
@@ -80,11 +71,7 @@ const loginResponse = () =>
   HttpResponse.json(envelope({ accessToken: "access-1", refreshToken: "refresh-1", userId: "u1", user: user() }));
 
 const server = setupServer(
-  http.get(url("/api/auth/me"), () => {
-    meCalls += 1;
-
-    return HttpResponse.json(envelope({ user: user(), permissions: [] }));
-  }),
+  http.get(url("/api/auth/me"), () => HttpResponse.json(envelope({ user: user(), permissions: [] }))),
   http.post(url("/api/auth/login"), async({ request }) => {
     loginBodies.push(await request.json());
 
@@ -95,11 +82,7 @@ const server = setupServer(
 
     return loginResponse();
   }),
-  http.post(url("/api/auth/logout"), () => {
-    logoutCalls += 1;
-
-    return HttpResponse.json(envelope(null));
-  }),
+  http.post(url("/api/auth/logout"), () => HttpResponse.json(envelope(null))),
 );
 
 type GoogleCallback = (response: { credential: string }) => void;
@@ -139,15 +122,7 @@ beforeEach(() => {
   currentRole = "STUDENT";
   loginBodies = [];
   googleBodies = [];
-  meCalls = 0;
-  logoutCalls = 0;
   googleCallback = null;
-  nextAuth.signIn.mockReset();
-  nextAuth.signIn.mockImplementation(() => Promise.resolve({ ok: true, error: null }));
-  nextAuth.signOut.mockReset();
-  nextAuth.signOut.mockImplementation(() => Promise.resolve(undefined));
-  nextAuth.getSession.mockReset();
-  nextAuth.getSession.mockImplementation(() => Promise.resolve(null));
   router.query = {};
   router.isReady = true;
   navigation.navigateTo.mockClear();
@@ -252,55 +227,6 @@ describe("LoginPage local login", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Inténtalo de nuevo en 45 segundos.");
   });
 
-  it("bridges NextAuth after establishSession and before the redirect", async() => {
-    let stateAtBridge: { accessToken: string | null, meCalls: number } | null = null;
-
-    nextAuth.signIn.mockImplementation(() => {
-      stateAtBridge = { accessToken: getAccessToken(), meCalls };
-
-      return Promise.resolve({ ok: true, error: null });
-    });
-    renderLogin();
-    fillAndSubmit("  ana@ventylab.demo ", "VentyLab-Demo-2026");
-
-    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/me"), { timeout: 5000 });
-    expect(nextAuth.signIn).toHaveBeenCalledTimes(1);
-    expect(nextAuth.signIn).toHaveBeenCalledWith("credentials", {
-      email: "ana@ventylab.demo",
-      password: "VentyLab-Demo-2026",
-      redirect: false,
-    });
-    expect(stateAtBridge).toEqual({ accessToken: "access-1", meCalls: 1 });
-    expect(nextAuth.signIn.mock.invocationCallOrder[0]).toBeLessThan(navigation.navigateTo.mock.invocationCallOrder[0] ?? 0);
-  });
-
-  it.each([
-    ["rejects", () => Promise.reject(new Error("csrf failed"))],
-    ["answers with an error", () => Promise.resolve({ ok: false, error: "CredentialsSignin" })],
-  ])("still redirects when the NextAuth bridge %s", async(_label, implementation) => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-
-    nextAuth.signIn.mockImplementation(implementation);
-    renderLogin();
-    fillAndSubmit();
-
-    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/me"), { timeout: 5000 });
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-    expect(warn).toHaveBeenCalledTimes(1);
-    // A failed bridge clears any stale NextAuth session so legacy pages cannot show another user.
-    expect(nextAuth.signOut).toHaveBeenCalledWith({ redirect: false });
-    warn.mockRestore();
-  });
-
-  it("does not bridge NextAuth when the backend login fails", async() => {
-    server.use(http.post(url("/api/auth/login"), () => errorResponse("auth.invalid_credentials", 401)));
-    renderLogin();
-    fillAndSubmit();
-
-    expect(await screen.findByRole("alert")).toHaveTextContent("Correo o contraseña incorrectos.");
-    expect(nextAuth.signIn).not.toHaveBeenCalled();
-  });
-
   it("shows a network message when the backend cannot be reached", async() => {
     server.use(http.post(url("/api/auth/login"), () => HttpResponse.error()));
     renderLogin();
@@ -322,8 +248,6 @@ describe("LoginPage Google sign-in", () => {
 
     await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/me"), { timeout: 5000 });
     expect(googleBodies).toEqual([{ idToken: "google-id-token" }]);
-    expect(nextAuth.signIn).not.toHaveBeenCalled();
-    expect(nextAuth.signOut).toHaveBeenCalledWith({ redirect: false });
   });
 
   it.each([
@@ -401,61 +325,5 @@ describe("LoginPage with an existing session", () => {
     renderLogin();
 
     expect(await screen.findByText(/tu sesión expiró/i)).toBeInTheDocument();
-  });
-});
-
-describe("LoginPage NextAuth session reconciliation", () => {
-  const otherUser = { user: { email: "luis@ventylab.demo" } };
-
-  it("redirects when the NextAuth session belongs to the same user", async() => {
-    nextAuth.getSession.mockImplementation(() => Promise.resolve({ user: { email: "ana@ventylab.demo" } }));
-    renderLogin();
-    fillAndSubmit();
-
-    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/me"), { timeout: 5000 });
-    expect(nextAuth.signOut).not.toHaveBeenCalled();
-  });
-
-  it("signs out a NextAuth session of another user and then redirects", async() => {
-    nextAuth.getSession.mockImplementationOnce(() => Promise.resolve(otherUser));
-    renderLogin();
-    fillAndSubmit();
-
-    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/me"), { timeout: 5000 });
-    expect(nextAuth.signOut).toHaveBeenCalledWith({ redirect: false });
-    expect(getAccessToken()).toBe("access-1");
-  });
-
-  it("does not open legacy pages when the other user's NextAuth session persists", async() => {
-    nextAuth.getSession.mockImplementation(() => Promise.resolve(otherUser));
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-
-    renderLogin();
-    fillAndSubmit();
-
-    expect(await screen.findByRole("alert", {}, { timeout: 5000 })).toHaveTextContent(
-      "No se pudo cerrar la sesión anterior. Cierra el navegador o borra las cookies e inténtalo de nuevo.",
-    );
-    expect(navigation.navigateTo).not.toHaveBeenCalled();
-    expect(getAccessToken()).toBeNull();
-    expect(getRefreshToken()).toBeNull();
-    expect(logoutCalls).toBe(1);
-    expect(screen.getByRole("button", { name: /iniciar sesión/i })).toBeEnabled();
-    warn.mockRestore();
-  });
-
-  it("does not open legacy pages after a Google login when another NextAuth session persists", async() => {
-    nextAuth.getSession.mockImplementation(() => Promise.resolve(otherUser));
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-
-    renderLogin();
-
-    await waitFor(() => expect(googleIdentity.initialize).toHaveBeenCalled());
-    googleCallback?.({ credential: "google-id-token" });
-
-    expect(await screen.findByRole("alert", {}, { timeout: 5000 })).toHaveTextContent("No se pudo cerrar la sesión anterior");
-    expect(navigation.navigateTo).not.toHaveBeenCalled();
-    expect(getAccessToken()).toBeNull();
-    warn.mockRestore();
   });
 });

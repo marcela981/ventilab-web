@@ -13,8 +13,6 @@ const nextConfig = {
     'prisma',
     'bcryptjs',
   ],
-  // Transpilación de next-auth para evitar "Unexpected token export" en producción
-  transpilePackages: ['next-auth'],
   // Configuración para archivos estáticos
   trailingSlash: false,
   // Configuración para imágenes
@@ -30,16 +28,6 @@ const nextConfig = {
         as: '*.js',
       },
     },
-  },
-  // Rewrites para evitar CORS y puertos cruzados en dev
-  // Proxy SOLO cuando el path empieza por /backend (aislado del espacio /api de NextAuth)
-  async rewrites() {
-    return [
-      {
-        source: '/backend/:path*',
-        destination: 'http://localhost:4000/api/:path*',
-      },
-    ];
   },
 };
 

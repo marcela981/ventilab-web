@@ -1,8 +1,7 @@
 /*
  * Funcionalidad: SocketContext
  * Descripción: Contexto React para la conexión WebSocket con el backend.
- *   Maneja la autenticación via JWT con WSGateway. Depende de next-auth session
- *   y socket.io-client.
+ *   Maneja la autenticación via JWT con WSGateway. Depende de socket.io-client.
  *   v1.1 (T8 coexistence): when a backend session exists (both tokens in
  *   @shared/api-client/token-storage) the legacy provider stays idle (no io()
  *   connection of its own) and exposes the RealtimeProvider socket through a 1:1
@@ -10,7 +9,9 @@
  *   isAuthenticated = status authenticated; re-auth after a token refresh comes from
  *   the new provider. NextAuth-bridge-only users keep the legacy socket unchanged.
  *   The socket instance is memoized per backend-session state (no ref read during render).
- * Versión: 1.1
+ *   v1.2 (B3.4, D4): NextAuth removed: the legacy socket only uses the stored
+ *   legacy JWT (no next-auth useSession). Deleted with the provider in B3.5.
+ * Versión: 1.2
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica
@@ -30,7 +31,6 @@ import {
   type ReactNode,
 } from 'react';
 import { io, type Socket } from 'socket.io-client';
-import { useSession } from 'next-auth/react';
 import {
   getAuthToken,
   refreshBackendTokenFromSession,
@@ -79,7 +79,6 @@ const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
 
 export function SocketProvider({ children }: { children: ReactNode }) {
-  const { data: session, status } = useSession();
   const backendSession = useHasBackendSession();
   const realtime = useContext(RealtimeContext);
   const [isConnected, setIsConnected] = useState(false);
@@ -166,18 +165,13 @@ export function SocketProvider({ children }: { children: ReactNode }) {
 
   // Connect/disconnect based on session state; emit 'authenticate' after connect.
   useEffect(() => {
-    if (status === 'loading') return;
     if (backendSession || !socket) return;
 
-    // Resolve the JWT: prefer the NextAuth accessToken (if exposed by the
-    // auth config), otherwise fall back to the backend JWT stored in localStorage
-    // by the custom authService after credential login.
-    const token =
-      session?.accessToken ?? getAuthToken();
+    // The legacy socket authenticates with the backend JWT stored in localStorage
+    // (NextAuth is gone, so there is no session token to prefer).
+    const token = getAuthToken();
 
-    const hasSession = status === 'authenticated' || !!token;
-
-    if (hasSession && token) {
+    if (token) {
       const sendAuth = () => socket.emit('authenticate', token);
 
       if (!socket.connected) {
@@ -197,7 +191,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       if (socket.connected) socket.disconnect();
       return undefined;
     }
-  }, [status, session, socket, backendSession]);
+  }, [socket, backendSession]);
 
   const realtimeSocket = realtime?.socket ?? null;
   const realtimeStatus = realtime?.status ?? 'idle';

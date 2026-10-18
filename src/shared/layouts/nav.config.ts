@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Navigation config
-* Descripción: Typed main-navigation items of the AppShell. Every item points to an EXISTING route of the session route table (routes.config) and lists the roles that see it (a test asserts each route exists and admits those roles). v1.1 (T11a): "Mi grupo" (/my-group, students) and "Grupos" (/groups, teachers and admins). v1.2 (T0 learning): "Aprender" (/learn, every role; teachers and admins preview the student viewer) and "Contenido" (/content, teachers and admins); the legacy "Aprendizaje" (/teaching) entry stays until the legacy routes redirect (R1). v1.3 (S0 evaluations): the legacy evaluation items are replaced by "Evaluaciones" (/evaluations, every role), "Gestionar evaluaciones" (/evaluations/manage) and "Calificar" (/grading), both for teachers and admins. getNavItems filters by role; findActiveHref picks the longest matching item for the current Next pathname. v1.4 (G1 grading): an item may name a `badgeKey` (nav-badges registry); "Calificar" shows the gradingPending count. v1.5 (A1 ai-chat): "Asistente IA" (/assistant, every role). v1.6 (T5 simulation): "Simulador" (/simulator, every role); the legacy /simulador entry is untouched until T13 renames it. v1.7 (T11 simulation): "Casos clínicos" (/simulator/cases, teachers and admins). v1.8 (T13 simulation): the legacy /simulador entry is relabelled "Ventilador real" (sensors icon): it stays as the only UI of the physical ventilator and is not redirected. v1.9 (T12 ventilator-lab): the legacy "Ventilador real" (/simulador, students) item is replaced by "Laboratorio" (/lab, every role: the backend lets every role book and operate) with the `ventilatorDevice` indicator (online / sin datos, nav-indicators); /simulador now redirects to /lab. An item may name an `indicator` (nav-indicators). v1.10 (T12 review fix W1): the indicator is only a key of the generic nav-indicators registry; the ventilator-lab feature feeds it (online / sin datos only when reported, nothing when unknown). Labels are plain Spanish because the i18next setup (src/i18n) is outside the new-code modules; TODO(i18n): move them to an i18next namespace. Depends on MUI icons and the session route table and entities. v1.11 (O5 operation): final navigation of the migration. Students start at "Inicio" (/me) and get "Mis calificaciones" (/me/grades) and "Mis notas" (/me/notes); teachers and admins start at "Panel docente" (/teacher); "Notificaciones" (/notifications, every role) carries the notificationsUnread badge; the admin console (/admin/users, /admin/settings, /admin/audit, /admin/ai, /admin/research, /admin/search-analytics: ADMIN; /admin/status "Estado del sistema": TEACHER and ADMIN) is a contiguous "Administración" section (optional `section`, rendered as a subheader by the AppShell) at the end. The legacy /dashboard, /panel, /panel/students, /panel/admin and /panel/settings items are removed (those routes now redirect); the legacy /teaching hub stays for students.
-* Versión: 1.11
+* Descripción: Typed main-navigation items of the AppShell. Every item points to an EXISTING route of the session route table (routes.config) and lists the roles that see it (a test asserts each route exists and admits those roles). v1.1 (T11a): "Mi grupo" (/my-group, students) and "Grupos" (/groups, teachers and admins). v1.2 (T0 learning): "Aprender" (/learn, every role; teachers and admins preview the student viewer) and "Contenido" (/content, teachers and admins); the legacy "Aprendizaje" (/teaching) entry stays until the legacy routes redirect (R1). v1.3 (S0 evaluations): the legacy evaluation items are replaced by "Evaluaciones" (/evaluations, every role), "Gestionar evaluaciones" (/evaluations/manage) and "Calificar" (/grading), both for teachers and admins. getNavItems filters by role; findActiveHref picks the longest matching item for the current Next pathname. v1.4 (G1 grading): an item may name a `badgeKey` (nav-badges registry); "Calificar" shows the gradingPending count. v1.5 (A1 ai-chat): "Asistente IA" (/assistant, every role). v1.6 (T5 simulation): "Simulador" (/simulator, every role); the legacy /simulador entry is untouched until T13 renames it. v1.7 (T11 simulation): "Casos clínicos" (/simulator/cases, teachers and admins). v1.8 (T13 simulation): the legacy /simulador entry is relabelled "Ventilador real" (sensors icon): it stays as the only UI of the physical ventilator and is not redirected. v1.9 (T12 ventilator-lab): the legacy "Ventilador real" (/simulador, students) item is replaced by "Laboratorio" (/lab, every role: the backend lets every role book and operate) with the `ventilatorDevice` indicator (online / sin datos, nav-indicators); /simulador now redirects to /lab. An item may name an `indicator` (nav-indicators). v1.10 (T12 review fix W1): the indicator is only a key of the generic nav-indicators registry; the ventilator-lab feature feeds it (online / sin datos only when reported, nothing when unknown). Labels are plain Spanish because the i18next setup (src/i18n) is outside the new-code modules; TODO(i18n): move them to an i18next namespace. Depends on MUI icons and the session route table and entities. v1.11 (O5 operation): final navigation of the migration. Students start at "Inicio" (/me) and get "Mis calificaciones" (/me/grades) and "Mis notas" (/me/notes); teachers and admins start at "Panel docente" (/teacher); "Notificaciones" (/notifications, every role) carries the notificationsUnread badge; the admin console (/admin/users, /admin/settings, /admin/audit, /admin/ai, /admin/research, /admin/search-analytics: ADMIN; /admin/status "Estado del sistema": TEACHER and ADMIN) is a contiguous "Administración" section (optional `section`, rendered as a subheader by the AppShell) at the end. The legacy /dashboard, /panel, /panel/students, /panel/admin and /panel/settings items are removed (those routes now redirect); the legacy /teaching hub stays for students. v1.12 (B3.4, D1): the legacy "Aprendizaje" (/teaching), "Logros" (/achievements) and "Analítica de búsqueda" (/admin/search-analytics) items are removed with their pages; students reach the learning home through "Aprender" (/learn).
+* Versión: 1.12
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,13 +9,11 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import AnalyticsIcon from "@mui/icons-material/Analytics";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import BiotechIcon from "@mui/icons-material/Biotech";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import DnsIcon from "@mui/icons-material/Dns";
 import EditNoteIcon from "@mui/icons-material/EditNote";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GradeIcon from "@mui/icons-material/Grade";
 import GradingIcon from "@mui/icons-material/Grading";
 import GroupWorkIcon from "@mui/icons-material/GroupWork";
@@ -28,7 +26,6 @@ import MenuBookIcon from "@mui/icons-material/MenuBook";
 import MonitorHeartIcon from "@mui/icons-material/MonitorHeart";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import PersonIcon from "@mui/icons-material/Person";
-import SchoolIcon from "@mui/icons-material/School";
 import ScienceIcon from "@mui/icons-material/Science";
 import SensorsIcon from "@mui/icons-material/Sensors";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -63,7 +60,6 @@ export const ADMIN_SECTION = "Administración";
 export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/me", label: "Inicio", icon: HomeIcon, roles: STUDENT },
   { href: "/teacher", label: "Panel docente", icon: DashboardIcon, roles: STAFF },
-  { href: "/teaching", label: "Aprendizaje", icon: SchoolIcon, roles: STUDENT },
   { href: "/learn", label: "Aprender", icon: MenuBookIcon, roles: EVERYONE },
   { href: "/lab", label: "Laboratorio", icon: SensorsIcon, roles: EVERYONE, indicator: "ventilatorDevice" },
   { href: "/simulator", label: "Simulador", icon: MonitorHeartIcon, roles: EVERYONE },
@@ -71,7 +67,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/me/grades", label: "Mis calificaciones", icon: GradeIcon, roles: STUDENT },
   { href: "/me/notes", label: "Mis notas", icon: StickyNote2Icon, roles: STUDENT },
   { href: "/assistant", label: "Asistente IA", icon: SmartToyIcon, roles: EVERYONE },
-  { href: "/achievements", label: "Logros", icon: EmojiEventsIcon, roles: STUDENT },
   { href: "/my-group", label: "Mi grupo", icon: GroupWorkIcon, roles: STUDENT },
   { href: "/groups", label: "Grupos", icon: GroupWorkIcon, roles: STAFF },
   { href: "/content", label: "Contenido", icon: LibraryBooksIcon, roles: STAFF },
@@ -85,7 +80,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/admin/audit", label: "Auditoría", icon: HistoryIcon, roles: ADMIN, section: ADMIN_SECTION },
   { href: "/admin/ai", label: "Analítica de IA", icon: InsightsIcon, roles: ADMIN, section: ADMIN_SECTION },
   { href: "/admin/research", label: "Investigación", icon: ScienceIcon, roles: ADMIN, section: ADMIN_SECTION },
-  { href: "/admin/search-analytics", label: "Analítica de búsqueda", icon: AnalyticsIcon, roles: ADMIN, section: ADMIN_SECTION },
   { href: "/admin/status", label: "Estado del sistema", icon: DnsIcon, roles: STAFF, section: ADMIN_SECTION },
 ];
 

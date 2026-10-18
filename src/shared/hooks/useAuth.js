@@ -16,11 +16,24 @@
  * if (isTeacher()) {
  *   return <TeacherDashboard />;
  * }
+ *
+ * Funcionalidad: Legacy useAuth hook
+ * Descripción: v1.1 (B3.4, D4): NextAuth removed; the session user, status and
+ *   sign-out come from the backend session of @shared/session (useSession) instead
+ *   of next-auth/react. Deleted with the legacy shell in B3.7.
+ * Versión: 1.1
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
  * =============================================================================
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+// Direct module import: the session index would pull the guards and the route table.
+import { useSession as useBackendSession } from '@shared/session/use-session';
 import {
   login as authLogin,
   register as authRegister,
@@ -28,8 +41,6 @@ import {
   getCurrentUser,
   isAuthenticated as checkAuthenticated,
   getUserData,
-  getAuthToken,
-  refreshBackendTokenFromSession,
 } from '@/shared/services/authService';
 
 // Import centralized role constants and helpers
@@ -143,16 +154,16 @@ export function useAuth() {
   // State Management
   // ============================================================================
 
-  const { data: session, status } = useSession();
+  const { user: sessionUser, status, signOut: signOutBackend } = useBackendSession();
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
   const [localLoading, setLocalLoading] = useState(false);
 
-  // Derive loading state from NextAuth status + local operations
+  // Derive loading state from the backend session status + local operations
   const isLoading = status === 'loading' || localLoading;
 
   // Use session user if available, fallback to local user state
-  const currentUser = session?.user || user;
+  const currentUser = sessionUser || user;
 
   // Derived authentication state
   const isAuthenticated = !!currentUser;
@@ -161,22 +172,15 @@ export function useAuth() {
   const role = currentUser?.role?.toLowerCase() || null;
 
   // ============================================================================
-  // Sync NextAuth session with local user state
+  // Sync the backend session with local user state
   // ============================================================================
 
   useEffect(() => {
     if (status === 'loading') return;
 
-    if (status === 'authenticated' && session?.user) {
-      setUser(session.user);
+    if (status === 'authenticated' && sessionUser) {
+      setUser(sessionUser);
       setError(null);
-      // NextAuth login doesn't call authService.login(), so the backend JWT is
-      // never stored in localStorage. Fetch it now so all API clients can use it.
-      if (!getAuthToken()) {
-        refreshBackendTokenFromSession().catch((err) =>
-          console.warn('[useAuth] Could not fetch backend token:', err?.message)
-        );
-      }
     } else if (status === 'unauthenticated') {
 
       // Check for custom auth token (non-OAuth login)
@@ -189,7 +193,7 @@ export function useAuth() {
         setUser(null);
       }
     }
-  }, [session, status]);
+  }, [sessionUser, status]);
 
   // ============================================================================
   // Authentication Functions
@@ -250,8 +254,8 @@ export function useAuth() {
       setUser(null);
       setError(null);
 
-      if (session) {
-        await signOut({ redirect: false });
+      if (sessionUser) {
+        await signOutBackend();
       }
 
       await authLogout();
@@ -262,7 +266,7 @@ export function useAuth() {
       setError(null);
       return false;
     }
-  }, [session]);
+  }, [sessionUser, signOutBackend]);
 
   const refreshUser = useCallback(async () => {
     setLocalLoading(true);

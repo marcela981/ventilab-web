@@ -5,11 +5,24 @@
  * Page displayed when user attempts to access a resource they don't have
  * permission to view based on their role.
  * 
- * NOTE: Client-side only to avoid SSR issues with useAuth
+ * NOTE: Client-side only to avoid SSR issues with the session
+ *
+ * Funcionalidad: Access denied page (legacy)
+ * Descripción: v1.1 (B3.4, D4): reads the user and role from the backend session
+ *   (@shared/session useSession) instead of the legacy NextAuth-based AuthContext;
+ *   the dashboard button goes to the role home (DEFAULT_ROUTE_BY_ROLE); the spinner
+ *   shows while the session loads (no mounted flag set in an effect).
+ * Versión: 1.1
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
  * =============================================================================
  */
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useRouter } from 'next/router';
 import {
   Box,
@@ -27,8 +40,9 @@ import {
   ArrowBack as ArrowBackIcon,
   ContactSupport as ContactSupportIcon,
 } from '@mui/icons-material';
-import Link from 'next/link';
-import { useAuth } from '@/shared/contexts/AuthContext';
+// Direct module imports: the session index would pull the guards into this page.
+import { useSession } from '@shared/session/use-session';
+import { DEFAULT_ROUTE_BY_ROLE } from '@shared/session/routes.config';
 import { ROLE_DISPLAY_NAMES } from '@/lib/auth-config';
 
 /**
@@ -37,15 +51,12 @@ import { ROLE_DISPLAY_NAMES } from '@/lib/auth-config';
 export default function AccessDeniedPage() {
   const router = useRouter();
   const { reason } = router.query;
-  const { user, role, isAuthenticated } = useAuth();
-  const [mounted, setMounted] = useState(false);
-
-  // Only render on client to avoid SSR issues
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
+  const { user, role: sessionRole, status } = useSession();
+  const isAuthenticated = status === 'authenticated';
+  // ROLE_DISPLAY_NAMES uses the legacy lowercase role keys.
+  const role = sessionRole ? sessionRole.toLowerCase() : null;
+  // The session is unknown on the server and while it loads: show the spinner.
+  if (status === 'loading') {
     return (
       <Box
         sx={{
@@ -79,7 +90,7 @@ export default function AccessDeniedPage() {
    * Navigate to dashboard
    */
   const handleGoDashboard = () => {
-    router.push('/dashboard');
+    router.push(sessionRole ? DEFAULT_ROUTE_BY_ROLE[sessionRole] : '/');
   };
 
   /**

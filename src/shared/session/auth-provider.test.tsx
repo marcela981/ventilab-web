@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AuthProvider behavior tests
-* Descripción: msw-backed tests of the session layer: boot with and without a stored token, establishSession, best-effort signOut (tokens and session SWR entries cleared even when logout fails), idempotent session-expired handling, cross-tab token removal, /me failures and handleRoleChanged (refresh + reload only for the current user). v1.1: signOut also signs out of NextAuth best effort (next-auth/react mocked), tolerating a rejection. Depends on vitest, Testing Library, msw, swr and the api-client modules.
-* Versión: 1.1
+* Descripción: msw-backed tests of the session layer: boot with and without a stored token, establishSession, best-effort signOut (tokens and session SWR entries cleared even when logout fails), idempotent session-expired handling, cross-tab token removal, /me failures and handleRoleChanged (refresh + reload only for the current user). v1.1: signOut also signs out of NextAuth best effort (next-auth/react mocked), tolerating a rejection. v1.2 (B3.4, D4): NextAuth removed; the NextAuth sign-out tests become one successful-logout test. Depends on vitest, Testing Library, msw, swr and the api-client modules.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,7 +16,7 @@ import { useEffect, useLayoutEffect } from "react";
 import type { ReactNode } from "react";
 import useSWR, { SWRConfig, unstable_serialize } from "swr";
 import type { Cache } from "swr";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { emitAuthEvent } from "@shared/api-client/auth-events";
 import {
   ACCESS_TOKEN_KEY,
@@ -30,12 +30,6 @@ import { AuthProvider } from "./auth-provider";
 import type { Role } from "./session.entity";
 import type { SessionContextValue } from "./session-context";
 import { useSession } from "./use-session";
-
-const nextAuth = vi.hoisted(() => ({
-  signOut: vi.fn<(...args: unknown[]) => Promise<unknown>>(() => Promise.resolve(undefined)),
-}));
-
-vi.mock("next-auth/react", () => nextAuth);
 
 const url = (path: string): string => `${BACKEND_ORIGIN}${path}`;
 
@@ -146,8 +140,6 @@ beforeEach(() => {
   currentRole = "STUDENT";
   session = null;
   statuses = [];
-  nextAuth.signOut.mockReset();
-  nextAuth.signOut.mockImplementation(() => Promise.resolve(undefined));
   server.use(meHandler(), refreshHandler());
 });
 
@@ -247,24 +239,8 @@ describe("signOut", () => {
     expect(cache.get(unstable_serialize(GROUPS_KEY))?.data).toBeUndefined();
   });
 
-  it("also signs out of NextAuth without a redirect", async() => {
+  it("ends the session after a successful logout", async() => {
     server.use(http.post(url("/api/auth/logout"), () => new HttpResponse(null, { status: 204 })));
-    await renderAuthenticated();
-
-    await act(async() => {
-      await session?.signOut();
-    });
-
-    expect(nextAuth.signOut).toHaveBeenCalledTimes(1);
-    expect(nextAuth.signOut).toHaveBeenCalledWith({ redirect: false });
-    expect(statusText()).toBe("unauthenticated:none");
-  });
-
-  it("tolerates a NextAuth sign-out failure", async() => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-
-    server.use(http.post(url("/api/auth/logout"), () => new HttpResponse(null, { status: 204 })));
-    nextAuth.signOut.mockImplementation(() => Promise.reject(new Error("csrf failed")));
     await renderAuthenticated();
 
     await act(async() => {
@@ -273,7 +249,6 @@ describe("signOut", () => {
 
     expect(getAccessToken()).toBeNull();
     expect(statusText()).toBe("unauthenticated:none");
-    warn.mockRestore();
   });
 });
 

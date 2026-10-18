@@ -15,7 +15,8 @@
  *   @shared/session/routes.config, as redirectByRole.js does) instead of a hardcoded copy; the legacy superuser
  *   key maps to the ADMIN home.
  *   v1.3 (B3.3): PROTECTED_ROUTES removed (no importer; it only listed legacy routes).
- * Versión: 1.3
+ *   v1.4 (B3.4, D4): /auth/error (NextAuth error page) removed from PUBLIC_ROUTES.
+ * Versión: 1.4
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -56,7 +57,6 @@ export const PUBLIC_ROUTES = [
   '/',
   '/auth/login',
   '/auth/signup',
-  '/auth/error',
   '/auth/verify-email',
   '/about',
   '/contact',

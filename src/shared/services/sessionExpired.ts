@@ -2,8 +2,7 @@
  * Funcionalidad: Manejador central de sesión expirada
  * Descripción: Punto único de logout ante 401/token expirado o inválido, para
  *              cualquier rol. Limpia la sesión completa (JWT y user en
- *              localStorage, cookie de NextAuth y snapshot de usuario en
- *              memoria vía broadcast de useSession), notifica por authEvents
+ *              localStorage), notifica por authEvents
  *              ('auth:logout' → SocketContext cierra el socket) y redirige a
  *              /auth/login?expired=1. Idempotente: múltiples 401 simultáneos
  *              producen un solo logout y un solo redirect, sin loops si ya se
@@ -12,7 +11,9 @@
  *              backend (access + refresh) vía clearTokens() de
  *              @shared/api-client/token-storage, que notifica a la sesión nueva
  *              (fin de sesión y cierre del socket realtime) una sola vez.
- * Versión: 1.1
+ *              v1.2 (B3.4, D4): sin NextAuth; ya no hay signOut de su cookie,
+ *              la redirección es inmediata.
+ * Versión: 1.2
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -21,7 +22,6 @@
  * Contacto: marcela.mazo@correounivalle.edu.co
  */
 
-import { signOut } from 'next-auth/react';
 import { removeAuthToken } from '@/shared/services/authService';
 import { authEvents } from '@/shared/services/authEvents';
 
@@ -50,25 +50,18 @@ export function handleSessionExpired(reason: string = 'token_expired'): void {
   // 2. Avisar al resto de la app (SocketContext desconecta el socket).
   authEvents.emit('auth:logout', { reason });
 
-  const onLoginPage = window.location.pathname.startsWith(LOGIN_ROUTE);
-
-  // 3. Invalidar la cookie de NextAuth; el broadcast de signOut pone useSession
-  //    en 'unauthenticated' y vacía el snapshot de usuario en memoria.
-  //    Con timeout: si /api/auth/signout no responde, se redirige igual.
-  const signOutSafe = Promise.race([
-    signOut({ redirect: false }).catch(() => undefined),
-    new Promise((resolve) => window.setTimeout(resolve, 3000)),
-  ]);
-
-  void signOutSafe.then(() => {
-    if (onLoginPage) {
-      // Ya estamos en login: no redirigir (evita loop). Se libera el flag para
-      // poder manejar una expiración futura tras un nuevo login.
+  if (window.location.pathname.startsWith(LOGIN_ROUTE)) {
+    // Ya estamos en login: no redirigir (evita loop). Se libera el flag después de
+    // las llamadas simultáneas (microtarea) para poder manejar una expiración futura
+    // tras un nuevo login.
+    queueMicrotask(() => {
       inProgress = false;
-      return;
-    }
-    window.location.href = `${LOGIN_ROUTE}?expired=1`;
-  });
+    });
+    return;
+  }
+
+  // 3. Redirigir al login (NextAuth ya no existe: no hay cookie que invalidar).
+  window.location.href = `${LOGIN_ROUTE}?expired=1`;
 }
 
 export default handleSessionExpired;

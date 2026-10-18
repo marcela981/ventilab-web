@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Route guard tests
-* Descripción: RequireAuth and RequireRole behavior with a mocked Next router: neutral loading state without protected content, redirect to the login page with a safe returnTo, redirect of a wrong role to its landing route, a single redirect when the session expires twice, and a clean login (no returnTo) after a voluntary sign-out. v1.2 (T12): end to end, a failed token refresh (real api-client, 401 then refresh 401) clears both tokens, hides the content and redirects to the login page with returnTo; a student on a teacher route (the /groups roles of the route table) goes to the student home. Depends on vitest, Testing Library, next/router (mocked) and the session modules. v1.3 (O5 operation): the student home is /me.
-* Versión: 1.3
+* Descripción: RequireAuth and RequireRole behavior with a mocked Next router: neutral loading state without protected content, redirect to the login page with a safe returnTo, redirect of a wrong role to its landing route, a single redirect when the session expires twice, and a clean login (no returnTo) after a voluntary sign-out. v1.2 (T12): end to end, a failed token refresh (real api-client, 401 then refresh 401) clears both tokens, hides the content and redirects to the login page with returnTo; a student on a teacher route (the /groups roles of the route table) goes to the student home. Depends on vitest, Testing Library, next/router (mocked) and the session modules. v1.3 (O5 operation): the student home is /me. v1.4 (B3.4, D4): no next-auth/react mock (NextAuth removed).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -34,7 +34,6 @@ const router = vi.hoisted(() => ({
 }));
 
 vi.mock("next/router", () => ({ useRouter: () => router }));
-vi.mock("next-auth/react", () => ({ signOut: vi.fn(() => Promise.resolve(undefined)) }));
 
 const server = setupServer(
   http.get(`${BACKEND_ORIGIN}/api/auth/me`, () =>

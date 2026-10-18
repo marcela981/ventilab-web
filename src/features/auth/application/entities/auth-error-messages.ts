@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Auth error messages
-* Descripción: Maps login failures (ApiError codes from the backend envelope or client network codes) to clear Spanish messages: invalid credentials, inactive account, Google-only account, domain not allowed, unverified Google email, invalid Google token, Google sign-in not configured, rate limit with the Retry-After wait, timeout/network and generic fallbacks. v1.1 (T9 follow-up): STALE_SESSION_MESSAGE for a NextAuth session of another user that could not be cleared after login, and the post-login redirect loop message. Spanish copy, TODO(i18n). Depends on @shared/api-client api-error.
-* Versión: 1.1
+* Descripción: Maps login failures (ApiError codes from the backend envelope or client network codes) to clear Spanish messages: invalid credentials, inactive account, Google-only account, domain not allowed, unverified Google email, invalid Google token, Google sign-in not configured, rate limit with the Retry-After wait, timeout/network and generic fallbacks. v1.1 (T9 follow-up): STALE_SESSION_MESSAGE for a NextAuth session of another user that could not be cleared after login, and the post-login redirect loop message. v1.2 (B3.4, D4): STALE_SESSION_MESSAGE removed with NextAuth; getRegisterErrorMessage maps registration failures (users.user_already_exists / 409 → email taken, 400 → check the data, the rest shared with login). Spanish copy, TODO(i18n). Depends on @shared/api-client api-error.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,10 +27,6 @@ export const AUTH_ERROR_MESSAGES = {
   server: "Ocurrió un error en el servidor. Inténtalo de nuevo más tarde.",
   unknown: "No se pudo iniciar sesión. Inténtalo de nuevo.",
 } as const;
-
-// TODO(i18n)
-export const STALE_SESSION_MESSAGE =
-  "No se pudo cerrar la sesión anterior. Cierra el navegador o borra las cookies e inténtalo de nuevo.";
 
 // TODO(i18n)
 export const REDIRECT_LOOP_MESSAGE =
@@ -83,4 +79,38 @@ export function getAuthErrorMessage(error: unknown): string {
   }
 
   return AUTH_ERROR_MESSAGES.unknown;
+}
+
+// TODO(i18n): move to an auth namespace in src/i18n.
+export const REGISTER_ERROR_MESSAGES = {
+  emailTaken: "Ya existe una cuenta con este correo. Inicia sesión o usa otro correo.",
+  badRequest: "Revisa los datos ingresados e inténtalo de nuevo.",
+  unknown: "No se pudo crear la cuenta. Inténtalo de nuevo.",
+} as const;
+
+const REGISTER_MESSAGES_BY_CODE: Readonly<Record<string, string>> = {
+  "users.user_already_exists": REGISTER_ERROR_MESSAGES.emailTaken,
+};
+
+// Registration failures: a taken email (409) and invalid data (400) get their own message; the rest
+// (domain not allowed, rate limit, network, server) share the login messages.
+export function getRegisterErrorMessage(error: unknown): string {
+  const apiError = toApiError(error);
+  const known = REGISTER_MESSAGES_BY_CODE[apiError.code];
+
+  if (known) {
+    return known;
+  }
+
+  if (apiError.status === 409) {
+    return REGISTER_ERROR_MESSAGES.emailTaken;
+  }
+
+  const message = getAuthErrorMessage(error);
+
+  if (message === AUTH_ERROR_MESSAGES.badRequest) {
+    return REGISTER_ERROR_MESSAGES.badRequest;
+  }
+
+  return message === AUTH_ERROR_MESSAGES.unknown ? REGISTER_ERROR_MESSAGES.unknown : message;
 }

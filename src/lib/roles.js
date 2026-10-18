@@ -6,6 +6,17 @@
  * These values MUST match the backend exactly.
  *
  * Backend role field: role: "student" | "teacher" | "admin" | "superuser"
+ *
+ * Funcionalidad: Legacy role constants and helpers
+ * Descripción: v1.1 (B3.4, D1): the /teaching entry of ROUTE_ROLES is removed with the
+ *   teaching hub (/teaching now only redirects to /learn).
+ * Versión: 1.1
+ * Autor: Marcela Mazo Castro
+ * Proyecto: VentyLab
+ * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
+ *        que integre un sistema de retroalimentación usando modelos de lenguaje
+ * Institución: Universidad del Valle
+ * Contacto: marcela.mazo@correounivalle.edu.co
  * =============================================================================
  */
 
@@ -216,7 +227,6 @@ export function canAccessWithRoles(userRole, requiredRoles) {
 export const ROUTE_ROLES = Object.freeze({
   // Panel routes require teacher-level access
   '/panel': [ROLES.TEACHER, ROLES.ADMIN, ROLES.SUPERUSER],
-  '/teaching': [ROLES.TEACHER, ROLES.ADMIN, ROLES.SUPERUSER],
 
   // Admin routes require admin-level access
   '/admin': [ROLES.ADMIN, ROLES.SUPERUSER],

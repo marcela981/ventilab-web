@@ -2,8 +2,9 @@
  * Funcionalidad: Sidebar
  * Descripción: Barra lateral de navegación de VentyLab. Lista las secciones
  *   principales y la tarjeta de usuario con acceso al perfil. v1.2 (B3.3): sin los
- *   enlaces legados /simulador, /evaluation y /panel (solo redirigían).
- * Versión: 1.2
+ *   enlaces legados /simulador, /evaluation y /panel (solo redirigían). v1.3 (B3.4):
+ *   el único ítem apunta a /learn ("Aprender"); el hub /teaching ya no existe.
+ * Versión: 1.3
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -42,9 +43,9 @@ const drawerWidth = 240;
 
 const menuItems = [
   {
-    text: 'Módulo de Enseñanza',
+    text: 'Aprender',
     icon: <TeachingIcon />,
-    path: '/teaching'
+    path: '/learn'
   }
 ];
 
