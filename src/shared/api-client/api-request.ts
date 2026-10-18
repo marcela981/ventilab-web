@@ -1,11 +1,11 @@
 /*
 * Funcionalidad: Typed request helpers
-* DescripciÃ³n: `apiRequest(method, path, options)` and the `apiGet/apiPost/apiPut/apiPatch/apiDelete` shortcuts over the generated OpenAPI paths. Substitutes `{param}` path segments, sends query/body, applies the per-call timeout category and returns the unwrapped envelope `{ data, pagination, message, traceId }`. Every failure rejects with ApiError (cancellations pass through). Depends on http-client, timeouts and api-error.
-* VersiÃ³n: 1.0
+* Descripción: `apiRequest(method, path, options)` and the `apiGet/apiPost/apiPut/apiPatch/apiDelete` shortcuts over the generated OpenAPI paths. Substitutes `{param}` path segments, sends query/body, applies the per-call timeout category and returns the unwrapped envelope `{ data, pagination, message, traceId }`. Every failure rejects with ApiError (cancellations pass through). Depends on http-client, timeouts and api-error. v1.1: header re-encoded as UTF-8 (the accented header words were double-encoded).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
-* Tesis: Desarrollo de una aplicaciÃ³n web para la enseÃ±anza de mecÃ¡nica ventilatoria que integre un sistema de retroalimentaciÃ³n usando modelos de lenguaje
-* InstituciÃ³n: Universidad del Valle
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 

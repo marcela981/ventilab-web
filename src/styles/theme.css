@@ -1,3 +1,13 @@
+/*
+* Funcionalidad: Variables CSS del tema legado
+* Descripción: Propiedades personalizadas de la paleta oscura legada (--color-*, --text-*, --spacing-*, --radius-*, --shadow-*, --gradient-*) y algunas clases utilitarias legadas. Solo la importa src/index.css; ningún CSS Module ni componente lee estas variables (el design system usa --vl-* y --mui-* de tokens.css).
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
 /* VentyLab Theme - CSS Variables */
 /* Nueva paleta de colores profesional */
 
