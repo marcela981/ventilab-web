@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AuditEntryDialog
-* Descripción: Detail dialog of one audit row of /admin/audit, built from the row already loaded (there is no entry detail endpoint): date, action, actor and actor role, target type, id and collection, description, reason, IP and request id, then the before/after diff with ONLY the changed fields (diffAuditChanges over the stored before/after objects, dotted keys). "Historial del objetivo" loads the paginated history of the same target (`GET /api/audit/targets/{type}/{id}`) under the detail; a history row can be opened in turn. The page mounts it with key = entry id, so the history panel starts closed for every entry. Depends on MUI, React, @shared/lib, the design-system states and skeleton, the admin console audit entity, hooks, components, error messages and CSS Module.
-* Versión: 1.0
+* Descripción: Detail dialog of one audit entry of /admin/audit, read by id from `GET /api/audit/{id}` (loading skeleton, error with retry, 404 message): date, action, actor and actor role, target type, id and collection, description, reason, IP and request id, then the before/after diff with ONLY the changed fields (diffAuditChanges over the stored before/after objects, dotted keys). "Historial del objetivo" loads the paginated history of the same target (`GET /api/audit/targets/{type}/{id}`) under the detail; a history row can be opened in turn. The page mounts it with key = entry id, so the history panel starts closed for every entry. v1.1 (closure B2): the dialog takes the entry id and reads the detail endpoint instead of reusing the list row. Depends on MUI, React, @shared/lib, the design-system states and skeleton, the admin console audit entity, hooks, components, error messages and CSS Module.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -23,6 +23,7 @@ import { getAdminConsoleErrorMessage } from "../entities/admin-console-error-mes
 import { MISSING_VALUE } from "../entities/admin-format";
 import { diffAuditChanges, formatAuditValue } from "../entities/audit.entity";
 import type { AuditEntry } from "../entities/audit.entity";
+import { useAuditEntry } from "../hooks/use-audit-entry";
 import { useAuditTargetHistory } from "../hooks/use-audit-target-history";
 import { AuditTable } from "./audit-table";
 import { ListPager } from "./list-pager";
@@ -54,6 +55,9 @@ export const AUDIT_DIALOG_COPY = {
   historyError: "No se pudo cargar el historial",
   historyEmpty: "No hay más registros de este objetivo.",
   close: "Cerrar",
+  loadingTitle: "Registro de auditoría",
+  entryLoading: "Cargando el registro…",
+  entryError: "No se pudo cargar el registro",
 } as const;
 
 function TargetHistory({ entry, onOpen }: { entry: AuditEntry, onOpen: (entry: AuditEntry) => void }) {
@@ -91,18 +95,46 @@ function TargetHistory({ entry, onOpen }: { entry: AuditEntry, onOpen: (entry: A
 }
 
 export type AuditEntryDialogProps = {
-  entry: AuditEntry | null
+  // Id of the entry to show; the dialog reads it from `GET /api/audit/{id}`.
+  entryId: string | null
   onOpen: (entry: AuditEntry) => void
   onClose: () => void
 };
 
-export function AuditEntryDialog({ entry, onOpen, onClose }: AuditEntryDialogProps) {
-  const [showHistory, setShowHistory] = useState(false);
-  const changes = useMemo(() => (entry ? diffAuditChanges(entry.before, entry.after) : []), [entry]);
+export function AuditEntryDialog({ entryId, onOpen, onClose }: AuditEntryDialogProps) {
+  const { entry, error, reload } = useAuditEntry(entryId);
 
-  if (!entry) {
+  if (!entryId) {
     return null;
   }
+
+  // One dialog for the whole read: only its content changes from the loading or error state to the detail.
+  return (
+    <Dialog open onClose={onClose} fullWidth maxWidth="md" aria-labelledby="audit-entry-title">
+      {entry ? <AuditEntryDetail entry={entry} onOpen={onOpen} onClose={onClose} /> : (
+        <>
+          <DialogTitle id="audit-entry-title">{AUDIT_DIALOG_COPY.loadingTitle}</DialogTitle>
+          <DialogContent>
+            {error ? (
+              <ErrorState
+                title={AUDIT_DIALOG_COPY.entryError}
+                description={getAdminConsoleErrorMessage(error)}
+                onRetry={() => void reload()}
+              />
+            ) : <ListSkeleton rows={4} label={AUDIT_DIALOG_COPY.entryLoading} />}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={onClose}>{AUDIT_DIALOG_COPY.close}</Button>
+          </DialogActions>
+        </>
+      )}
+    </Dialog>
+  );
+}
+
+function AuditEntryDetail({ entry, onOpen, onClose }: { entry: AuditEntry, onOpen: (entry: AuditEntry) => void, onClose: () => void }) {
+  const [showHistory, setShowHistory] = useState(false);
+  const changes = useMemo(() => diffAuditChanges(entry.before, entry.after), [entry]);
 
   const details: [string, string][] = [
     [AUDIT_DIALOG_COPY.date, formatDateTime(entry.performedAt)],
@@ -117,7 +149,7 @@ export function AuditEntryDialog({ entry, onOpen, onClose }: AuditEntryDialogPro
   ];
 
   return (
-    <Dialog open onClose={onClose} fullWidth maxWidth="md" aria-labelledby="audit-entry-title">
+    <>
       <DialogTitle id="audit-entry-title">{AUDIT_DIALOG_COPY.title(entry.action)}</DialogTitle>
       <DialogContent>
         <div className={cx(styles.dialogBody)}>
@@ -164,6 +196,6 @@ export function AuditEntryDialog({ entry, onOpen, onClose }: AuditEntryDialogPro
         </Button>
         <Button onClick={onClose}>{AUDIT_DIALOG_COPY.close}</Button>
       </DialogActions>
-    </Dialog>
+    </>
   );
 }

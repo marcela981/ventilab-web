@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Provider chain entity tests
-* Descripción: The provider chain rules: only configured providers not yet in the chain can be added, adding stops at maxLength, removing stops at minLength and drops the model, moving reorders, and reading/writing the chain keeps the rest of the draft value. Depends on vitest and the admin console entities.
-* Versión: 1.0
+* Descripción: The provider chain rules: only configured providers not yet in the chain can be added, adding stops at maxLength, removing stops at minLength and drops the model, moving reorders, and reading/writing the chain keeps the rest of the draft value. Depends on vitest and the admin console entities. v1.1 (closure B2): AI catalog providers (configured flag and models): unconfigured ones are never addable, the providers to show and the model options of a provider.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,6 +13,9 @@ import { describe, expect, it } from "vitest";
 import {
   addableProviders,
   addProvider,
+  catalogProvidersToShow,
+  isConfiguredProvider,
+  modelOptions,
   moveProvider,
   readProviderChain,
   removeProvider,
@@ -27,7 +30,26 @@ const FIELD: ProviderChainField = { kind: "providerChain", id: "providerChain", 
 
 describe("provider chain", () => {
   it("offers only configured providers that are not in the chain", () => {
-    expect(addableProviders([{ provider: "gemini", available: true }, { provider: "openai", available: true }], STATE)).toEqual(["openai"]);
+    expect(addableProviders([
+      { provider: "gemini", configured: true, models: [] },
+      { provider: "openai", configured: true, models: [] },
+      { provider: "anthropic", configured: false, models: [] },
+    ], STATE)).toEqual(["openai"]);
+  });
+
+  it("lists the catalog providers to show (configured first) and the model options of a provider", () => {
+    const catalog = [
+      { provider: "anthropic", configured: false, models: [] },
+      { provider: "openai", configured: true, models: ["gpt-4o"] },
+      { provider: "gemini", configured: true, models: ["g-1", "g-2"] },
+    ];
+
+    expect(catalogProvidersToShow(catalog, STATE).map((item) => item.provider)).toEqual(["openai", "anthropic"]);
+    expect(modelOptions(catalog, "gemini", "g-1")).toEqual(["g-1", "g-2"]);
+    expect(modelOptions(catalog, "gemini", "g-old")).toEqual(["g-old", "g-1", "g-2"]);
+    expect(modelOptions(catalog, "mistral", "")).toEqual([]);
+    expect(modelOptions([{ provider: "openai", configured: true, models: [] }], "openai", "gpt-4o")).toEqual([]);
+    expect(isConfiguredProvider(catalog, "anthropic")).toBe(false);
   });
 
   it("adds a provider with an empty model and refuses beyond the maximum", () => {

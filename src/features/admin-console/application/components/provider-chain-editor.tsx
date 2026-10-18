@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ProviderChainEditor
-* Descripción: Editor of the provider chain of an `ai.useCase.*` setting: ordered list reordered by drag and drop (@hello-pangea/dnd, keyboard dragging included) or the up/down buttons, one model text input per provider, remove (disabled at limits.providerChain.minLength) and "Agregar proveedor" offering only the providers with credentials (`configured: true` in `GET /api/system/status`) that are not in the chain yet (disabled at maxLength). A provider already in the chain without credentials is labelled "Sin credenciales". Errors of the chain and of each model are shown on their inputs. Depends on @hello-pangea/dnd, MUI, the design-system form field, @shared/lib and the provider chain entity and CSS Module.
-* Versión: 1.0
+* Descripción: Editor of the provider chain of an `ai.useCase.*` setting: ordered list reordered by drag and drop (@hello-pangea/dnd, keyboard dragging included) or the up/down buttons, one model input per provider, remove (disabled at limits.providerChain.minLength) and "Agregar proveedor". Errors of the chain and of each model are shown on their inputs. Depends on @hello-pangea/dnd, MUI, the design-system form field, @shared/lib and the provider chain entity and CSS Module. v1.1 (closure B2): the providers come from the AI catalog (`GET /api/admin/ai/providers`): the add select lists every provider not in the chain, the unconfigured ones disabled as "(no configurado)"; a provider in the chain without credentials is labelled "No configurado"; the model is a select of the provider's known models (the current one kept), or free text when the catalog knows none.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,7 +26,10 @@ import {
   addProvider,
   canAddProvider,
   canRemoveProvider,
+  catalogProvidersToShow,
   changeModel,
+  isConfiguredProvider,
+  modelOptions,
   moveProvider,
   removeProvider,
 } from "../entities/provider-chain.entity";
@@ -38,19 +41,21 @@ import styles from "../../UI/admin-settings.module.css";
 // TODO(i18n): move to an admin-console namespace in src/i18n.
 export const PROVIDER_CHAIN_COPY = {
   listLabel: (label: string) => `${label}: orden de uso`,
-  hint: "Se usan en orden: si un proveedor falla, se intenta el siguiente. Solo se pueden agregar proveedores con credenciales configuradas.",
+  hint: "Se usan en orden: si un proveedor falla, se intenta el siguiente. Solo se pueden agregar proveedores con credenciales configuradas en el servidor.",
   model: (provider: string) => `Modelo de ${provider}`,
+  chooseModel: "Elige un modelo",
   drag: (provider: string) => `Arrastrar ${provider}`,
   up: (provider: string) => `Subir ${provider}`,
   down: (provider: string) => `Bajar ${provider}`,
   remove: (provider: string) => `Quitar ${provider}`,
-  noCredentials: "Sin credenciales",
+  noCredentials: "No configurado",
+  notConfiguredOption: (provider: string) => `${provider} (no configurado)`,
   addLabel: "Proveedor para agregar",
   add: "Agregar proveedor",
   choose: "Elige un proveedor",
-  loadingProviders: "Cargando los proveedores con credenciales…",
-  providersFailed: "No se pudo leer qué proveedores tienen credenciales; por ahora no se pueden agregar proveedores.",
-  noneAvailable: "No hay más proveedores con credenciales para agregar.",
+  loadingProviders: "Cargando los proveedores de IA…",
+  providersFailed: "No se pudo leer qué proveedores de IA están configurados; por ahora no se pueden agregar proveedores.",
+  noneAvailable: "No hay más proveedores configurados para agregar.",
   atMax: "La cadena ya tiene el máximo de proveedores.",
   atMin: "La cadena ya tiene el mínimo de proveedores.",
 } as const;
@@ -89,6 +94,7 @@ export function ProviderChainEditor({ field, state, errors, configured, provider
   const errorId = useId();
   const [selected, setSelected] = useState("");
   const options = configured ? addableProviders(configured, state) : [];
+  const shown = configured ? catalogProvidersToShow(configured, state) : [];
   const choice = options.includes(selected) ? selected : "";
   const allowAdd = canAddProvider(state, field.limits);
   const allowRemove = canRemoveProvider(state, field.limits);
@@ -122,7 +128,9 @@ export function ProviderChainEditor({ field, state, errors, configured, provider
               aria-label={PROVIDER_CHAIN_COPY.listLabel(field.label)}
             >
               {state.chain.map((provider, index) => {
-                const missingCredentials = configured !== null && !configured.some((item) => item.provider === provider);
+                const missingCredentials = configured !== null && !isConfiguredProvider(configured, provider);
+                const model = state.models[provider] ?? "";
+                const models = configured ? modelOptions(configured, provider, model) : [];
 
                 return (
                   <Draggable key={provider} draggableId={`${droppableId}-${provider}`} index={index} isDragDisabled={disabled}>
@@ -141,15 +149,32 @@ export function ProviderChainEditor({ field, state, errors, configured, provider
                           {provider}
                           {missingCredentials ? <span className={cx(styles.warningBadge)}>{PROVIDER_CHAIN_COPY.noCredentials}</span> : null}
                         </span>
-                        <FormField
-                          className={cx(styles.chainModel)}
-                          size="small"
-                          label={PROVIDER_CHAIN_COPY.model(provider)}
-                          value={state.models[provider] ?? ""}
-                          disabled={disabled}
-                          error={errors[modelErrorKey(provider)]}
-                          onChange={(event) => onChange(changeModel(state, provider, event.target.value))}
-                        />
+                        {models.length > 0 ? (
+                          <FormField
+                            select
+                            className={cx(styles.chainModel)}
+                            size="small"
+                            label={PROVIDER_CHAIN_COPY.model(provider)}
+                            value={model}
+                            disabled={disabled}
+                            error={errors[modelErrorKey(provider)]}
+                            slotProps={NATIVE_SELECT}
+                            onChange={(event) => onChange(changeModel(state, provider, event.target.value))}
+                          >
+                            {model === "" ? <option value="">{PROVIDER_CHAIN_COPY.chooseModel}</option> : null}
+                            {models.map((item) => <option key={item} value={item}>{item}</option>)}
+                          </FormField>
+                        ) : (
+                          <FormField
+                            className={cx(styles.chainModel)}
+                            size="small"
+                            label={PROVIDER_CHAIN_COPY.model(provider)}
+                            value={model}
+                            disabled={disabled}
+                            error={errors[modelErrorKey(provider)]}
+                            onChange={(event) => onChange(changeModel(state, provider, event.target.value))}
+                          />
+                        )}
                         <div className={cx(styles.chainActions)}>
                           <IconButton size="small" aria-label={PROVIDER_CHAIN_COPY.up(provider)} disabled={disabled || index === 0} onClick={() => onChange(moveProvider(state, index, index - 1))}>
                             <ArrowUpwardIcon fontSize="small" />
@@ -190,7 +215,11 @@ export function ProviderChainEditor({ field, state, errors, configured, provider
           slotProps={NATIVE_SELECT}
         >
           <option value="">{PROVIDER_CHAIN_COPY.choose}</option>
-          {options.map((provider) => <option key={provider} value={provider}>{provider}</option>)}
+          {shown.map((item) => (
+            <option key={item.provider} value={item.provider} disabled={!item.configured}>
+              {item.configured ? item.provider : PROVIDER_CHAIN_COPY.notConfiguredOption(item.provider)}
+            </option>
+          ))}
         </FormField>
         <Button variant="outlined" startIcon={<AddIcon />} disabled={disabled || !allowAdd || !choice} onClick={add}>
           {PROVIDER_CHAIN_COPY.add}

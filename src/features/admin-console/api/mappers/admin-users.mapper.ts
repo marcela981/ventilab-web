@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin users mapper
-* Descripción: Maps the users list (UserDTO → AdminUserRow, an unknown role kept out by the generated enum) and the groups of the filter (GroupDTO → GroupFilterOption, sorted by name). Depends on the admin console DTOs and the admin users entity.
-* Versión: 1.0
+* Descripción: Maps the users list (UserDTO → AdminUserRow, an unknown role kept out by the generated enum) and the groups of the filter (GroupDTO → GroupFilterOption, sorted by name). Depends on the admin console DTOs and the admin users entity. v1.1 (closure B2): the row keeps the student code and the superadmin flag of the API.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,6 +20,8 @@ export function toAdminUserRow(user: UserDTO): AdminUserRow {
     role: user.role,
     isActive: user.isActive,
     createdAt: user.createdAt,
+    studentCode: user.studentCode,
+    isSuperadmin: user.isSuperadmin,
   };
 }
 

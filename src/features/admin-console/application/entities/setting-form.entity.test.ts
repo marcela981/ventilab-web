@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Setting form generator tests
-* Descripción: buildSettingField generates every field kind from the metadata (number with min/max/integer, boolean, string, string with allowedValues, array with allowedValues and required, plain array, object as a recursive group with per-field and inherited limits, ai.useCase.* provider chain, unmappable shapes as JSON); validateSettingValue reports the hard limits (range, integer, not a number, allowed and required values, chain length, empty model, invalid JSON) and nothing for valid values; describeLimits, diffSettingValues and mapSettingServerError (422 paths `value`, `providerChain[0]`, `models.x`, nested fields, unknown paths on the card, providers without credentials). Depends on vitest and the admin console entities. v1.1 (O4a review): record-like settings (ai.quotas optional quota numbers and entries; ai.prices optional providers/models with required prices when present) and removeAt.
-* Versión: 1.1
+* Descripción: buildSettingField generates every field kind from the metadata (number with min/max/integer, boolean, string, string with allowedValues, array with allowedValues and required, plain array, object as a recursive group with per-field and inherited limits, ai.useCase.* provider chain, unmappable shapes as JSON); validateSettingValue reports the hard limits (range, integer, not a number, allowed and required values, chain length, empty model, invalid JSON) and nothing for valid values; describeLimits, diffSettingValues and mapSettingServerError (422 paths `value`, `providerChain[0]`, `models.x`, nested fields, unknown paths on the card, providers without credentials). Depends on vitest and the admin console entities. v1.1 (O4a review): record-like settings (ai.quotas optional quota numbers and entries; ai.prices optional providers/models with required prices when present) and removeAt. v1.2 (closure B2): the declared types of the registry (integer with unit, string, string-list, integer-list), a map built from its key schema (validation per key, allowed keys in the limits, new keys empty for nested maps and seeded from the sample for objects, added/removed keys in the diff) and the per-field server errors (`data.errors`) mapped under the draft fields with the rest on the card.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,8 +16,11 @@ import {
   buildSettingField,
   describeLimits,
   diffSettingValues,
+  mapEntryField,
   mapSettingServerError,
+  newMapEntryValue,
   resolveServerPath,
+  settingRelativePath,
   validateSettingValue,
 } from "./setting-form.entity";
 import type { GroupField, SettingField } from "./setting-form.entity";
@@ -244,5 +247,90 @@ describe("mapSettingServerError", () => {
 
     expect(mapSettingServerError(field, unprocessable("platform-settings.ai_provider_not_configured", { providers: ["openai"] })))
       .toEqual({ fieldErrors: { providerChain: "La cadena incluye proveedores sin credenciales: openai." }, cardMessage: null });
+  });
+});
+
+describe("registry metadata (closure B2)", () => {
+  const unprocessable = (code: string, details: unknown) => new ApiError({ code, message: code, status: 422, details });
+  const QUOTA_SCHEMA = {
+    path: null,
+    keyLabel: "Rol",
+    allowedKeys: ["STUDENT", "TEACHER", "ADMIN"],
+    valueType: "map" as const,
+    valueLimits: null,
+    valueKeySchema: {
+      path: null,
+      keyLabel: "Caso de uso",
+      allowedKeys: ["*", "FREE_CHAT"],
+      valueType: "object" as const,
+      valueLimits: { requestsPerDay: { min: 0, max: 100, integer: true } },
+      valueKeySchema: null,
+    },
+  };
+  const QUOTAS = {
+    key: "ai.quotas",
+    type: "map" as const,
+    keySchema: QUOTA_SCHEMA,
+    defaultValue: { STUDENT: { "*": { requestsPerDay: 50, tokensPerDay: 20000 } } },
+    limits: {},
+  };
+
+  it("builds the declared types: integer, number with its unit, string, string-list and integer-list", () => {
+    expect(buildSettingField({ key: "a", defaultValue: 3, value: 3, limits: { min: 0 }, type: "integer", unit: "s" }))
+      .toMatchObject({ kind: "number", limits: { min: 0, integer: true }, unit: "s" });
+    expect(buildSettingField({ key: "a", defaultValue: "", value: "", limits: {}, type: "string" })).toMatchObject({ kind: "text" });
+    expect(buildSettingField({ key: "a", defaultValue: [], value: [], limits: {}, type: "string-list" })).toMatchObject({ kind: "list", itemKind: "string" });
+    expect(buildSettingField({ key: "a", defaultValue: [], value: [], limits: { min: 1 }, type: "integer-list" }))
+      .toMatchObject({ kind: "list", itemKind: "number", itemLimits: { min: 1, integer: true } });
+  });
+
+  it("builds a map from its key schema and validates every key of the draft", () => {
+    const field = buildSettingField({ ...QUOTAS, value: QUOTAS.defaultValue });
+
+    expect(field).toMatchObject({ kind: "map", keyLabel: "Rol", allowedKeys: ["STUDENT", "TEACHER", "ADMIN"] });
+    expect(validateSettingValue(field, { STUDENT: { "*": { requestsPerDay: 500 } } })).toEqual({ "STUDENT.*.requestsPerDay": "Debe estar entre 0 y 100." });
+    // ai.quotas entries are optional: a missing quota number is unlimited.
+    expect(validateSettingValue(field, { TEACHER: { FREE_CHAT: {} } })).toEqual({});
+    expect(describeLimits(field)).toBe("Claves permitidas: Estudiante, Docente, Administrador");
+  });
+
+  it("starts a new key of a nested map empty and a new key of an object map from the sample value", () => {
+    const field = buildSettingField({ ...QUOTAS, value: QUOTAS.defaultValue });
+
+    if (field.kind !== "map") {
+      throw new Error("map expected");
+    }
+
+    expect(newMapEntryValue(field)).toEqual({});
+    const inner = mapEntryField(field, "STUDENT", QUOTAS.defaultValue);
+
+    expect(inner.kind).toBe("map");
+    expect(inner.kind === "map" ? newMapEntryValue(inner) : null).toEqual({ requestsPerDay: 50, tokensPerDay: 20000 });
+  });
+
+  it("lists added and removed keys in the diff", () => {
+    const field = buildSettingField({ ...QUOTAS, value: QUOTAS.defaultValue });
+
+    expect(diffSettingValues(field, { STUDENT: { "*": { requestsPerDay: 50 } } }, { TEACHER: { "*": { requestsPerDay: 10 } } }).map((change) => change.label))
+      .toEqual(["Estudiante", "Docente"]);
+  });
+
+  it("places the per-field server errors under the field of the draft and the rest on the card", () => {
+    const value = { STUDENT: { "*": { requestsPerDay: 50 } } };
+    const field = buildSettingField({ ...QUOTAS, value });
+    const error = unprocessable("platform-settings.hard_limit_exceeded", {
+      errors: [
+        { field: "ai.quotas.STUDENT.*.requestsPerDay", message: "Debe ser como máximo 100." },
+        { field: "ai.quotas.GHOST.x", message: "Clave desconocida." },
+        { field: "version", message: "Versión inválida." },
+      ],
+    });
+
+    expect(mapSettingServerError(field, error, value, "ai.quotas")).toEqual({
+      fieldErrors: { "STUDENT.*.requestsPerDay": "Debe ser como máximo 100.", "": "Clave desconocida." },
+      cardMessage: "Versión inválida.",
+    });
+    expect(settingRelativePath("ai.quotas", "ai.quotas")).toBe("");
+    expect(settingRelativePath("ai.useCase.X", "ai.useCase.X.providerChain[0]")).toBe("providerChain[0]");
   });
 });

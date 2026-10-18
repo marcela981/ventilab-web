@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin operations service
-* Descripción: API paths and calls of the operation pages of the admin console: the audit log (`GET /api/audit`, `GET /api/audit/targets/{type}/{id}`, CSV `GET /api/audit/export` whose X-Export-Truncated header says when rows were left out), the AI telemetry and AI ratings stats with their CSV exports (`/api/admin/ai-telemetry/*`, `/api/admin/ai-ratings/*`), the anonymized research export (`GET /api/analytics/research/export.csv`, 503 without the anonymization key), the system status (`GET /api/system/status`), the ventilator telemetry metrics (`GET /api/ventilator/telemetry/metrics`, ADMIN) and the AI provider probe (`POST /api/system/probe/ai/{provider}`, ADMIN, 3 per minute). The CSV calls return the downloaded file and whether the server truncated it; the caller saves it. Depends on @shared/api-client.
-* Versión: 1.0
+* Descripción: API paths and calls of the operation pages of the admin console: the audit log (`GET /api/audit`, `GET /api/audit/targets/{type}/{id}`, CSV `GET /api/audit/export` whose X-Export-Truncated header says when rows were left out), the AI telemetry and AI ratings stats with their CSV exports (`/api/admin/ai-telemetry/*`, `/api/admin/ai-ratings/*`), the anonymized research export (`GET /api/analytics/research/export.csv`, 503 without the anonymization key), the system status (`GET /api/system/status`), the ventilator telemetry metrics (`GET /api/ventilator/telemetry/metrics`, ADMIN) and the AI provider probe (`POST /api/system/probe/ai/{provider}`, ADMIN, 3 per minute). The CSV calls return the downloaded file and whether the server truncated it; the caller saves it. Depends on @shared/api-client. v1.1 (closure B2): the audit entry detail (`GET /api/audit/{id}`) and catalog (`GET /api/audit/catalog`: actions, target types, export row limit), and the research export data dictionary (`GET /api/analytics/research/export/dictionary`), downloaded as a CSV built from its rows. Also depends on the admin operations mapper and the research dictionary entity.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,12 +11,17 @@
 
 import { apiGetText, isHeaderTrue } from "@shared/api-client/api-download";
 import type { ApiTextFile } from "@shared/api-client/api-download";
-import { apiPost } from "@shared/api-client/api-request";
+import { apiGet, apiPost } from "@shared/api-client/api-request";
+import { researchDictionaryCsv } from "../../application/entities/research-dictionary.entity";
 import type { AiProbeDTO } from "../dtos/admin-console.dto";
+import { toResearchColumn } from "../mappers/admin-operations.mapper";
 
 export const AUDIT_PATH = "/api/audit";
 export const AUDIT_EXPORT_PATH = "/api/audit/export";
 export const AUDIT_TARGET_PATH = "/api/audit/targets/{type}/{id}";
+export const AUDIT_ENTRY_PATH = "/api/audit/{id}";
+export const AUDIT_CATALOG_PATH = "/api/audit/catalog";
+export const RESEARCH_DICTIONARY_PATH = "/api/analytics/research/export/dictionary";
 export const AI_TELEMETRY_STATS_PATH = "/api/admin/ai-telemetry/stats";
 export const AI_TELEMETRY_EXPORT_PATH = "/api/admin/ai-telemetry/export.csv";
 export const AI_RATINGS_STATS_PATH = "/api/admin/ai-ratings/stats";
@@ -72,6 +77,13 @@ export async function exportAiRatingsCsv(query: AiRatingsExportQuery): Promise<E
 
 export async function exportResearchCsv(groupId: string | null): Promise<ExportedFile> {
   return exported(await apiGetText(RESEARCH_EXPORT_PATH, { query: groupId ? { groupId } : {}, timeout: "slow" }));
+}
+
+/** The research export data dictionary (`GET /api/analytics/research/export/dictionary`) as a CSV file built from its JSON rows. */
+export async function downloadResearchDictionary(): Promise<ApiTextFile> {
+  const result = await apiGet(RESEARCH_DICTIONARY_PATH);
+
+  return { content: researchDictionaryCsv(result.data.map(toResearchColumn)), filename: null };
 }
 
 export async function probeAiProvider(provider: string): Promise<AiProbeDTO> {

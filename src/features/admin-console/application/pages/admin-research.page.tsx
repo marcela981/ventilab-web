@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AdminResearchPage
-* Descripción: Page /admin/research (ADMIN): explains what the anonymized research export contains and what it leaves out, as built by ventylab-server (analytics ExportResearchDatasetUseCase, buildResearchRows, RESEARCH_CSV_COLUMNS, HmacPseudonymizer): a long-format CSV with the columns participant, group, domain, item, metric and value, user and group ids replaced by HMAC-SHA256 with the server key, and the progress, grades, simulation, AI telemetry and AI ratings metrics. An optional student group (`GET /api/groups`) narrows the export; "Descargar CSV" downloads `GET /api/analytics/research/export.csv` (UTF-8 BOM for Excel). A 503 (no anonymization key) shows "La clave de anonimización no está configurada en el servidor". Depends on MUI, next/head, React, the design-system components, the admin console hooks, entities, service and CSS Module.
-* Versión: 1.0
+* Descripción: Page /admin/research (ADMIN): explains what the anonymized research export contains and what it leaves out, as built by ventylab-server (analytics ExportResearchDatasetUseCase, buildResearchRows, RESEARCH_CSV_COLUMNS, HmacPseudonymizer): a long-format CSV with the columns participant, group, domain, item, metric and value, user and group ids replaced by HMAC-SHA256 with the server key, and the progress, grades, simulation, AI telemetry and AI ratings metrics. An optional student group (`GET /api/groups`) narrows the export; "Descargar CSV" downloads `GET /api/analytics/research/export.csv` (UTF-8 BOM for Excel). A 503 (no anonymization key) shows "La clave de anonimización no está configurada en el servidor". v1.1 (closure B2): "Descargar diccionario de datos" saves the columns of `GET /api/analytics/research/export/dictionary` (column, type, Spanish description, example) as a CSV through the shared download helper. Depends on MUI, next/head, React, the design-system components, the admin console hooks, entities, service and CSS Module.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,7 +19,7 @@ import { toApiError } from "@shared/api-client/api-error";
 import { AsyncButton } from "@shared/design-system/components/async-button";
 import { PageHeader } from "@shared/design-system/components/page-header";
 import { cx } from "@shared/lib/class-names";
-import { exportResearchCsv } from "../../api/services/admin-operations.service";
+import { downloadResearchDictionary, exportResearchCsv } from "../../api/services/admin-operations.service";
 import { getAdminConsoleErrorMessage, RESEARCH_EXPORT_NOT_CONFIGURED_MESSAGE } from "../entities/admin-console-error-messages";
 import { useAdminGroups } from "../hooks/use-admin-groups";
 import { useCsvExport } from "../hooks/use-csv-export";
@@ -54,6 +54,9 @@ export const ADMIN_RESEARCH_COPY = {
   groupsError: "No se pudieron cargar los grupos; puedes exportar todos.",
   download: "Descargar CSV",
   file: "investigacion-anonimizada.csv",
+  dictionary: "Descargar diccionario de datos",
+  dictionaryFile: "diccionario-datos-investigacion.csv",
+  dictionaryNote: "El diccionario de datos lista cada columna del CSV con su tipo, su descripción y un ejemplo, tal como los define el servidor.",
 } as const;
 
 function researchErrorMessage(error: unknown): string {
@@ -63,6 +66,7 @@ function researchErrorMessage(error: unknown): string {
 export function AdminResearchPage() {
   const { groups, error: groupsError } = useAdminGroups();
   const csv = useCsvExport(researchErrorMessage);
+  const dictionary = useCsvExport();
   const [groupId, setGroupId] = useState("");
   const studentGroups = (groups ?? []).filter((group) => group.type === "STUDENT");
 
@@ -103,8 +107,17 @@ export function AdminResearchPage() {
             >
               {ADMIN_RESEARCH_COPY.download}
             </AsyncButton>
+            <AsyncButton
+              variant="outlined"
+              startIcon={<DownloadIcon />}
+              loading={dictionary.exporting}
+              onClick={() => dictionary.run(async() => ({ file: await downloadResearchDictionary(), truncated: false }), ADMIN_RESEARCH_COPY.dictionaryFile)}
+            >
+              {ADMIN_RESEARCH_COPY.dictionary}
+            </AsyncButton>
           </div>
         </div>
+        <p className={cx(styles.note)}>{ADMIN_RESEARCH_COPY.dictionaryNote}</p>
         {groupsError ? <Alert severity="info">{ADMIN_RESEARCH_COPY.groupsError}</Alert> : null}
         {csv.error ? <Alert severity="error">{researchErrorMessage(csv.error)}</Alert> : null}
       </div>

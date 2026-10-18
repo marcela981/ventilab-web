@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: SettingCard
-* Descripción: Card of one platform setting in /admin/settings: key, description, origin chip (DEFAULT/OVERRIDE), effective value, default value, hard limits, last update, and the form generated from its metadata (SettingFieldEditor). Client validation mirrors the API hard limits and blocks "Guardar"; a 422 is placed on the field its path names or on the card. "Guardar" sends `PATCH /api/platform-settings/{key} {value, version}`; "Restablecer al valor por defecto" (disabled while the origin is DEFAULT) confirms and sends `POST /{key}/reset {version}`. In the `commands` category (ventilator safety) both ask for an extra confirmation listing the previous value, the new value and the hard limits of every changed field. A 409 platform-settings.version_conflict shows "Otro administrador cambió este valor" with "Recargar", which refetches and resets the form to the new value. Depends on MUI, the design-system components, @shared/lib, the admin console entities, the field editor and CSS Module.
-* Versión: 1.0
+* Descripción: Card of one platform setting in /admin/settings: key, description, origin chip (DEFAULT/OVERRIDE), effective value, default value, hard limits, last update, and the form generated from its metadata (SettingFieldEditor). Client validation mirrors the API hard limits and blocks "Guardar"; a 422 is placed on the field its path names or on the card. "Guardar" sends `PATCH /api/platform-settings/{key} {value, version}`; "Restablecer al valor por defecto" (disabled while the origin is DEFAULT) confirms and sends `POST /{key}/reset {version}`. In the `commands` category (ventilator safety) both ask for an extra confirmation listing the previous value, the new value and the hard limits of every changed field. A 409 platform-settings.version_conflict shows "Otro administrador cambió este valor" with "Recargar", which refetches and resets the form to the new value. Depends on MUI, the design-system components, @shared/lib, the admin console entities, the field editor and CSS Module. v1.1 (closure B2): the title is the Spanish label of the registry (the key below it), the description is the Spanish one of the API, the unit is a fact; a 400/422 with per-field errors (`data.errors`) is placed under the fields of the current draft (map keys included), the rest on the card.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -40,6 +40,7 @@ export const SETTING_CARD_COPY = {
   effective: "Valor efectivo",
   defaultValue: "Valor por defecto",
   limits: "Límites duros",
+  unit: "Unidad",
   updatedAt: "Última actualización",
   neverUpdated: "Nunca (usa el valor por defecto)",
   save: "Guardar",
@@ -72,7 +73,11 @@ export type SettingCardProps = {
 };
 
 function limitsText(setting: PlatformSetting, field: SettingField): string {
-  if (field.kind !== "group" && field.kind !== "json") {
+  if (field.kind === "map" && field.allowedKeys) {
+    return describeLimits(field);
+  }
+
+  if (field.kind !== "group" && field.kind !== "json" && field.kind !== "map") {
     return describeLimits(field);
   }
 
@@ -132,7 +137,7 @@ export function SettingCard({ setting, providers, onSave, onReset, onReload }: S
       if (isVersionConflict(caught)) {
         setConflict(true);
       } else if (action === "save") {
-        const mapped = mapSettingServerError(field, caught);
+        const mapped = mapSettingServerError(field, caught, draft, setting.key);
 
         setServerErrors(mapped.fieldErrors);
         setCardError(mapped.cardMessage);
@@ -195,11 +200,12 @@ export function SettingCard({ setting, providers, onSave, onReset, onReload }: S
   return (
     <section className={cx(styles.card)} aria-labelledby={titleId}>
       <header className={cx(styles.cardHeader)}>
-        <h2 id={titleId} className={cx(styles.cardTitle)}>{setting.key}</h2>
+        <h2 id={titleId} className={cx(styles.cardTitle)}>{setting.label}</h2>
         <span className={cx(styles.originChip)} data-origin={setting.origin}>
           {setting.origin === "DEFAULT" ? SETTING_CARD_COPY.originDefault : SETTING_CARD_COPY.originOverride}
         </span>
       </header>
+      {setting.label !== setting.key ? <p className={cx(styles.settingKey)}>{setting.key}</p> : null}
       <p className={cx(styles.description)}>{setting.description}</p>
       <dl className={cx(styles.facts)}>
         <div>
@@ -214,6 +220,12 @@ export function SettingCard({ setting, providers, onSave, onReset, onReload }: S
           <dt>{SETTING_CARD_COPY.limits}</dt>
           <dd>{limitsText(setting, field)}</dd>
         </div>
+        {setting.unit ? (
+          <div>
+            <dt>{SETTING_CARD_COPY.unit}</dt>
+            <dd>{setting.unit}</dd>
+          </div>
+        ) : null}
         <div>
           <dt>{SETTING_CARD_COPY.updatedAt}</dt>
           <dd>{setting.updatedAt ? formatDateTime(setting.updatedAt) : SETTING_CARD_COPY.neverUpdated}</dd>

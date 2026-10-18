@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Platform setting entity
-* Descripción: Client model of one platform setting (key, category, description, effective value, default value, origin DEFAULT/OVERRIDE, free-form hard limits, version, last update) and the pure value helpers the generated forms use: path ids in the backend error format (`a.b`, `list[0]`), immutable read/write by path, deep clone and deep equality of JSON values, the display format of a value (Sí/No, lists joined by commas, JSON for objects) and the marker of a JSON field whose text does not parse. Depends on the admin console config. v1.1 (O4a review): removeAt deletes the key of a path (immutably) so an optional entry can be omitted from the draft.
-* Versión: 1.1
+* Descripción: Client model of one platform setting (key, category, description, effective value, default value, origin DEFAULT/OVERRIDE, free-form hard limits, version, last update) and the pure value helpers the generated forms use: path ids in the backend error format (`a.b`, `list[0]`), immutable read/write by path, deep clone and deep equality of JSON values, the display format of a value (Sí/No, lists joined by commas, JSON for objects) and the marker of a JSON field whose text does not parse. Depends on the admin console config. v1.1 (O4a review): removeAt deletes the key of a path (immutably) so an optional entry can be omitted from the draft. v1.2 (closure B2): the form metadata of the API (Spanish label and unit, value type, map key schema with allowed keys, value type and limits and nested maps).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,10 +13,30 @@ import type { SettingCategory } from "../config/admin-console.config";
 
 export type SettingOrigin = "DEFAULT" | "OVERRIDE";
 
+/** Value type of a setting or of a map value, as the registry declares it (`PlatformSettingDTO.type`). */
+export type SettingValueType = "integer" | "number" | "boolean" | "string" | "string-list" | "integer-list" | "map" | "object";
+
+/** How a map-valued setting (or a map inside its value) is edited: its keys, the type and limits of each value, nested maps. */
+export type SettingKeySchema = {
+  // Path of the map inside the value (`a.b`), null for the value itself.
+  path: string | null
+  keyLabel: string
+  // Keys a form may add; null means free text.
+  allowedKeys: readonly string[] | null
+  valueType: SettingValueType
+  valueLimits: Readonly<Record<string, unknown>> | null
+  valueKeySchema: SettingKeySchema | null
+};
+
 export type PlatformSetting = {
   key: string
   category: SettingCategory
+  // Spanish metadata of the registry: label, description and unit of the value (null when it has none).
+  label: string
   description: string
+  unit: string | null
+  type: SettingValueType | null
+  keySchema: SettingKeySchema | null
   value: unknown
   defaultValue: unknown
   origin: SettingOrigin

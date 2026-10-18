@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin users styles
-* Descripción: Layout of /admin/users: filter bar (search form, role, group and status selects wrapping on narrow screens), the users table with horizontal scroll, the account status badge (text label plus border colour, never colour alone), row actions with the own-account reason, and the role change dialog body with its list of effects. Tokens only.
-* Versión: 1.0
+* Descripción: Layout of /admin/users: filter bar (search form, role, group and status selects wrapping on narrow screens), the users table with horizontal scroll, the account status badge (text label plus border colour, never colour alone), row actions with the own-account reason, and the role change dialog body with its list of effects. Tokens only. v1.1 (closure B2): the superadmin badge (text label plus warning border) and the student code cell.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -116,6 +116,22 @@
 
 .statusBadge[data-active="false"] {
   color: var(--vl-color-text-muted);
+}
+
+.protectedBadge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: var(--vl-space-1) var(--vl-space-2);
+  border: 1px solid var(--vl-color-warning);
+  border-radius: var(--vl-radius-pill);
+  font: var(--mui-font-caption);
+  white-space: nowrap;
+}
+
+.code {
+  font-family: var(--mui-font-family-mono, monospace);
+  white-space: nowrap;
 }
 
 .rowActions {

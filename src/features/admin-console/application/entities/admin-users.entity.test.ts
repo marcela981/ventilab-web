@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin users entity tests
-* Descripción: The URL filters of /admin/users (read with defaults and invalid values dropped, written without empty keys), the `GET /api/users` query they produce, the role change effects as the backend applies them and the own-account guard. Depends on vitest and the admin users entity.
-* Versión: 1.0
+* Descripción: The URL filters of /admin/users (read with defaults and invalid values dropped, written without empty keys), the `GET /api/users` query they produce, the role change effects as the backend applies them and the own-account guard. Depends on vitest and the admin users entity. v1.1 (closure B2): the locked reason (superadmin from the API flag first, then own account) and the student code rule.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,10 +12,13 @@
 import { describe, expect, it } from "vitest";
 import {
   isOwnAccount,
+  lockedReason,
   NO_USER_FILTERS,
+  parseStudentCode,
   readUserFilters,
   ROLE_CHANGE_EFFECTS,
   roleChangeEffects,
+  STUDENT_CODE_COPY,
   toAdminUsersQuery,
   toUserFiltersQuery,
 } from "./admin-users.entity";
@@ -65,10 +68,21 @@ describe("role change effects", () => {
   });
 
   it("recognises the signed-in admin's own account", () => {
-    const row = { id: "admin-1", name: null, email: "a@x", role: "ADMIN" as const, isActive: true, createdAt: "" };
+    const row = { id: "admin-1", name: null, email: "a@x", role: "ADMIN" as const, isActive: true, createdAt: "", studentCode: null, isSuperadmin: false };
 
     expect(isOwnAccount(row, "admin-1")).toBe(true);
     expect(isOwnAccount(row, "other")).toBe(false);
     expect(isOwnAccount(row, null)).toBe(false);
+    expect(lockedReason(row, "admin-1")).toBe("own");
+    expect(lockedReason(row, "other")).toBeNull();
+    expect(lockedReason({ ...row, isSuperadmin: true }, "admin-1")).toBe("superadmin");
+  });
+
+  it("parses a student code with the backend rule", () => {
+    expect(parseStudentCode("  2026-0001 ")).toEqual({ value: "2026-0001", error: null });
+    expect(parseStudentCode("   ")).toEqual({ value: null, error: null });
+    expect(parseStudentCode("con espacio").error).toBe(STUDENT_CODE_COPY.invalid);
+    expect(parseStudentCode("a".repeat(33)).error).toBe(STUDENT_CODE_COPY.invalid);
+    expect(parseStudentCode("a".repeat(32)).value).toHaveLength(32);
   });
 });

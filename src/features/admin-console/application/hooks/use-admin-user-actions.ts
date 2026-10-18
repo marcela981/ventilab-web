@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useAdminUserActions
-* Descripción: Role change (`PATCH /api/users/{id}/role`) and account status change (`PATCH /api/users/{id}/status`) of /admin/users; after a success every cached users list is revalidated. Errors are rethrown as ApiError so the dialogs show the mapped message (superadmin 403, own account 400). Depends on React, SWR, @shared/api-client and the admin users service.
-* Versión: 1.0
+* Descripción: Role change (`PATCH /api/users/{id}/role`), account status change (`PATCH /api/users/{id}/status`) and student code change (`PATCH /api/users/{id}/student-code`, null clears it) of /admin/users; after a success every cached users list is revalidated. Errors are rethrown as ApiError so the dialogs show the mapped message (superadmin 403, own account 400, code in use 409). Depends on React, SWR, @shared/api-client and the admin users service. v1.1 (closure B2): changeStudentCode.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,7 +12,7 @@
 import { useCallback } from "react";
 import { useSWRConfig } from "swr";
 import { invalidateApiQueries } from "@shared/api-client/use-api-query";
-import { changeUserRole, changeUserStatus, USERS_PATH } from "../../api/services/admin-users.service";
+import { changeUserRole, changeUserStatus, changeUserStudentCode, USERS_PATH } from "../../api/services/admin-users.service";
 import type { UserRole } from "../config/admin-console.config";
 
 const AFTER_CHANGE_PATHS = [USERS_PATH] as const;
@@ -20,6 +20,7 @@ const AFTER_CHANGE_PATHS = [USERS_PATH] as const;
 export type AdminUserActions = {
   changeRole: (userId: string, role: UserRole) => Promise<void>
   changeStatus: (userId: string, isActive: boolean) => Promise<void>
+  changeStudentCode: (userId: string, studentCode: string | null) => Promise<void>
 };
 
 export function useAdminUserActions(): AdminUserActions {
@@ -35,5 +36,10 @@ export function useAdminUserActions(): AdminUserActions {
     await invalidateApiQueries(mutate, AFTER_CHANGE_PATHS);
   }, [mutate]);
 
-  return { changeRole, changeStatus };
+  const changeStudentCode = useCallback(async(userId: string, studentCode: string | null) => {
+    await changeUserStudentCode(userId, studentCode);
+    await invalidateApiQueries(mutate, AFTER_CHANGE_PATHS);
+  }, [mutate]);
+
+  return { changeRole, changeStatus, changeStudentCode };
 }

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AdminAuditPage tests
-* Descripción: /admin/audit with msw: lists the rows of `GET /api/audit` with the URL filters sent as the Bogota ISO range, the detail dialog shows only the changed fields and loads the target history, the CSV export shows the truncation notice when X-Export-Truncated is true, a page beyond the last one moves to the last page, and a failing request shows the error instead of stale rows. Depends on Testing Library, msw, vitest and the admin console page and test helpers.
-* Versión: 1.0
+* Descripción: /admin/audit with msw: lists the rows of `GET /api/audit` with the URL filters sent as the Bogota ISO range, the detail dialog shows only the changed fields and loads the target history, the CSV export shows the truncation notice when X-Export-Truncated is true, a page beyond the last one moves to the last page, and a failing request shows the error instead of stale rows. Depends on Testing Library, msw, vitest and the admin console page and test helpers. v1.1 (closure B2): the dialog reads `GET /api/audit/{id}` (404 message in the dialog); the action and target type filters come from `GET /api/audit/catalog` (free text when it fails) and the export row limit is stated.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,12 +9,13 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { configure, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AuditLogEntryDTO } from "../../api/dtos/admin-console.dto";
 import { AUDIT_DIALOG_COPY } from "../components/audit-entry-dialog";
+import { AUDIT_FILTERS_COPY } from "../components/audit-filters";
 import { AUDIT_TABLE_COPY } from "../components/audit-table";
 import { ADMIN_AUDIT_COPY, AdminAuditPage } from "./admin-audit.page";
 import { apiUrl, envelope, errorResponse, renderAdminConsole } from "./admin-console-test-helpers";
@@ -33,6 +34,8 @@ const router = vi.hoisted(() => ({
 vi.mock("next/router", () => ({ useRouter: () => router }));
 
 vi.setConfig({ testTimeout: 20_000 });
+// The dialog chain (list, then the entry read) outlived the 1 s default wait on a loaded run.
+configure({ asyncUtilTimeout: 5_000 });
 
 function auditDto(id: string, overrides: Partial<AuditLogEntryDTO> = {}): AuditLogEntryDTO {
   return {
@@ -58,6 +61,8 @@ function auditDto(id: string, overrides: Partial<AuditLogEntryDTO> = {}): AuditL
 const server = setupServer();
 let listQueries: URLSearchParams[];
 let listStatus: number;
+let catalogStatus: number;
+let entryReads: string[];
 
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" });
@@ -66,6 +71,8 @@ beforeAll(() => {
 beforeEach(() => {
   listQueries = [];
   listStatus = 200;
+  catalogStatus = 200;
+  entryReads = [];
   router.query = {};
   router.replace.mockClear();
   server.use(
@@ -88,6 +95,15 @@ beforeEach(() => {
       [auditDto("h-1", { action: "user_created", targetType: String(params.type), targetId: String(params.id), before: null })],
       { total: 1, pages: 1, page: 1, limit: 10 },
     ))),
+    http.get(apiUrl("/api/audit/catalog"), () => (catalogStatus === 200
+      ? HttpResponse.json(envelope({ actions: ["user_role_changed", "user_status_changed"], targetTypes: ["platform_setting", "user"], exportRowLimit: 50000 }))
+      : errorResponse("internal", catalogStatus))),
+    http.get(apiUrl("/api/audit/:id"), ({ params }) => {
+      entryReads.push(String(params.id));
+
+      // The detail endpoint is the source of the dialog (its reason differs from the list row).
+      return HttpResponse.json(envelope(auditDto(String(params.id), { reason: `Detalle de ${String(params.id)}` })));
+    }),
   );
 });
 
@@ -114,13 +130,17 @@ describe("AdminAuditPage", () => {
     expect(query?.get("sortOrder")).toBe("desc");
   });
 
-  it("shows only the changed fields in the detail and loads the target history", async() => {
+  it("reads the detail by id and shows only the changed fields, then loads the target history", async() => {
     renderAdminConsole(<AdminAuditPage />);
 
     const buttons = await screen.findAllByRole("button", { name: /^Ver detalle de user_role_changed/ });
 
     fireEvent.click(buttons[0] as HTMLElement);
     const dialog = await screen.findByRole("dialog");
+
+    expect(await within(dialog).findByText("Detalle de a-1")).toBeInTheDocument();
+    // Only the opened entry is read (SWR may revalidate it, never another id).
+    expect(new Set(entryReads)).toEqual(new Set(["a-1"]));
     const changes = within(dialog).getByRole("table", { name: AUDIT_DIALOG_COPY.changesCaption });
 
     expect(within(changes).getByRole("rowheader", { name: "role" })).toBeInTheDocument();
@@ -128,11 +148,49 @@ describe("AdminAuditPage", () => {
     expect(within(changes).getByText("STUDENT")).toBeInTheDocument();
     expect(within(changes).getByText("TEACHER")).toBeInTheDocument();
     expect(within(dialog).getByText("203.0.113.10")).toBeInTheDocument();
-    expect(within(dialog).getByText("Coordinación")).toBeInTheDocument();
 
     fireEvent.click(within(dialog).getByRole("button", { name: AUDIT_DIALOG_COPY.history }));
 
     expect(await within(dialog).findByText("user_created")).toBeInTheDocument();
+  });
+
+  it("shows the error of a missing entry in the dialog", async() => {
+    server.use(http.get(apiUrl("/api/audit/:id"), () => errorResponse("audit-log.not_found", 404)));
+    renderAdminConsole(<AdminAuditPage />);
+
+    const buttons = await screen.findAllByRole("button", { name: /^Ver detalle de user_role_changed/ });
+
+    fireEvent.click(buttons[0] as HTMLElement);
+    const dialog = await screen.findByRole("dialog");
+
+    expect(await within(dialog).findByText("El registro de auditoría no existe.")).toBeInTheDocument();
+  });
+
+  it("fills the action and target type filters from the catalog and states the export row limit", async() => {
+    renderAdminConsole(<AdminAuditPage />);
+
+    expect(await screen.findByText(ADMIN_AUDIT_COPY.exportLimit(50000))).toBeInTheDocument();
+    fireEvent.mouseDown(screen.getByRole("combobox", { name: AUDIT_FILTERS_COPY.targetType }));
+    fireEvent.click(await screen.findByRole("option", { name: "platform_setting" }));
+    fireEvent.mouseDown(screen.getByRole("combobox", { name: AUDIT_FILTERS_COPY.action }));
+    fireEvent.click(await screen.findByRole("option", { name: "user_status_changed" }));
+    fireEvent.click(screen.getByRole("button", { name: AUDIT_FILTERS_COPY.apply }));
+
+    expect(router.replace).toHaveBeenCalledWith(
+      { pathname: "/admin/audit", query: { action: "user_status_changed", targetType: "platform_setting" } },
+      undefined,
+      { shallow: true },
+    );
+  });
+
+  it("keeps free text filters when the catalog cannot be read", async() => {
+    catalogStatus = 500;
+    renderAdminConsole(<AdminAuditPage />);
+
+    await screen.findAllByText("user_role_changed");
+
+    expect(screen.getByRole("textbox", { name: AUDIT_FILTERS_COPY.action })).toBeInTheDocument();
+    expect(screen.queryByText(ADMIN_AUDIT_COPY.exportLimit(50000))).not.toBeInTheDocument();
   });
 
   it("shows the truncation notice when the export is truncated", async() => {

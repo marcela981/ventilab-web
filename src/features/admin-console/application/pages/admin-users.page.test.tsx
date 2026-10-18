@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin users page tests
-* Descripción: /admin/users with msw: the rows of `GET /api/users` with the URL filters sent as the query and a filter change written back to the URL; the own account keeps its actions disabled with the reason; the role dialog shows the warning of its effects and sends `PATCH /api/users/{id}/role`; a superadmin 403 shows "Esta cuenta está protegida (superadministrador) y no se puede modificar." inside the dialog; deactivating asks for confirmation before `PATCH /api/users/{id}/status` and a superadmin 403 there becomes an error toast. Depends on vitest, msw, Testing Library and the admin console test helpers. v1.1 (O4a review): with the app keepPreviousData default a role filter change shows the loading state instead of the previous rows and a 500 shows the error; a page beyond the last one moves to the last page; Escape does not close the role dialog while its PATCH is pending. v1.2 (review): an in-range empty page (total > 0) shows the empty-page state with the pagination instead of a stuck skeleton.
-* Versión: 1.2
+* Descripción: /admin/users with msw: the rows of `GET /api/users` with the URL filters sent as the query and a filter change written back to the URL; the own account keeps its actions disabled with the reason; the role dialog shows the warning of its effects and sends `PATCH /api/users/{id}/role`; a superadmin 403 shows "Esta cuenta está protegida (superadministrador) y no se puede modificar." inside the dialog; deactivating asks for confirmation before `PATCH /api/users/{id}/status` and a superadmin 403 there becomes an error toast. Depends on vitest, msw, Testing Library and the admin console test helpers. v1.1 (O4a review): with the app keepPreviousData default a role filter change shows the loading state instead of the previous rows and a 500 shows the error; a page beyond the last one moves to the last page; Escape does not close the role dialog while its PATCH is pending. v1.2 (review): an in-range empty page (total > 0) shows the empty-page state with the pagination instead of a stuck skeleton. v1.3 (closure B2): the superadmin flag of the API locks the role and status actions (badge and reason), the student code column and the search note, "Editar código" validates on the client and sends `PATCH /api/users/{id}/student-code`, and a 409 shows "Código ya en uso" under the field.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,9 +13,10 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { STUDENT_CODE_DIALOG_COPY } from "../components/student-code-dialog";
 import { USERS_TABLE_COPY } from "../components/users-table";
 import { SUPERADMIN_PROTECTED_MESSAGE } from "../entities/admin-console-error-messages";
-import { ROLE_CHANGE_EFFECTS } from "../entities/admin-users.entity";
+import { ROLE_CHANGE_EFFECTS, STUDENT_CODE_COPY } from "../entities/admin-users.entity";
 import { ADMIN_USERS_COPY, AdminUsersPage } from "./admin-users.page";
 import { apiUrl, envelope, errorResponse, groupDto, renderAdminConsole, SESSION_USER_ID, userDto } from "./admin-console-test-helpers";
 
@@ -97,6 +98,10 @@ beforeEach(() => {
         await new Promise<void>((resolve) => {
           releaseMutation = resolve;
         });
+      }
+
+      if (mutationStatus === 409) {
+        return errorResponse("users.student_code_already_in_use", 409);
       }
 
       if (mutationStatus === 403) {
@@ -291,5 +296,60 @@ describe("AdminUsersPage", () => {
     fireEvent.click(within(await screen.findByRole("dialog")).getByRole("button", { name: ADMIN_USERS_COPY.deactivate }));
 
     expect(await screen.findByText(SUPERADMIN_PROTECTED_MESSAGE)).toBeInTheDocument();
+  });
+
+  it("locks the role and status actions of the superadmin flagged by the API", async() => {
+    server.use(http.get(apiUrl("/api/users"), () => HttpResponse.json(envelope([
+      userDto("u1", "Ana Gómez", { studentCode: "2026-0001" }),
+      userDto("root", "Raíz", { role: "ADMIN", isSuperadmin: true }),
+    ], { total: 2, pages: 1, page: 1, limit: 20 }))));
+    renderAdminConsole(<AdminUsersPage />);
+    await screen.findByText("Raíz");
+
+    const root = rowActions("Raíz");
+
+    expect(within(root).getByRole("button", { name: USERS_TABLE_COPY.changeRole })).toBeDisabled();
+    expect(within(root).getByRole("button", { name: USERS_TABLE_COPY.deactivate })).toBeDisabled();
+    expect(within(root).getByRole("button", { name: USERS_TABLE_COPY.editCode })).toBeEnabled();
+    expect(screen.getByText(USERS_TABLE_COPY.superadmin)).toBeInTheDocument();
+    expect(screen.getByText(SUPERADMIN_PROTECTED_MESSAGE)).toBeInTheDocument();
+    expect(within(rowActions("Ana Gómez")).getByRole("button", { name: USERS_TABLE_COPY.changeRole })).toBeEnabled();
+    expect(screen.getByText("2026-0001")).toBeInTheDocument();
+    expect(screen.getByText(ADMIN_USERS_COPY.searchNote)).toBeInTheDocument();
+  });
+
+  it("edits the student code with the backend rule and confirms it", async() => {
+    renderAdminConsole(<AdminUsersPage />);
+    await screen.findByText("Ana Gómez");
+
+    fireEvent.click(within(rowActions("Ana Gómez")).getByRole("button", { name: USERS_TABLE_COPY.editCode }));
+    const dialog = await screen.findByRole("dialog", { name: STUDENT_CODE_DIALOG_COPY.title("Ana Gómez") });
+    const input = within(dialog).getByLabelText(STUDENT_CODE_DIALOG_COPY.label);
+
+    fireEvent.change(input, { target: { value: "con espacio" } });
+    expect(within(dialog).getByText(STUDENT_CODE_COPY.invalid)).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: STUDENT_CODE_DIALOG_COPY.save })).toBeDisabled();
+
+    fireEvent.change(input, { target: { value: " 2026-0001 " } });
+    fireEvent.click(within(dialog).getByRole("button", { name: STUDENT_CODE_DIALOG_COPY.save }));
+
+    await waitFor(() => expect(mutations).toEqual([{ path: "u1/student-code", body: { studentCode: "2026-0001" } }]));
+    expect(await screen.findByText(ADMIN_USERS_COPY.codeChanged("Ana Gómez"))).toBeInTheDocument();
+  });
+
+  it("shows a code already in use under the field", async() => {
+    mutationStatus = 409;
+    renderAdminConsole(<AdminUsersPage />);
+    await screen.findByText("Ana Gómez");
+
+    fireEvent.click(within(rowActions("Ana Gómez")).getByRole("button", { name: USERS_TABLE_COPY.editCode }));
+    const dialog = await screen.findByRole("dialog", { name: STUDENT_CODE_DIALOG_COPY.title("Ana Gómez") });
+    const input = within(dialog).getByLabelText(STUDENT_CODE_DIALOG_COPY.label);
+
+    fireEvent.change(input, { target: { value: "2026-0009" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: STUDENT_CODE_DIALOG_COPY.save }));
+
+    expect(await within(dialog).findByText(STUDENT_CODE_COPY.inUse)).toBeInTheDocument();
+    expect(input).toHaveAttribute("aria-invalid", "true");
   });
 });

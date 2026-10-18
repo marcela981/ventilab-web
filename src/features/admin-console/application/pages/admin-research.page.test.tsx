@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AdminResearchPage tests
-* Descripción: /admin/research with msw: explains the export (long format, pseudonymized ids, what is left out), downloads `GET /api/analytics/research/export.csv` with the selected student group, and a 503 shows "La clave de anonimización no está configurada en el servidor". Depends on Testing Library, msw, vitest and the admin console page and test helpers.
-* Versión: 1.0
+* Descripción: /admin/research with msw: explains the export (long format, pseudonymized ids, what is left out), downloads `GET /api/analytics/research/export.csv` with the selected student group, and a 503 shows "La clave de anonimización no está configurada en el servidor". Depends on Testing Library, msw, vitest and the admin console page and test helpers. v1.1 (closure B2): "Descargar diccionario de datos" saves a CSV of the dictionary endpoint rows (quoted cells, doubled quotes).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -74,6 +74,37 @@ describe("AdminResearchPage", () => {
     await waitFor(() => expect(exported).toHaveLength(1));
     expect(exported[0]?.get("groupId")).toBe("g1");
     await waitFor(() => expect(URL.createObjectURL).toHaveBeenCalledTimes(1));
+  });
+
+  it("downloads the data dictionary as a CSV built from the dictionary endpoint", async() => {
+    const blobs: Blob[] = [];
+
+    URL.createObjectURL = vi.fn((blob: Blob) => {
+      blobs.push(blob);
+
+      return "blob:dictionary";
+    });
+    server.use(http.get(apiUrl("/api/analytics/research/export/dictionary"), () => HttpResponse.json(envelope([
+      { column: "participant", type: "string", description: "Seudónimo del participante", example: "a1b2" },
+      { column: "value", type: "number", description: "Valor, \"crudo\"", example: null },
+    ]))));
+    renderAdminConsole(<AdminResearchPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: ADMIN_RESEARCH_COPY.dictionary }));
+
+    await waitFor(() => expect(blobs).toHaveLength(1));
+    // jsdom's Blob has no text(): read it through FileReader.
+    const text = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+
+      reader.onload = () => resolve(String(reader.result));
+      reader.readAsText(blobs[0] as Blob);
+    });
+
+    expect(text).toContain("\"columna\",\"tipo\",\"descripcion\",\"ejemplo\"");
+    expect(text).toContain("\"participant\",\"string\",\"Seudónimo del participante\",\"a1b2\"");
+    expect(text).toContain("\"value\",\"number\",\"Valor, \"\"crudo\"\"\",\"\"");
+    expect(exported).toHaveLength(0);
   });
 
   it("explains a missing anonymization key on 503", async() => {

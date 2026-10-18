@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin settings styles
-* Descripción: Layout of /admin/settings: category tabs, the stack of setting cards (header with key and origin chip, description, facts list, generated form, actions), fieldsets of grouped fields, checkbox options, list entries, the provider chain list with drag handle, position, model input and actions (dragging state with a raised shadow), field error text and the change lines of the ventilator commands confirmation. The origin chip carries its text (DEFAULT/OVERRIDE), never colour alone. Tokens only.
-* Versión: 1.0
+* Descripción: Layout of /admin/settings: category tabs, the stack of setting cards (header with key and origin chip, description, facts list, generated form, actions), fieldsets of grouped fields, checkbox options, list entries, the provider chain list with drag handle, position, model input and actions (dragging state with a raised shadow), field error text and the change lines of the ventilator commands confirmation. The origin chip carries its text (DEFAULT/OVERRIDE), never colour alone. Tokens only. v1.1 (closure B2): the setting key under the Spanish label, map entries with their remove action and the add-key row.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -219,6 +219,36 @@
 .chainActions {
   display: flex;
   gap: var(--vl-space-1);
+}
+
+.settingKey {
+  margin: 0;
+  font-family: var(--mui-font-family-mono, monospace);
+  font-size: 0.8125rem;
+  color: var(--vl-color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.mapEntry {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--vl-space-1);
+}
+
+.mapEntry > :first-child {
+  align-self: stretch;
+}
+
+.mapAdd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  align-items: center;
+}
+
+.mapAdd > :first-child {
+  flex: 1 1 14rem;
 }
 
 .chainAdd {

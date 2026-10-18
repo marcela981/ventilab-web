@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AdminUsersPage
-* Descripción: Page /admin/users (ADMIN): paginated users of `GET /api/users` with search (name, email or exact id; the API has no student code), role, group (`GET /api/groups`) and account status filters, all kept in the URL (?page&search&role&groupId&isActive, shareable). "Cambiar rol" opens the role dialog with the warning of its effects (`PATCH /api/users/{id}/role`); "Desactivar"/"Activar" asks for confirmation (`PATCH /api/users/{id}/status`). A backend 403 on a superadmin shows "Esta cuenta está protegida (superadministrador) y no se puede modificar." in the dialog or as a toast; the admin's own row is disabled because the backend refuses changes to one's own account. Depends on MUI, next/head, next/router, React, the design-system components, the session, the admin console hooks, components, entities and CSS Module. v1.1 (O4a review): a new filter or page never shows the previous rows (no keepPreviousData, loading state instead); an error is shown whenever the request fails; a page beyond the last one (old URL) is moved to the last page. v1.2 (review): an empty page with total > 0 never sticks on the loading skeleton: only a page beyond the last one waits for the clamp; an in-range empty page (rows removed meanwhile, or pages out of sync) shows the empty-page state with the pagination visible so the admin can move.
-* Versión: 1.2
+* Descripción: Page /admin/users (ADMIN): paginated users of `GET /api/users` with search (name, email, student code or exact id, on the server), role, group (`GET /api/groups`) and account status filters, all kept in the URL (?page&search&role&groupId&isActive, shareable). "Cambiar rol" opens the role dialog with the warning of its effects (`PATCH /api/users/{id}/role`); "Desactivar"/"Activar" asks for confirmation (`PATCH /api/users/{id}/status`). A backend 403 on a superadmin shows "Esta cuenta está protegida (superadministrador) y no se puede modificar." in the dialog or as a toast; the admin's own row is disabled because the backend refuses changes to one's own account. Depends on MUI, next/head, next/router, React, the design-system components, the session, the admin console hooks, components, entities and CSS Module. v1.1 (O4a review): a new filter or page never shows the previous rows (no keepPreviousData, loading state instead); an error is shown whenever the request fails; a page beyond the last one (old URL) is moved to the last page. v1.2 (review): an empty page with total > 0 never sticks on the loading skeleton: only a page beyond the last one waits for the clamp; an in-range empty page (rows removed meanwhile, or pages out of sync) shows the empty-page state with the pagination visible so the admin can move. v1.3 (closure B2): the student code column and "Editar código" (`PATCH /api/users/{id}/student-code`, 409 → "Código ya en uso" under the field); the superadmin row is locked from `UserDTO.isSuperadmin`.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -24,6 +24,7 @@ import { useToast } from "@shared/design-system/components/use-toast";
 import { cx } from "@shared/lib/class-names";
 import { useSession } from "@shared/session/use-session";
 import { RoleChangeDialog } from "../components/role-change-dialog";
+import { StudentCodeDialog } from "../components/student-code-dialog";
 import { UsersFilters } from "../components/users-filters";
 import { UsersTable } from "../components/users-table";
 import { ROLE_LABELS } from "../config/admin-console.config";
@@ -41,7 +42,7 @@ export const ADMIN_USERS_COPY = {
   documentTitle: "Usuarios | VentyLab",
   title: "Usuarios",
   subtitle: "Busca cuentas, cambia su rol y activa o desactiva su acceso.",
-  searchNote: "La búsqueda cubre nombre, correo e ID: la API no tiene un código de estudiante.",
+  searchNote: "La búsqueda cubre nombre, correo, código de estudiante e ID.",
   loading: "Cargando usuarios…",
   loadErrorTitle: "No se pudieron cargar los usuarios",
   emptyTitle: "No hay usuarios",
@@ -61,6 +62,7 @@ export const ADMIN_USERS_COPY = {
   roleChanged: (name: string, role: string) => `${name} ahora tiene el rol ${role}.`,
   deactivated: (name: string) => `La cuenta de ${name} se desactivó.`,
   activated: (name: string) => `La cuenta de ${name} se activó.`,
+  codeChanged: (name: string) => `Se actualizó el código de estudiante de ${name}.`,
 } as const;
 
 const PAGE_BUTTON_LABELS: Record<"first" | "last" | "next" | "previous", string> = {
@@ -84,6 +86,7 @@ export function AdminUsersPage() {
   const actions = useAdminUserActions();
   const [roleTarget, setRoleTarget] = useState<AdminUserRow | null>(null);
   const [statusTarget, setStatusTarget] = useState<AdminUserRow | null>(null);
+  const [codeTarget, setCodeTarget] = useState<AdminUserRow | null>(null);
   const [statusPending, setStatusPending] = useState(false);
   const filtered = hasUserFilters(filters);
   const { rows, pagination } = users;
@@ -107,6 +110,12 @@ export function AdminUsersPage() {
     await actions.changeRole(row.id, role);
     setRoleTarget(null);
     toast.success(ADMIN_USERS_COPY.roleChanged(nameOf(row), ROLE_LABELS[role]));
+  };
+
+  const confirmCode = async(row: AdminUserRow, studentCode: string | null) => {
+    await actions.changeStudentCode(row.id, studentCode);
+    setCodeTarget(null);
+    toast.success(ADMIN_USERS_COPY.codeChanged(nameOf(row)));
   };
 
   const confirmStatus = async() => {
@@ -193,6 +202,7 @@ export function AdminUsersPage() {
           sessionUserId={sessionUser?.id ?? null}
           onChangeRole={setRoleTarget}
           onChangeStatus={setStatusTarget}
+          onEditCode={setCodeTarget}
         />
         {renderPagination(pagination)}
       </div>
@@ -214,6 +224,7 @@ export function AdminUsersPage() {
         {renderList()}
       </div>
       <RoleChangeDialog user={roleTarget} onConfirm={confirmRole} onClose={() => setRoleTarget(null)} />
+      <StudentCodeDialog user={codeTarget} onConfirm={confirmCode} onClose={() => setCodeTarget(null)} />
       <ConfirmDialog
         open={statusTarget !== null}
         title={deactivating ? ADMIN_USERS_COPY.deactivateTitle(statusName) : ADMIN_USERS_COPY.activateTitle(statusName)}

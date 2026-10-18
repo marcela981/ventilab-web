@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: UsersFilters
-* Descripción: Filter bar of /admin/users: search box (name, email or exact user id, applied on submit), role, group (every group from `GET /api/groups`) and account status selects. Every change goes to the URL through onChange and returns to the first page. The API has no student code field, so the search covers name, email and id only. Depends on MUI, the design-system form field and the admin console config, entities and CSS Module.
-* Versión: 1.0
+* Descripción: Filter bar of /admin/users: search box (name, email, student code or exact user id, applied on submit), role, group (every group from `GET /api/groups`) and account status selects. Every change goes to the URL through onChange and returns to the first page. Depends on MUI, the design-system form field and the admin console config, entities and CSS Module. v1.1 (closure B2): the server search also matches the student code.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -23,7 +23,7 @@ import styles from "../../UI/admin-users.module.css";
 // TODO(i18n): move to an admin-console namespace in src/i18n.
 export const USERS_FILTERS_COPY = {
   label: "Filtros de usuarios",
-  search: "Buscar por nombre, correo o ID",
+  search: "Buscar por nombre, correo, código o ID",
   searchAction: "Buscar",
   role: "Rol",
   group: "Grupo",

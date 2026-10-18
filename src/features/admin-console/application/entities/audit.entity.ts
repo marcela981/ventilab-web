@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Audit log rules
-* Descripción: Pure rules of /admin/audit: the AuditEntry read model (one row of `GET /api/audit`, before/after/metadata as plain objects), the filters kept in the URL (actor id, action, target type and id, Bogota calendar days, page and sort order) with their reader and writer, the API query of the list and of the CSV export (same filters, the export takes no paging), and diffAuditChanges, which flattens the before/after objects of one entry into dotted keys and keeps ONLY the keys whose values differ (deep comparison; arrays compared as a whole). formatAuditValue renders one side of a change. No statistic is computed. Depends on the admin console date range entity.
-* Versión: 1.0
+* Descripción: Pure rules of /admin/audit: the AuditEntry read model (one row of `GET /api/audit`, before/after/metadata as plain objects), the filters kept in the URL (actor id, action, target type and id, Bogota calendar days, page and sort order) with their reader and writer, the API query of the list and of the CSV export (same filters, the export takes no paging), and diffAuditChanges, which flattens the before/after objects of one entry into dotted keys and keeps ONLY the keys whose values differ (deep comparison; arrays compared as a whole). formatAuditValue renders one side of a change. No statistic is computed. Depends on the admin console date range entity. v1.1 (closure B2): the audit catalog model (actions, target types, export row limit) and catalogOptions for the action and target type selects.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -33,6 +33,18 @@ export type AuditEntry = {
 };
 
 export type AuditSortOrder = "asc" | "desc";
+
+/** Values of the audit filters and the CSV cap (`GET /api/audit/catalog`). */
+export type AuditCatalog = {
+  actions: string[]
+  targetTypes: string[]
+  exportRowLimit: number
+};
+
+/** Options of a catalog select: the catalog values plus a value of the URL the catalog does not list (old link). */
+export function catalogOptions(values: readonly string[], selected: string): string[] {
+  return selected && !values.includes(selected) ? [selected, ...values] : [...values];
+}
 
 export type AuditFilters = {
   actorId: string

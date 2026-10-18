@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: SettingFieldEditor
-* Descripción: Renders the field tree built by buildSettingField, recursively, on the draft value of one setting: number → text input with decimal keyboard and its limits as help (the typed text is kept while it does not parse, and validation reports it); boolean → switch; text; select (allowed values); multi-select → checkboxes of the allowed values; list → one input per entry with add/remove; group → fieldset with its children; provider chain → ProviderChainEditor; JSON → multiline input validated as JSON. Each input shows the error of its path (client limits or a server 422). Depends on MUI, the design-system form field, @shared/lib, the admin console entities, the provider chain editor and CSS Module. v1.1 (O4a review): emptying an optional number (record-like settings such as `ai.quotas`) removes its key from the draft instead of leaving an invalid number; parseNumberInput accepts one decimal separator ("." or ",") and rejects several separators, mixed "."/"," and a comma used as thousands grouping ("1,000") instead of coercing them. v1.2 (review): dot thousands grouping ("1.000", "12.500", as es-CO users write a thousand) is rejected the same way, so both ",ddd" and ".ddd" grouped forms with a non-zero integer part show the number error; "1.5", "1,5", "0.125" and "0,125" stay valid. v1.3 (final review): a single dot is always decimal again, so "1.125" can be typed; only comma grouping and several separators are rejected.
-* Versión: 1.3
+* Descripción: Renders the field tree built by buildSettingField, recursively, on the draft value of one setting: number → text input with decimal keyboard and its limits as help (the typed text is kept while it does not parse, and validation reports it); boolean → switch; text; select (allowed values); multi-select → checkboxes of the allowed values; list → one input per entry with add/remove; group → fieldset with its children; provider chain → ProviderChainEditor; JSON → multiline input validated as JSON. Each input shows the error of its path (client limits or a server 422). Depends on MUI, the design-system form field, @shared/lib, the admin console entities, the provider chain editor and CSS Module. v1.1 (O4a review): emptying an optional number (record-like settings such as `ai.quotas`) removes its key from the draft instead of leaving an invalid number; parseNumberInput accepts one decimal separator ("." or ",") and rejects several separators, mixed "."/"," and a comma used as thousands grouping ("1,000") instead of coercing them. v1.2 (review): dot thousands grouping ("1.000", "12.500", as es-CO users write a thousand) is rejected the same way, so both ",ddd" and ".ddd" grouped forms with a non-zero integer part show the number error; "1.5", "1,5", "0.125" and "0,125" stay valid. v1.3 (final review): a single dot is always decimal again, so "1.125" can be typed; only comma grouping and several separators are rejected. v1.4 (closure B2): number and list inputs show the setting unit as an end adornment; map fields (registry keySchema) list one editor per key with "Quitar", and add a key from a select of the allowed keys still missing (or free text when any key is allowed; a repeated key is refused).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,6 +15,7 @@ import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import IconButton from "@mui/material/IconButton";
+import InputAdornment from "@mui/material/InputAdornment";
 import Switch from "@mui/material/Switch";
 import { useId, useState } from "react";
 import { FormField } from "@shared/design-system/components/form-field";
@@ -23,11 +24,12 @@ import { formatSettingValue, getAt, InvalidJsonDraft, removeAt, setAt } from "..
 import type { Primitive } from "../entities/platform-setting.entity";
 import { readProviderChain, writeProviderChain } from "../entities/provider-chain.entity";
 import type { ConfiguredProvider } from "../entities/provider-chain.entity";
-import { describeLimits } from "../entities/setting-form.entity";
+import { describeLimits, fieldLabel, mapEntryField, mapKeys, newMapEntryValue } from "../entities/setting-form.entity";
 import type {
   FieldErrors,
   JsonField,
   ListField,
+  MapField,
   MultiSelectField,
   NumberField,
   SettingField,
@@ -41,6 +43,12 @@ export const FIELD_EDITOR_COPY = {
   item: (label: string, index: number) => `${label} ${index + 1}`,
   removeItem: (label: string, index: number) => `Quitar ${label} ${index + 1}`,
   jsonHint: "Formato JSON. Este valor no tiene un formulario propio.",
+  noKeys: "Sin entradas.",
+  newKey: (keyLabel: string) => `Nuevo: ${keyLabel}`,
+  chooseKey: "Elige una clave",
+  repeatedKey: "Esa clave ya existe.",
+  addKey: (keyLabel: string) => `Agregar ${keyLabel.toLowerCase()}`,
+  removeKey: (keyLabel: string, key: string) => `Quitar ${keyLabel.toLowerCase()} ${key}`,
 } as const;
 
 const DECIMAL_INPUT = { htmlInput: { inputMode: "decimal" } } as const;
@@ -80,6 +88,12 @@ function numberText(value: unknown): string {
   return typeof value === "number" && Number.isFinite(value) ? String(value) : "";
 }
 
+function numberInputProps(unit: string | undefined) {
+  return unit
+    ? { ...DECIMAL_INPUT, input: { endAdornment: <InputAdornment position="end">{unit}</InputAdornment> } }
+    : DECIMAL_INPUT;
+}
+
 function NumberEditor({ field, root, errors, disabled, onChange }: EditorProps<NumberField>) {
   const [text, setText] = useState(() => numberText(getAt(root, field.path)));
 
@@ -91,7 +105,7 @@ function NumberEditor({ field, root, errors, disabled, onChange }: EditorProps<N
       disabled={disabled}
       error={errors[field.id]}
       helperText={describeLimits(field)}
-      slotProps={DECIMAL_INPUT}
+      slotProps={numberInputProps(field.unit)}
       onChange={(event) => {
         setText(event.target.value);
         // An emptied optional number is omitted (e.g. a quota without limit), not sent as an invalid value.
@@ -158,7 +172,7 @@ function ListEditor({ field, root, errors, disabled, onChange }: EditorProps<Lis
               label={FIELD_EDITOR_COPY.item(field.label, index)}
               value={text}
               disabled={disabled}
-              {...(field.itemKind === "number" ? { slotProps: DECIMAL_INPUT } : {})}
+              {...(field.itemKind === "number" ? { slotProps: numberInputProps(field.unit) } : {})}
               onChange={(event) => update(texts.map((item, position) => (position === index ? event.target.value : item)))}
             />
             <IconButton
@@ -178,6 +192,76 @@ function ListEditor({ field, root, errors, disabled, onChange }: EditorProps<Lis
       </Button>
       <p className={cx(styles.hint)}>{describeLimits(field)}</p>
       {error ? <p id={errorId} className={cx(styles.fieldError)} role="alert">{error}</p> : null}
+    </fieldset>
+  );
+}
+
+function MapEditor(props: EditorProps<MapField>) {
+  const { field, root, errors, disabled, onChange } = props;
+  const keys = mapKeys(field, root);
+  const [newKey, setNewKey] = useState("");
+  const keyOptions = field.allowedKeys ? field.allowedKeys.filter((key) => !keys.includes(key)) : null;
+  const candidate = newKey.trim();
+  const canAdd = candidate !== "" && !keys.includes(candidate) && (keyOptions === null || keyOptions.includes(candidate));
+  const error = errors[field.id];
+
+  const add = () => {
+    if (canAdd) {
+      onChange(setAt(root, [...field.path, candidate], newMapEntryValue(field)));
+      setNewKey("");
+    }
+  };
+
+  return (
+    <fieldset className={cx(styles.fieldset)}>
+      <legend className={cx(styles.legend)}>{field.label}</legend>
+      {keys.length === 0 ? <p className={cx(styles.hint)}>{FIELD_EDITOR_COPY.noKeys}</p> : null}
+      <div className={cx(styles.group)}>
+        {keys.map((key) => (
+          <div key={key} className={cx(styles.mapEntry)}>
+            <SettingFieldEditor {...props} field={mapEntryField(field, key, root)} />
+            <Button
+              size="small"
+              color="error"
+              startIcon={<DeleteOutlineIcon fontSize="small" />}
+              disabled={disabled}
+              onClick={() => onChange(removeAt(root, [...field.path, key]))}
+            >
+              {FIELD_EDITOR_COPY.removeKey(field.keyLabel, fieldLabel(key))}
+            </Button>
+          </div>
+        ))}
+      </div>
+      <div className={cx(styles.mapAdd)}>
+        {keyOptions ? (
+          <FormField
+            select
+            size="small"
+            label={FIELD_EDITOR_COPY.newKey(field.keyLabel)}
+            value={keyOptions.includes(newKey) ? newKey : ""}
+            disabled={disabled || keyOptions.length === 0}
+            slotProps={NATIVE_SELECT}
+            onChange={(event) => setNewKey(event.target.value)}
+          >
+            <option value="">{FIELD_EDITOR_COPY.chooseKey}</option>
+            {keyOptions.map((key) => <option key={key} value={key}>{fieldLabel(key)}</option>)}
+          </FormField>
+        ) : (
+          <FormField
+            size="small"
+            label={FIELD_EDITOR_COPY.newKey(field.keyLabel)}
+            value={newKey}
+            disabled={disabled}
+            error={candidate !== "" && keys.includes(candidate) ? FIELD_EDITOR_COPY.repeatedKey : undefined}
+            onChange={(event) => setNewKey(event.target.value)}
+          />
+        )}
+        <Button size="small" startIcon={<AddIcon />} disabled={disabled || !canAdd} onClick={add}>
+          {FIELD_EDITOR_COPY.addKey(field.keyLabel)}
+        </Button>
+      </div>
+      <p className={cx(styles.hint)}>{describeLimits(field)}</p>
+      {error ? <p className={cx(styles.fieldError)} role="alert">{error}</p> : null}
     </fieldset>
   );
 }
@@ -269,6 +353,8 @@ export function SettingFieldEditor(props: EditorProps<SettingField>) {
       return <ListEditor {...props} field={field} />;
     case "json":
       return <JsonEditor {...props} field={field} />;
+    case "map":
+      return <MapEditor {...props} field={field} />;
     case "providerChain":
       return (
         <ProviderChainEditor
