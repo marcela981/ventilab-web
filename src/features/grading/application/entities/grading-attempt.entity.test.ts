@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Grading attempt entities tests
-* Descripción: Verifies the pure grading rules: score parsing (dot or comma, up to two decimals), the draft validation (required score, range [0, points], a comment when the answer already has an automatic or manual score, comment length), the dirty check against the counting score and the current comment, the request body, the pass state from `passed` or the API passing grade, the publish rule (GRADED, unpublished, not legacy), the pending feedback check and the spaced polling delays. Depends on vitest and the grading attempt entities. v1.1 (G2 review W1/S4): the empty override comment on a score change (and its restore), the new-comment rule of an override and the comment-only override of an automatic score.
-* Versión: 1.1
+* Descripción: Verifies the pure grading rules: score parsing (dot or comma, up to two decimals), the draft validation (required score, range [0, points], a comment when the answer already has an automatic or manual score, comment length), the dirty check against the counting score and the current comment, the request body, the pass state from `passed` or the API passing grade, the publish rule (GRADED, unpublished, not legacy), the pending feedback check and the spaced polling delays. Depends on vitest and the grading attempt entities. v1.1 (G2 review W1/S4): the empty override comment on a score change (and its restore), the new-comment rule of an override and the comment-only override of an automatic score. v1.2 (B4, D7): the score is read with the shared es-CO parser and an initial score is written in es-CO without float noise.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -66,6 +66,17 @@ describe("parseScore", () => {
     expect(parseScore("1.234")).toBeNull();
     expect(parseScore("-1")).toBeNull();
     expect(parseScore("abc")).toBeNull();
+  });
+
+  it("reads with the shared es-CO parser (D7)", () => {
+    expect(parseScore("1.000.000")).toBeNull();
+    expect(parseScore("1 000")).toBeNull();
+    expect(parseScore("1e1")).toBeNull();
+    expect(parseScore("1.12")).toBe(1.12);
+  });
+
+  it("writes the initial score in es-CO without float noise", () => {
+    expect(initialDraft(item({ autoScore: 0.1 + 0.2, manualScore: null })).score).toBe("0,3");
   });
 });
 

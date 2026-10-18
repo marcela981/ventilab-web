@@ -1,13 +1,15 @@
 /*
 * Funcionalidad: Grade attempt copy
-* Descripción: Spanish UI copy of the grade-attempt page /grading/attempts/[attemptId]: header (attempt, student, status, grade, passing grade, publication), the question navigator, each answer card (scores, correct answer, explanation, score and comment fields), the simulation rubric breakdown (criterion and reason labels of the server scoring), the save and publish actions with their confirmations and toasts, the unsaved-changes prompt and the AI feedback panel (statuses, provider and model, regenerate). No dependencies. v1.1 (G2 review W1/S3/S4): the read-only previous comment, the hint of a comment-only edit of an automatic score, the stale-after-save alert and its reload action, and the results link of G3.
-* Versión: 1.1
+* Descripción: Spanish UI copy of the grade-attempt page /grading/attempts/[attemptId]: header (attempt, student, status, grade, passing grade, publication), the question navigator, each answer card (scores, correct answer, explanation, score and comment fields), the simulation rubric breakdown (criterion and reason labels of the server scoring), the save and publish actions with their confirmations and toasts, the unsaved-changes prompt and the AI feedback panel (statuses, provider and model, regenerate). No dependencies. v1.1 (G2 review W1/S3/S4): the read-only previous comment, the hint of a comment-only edit of an automatic score, the stale-after-save alert and its reload action, and the results link of G3. v1.2 (B4, D7): the score hint adds DECIMAL_HELPER_TEXT.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
 * Institución: Universidad del Valle
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
+
+import { DECIMAL_HELPER_TEXT } from "@shared/lib/parse-decimal";
 
 const pointsFormatter = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 2 });
 
@@ -45,7 +47,7 @@ export const GRADE_COPY = {
   correctAnswer: "Respuesta correcta",
   explanation: "Explicación",
   scoreField: (points: string) => `Puntaje (0 a ${points})`,
-  scoreHint: "Hasta dos decimales.",
+  scoreHint: `Hasta dos decimales. ${DECIMAL_HELPER_TEXT}`,
   commentField: "Comentario para el estudiante",
   commentRequiredHint: "Obligatorio: esta respuesta ya tiene un puntaje.",
   commentOptionalHint: "Opcional.",

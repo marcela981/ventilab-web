@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Grading attempt entities
-* Descripción: View models and pure rules of the grade-attempt page /grading/attempts/[attemptId]: the attempt as the staff sees it (evaluation, student id, status, grade, passing grade, publication), each graded item (question as the evaluations feature renders it, the student answer, the correct options, automatic, manual and earned scores, pending flag, teacher comment and the practical score of a SIMULATION answer with its rubric breakdown), the per-answer grading draft (score text and comment) and its rules mirroring the backend: the score is a number in [0, points] with up to two decimals (the backend rounds to two), and a comment is required whenever the answer already has an automatic or manual score (422 evaluation.grade_override_comment_required); whether a draft changed, the request body, the pass/fail state from `passed` or the passingGrade of the API (never a hardcoded threshold) and the feedback items with their spaced polling delays. Depends on the evaluations barrel types. v1.1 (G2 review W1/S4): changing the score of an answer that needs a comment starts the override comment empty (applyScoreChange; the previous teacher comment stays visible, read-only) and requires a new, different comment for that change, while comment-only edits keep editing the current comment; isCommentOnlyOverride flags a comment-only edit of an automatically scored answer (saving it records a manual score equal to the automatic one).
-* Versión: 1.1
+* Descripción: View models and pure rules of the grade-attempt page /grading/attempts/[attemptId]: the attempt as the staff sees it (evaluation, student id, status, grade, passing grade, publication), each graded item (question as the evaluations feature renders it, the student answer, the correct options, automatic, manual and earned scores, pending flag, teacher comment and the practical score of a SIMULATION answer with its rubric breakdown), the per-answer grading draft (score text and comment) and its rules mirroring the backend: the score is a number in [0, points] with up to two decimals (the backend rounds to two), and a comment is required whenever the answer already has an automatic or manual score (422 evaluation.grade_override_comment_required); whether a draft changed, the request body, the pass/fail state from `passed` or the passingGrade of the API (never a hardcoded threshold) and the feedback items with their spaced polling delays. Depends on the evaluations barrel types. v1.1 (G2 review W1/S4): changing the score of an answer that needs a comment starts the override comment empty (applyScoreChange; the previous teacher comment stays visible, read-only) and requires a new, different comment for that change, while comment-only edits keep editing the current comment; isCommentOnlyOverride flags a comment-only edit of an automatically scored answer (saving it records a manual score equal to the automatic one). v1.2 (B4, D7): parseScore uses the shared parseDecimal (no negatives, at most two decimals, no thousands separator, no exponent) and the score texts use formatDecimal (es-CO, no float noise); SCORE_PATTERN is gone.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,6 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import { formatDecimal, parseDecimal } from "@shared/lib/parse-decimal";
 import type { AttemptAnswer, AttemptQuestion, AttemptScenario, AttemptStatus } from "@features/evaluations";
 
 export type RubricBreakdownRow = {
@@ -73,16 +74,14 @@ export const MAX_TEACHER_COMMENT_LENGTH = 2000;
 export const GRADE_DRAFT_ERRORS = {
   scoreRequired: "Indica el puntaje.",
   scoreNumber: "Escribe un número con máximo dos decimales.",
-  scoreRange: (points: number) => `El puntaje debe estar entre 0 y ${String(points).replace(".", ",")}.`,
+  scoreRange: (points: number) => `El puntaje debe estar entre 0 y ${formatDecimal(points)}.`,
   commentRequired: "Escribe un comentario: esta respuesta ya tenía un puntaje y lo estás cambiando.",
   commentNotNew: "Escribe un comentario nuevo para este cambio de puntaje; el anterior se muestra arriba.",
   commentTooLong: `El comentario no puede superar ${MAX_TEACHER_COMMENT_LENGTH} caracteres.`,
 } as const;
 
-const SCORE_PATTERN = /^\d+(?:[.,]\d{1,2})?$/;
-
 function scoreText(value: number | null): string {
-  return value === null ? "" : String(value).replace(".", ",");
+  return formatDecimal(value);
 }
 
 // The draft a card starts from: the score that counts now and the current comment.
@@ -92,9 +91,9 @@ export function initialDraft(item: GradingItem): GradeDraft {
 
 // Accepts "2", "2.5" or "2,5"; null when it is not a number with up to two decimals.
 export function parseScore(text: string): number | null {
-  const trimmed = text.trim();
+  const parsed = parseDecimal(text, { allowNegative: false, maxFractionDigits: 2 });
 
-  return SCORE_PATTERN.test(trimmed) ? Number(trimmed.replace(",", ".")) : null;
+  return parsed.ok ? parsed.value : null;
 }
 
 // The backend asks for a comment whenever an existing automatic or manual score is replaced.
