@@ -1,7 +1,7 @@
 <!--
 * Funcionalidad: Bundle report after closure
-* Descripción: First Load JS per route of ventilab-web after the closure (B5), measured from a real `npm run build` and compared with odd/baseline-bundle.md.
-* Versión: 1.0
+* Descripción: First Load JS per route of ventilab-web after the closure (B5), measured from a real `npm run build` and compared with odd/baseline-bundle.md. v1.1 (B6): re-measured after B6 (master 2c8f421: design-system global.css replaces the legacy global CSS, env reads through @shared/lib/env); every route moved by 0-1 kB (rounding).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,7 +11,7 @@
 
 # Bundle report after closure (First Load JS)
 
-Measured 2026-10-18 from a real `npm run build` (Next 16.1.1, webpack) on master 6062450. Next 16 prints no size table, so the method of
+Measured 2026-10-18 from a real `npm run build` (Next 16.1.1, webpack) on master 6062450, re-measured after B6 on master 2c8f421 (each route within 1 kB of the B5 numbers). Next 16 prints no size table, so the method of
 [`odd/baseline-bundle.md`](../odd/baseline-bundle.md) is repeated: `.next/build-manifest.json` → `polyfillFiles` + `pages['/_app']` +
 `pages[route]`, `*.js` only, each file counted once, gzip per file (Node zlib level 6, the default level that .NET `GZipStream` Optimal
 also uses; the baseline used .NET). Sizes in kB (1024 bytes).
@@ -23,9 +23,9 @@ equivalent existed. The Sentry SDK chunk is not part of any route's first load (
 
 | Route | Baseline gzip kB | Now gzip kB | Delta gzip kB | Now raw kB |
 |---|---|---|---|---|
-| / | 274 | 206 | -68 | 629 |
-| /404 | — | 209 | — | 637 |
-| /500 | — | 209 | — | 637 |
+| / | 274 | 207 | -67 | 629 |
+| /404 | — | 210 | — | 637 |
+| /500 | — | 210 | — | 637 |
 | /_app | 273 | 204 | -69 | 621 |
 | /_error | 275 | 206 | -69 | 626 |
 | /admin/ai | — | 239 | — | 726 |
@@ -36,13 +36,13 @@ equivalent existed. The Sentry SDK chunk is not part of any route's first load (
 | /admin/users | 327 (/panel/admin) | 239 | -88 | 726 |
 | /assistant | — | 281 | — | 847 |
 | /assistant/[conversationId] | — | 281 | — | 847 |
-| /auth/access-denied | 277 | 264 | -13 | 794 |
-| /auth/forgot-password | 276 | 264 | -12 | 794 |
-| /auth/login | 317 | 264 | -53 | 794 |
-| /auth/register | 300 | 264 | -36 | 794 |
+| /auth/access-denied | 277 | 264 | -13 | 795 |
+| /auth/forgot-password | 276 | 264 | -12 | 795 |
+| /auth/login | 317 | 264 | -53 | 795 |
+| /auth/register | 300 | 264 | -36 | 795 |
 | /content | — | 237 | — | 721 |
 | /content/pages/[pageId] | — | 237 | — | 721 |
-| /dashboard | 274 | 206 | -68 | 629 |
+| /dashboard | 274 | 207 | -67 | 629 |
 | /evaluations | 306 (/evaluation) | 309 | +3 | 934 |
 | /evaluations/[evaluationId] | 313 (/evaluation/[activityId]) | 309 | -4 | 934 |
 | /evaluations/[evaluationId]/attempts/[attemptId] | 313 (/evaluation/[activityId]) | 309 | -4 | 934 |
@@ -66,9 +66,9 @@ equivalent existed. The Sentry SDK chunk is not part of any route's first load (
 | /learn/modules/[moduleId] | 528 (/teaching) | 289 | -239 | 875 |
 | /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber] | 467 (/teaching/[moduleId]/[lessonId]) | 289 | -178 | 875 |
 | /learn/modules/[moduleId]/print | 528 (/teaching) | 269 | -259 | 811 |
-| /me | — | 238 | — | 725 |
-| /me/grades | — | 238 | — | 725 |
-| /me/notes | — | 238 | — | 725 |
+| /me | — | 238 | — | 726 |
+| /me/grades | — | 238 | — | 726 |
+| /me/notes | — | 238 | — | 726 |
 | /my-group | — | 264 | — | 795 |
 | /notifications | — | 238 | — | 725 |
 | /profile | 329 | 277 | -52 | 838 |
@@ -76,8 +76,8 @@ equivalent existed. The Sentry SDK chunk is not part of any route's first load (
 | /simulator/cases | 464 (/simulador) | 339 | -125 | 1024 |
 | /simulator/cases/[id]/edit | 464 (/simulador) | 339 | -125 | 1024 |
 | /simulator/cases/new | 464 (/simulador) | 339 | -125 | 1024 |
-| /simulator/sessions/[sessionId] | 464 (/simulador) | 346 | -118 | 1043 |
-| /simulator/sessions/[sessionId]/replay | 464 (/simulador) | 346 | -118 | 1043 |
-| /simulator/sessions/[sessionId]/result | 464 (/simulador) | 346 | -118 | 1043 |
+| /simulator/sessions/[sessionId] | 464 (/simulador) | 346 | -118 | 1044 |
+| /simulator/sessions/[sessionId]/replay | 464 (/simulador) | 346 | -118 | 1044 |
+| /simulator/sessions/[sessionId]/result | 464 (/simulador) | 346 | -118 | 1044 |
 | /teacher | 305 (/panel) | 238 | -67 | 725 |
 | /teacher/students/[userId] | 329 (/panel/students/[id]) | 238 | -91 | 725 |
