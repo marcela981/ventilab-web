@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AdminUsersPage
-* Descripción: Page /admin/users (ADMIN): paginated users of `GET /api/users` with search (name, email, student code or exact id, on the server), role, group (`GET /api/groups`) and account status filters, all kept in the URL (?page&search&role&groupId&isActive, shareable). "Cambiar rol" opens the role dialog with the warning of its effects (`PATCH /api/users/{id}/role`); "Desactivar"/"Activar" asks for confirmation (`PATCH /api/users/{id}/status`). A backend 403 on a superadmin shows "Esta cuenta está protegida (superadministrador) y no se puede modificar." in the dialog or as a toast; the admin's own row is disabled because the backend refuses changes to one's own account. Depends on MUI, next/head, next/router, React, the design-system components, the session, the admin console hooks, components, entities and CSS Module. v1.1 (O4a review): a new filter or page never shows the previous rows (no keepPreviousData, loading state instead); an error is shown whenever the request fails; a page beyond the last one (old URL) is moved to the last page. v1.2 (review): an empty page with total > 0 never sticks on the loading skeleton: only a page beyond the last one waits for the clamp; an in-range empty page (rows removed meanwhile, or pages out of sync) shows the empty-page state with the pagination visible so the admin can move. v1.3 (closure B2): the student code column and "Editar código" (`PATCH /api/users/{id}/student-code`, 409 → "Código ya en uso" under the field); the superadmin row is locked from `UserDTO.isSuperadmin`.
-* Versión: 1.3
+* Descripción: Page /admin/users (ADMIN): paginated users of `GET /api/users` with search (name, email, student code or exact id, on the server), role, group (`GET /api/groups`) and account status filters, all kept in the URL (?page&search&role&groupId&isActive, shareable). "Cambiar rol" opens the role dialog with the warning of its effects (`PATCH /api/users/{id}/role`); "Desactivar"/"Activar" asks for confirmation (`PATCH /api/users/{id}/status`). A backend 403 on a superadmin shows "Esta cuenta está protegida (superadministrador) y no se puede modificar." in the dialog or as a toast; the admin's own row is disabled because the backend refuses changes to one's own account. Depends on MUI, next/head, next/router, React, the design-system components, the session, the admin console hooks, components, entities and CSS Module. v1.1 (O4a review): a new filter or page never shows the previous rows (no keepPreviousData, loading state instead); an error is shown whenever the request fails; a page beyond the last one (old URL) is moved to the last page. v1.2 (review): an empty page with total > 0 never sticks on the loading skeleton: only a page beyond the last one waits for the clamp; an in-range empty page (rows removed meanwhile, or pages out of sync) shows the empty-page state with the pagination visible so the admin can move. v1.3 (closure B2): the student code column and "Editar código" (`PATCH /api/users/{id}/student-code`, 409 → "Código ya en uso" under the field); the superadmin row is locked from `UserDTO.isSuperadmin`. v1.4 (B4): renderPagination names its parameter currentPagination (it receives the pagination object, not a page number).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -139,13 +139,13 @@ export function AdminUsersPage() {
     }
   };
 
-  const renderPagination = (page: NonNullable<typeof pagination>) => (
+  const renderPagination = (currentPagination: NonNullable<typeof pagination>) => (
     <TablePagination
       component="div"
-      count={page.total}
-      page={Math.max(0, Math.min(filters.page, Math.max(1, page.pages)) - 1)}
-      rowsPerPage={page.limit}
-      rowsPerPageOptions={[page.limit]}
+      count={currentPagination.total}
+      page={Math.max(0, Math.min(filters.page, Math.max(1, currentPagination.pages)) - 1)}
+      rowsPerPage={currentPagination.limit}
+      rowsPerPageOptions={[currentPagination.limit]}
       onPageChange={(_event, next) => setFilters({ ...filters, page: next + 1 })}
       labelRowsPerPage={ADMIN_USERS_COPY.rowsPerPage}
       labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count}`}
