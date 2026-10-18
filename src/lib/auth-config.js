@@ -14,7 +14,8 @@
  *   v1.2 (review): ROLE_DASHBOARDS is derived from DEFAULT_ROUTE_BY_ROLE (imported from
  *   @shared/session/routes.config, as redirectByRole.js does) instead of a hardcoded copy; the legacy superuser
  *   key maps to the ADMIN home.
- * Versión: 1.2
+ *   v1.3 (B3.3): PROTECTED_ROUTES removed (no importer; it only listed legacy routes).
+ * Versión: 1.3
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -67,17 +68,6 @@ export const PUBLIC_ROUTES = [
  * Auth Routes (redirect to dashboard if already authenticated)
  */
 export const AUTH_ROUTES = ['/auth/login', '/auth/signup'];
-
-/**
- * Protected Routes (require authentication)
- */
-export const PROTECTED_ROUTES = [
-  '/simulador',
-  '/teaching',
-  '/flashcards',
-  '/evaluation',
-  '/panel',
-];
 
 /**
  * Admin-only Routes
@@ -181,7 +171,6 @@ const authConfig = {
   ROLE_DISPLAY_NAMES,
   PUBLIC_ROUTES,
   AUTH_ROUTES,
-  PROTECTED_ROUTES,
   ADMIN_ROUTES,
   getDashboardUrl,
   isPublicRoute,

@@ -1,8 +1,9 @@
 /*
  * Funcionalidad: Sidebar
  * Descripción: Barra lateral de navegación de VentyLab. Lista las secciones
- *   principales, el panel docente y la tarjeta de usuario con acceso al perfil.
- * Versión: 1.1
+ *   principales y la tarjeta de usuario con acceso al perfil. v1.2 (B3.3): sin los
+ *   enlaces legados /simulador, /evaluation y /panel (solo redirigían).
+ * Versión: 1.2
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -28,12 +29,9 @@ import {
   Divider,
 } from '@mui/material';
 import {
-  Dashboard as DashboardIcon,
   School as TeachingIcon,
-  Assessment as EvaluationIcon,
   Menu as MenuIcon,
   ChevronLeft as ChevronLeftIcon,
-  AdminPanelSettings as AdminPanelIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { useNotification } from '@/shared/contexts/NotificationContext';
@@ -44,25 +42,15 @@ const drawerWidth = 240;
 
 const menuItems = [
   {
-    text: 'Simulador Virtual',
-    icon: <DashboardIcon />,
-    path: '/simulador'
-  },
-  {
     text: 'Módulo de Enseñanza',
     icon: <TeachingIcon />,
     path: '/teaching'
-  },
-  {
-    text: 'Evaluación',
-    icon: <EvaluationIcon />,
-    path: '/evaluation'
   }
 ];
 
 const Sidebar = ({ open, onToggle, useCompactProfile = false }) => {
   const router = useRouter();
-  const { user, logout, isLoading, isTeacher } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const { showSuccess, showError } = useNotification();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -205,56 +193,6 @@ const Sidebar = ({ open, onToggle, useCompactProfile = false }) => {
           </ListItem>
         ))}
       </List>
-
-      {/* Panel de Administración — visible solo para teacher, admin, superuser */}
-      {isTeacher && isTeacher() && (
-        <>
-          <Divider sx={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', mx: 1 }} />
-          <List sx={{ px: 1 }}>
-            <ListItem disablePadding sx={{ display: 'block' }}>
-              <Link href="/panel" style={{ textDecoration: 'none', color: 'inherit' }}>
-                <ListItemButton
-                  sx={{
-                    minHeight: 48,
-                    justifyContent: open ? 'initial' : 'center',
-                    px: 2.5,
-                    backgroundColor: router.pathname.startsWith('/panel') ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
-                    '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    },
-                    borderRadius: '0 25px 25px 0',
-                    mr: 1,
-                    my: 0.5,
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{
-                      minWidth: 0,
-                      mr: open ? 3 : 'auto',
-                      justifyContent: 'center',
-                      color: 'white',
-                    }}
-                  >
-                    <AdminPanelIcon />
-                  </ListItemIcon>
-                  {open && (
-                    <ListItemText
-                      primary="Panel de Administración"
-                      sx={{
-                        opacity: 1,
-                        '& .MuiListItemText-primary': {
-                          color: 'white',
-                          fontWeight: router.pathname.startsWith('/panel') ? 600 : 400,
-                        }
-                      }}
-                    />
-                  )}
-                </ListItemButton>
-              </Link>
-            </ListItem>
-          </List>
-        </>
-      )}
 
       <Box sx={{ flexGrow: 1 }} />
 
