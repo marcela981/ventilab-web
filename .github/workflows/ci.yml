@@ -1,0 +1,92 @@
+# Funcionalidad: CI del frontend
+# Descripción: En cada push y pull request a master instala dependencias, ejecuta typecheck, lint, las pruebas
+#   de vitest en 6 lotes (--maxWorkers=2), el build de producción, knip y la verificación del contrato OpenAPI
+#   contra el repositorio del backend (clonado en una subcarpeta y leído con BACKEND_SPEC_PATH). Si el backend es
+#   privado, el secreto BACKEND_REPO_TOKEN debe tener permiso de lectura sobre marcela981/ventylab-server.
+#   No reemplaza a prisma-deploy.yml.
+# Versión: 1.0
+# Autor: Marcela Mazo Castro
+# Proyecto: VentyLab
+# Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+# Institución: Universidad del Valle
+# Contacto: marcela.mazo@correounivalle.edu.co
+
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      # Placeholder only: the legacy prisma/ folder needs the variable to generate its client; no database is used.
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests (a) admin-console, ai-chat, auth, case-editor, content-editor, evaluation-authoring, evaluations
+        run: npx vitest run src/features/admin-console src/features/ai-chat src/features/auth src/features/case-editor src/features/content-editor src/features/evaluation-authoring src/features/evaluations --maxWorkers=2
+
+      - name: Tests (b) grading, groups, learning
+        run: npx vitest run src/features/grading src/features/groups src/features/learning --maxWorkers=2
+
+      - name: Tests (c) notifications, profile, student-space
+        run: npx vitest run src/features/notifications src/features/profile src/features/student-space --maxWorkers=2
+
+      - name: Tests (d) simulator, ventilator-lab
+        run: npx vitest run src/features/simulator src/features/ventilator-lab --maxWorkers=2
+
+      - name: Tests (e) teacher-dashboard, teaching
+        run: npx vitest run src/features/teacher-dashboard src/features/teaching --maxWorkers=2
+
+      - name: Tests (f) shared, scripts, config
+        run: npx vitest run src/shared scripts config --maxWorkers=2
+
+      - name: Build
+        run: npm run build
+
+      - name: Knip (unused files, exports and dependencies)
+        run: npx --yes knip@5 --no-progress --no-gitignore
+
+      - name: Checkout backend contract
+        uses: actions/checkout@v4
+        with:
+          repository: marcela981/ventylab-server
+          path: .ci/ventylab-server
+          token: ${{ secrets.BACKEND_REPO_TOKEN || github.token }}
+          sparse-checkout: openapi
+          persist-credentials: false
+
+      - name: API contract check
+        env:
+          BACKEND_SPEC_PATH: .ci/ventylab-server/openapi/openapi.json
+        run: npm run check:api

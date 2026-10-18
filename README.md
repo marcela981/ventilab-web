@@ -45,6 +45,7 @@ Todas están documentadas en [`.env.example`](.env.example). Resumen:
 | `CSP_REPORT_ONLY` | `true` (defecto) envía la CSP solo como reporte; `false` la aplica. |
 | `CSP_REPORT_URI` | URL opcional para los reportes de violaciones de la CSP. |
 | `DATABASE_URL`, `LOG_DB` | Solo para la carpeta `prisma/` heredada (ver decisiones pendientes). |
+| `BACKEND_SPEC_PATH` | Ruta opcional al `openapi.json` del backend para `generate:api`/`check:api` (la usa la CI). |
 
 Las variables con prefijo `NEXT_PUBLIC_` quedan visibles en el navegador: **nunca** se debe usar ese prefijo para secretos (secreto de cliente de Google, claves de API de IA, claves de servicio de Supabase). Dentro de `src/`, `process.env` solo se lee en `src/shared/lib/env.ts` (excepción heredada: `NEXT_PUBLIC_GOOGLE_CLIENT_ID` en `src/features/auth/application/entities/google-config.ts`).
 
@@ -109,7 +110,7 @@ Convenciones: sin `sx`, `style={}` ni `styled()`; estilos solo en CSS Modules de
 
 ## Integración continua
 
-`.github/workflows/ci.yml` ejecuta en cada push y pull request a `master`: instalación, `typecheck`, `lint`, pruebas por lotes, `build`, knip y la verificación del contrato contra el repositorio del backend.
+`.github/workflows/ci.yml` ejecuta en cada push y pull request a `master`: instalación (`npm ci` con caché de npm), `typecheck`, `lint`, las pruebas en los 6 lotes, `build`, knip y la verificación del contrato: clona `marcela981/ventylab-server` en `.ci/ventylab-server` y corre `npm run check:api` con `BACKEND_SPEC_PATH` apuntando a su `openapi/openapi.json`. Si el repositorio del backend es privado, se debe crear el secreto `BACKEND_REPO_TOKEN` (token con lectura de ese repositorio). El flujo `prisma-deploy.yml` es independiente.
 
 ## Decisiones pendientes de la autora
 

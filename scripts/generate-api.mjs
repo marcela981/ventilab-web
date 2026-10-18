@@ -3,8 +3,11 @@
 * Descripción: Copia el contrato del backend (../ventylab-server/openapi/openapi.json) a openapi/openapi.json
 *   y genera src/shared/api-client/generated/schema.d.ts con openapi-typescript, anteponiendo el header
 *   obligatorio del proyecto. Si el repo del backend no está disponible, reutiliza la copia local.
+*   v1.1 (B5): BACKEND_SPEC_PATH (ruta relativa a la raíz del repo o absoluta) reemplaza la ruta por defecto del
+*   contrato del backend (la CI clona el backend en otra carpeta); cuando se define y el archivo no existe, falla
+*   en lugar de reutilizar la copia local, para que la verificación del contrato nunca pase sin el backend.
 *   Uso: npm run generate:api
-* Versión: 1.0
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,7 +21,10 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import openapiTS, { astToString } from "openapi-typescript";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const BACKEND_SPEC = path.resolve(ROOT, "..", "ventylab-server", "openapi", "openapi.json");
+const EXPLICIT_SPEC = (process.env.BACKEND_SPEC_PATH ?? "").trim();
+const BACKEND_SPEC = EXPLICIT_SPEC !== ""
+  ? path.resolve(ROOT, EXPLICIT_SPEC)
+  : path.resolve(ROOT, "..", "ventylab-server", "openapi", "openapi.json");
 const LOCAL_SPEC = path.join(ROOT, "openapi", "openapi.json");
 const OUTPUT = path.join(ROOT, "src", "shared", "api-client", "generated", "schema.d.ts");
 
@@ -50,6 +56,8 @@ async function main() {
   if (await exists(BACKEND_SPEC)) {
     await copyFile(BACKEND_SPEC, LOCAL_SPEC);
     console.log(`[generate:api] Copied ${path.relative(ROOT, BACKEND_SPEC)} -> openapi/openapi.json`);
+  } else if (EXPLICIT_SPEC !== "") {
+    throw new Error(`BACKEND_SPEC_PATH points to a missing file: ${BACKEND_SPEC}`);
   } else if (await exists(LOCAL_SPEC)) {
     console.warn("[generate:api] Backend spec not found; using the existing openapi/openapi.json");
   } else {

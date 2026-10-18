@@ -4,8 +4,10 @@
 *   y genera src/shared/api-client/generated/schema.d.ts) y falla (exit 1) si el resultado difiere de lo
 *   commiteado, es decir si `git status --porcelain -- openapi/openapi.json src/shared/api-client/generated`
 *   no está vacío. Así se detecta un contrato del backend sin consumir o un cliente editado a mano.
-*   Uso: npm run check:api. Depende de node y git.
-* Versión: 1.0
+*   v1.1 (B5): el generador hereda BACKEND_SPEC_PATH (ruta del contrato del backend; la CI la define y, si el
+*   archivo no existe, la verificación falla en lugar de comparar contra la copia local).
+*   Uso: npm run check:api [BACKEND_SPEC_PATH=...]. Depende de node y git.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,7 +24,8 @@ const GENERATOR = path.join(ROOT, "scripts", "generate-api.mjs");
 const CONTRACT_PATHS = ["openapi/openapi.json", "src/shared/api-client/generated"];
 
 function main() {
-  execFileSync(process.execPath, [GENERATOR], { cwd: ROOT, stdio: "inherit" });
+  // The generator inherits process.env, BACKEND_SPEC_PATH included.
+  execFileSync(process.execPath, [GENERATOR], { cwd: ROOT, stdio: "inherit", env: process.env });
 
   const status = execFileSync("git", ["status", "--porcelain", "--", ...CONTRACT_PATHS], { cwd: ROOT, encoding: "utf8" }).trim();
 
