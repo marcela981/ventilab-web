@@ -4,8 +4,8 @@
 *   expected value, used by the SIMULATION questions of the evaluation builder) with its pure rules, draft helpers,
 *   labels and copy, promoted unchanged from evaluation-authoring; and the outcome rubric editor of a clinical case
 *   `defaultRubric` (criteria with weight, threshold, window and penalty, assistance policy and passing score) with its
-*   validation mirroring the backend and its draft helpers. v1.1: the weight 0 hint. Depends on the module's application files only.
-* Versión: 1.1
+*   validation mirroring the backend and its draft helpers. v1.1: the weight 0 hint. Depends on the module's application files only. v1.2 (B4, D7): parseRubricNumber is no longer exported (numbers go through @shared/lib/parse-decimal).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -70,7 +70,6 @@ export {
   outcomeRubricIssueMessage,
   outcomeWeightTotal,
   outcomeWeightZeroHint,
-  parseRubricNumber,
   removeOutcomeCriterion,
   toOutcomeRubricValue,
   updateOutcomeCriterion,

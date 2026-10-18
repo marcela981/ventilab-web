@@ -8,8 +8,8 @@
 *   Testing Library and the rubric-editor module. v1.1 (review of 4134725): focus after reorder and removal with the
 *   live announcement, the invalid row of an unknown stored type, the weight 0 hint and the total with 2 decimals.
 *   v1.2 (review of b23709c): an identical announcement is a new node; a refused reorder never moves the focus later.
-*   v1.3 (final review): a host that renders a clone of the reordered or reduced list still gets the focus restored.
-* Versión: 1.3
+*   v1.3 (final review): a host that renders a clone of the reordered or reduced list still gets the focus restored. v1.4 (B4, D7): every numeric input is described by the shared decimal helper text when it has no error or hint.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,6 +20,7 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
+import { DECIMAL_HELPER_TEXT } from "@shared/lib/parse-decimal";
 import { OutcomeRubricEditor } from "./outcome-rubric-editor";
 import { emptyOutcomeRubricDraft, OUTCOME_CRITERION_TYPES, outcomeRubricDraftFrom, toOutcomeRubricValue } from "./outcome-rubric.entity";
 import type { OutcomeRubricDraft } from "./outcome-rubric.entity";
@@ -165,6 +166,19 @@ describe("OutcomeRubricEditor", () => {
     unmount();
     render(<Host initial={{ ...STORED, passingScore: "120" }} showIssues={false} />);
     expect(screen.getByLabelText(OUTCOME_RUBRIC_COPY.passingScore)).not.toHaveAttribute("aria-invalid", "true");
+  });
+
+  it("describes every numeric input with the decimal helper text (D7)", () => {
+    render(<Host initial={STORED} />);
+
+    for (const label of [
+      OUTCOME_RUBRIC_COPY.passingScore,
+      OUTCOME_RUBRIC_COPY.weight(1),
+      OUTCOME_RUBRIC_COPY.weight(2),
+      OUTCOME_RUBRIC_COPY.windowMinutes(2),
+    ]) {
+      expect(screen.getByLabelText(label)).toHaveAccessibleDescription(DECIMAL_HELPER_TEXT);
+    }
   });
 
   it("lists the rubric-level issue when there are no criteria", () => {
@@ -327,7 +341,7 @@ describe("OutcomeRubricEditor review fixes", () => {
 
     const weight = screen.getByLabelText(OUTCOME_RUBRIC_COPY.weight(1));
 
-    expect(weight).not.toHaveAccessibleDescription();
+    expect(weight).toHaveAccessibleDescription(DECIMAL_HELPER_TEXT);
     fireEvent.change(weight, { target: { value: "0" } });
     expect(weight).toHaveAccessibleDescription("Peso 0: este criterio no cuenta para la nota.");
   });

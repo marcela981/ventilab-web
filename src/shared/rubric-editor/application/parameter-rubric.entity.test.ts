@@ -1,8 +1,8 @@
 /*
 * Funcionalidad: Parameter rubric tests
-* Descripción: Unit tests of the builder rubric rules against the backend value object they mirror: a valid rubric (numeric range, text parameter, default priority, justification), every rejection in the backend order (not an object, empty criteria, unsupported and duplicated parameter, invalid priority, empty text value, range on a text parameter, non-numeric value, half range, inverted range, value outside the range, non-string justification) with its Spanish message, the translation of the English backend details, and the draft round trip (strings to numbers, empty draft as no rubric, text parameters drop their range, a new criterion picks an unused parameter). Depends on vitest and the parameter rubric entity. v1.1 (T10 simulation): moved unchanged with the entity
+* Descripción: Unit tests of the builder rubric rules against the backend value object they mirror: a valid rubric (numeric range, text parameter, default priority, justification), every rejection in the backend order (not an object, empty criteria, unsupported and duplicated parameter, invalid priority, empty text value, range on a text parameter, non-numeric value, half range, inverted range, value outside the range, non-string justification) with its Spanish message, the translation of the English backend details, and the draft round trip (strings to numbers, empty draft as no rubric, text parameters drop their range, a new criterion picks an unused parameter). Depends on vitest and the parameter rubric entity. v1.1 (T10 simulation): moved unchanged with the entity v1.2 (B4, D7): numeric values read through the shared es-CO parser; a grouped or exponent text is kept as text for the validator.
 *   to `@shared/rubric-editor`.
-* Versión: 1.1
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -143,6 +143,16 @@ describe("rubric drafts", () => {
 
     expect(draft.criteria[0]?.parameter).toBe("tidalVolume");
     expect(codes(toRubricValue(updateCriterionDraft(draft, "c1", { expectedValue: "abc" })))).toEqual([["numeric_expected_required", 0]]);
+  });
+
+  it("reads one separator as decimal and keeps a grouped number as text (D7)", () => {
+    const draft = addCriterionDraft(emptyRubricDraft(), "c1");
+    const valueOf = (expectedValue: string) => (toRubricValue(updateCriterionDraft(draft, "c1", { expectedValue })) as { criteria: Array<{ expectedValue: unknown }> }).criteria[0]?.expectedValue;
+
+    expect(valueOf("1,125")).toBe(1.125);
+    expect(valueOf("1.125")).toBe(1.125);
+    expect(valueOf("1.000.000")).toBe("1.000.000");
+    expect(valueOf("1e3")).toBe("1e3");
   });
 
   it("picks an unused parameter and clears the range of a text parameter", () => {

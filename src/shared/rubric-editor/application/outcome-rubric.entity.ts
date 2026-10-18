@@ -18,14 +18,16 @@
 *   v1.1 (review of 4134725): a stored criterion with an unknown type keeps that raw type in the draft
 *   (`unknownType`) and is reported as `type_invalid` until the author picks a known type (it was silently turned into
 *   TARGETS_REACHED); `outcomeWeightZeroHint` explains what a weight of 0 means for each type, following the session
-*   scoring conversion; the AI_ASSIST_USAGE integer rule is documented as a deliberate tightening of the backend.
-* Versión: 1.1
+*   scoring conversion; the AI_ASSIST_USAGE integer rule is documented as a deliberate tightening of the backend. v1.2 (B4, D7): every numeric text is read with the shared parseDecimalOrNaN ("," or "." decimal, no thousands separator, no exponent); the local parseRubricNumber is gone.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
 * Institución: Universidad del Valle
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
+
+import { parseDecimalOrNaN } from "@shared/lib/parse-decimal";
 
 export type OutcomeCriterionType =
   | "TARGETS_REACHED"
@@ -370,26 +372,19 @@ export function outcomeRubricDraftFrom(raw: unknown): OutcomeRubricDraft {
   };
 }
 
-/** A number for a numeric text ("," accepted as the decimal separator); NaN for an empty or non-numeric text. */
-export function parseRubricNumber(value: string): number {
-  const trimmed = value.trim().replace(",", ".");
-
-  return trimmed === "" ? Number.NaN : Number(trimmed);
-}
-
 function toCriterionRaw(criterion: OutcomeCriterionDraft): Record<string, unknown> {
   const raw: Record<string, unknown> = {
     type: criterion.unknownType ?? criterion.type,
-    weight: parseRubricNumber(criterion.weight),
-    threshold: parseRubricNumber(criterion.threshold),
+    weight: parseDecimalOrNaN(criterion.weight),
+    threshold: parseDecimalOrNaN(criterion.threshold),
   };
 
   if (criterionUsesWindow(criterion.type)) {
-    raw.windowMinutes = parseRubricNumber(criterion.windowMinutes);
+    raw.windowMinutes = parseDecimalOrNaN(criterion.windowMinutes);
   }
 
   if (criterionUsesPenalty(criterion.type) && criterion.penaltyPoints.trim() !== "") {
-    raw.penaltyPoints = parseRubricNumber(criterion.penaltyPoints);
+    raw.penaltyPoints = parseDecimalOrNaN(criterion.penaltyPoints);
   }
 
   return raw;
@@ -398,7 +393,7 @@ function toCriterionRaw(criterion: OutcomeCriterionDraft): Record<string, unknow
 function draftRaw(draft: OutcomeRubricDraft): Record<string, unknown> {
   return {
     assistancePolicy: draft.assistancePolicy,
-    passingScore: parseRubricNumber(draft.passingScore),
+    passingScore: parseDecimalOrNaN(draft.passingScore),
     criteria: draft.criteria.map(toCriterionRaw),
   };
 }
@@ -421,7 +416,7 @@ export function toOutcomeRubricValue(draft: OutcomeRubricDraft): OutcomeRubric |
 /** Sum of the weights that are numbers (an empty or invalid weight counts as 0). */
 export function outcomeWeightTotal(draft: OutcomeRubricDraft): number {
   return draft.criteria.reduce((sum, criterion) => {
-    const weight = parseRubricNumber(criterion.weight);
+    const weight = parseDecimalOrNaN(criterion.weight);
 
     return Number.isFinite(weight) ? sum + weight : sum;
   }, 0);
@@ -506,7 +501,7 @@ export function moveOutcomeCriterion(draft: OutcomeRubricDraft, key: string, off
  * still sets its limit and penalty in the grouped safety criterion. Null when the weight is not 0.
  */
 export function outcomeWeightZeroHint(criterion: OutcomeCriterionDraft): string | null {
-  if (criterion.unknownType !== undefined || parseRubricNumber(criterion.weight) !== 0) {
+  if (criterion.unknownType !== undefined || parseDecimalOrNaN(criterion.weight) !== 0) {
     return null;
   }
 
@@ -514,7 +509,7 @@ export function outcomeWeightZeroHint(criterion: OutcomeCriterionDraft): string 
     return "Peso 0: el límite se sigue vigilando y su penalización se aplica.";
   }
 
-  const penalty = parseRubricNumber(criterion.penaltyPoints);
+  const penalty = parseDecimalOrNaN(criterion.penaltyPoints);
 
   if (criterion.type === "AI_ASSIST_USAGE" && Number.isFinite(penalty) && penalty > 0) {
     return "Peso 0: cada uso penalizado resta la penalización.";

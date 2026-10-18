@@ -18,8 +18,8 @@
 *   v1.2 (review of b23709c): every announcement is a new node (nonce key), so an identical text is announced again;
 *   a pending focus request is dropped when the host does not render the expected reordered or reduced list.
 *   v1.3 (final review): the expected list is compared by its ordered criterion keys, not by object identity, so a
-*   host that renders a copy of the value it received still gets the focus restored.
-* Versión: 1.3
+*   host that renders a copy of the value it received still gets the focus restored. v1.4 (B4, D7): the numeric inputs (passing score, weight, threshold, window, penalty) show DECIMAL_HELPER_TEXT (the weight 0 hint keeps priority).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -36,6 +36,7 @@ import { useEffect, useRef, useState } from "react";
 import IconButton from "@mui/material/IconButton";
 import { FormField } from "@shared/design-system/components/form-field";
 import { cx } from "@shared/lib/class-names";
+import { DECIMAL_HELPER_TEXT } from "@shared/lib/parse-decimal";
 import {
   addOutcomeCriterion,
   criterionUsesPenalty,
@@ -224,6 +225,7 @@ export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false,
           inputMode="decimal"
           className={cx(styles.settingField)}
           error={fieldError(issues, null, "passingScore")}
+          helperText={DECIMAL_HELPER_TEXT}
           onChange={(event) => onChange({ ...value, passingScore: event.target.value })}
         />
       </div>
@@ -261,7 +263,7 @@ export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false,
                 inputMode="decimal"
                 className={cx(styles.valueField)}
                 error={fieldError(issues, key, "weight")}
-                helperText={weightHint ?? undefined}
+                helperText={weightHint ?? DECIMAL_HELPER_TEXT}
                 onChange={(event) => update(criterion, { weight: event.target.value })}
               />
               <FormField
@@ -274,6 +276,7 @@ export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false,
                 inputMode="decimal"
                 className={cx(styles.thresholdField)}
                 error={fieldError(issues, key, "threshold", unknownType === undefined ? type : undefined)}
+                helperText={DECIMAL_HELPER_TEXT}
                 onChange={(event) => update(criterion, { threshold: event.target.value })}
               />
               {unknownType === undefined && criterionUsesWindow(type) ? (
@@ -285,6 +288,7 @@ export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false,
                   inputMode="decimal"
                   className={cx(styles.valueField)}
                   error={fieldError(issues, key, "windowMinutes")}
+                  helperText={DECIMAL_HELPER_TEXT}
                   onChange={(event) => update(criterion, { windowMinutes: event.target.value })}
                 />
               ) : null}
@@ -297,6 +301,7 @@ export function OutcomeRubricEditor({ value, onChange, newKey, disabled = false,
                   inputMode="decimal"
                   className={cx(styles.valueField)}
                   error={fieldError(issues, key, "penaltyPoints")}
+                  helperText={DECIMAL_HELPER_TEXT}
                   onChange={(event) => update(criterion, { penaltyPoints: event.target.value })}
                 />
               ) : null}

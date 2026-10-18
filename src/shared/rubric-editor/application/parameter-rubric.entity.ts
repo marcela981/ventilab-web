@@ -2,14 +2,16 @@
 * Funcionalidad: Parameter rubric (shared rubric-editor)
 * Descripción: Pure rules of the rubric of a SIMULATION question, mirroring the backend value object (ventylab-server src/features/evaluation/domain/value-objects/simulation-rubric.ts): `{criteria:[{parameter, expectedValue, min?, max?, priority?}], justification?}` with numeric parameters tidalVolume, respiratoryRate, peep, fio2, maxPressure and text parameters ventilationMode, iERatio; at least one criterion, no duplicated parameter, min and max together or neither with min <= expectedValue <= max, no range on text parameters, priority CRITICO, IMPORTANTE or OPCIONAL (default OPCIONAL), justification a string. validateSimulationRubric applies the same rules in the same order and returns typed issues with Spanish messages; parseBackendRubricError translates the English details the backend sends in a readiness issue. Also the editable draft of the rubric (strings per field, stable client keys), its conversion to the value sent to the backend and back, and the Spanish labels. The backend rubric has no weights, thresholds or AI-assist policy, so none are offered. No dependencies. v1.1 (T10 simulation): promoted unchanged from
 *   evaluation-authoring (`application/entities/simulation-rubric.entity.ts`) to `@shared/rubric-editor`; the builder
-*   re-imports it from there.
-* Versión: 1.1
+*   re-imports it from there. v1.2 (B4, D7): a numeric value is read with the shared parseDecimal ("," or "." decimal); a grouped, exponent or other text stays text for the validator.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
 * Institución: Universidad del Valle
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
+
+import { parseDecimal } from "@shared/lib/parse-decimal";
 
 export type RubricNumericParameter = "tidalVolume" | "respiratoryRate" | "peep" | "fio2" | "maxPressure";
 export type RubricTextParameter = "ventilationMode" | "iERatio";
@@ -262,10 +264,9 @@ export function rubricDraftFrom(raw: unknown): RubricDraft {
 
 // A number when the text is one, otherwise the trimmed text (the validator then reports it).
 function toNumberOrText(value: string): number | string {
-  const trimmed = value.trim().replace(",", ".");
-  const parsed = Number(trimmed);
+  const parsed = parseDecimal(value);
 
-  return trimmed !== "" && Number.isFinite(parsed) ? parsed : value.trim();
+  return parsed.ok && parsed.value !== null ? parsed.value : value.trim();
 }
 
 function toCriterionValue(criterion: CriterionDraft): Record<string, unknown> {

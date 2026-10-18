@@ -2,8 +2,8 @@
 * Funcionalidad: ParameterRubricEditor
 * Descripción: Rubric editor of a SIMULATION question in the evaluation builder, on the real backend schema: one row per criterion with the ventilator parameter (each parameter at most once), the expected value (number for tidalVolume, respiratoryRate, peep, fio2 and maxPressure; text for ventilationMode and iERatio), the optional min and max (numeric parameters only) and the priority (Crítico, Importante, Opcional; Opcional by default), plus the optional justification. Shows the Spanish rubric issues from the builder validation. Disabled while the structure is locked. Depends on MUI, the design-system FormField, @shared/lib, the parameter rubric entity, the rubric editor copy and the rubric editor CSS Module.
 *   v1.1 (T10 simulation): promoted from evaluation-authoring (`components/builder/rubric-editor.tsx`) to
-*   `@shared/rubric-editor` with the same DOM, labels, classes and props; the copy and the styles moved with it.
-* Versión: 1.1
+*   `@shared/rubric-editor` with the same DOM, labels, classes and props; the copy and the styles moved with it. v1.2 (B4, D7): the numeric inputs (expected value of a numeric parameter, min, max) show DECIMAL_HELPER_TEXT.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,6 +17,7 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import { FormField } from "@shared/design-system/components/form-field";
 import { cx } from "@shared/lib/class-names";
+import { DECIMAL_HELPER_TEXT } from "@shared/lib/parse-decimal";
 import {
   addCriterionDraft,
   isNumericParameter,
@@ -81,6 +82,7 @@ export function ParameterRubricEditor({ rubric, issues, disabled, newKey, onChan
                 size="small"
                 inputMode={numeric ? "decimal" : "text"}
                 className={cx(styles.valueField)}
+                helperText={numeric ? DECIMAL_HELPER_TEXT : undefined}
                 onChange={(event) => update({ expectedValue: event.target.value })}
               />
               {numeric ? (
@@ -92,6 +94,7 @@ export function ParameterRubricEditor({ rubric, issues, disabled, newKey, onChan
                     size="small"
                     inputMode="decimal"
                     className={cx(styles.valueField)}
+                    helperText={DECIMAL_HELPER_TEXT}
                     onChange={(event) => update({ min: event.target.value })}
                   />
                   <FormField
@@ -101,6 +104,7 @@ export function ParameterRubricEditor({ rubric, issues, disabled, newKey, onChan
                     size="small"
                     inputMode="decimal"
                     className={cx(styles.valueField)}
+                    helperText={DECIMAL_HELPER_TEXT}
                     onChange={(event) => update({ max: event.target.value })}
                   />
                 </>

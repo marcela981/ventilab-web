@@ -1,6 +1,6 @@
 /*
 * Funcionalidad: Outcome rubric tests
-* Descripción: Unit tests of the outcome rubric rules against the backend rules they mirror
+* Descripción: Unit tests of the outcome rubric rules against the backend rules they mirror v1.2 (B4, D7): numbers read through the shared es-CO parser ("1.125" and "1,125" are 1.125, thousands grouping is invalid).
 *   (clinical-case-definition-validator `assertValidRubric` + the session scoring threshold units): a valid rubric, each
 *   rejection (not an object, policy, passing score out of [0, 100], no criteria, unknown and duplicated type, negative
 *   weight, missing threshold, negative penalty, missing or non-positive window, weights not adding up to 100 and the
@@ -9,7 +9,7 @@
 *   remove, weight total). Depends on vitest and the outcome rubric entity. v1.1 (review of 4134725): an unknown stored
 *   type is kept and reported as type_invalid until a known type is chosen; AI_ASSIST_USAGE free uses must be whole;
 *   the weight 0 hint per type.
-* Versión: 1.1
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -144,6 +144,16 @@ describe("outcome rubric draft", () => {
 
     expect(toOutcomeRubricValue(updateOutcomeCriterion(draft, key, { threshold: "0,75" }))?.criteria[0]?.threshold).toBe(0.75);
     expect(toOutcomeRubricValue(updateOutcomeCriterion(draft, key, { weight: "" }))).toBeNull();
+  });
+
+  it("reads one separator as decimal and rejects thousands grouping (D7)", () => {
+    const draft = outcomeRubricDraftFrom({ assistancePolicy: "DISABLED", passingScore: 60, criteria: [{ type: "TARGETS_REACHED", weight: 100, threshold: 1 }] });
+    const key = draft.criteria[0]?.key ?? "";
+
+    expect(toOutcomeRubricValue({ ...draft, passingScore: "1.125" })?.passingScore).toBe(1.125);
+    expect(toOutcomeRubricValue({ ...draft, passingScore: "1,125" })?.passingScore).toBe(1.125);
+    expect(toOutcomeRubricValue({ ...draft, passingScore: "1.000.000" })).toBeNull();
+    expect(toOutcomeRubricValue(updateOutcomeCriterion(draft, key, { weight: "1e2" }))).toBeNull();
   });
 
   it("reports draft issues with the key of their criterion; an empty field is invalid", () => {
