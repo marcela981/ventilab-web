@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher dashboard labels and formatters
-* Descripción: Spanish labels of the API enums shown by the teacher dashboard (AI use cases, timeline entry kinds, simulation session, evaluation attempt and reservation statuses) with the raw value as fallback, and the es-CO formatters of API values that @shared/lib/format does not cover: percentage of progress or helpfulness, simulation score, seconds to stabilize, ventilator hours and counts. Display only: values are formatted, never derived. Depends only on Intl.
-* Versión: 1.0
+* Descripción: Spanish labels of the API enums shown by the teacher dashboard (AI use cases, timeline entry kinds, simulation session, evaluation attempt and reservation statuses) with the raw value as fallback, and the es-CO formatters of API values that @shared/lib/format does not cover: percentage of progress or helpfulness, simulation score, seconds to stabilize, ventilator hours and counts. Display only: values are formatted, never derived. Depends only on Intl. v1.1 (closure B2): labels of the API risk reasons, of the caller's group relation and of the simulation session modes.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,6 +10,7 @@
 */
 
 import type { TimelineKind } from "./student-timeline.entity";
+import type { GroupRelation, RiskReason } from "./teacher-dashboard.entity";
 
 // TODO(i18n): move to a teacher-dashboard namespace in src/i18n.
 export const AI_USE_CASE_LABELS: Record<string, string> = {
@@ -42,6 +43,22 @@ export const STATUS_LABELS: Record<string, string> = {
   CANCELLED: "Cancelada",
   PREEMPTED: "Desplazada",
   COMPLETED: "Completada",
+};
+
+export const RISK_REASON_LABELS: Record<RiskReason, string> = {
+  FAILED_EVALUATIONS: "Reprobó evaluaciones",
+  LOW_PROGRESS: "Avance bajo",
+  INACTIVE: "Inactivo",
+};
+
+export const GROUP_RELATION_LABELS: Record<GroupRelation, string> = {
+  MANAGED: "A cargo",
+  SUPERVISED: "Supervisado",
+};
+
+export const SIMULATION_MODE_LABELS: Record<string, string> = {
+  FREE: "Práctica libre",
+  EXAM: "Examen",
 };
 
 export function labelOf(labels: Readonly<Record<string, string>>, value: string): string {

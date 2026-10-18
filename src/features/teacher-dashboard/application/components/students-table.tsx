@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: StudentsTable
-* Descripción: Students table of /teacher from the group dashboard rows: student (link to the detail page with the group), overall progress, average grade, simulation (sessions, average score, average time to stabilize), AI usage per use case (calls and helpful percentage exactly as returned, never summed) and ventilator hours. Columns sort by their API value (TableSortLabel) and a text filter keeps the rows whose name or email matches. A row is highlighted (warning border, tint and the "En riesgo" label) when the risk rule says so; a legend explains it. Each row expands to its section, level and module progress (curriculum titles) and its published evaluations. v1.1 (O3 review): the legend says that only the latest published attempt of each evaluation counts. Depends on MUI, next/link, @shared/lib/format, the teacher dashboard entities, routes and CSS Module.
-* Versión: 1.1
+* Descripción: Students table of /teacher from the group dashboard rows: student (link to the detail page with the group), overall progress, average grade, simulation (sessions, average score, average time to stabilize), AI usage per use case (calls and helpful percentage exactly as returned, never summed) and ventilator hours. Columns sort by their API value (TableSortLabel) and a text filter keeps the rows whose name or email matches. A row is highlighted (warning border, tint and the "En riesgo" label) when the API flags it (`atRisk`); the label lists the API reasons in Spanish (Reprobó evaluaciones with the failed evaluation titles, Avance bajo, Inactivo) and a short legend states the passing grade and the risk thresholds the API used (a 0 threshold is shown as off). Each row expands to its section, level and module progress (curriculum titles) and its published evaluations. v1.1 (O3 review): the legend says that only the latest published attempt of each evaluation counts. v1.2 (closure B2): the client risk rule (assessStudentRisk) is gone; risk, reasons and failed evaluations come from the API row, thresholds from the dashboard. Depends on MUI, next/link, @shared/lib/format, the teacher dashboard entities, routes and CSS Module.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -28,7 +28,6 @@ import { formatDate, formatGrade } from "@shared/lib/format";
 import { buildStudentDetailUrl } from "../config/teacher-dashboard.routes";
 import { levelTitle, moduleTitle, sectionTitle } from "../entities/curriculum-titles.entity";
 import type { CurriculumTitles } from "../entities/curriculum-titles.entity";
-import { assessStudentRisk } from "../entities/student-risk.entity";
 import {
   AI_USE_CASE_LABELS,
   formatHours,
@@ -37,18 +36,25 @@ import {
   formatSeconds,
   labelOf,
   MISSING,
+  RISK_REASON_LABELS,
 } from "../entities/teacher-dashboard-labels";
-import { DEFAULT_SORT, displayName, filterRows, sortRows, toggleSort } from "../entities/teacher-dashboard.entity";
-import type { ProgressItem, SortKey, SortState, StudentRow } from "../entities/teacher-dashboard.entity";
+import { DEFAULT_SORT, displayName, failedEvaluationTitles, filterRows, sortRows, toggleSort } from "../entities/teacher-dashboard.entity";
+import type { ProgressItem, RiskThresholds, SortKey, SortState, StudentRow } from "../entities/teacher-dashboard.entity";
 import styles from "../../UI/teacher-dashboard.module.css";
 
 // TODO(i18n): move to a teacher-dashboard namespace in src/i18n.
 export const STUDENTS_TABLE_COPY = {
   title: "Estudiantes",
   filter: "Buscar por nombre o correo",
-  legend: "Resaltado: en al menos una evaluación, el último intento publicado del estudiante está reprobado (dato de la API).",
+  legend: "Resaltado: estudiante en riesgo según la plataforma.",
+  legendLabel: "Criterios de riesgo",
+  legendPassing: (grade: string) => `Nota de aprobación ${grade}`,
+  legendFailed: (count: number) => (count === 0 ? "Reprobó evaluaciones: al menos una" : `Reprobó evaluaciones: más de ${count}`),
+  legendProgress: (percent: string) => `Avance bajo: menos de ${percent}`,
+  legendInactive: (days: number) => `Inactivo: más de ${days} ${days === 1 ? "día" : "días"} sin actividad`,
+  legendOff: (rule: string) => `${rule}: desactivado`,
   atRisk: "En riesgo",
-  atRiskDetail: (titles: readonly string[]) => `Reprobó: ${titles.join(", ")}`,
+  failedDetail: (titles: readonly string[]) => (titles.length > 0 ? `: ${titles.join(", ")}` : ""),
   columns: {
     name: "Estudiante",
     progress: "Progreso",
@@ -89,6 +95,29 @@ const SORTABLE_COLUMNS: readonly SortableColumn[] = [
 ];
 
 const COLUMN_COUNT = 9;
+
+/** Legend items: the passing grade and each risk rule with the threshold the API used (0 turns progress and inactivity off). */
+export function riskLegendItems(passingGrade: number, thresholds: RiskThresholds): string[] {
+  return [
+    STUDENTS_TABLE_COPY.legendPassing(formatGrade(passingGrade)),
+    STUDENTS_TABLE_COPY.legendFailed(thresholds.maxFailedEvaluations),
+    thresholds.minProgressPct > 0
+      ? STUDENTS_TABLE_COPY.legendProgress(formatPercent(thresholds.minProgressPct))
+      : STUDENTS_TABLE_COPY.legendOff(RISK_REASON_LABELS.LOW_PROGRESS),
+    thresholds.inactivityDays > 0
+      ? STUDENTS_TABLE_COPY.legendInactive(thresholds.inactivityDays)
+      : STUDENTS_TABLE_COPY.legendOff(RISK_REASON_LABELS.INACTIVE),
+  ];
+}
+
+/** Spanish reasons of an at-risk row; the failed evaluations reason names the API failed evaluations. */
+export function riskReasonsText(row: StudentRow): string {
+  return row.riskReasons
+    .map((reason) => (reason === "FAILED_EVALUATIONS"
+      ? `${RISK_REASON_LABELS.FAILED_EVALUATIONS}${STUDENTS_TABLE_COPY.failedDetail(failedEvaluationTitles(row))}`
+      : RISK_REASON_LABELS[reason]))
+    .join(" · ");
+}
 
 function percentValue(item: ProgressItem): number {
   // Display only: the bar takes the API percentage, bounded to its 0–100 range.
@@ -162,9 +191,11 @@ export type StudentsTableProps = {
   rows: readonly StudentRow[]
   groupId: string
   titles: CurriculumTitles
+  passingGrade: number
+  thresholds: RiskThresholds
 };
 
-export function StudentsTable({ rows, groupId, titles }: StudentsTableProps) {
+export function StudentsTable({ rows, groupId, titles, passingGrade, thresholds }: StudentsTableProps) {
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState<SortState>(DEFAULT_SORT);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -184,25 +215,28 @@ export function StudentsTable({ rows, groupId, titles }: StudentsTableProps) {
 
   const renderRow = (row: StudentRow) => {
     const name = displayName(row);
-    const risk = assessStudentRisk(row);
     const isOpen = expanded === row.userId;
+    const reasons = row.atRisk ? riskReasonsText(row) : "";
 
     return (
       <Fragment key={row.userId}>
-        <TableRow className={cx(risk.atRisk && styles.riskRow)} data-risk={risk.atRisk ? "true" : "false"}>
+        <TableRow className={cx(row.atRisk && styles.riskRow)} data-risk={row.atRisk ? "true" : "false"}>
           <TableCell>
             <div className={cx(styles.studentCell)}>
               <Link href={buildStudentDetailUrl(row.userId, groupId)} className={cx(styles.link)}>{name}</Link>
               {row.name ? <span className={cx(styles.itemMeta)}>{row.email}</span> : null}
-              {risk.atRisk ? (
-                <Chip
-                  size="small"
-                  color="warning"
-                  variant="outlined"
-                  label={STUDENTS_TABLE_COPY.atRisk}
-                  title={STUDENTS_TABLE_COPY.atRiskDetail(risk.failedEvaluationTitles)}
-                  className={cx(styles.riskLabel)}
-                />
+              {row.atRisk ? (
+                <>
+                  <Chip
+                    size="small"
+                    color="warning"
+                    variant="outlined"
+                    label={STUDENTS_TABLE_COPY.atRisk}
+                    title={reasons}
+                    className={cx(styles.riskLabel)}
+                  />
+                  {reasons ? <span className={cx(styles.itemMeta)}>{reasons}</span> : null}
+                </>
               ) : null}
             </div>
           </TableCell>
@@ -262,6 +296,9 @@ export function StudentsTable({ rows, groupId, titles }: StudentsTableProps) {
         <span aria-hidden="true" className={cx(styles.legendSwatch)} />
         {STUDENTS_TABLE_COPY.legend}
       </p>
+      <ul className={cx(styles.legendList)} aria-label={STUDENTS_TABLE_COPY.legendLabel}>
+        {riskLegendItems(passingGrade, thresholds).map((item) => <li key={item}>{item}</li>)}
+      </ul>
       {rows.length === 0 ? <p className={cx(styles.emptyText)}>{STUDENTS_TABLE_COPY.empty}</p> : (
         <div className={cx(styles.tableWrapper)}>
           <Table size="small" aria-label={STUDENTS_TABLE_COPY.title}>

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: StudentGrades
-* Descripción: Grades block of /teacher/students/[userId]. With the group the page was opened from (?groupId), it lists the published grades of the student's group dashboard row (grade, attempt, date and the passed / failed label of the API, linked to the evaluation results page because the row has no attemptId: BACKEND GAP) and the student's attempts waiting for review in the group grading queue (linked to /grading/attempts/[attemptId]). Without a group there is no staff endpoint with a student's grades (BACKEND GAP), so it explains how to see them. v1.1 (O3 review): a visible note warns when the scanned page of the group queue may not hold every attempt of the student. Depends on MUI, next/link, @shared/lib/format, the teacher dashboard hooks, entities, routes and CSS Module.
-* Versión: 1.1
+* Descripción: Grades block of /teacher/students/[userId]: the student's published grades from `GET /api/evaluation-grading/students/{userId}/grades` (evaluation, module, grade, attempt, publication date and the passed / failed label of the API; each grade links to its attempt in /grading/attempts/[attemptId]) and the attempts waiting for review from the grading queue filtered by the student (`GET /api/evaluation-grading/queue?studentId`, paged with the API pagination, linked to grading). v1.1 (O3 review): a note warned when the scanned group queue page could miss attempts. v1.2 (closure B2): no group is needed: grades come from the staff student grades endpoint (no group dashboard row, no link to the results page for lack of attemptId) and the queue is filtered by studentId and paged (no 50-row limit, no incomplete-list warning). Depends on MUI, next/link, @shared/lib/format, the teacher dashboard hooks, entities, routes and CSS Module.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,14 +10,16 @@
 */
 
 import Alert from "@mui/material/Alert";
+import Pagination from "@mui/material/Pagination";
 import Link from "next/link";
+import { useState } from "react";
 import { ListSkeleton } from "@shared/design-system/components/skeleton";
 import { cx } from "@shared/lib/class-names";
 import { formatDate, formatDateTime, formatGrade } from "@shared/lib/format";
-import { buildEvaluationResultsUrl, buildGradingAttemptUrl } from "../config/teacher-dashboard.routes";
+import { buildGradingAttemptUrl } from "../config/teacher-dashboard.routes";
 import { getTeacherDashboardErrorMessage } from "../entities/teacher-dashboard-error-messages";
 import { MISSING } from "../entities/teacher-dashboard-labels";
-import { useGroupDashboard } from "../hooks/use-group-dashboard";
+import { useStudentGrades } from "../hooks/use-student-grades";
 import { useStudentPendingAttempts } from "../hooks/use-student-pending-attempts";
 import styles from "../../UI/teacher-dashboard.module.css";
 
@@ -25,29 +27,23 @@ import styles from "../../UI/teacher-dashboard.module.css";
 export const STUDENT_GRADES_COPY = {
   published: "Calificaciones publicadas",
   pending: "Intentos por calificar",
-  average: (grade: string) => `Promedio (según la API): ${grade}`,
-  noGroup: "Abre este detalle desde el panel de un grupo para ver sus calificaciones: la API solo entrega las calificaciones de un estudiante dentro de su grupo.",
-  notInGroup: "El estudiante no aparece en el panel de este grupo.",
   noPublished: "Aún no tiene calificaciones publicadas.",
   noPending: "No tiene intentos pendientes de calificación.",
   gradeLine: (grade: string, attempt: number, date: string) => `Nota ${grade} · intento ${attempt} · publicada el ${date}`,
+  module: (title: string) => `Módulo: ${title}`,
   pendingLine: (attempt: number, date: string) => `Intento ${attempt} · enviado ${date}`,
+  pendingTotal: (total: number) => `${total} ${total === 1 ? "intento pendiente" : "intentos pendientes"}`,
   passed: "Aprobada",
   failed: "Reprobada",
   loading: "Cargando calificaciones…",
   grade: "Calificar",
-  possiblyIncomplete: "Lista posiblemente incompleta: la cola del grupo tiene más intentos de los revisados",
+  pagination: "Páginas de intentos por calificar",
 } as const;
 
-export function StudentGrades({ userId, groupId }: { userId: string, groupId: string | null }) {
-  const { dashboard, isLoading, error } = useGroupDashboard(groupId);
-  const pending = useStudentPendingAttempts(groupId, userId);
+function PublishedGrades({ userId }: { userId: string }) {
+  const { grades, isLoading, error } = useStudentGrades(userId);
 
-  if (!groupId) {
-    return <Alert severity="info">{STUDENT_GRADES_COPY.noGroup}</Alert>;
-  }
-
-  if (!dashboard) {
+  if (!grades) {
     if (error) {
       return <Alert severity="error">{getTeacherDashboardErrorMessage(error)}</Alert>;
     }
@@ -55,40 +51,41 @@ export function StudentGrades({ userId, groupId }: { userId: string, groupId: st
     return isLoading ? <ListSkeleton rows={3} label={STUDENT_GRADES_COPY.loading} /> : null;
   }
 
-  const row = dashboard.students.find((student) => student.userId === userId) ?? null;
+  if (grades.length === 0) {
+    return <p className={cx(styles.emptyText)}>{STUDENT_GRADES_COPY.noPublished}</p>;
+  }
 
   return (
-    <div className={cx(styles.detailGrid)}>
-      <div>
-        <h3 className={cx(styles.subTitle)}>{STUDENT_GRADES_COPY.published}</h3>
-        {!row ? <p className={cx(styles.emptyText)}>{STUDENT_GRADES_COPY.notInGroup}</p> : (
-          <>
-            <p className={cx(styles.meta)}>{STUDENT_GRADES_COPY.average(row.averageGrade === null ? MISSING : formatGrade(row.averageGrade))}</p>
-            {row.evaluations.length === 0 ? <p className={cx(styles.emptyText)}>{STUDENT_GRADES_COPY.noPublished}</p> : (
-              <ul className={cx(styles.list)}>
-                {row.evaluations.map((grade) => (
-                  <li key={`${grade.evaluationId}-${grade.attemptNumber}`} className={cx(styles.listItem)}>
-                    <Link href={buildEvaluationResultsUrl(grade.evaluationId)} className={cx(styles.link)}>{grade.evaluationTitle}</Link>
-                    <span className={cx(styles.itemMeta)}>
-                      {STUDENT_GRADES_COPY.gradeLine(formatGrade(grade.grade), grade.attemptNumber, formatDate(grade.publishedAt))}
-                      {" · "}
-                      <span className={cx(grade.passed ? styles.passed : styles.failed)}>
-                        {grade.passed ? STUDENT_GRADES_COPY.passed : STUDENT_GRADES_COPY.failed}
-                      </span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
-        )}
-      </div>
-      <div>
-        <h3 className={cx(styles.subTitle)}>{STUDENT_GRADES_COPY.pending}</h3>
-        {pending.error ? <Alert severity="error">{getTeacherDashboardErrorMessage(pending.error)}</Alert> : null}
-        {pending.attempts === null && pending.isLoading ? <ListSkeleton rows={2} label={STUDENT_GRADES_COPY.loading} /> : null}
-        {pending.attempts && pending.attempts.length === 0 ? <p className={cx(styles.emptyText)}>{STUDENT_GRADES_COPY.noPending}</p> : null}
-        {pending.attempts && pending.attempts.length > 0 ? (
+    <ul className={cx(styles.list)}>
+      {grades.map((grade) => (
+        <li key={grade.attemptId} className={cx(styles.listItem)}>
+          <Link href={buildGradingAttemptUrl(grade.attemptId)} className={cx(styles.link)}>{grade.evaluationTitle}</Link>
+          <span className={cx(styles.itemMeta)}>
+            {STUDENT_GRADES_COPY.gradeLine(formatGrade(grade.grade), grade.attemptNumber, formatDate(grade.publishedAt))}
+            {" · "}
+            <span className={cx(grade.passed ? styles.passed : styles.failed)}>
+              {grade.passed ? STUDENT_GRADES_COPY.passed : STUDENT_GRADES_COPY.failed}
+            </span>
+          </span>
+          {grade.moduleTitle ? <span className={cx(styles.itemMeta)}>{STUDENT_GRADES_COPY.module(grade.moduleTitle)}</span> : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function PendingAttempts({ userId }: { userId: string }) {
+  const [page, setPage] = useState(1);
+  const pending = useStudentPendingAttempts(userId, page);
+
+  return (
+    <>
+      {pending.error ? <Alert severity="error">{getTeacherDashboardErrorMessage(pending.error)}</Alert> : null}
+      {pending.attempts === null && pending.isLoading ? <ListSkeleton rows={2} label={STUDENT_GRADES_COPY.loading} /> : null}
+      {pending.attempts && pending.attempts.length === 0 ? <p className={cx(styles.emptyText)}>{STUDENT_GRADES_COPY.noPending}</p> : null}
+      {pending.attempts && pending.attempts.length > 0 ? (
+        <>
+          <p className={cx(styles.meta)}>{STUDENT_GRADES_COPY.pendingTotal(pending.total)}</p>
           <ul className={cx(styles.list)}>
             {pending.attempts.map((attempt) => (
               <li key={attempt.attemptId} className={cx(styles.listItem)}>
@@ -100,8 +97,31 @@ export function StudentGrades({ userId, groupId }: { userId: string, groupId: st
               </li>
             ))}
           </ul>
-        ) : null}
-        {pending.possiblyIncomplete ? <Alert severity="info">{STUDENT_GRADES_COPY.possiblyIncomplete}</Alert> : null}
+        </>
+      ) : null}
+      {pending.pages > 1 ? (
+        <Pagination
+          size="small"
+          count={pending.pages}
+          page={Math.min(page, pending.pages)}
+          onChange={(_event, next) => setPage(next)}
+          aria-label={STUDENT_GRADES_COPY.pagination}
+        />
+      ) : null}
+    </>
+  );
+}
+
+export function StudentGrades({ userId }: { userId: string }) {
+  return (
+    <div className={cx(styles.detailGrid)}>
+      <div>
+        <h3 className={cx(styles.subTitle)}>{STUDENT_GRADES_COPY.published}</h3>
+        <PublishedGrades userId={userId} />
+      </div>
+      <div>
+        <h3 className={cx(styles.subTitle)}>{STUDENT_GRADES_COPY.pending}</h3>
+        <PendingAttempts userId={userId} />
       </div>
     </div>
   );

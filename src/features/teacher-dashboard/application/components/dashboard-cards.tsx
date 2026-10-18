@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: DashboardCards
-* Descripción: Summary cards of /teacher for the selected group, each with its own loading and error state: attempts waiting for review (envelope total of the grading queue, link to /grading), active evaluations (envelope total plus the first rows with their window and pending reviews, linked to the evaluation results page) and upcoming ventilator reservations of the group in the next 30 days (window and purpose). Numbers are shown as the API returns them. Depends on MUI, next/link, @shared/lib/format, the design-system skeleton, the teacher dashboard hooks, entities, routes and CSS Module.
-* Versión: 1.0
+* Descripción: Summary cards of /teacher for the selected group, each with its own loading and error state: attempts waiting for review (`pending` of the grading queue count endpoint since v1.1 closure B2, link to /grading), active evaluations (envelope total plus the first rows with their window and pending reviews, linked to the evaluation results page) and upcoming ventilator reservations of the group in the next 30 days (window and purpose). Numbers are shown as the API returns them. Depends on MUI, next/link, @shared/lib/format, the design-system skeleton, the teacher dashboard hooks, entities, routes and CSS Module.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje

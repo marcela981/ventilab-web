@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: StudentDetailPage
-* Descripción: Page /teacher/students/[userId] (TEACHER, ADMIN): header from `GET /api/users/students/{id}` (name, email, last access; a 403 or 404 becomes a no-access / not-found state), the progress tree from `GET /api/progress/users/{userId}/summary` labelled with the curriculum titles, the grades of the group the page was opened from (?groupId: published grades of the group dashboard row and attempts waiting for review in the group queue, linked to grading), and the activity (simulation sessions with replay links and the windowed timeline of `GET /api/analytics/students/{userId}/timeline`). The student's personal notes and AI conversations are never read. Depends on MUI, next/head, next/link, next/router, the design-system states, the teacher dashboard hooks, components, entities, routes and CSS Module.
-* Versión: 1.0
+* Descripción: Page /teacher/students/[userId] (TEACHER, ADMIN): header from `GET /api/users/students/{id}` (name, email, last access; a 403 or 404 becomes a no-access / not-found state), the progress tree from `GET /api/progress/users/{userId}/summary` labelled with the curriculum titles, the grades (published grades of `GET /api/evaluation-grading/students/{userId}/grades` and attempts waiting for review of the queue filtered by the student, linked to grading), and the activity (simulation sessions of `GET /api/simulation/sessions/history?userId` with replay links and the windowed timeline of `GET /api/analytics/students/{userId}/timeline`). ?groupId only drives the back link to the group panel. The student's personal notes and AI conversations are never read. Depends on MUI, next/head, next/link, next/router, the design-system states, the teacher dashboard hooks, components, entities, routes and CSS Module. v1.1 (closure B2): the grades no longer depend on the group the page was opened from.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -95,7 +95,7 @@ export function StudentDetailPage({ userId }: StudentDetailPageProps) {
         </section>
         <section aria-label={STUDENT_DETAIL_COPY.gradesTitle} className={cx(styles.card)}>
           <h2 className={cx(styles.sectionTitle)}>{STUDENT_DETAIL_COPY.gradesTitle}</h2>
-          <StudentGrades userId={userId} groupId={groupId} />
+          <StudentGrades userId={userId} />
         </section>
         <section aria-label={STUDENT_DETAIL_COPY.activityTitle} className={cx(styles.card)}>
           <h2 className={cx(styles.sectionTitle)}>{STUDENT_DETAIL_COPY.activityTitle}</h2>

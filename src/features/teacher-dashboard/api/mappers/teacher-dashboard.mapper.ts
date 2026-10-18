@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher dashboard mappers
-* Descripción: DTO → view model mappers of the teacher dashboard: groups (STUDENT groups as returned), group dashboard rows (progress items, published grades, simulation, AI usage per use case, ventilator hours copied as the API sends them), evaluation stats (title, passingGrade, histogram buckets), active assignments (pending review count of the assignment), reservations calendar rows (only detail rows carry a group), grading queue rows, student header, learning progress summary and the curriculum tree reduced to titles and curriculum order. No value is computed. Depends on the teacher dashboard DTOs and entities.
-* Versión: 1.0
+* Descripción: DTO → view model mappers of the teacher dashboard: groups (STUDENT groups as returned), group dashboard rows (progress items, published grades, simulation, AI usage per use case, ventilator hours copied as the API sends them), evaluation stats (title, passingGrade, histogram buckets), active assignments (pending review count of the assignment), reservations calendar rows (only detail rows carry a group), grading queue rows, student header, learning progress summary and the curriculum tree reduced to titles and curriculum order. No value is computed. Depends on the teacher dashboard DTOs and entities. v1.1 (closure B2): the group relation, the row risk fields and last activity, the dashboard passingGrade, riskThresholds and moduleSummary, a student's published grades and simulation sessions are copied as the API sends them.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,9 +17,12 @@ import type {
   GroupDashboard,
   GroupOption,
   GroupReservation,
+  ModuleSummary,
   PendingAttempt,
   ProgressItem,
+  StudentGrade,
   StudentRow,
+  StudentSession,
 } from "../../application/entities/teacher-dashboard.entity";
 import type {
   AnalyticsProgressItemDTO,
@@ -29,11 +32,14 @@ import type {
   GradingQueueItemDTO,
   GroupDashboardDTO,
   GroupDTO,
+  GroupModuleSummaryDTO,
   LearningProgressSummaryDTO,
   ReservationDetailDTO,
   ReservationSummaryDTO,
+  SimulationSessionDTO,
   StudentDashboardRowDTO,
   StudentDTO,
+  StudentGradeDTO,
   StudentTimelineDTO,
 } from "../dtos/teacher-dashboard.dto";
 
@@ -47,7 +53,7 @@ export type StudentHeader = {
 export function toGroupOptions(groups: readonly GroupDTO[]): GroupOption[] {
   return groups
     .filter((group) => group.type === "STUDENT")
-    .map((group) => ({ id: group.id, name: group.name, membersCount: group.membersCount }));
+    .map((group) => ({ id: group.id, name: group.name, membersCount: group.membersCount, relation: group.relation ?? null }));
 }
 
 function toProgressItem(item: AnalyticsProgressItemDTO): ProgressItem {
@@ -92,6 +98,20 @@ export function toStudentRow(row: StudentDashboardRowDTO): StudentRow {
       helpfulPercentage: usage.helpfulPercentage,
     })),
     ventilatorHours: row.ventilatorHours,
+    atRisk: row.atRisk,
+    riskReasons: [...row.riskReasons],
+    failedEvaluationIds: [...row.failedEvaluationIds],
+    lastActivityAt: row.lastActivityAt,
+  };
+}
+
+function toModuleSummary(item: GroupModuleSummaryDTO): ModuleSummary {
+  return {
+    moduleId: item.moduleId,
+    moduleTitle: item.moduleTitle,
+    averageProgressPct: item.averageProgressPct,
+    completedCount: item.completedCount,
+    studentCount: item.studentCount,
   };
 }
 
@@ -100,8 +120,40 @@ export function toGroupDashboard(dashboard: GroupDashboardDTO): GroupDashboard {
     groupId: dashboard.groupId,
     groupName: dashboard.groupName,
     generatedAt: dashboard.generatedAt,
+    passingGrade: dashboard.passingGrade,
+    riskThresholds: {
+      maxFailedEvaluations: dashboard.riskThresholds.maxFailedEvaluations,
+      minProgressPct: dashboard.riskThresholds.minProgressPct,
+      inactivityDays: dashboard.riskThresholds.inactivityDays,
+    },
+    moduleSummary: dashboard.moduleSummary.map(toModuleSummary),
     students: dashboard.students.map(toStudentRow),
   };
+}
+
+export function toStudentGrades(grades: readonly StudentGradeDTO[]): StudentGrade[] {
+  return grades.map((grade) => ({
+    attemptId: grade.attemptId,
+    attemptNumber: grade.attemptNumber,
+    evaluationId: grade.evaluationId,
+    evaluationTitle: grade.evaluationTitle,
+    moduleTitle: grade.moduleTitle,
+    grade: grade.grade,
+    passed: grade.passed,
+    publishedAt: grade.publishedAt,
+  }));
+}
+
+export function toStudentSessions(sessions: readonly SimulationSessionDTO[]): StudentSession[] {
+  return sessions.map((session) => ({
+    id: session.id,
+    caseTitle: session.caseTitle,
+    mode: session.mode,
+    status: session.status,
+    score: session.score,
+    startedAt: session.startedAt,
+    endedAt: session.endedAt,
+  }));
 }
 
 export function toEvaluationStats(stats: EvaluationAnalyticsDTO): EvaluationStats {

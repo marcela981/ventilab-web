@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Curriculum titles and progress tree
-* Descripción: Titles and curriculum order of sections, levels and modules (read from `GET /api/curriculum/tree`, whose progress flags are ignored) used to label the progress items of the analytics and progress endpoints, which carry ids only. buildProgressTree nests the learning progress summary of one student (sections → levels → modules, linked by the sectionId / levelId the API returns) in curriculum order with the API percentages untouched; items missing from the tree keep a generic title and go last. toModuleProgressSeries lists one student's module percentages in curriculum order for the chart. v1.1 (O3 review): modules without a level (levelId null) or whose level is not in the summary are no longer dropped; they go to a last "Módulos sin nivel" bucket (a SectionNode with direct modules). Depends on nothing at runtime.
-* Versión: 1.1
+* Descripción: Titles and curriculum order of sections, levels and modules (read from `GET /api/curriculum/tree`, whose progress flags are ignored) used to label the progress items of the analytics and progress endpoints, which carry ids only. buildProgressTree nests the learning progress summary of one student (sections → levels → modules, linked by the sectionId / levelId the API returns) in curriculum order with the API percentages untouched; items missing from the tree keep a generic title and go last. toModuleProgressSeries lists one student's module percentages in curriculum order for the chart. v1.1 (O3 review): modules without a level (levelId null) or whose level is not in the summary are no longer dropped; they go to a last "Módulos sin nivel" bucket (a SectionNode with direct modules). v1.2 (closure B2): toGroupModuleSeries lists the group's API module averages (moduleSummary) in curriculum order for the group chart. Depends on nothing at runtime.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,7 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import type { ProgressItem } from "./teacher-dashboard.entity";
+import type { ModuleSummary, ProgressItem } from "./teacher-dashboard.entity";
 
 export type CurriculumEntry = {
   title: string
@@ -123,6 +123,13 @@ export function buildProgressTree(summary: LearningSummary, titles: CurriculumTi
     : sections;
 
   return unleveled.length > 0 ? [...tree, { id: null, title: UNTITLED.unleveled, progress: null, levels: [], modules: unleveled }] : tree;
+}
+
+/** The group's average module progress computed by the API (`moduleSummary`), in curriculum order; the API title wins over the tree title. */
+export function toGroupModuleSeries(summary: readonly ModuleSummary[], titles: CurriculumTitles): ModuleProgressPoint[] {
+  return [...summary]
+    .sort(byRank(titles.modules, (item: ModuleSummary) => item.moduleId))
+    .map((item) => ({ moduleId: item.moduleId, title: item.moduleTitle ?? moduleTitle(titles, item.moduleId), percentage: item.averageProgressPct }));
 }
 
 /** One student's module percentages exactly as the API returns them, in curriculum order (no aggregation). */

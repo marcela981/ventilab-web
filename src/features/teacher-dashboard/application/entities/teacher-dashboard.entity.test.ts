@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher dashboard entity tests
-* Descripción: Pure rules of the teacher dashboard: the risk highlight (only a published evaluation with passed === false, never a threshold invented on the client), row filter by name or email, sort by an API value with missing values last, sort toggling, distinct evaluation options, group reservation and student attempt selection, the progress tree nesting in curriculum order, the per-student module series, the timeline windows (default, previous, date inputs with their errors) and the error messages (403 no access, Retry-After). v1.1 (O3 review): latest published attempt per evaluation for the risk rule, modules without a level kept in a last bucket. v1.2 (review): attempts ordered by attemptNumber first (publishedAt only as tiebreak), so attempt 1 re-published after a passed attempt 2 is not at risk. Depends on vitest, the api-client errors and the teacher dashboard entities.
-* Versión: 1.2
+* Descripción: Pure rules of the teacher dashboard: the risk highlight (only a published evaluation with passed === false, never a threshold invented on the client), row filter by name or email, sort by an API value with missing values last, sort toggling, distinct evaluation options, group reservation and student attempt selection, the progress tree nesting in curriculum order, the per-student module series, the timeline windows (default, previous, date inputs with their errors) and the error messages (403 no access, Retry-After). v1.1 (O3 review): latest published attempt per evaluation for the risk rule, modules without a level kept in a last bucket. v1.2 (review): attempts ordered by attemptNumber first (publishedAt only as tiebreak), so attempt 1 re-published after a passed attempt 2 is not at risk. v1.3 (closure B2): the client risk rule and its tests are gone (the API flags the row); the failed evaluation titles come from the API failedEvaluationIds; the group calendar selection keeps SCHEDULED rows only (the API filters by group); the group module series from the API moduleSummary; the student-attempt and timeline-session selections are gone. Depends on vitest, the api-client errors and the teacher dashboard entities.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,17 +11,16 @@
 
 import { describe, expect, it } from "vitest";
 import { ApiError } from "@shared/api-client/api-error";
-import { buildProgressTree, toModuleProgressSeries, UNTITLED } from "./curriculum-titles.entity";
+import { buildProgressTree, toGroupModuleSeries, toModuleProgressSeries, UNTITLED } from "./curriculum-titles.entity";
 import type { CurriculumTitles } from "./curriculum-titles.entity";
-import { assessStudentRisk } from "./student-risk.entity";
-import { defaultWindow, previousWindow, simulationSessions, windowFromDateInputs } from "./student-timeline.entity";
+import { defaultWindow, previousWindow, windowFromDateInputs } from "./student-timeline.entity";
 import { getTeacherDashboardErrorMessage, isForbiddenError, TEACHER_DASHBOARD_FALLBACK_MESSAGES } from "./teacher-dashboard-error-messages";
 import {
   DEFAULT_SORT,
+  failedEvaluationTitles,
   filterRows,
   listEvaluationOptions,
-  selectGroupReservations,
-  selectStudentAttempts,
+  selectScheduledReservations,
   sortRows,
   toggleSort,
 } from "./teacher-dashboard.entity";
@@ -40,6 +39,10 @@ function row(userId: string, name: string | null, overrides: Partial<StudentRow>
     simulation: { sessionCount: 0, averageScore: null, averageTimeToStabilizeSeconds: null },
     aiUsage: [],
     ventilatorHours: 0,
+    atRisk: false,
+    riskReasons: [],
+    failedEvaluationIds: [],
+    lastActivityAt: null,
     ...overrides,
   };
 }
@@ -59,32 +62,15 @@ const TITLES: CurriculumTitles = {
   modules: new Map([["m1", { title: "Fisiología", rank: 0 }], ["m2", { title: "Modos", rank: 1 }]]),
 };
 
-describe("assessStudentRisk", () => {
-  it("flags only a published evaluation with passed false", () => {
-    expect(assessStudentRisk({ evaluations: [grade("e1", "Parcial", true), grade("e2", "Quiz", false)] }))
-      .toEqual({ atRisk: true, failedEvaluationTitles: ["Quiz"] });
-    expect(assessStudentRisk({ evaluations: [grade("e1", "Parcial", true)] })).toEqual({ atRisk: false, failedEvaluationTitles: [] });
-    expect(assessStudentRisk({ evaluations: [] }).atRisk).toBe(false);
-  });
+describe("failedEvaluationTitles", () => {
+  it("names only the evaluations the API lists as failed, once each, in row order", () => {
+    const retake = { ...grade("e2", "Quiz", false), attemptNumber: 2 };
 
-  it("only counts the latest published attempt of each evaluation", () => {
-    const attempt = (attemptNumber: number, passed: boolean, publishedAt: string) => ({ ...grade("e1", "Parcial", passed), attemptNumber, publishedAt });
-
-    expect(assessStudentRisk({ evaluations: [attempt(1, false, "2026-10-01T00:00:00.000Z"), attempt(2, true, "2026-10-05T00:00:00.000Z")] }))
-      .toEqual({ atRisk: false, failedEvaluationTitles: [] });
-    expect(assessStudentRisk({ evaluations: [attempt(2, false, "2026-10-05T00:00:00.000Z"), attempt(1, true, "2026-10-01T00:00:00.000Z")] }))
-      .toEqual({ atRisk: true, failedEvaluationTitles: ["Parcial"] });
-    expect(assessStudentRisk({ evaluations: [attempt(1, true, "2026-10-05T00:00:00.000Z"), attempt(2, false, "2026-10-05T00:00:00.000Z")] }).atRisk)
-      .toBe(true);
-  });
-
-  it("orders attempts by attemptNumber first, so a re-published earlier failure never hides a later pass", () => {
-    const attempt = (attemptNumber: number, passed: boolean, publishedAt: string) => ({ ...grade("e1", "Parcial", passed), attemptNumber, publishedAt });
-
-    expect(assessStudentRisk({ evaluations: [attempt(2, true, "2026-10-05T00:00:00.000Z"), attempt(1, false, "2026-10-09T00:00:00.000Z")] }))
-      .toEqual({ atRisk: false, failedEvaluationTitles: [] });
-    expect(assessStudentRisk({ evaluations: [attempt(1, false, "2026-10-09T00:00:00.000Z"), attempt(2, true, "2026-10-05T00:00:00.000Z")] }).atRisk)
-      .toBe(false);
+    expect(failedEvaluationTitles({
+      evaluations: [grade("e1", "Parcial", true), grade("e2", "Quiz", false), retake, grade("e3", "Taller", false)],
+      failedEvaluationIds: ["e3", "e2"],
+    })).toEqual(["Quiz", "Taller"]);
+    expect(failedEvaluationTitles({ evaluations: [grade("e1", "Parcial", false)], failedEvaluationIds: [] })).toEqual([]);
   });
 });
 
@@ -119,19 +105,14 @@ describe("students table rules", () => {
     expect(listEvaluationOptions(withGrades)).toEqual([{ id: "e1", title: "Parcial" }, { id: "e2", title: "Quiz" }]);
   });
 
-  it("selects the scheduled reservations of the group and the attempts of the student", () => {
-    const reservation = (id: string, groupId: string | null, status: string, startsAt: string) => ({ id, groupId, status, startsAt, endsAt: startsAt, purpose: null });
+  it("keeps the scheduled reservations of the group calendar, soonest first", () => {
+    const reservation = (id: string, status: string, startsAt: string) => ({ id, groupId: "g1", status, startsAt, endsAt: startsAt, purpose: null });
 
-    expect(selectGroupReservations([
-      reservation("r2", "g1", "SCHEDULED", "2026-10-19T00:00:00.000Z"),
-      reservation("r1", "g1", "SCHEDULED", "2026-10-18T00:00:00.000Z"),
-      reservation("r3", "g2", "SCHEDULED", "2026-10-17T00:00:00.000Z"),
-      reservation("r4", "g1", "CANCELLED", "2026-10-17T00:00:00.000Z"),
-    ], "g1").map((item) => item.id)).toEqual(["r1", "r2"]);
-
-    const attempt = (attemptId: string, studentId: string) => ({ attemptId, studentId, attemptNumber: 1, evaluationId: "e", evaluationTitle: "E", submittedAt: null });
-
-    expect(selectStudentAttempts([attempt("a1", "u1"), attempt("a2", "u2")], "u1").map((item) => item.attemptId)).toEqual(["a1"]);
+    expect(selectScheduledReservations([
+      reservation("r2", "SCHEDULED", "2026-10-19T00:00:00.000Z"),
+      reservation("r1", "SCHEDULED", "2026-10-18T00:00:00.000Z"),
+      reservation("r4", "CANCELLED", "2026-10-17T00:00:00.000Z"),
+    ]).map((item) => item.id)).toEqual(["r1", "r2"]);
   });
 });
 
@@ -169,6 +150,15 @@ describe("curriculum titles", () => {
     expect(toModuleProgressSeries([progress("m2", 20), progress(null, 5), progress("m1", 80)], TITLES))
       .toEqual([{ moduleId: "m1", title: "Fisiología", percentage: 80 }, { moduleId: "m2", title: "Modos", percentage: 20 }]);
   });
+
+  it("lists the group's API module averages in curriculum order, preferring the API title", () => {
+    const summary = (moduleId: string, moduleTitle: string | null, averageProgressPct: number) => ({ moduleId, moduleTitle, averageProgressPct, completedCount: 1, studentCount: 3 });
+
+    expect(toGroupModuleSeries([summary("m2", null, 35.5), summary("m1", "Fisiología respiratoria", 70)], TITLES)).toEqual([
+      { moduleId: "m1", title: "Fisiología respiratoria", percentage: 70 },
+      { moduleId: "m2", title: "Modos", percentage: 35.5 },
+    ]);
+  });
 });
 
 describe("timeline windows", () => {
@@ -186,12 +176,6 @@ describe("timeline windows", () => {
     expect(windowFromDateInputs("", "2026-10-01")).toBe("invalid");
   });
 
-  it("selects the simulation sessions of a window", () => {
-    const entry = (kind: "SIMULATION_SESSION" | "RESERVATION", referenceId: string) => ({ kind, referenceId, occurredAt: "", endedAt: null, status: null, title: null, value: null });
-
-    expect(simulationSessions({ from: "", to: "", truncated: false, entries: [entry("RESERVATION", "r"), entry("SIMULATION_SESSION", "s")] }).map((item) => item.referenceId))
-      .toEqual(["s"]);
-  });
 });
 
 describe("teacher dashboard error messages", () => {

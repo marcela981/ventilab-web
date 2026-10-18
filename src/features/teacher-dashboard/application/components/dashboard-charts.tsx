@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: DashboardCharts
-* Descripción: Charts of /teacher drawn with the shared BarChart: the grade distribution of the selected evaluation exactly as the API buckets it (`GET /api/analytics/evaluations/{id}/stats` histogram, labels such as "3,0–3,5", graded attempts per bucket; the passing grade of the API in the description) and the module progress of the selected student (each module percentage straight from the dashboard row, in curriculum order, on a 0–100 axis). Nothing is computed here, only labeled and formatted. Loaded lazily so Chart.js stays in a deferred chunk. Depends on React, @shared/charts, @shared/lib/format, the teacher dashboard entities and CSS Module.
-* Versión: 1.0
+* Descripción: Charts of /teacher drawn with the shared BarChart: the grade distribution of the selected evaluation exactly as the API buckets it (`GET /api/analytics/evaluations/{id}/stats` histogram, labels such as "3,0–3,5", graded attempts per bucket; the passing grade of the API in the description) and the module progress of the selected student (each module percentage straight from the dashboard row, in curriculum order, on a 0–100 axis). Nothing is computed here, only labeled and formatted. Loaded lazily so Chart.js stays in a deferred chunk. Depends on React, @shared/charts, @shared/lib/format, the teacher dashboard entities and CSS Module. v1.1 (closure B2): GroupModuleProgressChart draws the group's average progress per module computed by the API (`moduleSummary`), and the histogram description says it covers the selected group.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,7 +20,9 @@ import type { HistogramBin } from "../entities/teacher-dashboard.entity";
 // TODO(i18n): move to a teacher-dashboard namespace in src/i18n.
 export const DASHBOARD_CHARTS_COPY = {
   histogramTitle: (title: string) => `Distribución de notas: ${title}`,
-  histogramDescription: (passingGrade: string) => `Intentos calificados por rango de nota (calculado por el servidor). Nota de aprobación: ${passingGrade}.`,
+  histogramDescription: (passingGrade: string) => `Intentos calificados del grupo por rango de nota (calculado por el servidor). Nota de aprobación: ${passingGrade}.`,
+  groupModulesTitle: (group: string) => `Progreso promedio por módulo: ${group}`,
+  groupModulesDescription: "Promedio del porcentaje de lecciones completadas por los estudiantes del grupo en cada módulo, calculado por el servidor.",
   histogramCategory: "Nota",
   histogramValue: "Intentos",
   modulesTitle: (name: string) => `Progreso por módulo: ${name}`,
@@ -51,6 +53,33 @@ export function GradeDistributionChart({ title, passingGrade, histogram }: Grade
       categoryAxisLabel={DASHBOARD_CHARTS_COPY.histogramCategory}
       valueAxisLabel={DASHBOARD_CHARTS_COPY.histogramValue}
       formatValue={formatCount}
+    />
+  );
+}
+
+export type GroupModuleProgressChartProps = {
+  groupName: string
+  modules: readonly ModuleProgressPoint[]
+};
+
+export function GroupModuleProgressChart({ groupName, modules }: GroupModuleProgressChartProps) {
+  const labels = useMemo(() => modules.map((module) => module.title), [modules]);
+  const datasets = useMemo<BarDataset[]>(
+    () => [{ label: DASHBOARD_CHARTS_COPY.modulesValue, values: modules.map((module) => module.percentage), tone: "primary" }],
+    [modules],
+  );
+
+  return (
+    <BarChart
+      title={DASHBOARD_CHARTS_COPY.groupModulesTitle(groupName)}
+      description={DASHBOARD_CHARTS_COPY.groupModulesDescription}
+      labels={labels}
+      datasets={datasets}
+      categoryAxisLabel={DASHBOARD_CHARTS_COPY.modulesCategory}
+      valueAxisLabel={DASHBOARD_CHARTS_COPY.modulesValue}
+      valueMax={100}
+      formatValue={formatPercent}
+      horizontal
     />
   );
 }

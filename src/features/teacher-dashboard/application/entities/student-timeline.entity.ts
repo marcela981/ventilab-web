@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student timeline windows
-* Descripción: Date windows of the student activity timeline (`GET /api/analytics/students/{userId}/timeline?from&to`): the default window is the last 30 days (the backend default), "Cargar anteriores" appends the window of the same length that ends where the oldest loaded one starts, and the from/to date controls (Bogota calendar days, "YYYY-MM-DD") become a window from the start of the first day to the end of the last one, rejected when it does not start before it ends or spans more than the 366 days the API accepts. Also the timeline entry view model and the simulation sessions of a window (SIMULATION_SESSION entries, whose referenceId is the session id). Depends on @shared/lib/bogota-time.
-* Versión: 1.0
+* Descripción: Date windows of the student activity timeline (`GET /api/analytics/students/{userId}/timeline?from&to`): the default window is the last 30 days (the backend default), "Cargar anteriores" appends the window of the same length that ends where the oldest loaded one starts, and the from/to date controls (Bogota calendar days, "YYYY-MM-DD") become a window from the start of the first day to the end of the last one, rejected when it does not start before it ends or spans more than the 366 days the API accepts. Also the timeline entry view model. Depends on @shared/lib/bogota-time. v1.1 (closure B2): simulationSessions (SIMULATION_SESSION entries of a window) is gone: the sessions list reads the staff sessions history endpoint.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -80,8 +80,4 @@ export function windowFromDateInputs(fromDate: string, toDate: string): Timeline
 
 export function isWindow(value: TimelineWindow | WindowInputError): value is TimelineWindow {
   return typeof value === "object";
-}
-
-export function simulationSessions(timeline: StudentTimeline): TimelineEntry[] {
-  return timeline.entries.filter((entry) => entry.kind === "SIMULATION_SESSION");
 }

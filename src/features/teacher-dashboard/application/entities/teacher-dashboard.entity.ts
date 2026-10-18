@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher dashboard entities
-* Descripción: View models of the teacher dashboard (group option, students table row with the API progress, published grades, simulation, AI usage per use case and ventilator hours; evaluation stats; dashboard cards: active assignments, upcoming group reservations, pending attempts) and the pure row rules allowed on the client: text filter by name or email, sort by one API value (missing values last), the distinct evaluations present in the rows (selector options), the scheduled reservations of one group and the pending attempts of one student (selection only). Nothing here computes a grade, average or statistic: every number shown comes from the API. Depends on nothing at runtime.
-* Versión: 1.0
+* Descripción: View models of the teacher dashboard (group option, students table row with the API progress, published grades, simulation, AI usage per use case and ventilator hours; evaluation stats; dashboard cards: active assignments, upcoming group reservations, pending attempts) and the pure row rules allowed on the client: text filter by name or email, sort by one API value (missing values last), the distinct evaluations present in the rows (selector options), the scheduled reservations of one group and the pending attempts of one student (selection only). Nothing here computes a grade, average or statistic: every number shown comes from the API. Depends on nothing at runtime. v1.1 (closure B2): the row carries the API risk (atRisk, riskReasons, failedEvaluationIds, lastActivityAt), the dashboard its passingGrade, riskThresholds and per-module summary, the group option its relation (MANAGED/SUPERVISED); student grade and simulation session view models; the calendar is filtered by group on the server (only the SCHEDULED selection stays) and the queue by student (selectStudentAttempts removed); failedEvaluationTitles names the API failed evaluations.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,10 +9,33 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+/** How the caller follows a group (`GroupDTO.relation`): created/leads it or supervises it; null when the API does not say. */
+export type GroupRelation = "MANAGED" | "SUPERVISED";
+
 export type GroupOption = {
   id: string
   name: string
   membersCount: number
+  relation: GroupRelation | null
+};
+
+/** Reasons the API flags a student at risk (`StudentDashboardRowDTO.riskReasons`). */
+export type RiskReason = "FAILED_EVALUATIONS" | "LOW_PROGRESS" | "INACTIVE";
+
+/** Risk thresholds of the platform settings, as sent with the group dashboard (0 turns a rule off). */
+export type RiskThresholds = {
+  maxFailedEvaluations: number
+  minProgressPct: number
+  inactivityDays: number
+};
+
+/** Per-module aggregate of the group, computed by the API (`GroupDashboardDTO.moduleSummary`). */
+export type ModuleSummary = {
+  moduleId: string
+  moduleTitle: string | null
+  averageProgressPct: number
+  completedCount: number
+  studentCount: number
 };
 
 export type ProgressItem = {
@@ -62,13 +85,43 @@ export type StudentRow = {
   simulation: SimulationSummary
   aiUsage: AiUsage[]
   ventilatorHours: number
+  atRisk: boolean
+  riskReasons: RiskReason[]
+  failedEvaluationIds: string[]
+  lastActivityAt: string | null
 };
 
 export type GroupDashboard = {
   groupId: string
   groupName: string
   generatedAt: string
+  passingGrade: number
+  riskThresholds: RiskThresholds
+  moduleSummary: ModuleSummary[]
   students: StudentRow[]
+};
+
+/** One published grade of a student (`GET /api/evaluation-grading/students/{userId}/grades`). */
+export type StudentGrade = {
+  attemptId: string
+  attemptNumber: number
+  evaluationId: string
+  evaluationTitle: string
+  moduleTitle: string | null
+  grade: number
+  passed: boolean
+  publishedAt: string
+};
+
+/** One simulation session of a student (`GET /api/simulation/sessions/history?userId`). */
+export type StudentSession = {
+  id: string
+  caseTitle: string | null
+  mode: string
+  status: string
+  score: number | null
+  startedAt: string
+  endedAt: string | null
 };
 
 export type HistogramBin = {
@@ -215,14 +268,23 @@ export function listEvaluationOptions(rows: readonly StudentRow[]): EvaluationOp
     .sort((a, b) => collator.compare(a.title, b.title));
 }
 
-/** Upcoming reservations of one group from the calendar rows (selection only), soonest first. */
-export function selectGroupReservations(reservations: readonly GroupReservation[], groupId: string): GroupReservation[] {
+/** Upcoming reservations among the group calendar rows (the API filters by group; selection by status only), soonest first. */
+export function selectScheduledReservations(reservations: readonly GroupReservation[]): GroupReservation[] {
   return reservations
-    .filter((reservation) => reservation.groupId === groupId && reservation.status === SCHEDULED_RESERVATION_STATUS)
+    .filter((reservation) => reservation.status === SCHEDULED_RESERVATION_STATUS)
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 }
 
-/** Pending attempts of one student among the loaded queue rows (selection only). */
-export function selectStudentAttempts(attempts: readonly PendingAttempt[], studentId: string): PendingAttempt[] {
-  return attempts.filter((attempt) => attempt.studentId === studentId);
+/** Titles of the evaluations the API lists as failed for the row (`failedEvaluationIds`), in row order (selection only). */
+export function failedEvaluationTitles(row: Pick<StudentRow, "evaluations" | "failedEvaluationIds">): string[] {
+  const failed = new Set(row.failedEvaluationIds);
+  const titles = new Map<string, string>();
+
+  for (const grade of row.evaluations) {
+    if (failed.has(grade.evaluationId) && !titles.has(grade.evaluationId)) {
+      titles.set(grade.evaluationId, grade.evaluationTitle);
+    }
+  }
+
+  return [...titles.values()];
 }

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: TeacherDashboardPage
-* Descripción: Page /teacher (TEACHER, ADMIN): the caller's STUDENT groups (`GET /api/groups?type=STUDENT`) in a selector whose value lives in the URL (?groupId=, shareable; the first group by default), the summary cards of the group (attempts to grade, active evaluations, upcoming reservations), the students table of `GET /api/analytics/groups/{groupId}/dashboard` (sortable, filterable, risk highlight with legend, expandable progress) and the lazy charts (grade distribution of one evaluation from the API histogram, module progress of one student). "Exportar CSV" downloads `GET /api/analytics/groups/{groupId}/export.csv`. A 403 of the analytics (another teacher's group opened by URL) shows "No tienes acceso a este grupo". No grade, average or statistic is computed here; personal notes and AI conversations of the students are never read. v1.1 (O3 review): rows, error and loading branches and the CSV filename only use a dashboard whose groupId matches the selected group, so switching groups shows the loading or error state instead of the previous group. Depends on MUI, next/head, next/router, the design-system states and async button, the teacher dashboard hooks, components, entities and CSS Module.
-* Versión: 1.1
+* Descripción: Page /teacher (TEACHER, ADMIN): the caller's STUDENT groups (`GET /api/groups?type=STUDENT`) in a selector whose value lives in the URL (?groupId=, shareable; the first group by default), the summary cards of the group (attempts to grade, active evaluations, upcoming reservations), the students table of `GET /api/analytics/groups/{groupId}/dashboard` (sortable, filterable, risk highlight with legend, expandable progress) and the lazy charts (grade distribution of one evaluation from the API histogram, module progress of one student). "Exportar CSV" downloads `GET /api/analytics/groups/{groupId}/export.csv`. A 403 of the analytics (another teacher's group opened by URL) shows "No tienes acceso a este grupo". No grade, average or statistic is computed here; personal notes and AI conversations of the students are never read. v1.1 (O3 review): rows, error and loading branches and the CSV filename only use a dashboard whose groupId matches the selected group, so switching groups shows the loading or error state instead of the previous group. v1.2 (closure B2): the table receives the API passing grade and risk thresholds for its legend and the charts section the whole dashboard (group module aggregate, group-filtered stats). Depends on MUI, next/head, next/router, the design-system states and async button, the teacher dashboard hooks, components, entities and CSS Module.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -95,8 +95,14 @@ export function TeacherDashboardPage() {
         {dashboard ? (
           <>
             <p className={cx(styles.meta)}>{TEACHER_DASHBOARD_COPY.generatedAt(formatDateTime(dashboard.generatedAt))}</p>
-            <StudentsTable rows={dashboard.students} groupId={groupId} titles={titles} />
-            <DashboardChartsSection key={dashboard.groupId} rows={dashboard.students} titles={titles} />
+            <StudentsTable
+              rows={dashboard.students}
+              groupId={groupId}
+              titles={titles}
+              passingGrade={dashboard.passingGrade}
+              thresholds={dashboard.riskThresholds}
+            />
+            <DashboardChartsSection key={dashboard.groupId} dashboard={dashboard} titles={titles} />
           </>
         ) : null}
         {!dashboard && isLoading ? <ListSkeleton rows={5} label={TEACHER_DASHBOARD_COPY.loadingDashboard} /> : null}

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher dashboard styles
-* Descripción: Layout of the teacher dashboard: /teacher (toolbar with the group selector and the CSV export, summary cards grid, students table with sortable headers, risk highlight and expandable detail, chart cards with their selectors) and /teacher/students/[userId] (header, progress tree, grades, simulation sessions and the windowed activity timeline). The risk highlight uses the warning token as a left border and tinted background and always carries a text label (never colour alone). Tokens only.
-* Versión: 1.0
+* Descripción: Layout of the teacher dashboard: /teacher (toolbar with the group selector and the CSV export, summary cards grid, students table with sortable headers, risk highlight and expandable detail, chart cards with their selectors) and /teacher/students/[userId] (header, progress tree, grades, simulation sessions and the windowed activity timeline). The risk highlight uses the warning token as a left border and tinted background and always carries a text label (never colour alone). Tokens only. v1.1 (closure B2): risk criteria list under the legend and the group relation mark of the selector.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -156,6 +156,23 @@
   align-items: center;
   margin: 0;
   font-size: 0.8125rem;
+  color: var(--vl-color-text-muted);
+}
+
+.legendList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-1) var(--vl-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8125rem;
+  color: var(--vl-color-text-muted);
+}
+
+.relationMark {
+  margin-left: var(--vl-space-2);
+  font-size: 0.75rem;
   color: var(--vl-color-text-muted);
 }
 

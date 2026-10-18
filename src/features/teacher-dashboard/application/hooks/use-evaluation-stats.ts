@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useEvaluationStats
-* Descripción: Reads the statistics of one evaluation (`GET /api/analytics/evaluations/{evaluationId}/stats`: grade histogram bucketed by the API, passingGrade) through useApiQuery for the grade distribution chart of /teacher. A null evaluation sends no request. The backend computes them over every group of the caller in scope (admins: all), not only the selected group (BACKEND GAP: no groupId filter). Depends on React, @shared/api-client and the teacher dashboard mapper and service.
-* Versión: 1.0
+* Descripción: Reads the statistics of one evaluation for the selected group (`GET /api/analytics/evaluations/{evaluationId}/stats?groupId`: grade histogram bucketed by the API over the attempts of that group's assignments, passingGrade) through useApiQuery for the grade distribution chart of /teacher. A null evaluation or group sends no request. Depends on React, @shared/api-client and the teacher dashboard mapper and service. v1.1 (closure B2): the stats are filtered by the selected group on the server (the every-group scope is gone) and keepPreviousData is off, so another group's histogram is never shown.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,10 +22,13 @@ export type UseEvaluationStatsResult = {
   error: ApiError | null
 };
 
-export function useEvaluationStats(evaluationId: string | null): UseEvaluationStatsResult {
+const NO_PREVIOUS_DATA = { keepPreviousData: false } as const;
+
+export function useEvaluationStats(evaluationId: string | null, groupId: string | null): UseEvaluationStatsResult {
   const { data, error, isLoading } = useApiQuery(
-    evaluationId ? EVALUATION_STATS_PATH : null,
-    { params: { evaluationId: evaluationId ?? "" } },
+    evaluationId && groupId ? EVALUATION_STATS_PATH : null,
+    { params: { evaluationId: evaluationId ?? "" }, query: { groupId: groupId ?? "" } },
+    NO_PREVIOUS_DATA,
   );
   const stats = useMemo(() => (data ? toEvaluationStats(data.data) : null), [data]);
 

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useStudentPendingAttempts
-* Descripción: Attempts of one student waiting for review, to link them to the grading page: reads the first page of the group grading queue (`GET /api/evaluation-grading/queue?groupId&limit=50`, oldest first) and selects the rows of the student. The queue has no student filter (BACKEND GAP), so attempts beyond the first 50 of the group are not listed. A null group sends no request. v1.1 (O3 review): possiblyIncomplete is true when the envelope pagination.total is greater than the rows scanned, so the UI can warn that the list may be incomplete (no paging through the whole queue). Depends on React, @shared/api-client and the teacher dashboard mapper, service and entities.
-* Versión: 1.1
+* Descripción: Attempts of one student waiting for review, to link them to the grading page: reads one page of the grading queue filtered by the student on the server (`GET /api/evaluation-grading/queue?studentId&page&limit`, oldest first, scoped by the backend to the caller's groups) with the envelope pagination (total and pages). v1.1 (O3 review): possiblyIncomplete warned when the scanned page did not hold every attempt. v1.2 (closure B2): the queue is filtered by `studentId` and paged with the API pagination, so the 50-row group scan, the client selection of the student's rows and the incomplete-list warning are gone; the group is no longer needed. Depends on React, @shared/api-client and the teacher dashboard mapper, service and entities.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,28 +14,31 @@ import type { ApiError } from "@shared/api-client/api-error";
 import { useApiQuery } from "@shared/api-client/use-api-query";
 import { toPendingAttempts } from "../../api/mappers/teacher-dashboard.mapper";
 import { GRADING_QUEUE_PATH } from "../../api/services/teacher-dashboard.service";
-import { selectStudentAttempts } from "../entities/teacher-dashboard.entity";
 import type { PendingAttempt } from "../entities/teacher-dashboard.entity";
 
-export const PENDING_QUEUE_LIMIT = 50;
+export const PENDING_ATTEMPTS_PAGE_SIZE = 10;
 
 export type UseStudentPendingAttemptsResult = {
   attempts: PendingAttempt[] | null
-  /** True when the group queue holds more attempts than the page that was scanned (envelope total vs rows). */
-  possiblyIncomplete: boolean
+  total: number
+  pages: number
   isLoading: boolean
   error: ApiError | null
 };
 
-export function useStudentPendingAttempts(groupId: string | null, userId: string): UseStudentPendingAttemptsResult {
+/** `page` is 1-based, like the API. */
+export function useStudentPendingAttempts(userId: string, page: number): UseStudentPendingAttemptsResult {
   const { data, error, isLoading } = useApiQuery(
-    groupId ? GRADING_QUEUE_PATH : null,
-    { query: { groupId: groupId ?? "", limit: PENDING_QUEUE_LIMIT } },
+    GRADING_QUEUE_PATH,
+    { query: { studentId: userId, page, limit: PENDING_ATTEMPTS_PAGE_SIZE } },
   );
-  const attempts = useMemo(() => (data ? selectStudentAttempts(toPendingAttempts(data.data), userId) : null), [data, userId]);
+  const attempts = useMemo(() => (data ? toPendingAttempts(data.data) : null), [data]);
 
-  const total = data?.pagination?.total ?? null;
-  const possiblyIncomplete = data !== undefined && total !== null && total > data.data.length;
-
-  return { attempts, possiblyIncomplete, isLoading, error: error ?? null };
+  return {
+    attempts,
+    total: data?.pagination?.total ?? attempts?.length ?? 0,
+    pages: data?.pagination?.pages ?? 1,
+    isLoading,
+    error: error ?? null,
+  };
 }
