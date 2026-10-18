@@ -37,6 +37,7 @@
     "@mui/icons-material": "^7.1.1",
     "@mui/material": "^7.1.1",
     "@prisma/client": "^6.19.2",
+    "@sentry/browser": "^10.76.0",
     "@tiptap/extension-placeholder": "^3.22.2",
     "@tiptap/react": "^3.22.2",
     "@tiptap/starter-kit": "^3.22.2",

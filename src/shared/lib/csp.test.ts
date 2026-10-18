@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Security headers and CSP tests
-* Descripción: config/csp.mjs (served by next.config.mjs headers()): the backend origin follows the same precedence as src/shared/lib/env.ts and is allowed for HTTP/SSE and its WebSocket twin; Google Identity Services, the video players, fonts with data:, inline styles and the optional media origin and report-uri are in the policy; scripts are only 'self' plus the GSI client in production and add 'unsafe-eval' in development; the policy is Report-Only by default and enforcing only with CSP_REPORT_ONLY=false; the fixed security headers are always present. Depends on vitest, config/csp.mjs and env.ts.
-* Versión: 1.0
+* Descripción: config/csp.mjs (served by next.config.mjs headers()): the backend origin follows the same precedence as src/shared/lib/env.ts and is allowed for HTTP/SSE and its WebSocket twin; Google Identity Services, the video players, fonts with data:, inline styles and the optional media origin and report-uri are in the policy; scripts are only 'self' plus the GSI client in production and add 'unsafe-eval' in development; the policy is Report-Only by default and enforcing only with CSP_REPORT_ONLY=false; the fixed security headers are always present. v1.1 (B5): the Sentry ingest origin joins connect-src only when a DSN is set. Depends on vitest, config/csp.mjs and env.ts.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -88,6 +88,13 @@ describe("buildContentSecurityPolicy", () => {
     expect(directive(policy, "img-src")).toEqual(expect.arrayContaining(["data:", "blob:", "https://api.ventylab.test", "https://media.supabase.test"]));
     expect(directive(policy, "media-src")).toContain("https://media.supabase.test");
     expect(directive(policy, "report-uri")).toEqual(["https://reports.ventylab.test/csp"]);
+  });
+
+  it("adds the Sentry ingest origin to connect-src only when a DSN is set", () => {
+    const withDsn = buildContentSecurityPolicy({ ...PROD_ENV, NEXT_PUBLIC_SENTRY_DSN: "https://public@o1.ingest.sentry.test/42" });
+
+    expect(directive(withDsn, "connect-src")).toContain("https://o1.ingest.sentry.test");
+    expect(buildContentSecurityPolicy(PROD_ENV)).not.toContain("sentry");
   });
 
   it("ignores an invalid media origin and omits report-uri when unset", () => {

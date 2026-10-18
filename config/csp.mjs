@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Security headers and Content Security Policy
-* Descripción: Pure builder of the security headers served by next.config.mjs `headers()` for every route. buildContentSecurityPolicy derives the policy from the environment: the backend origin (NEXT_PUBLIC_BACKEND_URL, else NEXT_PUBLIC_API_URL without `/api`, else http://localhost:4000, as src/shared/lib/env.ts) for HTTP, SSE (connect-src) and Socket.io (its ws/wss twin), the optional media origin (NEXT_PUBLIC_MEDIA_ORIGIN, signed Supabase Storage URLs) for images and video, Google Identity Services (script https://accounts.google.com/gsi/client; frame, connect and style https://accounts.google.com/gsi/), Google profile pictures, the YouTube (nocookie) and Vimeo players of the VIDEO blocks, self-hosted fonts (next/font, KaTeX; `data:` allowed), `style-src 'unsafe-inline'` (MUI/Emotion inject style tags), `script-src 'self'` (the Pages Router needs no inline script; development adds 'unsafe-eval' for React Refresh), web workers from self and blob:, and an optional report-uri (CSP_REPORT_URI). buildSecurityHeaders adds X-Frame-Options DENY, Referrer-Policy strict-origin-when-cross-origin, X-Content-Type-Options nosniff and a minimal Permissions-Policy, and sends the policy as Content-Security-Policy-Report-Only unless CSP_REPORT_ONLY is "false" (Report-Only is the default until the author validates the policy in production). No dependencies.
-* Versión: 1.0
+* Descripción: Pure builder of the security headers served by next.config.mjs `headers()` for every route. buildContentSecurityPolicy derives the policy from the environment: the backend origin (NEXT_PUBLIC_BACKEND_URL, else NEXT_PUBLIC_API_URL without `/api`, else http://localhost:4000, as src/shared/lib/env.ts) for HTTP, SSE (connect-src) and Socket.io (its ws/wss twin), the optional media origin (NEXT_PUBLIC_MEDIA_ORIGIN, signed Supabase Storage URLs) for images and video, Google Identity Services (script https://accounts.google.com/gsi/client; frame, connect and style https://accounts.google.com/gsi/), Google profile pictures, the YouTube (nocookie) and Vimeo players of the VIDEO blocks, self-hosted fonts (next/font, KaTeX; `data:` allowed), `style-src 'unsafe-inline'` (MUI/Emotion inject style tags), `script-src 'self'` (the Pages Router needs no inline script; development adds 'unsafe-eval' for React Refresh), web workers from self and blob:, the Sentry ingest origin of NEXT_PUBLIC_SENTRY_DSN when it is set (connect-src) and an optional report-uri (CSP_REPORT_URI). buildSecurityHeaders adds X-Frame-Options DENY, Referrer-Policy strict-origin-when-cross-origin, X-Content-Type-Options nosniff and a minimal Permissions-Policy, and sends the policy as Content-Security-Policy-Report-Only unless CSP_REPORT_ONLY is "false" (Report-Only is the default until the author validates the policy in production). No dependencies. v1.1 (B5): the Sentry ingest origin joins connect-src when NEXT_PUBLIC_SENTRY_DSN is set.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -44,6 +44,11 @@ export function toWebSocketOrigin(origin) {
   return origin.replace(/^http(s?):/, "ws$1:");
 }
 
+/** Ingest origin of a Sentry DSN (https://key@o1.ingest.sentry.io/123 → https://o1.ingest.sentry.io), or null. */
+export function sentryIngestOrigin(dsn) {
+  return toOrigin(dsn);
+}
+
 function unique(values) {
   return [...new Set(values.filter((value) => typeof value === "string" && value !== ""))];
 }
@@ -55,6 +60,7 @@ export function isReportOnly(env) {
 export function buildContentSecurityPolicy(env, { isDev = false } = {}) {
   const backend = resolvePublicBackendOrigin(env);
   const media = toOrigin(env.NEXT_PUBLIC_MEDIA_ORIGIN);
+  const sentry = sentryIngestOrigin(env.NEXT_PUBLIC_SENTRY_DSN);
   const reportUri = typeof env.CSP_REPORT_URI === "string" ? env.CSP_REPORT_URI.trim() : "";
 
   const directives = [
@@ -68,7 +74,7 @@ export function buildContentSecurityPolicy(env, { isDev = false } = {}) {
     ["img-src", unique(["'self'", "data:", "blob:", backend, media, GOOGLE_AVATARS])],
     ["media-src", unique(["'self'", "blob:", backend, media])],
     ["font-src", ["'self'", "data:"]],
-    ["connect-src", unique(["'self'", backend, toWebSocketOrigin(backend), GOOGLE_GSI])],
+    ["connect-src", unique(["'self'", backend, toWebSocketOrigin(backend), GOOGLE_GSI, sentry])],
     ["frame-src", [GOOGLE_GSI, ...VIDEO_PLAYERS]],
     ["worker-src", ["'self'", "blob:"]],
     ["manifest-src", ["'self'"]],
