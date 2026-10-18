@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Profile page tests
-* Descripción: Integration tests of the profile page with the real backend session (AuthProvider), an isolated SWR cache and MSW: role, email and account status are shown read-only; name and avatar edits PATCH /api/users/me with only the changed fields and then refresh the session user (/api/auth/me); v1.1 (T12): while a save is pending "Guardar cambios" keeps its label, is disabled and aria-busy with a spinner (no "Guardando…" text) so the shell shows the new name; an avatar URL that is not http(s) is blocked before any request; backend validation messages land on their field; 403, 429 (Retry-After) and network failures show clear Spanish messages; the avatar preview falls back to initials. Depends on vitest, Testing Library, MSW and SWR.
-* Versión: 1.1
+* Descripción: Integration tests of the profile page with the real backend session (AuthProvider), an isolated SWR cache and MSW: role, email and account status are shown read-only; name and avatar edits PATCH /api/users/me with only the changed fields and then refresh the session user (/api/auth/me); v1.1 (T12): while a save is pending "Guardar cambios" keeps its label, is disabled and aria-busy with a spinner (no "Guardando…" text) so the shell shows the new name; an avatar URL that is not http(s) is blocked before any request; backend validation messages land on their field; 403, 429 (Retry-After) and network failures show clear Spanish messages; the avatar preview falls back to initials. Depends on vitest, Testing Library, MSW and SWR. v1.2 (B3.7): no next-auth/react mock (NextAuth removed in B3.4).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,19 +13,13 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { SWRConfig } from "swr";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { saveTokens } from "@shared/api-client/token-storage";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
 import { AuthProvider } from "@shared/session/auth-provider";
 import type { Role } from "@shared/session/session.entity";
 import { useSession } from "@shared/session/use-session";
 import { ProfilePage } from "./profile.page";
-
-vi.mock("next-auth/react", () => ({
-  signIn: vi.fn(() => Promise.resolve({ ok: true, error: null })),
-  signOut: vi.fn(() => Promise.resolve(undefined)),
-  getSession: vi.fn(() => Promise.resolve(null)),
-}));
 
 const url = (path: string): string => `${BACKEND_ORIGIN}${path}`;
 

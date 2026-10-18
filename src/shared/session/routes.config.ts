@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Route table
-* Descripción: Typed route table keyed by Next pathname pattern (`access: public | authenticated`, optional `roles`), the login path, the default landing route per role and an open-redirect safe `returnTo` helper that only accepts same-origin relative paths outside `/auth/`. The table lists the current pages as data; legacy pages keep their own guards. v1.1 (T9 follow-up): isPathAllowedForRole checks a concrete path (dynamic segments, query/hash ignored, static routes first) against the table, and resolvePostLoginRoute falls back to the role home when the returnTo route is not allowed for the role (the target page would bounce the user). v1.2 (T11a): /my-group (STUDENT only) and /groups (TEACHER, ADMIN) of the groups feature. v1.3 (T11b): /groups/[groupId] (TEACHER, ADMIN). v1.4 (T0 learning): learning routes /learn, /learn/[sectionId], /learn/modules/[moduleId] and the lesson page viewer for every authenticated role (teachers and admins use them as preview), the module print view and the content-editor routes /content, /content/pages/[pageId] for TEACHER and ADMIN. v1.5 (S0 evaluations): student evaluation routes /evaluations, /evaluations/[evaluationId] and its attempt and result pages for every authenticated role; authoring (/evaluations/manage/**) and grading (/grading/**) routes for TEACHER and ADMIN. The legacy /evaluation* routes stay declared until they redirect (R1). v1.6 (R1 evaluations): the legacy /evaluation/** pages now only redirect to the new routes; their entries stay declared with the same roles so a legacy returnTo keeps its role check (a student is not sent to a staff-only redirect). v1.7 (A1 ai-chat): the AI assistant routes /assistant and /assistant/[conversationId] for every authenticated role (the backend requires ai-tutor:use, minimum STUDENT). v1.8 (T5 simulation): the simulator routes /simulator, /simulator/sessions/[sessionId] and its result and replay pages for every authenticated role (the backend requires simulation:read/control, minimum STUDENT); the legacy /simulador stays declared. v1.9 (T11 simulation): the case editor routes /simulator/cases, /simulator/cases/new and /simulator/cases/[id]/edit for TEACHER and ADMIN (the backend requires clinical-cases:manage, minimum TEACHER). v1.10 (T0 ventilator-lab): the lab routes /lab, /lab/reservations, /lab/live, /lab/recordings and /lab/recordings/[recordingId] for every authenticated role (the backend grants reservations:read/create and ventilator:control to STUDENT, so every role inherits them). v1.11 (O0 operation): /notifications for every authenticated role; the student space /me, /me/notes, /me/grades (STUDENT only); the teacher dashboard /teacher and /teacher/students/[userId] (TEACHER, ADMIN); the admin console /admin/users, /admin/settings, /admin/audit, /admin/ai, /admin/research (ADMIN only) and /admin/status (TEACHER, ADMIN: the backend grants system:status to teachers). DEFAULT_ROUTE_BY_ROLE is unchanged. Depends on session entities. v1.12 (O5 operation): role homes STUDENT → /me, TEACHER → /teacher, ADMIN → /teacher (the /dashboard and /panel* entries stay for their redirect pages). v1.13 (B3.4, D1/D4): /achievements, /flashcards, /search, /admin/search-analytics and the NextAuth error page /auth/error are removed with their pages; /teaching and /teaching/[moduleId]/[lessonId] stay for their redirect pages.
-* Versión: 1.13
+* Descripción: Typed route table keyed by Next pathname pattern (`access: public | authenticated`, optional `roles`), the login path, the default landing route per role and an open-redirect safe `returnTo` helper that only accepts same-origin relative paths outside `/auth/`. The table lists the current pages as data; legacy pages keep their own guards. v1.1 (T9 follow-up): isPathAllowedForRole checks a concrete path (dynamic segments, query/hash ignored, static routes first) against the table, and resolvePostLoginRoute falls back to the role home when the returnTo route is not allowed for the role (the target page would bounce the user). v1.2 (T11a): /my-group (STUDENT only) and /groups (TEACHER, ADMIN) of the groups feature. v1.3 (T11b): /groups/[groupId] (TEACHER, ADMIN). v1.4 (T0 learning): learning routes /learn, /learn/[sectionId], /learn/modules/[moduleId] and the lesson page viewer for every authenticated role (teachers and admins use them as preview), the module print view and the content-editor routes /content, /content/pages/[pageId] for TEACHER and ADMIN. v1.5 (S0 evaluations): student evaluation routes /evaluations, /evaluations/[evaluationId] and its attempt and result pages for every authenticated role; authoring (/evaluations/manage/**) and grading (/grading/**) routes for TEACHER and ADMIN. The legacy /evaluation* routes stay declared until they redirect (R1). v1.6 (R1 evaluations): the legacy /evaluation/** pages now only redirect to the new routes; their entries stay declared with the same roles so a legacy returnTo keeps its role check (a student is not sent to a staff-only redirect). v1.7 (A1 ai-chat): the AI assistant routes /assistant and /assistant/[conversationId] for every authenticated role (the backend requires ai-tutor:use, minimum STUDENT). v1.8 (T5 simulation): the simulator routes /simulator, /simulator/sessions/[sessionId] and its result and replay pages for every authenticated role (the backend requires simulation:read/control, minimum STUDENT); the legacy /simulador stays declared. v1.9 (T11 simulation): the case editor routes /simulator/cases, /simulator/cases/new and /simulator/cases/[id]/edit for TEACHER and ADMIN (the backend requires clinical-cases:manage, minimum TEACHER). v1.10 (T0 ventilator-lab): the lab routes /lab, /lab/reservations, /lab/live, /lab/recordings and /lab/recordings/[recordingId] for every authenticated role (the backend grants reservations:read/create and ventilator:control to STUDENT, so every role inherits them). v1.11 (O0 operation): /notifications for every authenticated role; the student space /me, /me/notes, /me/grades (STUDENT only); the teacher dashboard /teacher and /teacher/students/[userId] (TEACHER, ADMIN); the admin console /admin/users, /admin/settings, /admin/audit, /admin/ai, /admin/research (ADMIN only) and /admin/status (TEACHER, ADMIN: the backend grants system:status to teachers). DEFAULT_ROUTE_BY_ROLE is unchanged. Depends on session entities. v1.12 (O5 operation): role homes STUDENT → /me, TEACHER → /teacher, ADMIN → /teacher (the /dashboard and /panel* entries stay for their redirect pages). v1.13 (B3.4, D1/D4): /achievements, /flashcards, /search, /admin/search-analytics and the NextAuth error page /auth/error are removed with their pages; /teaching and /teaching/[moduleId]/[lessonId] stay for their redirect pages. v1.14 (B3.7): buildLoginUrl accepts `{ expired: true }` to add the `expired=1` marker the login page renders as the "session expired" notice (EXPIRED_PARAM).
+* Versión: 1.14
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,6 +21,8 @@ export type RouteConfig = {
 export const LOGIN_PATH = "/auth/login";
 
 export const RETURN_TO_PARAM = "returnTo";
+
+export const EXPIRED_PARAM = "expired";
 
 const STAFF: readonly Role[] = ["TEACHER", "ADMIN"];
 const ADMIN_ONLY: readonly Role[] = ["ADMIN"];
@@ -140,10 +142,23 @@ export function sanitizeReturnTo(value: unknown): string | null {
   return value;
 }
 
-export function buildLoginUrl(returnTo?: string | null): string {
-  const safe = sanitizeReturnTo(returnTo);
+export type LoginUrlOptions = {
+  expired?: boolean
+};
 
-  return safe ? `${LOGIN_PATH}?${RETURN_TO_PARAM}=${encodeURIComponent(safe)}` : LOGIN_PATH;
+export function buildLoginUrl(returnTo?: string | null, options: LoginUrlOptions = {}): string {
+  const safe = sanitizeReturnTo(returnTo);
+  const params: string[] = [];
+
+  if (safe) {
+    params.push(`${RETURN_TO_PARAM}=${encodeURIComponent(safe)}`);
+  }
+
+  if (options.expired) {
+    params.push(`${EXPIRED_PARAM}=1`);
+  }
+
+  return params.length > 0 ? `${LOGIN_PATH}?${params.join("&")}` : LOGIN_PATH;
 }
 
 function patternMatches(pattern: string, pathname: string): boolean {

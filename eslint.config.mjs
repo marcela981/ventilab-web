@@ -78,7 +78,9 @@
  *   y sus rutas delgadas pages/notifications/index.tsx, pages/me/{index,notes,grades}.tsx,
  *   pages/teacher/index.tsx, pages/teacher/students/[userId].tsx y
  *   pages/admin/{users,settings,audit,ai,research,status}.tsx.
- * Versión: 3.34
+ *   v3.35 (B3.7): pages/auth/register/index.tsx, pages/auth/access-denied/index.tsx,
+ *   pages/auth/forgot-password/index.tsx y pages/teaching/index.tsx entran en NEW_PAGE_FILES.
+ * Versión: 3.35
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -108,6 +110,10 @@ const NEW_FEATURE_FILES = [
 // one here when it is created or rewritten (T6+); they get the new-code rules.
 const NEW_PAGE_FILES = [
   "pages/auth/login/index.tsx",
+  "pages/auth/register/index.tsx",
+  "pages/auth/access-denied/index.tsx",
+  "pages/auth/forgot-password/index.tsx",
+  "pages/teaching/index.tsx",
   "pages/profile/index.tsx",
   "pages/my-group/index.tsx",
   "pages/groups/index.tsx",

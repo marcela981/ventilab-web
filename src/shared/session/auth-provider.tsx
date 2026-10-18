@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AuthProvider (backend session)
-* Descripción: Owns the backend session for new code. A backend session exists only when token-storage holds BOTH tokens (a lone `ventilab_auth_token` is the legacy NextAuth bridge token and is left alone). On mount it loads `GET /api/auth/me` (slow route) or settles as unauthenticated without a request. Exposes establishSession (store tokens + load /me), best-effort signOut (`POST /api/auth/logout`, then always clears both tokens and the typed SWR entries), reloadSession and handleRoleChanged (single-flight refresh + reload /me for the current user). Follows token-storage changes (including other tabs) and the api-client `session-expired` event; ending the session is idempotent and never navigates (guards redirect). v1.1 (T9): a voluntary signOut ends the session with `signedOut: true` so the guards send the user to a clean login (no returnTo); every authenticated /me load persists the user snapshot of session-user-cache (read by legacy pages during coexistence) and ending the session removes it. v1.2 (T9 follow-up): signOut also signs out of NextAuth best effort (nextauth-bridge, no redirect, failures ignored) after the backend session ended, so no stale NextAuth cookie survives for legacy pages. v1.3: the early return of endSession is spelled out (readability only, same behavior). The request layer and the refresh module are imported lazily so the app shell does not ship axios. Depends on react, swr and the api-client modules. v1.4 (B3.4, D4): NextAuth is gone, so signOut no longer calls the nextauth-bridge.
-* Versión: 1.4
+* Descripción: Owns the backend session for new code. A backend session exists only when token-storage holds BOTH tokens (a lone `ventilab_auth_token` is the legacy NextAuth bridge token and is left alone). On mount it loads `GET /api/auth/me` (slow route) or settles as unauthenticated without a request. Exposes establishSession (store tokens + load /me), best-effort signOut (`POST /api/auth/logout`, then always clears both tokens and the typed SWR entries), reloadSession and handleRoleChanged (single-flight refresh + reload /me for the current user). Follows token-storage changes (including other tabs) and the api-client `session-expired` event; ending the session is idempotent and never navigates (guards redirect). v1.1 (T9): a voluntary signOut ends the session with `signedOut: true` so the guards send the user to a clean login (no returnTo); every authenticated /me load persists the user snapshot of session-user-cache (read by legacy pages during coexistence) and ending the session removes it. v1.2 (T9 follow-up): signOut also signs out of NextAuth best effort (nextauth-bridge, no redirect, failures ignored) after the backend session ended, so no stale NextAuth cookie survives for legacy pages. v1.3: the early return of endSession is spelled out (readability only, same behavior). The request layer and the refresh module are imported lazily so the app shell does not ship axios. Depends on react, swr and the api-client modules. v1.4 (B3.4, D4): NextAuth is gone, so signOut no longer calls the nextauth-bridge. v1.5 (B3.7): an api-client `session-expired` event ends the session with `expired: true` (also when the token removal of the same expiry ended it first), so the guards send the user to the login with the "session expired" notice; a voluntary signOut never sets it.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -28,6 +28,7 @@ type SessionState = {
   permissions: readonly Permission[]
   error: ApiError | null
   signedOut: boolean
+  expired: boolean
 };
 
 type InFlightLoad = {
@@ -36,9 +37,12 @@ type InFlightLoad = {
   promise: Promise<SessionUser>
 };
 
-const LOADING: SessionState = { status: "loading", user: null, permissions: [], error: null, signedOut: false };
-const UNAUTHENTICATED: SessionState = { status: "unauthenticated", user: null, permissions: [], error: null, signedOut: false };
+const LOADING: SessionState = { status: "loading", user: null, permissions: [], error: null, signedOut: false, expired: false };
+const UNAUTHENTICATED: SessionState = { status: "unauthenticated", user: null, permissions: [], error: null, signedOut: false, expired: false };
 const SIGNED_OUT: SessionState = { ...UNAUTHENTICATED, signedOut: true };
+const EXPIRED: SessionState = { ...UNAUTHENTICATED, expired: true };
+
+type EndCause = "ended" | "expired";
 
 // /me answers meaning the stored tokens no longer identify an active user.
 const SESSION_REJECTED_STATUSES = new Set([401, 403, 404]);
@@ -75,7 +79,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     void mutate(isApiQueryKey, undefined, { revalidate: false });
   }, [mutate]);
 
-  const endSession = useCallback(() => {
+  const endSession = useCallback((cause: EndCause = "ended") => {
     loadIdRef.current += 1;
     inFlightRef.current = null;
     sessionRefreshTokenRef.current = null;
@@ -89,12 +93,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const alreadyEnded = current.status === "unauthenticated" && current.error === null;
     // A voluntary sign-out must still mark an already ended session as signed out (clean login URL).
     const mustMarkSignedOut = signedOut && !current.signedOut;
+    // An expiry reaches the guards even when the token removal of the same expiry ended the session
+    // first, but never after a voluntary sign-out.
+    const expired = cause === "expired" && !signedOut && !current.signedOut;
+    const mustMarkExpired = expired && !current.expired;
 
-    if (alreadyEnded && !mustMarkSignedOut) {
+    if (alreadyEnded && !mustMarkSignedOut && !mustMarkExpired) {
       return;
     }
 
-    commit(signedOut ? SIGNED_OUT : UNAUTHENTICATED);
+    commit(signedOut ? SIGNED_OUT : expired ? EXPIRED : UNAUTHENTICATED);
     clearSessionCache();
   }, [commit, clearSessionCache]);
 
@@ -128,7 +136,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
           sessionRefreshTokenRef.current = tokens.refreshToken;
           writeCachedSessionUser(data.user);
-          commit({ status: "authenticated", user: data.user, permissions: data.permissions, error: null, signedOut: false });
+          commit({ status: "authenticated", user: data.user, permissions: data.permissions, error: null, signedOut: false, expired: false });
 
           if (previousUserId && previousUserId !== data.user.id) {
             clearSessionCache();
@@ -182,7 +190,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const unsubscribeTokens = subscribeTokens(handleTokens);
     const unsubscribeEvents = onAuthEvent((event) => {
       if (event.type === "session-expired") {
-        endSession();
+        endSession("expired");
       }
     });
 
@@ -252,6 +260,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       permissions: state.permissions,
       error: state.error,
       signedOut: state.signedOut,
+      expired: state.expired,
       hasRole: (...roles: Role[]) => role !== null && roles.includes(role),
       hasPermission: (permission: Permission) => state.permissions.includes(permission),
       establishSession,

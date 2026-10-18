@@ -1,0 +1,98 @@
+/*
+* Funcionalidad: Auth information page styles
+* Descripción: Card, icon badge, user summary, help list and action column of the informational auth pages (access denied, forgot password) shown inside the public layout. Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  padding: var(--vl-space-6) var(--vl-space-5);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+  box-shadow: var(--vl-shadow-2);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--vl-space-2);
+  text-align: center;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--vl-space-8);
+  height: var(--vl-space-8);
+  border-radius: 50%;
+  background: var(--vl-color-surface-contrast);
+  color: var(--vl-color-text-muted);
+}
+
+.iconDanger {
+  background: var(--vl-color-status-down-bg);
+  color: var(--vl-color-error);
+}
+
+.title {
+  color: var(--vl-color-text);
+}
+
+.subtitle {
+  color: var(--vl-color-text-muted);
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  text-align: center;
+  color: var(--vl-color-text-muted);
+}
+
+.summaryName {
+  color: var(--vl-color-text);
+  font-weight: 600;
+}
+
+.list {
+  margin: var(--vl-space-2) 0 0;
+  padding-left: var(--vl-space-5);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--vl-space-2);
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.link {
+  color: var(--vl-color-link);
+  text-decoration: underline;
+  border-radius: var(--vl-radius-sm);
+}
+
+.link:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}

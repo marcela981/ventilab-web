@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Route guard tests
-* Descripción: RequireAuth and RequireRole behavior with a mocked Next router: neutral loading state without protected content, redirect to the login page with a safe returnTo, redirect of a wrong role to its landing route, a single redirect when the session expires twice, and a clean login (no returnTo) after a voluntary sign-out. v1.2 (T12): end to end, a failed token refresh (real api-client, 401 then refresh 401) clears both tokens, hides the content and redirects to the login page with returnTo; a student on a teacher route (the /groups roles of the route table) goes to the student home. Depends on vitest, Testing Library, next/router (mocked) and the session modules. v1.3 (O5 operation): the student home is /me. v1.4 (B3.4, D4): no next-auth/react mock (NextAuth removed).
-* Versión: 1.4
+* Descripción: RequireAuth and RequireRole behavior with a mocked Next router: neutral loading state without protected content, redirect to the login page with a safe returnTo, redirect of a wrong role to its landing route, a single redirect when the session expires twice, and a clean login (no returnTo) after a voluntary sign-out. v1.2 (T12): end to end, a failed token refresh (real api-client, 401 then refresh 401) clears both tokens, hides the content and redirects to the login page with returnTo; a student on a teacher route (the /groups roles of the route table) goes to the student home. Depends on vitest, Testing Library, next/router (mocked) and the session modules. v1.3 (O5 operation): the student home is /me. v1.4 (B3.4, D4): no next-auth/react mock (NextAuth removed). v1.5 (B3.7): an expired session goes to the login with returnTo and the `expired=1` notice marker; a voluntary sign-out and a never-authenticated visitor do not get it.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -176,8 +176,32 @@ describe("RequireAuth", () => {
     expect(getAccessToken()).toBeNull();
     expect(getRefreshToken()).toBeNull();
     expect(screen.queryByText("Contenido protegido")).not.toBeInTheDocument();
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/auth/login?returnTo=%2Fteaching%2Fm1%2Fl2%3Ftab%3Dquiz"));
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/auth/login?returnTo=%2Fteaching%2Fm1%2Fl2%3Ftab%3Dquiz&expired=1"));
     expect(router.replace).toHaveBeenCalledTimes(1);
+  });
+
+  it("adds the expired marker when the session expires", async() => {
+    saveTokens("access-1", "refresh-1");
+    render(
+      <AuthProvider>
+        <RequireAuth>{protectedContent}</RequireAuth>
+      </AuthProvider>,
+    );
+
+    expect(await screen.findByText("Contenido protegido")).toBeInTheDocument();
+
+    act(() => {
+      emitAuthEvent({ type: "session-expired", reason: "socket" });
+    });
+
+    expect(router.replace).toHaveBeenCalledTimes(1);
+    expect(router.replace).toHaveBeenCalledWith("/auth/login?returnTo=%2Fteaching%2Fm1%2Fl2%3Ftab%3Dquiz&expired=1");
+  });
+
+  it("uses the expired marker of the session value", () => {
+    renderWith({ ...sessionValue("unauthenticated"), expired: true }, <RequireAuth>{protectedContent}</RequireAuth>);
+
+    expect(router.replace).toHaveBeenCalledWith("/auth/login?returnTo=%2Fteaching%2Fm1%2Fl2%3Ftab%3Dquiz&expired=1");
   });
 
   it("sends a voluntary sign-out to a clean login without returnTo", async() => {
@@ -240,7 +264,7 @@ describe("RequireAuth", () => {
       emitAuthEvent({ type: "session-expired", reason: "auth.refresh_token_expired" });
     });
 
-    expect(router.replace).toHaveBeenCalledWith("/auth/login?returnTo=%2Fteaching%2Fm1%2Fl2%3Ftab%3Dquiz");
+    expect(router.replace).toHaveBeenCalledWith("/auth/login?returnTo=%2Fteaching%2Fm1%2Fl2%3Ftab%3Dquiz&expired=1");
   });
 });
 

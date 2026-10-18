@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AuthProvider behavior tests
-* Descripción: msw-backed tests of the session layer: boot with and without a stored token, establishSession, best-effort signOut (tokens and session SWR entries cleared even when logout fails), idempotent session-expired handling, cross-tab token removal, /me failures and handleRoleChanged (refresh + reload only for the current user). v1.1: signOut also signs out of NextAuth best effort (next-auth/react mocked), tolerating a rejection. v1.2 (B3.4, D4): NextAuth removed; the NextAuth sign-out tests become one successful-logout test. Depends on vitest, Testing Library, msw, swr and the api-client modules.
-* Versión: 1.2
+* Descripción: msw-backed tests of the session layer: boot with and without a stored token, establishSession, best-effort signOut (tokens and session SWR entries cleared even when logout fails), idempotent session-expired handling, cross-tab token removal, /me failures and handleRoleChanged (refresh + reload only for the current user). v1.1: signOut also signs out of NextAuth best effort (next-auth/react mocked), tolerating a rejection. v1.2 (B3.4, D4): NextAuth removed; the NextAuth sign-out tests become one successful-logout test. v1.3 (B3.7): the `expired` mark (set by session-expired, also after the token removal of the same expiry; never after a voluntary sign-out or a cross-tab removal; cleared by the next session). Depends on vitest, Testing Library, msw, swr and the api-client modules.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -264,6 +264,8 @@ describe("session expiry", () => {
 
     expect(statusText()).toBe("unauthenticated:none");
     expect(statuses).toEqual(["loading", "authenticated", "unauthenticated"]);
+    expect(session?.expired).toBe(true);
+    expect(session?.signedOut).toBe(false);
   });
 
   it("ends the session on session-expired alone", async() => {
@@ -274,6 +276,54 @@ describe("session expiry", () => {
     });
 
     expect(statusText()).toBe("unauthenticated:none");
+    expect(session?.expired).toBe(true);
+  });
+
+  it("marks the expiry when the token removal of the same expiry ended the session first", async() => {
+    await renderAuthenticated();
+
+    act(() => {
+      clearTokens();
+    });
+    expect(session?.expired).toBe(false);
+
+    act(() => {
+      emitAuthEvent({ type: "session-expired", reason: "auth.refresh_token_expired" });
+    });
+
+    expect(statusText()).toBe("unauthenticated:none");
+    expect(session?.expired).toBe(true);
+  });
+
+  it("never marks a voluntary sign-out as expired", async() => {
+    server.use(http.post(url("/api/auth/logout"), () => new HttpResponse(null, { status: 204 })));
+    await renderAuthenticated();
+
+    await act(async() => {
+      await session?.signOut();
+    });
+    act(() => {
+      emitAuthEvent({ type: "session-expired", reason: "token_refresh_failed" });
+    });
+
+    expect(session?.signedOut).toBe(true);
+    expect(session?.expired).toBe(false);
+  });
+
+  it("clears the expiry mark on the next session", async() => {
+    await renderAuthenticated();
+
+    act(() => {
+      emitAuthEvent({ type: "session-expired", reason: "socket" });
+    });
+    expect(session?.expired).toBe(true);
+
+    act(() => {
+      saveTokens("access-2", "refresh-2");
+    });
+
+    await waitFor(() => expect(statusText()).toBe("authenticated:STUDENT"));
+    expect(session?.expired).toBe(false);
   });
 
   it("ignores a lone legacy bridge token", async() => {
@@ -294,6 +344,7 @@ describe("session expiry", () => {
     });
 
     expect(statusText()).toBe("unauthenticated:none");
+    expect(session?.expired).toBe(false);
   });
 });
 
