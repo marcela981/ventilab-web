@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation readiness tests
-* Descripción: Unit tests of the client READY validation of the builder against the backend rule it mirrors: no questions, non-positive points, choice questions without a correct option, SINGLE_CHOICE and TRUE_FALSE with two correct options, TRUE_FALSE without exactly two options (reported alone), a valid MULTIPLE_CHOICE with several correct options, SIMULATION with an invalid rubric (Spanish details) and the client-only clinical case rule, and readinessQuestionsFrom applying the unsaved drafts. Depends on vitest and the builder entities. v1.1 (A3 review W2): a SIMULATION question without a clinical case raises no readiness issue (the backend does not require it). v1.2 (T10 simulation): `emptyRubricDraft` comes from @shared/rubric-editor.
-* Versión: 1.2
+* Descripción: Unit tests of the client READY validation of the builder against the backend rule it mirrors: no questions, non-positive points, choice questions without a correct option, SINGLE_CHOICE and TRUE_FALSE with two correct options, TRUE_FALSE without exactly two options (reported alone), a valid MULTIPLE_CHOICE with several correct options, SIMULATION with an invalid rubric (Spanish details) and the client-only clinical case rule, and readinessQuestionsFrom applying the unsaved drafts. Depends on vitest and the builder entities. v1.1 (A3 review W2): a SIMULATION question without a clinical case raises no readiness issue (the backend does not require it). v1.2 (T10 simulation): `emptyRubricDraft` comes from @shared/rubric-editor. v1.3 (B4, D7): unsaved points read through the shared es-CO parser.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -86,5 +86,18 @@ describe("readinessQuestionsFrom", () => {
       ["q2", 2, [true]],
     ]);
     expect(codes(questions)).toEqual([["correct_option_required", "q1"]]);
+  });
+
+  it("reads unsaved points with the shared es-CO parser (D7)", () => {
+    const loaded = { id: "q1", type: "SINGLE_CHOICE", prompt: { type: "doc", content: [] }, points: 2, explanation: null, mediaIds: [], media: [], clinicalCaseId: null, rubric: null, options: [] };
+    const evaluation = { questions: [loaded] } as unknown as BuilderEvaluation;
+    const pointsOf = (points: string) => readinessQuestionsFrom(evaluation, {
+      q1: { points, options: [], clinicalCaseId: null, rubric: emptyRubricDraft() },
+    })[0]?.points;
+
+    expect(pointsOf("1.125")).toBe(1.125);
+    expect(pointsOf("1,125")).toBe(1.125);
+    expect(pointsOf("1.000.000")).toBeNaN();
+    expect(pointsOf("1e3")).toBeNaN();
   });
 });

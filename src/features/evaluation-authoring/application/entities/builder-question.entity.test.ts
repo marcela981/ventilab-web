@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Builder question draft tests
-* Descripción: Unit tests of the question draft rules of the evaluation builder: radio semantics of the correct answer for SINGLE_CHOICE and TRUE_FALSE and checkbox semantics for MULTIPLE_CHOICE, moving options, validation (points, option text), the save plan (question PATCH with only the changed fields, option creates, PATCHes with the newly correct ones first, deletes and the reorder flag), the dirty check and the body of a new TRUE_FALSE question. Depends on vitest and the builder entities. v1.1 (A3): the plan splits the text PATCH from the structural PATCH and covers the clinical case and the rubric of a SIMULATION question; an option created by a failed save (id set, client key kept) is neither recreated nor reordered; stripStructuralEdits keeps only the texts; withCreatedOptionIds merges created ids by key; SIMULATION rubric errors block the draft; backend rubric details are translated in readiness messages. v1.2 (A3 review S1): optionSaveSteps runs the creates before the updates that set isCorrect=false. v1.3 (S1): statement media and option images: added media go in the text PATCH (mediaIds), option images in the option PATCH (mediaId, null removes it), the statement media limit, and stripStructuralEdits keeps them.
-* Versión: 1.3
+* Descripción: Unit tests of the question draft rules of the evaluation builder: radio semantics of the correct answer for SINGLE_CHOICE and TRUE_FALSE and checkbox semantics for MULTIPLE_CHOICE, moving options, validation (points, option text), the save plan (question PATCH with only the changed fields, option creates, PATCHes with the newly correct ones first, deletes and the reorder flag), the dirty check and the body of a new TRUE_FALSE question. Depends on vitest and the builder entities. v1.1 (A3): the plan splits the text PATCH from the structural PATCH and covers the clinical case and the rubric of a SIMULATION question; an option created by a failed save (id set, client key kept) is neither recreated nor reordered; stripStructuralEdits keeps only the texts; withCreatedOptionIds merges created ids by key; SIMULATION rubric errors block the draft; backend rubric details are translated in readiness messages. v1.2 (A3 review S1): optionSaveSteps runs the creates before the updates that set isCorrect=false. v1.3 (S1): statement media and option images: added media go in the text PATCH (mediaIds), option images in the option PATCH (mediaId, null removes it), the statement media limit, and stripStructuralEdits keeps them. v1.4 (B4, D7): points read through the shared es-CO parser (one separator is decimal; grouping and exponents are invalid).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -83,6 +83,17 @@ describe("validateQuestionDraft", () => {
     expect(errors.points).toBe(QUESTION_ERROR_MESSAGES.pointsPositive);
     expect(errors.optionContent).toEqual({ "new-1": QUESTION_ERROR_MESSAGES.optionRequired });
     expect(validateQuestionDraft("SINGLE_CHOICE", { ...draft, points: "1,5" })).toEqual({ optionContent: {} });
+  });
+
+  it("reads the points with the shared es-CO parser (D7)", () => {
+    const draft = questionDraftFrom(choiceQuestion());
+
+    expect(validateQuestionDraft("SINGLE_CHOICE", { ...draft, points: "1.125" })).toEqual({ optionContent: {} });
+    expect(validateQuestionDraft("SINGLE_CHOICE", { ...draft, points: "1,125" })).toEqual({ optionContent: {} });
+
+    for (const points of ["1.000.000", "1 000", "1e3", "-2"]) {
+      expect(validateQuestionDraft("SINGLE_CHOICE", { ...draft, points }).points).toBe(QUESTION_ERROR_MESSAGES.pointsPositive);
+    }
   });
 
   it("reports the rubric issues of a SIMULATION draft and accepts an empty rubric", () => {

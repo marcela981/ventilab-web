@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation builder entities
-* Descripción: Domain types of the evaluation builder (BuilderEvaluation from `GET /api/evaluations/{id}` with its scenarios, questions, options, media, readiness issues, usage and the structureLocked flag) and the pure rules of its metadata form: the defaults of a new evaluation (showResultsImmediately true for QUIZ, false for EXAM and WORKSHOP, applied on a type change only while creating), the form built from a loaded evaluation, validation mirroring the backend DTOs (title required and at most 200 characters, duration and max attempts integers of at least 1, duration optional), the create body and the update body holding only the changed fields (null clears description, duration, module and level), the dirty check and the level/module choices of the curriculum (a module belongs to one level). No dependencies besides the builder rich text helpers.
-* Versión: 1.0
+* Descripción: Domain types of the evaluation builder (BuilderEvaluation from `GET /api/evaluations/{id}` with its scenarios, questions, options, media, readiness issues, usage and the structureLocked flag) and the pure rules of its metadata form: the defaults of a new evaluation (showResultsImmediately true for QUIZ, false for EXAM and WORKSHOP, applied on a type change only while creating), the form built from a loaded evaluation, validation mirroring the backend DTOs (title required and at most 200 characters, duration and max attempts integers of at least 1, duration optional), the create body and the update body holding only the changed fields (null clears description, duration, module and level), the dirty check and the level/module choices of the curriculum (a module belongs to one level). No dependencies besides the builder rich text helpers. v1.1 (B4, D7): duration and attempts are read with the shared parseDecimal in integer mode (no separator, so "1.000" is never 1).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,6 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import { parseDecimal } from "@shared/lib/parse-decimal";
 import { isBlankRichText, sameRichText } from "./builder-rich-text";
 import type { RichDoc, RichTextValue } from "./builder-rich-text";
 import type { EvaluationStatus, EvaluationType } from "./evaluation-authoring.entity";
@@ -142,15 +143,9 @@ export function metadataFormFrom(evaluation: BuilderEvaluation): MetadataForm {
 }
 
 function parsePositiveInteger(value: string): number | null {
-  const trimmed = value.trim();
+  const parsed = parseDecimal(value, { integer: true, allowNegative: false });
 
-  if (!/^\d+$/.test(trimmed)) {
-    return null;
-  }
-
-  const parsed = Number(trimmed);
-
-  return parsed >= 1 ? parsed : null;
+  return parsed.ok && parsed.value !== null && parsed.value >= 1 ? parsed.value : null;
 }
 
 export function validateMetadata(form: MetadataForm): MetadataErrors {

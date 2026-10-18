@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationMetadataForm
-* Descripción: General data of an evaluation in the builder: type (EXAM, QUIZ, WORKSHOP; editable only while creating because the update DTO has no type, and a change applies the default of "show results immediately"), title, description (rich text), optional level and module picked from the curriculum tree of the learning feature (`GET /api/curriculum/tree`; picking a module also links its level, picking a level drops a module of another level; ids no longer in the tree stay visible), optional duration in minutes, max attempts and the shuffle and show-results switches. Shows the validation messages of the builder. Depends on MUI, the design-system FormField, @features/learning (useCurriculumTree), the builder entities, RichTextField and the builder CSS Module.
-* Versión: 1.0
+* Descripción: General data of an evaluation in the builder: type (EXAM, QUIZ, WORKSHOP; editable only while creating because the update DTO has no type, and a change applies the default of "show results immediately"), title, description (rich text), optional level and module picked from the curriculum tree of the learning feature (`GET /api/curriculum/tree`; picking a module also links its level, picking a level drops a module of another level; ids no longer in the tree stay visible), optional duration in minutes, max attempts and the shuffle and show-results switches. Shows the validation messages of the builder. Depends on MUI, the design-system FormField, @features/learning (useCurriculumTree), the builder entities, RichTextField and the builder CSS Module. v1.1 (B4, D7): the duration and attempts inputs show INTEGER_HELPER_TEXT (after the duration help).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,6 +15,7 @@ import { useMemo } from "react";
 import { useCurriculumTree } from "@features/learning";
 import { FormField } from "@shared/design-system/components/form-field";
 import { cx } from "@shared/lib/class-names";
+import { INTEGER_HELPER_TEXT } from "@shared/lib/parse-decimal";
 import { BUILDER_COPY } from "../../entities/builder-copy";
 import { EVALUATION_TYPE_LABELS } from "../../entities/evaluation-authoring.entity";
 import type { EvaluationType } from "../../entities/evaluation-authoring.entity";
@@ -109,7 +110,7 @@ export function EvaluationMetadataForm({ form, errors, creating, editorKey, onCh
           value={form.durationMinutes}
           inputMode="numeric"
           error={errors.durationMinutes}
-          helperText={BUILDER_COPY.durationHelp}
+          helperText={`${BUILDER_COPY.durationHelp} ${INTEGER_HELPER_TEXT}`}
           onChange={(event) => onChange({ ...form, durationMinutes: event.target.value })}
         />
         <FormField
@@ -118,6 +119,7 @@ export function EvaluationMetadataForm({ form, errors, creating, editorKey, onCh
           inputMode="numeric"
           required
           error={errors.maxAttempts}
+          helperText={INTEGER_HELPER_TEXT}
           onChange={(event) => onChange({ ...form, maxAttempts: event.target.value })}
         />
       </div>
