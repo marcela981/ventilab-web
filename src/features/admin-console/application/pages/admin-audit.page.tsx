@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AdminAuditPage
-* Descripción: Page /admin/audit (ADMIN): paginated audit log of `GET /api/audit` with actor, action, target type and id, "Desde"/"Hasta" days in America/Bogota (sent as an ISO range, `to` exclusive) and sort order, all kept in the URL (shareable). A row opens the detail dialog (changed fields only, target history). "Exportar CSV" downloads `GET /api/audit/export` with the same filters and shows a notice when the server truncated the file (X-Export-Truncated). A new filter or page never shows the previous rows (no keepPreviousData); an error is shown whenever the request fails; a page beyond the last one (old URL) is moved to the last page. v1.1 (review): changing the filters (not the page) clears the CSV truncation notice, so it only describes the export of the current filters. v1.2 (closure B2): the audit catalog (`GET /api/audit/catalog`) fills the action and target type selects and states the CSV row limit (`exportRowLimit`); a row opens the dialog by id, which reads `GET /api/audit/{id}`. Depends on MUI, next/head, next/router, React, the design-system components, the admin console components, entities, hooks, service and CSS Module.
-* Versión: 1.2
+* Descripción: Page /admin/audit (ADMIN): paginated audit log of `GET /api/audit` with actor, action, target type and id, "Desde"/"Hasta" days in America/Bogota (sent as an ISO range, `to` exclusive) and sort order, all kept in the URL (shareable). A row opens the detail dialog (changed fields only, target history). "Exportar CSV" downloads `GET /api/audit/export` with the same filters and shows a notice when the server truncated the file (X-Export-Truncated). A new filter or page never shows the previous rows (no keepPreviousData); an error is shown whenever the request fails; a page beyond the last one (old URL) is moved to the last page. v1.1 (review): changing the filters (not the page) clears the CSV truncation notice, so it only describes the export of the current filters. v1.2 (closure B2): the audit catalog (`GET /api/audit/catalog`) fills the action and target type selects and states the CSV row limit (`exportRowLimit`); a row opens the dialog by id, which reads `GET /api/audit/{id}`. Depends on MUI, next/head, next/router, React, the design-system components, the admin console components, entities, hooks, service and CSS Module. v1.3 (B4): the range error comes from dateRangeErrorMessage.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -30,7 +30,7 @@ import { ListPager } from "../components/list-pager";
 import { getAdminConsoleErrorMessage } from "../entities/admin-console-error-messages";
 import { hasAuditFilters, NO_AUDIT_FILTERS, readAuditFilters, toAuditExportQuery, toAuditFiltersQuery } from "../entities/audit.entity";
 import type { AuditEntry, AuditFilters as AuditFiltersValue } from "../entities/audit.entity";
-import { DATE_RANGE_ERRORS, isIsoRange, toIsoRange } from "../entities/date-range.entity";
+import { dateRangeErrorMessage, isIsoRange, toIsoRange } from "../entities/date-range.entity";
 import { useAuditCatalog } from "../hooks/use-audit-catalog";
 import { useAuditLog } from "../hooks/use-audit-log";
 import { useCsvExport } from "../hooks/use-csv-export";
@@ -157,7 +157,7 @@ export function AdminAuditPage() {
         <AuditFilters value={filters} catalog={catalog} onChange={setFilters} />
         <p className={cx(styles.note)}>{ADMIN_AUDIT_COPY.datesNote}</p>
         {catalog ? <p className={cx(styles.note)}>{ADMIN_AUDIT_COPY.exportLimit(catalog.exportRowLimit)}</p> : null}
-        {isIsoRange(range) ? null : <Alert severity="error">{DATE_RANGE_ERRORS[range]}</Alert>}
+        {isIsoRange(range) ? null : <Alert severity="error">{dateRangeErrorMessage(range)}</Alert>}
         {csv.truncated ? <Alert severity="warning">{ADMIN_AUDIT_COPY.truncated}</Alert> : null}
         {renderList()}
       </div>

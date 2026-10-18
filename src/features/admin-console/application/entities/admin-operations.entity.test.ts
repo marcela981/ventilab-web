@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin operations entity tests
-* Descripción: Pure rules of the operation pages: the audit diff keeps only the changed fields (flattened dotted keys, deep comparison, added and removed keys), the audit filters round trip through the URL and become the API query with the Bogota range, the Bogota day range (exclusive end, reversed and too long ranges), the AI filters drop unknown enums and split telemetry and ratings queries, applyStatusChange writes the pushed states into the cached status, the display formatters return "—" for missing values, and the probe error message names the Retry-After wait of a 429. Depends on vitest, the api-client errors and the admin console entities.
-* Versión: 1.0
+* Descripción: Pure rules of the operation pages: the audit diff keeps only the changed fields (flattened dotted keys, deep comparison, added and removed keys), the audit filters round trip through the URL and become the API query with the Bogota range, the Bogota day range (exclusive end, reversed and too long ranges), the AI filters drop unknown enums and split telemetry and ratings queries, applyStatusChange writes the pushed states into the cached status, the display formatters return "—" for missing values, and the probe error message names the Retry-After wait of a 429. Depends on vitest, the api-client errors and the admin console entities. v1.1 (B4): the AI range 422 message names the client maximum (AI_ANALYTICS_MAX_RANGE_DAYS).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,11 +12,11 @@
 import { describe, expect, it } from "vitest";
 import { ApiError } from "@shared/api-client/api-error";
 import type { SystemStatusDTO } from "../../api/dtos/admin-console.dto";
-import { getProbeErrorMessage } from "./admin-console-error-messages";
+import { getAdminConsoleErrorMessage, getProbeErrorMessage } from "./admin-console-error-messages";
 import { formatMs, formatRate, formatUsd, MISSING_VALUE } from "./admin-format";
 import { readAiFilters, toAiRatingsQuery, toAiTelemetryQuery } from "./ai-analytics.entity";
 import { diffAuditChanges, formatAuditValue, NO_AUDIT_FILTERS, readAuditFilters, toAuditApiQuery, toAuditFiltersQuery } from "./audit.entity";
-import { toIsoRange } from "./date-range.entity";
+import { AI_ANALYTICS_MAX_RANGE_DAYS, toIsoRange } from "./date-range.entity";
 import { applyStatusChange, componentStateTone, globalStateTone } from "./system-status.entity";
 
 describe("diffAuditChanges", () => {
@@ -131,5 +131,15 @@ describe("formatting and messages", () => {
       .toBe("Se alcanzó el límite de 3 pruebas por minuto. Inténtalo de nuevo en 42 segundos.");
     expect(getProbeErrorMessage(new ApiError({ code: "ai.provider_not_registered", message: "x", status: 422 })))
       .toBe("El proveedor de IA no tiene configuración (credenciales).");
+  });
+});
+
+describe("range error messages", () => {
+  it("names the real maximum of the AI ranges", () => {
+    for (const code of ["ai-telemetry.invalid_range", "ai-ratings.invalid_range"]) {
+      const message = getAdminConsoleErrorMessage(new ApiError({ status: 422, code, message: "x" }));
+
+      expect(message).toBe(`El rango debe empezar antes de terminar y cubrir como máximo ${AI_ANALYTICS_MAX_RANGE_DAYS} días.`);
+    }
   });
 });

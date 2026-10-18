@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin console error messages
-* Descripción: Spanish message for any failure of an admin console request: backend codes of users (superadmin_role_immutable and superadmin_status_immutable → "Esta cuenta está protegida (superadministrador)…", own role/status, user not found) and platform settings (version conflict, unknown setting, providers without credentials from details.providers), then fallbacks by status (403, 404, 409, 400/422, 429 with Retry-After, 5xx), timeout, network and unknown errors. isVersionConflict tells the settings cards when to offer "Recargar". v1.1 (O4b): research export without anonymization key (analytics.export_not_configured), invalid audit and AI ranges, unknown or unconfigured AI provider of the probe. Depends on the api-client errors. v1.2 (closure B2): student code in use (409 → "Código ya en uso") or invalid, and serverFieldErrors, which reads the per-field errors of a 400/422 (`data.errors: [{ field, message }]`).
-* Versión: 1.2
+* Descripción: Spanish message for any failure of an admin console request: backend codes of users (superadmin_role_immutable and superadmin_status_immutable → "Esta cuenta está protegida (superadministrador)…", own role/status, user not found) and platform settings (version conflict, unknown setting, providers without credentials from details.providers), then fallbacks by status (403, 404, 409, 400/422, 429 with Retry-After, 5xx), timeout, network and unknown errors. isVersionConflict tells the settings cards when to offer "Recargar". v1.1 (O4b): research export without anonymization key (analytics.export_not_configured), invalid audit and AI ranges, unknown or unconfigured AI provider of the probe. Depends on the api-client errors. v1.2 (closure B2): student code in use (409 → "Código ya en uso") or invalid, and serverFieldErrors, which reads the per-field errors of a 400/422 (`data.errors: [{ field, message }]`). v1.3 (B4): the AI telemetry/ratings invalid_range message names AI_ANALYTICS_MAX_RANGE_DAYS from the date range entity instead of a hardcoded 366.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,6 +10,7 @@
 */
 
 import { CLIENT_ERROR_CODES, toApiError } from "@shared/api-client/api-error";
+import { AI_ANALYTICS_MAX_RANGE_DAYS, formatDays } from "./date-range.entity";
 
 export const SUPERADMIN_PROTECTED_MESSAGE = "Esta cuenta está protegida (superadministrador) y no se puede modificar.";
 export const OWN_ACCOUNT_MESSAGE = "No puedes cambiar tu propia cuenta.";
@@ -41,6 +42,8 @@ export function serverFieldErrors(error: unknown): ServerFieldError[] {
   });
 }
 
+const AI_RANGE_INVALID_MESSAGE = `El rango debe empezar antes de terminar y cubrir como máximo ${formatDays(AI_ANALYTICS_MAX_RANGE_DAYS)}.`;
+
 // TODO(i18n): move to an admin-console namespace in src/i18n.
 export const ADMIN_CONSOLE_ERROR_MESSAGES = {
   "users.superadmin_role_immutable": SUPERADMIN_PROTECTED_MESSAGE,
@@ -58,8 +61,8 @@ export const ADMIN_CONSOLE_ERROR_MESSAGES = {
   [RESEARCH_EXPORT_NOT_CONFIGURED_CODE]: RESEARCH_EXPORT_NOT_CONFIGURED_MESSAGE,
   "audit-log.invalid_range": "La fecha inicial debe ser anterior a la final.",
   "audit-log.not_found": "El registro de auditoría no existe.",
-  "ai-telemetry.invalid_range": "El rango debe empezar antes de terminar y cubrir como máximo 366 días.",
-  "ai-ratings.invalid_range": "El rango debe empezar antes de terminar y cubrir como máximo 366 días.",
+  "ai-telemetry.invalid_range": AI_RANGE_INVALID_MESSAGE,
+  "ai-ratings.invalid_range": AI_RANGE_INVALID_MESSAGE,
   "ai.provider_unknown": "El proveedor de IA no existe.",
   "ai.provider_not_registered": "El proveedor de IA no tiene configuración (credenciales).",
 } as const satisfies Record<string, string>;

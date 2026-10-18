@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AdminAiAnalyticsPage tests
-* Descripción: /admin/ai with msw and stubbed lazy charts: the telemetry totals render as returned with "—" for the percentiles the API leaves out, the per-day series reach the charts unchanged, the rating groups show their helpful rate and QUEST means, the URL filters reach both stats queries as the Bogota range, an invalid range sends nothing, and a failing stats request shows its error. Depends on Testing Library, msw, vitest and the admin console page and test helpers.
-* Versión: 1.0
+* Descripción: /admin/ai with msw and stubbed lazy charts: the telemetry totals render as returned with "—" for the percentiles the API leaves out, the per-day series reach the charts unchanged, the rating groups show their helpful rate and QUEST means, the URL filters reach both stats queries as the Bogota range, an invalid range sends nothing, and a failing stats request shows its error. Depends on Testing Library, msw, vitest and the admin console page and test helpers. v1.1 (B4): a too long closed range sends nothing and its message names AI_ANALYTICS_MAX_RANGE_DAYS.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,7 +15,7 @@ import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AiHelpfulChartProps, AiTelemetryChartsProps } from "../components/ai-charts";
 import { AI_TOTALS_COPY } from "../components/ai-telemetry-totals";
-import { DATE_RANGE_ERRORS } from "../entities/date-range.entity";
+import { AI_ANALYTICS_MAX_RANGE_DAYS, DATE_RANGE_ERRORS } from "../entities/date-range.entity";
 import { ADMIN_AI_COPY, AdminAiAnalyticsPage } from "./admin-ai-analytics.page";
 import { apiUrl, envelope, errorResponse, renderAdminConsole } from "./admin-console-test-helpers";
 
@@ -163,6 +163,14 @@ describe("AdminAiAnalyticsPage", () => {
     expect(telemetryQueries[0]?.get("useCase")).toBe("FREE_CHAT");
     expect(telemetryQueries[0]?.has("promptVersion")).toBe(false);
     expect(ratingsQueries[0]?.get("promptVersion")).toBe("1.0.0");
+  });
+
+  it("sends nothing for a too long range and names the real maximum", async() => {
+    router.query = { from: "2025-01-01", to: "2026-10-01" };
+    renderAdminConsole(<AdminAiAnalyticsPage />);
+
+    expect(await screen.findByText(`El rango puede cubrir como máximo ${AI_ANALYTICS_MAX_RANGE_DAYS} días.`)).toBeInTheDocument();
+    expect(telemetryQueries).toHaveLength(0);
   });
 
   it("sends nothing for a reversed range and shows the error of a failing request", async() => {

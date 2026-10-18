@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AdminAiAnalyticsPage
-* Descripción: Page /admin/ai (ADMIN): AI usage and quality from the API only. Filters in the URL (Bogota days from/to sent as an ISO range with `to` exclusive, use case, provider, model; prompt version and rated output type for the ratings). Telemetry (`GET /api/admin/ai-telemetry/stats`): total cards and lazy per-day charts (calls, latency and time to first token p50/p95, error and fallback rates, tokens, cost) straight from `days[]`. Ratings (`GET /api/admin/ai-ratings/stats`): table of groups with helpful rate and QUEST dimension means, plus a lazy chart of the helpful rate per group. CSV buttons download `/api/admin/ai-telemetry/export.csv` and `/api/admin/ai-ratings/export.csv` with the same filters (notice when X-Export-Truncated). New filters never show the previous result (no keepPreviousData) and every failure is shown. No metric is computed on the client. v1.1 (review): changing the filters clears both CSV truncation notices, so they only describe exports of the current filters. Depends on MUI, next/head, next/router, React, @shared/lib, the design-system components, the admin console components, entities, hooks, service and CSS Module.
-* Versión: 1.1
+* Descripción: Page /admin/ai (ADMIN): AI usage and quality from the API only. Filters in the URL (Bogota days from/to sent as an ISO range with `to` exclusive, use case, provider, model; prompt version and rated output type for the ratings). Telemetry (`GET /api/admin/ai-telemetry/stats`): total cards and lazy per-day charts (calls, latency and time to first token p50/p95, error and fallback rates, tokens, cost) straight from `days[]`. Ratings (`GET /api/admin/ai-ratings/stats`): table of groups with helpful rate and QUEST dimension means, plus a lazy chart of the helpful rate per group. CSV buttons download `/api/admin/ai-telemetry/export.csv` and `/api/admin/ai-ratings/export.csv` with the same filters (notice when X-Export-Truncated). New filters never show the previous result (no keepPreviousData) and every failure is shown. No metric is computed on the client. v1.1 (review): changing the filters clears both CSV truncation notices, so they only describe exports of the current filters. Depends on MUI, next/head, next/router, React, @shared/lib, the design-system components, the admin console components, entities, hooks, service and CSS Module. v1.2 (B4): the range error comes from dateRangeErrorMessage with AI_ANALYTICS_MAX_RANGE_DAYS (the limit the range is checked against).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -28,12 +28,10 @@ import { AiHelpfulChart, AiTelemetryCharts } from "../components/lazy-ai-charts"
 import { getAdminConsoleErrorMessage } from "../entities/admin-console-error-messages";
 import { readAiFilters, toAiFiltersQuery, toAiRatingsQuery, toAiTelemetryQuery } from "../entities/ai-analytics.entity";
 import type { AiFilters as AiFiltersValue } from "../entities/ai-analytics.entity";
-import { DATE_RANGE_ERRORS, isIsoRange, toIsoRange } from "../entities/date-range.entity";
+import { AI_ANALYTICS_MAX_RANGE_DAYS, dateRangeErrorMessage, isIsoRange, toIsoRange } from "../entities/date-range.entity";
 import { useAiRatingStats, useAiTelemetryStats } from "../hooks/use-ai-analytics";
 import { useCsvExport } from "../hooks/use-csv-export";
 import styles from "../../UI/admin-operations.module.css";
-
-const MAX_RANGE_DAYS = 366;
 
 // TODO(i18n): move to an admin-console namespace in src/i18n.
 export const ADMIN_AI_COPY = {
@@ -61,7 +59,7 @@ export const ADMIN_AI_COPY = {
 export function AdminAiAnalyticsPage() {
   const router = useRouter();
   const filters = useMemo(() => readAiFilters(router.query), [router.query]);
-  const range = toIsoRange(filters.fromDay, filters.toDay, MAX_RANGE_DAYS);
+  const range = toIsoRange(filters.fromDay, filters.toDay, AI_ANALYTICS_MAX_RANGE_DAYS);
   const validRange = isIsoRange(range) ? range : null;
   const ready = router.isReady && validRange !== null;
   const telemetryQuery = ready && validRange ? toAiTelemetryQuery(filters, validRange) : null;
@@ -169,7 +167,7 @@ export function AdminAiAnalyticsPage() {
       <div className={cx(styles.content)}>
         <AiFilters value={filters} onChange={setFilters} />
         <p className={cx(styles.note)}>{ADMIN_AI_COPY.defaultRange}</p>
-        {isIsoRange(range) ? null : <Alert severity="error">{DATE_RANGE_ERRORS[range]}</Alert>}
+        {isIsoRange(range) ? null : <Alert severity="error">{dateRangeErrorMessage(range, AI_ANALYTICS_MAX_RANGE_DAYS)}</Alert>}
         {telemetryCsv.truncated ? <Alert severity="warning">{ADMIN_AI_COPY.truncatedTelemetry}</Alert> : null}
         {ratingsCsv.truncated ? <Alert severity="warning">{ADMIN_AI_COPY.truncatedRatings}</Alert> : null}
         <section className={cx(styles.section)} aria-labelledby="ai-telemetry-title">

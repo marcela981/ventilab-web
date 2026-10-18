@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin console date ranges tests
-* Descripción: toIsoRange turns Bogota calendar days into the ISO range of the API (`to` exclusive), rejects invalid, reversed and too long closed ranges, and, with a maximum and only "desde" set, validates the open range against an injected now: a first day in the future is "future", one more than the maximum ago is "tooLong", and an open range without a maximum is never limited. Depends on vitest and the date range entity.
-* Versión: 1.0
+* Descripción: toIsoRange turns Bogota calendar days into the ISO range of the API (`to` exclusive), rejects invalid, reversed and too long closed ranges, and, with a maximum and only "desde" set, validates the open range against an injected now: a first day in the future is "future", one more than the maximum ago is "tooLong", and an open range without a maximum is never limited. Depends on vitest and the date range entity. v1.1 (B4): the too long message states the maximum the range was checked against (singular/plural), never a hardcoded 366.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,7 +10,7 @@
 */
 
 import { describe, expect, it } from "vitest";
-import { DATE_RANGE_ERRORS, toIsoRange } from "./date-range.entity";
+import { AI_ANALYTICS_MAX_RANGE_DAYS, DATE_RANGE_ERRORS, dateRangeErrorMessage, toIsoRange } from "./date-range.entity";
 
 const NOW = new Date("2026-10-17T15:00:00.000Z");
 
@@ -39,5 +39,12 @@ describe("toIsoRange", () => {
 
   it("never limits an open range when there is no maximum", () => {
     expect(toIsoRange("2020-01-01", "", undefined, NOW)).toEqual({ from: "2020-01-01T05:00:00.000Z" });
+  });
+
+  it("states the real maximum in the too long message", () => {
+    expect(dateRangeErrorMessage("tooLong", 31)).toBe("El rango puede cubrir como máximo 31 días.");
+    expect(dateRangeErrorMessage("tooLong", 1)).toBe("El rango puede cubrir como máximo 1 día.");
+    expect(dateRangeErrorMessage("tooLong", AI_ANALYTICS_MAX_RANGE_DAYS)).toBe(`El rango puede cubrir como máximo ${AI_ANALYTICS_MAX_RANGE_DAYS} días.`);
+    expect(dateRangeErrorMessage("order", 31)).toBe(DATE_RANGE_ERRORS.order);
   });
 });
