@@ -14,7 +14,9 @@
 *   public APIs, the case editor config, ranges and DTOs.
 *   v1.1 (review of 50ed812): a stored event time is read in seconds as ms / 1000 (no float noise such as
 *   0.7000000000000001) and `parseNumber` accepts only plain decimals (`/^-?\d+([.,]\d+)?$/`).
-* Versión: 1.1
+*   v1.2 (B4, D7): every numeric text goes through the shared parse-decimal module ("," or "." decimal,
+*   no thousands separator); a rejected text gets the parser message (thousands separator named); parseNumber is gone.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,6 +24,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import { DECIMAL_ERROR_MESSAGES, parseDecimal, parseDecimalOrNaN } from "@shared/lib/parse-decimal";
 import { outcomeRubricDraftFrom, outcomeRubricDraftIssues, outcomeRubricIssueMessage, toOutcomeRubricValue } from "@shared/rubric-editor";
 import type { OutcomeRubricDraft } from "@shared/rubric-editor";
 import {
@@ -73,7 +76,6 @@ import { formatRange, isOutOfRange, RANGE_COPY } from "./case-ranges.entity";
 // TODO(i18n): move to a case-editor namespace in src/i18n.
 export const DRAFT_COPY = {
   required: "Este campo es obligatorio.",
-  notANumber: "Escribe un número.",
   blockIncomplete: "Completa este valor: el bloque se guarda completo o vacío.",
   presentIllnessRequired: "Describe la enfermedad actual para guardar los antecedentes.",
   curveOrder: "La PEEP de cada punto debe ser mayor que la del punto anterior.",
@@ -296,19 +298,6 @@ export function caseDraftFromDefinition(definition: ClinicalCaseDefinitionDTO): 
 
 // ---- building the body --------------------------------------------------------------------------------------------
 
-/** A plain decimal number: optional minus, digits, and optionally "," or "." followed by digits. */
-const PLAIN_DECIMAL = /^-?\d+([.,]\d+)?$/;
-
-/**
- * A number for a typed text ("," accepted as the decimal separator); NaN when empty or not a plain decimal. Forms
- * that Number() would also read ("1e3", "0x10", "Infinity", ".5", "5.") are rejected.
- */
-export function parseNumber(value: string): number {
-  const trimmed = value.trim();
-
-  return PLAIN_DECIMAL.test(trimmed) ? Number(trimmed.replace(",", ".")) : Number.NaN;
-}
-
 function isBlank(value: string): boolean {
   return value.trim() === "";
 }
@@ -335,14 +324,15 @@ class ErrorCollector {
       return null;
     }
 
-    const parsed = parseNumber(value);
+    const result = parseDecimal(value);
 
-    if (!Number.isFinite(parsed)) {
-      this.add(field, DRAFT_COPY.notANumber);
+    if (!result.ok || result.value === null) {
+      this.add(field, result.ok ? DRAFT_COPY.required : DECIMAL_ERROR_MESSAGES[result.error]);
 
       return null;
     }
 
+    const parsed = result.value;
     const stored = scale === 1 ? parsed : Math.round(parsed / scale);
 
     if (isOutOfRange(definition.parameter, stored)) {
@@ -455,7 +445,7 @@ function buildVentilator(draft: CaseDraft, collector: ErrorCollector): UpsertCli
 /** Events sorted by time (stable; rows without a valid time last), as the contract requires non-decreasing times. */
 export function sortEventsByTime(events: readonly CaseEventDraft[]): CaseEventDraft[] {
   const timeOf = (event: CaseEventDraft): number => {
-    const value = parseNumber(event.timeSeconds);
+    const value = parseDecimalOrNaN(event.timeSeconds);
 
     return Number.isFinite(value) ? value : Number.POSITIVE_INFINITY;
   };
@@ -708,7 +698,7 @@ export function applyVentilatorChanges(draft: CaseDraft, changes: Partial<Ventil
 
 /** Predicted body weight (engine Devine formula) of the draft patient; null without a sex and a plausible height. */
 export function draftPredictedBodyWeightKg(draft: CaseDraft): number | null {
-  const height = parseNumber(draft.patientHeightCm);
+  const height = parseDecimalOrNaN(draft.patientHeightCm);
 
   if (draft.patientSex === "" || isOutOfRange(PATIENT_FIELDS.patientHeightCm.parameter, height)) {
     return null;

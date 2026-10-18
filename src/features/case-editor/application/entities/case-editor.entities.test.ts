@@ -10,7 +10,9 @@
 *   rubric, page-level message otherwise). Depends on vitest and the case editor entities.
 *   v1.1 (review of 50ed812): no status action for an unknown status, a server path the editor does not render falls
 *   back to the page message, event times in seconds without float noise, plain-decimal parsing.
-* Versión: 1.1
+*   v1.2 (B4, D7): the numbers go through the shared es-CO parser: one separator is decimal ("1.125" = "1,125"),
+*   a thousands grouping gets the parser message; parseNumber is gone.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,6 +20,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import { DECIMAL_ERROR_MESSAGES } from "@shared/lib/parse-decimal";
 import { describe, expect, it } from "vitest";
 import { ApiError } from "@shared/api-client/api-error";
 import { CLINICAL_CASE_PHYSIOLOGICAL_RANGES, predictedBodyWeightKg } from "@shared/sim-engine";
@@ -32,7 +35,6 @@ import {
   draftPredictedBodyWeightKg,
   emptyCaseDraft,
   eventsInTimeOrder,
-  parseNumber,
   removeEvent,
   sameDraft,
   sortDraftEvents,
@@ -276,15 +278,18 @@ describe("review fixes (e45841f / 50ed812)", () => {
     expect(draft.events.map((event) => event.timeSeconds)).toEqual(["0.7", "300", "1.1"]);
   });
 
-  it("accepts only plain decimal numbers (comma or dot), nothing Number() would also read", () => {
-    expect(parseNumber("1,5")).toBe(1.5);
-    expect(parseNumber(" -2.25 ")).toBe(-2.25);
-    expect(parseNumber("40")).toBe(40);
-    expect(parseNumber("1e3")).toBeNaN();
-    expect(parseNumber("0x10")).toBeNaN();
-    expect(parseNumber("Infinity")).toBeNaN();
-    expect(parseNumber(".5")).toBeNaN();
-    expect(parseNumber("5.")).toBeNaN();
-    expect(parseNumber("")).toBeNaN();
+  it("reads the numbers with the shared es-CO parser and names a thousands grouping (D7)", () => {
+    const draft = validDraft();
+    const field = "mechanics.complianceMlPerCmH2O";
+    const withCompliance = (text: string) => toUpsertCase({ ...draft, mechanics: { ...draft.mechanics, [field]: text } });
+
+    expect(withCompliance("40,5").body?.mechanics?.complianceMlPerCmH2O).toBe(40.5);
+    expect(withCompliance(" 40.5 ").body?.mechanics?.complianceMlPerCmH2O).toBe(40.5);
+    expect(withCompliance("1.000.000").errors[field]).toBe(DECIMAL_ERROR_MESSAGES.thousandsSeparator);
+    expect(withCompliance("40 000").errors[field]).toBe(DECIMAL_ERROR_MESSAGES.thousandsSeparator);
+
+    for (const text of ["1e3", "0x10", "Infinity", ".5", "5."]) {
+      expect(withCompliance(text).errors[field]).toBe(DECIMAL_ERROR_MESSAGES.invalid);
+    }
   });
 });

@@ -3,7 +3,8 @@
 * Descripción: Field building blocks of the case editor sections: NumericField (a decimal text input for one value of
 *   the definition whose helper text shows the plausible physiological range of its parameter, read from the vendored
 *   backend ranges, and turns into the field error when there is one) and `rangeHint` (the same range text on its own). Depends on the design-system FormField and the case editor config and ranges.
-* Versión: 1.0
+*   v1.1 (B4, D7): the numeric field help appends DECIMAL_HELPER_TEXT to the range.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,6 +13,7 @@
 */
 
 import { FormField } from "@shared/design-system/components/form-field";
+import { DECIMAL_HELPER_TEXT } from "@shared/lib/parse-decimal";
 import type { NumericFieldDefinition } from "../config/case-editor.config";
 import { formatRange, RANGE_COPY } from "../entities/case-ranges.entity";
 import type { RangeDisplay } from "../entities/case-ranges.entity";
@@ -40,7 +42,7 @@ export function NumericField({ definition, value, onChange, error, label, displa
       required={required}
       disabled={disabled}
       error={error}
-      helperText={rangeHint(definition, display)}
+      helperText={`${rangeHint(definition, display)} ${DECIMAL_HELPER_TEXT}`}
       onChange={(event) => onChange(event.target.value)}
       slotProps={{ htmlInput: { inputMode: "decimal", "data-field": definition.path } }}
     />

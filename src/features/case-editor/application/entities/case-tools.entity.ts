@@ -11,7 +11,8 @@
 *   sim-engine types and the case editor DTOs.
 *   v1.1 (review of ffe9297): "in use" is decided by the code `clinical-cases.clinical_case_in_use` (the 409 status
 *   only without a code); the preview initial settings keep only number and string values, like the backend mapper.
-* Versión: 1.1
+*   v1.2 (B4, D7): the whole seconds and seed are read with the shared parseDecimal in integer mode.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,6 +21,7 @@
 */
 
 import { CLIENT_ERROR_CODES, toApiError } from "@shared/api-client/api-error";
+import { parseDecimal } from "@shared/lib/parse-decimal";
 import type { CaseEvent, EngineCase, ShuntCurvePoint, VentilatorSettings } from "@shared/sim-engine";
 import type { ClinicalCaseTestRunRequestDTO, UpsertClinicalCaseDTO } from "../../api/dtos/case-editor.dto";
 
@@ -46,9 +48,9 @@ export type TestRunFormResult =
   | { ok: false, errors: TestRunFormErrors };
 
 function parseWhole(value: string): number | null {
-  const trimmed = value.trim();
+  const parsed = parseDecimal(value, { integer: true, allowNegative: false });
 
-  return /^\d+$/.test(trimmed) ? Number(trimmed) : null;
+  return parsed.ok ? parsed.value : null;
 }
 
 export function parseTestRunForm(form: TestRunForm): TestRunFormResult {

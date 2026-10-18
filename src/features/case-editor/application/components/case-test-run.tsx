@@ -11,7 +11,8 @@
 *   hook and the case tools CSS Module.
 *   v1.1 (review of ffe9297): the dialog is described by the panel description (aria-describedby) and keeps the last
 *   case title during its exit transition.
-* Versión: 1.1
+*   v1.2 (B4, D7): the seconds and seed inputs show INTEGER_HELPER_TEXT (after the seed help).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -32,6 +33,7 @@ import { LineChart } from "@shared/charts";
 import { FormField } from "@shared/design-system/components/form-field";
 import { LoadingState } from "@shared/design-system/components/loading-state";
 import { cx } from "@shared/lib/class-names";
+import { INTEGER_HELPER_TEXT } from "@shared/lib/parse-decimal";
 import type { ClinicalCaseTestRunDTO } from "../../api/dtos/case-editor.dto";
 import type { runClinicalCaseTest } from "../../api/services/case-editor.service";
 import { formatSimClock, parseTestRunForm, TEST_RUN_LIMITS, testRunSeries } from "../entities/case-tools.entity";
@@ -132,6 +134,7 @@ export function CaseTestRunPanel({ caseId, dirty = false, service, descriptionId
           className={cx(styles.formField)}
           disabled={running}
           error={errors.seconds}
+          helperText={INTEGER_HELPER_TEXT}
           onChange={(event) => setForm((current) => ({ ...current, seconds: event.target.value }))}
         />
         <FormField
@@ -142,7 +145,7 @@ export function CaseTestRunPanel({ caseId, dirty = false, service, descriptionId
           className={cx(styles.formField)}
           disabled={running}
           error={errors.seed}
-          helperText={CASE_TEST_RUN_COPY.seedHelp}
+          helperText={`${CASE_TEST_RUN_COPY.seedHelp} ${INTEGER_HELPER_TEXT}`}
           onChange={(event) => setForm((current) => ({ ...current, seed: event.target.value }))}
         />
         <div className={cx(styles.formActions)}>
