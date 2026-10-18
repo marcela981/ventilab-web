@@ -103,6 +103,9 @@
     "pages/admin/audit.tsx",
     "pages/admin/ai.tsx",
     "pages/admin/research.tsx",
-    "pages/admin/status.tsx"
+    "pages/admin/status.tsx",
+    "pages/404.tsx",
+    "pages/500.tsx",
+    "pages/_document.tsx"
   ]
 }

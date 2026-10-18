@@ -18,7 +18,8 @@
 *   reported) with a single `console.warn` outside production, instead of an event silently parked in a queue that
 *   never sends it. The owner disposes a queue only when its session is over or replaced; a late event belongs to the
 *   new queue.
-* Versión: 1.3
+*   v1.4 (B6): the production check goes through isProductionEnv of @shared/lib/env (no direct process.env).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,6 +28,7 @@
 */
 
 import { toApiError } from "@shared/api-client/api-error";
+import { isProductionEnv } from "@shared/lib/env";
 import {
   EVENT_FLUSH_ATTEMPTS,
   EVENT_FLUSH_INTERVAL_MS,
@@ -199,7 +201,7 @@ export function createEventQueue<E>(options: EventQueueOptions<E>): EventQueue<E
   return {
     enqueue(event) {
       if (disposed) {
-        if (!warnedLateEnqueue && process.env.NODE_ENV !== "production") {
+        if (!warnedLateEnqueue && !isProductionEnv()) {
           warnedLateEnqueue = true;
           console.warn("[event-queue] enqueue on a disposed queue ignored: the event is not queued or sent.", event);
         }
