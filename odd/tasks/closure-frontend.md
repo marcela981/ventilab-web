@@ -33,7 +33,7 @@ Finish the template migration of ventilab-web: consume the new backend contract,
 - [x] B3.8 — Centralise redirects (D5).
 - [x] B3.9 — Remove unused dependencies (verified one by one).
 - [x] B3.10 — knip (via npx) sweep of unused exports/files/deps.
-- [ ] B4 — Bugs: lab page headers, csv-export reset race, real range limit in message, renderPagination param name, D7 numeric util, badge screen-reader text.
+- [x] B4 — Bugs: lab page headers, csv-export reset race, real range limit in message, renderPagination param name, D7 numeric util, badge screen-reader text. (evidence below)
 - [ ] B5 — 404/500, favicon/metadata, Spanish UI, security headers + CSP (Report-Only via env), optional Sentry by DSN, .env.example, README, CI workflow.
 - [ ] B6 — Headers and style rules across all src/ and pages/.
 
@@ -110,3 +110,12 @@ Delegated direct: every block spans 2+ non-trivial files.
   - Numeric controls left on purpose (not typed decimals): page-size selects (`evaluations-manage`, `grading-queue`, `groups`, `notifications`, `my-notes`), the reservation duration select (`create-reservation-dialog`, options from the settings), the replay/playback sliders (`replay-timeline`, `playback-transport`), URL/query parsing (`admin-users` page, `learning-urls`, attempt session storage).
   - B4.5i design-system (commit `fix(design-system): forward inputMode to the FormField input`): found while applying D7 — `inputMode` passed to FormField (question points, rubric editors, case test run, evaluation metadata) went to the TextField root div, so no decimal/numeric keyboard; FormField v1.1 merges it into `slotProps.htmlInput`. RED: `inputmode` missing on the textbox; GREEN: vitest design-system 41/41; typecheck 0; lint 0.
   - B4.6 nav badge screen-reader text (commit `fix(layouts): announce differentiated nav badge counts`): `nav-badges` v1.3 `navBadgeText` ("N sin leer", "1 pendiente / N pendientes por calificar"); `app-shell` v1.8 gives a badged item `aria-label` "Notificaciones, 3 sin leer" / "Calificar, 2 pendientes por calificar" (indicator text kept, nothing at 0) instead of the generic hidden ", N pendientes" span (its `visuallyHidden` CSS class removed); the bell `labelWithUnread` reuses the text ("Notificaciones, N sin leer"). RED: 4 failures (old name "Calificar , 5 pendientes", no differentiated names, navBadgeText missing, bell "Notificaciones: 2 sin leer"); GREEN: vitest notifications + layouts + grading components 11 files / 127 pass; typecheck 0; lint 0.
+  - B4.7 other open items of `odd/tasks/operation.md` (each checked against the tree):
+    - O1 gap "the actor of a preemption sees the toast; `expectOwnPreemption` no-op kept" → fixed in B2 `b29f3d5` (no `expectOwnPreemption` left in src/pages; the backend excludes the actor).
+    - O1 gap "lab page headers still mention the old toast" → fixed in B2 `b29f3d5` (B4.1).
+    - O1 review lows → fixed `169bd08`; O2 advisory (empty-state flash, error paths, delete success) → fixed `580d297`; O3 review → fixed `aa28ae9`; O4a review → fixed `99b7a8c`; O4b review + O5/O6 advisory (contrast, latest attempt, truncated notice on filter change, one-sided AI range, empty users page, layout descriptions, auth-config role homes, RoleHomeRedirect tests) → fixed `477525d` / `1fa8586`.
+    - O5 advisory "1.000 dot grouping read as 1" → superseded by D7 (B4.5): one separator is always decimal ("1.000" = 1 in a decimal field), integer fields accept no separator.
+    - O7 finding "/achievements probably renders nothing" → obsolete: the page and features/progress were deleted (B3.4 D1, B3.6).
+    - Final review follow-ups: csv `reset()` race → B4.2; `renderPagination(page)` → B4.4; "tooLong" hardcoded 366 → B4.3.
+    - Not bugs (left as recorded): backend gaps lists, "Pending for the author" (build/bundle, E2E/axe, screenshots) and the CLOSURE approval (done through B3).
+- [x] B4 closed: commits `94d3b8a` (B4.2), `91e81dd` (B4.3), `bc37c90` (B4.4), `0b72438` `d60bed4` `fcde4fb` `65b59d4` `08d22e1` `86e529a` `3d9815f` `8fb108c` `fbc690e` (B4.5), `cc9dd3b` (B4.6) and the docs commit of B4.7; final checks below.
