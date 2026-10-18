@@ -1,0 +1,136 @@
+/*
+* Funcionalidad: Estilos globales base del design system
+* Descripción: Reset y estilos base de elementos HTML (html/body/#__next, tipografía de encabezados y párrafos, enlaces, botones, campos, barras de desplazamiento) expresados solo con tokens --vl-* / --mui-* de tokens.css. Reemplaza a los CSS globales legados src/App.css, src/index.css y src/styles/theme.css, conservando sus reglas efectivas sobre elementos (las clases utilitarias legadas no tenían consumidores). El anillo de foco por teclado vive en tokens.css. Se importa SOLO desde pages/_app.js, antes de tokens.css.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+/* === RESET === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--vl-scrollbar-thumb) var(--vl-scrollbar-track);
+}
+
+html,
+body {
+  height: 100%;
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  background: var(--vl-color-bg);
+  color: var(--vl-color-text);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#__next {
+  height: 100%;
+  width: 100%;
+}
+
+/* === TIPOGRAFÍA BASE (elementos sin clase de MUI) === */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: inherit;
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: var(--vl-text-block-gap);
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.75rem; }
+h4 { font-size: 1.5rem; }
+h5 { font-size: 1.25rem; }
+h6 { font-size: 1.125rem; }
+
+p {
+  line-height: 1.5;
+  margin-bottom: var(--vl-text-block-gap);
+}
+
+/* === ENLACES === */
+a {
+  color: var(--vl-color-link);
+  text-decoration: none;
+  transition: all var(--vl-duration-shortest) ease;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* === BOTONES === */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  border-radius: var(--vl-radius-md);
+  transition: all 0.2s ease;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* === CAMPOS === */
+input,
+textarea,
+select {
+  font-family: inherit;
+  border: none;
+  outline: none;
+  background: transparent;
+  border-radius: var(--vl-radius-md);
+  padding: var(--vl-space-2) var(--vl-text-block-gap);
+  transition: all var(--vl-duration-shortest) ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--vl-color-primary);
+  box-shadow: 0 0 0 2px var(--vl-color-field-focus-halo);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--vl-color-text-muted);
+}
+
+/* === BARRAS DE DESPLAZAMIENTO (WebKit; Firefox usa scrollbar-color en el reset) === */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: var(--vl-scrollbar-track);
+}
+
+::-webkit-scrollbar-track {
+  border-radius: var(--vl-radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--vl-scrollbar-thumb);
+  border-radius: var(--vl-radius-sm);
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vl-scrollbar-thumb-hover);
+}

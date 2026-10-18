@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentyLab app-level design tokens
-* Descripción: Global --vl-* tokens (spacing scale, radii, shadows, z-index, transitions, focus ring, semantic color aliases) layered on top of the MUI cssVariables theme (--mui-*). Imported ONLY from pages/_app.js. CSS Modules consume var(--vl-*) / var(--mui-*) and never hex/rgb literals. Depends on src/shared/design-system/theme (it emits the --mui-* variables on :root). v1.1 (T1 simulation): adds the --vl-console-* variant, a dark high-contrast surface for the ventilator console (surfaces, border, grid, text, per-curve colors, alarm priorities with their on-colors, pending and out-of-range highlights), derived from the identity palette with var()/color-mix only. v1.2 (O4b admin-console): --vl-color-status-{ok,degraded,down,idle} and their -bg tints for service health badges, mapped to the success, warning and error aliases (idle to the muted text). v1.3 (review): the status ok/degraded/down text tokens are darkened (55% mix with the primary text color) so badge and probe-result text reaches WCAG AA (>=4.5:1) on their tints and on the surface.
-* Versión: 1.3
+* Descripción: Global --vl-* tokens (spacing scale, radii, shadows, z-index, transitions, focus ring, semantic color aliases) layered on top of the MUI cssVariables theme (--mui-*). Imported ONLY from pages/_app.js. CSS Modules consume var(--vl-*) / var(--mui-*) and never hex/rgb literals. Depends on src/shared/design-system/theme (it emits the --mui-* variables on :root). v1.1 (T1 simulation): adds the --vl-console-* variant, a dark high-contrast surface for the ventilator console (surfaces, border, grid, text, per-curve colors, alarm priorities with their on-colors, pending and out-of-range highlights), derived from the identity palette with var()/color-mix only. v1.2 (O4b admin-console): --vl-color-status-{ok,degraded,down,idle} and their -bg tints for service health badges, mapped to the success, warning and error aliases (idle to the muted text). v1.3 (review): the status ok/degraded/down text tokens are darkened (55% mix with the primary text color) so badge and probe-result text reaches WCAG AA (>=4.5:1) on their tints and on the surface. v1.4 (B6): --vl-text-block-gap (bottom margin of bare headings and paragraphs, 16px; 12px up to 768px), --vl-color-field-focus-halo and the --vl-scrollbar-* colors used by global.css (the legacy App.css/index.css/theme.css values, expressed with the palette channels: black 10% track, white 20%/30% thumb).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -100,6 +100,16 @@
    * The existing primary color is NOT changed.
    */
   --vl-color-link: color-mix(in srgb, var(--mui-palette-primary-main) 60%, var(--mui-palette-common-black));
+  /* Focus halo of bare text fields (legacy rgba(primary / 0.2)). */
+  --vl-color-field-focus-halo: color-mix(in srgb, var(--mui-palette-primary-main) 20%, transparent);
+
+  /* === BASE ELEMENTS (global.css) === */
+  /* Bottom margin of bare headings and paragraphs (legacy --spacing-md). */
+  --vl-text-block-gap: var(--vl-space-4);
+  /* Scrollbars: same translucent values as the legacy App.css (black 10% track, white 20%/30% thumb). */
+  --vl-scrollbar-track: color-mix(in srgb, var(--mui-palette-common-black) 10%, transparent);
+  --vl-scrollbar-thumb: color-mix(in srgb, var(--mui-palette-common-white) 20%, transparent);
+  --vl-scrollbar-thumb-hover: color-mix(in srgb, var(--mui-palette-common-white) 30%, transparent);
 
   /*
    * === VENTILATOR CONSOLE VARIANT ===
@@ -136,6 +146,12 @@
   --vl-console-pending-bg: color-mix(in srgb, var(--mui-palette-primary-main) 20%, var(--vl-console-bg));
   --vl-console-out-of-range: var(--mui-palette-error-main);
   --vl-console-out-of-range-bg: color-mix(in srgb, var(--mui-palette-error-main) 20%, var(--vl-console-bg));
+}
+
+@media (max-width: 768px) {
+  :root {
+    --vl-text-block-gap: var(--vl-space-3);
+  }
 }
 
 /*
