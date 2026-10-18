@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AuditEntryDialog
-* Descripción: Detail dialog of one audit entry of /admin/audit, read by id from `GET /api/audit/{id}` (loading skeleton, error with retry, 404 message): date, action, actor and actor role, target type, id and collection, description, reason, IP and request id, then the before/after diff with ONLY the changed fields (diffAuditChanges over the stored before/after objects, dotted keys). "Historial del objetivo" loads the paginated history of the same target (`GET /api/audit/targets/{type}/{id}`) under the detail; a history row can be opened in turn. The page mounts it with key = entry id, so the history panel starts closed for every entry. v1.1 (closure B2): the dialog takes the entry id and reads the detail endpoint instead of reusing the list row. Depends on MUI, React, @shared/lib, the design-system states and skeleton, the admin console audit entity, hooks, components, error messages and CSS Module.
-* Versión: 1.1
+* Descripción: Detail dialog of one audit entry of /admin/audit, read by id from `GET /api/audit/{id}` (loading skeleton, error with retry, 404 message): date, action, actor and actor role, target type, id and collection, description, reason, IP and request id, then the before/after diff with ONLY the changed fields (diffAuditChanges over the stored before/after objects, dotted keys). "Historial del objetivo" loads the paginated history of the same target (`GET /api/audit/targets/{type}/{id}`) under the detail; a history row can be opened in turn. The page mounts it with key = entry id, so the history panel starts closed for every entry. v1.1 (closure B2): the dialog takes the entry id and reads the detail endpoint instead of reusing the list row. Depends on MUI, React, @shared/lib, the design-system states and skeleton, the admin console audit entity, hooks, components, error messages and CSS Module. v1.2 (B5): title, actor role, target and history title show the Spanish labels of the codes (audit-labels).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -23,6 +23,7 @@ import { getAdminConsoleErrorMessage } from "../entities/admin-console-error-mes
 import { MISSING_VALUE } from "../entities/admin-format";
 import { diffAuditChanges, formatAuditValue } from "../entities/audit.entity";
 import type { AuditEntry } from "../entities/audit.entity";
+import { auditActionLabel, auditRoleLabel, auditTargetTypeLabel } from "../entities/audit-labels";
 import { useAuditEntry } from "../hooks/use-audit-entry";
 import { useAuditTargetHistory } from "../hooks/use-audit-target-history";
 import { AuditTable } from "./audit-table";
@@ -70,7 +71,7 @@ function TargetHistory({ entry, onOpen }: { entry: AuditEntry, onOpen: (entry: A
     setPage(Math.max(1, pagination.pages));
   }
 
-  const title = AUDIT_DIALOG_COPY.historyTitle(entry.targetType, entry.targetId);
+  const title = AUDIT_DIALOG_COPY.historyTitle(auditTargetTypeLabel(entry.targetType), entry.targetId);
 
   return (
     <section className={cx(styles.section)} aria-label={title}>
@@ -139,8 +140,8 @@ function AuditEntryDetail({ entry, onOpen, onClose }: { entry: AuditEntry, onOpe
   const details: [string, string][] = [
     [AUDIT_DIALOG_COPY.date, formatDateTime(entry.performedAt)],
     [AUDIT_DIALOG_COPY.actor, entry.actorId ?? AUDIT_DIALOG_COPY.system],
-    [AUDIT_DIALOG_COPY.actorRole, entry.actorRole ?? MISSING_VALUE],
-    [AUDIT_DIALOG_COPY.target, `${entry.targetType} · ${entry.targetId}`],
+    [AUDIT_DIALOG_COPY.actorRole, entry.actorRole ? auditRoleLabel(entry.actorRole) : MISSING_VALUE],
+    [AUDIT_DIALOG_COPY.target, `${auditTargetTypeLabel(entry.targetType)} · ${entry.targetId}`],
     [AUDIT_DIALOG_COPY.collection, entry.targetCollection],
     [AUDIT_DIALOG_COPY.description, entry.description ?? MISSING_VALUE],
     [AUDIT_DIALOG_COPY.reason, entry.reason ?? MISSING_VALUE],
@@ -150,7 +151,7 @@ function AuditEntryDetail({ entry, onOpen, onClose }: { entry: AuditEntry, onOpe
 
   return (
     <>
-      <DialogTitle id="audit-entry-title">{AUDIT_DIALOG_COPY.title(entry.action)}</DialogTitle>
+      <DialogTitle id="audit-entry-title">{AUDIT_DIALOG_COPY.title(auditActionLabel(entry.action))}</DialogTitle>
       <DialogContent>
         <div className={cx(styles.dialogBody)}>
           <dl className={cx(styles.detailList)}>

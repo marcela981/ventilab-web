@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AuditFilters
-* Descripción: Filter bar of /admin/audit: actor id, action (exact text), target type and target id, "Desde"/"Hasta" calendar days in America/Bogota (native date inputs) and the sort order. The fields are a draft that only reaches the URL on "Aplicar" (Enter submits); "Limpiar" resets every filter. A page change is not done here. Depends on MUI, React, the admin console audit entity and CSS Module. v1.1 (closure B2): with the audit catalog (`GET /api/audit/catalog`) the action and the target type are selects of the catalog values ("Todas" first; a URL value outside the catalog stays selectable); without it they stay free text.
-* Versión: 1.1
+* Descripción: Filter bar of /admin/audit: actor id, action (exact text), target type and target id, "Desde"/"Hasta" calendar days in America/Bogota (native date inputs) and the sort order. The fields are a draft that only reaches the URL on "Aplicar" (Enter submits); "Limpiar" resets every filter. A page change is not done here. Depends on MUI, React, the admin console audit entity and CSS Module. v1.1 (closure B2): with the audit catalog (`GET /api/audit/catalog`) the action and the target type are selects of the catalog values ("Todas" first; a URL value outside the catalog stays selectable); without it they stay free text. v1.2 (B5): the action and target type options show their Spanish labels (audit-labels); the value sent stays the backend code.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { cx } from "@shared/lib/class-names";
 import { catalogOptions, NO_AUDIT_FILTERS } from "../entities/audit.entity";
+import { auditActionLabel, auditTargetTypeLabel } from "../entities/audit-labels";
 import type { AuditCatalog, AuditFilters as AuditFiltersValue, AuditSortOrder } from "../entities/audit.entity";
 import styles from "../../UI/admin-operations.module.css";
 
@@ -68,7 +69,7 @@ export function AuditFilters({ value, catalog = null, onChange }: AuditFiltersPr
       {catalog ? (
         <TextField size="small" select label={AUDIT_FILTERS_COPY.action} value={draft.action} onChange={set("action")}>
           <MenuItem value="">{AUDIT_FILTERS_COPY.all}</MenuItem>
-          {catalogOptions(catalog.actions, draft.action).map((action) => <MenuItem key={action} value={action}>{action}</MenuItem>)}
+          {catalogOptions(catalog.actions, draft.action).map((action) => <MenuItem key={action} value={action}>{auditActionLabel(action)}</MenuItem>)}
         </TextField>
       ) : (
         <TextField
@@ -82,7 +83,7 @@ export function AuditFilters({ value, catalog = null, onChange }: AuditFiltersPr
       {catalog ? (
         <TextField size="small" select label={AUDIT_FILTERS_COPY.targetType} value={draft.targetType} onChange={set("targetType")}>
           <MenuItem value="">{AUDIT_FILTERS_COPY.all}</MenuItem>
-          {catalogOptions(catalog.targetTypes, draft.targetType).map((type) => <MenuItem key={type} value={type}>{type}</MenuItem>)}
+          {catalogOptions(catalog.targetTypes, draft.targetType).map((type) => <MenuItem key={type} value={type}>{auditTargetTypeLabel(type)}</MenuItem>)}
         </TextField>
       ) : (
         <TextField size="small" label={AUDIT_FILTERS_COPY.targetType} value={draft.targetType} onChange={set("targetType")} />

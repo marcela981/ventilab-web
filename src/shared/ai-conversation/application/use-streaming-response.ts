@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useStreamingResponse
-* Descripción: Generic state of one streamed AI answer over the shared SSE helper (postEventStream). `start({path, body})` opens the stream (aborting any running one), accumulates the `delta` texts and resolves with the outcome: done (the route's `done` metadata: aiCallId, messageId, optional sources and extra fields such as conversationId), error (ApiError: errors before the stream such as 404/429/503 with `streamStarted` false, an `event: error` frame or a connection lost mid-stream with `streamStarted` true) or aborted. Deltas are buffered and committed once per animation frame, so a fast stream re-renders per frame, not per token; the buffer is flushed on done, error and abort. `abort()` keeps the partial text and sets status aborted; later frames are ignored. A terminal frame (done or error) ends the read loop, so frames after it are ignored. Unmounting aborts the running stream. Status: idle | streaming | done | error | aborted. Calling `start` again (e.g. a retry after an error) resets text, error and done. Depends on react and @shared/api-client. v1.2 (A3 ai-chat): the aborted outcome carries `streamStarted` (true once any frame arrived, even a delta still buffered for the next frame), so callers know whether the backend stored the turn without waiting for a render.
-* Versión: 1.2
+* Descripción: Generic state of one streamed AI answer over the shared SSE helper (postEventStream). `start({path, body})` opens the stream (aborting any running one), accumulates the `delta` texts and resolves with the outcome: done (the route's `done` metadata: aiCallId, messageId, optional sources and extra fields such as conversationId), error (ApiError: errors before the stream such as 404/429/503 with `streamStarted` false, an `event: error` frame or a connection lost mid-stream with `streamStarted` true) or aborted. Deltas are buffered and committed once per animation frame, so a fast stream re-renders per frame, not per token; the buffer is flushed on done, error and abort. `abort()` keeps the partial text and sets status aborted; later frames are ignored. A terminal frame (done or error) ends the read loop, so frames after it are ignored. Unmounting aborts the running stream. Status: idle | streaming | done | error | aborted. Calling `start` again (e.g. a retry after an error) resets text, error and done. Depends on react and @shared/api-client. v1.2 (A3 ai-chat): the aborted outcome carries `streamStarted` (true once any frame arrived, even a delta still buffered for the next frame), so callers know whether the backend stored the turn without waiting for a render. v1.3 (B5): the interrupted-stream message is the Spanish CLIENT_ERROR_MESSAGES.streamInterrupted.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,7 +10,7 @@
 */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ApiError, CLIENT_ERROR_CODES, toApiError } from "@shared/api-client/api-error";
+import { ApiError, CLIENT_ERROR_CODES, CLIENT_ERROR_MESSAGES, toApiError } from "@shared/api-client/api-error";
 import { postEventStream } from "@shared/api-client/sse-stream";
 import type { StreamDoneMetadata } from "./ai-conversation.entity";
 
@@ -158,7 +158,7 @@ export function useStreamingResponse<TDone extends StreamDoneMetadata = DefaultS
       if (outcome === null && isCurrent()) {
         fail(new ApiError({
           code: CLIENT_ERROR_CODES.streamInterrupted,
-          message: "The connection closed before the answer finished",
+          message: CLIENT_ERROR_MESSAGES.streamInterrupted,
           status: 0,
         }));
       }

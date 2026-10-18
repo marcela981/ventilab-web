@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Single-flight access token refresh
-* Descripción: `refreshAccessToken()` calls `POST /api/auth/refresh { refreshToken }` on an un-intercepted axios instance and shares ONE in-flight promise between every caller (new client and legacy adapter). On success it stores the new access token and emits `token-refreshed`. When the session cannot be recovered (no refresh token, or a 4xx from refresh other than 408/429) it clears the tokens and emits `session-expired` once. Network/timeout/5xx refresh failures reject without logging out. Depends on axios, env, token-storage, auth-events and api-error.
-* Versión: 1.0
+* Descripción: `refreshAccessToken()` calls `POST /api/auth/refresh { refreshToken }` on an un-intercepted axios instance and shares ONE in-flight promise between every caller (new client and legacy adapter). On success it stores the new access token and emits `token-refreshed`. When the session cannot be recovered (no refresh token, or a 4xx from refresh other than 408/429) it clears the tokens and emits `session-expired` once. Network/timeout/5xx refresh failures reject without logging out. Depends on axios, env, token-storage, auth-events and api-error. v1.1 (B5): the refresh call sends Accept-Language: es and its client-built messages are Spanish.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,7 +11,8 @@
 
 import axios from "axios";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
-import { ApiError, CLIENT_ERROR_CODES, toApiError } from "./api-error";
+import { ApiError, CLIENT_ERROR_CODES, CLIENT_ERROR_MESSAGES, toApiError } from "./api-error";
+import { LANGUAGE_HEADERS } from "./request-language";
 import { emitAuthEvent } from "./auth-events";
 import type { components } from "./generated/schema";
 import { TIMEOUTS } from "./timeouts";
@@ -28,7 +29,7 @@ const refreshClient = axios.create({
   baseURL: BACKEND_ORIGIN,
   timeout: TIMEOUTS.slow,
   withCredentials: true,
-  headers: { "Content-Type": "application/json", Accept: "application/json" },
+  headers: { "Content-Type": "application/json", Accept: "application/json", ...LANGUAGE_HEADERS },
 });
 
 let inFlightRefresh: Promise<string> | null = null;
@@ -56,7 +57,7 @@ async function performRefresh(): Promise<string> {
 
     throw new ApiError({
       code: CLIENT_ERROR_CODES.sessionExpired,
-      message: "The session has expired",
+      message: CLIENT_ERROR_MESSAGES.sessionExpired,
       status: 401,
     });
   }
@@ -82,7 +83,7 @@ async function performRefresh(): Promise<string> {
 
     throw new ApiError({
       code: CLIENT_ERROR_CODES.sessionExpired,
-      message: "The refresh response did not include an access token",
+      message: CLIENT_ERROR_MESSAGES.refreshWithoutToken,
       status: 401,
     });
   }

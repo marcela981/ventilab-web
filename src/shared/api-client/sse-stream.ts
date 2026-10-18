@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Server-sent events stream helper
-* Descripción: POSTs a JSON body to a backend text/event-stream route with fetch + ReadableStream (EventSource cannot POST or send a bearer token) and exposes the events as an async iterator (postEventStream) or as callbacks (runEventStream). Same backend origin, bearer token and credentials as the axios client; on a 401 it reuses the shared single-flight refresh and retries once (auth routes never refresh). Errors before the stream starts (validation, 403, 404 unpublished, 429 with Retry-After or retry info in the body, 503 provider unavailable) become ApiError through apiErrorFromResponse; `event: error` after the stream started is yielded as an event, and a stream that closes before `done`/`error` yields `network.stream_interrupted`. Aborting the signal ends the iteration silently. Depends on env, api-error, token-storage and token-refresh.
-* Versión: 1.0
+* Descripción: POSTs a JSON body to a backend text/event-stream route with fetch + ReadableStream (EventSource cannot POST or send a bearer token) and exposes the events as an async iterator (postEventStream) or as callbacks (runEventStream). Same backend origin, bearer token and credentials as the axios client; on a 401 it reuses the shared single-flight refresh and retries once (auth routes never refresh). Errors before the stream starts (validation, 403, 404 unpublished, 429 with Retry-After or retry info in the body, 503 provider unavailable) become ApiError through apiErrorFromResponse; `event: error` after the stream started is yielded as an event, and a stream that closes before `done`/`error` yields `network.stream_interrupted`. Aborting the signal ends the iteration silently. Depends on env, api-error, token-storage and token-refresh. v1.1 (B5): the stream request sends Accept-Language: es and the client-built error messages are Spanish (CLIENT_ERROR_MESSAGES).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,7 +10,8 @@
 */
 
 import { BACKEND_ORIGIN } from "@shared/lib/env";
-import { ApiError, apiErrorFromResponse, CLIENT_ERROR_CODES, parseRetryAfter, toApiError } from "./api-error";
+import { ApiError, apiErrorFromResponse, CLIENT_ERROR_CODES, CLIENT_ERROR_MESSAGES, parseRetryAfter, toApiError } from "./api-error";
+import { LANGUAGE_HEADERS } from "./request-language";
 import { REFRESH_EXEMPT_ROUTES } from "./http-client";
 import { refreshAccessToken } from "./token-refresh";
 import { getAccessToken } from "./token-storage";
@@ -147,7 +148,7 @@ function toStreamEvent<TDone>(frame: SseFrame): EventStreamEvent<TDone> | null {
     return {
       type: "error",
       code: typeof body.code === "string" ? body.code : CLIENT_ERROR_CODES.unknown,
-      message: typeof body.message === "string" ? body.message : "The answer could not be completed",
+      message: typeof body.message === "string" ? body.message : CLIENT_ERROR_MESSAGES.streamFailed,
     };
   }
 
@@ -191,7 +192,7 @@ async function toResponseError(response: Response): Promise<ApiError> {
 
 function send(path: string, body: unknown, signal: AbortSignal | undefined): Promise<Response> {
   const token = getAccessToken();
-  const headers: Record<string, string> = { "Content-Type": "application/json", Accept: "text/event-stream" };
+  const headers: Record<string, string> = { "Content-Type": "application/json", Accept: "text/event-stream", ...LANGUAGE_HEADERS };
 
   if (token) {
     headers.Authorization = `Bearer ${token}`;
@@ -238,7 +239,7 @@ async function open(path: string, body: unknown, signal: AbortSignal | undefined
 
     throw new ApiError({
       code: CLIENT_ERROR_CODES.networkUnavailable,
-      message: "The server could not be reached",
+      message: CLIENT_ERROR_MESSAGES.unreachable,
       status: 0,
     });
   }
@@ -266,7 +267,7 @@ export async function* postEventStream<TDone = TutorStreamDone>(
   }
 
   if (!response.body) {
-    yield { type: "error", code: CLIENT_ERROR_CODES.streamInterrupted, message: "The answer stream is empty" };
+    yield { type: "error", code: CLIENT_ERROR_CODES.streamInterrupted, message: CLIENT_ERROR_MESSAGES.streamEmpty };
 
     return;
   }
@@ -305,7 +306,7 @@ export async function* postEventStream<TDone = TutorStreamDone>(
       return;
     }
 
-    yield { type: "error", code: CLIENT_ERROR_CODES.streamInterrupted, message: "The connection closed before the answer finished" };
+    yield { type: "error", code: CLIENT_ERROR_CODES.streamInterrupted, message: CLIENT_ERROR_MESSAGES.streamInterrupted };
 
     return;
   } finally {
@@ -314,7 +315,7 @@ export async function* postEventStream<TDone = TutorStreamDone>(
   }
 
   if (!signal?.aborted) {
-    yield { type: "error", code: CLIENT_ERROR_CODES.streamInterrupted, message: "The connection closed before the answer finished" };
+    yield { type: "error", code: CLIENT_ERROR_CODES.streamInterrupted, message: CLIENT_ERROR_MESSAGES.streamInterrupted };
   }
 }
 

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: SSE stream helper tests
-* Descripción: Tests of the text/event-stream parser (frames split mid-line and mid-frame, CRLF, comments, multi-line data) and of postEventStream/runEventStream against msw: delta/done/error events, bearer token, single refresh + retry on 401, abort, truncated streams and the mapping of 429 (Retry-After header or body), 503 and 404 to ApiError. Depends on vitest, msw and the api-client modules.
-* Versión: 1.0
+* Descripción: Tests of the text/event-stream parser (frames split mid-line and mid-frame, CRLF, comments, multi-line data) and of postEventStream/runEventStream against msw: delta/done/error events, bearer token, single refresh + retry on 401, abort, truncated streams and the mapping of 429 (Retry-After header or body), 503 and 404 to ApiError. Depends on vitest, msw and the api-client modules. v1.1 (B5): the stream request sends Accept-Language: es.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -111,13 +111,14 @@ describe("createSseParser", () => {
 
 describe("postEventStream", () => {
   it("yields delta and done events sent with the bearer token and the JSON body", async() => {
-    let received: { authorization: string | null, accept: string | null, body: unknown } | null = null;
+    let received: { authorization: string | null, accept: string | null, language: string | null, body: unknown } | null = null;
 
     server.use(
       http.post(url(STREAM_PATH), async({ request }) => {
         received = {
           authorization: request.headers.get("authorization"),
           accept: request.headers.get("accept"),
+          language: request.headers.get("accept-language"),
           body: await request.json(),
         };
 
@@ -131,7 +132,7 @@ describe("postEventStream", () => {
 
     const events = await collect(postEventStream(STREAM_PATH, { question: "¿PEEP?" }));
 
-    expect(received).toEqual({ authorization: "Bearer access-1", accept: "text/event-stream", body: { question: "¿PEEP?" } });
+    expect(received).toEqual({ authorization: "Bearer access-1", accept: "text/event-stream", language: "es", body: { question: "¿PEEP?" } });
     expect(events).toEqual([
       { type: "delta", text: "La PEEP" },
       { type: "delta", text: " mantiene" },

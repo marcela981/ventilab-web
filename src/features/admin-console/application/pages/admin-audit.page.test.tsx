@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AdminAuditPage tests
-* Descripción: /admin/audit with msw: lists the rows of `GET /api/audit` with the URL filters sent as the Bogota ISO range, the detail dialog shows only the changed fields and loads the target history, the CSV export shows the truncation notice when X-Export-Truncated is true, a page beyond the last one moves to the last page, and a failing request shows the error instead of stale rows. Depends on Testing Library, msw, vitest and the admin console page and test helpers. v1.1 (closure B2): the dialog reads `GET /api/audit/{id}` (404 message in the dialog); the action and target type filters come from `GET /api/audit/catalog` (free text when it fails) and the export row limit is stated.
-* Versión: 1.1
+* Descripción: /admin/audit with msw: lists the rows of `GET /api/audit` with the URL filters sent as the Bogota ISO range, the detail dialog shows only the changed fields and loads the target history, the CSV export shows the truncation notice when X-Export-Truncated is true, a page beyond the last one moves to the last page, and a failing request shows the error instead of stale rows. Depends on Testing Library, msw, vitest and the admin console page and test helpers. v1.1 (closure B2): the dialog reads `GET /api/audit/{id}` (404 message in the dialog); the action and target type filters come from `GET /api/audit/catalog` (free text when it fails) and the export row limit is stated. v1.2 (B5): rows, options and the dialog show the Spanish labels of the action, actor role and target type codes (the raw action code stays under its label).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -121,6 +121,9 @@ describe("AdminAuditPage", () => {
     renderAdminConsole(<AdminAuditPage />, { keepPreviousData: true });
 
     expect(await screen.findAllByText("user_role_changed")).not.toHaveLength(0);
+    expect(screen.getAllByText("Rol de usuario cambiado")).not.toHaveLength(0);
+    expect(screen.getAllByText("Administrador")).not.toHaveLength(0);
+    expect(screen.getAllByText("Usuario")).not.toHaveLength(0);
     expect(screen.getByText(AUDIT_TABLE_COPY.system)).toBeInTheDocument();
     const query = listQueries[0];
 
@@ -133,7 +136,7 @@ describe("AdminAuditPage", () => {
   it("reads the detail by id and shows only the changed fields, then loads the target history", async() => {
     renderAdminConsole(<AdminAuditPage />);
 
-    const buttons = await screen.findAllByRole("button", { name: /^Ver detalle de user_role_changed/ });
+    const buttons = await screen.findAllByRole("button", { name: /^Ver detalle de Rol de usuario cambiado/ });
 
     fireEvent.click(buttons[0] as HTMLElement);
     const dialog = await screen.findByRole("dialog");
@@ -152,13 +155,14 @@ describe("AdminAuditPage", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: AUDIT_DIALOG_COPY.history }));
 
     expect(await within(dialog).findByText("user_created")).toBeInTheDocument();
+    expect(within(dialog).getByText("Usuario creado")).toBeInTheDocument();
   });
 
   it("shows the error of a missing entry in the dialog", async() => {
     server.use(http.get(apiUrl("/api/audit/:id"), () => errorResponse("audit-log.not_found", 404)));
     renderAdminConsole(<AdminAuditPage />);
 
-    const buttons = await screen.findAllByRole("button", { name: /^Ver detalle de user_role_changed/ });
+    const buttons = await screen.findAllByRole("button", { name: /^Ver detalle de Rol de usuario cambiado/ });
 
     fireEvent.click(buttons[0] as HTMLElement);
     const dialog = await screen.findByRole("dialog");
@@ -171,9 +175,9 @@ describe("AdminAuditPage", () => {
 
     expect(await screen.findByText(ADMIN_AUDIT_COPY.exportLimit(50000))).toBeInTheDocument();
     fireEvent.mouseDown(screen.getByRole("combobox", { name: AUDIT_FILTERS_COPY.targetType }));
-    fireEvent.click(await screen.findByRole("option", { name: "platform_setting" }));
+    fireEvent.click(await screen.findByRole("option", { name: "Configuración de la plataforma" }));
     fireEvent.mouseDown(screen.getByRole("combobox", { name: AUDIT_FILTERS_COPY.action }));
-    fireEvent.click(await screen.findByRole("option", { name: "user_status_changed" }));
+    fireEvent.click(await screen.findByRole("option", { name: "Estado de usuario cambiado" }));
     fireEvent.click(screen.getByRole("button", { name: AUDIT_FILTERS_COPY.apply }));
 
     expect(router.replace).toHaveBeenCalledWith(

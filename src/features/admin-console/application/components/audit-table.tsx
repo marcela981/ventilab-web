@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AuditTable
-* Descripción: Rows of the audit log in /admin/audit: date (es-CO, America/Bogota), action, actor (role and id, or "Sistema" when the API has no actor), target (type and id), description and a "Ver detalle" button that opens the detail dialog of the row. Shows the values as the API returns them. Depends on MUI, @shared/lib, the admin console audit entity and CSS Module.
-* Versión: 1.0
+* Descripción: Rows of the audit log in /admin/audit: date (es-CO, America/Bogota), action, actor (role and id, or "Sistema" when the API has no actor), target (type and id), description and a "Ver detalle" button that opens the detail dialog of the row. Shows the ids as the API returns them. Depends on MUI, @shared/lib, the admin console audit entity and CSS Module. v1.1 (B5): action, actor role and target type show their Spanish labels (audit-labels); the raw action code stays below the label when they differ.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,6 +14,7 @@ import { cx } from "@shared/lib/class-names";
 import { formatDateTime } from "@shared/lib/format";
 import { MISSING_VALUE } from "../entities/admin-format";
 import type { AuditEntry } from "../entities/audit.entity";
+import { auditActionLabel, auditRoleLabel, auditTargetTypeLabel } from "../entities/audit-labels";
 import styles from "../../UI/admin-operations.module.css";
 
 // TODO(i18n): move to an admin-console namespace in src/i18n.
@@ -54,26 +55,30 @@ export function AuditTable({ entries, onOpen, caption = AUDIT_TABLE_COPY.caption
         <tbody>
           {entries.map((entry) => {
             const date = formatDateTime(entry.performedAt);
+            const action = auditActionLabel(entry.action);
 
             return (
               <tr key={entry.id}>
                 <td>{date}</td>
-                <th scope="row" className={cx(styles.mono)}>{entry.action}</th>
+                <th scope="row">
+                  <span>{action}</span>
+                  {action !== entry.action ? <span className={cx(styles.secondary, styles.mono)}>{entry.action}</span> : null}
+                </th>
                 <td>
                   {entry.actorId ? (
                     <>
-                      <span>{entry.actorRole ?? MISSING_VALUE}</span>
+                      <span>{entry.actorRole ? auditRoleLabel(entry.actorRole) : MISSING_VALUE}</span>
                       <span className={cx(styles.secondary, styles.mono)}>{entry.actorId}</span>
                     </>
                   ) : AUDIT_TABLE_COPY.system}
                 </td>
                 <td>
-                  <span>{entry.targetType}</span>
+                  <span>{auditTargetTypeLabel(entry.targetType)}</span>
                   <span className={cx(styles.secondary, styles.mono)}>{entry.targetId}</span>
                 </td>
                 <td>{entry.description ?? MISSING_VALUE}</td>
                 <td>
-                  <Button size="small" onClick={() => onOpen(entry)} aria-label={AUDIT_TABLE_COPY.detailOf(entry.action, date)}>
+                  <Button size="small" onClick={() => onOpen(entry)} aria-label={AUDIT_TABLE_COPY.detailOf(action, date)}>
                     {AUDIT_TABLE_COPY.detail}
                   </Button>
                 </td>

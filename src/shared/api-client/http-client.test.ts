@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: HTTP client behavior tests
-* Descripción: msw-backed tests of the typed client: single-flight refresh for concurrent 401s, failed refresh (tokens cleared, one session-expired, pending requests rejected), no refresh/logout on 403, fast/slow timeout selection, Retry-After normalization and the non-doubled `/api` base URL. Depends on vitest, msw and the api-client modules.
-* Versión: 1.0
+* Descripción: msw-backed tests of the typed client: single-flight refresh for concurrent 401s, failed refresh (tokens cleared, one session-expired, pending requests rejected), no refresh/logout on 403, fast/slow timeout selection, Retry-After normalization and the non-doubled `/api` base URL. v1.1 (B5): every request sends Accept-Language: es and a client-built network error carries a Spanish message. Depends on vitest, msw and the api-client modules.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -258,7 +258,23 @@ describe("error normalization", () => {
   it("maps a network failure to network.unavailable", async() => {
     server.use(http.get(url("/api/groups"), () => HttpResponse.error()));
 
-    await expect(apiGet("/api/groups")).rejects.toMatchObject({ code: "network.unavailable", status: 0 });
+    await expect(apiGet("/api/groups")).rejects.toMatchObject({ code: "network.unavailable", status: 0, message: "No se pudo conectar con el servidor" });
+  });
+});
+
+describe("request language", () => {
+  it("asks the backend for Spanish messages with Accept-Language: es", async() => {
+    let language: string | null = null;
+
+    server.use(http.get(url("/api/groups"), ({ request }) => {
+      language = request.headers.get("accept-language");
+
+      return HttpResponse.json(envelope([]));
+    }));
+
+    await apiGet("/api/groups");
+
+    expect(language).toBe("es");
   });
 });
 

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Typed client HTTP transport
-* Descripción: The single axios instance of the new code. Its baseURL is the backend ORIGIN because the OpenAPI paths already include `/api`. Request interceptor: Bearer token from token-storage and the fast/slow timeout (SLOW_ROUTES or the explicit per-call timeout). Response interceptor: centralized 401 handling through the shared single-flight refresh (each request retries at most once via `_retry`, auth endpoints never refresh) and normalization of every failure to ApiError (a 403 is only an ApiError, never a logout). Depends on axios, env, timeouts, token-storage, token-refresh and api-error.
-* Versión: 1.0
+* Descripción: The single axios instance of the new code. Its baseURL is the backend ORIGIN because the OpenAPI paths already include `/api`. Request interceptor: Bearer token from token-storage and the fast/slow timeout (SLOW_ROUTES or the explicit per-call timeout). Response interceptor: centralized 401 handling through the shared single-flight refresh (each request retries at most once via `_retry`, auth endpoints never refresh) and normalization of every failure to ApiError (a 403 is only an ApiError, never a logout). Depends on axios, env, timeouts, token-storage, token-refresh and api-error. v1.1 (B5): every request sends Accept-Language: es (LANGUAGE_HEADERS) so the backend answers its messages in Spanish.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,6 +13,7 @@ import axios from "axios";
 import type { InternalAxiosRequestConfig } from "axios";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
 import { toApiError } from "./api-error";
+import { LANGUAGE_HEADERS } from "./request-language";
 import { resolveTimeout } from "./timeouts";
 import { refreshAccessToken } from "./token-refresh";
 import { getAccessToken } from "./token-storage";
@@ -26,7 +27,7 @@ export const REFRESH_EXEMPT_ROUTES: readonly RegExp[] = [/^\/api\/auth\/(login|g
 export const httpClient = axios.create({
   baseURL: BACKEND_ORIGIN,
   withCredentials: true,
-  headers: { Accept: "application/json" },
+  headers: { Accept: "application/json", ...LANGUAGE_HEADERS },
 });
 
 function isRefreshExempt(url: string | undefined): boolean {
