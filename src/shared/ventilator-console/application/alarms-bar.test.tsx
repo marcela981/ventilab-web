@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AlarmsBar tests
-* Descripción: Tests of the ventilator console alarms bar and its pure helpers: sorting by priority with a non-color indicator (icon + priority text), the 2-minute silence countdown driven by fake timers (alarms stay visible), the sound toggle off by default and beeping only after the user enables it, the session history derived from adapter updates (onset and clear) and the alarm limits panel (apply emits only changed thresholds; read-only without a callback). v1.2: an emptied limit draft is cleared on blur (the current value is shown again). Depends on Vitest and Testing Library.
-* Versión: 1.2
+* Descripción: Tests of the ventilator console alarms bar and its pure helpers: sorting by priority with a non-color indicator (icon + priority text), the 2-minute silence countdown driven by fake timers (alarms stay visible), the sound toggle off by default and beeping only after the user enables it, the session history derived from adapter updates (onset and clear) and the alarm limits panel (apply emits only changed thresholds; read-only without a callback). v1.2: an emptied limit draft is cleared on blur (the current value is shown again). Depends on Vitest and Testing Library. v1.3 (B4, D7): the limit inputs are text inputs with a decimal keyboard read by the shared es-CO parser ("," or "." decimal, a thousands grouping is invalid and never applied) and described by the decimal helper text.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,6 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import { DECIMAL_HELPER_TEXT } from "@shared/lib/parse-decimal";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { resolveAlarmPriority } from "./config/console-controls.config";
@@ -150,7 +151,7 @@ describe("AlarmsBar", () => {
     // Mimics typing: clear the field, then "3", "35" (an intermediate "3" is below the minimum of 10).
     for (const value of ["4", "", "3", "35"]) {
       fireEvent.change(input, { target: { value } });
-      expect(input).toHaveValue(value === "" ? null : Number(value));
+      expect(input).toHaveValue(value);
     }
 
     fireEvent.click(screen.getByRole("button", { name: "Aplicar límites" }));
@@ -167,7 +168,7 @@ describe("AlarmsBar", () => {
 
     fireEvent.change(pressure, { target: { value: "3" } });
     fireEvent.blur(pressure);
-    expect(pressure).toHaveValue(10);
+    expect(pressure).toHaveValue("10");
 
     fireEvent.change(rate, { target: { value: "" } });
     fireEvent.click(screen.getByRole("button", { name: "Aplicar límites" }));
@@ -182,11 +183,35 @@ describe("AlarmsBar", () => {
     const before = (rate as HTMLInputElement).value;
 
     fireEvent.change(rate, { target: { value: "" } });
-    expect(rate).toHaveValue(null);
+    expect(rate).toHaveValue("");
     fireEvent.blur(rate);
 
     expect((rate as HTMLInputElement).value).toBe(before);
     expect(screen.getByRole("button", { name: "Aplicar límites" })).toBeDisabled();
+  });
+
+  it("reads a limit with the shared es-CO parser (D7)", () => {
+    const onLimitsChange = vi.fn();
+    const decimalLimits: readonly ConsoleAlarmLimit[] = [{ id: "lowVolume", label: "Volumen bajo", value: 0.3, min: 0.1, max: 1, step: 0.05, unit: "L" }];
+    render(<AlarmsBar alarms={[]} readOnly={false} limits={decimalLimits} onLimitsChange={onLimitsChange} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Límites" }));
+    const volume = screen.getByRole("textbox", { name: "Volumen bajo" });
+
+    expect(volume).toHaveAttribute("inputmode", "decimal");
+    expect(volume).toHaveAccessibleDescription(DECIMAL_HELPER_TEXT);
+    expect(volume).toHaveValue("0,3");
+
+    fireEvent.change(volume, { target: { value: "1.000.000" } });
+    expect(volume).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByRole("button", { name: "Aplicar límites" })).toBeDisabled();
+
+    fireEvent.change(volume, { target: { value: "0,45" } });
+    expect(volume).not.toHaveAttribute("aria-invalid", "true");
+    fireEvent.blur(volume);
+    expect(volume).toHaveValue("0,45");
+    fireEvent.click(screen.getByRole("button", { name: "Aplicar límites" }));
+    expect(onLimitsChange).toHaveBeenCalledWith([{ id: "lowVolume", value: 0.45 }]);
   });
 
   it("keeps one live region mounted so the first alarm is announced", () => {
