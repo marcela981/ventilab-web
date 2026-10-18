@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Grading mappers
-* Descripción: Maps the grading API DTOs to the grading entities: a queue item (student name and email, evaluation title and type, attempt number, submission date, auto score), a queue page with the envelope pagination (falling back to the row count when it is missing), and the evaluation and student group filter options (only active STUDENT groups). Depends on the grading DTOs and entities and the api-client pagination type.
-* Versión: 1.0
+* Descripción: Maps the grading API DTOs to the grading entities: a queue item (student name and email, evaluation title and type, attempt number, submission date, auto score), a queue page with the envelope pagination (falling back to the row count when it is missing), and the evaluation and student group filter options (only active STUDENT groups). Depends on the grading DTOs and entities and the api-client pagination type. v1.1 (closure B2): the student filter options of a group (its STUDENT members, name or email).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,9 +10,9 @@
 */
 
 import type { ApiPagination } from "@shared/api-client/api-types";
-import type { EvaluationSummaryDTO, GradingQueueItemDTO, GroupDTO } from "../dtos/grading.dto";
+import type { EvaluationSummaryDTO, GradingQueueItemDTO, GroupDetailDTO, GroupDTO } from "../dtos/grading.dto";
 import type { FilterOption, GradingQueueItem, GradingQueuePage } from "../../application/entities/grading.entity";
-import { sortOptions } from "../../application/entities/grading.entity";
+import { sortOptions, studentLabel } from "../../application/entities/grading.entity";
 
 export function toGradingQueueItem(dto: GradingQueueItemDTO): GradingQueueItem {
   return {
@@ -46,5 +46,11 @@ export function toEvaluationOptions(dtos: readonly EvaluationSummaryDTO[]): Filt
 export function toGroupOptions(dtos: readonly GroupDTO[]): FilterOption[] {
   return sortOptions(
     dtos.filter((dto) => dto.type === "STUDENT" && dto.isActive).map((dto) => ({ id: dto.id, label: dto.name })),
+  );
+}
+
+export function toStudentOptions(group: GroupDetailDTO): FilterOption[] {
+  return sortOptions(
+    group.members.filter((member) => member.role === "STUDENT").map((member) => ({ id: member.userId, label: studentLabel(member.user) })),
   );
 }

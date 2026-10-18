@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GradingQueuePage
-* Descripción: Staff page /grading (teachers and admins): the queue of attempts waiting for review from `GET /api/evaluation-grading/queue`, filtered on the server by evaluation (READY evaluations plus those already in the loaded page) and student group, always oldest first (the backend has no sort option), 10/25/50 per page (changing a filter returns to the first page). Each row shows the student, the evaluation and its type, the attempt number, the submission date in Bogota time with its age and the automatic score so far, and links to /grading/attempts/[attemptId]. Revalidates on window focus. Loading, error with retry and empty ("No hay intentos pendientes de calificación") states; when the requested page comes back empty beyond the last page the list steps back to the last available page. Depends on MUI, next/head, the design-system components, @shared/lib, the grading hooks, entities, components and CSS Module. v1.1 (G1 review W1/S7): no sort toggle (the backend ignores sortOrder; reported gap); when a refresh fails while a page is already shown, an inline warning with the Spanish error and a retry stays above the (possibly stale) list.
-* Versión: 1.1
+* Descripción: Staff page /grading (teachers and admins): the queue of attempts waiting for review from `GET /api/evaluation-grading/queue`, filtered on the server by evaluation (READY evaluations plus those already in the loaded page) and student group, always oldest first (the backend has no sort option), 10/25/50 per page (changing a filter returns to the first page). Each row shows the student, the evaluation and its type, the attempt number, the submission date in Bogota time with its age and the automatic score so far, and links to /grading/attempts/[attemptId]. Revalidates on window focus. Loading, error with retry and empty ("No hay intentos pendientes de calificación") states; when the requested page comes back empty beyond the last page the list steps back to the last available page. Depends on MUI, next/head, the design-system components, @shared/lib, the grading hooks, entities, components and CSS Module. v1.1 (G1 review W1/S7): no sort toggle (the backend ignores sortOrder; reported gap); when a refresh fails while a page is already shown, an inline warning with the Spanish error and a retry stays above the (possibly stale) list. v1.2 (closure B2): student filter on the server (`studentId`; options: the chosen group's students plus the students of the loaded page, the chosen one kept), cleared with the other filters.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,8 +22,8 @@ import { PageHeader } from "@shared/design-system/components/page-header";
 import { cx } from "@shared/lib/class-names";
 import { GradingQueueFilters } from "../components/grading-queue-filters";
 import { GradingQueueTable } from "../components/grading-queue-table";
-import { DEFAULT_GRADING_FILTERS, mergeEvaluationOptions, toGradingQueueQuery } from "../entities/grading.entity";
-import type { GradingQueueFilters as Filters } from "../entities/grading.entity";
+import { DEFAULT_GRADING_FILTERS, mergeEvaluationOptions, mergeStudentOptions, toGradingQueueQuery } from "../entities/grading.entity";
+import type { FilterOption, GradingQueueFilters as Filters } from "../entities/grading.entity";
 import { getGradingErrorMessage } from "../entities/grading-error-messages";
 import { useGradingFilterOptions } from "../hooks/use-grading-filter-options";
 import { useGradingQueue } from "../hooks/use-grading-queue";
@@ -39,7 +39,7 @@ export const QUEUE_COPY = {
   emptyTitle: "No hay intentos pendientes de calificación",
   emptyDescription: "Cuando un estudiante envíe una evaluación con preguntas abiertas o prácticas, aparecerá aquí.",
   noMatchTitle: "No hay intentos pendientes con estos filtros",
-  noMatchDescription: "Prueba con otra evaluación u otro grupo.",
+  noMatchDescription: "Prueba con otra evaluación, otro grupo u otro estudiante.",
   clearFilters: "Limpiar filtros",
   rowsPerPage: "Filas por página:",
   staleWarning: "No se pudo actualizar la cola. Los datos mostrados pueden estar desactualizados.",
@@ -57,7 +57,8 @@ const PAGE_BUTTON_LABELS: Record<"first" | "last" | "next" | "previous", string>
 
 function hasFilters(filters: Filters): boolean {
   return filters.evaluationId !== DEFAULT_GRADING_FILTERS.evaluationId
-    || filters.groupId !== DEFAULT_GRADING_FILTERS.groupId;
+    || filters.groupId !== DEFAULT_GRADING_FILTERS.groupId
+    || filters.studentId !== DEFAULT_GRADING_FILTERS.studentId;
 }
 
 export type GradingQueuePageProps = {
@@ -71,11 +72,18 @@ export function GradingQueuePage({ now }: GradingQueuePageProps = {}) {
   const [pageSize, setPageSize] = useState(PAGE_SIZES[0] ?? 10);
   const query = useMemo(() => toGradingQueueQuery(filters, pageIndex, pageSize), [filters, pageIndex, pageSize]);
   const { page, isLoading, error, reload } = useGradingQueue(query);
-  const options = useGradingFilterOptions();
+  const options = useGradingFilterOptions(filters.groupId || null);
   const evaluationOptions = useMemo(
     () => mergeEvaluationOptions(options.evaluations, page?.items ?? []),
     [options.evaluations, page],
   );
+  // The chosen student stays among the options even when their filtered page comes back empty.
+  const [chosenStudent, setChosenStudent] = useState<FilterOption | null>(null);
+  const studentOptions = useMemo(() => {
+    const merged = mergeStudentOptions(options.students, page?.items ?? []);
+
+    return chosenStudent && !merged.some((option) => option.id === chosenStudent.id) ? [...merged, chosenStudent] : merged;
+  }, [options.students, page, chosenStudent]);
   const filtered = hasFilters(filters);
   // The server answered the requested page with no rows: it is beyond the last page (attempts were graded meanwhile).
   const outOfRange = page !== null && page.page === pageIndex + 1 && pageIndex > 0 && page.items.length === 0;
@@ -86,6 +94,7 @@ export function GradingQueuePage({ now }: GradingQueuePageProps = {}) {
   }
 
   const changeFilters = (next: Filters) => {
+    setChosenStudent(next.studentId ? (studentOptions.find((option) => option.id === next.studentId) ?? null) : null);
     setFilters(next);
     setPageIndex(0);
   };
@@ -107,6 +116,7 @@ export function GradingQueuePage({ now }: GradingQueuePageProps = {}) {
           value={filters}
           evaluations={evaluationOptions}
           groups={options.groups}
+          students={studentOptions}
           onChange={changeFilters}
         />
         {page.items.length === 0 ? (

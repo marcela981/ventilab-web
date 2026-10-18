@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GradingQueuePage tests
-* Descripción: Verifies the /grading queue against MSW: the first page oldest first with student, evaluation, attempt, Bogota submission date, its age and auto score, the "Calificar" link; the evaluation and group filters sent as query params (back to page 1) with server pagination; the evaluation options merging READY evaluations with the loaded queue; the empty and the no-match states; and the error state with retry. Depends on vitest, Testing Library, msw, @shared/lib/format and the grading page, entities and test helpers. v1.1 (G1 review W1/S7): no sortOrder in the query and no order toggle; a failed refresh keeps the page with an inline warning and retry.
-* Versión: 1.1
+* Descripción: Verifies the /grading queue against MSW: the first page oldest first with student, evaluation, attempt, Bogota submission date, its age and auto score, the "Calificar" link; the evaluation and group filters sent as query params (back to page 1) with server pagination; the evaluation options merging READY evaluations with the loaded queue; the empty and the no-match states; and the error state with retry. Depends on vitest, Testing Library, msw, @shared/lib/format and the grading page, entities and test helpers. v1.1 (G1 review W1/S7): no sortOrder in the query and no order toggle; a failed refresh keeps the page with an inline warning and retry. v1.2 (closure B2): the student filter (`studentId`; page students without a group, the group's STUDENT members with one, cleared by a group change, kept selected when its page is empty).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -77,6 +77,13 @@ beforeEach(() => {
     }),
     http.get(apiUrl("/api/evaluations"), () => HttpResponse.json(envelope([evaluationSummaryDto("ev-1", "Parcial de ventilación")]))),
     http.get(apiUrl("/api/groups"), () => HttpResponse.json(envelope([groupDto("g1", "Grupo A"), groupDto("g2", "Grupo B")]))),
+    http.get(apiUrl("/api/groups/:id"), ({ params }) => HttpResponse.json(envelope({
+      ...groupDto(String(params.id), "Grupo"),
+      members: [
+        { groupId: String(params.id), id: "m1", joinedAt: "", memberRole: "MEMBER", role: "STUDENT", userId: "s7", user: { createdAt: null, email: "sara@ventylab.demo", id: "s7", image: null, name: "Sara Ruiz", role: "STUDENT" } },
+        { groupId: String(params.id), id: "m2", joinedAt: "", memberRole: "MEMBER", role: "TEACHER", userId: "t1", user: { createdAt: null, email: "doc@ventylab.demo", id: "t1", image: null, name: "Docente", role: "TEACHER" } },
+      ],
+    }))),
   );
 });
 
@@ -146,6 +153,45 @@ describe("GradingQueuePage", () => {
     });
     // The backend ignores sortOrder, so there is no order toggle.
     expect(screen.queryByRole("button", { name: /primero/ })).not.toBeInTheDocument();
+  });
+
+  it("filters by student on the server with the students of the page and of the chosen group", async() => {
+    renderWithSwr(<GradingQueuePage now={NOW} />);
+    await screen.findByRole("table", { name: "Intentos pendientes de calificación" });
+
+    const studentSelect = screen.getByLabelText("Estudiante");
+
+    // Without a group, the options are the students of the loaded page.
+    expect(within(studentSelect).getByRole("option", { name: "Ana Gómez" })).toBeInTheDocument();
+    expect(within(studentSelect).getByRole("option", { name: "luis@ventylab.demo" })).toBeInTheDocument();
+
+    fireEvent.change(studentSelect, { target: { value: "s2" } });
+    await waitFor(() => {
+      expect(lastQuery()).toEqual({ studentId: "s2", page: "1", limit: "10" });
+    });
+
+    // Choosing a group clears the student and offers the group's students (STUDENT members only).
+    await waitFor(() => {
+      expect(within(screen.getByLabelText("Grupo")).getByRole("option", { name: "Grupo A" })).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByLabelText("Grupo"), { target: { value: "g1" } });
+    await waitFor(() => {
+      expect(lastQuery()).toEqual({ groupId: "g1", page: "1", limit: "10" });
+    });
+    await waitFor(() => {
+      expect(within(screen.getByLabelText("Estudiante")).getByRole("option", { name: "Sara Ruiz" })).toBeInTheDocument();
+    });
+    expect(within(screen.getByLabelText("Estudiante")).queryByRole("option", { name: "Docente" })).not.toBeInTheDocument();
+
+    items = [];
+    total = 0;
+    fireEvent.change(screen.getByLabelText("Estudiante"), { target: { value: "s7" } });
+    await waitFor(() => {
+      expect(lastQuery()).toEqual({ groupId: "g1", studentId: "s7", page: "1", limit: "10" });
+    });
+    expect(await screen.findByText(QUEUE_COPY.noMatchTitle)).toBeInTheDocument();
+    // The chosen student stays selectable although the filtered page is empty.
+    expect(screen.getByLabelText("Estudiante")).toHaveValue("s7");
   });
 
   it("shows the empty state when nothing waits for review", async() => {

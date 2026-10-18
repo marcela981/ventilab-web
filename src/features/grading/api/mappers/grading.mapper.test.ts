@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Grading mapper and entity tests
-* Descripción: Verifies the mapping of grading queue items and pages (pagination with row-count fallback, blank student names), the evaluation and student group filter options, the queue query built from the filters, the merge of READY evaluations with the evaluations of the loaded queue page, the pending count read from the pagination and the Spanish grading error messages. Depends on vitest, the grading mappers, entities, error messages and test helpers. v1.1 (G1 review W1): the queue query carries no sortOrder.
-* Versión: 1.1
+* Descripción: Verifies the mapping of grading queue items and pages (pagination with row-count fallback, blank student names), the evaluation and student group filter options, the queue query built from the filters, the merge of READY evaluations with the evaluations of the loaded queue page, the pending count read from the pagination and the Spanish grading error messages. Depends on vitest, the grading mappers, entities, error messages and test helpers. v1.1 (G1 review W1): the queue query carries no sortOrder. v1.2 (closure B2): the queue query carries studentId, the student options (group STUDENT members merged with the page students); toPendingCount is gone (count endpoint).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,11 +15,11 @@ import { evaluationSummaryDto, groupDto, queueItemDto } from "../../application/
 import {
   DEFAULT_GRADING_FILTERS,
   mergeEvaluationOptions,
+  mergeStudentOptions,
   toGradingQueueQuery,
-  toPendingCount,
 } from "../../application/entities/grading.entity";
 import { GRADING_ERROR_MESSAGES, GRADING_FALLBACK_MESSAGES, getGradingErrorMessage } from "../../application/entities/grading-error-messages";
-import { toEvaluationOptions, toGradingQueueItem, toGradingQueuePage, toGroupOptions } from "./grading.mapper";
+import { toEvaluationOptions, toGradingQueueItem, toGradingQueuePage, toGroupOptions, toStudentOptions } from "./grading.mapper";
 
 describe("toGradingQueueItem", () => {
   it("flattens the student and keeps the attempt, evaluation and score", () => {
@@ -93,20 +93,39 @@ describe("toGradingQueueQuery", () => {
   });
 
   it("sends the chosen evaluation, group and 1-based page", () => {
-    expect(toGradingQueueQuery({ evaluationId: "e1", groupId: "g1" }, 2, 25)).toEqual({
+    expect(toGradingQueueQuery({ evaluationId: "e1", groupId: "g1", studentId: "s1" }, 2, 25)).toEqual({
       evaluationId: "e1",
       groupId: "g1",
+      studentId: "s1",
       page: 3,
       limit: 25,
     });
   });
 });
 
-describe("toPendingCount", () => {
-  it("reads the total from the pagination, not the one-row page", () => {
-    expect(toPendingCount({ total: 7 }, 1)).toBe(7);
-    expect(toPendingCount(null, 1)).toBe(1);
-    expect(toPendingCount({ total: 0 }, 0)).toBe(0);
+describe("student filter options", () => {
+  it("keeps the STUDENT members of the group, by name or email", () => {
+    const member = (userId: string, name: string | null, role: "STUDENT" | "TEACHER") => ({
+      groupId: "g1", id: `m-${userId}`, joinedAt: "", memberRole: "MEMBER" as const, role, userId,
+      user: { createdAt: null, email: `${userId}@ventylab.demo`, id: userId, image: null, name, role },
+    });
+    const group = { ...groupDto("g1", "UCI A"), members: [member("s2", "Zoe", "STUDENT"), member("t1", "Docente", "TEACHER"), member("s1", " ", "STUDENT")] };
+
+    expect(toStudentOptions(group as Parameters<typeof toStudentOptions>[0])).toEqual([
+      { id: "s1", label: "s1@ventylab.demo" },
+      { id: "s2", label: "Zoe" },
+    ]);
+  });
+
+  it("merges the group students with the students of the loaded page", () => {
+    // Two attempts of the same student give one option; a page student already in the group keeps the group label.
+    const items = [
+      toGradingQueueItem(queueItemDto("a1", { student: { id: "s1", name: "Bruno Díaz", email: "bruno@ventylab.demo" } })),
+      toGradingQueueItem(queueItemDto("a2", { student: { id: "s1", name: "Bruno Díaz", email: "bruno@ventylab.demo" } })),
+      toGradingQueueItem(queueItemDto("a3", { student: { id: "s9", name: "Otro nombre", email: "ana@ventylab.demo" } })),
+    ];
+
+    expect(mergeStudentOptions([{ id: "s9", label: "Ana" }], items)).toEqual([{ id: "s9", label: "Ana" }, { id: "s1", label: "Bruno Díaz" }]);
   });
 });
 

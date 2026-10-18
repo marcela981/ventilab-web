@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GradingPendingBadgeSync tests
-* Descripción: Verifies the pending-grading navigation badge feed against MSW: a teacher's count comes from `pagination.total` of a one-row queue page (limit=1), a zero total clears the badge, the count refreshes every 120 s, and students send no request. Depends on vitest, Testing Library, msw, the session context, the nav-badges registry and the grading badge sync and test helpers. v1.1 (G1 review W2/S3/S4/S5): the sync polls only while a badge host (AppShell) is mounted; the zero case flips a shown badge (7) to none; the student case asserts after the loader chunk resolves; a session that turns into a student or signs out clears the badge; a render error of the loader renders nothing.
-* Versión: 1.1
+* Descripción: Verifies the pending-grading navigation badge feed against MSW: a teacher's count comes from `pagination.total` of a one-row queue page (limit=1), a zero total clears the badge, the count refreshes every 120 s, and students send no request. Depends on vitest, Testing Library, msw, the session context, the nav-badges registry and the grading badge sync and test helpers. v1.1 (G1 review W2/S3/S4/S5): the sync polls only while a badge host (AppShell) is mounted; the zero case flips a shown badge (7) to none; the student case asserts after the loader chunk resolves; a session that turns into a student or signs out clears the badge; a render error of the loader renders nothing. v1.2 (closure B2): the count is `pending` of `GET /api/evaluation-grading/queue/count` and no queue page is read for its pagination total.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,13 +19,14 @@ import { NavBadgeProvider, useNavBadgeCounts, useNavBadgeHost } from "@shared/la
 import type { Role } from "@shared/session/session.entity";
 import { SessionContext } from "@shared/session/session-context";
 import type { SessionContextValue } from "@shared/session/session-context";
-import { apiUrl, envelope, queueItemDto } from "../pages/grading-test-helpers";
+import { apiUrl, envelope } from "../pages/grading-test-helpers";
 import { PENDING_COUNT_REFRESH_MS } from "../hooks/use-pending-grading-count";
 import { BadgeErrorBoundary, GradingPendingBadgeSync } from "./lazy-grading-pending-badge-sync";
 
 const server = setupServer();
 let total: number;
 let queueQueries: URLSearchParams[] = [];
+let queuePageReads = 0;
 
 type Viewer = Role | "ANONYMOUS";
 
@@ -99,11 +100,18 @@ beforeAll(() => {
 beforeEach(() => {
   total = 7;
   queueQueries = [];
+  queuePageReads = 0;
   server.use(
-    http.get(apiUrl("/api/evaluation-grading/queue"), ({ request }) => {
+    http.get(apiUrl("/api/evaluation-grading/queue/count"), ({ request }) => {
       queueQueries.push(new URL(request.url).searchParams);
 
-      return HttpResponse.json(envelope(total > 0 ? [queueItemDto("a1")] : [], { total, pages: total, page: 1, limit: 1 }));
+      return HttpResponse.json(envelope({ pending: total }));
+    }),
+    // The badge never reads a queue page for its pagination total.
+    http.get(apiUrl("/api/evaluation-grading/queue"), () => {
+      queuePageReads += 1;
+
+      return HttpResponse.json(envelope([]));
     }),
   );
 });
@@ -119,11 +127,12 @@ afterAll(() => {
 });
 
 describe("GradingPendingBadgeSync", () => {
-  it("feeds the badge with the queue total read from a one-row page", async() => {
+  it("feeds the badge with the pending count of the count endpoint", async() => {
     renderSync("TEACHER");
 
     await waitFor(() => expect(badge()).toHaveTextContent("7"));
-    expect(Object.fromEntries(queueQueries[0] ?? [])).toEqual({ page: "1", limit: "1" });
+    expect(Object.fromEntries(queueQueries[0] ?? [])).toEqual({});
+    expect(queuePageReads).toBe(0);
   });
 
   it("does not poll while no badge host (AppShell) is mounted", async() => {
