@@ -1,13 +1,15 @@
 /*
 * Funcionalidad: Group entities
-* Descripción: Domain types of the groups feature (Group with its type STUDENT/TEACHER, leader and creator, GroupDetail with members, the student's own group with leader, members and supervising teacher groups, memberships, supervisions, member options for the user search and the create/edit draft), the Spanish labels of types and member roles, and the pure helpers of the group list: client-side filters (text ignoring case and accents, type, active state; `GET /api/groups` has no text search or pagination, decision 7), page slicing and the display name of a person. v1.1 (T11b): student limit parsing (integer >= 1, backend `@IsInt @Min(1)`), validation of the create/edit draft, the draft of an existing group, the management rule the UI mirrors (admins every group, teachers student groups; the backend scope still decides and a 403 is always handled) and the exclusion of current members from the user search. v1.2 (T11c): upper bound of the student limit (the backend DTO has no @Max, so the PostgreSQL integer maximum 2147483647 applies), the group types each role can create (admins also TEACHER), the platform role the member search uses per group type (teacher groups: TEACHER), the supervision rule (admins, teacher groups) and the student groups a teacher group can still supervise. No dependencies. v1.3 (closure B2): the caller's relation to a group (`GroupDTO.relation`: MANAGED / SUPERVISED, null when the API does not scope the list to the caller) with its Spanish label.
-* Versión: 1.3
+* Descripción: Domain types of the groups feature (Group with its type STUDENT/TEACHER, leader and creator, GroupDetail with members, the student's own group with leader, members and supervising teacher groups, memberships, supervisions, member options for the user search and the create/edit draft), the Spanish labels of types and member roles, and the pure helpers of the group list: client-side filters (text ignoring case and accents, type, active state; `GET /api/groups` has no text search or pagination, decision 7), page slicing and the display name of a person. v1.1 (T11b): student limit parsing (integer >= 1, backend `@IsInt @Min(1)`), validation of the create/edit draft, the draft of an existing group, the management rule the UI mirrors (admins every group, teachers student groups; the backend scope still decides and a 403 is always handled) and the exclusion of current members from the user search. v1.2 (T11c): upper bound of the student limit (the backend DTO has no @Max, so the PostgreSQL integer maximum 2147483647 applies), the group types each role can create (admins also TEACHER), the platform role the member search uses per group type (teacher groups: TEACHER), the supervision rule (admins, teacher groups) and the student groups a teacher group can still supervise. No dependencies. v1.3 (closure B2): the caller's relation to a group (`GroupDTO.relation`: MANAGED / SUPERVISED, null when the API does not scope the list to the caller) with its Spanish label. v1.4 (B4, D7): parseStudentLimit reads the text with the shared parseDecimal in integer mode (no separator, so "1.000" is never 1).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
 * Institución: Universidad del Valle
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
+
+import { parseDecimal } from "@shared/lib/parse-decimal";
 
 export type GroupType = "STUDENT" | "TEACHER";
 
@@ -192,19 +194,17 @@ export const MAX_STUDENT_LIMIT = 2147483647;
 
 // Empty means "no limit"; otherwise only plain integers from 1 to MAX_STUDENT_LIMIT.
 export function parseStudentLimit(value: string): StudentLimit {
-  const trimmed = value.trim();
+  const parsed = parseDecimal(value, { integer: true, allowNegative: false });
 
-  if (trimmed === "") {
-    return { valid: true, value: null };
-  }
-
-  const limit = Number(trimmed);
-
-  if (!/^\d+$/.test(trimmed) || !Number.isSafeInteger(limit) || limit < 1 || limit > MAX_STUDENT_LIMIT) {
+  if (!parsed.ok) {
     return { valid: false };
   }
 
-  return { valid: true, value: limit };
+  if (parsed.value === null) {
+    return { valid: true, value: null };
+  }
+
+  return parsed.value < 1 || parsed.value > MAX_STUDENT_LIMIT ? { valid: false } : { valid: true, value: parsed.value };
 }
 
 export function validateGroupDraft(draft: GroupDraft): GroupDraftErrors {

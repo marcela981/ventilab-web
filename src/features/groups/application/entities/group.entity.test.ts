@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Group entity tests
-* Descripción: Verifies the client-side filters of the group list (text over name, description, period, parent, leader and creator ignoring case and accents; type; active state), the page slicing and the display name of a person. v1.1 (T11b): student limit parsing, draft validation, the management rule per role and the member search exclusion. v1.2 (T11c): upper bound of the student limit, the group types each role creates, the member search role per group type, the supervision rule and the supervisable student groups. Depends on vitest and the group entity. v1.3 (closure B2): the group fixture carries the caller's relation.
-* Versión: 1.3
+* Descripción: Verifies the client-side filters of the group list (text over name, description, period, parent, leader and creator ignoring case and accents; type; active state), the page slicing and the display name of a person. v1.1 (T11b): student limit parsing, draft validation, the management rule per role and the member search exclusion. v1.2 (T11c): upper bound of the student limit, the group types each role creates, the member search role per group type, the supervision rule and the supervisable student groups. Depends on vitest and the group entity. v1.3 (closure B2): the group fixture carries the caller's relation. v1.4 (B4, D7): a grouped limit ("1.000", "1,000", "1 000") is rejected by the shared parser.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -106,7 +106,7 @@ describe("parseStudentLimit", () => {
     expect(parseStudentLimit(" 30 ")).toEqual({ valid: true, value: 30 });
   });
 
-  it.each(["abc", "12.5", "0", "-3", "1e3"])("rejects %j", (value) => {
+  it.each(["abc", "12.5", "0", "-3", "1e3", "1.000", "1,000", "1 000"])("rejects %j", (value) => {
     expect(parseStudentLimit(value)).toEqual({ valid: false });
   });
 

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GroupFormDialog
-* Descripción: Dialog form to create or edit a student group: name (required), description, semester, academic year and student limit (empty = no limit; otherwise an integer >= 1). Validates on submit with validateGroupDraft and shows per-field errors (noValidate, labelled fields), shows a server error inline (alert) and blocks closing while saving. The parent mounts it per opening, so the draft starts from initialDraft. v1.1 (T11c): optional typeOptions; with more than one type (admins creating a group) a labelled native select "Tipo de grupo" sets the draft type. v1.2 (T6b): text fields are design-system FormFields and the submit is an AsyncButton (centered spinner + aria-busy while saving). Depends on MUI, @shared/design-system, the group entity and the group detail CSS Module.
-* Versión: 1.2
+* Descripción: Dialog form to create or edit a student group: name (required), description, semester, academic year and student limit (empty = no limit; otherwise an integer >= 1). Validates on submit with validateGroupDraft and shows per-field errors (noValidate, labelled fields), shows a server error inline (alert) and blocks closing while saving. The parent mounts it per opening, so the draft starts from initialDraft. v1.1 (T11c): optional typeOptions; with more than one type (admins creating a group) a labelled native select "Tipo de grupo" sets the draft type. v1.2 (T6b): text fields are design-system FormFields and the submit is an AsyncButton (centered spinner + aria-busy while saving). Depends on MUI, @shared/design-system, the group entity and the group detail CSS Module. v1.3 (B4, D7): the student limit help adds INTEGER_HELPER_TEXT.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,6 +21,7 @@ import type { FormEvent } from "react";
 import { AsyncButton } from "@shared/design-system/components/async-button";
 import { FormField } from "@shared/design-system/components/form-field";
 import { cx } from "@shared/lib/class-names";
+import { INTEGER_HELPER_TEXT } from "@shared/lib/parse-decimal";
 import { GROUP_TYPE_LABELS, validateGroupDraft } from "../entities/group.entity";
 import type { GroupDraft, GroupDraftErrors, GroupDraftField, GroupType } from "../entities/group.entity";
 import styles from "../../UI/group-detail.module.css";
@@ -32,7 +33,7 @@ const FORM_COPY = {
   semester: "Semestre",
   academicYear: "Año académico",
   maxStudents: "Límite de estudiantes",
-  maxStudentsHelp: "Déjalo vacío si el grupo no tiene límite.",
+  maxStudentsHelp: `Déjalo vacío si el grupo no tiene límite. ${INTEGER_HELPER_TEXT}`,
   type: "Tipo de grupo",
   cancel: "Cancelar",
 } as const;
