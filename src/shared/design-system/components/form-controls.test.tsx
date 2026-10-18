@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: FormField, AsyncButton and skeleton tests
-* Descripción: Verifies FormField (visible label, required marker, id-linked helper and error text, aria-invalid from an entity validator string), AsyncButton (spinner and aria-busy while `loading` or while the Promise returned by onClick is pending, disabled meanwhile, accessible name preserved; a rejected onClick promise re-enables it without an unhandled rejection) and the list/card skeleton presets (hidden from assistive technology inside a busy status region). Depends on vitest and Testing Library.
-* Versión: 1.1
+* Descripción: Verifies FormField (visible label, required marker, id-linked helper and error text, aria-invalid from an entity validator string), AsyncButton (spinner and aria-busy while `loading` or while the Promise returned by onClick is pending, disabled meanwhile, accessible name preserved; a rejected onClick promise re-enables it without an unhandled rejection) and the list/card skeleton presets (hidden from assistive technology inside a busy status region). Depends on vitest and Testing Library. v1.2 (B4, D7): an inputMode given to FormField reaches the input element (decimal keyboard), also next to other htmlInput slot props.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,6 +16,19 @@ import { FormField } from "./form-field";
 import { CardSkeleton, ListSkeleton } from "./skeleton";
 
 describe("FormField", () => {
+  it("puts the inputMode on the input element, keeping the other htmlInput props", () => {
+    render(
+      <>
+        <FormField label="Peso" value="" onChange={() => {}} inputMode="decimal" />
+        <FormField label="Talla" value="" onChange={() => {}} inputMode="numeric" slotProps={{ htmlInput: { "data-field": "height" } }} />
+      </>,
+    );
+
+    expect(screen.getByRole("textbox", { name: "Peso" })).toHaveAttribute("inputmode", "decimal");
+    expect(screen.getByRole("textbox", { name: "Talla" })).toHaveAttribute("inputmode", "numeric");
+    expect(screen.getByRole("textbox", { name: "Talla" })).toHaveAttribute("data-field", "height");
+  });
+
   it("shows a labelled field with the helper text linked to it", () => {
     render(<FormField id="name" label="Nombre" value="" onChange={() => {}} helperText="Tu nombre completo" required />);
 
