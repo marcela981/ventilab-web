@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin settings page tests
-* Descripción: /admin/settings with msw: one `GET /api/platform-settings` grouped in category tabs (the tab in ?category, a change written to the URL); the reset button is disabled for a DEFAULT setting and enabled for an OVERRIDE; a value outside the client limits shows its field error and sends nothing; a 409 version conflict shows "Otro administrador cambió este valor" and "Recargar" refetches and resets the form to the new value; a 422 out of range is shown on the field it names; saving a ventilator commands setting asks for a second confirmation with the previous value, the new value and the limits before the PATCH; the AI tab offers only the providers configured in `GET /api/system/status`. Depends on vitest, msw, Testing Library and the admin console test helpers. v1.1 (O4a review): an ai.quotas override that omits a quota saves, and clearing a quota removes its key from the PATCH body; "1,000" in a number field shows the number error. v1.2 (closure B2): the providers come from `GET /api/admin/ai/providers` (unconfigured disabled, model select from the known models); metadata-driven cards (Spanish label as title with the key below, unit, integer type), string and integer-list types, a map setting (ai.prices) whose keys are added (allowedKeys select, free inner keys seeded from the default sample) and removed, and per-field server errors (`data.errors`) under the matching field with the unmatched ones on the card.
-* Versión: 1.2
+* Descripción: /admin/settings with msw: one `GET /api/platform-settings` grouped in category tabs (the tab in ?category, a change written to the URL); the reset button is disabled for a DEFAULT setting and enabled for an OVERRIDE; a value outside the client limits shows its field error and sends nothing; a 409 version conflict shows "Otro administrador cambió este valor" and "Recargar" refetches and resets the form to the new value; a 422 out of range is shown on the field it names; saving a ventilator commands setting asks for a second confirmation with the previous value, the new value and the limits before the PATCH; the AI tab offers only the providers configured in `GET /api/system/status`. Depends on vitest, msw, Testing Library and the admin console test helpers. v1.1 (O4a review): an ai.quotas override that omits a quota saves, and clearing a quota removes its key from the PATCH body; "1,000" in a number field shows the number error. v1.2 (closure B2): the providers come from `GET /api/admin/ai/providers` (unconfigured disabled, model select from the known models); metadata-driven cards (Spanish label as title with the key below, unit, integer type), string and integer-list types, a map setting (ai.prices) whose keys are added (allowedKeys select, free inner keys seeded from the default sample) and removed, and per-field server errors (`data.errors`) under the matching field with the unmatched ones on the card. v1.3 (B4, D7): number inputs read through the shared es-CO parser: "1,000" is the decimal 1, several separators or a space grouping are rejected, and the helper text explains the format.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,6 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import { DECIMAL_ERROR_MESSAGES, DECIMAL_HELPER_TEXT, INTEGER_HELPER_TEXT } from "@shared/lib/parse-decimal";
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
@@ -153,7 +154,8 @@ describe("AdminSettingsPage", () => {
     expect(grace.getByText(SETTING_CARD_COPY.originOverride)).toBeInTheDocument();
     expect(grace.getByRole("button", { name: SETTING_CARD_COPY.reset })).toBeEnabled();
     // Shown in the card facts and as the help of the field.
-    expect(grace.getAllByText("Mín. 0, máx. 600, entero")).toHaveLength(2);
+    expect(grace.getByText("Mín. 0, máx. 600, entero")).toBeInTheDocument();
+    expect(grace.getByText(`Mín. 0, máx. 600, entero ${INTEGER_HELPER_TEXT}`)).toBeInTheDocument();
     expect(listRequests).toBe(1);
 
     fireEvent.click(screen.getByRole("tab", { name: "Comandos del ventilador" }));
@@ -263,15 +265,29 @@ describe("AdminSettingsPage", () => {
     await waitFor(() => expect(patches).toEqual([{ key: "ai.quotas", body: { value: { STUDENT: { "*": { requestsPerDay: 50 } } }, version: 1 } }]));
   });
 
-  it("rejects a number typed with thousands grouping", async() => {
+  it("reads numbers with the shared es-CO parser and explains the format", async() => {
     router.query = { category: "evaluation" };
     renderAdminConsole(<AdminSettingsPage />);
 
+    const grade = await card("evaluation.passingGrade");
     const grace = await card("evaluation.submitGraceSeconds");
 
-    fireEvent.change(grace.getByLabelText("Valor"), { target: { value: "1,000" } });
+    expect(grade.getByText(DECIMAL_HELPER_TEXT, { exact: false })).toBeInTheDocument();
+    expect(grace.getByText(INTEGER_HELPER_TEXT, { exact: false })).toBeInTheDocument();
 
-    expect(grace.getByText("Ingresa un número.")).toBeInTheDocument();
+    for (const grouped of ["1.000.000", "1 000"]) {
+      fireEvent.change(grade.getByLabelText("Valor"), { target: { value: grouped } });
+      expect(grade.getByText(DECIMAL_ERROR_MESSAGES.thousandsSeparator)).toBeInTheDocument();
+    }
+
+    // One separator is always decimal: "3,125" is 3.125.
+    fireEvent.change(grade.getByLabelText("Valor"), { target: { value: "3,125" } });
+    expect(grade.queryByText(DECIMAL_ERROR_MESSAGES.thousandsSeparator)).not.toBeInTheDocument();
+    expect(grade.queryByText("Ingresa un número.")).not.toBeInTheDocument();
+
+    // An integer setting accepts no separator, so "1.000" is never read as 1.
+    fireEvent.change(grace.getByLabelText("Valor"), { target: { value: "1.000" } });
+    expect(grace.getByText(DECIMAL_ERROR_MESSAGES.notInteger)).toBeInTheDocument();
   });
 
   it("offers the AI providers of the catalog in the provider chain, the unconfigured ones disabled", async() => {
@@ -307,7 +323,7 @@ describe("AdminSettingsPage", () => {
 
     fireEvent.change(grace.getByLabelText("Valor"), { target: { value: "1.5" } });
 
-    expect(grace.getByText("Debe ser un número entero.")).toBeInTheDocument();
+    expect(grace.getByText(DECIMAL_ERROR_MESSAGES.notInteger)).toBeInTheDocument();
   });
 
   it("edits a string setting and an integer list from their declared types", async() => {
@@ -329,7 +345,7 @@ describe("AdminSettingsPage", () => {
     fireEvent.click(multipliers.getByRole("button", { name: FIELD_EDITOR_COPY.addItem }));
     fireEvent.change(multipliers.getByLabelText(FIELD_EDITOR_COPY.item("Valor", 0)), { target: { value: "2.5" } });
 
-    expect(multipliers.getByText("Elemento 1: Debe ser un número entero.")).toBeInTheDocument();
+    expect(multipliers.getByText("Elemento 1: Ingresa un número.")).toBeInTheDocument();
   });
 
   it("adds and removes the keys of a map setting from its key schema", async() => {
