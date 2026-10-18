@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Groups mappers
-* Descripción: Maps the backend group DTOs to the groups entities (Group with the parent name flattened, GroupDetail with members, the student's own group, supervisions, member options from UserDTO) and builds the request bodies of the group form: create (trimmed values, empty optionals omitted, student limit parsed, optional parent group) and update (only the changed fields; an emptied optional or limit is sent as null, which the contract uses to clear it). v1.1 (T11b review fix): the student limit goes through parseStudentLimit, so an invalid value (not a positive integer) is never sent, and an unchanged limit is not sent on update; the form shows the field error before submitting. Depends on the groups DTOs and entities.
-* Versión: 1.1
+* Descripción: Maps the backend group DTOs to the groups entities (Group with the parent name flattened, GroupDetail with members, the student's own group, supervisions, member options from UserDTO) and builds the request bodies of the group form: create (trimmed values, empty optionals omitted, student limit parsed, optional parent group) and update (only the changed fields; an emptied optional or limit is sent as null, which the contract uses to clear it). v1.1 (T11b review fix): the student limit goes through parseStudentLimit, so an invalid value (not a positive integer) is never sent, and an unchanged limit is not sent on update; the form shows the field error before submitting. Depends on the groups DTOs and entities. v1.2 (closure B2): the group carries the caller's relation (`relation`, null when absent).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -53,6 +53,7 @@ export function toGroup(group: GroupDTO): Group {
     creator: toPerson(group.creator),
     membersCount: group.membersCount,
     subGroupsCount: group.subGroupsCount,
+    relation: group.relation ?? null,
   };
 }
 

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Group entity tests
-* Descripción: Verifies the client-side filters of the group list (text over name, description, period, parent, leader and creator ignoring case and accents; type; active state), the page slicing and the display name of a person. v1.1 (T11b): student limit parsing, draft validation, the management rule per role and the member search exclusion. v1.2 (T11c): upper bound of the student limit, the group types each role creates, the member search role per group type, the supervision rule and the supervisable student groups. Depends on vitest and the group entity.
-* Versión: 1.2
+* Descripción: Verifies the client-side filters of the group list (text over name, description, period, parent, leader and creator ignoring case and accents; type; active state), the page slicing and the display name of a person. v1.1 (T11b): student limit parsing, draft validation, the management rule per role and the member search exclusion. v1.2 (T11c): upper bound of the student limit, the group types each role creates, the member search role per group type, the supervision rule and the supervisable student groups. Depends on vitest and the group entity. v1.3 (closure B2): the group fixture carries the caller's relation.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -46,6 +46,7 @@ function makeGroup(overrides: Partial<Group>): Group {
     creator: null,
     membersCount: 0,
     subGroupsCount: 0,
+    relation: null,
     ...overrides,
   };
 }

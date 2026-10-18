@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GroupsTable
-* Descripción: Table of one page of groups (caption "Grupos"): name as row header with the parent group of a subgroup, type, active state chip, member count (with the student limit), simulator leader and academic period. v1.1 (T11b): the name links to the group detail (/groups/[groupId]). Depends on next/link, MUI, the group entity and the groups CSS Module.
-* Versión: 1.1
+* Descripción: Table of one page of groups (caption "Grupos"): name as row header with the parent group of a subgroup, type, active state chip, member count (with the student limit), simulator leader and academic period. v1.1 (T11b): the name links to the group detail (/groups/[groupId]). v1.2 (closure B2): under the name, how the caller follows the group ("A cargo" / "Supervisado", `GroupDTO.relation`). Depends on next/link, MUI, the group entity and the groups CSS Module.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,7 +18,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Link from "next/link";
 import { cx } from "@shared/lib/class-names";
-import { GROUP_TYPE_LABELS, personName } from "../entities/group.entity";
+import { GROUP_RELATION_LABELS, GROUP_TYPE_LABELS, personName } from "../entities/group.entity";
 import type { Group } from "../entities/group.entity";
 import styles from "../../UI/groups.module.css";
 
@@ -75,6 +75,7 @@ export function GroupsTable({ groups }: GroupsTableProps) {
                 {group.parentGroupName ? (
                   <span className={styles.secondary}>{`${TABLE_COPY.subgroupOf} ${group.parentGroupName}`}</span>
                 ) : null}
+                {group.relation ? <span className={styles.secondary}>{GROUP_RELATION_LABELS[group.relation]}</span> : null}
               </TableCell>
               <TableCell>{GROUP_TYPE_LABELS[group.type]}</TableCell>
               <TableCell>

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GroupsPage tests
-* Descripción: Renders the staff group list against a mocked backend (`GET /api/groups`, msw): client-side pagination (10 per page), the text, type and status filters (which return to the first page), the no-match and no-groups empty states and the 403 error. v1.1 (T11b): the filter-reset test now proves the return to page 1 with a result that still spans several pages; group names link to the detail; "Crear grupo" creates a student group (validation, POST body, refreshed list, 403 message). v1.2 (T11c): rendered with a session role; the type selector only for admins and an admin creating a teacher group. v1.3 (T12): the create-from-dialog test has a 15 s budget (it timed out at the 5 s default under full-suite load). v1.4 (closure B1): every test gets 20 s and Testing Library waits 5 s (the type-selector and teacher-group tests also timed out under the full suite). Depends on vitest, Testing Library, msw, the groups test helpers and the groups feature.
-* Versión: 1.4
+* Descripción: Renders the staff group list against a mocked backend (`GET /api/groups`, msw): client-side pagination (10 per page), the text, type and status filters (which return to the first page), the no-match and no-groups empty states and the 403 error. v1.1 (T11b): the filter-reset test now proves the return to page 1 with a result that still spans several pages; group names link to the detail; "Crear grupo" creates a student group (validation, POST body, refreshed list, 403 message). v1.2 (T11c): rendered with a session role; the type selector only for admins and an admin creating a teacher group. v1.3 (T12): the create-from-dialog test has a 15 s budget (it timed out at the 5 s default under full-suite load). v1.4 (closure B1): every test gets 20 s and Testing Library waits 5 s (the type-selector and teacher-group tests also timed out under the full suite). v1.5 (closure B2): the row shows the caller's relation ("Supervisado"). Depends on vitest, Testing Library, msw, the groups test helpers and the groups feature.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -204,10 +204,13 @@ describe("GroupsPage", () => {
       semester: "2026-2",
       leader: { id: "s1", name: "Luis Gómez", email: "luis@ventylab.demo" },
       membersCount: 5,
+      relation: "SUPERVISED",
     })]);
     renderPage();
 
     const row = within(await screen.findByRole("table", { name: "Grupos" })).getAllByRole("row")[1];
+
+    expect(row).toHaveTextContent("Supervisado");
 
     expect(row).toBeDefined();
     expect(row).toHaveTextContent("UCI Mañana");

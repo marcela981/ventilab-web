@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Groups mapper tests
-* Descripción: Verifies the mapping of the backend group DTOs (GroupDTO, GroupDetailDTO, MyGroupsDTO, GroupSupervisionDTO, UserDTO) to the groups entities, and the create/update request bodies built from a group draft (trimmed values, omitted empty optionals on create, only changed fields with null to clear on update). Depends on vitest and the groups mappers. v1.2 (closure B1): UserDTO fixture carries isSuperadmin and studentCode.
-* Versión: 1.2
+* Descripción: Verifies the mapping of the backend group DTOs (GroupDTO, GroupDetailDTO, MyGroupsDTO, GroupSupervisionDTO, UserDTO) to the groups entities, and the create/update request bodies built from a group draft (trimmed values, omitted empty optionals on create, only changed fields with null to clear on update). Depends on vitest and the groups mappers. v1.2 (closure B1): UserDTO fixture carries isSuperadmin and studentCode. v1.3 (closure B2): the group keeps the caller's relation.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -62,6 +62,7 @@ const group: Group = {
   creator: { id: "t1", name: "Ana Torres", email: "ana@ventylab.demo" },
   membersCount: 5,
   subGroupsCount: 0,
+  relation: null,
 };
 
 const draft: GroupDraft = {
@@ -76,6 +77,11 @@ const draft: GroupDraft = {
 describe("toGroup", () => {
   it("keeps the fields the pages show and flattens the parent name", () => {
     expect(toGroup(groupDto)).toEqual(group);
+  });
+
+  it("keeps the caller's relation to the group", () => {
+    expect(toGroup({ ...groupDto, relation: "SUPERVISED" }).relation).toBe("SUPERVISED");
+    expect(toGroup({ ...groupDto, relation: null }).relation).toBeNull();
   });
 
   it("maps a root group without parent, leader or creator", () => {
