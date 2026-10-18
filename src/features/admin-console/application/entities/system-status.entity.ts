@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: System status rules
-* Descripción: Pure rules of /admin/status: the SystemStatus read model (the `GET /api/system/status` response as it comes), the Spanish labels and tones (ok, degraded, down, idle) of the global state (OK, DEGRADED, DOWN) and of the component states (up, degraded, down, idle, not_configured), the component titles, the circuit breaker labels and applyStatusChange, which writes the global and component states of a `system:status-changed` event into the cached status (a selection of the pushed values, no computation) so the page updates before the refetch arrives. Depends on the admin console DTOs and the realtime contract types.
-* Versión: 1.0
+* Descripción: Pure rules of /admin/status: the SystemStatus read model (the `GET /api/system/status` response as it comes), the Spanish labels and tones (ok, degraded, down, idle) of the global state (OK, DEGRADED, DOWN) and of the component states (up, degraded, down, idle, not_configured), the component titles, the circuit breaker labels and applyStatusChange, which writes the global and component states of a `system:status-changed` event into the cached status (a selection of the pushed values, no computation) so the page updates before the refetch arrives. v1.1 (B3.10): the unused COMPONENT_ORDER constant is removed. Depends on the admin console DTOs and the realtime contract types.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -47,8 +47,6 @@ export const BREAKER_LABELS: Record<BreakerState, string> = {
   open: "Abierto",
   half_open: "Semiabierto",
 };
-
-export const COMPONENT_ORDER: readonly SystemComponentName[] = ["database", "mqttBroker", "ventilator", "aiProviders", "storage", "process"];
 
 export function globalStateTone(state: GlobalState): StatusTone {
   if (state === "OK") {

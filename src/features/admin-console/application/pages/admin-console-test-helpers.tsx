@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin console test helpers
-* Descripción: Shared fixtures of the admin console tests: backend URL, envelope with pagination, error response with details, DTO builders typed against the generated schema (user, group, platform setting, system status with AI providers) and a renderer that wraps the UI in a fresh SWR cache, an authenticated ADMIN session (id admin-1) and the global ToastProvider. v1.1 (O4b): renderAdminConsole takes the session role (ADMIN by default, id admin-1), an optional fake socket (createFakeSocket, provided through RealtimeContext) and keepPreviousData to mirror the app SWR default. v1.2 (closure B1): userDto carries isSuperadmin and studentCode. Depends on Testing Library, msw, SWR, the design-system toast, the session context and the admin console DTOs.
-* Versión: 1.1
+* Descripción: Shared fixtures of the admin console tests: backend URL, envelope with pagination, error response with details, DTO builders typed against the generated schema (user, group, platform setting) and a renderer that wraps the UI in a fresh SWR cache, an authenticated ADMIN session (id admin-1) and the global ToastProvider. v1.1 (O4b): renderAdminConsole takes the session role (ADMIN by default, id admin-1), an optional fake socket (createFakeSocket, provided through RealtimeContext) and keepPreviousData to mirror the app SWR default. v1.2 (closure B1): userDto carries isSuperadmin and studentCode. v1.3 (B3.10): the unused statusDto builder is removed (the status tests build their own payloads). Depends on Testing Library, msw, SWR, the design-system toast, the session context and the admin console DTOs.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,7 +20,7 @@ import type { RealtimeEventMap, RealtimeEventName, RealtimeSocket } from "@share
 import type { Role } from "@shared/session/session.entity";
 import { SessionContext } from "@shared/session/session-context";
 import type { SessionContextValue } from "@shared/session/session-context";
-import type { GroupDTO, PlatformSettingDTO, SystemStatusDTO, UserDTO } from "../../api/dtos/admin-console.dto";
+import type { GroupDTO, PlatformSettingDTO, UserDTO } from "../../api/dtos/admin-console.dto";
 
 export const SESSION_USER_ID = "admin-1";
 
@@ -100,31 +100,6 @@ export function settingDto(key: string, category: PlatformSettingDTO["category"]
     version: 0,
     ...overrides,
   } as PlatformSettingDTO;
-}
-
-export function statusDto(providers: { provider: string, configured: boolean }[]): SystemStatusDTO {
-  return {
-    checkedAt: "2026-10-16T12:00:00.000Z",
-    state: "OK",
-    components: {
-      aiProviders: {
-        state: "up",
-        windowMinutes: 15,
-        providers: providers.map(({ provider, configured }) => ({
-          provider,
-          configured,
-          available: configured,
-          breaker: "closed",
-          calls: null,
-          errorRate: null,
-          lastErrorAt: null,
-          lastErrorCode: null,
-          lastSuccessAt: null,
-          latencyP95Ms: null,
-        })),
-      },
-    },
-  } as unknown as SystemStatusDTO;
 }
 
 function sessionValue(role: Role): SessionContextValue {

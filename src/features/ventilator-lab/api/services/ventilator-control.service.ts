@@ -3,13 +3,14 @@
 * Descripción: Endpoints of the exclusive operator control of the physical ventilator, all present in
 *   openapi/openapi.json: GET /api/ventilator/control (state for the caller), POST /api/ventilator/control (take the
 *   free control), POST /api/ventilator/control/takeover (leader of the holder group, teacher or admin take it from the
-*   current operator; audited), DELETE /api/ventilator/control (release) and POST /api/ventilator/control/heartbeat
-*   (refreshes the operator presence; the socket message ventilator:heartbeat does the same). Writes answer data null
+*   current operator; audited) and DELETE /api/ventilator/control (release). Writes answer data null
 *   and emit ventilator:control-changed. Also a keepalive `fetch` DELETE for leaving the page (axios cannot outlive the
 *   page), with the Bearer token of token storage and the cookies, like the simulator page-hide flush; best effort.
 *   v1.1 (T9 review fix W2): `readControlStateResult` (raw result for a re-read that must reject on failure).
+*   v1.2 (B3.10): the unused `fetchControlState` and `sendControlHeartbeat` (POST /api/ventilator/control/heartbeat)
+*   are removed; the operator presence is refreshed by the socket message ventilator:heartbeat.
 *   Depends on the api-client request helpers and token storage, the backend origin and the lab DTOs.
-* Versión: 1.1
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -25,7 +26,6 @@ import type { VentilatorControlStateDTO } from "../dtos/lab.dto";
 
 export const VENTILATOR_CONTROL_PATH = "/api/ventilator/control";
 export const VENTILATOR_CONTROL_TAKEOVER_PATH = "/api/ventilator/control/takeover";
-export const VENTILATOR_CONTROL_HEARTBEAT_PATH = "/api/ventilator/control/heartbeat";
 
 /** Keeps `undefined` when the backend omits a field (restricted projection), so nothing is filled in. */
 export function toOperatorControlState(dto: VentilatorControlStateDTO): OperatorControlState {
@@ -44,12 +44,6 @@ export function readControlStateResult() {
   return apiGet(VENTILATOR_CONTROL_PATH);
 }
 
-export async function fetchControlState(): Promise<OperatorControlState> {
-  const result = await apiGet(VENTILATOR_CONTROL_PATH);
-
-  return toOperatorControlState(result.data);
-}
-
 export async function takeControl(): Promise<void> {
   await apiPost(VENTILATOR_CONTROL_PATH);
 }
@@ -60,10 +54,6 @@ export async function takeOverControl(): Promise<void> {
 
 export async function releaseControl(): Promise<void> {
   await apiDelete(VENTILATOR_CONTROL_PATH);
-}
-
-export async function sendControlHeartbeat(): Promise<void> {
-  await apiPost(VENTILATOR_CONTROL_HEARTBEAT_PATH);
 }
 
 /** DELETE /api/ventilator/control that survives the page going away (pagehide / unmount); errors are ignored. */

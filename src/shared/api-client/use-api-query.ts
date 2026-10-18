@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Typed SWR query and mutation hooks
-* Descripción: `useApiQuery(path, options, config)` reads a typed GET endpoint through SWR with the `[path, { params, query }]` key; a null path disables the query. `useApiMutation(method, path, { invalidates })` runs a typed write and then revalidates every cached query whose key starts with one of the given paths. `invalidateApiQueries(mutate, paths)` exposes the same invalidation. Depends on swr, api-request, swr-config and api-error.
-* Versión: 1.0
+* Descripción: `useApiQuery(path, options, config)` reads a typed GET endpoint through SWR with the `[path, { params, query }]` key; a null path disables the query. `invalidateApiQueries(mutate, paths)` revalidates every cached query whose key starts with one of the given paths. v1.1 (B3.10): the unused `useApiMutation` hook (and its config/state types) is removed; writes call `apiRequest` and then `invalidateApiQueries`. Depends on swr, api-request, swr-config and api-error.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,18 +9,13 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { useCallback, useMemo, useState } from "react";
-import useSWR, { useSWRConfig } from "swr";
+import useSWR from "swr";
 import type { ScopedMutator, SWRConfiguration, SWRResponse } from "swr";
 import type { ApiError } from "./api-error";
-import { toApiError } from "./api-error";
-import { apiRequest } from "./api-request";
 import type {
   ApiPath,
   ApiResult,
-  HttpMethod,
   PathsWithMethod,
-  RequestArgs,
   RequestOptions,
   ResponseData,
 } from "./api-types";
@@ -53,63 +48,4 @@ export function invalidateApiQueries(mutate: ScopedMutator, paths: readonly ApiP
   return Promise.all(
     paths.map((path) => mutate((key: unknown) => isApiQueryKey(key) && key[0] === path)),
   );
-}
-
-type MutationMethod = Exclude<HttpMethod, "get">;
-
-export type UseApiMutationConfig = {
-  invalidates?: readonly ApiPath[]
-};
-
-export type ApiMutationState<P extends ApiPath, M extends MutationMethod> = {
-  trigger: (...args: RequestArgs<P, M>) => Promise<ApiResult<ResponseData<P, M>>>
-  isMutating: boolean
-  error: ApiError | null
-  reset: () => void
-};
-
-export function useApiMutation<M extends MutationMethod, P extends PathsWithMethod<M>>(
-  method: M,
-  path: P,
-  config?: UseApiMutationConfig,
-): ApiMutationState<P, M> {
-  const { mutate } = useSWRConfig();
-  const [isMutating, setIsMutating] = useState(false);
-  const [error, setError] = useState<ApiError | null>(null);
-  // A joined key keeps `trigger` stable when callers pass a new array literal on every render.
-  const invalidatesKey = (config?.invalidates ?? []).join(" ");
-  const invalidates = useMemo(
-    () => (invalidatesKey ? (invalidatesKey.split(" ") as ApiPath[]) : []),
-    [invalidatesKey],
-  );
-
-  const trigger = useCallback(
-    async(...args: RequestArgs<P, M>): Promise<ApiResult<ResponseData<P, M>>> => {
-      setIsMutating(true);
-      setError(null);
-
-      try {
-        const result = await apiRequest(method, path, ...args);
-
-        await invalidateApiQueries(mutate, invalidates);
-
-        return result;
-      } catch (caught) {
-        const apiError = toApiError(caught);
-
-        setError(apiError);
-
-        throw apiError;
-      } finally {
-        setIsMutating(false);
-      }
-    },
-    [method, path, mutate, invalidates],
-  );
-
-  const reset = useCallback(() => {
-    setError(null);
-  }, []);
-
-  return { trigger, isMutating, error, reset };
 }

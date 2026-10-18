@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Groups DTOs
-* Descripción: Request and response types of the groups endpoints, taken from the generated OpenAPI schema: list (`GET /api/groups` -> GroupDTO[]), own groups (`GET /api/groups/mine` -> MyGroupsDTO), detail (`GET /api/groups/{id}` -> GroupDetailDTO), members, supervisions, create/update/delete, add member, leader and supervision bodies, and the users list used to search members (`GET /api/users` -> UserDTO[]). Types only.
-* Versión: 1.0
+* Descripción: Request and response types of the groups endpoints, taken from the generated OpenAPI schema: list (`GET /api/groups` -> GroupDTO[]), own groups (`GET /api/groups/mine` -> MyGroupsDTO), detail (`GET /api/groups/{id}` -> GroupDetailDTO), members, supervisions, create/update/delete, add member, leader and supervision bodies, and the users list used to search members (`GET /api/users` -> UserDTO[]). Types only. v1.1 (B3.10): unused aliases removed (AddGroupMemberRequestDTO, SetGroupLeaderRequestDTO, AddGroupSupervisionRequestDTO).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -28,12 +28,6 @@ export type GroupSupervisionDTO = Schemas["GroupSupervisionDTO"];
 export type CreateGroupRequestDTO = Schemas["CreateGroupDTO"];
 
 export type UpdateGroupRequestDTO = Schemas["UpdateGroupDTO"];
-
-export type AddGroupMemberRequestDTO = Schemas["AddGroupMemberDTO"];
-
-export type SetGroupLeaderRequestDTO = Schemas["SetSimulatorLeadDTO"];
-
-export type AddGroupSupervisionRequestDTO = Schemas["AddGroupSupervisionDTO"];
 
 export type DeleteGroupResultDTO = Schemas["DeleteGroupResultDTO"];
 

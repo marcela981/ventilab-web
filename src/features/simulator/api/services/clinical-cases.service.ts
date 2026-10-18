@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Clinical cases service (simulator)
-* Descripción: Clinical case endpoints the simulator reads, all present in openapi/openapi.json: the paginated list GET /api/clinical-cases (only published cases for students; server-side pathology, difficulty and ids filters) and the full definition GET /api/clinical-cases/{caseId}/definition (requires clinical-cases:manage, minimum TEACHER). Paths are the generated OpenAPI keys; the shared client resolves them against the backend origin. v1.1 (T6): fetchClinicalCase → GET /api/clinical-cases/{caseId} (basic fields, every role) for the session case panel. v1.2: the catalog query always sends status=PUBLISHED, so staff (clinical-cases:manage) do not see DRAFT or ARCHIVED cases in the catalog. Depends on the api-client request helpers, the simulator DTOs and the catalog query entity.
-* Versión: 1.2
+* Descripción: Clinical case endpoints the simulator reads, all present in openapi/openapi.json: the paginated list GET /api/clinical-cases (only published cases for students; server-side pathology, difficulty and ids filters) and the full definition GET /api/clinical-cases/{caseId}/definition (requires clinical-cases:manage, minimum TEACHER). Paths are the generated OpenAPI keys; the shared client resolves them against the backend origin. v1.1 (T6): fetchClinicalCase → GET /api/clinical-cases/{caseId} (basic fields, every role) for the session case panel. v1.2: the catalog query always sends status=PUBLISHED, so staff (clinical-cases:manage) do not see DRAFT or ARCHIVED cases in the catalog. v1.3 (B3.10): the unused fetchClinicalCase is removed; the case panel and the exam slot read CLINICAL_CASE_PATH through useApiQuery. Depends on the api-client request helpers, the simulator DTOs and the catalog query entity.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,7 +11,7 @@
 
 import { apiGet } from "@shared/api-client/api-request";
 import type { CatalogQuery } from "../../application/entities/simulator.entity";
-import type { ClinicalCaseDefinitionDTO, ClinicalCaseDetailDTO, ClinicalCasesQueryDTO } from "../dtos/simulator.dto";
+import type { ClinicalCaseDefinitionDTO, ClinicalCasesQueryDTO } from "../dtos/simulator.dto";
 
 export const CLINICAL_CASES_PATH = "/api/clinical-cases";
 export const CLINICAL_CASE_PATH = "/api/clinical-cases/{caseId}";
@@ -34,10 +34,4 @@ export async function fetchCaseDefinition(caseId: string): Promise<ClinicalCaseD
   const result = await apiGet(CLINICAL_CASE_DEFINITION_PATH, { params: { caseId } });
 
   return result.data;
-}
-
-export async function fetchClinicalCase(caseId: string): Promise<ClinicalCaseDetailDTO["clinicalCase"]> {
-  const result = await apiGet(CLINICAL_CASE_PATH, { params: { caseId } });
-
-  return result.data.clinicalCase;
 }

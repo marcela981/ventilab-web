@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Curriculum DTOs
-* Descripción: Response types of the curriculum read endpoints used by the learning feature, taken from the generated OpenAPI schema: the student curriculum tree (`GET /api/curriculum/tree` -> sections -> levels -> modules with locked / missingPrerequisites / completed, plus unsectionedLevels), the lessons of a module (`GET /api/modules/{id}/lessons`) the Pages of a lesson (`GET /api/pages?lessonId=`) and, v1.1 (L3), one Page with its blocks (`GET /api/pages/{id}`: PageDTO with `sections` = PageSectionDTO[]). Types only. v1.2 (L7): the whole module for the print view (`GET /api/modules/{id}/full`: ModuleFullDTO -> lessons -> pages -> blocks, plus unassignedPages).
-* Versión: 1.2
+* Descripción: Response types of the curriculum read endpoints used by the learning feature, taken from the generated OpenAPI schema: the student curriculum tree (`GET /api/curriculum/tree` -> sections -> levels -> modules with locked / missingPrerequisites / completed, plus unsectionedLevels), the lessons of a module (`GET /api/modules/{id}/lessons`) the Pages of a lesson (`GET /api/pages?lessonId=`) and, v1.1 (L3), one Page with its blocks (`GET /api/pages/{id}`: PageDTO with `sections` = PageSectionDTO[]). Types only. v1.2 (L7): the whole module for the print view (`GET /api/modules/{id}/full`: ModuleFullDTO -> lessons -> pages -> blocks, plus unassignedPages). v1.3 (B3.10): unused aliases removed (ModuleFullLessonDTO).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -32,7 +32,5 @@ export type PageDetailDTO = Schemas["PageDTO"];
 export type PageSectionDTO = Schemas["PageSectionDTO"];
 
 export type ModuleFullDTO = Schemas["ModuleFullDTO"];
-
-export type ModuleFullLessonDTO = Schemas["ModuleFullLessonDTO"];
 
 export type ModuleFullPageDTO = Schemas["ModuleFullPageDTO"];

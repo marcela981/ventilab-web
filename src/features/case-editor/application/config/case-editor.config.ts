@@ -1,13 +1,13 @@
 /*
 * Funcionalidad: Case editor config
-* Descripción: Static configuration of the case editor (teachers and admins). The status, pathology, difficulty, sex
+* Descripción: Static configuration of the case editor (teachers and admins). The status, pathology, difficulty, sex v1.1 (B3.10): unused aliases removed (CaseListSortOrder).
 *   and event type keys come from the generated contract (label maps typed `satisfies Record<ContractEnum, string>`,
 *   so a contract change breaks the build instead of drifting). Every numeric field of the definition names the
 *   physiological parameter whose plausible range the backend enforces (the vendored
 *   CLINICAL_CASE_PHYSIOLOGICAL_RANGES are the only source of min/max; nothing here bounds a value), its Spanish label
 *   and its group. The event parameters per event type follow the contract field descriptions. Also the list page size
 *   and the Spanish names of the backend units. Depends on the case editor DTOs and the sim-engine public types.
-* Versión: 1.0
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,7 +19,6 @@ import type { PhysiologicalParameter } from "@shared/sim-engine";
 import type {
   ChangeClinicalCaseStatusDTO,
   ClinicalCaseEventDTO,
-  ClinicalCasesQueryDTO,
   UpsertClinicalCaseDTO,
 } from "../../api/dtos/case-editor.dto";
 
@@ -28,7 +27,6 @@ export type CasePathology = UpsertClinicalCaseDTO["pathology"];
 export type CaseDifficulty = UpsertClinicalCaseDTO["difficulty"];
 export type CaseSex = NonNullable<UpsertClinicalCaseDTO["patientSex"]>;
 export type CaseEventType = ClinicalCaseEventDTO["type"];
-export type CaseListSortOrder = NonNullable<ClinicalCasesQueryDTO["sortOrder"]>;
 
 // TODO(i18n): move to a case-editor namespace in src/i18n.
 export const STATUS_LABELS = {

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator console config
-* Descripción: Console-owned static configuration of the generic ventilator console: the numeric monitoring metric ids and the patient vital ids with their Spanish labels, units, decimals and default normal ranges (used for the out-of-range highlight and overridable through props), the three curve channels with their console color tokens, the time-window options and the waveform ring capacity. It knows nothing about the simulation engine or a physical ventilator; adapters deliver values already in these units. v1.1: the ring capacity is computed from the frame source sample rate (default 50 Hz) as twice the largest window; the default normal ranges are teaching defaults that adapters or consumers override (`null` disables the highlight). v1.2: a generic `pco2` vital (PCO2 in mmHg, for sources that report a CO2 partial pressure without saying whether it is arterial or end-tidal); a source that does not provide it never shows it; the generic no-data message of a frame source without data.
-* Versión: 1.2
+* Descripción: Console-owned static configuration of the generic ventilator console: the numeric monitoring metric ids and the patient vital ids with their Spanish labels, units, decimals and default normal ranges (used for the out-of-range highlight and overridable through props), the three curve channels with their console color tokens, the time-window options and the waveform ring capacity. It knows nothing about the simulation engine or a physical ventilator; adapters deliver values already in these units. v1.1: the ring capacity is computed from the frame source sample rate (default 50 Hz) as twice the largest window; the default normal ranges are teaching defaults that adapters or consumers override (`null` disables the highlight). v1.2: a generic `pco2` vital (PCO2 in mmHg, for sources that report a CO2 partial pressure without saying whether it is arterial or end-tidal); a source that does not provide it never shows it; the generic no-data message of a frame source without data. v1.3 (B3.10): the unused CONSOLE_BUFFER_CAPACITY constant is removed (callers size the buffer with consoleBufferCapacity(rate)).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -103,9 +103,6 @@ export function consoleBufferCapacity(sampleRateHz: number | undefined): number 
 
   return Math.ceil(rate * Math.max(...CONSOLE_WINDOW_SECONDS) * 2);
 }
-
-/** Capacity at the default rate (60 s at 50 Hz = 3000 samples). */
-export const CONSOLE_BUFFER_CAPACITY = consoleBufferCapacity(DEFAULT_CONSOLE_SAMPLE_RATE_HZ);
 
 /** Default overlay text and read-only reason while a frame source reports `no-data`. */
 // TODO(i18n): move to an i18next namespace once src/i18n is in scope.

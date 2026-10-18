@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Grading test helpers
-* Descripción: Shared fixtures of the grading tests: backend envelope (with optional pagination) and error bodies, factories of GradingQueueItemDTO, EvaluationSummaryDTO and GroupDTO, and a render helper that mounts a tree inside an isolated SWR cache. Test-only code. Depends on Testing Library, msw, SWR and the grading DTOs. v1.1 (G2): factories of the grading attempt (questions, options, answers, practical score) and the staff feedback DTOs, a fake socket that lets a test emit server events, and renderGradingPage, which mounts a page with an isolated SWR cache, a TEACHER session, the realtime context with the fake socket and the global ToastProvider.
-* Versión: 1.1
+* Descripción: Shared fixtures of the grading tests: backend envelope (with optional pagination) and error bodies, factories of GradingQueueItemDTO, EvaluationSummaryDTO and GroupDTO, and a render helper that mounts a tree inside an isolated SWR cache. Test-only code. Depends on Testing Library, msw, SWR and the grading DTOs. v1.1 (G2): factories of the grading attempt (questions, options, answers, practical score) and the staff feedback DTOs, a fake socket that lets a test emit server events, and renderGradingPage, which mounts a page with an isolated SWR cache, a TEACHER session, the realtime context with the fake socket and the global ToastProvider. v1.2 (B3.10): the unused createFakeSocket factory is removed (no grading test emits server events); renderGradingPage keeps the optional FakeSocket shape.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,7 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { act, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { HttpResponse } from "msw";
 import type { ReactElement } from "react";
 import { SWRConfig } from "swr";
@@ -199,35 +199,10 @@ export function feedbackDto(attemptId: string, overrides: Partial<GradeFeedbackD
   return { attemptId, overall: null, questions: [], ...overrides };
 }
 
-type Listener = (payload: never) => void;
-
 export type FakeSocket = {
   socket: RealtimeSocket
   emit: <E extends RealtimeEventName>(event: E, payload: RealtimeEventMap[E]) => void
 };
-
-export function createFakeSocket(): FakeSocket {
-  const listeners = new Map<string, Set<Listener>>();
-  const socket = {
-    on: (event: string, listener: Listener) => {
-      listeners.set(event, (listeners.get(event) ?? new Set<Listener>()).add(listener));
-    },
-    off: (event: string, listener: Listener) => {
-      listeners.get(event)?.delete(listener);
-    },
-  };
-
-  return {
-    socket: socket as unknown as RealtimeSocket,
-    emit: (event, payload) => {
-      act(() => {
-        for (const listener of listeners.get(event) ?? []) {
-          (listener as (value: typeof payload) => void)(payload);
-        }
-      });
-    },
-  };
-}
 
 function teacherSession(): SessionContextValue {
   const user = { id: "teacher-1", email: "laura@ventylab.demo", name: "Laura", image: null, role: "TEACHER" as const };
