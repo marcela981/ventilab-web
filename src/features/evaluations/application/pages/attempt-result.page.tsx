@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AttemptResultPage
-* Descripción: Page /evaluations/[evaluationId]/attempts/[attemptId]/result: the result of one attempt of the signed-in student. Loads the attempt (`GET /api/evaluation-attempts/{attemptId}`); an attempt still IN_PROGRESS goes back to the player. Unpublished attempts show only their state ("Enviado" for SUBMITTED, "Pendiente de calificación" for PENDING_REVIEW or a GRADED grade not yet published) and what happens next, without reading correctness, explanation, rubric or earned score. Published attempts show the grade (es-CO, colored by `passed` from the API), the score, the overall AI feedback and every question (QuestionResult). The AI feedback (`GET .../feedback`, only once published) is refreshed by the socket: `notification:new` of type FEEDBACK_READY for this attempt revalidates the feedback, `grade:published` for this attempt revalidates the attempt and the feedback; spaced polling in useAttemptFeedback is the backup while items are pending. Links back to the list and to the evaluation intro. Depends on next/head, next/link, next/router, the design-system components, @shared/lib, @shared/realtime, the evaluations hooks, entities and components, and the attempt result CSS Module. v1.1 (A3 review S4): passes the polling-stopped flag to the pending feedback blocks. v1.2 (B2 closure): the attemptId of a notification is read from its typed data (no cast).
-* Versión: 1.2
+* Descripción: Page /evaluations/[evaluationId]/attempts/[attemptId]/result: the result of one attempt of the signed-in student. Loads the attempt (`GET /api/evaluation-attempts/{attemptId}`); an attempt still IN_PROGRESS goes back to the player. Unpublished attempts show only their state ("Enviado" for SUBMITTED, "Pendiente de calificación" for PENDING_REVIEW or a GRADED grade not yet published) and what happens next, without reading correctness, explanation, rubric or earned score. Published attempts show the grade (es-CO, colored by `passed` from the API), the score, the overall AI feedback and every question (QuestionResult). The AI feedback (`GET .../feedback`, only once published) is refreshed by the socket: `notification:new` of type FEEDBACK_READY for this attempt revalidates the feedback, `grade:published` for this attempt revalidates the attempt and the feedback; spaced polling in useAttemptFeedback is the backup while items are pending. Links back to the list and to the evaluation intro. Depends on next/head, next/link, next/router, the design-system components, @shared/lib, @shared/realtime, the evaluations hooks, entities and components, and the attempt result CSS Module. v1.1 (A3 review S4): passes the polling-stopped flag to the pending feedback blocks. v1.2 (B2 closure): the attemptId of a notification is read from its typed data (no cast). v1.3 (closure B1): notification:new is the per-type union, so `type === "FEEDBACK_READY"` narrows `data` (no `"attemptId" in data` check).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -57,11 +57,6 @@ export const RESULT_COPY = {
   overallFeedback: "Retroalimentación general",
   feedbackUnavailable: "La retroalimentación no está disponible por ahora.",
 } as const;
-
-function notificationAttemptId({ data }: RealtimeEventMap["notification:new"]): string | null {
-  // The contract types `data` per notification type: only the grade and feedback variants carry an attemptId.
-  return data !== null && "attemptId" in data ? data.attemptId : null;
-}
 
 function UnpublishedResult({ attempt }: { attempt: AttemptDetail }) {
   const submitted = attempt.status === "SUBMITTED";
@@ -142,7 +137,8 @@ export function AttemptResultPage({ evaluationId, attemptId }: AttemptResultPage
   }, [inProgress, playerUrl, router]);
 
   const handleNotification = useCallback((payload: RealtimeEventMap["notification:new"]) => {
-    if (payload.type === "FEEDBACK_READY" && notificationAttemptId(payload) === attemptId) {
+    // `type` narrows `data` to the FEEDBACK_READY variant of the contract.
+    if (payload.type === "FEEDBACK_READY" && payload.data?.attemptId === attemptId) {
       void reloadFeedback().catch(() => undefined);
     }
   }, [attemptId, reloadFeedback]);

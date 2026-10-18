@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Profile mapper tests
-* Descripción: Tests of the profile mappers: UserDTO -> Profile, and the PATCH /api/users/me body that carries ONLY the changed fields (trimmed name; blank avatar -> null to remove it). Depends on vitest.
-* Versión: 1.0
+* Descripción: Tests of the profile mappers: UserDTO -> Profile, and the PATCH /api/users/me body that carries ONLY the changed fields (trimmed name; blank avatar -> null to remove it). Depends on vitest. v1.1 (closure B1): UserDTO fixture carries isSuperadmin and studentCode.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -31,6 +31,8 @@ describe("toProfile", () => {
       image: "https://cdn.example/old.png",
       role: "TEACHER",
       isActive: true,
+      isSuperadmin: false,
+      studentCode: null,
       emailVerified: null,
       createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-02T00:00:00.000Z",

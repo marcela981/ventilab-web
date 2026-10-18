@@ -1,6 +1,6 @@
 /*
 * Funcionalidad: Admin console test helpers
-* Descripción: Shared fixtures of the admin console tests: backend URL, envelope with pagination, error response with details, DTO builders typed against the generated schema (user, group, platform setting, system status with AI providers) and a renderer that wraps the UI in a fresh SWR cache, an authenticated ADMIN session (id admin-1) and the global ToastProvider. v1.1 (O4b): renderAdminConsole takes the session role (ADMIN by default, id admin-1), an optional fake socket (createFakeSocket, provided through RealtimeContext) and keepPreviousData to mirror the app SWR default. Depends on Testing Library, msw, SWR, the design-system toast, the session context and the admin console DTOs.
+* Descripción: Shared fixtures of the admin console tests: backend URL, envelope with pagination, error response with details, DTO builders typed against the generated schema (user, group, platform setting, system status with AI providers) and a renderer that wraps the UI in a fresh SWR cache, an authenticated ADMIN session (id admin-1) and the global ToastProvider. v1.1 (O4b): renderAdminConsole takes the session role (ADMIN by default, id admin-1), an optional fake socket (createFakeSocket, provided through RealtimeContext) and keepPreviousData to mirror the app SWR default. v1.2 (closure B1): userDto carries isSuperadmin and studentCode. Depends on Testing Library, msw, SWR, the design-system toast, the session context and the admin console DTOs.
 * Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -51,8 +51,10 @@ export function userDto(id: string, name: string | null, overrides: Partial<User
     id,
     image: null,
     isActive: true,
+    isSuperadmin: false,
     name,
     role: "STUDENT",
+    studentCode: null,
     updatedAt: "2026-01-15T10:30:00.000Z",
     ...overrides,
   };

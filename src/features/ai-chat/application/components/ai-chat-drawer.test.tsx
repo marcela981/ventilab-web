@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI chat drawer tests
-* Descripción: Behaviour of the global AI assistant drawer: the AiChatProvider keeps the drawer state (open, conversation) across rerenders that simulate a page navigation; the AiChatLauncher (top bar button with aria-expanded/aria-controls) lazily opens the drawer with the chat panel inside, the composer gets the focus once it is open, Esc closes it and the focus returns to the launcher; "Expandir" is disabled until a conversation exists and then navigates to /assistant/[id] and closes the drawer; "Nueva conversación" remounts the panel with no conversation; entering the /assistant routes closes the drawer and remounts its panel (fresh reload, same conversation); the launcher is hidden on the /assistant routes and without a session. The ChatPanel is replaced by a light stub that mirrors its autoFocus and focusComposer contract (the real one is covered by its own tests). Depends on vitest, Testing Library, a mocked next/router and the session context.
-* Versión: 1.0
+* Descripción: Behaviour of the global AI assistant drawer: the AiChatProvider keeps the drawer state (open, conversation) across rerenders that simulate a page navigation; the AiChatLauncher (top bar button with aria-expanded/aria-controls) lazily opens the drawer with the chat panel inside, the composer gets the focus once it is open, Esc closes it and the focus returns to the launcher; "Expandir" is disabled until a conversation exists and then navigates to /assistant/[id] and closes the drawer; "Nueva conversación" remounts the panel with no conversation; entering the /assistant routes closes the drawer and remounts its panel (fresh reload, same conversation); the launcher is hidden on the /assistant routes and without a session. The ChatPanel is replaced by a light stub that mirrors its autoFocus and focusComposer contract (the real one is covered by its own tests). Depends on vitest, Testing Library, a mocked next/router and the session context. v1.1 (closure B1): the first open waits up to 10 s for the lazy drawer chunk (the 1 s default failed under the full parallel suite) and each test may take 20 s.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -93,10 +93,15 @@ function tree(page: ReactNode, session = sessionValue()) {
 // hidden: while the drawer is open, MUI marks the rest of the page (the launcher included) aria-hidden.
 const launcher = () => screen.getByRole("button", { name: "Abrir asistente IA", hidden: true });
 
+// The drawer chunk loads lazily on the first open; cold, under the full parallel suite, it exceeds the 1 s default wait.
+const LAZY_WAIT = { timeout: 10_000 };
+
+vi.setConfig({ testTimeout: 20_000 });
+
 async function openDrawer() {
   fireEvent.click(launcher());
 
-  return screen.findByRole("dialog", { name: "Asistente IA" });
+  return screen.findByRole("dialog", { name: "Asistente IA" }, LAZY_WAIT);
 }
 
 beforeEach(() => {

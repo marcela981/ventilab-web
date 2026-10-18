@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher dashboard test helpers
-* Descripción: Shared fixtures of the teacher dashboard tests: backend URL, envelope with pagination, error response, DTO builders typed against the generated schema (group, dashboard row, evaluation stats, timeline entry, assignment, grading queue item, reservation, student, progress summary, curriculum tree) and a renderer that wraps the UI in a fresh SWR cache, an authenticated TEACHER session and the global ToastProvider. v1.1 (O3 review): the test SWR config keeps previous data like the app (API_SWR_CONFIG), so group switches are tested under the real default. Depends on Testing Library, msw, SWR, the design-system toast, the session context and the teacher dashboard DTOs.
-* Versión: 1.1
+* Descripción: Shared fixtures of the teacher dashboard tests: backend URL, envelope with pagination, error response, DTO builders typed against the generated schema (group, dashboard row, evaluation stats, timeline entry, assignment, grading queue item, reservation, student, progress summary, curriculum tree) and a renderer that wraps the UI in a fresh SWR cache, an authenticated TEACHER session and the global ToastProvider. v1.1 (O3 review): the test SWR config keeps previous data like the app (API_SWR_CONFIG), so group switches are tested under the real default. v1.2 (closure B1): fixtures carry the new contract fields (progress item titles, row risk fields and last activity, stats groupId). Depends on Testing Library, msw, SWR, the design-system toast, the session context and the teacher dashboard DTOs.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -23,6 +23,7 @@ import type {
   EvaluationAnalyticsDTO,
   EvaluationAssignmentDTO,
   GradingQueueItemDTO,
+  GroupDashboardDTO,
   GroupDTO,
   LearningProgressSummaryDTO,
   ReservationDetailDTO,
@@ -83,6 +84,7 @@ const item = (id: string | null, percentage: number, completedLessons = 1, total
   completedLessons,
   totalLessons,
   completed: percentage >= 100,
+  title: id ? `Título ${id}` : null,
 });
 
 export function rowDto(userId: string, name: string | null, overrides: Partial<StudentDashboardRowDTO> = {}): StudentDashboardRowDTO {
@@ -100,6 +102,23 @@ export function rowDto(userId: string, name: string | null, overrides: Partial<S
     simulation: { sessionCount: 3, averageScore: 81.5, averageTimeToStabilizeSeconds: 42.3 },
     aiUsage: [{ useCase: "FREE_CHAT", calls: 7, helpfulPercentage: 66.7, inputTokens: 100, outputTokens: 200, ratings: 3 }],
     ventilatorHours: 1.5,
+    atRisk: false,
+    riskReasons: [],
+    failedEvaluationIds: [],
+    lastActivityAt: "2026-10-15T20:00:00.000Z",
+    ...overrides,
+  };
+}
+
+export function dashboardDto(students: StudentDashboardRowDTO[], overrides: Partial<GroupDashboardDTO> = {}): GroupDashboardDTO {
+  return {
+    generatedAt: "2026-10-16T12:00:00.000Z",
+    groupId: "g1",
+    groupName: "Grupo A",
+    moduleSummary: [],
+    passingGrade: 3,
+    riskThresholds: { maxFailedEvaluations: 0, minProgressPct: 0, inactivityDays: 0 },
+    students,
     ...overrides,
   };
 }
@@ -109,6 +128,7 @@ export function statsDto(evaluationId: string, overrides: Partial<EvaluationAnal
     averageGrade: 3.6,
     evaluationId,
     gradedCount: 5,
+    groupId: null,
     histogram: [{ from: 2.5, to: 3, count: 1 }, { from: 3, to: 3.5, count: 2 }, { from: 4, to: 4.5, count: 2 }],
     maxGrade: 4.4,
     medianGrade: 3.4,

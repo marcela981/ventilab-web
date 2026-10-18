@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin console mapper tests
-* Descripción: The system status keeps only the AI providers with credentials (`configured: true`), the settings are grouped by category in tab order with every category present, and the users and groups map to their rows and sorted options. Depends on vitest, the admin console mappers and the test helpers.
-* Versión: 1.0
+* Descripción: The system status keeps only the AI providers with credentials (`configured: true`), the settings are grouped by category in tab order with every category present, and the users and groups map to their rows and sorted options. Depends on vitest, the admin console mappers and the test helpers. v1.1 (closure B1): the analytics category (risk thresholds) joins the tab order after evaluation.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,7 +27,7 @@ describe("admin console mappers", () => {
       toPlatformSetting(settingDto("evaluation.passingGrade", "evaluation", 3)),
     ]);
 
-    expect(Object.keys(grouped)).toEqual(["ai", "evaluation", "simulation", "reservations", "telemetry", "commands"]);
+    expect(Object.keys(grouped)).toEqual(["ai", "evaluation", "analytics", "simulation", "reservations", "telemetry", "commands"]);
     expect(grouped.telemetry.map((setting) => setting.key)).toEqual(["telemetry.recordingHz"]);
     expect(grouped.ai).toEqual([]);
   });

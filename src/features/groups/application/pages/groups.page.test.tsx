@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GroupsPage tests
-* Descripción: Renders the staff group list against a mocked backend (`GET /api/groups`, msw): client-side pagination (10 per page), the text, type and status filters (which return to the first page), the no-match and no-groups empty states and the 403 error. v1.1 (T11b): the filter-reset test now proves the return to page 1 with a result that still spans several pages; group names link to the detail; "Crear grupo" creates a student group (validation, POST body, refreshed list, 403 message). v1.2 (T11c): rendered with a session role; the type selector only for admins and an admin creating a teacher group. v1.3 (T12): the create-from-dialog test has a 15 s budget (it timed out at the 5 s default under full-suite load). Depends on vitest, Testing Library, msw, the groups test helpers and the groups feature.
-* Versión: 1.3
+* Descripción: Renders the staff group list against a mocked backend (`GET /api/groups`, msw): client-side pagination (10 per page), the text, type and status filters (which return to the first page), the no-match and no-groups empty states and the 403 error. v1.1 (T11b): the filter-reset test now proves the return to page 1 with a result that still spans several pages; group names link to the detail; "Crear grupo" creates a student group (validation, POST body, refreshed list, 403 message). v1.2 (T11c): rendered with a session role; the type selector only for admins and an admin creating a teacher group. v1.3 (T12): the create-from-dialog test has a 15 s budget (it timed out at the 5 s default under full-suite load). v1.4 (closure B1): every test gets 20 s and Testing Library waits 5 s (the type-selector and teacher-group tests also timed out under the full suite). Depends on vitest, Testing Library, msw, the groups test helpers and the groups feature.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,10 +9,10 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { configure, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
 import { GroupsPage } from "./groups.page";
 import { renderWithSession } from "./groups-test-helpers";
@@ -53,6 +53,10 @@ const twelveGroups = [
   groupDto(11, { name: "Docentes UCI", type: "TEACHER" }),
   groupDto(12, { name: "Neumología", isActive: false, leader: { id: "s1", name: "Luis Gómez", email: "luis@ventylab.demo" } }),
 ];
+
+// Under the full parallel suite the MUI dialogs and msw round trips exceed the 1 s default wait and the 5 s test timeout.
+configure({ asyncUtilTimeout: 5_000 });
+vi.setConfig({ testTimeout: 20_000 });
 
 const server = setupServer();
 

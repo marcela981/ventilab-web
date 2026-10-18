@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Groups mapper tests
-* Descripción: Verifies the mapping of the backend group DTOs (GroupDTO, GroupDetailDTO, MyGroupsDTO, GroupSupervisionDTO, UserDTO) to the groups entities, and the create/update request bodies built from a group draft (trimmed values, omitted empty optionals on create, only changed fields with null to clear on update). Depends on vitest and the groups mappers.
-* Versión: 1.1
+* Descripción: Verifies the mapping of the backend group DTOs (GroupDTO, GroupDetailDTO, MyGroupsDTO, GroupSupervisionDTO, UserDTO) to the groups entities, and the create/update request bodies built from a group draft (trimmed values, omitted empty optionals on create, only changed fields with null to clear on update). Depends on vitest and the groups mappers. v1.2 (closure B1): UserDTO fixture carries isSuperadmin and studentCode.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -160,6 +160,8 @@ describe("toGroupSupervision and toUserOption", () => {
       image: null,
       role: "STUDENT",
       isActive: true,
+      isSuperadmin: false,
+      studentCode: "EST-02",
       emailVerified: null,
       createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-01T00:00:00.000Z",

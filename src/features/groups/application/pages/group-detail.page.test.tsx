@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GroupDetailPage tests
-* Descripción: Renders the group detail page against a mocked backend (msw): group facts and members, the read-only view of a teacher group for a teacher, edit with only the changed fields and the student limit validation, the member search (STUDENT role, current members excluded), add member (success and the 409/422 messages), remove member and assign leader behind a confirmation (with the previous leader text), deactivate (PATCH isActive=false), the 403 message and a missing group. v1.1 (T11c): reactivate, a rejected edit (error inside the open dialog), an edit without changes (no request), an admin managing a teacher group (teacher search, no leader), the supervisions panel (list, add excluding supervised and teacher groups, remove after a confirmation, 403) and its absence for teachers. v1.2 (T6b): the supervisions list is refetched after an add or a remove (the added group leaves the select and the selection clears; GROUP_SUPERVISIONS_PATH is one of the invalidated keys), the error-with-retry states of the supervisions and student-groups reads, and zero supervisions requests for a teacher (counted). v1.3 (T12): the duplicate zero-supervisions test and its fixed wait were removed (the remaining one counts after the read-only view rendered) and request handlers read their own body. Depends on vitest, Testing Library, msw and the groups feature.
-* Versión: 1.3
+* Descripción: Renders the group detail page against a mocked backend (msw): group facts and members, the read-only view of a teacher group for a teacher, edit with only the changed fields and the student limit validation, the member search (STUDENT role, current members excluded), add member (success and the 409/422 messages), remove member and assign leader behind a confirmation (with the previous leader text), deactivate (PATCH isActive=false), the 403 message and a missing group. v1.1 (T11c): reactivate, a rejected edit (error inside the open dialog), an edit without changes (no request), an admin managing a teacher group (teacher search, no leader), the supervisions panel (list, add excluding supervised and teacher groups, remove after a confirmation, 403) and its absence for teachers. v1.2 (T6b): the supervisions list is refetched after an add or a remove (the added group leaves the select and the selection clears; GROUP_SUPERVISIONS_PATH is one of the invalidated keys), the error-with-retry states of the supervisions and student-groups reads, and zero supervisions requests for a teacher (counted). v1.3 (T12): the duplicate zero-supervisions test and its fixed wait were removed (the remaining one counts after the read-only view rendered) and request handlers read their own body. v1.4 (closure B1): Testing Library waits 5 s and each test 20 s (the 409 member-add test missed its button within the 1 s default under the full suite). Depends on vitest, Testing Library, msw and the groups feature.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,10 +9,10 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { configure, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { GROUP_QUERY_PATHS, GROUP_SUPERVISIONS_PATH } from "../../api/services/groups.service";
 import { GroupDetailPage } from "./group-detail.page";
 import { apiUrl, envelope, errorResponse, groupDto, memberDto, renderWithSession, supervisionDto, userDto } from "./groups-test-helpers";
@@ -32,6 +32,10 @@ let detailReads = 0;
 let supervisionReads = 0;
 let supervisions: Array<ReturnType<typeof supervisionDto>> = [];
 let requests: Array<{ method: string, path: string, body: unknown, search?: string }> = [];
+
+// Under the full parallel suite the MUI dialogs and msw round trips exceed the 1 s default wait and the 5 s test timeout.
+configure({ asyncUtilTimeout: 5_000 });
+vi.setConfig({ testTimeout: 20_000 });
 
 const server = setupServer();
 

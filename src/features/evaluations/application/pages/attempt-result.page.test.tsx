@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AttemptResultPage tests
-* Descripción: Covers the attempt result page against an msw backend: an IN_PROGRESS attempt goes back to the player; unpublished attempts (SUBMITTED, PENDING_REVIEW) show only their state, render no question detail and never request the feedback; a published attempt shows the es-CO grade with the pass/fail class from `passed`, per-question earned points, the correct option, the teacher explanation and the simulation rubric; the AI feedback goes from the PENDING skeleton to READY after a FEEDBACK_READY notification for the attempt (and ignores other attempts), and DETERMINISTIC items carry the "Retroalimentación automática" label with the rating widget. Depends on Vitest, Testing Library, msw and the evaluations test helpers. v1.1 (E3 review): the "other attempt is ignored" check now waits before comparing the request count and then proves exactly one extra request for this attempt; a failed first feedback read shows the unavailable message; a rubric that repeats a parameter renders every row. v1.2 (A3 review follow-up): the FEEDBACK_READY notification for another attempt is checked deterministically through a spy on the SWR fetcher (SWR calls it synchronously on revalidation) instead of a wall-clock sleep. v1.3 (B1 closure): the FEEDBACK_READY notifications carry the typed FeedbackReady data of the contract (no cast).
-* Versión: 1.3
+* Descripción: Covers the attempt result page against an msw backend: an IN_PROGRESS attempt goes back to the player; unpublished attempts (SUBMITTED, PENDING_REVIEW) show only their state, render no question detail and never request the feedback; a published attempt shows the es-CO grade with the pass/fail class from `passed`, per-question earned points, the correct option, the teacher explanation and the simulation rubric; the AI feedback goes from the PENDING skeleton to READY after a FEEDBACK_READY notification for the attempt (and ignores other attempts), and DETERMINISTIC items carry the "Retroalimentación automática" label with the rating widget. Depends on Vitest, Testing Library, msw and the evaluations test helpers. v1.1 (E3 review): the "other attempt is ignored" check now waits before comparing the request count and then proves exactly one extra request for this attempt; a failed first feedback read shows the unavailable message; a rubric that repeats a parameter renders every row. v1.2 (A3 review follow-up): the FEEDBACK_READY notification for another attempt is checked deterministically through a spy on the SWR fetcher (SWR calls it synchronously on revalidation) instead of a wall-clock sleep. v1.3 (B1 closure): the FEEDBACK_READY notifications carry the typed FeedbackReady data of the contract (no cast). v1.4 (closure B1): the full-suite timeouts (cold lazy markdown renderer under 278 parallel files) get headroom: lazy waits 10 s, Testing Library waits 5 s and every test 20 s (not only the first one).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,7 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { screen, waitFor, within } from "@testing-library/react";
+import { configure, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
@@ -57,9 +57,13 @@ function feedbackFetches(): number {
 }
 
 const server = setupServer();
-const LAZY = { timeout: 5000 };
-// The first render loads the lazy markdown renderer cold; under a parallel run it can exceed the 5 s default.
-const COLD_START_TIMEOUT_MS = 15_000;
+// The first render loads the lazy markdown renderer cold; under the full parallel run (278 files) the transform of the
+// lazy chunks can take several seconds, so the lazy waits, every Testing Library wait and every test get headroom.
+const LAZY = { timeout: 10_000 };
+const COLD_START_TIMEOUT_MS = 20_000;
+
+configure({ asyncUtilTimeout: 5_000 });
+vi.setConfig({ testTimeout: COLD_START_TIMEOUT_MS });
 let attempt: StudentAttemptDetailDTO;
 let feedback: StudentGradeFeedbackDTO;
 let feedbackRequests = 0;

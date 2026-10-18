@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher dashboard mapper tests
-* Descripción: DTO → view model mappers of the teacher dashboard: STUDENT groups only, dashboard rows copied as the API sends them (no derived value), evaluation stats histogram, active assignments with their pending reviews, calendar rows (only detail rows carry a group), grading queue rows, student header, learning summary, timeline and the curriculum tree reduced to titles in curriculum order. Depends on vitest, the teacher dashboard mapper and test helpers.
-* Versión: 1.0
+* Descripción: DTO → view model mappers of the teacher dashboard: STUDENT groups only, dashboard rows copied as the API sends them (no derived value), evaluation stats histogram, active assignments with their pending reviews, calendar rows (only detail rows carry a group), grading queue rows, student header, learning summary, timeline and the curriculum tree reduced to titles in curriculum order. Depends on vitest, the teacher dashboard mapper and test helpers. v1.1 (closure B1): the dashboard fixture comes from dashboardDto (new contract fields).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,6 +12,7 @@
 import { describe, expect, it } from "vitest";
 import {
   assignmentDto,
+  dashboardDto,
   groupDto,
   queueItemDto,
   reservationDto,
@@ -42,7 +43,7 @@ describe("teacher dashboard mappers", () => {
   });
 
   it("copies the dashboard rows as the API sends them", () => {
-    const dashboard = toGroupDashboard({ generatedAt: "2026-10-16T12:00:00.000Z", groupId: "g1", groupName: "Grupo A", students: [rowDto("u1", "Ana")] });
+    const dashboard = toGroupDashboard(dashboardDto([rowDto("u1", "Ana")]));
     const row = dashboard.students[0];
 
     expect(dashboard.groupName).toBe("Grupo A");

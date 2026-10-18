@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: RichContent tests
-* Descripción: Covers the pure format detection and the lazily loaded markdown/math rendering of RichContent (real react-markdown, remark-gfm, remark-math and rehype-katex run under jsdom), the raw-HTML policy and unsafe link removal. Depends on Vitest and Testing Library.
-* Versión: 1.0
+* Descripción: Covers the pure format detection and the lazily loaded markdown/math rendering of RichContent (real react-markdown, remark-gfm, remark-math and rehype-katex run under jsdom), the raw-HTML policy and unsafe link removal. Depends on Vitest and Testing Library. v1.1 (closure B1): the test timeout (20 s) is longer than the 10 s lazy wait, which the 5 s default cut short under the full suite, and the cold transform of the two lazy renderers is paid once in beforeAll (60 s budget) instead of inside a test.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,12 +10,21 @@
 */
 
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { detectContentFormat } from "./content-format";
 import { RichContent } from "./rich-content";
 
 // The first lazy import transforms react-markdown/KaTeX on demand, which is slow on a loaded machine.
 const LAZY_WAIT = { timeout: 10_000 };
+
+// The lazy waits above must fit inside the test: the 5 s default timed out first under the full parallel suite.
+vi.setConfig({ testTimeout: 20_000 });
+
+// The cold transform of react-markdown, remark/rehype and KaTeX took more than 10 s under the full parallel suite. It is
+// paid once here, with its own budget, so the tests measure the lazy rendering (React.lazy still suspends on first render).
+beforeAll(async() => {
+  await Promise.all([import("./markdown-view"), import("./math-markdown-view")]);
+}, 60_000);
 
 describe("detectContentFormat", () => {
   it("classifies empty, plain markdown and markdown with math", () => {

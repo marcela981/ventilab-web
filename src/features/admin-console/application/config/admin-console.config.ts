@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin console config
-* Descripción: Constants of the admin console: page size of the users list, the roles and their Spanish labels, the platform setting categories in tab order with their labels, and the Spanish labels of the known setting fields (the API sends no labels; an unknown field shows its key). No dependencies.
-* Versión: 1.0
+* Descripción: Constants of the admin console: page size of the users list, the roles and their Spanish labels, the platform setting categories in tab order with their labels, and the Spanish labels of the known setting fields (the API sends no labels; an unknown field shows its key). No dependencies. v1.1 (closure B1): new `analytics` setting category (risk thresholds) with its Spanish label.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,7 +22,7 @@ export const ROLE_LABELS: Readonly<Record<UserRole, string>> = {
   ADMIN: "Administrador",
 };
 
-export const SETTING_CATEGORIES = ["ai", "evaluation", "simulation", "reservations", "telemetry", "commands"] as const;
+export const SETTING_CATEGORIES = ["ai", "evaluation", "analytics", "simulation", "reservations", "telemetry", "commands"] as const;
 
 export type SettingCategory = (typeof SETTING_CATEGORIES)[number];
 
@@ -32,6 +32,7 @@ export const DEFAULT_SETTING_CATEGORY: SettingCategory = "ai";
 export const CATEGORY_LABELS: Readonly<Record<SettingCategory, string>> = {
   ai: "Inteligencia artificial",
   evaluation: "Evaluaciones",
+  analytics: "Analítica y riesgo",
   simulation: "Simulación",
   reservations: "Reservas",
   telemetry: "Telemetría",

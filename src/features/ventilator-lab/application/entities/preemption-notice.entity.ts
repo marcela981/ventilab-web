@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Preemption notice entities
-* Descripción: Spanish notice shown to the holder of a reservation preempted by a teacher or an admin, keyed by the reservation id so the same preemption is announced once: from the reservation:preempted event (Bogota window, "en curso" when it was active, the reason when the backend sends it) or, as a fallback, from a RESERVATION_PREEMPTED notification:new (its backend body; data.reservationId). No holder names are built. Depends on the slot grid labels and the realtime event types. v1.1 (B2 closure): the reservation id is read from the typed notification data of the contract (no cast).
-* Versión: 1.1
+* Descripción: Spanish notice shown to the holder of a reservation preempted by a teacher or an admin, keyed by the reservation id so the same preemption is announced once: from the reservation:preempted event (Bogota window, "en curso" when it was active, the reason when the backend sends it) or, as a fallback, from a RESERVATION_PREEMPTED notification:new (its backend body; data.reservationId). No holder names are built. Depends on the slot grid labels and the realtime event types. v1.1 (B2 closure): the reservation id is read from the typed notification data of the contract (no cast). v1.2 (closure B1): the input is the distributive pick of the per-type notification:new union, so `type` narrows `data` (no `"reservationId" in data` check).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,7 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import type { RealtimeEventMap } from "@shared/realtime";
+import type { NotificationNewEvent } from "@shared/realtime";
 import { slotWindowLabel } from "./slot-grid";
 
 export type PreemptionNotice = {
@@ -27,7 +27,9 @@ export type PreemptedReservationInput = {
 };
 
 /** Fields of a notification:new payload the notice needs (`data` typed per notification type by the contract). */
-export type PreemptionNotificationInput = Pick<RealtimeEventMap["notification:new"], "type" | "body" | "data">;
+export type PreemptionNotificationInput = NotificationNewEvent extends infer Variant
+  ? Variant extends NotificationNewEvent ? Pick<Variant, "type" | "body" | "data"> : never
+  : never;
 
 export const RESERVATION_PREEMPTED_NOTIFICATION = "RESERVATION_PREEMPTED";
 
@@ -48,10 +50,10 @@ export function noticeFromPreemptedEvent(event: PreemptedReservationInput): Pree
 
 /** Notice of a RESERVATION_PREEMPTED notification with its reservation id; null for any other notification. */
 export function noticeFromNotification(notification: PreemptionNotificationInput): PreemptionNotice | null {
-  const { type, data, body } = notification;
+  // `type` narrows `data` to the RESERVATION_PREEMPTED variant of the contract.
+  if (notification.type !== RESERVATION_PREEMPTED_NOTIFICATION || notification.data === null) {
+    return null;
+  }
 
-  // Only the reservation variants of the contract carry a reservationId.
-  return type === RESERVATION_PREEMPTED_NOTIFICATION && data !== null && "reservationId" in data
-    ? { reservationId: data.reservationId, message: body }
-    : null;
+  return { reservationId: notification.data.reservationId, message: notification.body };
 }

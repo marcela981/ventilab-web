@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ConversationList tests
-* Descripción: Behaviour of the assistant conversation list against msw: the scope toggle sends `scope` and returns to page 1, the title filter only keeps matching loaded conversations, inline rename saves with Enter (PATCH {title}) and Esc cancels without a request, delete asks for confirmation before DELETE and reports the deleted id, and a LESSON conversation shows its "Ir a la lección" link resolved from the lesson read. v1.1 (A3, review R3-page-not-clamped): deleting the only conversation of the last page moves the list back to the last existing page. Depends on Testing Library, msw and the AI chat test helpers.
-* Versión: 1.1
+* Descripción: Behaviour of the assistant conversation list against msw: the scope toggle sends `scope` and returns to page 1, the title filter only keeps matching loaded conversations, inline rename saves with Enter (PATCH {title}) and Esc cancels without a request, delete asks for confirmation before DELETE and reports the deleted id, and a LESSON conversation shows its "Ir a la lección" link resolved from the lesson read. v1.1 (A3, review R3-page-not-clamped): deleting the only conversation of the last page moves the list back to the last existing page. Depends on Testing Library, msw and the AI chat test helpers. v1.2 (closure B1): Testing Library waits up to 5 s and each test up to 20 s, since the defaults (1 s / 5 s) failed under the full parallel suite.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,7 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { configure, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import type { ReactNode } from "react";
@@ -21,6 +21,10 @@ import { ConversationList } from "./conversation-list";
 vi.mock("next/link", () => ({
   default: ({ href, children, ...rest }: { href: string, children: ReactNode }) => <a href={href} {...rest}>{children}</a>,
 }));
+
+// Under the full parallel suite the first msw round trip and MUI render exceed the 1 s default wait and the 5 s test timeout.
+configure({ asyncUtilTimeout: 5_000 });
+vi.setConfig({ testTimeout: 20_000 });
 
 const LIST_URL = apiUrl("/api/tutor/conversations");
 const ITEM_URL = apiUrl("/api/tutor/conversations/:conversationId");

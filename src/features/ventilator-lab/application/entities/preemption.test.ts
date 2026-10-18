@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Preemption entities tests
-* Descripción: The teacher-versus-teacher rule (a non-preemptable overlap with a teacher's or admin's reservation needs an admin; a student's 409 carries no roles), the create failure message that explains it, and the Spanish notice of a preempted reservation from the reservation:preempted event and from a RESERVATION_PREEMPTED notification (other notifications give none). Depends on vitest, the api-client ApiError and the lab entities. v1.1 (B2 closure): a notification whose typed data carries no reservationId gives no notice.
-* Versión: 1.1
+* Descripción: The teacher-versus-teacher rule (a non-preemptable overlap with a teacher's or admin's reservation needs an admin; a student's 409 carries no roles), the create failure message that explains it, and the Spanish notice of a preempted reservation from the reservation:preempted event and from a RESERVATION_PREEMPTED notification (other notifications give none). Depends on vitest, the api-client ApiError and the lab entities. v1.1 (B2 closure): a notification whose typed data carries no reservationId gives no notice. v1.2 (closure B1): the fixtures are valid per-type variants (a mismatched type/data pair no longer type-checks); another type with a reservationId gives no notice.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -93,8 +93,8 @@ describe("preemption notices", () => {
     };
 
     expect(noticeFromNotification(notification)).toEqual({ reservationId: "r1", message: "Tu reserva fue reemplazada por otra reserva." });
-    expect(noticeFromNotification({ ...notification, type: "GRADE_PUBLISHED" })).toBeNull();
     expect(noticeFromNotification({ ...notification, data: null })).toBeNull();
-    expect(noticeFromNotification({ ...notification, data: { evaluationId: "ev-1", attemptId: "at-1" } })).toBeNull();
+    expect(noticeFromNotification({ type: "GRADE_PUBLISHED", body: "Nota publicada", data: { evaluationId: "ev-1", attemptId: "at-1" } })).toBeNull();
+    expect(noticeFromNotification({ type: "RESERVATION_CANCELLED", body: "Reserva cancelada", data: { reservationId: "r1" } })).toBeNull();
   });
 });
