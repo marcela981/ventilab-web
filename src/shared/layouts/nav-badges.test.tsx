@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Navigation badges tests
-* Descripción: Verifies the nav-badges registry (a setter stores a positive count, zero or null clears it, setters are no-ops without a provider) and its rendering in the AppShell: the "Calificar" item of a teacher shows the gradingPending count as a badge with screen-reader text, and shows nothing at 0. Depends on vitest, Testing Library, next/router and next/link (mocked), the session context, the AppShell and the nav-badges registry. v1.1 (G1 review W2): badges are visible only while an AppShell (badge host) is mounted.
-* Versión: 1.1
+* Descripción: Verifies the nav-badges registry (a setter stores a positive count, zero or null clears it, setters are no-ops without a provider) and its rendering in the AppShell: the "Calificar" item of a teacher shows the gradingPending count as a badge with screen-reader text, and shows nothing at 0. Depends on vitest, Testing Library, next/router and next/link (mocked), the session context, the AppShell and the nav-badges registry. v1.1 (G1 review W2): badges are visible only while an AppShell (badge host) is mounted. v1.2 (B4): the accessible name of a badged nav item carries a differentiated, singular/plural count ("Notificaciones, 3 sin leer", "Calificar, 2 pendientes por calificar"), nothing at 0; navBadgeText is shared with the notifications bell.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,7 +17,7 @@ import type { Role } from "@shared/session/session.entity";
 import { SessionContext } from "@shared/session/session-context";
 import type { SessionContextValue } from "@shared/session/session-context";
 import { AppShell } from "./app-shell";
-import { NavBadgeProvider, useNavBadgeCounts, useNavBadgesVisible, useSetNavBadgeCount } from "./nav-badges";
+import { navBadgeText, NavBadgeProvider, useNavBadgeCounts, useNavBadgesVisible, useSetNavBadgeCount } from "./nav-badges";
 
 const router = vi.hoisted(() => ({ pathname: "/panel", asPath: "/panel", isReady: true, replace: vi.fn() }));
 
@@ -48,14 +48,21 @@ function sessionValue(role: Role): SessionContextValue {
 }
 
 // Feeds the gradingPending badge the way a feature does; undefined leaves it untouched.
-function Feeder({ count }: { count?: number | null | undefined }) {
+function Feeder({ count, notifications }: { count?: number | null | undefined, notifications?: number | undefined }) {
   const setPending = useSetNavBadgeCount("gradingPending");
+  const setUnread = useSetNavBadgeCount("notificationsUnread");
 
   useEffect(() => {
     if (count !== undefined) {
       setPending(count);
     }
   }, [count, setPending]);
+
+  useEffect(() => {
+    if (notifications !== undefined) {
+      setUnread(notifications);
+    }
+  }, [notifications, setUnread]);
 
   return null;
 }
@@ -98,11 +105,11 @@ describe("nav-badges registry", () => {
   });
 });
 
-function renderShell(count: number) {
+function renderShell(count: number, notifications?: number) {
   return render(
     <SessionContext.Provider value={sessionValue("TEACHER")}>
       <NavBadgeProvider>
-        <Feeder count={count} />
+        <Feeder count={count} notifications={notifications} />
         <AppShell>
           <p>Contenido</p>
         </AppShell>
@@ -122,8 +129,26 @@ describe("AppShell navigation badges", () => {
 
     const link = within(desktopNavigation()).getByRole("link", { name: /Calificar/ });
 
-    expect(link).toHaveAccessibleName("Calificar , 5 pendientes");
+    expect(link).toHaveAccessibleName("Calificar, 5 pendientes por calificar");
     expect(within(link).getByText("5")).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("names each badge count differently, singular and plural", () => {
+    const { unmount } = renderShell(1, 1);
+
+    expect(within(desktopNavigation()).getByRole("link", { name: "Calificar, 1 pendiente por calificar" })).toBeInTheDocument();
+    expect(within(desktopNavigation()).getByRole("link", { name: "Notificaciones, 1 sin leer" })).toBeInTheDocument();
+    unmount();
+
+    renderShell(2, 3);
+    expect(within(desktopNavigation()).getByRole("link", { name: "Calificar, 2 pendientes por calificar" })).toBeInTheDocument();
+    expect(within(desktopNavigation()).getByRole("link", { name: "Notificaciones, 3 sin leer" })).toBeInTheDocument();
+  });
+
+  it("shares the unread text with the notifications bell", () => {
+    expect(navBadgeText("notificationsUnread", 1)).toBe("1 sin leer");
+    expect(navBadgeText("notificationsUnread", 12)).toBe("12 sin leer");
+    expect(navBadgeText("gradingPending", 1)).toBe("1 pendiente por calificar");
   });
 
   it("shows no badge at zero", () => {
@@ -133,6 +158,7 @@ describe("AppShell navigation badges", () => {
 
     expect(link).toHaveAccessibleName("Calificar");
     expect(within(link).queryByText(/pendiente/)).not.toBeInTheDocument();
+    expect(within(desktopNavigation()).getByRole("link", { name: "Notificaciones" })).toBeInTheDocument();
   });
 });
 

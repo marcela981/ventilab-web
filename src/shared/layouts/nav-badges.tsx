@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Navigation badge counts
-* Descripción: Small registry of the numeric badges shown next to AppShell navigation items, keyed by a NavBadgeKey (for example "gradingPending"). NavBadgeProvider (mounted once in pages/_app.js) holds the counts; features feed them through useSetNavBadgeCount without the shared layer importing any feature, and the AppShell reads them with useNavBadgeCounts. Without a provider the counts are empty and setters are no-ops, so layouts and tests work unchanged. Depends on React. v1.1 (G1 review W2): badge visibility. The AppShell calls useNavBadgeHost while it is mounted, and useNavBadgesVisible reports whether any host is mounted, so feeders that poll the backend (the pending-grading count) run only while the badges are actually on screen (not on legacy pages without the AppShell). Without a provider nothing is visible. v1.2 (O1 notifications): new key "notificationsUnread" (unread notifications of the signed-in user, fed by NotificationsBadgeSync of the notifications feature).
-* Versión: 1.2
+* Descripción: Small registry of the numeric badges shown next to AppShell navigation items, keyed by a NavBadgeKey (for example "gradingPending"). NavBadgeProvider (mounted once in pages/_app.js) holds the counts; features feed them through useSetNavBadgeCount without the shared layer importing any feature, and the AppShell reads them with useNavBadgeCounts. Without a provider the counts are empty and setters are no-ops, so layouts and tests work unchanged. Depends on React. v1.1 (G1 review W2): badge visibility. The AppShell calls useNavBadgeHost while it is mounted, and useNavBadgesVisible reports whether any host is mounted, so feeders that poll the backend (the pending-grading count) run only while the badges are actually on screen (not on legacy pages without the AppShell). Without a provider nothing is visible. v1.2 (O1 notifications): new key "notificationsUnread" (unread notifications of the signed-in user, fed by NotificationsBadgeSync of the notifications feature). v1.3 (B4): navBadgeText gives the differentiated Spanish text of each count for screen readers ("3 sin leer", "1 pendiente por calificar"), shared by the AppShell items and the notifications bell.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,6 +17,17 @@ export const NAV_BADGE_KEYS = ["gradingPending", "notificationsUnread"] as const
 export type NavBadgeKey = (typeof NAV_BADGE_KEYS)[number];
 
 export type NavBadgeCounts = Partial<Record<NavBadgeKey, number>>;
+
+// TODO(i18n): see nav.config.
+const NAV_BADGE_TEXT: Record<NavBadgeKey, (count: number) => string> = {
+  gradingPending: (count) => `${count} ${count === 1 ? "pendiente" : "pendientes"} por calificar`,
+  notificationsUnread: (count) => `${count} sin leer`,
+};
+
+/** Screen-reader text of a badge count ("3 sin leer"); the caller shows nothing at 0. */
+export function navBadgeText(key: NavBadgeKey, count: number): string {
+  return NAV_BADGE_TEXT[key](count);
+}
 
 type NavBadgeContextValue = {
   counts: NavBadgeCounts

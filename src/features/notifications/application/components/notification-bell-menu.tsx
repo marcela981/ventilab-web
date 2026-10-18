@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: NotificationBellMenu
-* Descripción: Bell of the AppShell top bar (loaded lazily by NotificationBell): IconButton + MUI Badge with the unread count (useUnreadNotificationsCount; aria-label "Notificaciones: N sin leer"), and a popover (keyboard: focus moves in, Escape closes, items are buttons) that reads the latest BELL_NOTIFICATIONS_LIMIT notifications only while open: icon, title, body, relative time and read state. Clicking a notification marks it as read (`PATCH /api/notifications/{id}/read`, a failure does not block) and then navigates to its deep link (notification-links); one without a link only gets marked. "Marcar todas como leídas" (`PATCH /api/notifications/read-all`, error as a toast) and "Ver todas" → /notifications. Refreshes the count and the list on `notification:new` (useNotificationsRealtime). Loading skeleton, retryable error and empty state. Depends on MUI, next/link, next/router, the design-system skeleton and toast, the notifications hooks, config, entities, components and styles. v1.1 (O1 review): "Marcar todas como leídas" is also enabled when the loaded popover page shows an unread item, even if the polled count still says 0.
-* Versión: 1.1
+* Descripción: Bell of the AppShell top bar (loaded lazily by NotificationBell): IconButton + MUI Badge with the unread count (useUnreadNotificationsCount; aria-label "Notificaciones: N sin leer"), and a popover (keyboard: focus moves in, Escape closes, items are buttons) that reads the latest BELL_NOTIFICATIONS_LIMIT notifications only while open: icon, title, body, relative time and read state. Clicking a notification marks it as read (`PATCH /api/notifications/{id}/read`, a failure does not block) and then navigates to its deep link (notification-links); one without a link only gets marked. "Marcar todas como leídas" (`PATCH /api/notifications/read-all`, error as a toast) and "Ver todas" → /notifications. Refreshes the count and the list on `notification:new` (useNotificationsRealtime). Loading skeleton, retryable error and empty state. Depends on MUI, next/link, next/router, the design-system skeleton and toast, the notifications hooks, config, entities, components and styles. v1.1 (O1 review): "Marcar todas como leídas" is also enabled when the loaded popover page shows an unread item, even if the polled count still says 0. v1.2 (B4): labelWithUnread uses the shared navBadgeText, so the bell and the navigation item announce the same "Notificaciones, N sin leer".
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,6 +22,7 @@ import { useState } from "react";
 import type { MouseEvent } from "react";
 import { ListSkeleton } from "@shared/design-system/components/skeleton";
 import { useToast } from "@shared/design-system/components/use-toast";
+import { navBadgeText } from "@shared/layouts/nav-badges";
 import { cx } from "@shared/lib/class-names";
 import { resolveNotificationLink } from "../config/notification-links";
 import { NOTIFICATIONS_URL } from "../config/notifications.routes";
@@ -38,7 +39,7 @@ import styles from "../../UI/notifications.module.css";
 // TODO(i18n): move to a notifications namespace in src/i18n.
 export const NOTIFICATION_BELL_COPY = {
   label: "Notificaciones",
-  labelWithUnread: (count: number) => `Notificaciones: ${count} sin leer`,
+  labelWithUnread: (count: number) => `Notificaciones, ${navBadgeText("notificationsUnread", count)}`,
   title: "Notificaciones",
   markAll: "Marcar todas como leídas",
   viewAll: "Ver todas",
