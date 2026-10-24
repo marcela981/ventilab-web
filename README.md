@@ -1,7 +1,7 @@
 <!--
 * Funcionalidad: README de la aplicación web
-* Descripción: Descripción, requisitos, variables de entorno, scripts, integración continua y decisiones pendientes de ventilab-web. v1.0 (A7): se retiran las referencias a Prisma (prisma/, lib/, prisma-deploy.yml, DATABASE_URL, LOG_DB), eliminado de la web.
-* Versión: 1.0
+* Descripción: Descripción, requisitos, variables de entorno, scripts, integración continua y decisiones pendientes de ventilab-web. v1.0 (A7): se retiran las referencias a Prisma (prisma/, lib/, prisma-deploy.yml, DATABASE_URL, LOG_DB), eliminado de la web. v1.1 (A8): `.nvmrc` y `.node-version` fijan Node 22, como la CI.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,7 +26,7 @@ Toda la lógica de negocio y los datos viven en el backend `ventylab-server` (Ne
 
 ## Requisitos
 
-- **Node.js 20.9 o superior** (requisito de Next.js 16; la CI usa Node 22). El archivo `.nvmrc` todavía indica 18 y debe actualizarse.
+- **Node.js 20.9 o superior** (requisito de Next.js 16). `.nvmrc` y `.node-version` fijan Node 22, la misma versión que la CI.
 - **npm 10** (`packageManager: npm@10.9.0`).
 - El backend `ventylab-server` en ejecución (por defecto en `http://localhost:4000`).
 
@@ -126,7 +126,6 @@ Convenciones: sin `sx`, `style={}` ni `styled()`; estilos solo en CSS Modules de
 
 - **CSP aplicada**: pasar de Report-Only a aplicada tras validar en producción.
 - **Redirecciones heredadas**: son temporales (307) hasta después de la sustentación; luego pueden pasar a permanentes (308).
-- **`.nvmrc`**: actualizar a Node 20.9 o superior.
 
 ## Autoría
 
