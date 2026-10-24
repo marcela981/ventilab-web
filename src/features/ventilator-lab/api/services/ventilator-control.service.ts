@@ -9,8 +9,10 @@
 *   v1.1 (T9 review fix W2): `readControlStateResult` (raw result for a re-read that must reject on failure).
 *   v1.2 (B3.10): the unused `fetchControlState` and `sendControlHeartbeat` (POST /api/ventilator/control/heartbeat)
 *   are removed; the operator presence is refreshed by the socket message ventilator:heartbeat.
-*   Depends on the api-client request helpers and token storage, the backend origin and the lab DTOs.
-* Versión: 1.2
+*   v1.3 (A6, AUDIT_SYNC F4): the keepalive DELETE takes its Bearer token through `sendWithFreshToken` (shared
+*   api-client keepalive auth): a token about to expire is refreshed first through the shared single-flight refresh.
+*   Depends on the api-client request helpers and keepalive auth, the backend origin and the lab DTOs.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,7 +21,7 @@
 */
 
 import { apiDelete, apiGet, apiPost } from "@shared/api-client/api-request";
-import { getAccessToken } from "@shared/api-client/token-storage";
+import { sendWithFreshToken } from "@shared/api-client/keepalive-auth";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
 import type { OperatorControlState } from "../../application/entities/operator-control.entity";
 import type { VentilatorControlStateDTO } from "../dtos/lab.dto";
@@ -62,17 +64,12 @@ export function releaseControlKeepalive(): void {
     return;
   }
 
-  const token = getAccessToken();
-  const headers: Record<string, string> = { Accept: "application/json" };
-
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  try {
-    void fetch(`${BACKEND_ORIGIN}${VENTILATOR_CONTROL_PATH}`, { method: "DELETE", keepalive: true, credentials: "include", headers })
-      .catch(() => undefined);
-  } catch {
-    // Nothing else can be done while the page goes away; the backend presence grace releases it otherwise.
-  }
+  sendWithFreshToken({ Accept: "application/json" }, (headers) => {
+    try {
+      void fetch(`${BACKEND_ORIGIN}${VENTILATOR_CONTROL_PATH}`, { method: "DELETE", keepalive: true, credentials: "include", headers })
+        .catch(() => undefined);
+    } catch {
+      // Nothing else can be done while the page goes away; the backend presence grace releases it otherwise.
+    }
+  });
 }

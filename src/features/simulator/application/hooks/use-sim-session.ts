@@ -37,7 +37,9 @@
 *   (bounded like the normal end), posts /end at the last known simulated time, stops the worker and never starts it.
 *   v1.7 (T12): the frame hub moved unchanged to `@shared/sim-engine/console-binding` (`createConsoleFrameHub`), which
 *   the case editor local preview also uses.
-* Versión: 1.7
+*   v1.8 (A6, AUDIT_SYNC F4): while the session runs the access token is kept fresh (`keepAccessTokenFresh`), so
+*   the page-hide keepalive flush carries a valid token.
+* Versión: 1.8
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -47,6 +49,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toApiError } from "@shared/api-client/api-error";
+import { keepAccessTokenFresh } from "@shared/api-client/keepalive-auth";
 import { createSimWorker } from "@shared/sim-engine";
 import { createConsoleFrameHub } from "@shared/sim-engine/console-binding";
 import type { EngineMetrics, SimBatch, SimLoopStatus, SimWorkerClient, VentilatorSettings } from "@shared/sim-engine";
@@ -498,6 +501,8 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     };
 
     window.addEventListener("pagehide", flushOnPageHide);
+    // A6: the page-hide flush cannot wait for a refresh, so the token is kept fresh while the session runs.
+    const releaseFreshToken = keepAccessTokenFresh();
 
     return () => {
       disposed = true;
@@ -515,6 +520,7 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
       client.terminate();
       clientRef.current = null;
       queueRef.current = null;
+      releaseFreshToken();
     };
   }, [boot, blocked, hub]);
 
