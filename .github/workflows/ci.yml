@@ -3,8 +3,8 @@
 #   de vitest en 6 lotes (--maxWorkers=2), el build de producción, knip y la verificación del contrato OpenAPI
 #   contra el repositorio del backend (clonado en una subcarpeta y leído con BACKEND_SPEC_PATH). Si el backend es
 #   privado, el secreto BACKEND_REPO_TOKEN debe tener permiso de lectura sobre marcela981/ventylab-server.
-#   No reemplaza a prisma-deploy.yml.
-# Versión: 1.0
+#   v1.1 (A7): sin DATABASE_URL de marcador; la web ya no tiene Prisma.
+# Versión: 1.1
 # Autor: Marcela Mazo Castro
 # Proyecto: VentyLab
 # Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -31,8 +31,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      # Placeholder only: the legacy prisma/ folder needs the variable to generate its client; no database is used.
-      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
       - name: Checkout

@@ -8,7 +8,6 @@
   "project": [
     "pages/**/*.{js,jsx,ts,tsx}",
     "src/**/*.{js,jsx,ts,tsx,mjs}",
-    "lib/**/*.{js,ts}",
     "config/**/*.{mjs,mts}",
     "scripts/**/*.{js,mjs}"
   ],
@@ -17,10 +16,7 @@
     "entry": ["src/**/*.{test,spec}.{ts,tsx}", "scripts/e2e/*.test.mjs"]
   },
   "ignore": [
-    "lib/prisma.ts",
-    "lib/db-logger.ts",
     "src/shared/sim-engine/engine/**"
   ],
-  "ignoreBinaries": ["ts-node"],
   "ignoreExportsUsedInFile": true
 }
