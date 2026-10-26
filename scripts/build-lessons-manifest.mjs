@@ -1,5 +1,20 @@
 #!/usr/bin/env node
 
+/*
+* Funcionalidad: Generador del manifest de lecciones
+* Descripción: Lee los JSON de lecciones de src/features/teaching/data/lessons y escribe
+*   src/features/teaching/data/lessons.manifest.json (lo ejecutan postinstall y prestart).
+*   v1.1: no reescribe el manifest si su contenido, sin contar generatedAt, no cambió; así postinstall
+*   ya no deja el árbol de git modificado solo por el timestamp.
+*   Uso: npm run build:lessons-manifest
+* Versión: 1.1
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
 /**
  * Build Lessons Manifest Script
  * 
@@ -179,6 +194,30 @@ function processM03Lessons() {
 }
 
 /**
+ * Read the current manifest, or null when it is missing or unreadable
+ */
+function readCurrentManifest() {
+  if (!existsSync(MANIFEST_PATH)) {
+    return null;
+  }
+  try {
+    return JSON.parse(readFileSync(MANIFEST_PATH, 'utf-8'));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Compare two manifests ignoring generatedAt
+ */
+function sameContentIgnoringTimestamp(current, next) {
+  if (!current) return false;
+  const { generatedAt: _currentAt, ...currentContent } = current;
+  const { generatedAt: _nextAt, ...nextContent } = next;
+  return JSON.stringify(currentContent) === JSON.stringify(nextContent);
+}
+
+/**
  * Build the manifest
  */
 function buildManifest() {
@@ -257,13 +296,18 @@ function buildManifest() {
     })),
   };
   
-  // Ensure output directory exists before writing
-  mkdirSync(dirname(MANIFEST_PATH), { recursive: true });
+  // Skip the write when only the timestamp would change
+  if (sameContentIgnoringTimestamp(readCurrentManifest(), manifest)) {
+    console.log(`✅ Manifest unchanged at ${MANIFEST_PATH}`);
+  } else {
+    // Ensure output directory exists before writing
+    mkdirSync(dirname(MANIFEST_PATH), { recursive: true });
 
-  // Write manifest file
-  writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2), 'utf-8');
-  
-  console.log(`✅ Manifest generated at ${MANIFEST_PATH}`);
+    // Write manifest file
+    writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2), 'utf-8');
+
+    console.log(`✅ Manifest generated at ${MANIFEST_PATH}`);
+  }
   console.log(`   - Total lessons: ${lessons.length}`);
   console.log(`   - Beginner: ${levelsData[0].totalLessons} lessons, ${levelsData[0].totalPages} pages`);
   console.log(`   - Intermediate: ${levelsData[1].totalLessons} lessons, ${levelsData[1].totalPages} pages`);
