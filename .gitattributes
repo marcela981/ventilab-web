@@ -1,0 +1,13 @@
+# Funcionalidad: Atributos de Git del repositorio
+# Descripción: Fija finales de línea LF para el contrato OpenAPI copiado del backend y el cliente generado,
+#   de modo que `npm run generate:api` produzca los mismos bytes que el índice en cualquier sistema operativo
+#   (con core.autocrlf=true en Windows, el checkout en CRLF hacía que `npm run check:api` los viera modificados).
+# Versión: 1.0
+# Autor: Marcela Mazo Castro
+# Proyecto: VentyLab
+# Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+# Institución: Universidad del Valle
+# Contacto: marcela.mazo@correounivalle.edu.co
+
+openapi/** text eol=lf
+src/shared/api-client/generated/** text eol=lf

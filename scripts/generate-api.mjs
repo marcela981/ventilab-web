@@ -6,8 +6,11 @@
 *   v1.1 (B5): BACKEND_SPEC_PATH (ruta relativa a la raíz del repo o absoluta) reemplaza la ruta por defecto del
 *   contrato del backend (la CI clona el backend en otra carpeta); cuando se define y el archivo no existe, falla
 *   en lugar de reutilizar la copia local, para que la verificación del contrato nunca pase sin el backend.
+*   v1.2: en lugar de copiar el archivo byte a byte, parsea el contrato y lo escribe con JSON.stringify(spec, null, 2)
+*   y salto de línea LF final, de modo que la copia no depende de la indentación ni de los finales de línea del
+*   origen (.gitattributes fija eol=lf para openapi/** y src/shared/api-client/generated/**).
 *   Uso: npm run generate:api
-* Versión: 1.1
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,7 +18,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { copyFile, mkdir, writeFile, access } from "node:fs/promises";
+import { mkdir, readFile, writeFile, access } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import openapiTS, { astToString } from "openapi-typescript";
@@ -54,7 +57,8 @@ async function main() {
   await mkdir(path.dirname(LOCAL_SPEC), { recursive: true });
 
   if (await exists(BACKEND_SPEC)) {
-    await copyFile(BACKEND_SPEC, LOCAL_SPEC);
+    const spec = JSON.parse(await readFile(BACKEND_SPEC, "utf8"));
+    await writeFile(LOCAL_SPEC, `${JSON.stringify(spec, null, 2)}\n`, "utf8");
     console.log(`[generate:api] Copied ${path.relative(ROOT, BACKEND_SPEC)} -> openapi/openapi.json`);
   } else if (EXPLICIT_SPEC !== "") {
     throw new Error(`BACKEND_SPEC_PATH points to a missing file: ${BACKEND_SPEC}`);
