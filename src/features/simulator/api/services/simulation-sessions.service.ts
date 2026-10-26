@@ -3,7 +3,9 @@
 * Descripción: Engine-based simulation session endpoints, all present in openapi/openapi.json: start a session POST /api/simulation/sessions ({mode, caseId, timeMultiplier, attemptId?, questionId?}; the server fixes the seed and the engine version) and the paginated session history GET /api/simulation/sessions/history (own sessions by default; page, limit, caseId, mode and status filters). v1.1 (T6): POST /{id}/events (client events with idempotent ids; the server counts duplicates), GET /{id}/replay and GET /{id}/state (resume after a reload) and POST /{id}/end ({simTimeMs?}). Summary and assist are added by later tasks. v1.2: a keepalive `fetch` of POST /{id}/events for the page-hide flush (same origin, Bearer token and cookies as the axios client) and the session `startedAt` read from the history `ids` filter. Depends on the api-client request helpers and token storage, the backend origin, the simulator DTOs and mappers. v1.3 (T8): the GET /{id}/summary path (read through useApiQuery by the result page) and the history query of one session (its mode and exam linkage). v1.4 (review of 524aedf): GET /{id}/state also returns the server clock of its response (HTTP Date header, read through the axios client because the generic helpers hide headers); the page-hide keepalive is best effort and split into requests of ≤ 50 events and < 60 KiB each (the outbox mirror is the guarantee). v1.5 (review of 180a0a1): the keepalive chunks stop once their
 *   TOTAL would pass 60 KiB (browsers cap all in-flight keepalive bodies together at 64 KiB); the /state server clock
 *   records the monotonic client time of the response.
-* Versión: 1.5
+*   v1.6 (A6, AUDIT_SYNC F4): the page-hide keepalive takes its Bearer token through `sendWithFreshToken` (shared
+*   api-client keepalive auth): a token about to expire is refreshed first through the shared single-flight refresh.
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,7 +16,7 @@
 import { toApiError } from "@shared/api-client/api-error";
 import { apiGet, apiPost, buildPath, unwrapResponse } from "@shared/api-client/api-request";
 import { httpClient } from "@shared/api-client/http-client";
-import { getAccessToken } from "@shared/api-client/token-storage";
+import { sendWithFreshToken } from "@shared/api-client/keepalive-auth";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
 import { KEEPALIVE_MAX_BYTES, KEEPALIVE_MAX_EVENTS, KEEPALIVE_MAX_TOTAL_BYTES } from "../../application/config/sim-console.config";
 import { monotonicNow } from "../../application/entities/sim-session.entity";
@@ -145,29 +147,25 @@ export function chunkKeepaliveBodies(
  * each and only the chunks whose running total stays within KEEPALIVE_MAX_TOTAL_BYTES are sent; whatever is not sent
  * or the browser drops is not lost. The guarantee is the outbox mirror: the ids are idempotent and the
  * next boot resends every unacknowledged event. Same base URL, Bearer token and cookies (`credentials: "include"`,
- * matching the axios client's `withCredentials: true`); no refresh on 401 and no result.
+ * matching the axios client's `withCredentials: true`); a token about to expire is refreshed first
+ * (the page keeps it fresh beforehand: keepAccessTokenFresh), no refresh on 401 and no result.
  */
 export function sendSimulationEventsKeepalive(sessionId: string, events: readonly ClientSessionEvent[]): void {
   if (events.length === 0 || typeof fetch !== "function") {
     return;
   }
 
-  const token = getAccessToken();
-  const headers: Record<string, string> = { Accept: "application/json", "Content-Type": "application/json" };
+  sendWithFreshToken({ Accept: "application/json", "Content-Type": "application/json" }, (headers) => {
+    try {
+      const url = `${BACKEND_ORIGIN}${SIMULATION_SESSION_EVENTS_PATH.replace("{id}", encodeURIComponent(sessionId))}`;
 
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  try {
-    const url = `${BACKEND_ORIGIN}${SIMULATION_SESSION_EVENTS_PATH.replace("{id}", encodeURIComponent(sessionId))}`;
-
-    chunkKeepaliveBodies(events).forEach((body) => {
-      void fetch(url, { method: "POST", keepalive: true, credentials: "include", headers, body }).catch(() => undefined);
-    });
-  } catch {
-    // Nothing else can be done while the page goes away; the outbox keeps the events.
-  }
+      chunkKeepaliveBodies(events).forEach((body) => {
+        void fetch(url, { method: "POST", keepalive: true, credentials: "include", headers, body }).catch(() => undefined);
+      });
+    } catch {
+      // Nothing else can be done while the page goes away; the outbox keeps the events.
+    }
+  });
 }
 
 /** Wall-clock start of one own session, from the history (`ids` filter); null when it is not listed. */

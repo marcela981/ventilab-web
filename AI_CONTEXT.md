@@ -1,22 +1,46 @@
+<!--
+* Funcionalidad: Contexto del repositorio para asistentes de IA
+* Descripción: Estado real de ventilab-web: stack, backend NestJS y cliente OpenAPI generado, features, rutas, providers, estilos, pruebas y despliegue. v1.0 (A9): reescrito desde el código; reemplaza la versión de julio de 2026 (NextAuth, pages/api, backend Express, Prisma), que ya no aplica.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+-->
+
 # VentyLab — Contexto para IA
 
 ## Descripción del proyecto
-Sistema Ciberfísico Educativo para enseñanza de ventilación mecánica.
+Sistema Ciberfísico Educativo para la enseñanza de la ventilación mecánica.
 Tesis de Marcela Mazo Castro — Universidad del Valle.
 
-Este documento refleja el árbol **post-limpieza** (rama `cleanup-pre-entrega`, julio 2026).
-Repo hermano: `../ventylab-server` (backend Express + TS, tiene su propio AI_CONTEXT.md).
+Este repositorio es **solo la interfaz web**. Toda la lógica de negocio y los datos viven en el repo hermano `../ventylab-server` (backend **NestJS 11**, con su propio `AI_CONTEXT.md`).
 
 **Stack:**
-- Next.js 16 (Pages Router, `next dev/build --webpack`), React 19, TypeScript 5 (codebase mixto JS/TS)
-- UI: Material UI v7 + Emotion; Chart.js 4 (react-chartjs-2); @mui/x-date-pickers
-- Datos: SWR 2 (claves en `src/lib/swrKeys.ts`) + axios (cliente propio); react-hook-form + zod
-- Auth: NextAuth v4 + @next-auth/prisma-adapter; JWT puente hacia el backend Express
-- DB (solo rutas API de Next): PostgreSQL + Prisma 6 (`prisma/schema.prisma`, seed `prisma/seed.ts`)
+- Next.js 16 (Pages Router, `next dev/build --webpack`), React 19, TypeScript 5 (`allowJs`; quedan 4 archivos JS: `pages/_app.js`, `pages/index.js`, `pages/dashboard/index.js`, `src/shared/components/UI/WarmupOverlay.jsx`)
+- UI: Material UI 7 + Emotion, con CSS Modules; Chart.js 4
+- Datos: axios + SWR 2 sobre el cliente OpenAPI generado (`openapi-typescript`)
 - Realtime: socket.io-client 4
-- IA: @google/generative-ai (Gemini)
-- Contenido: react-markdown + remark-gfm/remark-math + KaTeX; TipTap 3 (editor rico); dompurify
-- i18n: i18next / react-i18next (es/en)
+- Contenido: react-markdown + remark-gfm/remark-math + KaTeX; TipTap 3; dompurify
+- Observabilidad: `@sentry/browser` (opcional, carga diferida)
+- Pruebas: vitest + Testing Library + msw (jsdom)
+- Sin i18n: textos en español escritos a mano (mapas `*-error-messages.ts` por feature)
+- **Sin base de datos ni Prisma**: no hay `prisma/`, `lib/` ni `pages/api/`. La base de datos pertenece al backend.
+
+---
+
+## Integración con el backend (contrato OpenAPI)
+
+- **Contrato:** `openapi/openapi.json` es una copia del `openapi/openapi.json` de `ventylab-server`. De él se genera `src/shared/api-client/generated/schema.d.ts` (`npm run generate:api`, `scripts/generate-api.mjs`; acepta `BACKEND_SPEC_PATH`).
+- **Sincronía:** `npm run check:api` (`scripts/check-api-contract.mjs`) vuelve a generar la copia y los tipos y falla (exit 1) si `git status` muestra cambios en `openapi/openapi.json` o en `src/shared/api-client/generated`: detecta un contrato del backend sin consumir o un cliente editado a mano. La CI lo ejecuta contra un clon del backend.
+- **Cliente** (`src/shared/api-client/`):
+  - `http-client.ts`: axios con `baseURL` = **origen** del backend (`BACKEND_ORIGIN` de `src/shared/lib/env.ts`, sin `/api`: las rutas del contrato ya lo llevan), `Bearer` desde `token-storage.ts`, `Accept-Language: es`, timeouts por ruta (`timeouts.ts`) y un reintento tras 401.
+  - `token-refresh.ts`: `POST /api/auth/refresh` de vuelo único compartido (axios, SSE y socket). Si la sesión no se puede recuperar, borra los tokens y emite `session-expired`. Un 403 nunca cierra la sesión.
+  - `keepalive-auth.ts`: mantiene fresco el token de las peticiones `fetch` con `keepalive` al salir de la página (liberación del control del ventilador, vaciado de eventos del simulador).
+  - `api-request.ts`: `apiGet/apiPost/apiPut/apiPatch/apiDelete` tipados por ruta y método del esquema; `unwrapResponse` convierte el envelope `{ success, data, pagination, message, traceId }` en `ApiResult`.
+  - `api-error.ts` (`ApiError` con `code`, `message`, `status`, `details`, `traceId`, `retryAfter`), `use-api-query.ts` + `swr-config.tsx` (SWR con clave `[path, { params, query }]`), `sse-stream.ts` (streaming de IA por `fetch`) y `api-download.ts` (CSV).
+- **Socket.io:** `src/shared/realtime/realtime-provider.tsx`.
 
 ---
 
@@ -24,92 +48,86 @@ Repo hermano: `../ventylab-server` (backend Express + TS, tiene su propio AI_CON
 
 ```
 src/
-  features/       — un dominio por carpeta (ver mapa abajo)
-  shared/         — componentes, contexts, hooks, servicios transversales
-  lib/            — helpers (apiAuth, auth-config, curriculumResolver, prisma, roles, swrKeys)
-  contracts/      — tipos compartidos con el backend (admin, patient, simulator)
-  config/env.ts   — resolución de URL del backend
-  theme/ styles/ i18n/ types/ telemetry/
-pages/            — rutas Next.js (Pages Router) + pages/api/
-lib/ (raíz)       — server-only: auth.ts, prisma.ts, db-logger.ts
-prisma/           — schema PostgreSQL + seed
+  features/<feature>/   — api/{dtos,mappers,services} + application/{components,entities,hooks,pages[,config]} + UI/*.module.css + index.ts
+  shared/               — api-client, session, realtime, design-system, layouts, lib, rich-content, charts, waveforms,
+                          sim-engine, ventilator-console, ai-conversation, ai-rating, media-upload, rubric-editor
+                          (+ restos legados: contexts/WarmupContext.tsx, components/UI/WarmupOverlay.jsx)
+pages/                  — rutas finas de Next que importan la feature por su barrel y declaran getLayout
+config/                 — csp.mjs (cabeceras y CSP) y legacy-redirects.mjs
+openapi/                — copia del contrato del backend
+scripts/                — generate-api, check-api-contract, sync-sim-engine, sync-lab-settings, e2e/, utilidades de lecciones
 ```
 
+`eslint-plugin-boundaries` define las fronteras: una feature solo importa `shared` y el `index.ts` de otras features.
+
 ### Reglas de arquitectura (OBLIGATORIAS)
-1. Estilos: SOLO en archivos `.css` externos dentro de subcarpeta `ui/` de cada módulo. PROHIBIDO `sx={{}}`, `style={{}}`, styled-components.
-2. Cada archivo inicia con header de comentario indicando funcionalidad, versión, autor.
-3. Principios: SOLID, KISS, YAGNI.
+1. Estilos: SOLO en archivos `.css` / `.module.css` dentro de la subcarpeta `UI/` de cada módulo. PROHIBIDO `sx={{}}`, `style={{}}` y CSS-in-JS; ESLint lo bloquea (`STYLE_BAN_SYNTAX` / `STYLE_BAN_IMPORTS`). Los tokens viven en `src/shared/design-system/UI/tokens.css` y `global.css`.
+2. Cada archivo inicia con el header de comentario (funcionalidad, descripción, versión, autor…); al modificarlo se sube la versión.
+3. Principios: SOLID, KISS, YAGNI (`ARQUITECTURA.md`).
 
 ---
 
-## Mapa de features vivas (`src/features/`)
+## Mapa de features (`src/features/`, 17)
 
-| Feature | Propósito | Subcarpetas clave |
+| Feature | Propósito | Rutas |
 |---|---|---|
-| `admin/` | Panel teacher/admin: estudiantes, estadísticas | components/ (panel/pages), hooks/, services/, useStudents.ts |
-| `ai-feedback/` | Capa cliente de IA (Gemini) | hooks/, services/ (prompts/system.ts), ai.api.ts, ai.types.ts |
-| `auth/` | Login/registro/sesión + guards | components/, auth.api.ts, auth.types.ts |
-| `dashboard/` | Widgets del dashboard estudiante (KPIs, tareas, recomendaciones) | components/ (~12 tiles), hooks/, DashboardTab.tsx |
-| `ensenanza/` | **Feature principal**: curriculum, lecciones, editor, generación IA | config/, curriculum/ (ensenanzaRespiratoria, ensenanzaVentylab, preRequisitos), shared/ (components, contexts, dashboard, data, hooks, progreso, services, utils) |
-| `evaluation/` | Actividades, quizzes, entregas, calificación | api/, components/ (builder, dashboard, grading, student), context/ (EvaluationContext), data/clinicalCases, hooks/, services/, shared/, UI/ |
-| `profile/` | Perfil de usuario | components/, profile.api.ts, useProfile.ts |
-| `progress/` | Progreso gamificado: XP, rachas, logros. **Zona intocable** (LearningProgressContext, curriculumData, JSON de lecciones) | components/, hooks/, services/, utils/, AchievementContext.jsx, LearningProgressContext.jsx |
-| `simulador/` | Simulador ventilador/paciente con conectividad a dispositivo | compartido/, conexion/ (mqtt, serial, websocket, contexto), simuladorPaciente/, simuladorVentilador/ (dashboard, graficasMonitor, IAMonitor, panelControl) |
-| `teaching/` | Residual: solo data/ (lessons.manifest.json regenerado por prestart) | data/ |
+| `admin-console` | Consola de administración: usuarios, ajustes de plataforma, auditoría, analítica de IA, exportación para investigación, estado del sistema | `/admin/*` |
+| `ai-chat` | Asistente IA conversacional con streaming (SSE); lanzador y panel montados en `_app.js` | `/assistant`, `/assistant/[conversationId]` |
+| `auth` | Login (correo y Google Identity Services), registro, recuperación de contraseña, acceso denegado. La sesión vive en `@shared/session` | `/auth/*` |
+| `case-editor` | Autoría de casos clínicos del simulador (con vista previa local del motor) | `/simulator/cases/**` |
+| `content-editor` | Edición del contenido de aprendizaje (páginas, editor TipTap, medios) | `/content/**` |
+| `evaluation-authoring` | Creación, edición y asignación de evaluaciones | `/evaluations/manage/**` |
+| `evaluations` | Presentación de evaluaciones por el estudiante, intentos y resultados (incluye preguntas de simulación) | `/evaluations/**` |
+| `grading` | Calificación docente con rúbricas y retroalimentación por IA; badge de pendientes en `_app.js` | `/grading/**` |
+| `groups` | Grupos: gestión docente y "mi grupo" del estudiante | `/groups/**`, `/my-group` |
+| `learning` | Feature principal de aprendizaje: secciones, módulos, lecciones, notas, progreso y tutor IA | `/learn/**` |
+| `notifications` | Notificaciones en tiempo real: campana, toasts y página | `/notifications` |
+| `profile` | Perfil del usuario | `/profile` |
+| `simulator` | Simulación de ventilador y paciente con el motor en un Web Worker, sesiones, repetición, resultados y asistente IA | `/simulator/**` |
+| `student-space` | Espacio del estudiante: inicio, notas y calificaciones | `/me`, `/me/notes`, `/me/grades` |
+| `teacher-dashboard` | Panel docente y seguimiento de estudiantes | `/teacher`, `/teacher/students/[userId]` |
+| `teaching` | Residual: solo `data/lessons.manifest.json` (lo regeneran `postinstall`/`prestart`; sin consumidores) | — |
+| `ventilator-lab` | Laboratorio con el ventilador físico: reservas, consola en vivo con telemetría y comandos, control exclusivo de operador, grabaciones | `/lab/**` |
 
 ---
 
-## Rutas (pages/)
+## Rutas y acceso
 
-Públicas/estudiante: `/`, `/dashboard`, `/achievements`, `/flashcards`, `/profile`, `/search`, `/simulador`, `/teaching`, `/teaching/[moduleId]/[lessonId]`
-Auth: `/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/error`, `/auth/access-denied`
-Panel (teacher/admin): `/panel`, `/panel/admin`, `/panel/settings`, `/panel/students`, `/panel/students/[id]`, `/admin/search-analytics`
-Evaluación: `/evaluation`, `/evaluation/[activityId]`, `/evaluation/grade`, `/evaluation/grade/[activityId]`, `/evaluation/manage`, `/evaluation/manage/new`, `/evaluation/manage/[activityId]/edit`
-
-### APIs Next.js (pages/api/)
-- `/api/auth/[...nextauth]` — handler NextAuth
-- `/api/auth/backend-token` — emite JWT para el backend (devuelve `{ token }` **sin** envelope; excepción a la convención)
-- `/api/curriculum/lessons/[lessonId]` (+ `/sections`, `/sections/[sectionIndex]`, `/sections/reorder`)
-- `/api/curriculum/levels/[levelId]`, `/api/curriculum/modules/[moduleId]`
+- `pages/` no tiene `pages/api/` ni usa `getServerSideProps`/`getStaticProps`/`getInitialProps`: la app es 100 % cliente.
+- Cada página declara su layout (`getLayout`, `src/shared/layouts/get-layout.ts`). Los guards de rol viven en los layouts: `withPublicLayout`, `withStudentLayout` (`RequireAuth`), `withStudentOnlyLayout`, `withTeacherLayout`, `withAdminLayout` y `withPrintLayout` (`RequireRole`). Roles: `STUDENT`, `TEACHER`, `ADMIN`.
+- Tabla de acceso por ruta: `src/shared/session/routes.config.ts`. `/` redirige al inicio del rol (`RoleHomeRedirect`).
+- Redirecciones legadas (307) en `config/legacy-redirects.mjs` y cabeceras de seguridad + CSP (Report-Only salvo `CSP_REPORT_ONLY=false`) en `config/csp.mjs`, servidas por `next.config.mjs`.
 
 ---
 
-## Acoplamiento con el backend
+## Providers globales (`pages/_app.js`, de afuera hacia adentro)
 
-- Cliente HTTP: `src/shared/services/api/http.ts` — exporta `http` (axios, timeout 8s) y `httpSlow` (60s, para health/login/warmup). Ambos `withCredentials`, interceptores de token, refresh en 401 (vía `/api/auth/backend-token`) y logout en 403.
-- Base URL: `BACKEND_API_URL` desde `src/config/env.ts` = `${BACKEND_URL}/api` (env `BACKEND_URL` / `NEXT_PUBLIC_BACKEND_URL`, fallback `http://localhost:4000`). **`httpSlow`/`http` ya incluyen `/api`** — no duplicar el prefijo en las llamadas.
-- Envelope de respuesta del backend: `{ success, data }` (+ `message` en errores).
+1. `ThemeProvider` (MUI, `@shared/design-system/theme`) + `CssBaseline`
+2. `RouteErrorBoundary`
+3. `ApiSWRProvider` (`@shared/api-client/swr-config`)
+4. `AuthProvider` (`@shared/session/auth-provider`)
+5. `RealtimeProvider` (Socket.io)
+6. `NavBadgeProvider` (+ `GradingPendingBadgeSync`, `NotificationsBadgeSync`)
+7. `NavIndicatorProvider` (+ `DeviceStatusNavIndicatorSync`)
+8. `WarmupProvider` (arranque en frío del backend, `GET /health` + `WarmupOverlay`)
+9. `ToastProvider` (+ `NotificationToasts`)
+10. `AiChatProvider` → `TopBarActionsProvider` (lanzador de IA y campana) → layout de la página
 
----
-
-## Contextos globales (`pages/_app.js`, de afuera hacia adentro)
-
-1. `ErrorBoundary` — shared/components
-2. `Providers` — src/providers/Providers.jsx (pass-through + fetch utils)
-3. `WarmupProvider` — shared/contexts/WarmupContext.tsx (detección de cold-start del backend + overlay)
-4. `SessionProvider` (next-auth) — refetch 5 min
-5. `AuthProvider` — shared/contexts/AuthContext.jsx
-6. `SocketProvider` — shared/contexts/SocketContext.tsx
-7. `ThemeProvider` (MUI) — src/theme
-8. `NotificationProvider` — shared/contexts/NotificationContext.jsx
-9. `PatientDataProvider` — features/simulador/simuladorPaciente/contexto
-10. Layout condicional: páginas auth/panel sin sidebar; resto con `SidebarContext.Provider` + `Sidebar`
-
-`LearningProgressContext`, `AchievementContext` y `EvaluationContext` NO son globales: envuelven sus páginas de feature localmente.
+Sentry se inicia de forma diferida (`startErrorReporting`) y `@features/simulator/composition/register-exam-practical-slot` se importa como efecto lateral.
 
 ---
 
-## Problemas conocidos
+## Pruebas y calidad
 
-- **tsc no es baseline verde**: ~280 errores de tipo preexistentes (`npx tsc --noEmit`). Para verificar una feature, filtrar la salida por ruta. La limpieza pre-entrega no agregó errores (291 → 280).
-- **NextAuth 404 en dev**: `/api/auth/*` devolviendo 404 = compilación obsoleta de `[...nextauth]`, no incompatibilidad. No correr `next build` con el dev server activo.
-- **Colisiones de barrels** (index.js vs index.ts en el mismo dir, exportan sets distintos; uno shadowea al otro): `features/dashboard/components/` y `features/ensenanza/shared/components/modulos/`.
-- **Pares .js/.ts vivos en paralelo** (no consolidar sin revisar): `progress/services/progressService.js` y `.ts` (ambos importados con extensión explícita); `evaluation/services/evaluationService.js` (runtime) vs `evaluation/shared/services/evaluationService.ts` (solo tipos); `ensenanza/shared/hooks/useModuleProgress.js` y `.ts` (imports sin extensión).
-- **Resolución webpack archivo-antes-que-carpeta**: `import './X'` toma `X.jsx` por sobre `X/index.ts`.
-- `lessons.manifest.json` duplicado: `features/teaching/data/` (regenerado por el script de prestart) vs `features/ensenanza/shared/data/` (stale, sin imports).
-- `src/features/teaching/` es residual; la feature viva es `ensenanza/`.
-- `src/hooks/` quedó vacío tras la limpieza.
-- Este repo **no tiene tests** (los únicos tests del proyecto están en el server, diferidos en `__deferred_tests__/`).
+- vitest coubicado (`*.test.ts(x)` junto al código), entorno jsdom, msw para HTTP. Carpetas incluidas en `vitest.config.ts`.
+- Scripts: `npm run typecheck` (`tsconfig.strict.json`), `npm run lint` (lista explícita de carpetas), `npm test`, `npm run build`, `npm run check:api`; knip con `npx --yes knip@5`.
+- CI (`.github/workflows/ci.yml`, Node 22): typecheck, lint, pruebas en 6 lotes, build, knip y `check:api` contra el backend.
+- `next.config.mjs` usa `typescript.ignoreBuildErrors: true`: la garantía de tipos es el `typecheck` de la CI.
 
-## Nota de limpieza (julio 2026)
-Rama `cleanup-pre-entrega`: checkpoint `55b9a8a` (estado previo) → `ce570d7` (limpieza, 96 archivos, −32.625 líneas). Se eliminaron huérfanos confirmados, scaffolding (docs/backups, docs/analysis, docs/examples, dev-notes, guías), duplicados shadowed y el `contracts/` raíz roto. Ítems dudosos (barrels en colisión, pares .js/.ts, manifest stale) se dejaron intactos a propósito.
+---
+
+## Despliegue
+
+- **Web:** Vercel (`vercel.json`: `npm install --include=dev`, `npm run build`). Variables en `.env.example`; `NEXT_PUBLIC_BACKEND_URL` es obligatoria en producción. Node 22 (`.nvmrc`, `.node-version`).
+- **Backend:** `ventylab-server` corre como **contenedor persistente de una sola réplica** (Socket.io, MQTT, SSE y tareas programadas en memoria: no es apto para serverless), desplegado en Dokploy.
+- **Base de datos:** PostgreSQL en Dokploy, propiedad exclusiva del backend (Prisma y migraciones viven en `ventylab-server`). La web nunca se conecta a ella.

@@ -1,3 +1,14 @@
+<!--
+* Funcionalidad: README de la aplicación web
+* Descripción: Descripción, requisitos, variables de entorno, scripts, integración continua y decisiones pendientes de ventilab-web. v1.0 (A7): se retiran las referencias a Prisma (prisma/, lib/, prisma-deploy.yml, DATABASE_URL, LOG_DB), eliminado de la web. v1.1 (A8): `.nvmrc` y `.node-version` fijan Node 22, como la CI.
+* Versión: 1.1
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+-->
+
 # VentyLab — aplicación web
 
 VentyLab es el frontend del Sistema Ciberfísico Educativo para la enseñanza de la mecánica ventilatoria, desarrollado como parte de la tesis *Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje* (Universidad del Valle).
@@ -15,14 +26,14 @@ Toda la lógica de negocio y los datos viven en el backend `ventylab-server` (Ne
 
 ## Requisitos
 
-- **Node.js 20.9 o superior** (requisito de Next.js 16; la CI usa Node 22). El archivo `.nvmrc` todavía indica 18 y debe actualizarse.
+- **Node.js 20.9 o superior** (requisito de Next.js 16). `.nvmrc` y `.node-version` fijan Node 22, la misma versión que la CI.
 - **npm 10** (`packageManager: npm@10.9.0`).
 - El backend `ventylab-server` en ejecución (por defecto en `http://localhost:4000`).
 
 ## Arranque local
 
 ```bash
-npm ci                 # instala dependencias (postinstall genera el cliente Prisma heredado y el manifiesto de lecciones)
+npm ci                 # instala dependencias (postinstall genera el manifiesto de lecciones)
 cp .env.example .env.local   # y complete los valores
 npm run generate:api   # regenera los tipos del contrato OpenAPI desde ../ventylab-server/openapi/openapi.json
 npm run dev            # servidor de desarrollo en http://localhost:3000 (Next con webpack)
@@ -44,7 +55,6 @@ Todas están documentadas en [`.env.example`](.env.example). Resumen:
 | `NEXT_PUBLIC_SENTRY_DSN` | DSN de Sentry; vacío desactiva la captura de errores (no se carga el SDK). |
 | `CSP_REPORT_ONLY` | `true` (defecto) envía la CSP solo como reporte; `false` la aplica. |
 | `CSP_REPORT_URI` | URL opcional para los reportes de violaciones de la CSP. |
-| `DATABASE_URL`, `LOG_DB` | Solo para la carpeta `prisma/` heredada (ver decisiones pendientes). |
 | `BACKEND_SPEC_PATH` | Ruta opcional al `openapi.json` del backend para `generate:api`/`check:api` (la usa la CI). |
 
 Las variables con prefijo `NEXT_PUBLIC_` quedan visibles en el navegador: **nunca** se debe usar ese prefijo para secretos (secreto de cliente de Google, claves de API de IA, claves de servicio de Supabase). Dentro de `src/`, `process.env` solo se lee en `src/shared/lib/env.ts` (excepción heredada: `NEXT_PUBLIC_GOOGLE_CLIENT_ID` en `src/features/auth/application/entities/google-config.ts`).
@@ -57,7 +67,7 @@ Las variables con prefijo `NEXT_PUBLIC_` quedan visibles en el navegador: **nunc
 | `npm run typecheck` | `tsc` estricto sobre el código migrado (`tsconfig.strict.json`). |
 | `npm run lint` | ESLint (incluye las reglas de fronteras entre módulos). |
 | `npx vitest run <carpetas> --maxWorkers=2` | Pruebas (ver lotes abajo). |
-| `npm run build` | Build de producción (valida el currículo y genera Prisma antes). |
+| `npm run build` | Build de producción (valida el currículo antes). |
 | `npm run check:api` | Falla si el cliente generado no coincide con el contrato del backend. |
 | `npx --yes knip@5 --no-progress --no-gitignore` | Archivos, exportaciones y dependencias sin uso (debe salir vacío). |
 
@@ -110,14 +120,12 @@ Convenciones: sin `sx`, `style={}` ni `styled()`; estilos solo en CSS Modules de
 
 ## Integración continua
 
-`.github/workflows/ci.yml` ejecuta en cada push y pull request a `master`: instalación (`npm ci` con caché de npm), `typecheck`, `lint`, las pruebas en los 6 lotes, `build`, knip y la verificación del contrato: clona `marcela981/ventylab-server` en `.ci/ventylab-server` y corre `npm run check:api` con `BACKEND_SPEC_PATH` apuntando a su `openapi/openapi.json`. Si el repositorio del backend es privado, se debe crear el secreto `BACKEND_REPO_TOKEN` (token con lectura de ese repositorio). El flujo `prisma-deploy.yml` es independiente.
+`.github/workflows/ci.yml` ejecuta en cada push y pull request a `master`: instalación (`npm ci` con caché de npm), `typecheck`, `lint`, las pruebas en los 6 lotes, `build`, knip y la verificación del contrato: clona `marcela981/ventylab-server` en `.ci/ventylab-server` y corre `npm run check:api` con `BACKEND_SPEC_PATH` apuntando a su `openapi/openapi.json`. Si el repositorio del backend es privado, se debe crear el secreto `BACKEND_REPO_TOKEN` (token con lectura de ese repositorio).
 
 ## Decisiones pendientes de la autora
 
-- **Carpeta `prisma/` del frontend**: la aplicación ya no consulta la base de datos (todo pasa por el backend), pero se conservan `prisma/`, `lib/prisma.ts`, `lib/db-logger.ts`, `.github/workflows/prisma-deploy.yml`, los scripts `prisma:*`/`postinstall` y las dependencias `prisma`, `@prisma/client` y `bcryptjs`. Eliminarlos o mantenerlos queda a decisión de la autora.
 - **CSP aplicada**: pasar de Report-Only a aplicada tras validar en producción.
 - **Redirecciones heredadas**: son temporales (307) hasta después de la sustentación; luego pueden pasar a permanentes (308).
-- **`.nvmrc`**: actualizar a Node 20.9 o superior.
 
 ## Autoría
 

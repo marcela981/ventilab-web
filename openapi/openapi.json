@@ -14875,26 +14875,6 @@
         ],
         "type": "object"
       },
-      "NextAuthTokenDTO": {
-        "properties": {
-          "email": {
-            "description": "User email from the NextAuth session",
-            "example": "student@ventylab.com",
-            "format": "email",
-            "type": "string"
-          },
-          "userId": {
-            "description": "User identifier from the NextAuth session",
-            "example": "cm5x2k9a00000abcd1234efgh",
-            "type": "string"
-          }
-        },
-        "required": [
-          "userId",
-          "email"
-        ],
-        "type": "object"
-      },
       "NextModuleDTO": {
         "properties": {
           "currentModuleId": {
@@ -24810,12 +24790,6 @@
         "name": "Authorization",
         "scheme": "bearer",
         "type": "http"
-      },
-      "NextAuth-bridge": {
-        "description": "Server-to-server secret shared with the frontend server",
-        "in": "header",
-        "name": "x-nextauth-bridge-secret",
-        "type": "apiKey"
       }
     }
   },
@@ -31971,161 +31945,6 @@
           "Authentication"
         ],
         "x-min-role": "STUDENT",
-        "x-required-permissions": []
-      }
-    },
-    "/api/auth/nextauth-token": {
-      "post": {
-        "description": "Issues the same token pair as login for a NextAuth session. Requires the shared bridge secret header. Limited to 60 requests per minute per calling server.\n\n**Required access:** server-to-server only: the `x-nextauth-bridge-secret` header must carry the bridge secret; user tokens are rejected.",
-        "operationId": "nextAuthToken",
-        "parameters": [
-          {
-            "description": "Shared NextAuth bridge secret",
-            "in": "header",
-            "name": "x-nextauth-bridge-secret",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NextAuthTokenDTO"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/APIResponseEnvelope"
-                    },
-                    {
-                      "properties": {
-                        "data": {
-                          "$ref": "#/components/schemas/LoginResponseDTO"
-                        }
-                      },
-                      "required": [
-                        "data"
-                      ],
-                      "type": "object"
-                    }
-                  ]
-                }
-              }
-            },
-            "description": "Tokens issued successfully"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "examples": {
-                  "ValidationError": {
-                    "$ref": "#/components/examples/ValidationError"
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Validation error"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "examples": {
-                  "UnauthorizedError": {
-                    "$ref": "#/components/examples/UnauthorizedError"
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Missing or invalid bridge secret, or email mismatch"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "examples": {
-                  "ForbiddenError": {
-                    "$ref": "#/components/examples/ForbiddenError"
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "User account is inactive"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "examples": {
-                  "NotFoundError": {
-                    "$ref": "#/components/examples/NotFoundError"
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "User not found"
-          },
-          "429": {
-            "content": {
-              "application/json": {
-                "examples": {
-                  "TooManyRequestsError": {
-                    "$ref": "#/components/examples/TooManyRequestsError"
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Too many token requests"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "examples": {
-                  "InternalServerError": {
-                    "$ref": "#/components/examples/InternalServerError"
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unexpected server error"
-          }
-        },
-        "security": [
-          {
-            "NextAuth-bridge": []
-          }
-        ],
-        "summary": "Exchange a NextAuth session for backend tokens",
-        "tags": [
-          "Authentication"
-        ],
-        "x-min-role": "SERVER",
         "x-required-permissions": []
       }
     },
@@ -75102,7 +74921,7 @@
     },
     "/api/users/me/change-password": {
       "post": {
-        "description": "Changes the authenticated user's password and closes every NextAuth session of the user\n\n**Required access:** any authenticated user (bearer token); minimum role STUDENT.",
+        "description": "Changes the authenticated user's password; access and refresh tokens already issued stay valid until they expire\n\n**Required access:** any authenticated user (bearer token); minimum role STUDENT.",
         "operationId": "changePassword",
         "parameters": [],
         "requestBody": {

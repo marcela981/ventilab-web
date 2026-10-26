@@ -1,3 +1,13 @@
+/*
+* Funcionalidad: TypeScript configuration
+* Descripción: Base compiler options and path aliases of the web (Next.js reads it; typecheck uses tsconfig.strict.json). v1.0 (A7): the `@/lib/*` alias no longer maps the removed root lib/ folder (dead Prisma client).
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
 {
   "compilerOptions": {
     /* Language and Environment */
@@ -41,7 +51,7 @@
       "@/*": ["./src/*"],
       "@/shared/*": ["./src/shared/*"],
       "@/features/*": ["./src/features/*"],
-      "@/lib/*": ["./lib/*", "./src/lib/*"],
+      "@/lib/*": ["./src/lib/*"],
       "@/data/*": ["./src/data/*"],
       "@/theme/*": ["./src/theme/*"],
       "@/styles/*": ["./src/styles/*"],

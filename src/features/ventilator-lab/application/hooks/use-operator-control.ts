@@ -28,7 +28,9 @@
 *   (the cache provider may already be gone); S1 a failed re-read while a control-changed event is still unconfirmed is
 *   retried ONCE per event after `rereadRetryMs` (the guard against older SWR data stays closed until a re-read
 *   answers; a second failure leaves it closed until the next event, action, re-authentication or bfcache restore).
-* Versión: 1.4
+*   v1.5 (A6, AUDIT_SYNC F4): while the caller is the operator the access token is kept fresh
+*   (`keepAccessTokenFresh`), so the keepalive release on leaving carries a valid token.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -37,6 +39,7 @@
 */
 
 import { useCallback, useEffect, useLayoutEffect, useReducer, useRef } from "react";
+import { keepAccessTokenFresh } from "@shared/api-client/keepalive-auth";
 import { useApiQuery } from "@shared/api-client/use-api-query";
 import { useSocket, useSocketEvent } from "@shared/realtime";
 import { useSession } from "@shared/session/use-session";
@@ -240,6 +243,9 @@ export function useOperatorControl({
 
     return () => clearInterval(timer);
   }, [isOperator, heartbeatMs]);
+
+  // A6: the keepalive release on leaving cannot wait for a refresh, so the token is kept fresh while operating.
+  useEffect(() => (isOperator ? keepAccessTokenFresh() : undefined), [isOperator]);
 
   useEffect(() => {
     if (!enabled) {
