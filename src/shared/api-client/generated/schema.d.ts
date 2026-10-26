@@ -990,28 +990,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/auth/nextauth-token": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Exchange a NextAuth session for backend tokens
-         * @description Issues the same token pair as login for a NextAuth session. Requires the shared bridge secret header. Limited to 60 requests per minute per calling server.
-         *
-         *     **Required access:** server-to-server only: the `x-nextauth-bridge-secret` header must carry the bridge secret; user tokens are rejected.
-         */
-        post: operations["nextAuthToken"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/auth/refresh": {
         parameters: {
             query?: never;
@@ -6378,7 +6356,7 @@ export interface paths {
         put?: never;
         /**
          * Change own password
-         * @description Changes the authenticated user's password and closes every NextAuth session of the user
+         * @description Changes the authenticated user's password; access and refresh tokens already issued stay valid until they expire
          *
          *     **Required access:** any authenticated user (bearer token); minimum role STUDENT.
          */
@@ -15830,19 +15808,6 @@ export interface components {
              * @example Fundamentos
              */
             title: string;
-        };
-        NextAuthTokenDTO: {
-            /**
-             * Format: email
-             * @description User email from the NextAuth session
-             * @example student@ventylab.com
-             */
-            email: string;
-            /**
-             * @description User identifier from the NextAuth session
-             * @example cm5x2k9a00000abcd1234efgh
-             */
-            userId: string;
         };
         NextModuleDTO: {
             /**
@@ -25573,89 +25538,6 @@ export interface operations {
                 };
             };
             /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unexpected server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    nextAuthToken: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Shared NextAuth bridge secret */
-                "x-nextauth-bridge-secret": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["NextAuthTokenDTO"];
-            };
-        };
-        responses: {
-            /** @description Tokens issued successfully */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
-                        data: components["schemas"]["LoginResponseDTO"];
-                    };
-                };
-            };
-            /** @description Validation error */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Missing or invalid bridge secret, or email mismatch */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description User account is inactive */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description User not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Too many token requests */
             429: {
                 headers: {
                     [name: string]: unknown;
