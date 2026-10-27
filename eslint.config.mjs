@@ -85,7 +85,10 @@
  *   v3.37 (W1 Bloque 1): nueva feature src/features/simulator-workspace (sin legado) y su ruta
  *   delgada pages/simulador/index.tsx; salen pages/simulator/index.tsx, pages/lab/index.tsx y
  *   pages/lab/live/index.tsx (borradas: next.config las redirige a /simulador?tab=…).
- * Versión: 3.37
+ *   v3.38 (W4 Bloque 1): además del index.ts, los puntos de entrada por área de una feature
+ *   (src/features/<feature>/*.entry.ts, p. ej. simulator/session.entry.ts) cuentan como su API
+ *   pública (feature-index): las páginas y otras features pueden importarlos sin cargar el barrel.
+ * Versión: 3.38
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -244,7 +247,8 @@ const eslintConfig = [
         {
           type: "feature-index",
           mode: "full",
-          pattern: `src/features/{${NEW_FEATURES}}/index.ts`,
+          // The barrel and the per-area entry points (e.g. simulator/session.entry.ts) are the public API.
+          pattern: [`src/features/{${NEW_FEATURES}}/index.ts`, `src/features/{${NEW_FEATURES}}/*.entry.ts`],
           capture: ["feature"],
         },
         {

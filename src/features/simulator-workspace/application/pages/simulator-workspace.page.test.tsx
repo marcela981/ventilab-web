@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Simulator workspace page tests
-* Descripción: The /simulador placeholder (W1) waits for the router before reading `?tab=`, falls back to monitoreo for a missing, repeated or unknown tab and loads the existing page of each tab (simular and sesiones → simulator catalog, conexion → lab home, monitoreo → lab live console). Depends on vitest, Testing Library and mocked next/router and feature barrels.
-* Versión: 0.1
+* Descripción: The /simulador placeholder (W1) waits for the router before reading `?tab=`, falls back to monitoreo for a missing, repeated or unknown tab and loads the existing page of each tab (simular and sesiones → simulator catalog, conexion → lab home, monitoreo → lab live console). Depends on vitest, Testing Library and mocked next/router and feature barrels. v0.2 (W4): the mocks follow the feature entry points.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,9 +17,9 @@ import { SIMULATOR_WORKSPACE_COPY, SimulatorWorkspacePage } from "./simulator-wo
 const router = vi.hoisted(() => ({ isReady: true, query: {} as Record<string, string | string[]> }));
 
 vi.mock("next/router", () => ({ useRouter: () => router }));
-vi.mock("@features/simulator", () => ({ SimulatorCatalogPage: () => <p>catalog page</p> }));
-vi.mock("@features/ventilator-lab", () => ({
-  LabHomePage: () => <p>lab home page</p>,
+vi.mock("@features/simulator/catalog.entry", () => ({ SimulatorCatalogPage: () => <p>catalog page</p> }));
+vi.mock("@features/ventilator-lab/home.entry", () => ({ LabHomePage: () => <p>lab home page</p> }));
+vi.mock("@features/ventilator-lab/live.entry", () => ({
   LabLivePage: () => <p>lab live page</p>,
 }));
 

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Simulator workspace page (placeholder)
-* Descripción: Temporary page of /simulador, the home of every role (W1, Bloque 1). It reads `?tab=` only once the router is ready (parseWorkspaceTab; missing or unknown → monitoreo), shows the workspace heading and, so no screen is lost while the workspace is built, lazy loads the existing page of that tab from its feature barrel: simular and sesiones → SimulatorCatalogPage (catalog and "Mis sesiones"), conexion → LabHomePage, monitoreo → LabLivePage. W5 replaces this content with the workspace shell (bottom tabs, panels mounted once). Depends on next/router, React.lazy, @shared/lib/retry-import, the design-system skeleton and route error boundary, and the simulator and ventilator-lab barrels.
-* Versión: 0.1
+* Descripción: Temporary page of /simulador, the home of every role (W1, Bloque 1). It reads `?tab=` only once the router is ready (parseWorkspaceTab; missing or unknown → monitoreo), shows the workspace heading and, so no screen is lost while the workspace is built, lazy loads the existing page of that tab from its feature barrel: simular and sesiones → SimulatorCatalogPage (catalog and "Mis sesiones"), conexion → LabHomePage, monitoreo → LabLivePage. W5 replaces this content with the workspace shell (bottom tabs, panels mounted once). Depends on next/router, React.lazy, @shared/lib/retry-import, the design-system skeleton and route error boundary, and the simulator and ventilator-lab barrels. v0.2 (W4, Bloque 1): each panel is lazy loaded from its feature entry point (catalog.entry, home.entry, live.entry), never from a feature barrel, so a tab chunk carries only that area.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,15 +27,15 @@ export const SIMULATOR_WORKSPACE_COPY = {
 } as const;
 
 const SimulatorCatalogPanel = lazy(() =>
-  retryImport(() => import("@features/simulator")).then((module) => ({ default: module.SimulatorCatalogPage })),
+  retryImport(() => import("@features/simulator/catalog.entry")).then((module) => ({ default: module.SimulatorCatalogPage })),
 );
 
 const LabHomePanel = lazy(() =>
-  retryImport(() => import("@features/ventilator-lab")).then((module) => ({ default: module.LabHomePage })),
+  retryImport(() => import("@features/ventilator-lab/home.entry")).then((module) => ({ default: module.LabHomePage })),
 );
 
 const LabLivePanel = lazy(() =>
-  retryImport(() => import("@features/ventilator-lab")).then((module) => ({ default: module.LabLivePage })),
+  retryImport(() => import("@features/ventilator-lab/live.entry")).then((module) => ({ default: module.LabLivePage })),
 );
 
 // Temporary mapping to the pages that existed before the workspace (W5–W10 replace each panel).

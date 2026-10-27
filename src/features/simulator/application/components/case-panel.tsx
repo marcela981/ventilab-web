@@ -7,8 +7,9 @@
 *   history; patient data and objectives come from the engine case. Depends on MUI icons, the api-client query hook,
 *   shared rich-content, the console adapter helpers and the simulator CSS.
 *   v1.1 (W2, Bloque 1): the case history (rich content, KaTeX) is memoised, so the live objectives refresh does not
-*   re-render it.
-* Versión: 1.1
+*   re-render it. v1.2 (W4, Bloque 1): the rich-content renderer of the history is lazy loaded (React.lazy +
+*   retryImport), so the session route does not carry it (nor KaTeX) in its first load.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,10 +19,10 @@
 
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { memo, useId, useState } from "react";
+import { lazy, memo, Suspense, useId, useState } from "react";
 import { useApiQuery } from "@shared/api-client/use-api-query";
 import { cx } from "@shared/lib/class-names";
-import { RichContent } from "@shared/rich-content";
+import { retryImport } from "@shared/lib/retry-import";
 import type { EngineCase, TargetStatusValue } from "@shared/sim-engine";
 import { CLINICAL_CASE_PATH } from "../../api/services/clinical-cases.service";
 import { patientSummary } from "../session/sim-console-adapter";
@@ -63,6 +64,11 @@ export type CasePanelProps = {
   objectives: readonly ObjectiveRow[]
 };
 
+// Loaded with the history only: the session route does not ship the markdown/KaTeX renderer in its first load.
+const RichContent = lazy(() =>
+  retryImport(() => import("@shared/rich-content/rich-content")).then((module) => ({ default: module.RichContent })),
+);
+
 /** Memoised: it depends only on the case id, never on the live objectives. */
 const CaseHistory = memo(function CaseHistory({ caseId }: { caseId: string }) {
   const { data, error, isLoading } = useApiQuery(CLINICAL_CASE_PATH, { params: { caseId } });
@@ -77,7 +83,9 @@ const CaseHistory = memo(function CaseHistory({ caseId }: { caseId: string }) {
       <p className={cx(styles.caseTitle)}>{clinicalCase.title}</p>
       <p className={cx(styles.caseMuted)}>{clinicalCase.mainDiagnosis}</p>
       <h3 className={cx(styles.caseHeading)}>{CASE_PANEL_COPY.history}</h3>
-      <RichContent content={clinicalCase.description} emptyLabel={CASE_PANEL_COPY.historyEmpty} className={cx(styles.caseRich)} />
+      <Suspense fallback={<p className={cx(styles.caseMuted)}>{CASE_PANEL_COPY.historyLoading}</p>}>
+        <RichContent content={clinicalCase.description} emptyLabel={CASE_PANEL_COPY.historyEmpty} className={cx(styles.caseRich)} />
+      </Suspense>
       {clinicalCase.educationalGoal ? (
         <>
           <h3 className={cx(styles.caseHeading)}>{CASE_PANEL_COPY.goal}</h3>

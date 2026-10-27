@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Simulator flows for the performance measurement
-* Descripción: How the perf spec reaches each measured screen, behind one interface so the same instrumentation runs before and after the unified simulator. `legacy` is the current app: /simulator catalog → pick a case and the maximum speed → "Iniciar práctica" → /simulator/sessions/[id]; finishing goes through "Finalizar sesión"; the replay is /simulator/sessions/[id]/replay with its local speed buttons. A later flow for /simulador registers here with the same contract and is selected with PERF_FLOW. Depends on @playwright/test.
-* Versión: 0.1
+* Descripción: How the perf spec reaches each measured screen, behind one interface so the same instrumentation runs before and after the unified simulator. `legacy` is the current app: /simulator catalog → pick a case and the maximum speed → "Iniciar práctica" → /simulator/sessions/[id]; finishing goes through "Finalizar sesión"; the replay is /simulator/sessions/[id]/replay with its local speed buttons. A later flow for /simulador registers here with the same contract and is selected with PERF_FLOW. Depends on @playwright/test. v0.2 (W4, Bloque 1): since W1 the catalog lives in the Simular tab of the workspace, so the legacy flow opens /simulador?tab=simular directly (the /simulator redirect only applies to full page loads).
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -30,7 +30,7 @@ const SESSION_URL = /\/simulator\/sessions\/([^/?#]+)(?:[?#].*)?$/;
 const legacyFlow: SimFlow = {
   name: "legacy",
   async startLiveSession(page, { caseTitle, timeMultiplier }) {
-    await page.goto("/simulator");
+    await page.goto("/simulador?tab=simular");
     const card = page.getByRole("article").filter({ has: page.getByRole("heading", { name: caseTitle, exact: true }) });
 
     await expect(card).toBeVisible({ timeout: 30_000 });

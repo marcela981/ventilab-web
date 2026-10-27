@@ -1,7 +1,7 @@
 <!--
 * Funcionalidad: Baseline de rendimiento del simulador (Bloque 1)
-* Descripción: Medición del simulador actual (/simulator/sessions/[id] y su repetición) antes de cualquier cambio del Bloque 1: fps de repintado de las curvas, fps de requestAnimationFrame, commits de React por segundo, long tasks, tiempo de hilo principal y tamaño de los bundles por ruta. Todos los números salen de los JSON de docs/bloque1/perf/ (Playwright + build de producción); los que no se pudieron medir se indican.
-* Versión: 0.1
+* Descripción: Medición del simulador actual (/simulator/sessions/[id] y su repetición) antes de cualquier cambio del Bloque 1: fps de repintado de las curvas, fps de requestAnimationFrame, commits de React por segundo, long tasks, tiempo de hilo principal y tamaño de los bundles por ruta. Todos los números salen de los JSON de docs/bloque1/perf/ (Playwright + build de producción); los que no se pudieron medir se indican. v0.2: medición intermedia después de W2–W4 (store externo, curvas por tiempo, barrel dividido).
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -80,3 +80,44 @@ Variables: `PERF_LABEL` (prefijo de los archivos), `PERF_FLOW` (flujo registrado
 `PERF_SCENARIOS`, `PERF_DURATION_S`, `PERF_WARMUP_S`, `PERF_CASE_TITLE`, `PERF_REPLAY_SESSION_ID`, `PERF_OUT_DIR`, `E2E_BASE_URL`.
 Para `/simulador` se registra un flujo nuevo con el mismo contrato y se corre `PERF_FLOW=<flujo> PERF_LABEL=after npm run perf:sim`;
 la instrumentación (`e2e/perf/perf-probe.ts`) es la misma.
+
+## Medición intermedia después de W2–W4
+
+Medido el 2026-10-27 con el mismo entorno y protocolo (Chromium 156, 1920×1080, 5 s de calentamiento + 60 s, mismo caso,
+flujo `legacy` sobre `/simulator/sessions/[id]`), sobre un build de producción del árbol de trabajo de W4 (los JSON
+registran `webCommit: 9bc3f08`, que es W3: el build incluía los cambios de W4 todavía sin commitear). Archivos:
+`docs/bloque1/perf/after-w4-*.json`. El flujo `legacy` abre ahora el catálogo en `/simulador?tab=simular` (W1 movió el catálogo).
+
+| Escenario | Curvas: fps de repintado | rAF fps | Frames > 50 ms (máx ms) | Commits React/s (máx en 1 s) | Long tasks | Hilo principal ms/s (script) |
+|---|---|---|---|---|---|---|
+| En vivo ×1 | **59,23** (antes 29,74) | 59,99 | 0 (17,1) | **1,00 (1)** (antes 3,80) | 0 | 67,3 (19,1) |
+| En vivo ×1, CPU ×4 | **59,71** (antes 29,46) | 59,98 | 0 (17,0) | **1,00 (2)** (antes 3,80) | 0 | 295,0 (103,1) |
+| Repetición ×8 | **52,19** (antes 29,56) | 59,97 | 0 (17,1) | **3,75 (5)** (antes 8,03) | 0 | 79,3 (23,5) |
+| Repetición ×8, CPU ×4 | **57,98** (antes 28,33) | 59,83 | 1 (83,2) | **4,03 (6)** (antes 7,99) | 0 | 373,2 (130,9) |
+
+Bundles (`after-w4-bundle.json`, gzip):
+
+| Ruta | Propio gz (KB) | First load gz (KB) | Antes (first load gz) |
+|---|---|---|---|
+| compartido (_app + main) | — | 203,9 | 203,8 |
+| `/simulador` | 34,3 | **238,1** | no existía |
+| `/simulator/sessions/[sessionId]` | 104,9 | **308,8** | 346,4 |
+| `/simulator/sessions/[sessionId]/replay` | 93,9 | **297,8** | 346,4 |
+| `/simulator/sessions/[sessionId]/result` | 95,7 | **299,6** | 346,4 |
+| `/lab/recordings/[recordingId]` | 113,2 | 317,1 | 326,9 |
+
+Lectura:
+
+- **Curvas ≥ 50 fps** en los cuatro escenarios: el painter dibuja por tiempo a la frecuencia del monitor (sin el tope de
+  30 fps) con un retardo de reproducción de 50 ms. La repetición ×8 sin limitar CPU queda en 52 fps: a ×8 cada frame
+  dibuja 8 veces más muestras y, probablemente, algunos frames no avanzan mientras el reloj vuelve a aprender la
+  velocidad tras cada reinicio de la repetición (no se midió por separado).
+- **Commits de React:** en vivo baja de 3,8 a 1 por segundo (solo el reloj, que se muestra en segundos enteros; las
+  métricas y alarmas re-renderizan solo su zona dentro del mismo commit). En la repetición ×8 baja de ~8 a ~4: el
+  throttle de 250 ms ya se aplica a `batch.metrics`. El 4,03 con CPU ×4 supera por poco el objetivo (≤ 4) por las
+  publicaciones forzadas de cambio de estado en cada reinicio de la repetición (7 reinicios en la ventana).
+- **0 commits por frame** y **0 long tasks > 50 ms** en todos los escenarios.
+- **Bundle:** las rutas de sesión, repetición y resultado ya no comparten el mismo conjunto de chunks (puntos de entrada
+  por área en lugar del barrel); `/simulador` carga el catálogo y las páginas del laboratorio en lazy desde sus entradas.
+- No se midió `live-x4` en esta pasada intermedia.
+
