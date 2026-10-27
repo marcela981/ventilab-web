@@ -5,7 +5,8 @@
 *   targets with known ids only) and the exam link of a history DTO.
 *   v1.3 (W6, Bloque 1): the own patient of a FREE session is kept (checked by parseSessionPatient) in the session
 *   state, replay and history; the started session carries the patient of the start request (not echoed by the server).
-* Versión: 1.3
+*   v1.4 (W8, Bloque 1): the patient preset of a clinical case detail ("Cargar caso" of the Simular Paciente form).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,12 +16,16 @@
 
 import type { TargetStatus } from "@shared/sim-engine";
 import { OBJECTIVE_DEFINITIONS } from "../../application/config/sim-console.config";
+import { CASE_DIFFICULTIES } from "../../application/config/simulator.config";
+import type { CaseDifficulty } from "../../application/config/simulator.config";
 import type { ScoreCriterion, SessionExamLink, SessionSummary } from "../../application/entities/sim-result.entity";
 import { sessionDurationMs } from "../../application/entities/simulator.entity";
 import { parseSessionPatient } from "../../application/entities/sim-patient.entity";
+import type { CasePatientPreset } from "../../application/entities/sim-patient.entity";
 import type { SessionReplay, SessionState } from "../../application/entities/sim-session.entity";
 import type { CaseCard, SessionHistoryItem, StartedSession } from "../../application/entities/simulator.entity";
 import type {
+  ClinicalCaseDetailDTO,
   ClinicalCaseListItemDTO,
   SimulationSessionDTO,
   SimulationSessionReplayDTO,
@@ -158,4 +163,41 @@ export function toSessionSummary(dto: SimulationSessionSummaryDTO): SessionSumma
 
 export function toSessionExamLink(dto: SimulationSessionDTO): SessionExamLink {
   return { mode: dto.mode, attemptId: dto.attemptId, questionId: dto.questionId };
+}
+
+function textOrNull(value: string | null | undefined): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
+function caseDifficultyOf(value: string): CaseDifficulty | null {
+  return CASE_DIFFICULTIES.find((difficulty) => difficulty === value) ?? null;
+}
+
+/** The patient of a clinical case detail ("Cargar caso"): case fields plus its `patient` block, unknowns as null. */
+export function toCasePatientPreset({ clinicalCase, patient }: ClinicalCaseDetailDTO): CasePatientPreset {
+  const vitals = patient.initialVitals;
+
+  return {
+    caseId: clinicalCase.id,
+    title: clinicalCase.title,
+    pathology: clinicalCase.pathology,
+    difficulty: caseDifficultyOf(clinicalCase.difficulty),
+    ageYears: clinicalCase.patientAge,
+    sex: patient.sex,
+    weightKg: clinicalCase.patientWeight,
+    heightCm: numberOrNull(patient.heightCm),
+    diagnosis: textOrNull(clinicalCase.mainDiagnosis),
+    allergies: patient.allergies,
+    history: patient.history,
+    vitals: {
+      respiratoryRateBpm: numberOrNull(vitals?.respiratoryRateBpm),
+      spo2Percent: numberOrNull(vitals?.spo2Percent),
+      heartRateBpm: numberOrNull(vitals?.heartRateBpm),
+      temperatureC: numberOrNull(vitals?.temperatureC),
+      systolicMmHg: numberOrNull(vitals?.systolicMmHg),
+      diastolicMmHg: numberOrNull(vitals?.diastolicMmHg),
+      glasgow: numberOrNull(vitals?.glasgow),
+      breathingPattern: vitals?.breathingPattern ?? null,
+    },
+  };
 }

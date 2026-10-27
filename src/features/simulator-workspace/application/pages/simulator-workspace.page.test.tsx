@@ -7,8 +7,9 @@
 *   of `?session=` runs above the tabs, so switching tabs never creates a second worker nor terminates the first;
 *   `start()` opens a session in Monitoreo and `clear()` drops it; the temporary Simular panel starts a practice in
 *   place. Depends on vitest, Testing Library, the workspace test helpers and mocked panels and catalog entry point.
-*   v0.4 (W9, Bloque 1): the Mis sesiones panel is mocked (its own tests cover it).
-* Versión: 0.5
+*   v0.4 (W9, Bloque 1): the Mis sesiones panel is mocked (its own tests cover it). v0.6 (W8, Bloque 1): the Simular
+*   Paciente panel (patient form, start mocked in the patient entry point) opens its session in Monitoreo.
+* Versión: 0.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -53,13 +54,14 @@ function CountingMonitoringPanel() {
 vi.mock("../components/monitoring/monitoring-panel", () => ({ MonitoringPanel: CountingMonitoringPanel }));
 vi.mock("../components/sessions/sessions-panel", () => ({ SessionsPanel: () => <h2>Mis sesiones</h2> }));
 
-vi.mock("@features/simulator/catalog.entry", () => ({
-  useCaseCatalog: () => ({ cases: [{ id: "case-9", title: "Pulmón normal" }], isLoading: false, error: null }),
+vi.mock("@features/simulator/patient.entry", async(importOriginal) => ({
+  ...await importOriginal<typeof import("@features/simulator/patient.entry")>(),
   useStartPractice: ({ onStarted }: { onStarted: (session: { id: string }) => void }) => ({
     pendingCaseId: null,
+    isPending: false,
     error: null,
-    start: (caseId: string) => {
-      catalog.start(caseId);
+    startWithPatient: (patient: unknown, options: unknown) => {
+      catalog.start(patient, options);
       onStarted({ id: "started-1" });
 
       return Promise.resolve({ status: "success" });
@@ -188,13 +190,15 @@ describe("SimulatorWorkspacePage", () => {
     expect(counters).toEqual({ mounts: 1, unmounts: 0 });
   });
 
-  it("the temporary Simular panel starts a practice in place and opens Monitoreo", async() => {
+  it("the Simular Paciente panel starts its patient in place and opens Monitoreo", async() => {
     routerStore.reset({ tab: "simular" });
     render(<SimulatorWorkspacePage />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Iniciar práctica: Pulmón normal" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Aleatorio" }));
+    fireEvent.click(screen.getByRole("button", { name: "Siguiente →" }));
+    fireEvent.click(screen.getByRole("button", { name: "Enviar al Monitoreo" }));
 
-    expect(catalog.start).toHaveBeenCalledWith("case-9");
+    await waitFor(() => expect(catalog.start).toHaveBeenCalledWith(expect.objectContaining({ vitals: expect.any(Object) }), { caseId: undefined }));
     expect(routerStore.query).toEqual({ tab: "monitoreo", session: "started-1" });
     expect(await screen.findByText("monitoring panel")).toBeVisible();
   });

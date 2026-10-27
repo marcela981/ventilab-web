@@ -7,8 +7,9 @@
 *   ready (useWorkspaceTab). Panels not built yet are temporary (W7–W9 replace them). Each panel has its own error
 *   boundary and loading skeleton. Depends on React.lazy, @shared/lib/retry-import, the design-system skeleton and route
 *   error boundary, the workspace tab hook, the bottom tabs and the workspace styles. v0.2 (W9, Bloque 1): Mis sesiones
-*   is the SessionsPanel (unified list and in-panel replay).
-* Versión: 0.2
+*   is the SessionsPanel (unified list and in-panel replay). v0.3 (W8, Bloque 1): the Simular Paciente tab is the
+*   patient form panel.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -46,7 +47,7 @@ const MonitoringPanel = lazy(() =>
 
 // Temporary panels: W8 (Simular Paciente), W7 (Conexión) and W9 (Mis sesiones) replace them.
 const SimularPanel = lazy(() =>
-  retryImport(() => import("./temporary-panels")).then((module) => ({ default: module.TemporarySimularPanel })),
+  retryImport(() => import("./patient-form/patient-form-panel")).then((module) => ({ default: module.PatientFormPanel })),
 );
 
 const ConexionPanel = lazy(() =>

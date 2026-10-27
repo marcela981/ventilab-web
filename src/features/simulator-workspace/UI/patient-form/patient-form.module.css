@@ -1,0 +1,200 @@
+/*
+* Funcionalidad: Patient form styles
+* Descripción: Layout of the Simular Paciente tab of /simulador (W8, Bloque 1): the panel card, the July "Módulo de
+*   Pacientes Simulados" loader, the step sections as responsive grids (one column on phones), the computed values row,
+*   the "Parámetros Ventilatorios Sugeridos" summary, the step buttons and the "Cargar caso" dialog list. Tokens only.
+* Versión: 0.1
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-4);
+  background: var(--vl-color-surface);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+}
+
+.title {
+  margin: 0;
+  font: var(--mui-font-h5);
+}
+
+.muted {
+  margin: 0;
+  color: var(--vl-color-text-muted);
+}
+
+.error {
+  margin: 0;
+  color: var(--vl-color-error);
+}
+
+/* Módulo de Pacientes Simulados */
+.loader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.loaderTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+  color: var(--vl-color-primary);
+}
+
+.loaderActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+}
+
+.baseCase {
+  margin: 0;
+  font: var(--mui-font-body2);
+}
+
+.stepper {
+  padding-block: var(--vl-space-2);
+}
+
+/* Step sections */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  min-width: 0;
+  padding: var(--vl-space-3);
+  margin: 0;
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.sectionTitle {
+  padding: 0 var(--vl-space-1);
+  font: var(--mui-font-subtitle1);
+  font-weight: 600;
+}
+
+.grid,
+.computedGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--vl-space-3);
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .computedGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .grid .wide {
+    grid-column: span 2;
+  }
+}
+
+/* Parámetros Ventilatorios Sugeridos */
+.summaryTitle {
+  margin: 0;
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-color-primary);
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  margin: 0;
+}
+
+.summaryRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+}
+
+.summaryRow dt {
+  color: var(--vl-color-text-muted);
+}
+
+.summaryRow dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Limpiar · Atrás · Siguiente / Enviar al Monitoreo */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--vl-space-2);
+}
+
+/* Cargar caso dialog */
+.dialogBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+}
+
+.caseList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.caseItem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--vl-space-2) var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.caseText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  min-width: 0;
+}
+
+.caseTitle {
+  font-weight: 600;
+}
+
+.pager {
+  display: flex;
+  gap: var(--vl-space-2);
+  align-items: center;
+  justify-content: center;
+}

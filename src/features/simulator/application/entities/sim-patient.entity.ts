@@ -6,7 +6,9 @@
 *   server keeps the resolved engine overrides; the client only shows this profile. `parseSessionPatient` checks an
 *   untrusted value (sessionStorage record); the Spanish labels follow the July form (FLUJOS_JULIO a.3). No
 *   dependencies besides the simulator config.
-* Versión: 0.1
+*   v0.2 (W8, Bloque 1): the patient preset of a published clinical case (`CasePatientPreset`, "Cargar caso" of the
+*   Simular Paciente form): what the case detail says about its patient, every unknown value null.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -75,6 +77,26 @@ export type SessionPatient = {
   allergies: readonly string[]
   history: readonly string[]
   vitals: SessionPatientVitals
+};
+
+/** Bedside vitals of a clinical case; a case may lack any of them. */
+export type CasePresetVitals = { [K in keyof SessionPatientVitals]: SessionPatientVitals[K] | null };
+
+/** The patient of a published clinical case, as its detail returns it (GET /api/clinical-cases/{id}). */
+export type CasePatientPreset = {
+  caseId: string
+  title: string
+  /** Case pathology (catalog value, e.g. NEUMONIA). */
+  pathology: string
+  difficulty: CaseDifficulty | null
+  ageYears: number
+  sex: PatientSex | null
+  weightKg: number
+  heightCm: number | null
+  diagnosis: string | null
+  allergies: readonly string[]
+  history: readonly string[]
+  vitals: CasePresetVitals
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
