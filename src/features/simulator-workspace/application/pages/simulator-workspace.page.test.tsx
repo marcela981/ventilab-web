@@ -1,7 +1,13 @@
 /*
 * Funcionalidad: Simulator workspace page tests
-* Descripción: The /simulador placeholder (W1) waits for the router before reading `?tab=`, falls back to monitoreo for a missing, repeated or unknown tab and loads the existing page of each tab (simular and sesiones → simulator catalog, conexion → lab home, monitoreo → lab live console). Depends on vitest, Testing Library and mocked next/router and feature barrels. v0.2 (W4): the mocks follow the feature entry points.
-* Versión: 0.2
+* Descripción: The /simulador workspace shell. v0.1 (W1): placeholder routing per tab. v0.2 (W4): entry point mocks.
+*   v0.3 (W5): the tab parser; nothing is read before the router is ready; a missing or unknown `?tab=` opens Monitoreo;
+*   the bottom tabs switch with a shallow `router.replace` that keeps the rest of the query; each panel loads on its
+*   first visit and then stays mounted (hidden), so the Monitoreo panel mounts once across tab switches; the session
+*   of `?session=` runs above the tabs, so switching tabs never creates a second worker nor terminates the first;
+*   `start()` opens a session in Monitoreo and `clear()` drops it; the temporary Simular panel starts a practice in
+*   place. Depends on vitest, Testing Library, the workspace test helpers and mocked panels and catalog entry point.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,28 +15,69 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { useEffect } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useWorkspaceSession } from "../components/workspace-session-provider";
 import { parseWorkspaceTab } from "../entities/workspace-tab.entity";
-import { SIMULATOR_WORKSPACE_COPY, SimulatorWorkspacePage } from "./simulator-workspace.page";
+import { buildFreshRecord, createSessionHarness, routerStore } from "../workspace-test-helpers";
+import { SimulatorWorkspacePage } from "./simulator-workspace.page";
 
-const router = vi.hoisted(() => ({ isReady: true, query: {} as Record<string, string | string[]> }));
+const counters = vi.hoisted(() => ({ mounts: 0, unmounts: 0 }));
+const catalog = vi.hoisted(() => ({ start: vi.fn() }));
 
-vi.mock("next/router", () => ({ useRouter: () => router }));
-vi.mock("@features/simulator/catalog.entry", () => ({ SimulatorCatalogPage: () => <p>catalog page</p> }));
-vi.mock("@features/ventilator-lab/home.entry", () => ({ LabHomePage: () => <p>lab home page</p> }));
-vi.mock("@features/ventilator-lab/live.entry", () => ({
-  LabLivePage: () => <p>lab live page</p>,
+vi.mock("next/router", async() => (await import("../workspace-test-helpers")).nextRouterMock);
+
+function CountingMonitoringPanel() {
+  const { sessionId, host, start, clear } = useWorkspaceSession();
+
+  useEffect(() => {
+    counters.mounts += 1;
+
+    return () => {
+      counters.unmounts += 1;
+    };
+  }, []);
+
+  return (
+    <div>
+      <p>monitoring panel</p>
+      <p>{`session: ${sessionId ?? "none"} · ${host?.phase ?? "no host"}`}</p>
+      <button type="button" onClick={() => start({ id: "s2" })}>start s2</button>
+      <button type="button" onClick={clear}>clear</button>
+    </div>
+  );
+}
+
+vi.mock("../components/monitoring/monitoring-panel", () => ({ MonitoringPanel: CountingMonitoringPanel }));
+
+vi.mock("@features/simulator/catalog.entry", () => ({
+  useCaseCatalog: () => ({ cases: [{ id: "case-9", title: "Pulmón normal" }], isLoading: false, error: null }),
+  useStartPractice: ({ onStarted }: { onStarted: (session: { id: string }) => void }) => ({
+    pendingCaseId: null,
+    error: null,
+    start: (caseId: string) => {
+      catalog.start(caseId);
+      onStarted({ id: "started-1" });
+
+      return Promise.resolve({ status: "success" });
+    },
+  }),
 }));
 
 beforeEach(() => {
-  router.isReady = true;
-  router.query = {};
+  routerStore.reset();
+  counters.mounts = 0;
+  counters.unmounts = 0;
+  catalog.start.mockClear();
 });
 
+const tab = (name: string) => screen.getByRole("tab", { name });
+const panelOf = (key: string) => document.getElementById(`workspace-panel-${key}`);
+
 describe("parseWorkspaceTab", () => {
-  it.each(["simular", "monitoreo", "conexion", "sesiones"] as const)("keeps %s", (tab) => {
-    expect(parseWorkspaceTab(tab)).toBe(tab);
+  it.each(["simular", "monitoreo", "conexion", "sesiones"] as const)("keeps %s", (value) => {
+    expect(parseWorkspaceTab(value)).toBe(value);
   });
 
   it.each([undefined, "", "otra", ["simular", "conexion"]])("falls back to monitoreo for %j", (value) => {
@@ -39,30 +86,114 @@ describe("parseWorkspaceTab", () => {
 });
 
 describe("SimulatorWorkspacePage", () => {
-  it("shows only the heading until the router is ready", () => {
-    router.isReady = false;
-    router.query = { tab: "simular" };
+  it("reads nothing until the router is ready", async() => {
+    routerStore.reset({ tab: "conexion" }, false);
     render(<SimulatorWorkspacePage />);
 
-    expect(screen.getByRole("heading", { level: 1, name: SIMULATOR_WORKSPACE_COPY.title })).toBeInTheDocument();
-    expect(screen.queryByText(/page$/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
+    expect(screen.queryByText("monitoring panel")).not.toBeInTheDocument();
+
+    act(() => routerStore.setReady());
+
+    expect(await screen.findByRole("heading", { name: "Conexión" })).toBeInTheDocument();
+    expect(tab("Conexión")).toHaveAttribute("aria-selected", "true");
   });
 
-  it.each([
-    ["simular", "catalog page"],
-    ["sesiones", "catalog page"],
-    ["conexion", "lab home page"],
-    ["monitoreo", "lab live page"],
-  ])("loads the existing page of the %s tab", async(tab, text) => {
-    router.query = { tab };
+  it.each([[{}], [{ tab: "otra" }], [{ tab: ["simular", "conexion"] }]])("opens Monitoreo for the query %j", async(query) => {
+    routerStore.reset(query);
     render(<SimulatorWorkspacePage />);
 
-    expect(await screen.findByText(text)).toBeInTheDocument();
+    expect(await screen.findByText("monitoring panel")).toBeInTheDocument();
+    expect(tab("Monitoreo")).toHaveAttribute("aria-selected", "true");
+    expect(screen.getAllByRole("tab").map((item) => item.textContent)).toEqual(["Simular Paciente", "Monitoreo", "Conexión", "Mis sesiones"]);
   });
 
-  it("opens monitoreo without a tab", async() => {
+  it("switches tabs with a shallow replace that keeps the rest of the query", async() => {
+    routerStore.reset({ tab: "monitoreo", foo: "bar" });
+    render(<SimulatorWorkspacePage />);
+    await screen.findByText("monitoring panel");
+
+    fireEvent.click(tab("Conexión"));
+
+    expect(routerStore.replace).toHaveBeenCalledWith(
+      { pathname: "/simulador", query: { tab: "conexion", foo: "bar" } },
+      undefined,
+      { shallow: true },
+    );
+    expect(await screen.findByRole("heading", { name: "Conexión" })).toBeInTheDocument();
+    expect(tab("Conexión")).toHaveAttribute("aria-selected", "true");
+    expect(panelOf("monitoreo")).not.toBeVisible();
+  });
+
+  it("loads each panel on its first visit and keeps it mounted afterwards", async() => {
+    render(<SimulatorWorkspacePage />);
+    await screen.findByText("monitoring panel");
+
+    expect(screen.queryByRole("heading", { name: "Mis sesiones" })).not.toBeInTheDocument();
+
+    fireEvent.click(tab("Mis sesiones"));
+    await screen.findByRole("heading", { name: "Mis sesiones" });
+    fireEvent.click(tab("Conexión"));
+    await screen.findByRole("heading", { name: "Conexión" });
+    fireEvent.click(tab("Monitoreo"));
+
+    expect(panelOf("monitoreo")).toBeVisible();
+    // The visited panels stay in the document, hidden.
+    expect(panelOf("sesiones")).not.toBeVisible();
+    expect(panelOf("sesiones")).toHaveTextContent("Mis sesiones");
+    expect(panelOf("conexion")).toHaveTextContent("Conexión");
+    expect(counters).toEqual({ mounts: 1, unmounts: 0 });
+  });
+
+  it("keeps the session worker across tab switches (one worker, never terminated)", async() => {
+    const harness = createSessionHarness();
+
+    routerStore.reset({ session: "s1" });
+    render(<SimulatorWorkspacePage deps={harness.deps} />);
+
+    await waitFor(() => expect(harness.createWorker).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText("session: s1 · ready")).toBeInTheDocument();
+
+    for (const name of ["Conexión", "Simular Paciente", "Mis sesiones", "Monitoreo", "Conexión", "Monitoreo"]) {
+      fireEvent.click(tab(name));
+      await waitFor(() => expect(tab(name)).toHaveAttribute("aria-selected", "true"));
+    }
+
+    expect(harness.createWorker).toHaveBeenCalledTimes(1);
+    expect(harness.workers[0]?.terminated).toBe(false);
+    expect(counters).toEqual({ mounts: 1, unmounts: 0 });
+    expect(screen.getByText("session: s1 · ready")).toBeInTheDocument();
+  });
+
+  it("start() opens the session in Monitoreo and clear() drops it, without remounting the panel", async() => {
+    const harness = createSessionHarness([buildFreshRecord({ id: "s2" })]);
+
+    routerStore.reset({ tab: "conexion" });
+    render(<SimulatorWorkspacePage deps={harness.deps} />);
+    await screen.findByRole("heading", { name: "Conexión" });
+    fireEvent.click(tab("Monitoreo"));
+    fireEvent.click(await screen.findByRole("button", { name: "start s2" }));
+
+    expect(routerStore.query).toEqual({ tab: "monitoreo", session: "s2" });
+    expect(await screen.findByText("session: s2 · ready")).toBeInTheDocument();
+    expect(harness.createWorker).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole("button", { name: "clear" }));
+
+    expect(routerStore.query).toEqual({ tab: "monitoreo" });
+    expect(await screen.findByText("session: none · no host")).toBeInTheDocument();
+    await waitFor(() => expect(harness.workers[0]?.terminated).toBe(true));
+    expect(counters).toEqual({ mounts: 1, unmounts: 0 });
+  });
+
+  it("the temporary Simular panel starts a practice in place and opens Monitoreo", async() => {
+    routerStore.reset({ tab: "simular" });
     render(<SimulatorWorkspacePage />);
 
-    expect(await screen.findByText("lab live page")).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole("button", { name: "Iniciar práctica: Pulmón normal" }));
+
+    expect(catalog.start).toHaveBeenCalledWith("case-9");
+    expect(routerStore.query).toEqual({ tab: "monitoreo", session: "started-1" });
+    expect(await screen.findByText("monitoring panel")).toBeVisible();
   });
 });

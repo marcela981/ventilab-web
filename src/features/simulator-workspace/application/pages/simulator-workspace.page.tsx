@@ -1,7 +1,12 @@
 /*
-* Funcionalidad: Simulator workspace page (placeholder)
-* Descripción: Temporary page of /simulador, the home of every role (W1, Bloque 1). It reads `?tab=` only once the router is ready (parseWorkspaceTab; missing or unknown → monitoreo), shows the workspace heading and, so no screen is lost while the workspace is built, lazy loads the existing page of that tab from its feature barrel: simular and sesiones → SimulatorCatalogPage (catalog and "Mis sesiones"), conexion → LabHomePage, monitoreo → LabLivePage. W5 replaces this content with the workspace shell (bottom tabs, panels mounted once). Depends on next/router, React.lazy, @shared/lib/retry-import, the design-system skeleton and route error boundary, and the simulator and ventilator-lab barrels. v0.2 (W4, Bloque 1): each panel is lazy loaded from its feature entry point (catalog.entry, home.entry, live.entry), never from a feature barrel, so a tab chunk carries only that area.
-* Versión: 0.2
+* Funcionalidad: Simulator workspace page
+* Descripción: Page of /simulador, the unified simulator workspace and the home of every role (Bloque 1). v0.1 (W1): a
+*   placeholder that lazy loaded the existing page of each tab. v0.2 (W4): each panel from its feature entry point.
+*   v0.3 (W5): composes the workspace: the session provider (active digital session in `?session=`, its worker,
+*   outbox and tab claim) and the lab connection provider ABOVE the tabs, then the shell with the bottom tabs and the
+*   panels mounted once (DISENO_BLOQUE1 §2.4 and §3). `deps` injects the session dependencies (tests). Depends on
+*   next/head and the workspace providers and shell.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,61 +14,34 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import Typography from "@mui/material/Typography";
-import { useRouter } from "next/router";
-import { lazy, Suspense } from "react";
-import type { ComponentType, LazyExoticComponent } from "react";
-import { RouteErrorBoundary } from "@shared/design-system/components/route-error-boundary";
-import { CardSkeleton } from "@shared/design-system/components/skeleton";
-import { cx } from "@shared/lib/class-names";
-import { retryImport } from "@shared/lib/retry-import";
-import { parseWorkspaceTab } from "../entities/workspace-tab.entity";
-import type { WorkspaceTab } from "../entities/workspace-tab.entity";
-import styles from "../../UI/simulator-workspace.module.css";
+import Head from "next/head";
+import type { SimSessionHostDeps } from "@features/simulator/session.entry";
+import { LabConnectionProvider } from "../components/lab-connection-provider";
+import type { LabConnectionValue } from "../components/lab-connection-provider";
+import { SimulatorWorkspace } from "../components/simulator-workspace";
+import { WorkspaceSessionProvider } from "../components/workspace-session-provider";
 
-export const SIMULATOR_WORKSPACE_COPY = {
-  title: "Simulador",
-  loading: "Cargando el simulador…",
+// TODO(i18n): move to a simulator namespace in src/i18n.
+export const SIMULATOR_WORKSPACE_PAGE_COPY = {
+  documentTitle: "Simulador | VentyLab",
 } as const;
 
-const SimulatorCatalogPanel = lazy(() =>
-  retryImport(() => import("@features/simulator/catalog.entry")).then((module) => ({ default: module.SimulatorCatalogPage })),
-);
-
-const LabHomePanel = lazy(() =>
-  retryImport(() => import("@features/ventilator-lab/home.entry")).then((module) => ({ default: module.LabHomePage })),
-);
-
-const LabLivePanel = lazy(() =>
-  retryImport(() => import("@features/ventilator-lab/live.entry")).then((module) => ({ default: module.LabLivePage })),
-);
-
-// Temporary mapping to the pages that existed before the workspace (W5–W10 replace each panel).
-const TAB_PANELS: Record<WorkspaceTab, LazyExoticComponent<ComponentType>> = {
-  simular: SimulatorCatalogPanel,
-  sesiones: SimulatorCatalogPanel,
-  conexion: LabHomePanel,
-  monitoreo: LabLivePanel,
+export type SimulatorWorkspacePageProps = {
+  /** Injectable session dependencies (tests). */
+  deps?: SimSessionHostDeps | undefined
+  /** Fixed lab connection (tests); omitted: the provider's own state. */
+  connection?: LabConnectionValue | undefined
 };
 
-export function SimulatorWorkspacePage() {
-  const router = useRouter();
-  // Before hydration the query is empty: wait for it instead of flashing the default tab.
-  const tab = router.isReady ? parseWorkspaceTab(router.query.tab) : null;
-  const Panel = tab ? TAB_PANELS[tab] : null;
-
+export function SimulatorWorkspacePage({ deps, connection }: SimulatorWorkspacePageProps = {}) {
   return (
-    <div className={styles.page} data-workspace-tab={tab ?? undefined}>
-      <Typography variant="h4" component="h1" className={cx(styles.title)}>
-        {SIMULATOR_WORKSPACE_COPY.title}
-      </Typography>
-      {Panel ? (
-        <RouteErrorBoundary resetKey={tab ?? undefined}>
-          <Suspense fallback={<CardSkeleton label={SIMULATOR_WORKSPACE_COPY.loading} />}>
-            <Panel />
-          </Suspense>
-        </RouteErrorBoundary>
-      ) : null}
-    </div>
+    <WorkspaceSessionProvider deps={deps}>
+      <LabConnectionProvider value={connection}>
+        <Head>
+          <title>{SIMULATOR_WORKSPACE_PAGE_COPY.documentTitle}</title>
+        </Head>
+        <SimulatorWorkspace />
+      </LabConnectionProvider>
+    </WorkspaceSessionProvider>
   );
 }

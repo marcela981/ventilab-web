@@ -1,7 +1,10 @@
 /*
 * Funcionalidad: Simulator workspace styles
-* Descripción: Temporary layout of the /simulador placeholder (W1): the workspace heading and the active tab panel stacked. W5 replaces it with the workspace shell and its bottom tabs. Tokens only.
-* Versión: 0.1
+* Descripción: Layout of the /simulador workspace. v0.1 (W1): the placeholder heading and panel. v0.2 (W5): the shell
+*   (panels stacked above the bottom tabs, which stay pinned to the bottom of the viewport inside the content area),
+*   the July-like bottom tabs (dark bar, selected tab in the primary color) and the temporary panels. A hidden panel
+*   relies on the `hidden` attribute (no display rule on .panel). Tokens only.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,13 +12,153 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-.page {
+.workspace {
   display: flex;
   flex-direction: column;
-  gap: var(--vl-space-4);
+  gap: var(--vl-space-3);
   width: 100%;
+  min-height: 100%;
 }
 
-.title {
+.panels {
+  flex: 1;
+  min-width: 0;
+}
+
+.panel {
+  width: 100%;
+  min-width: 0;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Bottom tabs (FLUJOS_JULIO a.1: fixed BottomNavigation). Sticky keeps them inside the content area, next to the side menu. */
+.bottomTabs {
+  position: sticky;
+  bottom: 0;
+  z-index: var(--vl-z-sticky);
+  background: var(--vl-console-bg);
+  border-top: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md) var(--vl-radius-md) 0 0;
+}
+
+.tabList {
+  display: flex;
+  justify-content: center;
+}
+
+.tab {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--vl-space-1);
+  max-width: 168px;
+  min-height: 56px;
+  padding: var(--vl-space-1) var(--vl-space-2);
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  transition: color var(--vl-duration-short) var(--vl-ease-standard);
+}
+
+.tab:hover {
+  color: var(--vl-console-text);
+}
+
+.tab[aria-selected="true"] {
+  color: var(--vl-color-primary);
+}
+
+.tab:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-console-focus-ring);
+  outline-offset: calc(-1 * var(--vl-focus-ring-width));
+}
+
+/* Temporary panels (W5) */
+.temporaryPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-4);
+  background: var(--vl-color-surface);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+}
+
+.panelTitle {
   margin: 0;
+  font: var(--mui-font-h6);
+}
+
+.muted {
+  margin: 0;
+  color: var(--vl-color-text-muted);
+}
+
+.link {
+  color: var(--vl-color-link);
+}
+
+.caseList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.caseItem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-2) var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.caseTitle {
+  font-weight: 600;
+}
+
+.caseError {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--vl-color-error);
+}
+
+.actionButton {
+  min-height: 36px;
+  padding: var(--vl-space-1) var(--vl-space-3);
+  font: var(--mui-font-button);
+  color: var(--vl-color-on-primary);
+  cursor: pointer;
+  background: var(--vl-color-primary);
+  border: 0;
+  border-radius: var(--vl-radius-sm);
+}
+
+.actionButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.actionButton:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
 }
