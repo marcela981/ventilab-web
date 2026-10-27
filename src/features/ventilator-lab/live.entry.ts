@@ -1,12 +1,13 @@
 /*
 * Funcionalidad: Ventilator lab live entry point
-* Descripción: Public entry point of the live lab page (W4, Bloque 1), lazy loaded by the Monitoreo tab of /simulador
-*   without the rest of the lab barrel. Depends on the ventilator-lab application layer.
+* Descripción: Public entry point of the live ventilator pieces (W4, Bloque 1: then the live lab page), used by the
+*   Monitoreo tab of /simulador without the rest of the lab barrel. Depends on the ventilator-lab application layer.
 *   v0.2 (W10, Bloque 1): the pieces of the real monitor of the Monitoreo tab: the LAZY live console (shared console,
 *   waveforms and real adapter stay in their own chunk), the device status, the stale telemetry timer, the server clock
 *   and telemetry latency hooks with the latency thresholds and level, the session recording hook, toggle and REC mark,
 *   and the operator control copy.
-* Versión: 0.2
+*   v0.3 (W11, Bloque 1): the /lab/live page is gone (superseded by the real monitor): LabLivePage and its copy.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,7 +15,6 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-export { LAB_LIVE_COPY, LabLivePage } from "./application/pages/lab-live.page";
 export { LazyLiveConsole, LIVE_CONSOLE_LOADING_LABEL } from "./application/components/lazy-live-console";
 export type { LiveConsoleProps } from "./application/components/live-console";
 export { RecIndicator, RecordingControl } from "./application/components/recording-control";

@@ -1,7 +1,9 @@
 /*
 * Funcionalidad: Lab live lazy boundary test
 * Descripción: Walks the STATIC import graph (value imports and re-exports of local files; `import type` and dynamic `import()` are not followed) from the /lab route modules and the ventilator-lab public index, and checks that none reaches the shared ventilator console, the waveforms, the charts module or Chart.js: the console and its adapter must land only in the lazy /lab/live chunk. As a control, the lazily imported live console module does reach the console. v1.1 (T6 review fix S4): limitations — the scan is regex based (imports are matched as text, not parsed), it resolves only relative specifiers and the `@shared/` and `@features/` aliases (a legacy `@/` alias import, or a bare package other than the listed heavy ones, is not followed), and it checks the source graph, not the emitted chunks (the bundle check stays a manual step). v1.2 (T11): also the recordings routes and pages; the recording player (console, waveforms, charts) is reached only through the dynamic import of the lazy recording player. Depends on vitest and node:fs. v1.3 (W1 Bloque 1): the /lab and /lab/live pages are gone; the /simulador route and the simulator-workspace index (which loads the lab pages through dynamic imports) are checked instead.
-* Versión: 1.3
+*   v1.4 (W11, Bloque 1): the live page is gone; the real monitor of /simulador (and the live entry it imports) are
+*   checked instead: the live console stays reachable only through its dynamic import.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -83,7 +85,8 @@ describe("/lab lazy console boundary", () => {
     "src/features/simulator-workspace/index.ts",
     "pages/lab/reservations/index.tsx",
     "src/features/ventilator-lab/index.ts",
-    "src/features/ventilator-lab/application/pages/lab-live.page.tsx",
+    "src/features/ventilator-lab/live.entry.ts",
+    "src/features/simulator-workspace/application/components/monitoring/real/real-monitor.tsx",
     // T11: the recordings list and the playback page (the player is lazy).
     "pages/lab/recordings/index.tsx",
     "pages/lab/recordings/[recordingId].tsx",

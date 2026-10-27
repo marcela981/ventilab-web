@@ -7,8 +7,8 @@
 *   appears only after the stale threshold without telemetry and goes away with the next batch; without a connection
 *   the guide to Conexión stays and no telemetry consumer is mounted; and telemetry batches never commit a React
 *   render (the adapter publishes at most every 250 ms). Depends on vitest, Testing Library, msw, SWR, the session and
-*   realtime contexts and the workspace test helpers.
-* Versión: 0.1
+*   realtime contexts and the workspace test helpers. v0.2 (W11, Bloque 1): no mock of the removed catalog entry point.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -37,10 +37,6 @@ import type { LabConnectionValue } from "../../lab-connection-provider";
 
 vi.mock("next/router", async() => (await import("../../../workspace-test-helpers")).nextRouterMock);
 vi.mock("../../../hooks/use-lab-connection-controller", async() => (await import("../../../workspace-test-helpers")).labConnectionControllerMock);
-vi.mock("@features/simulator/catalog.entry", () => ({
-  useCaseCatalog: () => ({ cases: [], isLoading: false, error: null }),
-  useStartPractice: () => ({ pendingCaseId: null, error: null, start: () => Promise.resolve({ status: "busy" }) }),
-}));
 
 const url = (path: string): string => `${BACKEND_ORIGIN}${path}`;
 const envelope = (data: unknown) => ({ success: true, message: null, data, code: null, timestamp: new Date().toISOString(), traceId: "t", pagination: null });

@@ -11,7 +11,8 @@
 *   SWR and the workspace test helpers.
 *   v0.3 (W7, Bloque 1): the CONNECTED lab is built with createLabConnectionValue (the value grew with W7) and the live
 *   lab connection controller is mocked idle (no session or socket providers here).
-* Versión: 0.3
+*   v0.4 (W11, Bloque 1): no mock of the simulator catalog entry point (removed with the temporary panels).
+* Versión: 0.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -38,10 +39,6 @@ import type { LabConnectionValue } from "../lab-connection-provider";
 
 vi.mock("next/router", async() => (await import("../../workspace-test-helpers")).nextRouterMock);
 vi.mock("../../hooks/use-lab-connection-controller", async() => (await import("../../workspace-test-helpers")).labConnectionControllerMock);
-vi.mock("@features/simulator/catalog.entry", () => ({
-  useCaseCatalog: () => ({ cases: [], isLoading: false, error: null }),
-  useStartPractice: () => ({ pendingCaseId: null, error: null, start: () => Promise.resolve({ status: "busy" }) }),
-}));
 vi.mock("@features/simulator/result.entry", () => ({
   SessionResultSummary: ({ sessionId }: { sessionId: string }) => <p>{`result summary of ${sessionId}`}</p>,
 }));
