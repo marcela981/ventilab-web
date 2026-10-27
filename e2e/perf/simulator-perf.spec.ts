@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Simulator performance measurement
-* Descripción: Runs the simulator for a fixed window per scenario and records the in-page probe (rAF fps, curve paint fps per canvas, React commits per second, long tasks, heap) plus the Chrome main-thread time from the CDP Performance domain. Scenarios: live ×1, live ×1 with CPU throttling ×4, live at the highest speed the UI offers (×4), and replay ×8 with and without throttling (the replay loops when it reaches the end). Each scenario writes <PERF_OUT_DIR>/<PERF_LABEL>-<scenario>.json. Parameters (environment): PERF_FLOW (legacy), PERF_LABEL (baseline), PERF_DURATION_S (60), PERF_WARMUP_S (5), PERF_CASE_TITLE, PERF_SCENARIOS (comma list), PERF_REPLAY_SOURCE_S (30), PERF_REPLAY_SESSION_ID (an ended session to replay instead of the last live one), PERF_OUT_DIR (docs/bloque1/perf). Depends on @playwright/test, the perf probe and the simulator flows.
-* Versión: 0.1
+* Descripción: Runs the simulator for a fixed window per scenario and records the in-page probe (rAF fps, curve paint fps per canvas, React commits per second, long tasks, heap) plus the Chrome main-thread time from the CDP Performance domain. Scenarios: live ×1, live ×1 with CPU throttling ×4, live at the highest speed the UI offers (×4), and replay ×8 with and without throttling (the replay loops when it reaches the end). Each scenario writes <PERF_OUT_DIR>/<PERF_LABEL>-<scenario>.json. Parameters (environment): PERF_FLOW (legacy), PERF_LABEL (baseline), PERF_DURATION_S (60), PERF_WARMUP_S (5), PERF_CASE_TITLE, PERF_SCENARIOS (comma list), PERF_REPLAY_SOURCE_S (30), PERF_REPLAY_SESSION_ID (an ended session to replay instead of the last live one), PERF_OUT_DIR (docs/bloque1/perf). Depends on @playwright/test, the perf probe and the simulator flows. v0.2 (W12, Bloque 1): a live scenario faster than the flow's `maxLiveMultiplier` is skipped (reported as not reachable, never estimated), and the session recorded for the replay runs at the fastest live speed the flow allows; the CDP counters and the commit hash come from perf-support.ts.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,12 +9,12 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { execSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
-import { type CDPSession, type Page, test } from "@playwright/test";
+import { type Page, test } from "@playwright/test";
 import { installPerfProbe, type PerfProbeSnapshot, type PerfProbeWindow } from "./perf-probe";
+import { currentCommit, MAIN_THREAD_UNIT, mainThreadPerSecond, readCdpMetrics } from "./perf-support";
 import { getSimFlow } from "./sim-flows";
 
 type Scenario = { id: string, kind: "live" | "replay", multiplier: number, cpuRate: number };
@@ -35,29 +35,6 @@ const REPLAY_SOURCE_S = Number(process.env.PERF_REPLAY_SOURCE_S ?? 30);
 const CASE_TITLE = process.env.PERF_CASE_TITLE ?? "Pulmón normal: postoperatorio inmediato";
 const OUT_DIR = process.env.PERF_OUT_DIR ?? "docs/bloque1/perf";
 const SELECTED = process.env.PERF_SCENARIOS?.split(",").map((id) => id.trim()).filter((id) => id.length > 0);
-const CDP_METRICS = ["TaskDuration", "ScriptDuration", "LayoutDuration", "RecalcStyleDuration", "LayoutCount", "RecalcStyleCount"] as const;
-
-type CdpMetricName = (typeof CDP_METRICS)[number];
-
-async function readCdpMetrics(cdp: CDPSession): Promise<Record<CdpMetricName, number>> {
-  const { metrics } = await cdp.send("Performance.getMetrics");
-  const values = {} as Record<CdpMetricName, number>;
-
-  for (const name of CDP_METRICS) {
-    values[name] = metrics.find((metric) => metric.name === name)?.value ?? 0;
-  }
-
-  return values;
-}
-
-function currentCommit(): string | null {
-  try {
-    return execSync("git rev-parse --short HEAD", { encoding: "utf8" }).trim();
-  } catch {
-    return null;
-  }
-}
-
 async function workerSizes(page: Page, urls: readonly string[]): Promise<{ url: string, rawKb: number, gzipKb: number }[]> {
   const sizes: { url: string, rawKb: number, gzipKb: number }[] = [];
 
@@ -84,6 +61,7 @@ for (const scenario of SCENARIOS) {
 
   test(`${FLOW.name} · ${scenario.id}`, async ({ page, browser }) => {
     test.skip(skip, `not in PERF_SCENARIOS (${SELECTED?.join(", ") ?? ""})`);
+    test.skip(scenario.kind === "live" && scenario.multiplier > FLOW.maxLiveMultiplier, `the ${FLOW.name} flow starts live sessions at ×${FLOW.maxLiveMultiplier} at most`);
     test.setTimeout((WARMUP_S + DURATION_S + REPLAY_SOURCE_S) * 1000 + 240_000);
 
     await page.addInitScript(installPerfProbe);
@@ -100,7 +78,7 @@ for (const scenario of SCENARIOS) {
       liveSessionId = (await FLOW.startLiveSession(page, { caseTitle: CASE_TITLE, timeMultiplier: scenario.multiplier })).sessionId;
     } else {
       if (endedSessionId === undefined) {
-        const source = await FLOW.startLiveSession(page, { caseTitle: CASE_TITLE, timeMultiplier: 4 });
+        const source = await FLOW.startLiveSession(page, { caseTitle: CASE_TITLE, timeMultiplier: Math.min(4, FLOW.maxLiveMultiplier) });
 
         await page.waitForTimeout(REPLAY_SOURCE_S * 1000);
         await FLOW.endLiveSession(page);
@@ -128,13 +106,7 @@ for (const scenario of SCENARIOS) {
     const probe = await page.evaluate(() => (window as PerfProbeWindow).__perfProbe?.snapshot() ?? null) as PerfProbeSnapshot | null;
     const after = await readCdpMetrics(cdp);
     const windowS = (probe?.windowMs ?? DURATION_S * 1000) / 1000;
-    const mainThread = Object.fromEntries(CDP_METRICS.map((name) => {
-      const delta = after[name] - before[name];
-      // *Duration metrics are seconds; *Count metrics are counts.
-      const perSecond = name.endsWith("Duration") ? (delta * 1000) / windowS : delta / windowS;
-
-      return [name, Number(perSecond.toFixed(2))];
-    }));
+    const mainThread = mainThreadPerSecond(before, after, windowS);
     const pageUrl = page.url();
 
     await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 });
@@ -164,7 +136,7 @@ for (const scenario of SCENARIOS) {
         measuredAt: new Date().toISOString(),
       },
       probe,
-      mainThreadPerSecond: { unit: "ms of main-thread time per second (Duration) or events per second (Count)", ...mainThread },
+      mainThreadPerSecond: { unit: MAIN_THREAD_UNIT, ...mainThread },
       workers,
     };
 
