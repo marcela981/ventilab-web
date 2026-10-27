@@ -1,0 +1,21 @@
+/*
+* Funcionalidad: Simulator workspace styles
+* Descripción: Temporary layout of the /simulador placeholder (W1): the workspace heading and the active tab panel stacked. W5 replaces it with the workspace shell and its bottom tabs. Tokens only.
+* Versión: 0.1
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  width: 100%;
+}
+
+.title {
+  margin: 0;
+}

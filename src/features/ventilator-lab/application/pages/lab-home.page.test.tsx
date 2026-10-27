@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Lab summary page tests
-* Descripción: The /lab summary shows the console entry only when the backend lets the caller control the ventilator, the occupancy label (never a name the backend did not send) otherwise, the free state, the upcoming reservations of the user and group without the active one, the empty and retryable error states, and the device status from the broadcast events without joining the ventilator room. Depends on vitest, msw, Testing Library and the lab test helpers.
-* Versión: 1.0
+* Descripción: The /lab summary shows the console entry only when the backend lets the caller control the ventilator, the occupancy label (never a name the backend did not send) otherwise, the free state, the upcoming reservations of the user and group without the active one, the empty and retryable error states, and the device status from the broadcast events without joining the ventilator room. Depends on vitest, msw, Testing Library and the lab test helpers. v1.1 (W1 Bloque 1): the console link opens the Monitoreo tab of the simulator workspace (/simulador?tab=monitoreo).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -72,7 +72,7 @@ describe("LabHomePage", () => {
     const console = await screen.findByRole("link", { name: "Entrar a la consola" });
     const activeCard = section("Reserva activa");
 
-    expect(console).toHaveAttribute("href", "/lab/live");
+    expect(console).toHaveAttribute("href", "/simulador?tab=monitoreo");
     expect(activeCard).toHaveTextContent("Ana Gómez");
 
     const list = await screen.findByRole("list", { name: "Próximas reservas" });

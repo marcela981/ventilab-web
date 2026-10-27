@@ -82,7 +82,10 @@
  *   pages/auth/forgot-password/index.tsx y pages/teaching/index.tsx entran en NEW_PAGE_FILES.
  *   v3.36 (B3.8, D5): salen de NEW_PAGE_FILES las páginas de solo redirección borradas
  *   (pages/teaching/** y pages/evaluation/**); las redirecciones viven en next.config.
- * Versión: 3.36
+ *   v3.37 (W1 Bloque 1): nueva feature src/features/simulator-workspace (sin legado) y su ruta
+ *   delgada pages/simulador/index.tsx; salen pages/simulator/index.tsx, pages/lab/index.tsx y
+ *   pages/lab/live/index.tsx (borradas: next.config las redirige a /simulador?tab=…).
+ * Versión: 3.37
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -96,12 +99,12 @@ import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
 
 const NEW_SHARED_MODULES = "api-client,realtime,session,design-system,layouts,rich-content,waveforms,charts,ai-rating,media-upload,ai-conversation,lib,sim-engine,ventilator-console,rubric-editor";
-const NEW_FEATURES = "auth,profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat,simulator,case-editor,ventilator-lab,notifications,student-space,teacher-dashboard,admin-console";
+const NEW_FEATURES = "auth,profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat,simulator,simulator-workspace,case-editor,ventilator-lab,notifications,student-space,teacher-dashboard,admin-console";
 const SOURCE_EXT = "{js,jsx,ts,tsx,mjs,cjs}";
 // auth/ still holds legacy files at its root and in components/, so only its template
 // layers count as new code. profile/ (legacy removed in T10), groups/, learning/ and
 // content-editor/ have no legacy, so the whole folder is new code.
-const LEGACY_FREE_FEATURES = "profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat,simulator,case-editor,ventilator-lab,notifications,student-space,teacher-dashboard,admin-console";
+const LEGACY_FREE_FEATURES = "profile,groups,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat,simulator,simulator-workspace,case-editor,ventilator-lab,notifications,student-space,teacher-dashboard,admin-console";
 const NEW_FEATURE_FILES = [
   `src/features/auth/{api,application}/**/*.${SOURCE_EXT}`,
   `src/features/{${NEW_FEATURES}}/index.ts`,
@@ -139,16 +142,14 @@ const NEW_PAGE_FILES = [
   "pages/grading/evaluations/[[]evaluationId[]].tsx",
   "pages/assistant/index.tsx",
   "pages/assistant/[[]conversationId[]].tsx",
-  "pages/simulator/index.tsx",
+  "pages/simulador/index.tsx",
   "pages/simulator/sessions/[[]sessionId[]]/index.tsx",
   "pages/simulator/sessions/[[]sessionId[]]/result.tsx",
   "pages/simulator/sessions/[[]sessionId[]]/replay.tsx",
   "pages/simulator/cases/index.tsx",
   "pages/simulator/cases/new.tsx",
   "pages/simulator/cases/[[]id[]]/edit.tsx",
-  "pages/lab/index.tsx",
   "pages/lab/reservations/index.tsx",
-  "pages/lab/live/index.tsx",
   "pages/lab/recordings/index.tsx",
   "pages/lab/recordings/[[]recordingId[]].tsx",
   "pages/notifications/index.tsx",
@@ -250,7 +251,7 @@ const eslintConfig = [
           type: "feature",
           mode: "full",
           pattern: [
-            `src/features/{auth,profile,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat,simulator,case-editor,ventilator-lab,notifications,student-space,teacher-dashboard,admin-console}/{api,application,UI}/**/*`,
+            `src/features/{auth,profile,learning,content-editor,evaluations,evaluation-authoring,grading,ai-chat,simulator,simulator-workspace,case-editor,ventilator-lab,notifications,student-space,teacher-dashboard,admin-console}/{api,application,UI}/**/*`,
             `src/features/(groups)/**/*`,
           ],
           capture: ["feature"],

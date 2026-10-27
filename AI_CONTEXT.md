@@ -1,7 +1,7 @@
 <!--
 * Funcionalidad: Contexto del repositorio para asistentes de IA
-* Descripción: Estado real de ventilab-web: stack, backend NestJS y cliente OpenAPI generado, features, rutas, providers, estilos, pruebas y despliegue. v1.0 (A9): reescrito desde el código; reemplaza la versión de julio de 2026 (NextAuth, pages/api, backend Express, Prisma), que ya no aplica.
-* Versión: 1.0
+* Descripción: Estado real de ventilab-web: stack, backend NestJS y cliente OpenAPI generado, features, rutas, providers, estilos, pruebas y despliegue. v1.0 (A9): reescrito desde el código; reemplaza la versión de julio de 2026 (NextAuth, pages/api, backend Express, Prisma), que ya no aplica. v1.1 (W1 Bloque 1): navegación del simulador unificado (/simulador como inicio de todos los roles, menú lateral corto, menú de usuario por rol, redirecciones de /simulator y /lab*) y la feature simulator-workspace.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -67,7 +67,7 @@ scripts/                — generate-api, check-api-contract, sync-sim-engine, s
 
 ---
 
-## Mapa de features (`src/features/`, 17)
+## Mapa de features (`src/features/`, 18)
 
 | Feature | Propósito | Rutas |
 |---|---|---|
@@ -83,11 +83,12 @@ scripts/                — generate-api, check-api-contract, sync-sim-engine, s
 | `learning` | Feature principal de aprendizaje: secciones, módulos, lecciones, notas, progreso y tutor IA | `/learn/**` |
 | `notifications` | Notificaciones en tiempo real: campana, toasts y página | `/notifications` |
 | `profile` | Perfil del usuario | `/profile` |
-| `simulator` | Simulación de ventilador y paciente con el motor en un Web Worker, sesiones, repetición, resultados y asistente IA | `/simulator/**` |
+| `simulator` | Simulación de ventilador y paciente con el motor en un Web Worker, sesiones, repetición, resultados y asistente IA | `/simulator/sessions/**` (catálogo dentro de `/simulador?tab=simular`) |
+| `simulator-workspace` | Panel unificado del simulador (pestañas Simular, Monitoreo, Conexión, Sesiones); en W1 es un marcador que carga las páginas existentes por pestaña | `/simulador` |
 | `student-space` | Espacio del estudiante: inicio, notas y calificaciones | `/me`, `/me/notes`, `/me/grades` |
 | `teacher-dashboard` | Panel docente y seguimiento de estudiantes | `/teacher`, `/teacher/students/[userId]` |
 | `teaching` | Residual: solo `data/lessons.manifest.json` (lo regeneran `postinstall`/`prestart`; sin consumidores) | — |
-| `ventilator-lab` | Laboratorio con el ventilador físico: reservas, consola en vivo con telemetría y comandos, control exclusivo de operador, grabaciones | `/lab/**` |
+| `ventilator-lab` | Laboratorio con el ventilador físico: reservas, consola en vivo con telemetría y comandos, control exclusivo de operador, grabaciones | `/lab/reservations`, `/lab/recordings/**` (resumen y consola en `/simulador?tab=conexion` y `?tab=monitoreo`) |
 
 ---
 
@@ -95,8 +96,10 @@ scripts/                — generate-api, check-api-contract, sync-sim-engine, s
 
 - `pages/` no tiene `pages/api/` ni usa `getServerSideProps`/`getStaticProps`/`getInitialProps`: la app es 100 % cliente.
 - Cada página declara su layout (`getLayout`, `src/shared/layouts/get-layout.ts`). Los guards de rol viven en los layouts: `withPublicLayout`, `withStudentLayout` (`RequireAuth`), `withStudentOnlyLayout`, `withTeacherLayout`, `withAdminLayout` y `withPrintLayout` (`RequireRole`). Roles: `STUDENT`, `TEACHER`, `ADMIN`.
-- Tabla de acceso por ruta: `src/shared/session/routes.config.ts`. `/` redirige al inicio del rol (`RoleHomeRedirect`).
-- Redirecciones legadas (307) en `config/legacy-redirects.mjs` y cabeceras de seguridad + CSP (Report-Only salvo `CSP_REPORT_ONLY=false`) en `config/csp.mjs`, servidas por `next.config.mjs`.
+- Tabla de acceso por ruta: `src/shared/session/routes.config.ts`. `/` y `/dashboard` redirigen al inicio del rol (`RoleHomeRedirect`), que es `/simulador` para los tres roles (`DEFAULT_ROUTE_BY_ROLE`).
+- Navegación (`src/shared/layouts/nav.config.ts`): menú lateral corto — Simulador (`/simulador`, con el indicador del ventilador y activo también en `/simulator/sessions/**` y `/lab/**` vía `activePrefixes`), Enseñanza (`/learn`) y Evaluación (`/evaluations`); el staff suma la sección «Panel docente» (Resumen `/teacher`, Grupos, Contenido, Gestionar evaluaciones, Casos clínicos, Calificar, Estado del sistema) y ADMIN la sección «Administración». El menú de usuario (`user-menu.config.ts`) lleva Mi resumen, Mis notas, Mis calificaciones, Mi grupo y Perfil (estudiante) o Perfil (staff), y Cerrar sesión; el asistente IA y las notificaciones viven en la barra superior.
+- `/simulador?tab=simular|monitoreo|conexion|sesiones` (por defecto `monitoreo`) es el panel unificado (`src/features/simulator-workspace`). `/simulator/sessions/[id]` se conserva (EXAM y enlaces directos); `/simulator/cases/**`, `/lab/reservations` y `/lab/recordings/**` conservan sus páginas.
+- Redirecciones legadas (307) en `config/legacy-redirects.mjs` (incluye `/simulator` → `/simulador?tab=simular`, `/lab` → `?tab=conexion`, `/lab/live` → `?tab=monitoreo`; solo rutas exactas; en la navegación de cliente no aplican, por eso las constantes internas apuntan a `/simulador?tab=…`) y cabeceras de seguridad + CSP (Report-Only salvo `CSP_REPORT_ONLY=false`) en `config/csp.mjs`, servidas por `next.config.mjs`.
 
 ---
 

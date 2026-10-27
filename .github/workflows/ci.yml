@@ -4,7 +4,8 @@
 #   contra el repositorio del backend (clonado en una subcarpeta y leído con BACKEND_SPEC_PATH). Si el backend es
 #   privado, el secreto BACKEND_REPO_TOKEN debe tener permiso de lectura sobre marcela981/ventylab-server.
 #   v1.1 (A7): sin DATABASE_URL de marcador; la web ya no tiene Prisma.
-# Versión: 1.1
+#   v1.2 (W1 Bloque 1): el lote (d) incluye la feature simulator-workspace.
+# Versión: 1.2
 # Autor: Marcela Mazo Castro
 # Proyecto: VentyLab
 # Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -60,8 +61,8 @@ jobs:
       - name: Tests (c) notifications, profile, student-space
         run: npx vitest run src/features/notifications src/features/profile src/features/student-space --maxWorkers=2
 
-      - name: Tests (d) simulator, ventilator-lab
-        run: npx vitest run src/features/simulator src/features/ventilator-lab --maxWorkers=2
+      - name: Tests (d) simulator, simulator-workspace, ventilator-lab
+        run: npx vitest run src/features/simulator src/features/simulator-workspace src/features/ventilator-lab --maxWorkers=2
 
       - name: Tests (e) teacher-dashboard, teaching
         run: npx vitest run src/features/teacher-dashboard src/features/teaching --maxWorkers=2

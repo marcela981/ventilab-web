@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Auth information pages tests
-* Descripción: AccessDeniedPage (loading state, authenticated user with name, role and role-home link, visitor with a login link, the `reason` query as a warning, back navigation) and ForgotPasswordPage (notice, login and registration links). Session doubles through SessionContext and a mocked Next router. Depends on vitest, Testing Library and @shared/session.
-* Versión: 1.0
+* Descripción: AccessDeniedPage (loading state, authenticated user with name, role and role-home link, visitor with a login link, the `reason` query as a warning, back navigation) and ForgotPasswordPage (notice, login and registration links). Session doubles through SessionContext and a mocked Next router. Depends on vitest, Testing Library and @shared/session. v1.1 (W1 Bloque 1): the role home of every role is /simulador.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -72,7 +72,7 @@ describe("AccessDeniedPage", () => {
     expect(screen.getByRole("heading", { name: "Acceso denegado" })).toBeInTheDocument();
     expect(screen.getByText("Ana Pérez")).toBeInTheDocument();
     expect(screen.getByText("Docente")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Ir a mi inicio" })).toHaveAttribute("href", "/teacher");
+    expect(screen.getByRole("link", { name: "Ir a mi inicio" })).toHaveAttribute("href", "/simulador");
     expect(screen.queryByRole("link", { name: "Iniciar sesión" })).not.toBeInTheDocument();
   });
 

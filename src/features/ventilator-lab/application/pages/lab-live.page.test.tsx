@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Lab live console page tests
-* Descripción: /lab/live with msw and a fake socket: the console (lazy) and the room join only for whoever the backend lets control the active reservation (holder, staff), "Equipo ocupado" with the backend label and no join for another student, the next reservation and the calendar link without an active one, the join re-sent on reconnect with the reconnection banner meanwhile, a join rejection with its reason and a re-read of the reservation, the no-data overlay on ventilator:disconnected and on the client stale timer and its automatic resume, the countdown and the latency (current and p95, colour level) on the server clock. v1.1 (T7): the control banner per role (operator, holder seen by a teacher, free), only the operator gets editable controls and loses them on a takeover (reason "Opera: …"), take, takeover behind its confirmation (going back sends nothing). v1.2 (T6 review fix S2): no latency value ("—") while the device has no data or the socket is down; the latency waits for every clock sample. v1.2 (T8): the operator confirms a PEEP change → one POST /api/ventilator/commands with the full reported setting set, the in-flight tag and the recent list follow the 202 and command-status, and the displayed value changes only when the telemetry reports it (APPLIED alone leaves it unchanged). Depends on vitest, msw, Testing Library and the lab test helpers. v1.3 (T9): control revoked — preemption during use → modal (reason, backend successor label, edits dropped, read-only) → leave to /lab, or watch the next reservation for staff; the countdown reaching zero → modal; takeover → non-blocking notice (no modal); presence timeout → notice with «Tomar control» again when allowed. v1.4 (T10): the recording toggle for the holder and staff (not without canControl, not after the session ended); start → REC mark in the console header; stop after confirming. v1.5 (T9 review fix): B1 no countdown ("—") and no end of the session while the server clock is pending or unsynced, even past the end on the browser clock; S2 a cancelled navigation to /lab falls back to a full page load and reopens the dialog; S3 no release DELETE after the session ended (pagehide and unmount).
-* Versión: 1.5
+* Descripción: /lab/live with msw and a fake socket: the console (lazy) and the room join only for whoever the backend lets control the active reservation (holder, staff), "Equipo ocupado" with the backend label and no join for another student, the next reservation and the calendar link without an active one, the join re-sent on reconnect with the reconnection banner meanwhile, a join rejection with its reason and a re-read of the reservation, the no-data overlay on ventilator:disconnected and on the client stale timer and its automatic resume, the countdown and the latency (current and p95, colour level) on the server clock. v1.1 (T7): the control banner per role (operator, holder seen by a teacher, free), only the operator gets editable controls and loses them on a takeover (reason "Opera: …"), take, takeover behind its confirmation (going back sends nothing). v1.2 (T6 review fix S2): no latency value ("—") while the device has no data or the socket is down; the latency waits for every clock sample. v1.2 (T8): the operator confirms a PEEP change → one POST /api/ventilator/commands with the full reported setting set, the in-flight tag and the recent list follow the 202 and command-status, and the displayed value changes only when the telemetry reports it (APPLIED alone leaves it unchanged). Depends on vitest, msw, Testing Library and the lab test helpers. v1.3 (T9): control revoked — preemption during use → modal (reason, backend successor label, edits dropped, read-only) → leave to /lab, or watch the next reservation for staff; the countdown reaching zero → modal; takeover → non-blocking notice (no modal); presence timeout → notice with «Tomar control» again when allowed. v1.4 (T10): the recording toggle for the holder and staff (not without canControl, not after the session ended); start → REC mark in the console header; stop after confirming. v1.5 (T9 review fix): B1 no countdown ("—") and no end of the session while the server clock is pending or unsynced, even past the end on the browser clock; S2 a cancelled navigation to /lab falls back to a full page load and reopens the dialog; S3 no release DELETE after the session ended (pagehide and unmount). v1.6 (W1 Bloque 1): leaving after a revocation goes to the Conexión tab of the simulator workspace (LAB_URL = /simulador?tab=conexion).
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -520,7 +520,7 @@ describe("LabLivePage", { timeout: 30_000 }, () => {
       expect(screen.queryByRole("button", { name: RECORDING_COPY.start, hidden: true })).not.toBeInTheDocument();
 
       fireEvent.click(within(dialog).getByRole("button", { name: REVOCATION_COPY.acknowledge }));
-      await waitFor(() => expect(router.push).toHaveBeenCalledWith("/lab"));
+      await waitFor(() => expect(router.push).toHaveBeenCalledWith("/simulador?tab=conexion"));
       // The ended reservation is not released by the page (the backend already did; a stale DELETE could hit the next one).
       expect(controlWrites).toEqual([]);
     });
@@ -568,7 +568,7 @@ describe("LabLivePage", { timeout: 30_000 }, () => {
 
       useCurrent({ reservation: null, canControl: false });
       fireEvent.click(within(dialog).getByRole("button", { name: REVOCATION_COPY.acknowledge }));
-      await waitFor(() => expect(router.push).toHaveBeenCalledWith("/lab"));
+      await waitFor(() => expect(router.push).toHaveBeenCalledWith("/simulador?tab=conexion"));
     });
 
     it("never ends the session on the browser clock while the server clock is unsynced (T9 review fix B1)", async() => {
@@ -625,7 +625,7 @@ describe("LabLivePage", { timeout: 30_000 }, () => {
       router.push.mockResolvedValueOnce(false);
       fireEvent.click(within(dialog).getByRole("button", { name: REVOCATION_COPY.acknowledge }));
 
-      await waitFor(() => expect(router.push).toHaveBeenCalledWith("/lab"));
+      await waitFor(() => expect(router.push).toHaveBeenCalledWith("/simulador?tab=conexion"));
       await waitFor(() => expect(consoleError.mock.calls.some((call) => /navigation/i.test(String(call[0])))).toBe(true));
       // Not stranded behind a closed dialog: it is open again, so "Entendido" can be retried.
       await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());

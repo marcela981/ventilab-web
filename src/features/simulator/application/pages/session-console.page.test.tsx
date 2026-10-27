@@ -25,7 +25,8 @@
 *   tab claim is released on a persisted pagehide (back/forward cache) and claimed again on its pageshow.
 *   v1.7 (review of eb3c21b): a deadline during the student's failing end returns to the exam with one end and one navigation; a deadline already past at mount posts /end before the worker boots and never starts it; an EXAM rebuilt without its exam context counts down on the attempt server clock.
 *   v1.8 (final review): a cancelled router.push (resolves false) falls back to a full page load.
-* Versión: 1.8
+*   v1.9 (W1 Bloque 1): "Volver al simulador" opens the Simular tab of the workspace (/simulador?tab=simular).
+* Versión: 1.9
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -606,7 +607,7 @@ describe("SessionConsolePage", () => {
 
     expect(await screen.findByText("No se puede reanudar esta sesión en este navegador")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Ver resultado" })).toHaveAttribute("href", "/simulator/sessions/s1/result");
-    expect(screen.getByRole("link", { name: "Volver al simulador" })).toHaveAttribute("href", "/simulator");
+    expect(screen.getByRole("link", { name: "Volver al simulador" })).toHaveAttribute("href", "/simulador?tab=simular");
   });
 });
 

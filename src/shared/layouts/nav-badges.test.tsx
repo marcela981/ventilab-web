@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Navigation badges tests
-* Descripción: Verifies the nav-badges registry (a setter stores a positive count, zero or null clears it, setters are no-ops without a provider) and its rendering in the AppShell: the "Calificar" item of a teacher shows the gradingPending count as a badge with screen-reader text, and shows nothing at 0. Depends on vitest, Testing Library, next/router and next/link (mocked), the session context, the AppShell and the nav-badges registry. v1.1 (G1 review W2): badges are visible only while an AppShell (badge host) is mounted. v1.2 (B4): the accessible name of a badged nav item carries a differentiated, singular/plural count ("Notificaciones, 3 sin leer", "Calificar, 2 pendientes por calificar"), nothing at 0; navBadgeText is shared with the notifications bell.
-* Versión: 1.2
+* Descripción: Verifies the nav-badges registry (a setter stores a positive count, zero or null clears it, setters are no-ops without a provider) and its rendering in the AppShell: the "Calificar" item of a teacher shows the gradingPending count as a badge with screen-reader text, and shows nothing at 0. Depends on vitest, Testing Library, next/router and next/link (mocked), the session context, the AppShell and the nav-badges registry. v1.1 (G1 review W2): badges are visible only while an AppShell (badge host) is mounted. v1.2 (B4): the accessible name of a badged nav item carries a differentiated, singular/plural count ("Notificaciones, 3 sin leer", "Calificar, 2 pendientes por calificar"), nothing at 0; navBadgeText is shared with the notifications bell. v1.3 (W1 Bloque 1): "Notificaciones" left the side menu (the bell keeps the unread count), so only "Calificar" shows a badge there; a fed unread count adds no navigation item.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -137,12 +137,11 @@ describe("AppShell navigation badges", () => {
     const { unmount } = renderShell(1, 1);
 
     expect(within(desktopNavigation()).getByRole("link", { name: "Calificar, 1 pendiente por calificar" })).toBeInTheDocument();
-    expect(within(desktopNavigation()).getByRole("link", { name: "Notificaciones, 1 sin leer" })).toBeInTheDocument();
     unmount();
 
     renderShell(2, 3);
     expect(within(desktopNavigation()).getByRole("link", { name: "Calificar, 2 pendientes por calificar" })).toBeInTheDocument();
-    expect(within(desktopNavigation()).getByRole("link", { name: "Notificaciones, 3 sin leer" })).toBeInTheDocument();
+    expect(within(desktopNavigation()).queryByRole("link", { name: /Notificaciones/ })).not.toBeInTheDocument();
   });
 
   it("shares the unread text with the notifications bell", () => {
@@ -158,7 +157,6 @@ describe("AppShell navigation badges", () => {
 
     expect(link).toHaveAccessibleName("Calificar");
     expect(within(link).queryByText(/pendiente/)).not.toBeInTheDocument();
-    expect(within(desktopNavigation()).getByRole("link", { name: "Notificaciones" })).toBeInTheDocument();
   });
 });
 
