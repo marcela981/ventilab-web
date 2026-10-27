@@ -6,8 +6,8 @@
 *   SimulatedPatientDTO validators (age 18–100 integer, weight 30–250 kg, height 140–215 cm, RR 5–50, SpO₂ 50–100,
 *   HR 30–200, T 34–42 °C, SBP 50–250, DBP 20–150, Glasgow 3–15 integer, name ≤ 100, diagnosis ≤ 500, lists ≤ 20 items
 *   of ≤ 200 characters); the required fields are the July ones plus RR and SpO₂, which the server requires. Validation
-*   messages are in Spanish (July wording when it had one). Pure, no dependencies besides the simulator patient types.
-* Versión: 0.1
+*   messages are in Spanish (July wording when it had one). Pure, no dependencies besides the simulator patient types. v0.2: without the unused step count.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -45,8 +45,6 @@ export type PatientFormField = keyof PatientFormValues;
 export type PatientFormErrors = Partial<Record<PatientFormField, string>>;
 
 export type PatientFormStep = 0 | 1;
-
-export const PATIENT_FORM_STEP_COUNT = 2;
 
 /** July default difficulty (usePatientForm.ts). */
 export const DEFAULT_PATIENT_DIFFICULTY: CaseDifficulty = "INTERMEDIATE";
