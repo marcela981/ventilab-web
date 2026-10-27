@@ -3,7 +3,10 @@
 * Descripción: Walks the STATIC import graph (value imports and re-exports of local files; `import type` and dynamic `import()` are not followed) from the /lab route modules and the ventilator-lab public index, and checks that none reaches the shared ventilator console, the waveforms, the charts module or Chart.js: the console and its adapter must land only in the lazy /lab/live chunk. As a control, the lazily imported live console module does reach the console. v1.1 (T6 review fix S4): limitations — the scan is regex based (imports are matched as text, not parsed), it resolves only relative specifiers and the `@shared/` and `@features/` aliases (a legacy `@/` alias import, or a bare package other than the listed heavy ones, is not followed), and it checks the source graph, not the emitted chunks (the bundle check stays a manual step). v1.2 (T11): also the recordings routes and pages; the recording player (console, waveforms, charts) is reached only through the dynamic import of the lazy recording player. Depends on vitest and node:fs. v1.3 (W1 Bloque 1): the /lab and /lab/live pages are gone; the /simulador route and the simulator-workspace index (which loads the lab pages through dynamic imports) are checked instead.
 *   v1.4 (W11, Bloque 1): the live page is gone; the real monitor of /simulador (and the live entry it imports) are
 *   checked instead: the live console stays reachable only through its dynamic import.
-* Versión: 1.4
+*   v1.5 (W7-fix, Bloque 1): the /simulador route and the simulator-workspace index do not statically reach the lab
+*   connection controller, the ventilator-lab connection entry, the request layer or axios; the controller is reached
+*   only through the dynamic import of LiveLabConnectionSource.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -41,7 +44,7 @@ function resolveSpecifier(specifier: string, from: string): string | null {
 }
 
 /** Heavy specifiers statically reachable from the entry, with the importing file. */
-function heavyImports(entry: string): string[] {
+function heavyImports(entry: string, patterns: readonly RegExp[] = HEAVY): string[] {
   const found: string[] = [];
   const seen = new Set<string>();
   const queue = [join(ROOT, entry)];
@@ -63,7 +66,7 @@ function heavyImports(entry: string): string[] {
         continue;
       }
 
-      if (HEAVY.some((pattern) => pattern.test(specifier))) {
+      if (patterns.some((pattern) => pattern.test(specifier))) {
         found.push(`${file.slice(ROOT.length + 1)} → ${specifier}`);
         continue;
       }
@@ -108,5 +111,30 @@ describe("/lab lazy console boundary", () => {
 
     expect(lazy).toContain('import("./recording-player")');
     expect(heavyImports("src/features/ventilator-lab/application/components/recording-player.tsx").length).toBeGreaterThan(0);
+  });
+});
+
+// W7-fix: the connection controller of /simulador (ventilator-lab connection entry, its dialogs, the request layer and
+// axios) loads lazily with LiveLabConnectionSource, never in the initial route chunk.
+const CONNECTION_HEAVY = [
+  /^axios$/,
+  /^@shared\/api-client\/api-request$/,
+  /^@features\/ventilator-lab\/connection\.entry$/,
+  /use-lab-connection-controller$/,
+];
+
+describe("/simulador lazy lab connection boundary (W7-fix)", () => {
+  it.each([
+    "pages/simulador/index.tsx",
+    "src/features/simulator-workspace/index.ts",
+  ])("%s does not statically import the connection controller, the request layer or axios", (entry) => {
+    expect(heavyImports(entry, CONNECTION_HEAVY)).toEqual([]);
+  }, 20_000);
+
+  it("loads the controller only through a dynamic import, which does reach the connection entry", () => {
+    const provider = readFileSync(join(ROOT, "src/features/simulator-workspace/application/components/lab-connection-provider.tsx"), "utf8");
+
+    expect(provider).toContain('import("./live-lab-connection-source")');
+    expect(heavyImports("src/features/simulator-workspace/application/components/live-lab-connection-source.tsx", CONNECTION_HEAVY).length).toBeGreaterThan(0);
   });
 });

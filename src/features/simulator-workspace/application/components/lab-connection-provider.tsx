@@ -12,7 +12,12 @@
 *   own reservation that ended or was displaced is rendered here, so it shows on any tab. The states and value types
 *   moved to connection-fsm and lab-connection.entity (re-exported). A fixed `value` skips every live source. Depends
 *   on React, the controller hook, the ventilator-lab revoked dialog and the connection entities.
-* Versión: 0.2
+*   v0.3 (W7-fix, Bloque 1): the controller and the revoked modal moved to LiveLabConnectionSource, loaded lazily, so
+*   the initial /simulador chunk no longer carries the ventilator-lab connection entry (booking and preemption
+*   dialogs, MUI form fields and popper), the request layer or axios. Until it runs, the tabs read a placeholder value
+*   (NO_RESERVATION, socket offline, every action disabled); a chunk that cannot be loaded keeps that placeholder.
+*   Depends on React, retry-import, the lazy source and the connection entities.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,11 +25,12 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { createContext, useContext } from "react";
-import type { ReactNode } from "react";
-import { ControlRevokedDialog } from "@features/ventilator-lab/connection.entry";
+import { createContext, lazy, Suspense, useContext, useState } from "react";
+import type { ComponentType, ReactNode } from "react";
+import { retryImport } from "@shared/lib/retry-import";
+import { createLabConnectionValue } from "../entities/lab-connection.entity";
 import type { LabConnectionValue } from "../entities/lab-connection.entity";
-import { useLabConnectionController } from "../hooks/use-lab-connection-controller";
+import type { LiveLabConnectionSourceProps } from "./live-lab-connection-source";
 
 export { LAB_CONNECTION_STATES } from "../entities/connection-fsm";
 export type { LabConnectionState } from "../entities/connection-fsm";
@@ -49,15 +55,28 @@ export type LabConnectionProviderProps = {
   children: ReactNode
 };
 
+const NoSource: ComponentType<LiveLabConnectionSourceProps> = () => null;
+
+// The controller (reservation, control, room, dialogs, request layer) loads in its own chunk. If the chunk cannot be
+// loaded even after the retries, the workspace keeps working with the placeholder value (no connection actions).
+const LiveLabConnectionSource = lazy<ComponentType<LiveLabConnectionSourceProps>>(() =>
+  retryImport(() => import("./live-lab-connection-source"))
+    .then((module) => ({ default: module.LiveLabConnectionSource }))
+    .catch(() => ({ default: NoSource })),
+);
+
+// Until the controller runs: no reservation known and every connection action disabled.
+const PLACEHOLDER = createLabConnectionValue();
+
 function LiveLabConnection({ children }: { children: ReactNode }) {
-  const value = useLabConnectionController();
+  const [live, setLive] = useState<LabConnectionValue | null>(null);
 
   return (
-    <LabConnectionContext.Provider value={value}>
+    <LabConnectionContext.Provider value={live ?? PLACEHOLDER}>
       {children}
-      {value.revocation ? (
-        <ControlRevokedDialog open modal={value.revocation} pending={false} error={null} onAcknowledge={value.acknowledgeRevocation} />
-      ) : null}
+      <Suspense fallback={null}>
+        <LiveLabConnectionSource onChange={setLive} />
+      </Suspense>
     </LabConnectionContext.Provider>
   );
 }

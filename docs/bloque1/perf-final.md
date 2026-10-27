@@ -1,7 +1,7 @@
 <!--
 * Funcionalidad: Rendimiento final del simulador (Bloque 1)
-* Descripción: Medición final del simulador unificado (/simulador) y de las rutas independientes que se conservan (/simulator/sessions/[id] y su repetición) frente al baseline previo al Bloque 1: fps de repintado de las curvas, fps de requestAnimationFrame, commits de React por segundo, long tasks, tiempo de hilo principal, tamaño de los bundles por ruta y una corrida de 60 s cambiando de pestaña. Todos los números salen de los JSON de docs/bloque1/perf/ (baseline-*, after-w4-*, final-*); lo que no se pudo medir se indica.
-* Versión: 0.1
+* Descripción: Medición final del simulador unificado (/simulador) y de las rutas independientes que se conservan (/simulator/sessions/[id] y su repetición) frente al baseline previo al Bloque 1: fps de repintado de las curvas, fps de requestAnimationFrame, commits de React por segundo, long tasks, tiempo de hilo principal, tamaño de los bundles por ruta y una corrida de 60 s cambiando de pestaña. Todos los números salen de los JSON de docs/bloque1/perf/ (baseline-*, after-w4-*, final-*); lo que no se pudo medir se indica. v0.2 (W7-fix): columna de bundles después de sacar el controlador de la conexión del chunk inicial de /simulador (w7fix-bundle.json) y nota de la corrección.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -69,17 +69,19 @@ Se inicia la sesión en `/simulador` y se alterna Conexión ↔ Monitoreo cada 1
 ## Bundles (first load, gzip)
 
 Se midieron con `node scripts/perf/bundle-sizes.mjs --json docs/bloque1/perf/final-bundle.json` sobre el mismo build.
+La columna "Tras W7-fix" sale de `docs/bloque1/perf/w7fix-bundle.json`, medida con el build de la corrección (ver la
+lectura).
 
-| Ruta | Antes (baseline) | Intermedio (after-w4) | Después (final) | Propio gz después |
-|---|---|---|---|---|
-| compartido (_app + main) | 203,8 | 203,9 | 204,0 | — |
-| `/simulador` | no existía | 238,1 | **317,5** | 113,4 |
-| `/simulator` (catálogo) | 346,3 | eliminada | eliminada (redirige a `/simulador?tab=simular`) | — |
-| `/simulator/sessions/[sessionId]` | 346,4 | 308,8 | **310,2** | 106,2 |
-| `/simulator/sessions/[sessionId]/replay` | 346,4 | 297,8 | **299,3** | 95,3 |
-| `/simulator/sessions/[sessionId]/result` | 346,4 | 299,6 | **301,3** | 97,2 |
-| `/lab/live` | 326,8 | eliminada | eliminada (redirige a `/simulador?tab=monitoreo`) | — |
-| `/lab/recordings/[recordingId]` | 326,9 | 317,1 | 319,9 | 115,9 |
+| Ruta | Antes (baseline) | Intermedio (after-w4) | Después (final) | Tras W7-fix | Propio gz tras W7-fix |
+|---|---|---|---|---|---|
+| compartido (_app + main) | 203,8 | 203,9 | 204,0 | 204,0 | — |
+| `/simulador` | no existía | 238,1 | 317,5 | **241,7** | 37,6 (antes 113,4) |
+| `/simulator` (catálogo) | 346,3 | eliminada | eliminada (redirige a `/simulador?tab=simular`) | eliminada | — |
+| `/simulator/sessions/[sessionId]` | 346,4 | 308,8 | 310,2 | **310,2** | 106,1 |
+| `/simulator/sessions/[sessionId]/replay` | 346,4 | 297,8 | 299,3 | **299,2** | 95,1 |
+| `/simulator/sessions/[sessionId]/result` | 346,4 | 299,6 | 301,3 | **301,3** | 97,3 |
+| `/lab/live` | 326,8 | eliminada | eliminada (redirige a `/simulador?tab=monitoreo`) | eliminada | — |
+| `/lab/recordings/[recordingId]` | 326,9 | 317,1 | 319,9 | 320,5 | 116,4 |
 
 El worker de simulación (`ventylab-sim.*.js`) no cambió: pesa 27,6 KB sin comprimir y 8,9 KB gz, el mismo archivo en
 ambas mediciones.
@@ -106,6 +108,16 @@ ambas mediciones.
   Todo apunta a los proveedores de W7/W10 que viven por encima de las pestañas (`LabConnectionProvider` y las entradas de
   `ventilator-lab`). Aun así, la ruta queda por debajo de los 346,4 KB que cargaba cualquier pantalla del simulador
   antes del bloque. No se corrigió en W12, porque tocaría código de producto; queda como pendiente.
+
+  **Corregido en W7-fix: 317,5 → 241,7 KB gz** (por debajo de los 250 KB del objetivo y apenas 3,6 KB sobre after-w4).
+  La causa era `LabConnectionProvider`: importaba de forma estática el controlador de la conexión, y con él la entrada
+  `ventilator-lab/connection.entry` (diálogos de "Reservar ahora" y de desplazamiento con sus campos de MUI, el popper,
+  los textos de reserva) y los servicios que usan la capa de peticiones con axios. Ahora el proveedor monta los
+  tabs con un valor provisional (sin reserva, acciones deshabilitadas) y carga en lazy `LiveLabConnectionSource`, que
+  ejecuta el controlador, publica su valor antes del pintado y muestra el modal de reserva revocada. El cliente HTTP
+  compartido no cambió: axios se sigue usando, pero llega en un chunk aparte cuando el controlador hace su primera
+  petición. `lab-live.lazy-boundary.test.ts` (v1.5) impide que el controlador, la entrada de conexión, `api-request` o
+  axios vuelvan a entrar en el grafo estático de `/simulador`.
 - **Rutas independientes:** `/simulator/sessions/[id]`, la repetición y el resultado quedan entre 299 y 310 KB gz,
   frente a 346,4 antes. Respecto de after-w4 subieron 1,4–1,7 KB.
 
