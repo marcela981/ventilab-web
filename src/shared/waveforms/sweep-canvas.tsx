@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: SweepCanvas
-* Descripción: Raw canvas renderer for N stacked live waveform channels read from a WaveformRingBuffer (not React state), in sweep (erase bar) or scroll mode, with a configurable window and fixed or auto y-ranges. `frozen` captures a snapshot and stops consuming data; on the frozen trace a measurement cursor follows the pointer or the arrow keys (the canvas becomes a slider) and a visual readout lists the time and every channel value with units. Depends on React, the sweep painter, waveform-geometry and the console tokens. v1.1: the readout is no longer aria-live (the slider's aria-valuetext and aria-describedby carry it), PageUp/PageDown move 10 % of the window, the readout is re-placed on resize while frozen, and a sweep-mode snapshot starts after the erase gap.
-* Versión: 1.1
+* Descripción: Raw canvas renderer for N stacked live waveform channels read from a WaveformRingBuffer (not React state), in sweep (erase bar) or scroll mode, with a configurable window and fixed or auto y-ranges. `frozen` captures a snapshot and stops consuming data; on the frozen trace a measurement cursor follows the pointer or the arrow keys (the canvas becomes a slider) and a visual readout lists the time and every channel value with units. Depends on React, the sweep painter, waveform-geometry and the console tokens. v1.1: the readout is no longer aria-live (the slider's aria-valuetext and aria-describedby carry it), PageUp/PageDown move 10 % of the window, the readout is re-placed on resize while frozen, and a sweep-mode snapshot starts after the erase gap. v1.2 (W3, Bloque 1): `playbackDelayMs` draws the live trace by time, that delay behind the newest sample (see the playback clock), so it advances on every frame between data batches; 0 (default) draws up to the newest sample.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -28,7 +28,10 @@ export type SweepCanvasProps<C extends string> = {
   windowSeconds?: number
   mode?: WaveformDisplayMode
   frozen?: boolean
+  /** Frames per second cap of the renderer; DISPLAY_REFRESH_FPS draws on every animation frame. */
   fps?: number
+  /** Live trace delay behind the newest sample in ms (DEFAULT_PLAYBACK_DELAY_MS for batched live sources); 0 = none. */
+  playbackDelayMs?: number
   className?: string
 };
 
@@ -57,6 +60,7 @@ export function SweepCanvas<C extends string>({
   mode = "sweep",
   frozen = false,
   fps,
+  playbackDelayMs = 0,
   className,
 }: SweepCanvasProps<C>) {
   const readoutId = useId();
@@ -83,7 +87,7 @@ export function SweepCanvas<C extends string>({
       if (freeze.snapshot) {
         painterRef.current.paintFrozen(frame, freeze.snapshot, freeze.cursor, config);
       } else {
-        painterRef.current.paintLive(frame, buffer, config);
+        painterRef.current.paintLive(frame, buffer, config, playbackDelayMs);
       }
     },
   });

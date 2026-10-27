@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Layouts and AppShell tests
-* Descripción: Verifies the guard behavior of the Student/Teacher/Admin layouts (redirect to login, wrong role to its landing route, content for the right role), the public layout without auth, and the AppShell (role-filtered nav, skip link, sign-out through the session, realtime status indicator, route error boundary). v1.1 (T11a): the user avatar shows the session image with the initials as fallback, and the student-only layout sends other roles to their landing route. v1.2 (T12 ventilator-lab): the Laboratorio item shows the device indicator. v1.3 (T12 review fix W1): the shell shows no indicator nobody fed (no invented device state), shows the one a feeder sets in the nav-indicators registry (tone + text) and declares the keys of the role's navigation as visible. Depends on vitest, Testing Library, next/router and next/link (mocked) and the session/realtime contexts. v1.4 (O5 operation): role homes /me (students) and /teacher (teachers and admins); the teacher navigation starts at "Panel docente" (/teacher) and shows "Estado del sistema" but no admin-only item; the admin navigation shows the "Administración" section subheader and its items.
-* Versión: 1.4
+* Descripción: Verifies the guard behavior of the Student/Teacher/Admin layouts (redirect to login, wrong role to its landing route, content for the right role), the public layout without auth, and the AppShell (role-filtered nav, skip link, sign-out through the session, realtime status indicator, route error boundary). v1.1 (T11a): the user avatar shows the session image with the initials as fallback, and the student-only layout sends other roles to their landing route. v1.2 (T12 ventilator-lab): the Laboratorio item shows the device indicator. v1.3 (T12 review fix W1): the shell shows no indicator nobody fed (no invented device state), shows the one a feeder sets in the nav-indicators registry (tone + text) and declares the keys of the role's navigation as visible. Depends on vitest, Testing Library, next/router and next/link (mocked) and the session/realtime contexts. v1.4 (O5 operation): role homes /me (students) and /teacher (teachers and admins); the teacher navigation starts at "Panel docente" (/teacher) and shows "Estado del sistema" but no admin-only item; the admin navigation shows the "Administración" section subheader and its items. v1.5 (W1 Bloque 1): every role lands on /simulador (wrong-role redirects go there); the teacher navigation shows the "Panel docente" section with "Resumen" (/teacher) active; the "Simulador" item (/simulador) carries the device indicator; the user menu lists the role links in order (students: Mi resumen, Mis notas, Mis calificaciones, Mi grupo, Perfil; staff: Perfil) as anchors, then "Cerrar sesión".
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -97,10 +97,10 @@ describe("authenticated layouts", () => {
     expect(screen.getByRole("main")).toContainElement(screen.getByText("Contenido de la página"));
   });
 
-  it("StudentOnlyLayout sends a teacher to the teacher landing route", () => {
+  it("StudentOnlyLayout sends a teacher to the role home", () => {
     renderWith(sessionValue("authenticated", "TEACHER"), <StudentOnlyLayout>{content}</StudentOnlyLayout>);
 
-    expect(router.replace).toHaveBeenCalledWith("/teacher");
+    expect(router.replace).toHaveBeenCalledWith("/simulador");
     expect(screen.queryByText("Contenido de la página")).not.toBeInTheDocument();
   });
 
@@ -110,10 +110,10 @@ describe("authenticated layouts", () => {
     expect(screen.getByRole("main")).toContainElement(screen.getByText("Contenido de la página"));
   });
 
-  it("TeacherLayout sends a student to the student landing route", () => {
+  it("TeacherLayout sends a student to the role home", () => {
     renderWith(sessionValue("authenticated", "STUDENT"), <TeacherLayout>{content}</TeacherLayout>);
 
-    expect(router.replace).toHaveBeenCalledWith("/me");
+    expect(router.replace).toHaveBeenCalledWith("/simulador");
     expect(screen.queryByText("Contenido de la página")).not.toBeInTheDocument();
   });
 
@@ -125,13 +125,14 @@ describe("authenticated layouts", () => {
     expect(screen.getByText("Contenido de la página")).toBeInTheDocument();
     expect(within(nav).getByRole("link", { name: /Estado del sistema/ })).toHaveAttribute("href", "/admin/status");
     expect(within(nav).queryByRole("link", { name: /Usuarios/ })).not.toBeInTheDocument();
-    expect(within(nav).getByRole("link", { name: /^Panel docente/ })).toHaveAttribute("aria-current", "page");
+    expect(within(nav).getByText("Panel docente")).toBeInTheDocument();
+    expect(within(nav).getByRole("link", { name: /^Resumen/ })).toHaveAttribute("aria-current", "page");
   });
 
-  it("AdminLayout sends a teacher to the teacher landing route", () => {
+  it("AdminLayout sends a teacher to the role home", () => {
     renderWith(sessionValue("authenticated", "TEACHER"), <AdminLayout>{content}</AdminLayout>);
 
-    expect(router.replace).toHaveBeenCalledWith("/teacher");
+    expect(router.replace).toHaveBeenCalledWith("/simulador");
     expect(screen.queryByText("Contenido de la página")).not.toBeInTheDocument();
   });
 
@@ -199,12 +200,29 @@ describe("AppShell", () => {
     expect(value.signOut).toHaveBeenCalledTimes(1);
   });
 
+  it.each([
+    ["STUDENT", [["Mi resumen", "/me"], ["Mis notas", "/me/notes"], ["Mis calificaciones", "/me/grades"], ["Mi grupo", "/my-group"], ["Perfil", "/profile"]]],
+    ["TEACHER", [["Perfil", "/profile"]]],
+    ["ADMIN", [["Perfil", "/profile"]]],
+  ] as const)("lists the %s user menu links in order, then Cerrar sesión (W1)", (role, links) => {
+    renderWith(sessionValue("authenticated", role), <AppShell>{content}</AppShell>);
+    fireEvent.click(screen.getByRole("button", { name: "Abrir menú de usuario" }));
+
+    const items = screen.getAllByRole("menuitem");
+
+    expect(items.map((item) => item.textContent)).toEqual([...links.map(([label]) => label), "Cerrar sesión"]);
+    links.forEach(([, href], index) => {
+      expect(items[index]).toHaveAttribute("href", href);
+    });
+    expect(items.at(-1)).not.toHaveAttribute("href");
+  });
+
   it("opens the mobile navigation drawer", () => {
     renderWith(sessionValue("authenticated", "STUDENT"), <AppShell>{content}</AppShell>);
     fireEvent.click(screen.getByRole("button", { name: "Abrir menú de navegación" }));
 
     // The modal drawer hides the rest of the page from the accessibility tree, so count by text.
-    expect(screen.getAllByText("Inicio")).toHaveLength(2);
+    expect(screen.getAllByText("Enseñanza")).toHaveLength(2);
   });
 
   it.each<RealtimeStatus>(["disconnected", "unauthorized"])("shows the realtime indicator when %s", (status) => {
@@ -219,12 +237,12 @@ describe("AppShell", () => {
     expect(screen.queryByText("Sin conexión en tiempo real")).not.toBeInTheDocument();
   });
 
-  it("shows the Laboratorio item without any indicator nobody fed (T12 review fix W1)", () => {
+  it("shows the Simulador item without any indicator nobody fed (T12 review fix W1)", () => {
     renderWith(sessionValue("authenticated", "STUDENT"), <AppShell>{content}</AppShell>, "authenticated");
 
     const nav = screen.getByRole("navigation", { name: "Navegación principal" });
-    const lab = within(nav).getByRole("link", { name: /Laboratorio/ });
-    expect(lab).toHaveAttribute("href", "/lab");
+    const lab = within(nav).getByRole("link", { name: /Simulador/ });
+    expect(lab).toHaveAttribute("href", "/simulador");
     expect(lab).not.toHaveTextContent("Equipo sin datos");
     expect(lab.querySelector("[data-indicator-tone]")).toBeNull();
     expect(within(nav).queryByRole("link", { name: /Ventilador real/ })).not.toBeInTheDocument();
@@ -259,7 +277,7 @@ describe("AppShell", () => {
     fireEvent.click(screen.getByRole("button", { name: "feed" }));
 
     const nav = screen.getByRole("navigation", { name: "Navegación principal" });
-    const lab = within(nav).getByRole("link", { name: /Laboratorio/ });
+    const lab = within(nav).getByRole("link", { name: /Simulador/ });
     expect(lab).toHaveTextContent("Equipo en línea");
     expect(lab.querySelector("[data-indicator-tone='positive']")).not.toBeNull();
 

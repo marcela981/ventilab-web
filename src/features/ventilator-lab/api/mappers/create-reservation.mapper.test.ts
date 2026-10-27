@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: Create reservation mapper tests
 * Descripción: The request body (caller, group and user holders, end from the duration, trimmed purpose omitted when empty, confirmPreempt only when set), the parsing of the 409 conflict details (malformed payloads yield null, missing fields become null) and the holder options built from the groups and users endpoints (a student only gets the active student groups they lead; names as returned, the email when a user has no name). Depends on vitest and the mapper.
-* Versión: 1.0
+*   v1.1 (W7, Bloque 1): fixtures and expectations follow the W7 contract (current reservation relation, holder student code, immediate booking, created reservation id).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -44,6 +45,26 @@ describe("toCreateReservationBody", () => {
     });
     expect(toCreateReservationBody({ holder: user, startsAt, durationMinutes: 15, purpose: "", confirmPreempt: true }))
       .toMatchObject({ holderType: "USER", userId: "u9", confirmPreempt: true });
+  });
+
+  it("W7: books an immediate reservation with the duration and no window", () => {
+    const group = { kind: "group" as const, key: "g1", holderType: "GROUP" as const, userId: null, groupId: "g1", label: "Grupo A" };
+
+    expect(toCreateReservationBody({ holder: SELF_HOLDER, startsAt: null, durationMinutes: 30, purpose: "" })).toEqual({
+      holderType: "USER",
+      durationMinutes: 30,
+    });
+    expect(toCreateReservationBody({ holder: group, startsAt: null, durationMinutes: 60, purpose: " Repaso ", confirmPreempt: true })).toEqual({
+      holderType: "GROUP",
+      groupId: "g1",
+      durationMinutes: 60,
+      purpose: "Repaso",
+      confirmPreempt: true,
+    });
+  });
+
+  it("W7: rejects an immediate duration the backend does not accept", () => {
+    expect(() => toCreateReservationBody({ holder: SELF_HOLDER, startsAt: null, durationMinutes: 20, purpose: "" })).toThrow(RangeError);
   });
 });
 

@@ -1,0 +1,223 @@
+/*
+* Funcionalidad: Monitoring panel styles
+* Descripción: CSS Module of the Monitoreo tab of /simulador (W6, Bloque 1): the dark console surface of the panel,
+*   the header row with the Digital/Real selector and the status chip (Sin señal, Simulando, Conectado (Físico); text
+*   plus a colored dot, never color alone), the guide states with their shortcuts, the own patient card, and the
+*   result dialog actions. Console and design-system tokens only.
+* Versión: 0.1
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  width: 100%;
+  padding: var(--vl-space-3);
+  color: var(--vl-console-text);
+  background: var(--vl-console-bg);
+  border-radius: var(--vl-radius-lg);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.console {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  min-width: 0;
+}
+
+.muted {
+  margin: 0;
+  color: var(--vl-console-text-muted);
+}
+
+/* Header: mode selector + status chip */
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-3);
+}
+
+.modeSelector {
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-pill);
+}
+
+.modeButton {
+  min-width: 88px;
+  padding: var(--vl-space-1) var(--vl-space-3);
+  font: var(--mui-font-button);
+  color: var(--vl-console-text-muted);
+  cursor: pointer;
+  background: var(--vl-console-surface);
+  border: 0;
+}
+
+.modeButton[aria-pressed="true"] {
+  color: var(--vl-color-on-primary);
+  background: var(--vl-color-primary);
+}
+
+.modeButton:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-console-focus-ring);
+  outline-offset: calc(-1 * var(--vl-focus-ring-width));
+}
+
+.statusChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding: var(--vl-space-1) var(--vl-space-3);
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text);
+  background: var(--vl-console-surface-raised);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-pill);
+}
+
+.statusDot {
+  width: var(--vl-space-2);
+  height: var(--vl-space-2);
+  background: var(--vl-console-text-muted);
+  border-radius: 50%;
+}
+
+.statusChip[data-status="simulating"] .statusDot {
+  background: var(--vl-console-curve-volume);
+}
+
+.statusChip[data-status="connected"] .statusDot {
+  background: var(--vl-color-success);
+}
+
+/* Guides */
+.guide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-6) var(--vl-space-4);
+  text-align: center;
+  background: var(--vl-console-surface);
+  border: 1px dashed var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.guideText {
+  max-width: 36rem;
+  margin: 0;
+  font: var(--mui-font-body1);
+  color: var(--vl-console-text);
+}
+
+.guideActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--vl-space-2);
+}
+
+.primaryButton,
+.secondaryButton {
+  min-height: 36px;
+  padding: var(--vl-space-1) var(--vl-space-3);
+  font: var(--mui-font-button);
+  cursor: pointer;
+  border-radius: var(--vl-radius-sm);
+}
+
+.primaryButton {
+  color: var(--vl-color-on-primary);
+  background: var(--vl-color-primary);
+  border: 1px solid var(--vl-color-primary);
+}
+
+.secondaryButton {
+  color: var(--vl-console-text);
+  background: var(--vl-console-surface-raised);
+  border: 1px solid var(--vl-console-border);
+}
+
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible,
+.link:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}
+
+/* Own patient */
+.patientCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-3);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.cardTitle {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+  color: var(--vl-console-text);
+}
+
+.cardSubtitle {
+  margin: 0;
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-console-text-muted);
+}
+
+.facts {
+  display: grid;
+  gap: var(--vl-space-1);
+  margin: 0;
+}
+
+.fact {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--vl-space-2);
+  font: var(--mui-font-body2);
+}
+
+.fact dt {
+  color: var(--vl-console-text-muted);
+}
+
+.fact dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Result dialog (light surface) */
+.dialogActions {
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-2) var(--vl-space-3);
+}
+
+.link {
+  font: var(--mui-font-button);
+  color: var(--vl-color-link);
+}

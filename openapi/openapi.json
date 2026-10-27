@@ -4206,6 +4206,14 @@
             ],
             "description": "Clinical case without the expert configuration"
           },
+          "patient": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClinicalCasePatientDTO"
+              }
+            ],
+            "description": "Patient data shown before choosing the case (readable without clinical-cases:manage)"
+          },
           "userAttempts": {
             "allOf": [
               {
@@ -4217,6 +4225,7 @@
         },
         "required": [
           "clinicalCase",
+          "patient",
           "userAttempts"
         ],
         "type": "object"
@@ -4516,6 +4525,72 @@
           "hemodynamics",
           "gasTimeConstants",
           "deterioration"
+        ],
+        "type": "object"
+      },
+      "ClinicalCasePatientDTO": {
+        "properties": {
+          "allergies": {
+            "description": "Known allergies",
+            "example": [],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "heightCm": {
+            "description": "Patient height (cm), null when the case has no simulation profile",
+            "example": 175,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "history": {
+            "description": "Relevant medical history",
+            "example": [
+              "Hipertensión arterial"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "initialVitals": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ClinicalCaseVitalsDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Bedside vital signs at the start (shown only, not simulated), null when the case has none"
+          },
+          "sex": {
+            "description": "Patient sex, null when the case has no simulation profile",
+            "enum": [
+              "MALE",
+              "FEMALE",
+              null
+            ],
+            "example": "MALE",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "sex",
+          "heightCm",
+          "history",
+          "allergies",
+          "initialVitals"
         ],
         "type": "object"
       },
@@ -4836,6 +4911,58 @@
         "required": [
           "mode"
         ],
+        "type": "object"
+      },
+      "ClinicalCaseVitalsDTO": {
+        "properties": {
+          "breathingPattern": {
+            "description": "Breathing pattern",
+            "enum": [
+              "normal",
+              "tachypneic",
+              "bradypneic",
+              "irregular",
+              "paradoxical"
+            ],
+            "example": "tachypneic",
+            "type": "string"
+          },
+          "diastolicMmHg": {
+            "description": "Diastolic blood pressure (mmHg)",
+            "example": 90,
+            "type": "number"
+          },
+          "glasgow": {
+            "description": "Glasgow coma scale (3-15)",
+            "example": 15,
+            "type": "number"
+          },
+          "heartRateBpm": {
+            "description": "Heart rate (beats/min)",
+            "example": 105,
+            "type": "number"
+          },
+          "respiratoryRateBpm": {
+            "description": "Respiratory rate (breaths/min)",
+            "example": 24,
+            "type": "number"
+          },
+          "spo2Percent": {
+            "description": "Pulse oximetry saturation (%)",
+            "example": 84,
+            "type": "number"
+          },
+          "systolicMmHg": {
+            "description": "Systolic blood pressure (mmHg)",
+            "example": 150,
+            "type": "number"
+          },
+          "temperatureC": {
+            "description": "Body temperature (°C)",
+            "example": 39.1,
+            "type": "number"
+          }
+        },
         "type": "object"
       },
       "CommandResultDTO": {
@@ -6063,8 +6190,19 @@
             "example": false,
             "type": "boolean"
           },
+          "durationMinutes": {
+            "description": "Length in minutes of an immediate reservation; required when startsAt is omitted and ignored otherwise",
+            "enum": [
+              15,
+              30,
+              45,
+              60
+            ],
+            "example": 30,
+            "type": "number"
+          },
           "endsAt": {
-            "description": "End of the reservation, on a slot boundary (ISO 8601)",
+            "description": "End of a scheduled reservation, on a slot boundary (ISO 8601); required with startsAt",
             "example": "2026-10-12T15:00:00.000Z",
             "type": "string"
           },
@@ -6089,7 +6227,7 @@
             "type": "string"
           },
           "startsAt": {
-            "description": "Start of the reservation, on a slot boundary (ISO 8601)",
+            "description": "Start of a scheduled reservation, on a slot boundary (ISO 8601). Omit it for an immediate reservation that starts now (truncated to the minute)",
             "example": "2026-10-12T14:00:00.000Z",
             "type": "string"
           },
@@ -6100,9 +6238,7 @@
           }
         },
         "required": [
-          "holderType",
-          "startsAt",
-          "endsAt"
+          "holderType"
         ],
         "type": "object"
       },
@@ -6253,9 +6389,21 @@
       "CurrentReservationDTO": {
         "properties": {
           "canControl": {
-            "description": "Whether the caller may control the ventilator now (holder, member of the holder group, teacher or admin)",
+            "description": "Whether the caller may control the ventilator now (holder user, leader of the holder group, teacher or admin; the other group members observe)",
             "example": true,
             "type": "boolean"
+          },
+          "relation": {
+            "description": "How the caller relates to the active reservation: its holder user, the leader or a member of its holder group, its creator, or none (also when the ventilator is free)",
+            "enum": [
+              "holder",
+              "group_leader",
+              "group_member",
+              "creator",
+              "none"
+            ],
+            "example": "group_leader",
+            "type": "string"
           },
           "reservation": {
             "anyOf": [
@@ -6275,7 +6423,8 @@
         },
         "required": [
           "reservation",
-          "canControl"
+          "canControl",
+          "relation"
         ],
         "type": "object"
       },
@@ -18329,6 +18478,14 @@
       },
       "ReservationPartyDTO": {
         "properties": {
+          "code": {
+            "description": "Student code; only teachers and admins see it (null otherwise or when the user has none)",
+            "example": "2024123456",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "id": {
             "description": "User identifier",
             "example": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f",
@@ -18357,7 +18514,8 @@
           "id",
           "name",
           "identifier",
-          "role"
+          "role",
+          "code"
         ],
         "type": "object"
       },
@@ -19415,6 +19573,195 @@
         },
         "type": "object"
       },
+      "SimulatedPatientDTO": {
+        "properties": {
+          "ageYears": {
+            "description": "Age (years); above 60 lowers the compliance by 0.5 mL/cmH2O per year",
+            "example": 60,
+            "maximum": 100,
+            "minimum": 18,
+            "type": "number"
+          },
+          "allergies": {
+            "description": "Allergies; shown only",
+            "example": [
+              "Penicilina"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "type": "array"
+          },
+          "condition": {
+            "description": "Main condition: sets compliance and resistance and, without caseId, the base case",
+            "enum": [
+              "HEALTHY",
+              "ARDS_MILD",
+              "ARDS_MODERATE",
+              "ARDS_SEVERE",
+              "COPD_MILD",
+              "COPD_MODERATE",
+              "COPD_SEVERE",
+              "ASTHMA_MILD",
+              "ASTHMA_MODERATE",
+              "ASTHMA_SEVERE",
+              "PNEUMONIA",
+              "PULMONARY_EDEMA",
+              "PNEUMOTHORAX",
+              "OBESITY_HYPOVENTILATION",
+              "NEUROMUSCULAR",
+              "POST_SURGICAL"
+            ],
+            "example": "PNEUMONIA",
+            "type": "string"
+          },
+          "diagnosis": {
+            "description": "Diagnosis; shown only",
+            "example": "Neumonía grave con hipoxemia",
+            "maxLength": 500,
+            "type": "string"
+          },
+          "difficulty": {
+            "description": "Difficulty; a label only, it does not change the simulation",
+            "enum": [
+              "BEGINNER",
+              "INTERMEDIATE",
+              "ADVANCED"
+            ],
+            "example": "INTERMEDIATE",
+            "type": "string"
+          },
+          "displayName": {
+            "description": "Name shown in the session (optional)",
+            "example": "María José",
+            "maxLength": 100,
+            "type": "string"
+          },
+          "heightCm": {
+            "description": "Height (cm), range of the engine",
+            "example": 175,
+            "maximum": 215,
+            "minimum": 140,
+            "type": "number"
+          },
+          "history": {
+            "description": "Relevant medical history; shown only",
+            "example": [
+              "Hipertensión arterial"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "type": "array"
+          },
+          "sex": {
+            "description": "Sex",
+            "enum": [
+              "MALE",
+              "FEMALE"
+            ],
+            "example": "MALE",
+            "type": "string"
+          },
+          "vitals": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SimulatedPatientVitalsDTO"
+              }
+            ],
+            "description": "Vital signs at the start"
+          },
+          "weightKg": {
+            "description": "Actual weight (kg); a BMI above 30 lowers the compliance by 1 % per point",
+            "example": 70,
+            "maximum": 250,
+            "minimum": 30,
+            "type": "number"
+          }
+        },
+        "required": [
+          "ageYears",
+          "sex",
+          "weightKg",
+          "heightCm",
+          "condition",
+          "difficulty",
+          "vitals"
+        ],
+        "type": "object"
+      },
+      "SimulatedPatientVitalsDTO": {
+        "properties": {
+          "breathingPattern": {
+            "description": "Breathing pattern; shown only",
+            "enum": [
+              "normal",
+              "tachypneic",
+              "bradypneic",
+              "irregular",
+              "paradoxical"
+            ],
+            "example": "tachypneic",
+            "type": "string"
+          },
+          "diastolicMmHg": {
+            "description": "Diastolic pressure (mmHg)",
+            "example": 85,
+            "maximum": 150,
+            "minimum": 20,
+            "type": "number"
+          },
+          "glasgow": {
+            "description": "Glasgow coma scale; shown only",
+            "example": 14,
+            "maximum": 15,
+            "minimum": 3,
+            "type": "number"
+          },
+          "heartRateBpm": {
+            "description": "Heart rate (beats/min); shown only",
+            "example": 105,
+            "maximum": 200,
+            "minimum": 30,
+            "type": "number"
+          },
+          "respiratoryRateBpm": {
+            "description": "Respiratory rate (breaths/min); initial ventilator rate, limited to 5-40",
+            "example": 24,
+            "maximum": 50,
+            "minimum": 5,
+            "type": "number"
+          },
+          "spo2Percent": {
+            "description": "SpO2 (%); sets the initial PaO2 through the inverse Severinghaus equation",
+            "example": 88,
+            "maximum": 100,
+            "minimum": 50,
+            "type": "number"
+          },
+          "systolicMmHg": {
+            "description": "Systolic pressure (mmHg); with the diastolic sets the baseline MAP (50-120)",
+            "example": 140,
+            "maximum": 250,
+            "minimum": 50,
+            "type": "number"
+          },
+          "temperatureC": {
+            "description": "Body temperature (°C); shown only",
+            "example": 38.2,
+            "maximum": 42,
+            "minimum": 34,
+            "type": "number"
+          }
+        },
+        "required": [
+          "respiratoryRateBpm",
+          "spo2Percent"
+        ],
+        "type": "object"
+      },
       "SimulationAssistDTO": {
         "properties": {
           "language": {
@@ -19617,6 +19964,21 @@
             "example": "FREE",
             "type": "string"
           },
+          "patient": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SimulatedPatientDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Own patient form of a FREE session started with one (shown after a reload, in the list and in the replay); null otherwise"
+          },
           "questionId": {
             "description": "Exam question ID",
             "example": null,
@@ -19669,7 +20031,8 @@
           "endedAt",
           "lastEventAt",
           "lastSimTimeMs",
-          "score"
+          "score",
+          "patient"
         ],
         "type": "object"
       },
@@ -19709,6 +20072,21 @@
             "example": "0192f1c2-7c1e-7a8b-9c0d-1e2f3a4b5c6d",
             "type": "string"
           },
+          "patient": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SimulatedPatientDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Own patient form of a FREE session started with one (shown after a reload, in the list and in the replay); null otherwise"
+          },
           "seed": {
             "description": "Engine seed",
             "example": 123456789,
@@ -19737,7 +20115,8 @@
           "timeMultiplier",
           "currentEngineVersion",
           "engineVersionMismatch",
-          "warning"
+          "warning",
+          "patient"
         ],
         "type": "object"
       },
@@ -19770,6 +20149,21 @@
               "simTimeMs": 42000
             },
             "type": "object"
+          },
+          "patient": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SimulatedPatientDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Own patient form of a FREE session started with one (shown after a reload, in the list and in the replay); null otherwise"
           },
           "settings": {
             "description": "Current ventilator settings",
@@ -19811,7 +20205,8 @@
           "settings",
           "metrics",
           "alarms",
-          "targets"
+          "targets",
+          "patient"
         ],
         "type": "object"
       },
@@ -20117,6 +20512,14 @@
             ],
             "example": "FREE",
             "type": "string"
+          },
+          "patient": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SimulatedPatientDTO"
+              }
+            ],
+            "description": "Own patient (FREE mode only; ignored in EXAM mode). Without caseId the server picks the published base case of its condition; its overrides are stored in the session"
           },
           "questionId": {
             "description": "Exam question ID of type SIMULATION (EXAM mode)",
@@ -24557,6 +24960,22 @@
             "description": "Whether a reservation is active now",
             "example": true,
             "type": "boolean"
+          },
+          "operatorLabelKey": {
+            "description": "i18n key of the generic label (a teacher, a student) shown instead of a hidden operatorName, null otherwise; omitted for students who are not holders of the active reservation",
+            "example": "ventilator-commands.operator_labels.teacher",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "operatorName": {
+            "description": "Operator name; null when nobody controls the ventilator or when the caller is a student who does not share the reservation with the operator (operatorLabelKey then names a generic label); omitted for students who are not holders of the active reservation",
+            "example": "Ana Gómez",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "operatorUserId": {
             "description": "Current operator, null when nobody controls the ventilator; omitted for students who are not holders of the active reservation",
@@ -64031,7 +64450,7 @@
         ]
       },
       "post": {
-        "description": "Schedules a slot for the caller, a user (admins) or a group (its student leader, a supervising teacher or an admin). An overlap returns 409; for teachers and admins the error data lists the conflicting reservations and whether confirmPreempt would preempt them\n\n**Required access:** bearer token holding `reservations:create`; minimum role STUDENT.",
+        "description": "Schedules a slot for the caller, a user (admins) or a group (its student leader, a supervising teacher or an admin). Without startsAt it is an immediate reservation: it starts now (truncated to the minute) and lasts durationMinutes, with no slot alignment or advance checks. An overlap returns 409; for teachers and admins the error data lists the conflicting reservations and whether confirmPreempt would preempt them (also the reservation active right now)\n\n**Required access:** bearer token holding `reservations:create`; minimum role STUDENT.",
         "operationId": "createReservation",
         "parameters": [],
         "requestBody": {
@@ -64056,7 +64475,7 @@
                     {
                       "properties": {
                         "data": {
-                          "type": "null"
+                          "$ref": "#/components/schemas/ReservationDetailDTO"
                         }
                       },
                       "required": [
@@ -64193,7 +64612,7 @@
     },
     "/api/reservations/current": {
       "get": {
-        "description": "Reservation active right now in the caller's projection and whether the caller may control the ventilator\n\n**Required access:** bearer token holding `reservations:read`; minimum role STUDENT.",
+        "description": "Reservation active right now in the caller's projection, whether the caller may control the ventilator and how the caller relates to it\n\n**Required access:** bearer token holding `reservations:read`; minimum role STUDENT.",
         "operationId": "getCurrentReservation",
         "parameters": [],
         "responses": {
@@ -67882,7 +68301,7 @@
                 }
               }
             },
-            "description": "Validation error or missing caseId in FREE mode"
+            "description": "Validation error or neither caseId nor patient in FREE mode"
           },
           "401": {
             "content": {
@@ -67927,7 +68346,7 @@
                 }
               }
             },
-            "description": "Clinical case not found"
+            "description": "Clinical case (or the base case of the patient's condition) not found"
           },
           "409": {
             "content": {
@@ -67943,6 +68362,21 @@
               }
             },
             "description": "Case not simulation-ready or invalid rubric"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnprocessableError": {
+                    "$ref": "#/components/examples/UnprocessableError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The own patient leaves a value of the base case outside its physiological range"
           },
           "429": {
             "content": {

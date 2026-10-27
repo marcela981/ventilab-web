@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Notification deep links tests
-* Descripción: Every notification type of the contract resolves to its route with the ids of its typed data (URI-encoded) and the routes match the route constants of the evaluations and ventilator-lab features; a type that needs ids gives null when its data is null, and a type unknown to this client gives null without throwing. Depends on vitest, the deep-link resolver and the evaluations and ventilator-lab barrels (route constants only). v1.1 (B2 closure): inputs are typed by the discriminated union (no untyped data cases), plus the parity with the feature route constants.
-* Versión: 1.1
+* Descripción: Every notification type of the contract resolves to its route with the ids of its typed data (URI-encoded) and the routes match the route constants of the evaluations and ventilator-lab features; a type that needs ids gives null when its data is null, and a type unknown to this client gives null without throwing. Depends on vitest, the deep-link resolver and the evaluations and ventilator-lab barrels (route constants only). v1.1 (B2 closure): inputs are typed by the discriminated union (no untyped data cases), plus the parity with the feature route constants. v1.2 (W1 Bloque 1): VENTILATOR_OFFLINE opens the Conexión tab of the simulator workspace (/simulador?tab=conexion).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,7 +22,7 @@ const CASES: [NotificationLinkInput, string][] = [
   [{ type: "GRADE_PUBLISHED", data: { evaluationId: "ev-1", attemptId: "at-1" } }, "/evaluations/ev-1/attempts/at-1/result"],
   [{ type: "FEEDBACK_READY", data: { evaluationId: "ev-1", attemptId: "at-1", feedbackId: "f1" } }, "/evaluations/ev-1/attempts/at-1/result"],
   [{ type: "ROLE_CHANGED", data: { previousRole: "STUDENT", newRole: "TEACHER" } }, "/profile"],
-  [{ type: "VENTILATOR_OFFLINE", data: { reservationId: "r1", reason: "timeout" } }, "/lab"],
+  [{ type: "VENTILATOR_OFFLINE", data: { reservationId: "r1", reason: "timeout" } }, "/simulador?tab=conexion"],
 ];
 
 describe("resolveNotificationLink", () => {

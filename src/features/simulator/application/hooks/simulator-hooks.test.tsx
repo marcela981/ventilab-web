@@ -1,7 +1,9 @@
 /*
 * Funcionalidad: Simulator hooks tests
 * Descripción: Behaviour of the simulator hooks against msw: useCaseCatalog sends the pathology/difficulty filters as server query params and goes back to page 1 on a filter change, exposing the server pagination; useSessionHistory pages the history and resolves the case titles with one ids request (a missing case keeps a null title); useStartPractice creates a FREE session with the default ×1 multiplier, navigates to the session console, ignores a second start while pending and reports a start error per case in Spanish. v1.1: the catalog always asks for PUBLISHED cases and clamps its page when the pages shrink; the history reports titles loading/failed separately from a missing case; a failed navigation after a successful start is not a start error. Depends on Vitest, Testing Library, msw, a mocked next/router and the simulator test helpers.
-* Versión: 1.1
+*   v1.2 (W8, Bloque 1): useStartPractice.startWithPatient sends the own patient (with or without the loaded case),
+*   stores the base case the server picked and reports a failure without a case as `caseId: null`.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,7 +15,9 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { buildTestCase } from "@shared/sim-engine/runtime/sim-test-helpers";
 import { apiUrl, caseItemDto, envelope, errorResponse, sessionDto, startedSessionDto, SwrWrapper } from "../pages/simulator-test-helpers";
+import { sessionStore } from "../session/session-store";
 import { useCaseCatalog } from "./use-case-catalog";
 import { useSessionHistory } from "./use-session-history";
 import { useStartPractice } from "./use-start-practice";
@@ -223,5 +227,71 @@ describe("useStartPractice", () => {
 
     expect(result.current.error).toEqual({ caseId: "c1", message: "Este caso todavía no se puede simular. Elige otro caso." });
     expect(router.push).not.toHaveBeenCalled();
+  });
+
+  it("starts a FREE session with an own patient, without a case, and stores the base case the server picked", async() => {
+    const bodies: unknown[] = [];
+    const onStarted = vi.fn();
+    const patient = {
+      ageYears: 60,
+      sex: "MALE" as const,
+      weightKg: 70,
+      heightCm: 175,
+      condition: "PNEUMONIA" as const,
+      difficulty: "ADVANCED" as const,
+      vitals: { respiratoryRateBpm: 24, spo2Percent: 84 },
+    };
+
+    server.use(http.post(apiUrl("/api/simulation/sessions"), async({ request }) => {
+      bodies.push(await request.json());
+
+      return HttpResponse.json(envelope(startedSessionDto("s-own", { case: buildTestCase() as unknown as Record<string, never> })), { status: 201 });
+    }));
+
+    const { result } = renderHook(() => useStartPractice({ onStarted }), { wrapper: SwrWrapper });
+    let outcome: unknown = null;
+
+    await act(async() => {
+      outcome = await result.current.startWithPatient(patient);
+    });
+
+    expect(outcome).toMatchObject({ status: "success", session: { id: "s-own", patient: { condition: "PNEUMONIA", difficulty: "ADVANCED" } } });
+    expect(bodies).toEqual([{ mode: "FREE", timeMultiplier: 1, patient }]);
+    expect(sessionStore.read("s-own")).toMatchObject({ caseId: "test-case", patient: { condition: "PNEUMONIA" } });
+    expect(onStarted).toHaveBeenCalledWith(expect.objectContaining({ id: "s-own" }));
+    expect(router.push).not.toHaveBeenCalled();
+    expect(result.current.isPending).toBe(false);
+  });
+
+  it("sends the loaded case with the own patient and reports a failure without a case as caseId null", async() => {
+    const bodies: unknown[] = [];
+
+    server.use(http.post(apiUrl("/api/simulation/sessions"), async({ request }) => {
+      bodies.push(await request.json());
+
+      return errorResponse("simulation.case_not_found", 404);
+    }));
+
+    const patient = {
+      ageYears: 60,
+      sex: "FEMALE" as const,
+      weightKg: 65,
+      heightCm: 160,
+      condition: "COPD_MODERATE" as const,
+      difficulty: "INTERMEDIATE" as const,
+      vitals: { respiratoryRateBpm: 28, spo2Percent: 88 },
+    };
+    const { result } = renderHook(() => useStartPractice(), { wrapper: SwrWrapper });
+
+    await act(async() => {
+      await result.current.startWithPatient(patient, { caseId: "july-epoc-descompensado", timeMultiplier: 2 });
+      await result.current.startWithPatient(patient);
+    });
+
+    expect(bodies).toEqual([
+      { mode: "FREE", caseId: "july-epoc-descompensado", timeMultiplier: 2, patient },
+      { mode: "FREE", timeMultiplier: 1, patient },
+    ]);
+    expect(result.current.error).toEqual({ caseId: null, message: "No se encontró el caso clínico o ya no está publicado." });
   });
 });

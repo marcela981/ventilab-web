@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: Preempt reservation dialog
 * Descripción: Staff alert dialog opened when a booking overlaps reservations the caller may preempt (409 reservations.conflict_preemptable): it lists each overlapping reservation exactly as the backend returned it to staff (holder name and identifier, or the group, and the Bogota window), lets the caller choose who holds the new reservation ("Asignarme a mí", "Asignar a un grupo" with the groups of useHolderOptions, or the user of the original request for an admin) and, on "Desplazar y reservar", resends the same window and purpose with confirmPreempt (the backend preempts every overlapping reservation in the same transaction and notifies their holders). Cancel sends nothing. A failure stays open with its Spanish message (for example, only an admin can preempt a teacher's reservation). v1.1 (T3 review fix): no exact preempted count in the copy (the backend preempts every overlap at confirm time) and `onPreempting` announces the caller's own preemption before the request. v1.2 (T6 review fix S1): documents why a conflict without a reservation id is not suppressed. v1.3 (B2 closure): `onPreempting` removed: the backend no longer notifies the actor of a preemption, so the caller's own preemption needs no client-side suppression. Depends on MUI, the design-system AsyncButton, the holder and create hooks, the lab entities and the CSS Module.
-* Versión: 1.3
+*   v1.4 (W7, Bloque 1): an immediate request (no start) shows the window as "desde ahora (<duración>)" and is resent with confirmPreempt as an immediate reservation ("Desplazar y reservar" from the /simulador Conexión tab); onCreated receives the new reservation id.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -25,6 +26,7 @@ import TextField from "@mui/material/TextField";
 import { useId, useState } from "react";
 import { AsyncButton } from "@shared/design-system/components/async-button";
 import { cx } from "@shared/lib/class-names";
+import { formatDuration } from "@shared/lib/format";
 import { reservationEnd, SELF_HOLDER } from "../entities/create-reservation.entity";
 import type {
   CreateReservationRequest,
@@ -45,6 +47,7 @@ import styles from "../../UI/lab-reservations.module.css";
 export const PREEMPT_RESERVATION_COPY = {
   title: "Desplazar reservas",
   // No exact count: the backend preempts every reservation overlapping at confirm time, which may differ from this list.
+  immediateWindow: (duration: string) => `desde ahora (${duration})`,
   description: (window: string) =>
     `La franja ${window} se solapa con las reservas de abajo. Si confirmas, se desplazarán todas las reservas en conflicto en ese momento y sus titulares recibirán un aviso.`,
   conflictsLabel: "Reservas que se desplazarán",
@@ -65,8 +68,8 @@ export type PreemptReservationDialogProps = {
   request: CreateReservationRequest
   settings: LabSettings
   onClose: () => void
-  /** Called once the reservation was created over the conflicting ones. */
-  onCreated: () => void
+  /** Called once the reservation was created over the conflicting ones (its id; null when not returned). */
+  onCreated: (reservationId: string | null) => void
 };
 
 function conflictHolder(item: ReservationConflictItem): string {
@@ -113,7 +116,10 @@ export function PreemptReservationDialog({
   const originalGroup = request.holder.kind === "group" && request.holder.groupId === groupId ? request.holder : null;
   const group = holders.groups.find((option) => option.key === groupId) ?? originalGroup;
   const holder: HolderOption | null = kind === "self" ? SELF_HOLDER : kind === "group" ? group : request.holder;
-  const windowLabel = slotWindowLabel(request.startsAt, reservationEnd(request));
+  const { startsAt, durationMinutes } = request;
+  const windowLabel = startsAt
+    ? slotWindowLabel(startsAt, reservationEnd({ startsAt, durationMinutes }))
+    : PREEMPT_RESERVATION_COPY.immediateWindow(formatDuration(durationMinutes));
 
   const handleConfirm = async() => {
     if (!holder) {
@@ -124,7 +130,7 @@ export function PreemptReservationDialog({
     const outcome = await submit({ ...request, holder, confirmPreempt: true });
 
     if (outcome.kind === "created") {
-      onCreated();
+      onCreated(outcome.reservationId);
 
       return;
     }

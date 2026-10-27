@@ -1,0 +1,89 @@
+/*
+* Funcionalidad: Simulator workspace styles
+* Descripción: Layout of the /simulador workspace. v0.1 (W1): the placeholder heading and panel. v0.2 (W5): the shell
+*   (panels stacked above the bottom tabs, which stay pinned to the bottom of the viewport inside the content area),
+*   the July-like bottom tabs (dark bar, selected tab in the primary color) and the temporary panels. A hidden panel
+*   relies on the `hidden` attribute (no display rule on .panel). Tokens only. v0.3 (W11, Bloque 1): the classes of
+*   the temporary panels are gone with them.
+* Versión: 0.3
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.workspace {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  width: 100%;
+  min-height: 100%;
+}
+
+.panels {
+  flex: 1;
+  min-width: 0;
+}
+
+.panel {
+  width: 100%;
+  min-width: 0;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Bottom tabs (FLUJOS_JULIO a.1: fixed BottomNavigation). Sticky keeps them inside the content area, next to the side menu. */
+.bottomTabs {
+  position: sticky;
+  bottom: 0;
+  z-index: var(--vl-z-sticky);
+  background: var(--vl-console-bg);
+  border-top: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md) var(--vl-radius-md) 0 0;
+}
+
+.tabList {
+  display: flex;
+  justify-content: center;
+}
+
+.tab {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--vl-space-1);
+  max-width: 168px;
+  min-height: 56px;
+  padding: var(--vl-space-1) var(--vl-space-2);
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  transition: color var(--vl-duration-short) var(--vl-ease-standard);
+}
+
+.tab:hover {
+  color: var(--vl-console-text);
+}
+
+.tab[aria-selected="true"] {
+  color: var(--vl-color-primary);
+}
+
+.tab:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-console-focus-ring);
+  outline-offset: calc(-1 * var(--vl-focus-ring-width));
+}

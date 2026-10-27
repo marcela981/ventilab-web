@@ -1,0 +1,121 @@
+/*
+* Funcionalidad: Real monitor styles
+* Descripción: CSS Module of the real view of the Monitoreo tab of /simulador (W10, Bloque 1): the bar with the title,
+*   the device tag and the latency traffic light (text plus a colored dot, never color alone: success, medium alarm
+*   and high alarm tokens), the "Opera: <nombre>" line, and the "Equipo sin datos" and reconnection notices. Console
+*   and design-system tokens only. v0.2 (W6-fix, Bloque 1): the monitor declares the `vl-console` inline-size
+*   container, so the shared console lays out by the width it really gets (curves never collapse at 1280 px).
+* Versión: 0.2
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.monitor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  min-width: 0;
+  container: vl-console / inline-size;
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-3);
+}
+
+.title {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+  color: var(--vl-console-text);
+}
+
+.indicators {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-4);
+}
+
+.indicator {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.indicatorLabel {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.deviceTag {
+  display: inline-block;
+  padding: 0 var(--vl-space-2);
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+  background: var(--vl-console-surface-raised);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-pill);
+}
+
+.deviceTag[data-online="true"] {
+  color: var(--mui-palette-success-main);
+  border-color: var(--mui-palette-success-main);
+}
+
+.latency {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-2);
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+  font-variant-numeric: tabular-nums;
+  color: var(--vl-console-text);
+}
+
+.latencyDot {
+  width: var(--vl-space-2);
+  height: var(--vl-space-2);
+  background: var(--vl-console-text-muted);
+  border-radius: 50%;
+}
+
+.latency[data-level="ok"] .latencyDot {
+  background: var(--mui-palette-success-main);
+}
+
+.latency[data-level="warning"] .latencyDot {
+  background: var(--vl-console-alarm-medium);
+}
+
+.latency[data-level="critical"] .latencyDot {
+  background: var(--vl-console-alarm-high);
+}
+
+.operator {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-console-text);
+}
+
+.muted {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.notice {
+  margin: 0;
+  padding: var(--vl-space-2) var(--vl-space-3);
+  font: var(--mui-font-body2);
+  color: var(--vl-console-pending);
+  background: var(--vl-console-pending-bg);
+  border: 1px solid var(--vl-console-pending);
+  border-radius: var(--vl-radius-md);
+}

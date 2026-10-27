@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: Lab hooks tests
 * Descripción: useLabSettings (admin reads the platform settings, other roles get the vendored defaults without any request, a failed read keeps the defaults), useDeviceStatus (unknown until an event, connected/disconnected with reason, telemetry proves online, staff seed from the system status, realtime offline; v1.1: the seed is not trusted after a reconnect until revalidated) without emitting ventilator:join, and useReservationsRealtime (ventilator:availability and reservation:preempted refetch the current reservation). v1.2 (T9 review fix W1): useCurrentReservation.read() rejects on a failed read (never the stale cache). Depends on vitest, msw, Testing Library and the lab test helpers.
-* Versión: 1.2
+*   v1.3 (W7, Bloque 1): fixtures and expectations follow the W7 contract (current reservation relation, holder student code, immediate booking, created reservation id).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -199,7 +200,7 @@ describe("useReservationsRealtime", () => {
     server.use(http.get(apiUrl("/api/reservations/current"), () => {
       requests += 1;
 
-      return HttpResponse.json(envelope({ reservation: null, canControl: false }));
+      return HttpResponse.json(envelope({ reservation: null, canControl: false, relation: "none" }));
     }));
 
     const socket = createFakeSocket();
@@ -209,7 +210,7 @@ describe("useReservationsRealtime", () => {
       return useCurrentReservation();
     }, { socket });
 
-    await waitFor(() => expect(result.current.data).toEqual({ reservation: null, canControl: false }));
+    await waitFor(() => expect(result.current.data).toEqual({ reservation: null, canControl: false, relation: "none" }));
     expect(requests).toBe(1);
 
     socket.dispatch("ventilator:availability", { occupied: true });
@@ -231,15 +232,15 @@ describe("useReservationsRealtime", () => {
 
 describe("useCurrentReservation.read (T9 review fix W1)", () => {
   it("resolves with the fresh answer and rejects on a failed read instead of the cached one", async() => {
-    server.use(http.get(apiUrl("/api/reservations/current"), () => HttpResponse.json(envelope({ reservation: null, canControl: false }))));
+    server.use(http.get(apiUrl("/api/reservations/current"), () => HttpResponse.json(envelope({ reservation: null, canControl: false, relation: "none" }))));
     const { result } = renderLabHook(() => useCurrentReservation(), { socket: createFakeSocket() });
 
-    await waitFor(() => expect(result.current.data).toEqual({ reservation: null, canControl: false }));
-    await expect(result.current.read()).resolves.toEqual({ reservation: null, canControl: false });
+    await waitFor(() => expect(result.current.data).toEqual({ reservation: null, canControl: false, relation: "none" }));
+    await expect(result.current.read()).resolves.toEqual({ reservation: null, canControl: false, relation: "none" });
 
     server.use(http.get(apiUrl("/api/reservations/current"), () => errorResponse("common.unknown", 500)));
     await expect(result.current.read()).rejects.toMatchObject({ status: 500 });
     // The cached data is still what the page shows; it simply never decides the next action.
-    expect(result.current.data).toEqual({ reservation: null, canControl: false });
+    expect(result.current.data).toEqual({ reservation: null, canControl: false, relation: "none" });
   });
 });

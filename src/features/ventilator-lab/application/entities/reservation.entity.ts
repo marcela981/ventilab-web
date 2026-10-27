@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: Lab reservation entities
 * Descripción: Client-side reservation model of the ventilator lab. A reservation is either `full` (own or group reservations, and every reservation for teachers and admins: holder and group as returned by the backend) or `limited` (other people's reservations seen by a student: window, status and the occupancy label only, never names). Also the Spanish status labels, the occupancy labels of the backend label keys and the pure selection of the upcoming reservations shown in the summary. v1.1 (T2): reservationHolderText, the holder line shared by the summary and the calendar (the backend occupancy label for limited reservations; the group or holder name as returned for full ones). v1.2 (T0+T1 review fix): upcoming reservations keep only SCHEDULED ones (cancelled, preempted and completed reservations are not upcoming). v1.3 (T4): full reservations keep the backend ids of the holder user, the holder group and the creator (never shown; used only to mirror the backend cancel permission). No dependencies.
-* Versión: 1.3
+*   v1.4 (W7, Bloque 1): CurrentReservation carries the backend relation of the caller (holder, group_leader, group_member, creator, none); full reservations keep the holder student code (staff projection); reservedByText builds the "Reservado por …" line of the /simulador Conexión tab.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -24,6 +25,8 @@ export type FullReservation = {
   holderRole: string
   /** Name of the holder user as returned by the backend (its identifier when the name is empty), or null. */
   holderName: string | null
+  /** Student code of the holder user (staff projection only), or null. */
+  holderCode: string | null
   groupName: string | null
   /** Backend ids (not shown): holder user, holder group and creator, or null when not sent. */
   holderUserId: string | null
@@ -45,10 +48,16 @@ export type LimitedReservation = {
 
 export type LabReservation = FullReservation | LimitedReservation;
 
+/** How the caller relates to the active reservation (backend `relation`; "none" also when the ventilator is free). */
+export type ReservationRelation = "holder" | "group_leader" | "group_member" | "creator" | "none";
+
+export const RESERVATION_RELATIONS: readonly ReservationRelation[] = ["holder", "group_leader", "group_member", "creator", "none"];
+
 export type CurrentReservation = {
   reservation: LabReservation | null
-  /** Holder, member of the holder group, teacher or admin (backend decision). */
+  /** Holder user, leader of the holder group, teacher or admin (backend decision; the other group members observe). */
   canControl: boolean
+  relation: ReservationRelation
 };
 
 // TODO(i18n): move to a ventilator-lab namespace in src/i18n.
@@ -81,6 +90,29 @@ export function reservationHolderText(reservation: LabReservation): string | nul
   }
 
   return reservation.holderName;
+}
+
+export const reservedByLabel = (holder: string): string => `Reservado por ${holder}`;
+
+/**
+ * "Reservado por …" exactly as the caller's projection allows: the backend occupancy label for a limited reservation
+ * (a student sees "Reservado por un estudiante del grupo X"), the holder (with the student code, staff only) or the
+ * group for a full one; null when the backend sent no holder.
+ */
+export function reservedByText(reservation: LabReservation): string | null {
+  if (reservation.visibility === "limited") {
+    return reservation.occupancyLabel;
+  }
+
+  const holder = reservationHolderText(reservation);
+
+  if (holder === null) {
+    return null;
+  }
+
+  const withCode = reservation.holderType === "USER" && reservation.holderCode ? `${holder} (${reservation.holderCode})` : holder;
+
+  return reservedByLabel(withCode);
 }
 
 export function reservationStatusLabel(status: string): string {

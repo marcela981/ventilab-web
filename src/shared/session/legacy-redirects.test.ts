@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Legacy route redirects tests
-* Descripción: The legacy routes redirect (temporary, 307) to the migrated screens through the next.config `redirects()` rules of config/legacy-redirects.mjs: /simulador → /lab; /panel and /panel/students → /teacher, /panel/students/[id] → /teacher/students/[id], /panel/admin → /admin/users, /panel/settings → /admin/settings; the seven /evaluation/** routes → /evaluations, /evaluations/manage, /evaluations/manage/new or /grading; /teaching/[moduleId]/[lessonId] and /teaching?moduleId=&lessonId= → page 1 of the same lesson, any other /teaching → /learn. Concrete paths are resolved with Next's own matchers (path-match, matchHas, prepareDestination) in rule order, so the order of the list is tested too; static destinations are routes of the session route table and next.config.mjs serves exactly this list. v1.0 covered only the panel getServerSideProps helpers. Depends on vitest, Next's routing utils and the session route table.
-* Versión: 2.0
+* Descripción: The legacy routes redirect (temporary, 307) to the migrated screens through the next.config `redirects()` rules of config/legacy-redirects.mjs: /panel and /panel/students → /teacher, /panel/students/[id] → /teacher/students/[id], /panel/admin → /admin/users, /panel/settings → /admin/settings; the seven /evaluation/** routes → /evaluations, /evaluations/manage, /evaluations/manage/new or /grading; /teaching/[moduleId]/[lessonId] and /teaching?moduleId=&lessonId= → page 1 of the same lesson, any other /teaching → /learn. Concrete paths are resolved with Next's own matchers (path-match, matchHas, prepareDestination) in rule order, so the order of the list is tested too; static destinations are routes of the session route table and next.config.mjs serves exactly this list. v1.0 covered only the panel getServerSideProps helpers. Depends on vitest, Next's routing utils and the session route table. v2.1 (W1 Bloque 1): /simulador is no longer redirected (it is the workspace); /simulator, /lab and /lab/live go to /simulador with their `tab` (query passed through, the rule's tab wins), exact paths only: the case editor, the session pages, /lab/reservations and /lab/recordings/** are left alone; no rule targets another rule's source (no cycles).
+* Versión: 2.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -65,7 +65,9 @@ describe("legacy redirect rules", () => {
 
   it("list every legacy source once per condition", () => {
     expect(LEGACY_REDIRECTS.map((rule) => `${rule.source}${rule.has ? " (query)" : ""}`)).toEqual([
-      "/simulador",
+      "/simulator",
+      "/lab",
+      "/lab/live",
       "/panel",
       "/panel/students",
       "/panel/students/:id",
@@ -85,7 +87,9 @@ describe("legacy redirect rules", () => {
   });
 
   it.each([
-    ["/simulador", "/lab"],
+    ["/simulator", "/simulador?tab=simular"],
+    ["/lab", "/simulador?tab=conexion"],
+    ["/lab/live", "/simulador?tab=monitoreo"],
     ["/panel", "/teacher"],
     ["/panel/students", "/teacher"],
     ["/panel/students/u1", "/teacher/students/u1"],
@@ -108,6 +112,36 @@ describe("legacy redirect rules", () => {
     expect(resolve(from)).toBe(to);
   });
 
+  it("keeps the request query on the simulator redirects and lets the rule's tab win", () => {
+    expect(resolve("/simulator?x=1")).toBe("/simulador?x=1&tab=simular");
+    expect(resolve("/lab/live?reservationId=r1")).toBe("/simulador?reservationId=r1&tab=monitoreo");
+    expect(resolve("/lab?tab=sesiones")).toBe("/simulador?tab=conexion");
+  });
+
+  it.each([
+    "/simulador",
+    "/simulador?tab=sesiones",
+    "/simulator/cases",
+    "/simulator/cases/new",
+    "/simulator/cases/c1/edit",
+    "/simulator/sessions/s1",
+    "/simulator/sessions/s1/result",
+    "/simulator/sessions/s1/replay",
+    "/lab/reservations",
+    "/lab/recordings",
+    "/lab/recordings/r1",
+  ])("does not redirect %s", (path) => {
+    expect(resolve(path)).toBeNull();
+  });
+
+  it("has no cycles: no destination is redirected again", () => {
+    for (const rule of LEGACY_REDIRECTS) {
+      const destination = rule.destination.replace(/:[A-Za-z]+/g, "x");
+
+      expect(resolve(destination), rule.destination).toBeNull();
+    }
+  });
+
   it("maps a legacy lesson path to page 1 of the same lesson", () => {
     expect(resolve("/teaching/module-01-inversion-fisiologica/module-01-inversion-fisiologica")).toBe(
       "/learn/modules/module-01-inversion-fisiologica/lessons/module-01-inversion-fisiologica/1",
@@ -128,13 +162,13 @@ describe("legacy redirect rules", () => {
     expect(resolve("/evaluations")).toBeNull();
     expect(resolve("/teacher/students/u1")).toBeNull();
     expect(resolve("/learn/modules/m1")).toBeNull();
-    expect(resolve("/lab")).toBeNull();
     expect(resolve("/dashboard")).toBeNull();
   });
 
   it("only targets routes of the route table", () => {
     for (const rule of LEGACY_REDIRECTS) {
       const pattern = rule.destination
+        .replace(/[?].*$/, "")
         .replace(/:id\b/, "[userId]")
         .replace(/:moduleId\b/, "[moduleId]")
         .replace(/:lessonId\b/, "[lessonId]")

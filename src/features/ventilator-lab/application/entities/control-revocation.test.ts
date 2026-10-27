@@ -4,7 +4,8 @@
 *   countdown, a re-read without the session reservation) to the modal reason, their priority, the modal copy, the
 *   successor line from the re-read (only the backend projection), the next action from canControl, and the
 *   control-loss notice copy (takeover, presence timeout, release by staff, lost on re-read). Depends on vitest.
-* Versión: 1.0
+*   v1.1 (W7, Bloque 1): fixtures and expectations follow the W7 contract (current reservation relation, holder student code, immediate booking, created reservation id).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -36,6 +37,7 @@ const full = (id: string, overrides: Partial<FullReservation> = {}): FullReserva
   holderType: "USER",
   holderRole: "STUDENT",
   holderName: "Ana Gómez",
+  holderCode: null,
   groupName: null,
   purpose: null,
   preemptedReason: null,
@@ -54,7 +56,7 @@ const limited = (id: string, occupancyLabel: string): LimitedReservation => ({
   occupancyLabel,
 });
 
-const current = (reservation: CurrentReservation["reservation"], canControl: boolean): CurrentReservation => ({ reservation, canControl });
+const current = (reservation: CurrentReservation["reservation"], canControl: boolean): CurrentReservation => ({ reservation, canControl, relation: "none" });
 
 describe("revocation sources", () => {
   const event = (reason: VentilatorControlChangedReason, reservationId = "r1") => ({ reservationId, operatorUserId: null, reason });

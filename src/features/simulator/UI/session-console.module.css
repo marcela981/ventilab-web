@@ -6,8 +6,14 @@
 *   (--vl-console-*) and the shared spacing, radius and focus tokens only; no hex or rgb values. The case panel moves
 *   under the console below 1280 px. v1.1: the pending-events indicator of the session bar. v1.2: the reason shown
 *   next to a disabled "Asesoría IA" button. v1.3 (T9): the EXAM countdown to the attempt deadline (warning tone
-*   in the last minutes).
-* Versión: 1.3
+*   in the last minutes). v1.4 (W6, Bloque 1): the side column that stacks the case panel and an extra block (the
+*   own patient of the /simulador Monitoreo tab). v1.5 (W6-fix, Bloque 1): responsive Monitoreo. The console area
+*   declares the `vl-console` inline-size container (the console lays out by its real width, so the curves never
+*   collapse); the case panel is a side column with its own scroll only from 1600 px and stacks under the console
+*   below; its body really hides when collapsed ([hidden] beat the flex display), and once hidden on the side the
+*   toggle moves above the console, which takes the full width; the clinical history (rich content, light-theme
+*   tokens) is re-tokenised to the console text colours for AA contrast on the dark surface.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -207,18 +213,28 @@
   color: var(--vl-console-text-muted);
 }
 
+/* Below 1600 px the case panel (and the side column) stack under the console; see the media query at the end. */
 .sessionLayout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--vl-space-3);
   align-items: start;
 }
 
+.sideColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  min-width: 0;
+}
+
+/* The console lays out by the width this area really has (see the vl-console container queries of the console). */
 .consoleArea {
   display: flex;
   flex-direction: column;
   gap: var(--vl-space-2);
   min-width: 0;
+  container: vl-console / inline-size;
 }
 
 .blocked,
@@ -264,23 +280,22 @@
   display: flex;
   flex-direction: column;
   gap: var(--vl-space-2);
-  width: calc(var(--vl-space-8) * 7);
-  max-height: calc(100vh - var(--vl-space-8) * 3);
-  overflow-y: auto;
+  min-width: 0;
   padding: var(--vl-space-3);
   background: var(--vl-console-surface);
   border: 1px solid var(--vl-console-border);
   border-radius: var(--vl-radius-md);
 }
 
-.casePanel[data-open="false"] {
-  width: auto;
-}
-
 .caseBody {
   display: flex;
   flex-direction: column;
   gap: var(--vl-space-2);
+}
+
+/* The class display would otherwise win over the hidden attribute and keep the collapsed body on screen. */
+.caseBody[hidden] {
+  display: none;
 }
 
 .caseHeading {
@@ -299,6 +314,16 @@
   margin: 0;
   font: var(--mui-font-body2);
   color: var(--vl-console-text);
+}
+
+/* The shared rich-content renderer paints with the light-theme tokens: map them to the console ones (AA on dark). */
+.caseRich {
+  --vl-color-text: var(--vl-console-text);
+  --vl-color-text-muted: var(--vl-console-text-muted);
+  --vl-color-link: var(--vl-console-text);
+  --vl-color-border: var(--vl-console-border);
+  --vl-color-hover: var(--vl-console-surface-raised);
+  --vl-color-surface-contrast: var(--vl-console-surface-raised);
 }
 
 .caseFacts {
@@ -362,14 +387,27 @@
   text-align: right;
 }
 
-@media (max-width: 1279.98px) {
+/* Wide screens: the case panel is a side column with its own scroll, so the console keeps a usable width. */
+@media (min-width: 1600px) {
   .sessionLayout {
+    grid-template-columns: minmax(0, 1fr) calc(var(--vl-space-8) * 6);
+  }
+
+  .casePanel {
+    max-height: calc(100vh - var(--vl-space-8) * 3);
+    overflow-y: auto;
+  }
+
+  /* Hidden case: the toggle bar moves above the console, which takes the full width (the rest of the column below). */
+  .sessionLayout:has(.casePanel[data-open="false"]) {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .casePanel,
+  .sessionLayout:has(.casePanel[data-open="false"]) > .sideColumn {
+    display: contents;
+  }
+
   .casePanel[data-open="false"] {
-    width: 100%;
-    max-height: none;
+    grid-row: 1;
   }
 }

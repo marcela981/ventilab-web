@@ -10,7 +10,8 @@
 *   (takeover, taken, presence timeout, release by someone else, lost on a re-read; never the own release or the end of
 *   the reservation). v1.2 (T9 review fix): W3 the own release is forgotten when the caller takes or is given the control again; S1 a
 *   loss during a back-forward cache stay is reported by the first re-read.
-* Versión: 1.2
+*   v1.3 (W7, Bloque 1): the operator name and generic label (controlOperatorLabel) and their reset on a control change.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,6 +27,7 @@ import {
   controlActions,
   controlBanner,
   controlHeartbeatIntervalMs,
+  controlOperatorLabel,
   controlPermissions,
   controlReducer,
   getControlErrorMessage,
@@ -260,5 +262,24 @@ describe("control presentation", () => {
   it("beats three times per presence grace, never faster than once a second", () => {
     expect(controlHeartbeatIntervalMs(15)).toBe(5000);
     expect(controlHeartbeatIntervalMs(0)).toBe(1000);
+  });
+});
+
+describe("operator name (W7)", () => {
+  it("shows the backend name, else the Spanish generic label of its key, else nothing", () => {
+    expect(controlOperatorLabel(state({ operatorUserId: "u2", operatorName: "Ana Gómez" }))).toBe("Ana Gómez");
+    expect(controlOperatorLabel(state({ operatorUserId: "u2", operatorName: null, operatorLabelKey: "ventilator-commands.operator_labels.teacher" }))).toBe("Un docente");
+    expect(controlOperatorLabel(state({ operatorUserId: "u2", operatorName: null, operatorLabelKey: "ventilator-commands.operator_labels.student" }))).toBe("Un estudiante");
+    expect(controlOperatorLabel(state({ operatorUserId: "u2", operatorLabelKey: "unknown.key" }))).toBeNull();
+    expect(controlOperatorLabel(state({ operatorUserId: null, operatorName: null }))).toBeNull();
+    expect(controlOperatorLabel(null)).toBeNull();
+  });
+
+  it("forgets the name when another operator takes over (until the re-read) and clears it when the control is free", () => {
+    const named = loaded({ operatorUserId: "u2", operatorName: "Ana Gómez", canTake: false });
+
+    expect(changed(named, "u3", "takeover").state?.operatorName).toBeUndefined();
+    expect(changed(named, "u2", "taken").state?.operatorName).toBe("Ana Gómez");
+    expect(changed(named, null, "released").state?.operatorName).toBeNull();
   });
 });

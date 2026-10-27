@@ -13,7 +13,8 @@
 *   v1.5 (review of 180a0a1): the server clock keeps the MONOTONIC client time of the response (`monotonicAtMs`,
 *   performance.now), so the elapsed time since a reading never follows a wall-clock jump; `monotonicNow` reads it.
 *   v1.6 (review of eb3c21b): the boot may carry the server clock offset of an EXAM rebuilt without its exam context.
-* Versión: 1.6
+*   v1.7 (W6, Bloque 1): the record, the replay and the state carry the own patient of a FREE session (null without one).
+* Versión: 1.7
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,6 +27,7 @@ import type { EngineCase, ParamChangeEvent, VentilatorSettings } from "@shared/s
 import { DEFAULT_TIME_MULTIPLIER, TIME_MULTIPLIERS } from "../config/simulator.config";
 import type { SimulationMode, TimeMultiplier } from "../config/simulator.config";
 import type { SessionExamContext } from "./sim-exam.entity";
+import type { SessionPatient } from "./sim-patient.entity";
 
 export type SessionRecord = {
   id: string
@@ -43,6 +45,8 @@ export type SessionRecord = {
   fresh: boolean
   /** EXAM only: the attempt/question linkage, return URL and assistance policy written by the exam slot (T9). */
   exam?: SessionExamContext | null | undefined
+  /** FREE only: the own patient of the session (start request, else the session state or replay); null without one. */
+  patient?: SessionPatient | null | undefined
 };
 
 export type RecordedSessionEvent = {
@@ -62,6 +66,7 @@ export type SessionReplay = {
   currentEngineVersion?: string | undefined
   engineVersionMismatch?: boolean | undefined
   warning?: string | null | undefined
+  patient?: SessionPatient | null | undefined
 };
 
 /** Server time read from a response (HTTP Date header or a body field) and the monotonic client time it arrived. */
@@ -83,6 +88,7 @@ export type SessionState = {
   expiresAt: string | null
   /** null/undefined when the response exposed no usable Date header (e.g. CORS without Access-Control-Expose-Headers). */
   serverClock?: ServerClock | null | undefined
+  patient?: SessionPatient | null | undefined
 };
 
 /** One client event of POST /simulation/sessions/{id}/events; the id is the idempotency key. */

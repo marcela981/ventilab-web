@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator console module (public API)
-* Descripción: Public surface of the generic ventilator console (engine- and feature-agnostic): the VentilatorConsole screen and its zones (curves, numeric monitor, patient monitor), the adapter contract a consumer implements, the console-owned metric/vital/curve config and the pure format helpers (T3), plus the mode selector and pending→confirm/cancel parameter controls with their pure reducer and mode→parameter table, and the alarms bar with priority sorting, 2-minute silence, optional sound, session history and alarm limits (T4). v1.2: frame source `sourceId`/`sampleRateHz`, adapter `ranges` and the sample-rate based ring capacity. v1.3: `pendingModeOf` and `buildConfirmation(state, applied, appliedMode)`. v1.4: exports the generic source-state contract (frame status, in-flight settings, metric provenance helpers, value tile and in-flight copy). v1.5 (B3.10): no longer exports the unused CONSOLE_BUFFER_CAPACITY.
-* Versión: 1.5
+* Descripción: Public surface of the generic ventilator console (engine- and feature-agnostic): the VentilatorConsole screen and its zones (curves, numeric monitor, patient monitor), the adapter contract a consumer implements, the console-owned metric/vital/curve config and the pure format helpers (T3), plus the mode selector and pending→confirm/cancel parameter controls with their pure reducer and mode→parameter table, and the alarms bar with priority sorting, 2-minute silence, optional sound, session history and alarm limits (T4). v1.2: frame source `sourceId`/`sampleRateHz`, adapter `ranges` and the sample-rate based ring capacity. v1.3: `pendingModeOf` and `buildConfirmation(state, applied, appliedMode)`. v1.4: exports the generic source-state contract (frame status, in-flight settings, metric provenance helpers, value tile and in-flight copy). v1.5 (B3.10): no longer exports the unused CONSOLE_BUFFER_CAPACITY. v1.6 (W2): exports the console external store (createExternalStore, useStoreSelector, ConsoleAdapterStore, reuseUnchangedSlices, createUiThrottle) that live sources use to publish ≤ 4 Hz snapshots.
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -83,6 +83,25 @@ export {
   sparklinePath,
 } from "./application/console-format";
 export type { RangeOverrides, RangeStatus } from "./application/console-format";
+export {
+  createExternalStore,
+  createUiThrottle,
+  isConsoleAdapterStore,
+  mapStore,
+  reuseUnchangedSlices,
+  sameData,
+  staticConsoleStore,
+  useStoreSelector,
+} from "./application/console-store";
+export type {
+  ConsoleAdapterStore,
+  ExternalStore,
+  UiThrottle,
+  UiThrottleOptions,
+  UiThrottleRequest,
+  UiThrottleTimers,
+  WritableStore,
+} from "./application/console-store";
 export { CURVES_COPY, CurvesZone } from "./application/curves-zone";
 export type { CurvesZoneProps, LoopKind } from "./application/curves-zone";
 export { NUMERIC_MONITOR_TITLE, NumericMonitor } from "./application/numeric-monitor";

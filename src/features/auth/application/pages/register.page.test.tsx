@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Register page tests
-* Descripción: Integration tests of the register page with the real backend session (AuthProvider) and MSW: a valid registration posts name, email and password (trimmed, no confirmation) to /api/auth/register, then logs in with the same credentials, establishes the session and navigates to the student home or a safe returnTo; the fields are validated in Spanish before any request; a taken email (409), invalid data (400) and network failures show their Spanish message without a login; a failed login after the account was created says so; the submit is busy while pending; an authenticated visitor is redirected to the home of their role. Depends on vitest, Testing Library, MSW, next/router (mocked) and the hard navigation helper (mocked).
-* Versión: 1.0
+* Descripción: Integration tests of the register page with the real backend session (AuthProvider) and MSW: a valid registration posts name, email and password (trimmed, no confirmation) to /api/auth/register, then logs in with the same credentials, establishes the session and navigates to the student home or a safe returnTo; the fields are validated in Spanish before any request; a taken email (409), invalid data (400) and network failures show their Spanish message without a login; a failed login after the account was created says so; the submit is busy while pending; an authenticated visitor is redirected to the home of their role. Depends on vitest, Testing Library, MSW, next/router (mocked) and the hard navigation helper (mocked). v1.1 (W1 Bloque 1): the role home of every role is /simulador.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -132,7 +132,7 @@ describe("RegisterPage", () => {
     renderRegister();
     fillAndSubmit();
 
-    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/me"), { timeout: 5000 });
+    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/simulador"), { timeout: 5000 });
     expect(registerBodies).toEqual([{ name: "Ana María Pérez", email: "ana@ventylab.demo", password: "SecurePass123" }]);
     expect(loginBodies).toEqual([{ email: "ana@ventylab.demo", password: "SecurePass123" }]);
     expect(getAccessToken()).toBe("access-1");
@@ -234,7 +234,7 @@ describe("RegisterPage", () => {
     saveTokens("access-0", "refresh-0");
     renderRegister();
 
-    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/teacher"), { timeout: 5000 });
+    await waitFor(() => expect(navigation.navigateTo).toHaveBeenCalledWith("/simulador"), { timeout: 5000 });
     expect(screen.queryByRole("button", { name: /crear cuenta/i })).not.toBeInTheDocument();
   });
 });

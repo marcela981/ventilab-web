@@ -3,7 +3,9 @@
 * Descripción: Backend contract types of the simulator feature, taken from the generated OpenAPI types (no hand-written shapes): the clinical case list item and summary, the full case definition, the simulation session start request/response and the session history item, plus the query parameters of the case list and the session history operations. v1.1 (T6): the clinical case detail, the v1.2 (B3.10): unused aliases removed (CaseUserAttemptsDTO, ClinicalCaseDetailDTO, EndSimulationSessionDTO).
 *   session events request/response, the end request, the session summary, replay and state. Depends on the generated
 *   api-client schema.
-* Versión: 1.2
+*   v1.3 (W8, Bloque 1): the clinical case detail again (its `patient` block is readable by students) and the own
+*   simulated patient of a FREE start (SimulatedPatientDTO).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,7 +20,9 @@ type Schemas = components["schemas"];
 export type ClinicalCaseListItemDTO = Schemas["ClinicalCaseListItemDTO"];
 export type ClinicalCaseSummaryDTO = Schemas["ClinicalCaseSummaryDTO"];
 export type ClinicalCaseDefinitionDTO = Schemas["ClinicalCaseDefinitionDTO"];
+export type ClinicalCaseDetailDTO = Schemas["ClinicalCaseDetailDTO"];
 export type StartSimulationSessionDTO = Schemas["StartSimulationSessionDTO"];
+export type SimulatedPatientDTO = Schemas["SimulatedPatientDTO"];
 export type StartedSimulationSessionDTO = Schemas["StartedSimulationSessionDTO"];
 export type SimulationSessionDTO = Schemas["SimulationSessionDTO"];
 export type AppendSimulationEventsDTO = Schemas["AppendSimulationEventsDTO"];

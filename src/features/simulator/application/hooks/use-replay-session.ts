@@ -13,7 +13,12 @@
 *   tests. Depends on React, the sim-engine and ventilator-console public APIs, the console mapping and the configs.
 *   v1.1: the seek generation is kept in a ref across source changes (a new source never reuses a frame source id)
 *   and every init, the first one included, publishes a fresh "starting" playback.
-* Versión: 1.1
+*   v1.2 (W2, Bloque 1): the playback state lives in an external store (one per source) instead of React state:
+*   `adapter` is a stable `ConsoleAdapterStore` whose unchanged slices keep their identity, and the metrics snapshots
+*   are throttled like the live session (at most one publish per UI_REFRESH_INTERVAL_MS; a status change or an init
+*   at once; a metrics snapshot inside the window at its end) instead of one React commit per snapshot. The hook only
+*   re-renders when the shown time, the status or the seek generation change.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -23,27 +28,23 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createSimWorker, DEFAULT_SAMPLE_RATE_HZ } from "@shared/sim-engine";
-import type { EngineCase, EngineMetrics, ParamChangeEvent, SimBatch, SimWorkerClient } from "@shared/sim-engine";
-import type { ConsoleAlarm, ConsoleFrameListener, ConsoleFrameSource, VentilatorConsoleAdapter } from "@shared/ventilator-console";
+import type { EngineCase, ParamChangeEvent, SimBatch, SimWorkerClient } from "@shared/sim-engine";
+import { createExternalStore, createUiThrottle, mapStore, reuseUnchangedSlices, useStoreSelector } from "@shared/ventilator-console";
+import type {
+  ConsoleAdapterStore,
+  ConsoleFrameListener,
+  ConsoleFrameSource,
+  VentilatorConsoleAdapter,
+  WritableStore,
+} from "@shared/ventilator-console";
 import { UI_REFRESH_INTERVAL_MS } from "../config/sim-console.config";
 import { DEFAULT_REPLAY_SPEED, REPLAY_SEEK_DEBOUNCE_MS } from "../config/sim-result.config";
 import type { ReplaySpeed } from "../config/sim-result.config";
 import { clampSeek } from "../entities/sim-replay.entity";
 import type { QueueTimers } from "../session/event-queue";
-import {
-  appendTrends,
-  applyChanges,
-  buildConsoleLimits,
-  initialSettingsOf,
-  MODE_OPTIONS,
-  rangesFromTargets,
-  toConsoleAlarms,
-  toConsoleMetrics,
-  toConsoleSamples,
-  toConsoleSettings,
-  toPatientValues,
-} from "../session/sim-console-adapter";
-import type { PatientTrends } from "../session/sim-console-adapter";
+import { applyChanges, initialSettingsOf, toConsoleSamples } from "../session/sim-console-adapter";
+import { buildSimConsoleAdapter, ingestBatch, initialLiveState } from "../session/sim-live-state";
+import type { SimLiveState } from "../session/sim-live-state";
 
 // TODO(i18n): move to a simulator namespace in src/i18n.
 export const REPLAY_SESSION_COPY = {
@@ -69,7 +70,8 @@ export type ReplaySessionDeps = {
 };
 
 export type ReplaySessionView = {
-  adapter: VentilatorConsoleAdapter | null
+  /** Stable per source; the console reads each slice from it. */
+  adapter: ConsoleAdapterStore | null
   status: ReplayPlaybackStatus
   /** Simulated time shown: the pending scrub target while scrubbing, otherwise the playback time. */
   simTimeMs: number
@@ -120,10 +122,15 @@ type Playback = {
   generation: number
   hub: FrameHub
   status: ReplayPlaybackStatus
+  live: SimLiveState
+};
+
+/** What the replay publishes (at most every UI_REFRESH_INTERVAL_MS; a status change or an init at once). */
+type ReplaySnapshot = {
+  generation: number
+  status: ReplayPlaybackStatus
   simTimeMs: number
-  metrics: EngineMetrics | null
-  alarms: readonly ConsoleAlarm[]
-  trends: PatientTrends
+  console: VentilatorConsoleAdapter
 };
 
 const defaultTimers: QueueTimers = {
@@ -134,20 +141,52 @@ const defaultTimers: QueueTimers = {
 const noop = (): void => undefined;
 
 function freshPlayback(sessionId: string, generation: number, simTimeMs: number): Playback {
-  return {
-    generation,
-    hub: createFrameHub(replaySourceId(sessionId, generation)),
-    status: "starting",
-    simTimeMs,
-    metrics: null,
-    alarms: [],
-    trends: {},
-  };
+  return { generation, hub: createFrameHub(replaySourceId(sessionId, generation)), status: "starting", live: initialLiveState(simTimeMs) };
 }
 
+/** The next snapshot of a playback; unchanged console slices (and an identical snapshot) keep their identity. */
+function replaySnapshotOf(previous: ReplaySnapshot | null, playback: Playback, source: ReplaySource): ReplaySnapshot {
+  const applied = applyChanges(
+    initialSettingsOf(source.engineCase),
+    source.events.filter((event) => event.simTimeMs <= playback.live.simTimeMs),
+  );
+  const console = reuseUnchangedSlices(previous?.console ?? null, buildSimConsoleAdapter({
+    frames: playback.hub.source,
+    applied,
+    live: playback.live,
+    // Read-only: a replay shows what happened; nothing can be changed or sent.
+    canControl: false,
+    onConfirm: noop,
+    targets: source.engineCase.targets,
+  }));
+
+  if (
+    previous !== null
+    && previous.console === console
+    && previous.generation === playback.generation
+    && previous.status === playback.status
+    && previous.simTimeMs === playback.live.simTimeMs
+  ) {
+    return previous;
+  }
+
+  return { generation: playback.generation, status: playback.status, simTimeMs: playback.live.simTimeMs, console };
+}
+
+type ReplayStore = WritableStore<ReplaySnapshot>;
+
+const NO_REPLAY = createExternalStore<ReplaySnapshot | null>(null);
+const selectStatus = (snapshot: ReplaySnapshot | null): ReplayPlaybackStatus => snapshot?.status ?? "starting";
+const selectSimTimeMs = (snapshot: ReplaySnapshot | null): number => snapshot?.simTimeMs ?? 0;
+const selectGeneration = (snapshot: ReplaySnapshot | null): number => snapshot?.generation ?? 0;
+const selectConsole = (snapshot: ReplaySnapshot): VentilatorConsoleAdapter => snapshot.console;
+
 export function useReplaySession(source: ReplaySource | null, deps: ReplaySessionDeps = {}): ReplaySessionView {
-  const sessionId = source?.sessionId ?? "";
-  const [playback, setPlayback] = useState<Playback>(() => freshPlayback(sessionId, 0, 0));
+  // One store per source; it starts from a fresh "starting" playback (the effect then publishes every init).
+  const store = useMemo<ReplayStore | null>(
+    () => (source ? createExternalStore(replaySnapshotOf(null, freshPlayback(source.sessionId, 0, 0), source)) : null),
+    [source],
+  );
   const [speed, setSpeedState] = useState<ReplaySpeed>(DEFAULT_REPLAY_SPEED);
   const [scrubMs, setScrubMs] = useState<number | null>(null);
   const [workerError, setWorkerError] = useState<string | null>(null);
@@ -166,7 +205,7 @@ export function useReplaySession(source: ReplaySource | null, deps: ReplaySessio
   });
 
   useEffect(() => {
-    if (!source) {
+    if (!source || !store) {
       return undefined;
     }
 
@@ -186,11 +225,13 @@ export function useReplaySession(source: ReplaySource | null, deps: ReplaySessio
     let hub = createFrameHub(replaySourceId(source.sessionId, generation));
     // Inits sent and not answered yet: batches of a superseded loop are ignored until the last ready.
     let pendingInits = 0;
-    let metrics: EngineMetrics | null = null;
-    let alarms: readonly ConsoleAlarm[] = [];
-    let trends: PatientTrends = {};
-    let simTimeMs = 0;
-    let lastUiMs = Number.NEGATIVE_INFINITY;
+    let live = initialLiveState(0);
+    let status: ReplayPlaybackStatus = "starting";
+    const publish = (): void => {
+      store.set(replaySnapshotOf(store.getSnapshot(), { generation, hub, status, live }, source));
+    };
+    // Metrics and the clock reach React at most every UI_REFRESH_INTERVAL_MS (×8 included); a status change at once.
+    const throttle = createUiThrottle(publish, { intervalMs: UI_REFRESH_INTERVAL_MS, now });
 
     const statusOf = (batch: SimBatch): ReplayPlaybackStatus => {
       if (batch.status === "running") {
@@ -200,24 +241,16 @@ export function useReplaySession(source: ReplaySource | null, deps: ReplaySessio
       return batch.simTimeMs >= source.durationMs ? "ended" : "paused";
     };
 
-    const publish = (status: ReplayPlaybackStatus): void => {
-      const snapshot: Playback = { generation, hub, status, simTimeMs, metrics, alarms, trends };
-
-      setPlayback(snapshot);
-    };
-
     const init = (startAtSimTimeMs: number): void => {
       generation += 1;
       generationRef.current = generation;
       pendingInits += 1;
       hub = createFrameHub(replaySourceId(source.sessionId, generation));
-      metrics = null;
-      alarms = [];
-      trends = {};
-      simTimeMs = startAtSimTimeMs;
+      live = initialLiveState(startAtSimTimeMs);
+      status = "starting";
       statusRef.current = "starting";
       // Every init (including the first one of a new source) publishes a fresh "starting" playback at its time.
-      publish("starting");
+      throttle.request({ force: true });
 
       client.send({
         type: "init",
@@ -240,17 +273,10 @@ export function useReplaySession(source: ReplaySource | null, deps: ReplaySessio
       }
 
       hub.emit(batch);
-      simTimeMs = batch.simTimeMs;
+      live = ingestBatch(live, batch);
+      status = statusOf(batch);
 
-      if (batch.metrics) {
-        metrics = batch.metrics;
-        alarms = toConsoleAlarms(batch.alarms, batch.simTimeMs, alarms);
-        trends = appendTrends(trends, toPatientValues(batch.metrics));
-      }
-
-      const status = statusOf(batch);
       const changed = status !== statusRef.current;
-      const wallMs = now();
 
       statusRef.current = status;
 
@@ -258,10 +284,8 @@ export function useReplaySession(source: ReplaySource | null, deps: ReplaySessio
         playingRef.current = false;
       }
 
-      if (changed || batch.metrics || wallMs - lastUiMs >= UI_REFRESH_INTERVAL_MS) {
-        lastUiMs = wallMs;
-        publish(status);
-      }
+      // A metrics snapshot inside the window shows at its end (it used to commit at once: ~8 commits/s at ×8).
+      throttle.request({ force: changed, trailing: batch.metrics !== null });
     };
 
     const unsubscribe = client.subscribe((message) => {
@@ -288,12 +312,13 @@ export function useReplaySession(source: ReplaySource | null, deps: ReplaySessio
     init(0);
 
     return () => {
+      throttle.dispose();
       unsubscribe();
       client.terminate();
       clientRef.current = null;
       initRef.current = noop;
     };
-  }, [source]);
+  }, [source, store]);
 
   useEffect(() => () => {
     if (debounceRef.current !== null) {
@@ -355,39 +380,18 @@ export function useReplaySession(source: ReplaySource | null, deps: ReplaySessio
     }, REPLAY_SEEK_DEBOUNCE_MS);
   }, [durationMs]);
 
-  const adapter = useMemo<VentilatorConsoleAdapter | null>(() => {
-    if (!source) {
-      return null;
-    }
-
-    const applied = applyChanges(
-      initialSettingsOf(source.engineCase),
-      source.events.filter((event) => event.simTimeMs <= playback.simTimeMs),
-    );
-    const values = toConsoleSettings(applied);
-
-    return {
-      frames: playback.hub.source,
-      settings: { current: values, applied: values },
-      mode: { current: applied.mode, options: MODE_OPTIONS },
-      metrics: toConsoleMetrics(playback.metrics, applied),
-      patient: { values: toPatientValues(playback.metrics), trends: playback.trends },
-      alarms: playback.alarms,
-      // Read-only: a replay shows what happened; nothing can be changed or sent.
-      permissions: { canControl: false },
-      limits: buildConsoleLimits(applied),
-      onConfirm: noop,
-      ranges: rangesFromTargets(source.engineCase.targets),
-      capabilities: { maneuvers: false },
-    };
-  }, [playback, source]);
+  const readStore = store ?? NO_REPLAY;
+  const status = useStoreSelector(readStore, selectStatus);
+  const playbackMs = useStoreSelector(readStore, selectSimTimeMs);
+  const seekGeneration = useStoreSelector(readStore, selectGeneration);
+  const adapter = useMemo<ConsoleAdapterStore | null>(() => (store ? mapStore(store, selectConsole) : null), [store]);
 
   return {
     adapter,
-    status: playback.status,
-    simTimeMs: scrubMs ?? playback.simTimeMs,
+    status,
+    simTimeMs: scrubMs ?? playbackMs,
     speed,
-    seekGeneration: playback.generation,
+    seekGeneration,
     workerError,
     play,
     pause,

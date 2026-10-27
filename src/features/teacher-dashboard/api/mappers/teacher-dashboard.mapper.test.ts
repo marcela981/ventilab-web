@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher dashboard mapper tests
-* Descripción: DTO → view model mappers of the teacher dashboard: STUDENT groups only, dashboard rows copied as the API sends them (no derived value), evaluation stats histogram, active assignments with their pending reviews, calendar rows (only detail rows carry a group), grading queue rows, student header, learning summary, timeline and the curriculum tree reduced to titles in curriculum order. Depends on vitest, the teacher dashboard mapper and test helpers. v1.1 (closure B1): the dashboard fixture comes from dashboardDto (new contract fields). v1.2 (closure B2): group relation, API risk fields, thresholds and module summary copied; student grades and sessions mapped.
-* Versión: 1.2
+* Descripción: DTO → view model mappers of the teacher dashboard: STUDENT groups only, dashboard rows copied as the API sends them (no derived value), evaluation stats histogram, active assignments with their pending reviews, calendar rows (only detail rows carry a group), grading queue rows, student header, learning summary, timeline and the curriculum tree reduced to titles in curriculum order. Depends on vitest, the teacher dashboard mapper and test helpers. v1.1 (closure B1): the dashboard fixture comes from dashboardDto (new contract fields). v1.2 (closure B2): group relation, API risk fields, thresholds and module summary copied; student grades and sessions mapped. v1.3 (S8): fixtures carry the regenerated block 1 contract fields (session patient null).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -69,7 +69,7 @@ describe("teacher dashboard mappers", () => {
     }]);
     expect(toStudentSessions([{
       attemptId: null, caseId: "c1", caseTitle: "SDRA", endedAt: null, engineVersion: "1", id: "ss-1", lastEventAt: "x", lastSimTimeMs: 0,
-      mode: "FREE", questionId: null, score: null, startedAt: "2026-10-14T15:00:00.000Z", status: "ACTIVE", timeMultiplier: 1, userId: "u1",
+      mode: "FREE", patient: null, questionId: null, score: null, startedAt: "2026-10-14T15:00:00.000Z", status: "ACTIVE", timeMultiplier: 1, userId: "u1",
     }])).toEqual([{ id: "ss-1", caseTitle: "SDRA", mode: "FREE", status: "ACTIVE", score: null, startedAt: "2026-10-14T15:00:00.000Z", endedAt: null }]);
   });
 

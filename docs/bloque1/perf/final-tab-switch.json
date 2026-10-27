@@ -1,0 +1,112 @@
+{
+  "meta": {
+    "label": "final",
+    "flow": "simulador",
+    "scenario": "tab-switch",
+    "durationS": 60,
+    "switchEveryS": 10,
+    "warmupS": 5,
+    "caseTitle": "Pulmón normal: postoperatorio inmediato",
+    "sessionId": "01a17b98-91e4-7761-8928-645287477bf7",
+    "webCommit": "fd46ac5",
+    "browser": "chromium 156.0.8078.4",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "measuredAt": "2026-10-27T04:23:45.056Z"
+  },
+  "session": {
+    "switches": [
+      {
+        "atS": 10.1,
+        "tab": "Conexión",
+        "session": "01a17b98-91e4-7761-8928-645287477bf7"
+      },
+      {
+        "atS": 20.1,
+        "tab": "Monitoreo",
+        "session": "01a17b98-91e4-7761-8928-645287477bf7"
+      },
+      {
+        "atS": 30.1,
+        "tab": "Conexión",
+        "session": "01a17b98-91e4-7761-8928-645287477bf7"
+      },
+      {
+        "atS": 40.1,
+        "tab": "Monitoreo",
+        "session": "01a17b98-91e4-7761-8928-645287477bf7"
+      },
+      {
+        "atS": 50.1,
+        "tab": "Conexión",
+        "session": "01a17b98-91e4-7761-8928-645287477bf7"
+      },
+      {
+        "atS": 60.1,
+        "tab": "Monitoreo",
+        "session": "01a17b98-91e4-7761-8928-645287477bf7"
+      }
+    ],
+    "sameSessionEverySwitch": true,
+    "simulatedClockStartS": 5,
+    "simulatedClockEndS": 65,
+    "wallClockS": 60.1,
+    "statusBackInMonitoreo": "Simulando"
+  },
+  "probe": {
+    "windowMs": 60133,
+    "raf": {
+      "frames": 3607,
+      "fps": 59.98,
+      "p50FrameMs": 16.7,
+      "p95FrameMs": 16.8,
+      "maxFrameMs": 17.1,
+      "framesOver50Ms": 0
+    },
+    "longTasks": {
+      "count": 0,
+      "totalMs": 0,
+      "maxMs": 0,
+      "supported": true
+    },
+    "react": {
+      "hookAttached": true,
+      "bundleType": 0,
+      "commits": 75,
+      "commitsPerSecond": 1.25,
+      "maxCommitsInOneSecond": 5
+    },
+    "canvases": [
+      {
+        "label": "(sin etiqueta)",
+        "width": 381,
+        "height": 448,
+        "connected": false,
+        "paintFrames": 3,
+        "paintFps": 0.05,
+        "drawCalls": 39
+      },
+      {
+        "label": "Curvas de presión, flujo y volumen",
+        "width": 381,
+        "height": 448,
+        "connected": true,
+        "paintFrames": 1784,
+        "paintFps": 29.67,
+        "drawCalls": 9041
+      }
+    ],
+    "heapUsedMb": 13.8
+  },
+  "mainThreadPerSecond": {
+    "unit": "ms of main-thread time per second (Duration) or events per second (Count)",
+    "TaskDuration": 55.69,
+    "ScriptDuration": 15.71,
+    "LayoutDuration": 0.91,
+    "RecalcStyleDuration": 1.17,
+    "LayoutCount": 0.67,
+    "RecalcStyleCount": 2.76
+  }
+}

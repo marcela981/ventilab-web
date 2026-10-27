@@ -1,0 +1,83 @@
+{
+  "meta": {
+    "label": "after-w4",
+    "flow": "legacy",
+    "scenario": "replay-x8",
+    "kind": "replay",
+    "multiplier": 8,
+    "cpuThrottlingRate": 1,
+    "durationS": 60,
+    "warmupS": 5,
+    "caseTitle": "Pulmón normal: postoperatorio inmediato",
+    "pageUrl": "/simulator/sessions/01a17b0e-db14-7464-b7d1-4851603def11/replay",
+    "replayRestarts": 7,
+    "webCommit": "9bc3f08",
+    "browser": "chromium 156.0.8078.4",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "measuredAt": "2026-10-27T01:54:26.695Z"
+  },
+  "probe": {
+    "windowMs": 60030,
+    "raf": {
+      "frames": 3600,
+      "fps": 59.97,
+      "p50FrameMs": 16.7,
+      "p95FrameMs": 16.8,
+      "maxFrameMs": 17.1,
+      "framesOver50Ms": 0
+    },
+    "longTasks": {
+      "count": 0,
+      "totalMs": 0,
+      "maxMs": 0,
+      "supported": true
+    },
+    "react": {
+      "hookAttached": true,
+      "bundleType": 0,
+      "commits": 225,
+      "commitsPerSecond": 3.75,
+      "maxCommitsInOneSecond": 5
+    },
+    "canvases": [
+      {
+        "label": "(sin etiqueta)",
+        "width": 844,
+        "height": 448,
+        "connected": false,
+        "paintFrames": 32,
+        "paintFps": 0.53,
+        "drawCalls": 488
+      },
+      {
+        "label": "Curvas de presión, flujo y volumen",
+        "width": 844,
+        "height": 448,
+        "connected": true,
+        "paintFrames": 3133,
+        "paintFps": 52.19,
+        "drawCalls": 15698
+      }
+    ],
+    "heapUsedMb": 10.5
+  },
+  "mainThreadPerSecond": {
+    "unit": "ms of main-thread time per second (Duration) or events per second (Count)",
+    "TaskDuration": 79.34,
+    "ScriptDuration": 23.46,
+    "LayoutDuration": 4.31,
+    "RecalcStyleDuration": 1.19,
+    "LayoutCount": 3.85,
+    "RecalcStyleCount": 5.01
+  },
+  "workers": [
+    {
+      "url": "/_next/static/chunks/ventylab-sim.e9486aa2a698b14c.js",
+      "rawKb": 27.6,
+      "gzipKb": 8.9
+    }
+  ]
+}

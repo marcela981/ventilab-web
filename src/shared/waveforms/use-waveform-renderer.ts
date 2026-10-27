@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useWaveformRenderer
-* Descripción: Canvas plumbing shared by SweepCanvas and LoopCanvas: a requestAnimationFrame loop throttled to a target fps, devicePixelRatio-aware backing store sized by a ResizeObserver, and a `full` flag that tells the frame callback when it must repaint everything (first frame, resize, DPR change, explicit invalidate). Also resolves canvas colors and fonts from CSS custom properties of the canvas element. Depends on React only; degrades to a no-op when there is no 2D context (jsdom). v1.1: a theme change (`data-theme` on <html> or `prefers-color-scheme`) forces a full repaint so painters re-read their palette, and `onResize` reports the canvas CSS size.
-* Versión: 1.1
+* Descripción: Canvas plumbing shared by SweepCanvas and LoopCanvas: a requestAnimationFrame loop throttled to a target fps, devicePixelRatio-aware backing store sized by a ResizeObserver, and a `full` flag that tells the frame callback when it must repaint everything (first frame, resize, DPR change, explicit invalidate). Also resolves canvas colors and fonts from CSS custom properties of the canvas element. Depends on React only; degrades to a no-op when there is no 2D context (jsdom). v1.1: a theme change (`data-theme` on <html> or `prefers-color-scheme`) forces a full repaint so painters re-read their palette, and `onResize` reports the canvas CSS size. v1.2 (W3, Bloque 1): `fps` accepts DISPLAY_REFRESH_FPS (Infinity: draw on every animation frame, the display refresh rate) besides a numeric cap; the 30 fps default is kept for generic charts, the console curves opt into the display rate.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,6 +13,9 @@ import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import type { RefObject } from "react";
 
 export const DEFAULT_WAVEFORM_FPS = 30;
+
+/** No cap: the frame callback runs on every animation frame (the display refresh rate, e.g. 60 or 120 Hz). */
+export const DISPLAY_REFRESH_FPS = Number.POSITIVE_INFINITY;
 
 /** One frame handed to the draw callback. Sizes are CSS pixels; the context is already DPR-scaled. */
 export type WaveformRenderFrame = {
@@ -28,6 +31,7 @@ export type WaveformRendererOptions = {
   onFrame: (frame: WaveformRenderFrame) => void
   /** Called with the canvas CSS size after every backing-store resize. */
   onResize?: ((width: number, height: number) => void) | undefined
+  /** Frames per second cap (default DEFAULT_WAVEFORM_FPS); DISPLAY_REFRESH_FPS draws on every animation frame. */
   fps?: number | undefined
 };
 
@@ -77,7 +81,8 @@ export function useWaveformRenderer({ onFrame, onResize, fps = DEFAULT_WAVEFORM_
     let dpr = 0;
     let last = Number.NEGATIVE_INFINITY;
     let handle = 0;
-    const interval = 1000 / Math.max(1, fps);
+    // 0 for DISPLAY_REFRESH_FPS: every animation frame.
+    const interval = Number.isFinite(fps) ? 1000 / Math.max(1, fps) : 0;
 
     const resize = (): void => {
       const rect = canvas.getBoundingClientRect();
@@ -95,7 +100,7 @@ export function useWaveformRenderer({ onFrame, onResize, fps = DEFAULT_WAVEFORM_
       handle = requestAnimationFrame(tick);
 
       // Small tolerance so a 60 Hz display reliably lands on every second frame at 30 fps.
-      if (now - last < interval - 2) {
+      if (interval > 0 && now - last < interval - 2) {
         return;
       }
 

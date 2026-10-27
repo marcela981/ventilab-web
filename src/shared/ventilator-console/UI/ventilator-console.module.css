@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentilatorConsole layout styles
-* Descripción: Dark console surface and responsive grid of the generic ventilator console, in the bedside-ventilator arrangement: alarms across the top, numeric monitoring in the left column, curves and patient monitor in the centre, mode and controls on the right. ≥1280 px is the main layout, 1024–1279 px a compact one, and below 1024 px the zones stack and the small-screen notice appears. Console and design-system tokens only. v1.1: the read-only state groups the badge with its reason.
-* Versión: 1.1
+* Descripción: Dark console surface and responsive grid of the generic ventilator console, in the bedside-ventilator arrangement: alarms across the top, numeric monitoring in the left column, curves and patient monitor in the centre, mode and controls on the right. ≥1280 px is the main layout, 1024–1279 px a compact one, and below 1024 px the zones stack and the small-screen notice appears. Console and design-system tokens only. v1.1: the read-only state groups the badge with its reason. v1.2 (W6-fix, Bloque 1): inside a host that declares the `vl-console` inline-size container (simulator session monitor, real Monitoreo view) the layout follows the width the console really gets instead of the viewport: below 1400 px the compact columns, below 1000 px the curves take the full width above metrics and controls; the side zones may shrink (min-width: 0), so the console never overflows its host.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -90,6 +90,7 @@
 
 .metrics {
   grid-area: metrics;
+  min-width: 0;
 }
 
 .centre {
@@ -102,6 +103,7 @@
 
 .controls {
   grid-area: controls;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--vl-space-3);
@@ -117,6 +119,30 @@
     grid-template-columns: minmax(calc(var(--vl-space-8) * 3.25), 1fr) minmax(0, 2.6fr) minmax(calc(var(--vl-space-8) * 3.75), 1.1fr);
     gap: var(--vl-space-3);
     padding: var(--vl-space-3);
+  }
+}
+
+/*
+ * Inside a `vl-console` container the layout follows the console width (a side panel next to it, the app menu…).
+ * Hosts without that container keep only the viewport rules.
+ */
+@container vl-console (max-width: 1399.98px) {
+  .console {
+    grid-template-columns: minmax(calc(var(--vl-space-8) * 3.25), 1fr) minmax(0, 2.6fr) minmax(calc(var(--vl-space-8) * 3.75), 1.1fr);
+    gap: var(--vl-space-3);
+    padding: var(--vl-space-3);
+  }
+}
+
+/* Narrow console: the curves take the full width and the metrics and controls share the row below. */
+@container vl-console (max-width: 999.98px) {
+  .console {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "header header"
+      "alarms alarms"
+      "centre centre"
+      "metrics controls";
   }
 }
 

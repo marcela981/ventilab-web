@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Live console
-* Descripción: The shared VentilatorConsole (live variant) fed by the real-ventilator adapter (useRealConsoleAdapter: telemetry and alarm events of the joined room, reported settings, derived metrics) for one data source, the active reservation. `live` false (device without data, stale telemetry or the socket lost) shows the grey frozen curves under the overlay message and keeps the console read-only with the given reason. Loaded ONLY through the lazy boundary (lazy-live-console) so the console, the waveforms and the adapter stay in the /lab/live chunk. v1.1 (T7): `canControl` (only the operator, from the control state) enables the controls. v1.2 (T8): commands (useVentilatorCommands): the control limits (engine limits ∩ backend safety maxima), the editable parameters per mode (no pressure; no PEEP in PCV/PSV) and the mode options for the reported mode; CONFIRMAR maps the confirmation to POST /api/ventilator/commands and the per-parameter in-flight state comes from the 202 and `ventilator:command-status`; while a command is in flight or a 429 wait runs the console is read-only with that reason (one command at a time); the displayed values stay the ones the device reports. The command panel (notices, "Comandos recientes") sits under the console. Depends on React, the shared ventilator console, the real console adapter hook, the commands hook, the lab settings hook, the command panel and the CSS Module. v1.3 (T9): `pendingResetKey` drops the unconfirmed edits; with canControl false no new command is sent while an in-flight one keeps its status. v1.4 (T10): optional `header` content for the console header (the REC mark of the page). v1.5 (T8 review fix 2, W5): the operator gets «Usar los valores que informa el equipo» in the command panel while an unreported block can be lifted.
-* Versión: 1.5
+* Descripción: The shared VentilatorConsole (live variant) fed by the real-ventilator adapter (useRealConsoleAdapter: telemetry and alarm events of the joined room, reported settings, derived metrics) for one data source, the active reservation. `live` false (device without data, stale telemetry or the socket lost) shows the grey frozen curves under the overlay message and keeps the console read-only with the given reason. Loaded ONLY through the lazy boundary (lazy-live-console) so the console, the waveforms and the adapter stay in the /lab/live chunk. v1.1 (T7): `canControl` (only the operator, from the control state) enables the controls. v1.2 (T8): commands (useVentilatorCommands): the control limits (engine limits ∩ backend safety maxima), the editable parameters per mode (no pressure; no PEEP in PCV/PSV) and the mode options for the reported mode; CONFIRMAR maps the confirmation to POST /api/ventilator/commands and the per-parameter in-flight state comes from the 202 and `ventilator:command-status`; while a command is in flight or a 429 wait runs the console is read-only with that reason (one command at a time); the displayed values stay the ones the device reports. The command panel (notices, "Comandos recientes") sits under the console. Depends on React, the shared ventilator console, the real console adapter hook, the commands hook, the lab settings hook, the command panel and the CSS Module. v1.3 (T9): `pendingResetKey` drops the unconfirmed edits; with canControl false no new command is sent while an in-flight one keeps its status. v1.4 (T10): optional `header` content for the console header (the REC mark of the page). v1.5 (T8 review fix 2, W5): the operator gets «Usar los valores que informa el equipo» in the command panel while an unreported block can be lifted. v1.6 (W10, Bloque 1): optional `alarmLimits` shows the client alarm limits panel (real-alarm-limits) in the alarms bar; the console is now loaded by the real monitor of /simulador.
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -31,9 +31,11 @@ export type LiveConsoleProps = {
   pendingResetKey?: string | number
   /** T10: content of the console header (e.g. the REC mark). */
   header?: ReactNode
+  /** W10: offer the client alarm limits (AlarmLimitsPanel; the real monitor of /simulador). */
+  alarmLimits?: boolean
 };
 
-export function LiveConsole({ sourceId, live, noDataMessage, readOnlyReason, canControl = false, pendingResetKey, header }: LiveConsoleProps) {
+export function LiveConsole({ sourceId, live, noDataMessage, readOnlyReason, canControl = false, pendingResetKey, header, alarmLimits = false }: LiveConsoleProps) {
   const { settings } = useLabSettings();
   const commands = useVentilatorCommands({ reservationId: sourceId, canSend: canControl, settings });
   // One command at a time: while one is in flight (or a 429 wait runs) the operator's console is read-only.
@@ -47,6 +49,7 @@ export function LiveConsole({ sourceId, live, noDataMessage, readOnlyReason, can
     inFlight: commands.inFlight,
     onConfirm: commands.onConfirm,
     modeOptionsFor: commands.modeOptionsFor,
+    alarmLimits,
     ...(pendingResetKey === undefined ? {} : { pendingResetKey }),
     ...(noDataMessage === undefined ? {} : { noDataMessage }),
     ...(reason === undefined ? {} : { readOnlyReason: reason }),

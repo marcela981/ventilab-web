@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Status pages tests
-* Descripción: The 404 and 500 pages show their Spanish title and message, link a signed-in user to the home of the role and an anonymous visitor to the login page, and the 500 page offers "Reintentar". Depends on vitest, Testing Library, next/head (mocked) and the session context.
-* Versión: 1.0
+* Descripción: The 404 and 500 pages show their Spanish title and message, link a signed-in user to the home of the role and an anonymous visitor to the login page, and the 500 page offers "Reintentar". Depends on vitest, Testing Library, next/head (mocked) and the session context. v1.1 (W1 Bloque 1): the role home of every role is /simulador.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -50,9 +50,9 @@ describe("NotFoundPage", () => {
   });
 
   it.each([
-    ["STUDENT", "/me"],
-    ["TEACHER", "/teacher"],
-    ["ADMIN", "/teacher"],
+    ["STUDENT", "/simulador"],
+    ["TEACHER", "/simulador"],
+    ["ADMIN", "/simulador"],
   ] as const)("links a %s back to %s", (role, href) => {
     renderWith(<NotFoundPage />, sessionValue("authenticated", role));
 
@@ -71,7 +71,7 @@ describe("ServerErrorPage", () => {
     renderWith(<ServerErrorPage />, sessionValue("authenticated", "STUDENT"));
 
     expect(screen.getByRole("heading", { level: 1, name: STATUS_PAGES_COPY.serverError.title })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: STATUS_PAGES_COPY.home })).toHaveAttribute("href", "/me");
+    expect(screen.getByRole("link", { name: STATUS_PAGES_COPY.home })).toHaveAttribute("href", "/simulador");
     expect(screen.getByRole("button", { name: STATUS_PAGES_COPY.retry })).toBeInTheDocument();
   });
 });

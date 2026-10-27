@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: My reservations entity tests
 * Descripción: Pure tests of the "Mis reservas" model: split of GET /api/reservations/mine into upcoming (scheduled, ordered by start, the one in progress flagged) and past (cancelled, preempted, completed or ended, most recent first), the status label with "En curso", the client mirror of the backend cancel permission (admin; creator; holder user; leader of the holder group; teacher supervising the holder group; only scheduled reservations that have not ended; never a limited projection) and the Spanish messages of the cancel error codes. Depends on vitest, the api-client error and the lab entities.
-* Versión: 1.0
+*   v1.1 (W7, Bloque 1): fixtures and expectations follow the W7 contract (current reservation relation, holder student code, immediate booking, created reservation id).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,6 +28,7 @@ const full = (id: string, overrides: Partial<FullReservation> = {}): FullReserva
   holderType: "USER",
   holderRole: "STUDENT",
   holderName: "Ana Gómez",
+  holderCode: null,
   groupName: null,
   holderUserId: "someone",
   groupId: null,

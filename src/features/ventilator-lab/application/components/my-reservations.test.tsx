@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: My reservations section tests
-* Descripción: "Mis reservas" with msw: GET /api/reservations/mine split into upcoming (the one in progress as "En curso") and past (preempted with its reason, cancelled), "Cancelar" only where the mirrored backend rules allow it (creator or holder, leader of the holder group, admin; never a group member who is not the leader, never a past reservation), confirming posts POST /api/reservations/{id}/cancel once, revalidates mine and shows the success toast, going back sends nothing, and the backend cancel codes are shown in Spanish. Depends on vitest, msw, Testing Library and the lab test helpers.
-* Versión: 1.0
+* Descripción: "Mis reservas" with msw: GET /api/reservations/mine split into upcoming (the one in progress as "En curso") and past (preempted with its reason, cancelled), "Cancelar" only where the mirrored backend rules allow it (creator or holder, leader of the holder group, admin; never a group member who is not the leader, never a past reservation), confirming posts POST /api/reservations/{id}/cancel once, revalidates mine and shows the success toast, going back sends nothing, and the backend cancel codes are shown in Spanish. Depends on vitest, msw, Testing Library and the lab test helpers. v1.1 (S8): fixtures carry the regenerated block 1 contract fields (party code null).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -25,7 +25,7 @@ let mine: ReservationDetailDTO[] = [];
 let mineReads = 0;
 let cancelPosts: string[] = [];
 
-const party = (id: string, name: string) => ({ id, name, identifier: `${id}@ventylab.demo`, role: "STUDENT" });
+const party = (id: string, name: string) => ({ id, code: null, name, identifier: `${id}@ventylab.demo`, role: "STUDENT" });
 
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" });

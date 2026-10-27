@@ -12,7 +12,10 @@
 *   components and CSS Modules. v1.1: the server breakdown is shown whenever the summary carries one (any mode, so
 *   teachers see it too), an explicit "modo no determinado" note when the mode is unknown, no retry for 403/404 and a
 *   retryable local evolution (timeout or failure).
-* Versión: 1.1
+*   v1.2 (W6, Bloque 1): the result content (mode note, score, objectives, breakdown, evolution) is
+*   SessionResultContent, and SessionResultSummary loads it for one session without the page chrome, so the
+*   /simulador workspace shows the result in a dialog; the page renders the same content.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -41,6 +44,7 @@ import type { ScoreCriterion, SessionExamLink, SessionSummary } from "../entitie
 import { formatScore, formatSessionDuration, sessionStatusLabel, simulationModeLabel } from "../entities/simulator.entity";
 import { getSimulatorErrorMessage } from "../entities/simulator-error-messages";
 import { useSessionResult } from "../hooks/use-session-result";
+import type { UseSessionResult } from "../hooks/use-session-result";
 import type { LocalReplayDeps } from "../hooks/use-local-replay";
 import { examReturnStore } from "../session/exam-return-store";
 import type { ExamReturnStore } from "../session/exam-return-store";
@@ -250,16 +254,18 @@ export function resolveExamReturnUrl(sessionId: string, link: SessionExamLink | 
   return EVALUATIONS_LIST_URL;
 }
 
-export function SessionResultPage({ sessionId, deps }: SessionResultPageProps) {
-  const result = useSessionResult(sessionId, deps);
-  const { summary, examLink, local, comparison } = result;
+export type SessionResultContentProps = {
+  result: UseSessionResult
+};
+
+/** The result of one session without the page chrome: mode note, server score, objectives, breakdown and evolution. */
+export function SessionResultContent({ result }: SessionResultContentProps) {
+  const { summary, examLink, local, comparison, modeUnknown } = result;
   const exam = examLink?.mode === "EXAM";
-  const { modeUnknown } = result;
   const evolution = useMemo(
     () => (local.status === "ready" ? buildEvolution(local.result.metricsTimeline, local.result.final) : null),
     [local],
   );
-  const returnUrl = exam ? resolveExamReturnUrl(sessionId, examLink, deps?.examReturn ?? examReturnStore) : null;
 
   let body;
 
@@ -313,14 +319,40 @@ export function SessionResultPage({ sessionId, deps }: SessionResultPageProps) {
   }
 
   return (
+    <>
+      {/* BACKEND GAP: the mode only comes from the own-session history; without it, never assume FREE silently. */}
+      {modeUnknown ? <p className={cx(styles.note)} role="note">{RESULT_PAGE_COPY.modeUnknown}</p> : null}
+      {body}
+    </>
+  );
+}
+
+export type SessionResultSummaryProps = SessionResultPageProps;
+
+/** Loads and shows the result of one session without the page chrome (the /simulador workspace result dialog). */
+export function SessionResultSummary({ sessionId, deps }: SessionResultSummaryProps) {
+  const result = useSessionResult(sessionId, deps);
+
+  return (
+    <div className={cx(styles.summary)}>
+      <SessionResultContent result={result} />
+    </div>
+  );
+}
+
+export function SessionResultPage({ sessionId, deps }: SessionResultPageProps) {
+  const result = useSessionResult(sessionId, deps);
+  const { examLink } = result;
+  const exam = examLink?.mode === "EXAM";
+  const returnUrl = exam ? resolveExamReturnUrl(sessionId, examLink, deps?.examReturn ?? examReturnStore) : null;
+
+  return (
     <div className={cx(styles.page)}>
       <Head>
         <title>{RESULT_PAGE_COPY.documentTitle}</title>
       </Head>
       <PageHeader title={RESULT_PAGE_COPY.title} {...(examLink ? { subtitle: simulationModeLabel(examLink.mode) } : {})} />
-      {/* BACKEND GAP: the mode only comes from the own-session history; without it, never assume FREE silently. */}
-      {modeUnknown ? <p className={cx(styles.note)} role="note">{RESULT_PAGE_COPY.modeUnknown}</p> : null}
-      {body}
+      <SessionResultContent result={result} />
       <nav className={cx(styles.links)}>
         {returnUrl ? (
           <Link href={returnUrl} className={cx(styles.primaryLink)}>{RESULT_PAGE_COPY.backToExam}</Link>

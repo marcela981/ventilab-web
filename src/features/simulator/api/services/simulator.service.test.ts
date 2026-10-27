@@ -3,7 +3,11 @@
 * Descripción: Tests of the simulator API services against msw: the case definition GET by id (URI-encoded), the FREE session start (POST body exactly {mode, caseId, timeMultiplier}, response mapped to a started session), the catalog query (server-side filters, null filters omitted), the ids query of the history titles and the history query (optional filters omitted), the list item → card mapping (no badge without a boolean flag) and the history duration. v1.1: the catalog query always carries status=PUBLISHED. v1.2: the keepalive page-hide POST of the events (Bearer token, contract body, nothing sent for an empty list) and the session start read from the history ids filter. v1.3: keepalive chunks (≤ 50 events, < 60 KiB, in order, one POST each) and the server clock of GET /state read from its Date header (none without it). v1.4 (review of 180a0a1): the keepalive chunks stop at a 60 KiB running total, an
 *   oversized single event is skipped with its neighbours kept in order, and the server clock carries the monotonic
 *   response time. Depends on Vitest, msw, the token storage and the simulator test helpers.
-* Versión: 1.4
+*   v1.5 (W6, Bloque 1): the own patient of the session state (null without one, checked when present) and of the
+*   start request (kept on the started session, sent in the body).
+*   v1.6 (W8, Bloque 1): the case detail mapped to the patient preset of the Simular Paciente form (unknown values
+*   null, an unknown difficulty dropped).
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,7 +23,7 @@ import { clearTokens, setAccessToken } from "@shared/api-client/token-storage";
 import { buildCatalogQuery, NO_CATALOG_FILTERS } from "../../application/entities/simulator.entity";
 import { apiUrl, caseItemDto, envelope, errorResponse, sessionDto, startedSessionDto } from "../../application/pages/simulator-test-helpers";
 import { toCaseCard, toSessionHistoryItem } from "../mappers/simulator.mapper";
-import { clinicalCasesByIdsQuery, clinicalCasesQuery, fetchCaseDefinition } from "./clinical-cases.service";
+import { clinicalCasesByIdsQuery, clinicalCasesQuery, fetchCaseDefinition, fetchCasePatientPreset } from "./clinical-cases.service";
 import {
   chunkKeepaliveBodies,
   fetchSessionStartedAt,
@@ -146,6 +150,7 @@ describe("simulator services", () => {
 
     expect(await fetchSessionState("s1", () => 123)).toEqual({
       ...dto,
+      patient: null,
       serverClock: { serverNowMs: Date.parse("2026-10-15T10:01:00.000Z"), monotonicAtMs: 123 },
     });
 
@@ -182,6 +187,48 @@ describe("simulator services", () => {
     expect(session).toMatchObject({ id: "s1", seed: 7, engineVersion: "1.0.0", expiresAt: null, engineCase: { id: "c1" } });
   });
 
+  it("keeps the own patient of the start request and of the session state", async() => {
+    const patient = {
+      displayName: "María José",
+      ageYears: 60,
+      sex: "FEMALE" as const,
+      weightKg: 70,
+      heightCm: 165,
+      condition: "PNEUMONIA" as const,
+      difficulty: "INTERMEDIATE" as const,
+      diagnosis: "Neumonía grave",
+      allergies: ["Penicilina"],
+      history: [],
+      vitals: { respiratoryRateBpm: 24, spo2Percent: 88, heartRateBpm: 105, breathingPattern: "tachypneic" as const },
+    };
+    const mapped = {
+      ...patient,
+      vitals: { ...patient.vitals, temperatureC: null, systolicMmHg: null, diastolicMmHg: null, glasgow: null },
+    };
+    const bodies: unknown[] = [];
+
+    server.use(
+      http.post(apiUrl("/api/simulation/sessions"), async({ request }) => {
+        bodies.push(await request.json());
+
+        return HttpResponse.json(envelope(startedSessionDto("s1")), { status: 201 });
+      }),
+      http.get(apiUrl("/api/simulation/sessions/s1/state"), () => HttpResponse.json(envelope({
+        id: "s1",
+        status: "ACTIVE",
+        simTimeMs: 0,
+        expiresAt: null,
+        patient,
+      }))),
+    );
+
+    const session = await startSimulationSession({ mode: "FREE", timeMultiplier: 1, patient });
+
+    expect(bodies).toEqual([{ mode: "FREE", timeMultiplier: 1, patient }]);
+    expect(session.patient).toEqual(mapped);
+    expect((await fetchSessionState("s1")).patient).toEqual(mapped);
+  });
+
   it("rejects a start error with the backend code", async() => {
     server.use(http.post(apiUrl("/api/simulation/sessions"), () => errorResponse("simulation.case_not_ready", 409)));
 
@@ -202,6 +249,52 @@ describe("simulator services", () => {
 
     await expect(fetchCaseDefinition("c/1")).resolves.toMatchObject({ id: "c/1", title: "SDRA" });
     expect(ids).toEqual(["c/1"]);
+  });
+
+
+  it("maps the case detail to the patient preset of the form, unknown values as null", async() => {
+    const detail = (patient: Record<string, unknown>, overrides: Record<string, unknown> = {}) => ({
+      clinicalCase: { ...caseItemDto("july-epoc").clinicalCase, title: "Caso 2: EPOC descompensado", pathology: "EPOC", difficulty: "INTERMEDIATE", patientAge: 68, patientWeight: 65, mainDiagnosis: "EPOC descompensado", ...overrides },
+      patient,
+      userAttempts: { attempts: [], bestScore: null, lastAttempt: null, total: 0 },
+    });
+
+    server.use(
+      http.get(apiUrl("/api/clinical-cases/july-epoc"), () => HttpResponse.json(envelope(detail({
+        sex: "FEMALE",
+        heightCm: 160,
+        history: ["Tabaquismo activo"],
+        allergies: ["Penicilina"],
+        initialVitals: { heartRateBpm: 95, respiratoryRateBpm: 28, spo2Percent: 88, temperatureC: 37.5, systolicMmHg: 135, diastolicMmHg: 85, glasgow: 14, breathingPattern: "tachypneic" },
+      })))),
+      http.get(apiUrl("/api/clinical-cases/bare"), () => HttpResponse.json(envelope(detail(
+        { sex: null, heightCm: null, history: [], allergies: [], initialVitals: null },
+        { id: "bare", difficulty: "EXPERT", mainDiagnosis: " " },
+      )))),
+    );
+
+    await expect(fetchCasePatientPreset("july-epoc")).resolves.toEqual({
+      caseId: "july-epoc",
+      title: "Caso 2: EPOC descompensado",
+      pathology: "EPOC",
+      difficulty: "INTERMEDIATE",
+      ageYears: 68,
+      sex: "FEMALE",
+      weightKg: 65,
+      heightCm: 160,
+      diagnosis: "EPOC descompensado",
+      allergies: ["Penicilina"],
+      history: ["Tabaquismo activo"],
+      vitals: { heartRateBpm: 95, respiratoryRateBpm: 28, spo2Percent: 88, temperatureC: 37.5, systolicMmHg: 135, diastolicMmHg: 85, glasgow: 14, breathingPattern: "tachypneic" },
+    });
+    await expect(fetchCasePatientPreset("bare")).resolves.toMatchObject({
+      caseId: "bare",
+      difficulty: null,
+      sex: null,
+      heightCm: null,
+      diagnosis: null,
+      vitals: { respiratoryRateBpm: null, spo2Percent: null, heartRateBpm: null, breathingPattern: null },
+    });
   });
 
   it("builds the catalog query of published cases with server-side filters and omits null filters", () => {

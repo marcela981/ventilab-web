@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LoopCanvas
-* Descripción: Raw canvas renderer for a ventilation loop (x channel vs y channel over the last window of samples, e.g. volume vs pressure for P-V or volume vs flow for F-V) read from a WaveformRingBuffer. The consumer switches loops by passing other axes. `frozen` keeps the window captured at freeze time. Depends on React, the loop painter and the console tokens.
-* Versión: 1.0
+* Descripción: Raw canvas renderer for a ventilation loop (x channel vs y channel over the last window of samples, e.g. volume vs pressure for P-V or volume vs flow for F-V) read from a WaveformRingBuffer. The consumer switches loops by passing other axes. `frozen` keeps the window captured at freeze time. Depends on React, the loop painter and the console tokens. v1.1 (W3, Bloque 1): optional `playbackDelayMs` keeps the live loop in step with the time-based sweep curves.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -29,6 +29,8 @@ export type LoopCanvasProps<C extends string> = {
   windowSeconds?: number
   frozen?: boolean
   fps?: number
+  /** Live loop delay behind the newest sample in ms, in step with the sweep curves; 0 = none. */
+  playbackDelayMs?: number
   className?: string
 };
 
@@ -43,6 +45,7 @@ export function LoopCanvas<C extends string>({
   windowSeconds = 4,
   frozen = false,
   fps,
+  playbackDelayMs = 0,
   className,
 }: LoopCanvasProps<C>) {
   const config = useMemo<LoopConfig<C>>(() => ({ x, y, colorVar, windowMs: windowSeconds * 1000 }), [x, y, colorVar, windowSeconds]);
@@ -61,7 +64,7 @@ export function LoopCanvas<C extends string>({
       if (freeze.window) {
         painterRef.current.paintFrozen(frame, freeze.window, config);
       } else {
-        painterRef.current.paintLive(frame, buffer, config);
+        painterRef.current.paintLive(frame, buffer, config, playbackDelayMs);
       }
     },
   });

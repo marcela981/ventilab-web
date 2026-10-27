@@ -1,0 +1,307 @@
+/*
+* Funcionalidad: Sessions panel styles
+* Descripción: CSS Module of the Mis sesiones tab of /simulador (W9, Bloque 1): the panel surface, the type filter
+*   (segmented buttons, pressed state in the primary color), the window pager, the unified list (one card per
+*   simulated session or recording, with its type tag: text plus color, never color alone), the notices, and the
+*   in-panel views (replay and recording on the dark console surface, the result on the light surface) with their
+*   "Volver a la lista" header. Design-system and console tokens only.
+* Versión: 0.1
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  width: 100%;
+  min-width: 0;
+  padding: var(--vl-space-4);
+  background: var(--vl-color-surface);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+}
+
+.panelTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+}
+
+.muted {
+  margin: 0;
+  color: var(--vl-color-text-muted);
+}
+
+/* List view */
+.listView {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+}
+
+.filter {
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-pill);
+}
+
+.filterButton {
+  min-width: 96px;
+  min-height: 36px;
+  padding: var(--vl-space-1) var(--vl-space-3);
+  font: var(--mui-font-button);
+  color: var(--vl-color-text-muted);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+
+.filterButton[aria-pressed="true"] {
+  color: var(--vl-color-on-primary);
+  background: var(--vl-color-primary);
+}
+
+.filterButton:focus-visible,
+.actionButton:focus-visible,
+.secondaryButton:focus-visible,
+.linkButton:focus-visible,
+.backButton:focus-visible,
+.actionLink:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--vl-space-1) var(--vl-space-3);
+  align-items: center;
+  padding: var(--vl-space-2) var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.itemMain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--vl-space-2);
+  min-width: 0;
+}
+
+.itemTitle {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.tag {
+  padding: 0 var(--vl-space-2);
+  font: var(--mui-font-caption);
+  border: 1px solid currentcolor;
+  border-radius: var(--vl-radius-pill);
+}
+
+.tag[data-kind="simulated"] {
+  color: var(--vl-color-primary);
+}
+
+.tag[data-kind="recording"] {
+  color: var(--vl-color-secondary);
+}
+
+.itemMeta {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1;
+  gap: var(--vl-space-3);
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.score {
+  font-weight: 600;
+  color: var(--vl-color-text);
+}
+
+.note {
+  grid-column: 1;
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-muted);
+}
+
+.itemActions {
+  display: flex;
+  flex-wrap: wrap;
+  grid-row: 1 / span 3;
+  grid-column: 2;
+  gap: var(--vl-space-2);
+  justify-content: flex-end;
+}
+
+.actionButton,
+.secondaryButton,
+.actionLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: var(--vl-space-1) var(--vl-space-3);
+  font: var(--mui-font-button);
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: var(--vl-radius-sm);
+}
+
+.actionButton,
+.actionLink {
+  color: var(--vl-color-on-primary);
+  background: var(--vl-color-primary);
+  border: 0;
+}
+
+.secondaryButton {
+  color: var(--vl-color-primary);
+  background: transparent;
+  border: 1px solid var(--vl-color-primary);
+}
+
+.linkButton {
+  padding: 0;
+  font: inherit;
+  color: var(--vl-color-link);
+  text-decoration: underline;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+
+.linkButton:disabled {
+  color: var(--vl-color-text-disabled);
+  text-decoration: none;
+  cursor: not-allowed;
+}
+
+.notice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  align-items: center;
+  padding: var(--vl-space-2) var(--vl-space-3);
+  margin: 0;
+  color: var(--vl-color-text);
+  background: var(--vl-color-status-degraded-bg);
+  border-radius: var(--vl-radius-md);
+}
+
+/* In-panel views */
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  min-width: 0;
+  padding: var(--vl-space-3);
+  border-radius: var(--vl-radius-lg);
+}
+
+.detail[data-tone="console"] {
+  color: var(--vl-console-text);
+  background: var(--vl-console-bg);
+}
+
+.detail[data-tone="surface"] {
+  border: 1px solid var(--vl-color-border);
+}
+
+.detail[data-tone="console"] .muted {
+  color: var(--vl-console-text-muted);
+}
+
+.detail[data-tone="console"] .linkButton {
+  color: var(--vl-console-text);
+}
+
+.detailHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-3);
+}
+
+.detailTitle {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+  font-weight: 600;
+}
+
+.detailActions {
+  display: flex;
+  gap: var(--vl-space-2);
+  margin-left: auto;
+}
+
+.backButton {
+  min-height: 36px;
+  padding: var(--vl-space-1) var(--vl-space-3);
+  font: var(--mui-font-button);
+  color: inherit;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid currentcolor;
+  border-radius: var(--vl-radius-sm);
+}
+
+.readOnlyTag {
+  padding: 0 var(--vl-space-2);
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-pill);
+}
+
+.player {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  min-width: 0;
+}
+
+@media (max-width: 600px) {
+  .item {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .itemActions {
+    grid-row: auto;
+    grid-column: 1;
+    justify-content: flex-start;
+  }
+}

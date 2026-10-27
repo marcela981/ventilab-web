@@ -1,7 +1,9 @@
 /*
 * Funcionalidad: SweepCanvas and LoopCanvas tests
 * Descripción: Covers the canvas renderers in jsdom: accessible names, freeze snapshot with the measurement cursor (pointer, arrow keys, PageUp/PageDown, Home/End) and its readout (described, not aria-live), unfreeze, and the paint loop with a mocked 2D context and a manual requestAnimationFrame (DPR-scaled backing store, colors read from CSS custom properties, incremental sweep frames that copy only the erase spans from the chrome layer, two spans across the wrap, palette re-read only on full repaints and theme changes, sweep snapshot after the erase gap, unmount cleanup, 30 fps throttle, loop polyline with pen lifts). Depends on Vitest and Testing Library.
-* Versión: 1.1
+*   v1.2 (W3, Bloque 1): with a playback delay and the display frame rate the live trace is drawn on (almost) every
+*   frame between data batches.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,6 +15,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LoopCanvas } from "./loop-canvas";
 import { SweepCanvas } from "./sweep-canvas";
+import { DISPLAY_REFRESH_FPS } from "./use-waveform-renderer";
 import type { SweepChannel } from "./sweep-painter";
 import { WaveformRingBuffer } from "./waveform-ring-buffer";
 
@@ -264,6 +267,42 @@ describe("SweepCanvas paint loop", () => {
 
     // The 12 px gap on a 348 px plot hides 344.8 ms of a 10 s window: the oldest drawn sample is 0.3 s.
     expect(slider).toHaveAttribute("aria-valuetext", expect.stringContaining("t = 0.30 s"));
+  });
+
+  it("draws by time on every display frame between 30 Hz batches when a playback delay is set", () => {
+    const fake = createFakeContext();
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(fake.ctx as never);
+    const buffer = new WaveformRingBuffer<Channel>({ channels: ["pressure", "flow", "volume"], capacity: 1_000 });
+    const push = (tMs: number) => buffer.push({ tMs, values: { pressure: tMs / 100, flow: 0, volume: 0 } });
+
+    render(<SweepCanvas buffer={buffer} channels={CHANNELS} label="Curvas" fps={DISPLAY_REFRESH_FPS} playbackDelayMs={50} />);
+
+    let drawnFrames = 0;
+    let sample = 0;
+    let nextBatch = 0;
+
+    // 2 s at 60 Hz; a batch of 50 Hz samples lands every 33.3 ms (wall time = source time).
+    for (let frame = 0; frame < 120; frame += 1) {
+      const now = 1_000 + frame * (1000 / 60);
+
+      while (nextBatch <= now - 1_000) {
+        for (; sample <= nextBatch; sample += 20) {
+          push(sample);
+        }
+
+        nextBatch += 1000 / 30;
+      }
+
+      fake.calls.length = 0;
+      runFrame(now);
+
+      if (fake.calls.some((call) => call.name === "stroke")) {
+        drawnFrames += 1;
+      }
+    }
+
+    // Once the source rate is learnt the trace moves on (almost) every frame, not only when a batch lands (~30/s).
+    expect(drawnFrames).toBeGreaterThan(100);
   });
 
   it("cancels the animation frame and disconnects the ResizeObserver on unmount", () => {

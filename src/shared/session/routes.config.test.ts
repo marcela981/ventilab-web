@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Route table tests
-* Descripción: Open-redirect safety of the returnTo helper (rejects protocol-relative, absolute, javascript: and auth-page targets), login URL building, route lookup by Next pathname pattern and the default landing route per role. v1.1 (T9 follow-up): role access of concrete paths (dynamic segments, query strings) and the post-login fallback to the role home when the returnTo route is not allowed for the role. v1.2 (T11a): /my-group is student-only and /groups is staff-only. v1.3 (T11b): /groups/[groupId] is staff-only. v1.4 (T0 learning): learning routes for every role, module print view and content-editor routes for staff only. v1.5 (S0 evaluations): student evaluation routes for every role, authoring and grading routes for staff only. v1.6 (T0 ventilator-lab): the lab routes are declared for every authenticated role. v1.7 (O0 operation): /notifications for every role, the student space for students only, the teacher dashboard and /admin/status for staff, the rest of the admin console for admins only. Depends on vitest and routes.config. v1.8 (O5 operation): role homes STUDENT /me, TEACHER and ADMIN /teacher; resolvePostLoginRoute falls back to them for the new role-restricted routes (/admin/users, /me, /teacher). v1.9 (B3.7): buildLoginUrl adds the `expired=1` marker on request, with or without returnTo.
-* Versión: 1.9
+* Descripción: Open-redirect safety of the returnTo helper (rejects protocol-relative, absolute, javascript: and auth-page targets), login URL building, route lookup by Next pathname pattern and the default landing route per role. v1.1 (T9 follow-up): role access of concrete paths (dynamic segments, query strings) and the post-login fallback to the role home when the returnTo route is not allowed for the role. v1.2 (T11a): /my-group is student-only and /groups is staff-only. v1.3 (T11b): /groups/[groupId] is staff-only. v1.4 (T0 learning): learning routes for every role, module print view and content-editor routes for staff only. v1.5 (S0 evaluations): student evaluation routes for every role, authoring and grading routes for staff only. v1.6 (T0 ventilator-lab): the lab routes are declared for every authenticated role. v1.7 (O0 operation): /notifications for every role, the student space for students only, the teacher dashboard and /admin/status for staff, the rest of the admin console for admins only. Depends on vitest and routes.config. v1.8 (O5 operation): role homes STUDENT /me, TEACHER and ADMIN /teacher; resolvePostLoginRoute falls back to them for the new role-restricted routes (/admin/users, /me, /teacher). v1.9 (B3.7): buildLoginUrl adds the `expired=1` marker on request, with or without returnTo. v1.10 (W1 Bloque 1): /simulador is the home of every role and is open to every authenticated role; resolvePostLoginRoute falls back to it; the legacy /simulator, /lab and /lab/live stay declared for their redirects.
+* Versión: 1.10
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -85,16 +85,29 @@ describe("resolvePostLoginRoute", () => {
   });
 });
 
-describe("role homes (O5)", () => {
-  it("lands students on /me and teachers and admins on /teacher", () => {
-    expect(DEFAULT_ROUTE_BY_ROLE).toEqual({ STUDENT: "/me", TEACHER: "/teacher", ADMIN: "/teacher" });
+describe("role homes (W1)", () => {
+  it("lands every role on the simulator workspace", () => {
+    expect(DEFAULT_ROUTE_BY_ROLE).toEqual({ STUDENT: "/simulador", TEACHER: "/simulador", ADMIN: "/simulador" });
+  });
+
+  it("opens /simulador to every authenticated role", () => {
+    expect(findRoute("/simulador")).toEqual({ access: "authenticated" });
+    for (const role of ["STUDENT", "TEACHER", "ADMIN"] as const) {
+      expect(isPathAllowedForRole("/simulador?tab=conexion", role)).toBe(true);
+    }
+  });
+
+  it("keeps the legacy simulator and lab entries for their redirects", () => {
+    for (const pattern of ["/simulator", "/lab", "/lab/live"]) {
+      expect(findRoute(pattern)).toEqual({ access: "authenticated" });
+    }
   });
 
   it("falls back to the role home for a returnTo outside the role", () => {
-    expect(resolvePostLoginRoute("/admin/users", "TEACHER")).toBe("/teacher");
-    expect(resolvePostLoginRoute("/teacher/students/u1", "STUDENT")).toBe("/me");
-    expect(resolvePostLoginRoute("/me/grades", "ADMIN")).toBe("/teacher");
-    expect(resolvePostLoginRoute(undefined, "STUDENT")).toBe("/me");
+    expect(resolvePostLoginRoute("/admin/users", "TEACHER")).toBe("/simulador");
+    expect(resolvePostLoginRoute("/teacher/students/u1", "STUDENT")).toBe("/simulador");
+    expect(resolvePostLoginRoute("/me/grades", "ADMIN")).toBe("/simulador");
+    expect(resolvePostLoginRoute(undefined, "STUDENT")).toBe("/simulador");
     expect(resolvePostLoginRoute("/admin/status", "TEACHER")).toBe("/admin/status");
   });
 });
