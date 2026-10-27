@@ -3,9 +3,9 @@
 * Descripción: Drives the live console adapter with a fake socket: batches reach the console listener synchronously
 *   without one React render per batch (throttled commits), the reported settings/mode/vitals and the derived metrics
 *   show after the throttle window, device alarms are added and cleared, the no-data state raises the synthetic alarm
-*   and clears the metrics, the source is stable across renders and a new source id gives a new source. v1.1 (T5 review fix): a pending throttled commit of a previous source never overwrites the new source, the no-data alarm carries the time no-data started (never 0), and the frame alarm codes are hidden while there is no data. Depends on
+*   and clears the metrics, the source is stable across renders and a new source id gives a new source. v1.1 (T5 review fix): a pending throttled commit of a previous source never overwrites the new source, the no-data alarm carries the time no-data started (never 0), and the frame alarm codes are hidden while there is no data. v1.2 (W2, Bloque 1): the hook returns a store adapter (read through getSnapshot) that keeps its identity for the source; batches cause no React render of the caller at all. Depends on
 *   Vitest, Testing Library and the lab test helpers.
-* Versión: 1.1
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,7 +17,7 @@ import { act, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { VentilatorTelemetryFrame } from "@shared/realtime";
 import { metricNumber } from "@shared/ventilator-console";
-import type { ConsoleSampleBatch, VentilatorConsoleAdapter } from "@shared/ventilator-console";
+import type { ConsoleAdapterStore, ConsoleSampleBatch, VentilatorConsoleAdapter } from "@shared/ventilator-console";
 import { createFakeSocket, renderLabHook } from "../pages/lab-test-helpers";
 import { NO_DATA_ALARM_ID } from "../entities/telemetry-alarms";
 import { useRealConsoleAdapter } from "./use-real-console-adapter";
@@ -51,7 +51,7 @@ function breathFrames(fromMs: number, breaths: number, extra: Partial<Ventilator
 function renderAdapter(options: Partial<UseRealConsoleAdapterOptions> = {}) {
   const socket = createFakeSocket();
   let renders = 0;
-  const view = renderLabHook<VentilatorConsoleAdapter | null, UseRealConsoleAdapterOptions>(
+  const view = renderLabHook<ConsoleAdapterStore | null, UseRealConsoleAdapterOptions>(
     (props: UseRealConsoleAdapterOptions) => {
       renders += 1;
 
@@ -63,12 +63,12 @@ function renderAdapter(options: Partial<UseRealConsoleAdapterOptions> = {}) {
   return { ...view, socket, renders: () => renders };
 }
 
-function current(adapter: VentilatorConsoleAdapter | null): VentilatorConsoleAdapter {
+function current(adapter: ConsoleAdapterStore | null): VentilatorConsoleAdapter {
   if (adapter === null) {
     throw new Error("No adapter");
   }
 
-  return adapter;
+  return adapter.getSnapshot();
 }
 
 describe("useRealConsoleAdapter", () => {
@@ -81,7 +81,10 @@ describe("useRealConsoleAdapter", () => {
     expect(first.permissions.canControl).toBe(false);
     expect(first.frames.sourceId).toBe("reservation-1");
 
+    const store = result.current;
+
     rerender({ sourceId: "reservation-1", live: true, readOnlyReason: "Sin control" });
+    expect(result.current).toBe(store);
     expect(current(result.current).frames.subscribe).toBe(first.frames.subscribe);
     expect(current(result.current).permissions.readOnlyReason).toBe("Sin control");
 
@@ -103,8 +106,8 @@ describe("useRealConsoleAdapter", () => {
 
     expect(listener).toHaveBeenCalledTimes(6);
     expect(listener.mock.calls.reduce((count, [batch]) => count + batch.samples.length, 0)).toBe(600);
-    // One immediate commit for the first batch; the rest wait for the throttle window.
-    expect(renders() - before).toBeLessThanOrEqual(2);
+    // The commits go to the store (one at once, the rest after the throttle window): the caller never re-renders.
+    expect(renders() - before).toBe(0);
 
     // The trailing commit carries the state after the last batch.
     await waitFor(() => expect(metricNumber(current(result.current).metrics.totalRespiratoryRate)).not.toBeNull());

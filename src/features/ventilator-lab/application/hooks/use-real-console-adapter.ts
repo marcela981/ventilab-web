@@ -13,7 +13,12 @@
 *   turned false and is shown only once that time is committed (never dated 0); the frame alarm codes are hidden while not live (stale). The
 *   wall-clock freshness watchdog is the page's useTelemetryStale (no batch for telemetry.staleAfterMs → `live` false). Returns null without a source. Depends on React, the
 *   realtime events and the real-console entities. v1.2 (T8): passes `modeOptionsFor` (command mode options) to the adapter. v1.3 (T9): optional `pendingResetKey` (drops the console's unconfirmed edits when it changes).
-* Versión: 1.3
+*   v1.4 (W2, Bloque 1): returns a `ConsoleAdapterStore` (stable per source) instead of a new adapter object per
+*   commit: telemetry, the live toggle, device alarms and the caller options publish immutable snapshots into it
+*   (createUiThrottle keeps the ≤ 1 per uiThrottleMs telemetry rate with its trailing publish; unchanged slices keep
+*   their identity), so the console zones re-render only when their own slice changes and the caller never re-renders
+*   per batch. Same contract as the simulator and the replay.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,17 +26,21 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSocketEvent } from "@shared/realtime";
 import type { VentilatorTelemetryFrame } from "@shared/realtime";
+import { createExternalStore, createUiThrottle, reuseUnchangedSlices } from "@shared/ventilator-console";
 import type {
+  ConsoleAdapterStore,
   ConsoleAlarm,
   ConsoleConfirmation,
   ConsoleFrameSource,
   ConsoleLimits,
   ConsoleModeOption,
   ConsoleSettings,
+  UiThrottle,
   VentilatorConsoleAdapter,
+  WritableStore,
 } from "@shared/ventilator-console";
 import { computeBreathMetrics, createBreathDetector, EMPTY_BREATH_METRICS } from "../entities/breath-detection";
 import type { BreathMetrics } from "../entities/breath-detection";
@@ -63,7 +72,6 @@ export type UseRealConsoleAdapterOptions = {
 };
 
 type Snapshot = {
-  sourceId: string | null
   metrics: BreathMetrics
   reported: ReportedState
   frameAlarms: readonly ConsoleAlarm[]
@@ -71,10 +79,7 @@ type Snapshot = {
   sampleRateHz: number | undefined
 };
 
-type DeviceAlarms = { sourceId: string | null, alarms: readonly ConsoleAlarm[] };
-
 const EMPTY_SNAPSHOT: Snapshot = {
-  sourceId: null,
   metrics: EMPTY_BREATH_METRICS,
   reported: EMPTY_REPORTED_STATE,
   frameAlarms: [],
@@ -119,7 +124,6 @@ function createLiveSource(sourceId: string): LiveSource {
       frameAlarms = reported.frameAlarms === null ? [] : frameAlarmsToConsole(reported.frameAlarms, now, frameAlarms);
 
       return {
-        sourceId,
         metrics: computeBreathMetrics(detector.breaths(), detector.latestMs()),
         reported,
         frameAlarms,
@@ -129,6 +133,101 @@ function createLiveSource(sourceId: string): LiveSource {
     },
   };
 }
+
+/** What the caller decides (published when it changes). */
+type CallerOptions = {
+  live: boolean
+  noDataMessage: string
+  canControl: boolean | undefined
+  readOnlyReason: string | undefined
+  pendingResetKey: string | number | undefined
+  limits: ConsoleLimits | undefined
+  inFlight: ConsoleSettings["inFlight"]
+  onConfirm: ((confirmation: ConsoleConfirmation) => void) | undefined
+  modeOptionsFor: ((reportedMode: string | null) => readonly ConsoleModeOption[]) | undefined
+};
+
+/**
+ * One live source and its store. The telemetry snapshot, the device alarms and the caller options live in this
+ * closure (never in React state); every change publishes a snapshot whose unchanged slices keep their identity.
+ */
+type SourceStore = {
+  store: WritableStore<VentilatorConsoleAdapter>
+  ingest: (frames: readonly VentilatorTelemetryFrame[]) => void
+  setLive: (live: boolean, now: number) => void
+  setOptions: (options: CallerOptions) => void
+  applyAlarm: (alarm: Parameters<typeof applyDeviceAlarm>[1]) => void
+  /** Commits the telemetry: at once with `force`, otherwise at most once per interval (trailing). */
+  requestCommit: (request: { force?: boolean, trailing?: boolean }) => void
+  /** Starts the commit throttle; the returned function drops a pending commit. */
+  startThrottle: (intervalMs: number) => () => void
+};
+
+function createSourceStore(sourceId: string, initial: CallerOptions): SourceStore {
+  const source = createLiveSource(sourceId);
+  let options = initial;
+  let telemetry = EMPTY_SNAPSHOT;
+  let deviceAlarms: readonly ConsoleAlarm[] = [];
+  let throttle: UiThrottle | null = null;
+
+  const build = (): VentilatorConsoleAdapter => {
+    // Shown once its start time is committed (one tick later), never with an invented time.
+    const noData = options.live || telemetry.noDataSince === null ? null : noDataAlarm(telemetry.noDataSince);
+
+    return buildRealConsoleAdapter({
+      frames: source.frames,
+      sampleRateHz: telemetry.sampleRateHz,
+      status: options.live ? "live" : "no-data",
+      statusMessage: options.noDataMessage,
+      metrics: telemetry.metrics,
+      reported: telemetry.reported,
+      // Without data the frame codes are as stale as the curves.
+      alarms: mergeConsoleAlarms(deviceAlarms, options.live ? telemetry.frameAlarms : [], noData),
+      ...(options.canControl === undefined ? {} : { canControl: options.canControl }),
+      readOnlyReason: options.readOnlyReason,
+      pendingResetKey: options.pendingResetKey,
+      ...(options.limits === undefined ? {} : { limits: options.limits }),
+      inFlight: options.inFlight,
+      ...(options.onConfirm === undefined ? {} : { onConfirm: options.onConfirm }),
+      ...(options.modeOptionsFor === undefined ? {} : { modeOptionsFor: options.modeOptionsFor }),
+    });
+  };
+  const store = createExternalStore(build());
+  const publish = (): void => store.set(reuseUnchangedSlices(store.getSnapshot(), build()));
+
+  return {
+    store,
+    ingest: (frames) => source.ingest(frames),
+    setLive: (live, now) => source.setLive(live, now),
+    setOptions(next) {
+      options = next;
+      publish();
+    },
+    applyAlarm(alarm) {
+      deviceAlarms = applyDeviceAlarm(deviceAlarms, alarm);
+      publish();
+    },
+    requestCommit: (request) => throttle?.request(request),
+    startThrottle(intervalMs) {
+      const own = createUiThrottle(() => {
+        telemetry = source.snapshot(Date.now());
+        publish();
+      }, { intervalMs });
+
+      throttle = own;
+
+      return () => {
+        own.dispose();
+
+        if (throttle === own) {
+          throttle = null;
+        }
+      };
+    },
+  };
+}
+
+type SourceEntry = { sourceId: string | null, target: SourceStore | null };
 
 export function useRealConsoleAdapter({
   sourceId,
@@ -142,103 +241,57 @@ export function useRealConsoleAdapter({
   onConfirm,
   modeOptionsFor,
   uiThrottleMs = LIVE_UI_THROTTLE_MS,
-}: UseRealConsoleAdapterOptions): VentilatorConsoleAdapter | null {
-  const source = useMemo(() => (sourceId === null ? null : createLiveSource(sourceId)), [sourceId]);
-  const [snapshot, setSnapshot] = useState<Snapshot>(EMPTY_SNAPSHOT);
-  const [deviceAlarms, setDeviceAlarms] = useState<DeviceAlarms>({ sourceId: null, alarms: [] });
-  const lastCommitRef = useRef(Number.NEGATIVE_INFINITY);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+}: UseRealConsoleAdapterOptions): ConsoleAdapterStore | null {
+  const options = useMemo<CallerOptions>(
+    () => ({ live, noDataMessage, canControl, readOnlyReason, pendingResetKey, limits, inFlight, onConfirm, modeOptionsFor }),
+    [live, noDataMessage, canControl, readOnlyReason, pendingResetKey, limits, inFlight, onConfirm, modeOptionsFor],
+  );
+  // One store per source; its first snapshot uses the options of the render that creates it. A new source replaces
+  // the entry during render (no effect round trip), like the console curve ring.
+  const [entry, setEntry] = useState<SourceEntry>(() => ({ sourceId, target: sourceId === null ? null : createSourceStore(sourceId, options) }));
+  let current = entry;
 
-  const commit = useCallback((target: LiveSource) => {
-    if (timerRef.current !== null) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
+  if (entry.sourceId !== sourceId) {
+    current = { sourceId, target: sourceId === null ? null : createSourceStore(sourceId, options) };
+    setEntry(current);
+  }
 
-    const now = Date.now();
-    lastCommitRef.current = now;
-    setSnapshot(target.snapshot(now));
-  }, []);
+  const { target } = current;
 
-  const scheduleCommit = useCallback((target: LiveSource) => {
-    if (timerRef.current !== null) {
-      return;
-    }
+  // The caller options reach the store at once (declared first, so the live toggle below commits with them).
+  useEffect(() => {
+    target?.setOptions(options);
+  }, [target, options]);
 
-    const wait = uiThrottleMs - (Date.now() - lastCommitRef.current);
-
-    if (wait <= 0) {
-      commit(target);
-    } else {
-      timerRef.current = setTimeout(() => commit(target), wait);
-    }
-  }, [commit, uiThrottleMs]);
-
-  // A new source (or unmount) drops the pending commit of the previous one.
-  useEffect(() => () => {
-    if (timerRef.current !== null) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-
-    lastCommitRef.current = Number.NEGATIVE_INFINITY;
-  }, [source]);
+  // At most one telemetry commit per uiThrottleMs (trailing); a new source (or unmount) drops the pending commit of
+  // the previous one, so it can never land on the new store.
+  useEffect(() => target?.startThrottle(uiThrottleMs), [target, uiThrottleMs]);
 
   // Without data the metrics of the last breaths are stale: restart the detection and raise the no-data alarm.
   // The status follows `live` at once; the dated no-data alarm and the cleared metrics are committed right after.
   useEffect(() => {
-    if (source === null) {
+    if (target === null) {
       return undefined;
     }
 
-    source.setLive(live, Date.now());
-    const timer = setTimeout(() => commit(source), 0);
+    target.setLive(live, Date.now());
+    const timer = setTimeout(() => target.requestCommit({ force: true }), 0);
 
     return () => clearTimeout(timer);
-  }, [source, live, commit]);
+  }, [target, live]);
 
   useSocketEvent("ventilator:telemetry", (batch) => {
-    if (source === null) {
+    if (target === null) {
       return;
     }
 
-    source.ingest(batch.frames);
-    scheduleCommit(source);
+    target.ingest(batch.frames);
+    target.requestCommit({ trailing: true });
   });
 
   useSocketEvent("ventilator:alarm", (alarm) => {
-    setDeviceAlarms((previous) => ({
-      sourceId,
-      alarms: applyDeviceAlarm(previous.sourceId === sourceId ? previous.alarms : [], alarm),
-    }));
+    target?.applyAlarm(alarm);
   });
 
-  return useMemo(() => {
-    if (source === null) {
-      return null;
-    }
-
-    const current = snapshot.sourceId === source.sourceId ? snapshot : EMPTY_SNAPSHOT;
-    const device = deviceAlarms.sourceId === source.sourceId ? deviceAlarms.alarms : [];
-    // Shown once its start time is committed (one tick later), never with an invented time.
-    const noData = live || current.noDataSince === null ? null : noDataAlarm(current.noDataSince);
-
-    return buildRealConsoleAdapter({
-      frames: source.frames,
-      sampleRateHz: current.sampleRateHz,
-      status: live ? "live" : "no-data",
-      statusMessage: noDataMessage,
-      metrics: current.metrics,
-      reported: current.reported,
-      // Without data the frame codes are as stale as the curves.
-      alarms: mergeConsoleAlarms(device, live ? current.frameAlarms : [], noData),
-      ...(canControl === undefined ? {} : { canControl }),
-      readOnlyReason,
-      pendingResetKey,
-      ...(limits === undefined ? {} : { limits }),
-      inFlight,
-      ...(onConfirm === undefined ? {} : { onConfirm }),
-      ...(modeOptionsFor === undefined ? {} : { modeOptionsFor }),
-    });
-  }, [source, snapshot, deviceAlarms, live, noDataMessage, canControl, readOnlyReason, pendingResetKey, limits, inFlight, onConfirm, modeOptionsFor]);
+  return target?.store ?? null;
 }

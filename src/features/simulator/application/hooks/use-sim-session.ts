@@ -39,7 +39,14 @@
 *   the case editor local preview also uses.
 *   v1.8 (A6, AUDIT_SYNC F4): while the session runs the access token is kept fresh (`keepAccessTokenFresh`), so
 *   the page-hide keepalive flush carries a valid token.
-* Versión: 1.8
+*   v1.9 (W2, Bloque 1): the low-frequency state (simulated time, status, engine metrics, alarms, trends, applied
+*   settings) lives in an external store (`store`, created per boot) instead of React state: worker batches publish
+*   immutable snapshots at most every UI_REFRESH_INTERVAL_MS (createUiThrottle: a status change at once, a metrics
+*   snapshot inside the window at its end), and `adapter` is a `ConsoleAdapterStore` with a stable identity for the
+*   whole boot whose unchanged slices keep their identity, so the console zones re-render only when their own slice
+*   changes. The hook itself re-renders only when the status or the applied settings change (no `simTimeMs` or
+*   `objectives` in the view any more: read them from `store`, e.g. with useSimSessionSlice).
+* Versión: 1.9
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -53,11 +60,15 @@ import { keepAccessTokenFresh } from "@shared/api-client/keepalive-auth";
 import { createSimWorker } from "@shared/sim-engine";
 import { createConsoleFrameHub } from "@shared/sim-engine/console-binding";
 import type { EngineMetrics, SimBatch, SimLoopStatus, SimWorkerClient, VentilatorSettings } from "@shared/sim-engine";
+import { createExternalStore, createUiThrottle, mapStore, reuseUnchangedSlices, useStoreSelector } from "@shared/ventilator-console";
 import type {
-  ConsoleAlarm,
+  ConsoleAdapterStore,
   ConsoleConfirmation,
+  ConsoleFrameSource,
+  ExternalStore,
   ModeParameterTable,
   VentilatorConsoleAdapter,
+  WritableStore,
 } from "@shared/ventilator-console";
 import {
   appendSimulationEvents,
@@ -74,24 +85,17 @@ import type { EventQueue, QueueTimers } from "../session/event-queue";
 import { eventOutbox } from "../session/event-outbox";
 import type { EventOutbox } from "../session/event-outbox";
 import {
-  appendTrends,
   applicabilityFor,
   applyChanges,
-  buildConsoleLimits,
-  buildObjectives,
   CHANGE_COPY,
   initialSettingsOf,
-  MODE_OPTIONS,
-  rangesFromTargets,
   reconcileEvents,
-  toConsoleAlarms,
-  toConsoleMetrics,
-  toConsoleSettings,
-  toPatientValues,
   toSettingsChanges,
   validateSettingsChange,
 } from "../session/sim-console-adapter";
-import type { ObjectiveRow, PatientTrends, PendingSettingsEvent } from "../session/sim-console-adapter";
+import type { PendingSettingsEvent } from "../session/sim-console-adapter";
+import { buildSimConsoleAdapter, ingestBatch, initialLiveState } from "../session/sim-live-state";
+import type { SimLiveState } from "../session/sim-live-state";
 import { sessionStore } from "../session/session-store";
 import type { SessionStore } from "../session/session-store";
 
@@ -141,15 +145,29 @@ export type EndSessionOptions = {
   flushTimeoutMs?: number | undefined
 };
 
-export type SimSessionView = {
-  adapter: VentilatorConsoleAdapter | null
-  applicability: ModeParameterTable | undefined
+/** Low-frequency state of a running session, published at most every UI_REFRESH_INTERVAL_MS (status changes at once). */
+export type SimSessionSnapshot = {
+  /** Console adapter snapshot; null while the session is blocked (EXAM engine mismatch). */
+  console: VentilatorConsoleAdapter | null
   status: SimSessionStatus
   simTimeMs: number
+  /** Latest engine metrics (live objectives); null before the first snapshot. */
+  metrics: EngineMetrics | null
+  applied: VentilatorSettings
+};
+
+export type SimSessionStore = ExternalStore<SimSessionSnapshot>;
+
+export type SimSessionView = {
+  /** Stable for the whole boot: the console reads each slice from it (null without a session or while blocked). */
+  adapter: ConsoleAdapterStore | null
+  /** Low-frequency session state (clock, status, metrics); null without a session. */
+  store: SimSessionStore | null
+  applicability: ModeParameterTable | undefined
+  status: SimSessionStatus
   multiplier: TimeMultiplier
   /** Playback multipliers the session allows (up to the session multiplier). */
   multiplierOptions: readonly TimeMultiplier[]
-  objectives: readonly ObjectiveRow[]
   changeError: string | null
   dismissChangeError: () => void
   syncError: string | null
@@ -244,32 +262,73 @@ function waitForPausedBatch(waiters: Set<(simTimeMs: number) => void>, fallback:
   });
 }
 
-type LiveState = {
-  metrics: EngineMetrics | null
-  alarms: readonly ConsoleAlarm[]
-  trends: PatientTrends
-  simTimeMs: number
-  status: SimSessionStatus
+type SnapshotInput = { applied: VentilatorSettings, live: SimLiveState, status: SimSessionStatus };
+
+/** What the console snapshot needs besides the live values; null while blocked (no console). */
+type ConsoleSource = { frames: ConsoleFrameSource, onConfirm: (confirmation: ConsoleConfirmation) => void, boot: SessionBoot };
+
+/** The next snapshot; unchanged console slices keep their identity, and an identical snapshot is the previous one. */
+function snapshotOf(previous: SimSessionSnapshot | null, { applied, live, status }: SnapshotInput, source: ConsoleSource | null): SimSessionSnapshot {
+  const console = source === null
+    ? null
+    : reuseUnchangedSlices(previous?.console ?? null, buildSimConsoleAdapter({
+      frames: source.frames,
+      applied,
+      live,
+      canControl: status === "running" || status === "paused",
+      onConfirm: source.onConfirm,
+      targets: source.boot.record.engineCase.targets,
+    }));
+
+  if (
+    previous !== null
+    && previous.console === console
+    && previous.status === status
+    && previous.simTimeMs === live.simTimeMs
+    && previous.metrics === live.metrics
+    && previous.applied === applied
+  ) {
+    return previous;
+  }
+
+  return { console, status, simTimeMs: live.simTimeMs, metrics: live.metrics, applied };
+}
+
+type SessionStoreHandle = {
+  store: WritableStore<SimSessionSnapshot>
+  publish: (input: SnapshotInput) => void
 };
 
-type SessionRuntime = {
-  boot: SessionBoot | null
-  applied: VentilatorSettings | null
-  multiplier: TimeMultiplier
-  live: LiveState
-};
+function initialSettingsOfBoot(boot: SessionBoot): VentilatorSettings {
+  return applyChanges(initialSettingsOf(boot.record.engineCase), boot.initialEvents);
+}
 
-function runtimeFor(boot: SessionBoot | null): SessionRuntime {
-  return {
-    boot,
-    applied: boot ? applyChanges(initialSettingsOf(boot.record.engineCase), boot.initialEvents) : null,
-    multiplier: boot?.record.timeMultiplier ?? 1,
-    live: { metrics: null, alarms: [], trends: {}, simTimeMs: boot?.startAtSimTimeMs ?? 0, status: "starting" },
-  };
+/** One store per boot: a resync (new boot) starts from a fresh "starting" snapshot. */
+function createSessionStoreHandle(boot: SessionBoot, source: ConsoleSource | null): SessionStoreHandle {
+  const store = createExternalStore(snapshotOf(null, {
+    applied: initialSettingsOfBoot(boot),
+    live: initialLiveState(boot.startAtSimTimeMs),
+    status: "starting",
+  }, source));
+
+  return { store, publish: (input) => store.set(snapshotOf(store.getSnapshot(), input, source)) };
+}
+
+type StatusSource = { status: SimSessionStatus, applied: VentilatorSettings | null };
+
+const NO_SESSION: ExternalStore<StatusSource> = createExternalStore<StatusSource>({ status: "starting", applied: null });
+
+const selectStatus = (snapshot: StatusSource): SimSessionStatus => snapshot.status;
+const selectApplied = (snapshot: StatusSource): VentilatorSettings | null => snapshot.applied;
+const selectConsole = (snapshot: SimSessionSnapshot): VentilatorConsoleAdapter => snapshot.console as VentilatorConsoleAdapter;
+
+/** A slice of the session store (e.g. the clock for the time controls), re-rendering only when it changes. */
+export function useSimSessionSlice<S>(store: SimSessionStore, selector: (snapshot: SimSessionSnapshot) => S, isEqual?: (a: S, b: S) => boolean): S {
+  return useStoreSelector(store, selector, isEqual);
 }
 
 export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions): SimSessionView {
-  const [runtime, setRuntime] = useState<SessionRuntime>(() => runtimeFor(boot));
+  const [multiplierState, setMultiplierState] = useState<{ boot: SessionBoot | null, multiplier: TimeMultiplier } | null>(null);
   const [changeError, setChangeError] = useState<string | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [diverged, setDiverged] = useState(false);
@@ -278,19 +337,27 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
   const [workerError, setWorkerError] = useState<string | null>(null);
   const [ending, setEnding] = useState(false);
 
-  // A new session resets the runtime during render (no effect round trip).
-  if (runtime.boot !== boot) {
-    setRuntime(runtimeFor(boot));
-  }
-
   const record = boot?.record ?? null;
   const sessionId = record?.id ?? null;
   const hub = useMemo(() => (sessionId ? createConsoleFrameHub(sessionId) : null), [sessionId]);
+  // A new session starts at its own multiplier (the state of another boot is ignored).
+  const multiplier: TimeMultiplier = multiplierState !== null && multiplierState.boot === boot
+    ? multiplierState.multiplier
+    : record?.timeMultiplier ?? 1;
+
+  // The console keeps one stable onConfirm for the whole boot; it calls the latest confirm.
+  const confirmRef = useRef<(confirmation: ConsoleConfirmation) => void>(() => undefined);
+  const onConfirm = useCallback((confirmation: ConsoleConfirmation) => confirmRef.current(confirmation), []);
+  const handle = useMemo(
+    () => (boot ? createSessionStoreHandle(boot, hub && !blocked ? { frames: hub.source, onConfirm, boot } : null) : null),
+    [blocked, boot, hub, onConfirm],
+  );
 
   const depsRef = useRef(deps);
   const clientRef = useRef<SimWorkerClient | null>(null);
   const queueRef = useRef<EventQueue<ClientSessionEvent> | null>(null);
   const appliedRef = useRef<VentilatorSettings | null>(null);
+  const liveRef = useRef<SimLiveState>(initialLiveState(0));
   // Settings the worker acknowledged, and the changes sent but not acknowledged yet (applied = acked + pending).
   const ackedRef = useRef<VentilatorSettings | null>(null);
   const pendingRef = useRef<PendingSettingsEvent[]>([]);
@@ -304,8 +371,17 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     depsRef.current = deps;
   });
 
+  /** Publishes the current applied settings, live values and status (the store keeps unchanged slices). */
+  const publishState = useCallback((target: SessionStoreHandle) => {
+    target.publish({
+      applied: appliedRef.current ?? target.store.getSnapshot().applied,
+      live: liveRef.current,
+      status: statusRef.current,
+    });
+  }, []);
+
   useEffect(() => {
-    if (!boot || blocked || !hub) {
+    if (!boot || blocked || !hub || !handle) {
       return undefined;
     }
 
@@ -342,15 +418,13 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
         setPendingEvents(events.length);
       },
     });
-    let metrics: EngineMetrics | null = null;
-    let alarms: readonly ConsoleAlarm[] = [];
-    let trends: PatientTrends = {};
-    let lastUiMs = Number.NEGATIVE_INFINITY;
-    let trailingRefresh: ReturnType<typeof setTimeout> | null = null;
+    // Metrics and the clock reach React at most every UI_REFRESH_INTERVAL_MS; a status change shows at once.
+    const throttle = createUiThrottle(() => publishState(handle), { intervalMs: UI_REFRESH_INTERVAL_MS, now });
 
     clientRef.current = client;
     queueRef.current = queue;
-    appliedRef.current = applyChanges(initialSettingsOf(session.engineCase), boot.initialEvents);
+    liveRef.current = initialLiveState(boot.startAtSimTimeMs);
+    appliedRef.current = initialSettingsOfBoot(boot);
     ackedRef.current = appliedRef.current;
     pendingRef.current = [];
     latestSimRef.current = boot.startAtSimTimeMs;
@@ -388,7 +462,7 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
         const rolledBack = applyChanges(ackedRef.current, result.pending);
 
         appliedRef.current = rolledBack;
-        setRuntime((previous) => (previous.boot === boot ? { ...previous, applied: rolledBack } : previous));
+        publishState(handle);
       }
 
       if (pendingRef.current.length === 0) {
@@ -409,41 +483,10 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
         releasePausedWaiters(batch.simTimeMs);
       }
 
-      if (batch.metrics) {
-        metrics = batch.metrics;
-        alarms = toConsoleAlarms(batch.alarms, batch.simTimeMs, alarms);
-        trends = appendTrends(trends, toPatientValues(batch.metrics));
-      }
-
-      const wallMs = now();
-
-      // A status change shows at once; metrics and the clock at most every UI_REFRESH_INTERVAL_MS.
-      if (statusChanged || wallMs - lastUiMs >= UI_REFRESH_INTERVAL_MS) {
-        publish(wallMs);
-      } else if (batch.metrics && trailingRefresh === null) {
-        // A snapshot inside the throttle window is shown at its end, even if no other batch arrives.
-        trailingRefresh = setTimeout(() => {
-          trailingRefresh = null;
-
-          if (!disposed) {
-            publish(now());
-          }
-        }, Math.max(0, UI_REFRESH_INTERVAL_MS - (wallMs - lastUiMs)));
-      }
+      liveRef.current = ingestBatch(liveRef.current, batch);
+      // A metrics snapshot inside the throttle window is shown at its end, even if no other batch arrives.
+      throttle.request({ force: statusChanged, trailing: batch.metrics !== null });
     };
-
-    function publish(wallMs: number): void {
-      lastUiMs = wallMs;
-
-      if (trailingRefresh !== null) {
-        clearTimeout(trailingRefresh);
-        trailingRefresh = null;
-      }
-
-      const live: LiveState = { metrics, alarms, trends, simTimeMs: latestSimRef.current, status: statusRef.current };
-
-      setRuntime((previous) => (previous.boot === boot ? { ...previous, live } : previous));
-    }
 
     // Unsent events of a reload go first, so a new event can never carry an earlier time than one in flight.
     boot.pendingEvents.forEach((event) => queue.enqueue(event));
@@ -507,10 +550,7 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     return () => {
       disposed = true;
       window.removeEventListener("pagehide", flushOnPageHide);
-
-      if (trailingRefresh !== null) {
-        clearTimeout(trailingRefresh);
-      }
+      throttle.dispose();
 
       unsubscribe();
       releaseAckWaiters();
@@ -522,7 +562,7 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
       queueRef.current = null;
       releaseFreshToken();
     };
-  }, [boot, blocked, hub]);
+  }, [boot, blocked, hub, handle, publishState]);
 
   const confirm = useCallback((confirmation: ConsoleConfirmation) => {
     const client = clientRef.current;
@@ -557,8 +597,15 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
 
     appliedRef.current = next;
     setChangeError(null);
-    setRuntime((previous) => (previous.boot === boot ? { ...previous, applied: next } : previous));
-  }, [boot]);
+
+    if (handle) {
+      publishState(handle);
+    }
+  }, [handle, publishState]);
+
+  useEffect(() => {
+    confirmRef.current = confirm;
+  });
 
   const isFree = record?.mode === "FREE";
   const sessionMultiplier = record?.timeMultiplier ?? 1;
@@ -583,7 +630,7 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     }
 
     clientRef.current?.send({ type: "setMultiplier", multiplier });
-    setRuntime((previous) => (previous.boot === boot ? { ...previous, multiplier } : previous));
+    setMultiplierState({ boot, multiplier });
   }, [boot, isFree, multiplierOptions]);
 
   /**
@@ -701,47 +748,29 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     queue.dispose();
   }, []);
 
-  const { applied, live, multiplier } = runtime;
-
-  const adapter = useMemo<VentilatorConsoleAdapter | null>(() => {
-    if (!record || !hub || !applied || blocked) {
-      return null;
-    }
-
-    const values = toConsoleSettings(applied);
-    const canControl = live.status === "running" || live.status === "paused";
-
-    return {
-      frames: hub.source,
-      settings: { current: values, applied: values },
-      mode: { current: applied.mode, options: MODE_OPTIONS },
-      metrics: toConsoleMetrics(live.metrics, applied),
-      patient: { values: toPatientValues(live.metrics), trends: live.trends },
-      alarms: live.alarms,
-      permissions: { canControl },
-      limits: buildConsoleLimits(applied),
-      onConfirm: confirm,
-      ranges: rangesFromTargets(record.engineCase.targets),
-      // The engine has no hold maneuvers and alarm thresholds are fixed per case (no runtime limits panel).
-      capabilities: { maneuvers: false },
-    };
-  }, [applied, blocked, confirm, hub, live, record]);
-
-  const objectives = useMemo(
-    () => (record ? buildObjectives(record.engineCase.targets, live.metrics?.targets ?? null) : []),
-    [live.metrics, record],
+  const statusStore: ExternalStore<StatusSource> = handle?.store ?? NO_SESSION;
+  // The hook re-renders only when the status or the applied settings change, never per batch.
+  const status = useStoreSelector(statusStore, selectStatus);
+  const applied = useStoreSelector(statusStore, selectApplied);
+  const applicability = useMemo(() => (applied ? applicabilityFor(applied) : undefined), [applied]);
+  const adapter = useMemo<ConsoleAdapterStore | null>(
+    () => (handle && hub && !blocked ? mapStore(handle.store, selectConsole) : null),
+    [blocked, handle, hub],
   );
 
-  return {
+  const store = handle?.store ?? null;
+  const dismissChangeError = useCallback(() => setChangeError(null), []);
+
+  // Memoised: hosts (e.g. the session host context) only change when one of these values changes.
+  return useMemo<SimSessionView>(() => ({
     adapter,
-    applicability: applied ? applicabilityFor(applied) : undefined,
-    status: live.status,
-    simTimeMs: live.simTimeMs,
+    store,
+    applicability,
+    status,
     multiplier,
     multiplierOptions,
-    objectives,
     changeError,
-    dismissChangeError: () => setChangeError(null),
+    dismissChangeError,
     syncError,
     diverged,
     divergenceCause,
@@ -753,5 +782,8 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     resume,
     setMultiplier,
     end,
-  };
+  }), [
+    adapter, store, applicability, status, multiplier, multiplierOptions, changeError, dismissChangeError, syncError, diverged,
+    divergenceCause, settle, pendingEvents, workerError, ending, pause, resume, setMultiplier, end,
+  ]);
 }

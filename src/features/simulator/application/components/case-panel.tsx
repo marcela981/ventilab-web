@@ -6,7 +6,9 @@
 *   live status, labelled "en tiempo real" and explicitly not a grade. The case request failing only hides the
 *   history; patient data and objectives come from the engine case. Depends on MUI icons, the api-client query hook,
 *   shared rich-content, the console adapter helpers and the simulator CSS.
-* Versión: 1.0
+*   v1.1 (W2, Bloque 1): the case history (rich content, KaTeX) is memoised, so the live objectives refresh does not
+*   re-render it.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,7 +18,7 @@
 
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { useId, useState } from "react";
+import { memo, useId, useState } from "react";
 import { useApiQuery } from "@shared/api-client/use-api-query";
 import { cx } from "@shared/lib/class-names";
 import { RichContent } from "@shared/rich-content";
@@ -61,7 +63,8 @@ export type CasePanelProps = {
   objectives: readonly ObjectiveRow[]
 };
 
-function CaseHistory({ caseId }: { caseId: string }) {
+/** Memoised: it depends only on the case id, never on the live objectives. */
+const CaseHistory = memo(function CaseHistory({ caseId }: { caseId: string }) {
   const { data, error, isLoading } = useApiQuery(CLINICAL_CASE_PATH, { params: { caseId } });
   const clinicalCase = data?.data.clinicalCase;
 
@@ -95,7 +98,7 @@ function CaseHistory({ caseId }: { caseId: string }) {
       </dl>
     </>
   );
-}
+});
 
 export function CasePanel({ caseId, engineCase, objectives }: CasePanelProps) {
   const [open, setOpen] = useState(true);

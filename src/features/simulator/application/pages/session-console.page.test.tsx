@@ -26,7 +26,9 @@
 *   v1.7 (review of eb3c21b): a deadline during the student's failing end returns to the exam with one end and one navigation; a deadline already past at mount posts /end before the worker boots and never starts it; an EXAM rebuilt without its exam context counts down on the attempt server clock.
 *   v1.8 (final review): a cancelled router.push (resolves false) falls back to a full page load.
 *   v1.9 (W1 Bloque 1): "Volver al simulador" opens the Simular tab of the workspace (/simulador?tab=simular).
-* Versión: 1.9
+*   v2.0 (W2 Bloque 1): the hook exposes a store adapter (read through getSnapshot) and a session store; the throttle
+*   test asserts one store publish per window and no hook re-render at all.
+* Versión: 2.0
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -836,7 +838,7 @@ describe("useSimSession frame source", () => {
       return useSimSession({ boot, blocked: false, deps: { createWorker: () => worker, now: () => 0 } });
     });
     const received: ConsoleSampleBatch[] = [];
-    const source = result.current.adapter?.frames;
+    const source = result.current.adapter?.getSnapshot().frames;
 
     source?.subscribe((batch) => received.push(batch));
     act(() => worker.emit({ type: "batch", batch: buildBatch({ status: "running", simTimeMs: 0 }) }));
@@ -849,11 +851,11 @@ describe("useSimSession frame source", () => {
 
     expect(received).toEqual([{ samples: [{ tMs: 20, pressure: 5, flow: 1, volume: 2 }] }]);
     expect(renders).toBe(before);
-    expect(result.current.adapter?.frames).toBe(source);
+    expect(result.current.adapter?.getSnapshot().frames).toBe(source);
     expect(source).toMatchObject({ sourceId: "s1", sampleRateHz: 50 });
   });
 
-  it("throttles metric re-renders to the UI refresh interval and still shows the last snapshot", async() => {
+  it("throttles the store snapshots to the UI refresh interval without re-rendering the hook, and still shows the last one", async() => {
     const worker = createFakeWorker();
     const boot = buildBoot();
     let wallMs = 0;
@@ -869,16 +871,55 @@ describe("useSimSession frame source", () => {
     act(() => worker.emit({ type: "batch", batch: buildBatch({ status: "running", simTimeMs: 0 }) }));
 
     const before = renders;
+    const published = vi.fn();
 
+    result.current.store?.subscribe(published);
     wallMs = 100;
     act(() => worker.emit({ type: "batch", batch: buildBatch({ status: "running", simTimeMs: 1000, metrics }) }));
     wallMs = 200;
     act(() => worker.emit({ type: "batch", batch: buildBatch({ status: "running", simTimeMs: 2000, metrics }) }));
     expect(renders).toBe(before);
+    expect(published).not.toHaveBeenCalled();
 
-    // The trailing refresh at the end of the window shows the latest snapshot once.
-    await waitFor(() => expect(result.current.simTimeMs).toBe(2000));
-    expect(renders).toBe(before + 1);
+    // The trailing refresh at the end of the window publishes the latest snapshot once; the hook never re-renders.
+    await waitFor(() => expect(result.current.store?.getSnapshot().simTimeMs).toBe(2000));
+    expect(published).toHaveBeenCalledTimes(1);
+    expect(result.current.store?.getSnapshot().metrics).toBe(metrics);
+    expect(renders).toBe(before);
+  });
+
+  it("keeps one adapter store per boot: a clock-only tick keeps the console snapshot, a metrics tick renews only its slices", () => {
+    const worker = createFakeWorker();
+    const boot = buildBoot();
+    let wallMs = 0;
+    const { result } = renderHook(() => useSimSession({ boot, blocked: false, deps: { createWorker: () => worker, now: () => wallMs } }));
+    const adapter = result.current.adapter;
+    const { final: metrics } = replay(buildEngineCase(), 42, [], 2000);
+
+    act(() => worker.emit({ type: "batch", batch: buildBatch({ status: "running", simTimeMs: 0 }) }));
+
+    const first = adapter?.getSnapshot();
+
+    wallMs = 300;
+    act(() => worker.emit({ type: "batch", batch: buildBatch({ status: "running", simTimeMs: 300 }) }));
+    expect(result.current.adapter).toBe(adapter);
+    expect(result.current.store?.getSnapshot().simTimeMs).toBe(300);
+    expect(adapter?.getSnapshot()).toBe(first);
+
+    wallMs = 600;
+    act(() => worker.emit({ type: "batch", batch: buildBatch({ status: "running", simTimeMs: 600, metrics }) }));
+
+    const second = adapter?.getSnapshot();
+
+    expect(result.current.adapter).toBe(adapter);
+    expect(second).not.toBe(first);
+    expect(second?.metrics).not.toBe(first?.metrics);
+    expect(second?.patient).not.toBe(first?.patient);
+    expect(second?.settings).toBe(first?.settings);
+    expect(second?.limits).toBe(first?.limits);
+    expect(second?.permissions).toBe(first?.permissions);
+    expect(second?.frames).toBe(first?.frames);
+    expect(second?.onConfirm).toBe(first?.onConfirm);
   });
 
   it("settle() stops the queue and waits for the in-flight send, so a resync reads a settled outbox", async() => {
@@ -896,7 +937,7 @@ describe("useSimSession frame source", () => {
       worker.emit({ type: "ready", engineVersion: "1.0.0" });
       worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 1000, status: "running" }) });
     });
-    act(() => result.current.adapter?.onConfirm({ mode: null, changes: [{ parameter: "peep", value: 6 }] }));
+    act(() => result.current.adapter?.getSnapshot().onConfirm({ mode: null, changes: [{ parameter: "peep", value: 6 }] }));
     act(() => worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 1033, confirmedEvents: [{ id: "evt-1", effectiveSimTimeMs: 1000 }] }) }));
     expect(storage.data.has("ventylab.simulator.outbox.s1")).toBe(true);
 
@@ -929,7 +970,7 @@ describe("useSimSession frame source", () => {
       worker.emit({ type: "ready", engineVersion: "1.0.0" });
       worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 1000, status: "running" }) });
     });
-    act(() => result.current.adapter?.onConfirm({ mode: null, changes: [{ parameter: "peep", value: 6 }] }));
+    act(() => result.current.adapter?.getSnapshot().onConfirm({ mode: null, changes: [{ parameter: "peep", value: 6 }] }));
     act(() => worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 1033, confirmedEvents: [{ id: "evt-1", effectiveSimTimeMs: 1000 }] }) }));
 
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
