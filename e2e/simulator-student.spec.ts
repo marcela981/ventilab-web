@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: E2E student flow of the unified simulator
-* Descripción: The student signs in (saved session), opens /simulador, fills Simular Paciente with "Aleatorio" plus a unique name and sends it to Monitoreo; the curves canvas keeps changing its pixels and the chip says "Simulando"; switching to Conexión and back keeps the same ?session and the simulated clock keeps advancing (the session lives above the tabs); "Finalizar sesión" opens the result dialog; Mis sesiones lists the session and opens its replay inside the panel in read-only mode. Depends on @playwright/test and the e2e support helpers.
-* Versión: 0.1
+* Descripción: The student signs in (saved session), opens /simulador, fills Simular Paciente with "Aleatorio" plus a unique name and sends it to Monitoreo; the curves canvas keeps changing its pixels and the chip says "Simulando"; switching to Conexión and back keeps the same ?session and the simulated clock keeps advancing (the session lives above the tabs); "Finalizar sesión" opens the result dialog; Mis sesiones lists the session and opens its replay inside the panel in read-only mode. v0.2 (W6-fix): at 1280×720 with the long case "Neumonía grave con hipoxemia" the curves canvas is at least 300 px wide, the case panel stacks under the console without covering it, and hiding the case keeps the console visible at its full width. Depends on @playwright/test and the e2e support helpers.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,7 +10,17 @@
 */
 
 import { expect, test } from "@playwright/test";
-import { curvesSignature, finishWorkspaceSession, simulatedSeconds, startPatientSession, SIMULATOR_VIEWPORT, workspaceTab } from "./support/simulator";
+import {
+  COMPACT_VIEWPORT,
+  CURVES_LABEL,
+  curvesSignature,
+  finishWorkspaceSession,
+  LONG_CASE_TITLE,
+  simulatedSeconds,
+  startPatientSession,
+  SIMULATOR_VIEWPORT,
+  workspaceTab,
+} from "./support/simulator";
 
 test.use({ viewport: SIMULATOR_VIEWPORT });
 
@@ -74,4 +84,31 @@ test("student simulates a patient, keeps the session across tabs, finishes it an
   await expect(replay.getByRole("region", { name: "Consola del ventilador" })).toBeVisible();
   await expect(replay.getByRole("spinbutton", { name: "Volumen corriente" })).toBeDisabled();
   await expect(replay.getByRole("button", { name: "Confirmar" })).toBeDisabled();
+});
+
+test("Monitoreo keeps usable curves at 1280×720 with a long case and the case panel never covers the console", async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.setViewportSize(COMPACT_VIEWPORT);
+  await startPatientSession(page, { caseTitle: LONG_CASE_TITLE });
+
+  const curves = page.getByRole("img", { name: CURVES_LABEL });
+  const consoleZone = page.getByRole("region", { name: "Consola del ventilador" });
+  const casePanel = page.getByRole("complementary", { name: "Caso clínico" });
+
+  await expect(page.getByRole("heading", { name: "Historia clínica" })).toBeVisible({ timeout: 30_000 });
+  expect(await curves.evaluate((canvas: HTMLCanvasElement) => canvas.clientWidth)).toBeGreaterThanOrEqual(300);
+
+  // The case panel stacks under the console at this width: no horizontal overlap with it.
+  const consoleBox = await consoleZone.boundingBox();
+  const panelBox = await casePanel.boundingBox();
+
+  expect(consoleBox && panelBox && panelBox.y >= consoleBox.y + consoleBox.height).toBe(true);
+
+  // Hiding the case leaves only its toggle; the console keeps the full width.
+  await casePanel.getByRole("button", { name: "Ocultar caso clínico" }).click();
+  await expect(page.getByRole("heading", { name: "Historia clínica" })).toBeHidden();
+  await expect(consoleZone).toBeVisible();
+  expect((await consoleZone.boundingBox())?.width).toBe(consoleBox?.width);
+
+  await finishWorkspaceSession(page);
 });

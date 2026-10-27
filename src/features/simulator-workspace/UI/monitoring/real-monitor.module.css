@@ -3,8 +3,9 @@
 * Descripción: CSS Module of the real view of the Monitoreo tab of /simulador (W10, Bloque 1): the bar with the title,
 *   the device tag and the latency traffic light (text plus a colored dot, never color alone: success, medium alarm
 *   and high alarm tokens), the "Opera: <nombre>" line, and the "Equipo sin datos" and reconnection notices. Console
-*   and design-system tokens only.
-* Versión: 0.1
+*   and design-system tokens only. v0.2 (W6-fix, Bloque 1): the monitor declares the `vl-console` inline-size
+*   container, so the shared console lays out by the width it really gets (curves never collapse at 1280 px).
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,6 +18,7 @@
   flex-direction: column;
   gap: var(--vl-space-3);
   min-width: 0;
+  container: vl-console / inline-size;
 }
 
 .bar {

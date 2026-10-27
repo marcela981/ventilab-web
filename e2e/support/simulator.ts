@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: E2E helpers of the unified simulator
-* Descripción: Steps shared by the functional specs and the perf flow on /simulador: start a FREE session from the Simular Paciente tab (a published case through "Cargar caso" or a random patient through "Aleatorio", optional patient name, the required vitals when the case has none) and wait for Monitoreo with ?session=; read the simulated clock of "Control del tiempo"; take a signature of the curves canvas to prove it keeps painting; finish the session through "Finalizar sesión" up to the result dialog. Depends on @playwright/test.
-* Versión: 0.1
+* Descripción: Steps shared by the functional specs and the perf flow on /simulador: start a FREE session from the Simular Paciente tab (a published case through "Cargar caso" or a random patient through "Aleatorio", optional patient name, the required vitals when the case has none) and wait for Monitoreo with ?session=; read the simulated clock of "Control del tiempo"; take a signature of the curves canvas to prove it keeps painting; finish the session through "Finalizar sesión" up to the result dialog. v0.2 (W6-fix): the compact 1280×720 viewport and the long-case title used by the responsive Monitoreo check. Depends on @playwright/test.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,11 +13,14 @@ import { expect, type Locator, type Page } from "@playwright/test";
 
 export const CURVES_LABEL = "Curvas de presión, flujo y volumen";
 
-/**
- * Below ~1440 px wide the console grid collapses the curves column to ~1 px (layout issue found in W12, not fixed
- * here), so the simulator specs use the same 1920×1080 viewport as the perf measurement.
- */
+/** Default viewport of the simulator specs: the same 1920×1080 as the perf measurement. */
 export const SIMULATOR_VIEWPORT = { width: 1920, height: 1080 } as const;
+
+/** Smallest supported desktop: the Monitoreo layout must keep usable curves here (W6-fix). */
+export const COMPACT_VIEWPORT = { width: 1280, height: 720 } as const;
+
+/** Published July case with the longest clinical history (the one that used to cover the console). */
+export const LONG_CASE_TITLE = "Neumonía grave con hipoxemia";
 
 export type StartPatientOptions = {
   /** Published case loaded through "Cargar caso"; without it the form uses "Aleatorio". */

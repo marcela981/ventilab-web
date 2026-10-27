@@ -1,7 +1,7 @@
 <!--
 * Funcionalidad: Capturas del simulador, julio frente al nuevo (Bloque 1)
-* Descripción: Índice de las capturas por pestaña del simulador unificado (/simulador) tomadas en W12 y comparación con la versión de julio (worktree _legacy-web-jul, commit 62c9d68). Explica por qué la app de julio no se pudo capturar y remite a las secciones de FLUJOS_JULIO.md que describen esas pantallas. Incluye dos capturas de un defecto de diseño encontrado durante la toma.
-* Versión: 0.1
+* Descripción: Índice de las capturas por pestaña del simulador unificado (/simulador) tomadas en W12 y comparación con la versión de julio (worktree _legacy-web-jul, commit 62c9d68). Explica por qué la app de julio no se pudo capturar y remite a las secciones de FLUJOS_JULIO.md que describen esas pantallas. v0.2 (W6-fix): las dos capturas del defecto de Monitoreo se reemplazan por las del layout corregido a 1280, 1440 y 1920 px (digital con el caso largo, caso oculto y vista real).
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -81,15 +81,24 @@ Diferencias visibles entre ambas versiones, según esas secciones:
 - El resultado de la sesión se muestra en un diálogo.
 - La reserva inmediata usa "Reservar ahora", con duraciones de 15, 30, 45 y 60 min.
 
-## Defecto de diseño encontrado durante la toma (no corregido)
+## Monitoreo responsive (W6-fix)
 
-| Archivo | Qué muestra |
-|---|---|
-| `defecto-monitoreo-caso-largo.png` | Monitoreo digital con el caso "Neumonía grave con hipoxemia", a 1920×1080. El panel "Caso clínico" se monta sobre la consola, y la columna de curvas y la de controles quedan recortadas. |
-| `defecto-monitoreo-ocultar-caso.png` | La misma sesión después de pulsar "Ocultar caso clínico". El panel ocupa todo el ancho y la consola desaparece. |
+Durante la toma de W12 apareció un defecto de diseño en Monitoreo: a 1280×720 (y a 1440×900) la columna de curvas medía
+~1 px; a 1920×1080, con el caso largo "Neumonía grave con hipoxemia", el panel "Caso clínico" se montaba sobre la consola;
+"Ocultar caso clínico" dejaba el texto del caso a todo el ancho y la consola desaparecía; y el texto de "Historia clínica"
+tenía muy poco contraste sobre el fondo oscuro. Se corrigió solo con CSS (W6-fix) y las capturas del defecto se
+reemplazaron por estas, tomadas con el build de producción y el mismo caso largo:
 
-Con el caso "Pulmón normal" (texto corto), la consola se ve bien (`nuevo-monitoreo-digital.png`).
+| Archivo | Tamaño | Qué muestra |
+|---|---|---|
+| `monitoreo-digital-caso-largo-1280.png` | 1280×720 | Las curvas ocupan todo el ancho de la consola (canvas de 882 px); métricas y controles quedan debajo, y el panel del caso se apila bajo la consola. |
+| `monitoreo-digital-caso-largo-1440.png` | 1440×900 | Consola en tres columnas compactas (curvas de 552 px, 53 % de la consola); el panel del caso se apila debajo. |
+| `monitoreo-digital-caso-largo-1920.png` | 1920×1080 | El panel del caso es una columna lateral con scroll propio y no tapa la consola (curvas de 598 px, 53 %). "Historia clínica" con el texto claro de la consola (contraste AA). |
+| `monitoreo-digital-caso-oculto-1920.png` | 1920×1080 | Después de "Ocultar caso clínico": queda solo la barra "Mostrar caso clínico" arriba y la consola toma todo el ancho (curvas de 844 px). |
+| `monitoreo-real-1280.png`, `monitoreo-real-1440.png`, `monitoreo-real-1920.png` | 1280, 1440 y 1920 | Vista real (conectado, "Equipo sin datos"): el mismo layout por ancho de la consola (curvas de 882, 552 y 844 px). |
 
-A 1280×720 la columna de curvas mide ~1 px con cualquier caso. Los E2E usan 1920×1080 por esa razón.
-
-El texto de "Historia clínica" se ve con muy poco contraste sobre el fondo oscuro.
+Cómo se resolvió: la consola elige su distribución según el ancho que realmente recibe (contenedor CSS `vl-console`
+declarado por el monitor de sesión y por la vista real), no según la ventana. El panel del caso es lateral solo desde
+1600 px y se apila debajo en pantallas menores. El E2E `simulator-student.spec.ts` comprueba a 1280×720, con el caso
+largo, que el canvas de curvas mide al menos 300 px, que el panel no se monta sobre la consola y que al ocultarlo la
+consola sigue visible con todo su ancho.
