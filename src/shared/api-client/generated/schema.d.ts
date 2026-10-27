@@ -4968,7 +4968,7 @@ export interface paths {
         put?: never;
         /**
          * Create reservation
-         * @description Schedules a slot for the caller, a user (admins) or a group (its student leader, a supervising teacher or an admin). An overlap returns 409; for teachers and admins the error data lists the conflicting reservations and whether confirmPreempt would preempt them
+         * @description Schedules a slot for the caller, a user (admins) or a group (its student leader, a supervising teacher or an admin). Without startsAt it is an immediate reservation: it starts now (truncated to the minute) and lasts durationMinutes, with no slot alignment or advance checks. An overlap returns 409; for teachers and admins the error data lists the conflicting reservations and whether confirmPreempt would preempt them (also the reservation active right now)
          *
          *     **Required access:** bearer token holding `reservations:create`; minimum role STUDENT.
          */
@@ -4988,7 +4988,7 @@ export interface paths {
         };
         /**
          * Current reservation
-         * @description Reservation active right now in the caller's projection and whether the caller may control the ventilator
+         * @description Reservation active right now in the caller's projection, whether the caller may control the ventilator and how the caller relates to it
          *
          *     **Required access:** bearer token holding `reservations:read`; minimum role STUDENT.
          */
@@ -9267,6 +9267,8 @@ export interface components {
         ClinicalCaseDetailDTO: {
             /** @description Clinical case without the expert configuration */
             clinicalCase: components["schemas"]["ClinicalCaseDTO"];
+            /** @description Patient data shown before choosing the case (readable without clinical-cases:manage) */
+            patient: components["schemas"]["ClinicalCasePatientDTO"];
             /** @description Recent attempts of the authenticated user */
             userAttempts: components["schemas"]["CaseRecentAttemptsDTO"];
         };
@@ -9410,6 +9412,33 @@ export interface components {
              * @example 200
              */
             vco2MlPerMin: number;
+        };
+        ClinicalCasePatientDTO: {
+            /**
+             * @description Known allergies
+             * @example []
+             */
+            allergies: string[];
+            /**
+             * @description Patient height (cm), null when the case has no simulation profile
+             * @example 175
+             */
+            heightCm: number | null;
+            /**
+             * @description Relevant medical history
+             * @example [
+             *       "Hipertensión arterial"
+             *     ]
+             */
+            history: string[];
+            /** @description Bedside vital signs at the start (shown only, not simulated), null when the case has none */
+            initialVitals: components["schemas"]["ClinicalCaseVitalsDTO"] | null;
+            /**
+             * @description Patient sex, null when the case has no simulation profile
+             * @example MALE
+             * @enum {string|null}
+             */
+            sex: "MALE" | "FEMALE" | null;
         };
         ClinicalCaseRubricDTO: {
             /**
@@ -9629,6 +9658,49 @@ export interface components {
              * @enum {string}
              */
             triggerType?: "FLOW" | "PRESSURE";
+        };
+        ClinicalCaseVitalsDTO: {
+            /**
+             * @description Breathing pattern
+             * @example tachypneic
+             * @enum {string}
+             */
+            breathingPattern?: "normal" | "tachypneic" | "bradypneic" | "irregular" | "paradoxical";
+            /**
+             * @description Diastolic blood pressure (mmHg)
+             * @example 90
+             */
+            diastolicMmHg?: number;
+            /**
+             * @description Glasgow coma scale (3-15)
+             * @example 15
+             */
+            glasgow?: number;
+            /**
+             * @description Heart rate (beats/min)
+             * @example 105
+             */
+            heartRateBpm?: number;
+            /**
+             * @description Respiratory rate (breaths/min)
+             * @example 24
+             */
+            respiratoryRateBpm?: number;
+            /**
+             * @description Pulse oximetry saturation (%)
+             * @example 84
+             */
+            spo2Percent?: number;
+            /**
+             * @description Systolic blood pressure (mmHg)
+             * @example 150
+             */
+            systolicMmHg?: number;
+            /**
+             * @description Body temperature (°C)
+             * @example 39.1
+             */
+            temperatureC?: number;
         };
         CommandResultDTO: {
             /**
@@ -10465,10 +10537,16 @@ export interface components {
              */
             confirmPreempt?: boolean;
             /**
-             * @description End of the reservation, on a slot boundary (ISO 8601)
+             * @description Length in minutes of an immediate reservation; required when startsAt is omitted and ignored otherwise
+             * @example 30
+             * @enum {number}
+             */
+            durationMinutes?: 15 | 30 | 45 | 60;
+            /**
+             * @description End of a scheduled reservation, on a slot boundary (ISO 8601); required with startsAt
              * @example 2026-10-12T15:00:00.000Z
              */
-            endsAt: string;
+            endsAt?: string;
             /**
              * @description Holder group when holderType is GROUP
              * @example cm5group01
@@ -10486,10 +10564,10 @@ export interface components {
              */
             purpose?: string;
             /**
-             * @description Start of the reservation, on a slot boundary (ISO 8601)
+             * @description Start of a scheduled reservation, on a slot boundary (ISO 8601). Omit it for an immediate reservation that starts now (truncated to the minute)
              * @example 2026-10-12T14:00:00.000Z
              */
-            startsAt: string;
+            startsAt?: string;
             /**
              * @description Holder user when holderType is USER (the caller when omitted)
              * @example 01932e9f-1234-7abc-9def-1a2b3c4d5e6f
@@ -10585,10 +10663,16 @@ export interface components {
         };
         CurrentReservationDTO: {
             /**
-             * @description Whether the caller may control the ventilator now (holder, member of the holder group, teacher or admin)
+             * @description Whether the caller may control the ventilator now (holder user, leader of the holder group, teacher or admin; the other group members observe)
              * @example true
              */
             canControl: boolean;
+            /**
+             * @description How the caller relates to the active reservation: its holder user, the leader or a member of its holder group, its creator, or none (also when the ventilator is free)
+             * @example group_leader
+             * @enum {string}
+             */
+            relation: "holder" | "group_leader" | "group_member" | "creator" | "none";
             /** @description Active reservation in the caller's projection, or null when the ventilator is free */
             reservation: components["schemas"]["ReservationDetailDTO"] | null;
         };
@@ -17923,6 +18007,11 @@ export interface components {
         };
         ReservationPartyDTO: {
             /**
+             * @description Student code; only teachers and admins see it (null otherwise or when the user has none)
+             * @example 2024123456
+             */
+            code: string | null;
+            /**
              * @description User identifier
              * @example 01932e9f-1234-7abc-9def-1a2b3c4d5e6f
              */
@@ -18612,6 +18701,110 @@ export interface components {
              */
             userId?: string | null;
         };
+        SimulatedPatientDTO: {
+            /**
+             * @description Age (years); above 60 lowers the compliance by 0.5 mL/cmH2O per year
+             * @example 60
+             */
+            ageYears: number;
+            /**
+             * @description Allergies; shown only
+             * @example [
+             *       "Penicilina"
+             *     ]
+             */
+            allergies?: string[];
+            /**
+             * @description Main condition: sets compliance and resistance and, without caseId, the base case
+             * @example PNEUMONIA
+             * @enum {string}
+             */
+            condition: "HEALTHY" | "ARDS_MILD" | "ARDS_MODERATE" | "ARDS_SEVERE" | "COPD_MILD" | "COPD_MODERATE" | "COPD_SEVERE" | "ASTHMA_MILD" | "ASTHMA_MODERATE" | "ASTHMA_SEVERE" | "PNEUMONIA" | "PULMONARY_EDEMA" | "PNEUMOTHORAX" | "OBESITY_HYPOVENTILATION" | "NEUROMUSCULAR" | "POST_SURGICAL";
+            /**
+             * @description Diagnosis; shown only
+             * @example Neumonía grave con hipoxemia
+             */
+            diagnosis?: string;
+            /**
+             * @description Difficulty; a label only, it does not change the simulation
+             * @example INTERMEDIATE
+             * @enum {string}
+             */
+            difficulty: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
+            /**
+             * @description Name shown in the session (optional)
+             * @example María José
+             */
+            displayName?: string;
+            /**
+             * @description Height (cm), range of the engine
+             * @example 175
+             */
+            heightCm: number;
+            /**
+             * @description Relevant medical history; shown only
+             * @example [
+             *       "Hipertensión arterial"
+             *     ]
+             */
+            history?: string[];
+            /**
+             * @description Sex
+             * @example MALE
+             * @enum {string}
+             */
+            sex: "MALE" | "FEMALE";
+            /** @description Vital signs at the start */
+            vitals: components["schemas"]["SimulatedPatientVitalsDTO"];
+            /**
+             * @description Actual weight (kg); a BMI above 30 lowers the compliance by 1 % per point
+             * @example 70
+             */
+            weightKg: number;
+        };
+        SimulatedPatientVitalsDTO: {
+            /**
+             * @description Breathing pattern; shown only
+             * @example tachypneic
+             * @enum {string}
+             */
+            breathingPattern?: "normal" | "tachypneic" | "bradypneic" | "irregular" | "paradoxical";
+            /**
+             * @description Diastolic pressure (mmHg)
+             * @example 85
+             */
+            diastolicMmHg?: number;
+            /**
+             * @description Glasgow coma scale; shown only
+             * @example 14
+             */
+            glasgow?: number;
+            /**
+             * @description Heart rate (beats/min); shown only
+             * @example 105
+             */
+            heartRateBpm?: number;
+            /**
+             * @description Respiratory rate (breaths/min); initial ventilator rate, limited to 5-40
+             * @example 24
+             */
+            respiratoryRateBpm: number;
+            /**
+             * @description SpO2 (%); sets the initial PaO2 through the inverse Severinghaus equation
+             * @example 88
+             */
+            spo2Percent: number;
+            /**
+             * @description Systolic pressure (mmHg); with the diastolic sets the baseline MAP (50-120)
+             * @example 140
+             */
+            systolicMmHg?: number;
+            /**
+             * @description Body temperature (°C); shown only
+             * @example 38.2
+             */
+            temperatureC?: number;
+        };
         SimulationAssistDTO: {
             /**
              * @description Answer language; defaults to the request language
@@ -18740,6 +18933,8 @@ export interface components {
              * @example FREE
              */
             mode: string;
+            /** @description Own patient form of a FREE session started with one (shown after a reload, in the list and in the replay); null otherwise */
+            patient: components["schemas"]["SimulatedPatientDTO"] | null;
             /**
              * @description Exam question ID
              * @example null
@@ -18801,6 +18996,8 @@ export interface components {
              * @example 0192f1c2-7c1e-7a8b-9c0d-1e2f3a4b5c6d
              */
             id: string;
+            /** @description Own patient form of a FREE session started with one (shown after a reload, in the list and in the replay); null otherwise */
+            patient: components["schemas"]["SimulatedPatientDTO"] | null;
             /**
              * @description Engine seed
              * @example 123456789
@@ -18840,6 +19037,8 @@ export interface components {
              *     }
              */
             metrics: Record<string, never>;
+            /** @description Own patient form of a FREE session started with one (shown after a reload, in the list and in the replay); null otherwise */
+            patient: components["schemas"]["SimulatedPatientDTO"] | null;
             /**
              * @description Current ventilator settings
              * @example {
@@ -19064,6 +19263,8 @@ export interface components {
              * @enum {string}
              */
             mode: "FREE" | "EXAM";
+            /** @description Own patient (FREE mode only; ignored in EXAM mode). Without caseId the server picks the published base case of its condition; its overrides are stored in the session */
+            patient?: components["schemas"]["SimulatedPatientDTO"];
             /**
              * @description Exam question ID of type SIMULATION (EXAM mode)
              * @example cm1question0001
@@ -21795,6 +21996,16 @@ export interface components {
              * @example true
              */
             occupied: boolean;
+            /**
+             * @description i18n key of the generic label (a teacher, a student) shown instead of a hidden operatorName, null otherwise; omitted for students who are not holders of the active reservation
+             * @example ventilator-commands.operator_labels.teacher
+             */
+            operatorLabelKey?: string | null;
+            /**
+             * @description Operator name; null when nobody controls the ventilator or when the caller is a student who does not share the reservation with the operator (operatorLabelKey then names a generic label); omitted for students who are not holders of the active reservation
+             * @example Ana Gómez
+             */
+            operatorName?: string | null;
             /**
              * @description Current operator, null when nobody controls the ventilator; omitted for students who are not holders of the active reservation
              * @example 01932e9f-1234-7abc-9def-1a2b3c4d5e71
@@ -41987,7 +42198,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["APIResponseEnvelope"] & {
-                        data: null;
+                        data: components["schemas"]["ReservationDetailDTO"];
                     };
                 };
             };
@@ -44037,7 +44248,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Validation error or missing caseId in FREE mode */
+            /** @description Validation error or neither caseId nor patient in FREE mode */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -44064,7 +44275,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Clinical case not found */
+            /** @description Clinical case (or the base case of the patient's condition) not found */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -44075,6 +44286,15 @@ export interface operations {
             };
             /** @description Case not simulation-ready or invalid rubric */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The own patient leaves a value of the base case outside its physiological range */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

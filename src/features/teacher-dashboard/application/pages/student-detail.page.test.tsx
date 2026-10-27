@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student detail page tests
-* Descripción: /teacher/students/[userId] with msw: header from `GET /api/users/students/{id}`, progress tree from `GET /api/progress/users/{userId}/summary` in curriculum order with the curriculum titles, published grades from `GET /api/evaluation-grading/students/{userId}/grades` linked to their attempt, the student's pending attempts from the queue filtered by `studentId` and paged with the API pagination, simulation sessions from `GET /api/simulation/sessions/history?userId` with the case title and replay links, the truncated flag and "Cargar anteriores" requesting the previous timeline window; the grades do not depend on ?groupId; a 403 of the student shows the no-access state; neither notes nor AI conversations are requested (unhandled requests fail). v1.1 (O3 review): the possibly-incomplete note of the pending attempts. v1.2 (closure B2): grades, pending attempts and sessions come from the staff endpoints (no group dashboard row, no 50-row group queue scan and its warning, no sessions from the timeline). Depends on vitest, msw, Testing Library and the teacher dashboard test helpers.
-* Versión: 1.2
+* Descripción: /teacher/students/[userId] with msw: header from `GET /api/users/students/{id}`, progress tree from `GET /api/progress/users/{userId}/summary` in curriculum order with the curriculum titles, published grades from `GET /api/evaluation-grading/students/{userId}/grades` linked to their attempt, the student's pending attempts from the queue filtered by `studentId` and paged with the API pagination, simulation sessions from `GET /api/simulation/sessions/history?userId` with the case title and replay links, the truncated flag and "Cargar anteriores" requesting the previous timeline window; the grades do not depend on ?groupId; a 403 of the student shows the no-access state; neither notes nor AI conversations are requested (unhandled requests fail). v1.1 (O3 review): the possibly-incomplete note of the pending attempts. v1.2 (closure B2): grades, pending attempts and sessions come from the staff endpoints (no group dashboard row, no 50-row group queue scan and its warning, no sessions from the timeline). Depends on vitest, msw, Testing Library and the teacher dashboard test helpers. v1.3 (S8): fixtures carry the regenerated block 1 contract fields (session patient null).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -80,6 +80,7 @@ function sessionDto(id: string, caseTitle: string | null, overrides: Partial<Sim
     lastEventAt: "2026-10-14T15:30:00.000Z",
     lastSimTimeMs: 0,
     mode: "FREE",
+    patient: null,
     questionId: null,
     score: 88,
     startedAt: "2026-10-14T15:00:00.000Z",
