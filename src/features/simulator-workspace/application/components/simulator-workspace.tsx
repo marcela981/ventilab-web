@@ -51,7 +51,7 @@ const SimularPanel = lazy(() =>
 );
 
 const ConexionPanel = lazy(() =>
-  retryImport(() => import("./temporary-panels")).then((module) => ({ default: module.TemporaryConexionPanel })),
+  retryImport(() => import("./connection/connection-panel")).then((module) => ({ default: module.ConnectionPanel })),
 );
 
 const SesionesPanel = lazy(() =>

@@ -12,7 +12,8 @@
 *   v1.3 (A6, AUDIT_SYNC F4): the keepalive DELETE takes its Bearer token through `sendWithFreshToken` (shared
 *   api-client keepalive auth): a token about to expire is refreshed first through the shared single-flight refresh.
 *   Depends on the api-client request helpers and keepalive auth, the backend origin and the lab DTOs.
-* Versión: 1.3
+*   v1.4 (W7, Bloque 1): the state keeps the operator name and its generic label key (operatorName / operatorLabelKey, projected by role) as sent: omitted stays undefined, null stays null.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -34,6 +35,8 @@ export function toOperatorControlState(dto: VentilatorControlStateDTO): Operator
   return {
     reservationId: dto.reservationId ?? null,
     operatorUserId: dto.operatorUserId,
+    operatorName: dto.operatorName,
+    operatorLabelKey: dto.operatorLabelKey,
     isOperator: dto.isOperator,
     canTake: dto.canTake,
     canTakeover: dto.canTakeover,

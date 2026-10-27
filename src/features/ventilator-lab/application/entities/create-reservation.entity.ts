@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: Create reservation entities
 * Descripción: Client model of booking the ventilator: the holder options offered by role (the caller; the student groups the caller leads, supervises or, for an admin, any active group; any user for an admin), the request built by the dialog (holder, start, duration in minutes, optional purpose, confirmPreempt reserved for the staff preemption flow), the overlap conflict the backend returns with a 409 (whether confirmPreempt would preempt and the overlapping reservations as the backend describes them) and the backend error codes of the create endpoint. Names come only from the backend. v1.1 (T3): requiresAdminToPreempt, the teacher-versus-teacher case (a non-preemptable overlap with a teacher's or admin's reservation, as the backend canPreempt decides). No dependencies.
-* Versión: 1.1
+*   v1.2 (W7, Bloque 1): a request without start (startsAt null) is an immediate reservation from now; the immediate durations 15/30/45/60 min (default 30).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -36,7 +37,8 @@ export const SELF_HOLDER: HolderOption = {
 
 export type CreateReservationRequest = {
   holder: HolderOption
-  startsAt: Date
+  /** Start on a slot boundary; null books an immediate reservation from now ("Reservar ahora"). */
+  startsAt: Date | null
   durationMinutes: number
   /** Trimmed by the mapper; empty is not sent. */
   purpose: string
@@ -78,8 +80,22 @@ export const RESERVATION_ERROR_CODES = {
 
 export const MAX_PURPOSE_LENGTH = 500;
 
-export function reservationEnd(request: Pick<CreateReservationRequest, "startsAt" | "durationMinutes">): Date {
+export function reservationEnd(request: { startsAt: Date, durationMinutes: number }): Date {
   return new Date(request.startsAt.getTime() + request.durationMinutes * 60_000);
+}
+
+/** Durations (minutes) of an immediate reservation (backend CreateReservationDTO.durationMinutes) and the default. */
+export const IMMEDIATE_DURATIONS = [15, 30, 45, 60] as const;
+
+export type ImmediateDuration = (typeof IMMEDIATE_DURATIONS)[number];
+
+export const DEFAULT_IMMEDIATE_DURATION: ImmediateDuration = 30;
+
+/** How the booking dialog places the reservation: a calendar slot, or now (immediate). */
+export type ReservationTiming = "slot" | "now";
+
+export function isImmediateDuration(minutes: number): minutes is ImmediateDuration {
+  return IMMEDIATE_DURATIONS.some((duration) => duration === minutes);
 }
 
 /** Holder roles whose reservations only an admin may preempt (ventylab-server reservation-access-policy canPreempt). */

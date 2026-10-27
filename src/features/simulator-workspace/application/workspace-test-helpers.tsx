@@ -4,7 +4,8 @@
 *   updates the query and re-renders the readers, like the Pages Router), an in-memory session store with a fresh FREE
 *   record, a fake simulation worker client and the session dependencies with a counting worker factory. Depends on
 *   vitest, React, the simulator session types and the sim-engine test case.
-* Versión: 0.1
+*   v0.2 (W7, Bloque 1): labConnectionControllerMock, an idle lab connection for the workspace tests without session or socket providers.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,6 +20,7 @@ import type { SimSessionHostDeps } from "@features/simulator/session.entry";
 import { ENGINE_VERSION } from "@shared/sim-engine";
 import type { SimCommand, SimWorkerClient, SimWorkerListener, SimWorkerMessage } from "@shared/sim-engine";
 import { buildTestCase } from "@shared/sim-engine/runtime/sim-test-helpers";
+import { createLabConnectionValue } from "./entities/lab-connection.entity";
 
 type Query = Record<string, string | string[] | undefined>;
 
@@ -187,3 +189,14 @@ export function createSessionHarness(records: readonly SessionRecord[] = [buildF
     },
   };
 }
+
+const IDLE_LAB_CONNECTION = createLabConnectionValue();
+
+/**
+ * Body of the lab connection controller mock (W7): an idle lab (NO_RESERVATION) for tests that render the workspace
+ * without session or socket providers:
+ * `vi.mock(".../hooks/use-lab-connection-controller", async() => (await import(".../workspace-test-helpers")).labConnectionControllerMock)`.
+ */
+export const labConnectionControllerMock = {
+  useLabConnectionController: () => IDLE_LAB_CONNECTION,
+};

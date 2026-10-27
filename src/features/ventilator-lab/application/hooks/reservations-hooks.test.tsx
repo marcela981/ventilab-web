@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: Reservation calendar and booking hooks tests
 * Descripción: useHolderOptions by role (a student gets only the student groups they lead from /api/groups/mine; a teacher the active student groups of /api/groups; an admin every active group and the user search; a failed read keeps no groups and reports the error), useUserHolderSearch (nothing below two characters, then the users search), useReservationsCalendar (range query, revalidated by ventilator:availability through useReservationsRealtime) and useCreateReservation (request body, calendar and mine revalidated after the data-null 201, a 409 with its parsed conflict, other failures without conflict). v1.1 (T2 review fix): a teacher is offered only the groups of the list the teacher did not create (certainly supervised), and the calendar never returns the previous range's data while another range loads or fails. v1.2 (T4 review fix S3): useCancelReservation resolves before the revalidations finish. Depends on vitest, msw, Testing Library and the lab test helpers.
-* Versión: 1.2
+*   v1.3 (W7, Bloque 1): fixtures and expectations follow the W7 contract (current reservation relation, holder student code, immediate booking, created reservation id).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -235,7 +236,7 @@ describe("useCreateReservation", () => {
       outcome = await result.current.create.submit(request);
     });
 
-    expect(outcome).toEqual({ kind: "created" });
+    expect(outcome).toEqual({ kind: "created", reservationId: null });
     expect(body).toEqual({
       holderType: "USER",
       startsAt: "2026-10-16T15:00:00.000Z",

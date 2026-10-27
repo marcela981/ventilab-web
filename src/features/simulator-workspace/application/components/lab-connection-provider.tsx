@@ -7,7 +7,12 @@
 *   NO_RESERVATION and connect/disconnect only record the intent. W7 derives the real state from the reservation, the
 *   operator control and the intent (connection-fsm.ts). `value` injects a fixed state (tests, W6 real-mode guide).
 *   Depends on React.
-* Versión: 0.1
+*   v0.2 (W7, Bloque 1): the live value comes from useLabConnectionController (reservation with relation, operator
+*   control, room join with retry, derived FSM; see lab-connection.entity for the full shape); the blocking modal of an
+*   own reservation that ended or was displaced is rendered here, so it shows on any tab. The states and value types
+*   moved to connection-fsm and lab-connection.entity (re-exported). A fixed `value` skips every live source. Depends
+*   on React, the controller hook, the ventilator-lab revoked dialog and the connection entities.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,35 +20,16 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useContext } from "react";
 import type { ReactNode } from "react";
+import { ControlRevokedDialog } from "@features/ventilator-lab/connection.entry";
+import type { LabConnectionValue } from "../entities/lab-connection.entity";
+import { useLabConnectionController } from "../hooks/use-lab-connection-controller";
 
-/** States of the July connection FSM (FLUJOS_JULIO b.4 and b.6). */
-export const LAB_CONNECTION_STATES = [
-  "NO_RESERVATION",
-  "RESERVING",
-  "RESERVED",
-  "CONNECTING",
-  "CONNECTED",
-  "ERROR",
-  "DISCONNECTED",
-] as const;
-
-export type LabConnectionState = (typeof LAB_CONNECTION_STATES)[number];
-
-/** What the student asked for locally; the FSM state is derived from it and the server state. */
-export type LabConnectionIntent = "idle" | "connect";
-
-export type LabConnectionValue = {
-  state: LabConnectionState
-  intent: LabConnectionIntent
-  /** Last connection error message (Spanish); null without one. */
-  error: string | null
-  /** Shortcut: the state is CONNECTED. */
-  connected: boolean
-  connect: () => void
-  disconnect: () => void
-};
+export { LAB_CONNECTION_STATES } from "../entities/connection-fsm";
+export type { LabConnectionState } from "../entities/connection-fsm";
+export { createLabConnectionValue } from "../entities/lab-connection.entity";
+export type { LabConnectionIntent, LabConnectionValue } from "../entities/lab-connection.entity";
 
 const LabConnectionContext = createContext<LabConnectionValue | null>(null);
 
@@ -63,17 +49,23 @@ export type LabConnectionProviderProps = {
   children: ReactNode
 };
 
+function LiveLabConnection({ children }: { children: ReactNode }) {
+  const value = useLabConnectionController();
+
+  return (
+    <LabConnectionContext.Provider value={value}>
+      {children}
+      {value.revocation ? (
+        <ControlRevokedDialog open modal={value.revocation} pending={false} error={null} onAcknowledge={value.acknowledgeRevocation} />
+      ) : null}
+    </LabConnectionContext.Provider>
+  );
+}
+
 export function LabConnectionProvider({ value: fixed, children }: LabConnectionProviderProps) {
-  const [intent, setIntent] = useState<LabConnectionIntent>("idle");
-  const connect = useCallback(() => setIntent("connect"), []);
-  const disconnect = useCallback(() => setIntent("idle"), []);
+  if (fixed) {
+    return <LabConnectionContext.Provider value={fixed}>{children}</LabConnectionContext.Provider>;
+  }
 
-  const own = useMemo<LabConnectionValue>(() => {
-    // No reservation source until W7: the state never leaves NO_RESERVATION.
-    const state: LabConnectionState = "NO_RESERVATION";
-
-    return { state, intent, error: null, connected: false, connect, disconnect };
-  }, [connect, disconnect, intent]);
-
-  return <LabConnectionContext.Provider value={fixed ?? own}>{children}</LabConnectionContext.Provider>;
+  return <LiveLabConnection>{children}</LiveLabConnection>;
 }

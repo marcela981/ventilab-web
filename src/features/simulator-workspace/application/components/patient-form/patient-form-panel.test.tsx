@@ -7,7 +7,8 @@
 *   "Enviar al Monitoreo" starting a FREE session with the loaded case and the mapped patient and opening Monitoreo,
 *   "Aleatorio" starting without a case, the send disabled while pending and a start failure shown in Spanish.
 *   Depends on vitest, Testing Library, msw, SWR and the workspace test helpers.
-* Versión: 0.1
+*   v0.2 (W7 integration): the live lab connection controller is mocked idle.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,6 +28,7 @@ import { SimulatorWorkspacePage } from "../../pages/simulator-workspace.page";
 import { createSessionHarness, routerStore } from "../../workspace-test-helpers";
 
 vi.mock("next/router", async() => (await import("../../workspace-test-helpers")).nextRouterMock);
+vi.mock("../../hooks/use-lab-connection-controller", async() => (await import("../../workspace-test-helpers")).labConnectionControllerMock);
 vi.mock("../monitoring/monitoring-panel", () => ({ MonitoringPanel: () => <p>monitoring panel</p> }));
 
 const apiUrl = (path: string): string => `${BACKEND_ORIGIN}${path}`;

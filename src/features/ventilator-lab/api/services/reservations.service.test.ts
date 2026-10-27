@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: Reservations service tests
 * Descripción: The read services call the documented paths (the calendar with its ISO range query) and map each item by its projection. Depends on vitest, msw and the reservations service.
-* Versión: 1.0
+*   v1.1 (W7, Bloque 1): fixtures and expectations follow the W7 contract (current reservation relation, holder student code, immediate booking, created reservation id).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -34,6 +35,7 @@ describe("reservations service", () => {
     server.use(http.get(apiUrl("/api/reservations/current"), () => HttpResponse.json(envelope({
       reservation: summaryDto("r1", "reservations.labels.teacher", "Reserved by a teacher"),
       canControl: false,
+      relation: "none",
     }))));
 
     await expect(fetchCurrentReservation()).resolves.toEqual({
@@ -46,6 +48,7 @@ describe("reservations service", () => {
         occupancyLabel: "Reservado por un docente",
       },
       canControl: false,
+      relation: "none",
     });
   });
 

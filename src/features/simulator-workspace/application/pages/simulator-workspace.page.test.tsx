@@ -8,8 +8,9 @@
 *   `start()` opens a session in Monitoreo and `clear()` drops it; the temporary Simular panel starts a practice in
 *   place. Depends on vitest, Testing Library, the workspace test helpers and mocked panels and catalog entry point.
 *   v0.4 (W9, Bloque 1): the Mis sesiones panel is mocked (its own tests cover it). v0.6 (W8, Bloque 1): the Simular
-*   Paciente panel (patient form, start mocked in the patient entry point) opens its session in Monitoreo.
-* Versión: 0.6
+*   Paciente panel (patient form, start mocked in the patient entry point) opens its session in Monitoreo. v0.7 (W7,
+*   Bloque 1): the live lab connection controller is mocked idle; the Conexión panel is the real one.
+* Versión: 0.7
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -29,6 +30,7 @@ const counters = vi.hoisted(() => ({ mounts: 0, unmounts: 0 }));
 const catalog = vi.hoisted(() => ({ start: vi.fn() }));
 
 vi.mock("next/router", async() => (await import("../workspace-test-helpers")).nextRouterMock);
+vi.mock("../hooks/use-lab-connection-controller", async() => (await import("../workspace-test-helpers")).labConnectionControllerMock);
 
 function CountingMonitoringPanel() {
   const { sessionId, host, start, clear } = useWorkspaceSession();

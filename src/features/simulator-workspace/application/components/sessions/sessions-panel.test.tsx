@@ -8,7 +8,8 @@
 *   "Ver resultado" showing the result summary and its link to the replay; "Reproducir" playing a recording in the
 *   panel; "Continuar" of a running FREE session opening it in Monitoreo; loading, empty, partial and full error states.
 *   Depends on vitest, Testing Library and the workspace test helpers.
-* Versión: 0.1
+*   v0.2 (W7 integration): the live lab connection controller is mocked idle.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -32,6 +33,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("next/router", async() => (await import("../../workspace-test-helpers")).nextRouterMock);
+vi.mock("../../hooks/use-lab-connection-controller", async() => (await import("../../workspace-test-helpers")).labConnectionControllerMock);
 vi.mock("@features/simulator/history.entry", async(importOriginal) => ({
   ...await importOriginal<typeof import("@features/simulator/history.entry")>(),
   useSessionHistoryRange: () => mocks.history,

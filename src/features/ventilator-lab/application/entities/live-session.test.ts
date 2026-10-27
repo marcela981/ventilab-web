@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: Live session entity tests
 * Descripción: Access to /lab/live from the backend current reservation (console for whoever the backend lets control it, the occupancy label for anyone else, nothing reserved), the Spanish text of the join rejections and the reservation countdown format. v1.1 (T9 review fix B1): the remaining time exists only on a synchronised server clock (pending / unsynced → null, never the browser clock). Depends on vitest, the reservations mapper, the lab test fixtures and the live session entity.
-* Versión: 1.1
+*   v1.2 (W7, Bloque 1): fixtures and expectations follow the W7 contract (current reservation relation, holder student code, immediate booking, created reservation id).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,20 +20,20 @@ const limited = toLabReservation(summaryDto("r2", "reservations.labels.group_stu
 
 describe("resolveLiveAccess", () => {
   it("opens the console for whoever the backend lets control the active reservation", () => {
-    expect(resolveLiveAccess({ reservation: full, canControl: true })).toEqual({ kind: "console", reservation: full });
+    expect(resolveLiveAccess({ reservation: full, canControl: true, relation: "none" })).toEqual({ kind: "console", reservation: full });
   });
 
   it("shows only the backend occupancy label to anyone else", () => {
-    expect(resolveLiveAccess({ reservation: limited, canControl: false })).toEqual({
+    expect(resolveLiveAccess({ reservation: limited, canControl: false, relation: "none" })).toEqual({
       kind: "busy",
       label: "Reservado por un estudiante del grupo B",
     });
   });
 
   it("reports nothing reserved", () => {
-    expect(resolveLiveAccess({ reservation: null, canControl: false })).toEqual({ kind: "none" });
+    expect(resolveLiveAccess({ reservation: null, canControl: false, relation: "none" })).toEqual({ kind: "none" });
     // Staff get canControl true even without a reservation: there is still no session to show.
-    expect(resolveLiveAccess({ reservation: null, canControl: true })).toEqual({ kind: "none" });
+    expect(resolveLiveAccess({ reservation: null, canControl: true, relation: "none" })).toEqual({ kind: "none" });
   });
 });
 

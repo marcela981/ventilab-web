@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: useCreateReservation
 * Descripción: Books the ventilator (POST /api/reservations). The backend answers 201 with data null, so on success the hook revalidates the current reservation, the caller's reservations and every cached calendar range. A failure resolves (it never throws) with the ApiError and, for a 409 overlap, the parsed conflict details (`preemptable` and the overlapping reservations) so the staff preemption flow can plug in. Depends on SWR, the api-client error and invalidation helpers, the reservations service and the create reservation mapper and entities.
-* Versión: 1.0
+*   v1.1 (W7, Bloque 1): the created outcome carries the id of the new reservation (null when the backend does not return it).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,7 +27,7 @@ import type { CreateReservationRequest, ReservationConflict } from "../entities/
 const CREATE_INVALIDATES = [RESERVATIONS_PATH, MY_RESERVATIONS_PATH, CURRENT_RESERVATION_PATH] as const;
 
 export type CreateReservationOutcome =
-  | { kind: "created" }
+  | { kind: "created", reservationId: string | null }
   | { kind: "failed", error: ApiError, conflict: ReservationConflict | null };
 
 export type UseCreateReservationResult = {
@@ -42,10 +43,10 @@ export function useCreateReservation(): UseCreateReservationResult {
     setIsSubmitting(true);
 
     try {
-      await createReservation(request);
+      const reservationId = await createReservation(request);
       await invalidateApiQueries(mutate, CREATE_INVALIDATES).catch(() => undefined);
 
-      return { kind: "created" };
+      return { kind: "created", reservationId };
     } catch (caught) {
       const error = toApiError(caught);
       const conflict = error.status === 409 ? toReservationConflict(error.details) : null;

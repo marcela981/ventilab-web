@@ -21,7 +21,8 @@
 *   forgotten on a take / takeover request and when an event makes the caller the operator (a `released` event before
 *   the 2xx would otherwise keep it and hide a later staff release); S1 "suspended" remembers that the caller operated
 *   (`suspendedOperator`), so a loss that happened in the back-forward cache is reported by the re-read.
-* Versión: 1.2
+*   v1.3 (W7, Bloque 1): the state keeps operatorName / operatorLabelKey (projected by role; a control-changed event to another operator leaves them unknown until the re-read); OPERATOR_LABELS (Spanish texts of the generic label keys) and controlOperatorLabel (name, else generic label) for "Opera: <nombre>".
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -38,6 +39,10 @@ export type OperatorControlState = {
   reservationId: string | null
   /** Current operator, null when nobody controls; undefined when the backend does not disclose it. */
   operatorUserId: string | null | undefined
+  /** Operator name as the backend projects it; null when hidden or nobody operates; undefined when not disclosed. */
+  operatorName?: string | null | undefined
+  /** i18n key of the generic label shown instead of a hidden name (OPERATOR_LABELS); null / undefined otherwise. */
+  operatorLabelKey?: string | null | undefined
   isOperator: boolean
   canTake: boolean
   canTakeover: boolean
@@ -118,25 +123,29 @@ export const CONTROL_COPY = {
 const RESERVATION_OVER: ReadonlySet<VentilatorControlChangedEvent["reason"]> = new Set(["reservation_ended", "reservation_preempted"]);
 
 function applyChange(state: OperatorControlState, event: VentilatorControlChangedEvent, selfUserId: string | null): OperatorControlState {
-  const operatorUserId = event.operatorUserId;
+  const { operatorUserId } = event;
+  // W7: the event carries no name; a different operator is unnamed until the re-read the event triggers.
+  const named = operatorUserId === state.operatorUserId
+    ? state
+    : { ...state, operatorName: operatorUserId === null ? null : undefined, operatorLabelKey: operatorUserId === null ? null : undefined };
 
   if (RESERVATION_OVER.has(event.reason)) {
-    return { ...state, operatorUserId: null, isOperator: false, canTake: false, canTakeover: false };
+    return { ...state, operatorUserId: null, operatorName: null, operatorLabelKey: null, isOperator: false, canTake: false, canTakeover: false };
   }
 
   if (operatorUserId === null) {
     // Whoever could take, take over or held the control may take the free control (backend: holders and staff).
     const eligible = state.canTake || state.canTakeover || state.isOperator;
 
-    return { ...state, operatorUserId: null, isOperator: false, canTake: eligible, canTakeover: false };
+    return { ...named, operatorUserId: null, isOperator: false, canTake: eligible, canTakeover: false };
   }
 
   if (operatorUserId === selfUserId) {
-    return { ...state, operatorUserId, isOperator: true, canTake: false, canTakeover: false };
+    return { ...named, operatorUserId, isOperator: true, canTake: false, canTakeover: false };
   }
 
   // Another operator: a takeover right the backend already granted (leader, staff) is kept; nothing else is inferred.
-  return { ...state, operatorUserId, isOperator: false, canTake: false, canTakeover: state.canTakeover };
+  return { ...named, operatorUserId, isOperator: false, canTake: false, canTakeover: state.canTakeover };
 }
 
 /** Reasons that can take the control away from the operator while the reservation continues. */
@@ -233,6 +242,31 @@ export function controlReducer(view: ControlView, event: ControlEvent): ControlV
     default:
       return view;
   }
+}
+
+// TODO(i18n): move to a ventilator-lab namespace in src/i18n.
+/** Spanish texts of the generic operator labels (ventylab-server src/i18n/es/ventilator-commands.json, `operator_labels`). */
+export const OPERATOR_LABELS: Readonly<Record<string, string>> = {
+  "ventilator-commands.operator_labels.teacher": "Un docente",
+  "ventilator-commands.operator_labels.student": "Un estudiante",
+};
+
+/**
+ * W7: who operates, as the backend projects it to the caller: the operator name, else the Spanish generic label of
+ * its key ("Un docente" / "Un estudiante"), else null (nobody operates, or the backend disclosed nothing).
+ */
+export function controlOperatorLabel(state: Pick<OperatorControlState, "operatorName" | "operatorLabelKey"> | null): string | null {
+  if (!state) {
+    return null;
+  }
+
+  if (typeof state.operatorName === "string" && state.operatorName.trim() !== "") {
+    return state.operatorName;
+  }
+
+  const key = state.operatorLabelKey;
+
+  return typeof key === "string" && Object.prototype.hasOwnProperty.call(OPERATOR_LABELS, key) ? OPERATOR_LABELS[key] ?? null : null;
 }
 
 /** The operator name only when the backend returned it as the holder user of the reservation; null otherwise. */

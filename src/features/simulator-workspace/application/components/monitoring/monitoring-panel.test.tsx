@@ -9,7 +9,9 @@
 *   that never commit a React render (high frequency stays out of React). v0.2 (W9, Bloque 1): the replay link opens
 *   Mis sesiones (/simulador?tab=sesiones&replay=<id>). Depends on vitest, Testing Library, msw,
 *   SWR and the workspace test helpers.
-* Versión: 0.2
+*   v0.3 (W7, Bloque 1): the CONNECTED lab is built with createLabConnectionValue (the value grew with W7) and the live
+*   lab connection controller is mocked idle (no session or socket providers here).
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -31,9 +33,11 @@ import { ALARM_LIMITS_COPY, ALARMS_COPY } from "@shared/ventilator-console";
 import { SimulatorWorkspacePage } from "../../pages/simulator-workspace.page";
 import { buildFreshRecord, createSessionHarness, routerStore } from "../../workspace-test-helpers";
 import type { FakeWorker, SessionHarness } from "../../workspace-test-helpers";
+import { createLabConnectionValue } from "../lab-connection-provider";
 import type { LabConnectionValue } from "../lab-connection-provider";
 
 vi.mock("next/router", async() => (await import("../../workspace-test-helpers")).nextRouterMock);
+vi.mock("../../hooks/use-lab-connection-controller", async() => (await import("../../workspace-test-helpers")).labConnectionControllerMock);
 vi.mock("@features/simulator/catalog.entry", () => ({
   useCaseCatalog: () => ({ cases: [], isLoading: false, error: null }),
   useStartPractice: () => ({ pendingCaseId: null, error: null, start: () => Promise.resolve({ status: "busy" }) }),
@@ -68,14 +72,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const CONNECTED: LabConnectionValue = {
-  state: "CONNECTED",
-  intent: "connect",
-  error: null,
-  connected: true,
-  connect: () => undefined,
-  disconnect: () => undefined,
-};
+const CONNECTED: LabConnectionValue = createLabConnectionValue({ state: "CONNECTED", intent: "connect" });
 
 const PATIENT: SessionPatient = {
   displayName: "María José",
