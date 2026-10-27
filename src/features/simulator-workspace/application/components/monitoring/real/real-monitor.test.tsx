@@ -7,8 +7,9 @@
 *   appears only after the stale threshold without telemetry and goes away with the next batch; without a connection
 *   the guide to Conexión stays and no telemetry consumer is mounted; and telemetry batches never commit a React
 *   render (the adapter publishes at most every 250 ms). Depends on vitest, Testing Library, msw, SWR, the session and
-*   realtime contexts and the workspace test helpers. v0.2 (W11, Bloque 1): no mock of the removed catalog entry point.
-* Versión: 0.2
+*   realtime contexts and the workspace test helpers. v0.2 (W11, Bloque 1): no mock of the removed catalog entry point. v0.3 (integration): a
+*   telemetry heartbeat every 500 ms keeps the source live while a test asserts (one batch went stale under load).
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -66,7 +67,11 @@ beforeEach(() => {
   routerStore.reset({ tab: "monitoreo" });
 });
 
+let stopHeartbeat: (() => void) | null = null;
+
 afterEach(() => {
+  stopHeartbeat?.();
+  stopHeartbeat = null;
   server.resetHandlers();
   vi.restoreAllMocks();
 });
@@ -199,6 +204,9 @@ async function openReal(fake: FakeSocket) {
   fireEvent.click(await screen.findByRole("button", { name: "Real" }));
   await waitFor(() => expect(curvesStatus()).not.toBeNull(), { timeout: LOAD_TIMEOUT });
   fake.dispatch("ventilator:telemetry", telemetry());
+  const heartbeat = setInterval(() => fake.dispatch("ventilator:telemetry", telemetry()), 500);
+
+  stopHeartbeat = () => clearInterval(heartbeat);
   await waitFor(() => expect(curvesStatus()).toBe("live"));
 }
 
@@ -252,6 +260,7 @@ describe("RealMonitor", () => {
     await openReal(fake);
 
     expect(screen.queryByTestId("real-monitor-no-data")).not.toBeInTheDocument();
+    stopHeartbeat?.();
     await waitFor(
       () => expect(screen.getByTestId("real-monitor-no-data")).toHaveTextContent("Equipo sin datos: sin señal del ventilador hace más de 2 segundos."),
       { timeout: 5000 },
@@ -283,6 +292,7 @@ describe("RealMonitor", () => {
 
     await openReal(fake);
     await waitFor(() => expect(screen.getByRole("button", { name: "Aumentar PEEP" })).toBeEnabled());
+    stopHeartbeat?.();
 
     // Inside one throttle window: the first batch below may only schedule the trailing publish.
     const now = Date.now();
