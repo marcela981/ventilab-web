@@ -1,3 +1,12 @@
+# Funcionalidad: Archivos ignorados por git en la web
+# Descripción: Dependencias, builds, secretos (.env*), salidas de pruebas y archivos de IDE. v0.1 (T1 Bloque 1): ignora la salida de Playwright (test-results, playwright-report, blob-report) y las sesiones guardadas en e2e/.auth (tokens).
+# Versión: 0.1
+# Autor: Marcela Mazo Castro
+# Proyecto: VentyLab
+# Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+# Institución: Universidad del Valle
+# Contacto: marcela.mazo@correounivalle.edu.co
+
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # =============================================================================
@@ -78,6 +87,11 @@ next-env.d.ts
 !src/features/**/*.test.ts
 !src/features/**/*.test.tsx
 !e2e/**/*.spec.ts
+# Playwright output and saved sessions (tokens) are never versioned.
+/test-results/
+/playwright-report/
+/blob-report/
+/e2e/.auth/
 
 # =============================================================================
 # IDEs and editors

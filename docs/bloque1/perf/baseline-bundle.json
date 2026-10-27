@@ -1,0 +1,61 @@
+{
+  "measuredAt": "2026-10-27T00:00:49.182Z",
+  "shared": {
+    "gzipKb": 203.8,
+    "rawKb": 620.9
+  },
+  "routes": [
+    {
+      "route": "/simulador",
+      "present": false
+    },
+    {
+      "route": "/simulator",
+      "present": true,
+      "pageOnlyGzipKb": 142.5,
+      "pageOnlyRawKb": 423.7,
+      "firstLoadGzipKb": 346.3,
+      "firstLoadRawKb": 1044.7
+    },
+    {
+      "route": "/simulator/sessions/[sessionId]",
+      "present": true,
+      "pageOnlyGzipKb": 142.6,
+      "pageOnlyRawKb": 423.9,
+      "firstLoadGzipKb": 346.4,
+      "firstLoadRawKb": 1044.8
+    },
+    {
+      "route": "/simulator/sessions/[sessionId]/replay",
+      "present": true,
+      "pageOnlyGzipKb": 142.6,
+      "pageOnlyRawKb": 423.9,
+      "firstLoadGzipKb": 346.4,
+      "firstLoadRawKb": 1044.8
+    },
+    {
+      "route": "/simulator/sessions/[sessionId]/result",
+      "present": true,
+      "pageOnlyGzipKb": 142.6,
+      "pageOnlyRawKb": 423.9,
+      "firstLoadGzipKb": 346.4,
+      "firstLoadRawKb": 1044.8
+    },
+    {
+      "route": "/lab/live",
+      "present": true,
+      "pageOnlyGzipKb": 123,
+      "pageOnlyRawKb": 365.7,
+      "firstLoadGzipKb": 326.8,
+      "firstLoadRawKb": 986.6
+    },
+    {
+      "route": "/lab/recordings/[recordingId]",
+      "present": true,
+      "pageOnlyGzipKb": 123.1,
+      "pageOnlyRawKb": 365.8,
+      "firstLoadGzipKb": 326.9,
+      "firstLoadRawKb": 986.8
+    }
+  ]
+}
