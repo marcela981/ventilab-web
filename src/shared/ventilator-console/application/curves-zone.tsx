@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Console curves zone
-* Descripción: Curves area of the ventilator console: one SweepCanvas with stacked pressure (cmH2O), flow (L/min) and volume (mL) lanes colored by the console curve tokens, plus a toolbar with the sweep/scroll toggle, the time-window selector, the freeze button (the frozen trace exposes the measurement cursor) and the P-V / F-V loop toggle rendered by LoopCanvas. Reads the waveform ring buffer directly. v1.1: an optional frame-source `status`; with `no-data` the last curves stay greyed under an overlay (role status) with the source message or a generic default, and the zone exposes `data-source-status`. Depends on React, MUI icons, @shared/waveforms and the console config.
-* Versión: 1.1
+* Descripción: Curves area of the ventilator console: one SweepCanvas with stacked pressure (cmH2O), flow (L/min) and volume (mL) lanes colored by the console curve tokens, plus a toolbar with the sweep/scroll toggle, the time-window selector, the freeze button (the frozen trace exposes the measurement cursor) and the P-V / F-V loop toggle rendered by LoopCanvas. Reads the waveform ring buffer directly. v1.1: an optional frame-source `status`; with `no-data` the last curves stay greyed under an overlay (role status) with the source message or a generic default, and the zone exposes `data-source-status`. Depends on React, MUI icons, @shared/waveforms and the console config. v1.2 (W3, Bloque 1): the sweep and loop canvases draw at the display refresh rate (no 30 fps cap) and by time, DEFAULT_PLAYBACK_DELAY_MS behind the newest sample, so the curves advance smoothly between the 30 Hz data batches.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,7 +13,7 @@ import AcUnitIcon from "@mui/icons-material/AcUnit";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import { useState } from "react";
 import { cx } from "@shared/lib/class-names";
-import { LoopCanvas, SweepCanvas } from "@shared/waveforms";
+import { DEFAULT_PLAYBACK_DELAY_MS, DISPLAY_REFRESH_FPS, LoopCanvas, SweepCanvas } from "@shared/waveforms";
 import type { LoopAxis, SweepChannel, WaveformDisplayMode, WaveformRingBuffer } from "@shared/waveforms";
 import { CONSOLE_CURVES, CONSOLE_NO_DATA_MESSAGE, CONSOLE_WINDOW_SECONDS, DEFAULT_CONSOLE_WINDOW_SECONDS } from "./config/console.config";
 import type { CurveId } from "./config/console.config";
@@ -144,6 +144,8 @@ export function CurvesZone({ buffer, status = "live", statusMessage, className }
           mode={mode}
           windowSeconds={windowSeconds}
           frozen={frozen}
+          fps={DISPLAY_REFRESH_FPS}
+          playbackDelayMs={DEFAULT_PLAYBACK_DELAY_MS}
           className={cx(styles.sweep)}
         />
         {loopSetup ? (
@@ -154,6 +156,8 @@ export function CurvesZone({ buffer, status = "live", statusMessage, className }
             colorVar={loopSetup.colorVar}
             label={loopSetup.label}
             frozen={frozen}
+            fps={DISPLAY_REFRESH_FPS}
+            playbackDelayMs={DEFAULT_PLAYBACK_DELAY_MS}
             className={cx(styles.loop)}
           />
         ) : null}

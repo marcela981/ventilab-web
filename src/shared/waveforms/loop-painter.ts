@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Loop painter
-* Descripción: Canvas painting for LoopCanvas (P-V / F-V loops): x/y gridlines with tick values, axis labels with units and the loop polyline of the last window of samples, with fixed or auto ranges. Repaints only when the buffer changed, the canvas resized or the consumer invalidated. Colors come from CSS custom properties of the canvas. Depends on the ring buffer, waveform-geometry and use-waveform-renderer. v1.1: the palette is cached and re-read only on a full repaint (resize, theme change, invalidate); live frames read into a reused window and scratch loop buffers, so they allocate no sample arrays; a NaN gap marker in the loop lifts the pen.
-* Versión: 1.1
+* Descripción: Canvas painting for LoopCanvas (P-V / F-V loops): x/y gridlines with tick values, axis labels with units and the loop polyline of the last window of samples, with fixed or auto ranges. Repaints only when the buffer changed, the canvas resized or the consumer invalidated. Colors come from CSS custom properties of the canvas. Depends on the ring buffer, waveform-geometry and use-waveform-renderer. v1.1: the palette is cached and re-read only on a full repaint (resize, theme change, invalidate); live frames read into a reused window and scratch loop buffers, so they allocate no sample arrays; a NaN gap marker in the loop lifts the pen. v1.2 (W3, Bloque 1): the live loop is the window ending at the playback head (same delay as the sweep curves), repainted when a new sample enters it.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,6 +13,7 @@ import type { WaveformRange } from "./waveform.entity";
 import type { WaveformRingBuffer, WaveformWindow } from "./waveform-ring-buffer";
 import { computeAutoRange, extractLoop, niceTicks, valueToX, valueToY } from "./waveform-geometry";
 import type { LoopPoints } from "./waveform-geometry";
+import { advancePlayback, createPlaybackClock, resetPlaybackClock } from "./playback-clock";
 import { resolveCanvasColor, resolveCanvasFont } from "./use-waveform-renderer";
 import type { WaveformRenderFrame } from "./use-waveform-renderer";
 
@@ -166,11 +167,18 @@ export class LoopPainter<C extends string> {
   private paletteVar = "";
   private window: WaveformWindow<C> | null = null;
   private scratch: { x: Float32Array, y: Float32Array } | null = null;
+  private readonly clock = createPlaybackClock();
 
-  public paintLive(frame: WaveformRenderFrame, buffer: WaveformRingBuffer<C>, config: LoopConfig<C>): void {
-    if (!frame.full && buffer.generation === this.generation && buffer.writeCount === this.sequence) {
-      return;
+  /**
+   * Draws the loop of the window ending at the playback head (`delayMs` behind the newest sample, as the sweep curves),
+   * so both stay in step; it repaints only when a new sample enters that window.
+   */
+  public paintLive(frame: WaveformRenderFrame, buffer: WaveformRingBuffer<C>, config: LoopConfig<C>, delayMs = 0): void {
+    if (buffer.generation !== this.generation) {
+      resetPlaybackClock(this.clock);
     }
+
+    const head = advancePlayback(this.clock, buffer.latestTime, frame.now, delayMs);
 
     if (this.window?.t.length !== buffer.capacity) {
       this.window = buffer.createWindow();
@@ -178,11 +186,20 @@ export class LoopPainter<C extends string> {
       this.scratch = { x: new Float32Array(buffer.capacity), y: new Float32Array(buffer.capacity) };
     }
 
-    const latest = buffer.latestTime;
-    const window = buffer.readWindowInto(this.window, latest === null ? Number.NEGATIVE_INFINITY : latest - config.windowMs);
+    const window = buffer.readWindowInto(
+      this.window,
+      head === null ? Number.NEGATIVE_INFINITY : head - config.windowMs,
+      head ?? Number.POSITIVE_INFINITY,
+    );
+    const end = window.firstSequence + window.length;
+
+    if (!frame.full && buffer.generation === this.generation && end === this.sequence) {
+      return;
+    }
+
     this.paint(frame, window, config);
     this.generation = buffer.generation;
-    this.sequence = buffer.writeCount;
+    this.sequence = end;
   }
 
   public paintFrozen(frame: WaveformRenderFrame, window: WaveformWindow<C>, config: LoopConfig<C>): void {

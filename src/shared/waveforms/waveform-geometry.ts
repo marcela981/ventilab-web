@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Waveform geometry
-* Descripción: Pure drawing math shared by SweepCanvas and LoopCanvas: sweep position, time/value to pixel mapping (sweep and scroll layouts), pixel to time for the measurement cursor, nearest-sample binary search, auto-range, round tick steps, stacked lanes, x/y loop extraction from a ring window and the cursor readout text. No DOM or canvas access, so it is unit-tested in jsdom. v1.1: loop extraction keeps a NaN gap marker for pen lifts and can write into scratch buffers (views via `subarray`).
-* Versión: 1.1
+* Descripción: Pure drawing math shared by SweepCanvas and LoopCanvas: sweep position, time/value to pixel mapping (sweep and scroll layouts), pixel to time for the measurement cursor, nearest-sample binary search, auto-range, round tick steps, stacked lanes, x/y loop extraction from a ring window and the cursor readout text. No DOM or canvas access, so it is unit-tested in jsdom. v1.1: loop extraction keeps a NaN gap marker for pen lifts and can write into scratch buffers (views via `subarray`). v1.2 (W3, Bloque 1): `eraseSpansInto` writes the erase spans into a reused pool (no per-frame allocation).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -63,22 +63,50 @@ export function valueToX(value: number, range: WaveformRange, plot: PlotSpan): n
  * plus the erase gap, split at the right edge when the head or the gap wraps around.
  */
 export function eraseSpans(fromX: number, toX: number, gapPx: number, plot: PlotSpan): Array<[number, number]> {
-  const left = plot.x;
-  const right = plot.x + plot.width;
-  const raw: Array<[number, number]> = toX >= fromX
-    ? [[fromX, toX + gapPx]]
-    : [[fromX, right], [left, toX + gapPx]];
-  const spans: Array<[number, number]> = [];
+  const out: Array<[number, number]> = [];
+  const count = eraseSpansInto(out, fromX, toX, gapPx, plot);
 
-  for (const [start, end] of raw) {
-    spans.push([start, Math.min(end, right)]);
+  return out.slice(0, count).map(([start, end]) => [start, end]);
+}
 
-    if (end > right) {
-      spans.push([left, left + (end - right)]);
-    }
+/** Writes the non-empty span `[start, end]` into the reused slot `count` of `out`; returns the new count. */
+function writeSpan(out: Array<[number, number]>, count: number, start: number, end: number): number {
+  if (end <= start) {
+    return count;
   }
 
-  return spans.filter(([start, end]) => end > start);
+  const slot = out[count];
+
+  if (slot) {
+    slot[0] = start;
+    slot[1] = end;
+  } else {
+    out[count] = [start, end];
+  }
+
+  return count + 1;
+}
+
+/** One raw span clamped to the right edge, with its overflow wrapped to the left edge. */
+function writeWrapped(out: Array<[number, number]>, count: number, start: number, end: number, left: number, right: number): number {
+  const next = writeSpan(out, count, start, Math.min(end, right));
+
+  return end > right ? writeSpan(out, next, left, left + (end - right)) : next;
+}
+
+/**
+ * `eraseSpans` into a reused array of span tuples (live frames allocate nothing once the pool holds its 3 slots);
+ * returns how many leading entries of `out` are valid.
+ */
+export function eraseSpansInto(out: Array<[number, number]>, fromX: number, toX: number, gapPx: number, plot: PlotSpan): number {
+  const left = plot.x;
+  const right = plot.x + plot.width;
+
+  if (toX >= fromX) {
+    return writeWrapped(out, 0, fromX, toX + gapPx, left, right);
+  }
+
+  return writeWrapped(out, writeWrapped(out, 0, fromX, right, left, right), left, toX + gapPx, left, right);
 }
 
 /** Time under pixel `x` for the given layout; `x` is clamped to the plot area. */

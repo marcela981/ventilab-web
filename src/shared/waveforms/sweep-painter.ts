@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Sweep painter
-* Descripción: Canvas painting for SweepCanvas, outside React. Stacked lanes (one per channel) with gridlines, tick values and a label with units; sweep mode paints incrementally (only the new segment plus the erase bar ahead of the head, O(new samples)) and repaints in full on resize, reset, wrap with auto-range or catch-up; scroll mode repaints the window when new data arrives. Frozen snapshots and the measurement cursor are painted from a captured window. Colors come from CSS custom properties of the canvas. Depends on the ring buffer, waveform-geometry and use-waveform-renderer. v1.1: the chrome (background, grid, labels) is rendered once per full repaint (or range change) into an offscreen canvas and incremental frames copy only the erase spans from it, with a direct-paint fallback where no offscreen canvas exists; reads go into a reused window and the last point is copied in place, so live frames allocate no sample arrays; in sweep mode a frozen snapshot starts after the erase gap. v1.2: span copies clamp the source rectangle to the chrome layer backing store (fractional DPR rounding never reads outside it).
-* Versión: 1.2
+* Descripción: Canvas painting for SweepCanvas, outside React. Stacked lanes (one per channel) with gridlines, tick values and a label with units; sweep mode paints incrementally (only the new segment plus the erase bar ahead of the head, O(new samples)) and repaints in full on resize, reset, wrap with auto-range or catch-up; scroll mode repaints the window when new data arrives. Frozen snapshots and the measurement cursor are painted from a captured window. Colors come from CSS custom properties of the canvas. Depends on the ring buffer, waveform-geometry and use-waveform-renderer. v1.1: the chrome (background, grid, labels) is rendered once per full repaint (or range change) into an offscreen canvas and incremental frames copy only the erase spans from it, with a direct-paint fallback where no offscreen canvas exists; reads go into a reused window and the last point is copied in place, so live frames allocate no sample arrays; in sweep mode a frozen snapshot starts after the erase gap. v1.2: span copies clamp the source rectangle to the chrome layer backing store (fractional DPR rounding never reads outside it). v1.3 (W3, Bloque 1): live painting is driven by time, not by batch arrival: a playback clock (playback-clock.ts) turns the frame time into a head a small delay behind the newest sample, and each frame draws the samples up to the head plus the point interpolated exactly at it, so the sweep (and scroll) advances at the display refresh rate between 30 Hz batches; with `delayMs` 0 the head is the newest sample (previous behaviour). The layout is cached per size, the scene object and the erase-span pool are reused and the trace loop has no closures, so live frames allocate nothing; the palette is still read only on a full repaint.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,12 +14,14 @@ import type { WaveformRingBuffer, WaveformWindow } from "./waveform-ring-buffer"
 import {
   computeAutoRange,
   computeLanes,
-  eraseSpans,
+  eraseSpansInto,
   niceTicks,
   scrollX,
   sweepX,
   valueToY,
 } from "./waveform-geometry";
+import { advancePlayback, countUpTo, createPlaybackClock, interpolateAt, resetPlaybackClock } from "./playback-clock";
+import type { TracePoint } from "./playback-clock";
 import type { Lane, PlotSpan, WaveformDisplayMode } from "./waveform-geometry";
 import { resolveCanvasColor, resolveCanvasFont } from "./use-waveform-renderer";
 import type { WaveformRenderFrame } from "./use-waveform-renderer";
@@ -70,7 +72,7 @@ type SweepScene<C extends string> = {
   latestMs: number
 };
 
-type Point<C extends string> = { t: number, values: Record<C, number> };
+type Point<C extends string> = TracePoint<C>;
 
 export const SWEEP_LAYOUT = { leftPad: 44, rightPad: 8, laneGap: 8, eraseGapPx: 12, tickCount: 5 } as const;
 
@@ -211,7 +213,13 @@ function renderChromeLayer<C extends string>(layer: ChromeLayer, frame: Waveform
 }
 
 /** Copies the chrome layer to the canvas: everything, or only the given horizontal spans (exported for tests). */
-export function blitChrome(ctx: CanvasRenderingContext2D, layer: ChromeLayer, layout: SweepLayout, spans?: ReadonlyArray<[number, number]>): void {
+export function blitChrome(
+  ctx: CanvasRenderingContext2D,
+  layer: ChromeLayer,
+  layout: SweepLayout,
+  spans?: ReadonlyArray<readonly [number, number]>,
+  count: number = spans?.length ?? 0,
+): void {
   if (!spans) {
     ctx.drawImage(layer.canvas, 0, 0, layout.width, layout.height);
 
@@ -221,7 +229,14 @@ export function blitChrome(ctx: CanvasRenderingContext2D, layer: ChromeLayer, la
   const sourceWidth = layer.canvas.width;
   const sourceHeight = layer.canvas.height;
 
-  for (const [start, end] of spans) {
+  for (let index = 0; index < count; index += 1) {
+    const span = spans[index];
+
+    if (!span) {
+      continue;
+    }
+
+    const [start, end] = span;
     // Fractional DPR rounding can push the scaled span past the backing store; clamp the source rectangle to it.
     const sourceStart = Math.max(0, start * layer.dpr);
     const sourceEnd = Math.min(sourceWidth, end * layer.dpr);
@@ -241,7 +256,8 @@ export function blitChrome(ctx: CanvasRenderingContext2D, layer: ChromeLayer, la
 function paintChrome<C extends string>(
   ctx: CanvasRenderingContext2D,
   scene: SweepScene<C>,
-  spans?: ReadonlyArray<[number, number]>,
+  spans?: ReadonlyArray<readonly [number, number]>,
+  count: number = spans?.length ?? 0,
 ): void {
   if (!spans) {
     paintChromeArea(ctx, scene);
@@ -249,7 +265,14 @@ function paintChrome<C extends string>(
     return;
   }
 
-  for (const [start, end] of spans) {
+  for (let index = 0; index < count; index += 1) {
+    const span = spans[index];
+
+    if (!span) {
+      continue;
+    }
+
+    const [start, end] = span;
     ctx.save();
     ctx.beginPath();
     ctx.rect(start, 0, end - start, scene.layout.height);
@@ -263,32 +286,68 @@ function sameRanges(a: readonly WaveformRange[], b: readonly WaveformRange[]): b
   return a.length === b.length && a.every((range, index) => range.min === b[index]?.min && range.max === b[index]?.max);
 }
 
-/** Strokes each channel in its lane. A backwards jump in x (sweep wrap) or a NaN lifts the pen. */
+/**
+ * Strokes each channel in its lane: `prefix` (the previous head), the samples of `window` from `fromMs` up to the
+ * first `count` samples, then `suffix` (the point at the new head). A backwards jump in x (sweep wrap) or a NaN lifts
+ * the pen. Plain loops, no closures: it runs every frame.
+ */
 function paintTrace<C extends string>(
   ctx: CanvasRenderingContext2D,
   scene: SweepScene<C>,
   window: WaveformWindow<C>,
   fromMs: number,
   prefix: Point<C> | null = null,
+  count: number = window.length,
+  suffix: Point<C> | null = null,
 ): void {
   const { layout, config } = scene;
+  const { channels } = config;
 
-  config.channels.forEach((channel, index) => {
+  for (let index = 0; index < channels.length; index += 1) {
+    const channel = channels[index];
     const lane = layout.lanes[index];
-    const range = scene.ranges[index] ?? AUTO_RANGE_FALLBACK;
-    const values = window.values[channel.key];
 
-    if (!lane) {
-      return;
+    if (!channel || !lane) {
+      continue;
     }
 
+    const range = scene.ranges[index] ?? AUTO_RANGE_FALLBACK;
+    const values = window.values[channel.key];
     let penDown = false;
     let lastX = Number.NEGATIVE_INFINITY;
-    const visit = (t: number, value: number): void => {
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(layout.plot.x, lane.y, layout.plot.width, lane.height);
+    ctx.clip();
+    ctx.beginPath();
+    ctx.strokeStyle = scene.palette.curves[index] ?? scene.palette.text;
+    ctx.lineWidth = 1.5;
+    ctx.lineJoin = "round";
+
+    // -1 is the prefix, `count` the suffix; in between the samples of the window.
+    for (let i = prefix ? -1 : 0; i <= count; i += 1) {
+      let t: number;
+      let value: number;
+
+      if (i < 0 && prefix) {
+        t = prefix.t;
+        value = prefix.values[channel.key];
+      } else if (i === count) {
+        if (!suffix) {
+          break;
+        }
+
+        t = suffix.t;
+        value = suffix.values[channel.key];
+      } else {
+        t = window.t[i] ?? Number.NaN;
+        value = values[i] ?? Number.NaN;
+      }
+
       if (t < fromMs || !Number.isFinite(value)) {
         penDown = false;
-
-        return;
+        continue;
       }
 
       const x = timeToX(t, config, scene.latestMs, layout.plot);
@@ -302,28 +361,11 @@ function paintTrace<C extends string>(
 
       penDown = true;
       lastX = x;
-    };
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(layout.plot.x, lane.y, layout.plot.width, lane.height);
-    ctx.clip();
-    ctx.beginPath();
-    ctx.strokeStyle = scene.palette.curves[index] ?? scene.palette.text;
-    ctx.lineWidth = 1.5;
-    ctx.lineJoin = "round";
-
-    if (prefix) {
-      visit(prefix.t, prefix.values[channel.key]);
-    }
-
-    for (let i = 0; i < window.length; i += 1) {
-      visit(window.t[i] ?? Number.NaN, values[i] ?? Number.NaN);
     }
 
     ctx.stroke();
     ctx.restore();
-  });
+  }
 }
 
 function paintCursor<C extends string>(ctx: CanvasRenderingContext2D, scene: SweepScene<C>, window: WaveformWindow<C>, index: number): void {
@@ -357,82 +399,81 @@ function paintCursor<C extends string>(ctx: CanvasRenderingContext2D, scene: Swe
   });
 }
 
-/** Copies the last sample of `window` into the reused `target`; false when the window is empty. */
-function copyLastPoint<C extends string>(window: WaveformWindow<C>, channels: readonly SweepChannel<C>[], target: Point<C>): boolean {
-  const index = window.length - 1;
-  const t = window.t[index];
-
-  if (index < 0 || t === undefined) {
-    return false;
-  }
-
-  target.t = t;
-
-  for (const channel of channels) {
-    target.values[channel.key] = window.values[channel.key][index] ?? Number.NaN;
-  }
-
-  return true;
-}
-
 /** Holds the incremental state of one SweepCanvas between frames, including its reused buffers. */
 export class SweepPainter<C extends string> {
   private generation = -1;
+  /** Write sequence of the first sample not drawn yet (it lies after the head). */
   private sequence = 0;
   private cycle = -1;
   private readonly prev: Point<C> = { t: 0, values: {} as Record<C, number> };
+  private readonly next: Point<C> = { t: 0, values: {} as Record<C, number> };
   private hasPrev = false;
+  private headMs: number | null = null;
+  private readonly clock = createPlaybackClock();
   private ranges: WaveformRange[] = [];
   private palette: SweepPalette | null = null;
   private window: WaveformWindow<C> | null = null;
   private chrome: ChromeLayer | null = null;
   private chromeReady = false;
   private chromeRanges: WaveformRange[] = [];
+  private layout: SweepLayout | null = null;
+  private scene: SweepScene<C> | null = null;
+  private readonly spans: Array<[number, number]> = [];
+  private channelKeys: C[] = [];
 
-  public paintLive(frame: WaveformRenderFrame, buffer: WaveformRingBuffer<C>, config: SweepConfig<C>): void {
-    const layout = computeSweepLayout(frame.width, frame.height, config.channels.length);
-    const latest = buffer.latestTime;
-    const unchanged = buffer.generation === this.generation && buffer.writeCount === this.sequence;
+  /**
+   * Draws the live trace up to the playback head of this frame (`delayMs` behind the newest sample, extrapolated
+   * between batches); with `delayMs` 0 the head is the newest sample.
+   */
+  public paintLive(frame: WaveformRenderFrame, buffer: WaveformRingBuffer<C>, config: SweepConfig<C>, delayMs = 0): void {
+    if (buffer.generation !== this.generation) {
+      resetPlaybackClock(this.clock);
+    }
+
+    const head = advancePlayback(this.clock, buffer.latestTime, frame.now, delayMs);
+    const layout = this.layoutFor(frame.width, frame.height, config.channels.length);
+    const unchanged = buffer.generation === this.generation && head === this.headMs;
 
     if (!frame.full && unchanged) {
       return;
     }
 
     const gapMs = sweepGapMs(config, layout.plot.width);
-    const cycle = latest === null ? -1 : Math.floor(latest / config.windowMs);
+    const cycle = head === null ? -1 : Math.floor(head / config.windowMs);
     const autoWrapped = cycle !== this.cycle && config.channels.some((channel) => !channel.range);
-    const caughtUp = latest !== null && this.hasPrev && latest - this.prev.t >= config.windowMs - gapMs;
+    const caughtUp = head !== null && this.hasPrev && head - this.prev.t >= config.windowMs - gapMs;
 
-    if (frame.full || !this.palette || config.mode === "scroll" || latest === null || !this.hasPrev
+    if (frame.full || !this.palette || config.mode === "scroll" || head === null || !this.hasPrev
       || buffer.generation !== this.generation || autoWrapped || caughtUp) {
-      this.paintFull(frame, layout, buffer, config, gapMs);
+      this.paintFull(frame, layout, buffer, config, gapMs, head);
 
       return;
     }
 
+    // Samples not drawn yet: those up to the head are drawn now, the rest wait for a later frame.
     const fresh = buffer.readSinceInto(this.scratchWindow(buffer), this.sequence);
-    const freshLatest = fresh.length > 0 ? fresh.t[fresh.length - 1] : undefined;
-
-    if (freshLatest === undefined) {
-      return;
-    }
-
-    const scene: SweepScene<C> = { config, layout, palette: this.palette, ranges: this.ranges, latestMs: freshLatest };
-    const spans = eraseSpans(
+    const count = countUpTo(fresh, head);
+    // Without a sample at or before the head in `fresh`, the head lies between the previous point and the next sample.
+    const hasNext = count > 0
+      ? interpolateAt(fresh, this.keysOf(config), head, this.next)
+      : this.interpolateFromPrev(fresh, head, config);
+    const scene = this.sceneFor(config, layout, this.palette, this.ranges, head);
+    const spanCount = eraseSpansInto(
+      this.spans,
       sweepX(this.prev.t, config.windowMs, layout.plot),
-      sweepX(freshLatest, config.windowMs, layout.plot),
+      sweepX(head, config.windowMs, layout.plot),
       SWEEP_LAYOUT.eraseGapPx,
       layout.plot,
     );
 
     if (this.chrome && this.chromeReady) {
-      blitChrome(frame.ctx, this.chrome, layout, spans);
+      blitChrome(frame.ctx, this.chrome, layout, this.spans, spanCount);
     } else {
-      paintChrome(frame.ctx, scene, spans);
+      paintChrome(frame.ctx, scene, this.spans, spanCount);
     }
 
-    paintTrace(frame.ctx, scene, fresh, Number.NEGATIVE_INFINITY, this.prev);
-    this.track(buffer, fresh, config, cycle);
+    paintTrace(frame.ctx, scene, fresh, Number.NEGATIVE_INFINITY, this.prev, count, hasNext ? this.next : null);
+    this.track(buffer, fresh, count, hasNext, cycle, head);
   }
 
   public paintFrozen(frame: WaveformRenderFrame, snapshot: FrozenSweep<C>, cursorIndex: number, config: SweepConfig<C>): void {
@@ -440,9 +481,9 @@ export class SweepPainter<C extends string> {
       return;
     }
 
-    const layout = computeSweepLayout(frame.width, frame.height, config.channels.length);
+    const layout = this.layoutFor(frame.width, frame.height, config.channels.length);
     this.palette = readPalette(frame, config.channels);
-    const scene: SweepScene<C> = { config, layout, palette: this.palette, ranges: snapshot.ranges, latestMs: snapshot.latestMs };
+    const scene = this.sceneFor(config, layout, this.palette, snapshot.ranges, snapshot.latestMs);
     this.drawChrome(frame, scene, true);
     paintTrace(frame.ctx, scene, snapshot.window, snapshot.latestMs - config.windowMs + sweepGapMs(config, layout.plot.width));
 
@@ -459,22 +500,47 @@ export class SweepPainter<C extends string> {
     buffer: WaveformRingBuffer<C>,
     config: SweepConfig<C>,
     gapMs: number,
+    head: number | null,
   ): void {
-    const latest = buffer.latestTime;
+    // Everything from the left edge of the window to the newest sample; only the part up to the head is drawn.
     const window = buffer.readWindowInto(
       this.scratchWindow(buffer),
-      latest === null ? Number.NEGATIVE_INFINITY : latest - config.windowMs + gapMs,
+      head === null ? Number.NEGATIVE_INFINITY : head - config.windowMs + gapMs,
     );
+    const count = head === null ? window.length : countUpTo(window, head);
+    const hasNext = head !== null && interpolateAt(window, this.keysOf(config), head, this.next);
     // The palette is re-read only on a full repaint (resize, theme change, invalidate), never per frame.
     const palette = frame.full || !this.palette ? readPalette(frame, config.channels) : this.palette;
     const ranges = resolveRanges(config.channels, window);
     const rebuildChrome = palette !== this.palette || !sameRanges(ranges, this.chromeRanges);
     this.palette = palette;
     this.ranges = ranges;
-    const scene: SweepScene<C> = { config, layout, palette, ranges, latestMs: latest ?? 0 };
+    const scene = this.sceneFor(config, layout, palette, ranges, head ?? 0);
     this.drawChrome(frame, scene, rebuildChrome);
-    paintTrace(frame.ctx, scene, window, Number.NEGATIVE_INFINITY);
-    this.track(buffer, window, config, latest === null ? -1 : Math.floor(latest / config.windowMs));
+    paintTrace(frame.ctx, scene, window, Number.NEGATIVE_INFINITY, null, count, hasNext ? this.next : null);
+    this.track(buffer, window, count, hasNext, head === null ? -1 : Math.floor(head / config.windowMs), head);
+  }
+
+  /** The point at `head` between the previous head point and the first sample of `fresh` (none drawn in between). */
+  private interpolateFromPrev(fresh: WaveformWindow<C>, head: number, config: SweepConfig<C>): boolean {
+    const after = fresh.t[0];
+
+    if (!this.hasPrev || fresh.length === 0 || after === undefined || after <= this.prev.t) {
+      return false;
+    }
+
+    const ratio = Math.min(1, Math.max(0, (head - this.prev.t) / (after - this.prev.t)));
+
+    this.next.t = head;
+
+    for (const key of this.keysOf(config)) {
+      const from = this.prev.values[key];
+      const to = fresh.values[key][0] ?? Number.NaN;
+
+      this.next.values[key] = from + (to - from) * ratio;
+    }
+
+    return true;
   }
 
   /**
@@ -507,10 +573,66 @@ export class SweepPainter<C extends string> {
     return this.window;
   }
 
-  private track(buffer: WaveformRingBuffer<C>, window: WaveformWindow<C>, config: SweepConfig<C>, cycle: number): void {
+  /** The layout of this size, recomputed only when the canvas size or the channel count changes. */
+  private layoutFor(width: number, height: number, channelCount: number): SweepLayout {
+    const cached = this.layout;
+
+    if (cached && cached.width === width && cached.height === height && cached.lanes.length === Math.max(1, channelCount)) {
+      return cached;
+    }
+
+    this.layout = computeSweepLayout(width, height, channelCount);
+
+    return this.layout;
+  }
+
+  /** The channel keys of the config, rebuilt only when the channels change. */
+  private keysOf(config: SweepConfig<C>): C[] {
+    const keys = this.channelKeys;
+    let same = keys.length === config.channels.length;
+
+    for (let index = 0; same && index < keys.length; index += 1) {
+      same = config.channels[index]?.key === keys[index];
+    }
+
+    if (!same) {
+      this.channelKeys = config.channels.map((channel) => channel.key);
+    }
+
+    return this.channelKeys;
+  }
+
+  /** The scene object of this painter, updated in place. */
+  private sceneFor(config: SweepConfig<C>, layout: SweepLayout, palette: SweepPalette, ranges: WaveformRange[], latestMs: number): SweepScene<C> {
+    if (this.scene === null) {
+      this.scene = { config, layout, palette, ranges, latestMs };
+    } else {
+      this.scene.config = config;
+      this.scene.layout = layout;
+      this.scene.palette = palette;
+      this.scene.ranges = ranges;
+      this.scene.latestMs = latestMs;
+    }
+
+    return this.scene;
+  }
+
+  /** Remembers what was drawn: the head point and the write sequence of the next sample to draw. */
+  private track(buffer: WaveformRingBuffer<C>, window: WaveformWindow<C>, count: number, hasNext: boolean, cycle: number, head: number | null): void {
     this.generation = buffer.generation;
-    this.sequence = buffer.writeCount;
+    this.sequence = window.firstSequence + count;
     this.cycle = cycle;
-    this.hasPrev = copyLastPoint(window, config.channels, this.prev);
+    this.headMs = head;
+
+    if (hasNext) {
+      this.prev.t = this.next.t;
+
+      for (const key of this.channelKeys) {
+        this.prev.values[key] = this.next.values[key];
+      }
+    }
+
+    // Without a point at the head (no data yet) the next frame repaints in full.
+    this.hasPrev = hasNext;
   }
 }
