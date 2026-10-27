@@ -8,8 +8,9 @@
 *   `?session=` and opens Monitoreo; a successful "Finalizar sesión" stays on /simulador and records the ended session
 *   (`endedSessionId`) for the result dialog; `clear()` drops `?session=` and the ended mark. High-frequency data never
 *   goes through this context (the console reads the session store). Depends on next/router, React and the simulator
-*   session entry point.
-* Versión: 0.1
+*   session entry point. v0.2 (Bloque 1 integration): the session runner (SimSessionHost + bridge) is loaded through a
+*   dynamic import so the session runtime and the console stay out of the initial /simulador chunk.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,10 +19,10 @@
 */
 
 import { useRouter } from "next/router";
-import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState } from "react";
+import { createContext, lazy, Suspense, useCallback, useContext, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { SimSessionHost, useSimSessionHost } from "@features/simulator/session.entry";
 import type { SimSessionHostDeps, SimSessionHostValue } from "@features/simulator/session.entry";
+import { retryImport } from "@shared/lib/retry-import";
 import type { WorkspaceTab } from "../entities/workspace-tab.entity";
 
 const MONITORING_TAB: WorkspaceTab = "monitoreo";
@@ -54,18 +55,9 @@ export function useWorkspaceSession(): WorkspaceSessionValue {
   return value;
 }
 
-/** Reads the host context and lifts it before paint; renders nothing. */
-function HostBridge({ onValue }: { onValue: (value: SimSessionHostValue | null) => void }) {
-  const value = useSimSessionHost();
-
-  useLayoutEffect(() => {
-    onValue(value);
-  }, [onValue, value]);
-
-  useLayoutEffect(() => () => onValue(null), [onValue]);
-
-  return null;
-}
+const WorkspaceSessionRunner = lazy(() =>
+  retryImport(() => import("./workspace-session-runner")).then((module) => ({ default: module.WorkspaceSessionRunner })),
+);
 
 function sessionOf(query: Record<string, string | string[] | undefined>): string | null {
   const value = query.session;
@@ -119,9 +111,9 @@ export function WorkspaceSessionProvider({ deps, children }: WorkspaceSessionPro
   return (
     <WorkspaceSessionContext.Provider value={value}>
       {sessionId ? (
-        <SimSessionHost key={sessionId} sessionId={sessionId} onEnded={onEnded} deps={deps}>
-          <HostBridge onValue={setLifted} />
-        </SimSessionHost>
+        <Suspense fallback={null}>
+          <WorkspaceSessionRunner key={sessionId} sessionId={sessionId} onEnded={onEnded} onValue={setLifted} deps={deps} />
+        </Suspense>
       ) : null}
       {children}
     </WorkspaceSessionContext.Provider>

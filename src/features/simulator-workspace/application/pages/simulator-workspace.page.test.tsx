@@ -1,6 +1,6 @@
 /*
 * Funcionalidad: Simulator workspace page tests
-* Descripción: The /simulador workspace shell. v0.1 (W1): placeholder routing per tab. v0.2 (W4): entry point mocks.
+* Descripción: The /simulador workspace shell. v0.1 (W1): placeholder routing per tab. v0.2 (W4): entry point mocks. v0.5 (integration): waits longer for the lazily loaded session runner.
 *   v0.3 (W5): the tab parser; nothing is read before the router is ready; a missing or unknown `?tab=` opens Monitoreo;
 *   the bottom tabs switch with a shallow `router.replace` that keeps the rest of the query; each panel loads on its
 *   first visit and then stays mounted (hidden), so the Monitoreo panel mounts once across tab switches; the session
@@ -8,7 +8,7 @@
 *   `start()` opens a session in Monitoreo and `clear()` drops it; the temporary Simular panel starts a practice in
 *   place. Depends on vitest, Testing Library, the workspace test helpers and mocked panels and catalog entry point.
 *   v0.4 (W9, Bloque 1): the Mis sesiones panel is mocked (its own tests cover it).
-* Versión: 0.4
+* Versión: 0.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -153,7 +153,7 @@ describe("SimulatorWorkspacePage", () => {
     routerStore.reset({ session: "s1" });
     render(<SimulatorWorkspacePage deps={harness.deps} />);
 
-    await waitFor(() => expect(harness.createWorker).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(harness.createWorker).toHaveBeenCalledTimes(1), { timeout: 5000 });
     expect(await screen.findByText("session: s1 · ready")).toBeInTheDocument();
 
     for (const name of ["Conexión", "Simular Paciente", "Mis sesiones", "Monitoreo", "Conexión", "Monitoreo"]) {
