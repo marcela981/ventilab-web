@@ -7,7 +7,8 @@
 *   of `?session=` runs above the tabs, so switching tabs never creates a second worker nor terminates the first;
 *   `start()` opens a session in Monitoreo and `clear()` drops it; the temporary Simular panel starts a practice in
 *   place. Depends on vitest, Testing Library, the workspace test helpers and mocked panels and catalog entry point.
-* Versión: 0.3
+*   v0.4 (W9, Bloque 1): the Mis sesiones panel is mocked (its own tests cover it).
+* Versión: 0.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -50,6 +51,7 @@ function CountingMonitoringPanel() {
 }
 
 vi.mock("../components/monitoring/monitoring-panel", () => ({ MonitoringPanel: CountingMonitoringPanel }));
+vi.mock("../components/sessions/sessions-panel", () => ({ SessionsPanel: () => <h2>Mis sesiones</h2> }));
 
 vi.mock("@features/simulator/catalog.entry", () => ({
   useCaseCatalog: () => ({ cases: [{ id: "case-9", title: "Pulmón normal" }], isLoading: false, error: null }),

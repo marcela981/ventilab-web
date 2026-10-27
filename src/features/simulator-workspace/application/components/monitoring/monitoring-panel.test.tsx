@@ -6,9 +6,10 @@
 *   the July empty guide and its shortcuts; the real-mode guide to Conexión; the digital console without the alarm
 *   limits panel; the own patient of the session; "Finalizar sesión" ending the session and showing its result in a
 *   dialog without any navigation, with the replay link, and closing it clearing `?session=`; and simulation frames
-*   that never commit a React render (high frequency stays out of React). Depends on vitest, Testing Library, msw,
+*   that never commit a React render (high frequency stays out of React). v0.2 (W9, Bloque 1): the replay link opens
+*   Mis sesiones (/simulador?tab=sesiones&replay=<id>). Depends on vitest, Testing Library, msw,
 *   SWR and the workspace test helpers.
-* Versión: 0.1
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -224,7 +225,7 @@ describe("MonitoringPanel", () => {
 
     expect(harness.endSession).toHaveBeenCalledWith("s1", 1500);
     expect(await within(dialog).findByText("result summary of s1")).toBeInTheDocument();
-    expect(within(dialog).getByRole("link", { name: "Ver repetición" })).toHaveAttribute("href", "/simulator/sessions/s1/replay");
+    expect(within(dialog).getByRole("link", { name: "Ver repetición" })).toHaveAttribute("href", "/simulador?tab=sesiones&replay=s1");
     expect(routerStore.push).not.toHaveBeenCalled();
     expect(routerStore.query).toEqual({ session: "s1", tab: "monitoreo" });
 

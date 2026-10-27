@@ -6,7 +6,9 @@
 *   v1.6 (A6, AUDIT_SYNC F4): the page-hide keepalive takes its Bearer token through `sendWithFreshToken` (shared
 *   api-client keepalive auth): a token about to expire is refreshed first through the shared single-flight refresh.
 *   v1.7 (W6, Bloque 1): the started session keeps the own patient of the start request (`patient`).
-* Versión: 1.7
+*   v1.8 (W9, Bloque 1): the history query also takes the start-date window (createdAtFrom / createdAtTo, applied by
+*   the server to `startedAt`) used by the Mis sesiones tab of /simulador.
+* Versión: 1.8
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -45,15 +47,18 @@ export function singleSessionQuery(sessionId: string): SimulationSessionsQueryDT
   return { ids: sessionId, limit: 1, page: 1 };
 }
 
-export type SessionHistoryQuery = Pick<SimulationSessionsQueryDTO, "caseId" | "mode" | "status"> & { page: number, limit: number };
+export type SessionHistoryQuery = Pick<SimulationSessionsQueryDTO, "caseId" | "mode" | "status" | "createdAtFrom" | "createdAtTo">
+  & { page: number, limit: number };
 
-export function sessionHistoryQuery({ page, limit, caseId, mode, status }: SessionHistoryQuery): SimulationSessionsQueryDTO {
+export function sessionHistoryQuery({ page, limit, caseId, mode, status, createdAtFrom, createdAtTo }: SessionHistoryQuery): SimulationSessionsQueryDTO {
   return {
     page,
     limit,
     ...(caseId === undefined ? {} : { caseId }),
     ...(mode === undefined ? {} : { mode }),
     ...(status === undefined ? {} : { status }),
+    ...(createdAtFrom === undefined ? {} : { createdAtFrom }),
+    ...(createdAtTo === undefined ? {} : { createdAtTo }),
   };
 }
 

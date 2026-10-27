@@ -6,8 +6,9 @@
 *   canvases and the session it shows survive every tab switch; the tab is read from the URL only once the router is
 *   ready (useWorkspaceTab). Panels not built yet are temporary (W7–W9 replace them). Each panel has its own error
 *   boundary and loading skeleton. Depends on React.lazy, @shared/lib/retry-import, the design-system skeleton and route
-*   error boundary, the workspace tab hook, the bottom tabs and the workspace styles.
-* Versión: 0.1
+*   error boundary, the workspace tab hook, the bottom tabs and the workspace styles. v0.2 (W9, Bloque 1): Mis sesiones
+*   is the SessionsPanel (unified list and in-panel replay).
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -53,7 +54,7 @@ const ConexionPanel = lazy(() =>
 );
 
 const SesionesPanel = lazy(() =>
-  retryImport(() => import("./temporary-panels")).then((module) => ({ default: module.TemporarySesionesPanel })),
+  retryImport(() => import("./sessions/sessions-panel")).then((module) => ({ default: module.SessionsPanel })),
 );
 
 const TAB_PANELS: Record<WorkspaceTab, LazyExoticComponent<ComponentType>> = {

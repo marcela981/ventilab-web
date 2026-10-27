@@ -5,8 +5,10 @@
 *   objectives, breakdown, local evolution) is lazy loaded from its entry point; the dialog links to the replay
 *   (/simulator/sessions/[id]/replay until W9 brings the replay into Mis sesiones) and closing it clears the session
 *   (`onClose`). Depends on MUI Dialog, React.lazy, @shared/lib/retry-import, the design-system loading state, the
-*   simulator result and session entry points and the monitoring styles.
-* Versión: 0.1
+*   simulator result and session entry points and the monitoring styles. v0.2 (W9, Bloque 1): the replay link opens
+*   the replay inside Mis sesiones (/simulador?tab=sesiones&replay=<id>, shallow); leaving `?session=` out of that URL
+*   closes the dialog and clears the ended session.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,10 +22,10 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import Link from "next/link";
 import { lazy, Suspense, useId } from "react";
-import { buildSessionReplayUrl } from "@features/simulator/session.entry";
 import { LoadingState } from "@shared/design-system/components/loading-state";
 import { cx } from "@shared/lib/class-names";
 import { retryImport } from "@shared/lib/retry-import";
+import { buildWorkspaceReplayUrl } from "../../entities/sessions-feed.entity";
 import styles from "../../../UI/monitoring/monitoring-panel.module.css";
 
 // TODO(i18n): move to a simulator namespace in src/i18n.
@@ -59,7 +61,7 @@ export function SessionResultDialog({ sessionId, onClose }: SessionResultDialogP
       </DialogContent>
       <DialogActions className={cx(styles.dialogActions)}>
         {sessionId ? (
-          <Link href={buildSessionReplayUrl(sessionId)} className={cx(styles.link)}>{RESULT_DIALOG_COPY.viewReplay}</Link>
+          <Link href={buildWorkspaceReplayUrl(sessionId)} shallow className={cx(styles.link)}>{RESULT_DIALOG_COPY.viewReplay}</Link>
         ) : null}
         <button type="button" className={cx(styles.primaryButton)} onClick={onClose}>{RESULT_DIALOG_COPY.close}</button>
       </DialogActions>

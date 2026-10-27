@@ -11,8 +11,11 @@
 *   Depends on next/head, next/link, the api-client query hook, the design system, the ventilator console, the
 *   simulator hooks, entities, components and CSS Modules. v1.1: the playback length is frozen once settled (a /state
 *   revalidation never restarts the replay); a failed /state offers a retry first and falls back to the last recorded
-*   event only after it (or at once for 403/404), with a visible note.
-* Versión: 1.1
+*   event only after it (or at once for 403/404), with a visible note. v1.2 (W9, Bloque 1): the replay without the
+*   page chrome (SessionReplayView: loading, errors, warnings, timeline and read-only console) is shared with the Mis
+*   sesiones tab of /simulador, which lazy loads it; its way out of an error is the `exit` slot (here the link back to
+*   the simulator).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -138,7 +141,13 @@ function ReplayPlayer({ source, replay, deps }: { source: ReplaySource, replay: 
   );
 }
 
-export function SessionReplayPage({ sessionId, deps }: SessionReplayPageProps) {
+export type SessionReplayViewProps = SessionReplayPageProps & {
+  /** Way out shown next to a load error (a link or a button); nothing when omitted. */
+  exit?: ReactNode
+};
+
+/** Loads and plays one session replay without the page chrome (the /simulador Mis sesiones tab and this page). */
+export function SessionReplayView({ sessionId, deps, exit = null }: SessionReplayViewProps) {
   const params = { params: { id: sessionId } };
   const replayQuery = useApiQuery(SIMULATION_SESSION_REPLAY_PATH, params);
   const stateQuery = useApiQuery(SIMULATION_SESSION_STATE_PATH, params);
@@ -181,7 +190,7 @@ export function SessionReplayPage({ sessionId, deps }: SessionReplayPageProps) {
           {replayQuery.error.status === 403 || replayQuery.error.status === 404 ? null : (
             <button type="button" className={cx(consoleStyles.timeButton)} onClick={() => void replayQuery.mutate()}>{REPLAY_PAGE_COPY.retry}</button>
           )}
-          <Link href={SIMULATOR_URL} className={cx(consoleStyles.link)}>{REPLAY_PAGE_COPY.backToCatalog}</Link>
+          {exit}
         </div>
       </section>
     );
@@ -208,6 +217,12 @@ export function SessionReplayPage({ sessionId, deps }: SessionReplayPageProps) {
     body = <p className={cx(consoleStyles.consoleMuted)} role="status">{REPLAY_PAGE_COPY.loading}</p>;
   }
 
+  return <>{body}</>;
+}
+
+export function SessionReplayPage({ sessionId, deps }: SessionReplayPageProps) {
+  const backToSimulator = <Link href={SIMULATOR_URL} className={cx(consoleStyles.link)}>{REPLAY_PAGE_COPY.backToCatalog}</Link>;
+
   return (
     <div className={cx(consoleStyles.sessionPage)}>
       <Head>
@@ -218,10 +233,10 @@ export function SessionReplayPage({ sessionId, deps }: SessionReplayPageProps) {
         <span className={cx(consoleStyles.modeTag)}>{REPLAY_PAGE_COPY.readOnly}</span>
         <div className={cx(consoleStyles.noticeActions)}>
           <Link href={buildSessionResultUrl(sessionId)} className={cx(consoleStyles.link)}>{REPLAY_PAGE_COPY.viewResult}</Link>
-          <Link href={SIMULATOR_URL} className={cx(consoleStyles.link)}>{REPLAY_PAGE_COPY.backToCatalog}</Link>
+          {backToSimulator}
         </div>
       </header>
-      {body}
+      <SessionReplayView sessionId={sessionId} deps={deps} exit={backToSimulator} />
     </div>
   );
 }
