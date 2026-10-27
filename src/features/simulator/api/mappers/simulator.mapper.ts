@@ -3,7 +3,9 @@
 * Descripción: Maps the simulator backend DTOs to the feature entities: a clinical case list item to a catalog card, the start-session response to a started session and a history DTO to a history row with its duration. The list summary has no expert-validation flag (backend gap); the card reads one only if a future payload carries it as a boolean, otherwise it stays null and no badge is shown. v1.1 (T6): the session replay and state read models used to resume a session (the opaque `case` stays unknown until the entity guard checks it). Depends on the simulator DTOs and entities.
 *   v1.2 (T8): the replay keeps its engine version fields; the session summary (score, rubric breakdown, final
 *   targets with known ids only) and the exam link of a history DTO.
-* Versión: 1.2
+*   v1.3 (W6, Bloque 1): the own patient of a FREE session is kept (checked by parseSessionPatient) in the session
+*   state, replay and history; the started session carries the patient of the start request (not echoed by the server).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,6 +17,7 @@ import type { TargetStatus } from "@shared/sim-engine";
 import { OBJECTIVE_DEFINITIONS } from "../../application/config/sim-console.config";
 import type { ScoreCriterion, SessionExamLink, SessionSummary } from "../../application/entities/sim-result.entity";
 import { sessionDurationMs } from "../../application/entities/simulator.entity";
+import { parseSessionPatient } from "../../application/entities/sim-patient.entity";
 import type { SessionReplay, SessionState } from "../../application/entities/sim-session.entity";
 import type { CaseCard, SessionHistoryItem, StartedSession } from "../../application/entities/simulator.entity";
 import type {
@@ -47,7 +50,8 @@ export function toCaseCard({ clinicalCase }: ClinicalCaseListItemDTO): CaseCard 
   };
 }
 
-export function toStartedSession(dto: StartedSimulationSessionDTO): StartedSession {
+/** `requestedPatient`: the own patient of the start request (the response does not echo it). */
+export function toStartedSession(dto: StartedSimulationSessionDTO, requestedPatient?: unknown): StartedSession {
   return {
     id: dto.id,
     seed: dto.seed,
@@ -56,6 +60,7 @@ export function toStartedSession(dto: StartedSimulationSessionDTO): StartedSessi
     expiresAt: dto.expiresAt,
     timeMultiplier: dto.timeMultiplier,
     engineCase: dto.case,
+    patient: parseSessionPatient(requestedPatient),
   };
 }
 
@@ -69,6 +74,7 @@ export function toSessionHistoryItem(dto: SimulationSessionDTO): SessionHistoryI
     endedAt: dto.endedAt,
     durationMs: sessionDurationMs(dto.startedAt, dto.endedAt),
     score: dto.score,
+    patient: parseSessionPatient(dto.patient),
   };
 }
 
@@ -83,11 +89,12 @@ export function toSessionReplay(dto: SimulationSessionReplayDTO): SessionReplay 
     currentEngineVersion: dto.currentEngineVersion,
     engineVersionMismatch: dto.engineVersionMismatch,
     warning: dto.warning,
+    patient: parseSessionPatient(dto.patient),
   };
 }
 
 export function toSessionState(dto: SimulationSessionStateDTO): SessionState {
-  return { id: dto.id, status: dto.status, simTimeMs: dto.simTimeMs, expiresAt: dto.expiresAt };
+  return { id: dto.id, status: dto.status, simTimeMs: dto.simTimeMs, expiresAt: dto.expiresAt, patient: parseSessionPatient(dto.patient) };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

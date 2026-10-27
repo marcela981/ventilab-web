@@ -29,7 +29,9 @@
 *   v1.5 (review of eb3c21b): an EXAM rebuilt without its exam context (the "Continuar parte práctica" path writes
 *   only the exam return record) takes the attempt from that record, so the resume can read the attempt clock, and
 *   the boot carries the server clock offset (server now − client wall clock) for the countdown.
-* Versión: 1.5
+*   v1.6 (W6, Bloque 1): a rebuilt record keeps the own patient (stored record, else the session state, else the
+*   replay; null without one).
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -209,6 +211,7 @@ export async function bootstrapSession(sessionId: string, deps: BootstrapDeps): 
     fresh: false,
     // The exam linkage only exists in this tab's record (no session endpoint carries it).
     exam: stored?.exam ?? null,
+    patient: stored?.patient ?? state.patient ?? replay.patient ?? null,
   };
   const startAtSimTimeMs = Math.max(0, state.simTimeMs, lastEventMs);
   // FREE (and a no-fast-forward reload) resumes at the last known time; EXAM follows the server clock.

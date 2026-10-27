@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Simulator entities
-* Descripción: Front-end model of the simulator catalog and history: a clinical case card (summary + the expert-validation flag only when the data carries it; the list `userAttempts` belong to the old configuration-comparison flow, not to simulation sessions, so they are not shown), a started session, a session history row (with the case title resolved separately), the catalog filters and the list pagination. Pure helpers: the server-side catalog query (pathology and difficulty are real query params of GET /api/clinical-cases, so no client-side filtering), the history query, the session duration (end − start, null while running), the Spanish labels of free-text pathology/difficulty/status values (case-insensitive, raw value as fallback) and the duration and score formatting. Depends on the simulator config.
-* Versión: 1.0
+* Descripción: Front-end model of the simulator catalog and history: a clinical case card (summary + the expert-validation flag only when the data carries it; the list `userAttempts` belong to the old configuration-comparison flow, not to simulation sessions, so they are not shown), a started session, a session history row (with the case title resolved separately), the catalog filters and the list pagination. Pure helpers: the server-side catalog query (pathology and difficulty are real query params of GET /api/clinical-cases, so no client-side filtering), the history query, the session duration (end − start, null while running), the Spanish labels of free-text pathology/difficulty/status values (case-insensitive, raw value as fallback) and the duration and score formatting. Depends on the simulator config. v1.1 (W6, Bloque 1): the started session and the history row carry the own patient of a FREE session (null without one).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,6 +11,7 @@
 
 import { DIFFICULTY_LABELS, PATHOLOGY_LABELS, SESSION_STATUS_LABELS, SIMULATION_MODE_LABELS } from "../config/simulator.config";
 import type { CaseDifficulty, CasePathology } from "../config/simulator.config";
+import type { SessionPatient } from "./sim-patient.entity";
 
 export type CaseCard = {
   id: string
@@ -34,6 +35,8 @@ export type StartedSession = {
   timeMultiplier: number
   /** Engine case definition the client runs locally (opaque until the console adapter reads it). */
   engineCase: unknown
+  /** Own patient sent with the start (the start response does not echo it); null/omitted without one. */
+  patient?: SessionPatient | null | undefined
 };
 
 export type SessionHistoryItem = {
@@ -46,6 +49,8 @@ export type SessionHistoryItem = {
   durationMs: number | null
   /** Server-computed score between 0 and 1, null until the session ends. */
   score: number | null
+  /** Own patient of a FREE session; null without one. */
+  patient: SessionPatient | null
 };
 
 export type CatalogFilters = {

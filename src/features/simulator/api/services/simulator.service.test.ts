@@ -3,7 +3,9 @@
 * Descripción: Tests of the simulator API services against msw: the case definition GET by id (URI-encoded), the FREE session start (POST body exactly {mode, caseId, timeMultiplier}, response mapped to a started session), the catalog query (server-side filters, null filters omitted), the ids query of the history titles and the history query (optional filters omitted), the list item → card mapping (no badge without a boolean flag) and the history duration. v1.1: the catalog query always carries status=PUBLISHED. v1.2: the keepalive page-hide POST of the events (Bearer token, contract body, nothing sent for an empty list) and the session start read from the history ids filter. v1.3: keepalive chunks (≤ 50 events, < 60 KiB, in order, one POST each) and the server clock of GET /state read from its Date header (none without it). v1.4 (review of 180a0a1): the keepalive chunks stop at a 60 KiB running total, an
 *   oversized single event is skipped with its neighbours kept in order, and the server clock carries the monotonic
 *   response time. Depends on Vitest, msw, the token storage and the simulator test helpers.
-* Versión: 1.4
+*   v1.5 (W6, Bloque 1): the own patient of the session state (null without one, checked when present) and of the
+*   start request (kept on the started session, sent in the body).
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -146,6 +148,7 @@ describe("simulator services", () => {
 
     expect(await fetchSessionState("s1", () => 123)).toEqual({
       ...dto,
+      patient: null,
       serverClock: { serverNowMs: Date.parse("2026-10-15T10:01:00.000Z"), monotonicAtMs: 123 },
     });
 
@@ -180,6 +183,48 @@ describe("simulator services", () => {
 
     expect(bodies).toEqual([{ mode: "FREE", caseId: "c1", timeMultiplier: 2 }]);
     expect(session).toMatchObject({ id: "s1", seed: 7, engineVersion: "1.0.0", expiresAt: null, engineCase: { id: "c1" } });
+  });
+
+  it("keeps the own patient of the start request and of the session state", async() => {
+    const patient = {
+      displayName: "María José",
+      ageYears: 60,
+      sex: "FEMALE" as const,
+      weightKg: 70,
+      heightCm: 165,
+      condition: "PNEUMONIA" as const,
+      difficulty: "INTERMEDIATE" as const,
+      diagnosis: "Neumonía grave",
+      allergies: ["Penicilina"],
+      history: [],
+      vitals: { respiratoryRateBpm: 24, spo2Percent: 88, heartRateBpm: 105, breathingPattern: "tachypneic" as const },
+    };
+    const mapped = {
+      ...patient,
+      vitals: { ...patient.vitals, temperatureC: null, systolicMmHg: null, diastolicMmHg: null, glasgow: null },
+    };
+    const bodies: unknown[] = [];
+
+    server.use(
+      http.post(apiUrl("/api/simulation/sessions"), async({ request }) => {
+        bodies.push(await request.json());
+
+        return HttpResponse.json(envelope(startedSessionDto("s1")), { status: 201 });
+      }),
+      http.get(apiUrl("/api/simulation/sessions/s1/state"), () => HttpResponse.json(envelope({
+        id: "s1",
+        status: "ACTIVE",
+        simTimeMs: 0,
+        expiresAt: null,
+        patient,
+      }))),
+    );
+
+    const session = await startSimulationSession({ mode: "FREE", timeMultiplier: 1, patient });
+
+    expect(bodies).toEqual([{ mode: "FREE", timeMultiplier: 1, patient }]);
+    expect(session.patient).toEqual(mapped);
+    expect((await fetchSessionState("s1")).patient).toEqual(mapped);
   });
 
   it("rejects a start error with the backend code", async() => {

@@ -5,7 +5,8 @@
 *   records the monotonic client time of the response.
 *   v1.6 (A6, AUDIT_SYNC F4): the page-hide keepalive takes its Bearer token through `sendWithFreshToken` (shared
 *   api-client keepalive auth): a token about to expire is refreshed first through the shared single-flight refresh.
-* Versión: 1.6
+*   v1.7 (W6, Bloque 1): the started session keeps the own patient of the start request (`patient`).
+* Versión: 1.7
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -59,7 +60,7 @@ export function sessionHistoryQuery({ page, limit, caseId, mode, status }: Sessi
 export async function startSimulationSession(body: StartSimulationSessionDTO): Promise<StartedSession> {
   const result = await apiPost(SIMULATION_SESSIONS_PATH, { body });
 
-  return toStartedSession(result.data);
+  return toStartedSession(result.data, body.patient);
 }
 
 function eventsBody(events: readonly ClientSessionEvent[]): AppendSimulationEventsDTO {
