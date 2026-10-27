@@ -14,7 +14,8 @@
 *   that ends (time, cancellation by someone else, preemption) opens the blocking modal (the control revoked model of
 *   the lab) and the state falls to NO_RESERVATION. Depends on React, the shared realtime and session hooks, the
 *   ventilator-lab connection entry point and the connection FSM.
-* Versión: 0.1
+*   v0.2 (W10, Bloque 1): exposes `canControl` of the active reservation (the real monitor offers "Grabar sesión").
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -291,6 +292,7 @@ export function useLabConnectionController(): LabConnectionValue {
   const reservedBy = isReservedByOther(reservation) && active ? reservedByText(active) : null;
   const operatorName = controlOperatorLabel(controlState);
   const relation = reservation?.relation ?? "none";
+  const canControl = access && reservation?.canControl === true;
   const modal = useMemo(
     () => (ended && !ended.acknowledged ? revocationModal(ended.revocation, data, ended.reservationId) : null),
     [ended, data],
@@ -313,6 +315,7 @@ export function useLabConnectionController(): LabConnectionValue {
     reservation: active,
     reservedBy,
     relation,
+    canControl,
     isOperator,
     operatorName,
     control: controlValue,
@@ -336,6 +339,7 @@ export function useLabConnectionController(): LabConnectionValue {
     active,
     reservedBy,
     relation,
+    canControl,
     isOperator,
     operatorName,
     controlValue,

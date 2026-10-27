@@ -5,7 +5,9 @@
 *   Paciente and Conexión; in real mode without a CONNECTED ventilator, the guide to connect from Conexión; and the
 *   slot of the real-ventilator console while connected (W10 mounts the real monitor there). Depends on the workspace
 *   tab hook and the monitoring styles.
-* Versión: 0.1
+*   v0.2 (W10, Bloque 1): while connected the slot LAZY loads the real monitor (its hooks and the live console are not
+*   part of the Monitoreo chunk), with the waiting message as fallback. Depends also on React.lazy and retryImport.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,7 +15,9 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import { lazy, Suspense } from "react";
 import { cx } from "@shared/lib/class-names";
+import { retryImport } from "@shared/lib/retry-import";
 import { useWorkspaceTab } from "../../hooks/use-workspace-tab";
 import styles from "../../../UI/monitoring/monitoring-panel.module.css";
 
@@ -48,14 +52,20 @@ export type RealMonitorSlotProps = {
   connected: boolean
 };
 
-/** Real mode: the guide to connect, or the slot of the real-ventilator console (W10) while connected. */
+const RealMonitor = lazy(() =>
+  retryImport(() => import("./real/real-monitor")).then((module) => ({ default: module.RealMonitor })),
+);
+
+/** Real mode: the guide to connect, or the real monitor (W10) while connected. */
 export function RealMonitorSlot({ connected }: RealMonitorSlotProps) {
   const { selectTab } = useWorkspaceTab();
 
   if (connected) {
     return (
-      <section className={cx(styles.guide)} data-slot="real-monitor">
-        <p className={cx(styles.guideText)} role="status">{MONITOR_GUIDES_COPY.realConnected}</p>
+      <section data-slot="real-monitor">
+        <Suspense fallback={<p className={cx(styles.guideText)} role="status">{MONITOR_GUIDES_COPY.realConnected}</p>}>
+          <RealMonitor />
+        </Suspense>
       </section>
     );
   }

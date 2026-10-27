@@ -18,7 +18,10 @@
 *   (createUiThrottle keeps the ≤ 1 per uiThrottleMs telemetry rate with its trailing publish; unchanged slices keep
 *   their identity), so the console zones re-render only when their own slice changes and the caller never re-renders
 *   per batch. Same contract as the simulator and the replay.
-* Versión: 1.4
+*   v1.5 (W10, Bloque 1): optional `alarmLimits` gives the console the client alarm limits of the source
+*   (real-alarm-limits: kept in the store closure, changed from the AlarmLimitsPanel, evaluated on every published
+*   snapshot against the derived metrics, never while there is no data).
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -33,6 +36,8 @@ import { createExternalStore, createUiThrottle, reuseUnchangedSlices } from "@sh
 import type {
   ConsoleAdapterStore,
   ConsoleAlarm,
+  ConsoleAlarmLimit,
+  ConsoleAlarmLimitChange,
   ConsoleConfirmation,
   ConsoleFrameSource,
   ConsoleLimits,
@@ -44,6 +49,7 @@ import type {
 } from "@shared/ventilator-console";
 import { computeBreathMetrics, createBreathDetector, EMPTY_BREATH_METRICS } from "../entities/breath-detection";
 import type { BreathMetrics } from "../entities/breath-detection";
+import { applyAlarmLimitChanges, DEFAULT_REAL_ALARM_LIMITS, evaluateAlarmLimits } from "../entities/real-alarm-limits";
 import { buildRealConsoleAdapter } from "../entities/real-console-adapter";
 import { EMPTY_REPORTED_STATE, reduceReportedState } from "../entities/reported-settings";
 import type { ReportedState } from "../entities/reported-settings";
@@ -68,6 +74,8 @@ export type UseRealConsoleAdapterOptions = {
   inFlight?: ConsoleSettings["inFlight"]
   onConfirm?: (confirmation: ConsoleConfirmation) => void
   modeOptionsFor?: (reportedMode: string | null) => readonly ConsoleModeOption[]
+  /** W10: the console offers the client alarm limits (AlarmLimitsPanel, real-alarm-limits). Default false. */
+  alarmLimits?: boolean
   uiThrottleMs?: number
 };
 
@@ -145,6 +153,7 @@ type CallerOptions = {
   inFlight: ConsoleSettings["inFlight"]
   onConfirm: ((confirmation: ConsoleConfirmation) => void) | undefined
   modeOptionsFor: ((reportedMode: string | null) => readonly ConsoleModeOption[]) | undefined
+  alarmLimits: boolean
 };
 
 /**
@@ -170,9 +179,23 @@ function createSourceStore(sourceId: string, initial: CallerOptions): SourceStor
   let deviceAlarms: readonly ConsoleAlarm[] = [];
   let throttle: UiThrottle | null = null;
 
+  // W10: client alarm limits of this source (kept across caller option changes) and the alarms they raise.
+  let alarmLimits: readonly ConsoleAlarmLimit[] = DEFAULT_REAL_ALARM_LIMITS;
+  let limitAlarms: readonly ConsoleAlarm[] = [];
+  // Declared before the first build; it only runs after the store exists (a panel change).
+  let publishLimits = (): void => undefined;
+  const onAlarmLimitsChange = (changes: readonly ConsoleAlarmLimitChange[]): void => {
+    alarmLimits = applyAlarmLimitChanges(alarmLimits, changes);
+    publishLimits();
+  };
+
   const build = (): VentilatorConsoleAdapter => {
     // Shown once its start time is committed (one tick later), never with an invented time.
     const noData = options.live || telemetry.noDataSince === null ? null : noDataAlarm(telemetry.noDataSince);
+    const withLimits = options.alarmLimits === true;
+
+    // Without data the metrics are stale: no limit alarm (the no-data alarm says it).
+    limitAlarms = withLimits && options.live ? evaluateAlarmLimits(alarmLimits, telemetry.metrics, Date.now(), limitAlarms) : [];
 
     return buildRealConsoleAdapter({
       frames: source.frames,
@@ -182,7 +205,7 @@ function createSourceStore(sourceId: string, initial: CallerOptions): SourceStor
       metrics: telemetry.metrics,
       reported: telemetry.reported,
       // Without data the frame codes are as stale as the curves.
-      alarms: mergeConsoleAlarms(deviceAlarms, options.live ? telemetry.frameAlarms : [], noData),
+      alarms: mergeConsoleAlarms(deviceAlarms, options.live ? telemetry.frameAlarms : [], noData, limitAlarms),
       ...(options.canControl === undefined ? {} : { canControl: options.canControl }),
       readOnlyReason: options.readOnlyReason,
       pendingResetKey: options.pendingResetKey,
@@ -190,10 +213,13 @@ function createSourceStore(sourceId: string, initial: CallerOptions): SourceStor
       inFlight: options.inFlight,
       ...(options.onConfirm === undefined ? {} : { onConfirm: options.onConfirm }),
       ...(options.modeOptionsFor === undefined ? {} : { modeOptionsFor: options.modeOptionsFor }),
+      ...(withLimits ? { alarmLimits, onAlarmLimitsChange } : {}),
     });
   };
   const store = createExternalStore(build());
   const publish = (): void => store.set(reuseUnchangedSlices(store.getSnapshot(), build()));
+
+  publishLimits = publish;
 
   return {
     store,
@@ -240,11 +266,12 @@ export function useRealConsoleAdapter({
   inFlight,
   onConfirm,
   modeOptionsFor,
+  alarmLimits = false,
   uiThrottleMs = LIVE_UI_THROTTLE_MS,
 }: UseRealConsoleAdapterOptions): ConsoleAdapterStore | null {
   const options = useMemo<CallerOptions>(
-    () => ({ live, noDataMessage, canControl, readOnlyReason, pendingResetKey, limits, inFlight, onConfirm, modeOptionsFor }),
-    [live, noDataMessage, canControl, readOnlyReason, pendingResetKey, limits, inFlight, onConfirm, modeOptionsFor],
+    () => ({ live, noDataMessage, canControl, readOnlyReason, pendingResetKey, limits, inFlight, onConfirm, modeOptionsFor, alarmLimits }),
+    [live, noDataMessage, canControl, readOnlyReason, pendingResetKey, limits, inFlight, onConfirm, modeOptionsFor, alarmLimits],
   );
   // One store per source; its first snapshot uses the options of the render that creates it. A new source replaces
   // the entry during render (no effect round trip), like the console curve ring.

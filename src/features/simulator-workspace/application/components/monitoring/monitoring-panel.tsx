@@ -11,7 +11,9 @@
 *   mode is local state (the panel never unmounts); the digital view keeps rendering while the session runs, so the
 *   console and its pending edits survive mode and tab switches. Depends on React, the simulator session entry point,
 *   the workspace session and lab connection, the monitor components and the monitoring styles.
-* Versión: 0.2
+*   v0.3 (W10, Bloque 1): the real view is the lazy real monitor while CONNECTED; once real mode was opened it stays
+*   mounted (hidden in digital mode), so its console edits, recording state and latency survive mode switches.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -53,8 +55,13 @@ export function MonitoringPanel() {
   const { sessionId, host, endedSessionId, clear } = useWorkspaceSession();
   const { connected } = useLabConnection();
   const [mode, setMode] = useState<MonitorMode>("digital");
+  const [realOpened, setRealOpened] = useState(false);
   const sessionStatus = host?.running?.session.status ?? null;
   const status = deriveMonitorStatus({ mode, sessionStatus, connected });
+
+  if (mode === "real" && !realOpened) {
+    setRealOpened(true);
+  }
 
   let digital;
 
@@ -72,7 +79,8 @@ export function MonitoringPanel() {
       <MonitorHeader mode={mode} onModeChange={setMode} status={status} />
       {/* The digital view stays mounted in real mode while a session runs (console state, pending edits, canvases). */}
       <div hidden={mode !== "digital"}>{digital}</div>
-      {mode === "real" ? <RealMonitorSlot connected={connected} /> : null}
+      {/* Same for the real view once opened (telemetry consumers exist only while CONNECTED). */}
+      {realOpened ? <div hidden={mode !== "real"}><RealMonitorSlot connected={connected} /></div> : null}
       <SessionResultDialog sessionId={endedSessionId} onClose={clear} />
     </section>
   );

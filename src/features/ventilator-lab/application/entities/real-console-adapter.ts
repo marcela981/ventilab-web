@@ -10,7 +10,8 @@
 *   PCO2 the frames report, with the patient monitor hidden when neither is reported; the merged alarms; read-only by
 *   default (`canControl` false; control comes with T7/T8) with an optional reason, limits and confirm callback. Pure.
 *   v1.1: ΔP described as Pplat minus the end-expiratory PEEP (not a total PEEP). v1.2 (T8): optional `modeOptionsFor(reportedMode)` narrows the mode selector to the modes a command may target. Depends on the breath metrics, the reported state and the console contract. v1.3 (T9): optional `pendingResetKey` passed to the console permissions.
-* Versión: 1.3
+*   v1.4 (W10, Bloque 1): optional alarm limits and their change callback (the AlarmLimitsPanel of the real console).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,6 +21,8 @@
 
 import type {
   ConsoleAlarm,
+  ConsoleAlarmLimit,
+  ConsoleAlarmLimitChange,
   ConsoleConfirmation,
   ConsoleFrameSource,
   ConsoleFrameStatus,
@@ -62,6 +65,9 @@ export type RealConsoleAdapterInput = {
   onConfirm?: (confirmation: ConsoleConfirmation) => void
   /** Mode options for the reported mode (default: every mode the backend accepts). */
   modeOptionsFor?: (reportedMode: string | null) => readonly ConsoleModeOption[]
+  /** W10: alarm limits of the console (client-side, real-alarm-limits) and their change callback. */
+  alarmLimits?: readonly ConsoleAlarmLimit[]
+  onAlarmLimitsChange?: (changes: readonly ConsoleAlarmLimitChange[]) => void
 };
 
 /** Every metric the breath detection gives, marked as derived; nothing else. */
@@ -117,5 +123,7 @@ export function buildRealConsoleAdapter(input: RealConsoleAdapterInput): Ventila
     },
     limits: input.limits ?? {},
     onConfirm: input.onConfirm ?? IGNORE_CONFIRMATION,
+    ...(input.alarmLimits === undefined ? {} : { alarmLimits: input.alarmLimits }),
+    ...(input.onAlarmLimitsChange === undefined ? {} : { onAlarmLimitsChange: input.onAlarmLimitsChange }),
   };
 }

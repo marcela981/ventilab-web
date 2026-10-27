@@ -8,7 +8,9 @@
 *   in the frame: the console default type map, unknown → medium). (3) The synthetic high-priority "Equipo sin datos"
 *   alarm the adapter raises while the device sends no data. A frame code already raised by the device event is shown
 *   once. Pure. Depends on the realtime event types and the console alarm contract. v1.1: label and severity maps read with own-key lookups only.
-* Versión: 1.1
+*   v1.2 (W10, Bloque 1): the merge also takes the alarms of the client alarm limits (real-alarm-limits), shown after the
+*   device and frame alarms unless the device already raised that type.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -113,9 +115,15 @@ export function noDataAlarm(since: number): ConsoleAlarm {
   return { id: NO_DATA_ALARM_ID, type: "NO_DATA", priority: "high", message: NO_DATA_ALARM_MESSAGE, since };
 }
 
-/** No-data first, then device alarms, then the frame codes the device event has not raised. */
-export function mergeConsoleAlarms(device: readonly ConsoleAlarm[], frame: readonly ConsoleAlarm[], noData: ConsoleAlarm | null): ConsoleAlarm[] {
+/** No-data first, then device alarms, then the frame codes and the client limit alarms the device event has not raised. */
+export function mergeConsoleAlarms(
+  device: readonly ConsoleAlarm[],
+  frame: readonly ConsoleAlarm[],
+  noData: ConsoleAlarm | null,
+  limit: readonly ConsoleAlarm[] = [],
+): ConsoleAlarm[] {
   const deviceTypes = new Set(device.map((alarm) => alarm.type));
+  const notRaised = (alarm: ConsoleAlarm) => !deviceTypes.has(alarm.type);
 
-  return [...(noData ? [noData] : []), ...device, ...frame.filter((alarm) => !deviceTypes.has(alarm.type))];
+  return [...(noData ? [noData] : []), ...device, ...frame.filter(notRaised), ...limit.filter(notRaised)];
 }

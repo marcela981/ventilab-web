@@ -7,7 +7,8 @@
 *   caller operates and who operates, for "Opera: <nombre>", plus the control hook result for the control bar), the
 *   immediate booking callbacks (RESERVING while it is sent) and the revoked reservation modal. Also the builder of a
 *   fixed value (tests, guides). Depends only on the connection FSM and ventilator-lab types.
-* Versión: 0.1
+*   v0.2 (W10, Bloque 1): `canControl`, the backend control right on the active reservation (the recording rule).
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -43,6 +44,8 @@ export type LabConnectionValue = {
   /** "Reservado por …" when someone else holds the active reservation; null otherwise. */
   reservedBy: string | null
   relation: ConnectionRelation
+  /** W10: backend control right on the active reservation (holder user, group leader, teacher, admin): may record it. */
+  canControl: boolean
   /** The caller operates the ventilator now. */
   isOperator: boolean
   /** Who operates, as the backend projects it (name or "Un docente" / "Un estudiante"); null when nobody or unknown. */
@@ -79,6 +82,7 @@ export function createLabConnectionValue(overrides: Partial<LabConnectionValue> 
     reservation: null,
     reservedBy: null,
     relation: "none",
+    canControl: false,
     isOperator: false,
     operatorName: null,
     control: null,
