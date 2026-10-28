@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Gamification mapper
-* Descripción: Maps the gamification DTOs to the gamification entities, copying the server values (no XP is recalculated). The recent activity keeps only the milestone kinds (lesson, module, evaluation, achievement): a page view, which the endpoint never returns, is dropped defensively. Depends on the gamification DTOs and entity.
-* Versión: 0.1
+* Descripción: Maps the gamification DTOs to the gamification entities, copying the server values (no XP is recalculated). The recent activity keeps only the milestone kinds (lesson, module, evaluation, achievement): a page view, which the endpoint never returns, is dropped defensively. Depends on the gamification DTOs and entity. v0.2 (W9): activity days (missing list → empty) and achievements (server order, newest first).
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,8 +9,14 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import type { GamificationStats, RecentActivity, RecentActivityKind } from "../../application/entities/gamification.entity";
-import type { GamificationStatsDTO, RecentActivityItemDTO } from "../dtos/gamification.dto";
+import type {
+  Achievement,
+  ActivityDay,
+  GamificationStats,
+  RecentActivity,
+  RecentActivityKind,
+} from "../../application/entities/gamification.entity";
+import type { AchievementsDTO, ActivityCalendarDTO, GamificationStatsDTO, RecentActivityItemDTO } from "../dtos/gamification.dto";
 
 const RECENT_KINDS: ReadonlySet<string> = new Set<RecentActivityKind>([
   "LESSON_COMPLETED",
@@ -39,4 +45,20 @@ export function toRecentActivity(items: readonly RecentActivityItemDTO[]): Recen
   return items.flatMap((item) => (isRecentKind(item.kind)
     ? [{ id: item.id, kind: item.kind, refId: item.refId, xp: item.xp, occurredAt: item.occurredAt, title: item.title }]
     : []));
+}
+
+export function toActivityDays(dto: ActivityCalendarDTO): ActivityDay[] {
+  return (dto.days ?? []).map((day) => ({ date: day.date, count: day.count, xp: day.xp }));
+}
+
+export function toAchievements(dto: AchievementsDTO): Achievement[] {
+  return (dto.achievements ?? []).map((achievement) => ({
+    id: achievement.id,
+    code: achievement.code,
+    title: achievement.title,
+    description: achievement.description,
+    icon: achievement.icon,
+    unlockedAt: achievement.unlockedAt,
+    xpReward: achievement.xpReward,
+  }));
 }

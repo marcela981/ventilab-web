@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LearnWorkspace tests
-* Descripción: The /learn workspace shell (W3, Bloque 2): nothing is read before the router is ready; a missing or unknown `?tab=` opens Currículo; the top tabs switch with a shallow router.replace that keeps the rest of the query; arrow keys move between tabs; each panel loads on its first visit and then stays mounted (hidden), so the Currículo panel mounts once across tab switches; staff only get Currículo (no tab list, `?tab=` ignored); the tree and progress summary are requested once each. Depends on vitest, Testing Library, msw, the learning router and test helpers and mocked panels. v0.2 (W8, Bloque 2): the Inicio wave (student summary, gamification, recent activity) starts once with the panel for students and never for staff.
-* Versión: 0.2
+* Descripción: The /learn workspace shell (W3, Bloque 2): nothing is read before the router is ready; a missing or unknown `?tab=` opens Currículo; the top tabs switch with a shallow router.replace that keeps the rest of the query; arrow keys move between tabs; each panel loads on its first visit and then stays mounted (hidden), so the Currículo panel mounts once across tab switches; staff only get Currículo (no tab list, `?tab=` ignored); the tree and progress summary are requested once each. Depends on vitest, Testing Library, msw, the learning router and test helpers and mocked panels. v0.2 (W8, Bloque 2): the Inicio wave (student summary, gamification, recent activity) starts once with the panel for students and never for staff. v0.3 (W9, Bloque 2): the Mi Progreso wave (gamification, calendar, achievements, tree, progress summary) starts once with its panel.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -36,7 +36,7 @@ function CountingCurriculumTab() {
 
 vi.mock("../curriculum/curriculum-tab", () => ({ CurriculumTab: CountingCurriculumTab }));
 vi.mock("../home/home-tab", () => ({ HomeTab: () => <h2>home panel</h2> }));
-vi.mock("./progress-tab", () => ({ ProgressTab: () => <h2>progress panel</h2> }));
+vi.mock("../progress/progress-tab", () => ({ ProgressTab: () => <h2>progress panel</h2> }));
 
 const server = setupServer();
 const requests: string[] = [];
@@ -70,6 +70,16 @@ beforeEach(() => {
       requests.push("gamification");
 
       return HttpResponse.json(envelope(null), { status: 503 });
+    }),
+    http.get(apiUrl("/api/progress/activity"), () => {
+      requests.push("calendar");
+
+      return HttpResponse.json(envelope({ days: [] }));
+    }),
+    http.get(apiUrl("/api/progress/achievements"), () => {
+      requests.push("achievements");
+
+      return HttpResponse.json(envelope({ achievements: [], totalUnlocked: 0 }));
     }),
     http.get(apiUrl("/api/progress/activity/recent"), () => {
       requests.push("recent");
@@ -170,6 +180,17 @@ describe("LearnWorkspace", () => {
 
     await waitFor(() => {
       expect([...requests].sort()).toEqual(["gamification", "me-summary", "recent"]);
+    });
+  });
+
+  it("starts the Mi Progreso wave once, in parallel, with the panel", async() => {
+    routerStore.reset({ tab: "progreso" });
+    renderWithSession(<LearnWorkspace />);
+
+    await screen.findByText("progress panel");
+
+    await waitFor(() => {
+      expect([...requests].sort()).toEqual(["achievements", "calendar", "gamification", "summary", "tree"]);
     });
   });
 

@@ -1,0 +1,219 @@
+/*
+* Funcionalidad: Mi Progreso styles
+* Descripción: Layout of the Mi Progreso tab of /learn (W9, Bloque 2; July ProgressContent): responsive grid of cards (the shared student home SummaryCard), the XP and streak stats, progress bars, the "Activa" chip, achievements, milestones, the skill tree branches and the activity heatmap (week columns, 5 intensity levels mixed from the primary token, focus ring on the grid, horizontal scroll on narrow screens) with its legend. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 0.1
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--vl-space-4);
+}
+
+.meta {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--vl-color-text-muted);
+}
+
+.itemTitle {
+  overflow-wrap: anywhere;
+  color: var(--vl-color-text);
+  font-weight: 500;
+}
+
+.link {
+  color: var(--vl-color-link);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.link:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}
+
+/* Stats */
+
+.statRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  align-items: center;
+}
+
+.statIcon {
+  color: var(--vl-color-warning);
+}
+
+.statValue {
+  flex: 1;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--vl-color-text);
+}
+
+.chip {
+  padding: var(--vl-space-0) var(--vl-space-2);
+  border-radius: var(--vl-radius-pill);
+  background: var(--vl-color-status-ok-bg);
+  color: var(--vl-color-status-ok);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.bar {
+  height: var(--vl-space-2);
+  border-radius: var(--vl-radius-pill);
+}
+
+/* Lists: achievements, milestones, skill tree */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.rowHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.achieved {
+  display: inline-flex;
+  gap: var(--vl-space-1);
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--vl-color-success);
+}
+
+.achievements {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: var(--vl-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.achievement {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  padding: var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.achievementIcon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.branches {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+.branch {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.branchTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--vl-color-text);
+}
+
+/* Activity heatmap */
+
+.calendarScroll {
+  overflow-x: auto;
+}
+
+.calendar {
+  display: inline-flex;
+  gap: var(--vl-space-1);
+  padding: var(--vl-space-1);
+  border-radius: var(--vl-radius-sm);
+}
+
+.calendar:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}
+
+.week {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.day {
+  display: inline-block;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: var(--vl-radius-sm);
+  background: var(--vl-color-hover);
+}
+
+.day[data-level="1"] {
+  background: color-mix(in srgb, var(--vl-color-primary) 25%, var(--vl-color-surface));
+}
+
+.day[data-level="2"] {
+  background: color-mix(in srgb, var(--vl-color-primary) 50%, var(--vl-color-surface));
+}
+
+.day[data-level="3"] {
+  background: color-mix(in srgb, var(--vl-color-primary) 75%, var(--vl-color-surface));
+}
+
+.day[data-level="4"] {
+  background: var(--vl-color-primary);
+}
+
+.dayFuture {
+  background: transparent;
+  border: 1px dashed var(--vl-color-border);
+}
+
+.legend {
+  display: flex;
+  gap: var(--vl-space-1);
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--vl-color-text-muted);
+}
