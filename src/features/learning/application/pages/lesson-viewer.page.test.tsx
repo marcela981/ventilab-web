@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LessonViewerPage tests
-* Descripción: Integration tests (msw) of the lesson viewer: blocks of page N in order, breadcrumb, previous link, view registration on Siguiente, module completion in place, pageNumber redirects and a lesson outside the module. v1.1 (L4): notes in the side panel. v1.2 (L5/L6): Profundizar and Preguntas tabs. v1.3 (W5, Bloque 2): July layout (title, "Página x de N" with bar and percentage, lesson index, no side panel), the requests of a page load (two waves, never the curriculum tree; section and level from a cached tree), the index locks, the lock screen from the access endpoint and from a 403 progress.lesson_locked, the lesson completion dialog (focus, Esc, Continuar, lazy confetti), the module card driven by moduleCompleted, the next-page prefetch, the tree invalidation only on completion and the staff preview with "Editar esta página". Depends on vitest, Testing Library, msw and the learning test helpers.
-* Versión: 1.3
+* Descripción: Integration tests (msw) of the lesson viewer: blocks of page N in order, breadcrumb, previous link, view registration on Siguiente, module completion in place, pageNumber redirects and a lesson outside the module. v1.1 (L4): notes in the side panel. v1.2 (L5/L6): Profundizar and Preguntas tabs. v1.3 (W5, Bloque 2): July layout (title, "Página x de N" with bar and percentage, lesson index, no side panel), the requests of a page load (two waves, never the curriculum tree; section and level from a cached tree), the index locks, the lock screen from the access endpoint and from a 403 progress.lesson_locked, the lesson completion dialog (focus, Esc, Continuar, lazy confetti), the module card driven by moduleCompleted, the next-page prefetch, the tree invalidation only on completion and the staff preview with "Editar esta página". Depends on vitest, Testing Library, msw and the learning test helpers. v1.4 (W7, Bloque 2): the deepen accordion follows the page content and the TutorAI button is offered, neither on the lock screen.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -161,6 +161,17 @@ describe("LessonViewerPage", { timeout: 20_000 }, () => {
     expect(screen.queryByRole("tab", { name: "Notas" })).not.toBeInTheDocument();
   });
 
+  it("closes each page with the deepen accordion and offers the TutorAI button", async() => {
+    renderWithSession(<LessonViewerPage moduleId="m2" lessonId="l1" pageParam="2" />);
+
+    const content = await screen.findByText("Segundo bloque p1b", {}, LAZY_WAIT);
+    const accordion = screen.getByRole("button", { name: "¿Te gustaría expandir más este tema?" });
+
+    expect(content.compareDocumentPosition(accordion) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(accordion).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("button", { name: "Abrir TutorAI" })).toHaveAttribute("aria-haspopup", "dialog");
+  });
+
   it("loads the page in two request waves and never requests the curriculum tree", async() => {
     renderWithSession(<LessonViewerPage moduleId="m2" lessonId="l1" pageParam="1" />);
 
@@ -220,6 +231,8 @@ describe("LessonViewerPage", { timeout: 20_000 }, () => {
       .toHaveAttribute("href", "/learn/modules/m2/lessons/l1/1");
     expect(screen.queryByText("Contenido p2a")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Siguiente|Finalizar/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Abrir TutorAI" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "¿Te gustaría expandir más este tema?" })).not.toBeInTheDocument();
   });
 
   it("shows the lock screen when the server answers the page with 403 progress.lesson_locked", async() => {
