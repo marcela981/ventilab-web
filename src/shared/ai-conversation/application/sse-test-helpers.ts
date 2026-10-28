@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI conversation SSE test helpers
-* Descripción: Test-only builders of text/event-stream bodies for msw: delta/done/error frames, a controlled stream the test pushes chunks into, and a closed stream with fixed chunks. Shared modules cannot import the learning helpers, so this is the shared copy. Depends on msw.
-* Versión: 1.0
+* Descripción: Test-only builders of text/event-stream bodies for msw: start/delta/done/error frames, a controlled stream the test pushes chunks into, and a closed stream with fixed chunks. Shared modules cannot import the learning helpers, so this is the shared copy. v1.1 (W7, Bloque 2): startFrame (early AI tutor `start` event). Depends on msw.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,6 +12,11 @@
 import { HttpResponse } from "msw";
 
 const encoder = new TextEncoder();
+
+export const startFrame = (data: { conversationId: string, messageId: string }): string => `event: start
+data: ${JSON.stringify(data)}
+
+`;
 
 export const deltaFrame = (text: string): string => `event: delta\ndata: ${JSON.stringify({ text })}\n\n`;
 
