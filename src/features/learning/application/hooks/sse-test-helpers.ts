@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: SSE test helpers
-* Descripción: Test-only helpers that serve real text/event-stream bodies through msw: SSE frame builders (delta, done, error) and a controllable stream whose chunks the test pushes one at a time (progressive rendering, abort while streaming), plus a fixed stream for whole answers. Used by the useAiStream, Profundizar and Preguntas tests. Depends on msw.
-* Versión: 1.0
+* Descripción: Test-only helpers that serve real text/event-stream bodies through msw: SSE frame builders (delta, done, error) and a controllable stream whose chunks the test pushes one at a time (progressive rendering, abort while streaming), plus a fixed stream for whole answers. Used by the useAiStream, Profundizar and Preguntas tests. Depends on msw. v1.1 (W7, Bloque 2): startFrame (early AI tutor `start` event with conversationId and messageId).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,6 +12,8 @@
 import { HttpResponse } from "msw";
 
 const encoder = new TextEncoder();
+
+export const startFrame = (data: { conversationId: string, messageId: string }): string => `event: start\ndata: ${JSON.stringify(data)}\n\n`;
 
 export const deltaFrame = (text: string): string => `event: delta\ndata: ${JSON.stringify({ text })}\n\n`;
 

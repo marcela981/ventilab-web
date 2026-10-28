@@ -13,10 +13,7 @@ import { HttpResponse } from "msw";
 
 const encoder = new TextEncoder();
 
-export const startFrame = (data: { conversationId: string, messageId: string }): string => `event: start
-data: ${JSON.stringify(data)}
-
-`;
+export const startFrame = (data: { conversationId: string, messageId: string }): string => `event: start\ndata: ${JSON.stringify(data)}\n\n`;
 
 export const deltaFrame = (text: string): string => `event: delta\ndata: ${JSON.stringify({ text })}\n\n`;
 

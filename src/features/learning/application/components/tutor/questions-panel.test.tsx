@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: QuestionsPanel tests
-* Descripción: Integration tests of the "Preguntas" panel against msw (real text/event-stream bodies for the streamed answers): it reopens the caller's LESSON conversation (client-side refId lookup, also on a later page of the listing) and shows its history with the incomplete note and the rating widget, sending a message streams the answer progressively and then shows the saved conversation, the first message starts a conversation with scope/refId/currentPageId, switching to MODULE looks up and starts with the moduleId, "Detener" stops the answer, an error before the stream gives the question back, and unmounting aborts the running stream. v1.2 (S2 ai-chat): Enter keeps inserting a new line (no submit) and no character counter is shown, as before the shared Composer. RichContent is replaced by plain text. Depends on vitest, Testing Library, msw and the learning/SSE test helpers. v1.1 (L6 fix): a network failure before the stream (status 0) also gives the question back.
-* Versión: 1.2
+* Descripción: Integration tests of the "Preguntas" panel against msw (real text/event-stream bodies for the streamed answers): it reopens the caller's LESSON conversation (client-side refId lookup, also on a later page of the listing) and shows its history with the incomplete note and the rating widget, sending a message streams the answer progressively and then shows the saved conversation, the first message starts a conversation with scope/refId/currentPageId, switching to MODULE looks up and starts with the moduleId, "Detener" stops the answer, an error before the stream gives the question back, and unmounting aborts the running stream. v1.2 (S2 ai-chat): Enter keeps inserting a new line (no submit) and no character counter is shown, as before the shared Composer. RichContent is replaced by plain text. Depends on vitest, Testing Library, msw and the learning/SSE test helpers. v1.1 (L6 fix): a network failure before the stream (status 0) also gives the question back. v1.3 (W7, Bloque 2): an answer saved incomplete with text is rateable; ratings send surface POPUP and the conversation scope; "Abrir en el asistente" is disabled until the conversation id is known and pushes /assistant/[id]; a stopped first message adopts the conversation announced by the start frame; "Reintentar" re-sends a failed message; a TutorAI suggestion prefills the message.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,10 +14,15 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { AI_ERROR_MESSAGES } from "../../entities/ai-error-messages";
-import { controlledStream, deltaFrame, doneFrame, sseResponse } from "../../hooks/sse-test-helpers";
+import { controlledStream, deltaFrame, doneFrame, errorFrame, sseResponse, startFrame } from "../../hooks/sse-test-helpers";
 import type { ControlledStream } from "../../hooks/sse-test-helpers";
+import { TutorPromptContext } from "../../hooks/use-tutor-prompt";
+import { routerStore } from "../../learning-router-test-helpers";
 import { apiUrl, envelope, errorResponse, renderWithSession } from "../../pages/learning-test-helpers";
+import { createTutorPromptStore } from "../../session/tutor-prompt-store";
 import { QuestionsPanel } from "./questions-panel";
+
+vi.mock("next/router", async() => (await import("../../learning-router-test-helpers")).nextRouterMock);
 
 vi.mock("@shared/rich-content/rich-content", () => ({
   RichContent: ({ content }: { content: unknown }) => <div>{typeof content === "string" ? content : ""}</div>,
@@ -51,6 +56,7 @@ let listings: Record<string, { items: ReturnType<typeof conversationDto>[], page
 let details: Record<string, MessageFixture[]> = {};
 let listQueries: string[] = [];
 let streamRequests: { path: string, body: unknown }[] = [];
+let ratings: unknown[] = [];
 let stream: ControlledStream;
 
 beforeAll(() => {
@@ -60,6 +66,8 @@ beforeAll(() => {
 beforeEach(() => {
   listQueries = [];
   streamRequests = [];
+  ratings = [];
+  routerStore.reset();
   stream = controlledStream();
   listings = {
     LESSON: [{ items: [conversationDto("c-other", "LESSON", "l9"), conversationDto("c-l1", "LESSON", "l1")], pages: 1 }],
@@ -93,6 +101,11 @@ beforeEach(() => {
         : errorResponse("ai-tutor.conversation_not_found", 404);
     }),
     http.get(apiUrl("/api/ai-ratings/mine"), () => HttpResponse.json(envelope(null))),
+    http.put(apiUrl("/api/ai-ratings"), async({ request }) => {
+      ratings.push(await request.json());
+
+      return HttpResponse.json(envelope(null));
+    }),
     http.post(apiUrl("/api/tutor/conversations"), async({ request }) => {
       streamRequests.push({ path: "/api/tutor/conversations", body: await request.json() });
 
@@ -131,8 +144,8 @@ describe("QuestionsPanel", () => {
     expect(await screen.findByText("La PEEP es la presión al final de la espiración.")).toBeInTheDocument();
     expect(screen.getByText("¿Qué es la PEEP?")).toBeInTheDocument();
     expect(screen.getByText("Respuesta incompleta: se interrumpió antes de terminar.")).toBeInTheDocument();
-    // Only the complete answer produced by an AI call is rateable.
-    expect(await screen.findAllByRole("heading", { name: "¿Te fue útil?" })).toHaveLength(1);
+    // The complete answer and the incomplete one with text (a stopped answer) are rateable.
+    expect(await screen.findAllByRole("heading", { name: "¿Te fue útil?" })).toHaveLength(2);
     expect(listQueries[0]).toContain("scope=LESSON");
     expect(screen.getByRole("button", { name: "Esta lección" })).toHaveAttribute("aria-pressed", "true");
   });
@@ -226,6 +239,93 @@ describe("QuestionsPanel", () => {
     await waitFor(() => expect(screen.getAllByText("Respuesta incompleta: se interrumpió antes de terminar.")).toHaveLength(2));
     expect(screen.queryByText(/distensibilidad/)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Detener" })).not.toBeInTheDocument();
+  });
+
+  it("rates an answer with surface POPUP and the conversation scope", async() => {
+    renderPanel();
+    await screen.findByText("La PEEP es la presión al final de la espiración.");
+
+    fireEvent.click((await screen.findAllByRole("button", { name: "Sí, fue útil" }))[0]!);
+
+    await waitFor(() => expect(ratings).toEqual([{ targetType: "MESSAGE", targetId: "a1", helpful: true, surface: "POPUP", scope: "LESSON" }]));
+  });
+
+  it("opens the conversation in the assistant once its id is known", async() => {
+    renderPanel();
+    const open = screen.getByRole("button", { name: "Abrir en el asistente" });
+
+    expect(open).toBeDisabled();
+    await screen.findByText("¿Qué es la PEEP?");
+    await waitFor(() => expect(open).toBeEnabled());
+
+    fireEvent.click(open);
+    expect(routerStore.push).toHaveBeenCalledWith("/assistant/c-l1");
+  });
+
+  it("adopts the conversation announced by a stopped first message", async() => {
+    listings.LESSON = [{ items: [], pages: 1 }];
+    renderPanel();
+    await screen.findByText("Pregunta al tutor de IA lo que quieras sobre esta lección.");
+    expect(screen.getByRole("button", { name: "Abrir en el asistente" })).toBeDisabled();
+
+    send("Primera pregunta");
+    stream.push(startFrame({ conversationId: "c-new", messageId: "a1" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Abrir en el asistente" })).toBeEnabled());
+    stream.push(deltaFrame("Parte"));
+    expect(await screen.findByText("Parte")).toBeInTheDocument();
+
+    details["c-new"] = [
+      { id: "u1", role: "USER", content: "Primera pregunta" },
+      { id: "a1", role: "ASSISTANT", content: "Parte", isIncomplete: true, aiCallId: null },
+    ];
+    fireEvent.click(screen.getByRole("button", { name: "Detener" }));
+    stream.close();
+
+    expect(await screen.findByText("Respuesta incompleta: se interrumpió antes de terminar.")).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole("button", { name: "No fue útil" }));
+    await waitFor(() => expect(ratings).toEqual([{ targetType: "MESSAGE", targetId: "a1", helpful: false, surface: "POPUP", scope: "LESSON" }]));
+
+    fireEvent.click(screen.getByRole("button", { name: "Abrir en el asistente" }));
+    expect(routerStore.push).toHaveBeenCalledWith("/assistant/c-new");
+  });
+
+  it("re-sends a message that failed mid-stream with Reintentar", async() => {
+    const responses = [
+      () => sseResponse([startFrame({ conversationId: "c-l1", messageId: "a3" }), deltaFrame("Parcial"), errorFrame("ai.stream_interrupted", "cortado")]),
+      () => sseResponse([startFrame({ conversationId: "c-l1", messageId: "a4" }), deltaFrame("Completa"), doneFrame({ aiCallId: "call-a4", messageId: "a4", conversationId: "c-l1" })]),
+    ];
+
+    server.use(http.post(apiUrl("/api/tutor/conversations/:conversationId/messages"), async({ request }) => {
+      streamRequests.push({ path: "messages", body: await request.json() });
+
+      return (responses.shift() ?? responses[0])!();
+    }));
+    renderPanel();
+    await screen.findByText("¿Qué es la PEEP?");
+
+    send("Explica la PEEP");
+    expect(await screen.findByText(AI_ERROR_MESSAGES.interrupted)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
+
+    await waitFor(() => expect(streamRequests).toHaveLength(2));
+    expect(streamRequests[1]?.body).toEqual({ message: "Explica la PEEP", currentPageId: "p1" });
+    await waitFor(() => expect(screen.queryByText(AI_ERROR_MESSAGES.interrupted)).not.toBeInTheDocument());
+  });
+
+  it("fills the message with a TutorAI suggestion prompt without sending it", async() => {
+    const store = createTutorPromptStore();
+
+    store.request("questions", "Resume los puntos clave de la lección");
+    renderWithSession(
+      <TutorPromptContext.Provider value={store}>
+        <QuestionsPanel moduleId="m1" lessonId="l1" currentPageId="p1" />
+      </TutorPromptContext.Provider>,
+    );
+
+    expect(screen.getByRole("textbox", { name: "Tu pregunta" })).toHaveValue("Resume los puntos clave de la lección");
+    await waitFor(() => expect(store.getSnapshot()).toBeNull());
+    expect(streamRequests).toEqual([]);
   });
 
   it("keeps Enter as a new line and shows no character counter, as before the shared composer", async() => {

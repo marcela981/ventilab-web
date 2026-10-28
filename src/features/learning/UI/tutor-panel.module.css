@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI tutor panels styles
-* Descripción: Styles of the "Profundizar" and "Preguntas" tabs of the lesson viewer: panel column, scope selector, stopped/incomplete notes, the deepen form with its actions and the intro/empty/hint texts. v1.1 (S2 ai-chat): the thread, bubbles and "thinking" hint moved to @shared/ai-conversation (conversation.module.css). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
-* Versión: 1.1
+* Descripción: Styles of the "Profundizar" and "Preguntas" tabs of the lesson viewer: panel column, scope selector, stopped/incomplete notes, the deepen form with its actions and the intro/empty/hint texts. v1.1 (S2 ai-chat): the thread, bubbles and "thinking" hint moved to @shared/ai-conversation (conversation.module.css). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.2 (W7, Bloque 2): deepen accordion (heading button, chevron, region) and the panel title and thread actions of the TutorAI popup panels.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,7 +15,6 @@
   gap: var(--vl-space-3);
 }
 
-.intro,
 .hint {
   margin: 0;
   font: var(--mui-font-body2);
@@ -44,4 +43,79 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: var(--vl-space-2);
+}
+
+.panelTitle {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+  color: var(--vl-color-text);
+}
+
+.threadActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Deepen accordion at the end of the page content (W7). */
+.accordion {
+  margin-top: var(--vl-space-4);
+  background: var(--vl-color-surface);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+}
+
+.accordionHeading {
+  margin: 0;
+  font: inherit;
+}
+
+.accordionButton {
+  display: flex;
+  align-items: center;
+  gap: var(--vl-space-2);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--vl-space-3) var(--vl-space-4);
+  font: var(--mui-font-subtitle1);
+  color: var(--vl-color-primary);
+  text-align: left;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: var(--vl-radius-lg);
+}
+
+.accordionButton:hover {
+  background: var(--vl-color-hover);
+}
+
+.accordionButton:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}
+
+.accordionTitle {
+  flex: 1;
+}
+
+.accordionChevron {
+  transition: transform var(--vl-duration-short) var(--vl-ease-standard);
+}
+
+.accordionChevronOpen {
+  transform: rotate(180deg);
+}
+
+.accordionBody {
+  padding: 0 var(--vl-space-4) var(--vl-space-4);
+}
+
+.accordionBody[hidden] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accordionChevron {
+    transition: none;
+  }
 }
