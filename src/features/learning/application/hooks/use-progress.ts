@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Learning progress hooks
-* Descripción: useProgressSummary, useSectionProgress, useLevelProgress and useModuleProgress read the backend progress (`GET /api/progress/summary`, `/sections/{sectionId}`, `/levels/{levelId}`, `/modules/{moduleId}`) through useApiQuery with the learning cache config (C4: cache-first, stale-while-revalidate, 60 s dedupe; v1.1 (L3): no keepPreviousData, so a changed id never shows the previous id's progress) and map them to the progress entities. Values are the backend's; nothing is recalculated. A null id disables the query. None of them waits for another query (no request cascade). Depends on @shared/api-client and the progress mapper/service.
-* Versión: 1.1
+* Descripción: useProgressSummary, useSectionProgress, useLevelProgress and useModuleProgress read the backend progress (`GET /api/progress/summary`, `/sections/{sectionId}`, `/levels/{levelId}`, `/modules/{moduleId}`) through useApiQuery with the learning cache config (C4: cache-first, stale-while-revalidate, 60 s dedupe; v1.1 (L3): no keepPreviousData, so a changed id never shows the previous id's progress) and map them to the progress entities. Values are the backend's; nothing is recalculated. A null id disables the query. None of them waits for another query (no request cascade). Depends on @shared/api-client and the progress mapper/service. v1.2 (W3, Bloque 2): useProgressSummary takes an optional enabled flag and exposes reload (the Currículo tab retries both of its requests).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,7 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import type { ApiError } from "@shared/api-client/api-error";
 import { useApiQuery } from "@shared/api-client/use-api-query";
 import {
@@ -33,11 +33,18 @@ export type ProgressQueryResult<T> = {
   error: ApiError | null
 };
 
-export function useProgressSummary(): ProgressQueryResult<ProgressSummary> {
-  const { data, error, isLoading } = useApiQuery(PROGRESS_SUMMARY_PATH, undefined, LEARNING_QUERY_CONFIG);
-  const progress = useMemo(() => (data ? toProgressSummary(data.data) : null), [data]);
+export type ReloadableProgressQueryResult<T> = ProgressQueryResult<T> & {
+  reload: () => Promise<void>
+};
 
-  return { progress, isLoading, error: error ?? null };
+export function useProgressSummary(enabled = true): ReloadableProgressQueryResult<ProgressSummary> {
+  const { data, error, isLoading, mutate } = useApiQuery(enabled ? PROGRESS_SUMMARY_PATH : null, undefined, LEARNING_QUERY_CONFIG);
+  const progress = useMemo(() => (data ? toProgressSummary(data.data) : null), [data]);
+  const reload = useCallback(async() => {
+    await mutate();
+  }, [mutate]);
+
+  return { progress, isLoading, error: error ?? null, reload };
 }
 
 export function useSectionProgress(sectionId: string | null): ProgressQueryResult<SectionProgress> {

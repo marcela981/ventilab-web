@@ -5,11 +5,13 @@
 *   FIRST visit of its tab and then stays mounted with the `hidden` attribute (never unmounted), so its state, its
 *   canvases and the session it shows survive every tab switch; the tab is read from the URL only once the router is
 *   ready (useWorkspaceTab). Each panel has its own error
-*   boundary and loading skeleton. Depends on React.lazy, @shared/lib/retry-import, the design-system skeleton and route
-*   error boundary, the workspace tab hook, the bottom tabs and the workspace styles. v0.2 (W9, Bloque 1): Mis sesiones
+*   boundary and loading skeleton. Depends on @shared/lib/kept-mounted-tab-panels, the design-system skeleton,
+*   the workspace tab hook, the bottom tabs and the workspace styles. v0.2 (W9, Bloque 1): Mis sesiones
 *   is the SessionsPanel (unified list and in-panel replay). v0.3 (W8, Bloque 1): the Simular Paciente tab is the
 *   patient form panel. v0.4 (W11, Bloque 1): every tab has its final panel (W6–W10); the temporary panels are gone.
-* Versión: 0.4
+*   v0.5 (W1, Bloque 2): the visited/hidden panels and their lazy loading come from the shared KeptMountedTabPanels
+*   and lazyPanel, with no behaviour change.
+* Versión: 0.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,12 +19,10 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { lazy, Suspense, useState } from "react";
-import type { ComponentType, LazyExoticComponent } from "react";
-import { RouteErrorBoundary } from "@shared/design-system/components/route-error-boundary";
 import { CardSkeleton } from "@shared/design-system/components/skeleton";
 import { cx } from "@shared/lib/class-names";
-import { retryImport } from "@shared/lib/retry-import";
+import { KeptMountedTabPanels, lazyPanel } from "@shared/lib/kept-mounted-tab-panels";
+import type { LazyPanel } from "@shared/lib/kept-mounted-tab-panels";
 import { WORKSPACE_TABS } from "../entities/workspace-tab.entity";
 import type { WorkspaceTab } from "../entities/workspace-tab.entity";
 import { useWorkspaceTab } from "../hooks/use-workspace-tab";
@@ -41,66 +41,31 @@ export const SIMULATOR_WORKSPACE_COPY = {
   } satisfies Record<WorkspaceTab, string>,
 } as const;
 
-const MonitoringPanel = lazy(() =>
-  retryImport(() => import("./monitoring/monitoring-panel")).then((module) => ({ default: module.MonitoringPanel })),
-);
-
-const SimularPanel = lazy(() =>
-  retryImport(() => import("./patient-form/patient-form-panel")).then((module) => ({ default: module.PatientFormPanel })),
-);
-
-const ConexionPanel = lazy(() =>
-  retryImport(() => import("./connection/connection-panel")).then((module) => ({ default: module.ConnectionPanel })),
-);
-
-const SesionesPanel = lazy(() =>
-  retryImport(() => import("./sessions/sessions-panel")).then((module) => ({ default: module.SessionsPanel })),
-);
-
-const TAB_PANELS: Record<WorkspaceTab, LazyExoticComponent<ComponentType>> = {
-  simular: SimularPanel,
-  monitoreo: MonitoringPanel,
-  conexion: ConexionPanel,
-  sesiones: SesionesPanel,
+const TAB_PANELS: Record<WorkspaceTab, LazyPanel> = {
+  simular: lazyPanel(() => import("./patient-form/patient-form-panel").then((module) => module.PatientFormPanel)),
+  monitoreo: lazyPanel(() => import("./monitoring/monitoring-panel").then((module) => module.MonitoringPanel)),
+  conexion: lazyPanel(() => import("./connection/connection-panel").then((module) => module.ConnectionPanel)),
+  sesiones: lazyPanel(() => import("./sessions/sessions-panel").then((module) => module.SessionsPanel)),
 };
 
-const NO_VISITS: readonly WorkspaceTab[] = [];
+const panelFallback = (tab: WorkspaceTab) => <CardSkeleton label={SIMULATOR_WORKSPACE_COPY.loadingPanel[tab]} />;
 
 export function SimulatorWorkspace() {
   const { tab, selectTab } = useWorkspaceTab();
-  // Tabs visited at least once: their panel is mounted and stays mounted (hidden) afterwards.
-  const [visited, setVisited] = useState<readonly WorkspaceTab[]>(NO_VISITS);
-
-  if (tab !== null && !visited.includes(tab)) {
-    setVisited([...visited, tab]);
-  }
 
   return (
     <div className={cx(styles.workspace)} data-workspace-tab={tab ?? undefined}>
       <h1 className={cx(styles.visuallyHidden)}>{SIMULATOR_WORKSPACE_COPY.title}</h1>
       <div className={cx(styles.panels)}>
-        {WORKSPACE_TABS.map((key) => {
-          const Panel = TAB_PANELS[key];
-
-          return (
-            <section
-              key={key}
-              id={workspacePanelId(key)}
-              role="tabpanel"
-              aria-labelledby={workspaceTabId(key)}
-              hidden={tab !== key}
-              className={cx(styles.panel)}
-            >
-              {visited.includes(key) ? (
-                <RouteErrorBoundary>
-                  <Suspense fallback={<CardSkeleton label={SIMULATOR_WORKSPACE_COPY.loadingPanel[key]} />}>
-                    <Panel />
-                  </Suspense>
-                </RouteErrorBoundary>
-              ) : null}
-            </section>
-          );
-        })}
+        <KeptMountedTabPanels
+          tabs={WORKSPACE_TABS}
+          active={tab}
+          panels={TAB_PANELS}
+          fallback={panelFallback}
+          panelId={workspacePanelId}
+          tabId={workspaceTabId}
+          panelClassName={cx(styles.panel)}
+        />
       </div>
       {tab !== null ? <BottomTabs active={tab} onSelect={selectTab} /> : null}
     </div>

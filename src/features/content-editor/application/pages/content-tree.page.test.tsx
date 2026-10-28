@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ContentTreePage tests
-* Descripción: Integration tests of the content editor tree against msw (generous timeouts for runs under load): composition (sections in order, "Sin sección" levels, status badges) and lesson pages loaded only when the lesson is expanded; text and status filters keeping ancestors; creating a child (POST with the next order, then the tree is read again); status change methods (PATCH for sections, PUT {status} for modules); the warning when publishing under a draft ancestor; and the delete 409 (student data) flow that offers "Archivar en su lugar" and sends ARCHIVED (PUT for a module, PATCH for a section). Depends on vitest, Testing Library, msw and the content editor test helpers.
-* Versión: 1.0 (C1)
+* Descripción: Integration tests of the content editor tree against msw (generous timeouts for runs under load): composition (sections in order, "Sin sección" levels, status badges) and lesson pages loaded only when the lesson is expanded; text and status filters keeping ancestors; creating a child (POST with the next order, then the tree is read again); status change methods (PATCH for sections, PUT {status} for modules); the warning when publishing under a draft ancestor; and the delete 409 (student data) flow that offers "Archivar en su lugar" and sends ARCHIVED (PUT for a module, PATCH for a section). Depends on vitest, Testing Library, msw and the content editor test helpers. v1.1 (W6, Bloque 2): the ?node= deep link expands the ancestors (and the node), scrolls to and focuses its row; an unknown node changes nothing.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -95,6 +95,39 @@ function rowOf(title: string): HTMLElement {
 }
 
 describe("ContentTreePage", { timeout: 20_000 }, () => {
+  it("reveals, scrolls to and focuses the node of the ?node= deep link", async() => {
+    const scrolled: string[] = [];
+    const original = Element.prototype.scrollIntoView;
+
+    Element.prototype.scrollIntoView = function scrollIntoView(this: Element) {
+      scrolled.push(this.id);
+    };
+
+    try {
+      renderWithSession(<ContentTreePage focusNode="module:m1" />);
+
+      expect(await screen.findByText("Presiones", {}, { timeout: LOAD_TIMEOUT })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Contraer Fundamentos" })).toHaveAttribute("aria-expanded", "true");
+      expect(screen.getByRole("button", { name: "Contraer Nivel básico" })).toHaveAttribute("aria-expanded", "true");
+      expect(screen.getByRole("button", { name: "Expandir Avanzado" })).toHaveAttribute("aria-expanded", "false");
+
+      await waitFor(() => {
+        expect(document.activeElement?.id).toBe("content-node-module:m1");
+      });
+      expect(scrolled).toContain("content-node-module:m1");
+      expect(within(document.activeElement as HTMLElement).getByText("Mecánica ventilatoria")).toBeInTheDocument();
+    } finally {
+      Element.prototype.scrollIntoView = original;
+    }
+  });
+
+  it("keeps the default expansion for an unknown or malformed node", async() => {
+    renderWithSession(<ContentTreePage focusNode="level:ghost" />);
+
+    await screen.findByText("Fundamentos", {}, { timeout: LOAD_TIMEOUT });
+    expect(screen.getByRole("button", { name: "Expandir Fundamentos" })).toHaveAttribute("aria-expanded", "false");
+  });
+
   it("composes sections, unsectioned levels and status badges", async() => {
     await renderTree();
 

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: usePageViewTracker tests
-* Descripción: Fake-timer tests of the page-view rule: one registration after 5 s on the page; "Siguiente" (markViewedNow) before 5 s registers once and the timer does not fire again; unmounting before 5 s registers nothing; a new pageId starts a new visit; preview mode (teacher) never registers; after success the module progress cache takes the response values for that lesson and the affected progress queries and the curriculum tree are invalidated. The service is mocked. Depends on vitest, Testing Library, SWR and the session context.
-* Versión: 1.0
+* Descripción: Fake-timer tests of the page-view rule: one registration after 5 s on the page; "Siguiente" (markViewedNow) before 5 s registers once and the timer does not fire again; unmounting before 5 s registers nothing; a new pageId starts a new visit; preview mode (teacher) never registers; after success the module progress cache takes the response values for that lesson and the affected progress queries and the curriculum tree are invalidated. The service is mocked. v1.1 (W2, Bloque 2): a view that fails with a network error goes to the user's offline progress outbox; a 403 is dropped with a console warning. Depends on vitest, Testing Library, SWR, the session context and the progress outbox key. v1.2 (W5, Bloque 2): markViewedNow resolves with the view result (null on failure) and onViewed receives it once, from the timer or from Siguiente.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,12 +13,14 @@ import { act, renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { SWRConfig, unstable_serialize } from "swr";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ApiError } from "@shared/api-client/api-error";
 import { apiQueryKey } from "@shared/api-client/use-api-query";
 import { SessionContext } from "@shared/session/session-context";
 import type { SessionContextValue } from "@shared/session/session-context";
 import type { Role } from "@shared/session/session.entity";
 import { MODULE_PROGRESS_PATH } from "../../api/services/progress.service";
 import { lessonProgressDto, moduleProgressDto } from "../pages/learning-test-helpers";
+import { progressOutboxKey } from "../session/progress-outbox";
 import { PAGE_VIEW_DELAY_MS, usePageViewTracker } from "./use-page-view-tracker";
 
 const service = vi.hoisted(() => ({ recordPageView: vi.fn() }));
@@ -35,12 +37,14 @@ const viewResult = {
   totalPages: 1,
   lessonCompleted: true,
   lessonJustCompleted: true,
+  moduleCompleted: false,
   firstViewedAt: "2026-10-14T00:00:00.000Z",
   lastVisitedAt: "2026-10-14T00:00:00.000Z",
 };
 
-function makeWrapper(role: Role, cache: Map<string, unknown>) {
-  const session = { role, status: "authenticated" } as unknown as SessionContextValue;
+function makeWrapper(role: Role, cache: Map<string, unknown>, userId?: string) {
+  const user = userId ? { id: userId } : null;
+  const session = { role, status: "authenticated", user } as unknown as SessionContextValue;
 
   return function Wrapper({ children }: { children: ReactNode }) {
     return (
@@ -65,6 +69,7 @@ async function advance(ms: number) {
 }
 
 beforeEach(() => {
+  window.localStorage.clear();
   vi.useFakeTimers();
   service.recordPageView.mockReset();
   service.recordPageView.mockResolvedValue(viewResult);
@@ -142,8 +147,23 @@ describe("usePageViewTracker", () => {
     const { result } = renderTracker();
 
     await act(async() => {
-      await expect(result.current.markViewedNow()).resolves.toBeUndefined();
+      await expect(result.current.markViewedNow()).resolves.toBeNull();
     });
+  });
+
+  it("resolves markViewedNow with the view result and hands it once to onViewed", async() => {
+    const onViewed = vi.fn();
+    const { result } = renderHook(() => usePageViewTracker({ pageId: "p1", moduleId: "m1", onViewed }), {
+      wrapper: makeWrapper("STUDENT", new Map(), "u1"),
+    });
+
+    await advance(PAGE_VIEW_DELAY_MS);
+    await act(async() => {
+      await expect(result.current.markViewedNow()).resolves.toEqual(viewResult);
+    });
+
+    expect(onViewed).toHaveBeenCalledTimes(1);
+    expect(onViewed).toHaveBeenCalledWith(viewResult);
   });
 
   it("updates the cached module progress of that lesson with the response values", async() => {
@@ -164,5 +184,34 @@ describe("usePageViewTracker", () => {
     expect(updated.lessons[1]).toEqual(cached.lessons[1]);
     // Percentages are not recalculated in the frontend: the invalidation refetches them.
     expect(updated.percentage).toBe(0);
+  });
+
+  it("puts a view that fails with a network error in the user's offline outbox", async() => {
+    service.recordPageView.mockRejectedValue(new ApiError({ code: "network.unavailable", message: "offline", status: 0 }));
+    const { result } = renderHook(() => usePageViewTracker({ pageId: "p1", moduleId: "m1" }), {
+      wrapper: makeWrapper("STUDENT", new Map(), "u1"),
+    });
+
+    await act(async() => {
+      await result.current.markViewedNow();
+    });
+
+    expect(window.localStorage.getItem(progressOutboxKey("u1"))).toBe(JSON.stringify(["p1"]));
+  });
+
+  it("drops a view rejected with 403 with a console warning", async() => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    service.recordPageView.mockRejectedValue(new ApiError({ code: "progress.lesson_locked", message: "locked", status: 403 }));
+    const { result } = renderHook(() => usePageViewTracker({ pageId: "p1", moduleId: "m1" }), {
+      wrapper: makeWrapper("STUDENT", new Map(), "u1"),
+    });
+
+    await act(async() => {
+      await result.current.markViewedNow();
+    });
+
+    expect(window.localStorage.getItem(progressOutboxKey("u1"))).toBeNull();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("p1"), expect.any(ApiError));
+    warn.mockRestore();
   });
 });

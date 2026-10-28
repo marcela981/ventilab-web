@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Learning test helpers
-* Descripción: Shared fixtures of the learning tests: backend envelope and error bodies, factories of the curriculum tree, module lessons and progress DTOs (summary, section, module), v1.1 (L3) lesson Page summaries, Page details with Tiptap text blocks, and a render helper that mounts a page inside an isolated SWR cache and a session context with the given role (no AuthProvider, no network for the session). Test-only code. Depends on Testing Library, msw, SWR and the session context.
-* Versión: 1.1
+* Descripción: Shared fixtures of the learning tests: backend envelope and error bodies, factories of the curriculum tree, module lessons and progress DTOs (summary, section, module), v1.1 (L3) lesson Page summaries, Page details with Tiptap text blocks, and a render helper that mounts a page inside an isolated SWR cache and a session context with the given role (no AuthProvider, no network for the session). Test-only code. Depends on Testing Library, msw, SWR and the session context. v1.2 (W3, Bloque 2): progress summary builder. v1.3 (W4, Bloque 2): level and module progress item builders and the seeded (July-shaped) tree.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -104,6 +104,51 @@ export function treeDto(): CurriculumTreeDTO {
   };
 }
 
+// Seeded shape (W4): section-mecanica (order 0) holds level-prerequisitos, level-beginner (m-b1 completed, m-b2,
+// m-b3 coming soon: no lessons) and level-intermedio (locked by level-beginner, m-i1 locked); section-ventylab
+// (order 1) holds ventylab-principiante (track ventylab, m-v1) and a draft level ventylab-borrador (m-v2 draft).
+export function seededTreeDto(): CurriculumTreeDTO {
+  const mecanica = (id: string, order: number, modules: TreeModuleDTO[], overrides: Partial<TreeLevelDTO> = {}) => treeLevelDto(id, order, "section-mecanica", modules, { track: "mecanica", ...overrides });
+  const ventylab = (id: string, order: number, modules: TreeModuleDTO[], overrides: Partial<TreeLevelDTO> = {}) => treeLevelDto(id, order, "section-ventylab", modules, { track: "ventylab", ...overrides });
+
+  return {
+    sections: [
+      {
+        id: "section-ventylab",
+        slug: "ventylab",
+        title: "VentyLab",
+        description: null,
+        order: 1,
+        status: "PUBLISHED",
+        levels: [
+          ventylab("ventylab-principiante", 1, [treeModuleDto("m-v1", 1)], { title: "Principiante" }),
+          ventylab("ventylab-borrador", 2, [treeModuleDto("m-v2", 1, { status: "DRAFT" })], { title: "Borrador VentyLab", status: "DRAFT" }),
+        ],
+      },
+      {
+        id: "section-mecanica",
+        slug: "mecanica",
+        title: "Mecánica ventilatoria",
+        description: null,
+        order: 0,
+        status: "PUBLISHED",
+        levels: [
+          mecanica("level-intermedio", 3, [
+            treeModuleDto("m-i1", 1, { locked: true, missingPrerequisites: [{ id: "m-b2", title: "Módulo m-b2" }] }),
+          ], { title: "Nivel Intermedio", locked: true, missingPrerequisites: [{ id: "level-beginner", title: "Nivel Principiante" }] }),
+          mecanica("level-beginner", 2, [
+            treeModuleDto("m-b1", 1, { completed: true }),
+            treeModuleDto("m-b2", 2),
+            treeModuleDto("m-b3", 3, { lessonCount: 0 }),
+          ], { title: "Nivel Principiante" }),
+          mecanica("level-prerequisitos", 1, [treeModuleDto("m-p1", 1)], { title: "Prerequisitos" }),
+        ],
+      },
+    ],
+    unsectionedLevels: [],
+  };
+}
+
 export function lessonDto(id: string, order: number, pageCount: number): ModuleLessonDTO {
   return {
     id,
@@ -128,6 +173,27 @@ export function lessonDto(id: string, order: number, pageCount: number): ModuleL
 
 export function progressItem(percentage: number, completedLessons: number, totalLessons: number) {
   return { percentage, completedLessons, totalLessons, completed: percentage >= 100 };
+}
+
+type LevelProgressItem = ReturnType<typeof progressItem> & { levelId: string, sectionId: string | null, completedModules: number, totalModules: number };
+
+type ModuleProgressItem = ReturnType<typeof progressItem> & { moduleId: string, levelId: string | null };
+
+export function levelProgressItemDto(levelId: string, completedModules: number, totalModules: number, sectionId: string | null = null): LevelProgressItem {
+  const percentage = totalModules > 0 ? Math.floor((completedModules / totalModules) * 100) : 0;
+
+  return { levelId, sectionId, completedModules, totalModules, ...progressItem(percentage, completedModules, totalModules) };
+}
+
+export function moduleProgressItemDto(moduleId: string, completedLessons: number, totalLessons: number, levelId: string | null = null): ModuleProgressItem {
+  const percentage = totalLessons > 0 ? Math.floor((completedLessons / totalLessons) * 100) : 0;
+
+  return { moduleId, levelId, ...progressItem(percentage, completedLessons, totalLessons) };
+}
+
+/** GET /api/progress/summary body. */
+export function progressSummaryDto(levels: LevelProgressItem[] = [], modules: ModuleProgressItem[] = []) {
+  return { ...progressItem(0, 0, 0), sections: [], levels, modules };
 }
 
 export function lessonProgressDto(lessonId: string, viewedPages: number, totalPages: number) {

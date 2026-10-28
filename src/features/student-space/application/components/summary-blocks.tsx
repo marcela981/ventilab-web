@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student home summary blocks
-* Descripción: The blocks of /me, all fed by the single `GET /api/me/summary` read and never computing a metric: learning progress (overall and per section with the section title from the API, bars with the API percentage and lesson counts), active and upcoming evaluations (link to /evaluations/[evaluationId]), latest published grades (grade in es-CO plus "Aprobada"/"No aprobada" from the API `passed`, module when known; link to the attempt result with its feedback), latest notes (excerpt with lesson and page titles; link to the lesson page in the learning viewer when the module is known), latest AI conversations (/assistant/[id]), latest simulation sessions (case title; result and replay of ended sessions, the session itself while active), upcoming ventilator reservations (/lab/reservations) and the unread notifications counter (/notifications). Every block has a Spanish empty state with a next step. Depends on MUI, next/link, the design-system empty state, @shared/lib format, the student space routes, labels and entities, SummaryCard and the student space CSS Module. v1.1 (B2 closure): the backend gaps are closed (section titles, grade attempt result links and modules, note lesson links and titles, session case titles).
-* Versión: 1.1
+* Descripción: The blocks of /me, all fed by the single `GET /api/me/summary` read and never computing a metric: learning progress (overall and per section with the section title from the API, bars with the API percentage and lesson counts), active and upcoming evaluations (link to /evaluations/[evaluationId]), latest published grades (grade in es-CO plus "Aprobada"/"No aprobada" from the API `passed`, module when known; link to the attempt result with its feedback), latest notes (excerpt with lesson and page titles; link to the lesson page in the learning viewer when the module is known), latest AI conversations (/assistant/[id]), latest simulation sessions (case title; result and replay of ended sessions, the session itself while active), upcoming ventilator reservations (/lab/reservations) and the unread notifications counter (/notifications). Every block has a Spanish empty state with a next step. Depends on MUI, next/link, the design-system empty state, @shared/lib format, the student space routes, labels and entities, SummaryCard and the student space CSS Module. v1.1 (B2 closure): the backend gaps are closed (section titles, grade attempt result links and modules, note lesson links and titles, session case titles). v1.2 (W8, Bloque 2): shared with the Inicio tab of /learn: ContinueLearningBlock ("Continuar donde quedaste": module and lesson titles, the API module percentage as a bar and a "Continuar" link to /learn/modules/[moduleId], whose resolver opens the resume point) and an optional title on EvaluationsBlock (Inicio shows "Evaluaciones pendientes").
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,6 +20,7 @@ import {
   buildConversationUrl,
   buildEvaluationUrl,
   buildLessonUrl,
+  buildModuleUrl,
   buildSectionUrl,
   buildSimulationReplayUrl,
   buildSimulationResultUrl,
@@ -40,6 +41,7 @@ import {
   SIMULATION_STATUS_LABELS,
 } from "../entities/student-space-labels";
 import type {
+  ContinueLearning,
   ProgressItem,
   SummaryConversation,
   SummaryEvaluation,
@@ -54,6 +56,11 @@ import styles from "../../UI/student-space.module.css";
 
 // TODO(i18n): move to a student-space namespace in src/i18n.
 export const SUMMARY_COPY = {
+  continueTitle: "Continuar donde quedaste",
+  continueAction: "Continuar",
+  continueActionAria: (lessonTitle: string) => `Continuar con la lección ${lessonTitle}`,
+  continueAria: (moduleTitle: string) => `Progreso del módulo ${moduleTitle}`,
+  continueValue: (percent: number) => `${percent} % del módulo`,
   progressTitle: "Mi progreso",
   progressLink: "Ir al aprendizaje",
   overall: "Todo el currículo",
@@ -107,13 +114,40 @@ export const SUMMARY_COPY = {
 
 const scoreFormatter = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 1 });
 
-function percentOf(item: ProgressItem): number {
-  // Display only: the bar takes the API percentage, bounded to its 0–100 range.
-  return Math.min(100, Math.max(0, Math.round(item.percentage)));
+function boundedPercent(value: number): number {
+  return Math.min(100, Math.max(0, Math.round(value)));
+}
+
+export function ContinueLearningBlock({ item }: { item: ContinueLearning }) {
+  const value = boundedPercent(item.percent);
+
+  return (
+    <SummaryCard title={SUMMARY_COPY.continueTitle}>
+      <div className={cx(styles.continue)}>
+        <span className={cx(styles.itemMeta)}>{item.moduleTitle}</span>
+        <span className={cx(styles.itemTitle)}>{item.lessonTitle}</span>
+        <LinearProgress
+          variant="determinate"
+          value={value}
+          aria-label={SUMMARY_COPY.continueAria(item.moduleTitle)}
+          className={cx(styles.progressBar)}
+        />
+        <span className={cx(styles.itemMeta)}>{SUMMARY_COPY.continueValue(value)}</span>
+        <Link
+          href={buildModuleUrl(item.moduleId)}
+          aria-label={SUMMARY_COPY.continueActionAria(item.lessonTitle)}
+          className={cx(styles.primaryAction)}
+        >
+          {SUMMARY_COPY.continueAction}
+        </Link>
+      </div>
+    </SummaryCard>
+  );
 }
 
 function ProgressRow({ title, item, href }: { title: string, item: ProgressItem, href?: string | undefined }) {
-  const value = percentOf(item);
+  // Display only: the bar takes the API percentage, bounded to its 0–100 range.
+  const value = boundedPercent(item.percentage);
 
   return (
     <li className={cx(styles.progressRow)}>
@@ -177,9 +211,15 @@ function EvaluationList({ title, items }: { title: string, items: readonly Summa
   );
 }
 
-export function EvaluationsBlock({ active, upcoming }: { active: readonly SummaryEvaluation[], upcoming: readonly SummaryEvaluation[] }) {
+export type EvaluationsBlockProps = {
+  active: readonly SummaryEvaluation[]
+  upcoming: readonly SummaryEvaluation[]
+  title?: string | undefined
+};
+
+export function EvaluationsBlock({ active, upcoming, title = SUMMARY_COPY.evaluationsTitle }: EvaluationsBlockProps) {
   return (
-    <SummaryCard title={SUMMARY_COPY.evaluationsTitle} link={{ href: EVALUATIONS_LIST_URL, label: SUMMARY_COPY.evaluationsLink }}>
+    <SummaryCard title={title} link={{ href: EVALUATIONS_LIST_URL, label: SUMMARY_COPY.evaluationsLink }}>
       {active.length === 0 && upcoming.length === 0 ? (
         <EmptyState title={SUMMARY_COPY.evaluationsEmptyTitle} description={SUMMARY_COPY.evaluationsEmptyDescription} />
       ) : (

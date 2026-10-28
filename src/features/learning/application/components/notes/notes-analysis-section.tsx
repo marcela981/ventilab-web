@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: NotesAnalysisSection
-* Descripción: "Analizar mis notas con IA" block of the notes panel: runs the AI analysis of the caller's notes of the lesson (useNotesAnalysis, slow timeout), shows its error (no notes, 429 with the wait, AI service unavailable or failing, network) and the result: summary, key concepts, gaps and suggestions, plus the shared "¿Te fue útil?" widget rating the analysis (targetType NOTES_ANALYSIS, targetId = the returned aiCallId; a fresh analysis has no rating yet). Depends on MUI, @shared/design-system (AsyncButton), @shared/ai-rating, useNotesAnalysis, the notes error messages and the notes CSS Module. v1.1 (L5/L6): list items are keyed by index + text (LLM output may repeat an item).
-* Versión: 1.1
+* Descripción: "Analizar mis notas con IA" block of the notes panel: runs the AI analysis of the caller's notes of the lesson (useNotesAnalysis, slow timeout), shows its error (no notes, 429 with the wait, AI service unavailable or failing, network) and the result: summary, key concepts, gaps and suggestions, plus the shared "¿Te fue útil?" widget rating the analysis (targetType NOTES_ANALYSIS, targetId = the returned aiCallId; a fresh analysis has no rating yet). Depends on MUI, @shared/design-system (AsyncButton), @shared/ai-rating, useNotesAnalysis, the notes error messages and the notes CSS Module. v1.1 (L5/L6): list items are keyed by index + text (LLM output may repeat an item). v1.2 (W7, Bloque 2): the rating sends surface NOTES_ANALYSIS and scope LESSON (the analysis covers the lesson notes).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -66,7 +66,7 @@ export function NotesAnalysisSection({ lessonId, canAnalyze }: NotesAnalysisSect
           <AnalysisList title={COPY.keyConcepts} items={analysis.keyConcepts} />
           <AnalysisList title={COPY.gaps} items={analysis.gaps} />
           <AnalysisList title={COPY.suggestions} items={analysis.suggestions} />
-          <AiRatingWidget key={analysis.aiCallId} targetType="NOTES_ANALYSIS" targetId={analysis.aiCallId} initialRating={null} />
+          <AiRatingWidget key={analysis.aiCallId} targetType="NOTES_ANALYSIS" targetId={analysis.aiCallId} initialRating={null} surface="NOTES_ANALYSIS" scope="LESSON" />
         </section>
       ) : null}
     </div>

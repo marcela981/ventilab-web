@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Legacy route redirects tests
-* Descripción: The legacy routes redirect (temporary, 307) to the migrated screens through the next.config `redirects()` rules of config/legacy-redirects.mjs: /panel and /panel/students → /teacher, /panel/students/[id] → /teacher/students/[id], /panel/admin → /admin/users, /panel/settings → /admin/settings; the seven /evaluation/** routes → /evaluations, /evaluations/manage, /evaluations/manage/new or /grading; /teaching/[moduleId]/[lessonId] and /teaching?moduleId=&lessonId= → page 1 of the same lesson, any other /teaching → /learn. Concrete paths are resolved with Next's own matchers (path-match, matchHas, prepareDestination) in rule order, so the order of the list is tested too; static destinations are routes of the session route table and next.config.mjs serves exactly this list. v1.0 covered only the panel getServerSideProps helpers. Depends on vitest, Next's routing utils and the session route table. v2.1 (W1 Bloque 1): /simulador is no longer redirected (it is the workspace); /simulator, /lab and /lab/live go to /simulador with their `tab` (query passed through, the rule's tab wins), exact paths only: the case editor, the session pages, /lab/reservations and /lab/recordings/** are left alone; no rule targets another rule's source (no cycles).
-* Versión: 2.1
+* Descripción: The legacy routes redirect (temporary, 307) to the migrated screens through the next.config `redirects()` rules of config/legacy-redirects.mjs: /panel and /panel/students → /teacher, /panel/students/[id] → /teacher/students/[id], /panel/admin → /admin/users, /panel/settings → /admin/settings; the seven /evaluation/** routes → /evaluations, /evaluations/manage, /evaluations/manage/new or /grading; /teaching/[moduleId]/[lessonId] and /teaching?moduleId=&lessonId= → page 1 of the same lesson, any other /teaching → /learn. Concrete paths are resolved with Next's own matchers (path-match, matchHas, prepareDestination) in rule order, so the order of the list is tested too; static destinations are routes of the session route table and next.config.mjs serves exactly this list. v1.0 covered only the panel getServerSideProps helpers. Depends on vitest, Next's routing utils and the session route table. v2.1 (W1 Bloque 1): /simulador is no longer redirected (it is the workspace); /simulator, /lab and /lab/live go to /simulador with their `tab` (query passed through, the rule's tab wins), exact paths only: the case editor, the session pages, /lab/reservations and /lab/recordings/** are left alone; no rule targets another rule's source (no cycles). v2.2 (W3, Bloque 2): /learn/:sectionId goes to the Currículo tab; /learn and its module routes are not redirected.
+* Versión: 2.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -83,6 +83,7 @@ describe("legacy redirect rules", () => {
       "/teaching/:moduleId/:lessonId",
       "/teaching (query)",
       "/teaching",
+      "/learn/:sectionId",
     ]);
   });
 
@@ -158,10 +159,19 @@ describe("legacy redirect rules", () => {
     expect(resolve("/teaching?moduleId=&lessonId=l1")).toBe("/learn?moduleId=&lessonId=l1");
   });
 
+  it("sends a legacy section page to the Currículo tab with that section open", () => {
+    expect(resolve("/learn/section-mecanica")).toBe("/learn?tab=curriculo&section=section-mecanica");
+    expect(resolve("/learn/s1?tab=inicio")).toBe("/learn?tab=curriculo&section=s1");
+  });
+
   it("leaves the new routes alone", () => {
     expect(resolve("/evaluations")).toBeNull();
     expect(resolve("/teacher/students/u1")).toBeNull();
+    expect(resolve("/learn")).toBeNull();
+    expect(resolve("/learn?tab=progreso")).toBeNull();
     expect(resolve("/learn/modules/m1")).toBeNull();
+    expect(resolve("/learn/modules/m1/print")).toBeNull();
+    expect(resolve("/learn/modules/m1/lessons/l1/2")).toBeNull();
     expect(resolve("/dashboard")).toBeNull();
   });
 

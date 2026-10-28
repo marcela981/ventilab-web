@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student space styles
-* Descripción: Layout of the student space: /me (responsive grid of summary cards with lists, progress bars, links and the unread counter), /me/notes (filters, module groups with the AI analysis and lesson groups with their notes) and /me/grades (type filter and the grades table). Passed and failed grades use the success and error tokens and always carry their text label (never colour alone). Tokens only. v1.1 (B2 closure): the /me/notes search field and the module filter of /me/grades.
-* Versión: 1.1
+* Descripción: Layout of the student space: /me (responsive grid of summary cards with lists, progress bars, links and the unread counter), /me/notes (filters, module groups with the AI analysis and lesson groups with their notes) and /me/grades (type filter and the grades table). Passed and failed grades use the success and error tokens and always carry their text label (never colour alone). Tokens only. v1.1 (B2 closure): the /me/notes search field and the module filter of /me/grades. v1.2 (W8, Bloque 2): the "Continuar donde quedaste" block (shared with the Inicio tab of /learn) and its primary "Continuar" link.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -155,6 +155,33 @@
 .progressBar {
   height: var(--vl-space-2);
   border-radius: var(--vl-radius-pill);
+}
+
+.continue {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.primaryAction {
+  align-self: flex-start;
+  margin-top: var(--vl-space-2);
+  padding: var(--vl-space-2) var(--vl-space-4);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-primary);
+  color: var(--vl-color-on-primary);
+  font: var(--mui-font-button);
+  text-decoration: none;
+  transition: box-shadow var(--vl-duration-short) var(--vl-ease-standard);
+}
+
+.primaryAction:hover {
+  box-shadow: var(--vl-shadow-primary-hover);
+}
+
+.primaryAction:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
 }
 
 .counter {

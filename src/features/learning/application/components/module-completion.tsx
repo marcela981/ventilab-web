@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Module completion
-* Descripción: Completion card of a module, shown on /learn/modules/[moduleId]?completed=1 (the viewer's "Finalizar módulo" after the last Page). Shows the backend module progress (never recalculated; it is refetched after the last page view) and links to the next unlocked module of the curriculum (findNextModule excluding this one); when there is none, it links back to the section (or to /learn for modules without section). Depends on MUI, next/link, the progress bar and the viewer CSS Module.
-* Versión: 1.0
+* Descripción: Completion card of a module, shown on /learn/modules/[moduleId]?completed=1 (the viewer's "Finalizar módulo" after the last Page). Shows the backend module progress (never recalculated; it is refetched after the last page view) and links to the next unlocked module of the curriculum (findNextModule excluding this one); when there is none, it links back to the section (or to /learn for modules without section). Depends on MUI, next/link, the progress bar and the viewer CSS Module. v1.1 (W3, Bloque 2): shown by the lesson viewer after "Finalizar módulo" (the ?completed=1 module route is gone). v1.2 (W5, Bloque 2): the viewer shows it when a page view answers moduleCompleted (not after a button or a URL), with the module progress the viewer already reads.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje

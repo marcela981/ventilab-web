@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Learning URL tests
-* Descripción: Unit tests of the pure learning URL builders (/learn, section, module, lesson page, print) and of the route parsers (route id and the 1-based pageNumber, which only accepts positive integers). v1.1 (L3): the module completion URL (?completed=1). v1.2 (R1): legacy /teaching lesson URLs resolve to the equivalent lesson page. Depends on vitest. v1.3 (B3.8, D5): the legacy /teaching cases moved to src/shared/session/legacy-redirects.test.ts (next.config redirect rules).
-* Versión: 1.3
+* Descripción: Unit tests of the pure learning URL builders (/learn, section, module, lesson page, print) and of the route parsers (route id and the 1-based pageNumber, which only accepts positive integers). v1.1 (L3): the module completion URL (?completed=1). v1.2 (R1): legacy /teaching lesson URLs resolve to the equivalent lesson page. Depends on vitest. v1.3 (B3.8, D5): the legacy /teaching cases moved to src/shared/session/legacy-redirects.test.ts (next.config redirect rules). v1.4 (W3, Bloque 2): the Currículo tab URL with ?section=; sections and levels link into it; the completion URL is gone. v1.5 (W4, Bloque 2): the content editor node deep link. v1.6 (W5, Bloque 2): the Page editor link.
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,10 +12,12 @@
 import { describe, expect, it } from "vitest";
 import {
   buildLessonPageUrl,
-  buildModuleCompletedUrl,
+  buildContentNodeUrl,
+  buildCurriculumUrl,
   buildLevelUrl,
   buildModulePrintUrl,
   buildModuleUrl,
+  buildPageEditorUrl,
   buildSectionUrl,
   LEARN_HOME_URL,
   levelAnchorId,
@@ -26,21 +28,24 @@ import {
 describe("learning URL builders", () => {
   it("builds every learning route and encodes the ids", () => {
     expect(LEARN_HOME_URL).toBe("/learn");
-    expect(buildSectionUrl("s1")).toBe("/learn/s1");
+    expect(buildCurriculumUrl()).toBe("/learn?tab=curriculo");
+    expect(buildCurriculumUrl("section mecanica")).toBe("/learn?tab=curriculo&section=section%20mecanica");
+    expect(buildSectionUrl("s1")).toBe("/learn?tab=curriculo&section=s1");
     expect(buildModuleUrl("m 1")).toBe("/learn/modules/m%201");
     expect(buildLessonPageUrl("m1", "l/1", 3)).toBe("/learn/modules/m1/lessons/l%2F1/3");
     expect(buildModulePrintUrl("m1")).toBe("/learn/modules/m1/print");
-    expect(buildModuleCompletedUrl("m 1")).toBe("/learn/modules/m%201?completed=1");
+    expect(buildContentNodeUrl("level", "lv 1")).toBe("/content?node=level:lv%201");
+    expect(buildContentNodeUrl("module", "m1")).toBe("/content?node=module:m1");
+    expect(buildPageEditorUrl("p 1")).toBe("/content/pages/p%201");
   });
 
   it("defaults the lesson page to the first page", () => {
     expect(buildLessonPageUrl("m1", "l1")).toBe("/learn/modules/m1/lessons/l1/1");
   });
 
-  it("links a level to its anchor inside the section page, or inside /learn when it has no section", () => {
+  it("links a level to its anchor inside the Currículo tab, opening the accordion that holds it", () => {
     expect(levelAnchorId("lv1")).toBe("level-lv1");
-    expect(buildLevelUrl("lv1", "s1")).toBe("/learn/s1#level-lv1");
-    expect(buildLevelUrl("lv1", null)).toBe("/learn#level-lv1");
+    expect(buildLevelUrl("lv1")).toBe("/learn?tab=curriculo&section=lv1#level-lv1");
   });
 });
 

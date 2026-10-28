@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Server-sent events stream helper
-* Descripción: POSTs a JSON body to a backend text/event-stream route with fetch + ReadableStream (EventSource cannot POST or send a bearer token) and exposes the events as an async iterator (postEventStream) or as callbacks (runEventStream). Same backend origin, bearer token and credentials as the axios client; on a 401 it reuses the shared single-flight refresh and retries once (auth routes never refresh). Errors before the stream starts (validation, 403, 404 unpublished, 429 with Retry-After or retry info in the body, 503 provider unavailable) become ApiError through apiErrorFromResponse; `event: error` after the stream started is yielded as an event, and a stream that closes before `done`/`error` yields `network.stream_interrupted`. Aborting the signal ends the iteration silently. Depends on env, api-error, token-storage and token-refresh. v1.1 (B5): the stream request sends Accept-Language: es and the client-built error messages are Spanish (CLIENT_ERROR_MESSAGES).
-* Versión: 1.1
+* Descripción: POSTs a JSON body to a backend text/event-stream route with fetch + ReadableStream (EventSource cannot POST or send a bearer token) and exposes the events as an async iterator (postEventStream) or as callbacks (runEventStream). Same backend origin, bearer token and credentials as the axios client; on a 401 it reuses the shared single-flight refresh and retries once (auth routes never refresh). Errors before the stream starts (validation, 403, 404 unpublished, 429 with Retry-After or retry info in the body, 503 provider unavailable) become ApiError through apiErrorFromResponse; `event: error` after the stream started is yielded as an event, and a stream that closes before `done`/`error` yields `network.stream_interrupted`. Aborting the signal ends the iteration silently. Depends on env, api-error, token-storage and token-refresh. v1.1 (B5): the stream request sends Accept-Language: es and the client-built error messages are Spanish (CLIENT_ERROR_MESSAGES). v1.2 (W7, Bloque 2): the AI tutor routes send an early `event: start` {conversationId, messageId} before the first delta; it is yielded as a non-terminal `start` event (like delta) so callers learn the conversation and the assistant message id even when the answer is stopped before `done`. Frames with an unknown event name are still ignored.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -33,7 +33,14 @@ export type TutorStreamDone = {
   conversationId: string
 };
 
+// The `start` payload of the AI tutor routes: sent before the first delta, once the turn is stored.
+export type TutorStreamStart = {
+  conversationId: string
+  messageId: string
+};
+
 export type EventStreamEvent<TDone = TutorStreamDone> =
+  | { type: "start", data: TutorStreamStart }
   | { type: "delta", text: string }
   | { type: "done", data: TDone }
   | { type: "error", code: string, message: string };
@@ -43,6 +50,7 @@ export type EventStreamOptions = {
 };
 
 export type EventStreamHandlers<TDone = TutorStreamDone> = {
+  onStart?: (data: TutorStreamStart) => void
   onDelta?: (text: string) => void
   onDone?: (data: TDone) => void
   onError?: (error: { code: string, message: string }) => void
@@ -133,6 +141,12 @@ function parseJson(data: string): unknown {
 
 function toStreamEvent<TDone>(frame: SseFrame): EventStreamEvent<TDone> | null {
   const payload = parseJson(frame.data);
+
+  if (frame.event === "start") {
+    return isRecord(payload) && typeof payload.conversationId === "string" && typeof payload.messageId === "string"
+      ? { type: "start", data: { conversationId: payload.conversationId, messageId: payload.messageId } }
+      : null;
+  }
 
   if (frame.event === "delta") {
     return isRecord(payload) && typeof payload.text === "string" ? { type: "delta", text: payload.text } : null;
@@ -287,7 +301,7 @@ export async function* postEventStream<TDone = TutorStreamDone>(
         if (event) {
           yield event;
 
-          if (event.type !== "delta") {
+          if (event.type === "done" || event.type === "error") {
             return;
           }
         }
@@ -326,7 +340,9 @@ export async function runEventStream<TDone = TutorStreamDone>(
   options: EventStreamOptions = {},
 ): Promise<void> {
   for await (const event of postEventStream<TDone>(path, body, options)) {
-    if (event.type === "delta") {
+    if (event.type === "start") {
+      handlers.onStart?.(event.data);
+    } else if (event.type === "delta") {
       handlers.onDelta?.(event.text);
     } else if (event.type === "done") {
       handlers.onDone?.(event.data);

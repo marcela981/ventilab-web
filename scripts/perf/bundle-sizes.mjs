@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Route bundle sizes
-* Descripción: Reads .next/build-manifest.json after `npm run build` (webpack, pages router) and prints, per route, the JavaScript that the route adds on top of the shared files (_app + main + polyfills) and its first load, both raw and gzip (zlib default level, the same compression `next start` serves). Routes default to the simulator ones; pass others as arguments. `--json <file>` also writes the numbers as JSON, `--next <dir>` points to another build folder. Routes missing from the manifest are reported as such, never estimated. Depends on Node only.
-* Versión: 0.1
+* Descripción: Reads .next/build-manifest.json after `npm run build` (webpack, pages router) and prints, per route, the JavaScript that the route adds on top of the shared files (_app + main + polyfills) and its first load, both raw and gzip (zlib default level, the same compression `next start` serves). Routes default to the simulator ones; pass others as arguments, or `--preset learn` for the four /learn routes plus /me and /simulador as references (v0.2, Bloque 2). `--json <file>` also writes the numbers as JSON, `--next <dir>` points to another build folder. Routes missing from the manifest are reported as such, never estimated. Depends on Node only.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -23,6 +23,17 @@ const DEFAULT_ROUTES = [
   "/lab/recordings/[recordingId]",
 ];
 
+const PRESETS = {
+  learn: [
+    "/learn",
+    "/learn/[sectionId]",
+    "/learn/modules/[moduleId]",
+    "/learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]",
+    "/me",
+    "/simulador",
+  ],
+};
+
 function parseArgs(argv) {
   const options = { nextDir: ".next", json: null, routes: [] };
 
@@ -31,6 +42,14 @@ function parseArgs(argv) {
 
     if (arg === "--json") {
       options.json = argv[++index];
+    } else if (arg === "--preset") {
+      const preset = PRESETS[argv[++index]];
+
+      if (!preset) {
+        throw new Error(`Unknown preset. Available: ${Object.keys(PRESETS).join(", ")}`);
+      }
+
+      options.routes.push(...preset);
     } else if (arg === "--next") {
       options.nextDir = argv[++index];
     } else {

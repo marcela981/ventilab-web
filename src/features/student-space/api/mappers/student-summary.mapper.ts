@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student summary mapper
-* Descripción: Maps `GET /api/me/summary` (MySummaryDTO) to the StudentSummary entity. Values are copied as the API returns them (no client-side metric); only defensive normalisations apply: missing lists become empty and an invalid unread count becomes 0. Depends on the student space DTOs and entities. v1.1 (B2 closure): copies the section titles, grade attemptId and module, note module and titles, and session case title.
-* Versión: 1.1
+* Descripción: Maps `GET /api/me/summary` (MySummaryDTO) to the StudentSummary entity. Values are copied as the API returns them (no client-side metric); only defensive normalisations apply: missing lists become empty and an invalid unread count becomes 0. Depends on the student space DTOs and entities. v1.1 (B2 closure): copies the section titles, grade attemptId and module, note module and titles, and session case title. v1.2 (W8, Bloque 2): copies continueLearning (null when the API has no lesson to resume).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,6 +10,7 @@
 */
 
 import type {
+  ContinueLearning,
   ProgressItem,
   StudentSummary,
   SummaryConversation,
@@ -20,6 +21,7 @@ import type {
   SummarySimulationSession,
 } from "../../application/entities/student-summary.entity";
 import type {
+  MyContinueLearningDTO,
   MyConversationDTO,
   MyGradeDTO,
   MyNoteDTO,
@@ -38,6 +40,20 @@ export function toProgressItem(dto: ProgressItemDTO): ProgressItem {
     completedLessons: dto.completedLessons,
     totalLessons: dto.totalLessons,
     completed: dto.completed,
+  };
+}
+
+function toContinueLearning(dto: MyContinueLearningDTO | null | undefined): ContinueLearning | null {
+  if (!dto) {
+    return null;
+  }
+
+  return {
+    moduleId: dto.moduleId,
+    moduleTitle: dto.moduleTitle,
+    lessonId: dto.lessonId,
+    lessonTitle: dto.lessonTitle,
+    percent: dto.percent,
   };
 }
 
@@ -117,6 +133,7 @@ function list<T, R>(items: readonly T[] | null | undefined, map: (item: T) => R)
 export function toStudentSummary(dto: MySummaryDTO): StudentSummary {
   return {
     overallProgress: toProgressItem(dto.progress.overall),
+    continueLearning: toContinueLearning(dto.continueLearning),
     sectionProgress: list(dto.progress.sections, toProgressItem),
     activeEvaluations: list(dto.activeEvaluations, toEvaluation),
     upcomingEvaluations: list(dto.upcomingEvaluations, toEvaluation),

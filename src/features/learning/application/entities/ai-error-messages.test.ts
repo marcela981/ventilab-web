@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI tutor error messages tests
-* Descripción: Unit tests of the Spanish messages of the AI tutor errors: daily quota with the local reset time (and without it), short rate limit with the wait, provider unavailable (503 or its code), unpublished page (404, caller message or the learning default, pinned to the pre-S1 text), interrupted stream (client code, backend code, 502), a generic stream failure and network fallbacks. Depends on vitest and the api-client ApiError.
-* Versión: 1.1
+* Descripción: Unit tests of the Spanish messages of the AI tutor errors: daily quota with the local reset time (and without it), short rate limit with the wait, provider unavailable (503 or its code), unpublished page (404, caller message or the learning default, pinned to the pre-S1 text), interrupted stream (client code, backend code, 502), a generic stream failure and network fallbacks. Depends on vitest and the api-client ApiError. v1.2 (W7, Bloque 2): the July deepen accordion messages (getDeepenErrorMessage).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,7 +11,7 @@
 
 import { describe, expect, it } from "vitest";
 import { ApiError, CLIENT_ERROR_CODES } from "@shared/api-client/api-error";
-import { AI_ERROR_CODES, AI_ERROR_MESSAGES, formatResetTime, getAiErrorMessage } from "./ai-error-messages";
+import { AI_ERROR_CODES, AI_ERROR_MESSAGES, DEEPEN_ERROR_MESSAGES, formatResetTime, getAiErrorMessage, getDeepenErrorMessage } from "./ai-error-messages";
 import { LEARNING_FALLBACK_MESSAGES } from "./learning-error-messages";
 
 const NOW = Date.UTC(2026, 9, 14, 15, 0, 0);
@@ -22,6 +22,17 @@ describe("formatResetTime", () => {
   it("formats the reset moment as local hh:mm", () => {
     expect(formatResetTime(5_400, NOW)).toBe(localTime(NOW + 5_400_000));
     expect(formatResetTime(5_400, NOW)).toMatch(/^\d{2}:\d{2}$/);
+  });
+});
+
+describe("getDeepenErrorMessage", () => {
+  it("uses the July deepen accordion texts", () => {
+    expect(getDeepenErrorMessage(error("common.too_many_requests", 429, 30))).toBe("Demasiadas solicitudes. Por favor, espera un momento.");
+    expect(getDeepenErrorMessage(error(AI_ERROR_CODES.quotaExceeded, 429, 3_600))).toBe(DEEPEN_ERROR_MESSAGES.rateLimit);
+    expect(getDeepenErrorMessage(error(CLIENT_ERROR_CODES.networkUnavailable, 0))).toBe("Sin conexión");
+    expect(getDeepenErrorMessage(error(CLIENT_ERROR_CODES.networkTimeout, 0))).toBe("Tiempo de espera agotado");
+    expect(getDeepenErrorMessage(error("ai.providers_unavailable", 503))).toBe("Error al expandir el tema");
+    expect(getDeepenErrorMessage(new Error("boom"))).toBe(DEEPEN_ERROR_MESSAGES.failed);
   });
 });
 

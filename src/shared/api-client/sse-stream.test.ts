@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: SSE stream helper tests
-* Descripción: Tests of the text/event-stream parser (frames split mid-line and mid-frame, CRLF, comments, multi-line data) and of postEventStream/runEventStream against msw: delta/done/error events, bearer token, single refresh + retry on 401, abort, truncated streams and the mapping of 429 (Retry-After header or body), 503 and 404 to ApiError. Depends on vitest, msw and the api-client modules. v1.1 (B5): the stream request sends Accept-Language: es.
-* Versión: 1.1
+* Descripción: Tests of the text/event-stream parser (frames split mid-line and mid-frame, CRLF, comments, multi-line data) and of postEventStream/runEventStream against msw: delta/done/error events, bearer token, single refresh + retry on 401, abort, truncated streams and the mapping of 429 (Retry-After header or body), 503 and 404 to ApiError. Depends on vitest, msw and the api-client modules. v1.1 (B5): the stream request sends Accept-Language: es. v1.2 (W7, Bloque 2): the early `start` frame is yielded as a non-terminal event and dispatched to onStart; a malformed start frame is ignored.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -156,6 +156,25 @@ describe("postEventStream", () => {
     ]);
   });
 
+  it("yields the start event before the deltas without ending the stream and ignores a malformed one", async() => {
+    server.use(
+      http.post(url(STREAM_PATH), () => sseResponse([
+        "event: start\ndata: {\"conversationId\":\"conv-1\"}\n\n",
+        "event: start\ndata: {\"conversationId\":\"conv-1\",\"messageId\":\"msg-1\"}\n\n",
+        "event: delta\ndata: {\"text\":\"Hola\"}\n\n",
+        `event: done\ndata: ${JSON.stringify(DONE)}\n\n`,
+      ])),
+    );
+
+    const events = await collect(postEventStream(STREAM_PATH, {}));
+
+    expect(events).toEqual([
+      { type: "start", data: { conversationId: "conv-1", messageId: "msg-1" } },
+      { type: "delta", text: "Hola" },
+      { type: "done", data: DONE },
+    ]);
+  });
+
   it("reports a stream that closes before done or error as interrupted", async() => {
     server.use(http.post(url(STREAM_PATH), () => sseResponse(["event: delta\ndata: {\"text\":\"Hola\"}\n\n"])));
 
@@ -275,6 +294,7 @@ describe("runEventStream", () => {
   it("dispatches each event to its callback", async() => {
     server.use(
       http.post(url(STREAM_PATH), () => sseResponse([
+        "event: start\ndata: {\"conversationId\":\"conv-1\",\"messageId\":\"msg-1\"}\n\n",
         "event: delta\ndata: {\"text\":\"A\"}\n\nevent: delta\ndata: {\"text\":\"B\"}\n\n",
         `event: done\ndata: ${JSON.stringify(DONE)}\n\n`,
       ])),
@@ -283,7 +303,12 @@ describe("runEventStream", () => {
     const deltas: string[] = [];
     let done: unknown = null;
 
+    let started: unknown = null;
+
     await runEventStream(STREAM_PATH, {}, {
+      onStart: (data) => {
+        started = data;
+      },
       onDelta: (text) => deltas.push(text),
       onDone: (data) => {
         done = data;
@@ -293,6 +318,7 @@ describe("runEventStream", () => {
       },
     });
 
+    expect(started).toEqual({ conversationId: "conv-1", messageId: "msg-1" });
     expect(deltas).toEqual(["A", "B"]);
     expect(done).toEqual(DONE);
   });

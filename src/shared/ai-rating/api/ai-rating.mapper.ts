@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI rating mapper
-* Descripción: Maps AiRatingDTO to the domain AiRating (missing comment -> empty string) and the domain command to the PUT body (trimmed comment, omitted when empty). The PUT replaces the whole rating, so callers always pass the comment they want to keep.
-* Versión: 1.0
+* Descripción: Maps AiRatingDTO to the domain AiRating (missing comment -> empty string) and the domain command to the PUT body (trimmed comment, omitted when empty). The PUT replaces the whole rating, so callers always pass the comment they want to keep. v1.1 (W7, Bloque 2): surface and scope are sent only when given.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -24,5 +24,7 @@ export function toUpsertBody(command: AiRatingCommand): UpsertAiRatingDTO {
     targetId: command.targetId,
     helpful: command.helpful,
     ...(comment ? { comment } : {}),
+    ...(command.surface ? { surface: command.surface } : {}),
+    ...(command.scope ? { scope: command.scope } : {}),
   };
 }

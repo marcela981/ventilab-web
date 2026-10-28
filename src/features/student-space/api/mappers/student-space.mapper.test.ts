@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student space mapper tests
-* Descripción: The summary mapper copies every API value as is (progress, grades, evaluations, notes, conversations, sessions, reservations) and normalises missing lists and invalid unread counts; the grades mapper keeps grade, points and `passed`; the notes mappers build the notes page from the envelope pagination (or the list length without it) keeping the note labels, and the module analysis. Depends on vitest, the student space mappers and the test fixtures. v1.1 (B2 closure): section titles, grade attemptId and module, note module and titles, session case title; the lesson read mapping is gone.
-* Versión: 1.1
+* Descripción: The summary mapper copies every API value as is (progress, grades, evaluations, notes, conversations, sessions, reservations) and normalises missing lists and invalid unread counts; the grades mapper keeps grade, points and `passed`; the notes mappers build the notes page from the envelope pagination (or the list length without it) keeping the note labels, and the module analysis. Depends on vitest, the student space mappers and the test fixtures. v1.1 (B2 closure): section titles, grade attemptId and module, note module and titles, session case title; the lesson read mapping is gone. v1.2 (W8, Bloque 2): continueLearning is copied, or null when absent.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -79,6 +79,14 @@ describe("toStudentSummary", () => {
 
     expect(summary.grades).toEqual([]);
     expect(summary.unreadNotifications).toBe(0);
+  });
+
+  it("copies continueLearning, or null when the API has none", () => {
+    const resume = { moduleId: "m1", moduleTitle: "Inversión fisiológica", lessonId: "l1", lessonTitle: "Ecuación del movimiento", percent: 40 };
+
+    expect(toStudentSummary(summaryDto({ continueLearning: resume })).continueLearning).toEqual(resume);
+    expect(toStudentSummary(summaryDto()).continueLearning).toBeNull();
+    expect(toStudentSummary({ ...summaryDto(), continueLearning: undefined } as unknown as MySummaryDTO).continueLearning).toBeNull();
   });
 
   it("marks a reservation held by a group", () => {

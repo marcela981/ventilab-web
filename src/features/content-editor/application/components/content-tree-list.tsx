@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Content tree list
-* Descripción: Recursive rendering of the editor tree. SiblingList renders one sibling group (the children of one parent) in its optimistic order as a @hello-pangea/dnd Droppable whose `type` is the group key, so an item can only be dropped among its own siblings (BACKEND GAP: no move between parents); it registers its displayed ids for the drop handler (callers pass a stable group object). TreeNodeItem is one Draggable row: drag handle (disabled while a filter is active, because a filtered list is not the whole sibling list the backend reorders), expand toggle, kind, title (a page links to /content/pages/[pageId]), status badge and actions menu; when expanded it renders its children list. LessonPagesList loads the pages of a lesson only when that lesson is expanded (useLessonPageNodes) and applies the active filter to them. Depends on MUI, next/link, @hello-pangea/dnd, the content editor entities, hooks, actions context and CSS Module.
-* Versión: 1.0 (C1)
+* Descripción: Recursive rendering of the editor tree. SiblingList renders one sibling group (the children of one parent) in its optimistic order as a @hello-pangea/dnd Droppable whose `type` is the group key, so an item can only be dropped among its own siblings (BACKEND GAP: no move between parents); it registers its displayed ids for the drop handler (callers pass a stable group object). TreeNodeItem is one Draggable row: drag handle (disabled while a filter is active, because a filtered list is not the whole sibling list the backend reorders), expand toggle, kind, title (a page links to /content/pages/[pageId]), status badge and actions menu; when expanded it renders its children list. LessonPagesList loads the pages of a lesson only when that lesson is expanded (useLessonPageNodes) and applies the active filter to them. Depends on MUI, next/link, @hello-pangea/dnd, the content editor entities, hooks, actions context and CSS Module. v1.1 (W6, Bloque 2): each row has a stable id (nodeDomId) and is focusable (tabIndex -1) for the ?node= deep link.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,6 +19,7 @@ import Link from "next/link";
 import { useEffect, useMemo } from "react";
 import { cx } from "@shared/lib/class-names";
 import { childGroupOf, groupKey, KIND_LABELS, nodeKey } from "../entities/content-node.entity";
+import { nodeDomId } from "../entities/content-node-link";
 import type { ContentNode, NodeKind, SiblingGroup } from "../entities/content-node.entity";
 import { getContentErrorMessage } from "../entities/content-editor-error-messages";
 import { applyOrder } from "../entities/content-reorder";
@@ -122,7 +123,8 @@ function TreeNodeItem({ node, index }: { node: ContentNode, index: number }) {
     <Draggable draggableId={key} index={index} isDragDisabled={filterActive}>
       {(provided, snapshot) => (
         <li ref={provided.innerRef} {...provided.draggableProps} className={cx(styles.item, snapshot.isDragging && styles.dragging)}>
-          <div className={cx(styles.row)}>
+          {/* Focusable (not tabbable) row: the target of the /content?node= deep link. */}
+          <div id={nodeDomId(node)} tabIndex={-1} className={cx(styles.row)}>
             <span
               {...(provided.dragHandleProps ?? {})}
               aria-label={`Arrastrar ${node.title}`}

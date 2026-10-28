@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: StudentHomePage
-* Descripción: Page /me (STUDENT): the student home built from ONE request, `GET /api/me/summary`. Blocks: learning progress, active and upcoming evaluations, latest grades, latest notes, AI conversations, simulation sessions, upcoming ventilator reservations and the unread notifications counter, each with its empty state (summary-blocks). Card skeletons while loading, a retryable error, and a stale-data warning when a refresh fails over shown data. Nothing is computed on the client. Depends on MUI, next/head, the design-system states and header, the student summary hook, the summary blocks and the student space CSS Module.
-* Versión: 1.0
+* Descripción: Page /me (STUDENT): the student home built from ONE request, `GET /api/me/summary`. Blocks: learning progress, active and upcoming evaluations, latest grades, latest notes, AI conversations, simulation sessions, upcoming ventilator reservations and the unread notifications counter, each with its empty state (summary-blocks). Card skeletons while loading, a retryable error, and a stale-data warning when a refresh fails over shown data. Nothing is computed on the client. Depends on MUI, next/head, the design-system states and header, the student summary hook, the summary blocks and the student space CSS Module. v1.1 (W8, Bloque 2): "Continuar donde quedaste" first when the API has a lesson to resume (the same block as the Inicio tab of /learn; hidden when continueLearning is null).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,6 +17,7 @@ import { PageHeader } from "@shared/design-system/components/page-header";
 import { CardSkeleton } from "@shared/design-system/components/skeleton";
 import { cx } from "@shared/lib/class-names";
 import {
+  ContinueLearningBlock,
   ConversationsBlock,
   EvaluationsBlock,
   GradesBlock,
@@ -68,6 +69,7 @@ export function StudentHomePage({ now }: StudentHomePageProps = {}) {
         ) : null}
         {summary ? (
           <div className={cx(styles.grid)}>
+            {summary.continueLearning ? <ContinueLearningBlock item={summary.continueLearning} /> : null}
             <ProgressBlock overall={summary.overallProgress} sections={summary.sectionProgress} />
             <EvaluationsBlock active={summary.activeEvaluations} upcoming={summary.upcomingEvaluations} />
             <GradesBlock grades={summary.grades} />

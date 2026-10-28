@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useChatSession
-* Descripción: State machine of one AI assistant conversation, shared by the /assistant page and the global drawer. With a conversationId it seeds the thread from the stored detail once (404 → status not-found); without one it starts empty and creates the FREE conversation lazily on the first send, never before, through the streamed `POST /api/tutor/conversations` {scope: "FREE", message}; later sends stream from `/{id}/messages`. One turn at a time: the answer streams through the shared useStreamingResponse; on `done` the turn adopts conversationId, aiCallId, messageId and sources (when present) and the listing and detail reads are revalidated (the title is only known server-side). `stop()` aborts and keeps the partial answer as interrupted. A failure is classified (quota with the local reset time and no retry, provider unavailable, interrupted mid-stream, not found, failed); `retry()` resends the last user message (a turn rejected before its stream started is dropped, since the backend did not store it; a started one stays as interrupted). BACKEND GAP: the id of a new FREE conversation arrives only in `done`, so a first turn stopped after some text or failed mid-stream re-reads the newest FREE conversation (`?scope=FREE&limit=1`) to adopt it; a turn stopped before any frame adopts nothing. A completed answer equal to the fixed off-topic reply gets kind off-topic. Session expiry is left to the api-client. Depends on React, SWR, @shared/api-client, @shared/ai-conversation and the AI chat service, entity, config and useConversation. v1.1 (A2 review fixes): the recovery adopts the newest FREE conversation only when it was created at or after the turn start minus RECOVERY_CLOCK_SKEW_MS and is not a conversation this session already knew; "received" for a stopped turn is read after the aborted phase is rendered (the abort flushes the text buffered for the next animation frame), with a bounded wait; a non-404 detail failure sets status load-error (send stays blocked) and reload() re-reads the detail. v1.2 (A3): a stopped turn reads whether any frame arrived from the shared stream outcome (`streamStarted` of the aborted outcome) instead of waiting for the aborted render, so the bounded wait is gone.
-* Versión: 1.2
+* Descripción: State machine of one AI assistant conversation, shared by the /assistant page and the global drawer. With a conversationId it seeds the thread from the stored detail once (404 → status not-found); without one it starts empty and creates the FREE conversation lazily on the first send, never before, through the streamed `POST /api/tutor/conversations` {scope: "FREE", message}; later sends stream from `/{id}/messages`. One turn at a time: the answer streams through the shared useStreamingResponse; on `done` the turn adopts conversationId, aiCallId, messageId and sources (when present) and the listing and detail reads are revalidated (the title is only known server-side). `stop()` aborts and keeps the partial answer as interrupted. A failure is classified (quota with the local reset time and no retry, provider unavailable, interrupted mid-stream, not found, failed); `retry()` resends the last user message (a turn rejected before its stream started is dropped, since the backend did not store it; a started one stays as interrupted). BACKEND GAP: the id of a new FREE conversation arrives only in `done`, so a first turn stopped after some text or failed mid-stream re-reads the newest FREE conversation (`?scope=FREE&limit=1`) to adopt it; a turn stopped before any frame adopts nothing. A completed answer equal to the fixed off-topic reply gets kind off-topic. Session expiry is left to the api-client. Depends on React, SWR, @shared/api-client, @shared/ai-conversation and the AI chat service, entity, config and useConversation. v1.1 (A2 review fixes): the recovery adopts the newest FREE conversation only when it was created at or after the turn start minus RECOVERY_CLOCK_SKEW_MS and is not a conversation this session already knew; "received" for a stopped turn is read after the aborted phase is rendered (the abort flushes the text buffered for the next animation frame), with a bounded wait; a non-404 detail failure sets status load-error (send stays blocked) and reload() re-reads the detail. v1.2 (A3): a stopped turn reads whether any frame arrived from the shared stream outcome (`streamStarted` of the aborted outcome) instead of waiting for the aborted render, so the bounded wait is gone. v1.3 (W7, Bloque 2): the early `start` frame of the tutor routes announces the conversation and the assistant message: a first FREE turn stopped or failed after it adopts that conversation directly (the newest-FREE recovery stays only for streams without it) and an interrupted answer keeps the announced message id so it can be rated.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,6 +15,7 @@ import { invalidateApiQueries } from "@shared/api-client/use-api-query";
 import type { ApiError } from "@shared/api-client/api-error";
 import { useStreamingResponse } from "@shared/ai-conversation";
 import type { StreamDoneMetadata } from "@shared/ai-conversation";
+import type { TutorStreamStart } from "@shared/api-client/sse-stream";
 import {
   CONVERSATION_PATH,
   CONVERSATIONS_PATH,
@@ -72,6 +73,8 @@ type Turn = {
   conversationId: string | null
   phase: TurnPhase
   streamStarted: boolean
+  // Conversation and assistant message announced by the early `start` frame.
+  announced: TutorStreamStart | null
   done: ChatDone | null
   error: ChatError | null
 };
@@ -106,7 +109,8 @@ function turnMessages(turn: Turn, text: string, frozen: boolean): ChatMessage[] 
       status,
       kind: turn.phase === "done" ? messageKind("assistant", text) : "answer",
       aiCallId: done?.aiCallId ?? null,
-      messageId: done?.messageId ?? null,
+      // A stopped or failed answer is rated with the message id announced by the start frame.
+      messageId: done?.messageId ?? turn.announced?.messageId ?? null,
       sources: done?.sources ?? [],
       createdAt: null,
     },
@@ -249,7 +253,7 @@ export function useChatSession({ conversationId: requestedId }: ChatSessionOptio
     const key = keyRef.current;
     const conversationId = activeIdRef.current;
     const startedAt = Date.now();
-    const next: Turn = { key, userText, conversationId, phase: "streaming", streamStarted: false, done: null, error: null };
+    const next: Turn = { key, userText, conversationId, phase: "streaming", streamStarted: false, announced: null, done: null, error: null };
     const update = (patch: Partial<Turn>) => {
       setTurn((current) => (current?.key === key ? { ...current, ...patch } : current));
     };
@@ -285,9 +289,12 @@ export function useChatSession({ conversationId: requestedId }: ChatSessionOptio
     }
 
     if (outcome.status === "error") {
-      update({ phase: "error", streamStarted: outcome.streamStarted, error: classifyChatError(outcome.error) });
+      update({ phase: "error", streamStarted: outcome.streamStarted, announced: outcome.announced, error: classifyChatError(outcome.error) });
 
-      if (conversationId === null && outcome.streamStarted) {
+      if (conversationId === null && outcome.announced) {
+        adopt(outcome.announced.conversationId);
+        await revalidate();
+      } else if (conversationId === null && outcome.streamStarted) {
         await recoverCreated(startedAt);
       }
 
@@ -296,9 +303,12 @@ export function useChatSession({ conversationId: requestedId }: ChatSessionOptio
 
     // Aborted by stop(): the backend stored the conversation once a frame was received (the shared hook
     // reports it, even for a delta still buffered for the next animation frame).
-    update({ phase: "aborted", streamStarted: outcome.streamStarted });
+    update({ phase: "aborted", streamStarted: outcome.streamStarted, announced: outcome.announced });
 
-    if (conversationId === null && stoppedRef.current && outcome.streamStarted) {
+    if (conversationId === null && stoppedRef.current && outcome.announced) {
+      adopt(outcome.announced.conversationId);
+      await revalidate();
+    } else if (conversationId === null && stoppedRef.current && outcome.streamStarted) {
       await recoverCreated(startedAt);
     }
   }, [adopt, recoverCreated, revalidate, startStream]);

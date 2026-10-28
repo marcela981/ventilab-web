@@ -1,0 +1,430 @@
+/*
+* Funcionalidad: Curriculum tab styles
+* Descripción: Currículo tab of /learn (W4, Bloque 2): the three accordions (July CurriculumSections: rounded surface, icon, title, optional badge, rotating chevron), the vertical level stepper (numbered / check / lock markers joined by a line, locked levels dimmed like July's 0.55 opacity), the level progress bar and text, the responsive module card grid (state-colored left border, badges, full-width footer button: green primary action for Comenzar/Continuar, outlined for Completado, disabled for Bloqueado/Próximamente, as in July ModuleCardFooter), the staff actions and the floating "Modo edición" toggle (July EditModeToggle). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v0.2 (W10 fix): the badges (Opcional, Sin iniciar, Próximamente, Bloqueado, Completado, Borrador) sit on a light tint of the surface in the primary text color instead of muted text on the navy contrast background, where it was unreadable (WCAG AA).
+* Versión: 0.2
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.curriculum {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+.heading {
+  margin: 0;
+  font: var(--mui-font-h5);
+  color: var(--vl-color-text);
+}
+
+.muted {
+  margin: 0;
+  color: var(--vl-color-text-muted);
+}
+
+/* Accordions */
+
+.accordions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+}
+
+.accordion {
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.accordion[data-expanded="true"] {
+  box-shadow: var(--vl-shadow-2);
+}
+
+.accordionHeading {
+  margin: 0;
+}
+
+.accordionTrigger {
+  display: flex;
+  align-items: center;
+  gap: var(--vl-space-3);
+  width: 100%;
+  padding: var(--vl-space-3) var(--vl-space-5);
+  font: var(--mui-font-subtitle1);
+  font-weight: 600;
+  color: var(--vl-color-text);
+  text-align: left;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: var(--vl-radius-lg);
+}
+
+.accordionTrigger:hover {
+  background: var(--vl-color-hover);
+}
+
+.accordionIcon {
+  display: inline-flex;
+  color: var(--vl-color-primary);
+}
+
+.accordionTitle {
+  flex: 0 1 auto;
+}
+
+.accordionChevron {
+  margin-left: auto;
+  color: var(--vl-color-text-muted);
+  transition: transform var(--vl-duration-short) var(--vl-ease-standard);
+}
+
+.accordion[data-expanded="true"] .accordionChevron {
+  transform: rotate(180deg);
+}
+
+.accordionRegion {
+  padding: 0 var(--vl-space-4) var(--vl-space-4);
+}
+
+.accordionRegion[hidden] {
+  display: none;
+}
+
+/* Badges */
+
+.badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-1);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+  padding: 2px var(--vl-space-2);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-pill);
+  /* Light tint of the surface: --vl-color-surface-contrast is the navy console background and hid the text. */
+  background: color-mix(in srgb, var(--vl-color-text) 5%, var(--vl-color-surface));
+  font: var(--mui-font-caption);
+  font-weight: 600;
+  color: var(--vl-color-text);
+}
+
+.badgeSuccess {
+  border-color: var(--vl-color-success);
+  color: var(--vl-color-success);
+}
+
+.badgeWarning {
+  border-color: var(--vl-color-warning);
+  color: var(--vl-color-text);
+}
+
+.badgeDraft {
+  border-style: dashed;
+  color: var(--vl-color-text);
+}
+
+/* Level stepper */
+
+.stepper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--vl-space-7) minmax(0, 1fr);
+  gap: var(--vl-space-3);
+  scroll-margin-top: var(--vl-space-7);
+}
+
+/* Line joining the markers. */
+.step:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: var(--vl-space-7);
+  bottom: calc(-1 * var(--vl-space-5));
+  left: calc(var(--vl-space-7) / 2);
+  width: 2px;
+  background: var(--vl-color-border);
+}
+
+.stepMarker {
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--vl-space-7);
+  height: var(--vl-space-7);
+  border: 2px solid var(--vl-color-primary);
+  border-radius: 50%;
+  background: var(--vl-color-surface);
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-color-primary);
+}
+
+.step[data-status="completed"] .stepMarker {
+  border-color: var(--vl-color-success);
+  background: var(--vl-color-success);
+  color: var(--vl-color-on-primary);
+}
+
+.step[data-status="locked"] .stepMarker {
+  border-color: var(--vl-color-border);
+  color: var(--vl-color-text-muted);
+}
+
+.step[data-status="locked"] .stepBody {
+  opacity: 0.55;
+}
+
+.stepBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  min-width: 0;
+}
+
+.stepHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+}
+
+.levelTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+  color: var(--vl-color-text);
+}
+
+.levelDescription {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+}
+
+.lockText {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-muted);
+}
+
+.levelProgress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.progressBar {
+  height: 6px;
+  border-radius: var(--vl-radius-sm);
+}
+
+.progressText {
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-muted);
+}
+
+/* Module cards */
+
+.moduleGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: var(--vl-space-3);
+  margin: var(--vl-space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.moduleGrid > li {
+  display: flex;
+}
+
+.moduleCard {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-4);
+  border: 1px solid var(--vl-color-border);
+  border-left: var(--vl-space-1) solid var(--vl-color-primary);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+  overflow-wrap: anywhere;
+}
+
+.moduleCard[data-state="completed"] {
+  border-left-color: var(--vl-color-success);
+}
+
+.moduleCard[data-state="locked"],
+.moduleCard[data-state="coming_soon"] {
+  border-left-color: var(--vl-color-border);
+  background: var(--vl-color-hover);
+}
+
+.moduleCardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.moduleTitle {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+  font-weight: 600;
+  color: var(--vl-color-text);
+}
+
+.moduleDescription {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.moduleMeta {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-muted);
+}
+
+.moduleCardFooter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin-top: auto;
+}
+
+.cardButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vl-space-1);
+  width: 100%;
+  padding: var(--vl-space-2) var(--vl-space-3);
+  border: 1px solid var(--vl-color-success);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-success);
+  font: var(--mui-font-button);
+  text-transform: none;
+  color: var(--vl-color-on-primary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: box-shadow var(--vl-duration-short) var(--vl-ease-standard);
+}
+
+.cardButton:hover {
+  box-shadow: var(--vl-shadow-2);
+}
+
+.cardButtonOutlined {
+  background: transparent;
+  color: var(--vl-color-success);
+}
+
+.cardButton:disabled {
+  border-color: var(--vl-color-border);
+  background: transparent;
+  color: var(--vl-color-text-disabled);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.staffActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+}
+
+.staffLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+  font: var(--mui-font-caption);
+  color: var(--vl-color-link);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+/* Floating edit mode toggle (July EditModeToggle). */
+
+.editFab {
+  position: fixed;
+  right: var(--vl-space-6);
+  bottom: var(--vl-space-6);
+  z-index: var(--vl-z-sticky);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--vl-space-1);
+}
+
+.editFabLabel {
+  padding: var(--vl-space-1) var(--vl-space-2);
+  border: 1px solid var(--vl-color-primary);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-surface);
+  font: var(--mui-font-caption);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--vl-color-primary);
+}
+
+.editFabButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 2px solid var(--vl-color-border);
+  border-radius: 50%;
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text-muted);
+  box-shadow: var(--vl-shadow-3);
+  cursor: pointer;
+  transition: background var(--vl-duration-short) var(--vl-ease-standard);
+}
+
+.editFabButton[aria-pressed="true"] {
+  border-color: var(--vl-color-primary);
+  background: var(--vl-color-primary);
+  color: var(--vl-color-on-primary);
+}
+
+.curriculum :focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accordionChevron,
+  .cardButton,
+  .editFabButton {
+    transition: none;
+  }
+}

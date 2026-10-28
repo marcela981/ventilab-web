@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Lesson viewer styles
-* Descripción: Layout of the lesson page viewer (/learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]): wide column with the main content next to the collapsible side panel (Notas | Profundizar | Preguntas) on desktop, a single column on mobile where the panel becomes a bottom sheet opened by a button; Previous/Next bar; module completion card. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
-* Versión: 1.0
+* Descripción: Layout of the lesson page viewer (/learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]): wide column with the main content next to the collapsible side panel (Notas | Profundizar | Preguntas) on desktop, a single column on mobile where the panel becomes a bottom sheet opened by a button; Previous/Next bar; module completion card. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (W5, Bloque 2): July layout of the viewer: "Página x de N" line with bar and percentage, module lesson index in the right column (collapsible; hidden below md, where a button opens it in a right Drawer) with current, completed and locked entries, and the fixed mount slot of the W7 TutorAI button. The side panel classes stay for the reusable LessonSidePanel. v1.2 (W7, Bloque 2): the side panel and bottom-sheet styles are gone with LessonSidePanel (the TutorAI popup has its own CSS Module). v1.3 (W10 fix): the "Índice de lecciones" sheet button rules use a doubled class, so the MUI Button styles no longer show it on desktop next to the index column.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -68,54 +68,6 @@
   flex: 1 1 auto;
 }
 
-.panel {
-  position: sticky;
-  top: var(--vl-space-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--vl-space-2);
-  padding: var(--vl-space-3);
-  border: 1px solid var(--vl-color-border);
-  border-radius: var(--vl-radius-lg);
-  background: var(--vl-color-surface);
-  color: var(--vl-color-text);
-  box-shadow: var(--vl-shadow-1);
-  width: 20rem;
-}
-
-.panelCollapsed {
-  width: auto;
-}
-
-.panelHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--vl-space-2);
-}
-
-.panelBody {
-  padding: var(--vl-space-2) 0;
-}
-
-.panelPlaceholder {
-  margin: 0;
-  color: var(--vl-color-text-muted);
-}
-
-.sheet {
-  max-height: 80vh;
-  padding: var(--vl-space-3) var(--vl-space-4) var(--vl-space-5);
-  border-top-left-radius: var(--vl-radius-lg);
-  border-top-right-radius: var(--vl-radius-lg);
-  background: var(--vl-color-surface);
-  color: var(--vl-color-text);
-}
-
-.sheetButton {
-  align-self: flex-end;
-}
-
 .completion {
   display: flex;
   flex-direction: column;
@@ -136,4 +88,147 @@
 
 .completionProgress {
   width: 100%;
+}
+
+/* W5 (Bloque 2): "Página x de N" with bar and percentage (July layout). */
+.pageProgress {
+  display: flex;
+  align-items: center;
+  gap: var(--vl-space-3);
+  color: var(--vl-color-text-muted);
+}
+
+.pageProgressLabel,
+.pageProgressPercent {
+  flex: 0 0 auto;
+  font-size: 0.875rem;
+}
+
+.pageProgressPercent {
+  font-weight: 600;
+}
+
+.pageProgressBar {
+  flex: 1 1 auto;
+  max-width: 24rem;
+  height: 0.375rem;
+  border-radius: var(--vl-radius-sm);
+}
+
+/* W5: module lesson index (right column on desktop, Drawer on mobile). */
+.index {
+  position: sticky;
+  top: var(--vl-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  width: 18rem;
+  padding: var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.indexHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.indexHeading {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.indexList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.indexItem {
+  display: flex;
+  align-items: center;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-2);
+  border-left: 3px solid transparent;
+  border-radius: var(--vl-radius-sm);
+  color: inherit;
+  text-decoration: none;
+}
+
+a.indexItem:hover,
+a.indexItem:focus-visible {
+  background: var(--vl-color-hover);
+}
+
+.indexItemCurrent {
+  border-left-color: var(--vl-color-primary);
+  font-weight: 600;
+}
+
+.indexItemLocked {
+  color: var(--vl-color-text-muted);
+  cursor: not-allowed;
+}
+
+.indexCheck {
+  color: var(--vl-color-success);
+}
+
+.indexBullet {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 auto;
+  border: 2px solid var(--vl-color-border);
+  border-radius: 50%;
+}
+
+/* Doubled class: MUI injects the Button styles (display: inline-flex) after this module, so a single class loses. */
+.indexSheetButton.indexSheetButton {
+  display: none;
+}
+
+.indexSheet {
+  width: min(20rem, 90vw);
+  padding: var(--vl-space-3);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-text);
+}
+
+@media (max-width: 899.95px) {
+  .index {
+    display: none;
+  }
+
+  .indexSheetButton.indexSheetButton {
+    display: inline-flex;
+    order: -1;
+    justify-self: start;
+  }
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* W7 mounts the TutorAI floating button here. */
+.tutorFabSlot {
+  position: fixed;
+  right: var(--vl-space-4);
+  bottom: var(--vl-space-4);
+  z-index: 1100;
 }

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Performance results table
-* Descripción: Prints a Markdown table from the JSON files written by the simulator perf spec (e2e/perf) for one label, e.g. `node scripts/perf/perf-table.mjs baseline` reads docs/bloque1/perf/baseline-*.json, so the "before" and "after" documents are built from measured files only. A metric absent from a file prints "sin dato". Depends on Node only.
-* Versión: 0.1
+* Descripción: Prints a Markdown table from the JSON files written by the simulator perf spec (e2e/perf) for one label, e.g. `node scripts/perf/perf-table.mjs baseline` reads docs/bloque1/perf/baseline-*.json, so the "before" and "after" documents are built from measured files only. A metric absent from a file prints "sin dato". v0.2 (Bloque 2): skips the <label>-learn.json file of the learning perf spec, which has its own table (learn-perf-table.mjs). Depends on Node only.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,7 +14,7 @@ import { join } from "node:path";
 
 const label = process.argv[2] ?? "baseline";
 const dir = process.argv[3] ?? "docs/bloque1/perf";
-const files = readdirSync(dir).filter((file) => file.startsWith(`${label}-`) && file.endsWith(".json") && !file.includes("bundle"));
+const files = readdirSync(dir).filter((file) => file.startsWith(`${label}-`) && file.endsWith(".json") && !file.includes("bundle") && !file.endsWith("-learn.json"));
 const NO_DATA = "sin dato";
 
 const value = (input) => (input === undefined || input === null ? NO_DATA : input);

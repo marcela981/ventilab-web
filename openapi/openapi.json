@@ -261,6 +261,11 @@
       },
       "AchievementDTO": {
         "properties": {
+          "code": {
+            "description": "Stable catalog key of the achievement (one unlock per user and code)",
+            "example": "first_lesson",
+            "type": "string"
+          },
           "description": {
             "description": "Achievement description",
             "example": "Completa tu primera lección",
@@ -301,6 +306,7 @@
         },
         "required": [
           "id",
+          "code",
           "title",
           "description",
           "icon",
@@ -439,6 +445,21 @@
         ],
         "type": "object"
       },
+      "ActivityCalendarDTO": {
+        "properties": {
+          "days": {
+            "description": "Days with activity in the range, ascending; days without activity are omitted",
+            "items": {
+              "$ref": "#/components/schemas/ActivityDayDTO"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "days"
+        ],
+        "type": "object"
+      },
       "ActivityDTO": {
         "properties": {
           "createdAt": {
@@ -542,6 +563,32 @@
           "createdBy",
           "createdAt",
           "updatedAt"
+        ],
+        "type": "object"
+      },
+      "ActivityDayDTO": {
+        "properties": {
+          "count": {
+            "description": "Number of ledger events on that day",
+            "example": 6,
+            "type": "number"
+          },
+          "date": {
+            "description": "America/Bogota calendar day (YYYY-MM-DD)",
+            "example": "2026-10-27",
+            "format": "date",
+            "type": "string"
+          },
+          "xp": {
+            "description": "Experience points earned on that day",
+            "example": 75,
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "count",
+          "xp"
         ],
         "type": "object"
       },
@@ -2218,6 +2265,28 @@
             "example": 5,
             "type": "number"
           },
+          "scope": {
+            "description": "Content scope of the rated answer",
+            "enum": [
+              "LESSON",
+              "MODULE",
+              "PAGE",
+              "FREE"
+            ],
+            "example": "LESSON",
+            "type": "string"
+          },
+          "surface": {
+            "description": "Surface where the answer was rated",
+            "enum": [
+              "POPUP",
+              "ACCORDION",
+              "ASSISTANT",
+              "NOTES_ANALYSIS"
+            ],
+            "example": "POPUP",
+            "type": "string"
+          },
           "targetId": {
             "description": "Rated output id",
             "example": "cm1x2y3z40000abcd1234efgh",
@@ -2397,6 +2466,16 @@
             "example": 20,
             "type": "number"
           },
+          "scope": {
+            "description": "Content scope of the rated answers (LESSON, MODULE, PAGE, FREE), or \"unknown\"",
+            "example": "MODULE",
+            "type": "string"
+          },
+          "surface": {
+            "description": "Surface of the ratings (POPUP, ACCORDION, ASSISTANT, NOTES_ANALYSIS), or \"unknown\" for ratings without one",
+            "example": "POPUP",
+            "type": "string"
+          },
           "useCase": {
             "description": "Use case of the linked AI call, or \"unknown\"",
             "example": "FREE_CHAT",
@@ -2404,6 +2483,8 @@
           }
         },
         "required": [
+          "surface",
+          "scope",
           "useCase",
           "provider",
           "model",
@@ -8871,6 +8952,55 @@
         },
         "type": "object"
       },
+      "GamificationStatsDTO": {
+        "properties": {
+          "level": {
+            "description": "Current level: floor(xpTotal / 500) + 1",
+            "example": 3,
+            "type": "number"
+          },
+          "longestStreak": {
+            "description": "Longest run of consecutive days with activity",
+            "example": 9,
+            "type": "number"
+          },
+          "nextLevelXp": {
+            "description": "Total experience points at which the next level starts (level × 500)",
+            "example": 1500,
+            "type": "number"
+          },
+          "streakDays": {
+            "description": "Consecutive America/Bogota days with activity ending today or yesterday",
+            "example": 4,
+            "type": "number"
+          },
+          "xpIntoLevel": {
+            "description": "Experience points earned inside the current level (0 to 499)",
+            "example": 255,
+            "type": "number"
+          },
+          "xpToday": {
+            "description": "Experience points earned today (America/Bogota)",
+            "example": 55,
+            "type": "number"
+          },
+          "xpTotal": {
+            "description": "Total experience points in the activity ledger",
+            "example": 1255,
+            "type": "number"
+          }
+        },
+        "required": [
+          "xpTotal",
+          "level",
+          "xpIntoLevel",
+          "nextLevelXp",
+          "streakDays",
+          "longestStreak",
+          "xpToday"
+        ],
+        "type": "object"
+      },
       "GasTimeConstantsDTO": {
         "properties": {
           "oxygenTimeConstantS": {
@@ -10674,20 +10804,36 @@
       },
       "LessonAccessDTO": {
         "properties": {
-          "hasAccess": {
-            "description": "Whether the user can open the lesson",
+          "allowed": {
+            "description": "Whether the current user can open the lesson (always true for content managers)",
             "example": false,
             "type": "boolean"
           },
-          "lessonId": {
-            "description": "Lesson ID",
-            "example": "lesson-ecuacion-movimiento",
-            "type": "string"
+          "missing": {
+            "description": "Previous published lessons with published pages that are not completed yet, in lesson order; empty unless reason is previous_lesson_incomplete",
+            "items": {
+              "$ref": "#/components/schemas/MissingLessonDTO"
+            },
+            "type": "array"
+          },
+          "reason": {
+            "description": "Why the lesson is locked: module_locked (its module is still locked) or previous_lesson_incomplete (see missing); null when allowed",
+            "enum": [
+              "module_locked",
+              "previous_lesson_incomplete",
+              null
+            ],
+            "example": "previous_lesson_incomplete",
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
-          "lessonId",
-          "hasAccess"
+          "allowed",
+          "reason",
+          "missing"
         ],
         "type": "object"
       },
@@ -12810,6 +12956,25 @@
         ],
         "type": "object"
       },
+      "MissingLessonDTO": {
+        "properties": {
+          "lessonId": {
+            "description": "ID of a previous lesson that must be completed first",
+            "example": "cm1lesson00001",
+            "type": "string"
+          },
+          "title": {
+            "description": "Title of that lesson",
+            "example": "Ecuación del movimiento",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lessonId",
+          "title"
+        ],
+        "type": "object"
+      },
       "ModuleAccessDTO": {
         "properties": {
           "hasAccess": {
@@ -13447,7 +13612,7 @@
             "type": "number"
           },
           "pageCount": {
-            "description": "Number of content pages in the legacy JSON content",
+            "description": "Number of published pages of the lesson; 0 means the lesson has nothing to show and the viewer skips it",
             "example": 5,
             "type": "number"
           },
@@ -14251,6 +14416,43 @@
         ],
         "type": "object"
       },
+      "MyContinueLearningDTO": {
+        "properties": {
+          "lessonId": {
+            "description": "Most recently accessed published lesson across all modules",
+            "example": "cm1lesson00001",
+            "type": "string"
+          },
+          "lessonTitle": {
+            "description": "Lesson title",
+            "example": "Ecuación del movimiento",
+            "type": "string"
+          },
+          "moduleId": {
+            "description": "Module of the lesson to continue",
+            "example": "cm1module00001",
+            "type": "string"
+          },
+          "moduleTitle": {
+            "description": "Module title",
+            "example": "Inversión fisiológica",
+            "type": "string"
+          },
+          "percent": {
+            "description": "Lesson-weighted completion percentage of the module (0-100)",
+            "example": 40,
+            "type": "number"
+          }
+        },
+        "required": [
+          "moduleId",
+          "moduleTitle",
+          "lessonId",
+          "lessonTitle",
+          "percent"
+        ],
+        "type": "object"
+      },
       "MyConversationDTO": {
         "properties": {
           "id": {
@@ -14936,6 +15138,21 @@
             },
             "type": "array"
           },
+          "continueLearning": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MyContinueLearningDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where to resume studying: the most recently accessed lesson (UserProgress.lastAccessedAt) whose lesson and module are still published; null when there is none"
+          },
           "grades": {
             "description": "Published grades, newest first",
             "items": {
@@ -15001,7 +15218,8 @@
           "latestConversations",
           "latestSimulationSessions",
           "upcomingReservations",
-          "unreadNotifications"
+          "unreadNotifications",
+          "continueLearning"
         ],
         "type": "object"
       },
@@ -15604,7 +15822,7 @@
             "type": "number"
           },
           "level": {
-            "description": "Current level derived from the experience points",
+            "description": "Current level: floor(xpTotal / 500) + 1",
             "example": 1,
             "type": "number"
           },
@@ -15614,12 +15832,12 @@
             "type": "number"
           },
           "nextLevelXp": {
-            "description": "Experience points needed for the next level",
+            "description": "Total experience points at which the next level starts (level × 500)",
             "example": 500,
             "type": "number"
           },
           "streakDays": {
-            "description": "Consecutive study days",
+            "description": "Consecutive America/Bogota days with activity ending today or yesterday",
             "example": 0,
             "type": "number"
           },
@@ -15634,7 +15852,7 @@
             "type": "number"
           },
           "xpTotal": {
-            "description": "Experience points from completed lessons",
+            "description": "Total experience points from the activity ledger (same value as GET /api/progress/gamification)",
             "example": 300,
             "type": "number"
           }
@@ -16239,6 +16457,11 @@
             "example": false,
             "type": "boolean"
           },
+          "moduleCompleted": {
+            "description": "Whether the module of the lesson is completed after this view (false for a page without a lesson)",
+            "example": false,
+            "type": "boolean"
+          },
           "pageId": {
             "description": "Viewed page ID",
             "example": "cm1page000001",
@@ -16262,6 +16485,7 @@
           "lastVisitedAt",
           "lessonCompleted",
           "lessonJustCompleted",
+          "moduleCompleted",
           "viewedPages",
           "totalPages"
         ],
@@ -17824,6 +18048,59 @@
           "userName",
           "action",
           "timestamp"
+        ],
+        "type": "object"
+      },
+      "RecentActivityItemDTO": {
+        "properties": {
+          "id": {
+            "description": "Ledger entry ID",
+            "example": "0192f1c4-7a1e-7c3b-9a55-2f1e4d1b7c10",
+            "type": "string"
+          },
+          "kind": {
+            "description": "Kind of learning fact",
+            "enum": [
+              "PAGE_VIEWED",
+              "LESSON_COMPLETED",
+              "MODULE_COMPLETED",
+              "EVALUATION_PASSED",
+              "ACHIEVEMENT_UNLOCKED"
+            ],
+            "example": "LESSON_COMPLETED",
+            "type": "string"
+          },
+          "occurredAt": {
+            "description": "When the fact happened (ISO 8601)",
+            "example": "2026-10-27T15:04:05.000Z",
+            "type": "string"
+          },
+          "refId": {
+            "description": "ID of the lesson, module, evaluation, page or achievement code the entry refers to",
+            "example": "lesson-01-intro",
+            "type": "string"
+          },
+          "title": {
+            "description": "Title of the referenced item, or null when it no longer exists",
+            "example": "Introducción a la ventilación",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "xp": {
+            "description": "Experience points of the entry",
+            "example": 50,
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "refId",
+          "xp",
+          "occurredAt",
+          "title"
         ],
         "type": "object"
       },
@@ -22358,7 +22635,7 @@
             "type": "string"
           },
           "lessonCount": {
-            "description": "Number of lessons",
+            "description": "Number of published lessons with at least one published page; 0 means the module has nothing to study yet",
             "example": 4,
             "type": "number"
           },
@@ -22994,6 +23271,25 @@
           "id",
           "name",
           "email"
+        ],
+        "type": "object"
+      },
+      "TeachingLessonAccessDTO": {
+        "properties": {
+          "hasAccess": {
+            "description": "Whether the user can open the lesson",
+            "example": false,
+            "type": "boolean"
+          },
+          "lessonId": {
+            "description": "Lesson ID",
+            "example": "lesson-ecuacion-movimiento",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lessonId",
+          "hasAccess"
         ],
         "type": "object"
       },
@@ -24321,8 +24617,30 @@
             "minimum": 1,
             "type": "number"
           },
+          "scope": {
+            "description": "Content scope of the answer; for a tutor message it is derived from its conversation and a different value answers 422",
+            "enum": [
+              "LESSON",
+              "MODULE",
+              "PAGE",
+              "FREE"
+            ],
+            "example": "LESSON",
+            "type": "string"
+          },
+          "surface": {
+            "description": "Where the answer was shown: tutor popup, deepen accordion, assistant page or notes analysis (thesis analytics)",
+            "enum": [
+              "POPUP",
+              "ACCORDION",
+              "ASSISTANT",
+              "NOTES_ANALYSIS"
+            ],
+            "example": "POPUP",
+            "type": "string"
+          },
           "targetId": {
-            "description": "Rated output: the grade feedback id (GRADE_FEEDBACK), the assistant message id (MESSAGE) or the AI call id of the analysis (NOTES_ANALYSIS)",
+            "description": "Rated output: the grade feedback id (GRADE_FEEDBACK), the assistant message id (MESSAGE; announced by the SSE start event, so a stopped answer can be rated too) or the AI call id of the analysis (NOTES_ANALYSIS)",
             "example": "cm1x2y3z40000abcd1234efgh",
             "type": "string"
           },
@@ -28199,6 +28517,38 @@
             }
           },
           {
+            "description": "Only ratings given on this surface",
+            "in": "query",
+            "name": "surface",
+            "required": false,
+            "schema": {
+              "enum": [
+                "POPUP",
+                "ACCORDION",
+                "ASSISTANT",
+                "NOTES_ANALYSIS"
+              ],
+              "example": "POPUP",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only ratings of answers with this content scope",
+            "in": "query",
+            "name": "scope",
+            "required": false,
+            "schema": {
+              "enum": [
+                "LESSON",
+                "MODULE",
+                "PAGE",
+                "FREE"
+              ],
+              "example": "MODULE",
+              "type": "string"
+            }
+          },
+          {
             "description": "Only ratings linked to calls of this use case",
             "in": "query",
             "name": "useCase",
@@ -28209,6 +28559,7 @@
                 "NOTES_ANALYSIS",
                 "PAGE_DEEPEN",
                 "LESSON_QA",
+                "MODULE_QA",
                 "FREE_CHAT",
                 "TOPIC_CHECK",
                 "SIM_ASSIST"
@@ -28408,6 +28759,38 @@
             }
           },
           {
+            "description": "Only ratings given on this surface",
+            "in": "query",
+            "name": "surface",
+            "required": false,
+            "schema": {
+              "enum": [
+                "POPUP",
+                "ACCORDION",
+                "ASSISTANT",
+                "NOTES_ANALYSIS"
+              ],
+              "example": "POPUP",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only ratings of answers with this content scope",
+            "in": "query",
+            "name": "scope",
+            "required": false,
+            "schema": {
+              "enum": [
+                "LESSON",
+                "MODULE",
+                "PAGE",
+                "FREE"
+              ],
+              "example": "MODULE",
+              "type": "string"
+            }
+          },
+          {
             "description": "Only ratings linked to calls of this use case",
             "in": "query",
             "name": "useCase",
@@ -28418,6 +28801,7 @@
                 "NOTES_ANALYSIS",
                 "PAGE_DEEPEN",
                 "LESSON_QA",
+                "MODULE_QA",
                 "FREE_CHAT",
                 "TOPIC_CHECK",
                 "SIM_ASSIST"
@@ -28625,6 +29009,7 @@
                 "NOTES_ANALYSIS",
                 "PAGE_DEEPEN",
                 "LESSON_QA",
+                "MODULE_QA",
                 "FREE_CHAT",
                 "TOPIC_CHECK",
                 "SIM_ASSIST"
@@ -28808,6 +29193,7 @@
                 "NOTES_ANALYSIS",
                 "PAGE_DEEPEN",
                 "LESSON_QA",
+                "MODULE_QA",
                 "FREE_CHAT",
                 "TOPIC_CHECK",
                 "SIM_ASSIST"
@@ -49407,6 +49793,150 @@
       }
     },
     "/api/lessons/{id}/access": {
+      "get": {
+        "description": "Tells whether the current user can open the lesson: its module must be unlocked and every previous published lesson with published pages must be completed (lessons without published pages never block). Content managers are always allowed\n\n**Required access:** bearer token holding `progress:read_own`; minimum role STUDENT.",
+        "operationId": "getLessonAccess",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/LessonAccessDTO"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Lesson access retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error or malformed request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The caller lacks the required permission or is not allowed to act on this resource"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "NotFoundError": {
+                    "$ref": "#/components/examples/NotFoundError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Lesson not found"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Check lesson access",
+        "tags": [
+          "Lessons"
+        ],
+        "x-min-role": "STUDENT",
+        "x-required-permissions": [
+          "progress:read_own"
+        ]
+      },
       "post": {
         "description": "Records that the current user opened the lesson\n\n**Required access:** bearer token holding `progress:update_own`; minimum role STUDENT.",
         "operationId": "recordLessonAccess",
@@ -55145,7 +55675,8 @@
     },
     "/api/modules/{id}/resume": {
       "get": {
-        "description": "Finds the first incomplete active lesson and the step to resume at\n\n**Required access:** bearer token holding `progress:read_own`; minimum role STUDENT.",
+        "deprecated": true,
+        "description": "Finds the first incomplete active lesson and the step to resume at\n\n**Required access:** bearer token holding `progress:read_own`; minimum role STUDENT.\n\n**Deprecated:** use `GET /api/progress/modules/{moduleId}`. Responses carry the `Deprecation` header (RFC 9745) and, when the successor URL can be built from this request, `Link: <successor>; rel=\"successor-version\"`.",
         "operationId": "getModuleResume",
         "parameters": [
           {
@@ -55286,7 +55817,8 @@
         "x-min-role": "STUDENT",
         "x-required-permissions": [
           "progress:read_own"
-        ]
+        ],
+        "x-successor": "GET /api/progress/modules/{moduleId}"
       }
     },
     "/api/my-evaluations": {
@@ -59505,7 +60037,7 @@
         ]
       },
       "get": {
-        "description": "Retrieves a page with its active blocks and resolved media URLs; unpublished content answers 404 for students\n\n**Required access:** public; an optional bearer token identifies the caller and may widen what is returned.",
+        "description": "Retrieves a page with its active blocks and resolved media URLs; unpublished content answers 404 for students, and an authenticated student gets 403 progress.lesson_locked (data.missing lists the previous lessons to complete) when the lesson is still locked\n\n**Required access:** public; an optional bearer token identifies the caller and may widen what is returned.",
         "operationId": "getPageById",
         "parameters": [
           {
@@ -59557,6 +60089,21 @@
               }
             },
             "description": "Validation error or malformed request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The lesson is locked for the current student (progress.lesson_locked)"
           },
           "404": {
             "content": {
@@ -61028,6 +61575,397 @@
         ]
       }
     },
+    "/api/progress/activity": {
+      "get": {
+        "description": "Returns the America/Bogota days with activity (event count and XP) between from and to, both inclusive, at most 366 days; by default the 366 days ending today\n\n**Required access:** bearer token holding `progress:read_own`; minimum role STUDENT.",
+        "operationId": "getActivity",
+        "parameters": [
+          {
+            "description": "First day (America/Bogota, YYYY-MM-DD, inclusive); defaults to 365 days before `to`",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "example": "2026-01-01",
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Last day (America/Bogota, YYYY-MM-DD, inclusive); defaults to today. At most 366 days from `from`",
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "example": "2026-10-28",
+              "format": "date",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/ActivityCalendarDTO"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Activity calendar retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error or malformed request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Missing, invalid or expired credentials"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The caller lacks the required permission or is not allowed to act on this resource"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get my activity calendar",
+        "tags": [
+          "Progress"
+        ],
+        "x-min-role": "STUDENT",
+        "x-required-permissions": [
+          "progress:read_own"
+        ]
+      }
+    },
+    "/api/progress/activity/recent": {
+      "get": {
+        "description": "Returns the latest ledger milestones (lesson and module completions, passed evaluations and unlocked achievements) with the title of the referenced item, newest first\n\n**Required access:** bearer token holding `progress:read_own`; minimum role STUDENT.",
+        "operationId": "getRecentActivity",
+        "parameters": [
+          {
+            "description": "Maximum number of entries",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "maximum": 50,
+              "minimum": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/RecentActivityItemDTO"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Recent activity retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error or malformed request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Missing, invalid or expired credentials"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The caller lacks the required permission or is not allowed to act on this resource"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get my recent activity",
+        "tags": [
+          "Progress"
+        ],
+        "x-min-role": "STUDENT",
+        "x-required-permissions": [
+          "progress:read_own"
+        ]
+      }
+    },
+    "/api/progress/gamification": {
+      "get": {
+        "description": "Returns XP, level, XP inside the level, the XP of the next level, the current and longest streak (America/Bogota days) and today's XP from the activity ledger\n\n**Required access:** bearer token holding `progress:read_own`; minimum role STUDENT.",
+        "operationId": "getGamification",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/GamificationStatsDTO"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Gamification statistics retrieved successfully"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Missing, invalid or expired credentials"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The caller lacks the required permission or is not allowed to act on this resource"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get my gamification statistics",
+        "tags": [
+          "Progress"
+        ],
+        "x-min-role": "STUDENT",
+        "x-required-permissions": [
+          "progress:read_own"
+        ]
+      }
+    },
     "/api/progress/lesson/{lessonId}": {
       "get": {
         "deprecated": true,
@@ -61656,7 +62594,8 @@
     },
     "/api/progress/milestones": {
       "get": {
-        "description": "Returns the user milestones\n\n**Required access:** bearer token holding `progress:read_own`; minimum role STUDENT.",
+        "deprecated": true,
+        "description": "Returns the user milestones\n\n**Required access:** bearer token holding `progress:read_own`; minimum role STUDENT.\n\n**Deprecated:** use `GET /api/progress/summary`. Responses carry the `Deprecation` header (RFC 9745) and, when the successor URL can be built from this request, `Link: <successor>; rel=\"successor-version\"`.",
         "operationId": "getProgressMilestones",
         "parameters": [],
         "responses": {
@@ -61758,7 +62697,8 @@
         "x-min-role": "STUDENT",
         "x-required-permissions": [
           "progress:read_own"
-        ]
+        ],
+        "x-successor": "GET /api/progress/summary"
       }
     },
     "/api/progress/module/{moduleId}": {
@@ -62162,7 +63102,7 @@
     },
     "/api/progress/pages/{pageId}/view": {
       "post": {
-        "description": "Idempotently records that the current user viewed a page; viewing every published page of a lesson completes it. Students only reach published pages with published ancestors\n\n**Required access:** bearer token holding `progress:update_own`; minimum role STUDENT.",
+        "description": "Idempotently records that the current user viewed a page; viewing every published page of a lesson completes it. Students only reach published pages with published ancestors, and only in lesson order: a page of a locked lesson answers 403 progress.lesson_locked (data.missing lists the previous lessons to complete)\n\n**Required access:** bearer token holding `progress:update_own`; minimum role STUDENT.",
         "operationId": "recordPageView",
         "parameters": [
           {
@@ -62243,7 +63183,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Missing permission, or the lesson is locked for the current student (progress.lesson_locked)"
           },
           "404": {
             "content": {
@@ -62308,7 +63248,8 @@
     },
     "/api/progress/resume/{moduleId}": {
       "get": {
-        "description": "Returns the first incomplete active lesson of the module and the step to resume at\n\n**Required access:** bearer token holding `progress:read_own`; minimum role STUDENT.",
+        "deprecated": true,
+        "description": "Returns the first incomplete active lesson of the module and the step to resume at\n\n**Required access:** bearer token holding `progress:read_own`; minimum role STUDENT.\n\n**Deprecated:** use `GET /api/progress/modules/{moduleId}`. Responses carry the `Deprecation` header (RFC 9745) and, when the successor URL can be built from this request, `Link: <successor>; rel=\"successor-version\"`.",
         "operationId": "getProgressResume",
         "parameters": [
           {
@@ -62449,7 +63390,8 @@
         "x-min-role": "STUDENT",
         "x-required-permissions": [
           "progress:read_own"
-        ]
+        ],
+        "x-successor": "GET /api/progress/modules/{moduleId}"
       }
     },
     "/api/progress/sections/{sectionId}": {
@@ -62600,7 +63542,8 @@
     },
     "/api/progress/skills": {
       "get": {
-        "description": "Returns the user skills and competence categories\n\n**Required access:** bearer token holding `progress:read_own`; minimum role STUDENT.",
+        "deprecated": true,
+        "description": "Returns the user skills and competence categories\n\n**Required access:** bearer token holding `progress:read_own`; minimum role STUDENT.\n\n**Deprecated:** use `GET /api/progress/summary`. Responses carry the `Deprecation` header (RFC 9745) and, when the successor URL can be built from this request, `Link: <successor>; rel=\"successor-version\"`.",
         "operationId": "getProgressSkills",
         "parameters": [],
         "responses": {
@@ -62702,7 +63645,8 @@
         "x-min-role": "STUDENT",
         "x-required-permissions": [
           "progress:read_own"
-        ]
+        ],
+        "x-successor": "GET /api/progress/summary"
       }
     },
     "/api/progress/step/update": {
@@ -72693,7 +73637,8 @@
     },
     "/api/teaching/lessons/{lessonId}/access": {
       "get": {
-        "description": "Tells whether the current user can open the lesson in sequence\n\n**Required access:** bearer token holding `progress:read_own`; minimum role STUDENT.",
+        "deprecated": true,
+        "description": "Tells whether the current user can open the lesson in sequence\n\n**Required access:** bearer token holding `progress:read_own`; minimum role STUDENT.\n\n**Deprecated:** use `GET /api/lessons/{id}/access`. Responses carry the `Deprecation` header (RFC 9745) and, when the successor URL can be built from this request, `Link: <successor>; rel=\"successor-version\"`.",
         "operationId": "checkTeachingLessonAccess",
         "parameters": [
           {
@@ -72717,7 +73662,7 @@
                     {
                       "properties": {
                         "data": {
-                          "$ref": "#/components/schemas/LessonAccessDTO"
+                          "$ref": "#/components/schemas/TeachingLessonAccessDTO"
                         }
                       },
                       "required": [
@@ -72834,7 +73779,8 @@
         "x-min-role": "STUDENT",
         "x-required-permissions": [
           "progress:read_own"
-        ]
+        ],
+        "x-successor": "GET /api/lessons/{id}/access"
       }
     },
     "/api/teaching/modules/unlocked": {

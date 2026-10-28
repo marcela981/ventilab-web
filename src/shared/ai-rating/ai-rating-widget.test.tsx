@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AiRatingWidget tests
-* Descripción: Covers the "¿Te fue útil?" widget against an msw backend: the PUT /api/ai-ratings body, optimistic selection with rollback and error message, disabled state while saving, comment length limit and counter, aria-pressed, and loading the existing rating from GET /api/ai-ratings/mine. Depends on Vitest, Testing Library, msw and SWR.
-* Versión: 1.0
+* Descripción: Covers the "¿Te fue útil?" widget against an msw backend: the PUT /api/ai-ratings body, optimistic selection with rollback and error message, disabled state while saving, comment length limit and counter, aria-pressed, and loading the existing rating from GET /api/ai-ratings/mine. v1.1 (W7, Bloque 2): surface and scope in the PUT body, and the single retry of a 404 (stopped answer not stored yet). Depends on Vitest, Testing Library, msw and SWR.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -126,6 +126,41 @@ describe("AiRatingWidget", () => {
     });
     expect(upButton()).toHaveAttribute("aria-pressed", "true");
     expect(putBodies).toEqual([{ targetType: "MESSAGE", targetId: "msg-1", helpful: true }]);
+  });
+
+  it("sends the surface and the scope of the answer", async() => {
+    server.use(putHandler());
+    render(
+      <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
+        <AiRatingWidget targetType="MESSAGE" targetId="msg-1" initialRating={null} surface="ACCORDION" scope="PAGE" />
+      </SWRConfig>,
+    );
+
+    fireEvent.click(downButton());
+
+    await waitFor(() => expect(putBodies).toEqual([{ targetType: "MESSAGE", targetId: "msg-1", helpful: false, surface: "ACCORDION", scope: "PAGE" }]));
+  });
+
+  it("retries a 404 once (an answer stopped a moment ago may not be stored yet)", async() => {
+    let calls = 0;
+
+    server.use(putHandler(() => {
+      calls += 1;
+
+      return calls === 1
+        ? HttpResponse.json(
+          { success: false, message: "missing", data: null, code: "ai-ratings.target_not_found", timestamp: "x", traceId: "t", pagination: null },
+          { status: 404 },
+        )
+        : HttpResponse.json(envelope(null));
+    }));
+    renderWidget(null);
+
+    fireEvent.click(upButton());
+
+    expect(await screen.findByRole("status")).toHaveTextContent("¡Gracias por tu valoración!");
+    expect(putBodies).toHaveLength(2);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
   it("rolls back the selection and shows an error when saving fails", async() => {

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student space entity tests
-* Descripción: Pure rules of the student space: module options in curriculum order (all sections plus unsectioned levels, or one section), the notes page query with the server-side filters, grouping of a notes page by module (curriculum rank, title from the tree) and lesson (API order, title from the note) with a trailing group for notes without module, the grade type and module filters (row selection only) and the grade module options and the labels fallback. Depends on vitest and the student space entities. v1.1 (B1 closure): the note fixture carries the new label fields. v1.2 (B2 closure): notes grouped by their API labels, notes query filters, grade module filter.
-* Versión: 1.2
+* Descripción: Pure rules of the student space: module options in curriculum order (all sections plus unsectioned levels, or one section), the notes page query with the server-side filters, grouping of a notes page by module (curriculum rank, title from the tree) and lesson (API order, title from the note) with a trailing group for notes without module, the grade type and module filters (row selection only) and the grade module options and the labels fallback. Depends on vitest and the student space entities. v1.1 (B1 closure): the note fixture carries the new label fields. v1.2 (B2 closure): notes grouped by their API labels, notes query filters, grade module filter. v1.3 (W4, Bloque 2): curriculum fixtures carry track, slug and status (learning entity fields).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -23,6 +23,8 @@ function level(id: string, sectionId: string | null, moduleIds: string[]): Curri
     description: null,
     order: 1,
     sectionId,
+    track: "mecanica",
+    status: "PUBLISHED",
     locked: false,
     completed: false,
     missingPrerequisites: [],
@@ -32,6 +34,7 @@ function level(id: string, sectionId: string | null, moduleIds: string[]): Curri
       description: null,
       order: index + 1,
       lessonCount: 1,
+      status: "PUBLISHED" as const,
       locked: false,
       completed: false,
       missingPrerequisites: [],
@@ -41,8 +44,8 @@ function level(id: string, sectionId: string | null, moduleIds: string[]): Curri
 
 const TREE: CurriculumTree = {
   sections: [
-    { id: "s1", title: "Fundamentos", description: null, order: 1, levels: [level("lv1", "s1", ["m1", "m2"])] },
-    { id: "s2", title: "Avanzado", description: null, order: 2, levels: [level("lv2", "s2", ["m3"])] },
+    { id: "s1", slug: "s1", status: "PUBLISHED", title: "Fundamentos", description: null, order: 1, levels: [level("lv1", "s1", ["m1", "m2"])] },
+    { id: "s2", slug: "s2", status: "PUBLISHED", title: "Avanzado", description: null, order: 2, levels: [level("lv2", "s2", ["m3"])] },
   ],
   unsectionedLevels: [level("lv9", null, ["m9"])],
 };
