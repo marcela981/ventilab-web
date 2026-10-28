@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useStreamingResponse tests
-* Descripción: Tests of the generic AI answer stream hook against msw serving real text/event-stream bodies: deltas accumulate and `done` resolves with its metadata (extra fields and sources included), an `event: error` frame and a 429 before the stream become ApiError state, abort keeps the partial text (also the text still buffered for the next frame) and ignores later frames, a new start after a lost connection resets the state, a start while another stream runs aborts it without leaking its buffered or late text, reset returns to idle, deltas are committed once per animation frame, unmounting aborts, and the aborted outcome reports whether any frame arrived (streamStarted, true even for a delta still buffered for the next frame). Depends on vitest, Testing Library, msw and the shared SSE test helpers.
-* Versión: 1.2
+* Descripción: Tests of the generic AI answer stream hook against msw serving real text/event-stream bodies: deltas accumulate and `done` resolves with its metadata (extra fields and sources included), an `event: error` frame and a 429 before the stream become ApiError state, abort keeps the partial text (also the text still buffered for the next frame) and ignores later frames, a new start after a lost connection resets the state, a start while another stream runs aborts it without leaking its buffered or late text, reset returns to idle, deltas are committed once per animation frame, unmounting aborts, and the aborted outcome reports whether any frame arrived (streamStarted, true even for a delta still buffered for the next frame). v1.3 (W7, Bloque 2): the aborted outcome carries `announced` (null without a start frame); the early `start` frame is exposed as announced in the state and in the aborted outcome. Depends on vitest, Testing Library, msw and the shared SSE test helpers.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,7 +14,7 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
-import { controlledStream, deltaFrame, doneFrame, errorFrame, sseResponse } from "./sse-test-helpers";
+import { controlledStream, deltaFrame, doneFrame, errorFrame, sseResponse, startFrame } from "./sse-test-helpers";
 import { useStreamingResponse } from "./use-streaming-response";
 
 const PATH = "/api/tutor/conversations/c1/messages";
@@ -149,7 +149,7 @@ describe("useStreamingResponse", () => {
     stream.push(deltaFrame(" y parte dos"));
     stream.push(doneFrame(DONE));
     await act(async() => {
-      await expect(outcome).resolves.toEqual({ status: "aborted", streamStarted: true });
+      await expect(outcome).resolves.toEqual({ status: "aborted", streamStarted: true, announced: null });
     });
     expect(result.current.text).toBe("Parte uno");
     expect(result.current.done).toBeNull();
@@ -245,7 +245,7 @@ describe("useStreamingResponse", () => {
     first.push(deltaFrame(" tardía"));
     first.push(doneFrame(DONE));
     await act(async() => {
-      await expect(firstOutcome).resolves.toEqual({ status: "aborted", streamStarted: true });
+      await expect(firstOutcome).resolves.toEqual({ status: "aborted", streamStarted: true, announced: null });
     });
     act(() => frames.runFrame());
     expect(result.current.text).toBe("");
@@ -285,7 +285,7 @@ describe("useStreamingResponse", () => {
     stream.push(deltaFrame(" y parte dos"));
     stream.push(doneFrame(DONE));
     await act(async() => {
-      await expect(outcome).resolves.toEqual({ status: "aborted", streamStarted: true });
+      await expect(outcome).resolves.toEqual({ status: "aborted", streamStarted: true, announced: null });
     });
     act(() => frames.runFrame());
     expect(result.current).toMatchObject({ status: "idle", text: "", done: null, error: null });
@@ -302,6 +302,32 @@ describe("useStreamingResponse", () => {
 
     act(() => result.current.reset());
     expect(result.current).toMatchObject({ status: "idle", text: "", done: null, error: null });
+  });
+
+  it("exposes the start frame as announced and keeps it in the aborted outcome", async() => {
+    const stream = controlledStream();
+
+    server.use(http.post(URL, () => stream.response()));
+    const { result } = renderHook(() => useStreamingResponse());
+    let outcome: Promise<unknown> = Promise.resolve();
+
+    act(() => {
+      outcome = result.current.start(REQUEST);
+    });
+    stream.push(startFrame({ conversationId: "conv-1", messageId: "msg-1" }));
+    await waitFor(() => expect(result.current.announced).toEqual({ conversationId: "conv-1", messageId: "msg-1" }));
+    expect(result.current.status).toBe("streaming");
+
+    act(() => result.current.abort());
+    stream.close();
+    await act(async() => {
+      await expect(outcome).resolves.toEqual({
+        status: "aborted",
+        streamStarted: true,
+        announced: { conversationId: "conv-1", messageId: "msg-1" },
+      });
+    });
+    expect(result.current.announced).toEqual({ conversationId: "conv-1", messageId: "msg-1" });
   });
 
   it("reports streamStarted false when aborted before any frame arrived", async() => {
@@ -324,7 +350,7 @@ describe("useStreamingResponse", () => {
     act(() => result.current.abort());
     stream.push(deltaFrame("tarde"));
     await act(async() => {
-      await expect(outcome).resolves.toEqual({ status: "aborted", streamStarted: false });
+      await expect(outcome).resolves.toEqual({ status: "aborted", streamStarted: false, announced: null });
     });
     expect(result.current.text).toBe("");
   });
@@ -344,6 +370,6 @@ describe("useStreamingResponse", () => {
 
     unmount();
     stream.push(doneFrame(DONE));
-    await expect(outcome).resolves.toEqual({ status: "aborted", streamStarted: true });
+    await expect(outcome).resolves.toEqual({ status: "aborted", streamStarted: true, announced: null });
   });
 });
