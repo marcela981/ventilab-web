@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student summary entity
-* Descripción: Domain shape of the student home (`GET /api/me/summary`): learning progress (overall and per section, values exactly as the API computes them), active and upcoming evaluations, latest published grades, notes, AI conversations, simulation sessions, upcoming ventilator reservations and the unread notifications count. Nothing here is computed on the client. No dependencies. v1.1 (B2 closure): section progress carries its title, grades their attemptId and module, notes their module, lesson and page titles, and simulation sessions their case title (the backend gaps are closed).
-* Versión: 1.1
+* Descripción: Domain shape of the student home (`GET /api/me/summary`): learning progress (overall and per section, values exactly as the API computes them), active and upcoming evaluations, latest published grades, notes, AI conversations, simulation sessions, upcoming ventilator reservations and the unread notifications count. Nothing here is computed on the client. No dependencies. v1.1 (B2 closure): section progress carries its title, grades their attemptId and module, notes their module, lesson and page titles, and simulation sessions their case title (the backend gaps are closed). v1.2 (W8, Bloque 2): continueLearning, the lesson to resume (most recently accessed published lesson, module and lesson titles and the module percentage from the API) or null.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -77,8 +77,18 @@ export type SummaryReservation = {
   heldByGroup: boolean
 };
 
+export type ContinueLearning = {
+  moduleId: string
+  moduleTitle: string
+  lessonId: string
+  lessonTitle: string
+  // Lesson-weighted module completion (0-100) computed by the API.
+  percent: number
+};
+
 export type StudentSummary = {
   overallProgress: ProgressItem
+  continueLearning: ContinueLearning | null
   sectionProgress: ProgressItem[]
   activeEvaluations: SummaryEvaluation[]
   upcomingEvaluations: SummaryEvaluation[]

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student space routes
-* Descripción: URLs of the student space (/me, /me/notes, /me/grades) and local constants of the routes it links to in other features (learning section and lesson page, evaluation detail and attempt result, AI assistant conversation, simulator session, result and replay, lab reservations, notifications). Kept local because feature barrels are not tree-shaken: importing them for a route string would pull whole features into the /me chunk (precedent: notifications/application/config/notification-links.ts and simulator.routes.ts); a parity test compares them with the route constants of those features. No dependencies. v1.1 (B2 closure): lesson page route for the note deep links. v1.2 (B3.10): the unused STUDENT_HOME_URL constant is removed. v1.3 (W1 Bloque 1): the simulator home is the Simular tab of the unified workspace (/simulador?tab=simular); the session, result and replay URLs keep /simulator/sessions/[sessionId]. v1.4 (W3, Bloque 2): a learning section links to the Currículo tab of /learn (?tab=curriculo&section=).
-* Versión: 1.4
+* Descripción: URLs of the student space (/me, /me/notes, /me/grades) and local constants of the routes it links to in other features (learning section and lesson page, evaluation detail and attempt result, AI assistant conversation, simulator session, result and replay, lab reservations, notifications). Kept local because feature barrels are not tree-shaken: importing them for a route string would pull whole features into the /me chunk (precedent: notifications/application/config/notification-links.ts and simulator.routes.ts); a parity test compares them with the route constants of those features. No dependencies. v1.1 (B2 closure): lesson page route for the note deep links. v1.2 (B3.10): the unused STUDENT_HOME_URL constant is removed. v1.3 (W1 Bloque 1): the simulator home is the Simular tab of the unified workspace (/simulador?tab=simular); the session, result and replay URLs keep /simulator/sessions/[sessionId]. v1.4 (W3, Bloque 2): a learning section links to the Currículo tab of /learn (?tab=curriculo&section=). v1.5 (W8, Bloque 2): the module entry of the viewer (/learn/modules/[moduleId], its resolver opens the resume point) for "Continuar donde quedaste".
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -33,6 +33,11 @@ export function buildSectionUrl(sectionId: string): string {
 /** First page of a lesson in the learning viewer (mirrors learning buildLessonPageUrl with page 1). */
 export function buildLessonUrl(moduleId: string, lessonId: string): string {
   return `${LEARN_HOME_URL}/modules/${segment(moduleId)}/lessons/${segment(lessonId)}/1`;
+}
+
+/** Module entry of the learning viewer: its resolver opens the resume point (mirrors learning buildModuleUrl). */
+export function buildModuleUrl(moduleId: string): string {
+  return `${LEARN_HOME_URL}/modules/${segment(moduleId)}`;
 }
 
 export function buildEvaluationUrl(evaluationId: string): string {
