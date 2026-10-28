@@ -21,6 +21,10 @@ test("(5) staff previews without locks and opens the CMS page editor from the vi
   const teacher = await backendApiAs(request, TEACHER_STORAGE_STATE);
   const [firstPage] = await pagesOf(teacher, LESSON_2.id);
 
+  if (!firstPage) {
+    throw new Error("The demo lesson 2 has no published Pages: seed the database (LOCAL_STACK.md)");
+  }
+
   await page.goto("/learn?tab=progreso");
   await expect(page.getByText("Vista previa").first()).toBeVisible({ timeout: 30_000 });
   await expect(page.getByRole("tablist", { name: "Secciones de Aprender" })).toHaveCount(0);
@@ -45,7 +49,7 @@ test("(5) staff previews without locks and opens the CMS page editor from the vi
     }
   });
   await page.goto(lessonPageUrl(LESSON_2.id, 1));
-  await waitForLessonContent(page, firstPage?.title);
+  await waitForLessonContent(page, firstPage.title);
   await expect(page.getByRole("region", { name: "Contenido bloqueado" })).toHaveCount(0);
   await expect(page.getByText("Vista previa").first()).toBeVisible();
   await page.waitForTimeout(6_000);
@@ -53,9 +57,9 @@ test("(5) staff previews without locks and opens the CMS page editor from the vi
 
   const edit = page.getByRole("link", { name: "Editar esta página" });
 
-  await expect(edit).toHaveAttribute("href", `/content/pages/${firstPage?.id}`);
+  await expect(edit).toHaveAttribute("href", `/content/pages/${firstPage.id}`);
   await edit.click();
-  await expect(page).toHaveURL(new RegExp(`/content/pages/${firstPage?.id}$`));
+  await expect(page).toHaveURL(new RegExp(`/content/pages/${firstPage.id}$`));
   await expect(page.getByText("Editor de página").first()).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByRole("heading", { level: 1, name: firstPage?.title })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: firstPage.title })).toBeVisible();
 });
