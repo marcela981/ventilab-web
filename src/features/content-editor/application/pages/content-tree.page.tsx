@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ContentTreePage
-* Descripción: Content editor tree (/content, TEACHER and ADMIN): the whole hierarchy Sección > Nivel > Módulo > Lección > Página composed by useContentTree (sections + levels + teaching tree; levels without a section under "Sin sección"; lesson pages loaded only when the lesson is expanded). Every node shows its status badge and can be expanded/collapsed. Filters by title text and by status keep the ancestors of every match visible and expanded. Actions per node: create the child of the next level and edit (NodeFormDialog with the DTO fields), change the status (PATCH for sections, PUT {status} for the rest) with a confirmation when publishing under a draft/archived ancestor (students would not see it), and delete with confirmation; when the backend answers 409 curriculum.node_has_student_data the "Archivar en su lugar" dialog sets ARCHIVED instead. Drag and drop (@hello-pangea/dnd) reorders siblings of the same parent with an optimistic update and the per-parent batch endpoint (reverted with a toast on failure); it is disabled while a filter is active. Loading skeleton, error state with retry and empty state. v1.1 (C3): "Prerrequisitos" on levels and modules opens PrerequisitesDialog (candidates from the composed tree, never the node itself) and saves the whole selection with the replace endpoint (PUT); every content read, prerequisite reads included, is revalidated after it. A 409 circular dependency is explained in the dialog by walking the dependents of the edited node (findCycleChain over GET /api/levels/{id}/prerequisites or GET /api/modules/{id}; the backend does not name the dependency) and naming the selected item that already depends on it; when the walk finds nothing the generic cycle message is shown. Depends on MUI, @hello-pangea/dnd, @shared/design-system, the content editor services, entities, hooks, components and CSS Module. v1.2 (B5): document title "Contenido | VentyLab" through formatPageTitle (next/head).
-* Versión: 1.2 (B5)
+* Descripción: Content editor tree (/content, TEACHER and ADMIN): the whole hierarchy Sección > Nivel > Módulo > Lección > Página composed by useContentTree (sections + levels + teaching tree; levels without a section under "Sin sección"; lesson pages loaded only when the lesson is expanded). Every node shows its status badge and can be expanded/collapsed. Filters by title text and by status keep the ancestors of every match visible and expanded. Actions per node: create the child of the next level and edit (NodeFormDialog with the DTO fields), change the status (PATCH for sections, PUT {status} for the rest) with a confirmation when publishing under a draft/archived ancestor (students would not see it), and delete with confirmation; when the backend answers 409 curriculum.node_has_student_data the "Archivar en su lugar" dialog sets ARCHIVED instead. Drag and drop (@hello-pangea/dnd) reorders siblings of the same parent with an optimistic update and the per-parent batch endpoint (reverted with a toast on failure); it is disabled while a filter is active. Loading skeleton, error state with retry and empty state. v1.1 (C3): "Prerrequisitos" on levels and modules opens PrerequisitesDialog (candidates from the composed tree, never the node itself) and saves the whole selection with the replace endpoint (PUT); every content read, prerequisite reads included, is revalidated after it. A 409 circular dependency is explained in the dialog by walking the dependents of the edited node (findCycleChain over GET /api/levels/{id}/prerequisites or GET /api/modules/{id}; the backend does not name the dependency) and naming the selected item that already depends on it; when the walk finds nothing the generic cycle message is shown. Depends on MUI, @hello-pangea/dnd, @shared/design-system, the content editor services, entities, hooks, components and CSS Module. v1.2 (B5): document title "Contenido | VentyLab" through formatPageTitle (next/head). v1.3 (W6, Bloque 2): focusNode (the /content?node=level:<id> | module:<id> deep link): once the tree is loaded the node's ancestors and the node itself are expanded (expansion keys kind:id) and its row is scrolled into view and focused; each value is applied once.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,7 +16,7 @@ import AddIcon from "@mui/icons-material/Add";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import Head from "next/head";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
 import { EmptyState } from "@shared/design-system/components/empty-state";
@@ -41,6 +41,7 @@ import {
 } from "../entities/content-node.entity";
 import type { AncestorRef, ContentNode, ContentStatus, NodeFormValues, SiblingGroup } from "../entities/content-node.entity";
 import { isCircularDependency, isStudentDataConflict } from "../entities/content-editor-error-messages";
+import { nodeDomId, nodeLinkExpansion, parseNodeParam } from "../entities/content-node-link";
 import { cycleMessage, findCycleChain, hasPrerequisites, prerequisiteOptions } from "../entities/content-prerequisites";
 import type { PrerequisiteKind } from "../entities/content-prerequisites";
 import { filterNodes, isFilterActive, NO_FILTER } from "../entities/content-tree-filter";
@@ -105,7 +106,12 @@ function formValuesOf(node: ContentNode): NodeFormValues {
   return { title: node.title, slug: node.slug ?? "", description: node.description ?? "" };
 }
 
-export function ContentTreePage() {
+export type ContentTreePageProps = {
+  // Raw ?node= value (level:<id> | module:<id>): the node is revealed (ancestors expanded), scrolled to and focused.
+  focusNode?: string | null
+};
+
+export function ContentTreePage({ focusNode = null }: ContentTreePageProps) {
   const { tree, isLoading, error, reload } = useContentTree();
   const toast = useToast();
   const { run, pending } = useContentMutation();
@@ -120,7 +126,32 @@ export function ContentTreePage() {
   const [prerequisitesTarget, setPrerequisitesTarget] = useState<PrerequisitesTarget | null>(null);
   const [prerequisitesError, setPrerequisitesError] = useState<string | null>(null);
   const [explainingCycle, setExplainingCycle] = useState(false);
+  // ?node= value already applied to the expansion (each value is applied once, after the tree loads).
+  const [appliedFocus, setAppliedFocus] = useState<string | null>(null);
   const groups = useRef(new Map<string, GroupEntry>());
+  const focusLink = parseNodeParam(focusNode);
+  const focusDomId = focusLink ? nodeDomId(focusLink) : null;
+
+  if (tree && focusNode && focusLink && appliedFocus !== focusNode) {
+    const keys = nodeLinkExpansion(tree, focusLink);
+
+    setAppliedFocus(focusNode);
+
+    if (keys) {
+      setExpanded((current) => new Set([...current, ...keys]));
+    }
+  }
+
+  useEffect(() => {
+    if (!focusDomId || appliedFocus !== focusNode) {
+      return;
+    }
+
+    const row = document.getElementById(focusDomId);
+
+    row?.scrollIntoView?.({ block: "center" });
+    row?.focus({ preventScroll: true });
+  }, [appliedFocus, focusNode, focusDomId]);
   const filterActive = isFilterActive(filter);
   const filtered = useMemo(() => {
     if (!tree) {

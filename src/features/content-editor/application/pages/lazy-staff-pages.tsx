@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Lazy content editor pages
-* Descripción: On-demand entry point of the content editor pages exported by the content-editor barrel: ContentTreePage (/content) loads its page module with React.lazy + retryImport (3 attempts with backoff) behind a LoadingState, inside a RouteErrorBoundary (a chunk that still fails shows "Recargar"). The tree code (drag and drop, dialogs) stays out of the shared chunks, and the page editor of C4 can be added the same way without growing /content. Same pattern as the groups staff pages. v1.1 (C4): PageEditorPage (/content/pages/[pageId]) loads the page editor module the same way, in its own chunk (Tiptap is a further lazy chunk inside it). Depends on React, @shared/design-system and @shared/lib.
-* Versión: 1.1 (C4)
+* Descripción: On-demand entry point of the content editor pages exported by the content-editor barrel: ContentTreePage (/content) loads its page module with React.lazy + retryImport (3 attempts with backoff) behind a LoadingState, inside a RouteErrorBoundary (a chunk that still fails shows "Recargar"). The tree code (drag and drop, dialogs) stays out of the shared chunks, and the page editor of C4 can be added the same way without growing /content. Same pattern as the groups staff pages. v1.1 (C4): PageEditorPage (/content/pages/[pageId]) loads the page editor module the same way, in its own chunk (Tiptap is a further lazy chunk inside it). Depends on React, @shared/design-system and @shared/lib. v1.2 (W6, Bloque 2): ContentTreePage forwards focusNode (?node= deep link).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -25,11 +25,11 @@ const LoadedPageEditorPage = lazy(() =>
 // TODO(i18n): move to a content-editor namespace in src/i18n.
 const LOADING_LABEL = "Cargando el editor de contenido…";
 
-export function ContentTreePage() {
+export function ContentTreePage({ focusNode = null }: { focusNode?: string | null }) {
   return (
     <RouteErrorBoundary>
       <Suspense fallback={<LoadingState label={LOADING_LABEL} />}>
-        <LoadedContentTreePage />
+        <LoadedContentTreePage focusNode={focusNode} />
       </Suspense>
     </RouteErrorBoundary>
   );
