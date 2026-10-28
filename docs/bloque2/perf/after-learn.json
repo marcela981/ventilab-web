@@ -1,0 +1,1391 @@
+{
+  "meta": {
+    "label": "after",
+    "contentDefinition": "after",
+    "runs": 5,
+    "warmupRoundsDiscarded": 1,
+    "cpuThrottlingRate": 4,
+    "settleMs": 3000,
+    "network": "localhost, no network throttling",
+    "storageState": "e2e/.auth/student.json",
+    "webCommit": "63175f6",
+    "browser": "chromium 156.0.8078.4",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "measuredAt": "2026-10-28T16:03:19.026Z",
+    "definitions": {
+      "contentMs": "page performance.now() at the first visible match of the content selector (MutationObserver); 0 = navigation start (cold/warm) or the click (next)",
+      "apiDepth": "sequential waves among API requests until the content: wave = 1 + highest wave of the API requests that had finished before it started",
+      "depthWithChunks": "same rule over document + JS chunks + API requests served from the network (cache hits excluded) until the content; an upper bound, since a request started later for an unrelated reason also counts as a new wave",
+      "warm": "second full visit (page.goto) of the same URL in the same browser context: HTTP cache warm, SWR memory cache empty",
+      "next": "client-side navigation by clicking Siguiente in the viewer"
+    }
+  },
+  "screens": {
+    "learn-home": {
+      "url": "/learn",
+      "contentSelector": "[role=\"region\"]:not([hidden]) ul[aria-label^=\"Módulos de\"] > li",
+      "median": {
+        "cold": {
+          "contentMs": 2620,
+          "api": 3,
+          "apiDepth": 2,
+          "chunksNetwork": 38,
+          "chunksFromCache": 0,
+          "depthWithChunks": 16,
+          "apiAfterContent": 1,
+          "longTasksUntilContent": 10,
+          "longTasksMsUntilContent": 1708,
+          "longTasksUntilSettle": 12,
+          "longTasksMsUntilSettle": 1767,
+          "longTaskMaxMs": 339
+        },
+        "warm": {
+          "contentMs": 999,
+          "api": 3,
+          "apiDepth": 2,
+          "chunksNetwork": 0,
+          "chunksFromCache": 28,
+          "depthWithChunks": 3,
+          "apiAfterContent": 1,
+          "longTasksUntilContent": 3,
+          "longTasksMsUntilContent": 422,
+          "longTasksUntilSettle": 4,
+          "longTasksMsUntilSettle": 459,
+          "longTaskMaxMs": 177
+        },
+        "next": []
+      },
+      "runs": [
+        {
+          "cold": {
+            "contentMs": 2709,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 18,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 10
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 10,
+                "totalMs": 1708,
+                "maxMs": 382
+              },
+              "untilSettle": {
+                "count": 11,
+                "totalMs": 1767,
+                "maxMs": 382
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 952,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 28,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 422,
+                "maxMs": 171
+              },
+              "untilSettle": {
+                "count": 3,
+                "totalMs": 422,
+                "maxMs": 171
+              }
+            }
+          },
+          "next": []
+        },
+        {
+          "cold": {
+            "contentMs": 2378,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 17,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 10
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 9,
+                "totalMs": 1445,
+                "maxMs": 284
+              },
+              "untilSettle": {
+                "count": 10,
+                "totalMs": 1495,
+                "maxMs": 284
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 952,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 28,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 401,
+                "maxMs": 190
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 453,
+                "maxMs": 190
+              }
+            }
+          },
+          "next": []
+        },
+        {
+          "cold": {
+            "contentMs": 2620,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 12,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 10
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 12,
+                "totalMs": 1726,
+                "maxMs": 262
+              },
+              "untilSettle": {
+                "count": 13,
+                "totalMs": 1779,
+                "maxMs": 262
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 1075,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 28,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 4,
+                "totalMs": 467,
+                "maxMs": 177
+              },
+              "untilSettle": {
+                "count": 5,
+                "totalMs": 526,
+                "maxMs": 177
+              }
+            }
+          },
+          "next": []
+        },
+        {
+          "cold": {
+            "contentMs": 2672,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 28,
+              "chunksFromCache": 0,
+              "depthWithChunks": 11,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 10,
+                "totalMs": 2063,
+                "maxMs": 358
+              },
+              "untilSettle": {
+                "count": 12,
+                "totalMs": 2177,
+                "maxMs": 358
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 999,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 28,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 459,
+                "maxMs": 209
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 510,
+                "maxMs": 209
+              }
+            }
+          },
+          "next": []
+        },
+        {
+          "cold": {
+            "contentMs": 2513,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 16,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 10
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 11,
+                "totalMs": 1564,
+                "maxMs": 339
+              },
+              "untilSettle": {
+                "count": 12,
+                "totalMs": 1622,
+                "maxMs": 339
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 1062,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 28,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 409,
+                "maxMs": 174
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 459,
+                "maxMs": 174
+              }
+            }
+          },
+          "next": []
+        }
+      ]
+    },
+    "learn-section": {
+      "url": "/learn/section-mecanica",
+      "contentSelector": "[role=\"region\"]:not([hidden]) ul[aria-label^=\"Módulos de\"] > li",
+      "median": {
+        "cold": {
+          "contentMs": 2627,
+          "api": 4,
+          "apiDepth": 3,
+          "chunksNetwork": 38,
+          "chunksFromCache": 0,
+          "depthWithChunks": 17,
+          "apiAfterContent": 0,
+          "longTasksUntilContent": 11,
+          "longTasksMsUntilContent": 1704,
+          "longTasksUntilSettle": 12,
+          "longTasksMsUntilSettle": 1759,
+          "longTaskMaxMs": 288
+        },
+        "warm": {
+          "contentMs": 1103,
+          "api": 3,
+          "apiDepth": 2,
+          "chunksNetwork": 0,
+          "chunksFromCache": 28,
+          "depthWithChunks": 3,
+          "apiAfterContent": 1,
+          "longTasksUntilContent": 4,
+          "longTasksMsUntilContent": 477,
+          "longTasksUntilSettle": 4,
+          "longTasksMsUntilSettle": 477,
+          "longTaskMaxMs": 187
+        },
+        "next": []
+      },
+      "runs": [
+        {
+          "cold": {
+            "contentMs": 2722,
+            "untilContent": {
+              "api": 4,
+              "apiDepth": 3,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 19,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 10
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 12,
+                "totalMs": 1733,
+                "maxMs": 288
+              },
+              "untilSettle": {
+                "count": 13,
+                "totalMs": 1804,
+                "maxMs": 288
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 1103,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 28,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 5,
+                "totalMs": 564,
+                "maxMs": 187
+              },
+              "untilSettle": {
+                "count": 5,
+                "totalMs": 564,
+                "maxMs": 187
+              }
+            }
+          },
+          "next": []
+        },
+        {
+          "cold": {
+            "contentMs": 2600,
+            "untilContent": {
+              "api": 4,
+              "apiDepth": 2,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 15,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 10
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 11,
+                "totalMs": 1580,
+                "maxMs": 257
+              },
+              "untilSettle": {
+                "count": 12,
+                "totalMs": 1653,
+                "maxMs": 257
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 1280,
+            "untilContent": {
+              "api": 4,
+              "apiDepth": 3,
+              "chunksNetwork": 0,
+              "chunksFromCache": 38,
+              "depthWithChunks": 4,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 10
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 331,
+                "maxMs": 137
+              },
+              "untilSettle": {
+                "count": 3,
+                "totalMs": 331,
+                "maxMs": 137
+              }
+            }
+          },
+          "next": []
+        },
+        {
+          "cold": {
+            "contentMs": 2850,
+            "untilContent": {
+              "api": 4,
+              "apiDepth": 2,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 17,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 10
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 11,
+                "totalMs": 1719,
+                "maxMs": 349
+              },
+              "untilSettle": {
+                "count": 12,
+                "totalMs": 1771,
+                "maxMs": 349
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 1106,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 28,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 424,
+                "maxMs": 191
+              },
+              "untilSettle": {
+                "count": 3,
+                "totalMs": 424,
+                "maxMs": 191
+              }
+            }
+          },
+          "next": []
+        },
+        {
+          "cold": {
+            "contentMs": 2474,
+            "untilContent": {
+              "api": 4,
+              "apiDepth": 3,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 16,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 10
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 8,
+                "totalMs": 1412,
+                "maxMs": 316
+              },
+              "untilSettle": {
+                "count": 9,
+                "totalMs": 1468,
+                "maxMs": 316
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 969,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 28,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 4,
+                "totalMs": 477,
+                "maxMs": 156
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 477,
+                "maxMs": 156
+              }
+            }
+          },
+          "next": []
+        },
+        {
+          "cold": {
+            "contentMs": 2627,
+            "untilContent": {
+              "api": 4,
+              "apiDepth": 3,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 17,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 10
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 11,
+                "totalMs": 1704,
+                "maxMs": 255
+              },
+              "untilSettle": {
+                "count": 12,
+                "totalMs": 1759,
+                "maxMs": 255
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 1002,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 28,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 4,
+                "totalMs": 540,
+                "maxMs": 219
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 540,
+                "maxMs": 219
+              }
+            }
+          },
+          "next": []
+        }
+      ]
+    },
+    "lesson-viewer": {
+      "url": "/learn/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/1",
+      "contentSelector": "article[aria-labelledby=\"lesson-page-title\"] section[data-block-type]",
+      "median": {
+        "cold": {
+          "contentMs": 3103,
+          "api": 8,
+          "apiDepth": 5,
+          "chunksNetwork": 42,
+          "chunksFromCache": 0,
+          "depthWithChunks": 21,
+          "apiAfterContent": 0,
+          "longTasksUntilContent": 17,
+          "longTasksMsUntilContent": 1939,
+          "longTasksUntilSettle": 17,
+          "longTasksMsUntilSettle": 1939,
+          "longTaskMaxMs": 290
+        },
+        "warm": {
+          "contentMs": 1510,
+          "api": 7,
+          "apiDepth": 4,
+          "chunksNetwork": 0,
+          "chunksFromCache": 42,
+          "depthWithChunks": 5,
+          "apiAfterContent": 1,
+          "longTasksUntilContent": 6,
+          "longTasksMsUntilContent": 500,
+          "longTasksUntilSettle": 6,
+          "longTasksMsUntilSettle": 500,
+          "longTaskMaxMs": 154
+        },
+        "next": [
+          {
+            "click": 1,
+            "from": "/learn/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/1",
+            "to": "/learn/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/2",
+            "contentMs": 220,
+            "api": 1,
+            "apiDepth": 1,
+            "chunksNetwork": 0,
+            "chunksFromCache": 0,
+            "depthWithChunks": 1,
+            "apiAfterContent": 1,
+            "longTasksUntilContent": 1,
+            "longTasksMsUntilContent": 54,
+            "longTasksUntilSettle": 1,
+            "longTasksMsUntilSettle": 54,
+            "longTaskMaxMs": 54
+          }
+        ]
+      },
+      "runs": [
+        {
+          "cold": {
+            "contentMs": 3016,
+            "untilContent": {
+              "api": 8,
+              "apiDepth": 5,
+              "chunksNetwork": 42,
+              "chunksFromCache": 15,
+              "depthWithChunks": 18,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/pages?lessonId=ebdf6985-39a6-59c7-b94d-f5127dcb53a4",
+                "GET /api/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons",
+                "GET /api/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/access",
+                "GET /api/progress/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323",
+                "GET /api/pages/12155882-9e3d-54bb-b66f-bd81b750067c",
+                "GET /api/pages/2b230909-57f3-5f75-b0f7-499df20e396d"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 0
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 12,
+                "totalMs": 1646,
+                "maxMs": 270
+              },
+              "untilSettle": {
+                "count": 12,
+                "totalMs": 1646,
+                "maxMs": 270
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 1510,
+            "untilContent": {
+              "api": 7,
+              "apiDepth": 4,
+              "chunksNetwork": 0,
+              "chunksFromCache": 42,
+              "depthWithChunks": 5,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/pages?lessonId=ebdf6985-39a6-59c7-b94d-f5127dcb53a4",
+                "GET /api/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons",
+                "GET /api/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/access",
+                "GET /api/progress/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323",
+                "GET /api/pages/12155882-9e3d-54bb-b66f-bd81b750067c",
+                "GET /api/pages/2b230909-57f3-5f75-b0f7-499df20e396d"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 15
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 6,
+                "totalMs": 500,
+                "maxMs": 154
+              },
+              "untilSettle": {
+                "count": 6,
+                "totalMs": 500,
+                "maxMs": 154
+              }
+            }
+          },
+          "next": [
+            {
+              "from": "/learn/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/1",
+              "to": "/learn/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/2",
+              "contentMs": 174,
+              "untilContent": {
+                "api": 1,
+                "apiDepth": 1,
+                "chunksNetwork": 0,
+                "chunksFromCache": 0,
+                "depthWithChunks": 1,
+                "apiCalls": [
+                  "POST /api/progress/pages/12155882-9e3d-54bb-b66f-bd81b750067c/view"
+                ]
+              },
+              "settle": {
+                "apiAfterContent": [
+                  "GET /api/pages?lessonId=b0ffaa43-4416-536a-916c-d43924725236"
+                ],
+                "chunksAfterContent": 0
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 1,
+                  "totalMs": 54,
+                  "maxMs": 54
+                },
+                "untilSettle": {
+                  "count": 1,
+                  "totalMs": 54,
+                  "maxMs": 54
+                }
+              }
+            }
+          ]
+        },
+        {
+          "cold": {
+            "contentMs": 2924,
+            "untilContent": {
+              "api": 8,
+              "apiDepth": 4,
+              "chunksNetwork": 42,
+              "chunksFromCache": 14,
+              "depthWithChunks": 20,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/pages?lessonId=ebdf6985-39a6-59c7-b94d-f5127dcb53a4",
+                "GET /api/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons",
+                "GET /api/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/access",
+                "GET /api/progress/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323",
+                "GET /api/pages/12155882-9e3d-54bb-b66f-bd81b750067c",
+                "GET /api/pages/2b230909-57f3-5f75-b0f7-499df20e396d"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 1
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 14,
+                "totalMs": 1746,
+                "maxMs": 290
+              },
+              "untilSettle": {
+                "count": 15,
+                "totalMs": 1844,
+                "maxMs": 290
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 1429,
+            "untilContent": {
+              "api": 7,
+              "apiDepth": 4,
+              "chunksNetwork": 0,
+              "chunksFromCache": 57,
+              "depthWithChunks": 5,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/pages?lessonId=ebdf6985-39a6-59c7-b94d-f5127dcb53a4",
+                "GET /api/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons",
+                "GET /api/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/access",
+                "GET /api/progress/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323",
+                "GET /api/pages/12155882-9e3d-54bb-b66f-bd81b750067c",
+                "GET /api/pages/2b230909-57f3-5f75-b0f7-499df20e396d"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 0
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 287,
+                "maxMs": 128
+              },
+              "untilSettle": {
+                "count": 3,
+                "totalMs": 287,
+                "maxMs": 128
+              }
+            }
+          },
+          "next": [
+            {
+              "from": "/learn/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/1",
+              "to": "/learn/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/2",
+              "contentMs": 200,
+              "untilContent": {
+                "api": 1,
+                "apiDepth": 1,
+                "chunksNetwork": 0,
+                "chunksFromCache": 0,
+                "depthWithChunks": 1,
+                "apiCalls": [
+                  "POST /api/progress/pages/12155882-9e3d-54bb-b66f-bd81b750067c/view"
+                ]
+              },
+              "settle": {
+                "apiAfterContent": [
+                  "GET /api/pages?lessonId=b0ffaa43-4416-536a-916c-d43924725236"
+                ],
+                "chunksAfterContent": 0
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 1,
+                  "totalMs": 57,
+                  "maxMs": 57
+                },
+                "untilSettle": {
+                  "count": 1,
+                  "totalMs": 57,
+                  "maxMs": 57
+                }
+              }
+            }
+          ]
+        },
+        {
+          "cold": {
+            "contentMs": 3103,
+            "untilContent": {
+              "api": 8,
+              "apiDepth": 5,
+              "chunksNetwork": 42,
+              "chunksFromCache": 0,
+              "depthWithChunks": 22,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/pages?lessonId=ebdf6985-39a6-59c7-b94d-f5127dcb53a4",
+                "GET /api/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons",
+                "GET /api/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/access",
+                "GET /api/progress/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323",
+                "GET /api/pages/12155882-9e3d-54bb-b66f-bd81b750067c",
+                "GET /api/pages/2b230909-57f3-5f75-b0f7-499df20e396d"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 15
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 18,
+                "totalMs": 1950,
+                "maxMs": 288
+              },
+              "untilSettle": {
+                "count": 18,
+                "totalMs": 1950,
+                "maxMs": 288
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 1698,
+            "untilContent": {
+              "api": 7,
+              "apiDepth": 4,
+              "chunksNetwork": 0,
+              "chunksFromCache": 42,
+              "depthWithChunks": 5,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/pages?lessonId=ebdf6985-39a6-59c7-b94d-f5127dcb53a4",
+                "GET /api/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons",
+                "GET /api/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/access",
+                "GET /api/progress/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323",
+                "GET /api/pages/12155882-9e3d-54bb-b66f-bd81b750067c",
+                "GET /api/pages/2b230909-57f3-5f75-b0f7-499df20e396d"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 15
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 6,
+                "totalMs": 537,
+                "maxMs": 155
+              },
+              "untilSettle": {
+                "count": 6,
+                "totalMs": 537,
+                "maxMs": 155
+              }
+            }
+          },
+          "next": [
+            {
+              "from": "/learn/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/1",
+              "to": "/learn/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/2",
+              "contentMs": 245,
+              "untilContent": {
+                "api": 1,
+                "apiDepth": 1,
+                "chunksNetwork": 0,
+                "chunksFromCache": 0,
+                "depthWithChunks": 1,
+                "apiCalls": [
+                  "POST /api/progress/pages/12155882-9e3d-54bb-b66f-bd81b750067c/view"
+                ]
+              },
+              "settle": {
+                "apiAfterContent": [
+                  "GET /api/pages?lessonId=b0ffaa43-4416-536a-916c-d43924725236"
+                ],
+                "chunksAfterContent": 0
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 1,
+                  "totalMs": 72,
+                  "maxMs": 72
+                },
+                "untilSettle": {
+                  "count": 2,
+                  "totalMs": 139,
+                  "maxMs": 72
+                }
+              }
+            }
+          ]
+        },
+        {
+          "cold": {
+            "contentMs": 4317,
+            "untilContent": {
+              "api": 8,
+              "apiDepth": 6,
+              "chunksNetwork": 42,
+              "chunksFromCache": 0,
+              "depthWithChunks": 23,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/pages?lessonId=ebdf6985-39a6-59c7-b94d-f5127dcb53a4",
+                "GET /api/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons",
+                "GET /api/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/access",
+                "GET /api/progress/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323",
+                "GET /api/pages/12155882-9e3d-54bb-b66f-bd81b750067c",
+                "GET /api/pages/2b230909-57f3-5f75-b0f7-499df20e396d"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 15
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 19,
+                "totalMs": 2927,
+                "maxMs": 770
+              },
+              "untilSettle": {
+                "count": 20,
+                "totalMs": 2998,
+                "maxMs": 770
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 1714,
+            "untilContent": {
+              "api": 7,
+              "apiDepth": 4,
+              "chunksNetwork": 0,
+              "chunksFromCache": 42,
+              "depthWithChunks": 5,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/pages?lessonId=ebdf6985-39a6-59c7-b94d-f5127dcb53a4",
+                "GET /api/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons",
+                "GET /api/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/access",
+                "GET /api/progress/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323",
+                "GET /api/pages/12155882-9e3d-54bb-b66f-bd81b750067c",
+                "GET /api/pages/2b230909-57f3-5f75-b0f7-499df20e396d"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 15
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 8,
+                "totalMs": 684,
+                "maxMs": 180
+              },
+              "untilSettle": {
+                "count": 8,
+                "totalMs": 684,
+                "maxMs": 180
+              }
+            }
+          },
+          "next": [
+            {
+              "from": "/learn/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/1",
+              "to": "/learn/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/2",
+              "contentMs": 229,
+              "untilContent": {
+                "api": 1,
+                "apiDepth": 1,
+                "chunksNetwork": 0,
+                "chunksFromCache": 0,
+                "depthWithChunks": 1,
+                "apiCalls": [
+                  "POST /api/progress/pages/12155882-9e3d-54bb-b66f-bd81b750067c/view"
+                ]
+              },
+              "settle": {
+                "apiAfterContent": [
+                  "GET /api/pages?lessonId=b0ffaa43-4416-536a-916c-d43924725236"
+                ],
+                "chunksAfterContent": 0
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 1,
+                  "totalMs": 54,
+                  "maxMs": 54
+                },
+                "untilSettle": {
+                  "count": 1,
+                  "totalMs": 54,
+                  "maxMs": 54
+                }
+              }
+            }
+          ]
+        },
+        {
+          "cold": {
+            "contentMs": 3134,
+            "untilContent": {
+              "api": 8,
+              "apiDepth": 5,
+              "chunksNetwork": 42,
+              "chunksFromCache": 0,
+              "depthWithChunks": 21,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/pages?lessonId=ebdf6985-39a6-59c7-b94d-f5127dcb53a4",
+                "GET /api/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons",
+                "GET /api/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/access",
+                "GET /api/progress/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323",
+                "GET /api/pages/12155882-9e3d-54bb-b66f-bd81b750067c",
+                "GET /api/pages/2b230909-57f3-5f75-b0f7-499df20e396d"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 15
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 17,
+                "totalMs": 1939,
+                "maxMs": 341
+              },
+              "untilSettle": {
+                "count": 17,
+                "totalMs": 1939,
+                "maxMs": 341
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 1374,
+            "untilContent": {
+              "api": 7,
+              "apiDepth": 4,
+              "chunksNetwork": 0,
+              "chunksFromCache": 42,
+              "depthWithChunks": 5,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/pages?lessonId=ebdf6985-39a6-59c7-b94d-f5127dcb53a4",
+                "GET /api/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons",
+                "GET /api/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/access",
+                "GET /api/progress/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323",
+                "GET /api/pages/12155882-9e3d-54bb-b66f-bd81b750067c",
+                "GET /api/pages/2b230909-57f3-5f75-b0f7-499df20e396d"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 15
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 4,
+                "totalMs": 301,
+                "maxMs": 99
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 301,
+                "maxMs": 99
+              }
+            }
+          },
+          "next": [
+            {
+              "from": "/learn/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/1",
+              "to": "/learn/modules/5e81b2d5-4fb2-52e7-ad9f-44a281266323/lessons/ebdf6985-39a6-59c7-b94d-f5127dcb53a4/2",
+              "contentMs": 220,
+              "untilContent": {
+                "api": 1,
+                "apiDepth": 1,
+                "chunksNetwork": 0,
+                "chunksFromCache": 0,
+                "depthWithChunks": 1,
+                "apiCalls": [
+                  "POST /api/progress/pages/12155882-9e3d-54bb-b66f-bd81b750067c/view"
+                ]
+              },
+              "settle": {
+                "apiAfterContent": [
+                  "GET /api/pages?lessonId=b0ffaa43-4416-536a-916c-d43924725236"
+                ],
+                "chunksAfterContent": 0
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 1,
+                  "totalMs": 54,
+                  "maxMs": 54
+                },
+                "untilSettle": {
+                  "count": 1,
+                  "totalMs": 54,
+                  "maxMs": 54
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

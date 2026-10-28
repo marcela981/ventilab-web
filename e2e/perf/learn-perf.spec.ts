@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Runtime performance of /learn and the lesson viewer
-* Descripción: Measures, as the student and with CPU throttling ×PERF_CPU_RATE (4) through CDP, three learning screens on a production build: /learn (section cards), /learn/[sectionId] (level cards with their modules) and the lesson viewer (article + first content block), plus PERF_NEXT_CLICKS (1) "Siguiente" clicks inside the viewer (next Page of the same lesson; PERF_SCREENS limits the screens, PERF_DEBUG=1 logs each step). For every navigation it records with the CDP Network domain the requests until the first useful content (API calls and JS chunks, from the network or from the HTTP cache) and the request depth (sequential waves: a request belongs to wave 1 + the highest wave among the requests of the same kind that had finished before it started), the time from the navigation start (or the click) to the first useful content measured in the page with a MutationObserver, the long tasks > 50 ms (PerformanceObserver) until that moment and until PERF_SETTLE_MS later, and every request fired in the settle window (e.g. the progress POST and a curriculum tree re-fetch after "Siguiente"). Cold = new browser context (empty HTTP cache, saved session); warm = second full visit of the same URL in that context. Runs one discarded warm-up round, then PERF_RUNS rounds, and writes <PERF_OUT_DIR>/<PERF_LABEL>-learn.json with every run and the medians. Depends on @playwright/test, Node and the perf support helpers.
-* Versión: 0.1
+* Descripción: Measures, as the student and with CPU throttling ×PERF_CPU_RATE (4) through CDP, three learning screens on a production build: /learn (section cards), /learn/[sectionId] (level cards with their modules) and the lesson viewer (article + first content block), plus PERF_NEXT_CLICKS (1) "Siguiente" clicks inside the viewer (next Page of the same lesson; PERF_SCREENS limits the screens, PERF_DEBUG=1 logs each step). For every navigation it records with the CDP Network domain the requests until the first useful content (API calls and JS chunks, from the network or from the HTTP cache) and the request depth (sequential waves: a request belongs to wave 1 + the highest wave among the requests of the same kind that had finished before it started), the time from the navigation start (or the click) to the first useful content measured in the page with a MutationObserver, the long tasks > 50 ms (PerformanceObserver) until that moment and until PERF_SETTLE_MS later, and every request fired in the settle window (e.g. the progress POST and a curriculum tree re-fetch after "Siguiente"). Cold = new browser context (empty HTTP cache, saved session); warm = second full visit of the same URL in that context. Runs one discarded warm-up round, then PERF_RUNS rounds, and writes <PERF_OUT_DIR>/<PERF_LABEL>-learn.json with every run and the medians. Depends on @playwright/test, Node and the perf support helpers. v0.2 (W11, Bloque 2): /learn and /learn/[sectionId] no longer have section cards (Currículo tab with accordions; /learn/[sectionId] redirects to /learn?tab=curriculo&section=<id>), so with PERF_CONTENT=after (default) their useful content is the first module card of the open accordion ([role="region"]:not([hidden]) ul[aria-label^="Módulos de"] > li); PERF_CONTENT=baseline keeps the pre-Block 2 selectors.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -36,13 +36,19 @@ function log(message: string): void {
   }
 }
 
+// Content definitions of the /learn screens: "baseline" = pre-Block 2 markup (section cards), "after" = Block 2 Currículo tab (module cards).
+const CONTENT_DEFINITION = process.env.PERF_CONTENT ?? "after";
+// Scoped to the open accordion: the closed ones stay in the DOM with [hidden] and querySelector returns the first match.
+const MODULE_CARDS = "[role=\"region\"]:not([hidden]) ul[aria-label^=\"Módulos de\"] > li";
+const LEARN_HOME_CONTENT = CONTENT_DEFINITION === "baseline" ? "ul[aria-label=\"Secciones\"] > li" : MODULE_CARDS;
+
 const VIEWER_CONTENT = "article[aria-labelledby=\"lesson-page-title\"] section[data-block-type]";
 
 type Screen = { id: string, url: string, selector: string, nextClicks: number };
 
 const SCREENS: readonly Screen[] = [
-  { id: "learn-home", url: "/learn", selector: "ul[aria-label=\"Secciones\"] > li", nextClicks: 0 },
-  { id: "learn-section", url: `/learn/${SECTION_ID}`, selector: "ul[aria-label^=\"Módulos de\"] > li", nextClicks: 0 },
+  { id: "learn-home", url: "/learn", selector: LEARN_HOME_CONTENT, nextClicks: 0 },
+  { id: "learn-section", url: `/learn/${SECTION_ID}`, selector: MODULE_CARDS, nextClicks: 0 },
   { id: "lesson-viewer", url: `/learn/modules/${MODULE_ID}/lessons/${LESSON_ID}/1`, selector: VIEWER_CONTENT, nextClicks: NEXT_CLICKS },
 ];
 
@@ -429,6 +435,7 @@ test("learn · runtime baseline (CPU throttled)", async ({ browser }) => {
   const result = {
     meta: {
       label: LABEL,
+      contentDefinition: CONTENT_DEFINITION,
       runs: RUNS,
       warmupRoundsDiscarded: 1,
       cpuThrottlingRate: CPU_RATE,
