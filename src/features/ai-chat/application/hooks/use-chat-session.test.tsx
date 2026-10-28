@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useChatSession tests
-* Descripción: Behaviour of the AI chat state machine against msw with real SSE bodies: the FREE conversation is created lazily by the first send (POST /api/tutor/conversations, never on mount), the answer streams and `done` adopts conversationId, aiCallId, messageId and sources and revalidates the listing; later sends go to /{id}/messages; stop keeps the partial text as interrupted; retry resends the last user message; the fixed off-topic reply is flagged; a 429 quota error shows the local reset time and cannot be retried; a mid-stream error can be retried; a first FREE turn stopped before `done` re-reads the newest FREE conversation to adopt it; an existing conversation seeds the thread from its detail; moving the page to the adopted id keeps the thread and opening another conversation resets it. Depends on Testing Library, msw, the shared SSE test helpers and the AI chat test helpers. v1.1 (A2 review fixes): a newest FREE conversation older than the stopped turn is not adopted; a stop after a delta arrived but before its animation frame flushed still recovers the created conversation; a 500 on the detail is load-error, blocks sending and recovers on reload. v1.2 (A3): stops settle inside act again, since the session reads `streamStarted` from the aborted stream outcome instead of waiting for the aborted render.
-* Versión: 1.2
+* Descripción: Behaviour of the AI chat state machine against msw with real SSE bodies: the FREE conversation is created lazily by the first send (POST /api/tutor/conversations, never on mount), the answer streams and `done` adopts conversationId, aiCallId, messageId and sources and revalidates the listing; later sends go to /{id}/messages; stop keeps the partial text as interrupted; retry resends the last user message; the fixed off-topic reply is flagged; a 429 quota error shows the local reset time and cannot be retried; a mid-stream error can be retried; a first FREE turn stopped before `done` re-reads the newest FREE conversation to adopt it; an existing conversation seeds the thread from its detail; moving the page to the adopted id keeps the thread and opening another conversation resets it. Depends on Testing Library, msw, the shared SSE test helpers and the AI chat test helpers. v1.1 (A2 review fixes): a newest FREE conversation older than the stopped turn is not adopted; a stop after a delta arrived but before its animation frame flushed still recovers the created conversation; a 500 on the detail is load-error, blocks sending and recovers on reload. v1.2 (A3): stops settle inside act again, since the session reads `streamStarted` from the aborted stream outcome instead of waiting for the aborted render. v1.3 (W7, Bloque 2): a first turn stopped after the start frame adopts the announced conversation without the listing read and keeps the announced message id.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,7 +13,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { controlledStream, deltaFrame, doneFrame, errorFrame, sseResponse } from "@shared/ai-conversation/application/sse-test-helpers";
+import { controlledStream, deltaFrame, doneFrame, errorFrame, sseResponse, startFrame } from "@shared/ai-conversation/application/sse-test-helpers";
 import { OFF_TOPIC_REPLY } from "../config/ai-chat.config";
 import { apiUrl, conversationDto, envelope, errorResponse, messageDto, SwrWrapper } from "./ai-chat-test-helpers";
 import { useChatSession } from "./use-chat-session";
@@ -328,6 +328,41 @@ describe("useChatSession", () => {
     await waitFor(() => expect(result.current.conversationId).toBe("c-created"));
     expect(listQueries).toEqual(["?scope=FREE&page=1&limit=1"]);
     expect(result.current.messages[1]).toMatchObject({ content: "Empieza", status: "interrupted" });
+  });
+
+  it("adopts the conversation announced by the start frame when the first turn is stopped, without re-reading the listing", async() => {
+    const stream = controlledStream();
+    const listQueries: string[] = [];
+
+    server.use(
+      http.post(LIST_URL, () => stream.response()),
+      http.get(LIST_URL, ({ request }) => {
+        listQueries.push(new URL(request.url).search);
+
+        return HttpResponse.json(envelope([], PAGINATION));
+      }),
+      detailHandler([]),
+    );
+
+    const { result } = renderHook(() => useChatSession({}), { wrapper: SwrWrapper });
+    let sending: Promise<void> = Promise.resolve();
+
+    act(() => {
+      sending = result.current.send("Primera pregunta");
+    });
+    stream.push(startFrame({ conversationId: "c-announced", messageId: "m-announced" }));
+    stream.push(deltaFrame("Empieza"));
+    await waitFor(() => expect(result.current.messages[1]?.content).toBe("Empieza"));
+
+    await act(async() => {
+      result.current.stop();
+      stream.close();
+      await sending;
+    });
+
+    await waitFor(() => expect(result.current.conversationId).toBe("c-announced"));
+    expect(listQueries.filter((query) => query.includes("limit=1"))).toEqual([]);
+    expect(result.current.messages[1]).toMatchObject({ content: "Empieza", status: "interrupted", messageId: "m-announced" });
   });
 
   it("does not adopt any conversation when the first turn is stopped before any frame", async() => {

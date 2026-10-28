@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ChatPanel tests
-* Descripción: Behaviour of the AI assistant conversation view against msw with real SSE bodies: a new chat shows the scope text and suggested questions and a suggestion sends it (POST /api/tutor/conversations {scope: FREE}), streams the answer, reports the created conversation once and shows "¿Te fue útil?" for the complete answer; "Detener" leaves "Respuesta interrumpida" and "Reintentar" resends the same message; the fixed off-topic reply renders as an informational note (no alert); a 429 quota error shows the local reset time without a retry; "Copiar" writes the answer to the clipboard and confirms "Copiado"; scrolling up shows "Ir al final", which scrolls back to the end; a detail load failure shows "Reintentar", blocks sending and reloads. Depends on Testing Library, msw, the shared SSE test helpers and the AI chat test helpers.
-* Versión: 1.0
+* Descripción: Behaviour of the AI assistant conversation view against msw with real SSE bodies: a new chat shows the scope text and suggested questions and a suggestion sends it (POST /api/tutor/conversations {scope: FREE}), streams the answer, reports the created conversation once and shows "¿Te fue útil?" for the complete answer; "Detener" leaves "Respuesta interrumpida" and "Reintentar" resends the same message; the fixed off-topic reply renders as an informational note (no alert); a 429 quota error shows the local reset time without a retry; "Copiar" writes the answer to the clipboard and confirms "Copiado"; scrolling up shows "Ir al final", which scrolls back to the end; a detail load failure shows "Reintentar", blocks sending and reloads. Depends on Testing Library, msw, the shared SSE test helpers and the AI chat test helpers. v1.1 (W7, Bloque 2): ratings send surface ASSISTANT without scope, also for a LESSON conversation, and an answer stopped after the start frame is rateable.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,7 +13,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { controlledStream, deltaFrame, doneFrame, sseResponse } from "@shared/ai-conversation/application/sse-test-helpers";
+import { controlledStream, deltaFrame, doneFrame, sseResponse, startFrame } from "@shared/ai-conversation/application/sse-test-helpers";
 import { OFF_TOPIC_REPLY, SUGGESTED_QUESTIONS } from "../config/ai-chat.config";
 import { apiUrl, conversationDto, envelope, errorResponse, messageDto, SwrWrapper } from "../hooks/ai-chat-test-helpers";
 import type { AiConversationMessageDTO } from "../../api/dtos/ai-chat.dto";
@@ -29,6 +29,7 @@ const MESSAGES_URL = apiUrl("/api/tutor/conversations/:conversationId/messages")
 const PAGINATION = { page: 1, pages: 1, limit: 20, total: 0 };
 const server = setupServer();
 let details: Record<string, AiConversationMessageDTO[]> = {};
+let ratings: unknown[] = [];
 
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" });
@@ -36,7 +37,13 @@ beforeAll(() => {
 
 beforeEach(() => {
   details = { c1: [] };
+  ratings = [];
   server.use(
+    http.put(apiUrl("/api/ai-ratings"), async({ request }) => {
+      ratings.push(await request.json());
+
+      return HttpResponse.json(envelope(null));
+    }),
     http.get(LIST_URL, () => HttpResponse.json(envelope([], PAGINATION))),
     http.get(DETAIL_URL, ({ params }) => {
       const id = String(params.conversationId);
@@ -127,6 +134,40 @@ describe("ChatPanel", () => {
 
     expect(await screen.findAllByText("Respuesta completa.")).not.toHaveLength(0);
     expect(bodies).toEqual([{ message: "¿Qué es la PEEP?" }, { message: "¿Qué es la PEEP?" }]);
+  });
+
+  it("rates answers with surface ASSISTANT and no scope, also in a lesson conversation and after a stop", async() => {
+    const stream = controlledStream();
+
+    details["c-lesson"] = [
+      messageDto("u1", "USER", "¿Qué es la PEEP?"),
+      messageDto("a1", "ASSISTANT", "La PEEP mantiene los alvéolos abiertos.", { aiCallId: "call-a1" }),
+    ];
+    server.use(
+      http.get(DETAIL_URL, ({ params }) => HttpResponse.json(envelope({
+        ...conversationDto(String(params.conversationId), { scope: "LESSON", refId: "l1" }),
+        messages: details[String(params.conversationId)] ?? [],
+      }))),
+      http.post(MESSAGES_URL, () => stream.response()),
+    );
+
+    renderPanel({ conversationId: "c-lesson" });
+
+    fireEvent.click(await screen.findByRole("button", { name: "Sí, fue útil" }));
+    await waitFor(() => expect(ratings).toEqual([{ targetType: "MESSAGE", targetId: "a1", helpful: true, surface: "ASSISTANT" }]));
+
+    type("¿Y la meseta?");
+    fireEvent.keyDown(screen.getByRole("textbox", { name: "Escribe tu pregunta" }), { key: "Enter" });
+    stream.push(startFrame({ conversationId: "c-lesson", messageId: "a2" }));
+    stream.push(deltaFrame("La meseta"));
+    expect(await screen.findAllByText("La meseta")).not.toHaveLength(0);
+    fireEvent.click(screen.getByRole("button", { name: "Detener" }));
+    stream.close();
+
+    expect(await screen.findByText("Respuesta interrumpida")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getAllByRole("button", { name: "No fue útil" })).toHaveLength(2));
+    fireEvent.click(screen.getAllByRole("button", { name: "No fue útil" })[1]!);
+    await waitFor(() => expect(ratings).toContainEqual({ targetType: "MESSAGE", targetId: "a2", helpful: false, surface: "ASSISTANT" }));
   });
 
   it("renders the off-topic reply as an informational note, not an error", async() => {
