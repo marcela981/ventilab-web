@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AiRatingWidget
-* Descripción: "¿Te fue útil?" widget for AI outputs: thumbs up/down toggle buttons (aria-pressed, labelled group), disabled while loading or saving, optional comment with a 0/2000 counter once a thumb is chosen, error alert on failure and a thank-you status after saving. Props `{targetType, targetId, initialRating?}`; remount it (key) to rate another target. Depends on MUI and useAiRating.
-* Versión: 1.0
+* Descripción: "¿Te fue útil?" widget for AI outputs: thumbs up/down toggle buttons (aria-pressed, labelled group), disabled while loading or saving, optional comment with a 0/2000 counter once a thumb is chosen, error alert on failure and a thank-you status after saving. Props `{targetType, targetId, initialRating?}`; remount it (key) to rate another target. Depends on MUI and useAiRating. v1.1 (W7, Bloque 2): optional `surface` and `scope` props, sent with every rating.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -23,21 +23,24 @@ import type { FormEvent } from "react";
 import { cx } from "@shared/lib/class-names";
 import styles from "../UI/ai-rating-widget.module.css";
 import { AI_RATING_COMMENT_MAX } from "./ai-rating.entity";
-import type { AiRating, AiRatingTargetType } from "./ai-rating.entity";
+import type { AiRating, AiRatingScope, AiRatingSurface, AiRatingTargetType } from "./ai-rating.entity";
 import { useAiRating } from "./use-ai-rating";
 
 export type AiRatingWidgetProps = {
   targetType: AiRatingTargetType
   targetId: string
   initialRating?: AiRating | null
+  // Where the answer is shown and its content scope (thesis analytics); omitted when unknown.
+  surface?: AiRatingSurface | undefined
+  scope?: AiRatingScope | undefined
   className?: string
 };
 
 // TODO(i18n): move the copy to an i18next namespace once src/i18n is in scope.
-export function AiRatingWidget({ targetType, targetId, initialRating, className }: AiRatingWidgetProps) {
+export function AiRatingWidget({ targetType, targetId, initialRating, surface, scope, className }: AiRatingWidgetProps) {
   const questionId = useId();
   const commentId = useId();
-  const rating = useAiRating({ targetType, targetId, ...(initialRating === undefined ? {} : { initialRating }) });
+  const rating = useAiRating({ targetType, targetId, surface, scope, ...(initialRating === undefined ? {} : { initialRating }) });
   const [draft, setDraft] = useState<string | null>(null);
   const savedComment = rating.savedRating?.comment ?? "";
   const comment = draft ?? savedComment;
