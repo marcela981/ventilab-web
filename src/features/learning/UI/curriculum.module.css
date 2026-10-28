@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Curriculum tab styles
-* Descripción: Currículo tab of /learn (W4, Bloque 2): the three accordions (July CurriculumSections: rounded surface, icon, title, optional badge, rotating chevron), the vertical level stepper (numbered / check / lock markers joined by a line, locked levels dimmed like July's 0.55 opacity), the level progress bar and text, the responsive module card grid (state-colored left border, badges, full-width footer button: green primary action for Comenzar/Continuar, outlined for Completado, disabled for Bloqueado/Próximamente, as in July ModuleCardFooter), the staff actions and the floating "Modo edición" toggle (July EditModeToggle). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
-* Versión: 0.1
+* Descripción: Currículo tab of /learn (W4, Bloque 2): the three accordions (July CurriculumSections: rounded surface, icon, title, optional badge, rotating chevron), the vertical level stepper (numbered / check / lock markers joined by a line, locked levels dimmed like July's 0.55 opacity), the level progress bar and text, the responsive module card grid (state-colored left border, badges, full-width footer button: green primary action for Comenzar/Continuar, outlined for Completado, disabled for Bloqueado/Próximamente, as in July ModuleCardFooter), the staff actions and the floating "Modo edición" toggle (July EditModeToggle). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v0.2 (W10 fix): the badges (Opcional, Sin iniciar, Próximamente, Bloqueado, Completado, Borrador) sit on a light tint of the surface in the primary text color instead of muted text on the navy contrast background, where it was unreadable (WCAG AA).
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -112,10 +112,11 @@
   padding: 2px var(--vl-space-2);
   border: 1px solid var(--vl-color-border);
   border-radius: var(--vl-radius-pill);
-  background: var(--vl-color-surface-contrast);
+  /* Light tint of the surface: --vl-color-surface-contrast is the navy console background and hid the text. */
+  background: color-mix(in srgb, var(--vl-color-text) 5%, var(--vl-color-surface));
   font: var(--mui-font-caption);
   font-weight: 600;
-  color: var(--vl-color-text-muted);
+  color: var(--vl-color-text);
 }
 
 .badgeSuccess {

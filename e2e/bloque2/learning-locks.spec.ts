@@ -1,6 +1,6 @@
 /*
 * Funcionalidad: E2E locks of the curriculum and the lesson viewer (Bloque 2, scenario 2)
-* Descripción: For a brand-new student, the Currículo tab shows "Nivel Intermedio" locked with "Completa el nivel anterior para desbloquear" and no module cards; opening lesson 2 of the demo module by direct URL shows "Contenido bloqueado" listing the missing lesson 1 with its link, without the content or the TutorAI button; and the server enforces the order: GET /api/lessons/{id}/access answers allowed false with the missing lesson, GET /api/pages/{id} and POST /api/progress/pages/{id}/view answer 403 lesson_locked. Depends on @playwright/test and the learning e2e helpers.
+* Descripción: For a brand-new student, the Currículo tab shows "Nivel Intermedio" locked with "Completa el nivel anterior para desbloquear" and no module cards, with readable badges (WCAG AA contrast); opening lesson 2 of the demo module by direct URL shows "Contenido bloqueado" listing the missing lesson 1 with its link, without the content or the TutorAI button; and the server enforces the order: GET /api/lessons/{id}/access answers allowed false with the missing lesson, GET /api/pages/{id} and POST /api/progress/pages/{id}/view answer 403 lesson_locked. Depends on @playwright/test and the learning e2e helpers.
 * Versión: 0.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -10,7 +10,7 @@
 */
 
 import { expect, test } from "@playwright/test";
-import { contextFor, LESSON_1, LESSON_2, lessonPageUrl, pagesOf, registerFreshStudent, statusOf } from "../support/learning";
+import { contextFor, LESSON_1, LESSON_2, lessonPageUrl, pagesOf, registerFreshStudent, statusOf, textContrastOf } from "../support/learning";
 
 test("(2) locked level and locked lesson: screen with the missing lessons and 403 from the server", async ({ browser, request, baseURL }) => {
   test.setTimeout(120_000);
@@ -27,6 +27,9 @@ test("(2) locked level and locked lesson: screen with the missing lessons and 40
     await expect(level).toContainText("Bloqueado");
     await expect(level).toContainText("Completa el nivel anterior para desbloquear");
     await expect(page.getByRole("list", { name: "Módulos de Nivel Intermedio" })).toHaveCount(0);
+    // Readable badges (regression: they sat on the navy contrast background).
+    expect(await textContrastOf(level.getByText("Bloqueado", { exact: true }).first())).toBeGreaterThanOrEqual(4.5);
+    expect(await textContrastOf(page.getByText("Opcional", { exact: true }).first())).toBeGreaterThanOrEqual(4.5);
 
     // Locked lesson by direct URL.
     await page.goto(lessonPageUrl(LESSON_2.id, 1));

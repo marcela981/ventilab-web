@@ -1,6 +1,6 @@
 /*
 * Funcionalidad: E2E helpers of the learning area (Bloque 2)
-* Descripción: Shared pieces of the /learn, lesson viewer and TutorAI specs: the deterministic ids of the ventylab-server demo seed (demo module "Mecánica respiratoria aplicada" with two lessons of two Pages each), a brand-new student per scenario (POST /api/auth/register + /api/auth/login, retried after a 429 of the sign-in limit) injected into a browser context through its localStorage tokens so every run starts without progress, an API client for that student, a superadmin API client for /admin endpoints, the Bogotá calendar date and its es-CO label as the activity calendar writes it, and the lesson viewer locators. The backend URL comes from E2E_API_URL (default http://localhost:4000). Depends on @playwright/test and the backend API helper.
+* Descripción: Shared pieces of the /learn, lesson viewer and TutorAI specs: the deterministic ids of the ventylab-server demo seed (demo module "Mecánica respiratoria aplicada" with two lessons of two Pages each), a brand-new student per scenario (POST /api/auth/register + /api/auth/login, retried after a 429 of the sign-in limit) injected into a browser context through its localStorage tokens so every run starts without progress, an API client for that student, a superadmin API client for /admin endpoints, the Bogotá calendar date and its es-CO label as the activity calendar writes it, and the lesson viewer locators and the WCAG text contrast of an element (curriculum badges). The backend URL comes from E2E_API_URL (default http://localhost:4000). Depends on @playwright/test and the backend API helper.
 * Versión: 0.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -166,4 +166,44 @@ export async function pagesOf(api: BackendApi, lessonId: string): Promise<Lesson
   const list = Array.isArray(pages) ? pages : pages.items;
 
   return [...list].sort((a, b) => a.order - b.order);
+}
+
+/** WCAG contrast ratio between the text color of an element and the background behind it (nearest opaque one). */
+export async function textContrastOf(locator: Locator): Promise<number> {
+  return locator.evaluate((element) => {
+    const probe = document.createElement("canvas").getContext("2d");
+    const rgb = (color: string): number[] => {
+      if (!probe) {
+        return [0, 0, 0];
+      }
+
+      // The canvas normalizes any CSS color (also color-mix results) to its sRGB pixel.
+      probe.clearRect(0, 0, 1, 1);
+      probe.fillStyle = color;
+      probe.fillRect(0, 0, 1, 1);
+      const [r = 0, g = 0, b = 0] = probe.getImageData(0, 0, 1, 1).data;
+
+      return [r, g, b];
+    };
+    const luminance = (color: string): number => {
+      const [r = 0, g = 0, b = 0] = rgb(color).map((channel) => {
+        const value = channel / 255;
+
+        return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+      });
+
+      return (0.2126 * r) + (0.7152 * g) + (0.0722 * b);
+    };
+    // Background: the element or its nearest ancestor with a non-transparent background.
+    let holder: Element | null = element;
+
+    while (holder && /rgba\(.*,\s*0\)$|transparent/.test(getComputedStyle(holder).backgroundColor)) {
+      holder = holder.parentElement;
+    }
+
+    const background = holder ? getComputedStyle(holder).backgroundColor : "rgb(255, 255, 255)";
+    const [light, dark] = [luminance(getComputedStyle(element).color), luminance(background)].sort((a, b) => b - a);
+
+    return ((light ?? 0) + 0.05) / ((dark ?? 0) + 0.05);
+  });
 }
