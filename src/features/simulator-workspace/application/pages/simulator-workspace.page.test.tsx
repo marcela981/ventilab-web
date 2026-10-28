@@ -9,8 +9,9 @@
 *   place. Depends on vitest, Testing Library, the workspace test helpers and mocked panels and catalog entry point.
 *   v0.4 (W9, Bloque 1): the Mis sesiones panel is mocked (its own tests cover it). v0.6 (W8, Bloque 1): the Simular
 *   Paciente panel (patient form, start mocked in the patient entry point) opens its session in Monitoreo. v0.7 (W7,
-*   Bloque 1): the live lab connection controller is mocked idle; the Conexión panel is the real one.
-* Versión: 0.7
+*   Bloque 1): the live lab connection controller is mocked idle; the Conexión panel is the real one. v0.8 (Ola 0 CI):
+*   the lazily loaded Conexión panel gets a 4 s wait instead of the default 1 s of findBy.
+* Versión: 0.8
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -79,6 +80,8 @@ beforeEach(() => {
 });
 
 const tab = (name: string) => screen.getByRole("tab", { name });
+// The real Conexión panel is loaded lazily; its first import can take longer than the default 1 s of findBy.
+const LAZY_PANEL_WAIT = { timeout: 4000 };
 const panelOf = (key: string) => document.getElementById(`workspace-panel-${key}`);
 
 describe("parseWorkspaceTab", () => {
@@ -101,7 +104,7 @@ describe("SimulatorWorkspacePage", () => {
 
     act(() => routerStore.setReady());
 
-    expect(await screen.findByRole("heading", { name: "Conexión" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Conexión" }, LAZY_PANEL_WAIT)).toBeInTheDocument();
     expect(tab("Conexión")).toHaveAttribute("aria-selected", "true");
   });
 
@@ -126,7 +129,7 @@ describe("SimulatorWorkspacePage", () => {
       undefined,
       { shallow: true },
     );
-    expect(await screen.findByRole("heading", { name: "Conexión" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Conexión" }, LAZY_PANEL_WAIT)).toBeInTheDocument();
     expect(tab("Conexión")).toHaveAttribute("aria-selected", "true");
     expect(panelOf("monitoreo")).not.toBeVisible();
   });
@@ -140,7 +143,7 @@ describe("SimulatorWorkspacePage", () => {
     fireEvent.click(tab("Mis sesiones"));
     await screen.findByRole("heading", { name: "Mis sesiones" });
     fireEvent.click(tab("Conexión"));
-    await screen.findByRole("heading", { name: "Conexión" });
+    await screen.findByRole("heading", { name: "Conexión" }, LAZY_PANEL_WAIT);
     fireEvent.click(tab("Monitoreo"));
 
     expect(panelOf("monitoreo")).toBeVisible();
@@ -176,7 +179,7 @@ describe("SimulatorWorkspacePage", () => {
 
     routerStore.reset({ tab: "conexion" });
     render(<SimulatorWorkspacePage deps={harness.deps} />);
-    await screen.findByRole("heading", { name: "Conexión" });
+    await screen.findByRole("heading", { name: "Conexión" }, LAZY_PANEL_WAIT);
     fireEvent.click(tab("Monitoreo"));
     fireEvent.click(await screen.findByRole("button", { name: "start s2" }));
 
