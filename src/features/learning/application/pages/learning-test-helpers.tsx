@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Learning test helpers
-* Descripción: Shared fixtures of the learning tests: backend envelope and error bodies, factories of the curriculum tree, module lessons and progress DTOs (summary, section, module), v1.1 (L3) lesson Page summaries, Page details with Tiptap text blocks, and a render helper that mounts a page inside an isolated SWR cache and a session context with the given role (no AuthProvider, no network for the session). Test-only code. Depends on Testing Library, msw, SWR and the session context.
-* Versión: 1.1
+* Descripción: Shared fixtures of the learning tests: backend envelope and error bodies, factories of the curriculum tree, module lessons and progress DTOs (summary, section, module), v1.1 (L3) lesson Page summaries, Page details with Tiptap text blocks, and a render helper that mounts a page inside an isolated SWR cache and a session context with the given role (no AuthProvider, no network for the session). Test-only code. Depends on Testing Library, msw, SWR and the session context. v1.2 (W3, Bloque 2): progress summary builder.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -128,6 +128,15 @@ export function lessonDto(id: string, order: number, pageCount: number): ModuleL
 
 export function progressItem(percentage: number, completedLessons: number, totalLessons: number) {
   return { percentage, completedLessons, totalLessons, completed: percentage >= 100 };
+}
+
+type LevelProgressItem = ReturnType<typeof progressItem> & { levelId: string, sectionId: string | null, completedModules: number, totalModules: number };
+
+type ModuleProgressItem = ReturnType<typeof progressItem> & { moduleId: string, levelId: string | null };
+
+/** GET /api/progress/summary body. */
+export function progressSummaryDto(levels: LevelProgressItem[] = [], modules: ModuleProgressItem[] = []) {
+  return { ...progressItem(0, 0, 0), sections: [], levels, modules };
 }
 
 export function lessonProgressDto(lessonId: string, viewedPages: number, totalPages: number) {

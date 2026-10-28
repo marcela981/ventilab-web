@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Request helper and error utility tests
-* Descripción: Unit tests for path substitution, envelope unwrapping, Retry-After parsing, timeout resolution and the compile-time contract of the typed helpers (required path params). Depends on vitest and the api-client modules.
-* Versión: 1.0
+* Descripción: Unit tests for path substitution, envelope unwrapping, Retry-After parsing, timeout resolution and the compile-time contract of the typed helpers (required path params). Depends on vitest and the api-client modules. v1.1 (W3, Bloque 2): the learning tree and progress summary are slow routes.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -60,6 +60,9 @@ describe("resolveTimeout", () => {
     expect(resolveTimeout("/api/auth/google")).toBe(TIMEOUTS.slow);
     expect(resolveTimeout("/api/users/me?x=1")).toBe(TIMEOUTS.slow);
     expect(resolveTimeout("/health/ready")).toBe(TIMEOUTS.slow);
+    expect(resolveTimeout("http://api.test/api/curriculum/tree")).toBe(TIMEOUTS.slow);
+    expect(resolveTimeout("/api/progress/summary")).toBe(TIMEOUTS.slow);
+    expect(resolveTimeout("/api/progress/modules/m1")).toBe(TIMEOUTS.fast);
     expect(resolveTimeout("/api/users/me/stats")).toBe(TIMEOUTS.fast);
     expect(resolveTimeout("/api/auth/me", "fast")).toBe(TIMEOUTS.fast);
   });

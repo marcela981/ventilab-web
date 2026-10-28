@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Curriculum entity tests
-* Descripción: Unit tests of the curriculum tree helpers: locating a section, level and module (with their parents, for the breadcrumb and the locks), resolving the links of missing prerequisites (levels link to their section anchor, modules to their page, unknown references have no link) and picking the module for "Continuar donde quedé" (first unlocked, not completed module in curriculum order; preview ignores locks). v1.1 (L3): excludeModuleId skips the module just completed. Depends on vitest.
-* Versión: 1.1
+* Descripción: Unit tests of the curriculum tree helpers: locating a section, level and module (with their parents, for the breadcrumb and the locks), resolving the links of missing prerequisites (levels link to their section anchor, modules to their page, unknown references have no link) and picking the module for "Continuar donde quedé" (first unlocked, not completed module in curriculum order; preview ignores locks). v1.1 (L3): excludeModuleId skips the module just completed. Depends on vitest. v1.2 (W3, Bloque 2): level prerequisite links point at the Currículo tab.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -97,8 +97,8 @@ describe("prerequisite links", () => {
     ]);
 
     expect(links).toEqual([
-      { id: "lv1", title: "Nivel lv1", href: "/learn/s1#level-lv1" },
-      { id: "lv9", title: "Nivel lv9", href: "/learn#level-lv9" },
+      { id: "lv1", title: "Nivel lv1", href: "/learn?tab=curriculo&section=lv1#level-lv1" },
+      { id: "lv9", title: "Nivel lv9", href: "/learn?tab=curriculo&section=lv9#level-lv9" },
       { id: "ghost", title: "Oculto", href: null },
     ]);
   });

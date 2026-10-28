@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Learn lesson page route
-* Descripción: Thin route for /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]: composes the student layout (RequireAuth + AppShell, which waits for router.isReady) with the LessonViewerPage of the learning feature. The raw [pageNumber] segment is passed through so the viewer can redirect an invalid or out-of-range value. Depends on next/router, @features/learning and @shared/layouts/student-layout.
-* Versión: 1.0
+* Descripción: Thin route for /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]: composes the student layout (RequireAuth + AppShell, which waits for router.isReady) with the LessonViewerPage of the learning feature. The raw [pageNumber] segment is passed through so the viewer can redirect an invalid or out-of-range value. Depends on next/router, @features/learning/lesson-viewer.entry and @shared/layouts/student-layout. v1.1 (W3, Bloque 2): imports the lesson viewer entry point instead of the feature barrel.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,7 +10,7 @@
 */
 
 import { useRouter } from "next/router";
-import { LessonViewerPage, parseRouteId } from "@features/learning";
+import { LessonViewerPage, parseRouteId } from "@features/learning/lesson-viewer.entry";
 import type { NextPageWithLayout } from "@shared/layouts/get-layout";
 // Direct module import: the layouts index would pull every layout into this chunk.
 import { withStudentLayout } from "@shared/layouts/student-layout";

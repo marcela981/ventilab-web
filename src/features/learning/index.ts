@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: learning public API
-* Descripción: Public surface of the learning feature for the thin routes under pages/learn (LearnHomePage, SectionPage, ModulePage) and for the next learning tasks (L3 viewer, L7 print): URL builders/parsers, curriculum tree and lesson hooks with the tree locators, LockedContentScreen, LearningBreadcrumb, PreviewNotice, usePreviewMode, the progress hooks, the page-view tracker and the learning error messages. v1.1 (L3): LessonViewerPage, LessonSidePanel (slots for the L4-L6 panels), the lesson navigation rules, PageContent/usePageContent and the module completion URL. v1.2 (L7): ModulePrintPage and withPrintLayout (print view without the app shell, TEACHER/ADMIN guard). v1.3 (R1): resolveLegacyLessonUrl for the legacy /teaching redirects. v1.4 (C6): LessonPageArticle (Page body renderer) for the content editor's student preview. v1.5 (O2): notes reuse for the student space /me/notes: NoteItem, NoteComposer (lazy Tiptap editor with autosave), deleteNote, LESSON_NOTES_PATH (cache key the student space refreshes after an edit), notePageNumber and the Note/NotesAnalysis types. v1.6 (B3.8, D5): resolveLegacyLessonUrl is gone; the /teaching redirects live in config/legacy-redirects.mjs (next.config redirects).
-* Versión: 1.6
+* Descripción: Public surface of the learning feature for the thin routes under pages/learn (LearnHomePage, SectionPage, ModulePage) and for the next learning tasks (L3 viewer, L7 print): URL builders/parsers, curriculum tree and lesson hooks with the tree locators, LockedContentScreen, LearningBreadcrumb, PreviewNotice, usePreviewMode, the progress hooks, the page-view tracker and the learning error messages. v1.1 (L3): LessonViewerPage, LessonSidePanel (slots for the L4-L6 panels), the lesson navigation rules, PageContent/usePageContent and the module completion URL. v1.2 (L7): ModulePrintPage and withPrintLayout (print view without the app shell, TEACHER/ADMIN guard). v1.3 (R1): resolveLegacyLessonUrl for the legacy /teaching redirects. v1.4 (C6): LessonPageArticle (Page body renderer) for the content editor's student preview. v1.5 (O2): notes reuse for the student space /me/notes: NoteItem, NoteComposer (lazy Tiptap editor with autosave), deleteNote, LESSON_NOTES_PATH (cache key the student space refreshes after an edit), notePageNumber and the Note/NotesAnalysis types. v1.6 (B3.8, D5): resolveLegacyLessonUrl is gone; the /teaching redirects live in config/legacy-redirects.mjs (next.config redirects). v1.7 (W3, Bloque 2): the routes import per-area entry points (learn, module, lesson-viewer, print .entry.ts) instead of this barrel, so the pages, the print layout, the route id parser and the completion URL are no longer exported here (LearnHomePage, SectionPage and ModulePage are gone).
+* Versión: 1.7
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,7 +21,6 @@ export { NoteComposer } from "./application/components/notes/note-composer";
 export type { NoteComposerProps } from "./application/components/notes/note-composer";
 export { NoteItem } from "./application/components/notes/note-item";
 export type { NoteItemProps } from "./application/components/notes/note-item";
-export { PrintLayout, withPrintLayout } from "./application/components/print-layout";
 export type { LockedContentScreenProps } from "./application/components/locked-content-screen";
 export { PreviewNotice } from "./application/components/preview-notice";
 export { findContinueTarget } from "./application/entities/continue-target";
@@ -46,14 +45,11 @@ export { getLearningErrorMessage } from "./application/entities/learning-error-m
 export {
   buildLessonPageUrl,
   buildLevelUrl,
-  buildModuleCompletedUrl,
   buildModulePrintUrl,
   buildModuleUrl,
   buildSectionUrl,
   LEARN_HOME_URL,
-  MODULE_COMPLETED_PARAM,
   parsePageNumber,
-  parseRouteId,
 } from "./application/entities/learning-urls";
 export type { LessonPage, LessonSummary, PageContent } from "./application/entities/lesson.entity";
 export { notePageNumber } from "./application/entities/note.entity";
@@ -69,12 +65,3 @@ export { PAGE_VIEW_DELAY_MS, usePageViewTracker } from "./application/hooks/use-
 export type { PageViewTracker } from "./application/hooks/use-page-view-tracker";
 export { usePreviewMode } from "./application/hooks/use-preview-mode";
 export { useLevelProgress, useModuleProgress, useProgressSummary, useSectionProgress } from "./application/hooks/use-progress";
-export { LearnHomePage } from "./application/pages/learn-home.page";
-export { LessonViewerPage } from "./application/pages/lesson-viewer.page";
-export type { LessonViewerPageProps } from "./application/pages/lesson-viewer.page";
-export { ModulePage } from "./application/pages/module.page";
-export { ModulePrintPage } from "./application/pages/module-print.page";
-export type { ModulePrintPageProps } from "./application/pages/module-print.page";
-export type { ModulePageProps } from "./application/pages/module.page";
-export { SectionPage } from "./application/pages/section.page";
-export type { SectionPageProps } from "./application/pages/section.page";

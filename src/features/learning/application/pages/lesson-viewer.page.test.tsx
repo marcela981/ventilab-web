@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LessonViewerPage tests
-* Descripción: Renders /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber] against a mocked backend (msw) with a mocked next/router: blocks of Page N with the breadcrumb and Previous link; lock screen for a student on a locked module (the Page content is never requested) and the content in preview for a teacher; "Siguiente" registers the view once and navigates to the next lesson; "Finalizar módulo" goes to the completion screen; an invalid or out-of-range pageNumber redirects; a lesson outside the module is not found; the side panel tabs and its persisted collapsed state. v1.1 (L4): the Notas tab shows the caller's notes of the lesson with the anchor page link. v1.2 (L5/L6): the Profundizar tab lazily shows the deepen button and the Preguntas tab the lesson chat. Depends on vitest, Testing Library, msw and the learning test helpers.
-* Versión: 1.2
+* Descripción: Renders /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber] against a mocked backend (msw) with a mocked next/router: blocks of Page N with the breadcrumb and Previous link; lock screen for a student on a locked module (the Page content is never requested) and the content in preview for a teacher; "Siguiente" registers the view once and navigates to the next lesson; "Finalizar módulo" goes to the completion screen; an invalid or out-of-range pageNumber redirects; a lesson outside the module is not found; the side panel tabs and its persisted collapsed state. v1.1 (L4): the Notas tab shows the caller's notes of the lesson with the anchor page link. v1.2 (L5/L6): the Profundizar tab lazily shows the deepen button and the Preguntas tab the lesson chat. Depends on vitest, Testing Library, msw and the learning test helpers. v1.3 (W3, Bloque 2): "Finalizar módulo" registers the view and shows the completion card in place (no navigation).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -153,14 +153,19 @@ describe("LessonViewerPage", { timeout: 20_000 }, () => {
     expect(router.push).toHaveBeenCalledWith("/learn/modules/m2/lessons/l2/1");
   });
 
-  it("finishes the module after its last page", async() => {
+  it("finishes the module after its last page with the completion card in place", async() => {
     renderWithSession(<LessonViewerPage moduleId="m2" lessonId="l2" pageParam="1" />);
 
     await screen.findByText("Contenido p2a", {}, LAZY_WAIT);
+    expect(screen.getByRole("link", { name: "Anterior" })).toHaveAttribute("href", "/learn/modules/m2/lessons/l1/2");
     fireEvent.click(screen.getByRole("button", { name: "Finalizar módulo" }));
 
-    expect(router.push).toHaveBeenCalledWith("/learn/modules/m2?completed=1");
-    expect(screen.getByRole("link", { name: "Anterior" })).toHaveAttribute("href", "/learn/modules/m2/lessons/l1/2");
+    expect(await screen.findByRole("heading", { name: "¡Completaste el módulo!" })).toBeInTheDocument();
+    expect(router.push).not.toHaveBeenCalled();
+    expect(screen.queryByRole("button", { name: "Finalizar módulo" })).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(viewRequests).toEqual(["p2a"]);
+    });
   });
 
   it("redirects an invalid pageNumber to the first page", async() => {

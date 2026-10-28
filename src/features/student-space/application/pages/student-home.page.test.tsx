@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student home page tests
-* Descripción: /me with msw: the whole page comes from ONE `GET /api/me/summary` request (any other request fails the test); progress bars carry the API percentage and lesson counts; evaluations, grades (es-CO grade with its passed/failed text), notes, conversations, simulation sessions (result and replay of ended sessions, resume of active ones), reservations and the unread counter link to their routes; every block shows its empty state; a failed load shows a retryable error. Depends on vitest, msw, Testing Library and the student space test helpers. v1.1 (B1 closure): the empty overall progress carries the new title field. v1.2 (B2 closure): section titles from the API (fallback "Sección N"), grades linking to the attempt result with their module, notes linking to the lesson page with lesson and page titles (plain text without module), session case titles (fallback label).
-* Versión: 1.2
+* Descripción: /me with msw: the whole page comes from ONE `GET /api/me/summary` request (any other request fails the test); progress bars carry the API percentage and lesson counts; evaluations, grades (es-CO grade with its passed/failed text), notes, conversations, simulation sessions (result and replay of ended sessions, resume of active ones), reservations and the unread counter link to their routes; every block shows its empty state; a failed load shows a retryable error. Depends on vitest, msw, Testing Library and the student space test helpers. v1.1 (B1 closure): the empty overall progress carries the new title field. v1.2 (B2 closure): section titles from the API (fallback "Sección N"), grades linking to the attempt result with their module, notes linking to the lesson page with lesson and page titles (plain text without module), session case titles (fallback label). v1.3 (W3, Bloque 2): a section links to the Currículo tab of /learn.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -68,7 +68,7 @@ describe("StudentHomePage", () => {
     expect(within(progress).getByRole("progressbar", { name: SUMMARY_COPY.progressAria("Fundamentos") })).toHaveAttribute("aria-valuenow", "75");
     expect(within(progress).getByRole("progressbar", { name: SUMMARY_COPY.progressAria("Sección 2") })).toHaveAttribute("aria-valuenow", "17");
     expect(within(progress).getByText(SUMMARY_COPY.progressValue(40, 4, 10))).toBeInTheDocument();
-    expect(within(progress).getAllByRole("link", { name: SUMMARY_COPY.openSection })[0]).toHaveAttribute("href", "/learn/s1");
+    expect(within(progress).getAllByRole("link", { name: SUMMARY_COPY.openSection })[0]).toHaveAttribute("href", "/learn?tab=curriculo&section=s1");
 
     const evaluations = block(SUMMARY_COPY.evaluationsTitle);
 

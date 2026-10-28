@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LessonViewerPage
-* Descripción: Page viewer of /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]. Navigation state comes ONLY from the URL: pageNumber is the 1-based position of the backend Page inside its lesson (decision 1). Tree, module lessons and lesson Pages load in parallel; the Page content (`GET /api/pages/{id}`) is requested only once its id is known AND the module is visible for the user. An invalid pageNumber is replaced with Page 1, an out-of-range one with the last Page; an unknown module or a lesson outside the module is "not available". A student on a locked module (module or level locked in the curriculum tree) gets the lock screen with prerequisites; teachers/admins preview everything (PreviewNotice, no lock, no view registration). Breadcrumb Sección > Nivel > Módulo > Lección > Página. Previous/Next cross lesson boundaries (lesson-navigation entity); "Siguiente" registers the page view (fire-and-forget, also after 5 s) and navigates; after the last Page "Finalizar módulo" opens the module completion screen (/learn/modules/[moduleId]?completed=1). Side panel Notas | Profundizar | Preguntas with slots for L4-L6. v1.1 (L4): the "Notas" slot defaults to LessonNotesPanel (the caller's own notes of the lesson, anchored to the visible Page, page numbers resolved with the lesson Pages already loaded here); `panels.notes` still overrides it. The panel is a lazy chunk (React.lazy + retryImport, design-system error boundary, list skeleton fallback) so its MUI dialog/form pieces, the rating widget and the note renderer stay out of the viewer's First Load JS; the Tiptap editor is a further lazy chunk loaded only when a note is created or edited. v1.2 (L5/L6): the "Profundizar" slot defaults to DeepenPanel (AI deepening of the visible Page, keyed by pageId) and "Preguntas" to QuestionsPanel (lesson/module chat, keyed by lessonId), both lazy chunks with the same retryImport + error boundary + skeleton pattern (not exported from the shared feature barrel); `panels.deepen` / `panels.questions` still override them. Depends on next/router, next/head, @shared/design-system, the learning hooks, entities and components.
-* Versión: 1.2
+* Descripción: Page viewer of /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]. Navigation state comes ONLY from the URL: pageNumber is the 1-based position of the backend Page inside its lesson (decision 1). Tree, module lessons and lesson Pages load in parallel; the Page content (`GET /api/pages/{id}`) is requested only once its id is known AND the module is visible for the user. An invalid pageNumber is replaced with Page 1, an out-of-range one with the last Page; an unknown module or a lesson outside the module is "not available". A student on a locked module (module or level locked in the curriculum tree) gets the lock screen with prerequisites; teachers/admins preview everything (PreviewNotice, no lock, no view registration). Breadcrumb Sección > Nivel > Módulo > Lección > Página. Previous/Next cross lesson boundaries (lesson-navigation entity); "Siguiente" registers the page view (fire-and-forget, also after 5 s) and navigates; after the last Page "Finalizar módulo" opens the module completion screen (/learn/modules/[moduleId]?completed=1). Side panel Notas | Profundizar | Preguntas with slots for L4-L6. v1.1 (L4): the "Notas" slot defaults to LessonNotesPanel (the caller's own notes of the lesson, anchored to the visible Page, page numbers resolved with the lesson Pages already loaded here); `panels.notes` still overrides it. The panel is a lazy chunk (React.lazy + retryImport, design-system error boundary, list skeleton fallback) so its MUI dialog/form pieces, the rating widget and the note renderer stay out of the viewer's First Load JS; the Tiptap editor is a further lazy chunk loaded only when a note is created or edited. v1.2 (L5/L6): the "Profundizar" slot defaults to DeepenPanel (AI deepening of the visible Page, keyed by pageId) and "Preguntas" to QuestionsPanel (lesson/module chat, keyed by lessonId), both lazy chunks with the same retryImport + error boundary + skeleton pattern (not exported from the shared feature barrel); `panels.deepen` / `panels.questions` still override them. Depends on next/router, next/head, @shared/design-system, the learning hooks, entities and components. v1.3 (W3, Bloque 2): /learn/modules/[id] is the resume resolver, so "Finalizar módulo" no longer navigates to ?completed=1: it registers the view and shows the ModuleCompletion card in place of the navigation (module progress read only then); the curriculum links point at the module's level in the Currículo tab.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,7 +13,7 @@ import MenuBookIcon from "@mui/icons-material/MenuBook";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { EmptyState } from "@shared/design-system/components/empty-state";
 import { ErrorState } from "@shared/design-system/components/error-state";
 import { PageHeader } from "@shared/design-system/components/page-header";
@@ -27,13 +27,14 @@ import { LessonPageNav } from "../components/lesson-page-nav";
 import { LessonSidePanel } from "../components/lesson-side-panel";
 import type { LessonSidePanelSlots } from "../components/lesson-side-panel";
 import { LockedContentScreen } from "../components/locked-content-screen";
+import { ModuleCompletion } from "../components/module-completion";
 import { PreviewNotice } from "../components/preview-notice";
 import type { CurriculumTree, ModuleLocation } from "../entities/curriculum.entity";
-import { levelPrerequisiteLinks, locateModule, modulePrerequisiteLinks } from "../entities/curriculum.entity";
+import { findNextModule, levelPrerequisiteLinks, locateModule, modulePrerequisiteLinks } from "../entities/curriculum.entity";
 import { getLearningErrorMessage } from "../entities/learning-error-messages";
 import {
   buildLessonPageUrl,
-  buildModuleCompletedUrl,
+  buildLevelUrl,
   buildModuleUrl,
   buildSectionUrl,
   LEARN_HOME_URL,
@@ -47,6 +48,7 @@ import { useModuleLessons } from "../hooks/use-module-lessons";
 import { usePageContent } from "../hooks/use-page-content";
 import { usePageViewTracker } from "../hooks/use-page-view-tracker";
 import { usePreviewMode } from "../hooks/use-preview-mode";
+import { useModuleProgress } from "../hooks/use-progress";
 import learningStyles from "../../UI/learning.module.css";
 import styles from "../../UI/lesson-viewer.module.css";
 
@@ -73,6 +75,7 @@ const PAGE_COPY = {
   backHome: "Volver a Aprender",
   backSection: "Volver a la sección",
   backModule: "Volver al módulo",
+  backCurriculum: "Volver al currículo",
   loadErrorTitle: "No se pudo cargar la lección",
   pageOf: (page: number, total: number) => `Página ${page} de ${total}`,
   loadingNotes: "Cargando tus notas…",
@@ -125,7 +128,8 @@ type NavTargets = {
   isLastPage: boolean
 };
 
-function navTargets(moduleId: string, lessons: LessonSummary[] | null, lessonId: string, pageNumber: number | null, pageCount: number | null): NavTargets {
+// completeHref: target of "Finalizar módulo" (the viewer shows the completion card in place; the href only enables the button).
+function navTargets(moduleId: string, lessons: LessonSummary[] | null, lessonId: string, pageNumber: number | null, pageCount: number | null, completeHref: string): NavTargets {
   if (!lessons || pageNumber === null || pageCount === null || pageNumber > pageCount) {
     return { previousHref: null, nextHref: null, isLastPage: false };
   }
@@ -136,7 +140,7 @@ function navTargets(moduleId: string, lessons: LessonSummary[] | null, lessonId:
 
   return {
     previousHref: previous ? buildLessonPageUrl(moduleId, previous.lessonId, previous.pageNumber) : null,
-    nextHref: next ? (next.kind === "complete" ? buildModuleCompletedUrl(moduleId) : buildLessonPageUrl(moduleId, next.lessonId, next.pageNumber)) : null,
+    nextHref: next ? (next.kind === "complete" ? completeHref : buildLessonPageUrl(moduleId, next.lessonId, next.pageNumber)) : null,
     isLastPage: next?.kind === "complete",
   };
 }
@@ -173,11 +177,24 @@ export function LessonViewerPage({ moduleId, lessonId, pageParam, panels }: Less
   }, [redirectHref, router]);
 
   const title = visiblePage?.title ?? lesson?.title ?? PAGE_COPY.fallbackTitle;
-  const nav = navTargets(moduleId, lessons, lessonId, pageNumber, pages?.length ?? null);
+  const curriculumHref = location ? buildLevelUrl(location.level.id) : LEARN_HOME_URL;
+  const nav = navTargets(moduleId, lessons, lessonId, pageNumber, pages?.length ?? null, curriculumHref);
+  // Page on which "Finalizar módulo" was pressed: the completion card replaces the navigation there.
+  const [finishedPageId, setFinishedPageId] = useState<string | null>(null);
+  const finished = visiblePage !== null && finishedPageId === visiblePage.id;
+  // Requested only after finishing (no extra request on page load); refreshed by the page-view invalidation.
+  const completionProgress = useModuleProgress(finished ? moduleId : null);
 
   const handleNext = (href: string) => {
     // Fire-and-forget: markViewedNow never rejects and registers at most once per visit.
     void tracker.markViewedNow();
+
+    if (nav.isLastPage && visiblePage) {
+      setFinishedPageId(visiblePage.id);
+
+      return;
+    }
+
     void router.push(href);
   };
 
@@ -234,7 +251,16 @@ export function LessonViewerPage({ moduleId, lessonId, pageParam, panels }: Less
               error={visiblePage ? null : contentError}
               onRetry={retry}
             />
-            {visiblePage ? <LessonPageNav {...nav} onNext={handleNext} /> : null}
+            {visiblePage && !finished ? <LessonPageNav {...nav} onNext={handleNext} /> : null}
+            {finished ? (
+              <ModuleCompletion
+                title={module.title}
+                progress={completionProgress.progress?.overall ?? null}
+                nextModule={findNextModule(tree, { ignoreLocks: isPreview, excludeModuleId: module.id })}
+                backHref={curriculumHref}
+                backLabel={PAGE_COPY.backCurriculum}
+              />
+            ) : null}
           </div>
           <LessonSidePanel
             {...panels}

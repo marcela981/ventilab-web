@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LearningBreadcrumb
-* Descripción: Breadcrumb Aprender > Sección > Nivel > Módulo > Lección > Página built from the URL builders: every known part links to its route (the level links to its anchor inside the section page) and the last part is the current page (aria-current, no link). Only the parts that are known are rendered. Depends on MUI Breadcrumbs, next/link, learning-urls and the learning CSS Module.
-* Versión: 1.0
+* Descripción: Breadcrumb Aprender > Sección > Nivel > Módulo > Lección > Página built from the URL builders: every known part links to its route (the level links to its anchor inside the section page) and the last part is the current page (aria-current, no link). Only the parts that are known are rendered. Depends on MUI Breadcrumbs, next/link, learning-urls and the learning CSS Module. v1.1 (W3, Bloque 2): the section and level parts link into the Currículo tab of /learn (?section=), the level with its anchor.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -45,7 +45,7 @@ function toCrumbs({ section, level, module, lesson, pageNumber }: LearningBreadc
   }
 
   if (level) {
-    crumbs.push({ key: "level", label: level.title, href: buildLevelUrl(level.id, level.sectionId) });
+    crumbs.push({ key: "level", label: level.title, href: buildLevelUrl(level.id) });
   }
 
   if (module) {

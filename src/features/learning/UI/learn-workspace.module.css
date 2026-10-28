@@ -1,0 +1,71 @@
+/*
+* Funcionalidad: Learn workspace styles
+* Descripción: Layout of the /learn workspace (W3, Bloque 2): centered column, the top tab list (Inicio, Currículo, Mi Progreso; selected tab underlined in the primary color, like the July TeachingTabs) and the tab panels (a hidden panel stays mounted but is not displayed). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 0.1
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.workspace {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.tabList {
+  display: flex;
+  gap: var(--vl-space-1);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--vl-color-border);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+  min-height: 48px;
+  padding: var(--vl-space-2) var(--vl-space-4);
+  font: var(--mui-font-button);
+  color: var(--vl-color-text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  transition: color var(--vl-duration-short) var(--vl-ease-standard);
+}
+
+.tab:hover {
+  color: var(--vl-color-text);
+}
+
+.tab[aria-selected="true"] {
+  color: var(--vl-color-primary);
+  border-bottom-color: var(--vl-color-primary);
+}
+
+.tab:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: calc(-1 * var(--vl-focus-ring-width));
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.workspace :focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}

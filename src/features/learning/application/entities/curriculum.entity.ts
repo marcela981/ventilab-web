@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Curriculum entity
-* Descripción: Frontend model of the student curriculum tree (sections -> levels -> modules, plus levels without section) with the backend lock state (locked, missingPrerequisites, completed), and pure helpers: locate a section, level or module with its parents (breadcrumb and locks), resolve the links of missing prerequisites (level -> its section anchor, module -> its page; references the tree does not know get no link) and pick the module for "Continuar donde quedé" (first unlocked, not completed module in curriculum order; preview mode ignores locks). v1.1 (L3): findNextModule takes excludeModuleId, so the module completion screen never proposes the module just completed while the backend tree still reports it as not completed. Depends on learning-urls.
-* Versión: 1.1
+* Descripción: Frontend model of the student curriculum tree (sections -> levels -> modules, plus levels without section) with the backend lock state (locked, missingPrerequisites, completed), and pure helpers: locate a section, level or module with its parents (breadcrumb and locks), resolve the links of missing prerequisites (level -> its section anchor, module -> its page; references the tree does not know get no link) and pick the module for "Continuar donde quedé" (first unlocked, not completed module in curriculum order; preview mode ignores locks). v1.1 (L3): findNextModule takes excludeModuleId, so the module completion screen never proposes the module just completed while the backend tree still reports it as not completed. Depends on learning-urls. v1.2 (W3, Bloque 2): level prerequisite links open the Currículo tab at the level (buildLevelUrl without section).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -95,9 +95,9 @@ export function locateModule(tree: CurriculumTree, moduleId: string): ModuleLoca
 
 export function levelPrerequisiteLinks(tree: CurriculumTree, prerequisites: NamedRef[]): PrerequisiteLink[] {
   return prerequisites.map((prerequisite) => {
-    const location = locateLevel(tree, prerequisite.id);
+    const known = locateLevel(tree, prerequisite.id) !== null;
 
-    return { ...prerequisite, href: location ? buildLevelUrl(prerequisite.id, location.section?.id ?? null) : null };
+    return { ...prerequisite, href: known ? buildLevelUrl(prerequisite.id) : null };
   });
 }
 
