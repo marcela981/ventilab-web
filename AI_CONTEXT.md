@@ -1,7 +1,7 @@
 <!--
 * Funcionalidad: Contexto del repositorio para asistentes de IA
-* Descripción: Estado real de ventilab-web: stack, backend NestJS y cliente OpenAPI generado, features, rutas, providers, estilos, pruebas y despliegue. v1.0 (A9): reescrito desde el código; reemplaza la versión de julio de 2026 (NextAuth, pages/api, backend Express, Prisma), que ya no aplica. v1.1 (W1 Bloque 1): navegación del simulador unificado (/simulador como inicio de todos los roles, menú lateral corto, menú de usuario por rol, redirecciones de /simulator y /lab*) y la feature simulator-workspace. v1.2 (W13 Bloque 1): panel /simulador completo (pestañas montadas, sesión y conexión por encima), store externo de la consola, curvas por tiempo, entradas *.entry.ts por área y Playwright (e2e y rendimiento).
-* Versión: 1.2
+* Descripción: Estado real de ventilab-web: stack, backend NestJS y cliente OpenAPI generado, features, rutas, providers, estilos, pruebas y despliegue. v1.0 (A9): reescrito desde el código; reemplaza la versión de julio de 2026 (NextAuth, pages/api, backend Express, Prisma), que ya no aplica. v1.1 (W1 Bloque 1): navegación del simulador unificado (/simulador como inicio de todos los roles, menú lateral corto, menú de usuario por rol, redirecciones de /simulator y /lab*) y la feature simulator-workspace. v1.2 (W13 Bloque 1): panel /simulador completo (pestañas montadas, sesión y conexión por encima), store externo de la consola, curvas por tiempo, entradas *.entry.ts por área y Playwright (e2e y rendimiento). v1.3 (W12 Bloque 2): /learn con pestañas Inicio, Currículo y Mi Progreso, resolvedor de módulo, visor de julio sin cascada, cola offline del progreso, TutorAI, gamificación, dueños del estado, E2E del Bloque 2 con el LLM falso y limitaciones conocidas.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -80,7 +80,7 @@ scripts/                — generate-api, check-api-contract, sync-sim-engine, s
 | `evaluations` | Presentación de evaluaciones por el estudiante, intentos y resultados (incluye preguntas de simulación) | `/evaluations/**` |
 | `grading` | Calificación docente con rúbricas y retroalimentación por IA; badge de pendientes en `_app.js` | `/grading/**` |
 | `groups` | Grupos: gestión docente y "mi grupo" del estudiante | `/groups/**`, `/my-group` |
-| `learning` | Feature principal de aprendizaje: secciones, módulos, lecciones, notas, progreso y tutor IA | `/learn/**` |
+| `learning` | Aprendizaje (Bloque 2): `/learn` con pestañas Inicio, Currículo y Mi Progreso, resolvedor de módulo, visor de lecciones de julio con índice, cierre y TutorAI, notas, cola offline del progreso, gamificación (XP, nivel, racha, calendario, logros con toast) | `/learn/**` |
 | `notifications` | Notificaciones en tiempo real: campana, toasts y página | `/notifications` |
 | `profile` | Perfil del usuario | `/profile` |
 | `simulator` | Simulación de ventilador y paciente con el motor en un Web Worker, sesiones, repetición, resultados y asistente IA | `/simulator/sessions/**` (catálogo dentro de `/simulador?tab=simular`) |
@@ -100,6 +100,41 @@ scripts/                — generate-api, check-api-contract, sync-sim-engine, s
 - Navegación (`src/shared/layouts/nav.config.ts`): menú lateral corto — Simulador (`/simulador`, con el indicador del ventilador y activo también en `/simulator/sessions/**` y `/lab/**` vía `activePrefixes`), Enseñanza (`/learn`) y Evaluación (`/evaluations`); el staff suma la sección «Panel docente» (Resumen `/teacher`, Grupos, Contenido, Gestionar evaluaciones, Casos clínicos, Calificar, Estado del sistema) y ADMIN la sección «Administración». El menú de usuario (`user-menu.config.ts`) lleva Mi resumen, Mis notas, Mis calificaciones, Mi grupo y Perfil (estudiante) o Perfil (staff), y Cerrar sesión; el asistente IA y las notificaciones viven en la barra superior.
 - `/simulador?tab=simular|monitoreo|conexion|sesiones` (por defecto `monitoreo`) es el panel unificado (`src/features/simulator-workspace`). `/simulator/sessions/[id]` se conserva (EXAM y enlaces directos); `/simulator/cases/**`, `/lab/reservations` y `/lab/recordings/**` conservan sus páginas.
 - Redirecciones legadas (307) en `config/legacy-redirects.mjs` (incluye `/simulator` → `/simulador?tab=simular`, `/lab` → `?tab=conexion`, `/lab/live` → `?tab=monitoreo`; solo rutas exactas; en la navegación de cliente no aplican, por eso las constantes internas apuntan a `/simulador?tab=…`) y cabeceras de seguridad + CSP (Report-Only salvo `CSP_REPORT_ONLY=false`) en `config/csp.mjs`, servidas por `next.config.mjs`.
+
+---
+
+## Aprendizaje (Bloque 2)
+
+Diseño completo y desvíos: `../DISENO_BLOQUE2.md` (§2, §3, §7b y §9).
+
+- **Rutas.** `/learn?tab=inicio|curriculo|progreso` (por defecto `curriculo`; un valor inválido da `curriculo`) con `useUrlTab` y `KeptMountedTabPanels` de `src/shared/lib` (lazy + `retryImport`, montadas una vez, `hidden`), los mismos que usa `/simulador`. El staff solo ve Currículo (sin lista de pestañas; `?tab=` se ignora) con el aviso "Vista previa". `/learn/[sectionId]` reemplaza la URL por `/learn?tab=curriculo&section=<id>` (y regla en `legacy-redirects.mjs`). `/learn/modules/[id]` es el **resolvedor**: calcula el punto de retome con `findContinueTarget` y reemplaza la URL por la lección y la página (bloqueado: `LockedContentScreen`). `/learn/modules/[id]/print` se conserva.
+- **Currículo.** Dos peticiones en paralelo (`GET /api/curriculum/tree` + `GET /api/progress/summary`). Los tres acordeones de julio se arman en el cliente (VentyLab; Prerequisitos "Opcional", por el id `level-prerequisitos`; Mecánica respiratoria, abierta por defecto; `?section=` abre otro). Tarjetas con 5 estados (completed, in-progress, available, locked, coming_soon); solo el botón navega. Staff: "Modo edición" (localStorage `learning.editMode.v1`) con enlaces "Editar en el CMS" a `/content?node=level:<id>|module:<id>`.
+- **Visor.** Sin cascada: listado de páginas, lecciones del módulo, acceso (`GET /api/lessons/{id}/access`) y progreso del módulo en paralelo, luego `GET /api/pages/{id}` (un 403 `progress.lesson_locked` también muestra el bloqueo). Precarga de la página siguiente (SWR `preload` + `router.prefetch`). Índice de lecciones del módulo (columna derecha; Drawer por debajo de md), "Página x de N" con barra, diálogo "¡Lección Completada!" con confeti lazy (no con `prefers-reduced-motion`) y "Continuar a la Siguiente Lección", tarjeta `ModuleCompletion` dentro del visor. Staff: sin bloqueos, sin registro de vista y "Editar esta página" hacia `/content/pages/[id]`.
+- **Progreso y cola offline.** La vista (`POST /api/progress/pages/{id}/view`) se envía a los 5 s o al pulsar Siguiente. Si falla por red, 408, 429 o 5xx queda en `progressOutbox` (localStorage `progress.outbox.v1:<userId>`, conjunto de `pageId`; el servidor es idempotente), que se vacía al montar, con `online` y con `visibilitychange`, con backoff (2 s a 60 s) y `navigator.locks` (o `BroadcastChannel`) entre pestañas. 403 y 404 se descartan con `console.warn`. `PAGE_VIEW_INVALIDATES` refresca progreso y gamificación; el árbol, solo cuando la lección se completó.
+- **TutorAI.** FAB "Abrir TutorAI" en el visor y popup lazy (Sugerencias; Preguntas con alcance lección o módulo; Notas con análisis por IA) y acordeón "¿Te gustaría expandir más este tema?" al final de cada página. Popup y acordeón usan `useTutorTurn` (`src/shared/ai-conversation`: iniciar, detener, reintentar, ids desde el evento SSE `start`); el asistente sigue en `useStreamingResponse`. Toda respuesta de IA se valora con `AiRatingWidget` (`surface` POPUP, ACCORDION, ASSISTANT o NOTES_ANALYSIS, y `scope`). Las sugerencias prellenan el campo, no envían.
+- **Inicio y Mi Progreso.** Inicio reutiliza los bloques de `/me` (`student-space`): "Continuar donde quedaste" (`continueLearning` de `/api/me/summary`), "XP Hoy", actividad reciente y evaluaciones pendientes. Mi Progreso: nivel y XP, racha, "Calendario de actividad" (12 semanas), logros, hitos y árbol de habilidades derivados del currículo. `AchievementToasts` escucha `achievement:unlocked` (solo estudiantes).
+
+**Dueños del estado**
+
+| Estado | Dueño | Mecanismo |
+|---|---|---|
+| Pestaña, sección abierta, lección y página | URL | `router.query` |
+| Árbol, resumen, gamificación, actividad, logros | servidor | SWR (`LEARNING_QUERY_CONFIG`) |
+| Acceso a la lección | servidor | `GET /api/lessons/{id}/access` + 403 |
+| Vistas pendientes sin red | `progressOutbox` | localStorage por usuario + `navigator.locks` |
+| Prompt prellenado de Sugerencias | store del visor | `useSyncExternalStore` |
+| Texto en streaming | `useTutorTurn` / `useStreamingResponse` | commit por frame |
+| Modo edición | store pequeño | `useSyncExternalStore` + localStorage |
+| Popup abierto y su pestaña | `TutorPopup` | estado local |
+
+**Limitaciones conocidas**
+
+- `GET /api/pages/{id}` sin token no aplica el orden (el web siempre envía el token).
+- Dos primeras vistas simultáneas de las dos últimas páginas de una lección (por ejemplo, dos pestañas) pueden no completar la lección hasta la siguiente vista (nunca hay duplicados).
+- La racha histórica queda subestimada: el backfill del servidor solo conoce primeras y últimas marcas.
+- Una respuesta abortada antes del primer token no se puede valorar; las que fallan a mitad del streaming no se pueden valorar en Profundizar ni en Preguntas (en el asistente sí).
+- La tarjeta del currículo pasa a "Continuar" solo con una lección completada (el resumen cuenta lecciones, no páginas); con páginas vistas dice "Comenzar", aunque el resolvedor retoma en la página correcta. "Continuar donde quedaste" de Inicio sí refleja la página.
+- Mediciones: `docs/bloque2/perf-baseline.md` y `docs/bloque2/perf-after.md`; capturas en `docs/bloque2/capturas/`.
 
 ---
 
@@ -132,7 +167,7 @@ Sentry se inicia de forma diferida (`startErrorReporting`) y `@features/simulato
 - vitest coubicado (`*.test.ts(x)` junto al código), entorno jsdom, msw para HTTP. Carpetas incluidas en `vitest.config.ts`.
 - Scripts: `npm run typecheck` (`tsconfig.strict.json`), `npm run lint` (lista explícita de carpetas), `npm test`, `npm run build`, `npm run check:api`; knip con `npx --yes knip@5`.
 - CI (`.github/workflows/ci.yml`, Node 22): typecheck, lint, pruebas en 6 lotes, build, knip y `check:api` contra el backend.
-- E2E con Playwright (`playwright.config.ts`, carpeta `e2e/`, `npm run e2e`): flujo del estudiante en `/simulador`, reservar ahora y modo Real (titular, líder y miembro observador), pregunta SIMULATION de examen y redirecciones. Requiere el stack local (backend en :4000 y web en :3000; `E2E_BASE_URL`).
+- E2E con Playwright (`playwright.config.ts`, carpeta `e2e/`, `npm run e2e`): flujo del estudiante en `/simulador`, reservar ahora y modo Real (titular, líder y miembro observador), pregunta SIMULATION de examen y redirecciones. Bloque 2 (`e2e/bloque2/`): retome y cierre de lección, bloqueos (UI y 403), TutorAI, Mi Progreso, vista previa del staff, progreso sin red y layout del visor; cada escenario registra un estudiante nuevo y TutorAI corre contra el backend real con `OPENAI_BASE_URL` apuntando a `scripts/e2e/fake-llm.mjs` (ver `scripts/e2e/README.md`). `E2E_CAPTURES=1` regenera las capturas. Requiere el stack local (backend en :4000 y web en :3000; `E2E_BASE_URL`).
 - `next.config.mjs` usa `typescript.ignoreBuildErrors: true`: la garantía de tipos es el `typecheck` de la CI.
 
 ---
