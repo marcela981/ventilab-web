@@ -4464,6 +4464,72 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/progress/activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get my activity calendar
+         * @description Returns the America/Bogota days with activity (event count and XP) between from and to, both inclusive, at most 366 days; by default the 366 days ending today
+         *
+         *     **Required access:** bearer token holding `progress:read_own`; minimum role STUDENT.
+         */
+        get: operations["getActivity"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/progress/activity/recent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get my recent activity
+         * @description Returns the latest ledger milestones (lesson and module completions, passed evaluations and unlocked achievements) with the title of the referenced item, newest first
+         *
+         *     **Required access:** bearer token holding `progress:read_own`; minimum role STUDENT.
+         */
+        get: operations["getRecentActivity"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/progress/gamification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get my gamification statistics
+         * @description Returns XP, level, XP inside the level, the XP of the next level, the current and longest streak (America/Bogota days) and today's XP from the activity ledger
+         *
+         *     **Required access:** bearer token holding `progress:read_own`; minimum role STUDENT.
+         */
+        get: operations["getGamification"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/progress/lesson/{lessonId}": {
         parameters: {
             query?: never;
@@ -6873,6 +6939,11 @@ export interface components {
         };
         AchievementDTO: {
             /**
+             * @description Stable catalog key of the achievement (one unlock per user and code)
+             * @example first_lesson
+             */
+            code: string;
+            /**
              * @description Achievement description
              * @example Completa tu primera lección
              */
@@ -6969,6 +7040,10 @@ export interface components {
              */
             visibleFrom: string | null;
         };
+        ActivityCalendarDTO: {
+            /** @description Days with activity in the range, ascending; days without activity are omitted */
+            days: components["schemas"]["ActivityDayDTO"][];
+        };
         ActivityDTO: {
             /**
              * Format: date-time
@@ -7039,6 +7114,24 @@ export interface components {
              * @example 2026-10-02T10:00:00.000Z
              */
             updatedAt: string;
+        };
+        ActivityDayDTO: {
+            /**
+             * @description Number of ledger events on that day
+             * @example 6
+             */
+            count: number;
+            /**
+             * Format: date
+             * @description America/Bogota calendar day (YYYY-MM-DD)
+             * @example 2026-10-27
+             */
+            date: string;
+            /**
+             * @description Experience points earned on that day
+             * @example 75
+             */
+            xp: number;
         };
         ActivityDetailDTO: {
             /** @description Active assignments */
@@ -8079,6 +8172,18 @@ export interface components {
              */
             safety?: number;
             /**
+             * @description Content scope of the rated answer
+             * @example LESSON
+             * @enum {string}
+             */
+            scope?: "LESSON" | "MODULE" | "PAGE" | "FREE";
+            /**
+             * @description Surface where the answer was rated
+             * @example POPUP
+             * @enum {string}
+             */
+            surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS";
+            /**
              * @description Rated output id
              * @example cm1x2y3z40000abcd1234efgh
              */
@@ -8176,6 +8281,16 @@ export interface components {
              * @example 20
              */
             ratings: number;
+            /**
+             * @description Content scope of the rated answers (LESSON, MODULE, PAGE, FREE), or "unknown"
+             * @example MODULE
+             */
+            scope: string;
+            /**
+             * @description Surface of the ratings (POPUP, ACCORDION, ASSISTANT, NOTES_ANALYSIS), or "unknown" for ratings without one
+             * @example POPUP
+             */
+            surface: string;
             /**
              * @description Use case of the linked AI call, or "unknown"
              * @example FREE_CHAT
@@ -12181,6 +12296,43 @@ export interface components {
              * @example Versión simplificada
              */
             title?: string;
+        };
+        GamificationStatsDTO: {
+            /**
+             * @description Current level: floor(xpTotal / 500) + 1
+             * @example 3
+             */
+            level: number;
+            /**
+             * @description Longest run of consecutive days with activity
+             * @example 9
+             */
+            longestStreak: number;
+            /**
+             * @description Total experience points at which the next level starts (level × 500)
+             * @example 1500
+             */
+            nextLevelXp: number;
+            /**
+             * @description Consecutive America/Bogota days with activity ending today or yesterday
+             * @example 4
+             */
+            streakDays: number;
+            /**
+             * @description Experience points earned inside the current level (0 to 499)
+             * @example 255
+             */
+            xpIntoLevel: number;
+            /**
+             * @description Experience points earned today (America/Bogota)
+             * @example 55
+             */
+            xpToday: number;
+            /**
+             * @description Total experience points in the activity ledger
+             * @example 1255
+             */
+            xpTotal: number;
         };
         GasTimeConstantsDTO: {
             /**
@@ -16313,7 +16465,7 @@ export interface components {
              */
             completedLessons: number;
             /**
-             * @description Current level derived from the experience points
+             * @description Current level: floor(xpTotal / 500) + 1
              * @example 1
              */
             level: number;
@@ -16323,12 +16475,12 @@ export interface components {
              */
             modulesCompleted: number;
             /**
-             * @description Experience points needed for the next level
+             * @description Total experience points at which the next level starts (level × 500)
              * @example 500
              */
             nextLevelXp: number;
             /**
-             * @description Consecutive study days
+             * @description Consecutive America/Bogota days with activity ending today or yesterday
              * @example 0
              */
             streakDays: number;
@@ -16343,7 +16495,7 @@ export interface components {
              */
             totalModules: number;
             /**
-             * @description Experience points from completed lessons
+             * @description Total experience points from the activity ledger (same value as GET /api/progress/gamification)
              * @example 300
              */
             xpTotal: number;
@@ -17709,6 +17861,39 @@ export interface components {
              * @example Ana Pérez
              */
             userName: string | null;
+        };
+        RecentActivityItemDTO: {
+            /**
+             * @description Ledger entry ID
+             * @example 0192f1c4-7a1e-7c3b-9a55-2f1e4d1b7c10
+             */
+            id: string;
+            /**
+             * @description Kind of learning fact
+             * @example LESSON_COMPLETED
+             * @enum {string}
+             */
+            kind: "PAGE_VIEWED" | "LESSON_COMPLETED" | "MODULE_COMPLETED" | "EVALUATION_PASSED" | "ACHIEVEMENT_UNLOCKED";
+            /**
+             * @description When the fact happened (ISO 8601)
+             * @example 2026-10-27T15:04:05.000Z
+             */
+            occurredAt: string;
+            /**
+             * @description ID of the lesson, module, evaluation, page or achievement code the entry refers to
+             * @example lesson-01-intro
+             */
+            refId: string;
+            /**
+             * @description Title of the referenced item, or null when it no longer exists
+             * @example Introducción a la ventilación
+             */
+            title: string | null;
+            /**
+             * @description Experience points of the entry
+             * @example 50
+             */
+            xp: number;
         };
         RecordedTelemetryFrameDTO: {
             /**
@@ -21667,7 +21852,19 @@ export interface components {
              */
             safety?: number;
             /**
-             * @description Rated output: the grade feedback id (GRADE_FEEDBACK), the assistant message id (MESSAGE) or the AI call id of the analysis (NOTES_ANALYSIS)
+             * @description Content scope of the answer; for a tutor message it is derived from its conversation and a different value answers 422
+             * @example LESSON
+             * @enum {string}
+             */
+            scope?: "LESSON" | "MODULE" | "PAGE" | "FREE";
+            /**
+             * @description Where the answer was shown: tutor popup, deepen accordion, assistant page or notes analysis (thesis analytics)
+             * @example POPUP
+             * @enum {string}
+             */
+            surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS";
+            /**
+             * @description Rated output: the grade feedback id (GRADE_FEEDBACK), the assistant message id (MESSAGE; announced by the SSE start event, so a stopped answer can be rated too) or the AI call id of the analysis (NOTES_ANALYSIS)
              * @example cm1x2y3z40000abcd1234efgh
              */
             targetId: string;
@@ -23792,8 +23989,12 @@ export interface operations {
                 to?: string;
                 /** @description Only ratings of this kind of output */
                 targetType?: "GRADE_FEEDBACK" | "MESSAGE" | "NOTES_ANALYSIS" | "SIM_ASSIST";
+                /** @description Only ratings given on this surface */
+                surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS";
+                /** @description Only ratings of answers with this content scope */
+                scope?: "LESSON" | "MODULE" | "PAGE" | "FREE";
                 /** @description Only ratings linked to calls of this use case */
-                useCase?: "GRADE_FEEDBACK" | "NOTES_ANALYSIS" | "PAGE_DEEPEN" | "LESSON_QA" | "FREE_CHAT" | "TOPIC_CHECK" | "SIM_ASSIST";
+                useCase?: "GRADE_FEEDBACK" | "NOTES_ANALYSIS" | "PAGE_DEEPEN" | "LESSON_QA" | "MODULE_QA" | "FREE_CHAT" | "TOPIC_CHECK" | "SIM_ASSIST";
                 /** @description Only ratings linked to calls served by this provider */
                 provider?: string;
                 /** @description Only ratings linked to calls served by this model */
@@ -23881,8 +24082,12 @@ export interface operations {
                 to?: string;
                 /** @description Only ratings of this kind of output */
                 targetType?: "GRADE_FEEDBACK" | "MESSAGE" | "NOTES_ANALYSIS" | "SIM_ASSIST";
+                /** @description Only ratings given on this surface */
+                surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS";
+                /** @description Only ratings of answers with this content scope */
+                scope?: "LESSON" | "MODULE" | "PAGE" | "FREE";
                 /** @description Only ratings linked to calls of this use case */
-                useCase?: "GRADE_FEEDBACK" | "NOTES_ANALYSIS" | "PAGE_DEEPEN" | "LESSON_QA" | "FREE_CHAT" | "TOPIC_CHECK" | "SIM_ASSIST";
+                useCase?: "GRADE_FEEDBACK" | "NOTES_ANALYSIS" | "PAGE_DEEPEN" | "LESSON_QA" | "MODULE_QA" | "FREE_CHAT" | "TOPIC_CHECK" | "SIM_ASSIST";
                 /** @description Only ratings linked to calls served by this provider */
                 provider?: string;
                 /** @description Only ratings linked to calls served by this model */
@@ -23971,7 +24176,7 @@ export interface operations {
                 /** @description Range end (exclusive, ISO 8601); defaults to now. The range spans at most 366 days */
                 to?: string;
                 /** @description Only calls of this use case */
-                useCase?: "GRADE_FEEDBACK" | "NOTES_ANALYSIS" | "PAGE_DEEPEN" | "LESSON_QA" | "FREE_CHAT" | "TOPIC_CHECK" | "SIM_ASSIST";
+                useCase?: "GRADE_FEEDBACK" | "NOTES_ANALYSIS" | "PAGE_DEEPEN" | "LESSON_QA" | "MODULE_QA" | "FREE_CHAT" | "TOPIC_CHECK" | "SIM_ASSIST";
                 /** @description Only calls served by this provider */
                 provider?: string;
                 /** @description Only calls served by this model */
@@ -24056,7 +24261,7 @@ export interface operations {
                 /** @description Range end (exclusive, ISO 8601); defaults to now. The range spans at most 366 days */
                 to?: string;
                 /** @description Only calls of this use case */
-                useCase?: "GRADE_FEEDBACK" | "NOTES_ANALYSIS" | "PAGE_DEEPEN" | "LESSON_QA" | "FREE_CHAT" | "TOPIC_CHECK" | "SIM_ASSIST";
+                useCase?: "GRADE_FEEDBACK" | "NOTES_ANALYSIS" | "PAGE_DEEPEN" | "LESSON_QA" | "MODULE_QA" | "FREE_CHAT" | "TOPIC_CHECK" | "SIM_ASSIST";
                 /** @description Only calls served by this provider */
                 provider?: string;
                 /** @description Only calls served by this model */
@@ -40528,6 +40733,206 @@ export interface operations {
                 };
             };
             /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getActivity: {
+        parameters: {
+            query?: {
+                /** @description First day (America/Bogota, YYYY-MM-DD, inclusive); defaults to 365 days before `to` */
+                from?: string;
+                /** @description Last day (America/Bogota, YYYY-MM-DD, inclusive); defaults to today. At most 366 days from `from` */
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Activity calendar retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: components["schemas"]["ActivityCalendarDTO"];
+                    };
+                };
+            };
+            /** @description Validation error or malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Missing, invalid or expired credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The caller lacks the required permission or is not allowed to act on this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getRecentActivity: {
+        parameters: {
+            query?: {
+                /** @description Maximum number of entries */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Recent activity retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: components["schemas"]["RecentActivityItemDTO"][];
+                    };
+                };
+            };
+            /** @description Validation error or malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Missing, invalid or expired credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The caller lacks the required permission or is not allowed to act on this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getGamification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Gamification statistics retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: components["schemas"]["GamificationStatsDTO"];
+                    };
+                };
+            };
+            /** @description Missing, invalid or expired credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The caller lacks the required permission or is not allowed to act on this resource */
             403: {
                 headers: {
                     [name: string]: unknown;
