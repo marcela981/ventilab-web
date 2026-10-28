@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student space test helpers
-* Descripción: Shared fixtures of the student space tests: backend URL, envelope with pagination, error response, DTO builders (summary, published grade, note, module lesson, curriculum tree, lesson Page) and a renderer that wraps the UI in a fresh SWR cache, an authenticated STUDENT session and the global ToastProvider. Fixtures are typed against the generated schema; the learning tree and Page shapes are cast because the learning DTO aliases are internal to that feature. Depends on Testing Library, msw, SWR, the design-system toast, the session context and the student space DTOs. v1.1 (B1 closure): the fixtures carry the new contract fields (section titles, grade attemptId and module, note module and titles, session case title). v1.2 (B2 closure): the lesson detail builder is replaced by a module lesson builder (lesson filter options).
-* Versión: 1.2
+* Descripción: Shared fixtures of the student space tests: backend URL, envelope with pagination, error response, DTO builders (summary, published grade, note, module lesson, curriculum tree, lesson Page) and a renderer that wraps the UI in a fresh SWR cache, an authenticated STUDENT session and the global ToastProvider. Fixtures are typed against the generated schema; the learning tree and Page shapes are cast because the learning DTO aliases are internal to that feature. Depends on Testing Library, msw, SWR, the design-system toast, the session context and the student space DTOs. v1.1 (B1 closure): the fixtures carry the new contract fields (section titles, grade attemptId and module, note module and titles, session case title). v1.2 (B2 closure): the lesson detail builder is replaced by a module lesson builder (lesson filter options). v1.3 (Block 2 API): the summary builder carries continueLearning (null by default).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -51,6 +51,7 @@ const progress = (id: string | null, percentage: number, completedLessons: numbe
 export function summaryDto(overrides: Partial<MySummaryDTO> = {}): MySummaryDTO {
   return {
     progress: { overall: progress(null, 40, 4, 10), sections: [progress("s1", 75, 3, 4, "Fundamentos"), progress("s2", 17, 1, 6, null)] },
+    continueLearning: null,
     activeEvaluations: [{
       assignmentId: "as-1",
       evaluationId: "ev-1",
