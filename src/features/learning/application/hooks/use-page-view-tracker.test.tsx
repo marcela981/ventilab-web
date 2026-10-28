@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: usePageViewTracker tests
-* Descripción: Fake-timer tests of the page-view rule: one registration after 5 s on the page; "Siguiente" (markViewedNow) before 5 s registers once and the timer does not fire again; unmounting before 5 s registers nothing; a new pageId starts a new visit; preview mode (teacher) never registers; after success the module progress cache takes the response values for that lesson and the affected progress queries and the curriculum tree are invalidated. The service is mocked. v1.1 (W2, Bloque 2): a view that fails with a network error goes to the user's offline progress outbox; a 403 is dropped with a console warning. Depends on vitest, Testing Library, SWR, the session context and the progress outbox key.
-* Versión: 1.1
+* Descripción: Fake-timer tests of the page-view rule: one registration after 5 s on the page; "Siguiente" (markViewedNow) before 5 s registers once and the timer does not fire again; unmounting before 5 s registers nothing; a new pageId starts a new visit; preview mode (teacher) never registers; after success the module progress cache takes the response values for that lesson and the affected progress queries and the curriculum tree are invalidated. The service is mocked. v1.1 (W2, Bloque 2): a view that fails with a network error goes to the user's offline progress outbox; a 403 is dropped with a console warning. Depends on vitest, Testing Library, SWR, the session context and the progress outbox key. v1.2 (W5, Bloque 2): markViewedNow resolves with the view result (null on failure) and onViewed receives it once, from the timer or from Siguiente.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -37,6 +37,7 @@ const viewResult = {
   totalPages: 1,
   lessonCompleted: true,
   lessonJustCompleted: true,
+  moduleCompleted: false,
   firstViewedAt: "2026-10-14T00:00:00.000Z",
   lastVisitedAt: "2026-10-14T00:00:00.000Z",
 };
@@ -146,8 +147,23 @@ describe("usePageViewTracker", () => {
     const { result } = renderTracker();
 
     await act(async() => {
-      await expect(result.current.markViewedNow()).resolves.toBeUndefined();
+      await expect(result.current.markViewedNow()).resolves.toBeNull();
     });
+  });
+
+  it("resolves markViewedNow with the view result and hands it once to onViewed", async() => {
+    const onViewed = vi.fn();
+    const { result } = renderHook(() => usePageViewTracker({ pageId: "p1", moduleId: "m1", onViewed }), {
+      wrapper: makeWrapper("STUDENT", new Map(), "u1"),
+    });
+
+    await advance(PAGE_VIEW_DELAY_MS);
+    await act(async() => {
+      await expect(result.current.markViewedNow()).resolves.toEqual(viewResult);
+    });
+
+    expect(onViewed).toHaveBeenCalledTimes(1);
+    expect(onViewed).toHaveBeenCalledWith(viewResult);
   });
 
   it("updates the cached module progress of that lesson with the response values", async() => {

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Curriculum mapper tests
-* Descripción: Unit tests of the curriculum DTO -> entity mapper: sections, levels and modules are sorted by `order`, lock state and missing prerequisites are kept as the backend sends them, and module lessons are sorted by order. v1.1 (L3): toPageContent keeps the active blocks sorted by order and the Page owners. Depends on vitest. v1.2 (W4, Bloque 2): the section slug, level track and node status are kept.
-* Versión: 1.2
+* Descripción: Unit tests of the curriculum DTO -> entity mapper: sections, levels and modules are sorted by `order`, lock state and missing prerequisites are kept as the backend sends them, and module lessons are sorted by order. v1.1 (L3): toPageContent keeps the active blocks sorted by order and the Page owners. Depends on vitest. v1.2 (W4, Bloque 2): the section slug, level track and node status are kept. v1.3 (W5, Bloque 2): toPageContent keeps the module title and level id; toLessonLock.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,7 +11,7 @@
 
 import { describe, expect, it } from "vitest";
 import { lessonDto, pageDetailDto, pageSectionDto, treeDto, treeLevelDto, treeModuleDto } from "../../application/pages/learning-test-helpers";
-import { toCurriculumTree, toLessonPages, toLessonSummaries, toPageContent } from "./curriculum.mapper";
+import { toCurriculumTree, toLessonLock, toLessonPages, toLessonSummaries, toPageContent } from "./curriculum.mapper";
 
 describe("toCurriculumTree", () => {
   it("sorts every level of the tree by order and keeps the lock state", () => {
@@ -83,8 +83,20 @@ describe("toPageContent", () => {
     ]);
     const page = toPageContent(dto);
 
-    expect(page).toMatchObject({ id: "p1", title: "Página p1", lessonId: "l1", moduleId: "m2" });
+    expect(page).toMatchObject({ id: "p1", title: "Página p1", lessonId: "l1", moduleId: "m2", moduleTitle: "Módulo m2", levelId: "lv1" });
     expect(page.blocks.map((block) => block.id)).toEqual(["b1", "b2"]);
     expect(page.blocks[1]).toMatchObject({ type: "TEXT", title: "Teoría", mediaUrl: "https://cdn/x.png", mediaId: null });
+  });
+});
+
+describe("toLessonLock", () => {
+  it("is null when the lesson is allowed", () => {
+    expect(toLessonLock({ allowed: true, reason: null, missing: [] })).toBeNull();
+  });
+
+  it("keeps the reason and the missing lessons in order", () => {
+    expect(toLessonLock({ allowed: false, reason: "previous_lesson_incomplete", missing: [{ lessonId: "l1", title: "Uno" }] }))
+      .toEqual({ reason: "previous_lesson_incomplete", missing: [{ lessonId: "l1", title: "Uno" }] });
+    expect(toLessonLock({ allowed: false, reason: "module_locked", missing: [] })).toEqual({ reason: "module_locked", missing: [] });
   });
 });

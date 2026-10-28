@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LessonViewerPage
-* Descripción: Page viewer of /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]. Navigation state comes ONLY from the URL: pageNumber is the 1-based position of the backend Page inside its lesson (decision 1). Tree, module lessons and lesson Pages load in parallel; the Page content (`GET /api/pages/{id}`) is requested only once its id is known AND the module is visible for the user. An invalid pageNumber is replaced with Page 1, an out-of-range one with the last Page; an unknown module or a lesson outside the module is "not available". A student on a locked module (module or level locked in the curriculum tree) gets the lock screen with prerequisites; teachers/admins preview everything (PreviewNotice, no lock, no view registration). Breadcrumb Sección > Nivel > Módulo > Lección > Página. Previous/Next cross lesson boundaries (lesson-navigation entity); "Siguiente" registers the page view (fire-and-forget, also after 5 s) and navigates; after the last Page "Finalizar módulo" opens the module completion screen (/learn/modules/[moduleId]?completed=1). Side panel Notas | Profundizar | Preguntas with slots for L4-L6. v1.1 (L4): the "Notas" slot defaults to LessonNotesPanel (the caller's own notes of the lesson, anchored to the visible Page, page numbers resolved with the lesson Pages already loaded here); `panels.notes` still overrides it. The panel is a lazy chunk (React.lazy + retryImport, design-system error boundary, list skeleton fallback) so its MUI dialog/form pieces, the rating widget and the note renderer stay out of the viewer's First Load JS; the Tiptap editor is a further lazy chunk loaded only when a note is created or edited. v1.2 (L5/L6): the "Profundizar" slot defaults to DeepenPanel (AI deepening of the visible Page, keyed by pageId) and "Preguntas" to QuestionsPanel (lesson/module chat, keyed by lessonId), both lazy chunks with the same retryImport + error boundary + skeleton pattern (not exported from the shared feature barrel); `panels.deepen` / `panels.questions` still override them. Depends on next/router, next/head, @shared/design-system, the learning hooks, entities and components. v1.3 (W3, Bloque 2): /learn/modules/[id] is the resume resolver, so "Finalizar módulo" no longer navigates to ?completed=1: it registers the view and shows the ModuleCompletion card in place of the navigation (module progress read only then); the curriculum links point at the module's level in the Currículo tab.
-* Versión: 1.3
+* Descripción: Page viewer of /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]. Navigation state comes ONLY from the URL: pageNumber is the 1-based position of the backend Page inside its lesson (decision 1). Tree, module lessons and lesson Pages load in parallel; the Page content (`GET /api/pages/{id}`) is requested only once its id is known AND the module is visible for the user. An invalid pageNumber is replaced with Page 1, an out-of-range one with the last Page; an unknown module or a lesson outside the module is "not available". A student on a locked module (module or level locked in the curriculum tree) gets the lock screen with prerequisites; teachers/admins preview everything (PreviewNotice, no lock, no view registration). Breadcrumb Sección > Nivel > Módulo > Lección > Página. Previous/Next cross lesson boundaries (lesson-navigation entity); "Siguiente" registers the page view (fire-and-forget, also after 5 s) and navigates; after the last Page "Finalizar módulo" opens the module completion screen (/learn/modules/[moduleId]?completed=1). Side panel Notas | Profundizar | Preguntas with slots for L4-L6. v1.1 (L4): the "Notas" slot defaults to LessonNotesPanel. v1.2 (L5/L6): the "Profundizar" slot defaults to DeepenPanel and "Preguntas" to QuestionsPanel. v1.3 (W3, Bloque 2): "Finalizar módulo" shows the ModuleCompletion card in place of the navigation. v1.4 (W5, Bloque 2): July layout (FLUJOS_JULIO §e.4) without request cascade (DISENO_BLOQUE2 §2.7-2.8). Breadcrumb, lesson title, "Página x de N" with bar and percentage, content, module lesson index on the right (collapsible; Drawer on mobile) and Anterior / Siguiente below; the side panel is gone (its notes / deepen / questions components stay in the feature for the W7 TutorAI popup, which mounts in the `tutorFab` slot). Requests: wave 1 fires together on mount (lesson Pages, module lessons, lesson access and module progress for students, plus the ContentBlocks chunk); wave 2 is only `GET /api/pages/{id}`, which waits for the lesson Pages and nothing else. The curriculum tree is NEVER requested on load (the breadcrumb takes section and level from the tree already cached, if any; the module title comes with the Page); it is fetched only for a module_locked screen (prerequisites) or the module completion card (next module). Locking is the server's: `GET /api/lessons/{id}/access` or a 403 progress.lesson_locked on the Page shows LockedContentScreen with the missing lessons as links; the index locks later incomplete lessons. Once the Page is on screen the next step is prefetched (SWR preload + router.prefetch). Page views (5 s or Siguiente, offline outbox from W2) invalidate the tree only when they complete a lesson. Lesson close: on the last Page of a lesson, a view that completes it (or "Siguiente" on an already completed lesson) opens the "¡Lección Completada!" dialog (lazy chunk) with lazy confetti when it was just completed; "Continuar a la Siguiente Lección" goes to the next lesson with Pages, nothing navigates by itself. Module close: a view answering moduleCompleted (the one that completed the module, or "Finalizar módulo") shows the ModuleCompletion card in place of the navigation. Staff preview: no locks, no view registration, "Editar esta página" link to the Page editor. Depends on next/router, next/head, @shared/design-system, @shared/lib, the learning hooks, entities and components.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,42 +9,49 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import EditIcon from "@mui/icons-material/Edit";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
+import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { EmptyState } from "@shared/design-system/components/empty-state";
-import { ErrorState } from "@shared/design-system/components/error-state";
 import { PageHeader } from "@shared/design-system/components/page-header";
 import { RouteErrorBoundary } from "@shared/design-system/components/route-error-boundary";
-import { CardSkeleton, ListSkeleton } from "@shared/design-system/components/skeleton";
 import { cx } from "@shared/lib/class-names";
 import { retryImport } from "@shared/lib/retry-import";
+import type { PageViewResultDTO } from "../../api/dtos/progress.dto";
 import { LearningBreadcrumb } from "../components/learning-breadcrumb";
-import { LessonPageContent } from "../components/lesson-page-content";
+import { launchLessonConfetti } from "../components/lesson-confetti";
+import { LessonIndex } from "../components/lesson-index";
+import { LessonPageContent, preloadContentBlocks } from "../components/lesson-page-content";
 import { LessonPageNav } from "../components/lesson-page-nav";
-import { LessonSidePanel } from "../components/lesson-side-panel";
-import type { LessonSidePanelSlots } from "../components/lesson-side-panel";
+import { LessonPageProgress } from "../components/lesson-page-progress";
 import { LockedContentScreen } from "../components/locked-content-screen";
 import { ModuleCompletion } from "../components/module-completion";
 import { PreviewNotice } from "../components/preview-notice";
-import type { CurriculumTree, ModuleLocation } from "../entities/curriculum.entity";
+import type { CurriculumTree, PrerequisiteLink } from "../entities/curriculum.entity";
 import { findNextModule, levelPrerequisiteLinks, locateModule, modulePrerequisiteLinks } from "../entities/curriculum.entity";
-import { getLearningErrorMessage } from "../entities/learning-error-messages";
 import {
   buildLessonPageUrl,
   buildLevelUrl,
   buildModuleUrl,
-  buildSectionUrl,
+  buildPageEditorUrl,
   LEARN_HOME_URL,
   parsePageNumber,
 } from "../entities/learning-urls";
-import type { LessonSummary } from "../entities/lesson.entity";
+import { buildLessonIndex, lessonLockFromError } from "../entities/lesson-access.entity";
+import type { LessonLock, LessonPage, LessonSummary } from "../entities/lesson.entity";
 import { findNextStep, findPreviousStep, resolvePageRedirect } from "../entities/lesson-navigation";
-import { useCurriculumTree } from "../hooks/use-curriculum-tree";
+import { useCachedCurriculumTree, useCurriculumTree } from "../hooks/use-curriculum-tree";
+import { useLessonAccess } from "../hooks/use-lesson-access";
 import { useLessonPages } from "../hooks/use-lesson-pages";
 import { useModuleLessons } from "../hooks/use-module-lessons";
+import type { NextPageTarget } from "../hooks/use-next-page-prefetch";
+import { useNextPagePrefetch } from "../hooks/use-next-page-prefetch";
 import { usePageContent } from "../hooks/use-page-content";
 import { usePageViewTracker } from "../hooks/use-page-view-tracker";
 import { usePreviewMode } from "../hooks/use-preview-mode";
@@ -52,34 +59,22 @@ import { useModuleProgress } from "../hooks/use-progress";
 import learningStyles from "../../UI/learning.module.css";
 import styles from "../../UI/lesson-viewer.module.css";
 
-const LessonNotesPanel = lazy(() =>
-  retryImport(() => import("../components/notes/lesson-notes-panel")).then((module) => ({ default: module.LessonNotesPanel })),
-);
-
-const DeepenPanel = lazy(() =>
-  retryImport(() => import("../components/tutor/deepen-panel")).then((module) => ({ default: module.DeepenPanel })),
-);
-
-const QuestionsPanel = lazy(() =>
-  retryImport(() => import("../components/tutor/questions-panel")).then((module) => ({ default: module.QuestionsPanel })),
+const LessonCompleteDialog = lazy(() =>
+  retryImport(() => import("../components/lesson-complete-dialog")).then((module) => ({ default: module.LessonCompleteDialog })),
 );
 
 // TODO(i18n): move to a learning namespace in src/i18n.
 const PAGE_COPY = {
   documentTitle: (title: string) => `${title} | VentyLab`,
   fallbackTitle: "Lección",
-  loading: "Cargando la lección…",
   moduleNotFound: "Módulo no disponible",
   lessonNotFound: "Lección no disponible",
   notFoundDescription: "El contenido no existe o todavía no está publicado.",
   backHome: "Volver a Aprender",
-  backSection: "Volver a la sección",
   backModule: "Volver al módulo",
   backCurriculum: "Volver al currículo",
-  loadErrorTitle: "No se pudo cargar la lección",
-  pageOf: (page: number, total: number) => `Página ${page} de ${total}`,
-  loadingNotes: "Cargando tus notas…",
-  loadingTutor: "Cargando el tutor…",
+  editPage: "Editar esta página",
+  moduleIncomplete: "Aún te faltan páginas o lecciones por completar en este módulo.",
 } as const;
 
 export type LessonViewerPageProps = {
@@ -87,12 +82,60 @@ export type LessonViewerPageProps = {
   lessonId: string
   // Raw [pageNumber] route segment; validated here so an invalid value can be redirected.
   pageParam: string | null
-  // Side panel bodies (L4 notes, L5 deepen, L6 questions); placeholders when absent.
-  panels?: LessonSidePanelSlots
+  // W7: mount point of the TutorAI floating button (and its lazy popup), fixed at the bottom right of the viewer.
+  tutorFab?: ReactNode
 };
 
-function isModuleLocked(location: ModuleLocation): boolean {
-  return location.module.locked || location.level.locked;
+type NavTargets = {
+  previousHref: string | null
+  nextHref: string | null
+  // The next step after this Page is the end of the module ("Finalizar módulo").
+  isLastPage: boolean
+  next: NextPageTarget | null
+};
+
+const NO_NAV: NavTargets = { previousHref: null, nextHref: null, isLastPage: false, next: null };
+
+// completeHref only enables "Finalizar módulo"; the viewer shows the completion card in place.
+function navTargets(moduleId: string, lessons: LessonSummary[] | null, lessonId: string, pageNumber: number | null, pages: LessonPage[] | null, completeHref: string): NavTargets {
+  if (!lessons || pageNumber === null || !pages || pageNumber > pages.length) {
+    return NO_NAV;
+  }
+
+  const position = { lessonId, pageNumber };
+  const previous = findPreviousStep(lessons, position);
+  const next = findNextStep(lessons, position, pages.length);
+  const previousHref = previous ? buildLessonPageUrl(moduleId, previous.lessonId, previous.pageNumber) : null;
+
+  if (!next) {
+    return { ...NO_NAV, previousHref };
+  }
+
+  if (next.kind === "complete") {
+    return { previousHref, nextHref: completeHref, isLastPage: true, next: null };
+  }
+
+  const href = buildLessonPageUrl(moduleId, next.lessonId, next.pageNumber);
+  const sameLesson = next.lessonId === lessonId;
+
+  return {
+    previousHref,
+    nextHref: href,
+    isLastPage: false,
+    next: { href, pageId: sameLesson ? pages[next.pageNumber - 1]?.id ?? null : null, lessonId: sameLesson ? null : next.lessonId },
+  };
+}
+
+function lockPrerequisites(moduleId: string, lock: LessonLock, tree: CurriculumTree | null): PrerequisiteLink[] {
+  if (lock.reason === "previous_lesson_incomplete") {
+    return lock.missing.map((missing) => ({ id: missing.lessonId, title: missing.title, href: buildLessonPageUrl(moduleId, missing.lessonId) }));
+  }
+
+  const location = tree ? locateModule(tree, moduleId) : null;
+
+  return tree && location
+    ? [...modulePrerequisiteLinks(tree, location.module.missingPrerequisites), ...levelPrerequisiteLinks(tree, location.level.missingPrerequisites)]
+    : [];
 }
 
 function NotFound({ title, href, label }: { title: string, href: string, label: string }) {
@@ -106,67 +149,30 @@ function NotFound({ title, href, label }: { title: string, href: string, label: 
   );
 }
 
-function LockedModule({ tree, location }: { tree: CurriculumTree, location: ModuleLocation }) {
-  const { section, level, module } = location;
-
-  return (
-    <LockedContentScreen
-      title={module.title}
-      prerequisites={[
-        ...modulePrerequisiteLinks(tree, module.missingPrerequisites),
-        ...levelPrerequisiteLinks(tree, level.missingPrerequisites),
-      ]}
-      backHref={section ? buildSectionUrl(section.id) : LEARN_HOME_URL}
-      backLabel={section ? PAGE_COPY.backSection : PAGE_COPY.backHome}
-    />
-  );
-}
-
-type NavTargets = {
-  previousHref: string | null
-  nextHref: string | null
-  isLastPage: boolean
-};
-
-// completeHref: target of "Finalizar módulo" (the viewer shows the completion card in place; the href only enables the button).
-function navTargets(moduleId: string, lessons: LessonSummary[] | null, lessonId: string, pageNumber: number | null, pageCount: number | null, completeHref: string): NavTargets {
-  if (!lessons || pageNumber === null || pageCount === null || pageNumber > pageCount) {
-    return { previousHref: null, nextHref: null, isLastPage: false };
-  }
-
-  const position = { lessonId, pageNumber };
-  const previous = findPreviousStep(lessons, position);
-  const next = findNextStep(lessons, position, pageCount);
-
-  return {
-    previousHref: previous ? buildLessonPageUrl(moduleId, previous.lessonId, previous.pageNumber) : null,
-    nextHref: next ? (next.kind === "complete" ? completeHref : buildLessonPageUrl(moduleId, next.lessonId, next.pageNumber)) : null,
-    isLastPage: next?.kind === "complete",
-  };
-}
-
-export function LessonViewerPage({ moduleId, lessonId, pageParam, panels }: LessonViewerPageProps) {
+export function LessonViewerPage({ moduleId, lessonId, pageParam, tutorFab }: LessonViewerPageProps) {
   const router = useRouter();
   const isPreview = usePreviewMode();
-  // Fired together on mount: none of these queries waits for another one's data.
-  const treeQuery = useCurriculumTree();
-  const lessonsQuery = useModuleLessons(moduleId);
-  const pagesQuery = useLessonPages(lessonId);
   const pageNumber = parsePageNumber(pageParam);
-  const { tree } = treeQuery;
-  const { lessons } = lessonsQuery;
+  // Wave 1: fired together on mount, none waits for another one's data.
+  const pagesQuery = useLessonPages(lessonId);
+  const lessonsQuery = useModuleLessons(moduleId);
+  const access = useLessonAccess(isPreview ? null : lessonId);
+  const moduleProgress = useModuleProgress(isPreview ? null : moduleId);
+  const cachedTree = useCachedCurriculumTree();
+
+  useEffect(() => {
+    preloadContentBlocks();
+  }, []);
+
   const { pages } = pagesQuery;
-  const location = tree ? locateModule(tree, moduleId) : null;
+  const { lessons } = lessonsQuery;
   const lesson = lessons?.find((item) => item.id === lessonId) ?? null;
-  // BACKEND GAP (odd/tasks/learning-content-editor.md, "Prerequisite locks are NOT enforced on content reads"):
-  // GET /api/pages/{id} answers 200 for locked modules, so the lock is enforced here: the content of a locked
-  // module is never requested nor rendered for a student, whatever the backend would return.
-  const locked = location !== null && isModuleLocked(location) && !isPreview;
-  const canRead = location !== null && lesson !== null && !locked;
   const pageSummary = pages && pageNumber !== null ? pages[pageNumber - 1] ?? null : null;
-  const contentQuery = usePageContent(canRead && pageSummary ? pageSummary.id : null);
-  const visiblePage = canRead && pageSummary && contentQuery.page?.id === pageSummary.id ? contentQuery.page : null;
-  const tracker = usePageViewTracker({ pageId: visiblePage?.id ?? null, moduleId });
+  const accessLock = access.lock ?? null;
+  // Wave 2: the Page waits only for the lesson Pages (its id); the server rejects it with 403 if the lesson is locked.
+  const contentQuery = usePageContent(pageSummary && !accessLock ? pageSummary.id : null);
+  const lock = accessLock ?? lessonLockFromError(contentQuery.error);
+  const visiblePage = !lock && pageSummary && contentQuery.page?.id === pageSummary.id ? contentQuery.page : null;
   const redirectPage = pages ? resolvePageRedirect(pageNumber, pages.length) : null;
   const redirectHref = redirectPage === null ? null : buildLessonPageUrl(moduleId, lessonId, redirectPage);
 
@@ -176,116 +182,206 @@ export function LessonViewerPage({ moduleId, lessonId, pageParam, panels }: Less
     }
   }, [redirectHref, router]);
 
-  const title = visiblePage?.title ?? lesson?.title ?? PAGE_COPY.fallbackTitle;
-  const curriculumHref = location ? buildLevelUrl(location.level.id) : LEARN_HOME_URL;
-  const nav = navTargets(moduleId, lessons, lessonId, pageNumber, pages?.length ?? null, curriculumHref);
-  // Page on which "Finalizar módulo" was pressed: the completion card replaces the navigation there.
-  const [finishedPageId, setFinishedPageId] = useState<string | null>(null);
-  const finished = visiblePage !== null && finishedPageId === visiblePage.id;
-  // Requested only after finishing (no extra request on page load); refreshed by the page-view invalidation.
-  const completionProgress = useModuleProgress(finished ? moduleId : null);
+  const cachedLocation = cachedTree ? locateModule(cachedTree, moduleId) : null;
+  const moduleTitle = visiblePage?.moduleTitle ?? cachedLocation?.module.title ?? null;
+  const levelId = visiblePage?.levelId ?? cachedLocation?.level.id ?? null;
+  const curriculumHref = levelId ? buildLevelUrl(levelId) : LEARN_HOME_URL;
+  const nav = navTargets(moduleId, lessons, lessonId, pageNumber, pages, curriculumHref);
+  const isLessonEnd = pages !== null && pageNumber !== null && pages.length > 0 && pageNumber === pages.length;
+
+  // Completion state, keyed by the Page it belongs to (a new Page resets it).
+  const [dialogPageId, setDialogPageId] = useState<string | null>(null);
+  const [dialogLoaded, setDialogLoaded] = useState(false);
+  const [moduleDonePageId, setModuleDonePageId] = useState<string | null>(null);
+  const [incompletePageId, setIncompletePageId] = useState<string | null>(null);
+  const visiblePageId = visiblePage?.id ?? null;
+  const moduleDone = visiblePageId !== null && moduleDonePageId === visiblePageId;
+  // Fetched only for the screens that need it, never on load.
+  const treeQuery = useCurriculumTree(lock?.reason === "module_locked" || moduleDone);
+  const tree = treeQuery.tree ?? cachedTree;
+
+  const visiblePageIdRef = useRef(visiblePageId);
+  const endsRef = useRef({ isLessonEnd, isModuleEnd: nav.isLastPage });
+
+  useEffect(() => {
+    visiblePageIdRef.current = visiblePageId;
+    endsRef.current = { isLessonEnd, isModuleEnd: nav.isLastPage };
+  }, [visiblePageId, isLessonEnd, nav.isLastPage]);
+
+  // The same result may arrive twice (timer callback and Siguiente): celebrate a Page once.
+  const celebratedPageIdRef = useRef<string | null>(null);
+  const celebrate = useCallback((result: PageViewResultDTO) => {
+    if (result.lessonJustCompleted && celebratedPageIdRef.current !== result.pageId) {
+      celebratedPageIdRef.current = result.pageId;
+      void launchLessonConfetti();
+    }
+  }, []);
+
+  const openDialog = useCallback((pageId: string) => {
+    setDialogLoaded(true);
+    setDialogPageId(pageId);
+  }, []);
+
+  // Applies a view result of the visible Page; explicit = "Siguiente"/"Finalizar módulo". Returns whether it took over.
+  const applyViewResult = useCallback((result: PageViewResultDTO, explicit: boolean): boolean => {
+    const { isLessonEnd: lessonEnd, isModuleEnd: moduleEnd } = endsRef.current;
+
+    if (result.pageId !== visiblePageIdRef.current) {
+      return false;
+    }
+
+    if (result.moduleCompleted && (result.lessonJustCompleted || (explicit && moduleEnd))) {
+      setModuleDonePageId(result.pageId);
+      celebrate(result);
+
+      return true;
+    }
+
+    if (explicit && moduleEnd) {
+      setIncompletePageId(result.pageId);
+
+      return true;
+    }
+
+    if (lessonEnd && (result.lessonJustCompleted || (explicit && result.lessonCompleted))) {
+      openDialog(result.pageId);
+      celebrate(result);
+
+      return true;
+    }
+
+    return false;
+  }, [celebrate, openDialog]);
+
+  const handleViewed = useCallback((result: PageViewResultDTO) => {
+    applyViewResult(result, false);
+  }, [applyViewResult]);
+
+  const tracker = usePageViewTracker({ pageId: visiblePageId, moduleId, onViewed: handleViewed });
+
+  useNextPagePrefetch(visiblePageId, nav.next);
 
   const handleNext = (href: string) => {
-    // Fire-and-forget: markViewedNow never rejects and registers at most once per visit.
-    void tracker.markViewedNow();
+    if (!visiblePage) {
+      return;
+    }
 
-    if (nav.isLastPage && visiblePage) {
-      setFinishedPageId(visiblePage.id);
+    if (isPreview) {
+      if (nav.isLastPage) {
+        setModuleDonePageId(visiblePage.id);
+      } else {
+        void router.push(href);
+      }
 
       return;
     }
 
-    void router.push(href);
+    if (!isLessonEnd) {
+      // Fire-and-forget: markViewedNow never rejects and registers at most once per visit.
+      void tracker.markViewedNow();
+      void router.push(href);
+
+      return;
+    }
+
+    // Last Page of the lesson: the view result decides between the dialog, the module card and navigating.
+    void tracker.markViewedNow().then((result) => {
+      if (result && applyViewResult(result, true)) {
+        return;
+      }
+
+      if (!nav.isLastPage) {
+        void router.push(href);
+      }
+    });
   };
 
-  const renderBody = () => {
-    if (!tree) {
-      return treeQuery.error && !treeQuery.isLoading
-        ? <ErrorState title={PAGE_COPY.loadErrorTitle} description={getLearningErrorMessage(treeQuery.error)} onRetry={() => void treeQuery.reload()} />
-        : <CardSkeleton label={PAGE_COPY.loading} />;
-    }
+  const completedLessonIds = useMemo(() => {
+    const progress = moduleProgress.progress;
 
-    if (!location) {
-      return <NotFound title={PAGE_COPY.moduleNotFound} href={LEARN_HOME_URL} label={PAGE_COPY.backHome} />;
-    }
+    return progress ? new Set(progress.lessons.filter((item) => item.completed).map((item) => item.lessonId)) : null;
+  }, [moduleProgress.progress]);
+  const indexEntries = lessons ? buildLessonIndex({ lessons, completedLessonIds, currentLessonId: lessonId, preview: isPreview }) : null;
+  const title = lesson?.title ?? visiblePage?.title ?? PAGE_COPY.fallbackTitle;
+  const dialogOpen = visiblePageId !== null && dialogPageId === visiblePageId;
+  const continueHref = nav.isLastPage ? null : nav.nextHref;
 
-    const { section, level, module } = location;
-    const breadcrumb = (
-      <LearningBreadcrumb section={section} level={level} module={module} lesson={lesson} pageNumber={lesson ? pageNumber : null} />
-    );
-
-    if (locked) {
+  const renderMain = () => {
+    if (lock) {
       return (
-        <>
-          {breadcrumb}
-          <PageHeader title={module.title} />
-          <LockedModule tree={tree} location={location} />
-        </>
+        <LockedContentScreen
+          title={lock.reason === "module_locked" ? (moduleTitle ?? title) : title}
+          prerequisites={lockPrerequisites(moduleId, lock, tree)}
+          backHref={curriculumHref}
+          backLabel={levelId ? PAGE_COPY.backCurriculum : PAGE_COPY.backHome}
+        />
       );
     }
 
-    if (lessons && !lesson) {
-      return <NotFound title={PAGE_COPY.lessonNotFound} href={buildModuleUrl(moduleId)} label={PAGE_COPY.backModule} />;
-    }
-
-    const contentError = lessonsQuery.error ?? pagesQuery.error ?? contentQuery.error;
+    const contentError = pagesQuery.error ?? contentQuery.error;
     const retry = () => {
-      void lessonsQuery.reload();
       void pagesQuery.reload();
       void contentQuery.reload();
     };
 
     return (
       <>
-        {breadcrumb}
-        <PageHeader
-          title={lesson?.title ?? module.title}
-          subtitle={pages && pageNumber !== null && redirectHref === null && pages.length > 0 ? PAGE_COPY.pageOf(pageNumber, pages.length) : null}
+        <LessonPageContent
+          page={visiblePage}
+          isEmpty={pages !== null && pages.length === 0}
+          error={visiblePage ? null : contentError}
+          onRetry={retry}
         />
+        {visiblePage && incompletePageId === visiblePage.id && !moduleDone ? (
+          <Alert severity="info" className={cx(learningStyles.notice)}>{PAGE_COPY.moduleIncomplete}</Alert>
+        ) : null}
+        {visiblePage && !moduleDone ? <LessonPageNav previousHref={nav.previousHref} nextHref={nav.nextHref} isLastPage={nav.isLastPage} onNext={handleNext} /> : null}
+        {moduleDone ? (
+          <ModuleCompletion
+            title={moduleTitle ?? title}
+            progress={moduleProgress.progress?.overall ?? null}
+            nextModule={tree ? findNextModule(tree, { ignoreLocks: isPreview, excludeModuleId: moduleId }) : null}
+            backHref={curriculumHref}
+            backLabel={PAGE_COPY.backCurriculum}
+          />
+        ) : null}
+      </>
+    );
+  };
+
+  const renderBody = () => {
+    if (lessonsQuery.error?.status === 404) {
+      return <NotFound title={PAGE_COPY.moduleNotFound} href={LEARN_HOME_URL} label={PAGE_COPY.backHome} />;
+    }
+
+    if (lessons && !lesson) {
+      return <NotFound title={PAGE_COPY.lessonNotFound} href={buildModuleUrl(moduleId)} label={PAGE_COPY.backModule} />;
+    }
+
+    const showProgress = !lock && pages !== null && pages.length > 0 && pageNumber !== null && redirectHref === null;
+
+    return (
+      <>
+        <LearningBreadcrumb
+          section={cachedLocation?.section ?? null}
+          level={cachedLocation?.level ?? null}
+          module={moduleTitle ? { id: moduleId, title: moduleTitle } : null}
+          lesson={lesson}
+          pageNumber={lesson ? pageNumber : null}
+        />
+        <PageHeader
+          title={title}
+          actions={isPreview && pageSummary ? (
+            <Button component={Link} href={buildPageEditorUrl(pageSummary.id)} variant="outlined" startIcon={<EditIcon />}>
+              {PAGE_COPY.editPage}
+            </Button>
+          ) : null}
+        />
+        {showProgress && pageNumber !== null && pages ? <LessonPageProgress pageNumber={pageNumber} pageCount={pages.length} /> : null}
         {isPreview ? <PreviewNotice /> : null}
         <div className={cx(styles.layout)}>
-          <div className={cx(styles.main)}>
-            <LessonPageContent
-              page={visiblePage}
-              isEmpty={pages !== null && pages.length === 0}
-              error={visiblePage ? null : contentError}
-              onRetry={retry}
-            />
-            {visiblePage && !finished ? <LessonPageNav {...nav} onNext={handleNext} /> : null}
-            {finished ? (
-              <ModuleCompletion
-                title={module.title}
-                progress={completionProgress.progress?.overall ?? null}
-                nextModule={findNextModule(tree, { ignoreLocks: isPreview, excludeModuleId: module.id })}
-                backHref={curriculumHref}
-                backLabel={PAGE_COPY.backCurriculum}
-              />
-            ) : null}
-          </div>
-          <LessonSidePanel
-            {...panels}
-            notes={panels?.notes ?? (
-              <RouteErrorBoundary resetKey={lessonId}>
-                <Suspense fallback={<ListSkeleton label={PAGE_COPY.loadingNotes} />}>
-                  <LessonNotesPanel key={lessonId} moduleId={moduleId} lessonId={lessonId} currentPageId={visiblePage?.id ?? null} pages={pages} />
-                </Suspense>
-              </RouteErrorBoundary>
-            )}
-            deepen={panels?.deepen ?? (
-              <RouteErrorBoundary resetKey={lessonId}>
-                <Suspense fallback={<ListSkeleton label={PAGE_COPY.loadingTutor} />}>
-                  <DeepenPanel pageId={visiblePage?.id ?? null} />
-                </Suspense>
-              </RouteErrorBoundary>
-            )}
-            questions={panels?.questions ?? (
-              <RouteErrorBoundary resetKey={lessonId}>
-                <Suspense fallback={<ListSkeleton label={PAGE_COPY.loadingTutor} />}>
-                  <QuestionsPanel key={lessonId} moduleId={moduleId} lessonId={lessonId} currentPageId={visiblePage?.id ?? null} />
-                </Suspense>
-              </RouteErrorBoundary>
-            )}
-          />
+          <div className={cx(styles.main)}>{renderMain()}</div>
+          {indexEntries ? <LessonIndex moduleId={moduleId} entries={indexEntries} /> : null}
         </div>
       </>
     );
@@ -297,6 +393,21 @@ export function LessonViewerPage({ moduleId, lessonId, pageParam, panels }: Less
         <title>{PAGE_COPY.documentTitle(title)}</title>
       </Head>
       {renderBody()}
+      {dialogLoaded ? (
+        <RouteErrorBoundary resetKey={lessonId}>
+          <Suspense fallback={null}>
+            <LessonCompleteDialog
+              open={dialogOpen}
+              onClose={() => setDialogPageId(null)}
+              onContinue={continueHref ? () => {
+                setDialogPageId(null);
+                void router.push(continueHref);
+              } : null}
+            />
+          </Suspense>
+        </RouteErrorBoundary>
+      ) : null}
+      {tutorFab ? <div className={cx(styles.tutorFabSlot)}>{tutorFab}</div> : null}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Page-view invalidation tests
-* Descripción: Proves end to end (msw) that a successful page view really revalidates the cached module, level, section and summary progress and the curriculum tree: each mounted query is requested again after markViewedNow, and a failed registration revalidates nothing. Guards the key matching of invalidateApiQueries (path template vs. cached keys). Depends on vitest, Testing Library, msw and the learning test helpers.
-* Versión: 1.0
+* Descripción: Proves end to end (msw) that a successful page view really revalidates the cached module, level, section and summary progress and the curriculum tree: each mounted query is requested again after markViewedNow, and a failed registration revalidates nothing. v1.1 (W5, Bloque 2): the curriculum tree and the module progress are revalidated only when the view completed a lesson (lessonJustCompleted); any other view revalidates only the level, section and summary progress. Guards the key matching of invalidateApiQueries (path template vs. cached keys). Depends on vitest, Testing Library, msw and the learning test helpers.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -42,6 +42,7 @@ const viewResult = {
   totalPages: 1,
   lessonCompleted: true,
   lessonJustCompleted: true,
+  moduleCompleted: false,
   firstViewedAt: "2026-10-14T00:00:00.000Z",
   lastVisitedAt: "2026-10-14T00:00:00.000Z",
 };
@@ -126,7 +127,7 @@ async function renderLoaded() {
 }
 
 describe("page-view invalidation", () => {
-  it("refetches the progress queries and the curriculum tree after a successful view", async() => {
+  it("refetches the progress queries and the curriculum tree after a view that completes a lesson", async() => {
     const { result } = await renderLoaded();
 
     await act(async() => {
@@ -136,6 +137,24 @@ describe("page-view invalidation", () => {
     await waitFor(() => {
       expect(NAMES.map((name) => counts.get(name) ?? 0)).toEqual([2, 2, 2, 2, 2]);
     });
+  });
+
+  it("does not refetch the curriculum tree nor the module progress when the view completes no lesson", async() => {
+    server.use(http.post(apiUrl("/api/progress/pages/:pageId/view"), () => HttpResponse.json(envelope({ ...viewResult, lessonCompleted: false, lessonJustCompleted: false }))));
+    const { result } = await renderLoaded();
+
+    await act(async() => {
+      await result.current.tracker.markViewedNow();
+    });
+
+    await waitFor(() => {
+      expect(NAMES.map((name) => counts.get(name) ?? 0)).toEqual([1, 2, 2, 2, 1]);
+    });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
+    expect(counts.get("tree")).toBe(1);
+    expect(counts.get("module")).toBe(1);
   });
 
   it("revalidates nothing when the registration fails", async() => {
