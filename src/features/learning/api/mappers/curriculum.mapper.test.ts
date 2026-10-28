@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Curriculum mapper tests
-* Descripción: Unit tests of the curriculum DTO -> entity mapper: sections, levels and modules are sorted by `order`, lock state and missing prerequisites are kept as the backend sends them, and module lessons are sorted by order. v1.1 (L3): toPageContent keeps the active blocks sorted by order and the Page owners. Depends on vitest.
-* Versión: 1.1
+* Descripción: Unit tests of the curriculum DTO -> entity mapper: sections, levels and modules are sorted by `order`, lock state and missing prerequisites are kept as the backend sends them, and module lessons are sorted by order. v1.1 (L3): toPageContent keeps the active blocks sorted by order and the Page owners. Depends on vitest. v1.2 (W4, Bloque 2): the section slug, level track and node status are kept.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,7 +10,7 @@
 */
 
 import { describe, expect, it } from "vitest";
-import { lessonDto, pageDetailDto, pageSectionDto, treeDto } from "../../application/pages/learning-test-helpers";
+import { lessonDto, pageDetailDto, pageSectionDto, treeDto, treeLevelDto, treeModuleDto } from "../../application/pages/learning-test-helpers";
 import { toCurriculumTree, toLessonPages, toLessonSummaries, toPageContent } from "./curriculum.mapper";
 
 describe("toCurriculumTree", () => {
@@ -26,6 +26,18 @@ describe("toCurriculumTree", () => {
     expect(locked?.locked).toBe(true);
     expect(locked?.missingPrerequisites).toEqual([{ id: "lv1", title: "Nivel básico" }]);
     expect(tree.unsectionedLevels.map((level) => level.id)).toEqual(["lv9"]);
+  });
+
+  it("keeps the section slug, the level track and the status of every node", () => {
+    const dto = treeDto();
+
+    dto.unsectionedLevels = [treeLevelDto("lv9", 1, null, [treeModuleDto("m9", 1, { status: "DRAFT", lessonCount: 0 })], { track: "ventylab", status: "DRAFT" })];
+
+    const tree = toCurriculumTree(dto);
+
+    expect(tree.sections[0]).toMatchObject({ id: "s1", slug: "s1", status: "PUBLISHED" });
+    expect(tree.unsectionedLevels[0]).toMatchObject({ track: "ventylab", status: "DRAFT" });
+    expect(tree.unsectionedLevels[0]?.modules[0]).toMatchObject({ status: "DRAFT", lessonCount: 0 });
   });
 });
 

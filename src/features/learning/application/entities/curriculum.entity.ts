@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Curriculum entity
-* Descripción: Frontend model of the student curriculum tree (sections -> levels -> modules, plus levels without section) with the backend lock state (locked, missingPrerequisites, completed), and pure helpers: locate a section, level or module with its parents (breadcrumb and locks), resolve the links of missing prerequisites (level -> its section anchor, module -> its page; references the tree does not know get no link) and pick the module for "Continuar donde quedé" (first unlocked, not completed module in curriculum order; preview mode ignores locks). v1.1 (L3): findNextModule takes excludeModuleId, so the module completion screen never proposes the module just completed while the backend tree still reports it as not completed. Depends on learning-urls. v1.2 (W3, Bloque 2): level prerequisite links open the Currículo tab at the level (buildLevelUrl without section).
-* Versión: 1.2
+* Descripción: Frontend model of the student curriculum tree (sections -> levels -> modules, plus levels without section) with the backend lock state (locked, missingPrerequisites, completed), and pure helpers: locate a section, level or module with its parents (breadcrumb and locks), resolve the links of missing prerequisites (level -> its section anchor, module -> its page; references the tree does not know get no link) and pick the module for "Continuar donde quedé" (first unlocked, not completed module in curriculum order; preview mode ignores locks). v1.1 (L3): findNextModule takes excludeModuleId, so the module completion screen never proposes the module just completed while the backend tree still reports it as not completed. Depends on learning-urls. v1.2 (W3, Bloque 2): level prerequisite links open the Currículo tab at the level (buildLevelUrl without section). v1.3 (W4, Bloque 2): the tree keeps the publication status of sections, levels and modules, the level track and the section slug (the Currículo accordions, drafts and coming-soon modules depend on them).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,12 +20,16 @@ export type PrerequisiteLink = NamedRef & {
   href: string | null
 };
 
+/** Publication status of a curriculum node (students only receive PUBLISHED content). */
+export type ContentStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
+
 export type CurriculumModule = {
   id: string
   title: string
   description: string | null
   order: number
   lessonCount: number
+  status: ContentStatus
   locked: boolean
   completed: boolean
   missingPrerequisites: NamedRef[]
@@ -37,6 +41,9 @@ export type CurriculumLevel = {
   description: string | null
   order: number
   sectionId: string | null
+  // Curriculum track ("mecanica", "ventylab"): splits the Currículo accordions.
+  track: string
+  status: ContentStatus
   locked: boolean
   completed: boolean
   missingPrerequisites: NamedRef[]
@@ -45,6 +52,8 @@ export type CurriculumLevel = {
 
 export type CurriculumSection = {
   id: string
+  slug: string
+  status: ContentStatus
   title: string
   description: string | null
   order: number

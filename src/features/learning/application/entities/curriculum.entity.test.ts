@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Curriculum entity tests
-* Descripción: Unit tests of the curriculum tree helpers: locating a section, level and module (with their parents, for the breadcrumb and the locks), resolving the links of missing prerequisites (levels link to their section anchor, modules to their page, unknown references have no link) and picking the module for "Continuar donde quedé" (first unlocked, not completed module in curriculum order; preview ignores locks). v1.1 (L3): excludeModuleId skips the module just completed. Depends on vitest. v1.2 (W3, Bloque 2): level prerequisite links point at the Currículo tab.
-* Versión: 1.2
+* Descripción: Unit tests of the curriculum tree helpers: locating a section, level and module (with their parents, for the breadcrumb and the locks), resolving the links of missing prerequisites (levels link to their section anchor, modules to their page, unknown references have no link) and picking the module for "Continuar donde quedé" (first unlocked, not completed module in curriculum order; preview ignores locks). v1.1 (L3): excludeModuleId skips the module just completed. Depends on vitest. v1.2 (W3, Bloque 2): level prerequisite links point at the Currículo tab. v1.3 (W4, Bloque 2): fixtures carry track, slug and status.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,6 +27,7 @@ function moduleOf(id: string, overrides: Partial<CurriculumModule> = {}): Curric
     description: null,
     order: 1,
     lessonCount: 2,
+    status: "PUBLISHED",
     locked: false,
     completed: false,
     missingPrerequisites: [],
@@ -41,6 +42,8 @@ function levelOf(id: string, sectionId: string | null, modules: CurriculumModule
     description: null,
     order: 1,
     sectionId,
+    track: "mecanica",
+    status: "PUBLISHED",
     locked: false,
     completed: false,
     missingPrerequisites: [],
@@ -53,6 +56,8 @@ const tree: CurriculumTree = {
   sections: [
     {
       id: "s1",
+      slug: "s1",
+      status: "PUBLISHED",
       title: "Fundamentos",
       description: null,
       order: 1,
