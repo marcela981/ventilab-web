@@ -29,6 +29,7 @@
     "next-env.d.ts",
     "vitest.config.ts",
     "vitest.setup.ts",
+    "vitest.environment.ts",
     "playwright.config.ts",
     "e2e/**/*",
     "src/shared/api-client/**/*",
