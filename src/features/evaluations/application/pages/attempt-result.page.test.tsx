@@ -111,7 +111,7 @@ function publishedAttempt(overrides: Partial<StudentAttemptDetailDTO> = {}): Stu
 }
 
 const feedbackItem = (id: string, questionId: string | null, status: "PENDING" | "READY" | "FAILED", source: "LLM" | "DETERMINISTIC" | null = null, content: string | null = null) =>
-  ({ id, questionId, status, source, content });
+  ({ id, questionId, status, source, content, myRating: null });
 
 function renderResult(socket?: FakeSocket) {
   return renderWithSession(<AttemptResultPage evaluationId="e1" attemptId="at1" />, socket ? { socket } : {});

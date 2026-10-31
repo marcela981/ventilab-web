@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation builder entities
-* Descripción: Domain types of the evaluation builder (BuilderEvaluation from `GET /api/evaluations/{id}` with its scenarios, questions, options, media, readiness issues, usage and the structureLocked flag) and the pure rules of its metadata form: the defaults of a new evaluation (showResultsImmediately true for QUIZ, false for EXAM and WORKSHOP, applied on a type change only while creating), the form built from a loaded evaluation, validation mirroring the backend DTOs (title required and at most 200 characters, duration and max attempts integers of at least 1, duration optional), the create body and the update body holding only the changed fields (null clears description, duration, module and level), the dirty check and the level/module choices of the curriculum (a module belongs to one level). No dependencies besides the builder rich text helpers. v1.1 (B4, D7): duration and attempts are read with the shared parseDecimal in integer mode (no separator, so "1.000" is never 1).
-* Versión: 1.1
+* Descripción: Domain types of the evaluation builder (BuilderEvaluation from `GET /api/evaluations/{id}` with its scenarios, questions, options, media, readiness issues, usage and the structureLocked flag) and the pure rules of its metadata form: the defaults of a new evaluation (showResultsImmediately true for QUIZ, false for EXAM and WORKSHOP, applied on a type change only while creating), the form built from a loaded evaluation, validation mirroring the backend DTOs (title required and at most 200 characters, duration and max attempts integers of at least 1, duration optional), the create body and the update body holding only the changed fields (null clears description, duration, module and level), the dirty check and the level/module choices of the curriculum (a module belongs to one level). No dependencies besides the builder rich text helpers. v1.1 (B4, D7): duration and attempts are read with the shared parseDecimal in integer mode (no separator, so "1.000" is never 1). v1.2 (Bloque 3): BuilderQuestion carries the hint (WORKSHOP only for students).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -40,6 +40,8 @@ export type BuilderQuestion = {
   prompt: RichDoc
   points: number
   explanation: string | null
+  // Shown to students in WORKSHOP only.
+  hint: string | null
   mediaIds: string[]
   media: BuilderMedia[]
   clinicalCaseId: string | null

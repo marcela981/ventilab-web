@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluations test helpers
-* Descripción: Shared fixtures of the evaluations tests: backend envelope and error bodies, factories of MyEvaluationDTO and MyEvaluationAttemptDTO, a fake socket that records listeners and lets a test emit server events, and a render helper that mounts a page inside an isolated SWR cache, a session context with the given role and a realtime context with the fake socket (no AuthProvider, no network for the session or the socket). Test-only code. Depends on Testing Library, msw, SWR, the session and realtime contexts and the evaluations DTOs. v1.1 (E2): the render helper also mounts the global ToastProvider (as pages/_app.js does), plus factories of the student attempt detail, question, option and scenario DTOs (without isCorrect, explanation, rubric or earnedScore, as the backend sends them before publication).
-* Versión: 1.1
+* Descripción: Shared fixtures of the evaluations tests: backend envelope and error bodies, factories of MyEvaluationDTO and MyEvaluationAttemptDTO, a fake socket that records listeners and lets a test emit server events, and a render helper that mounts a page inside an isolated SWR cache, a session context with the given role and a realtime context with the fake socket (no AuthProvider, no network for the session or the socket). Test-only code. Depends on Testing Library, msw, SWR, the session and realtime contexts and the evaluations DTOs. v1.1 (E2): the render helper also mounts the global ToastProvider (as pages/_app.js does), plus factories of the student attempt detail, question, option and scenario DTOs (without isCorrect, explanation, rubric or earnedScore, as the backend sends them before publication). v1.2 (Bloque 3): fixtures carry attemptsAllowed, the curriculum placement, hint, reveal and partialClosedScore.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -73,6 +73,7 @@ export function myEvaluationDto(
     endsAt: "2026-10-20T23:00:00.000Z",
     attempts: [],
     canStart: true,
+    attemptsAllowed: evaluation?.maxAttempts ?? 2,
     ...rest,
     evaluation: evaluation === null ? null : {
       id: evaluationId,
@@ -82,6 +83,11 @@ export function myEvaluationDto(
       durationMinutes: 30,
       maxAttempts: 2,
       questionCount: 5,
+      moduleId: null,
+      levelId: null,
+      levelTitle: null,
+      levelOrder: null,
+      track: null,
       ...evaluation,
     },
   };
@@ -113,6 +119,8 @@ export function questionDto(
     clinicalCaseId: null,
     options: [],
     answer: null,
+    hint: null,
+    reveal: null,
     ...rest,
   };
 }
@@ -135,6 +143,7 @@ export function attemptDetailDto(id: string, overrides: Partial<StudentAttemptDe
     evaluation: { id: "e1", title: "Quiz de PEEP", type: "QUIZ", description: null },
     scenarios: [],
     questions: [],
+    partialClosedScore: null,
     ...overrides,
   };
 }

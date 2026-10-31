@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Attempt feedback and result entities
-* Descripción: Domain types and pure rules of the attempt result page. AttemptFeedback is the AI feedback of a published attempt (overall item plus one item per question, each PENDING|READY|FAILED with source LLM|DETERMINISTIC|null; the item id is the GRADE_FEEDBACK rating target). Rules: whether any item is still pending, the feedback item of a question, the spaced polling delay used while feedback is pending (10 s, 20 s, 40 s… capped at 60 s) and the parsing of a published simulation rubric (`{criteria:[{parameter, expectedValue, min?, max?, priority?}], justification?}`, the real backend schema) into display rows; unknown or malformed criteria are skipped. No dependencies.
-* Versión: 1.0
+* Descripción: Domain types and pure rules of the attempt result page. AttemptFeedback is the AI feedback of a published attempt (overall item plus one item per question, each PENDING|READY|FAILED with source LLM|DETERMINISTIC|null; the item id is the GRADE_FEEDBACK rating target). Rules: whether any item is still pending, the feedback item of a question, the spaced polling delay used while feedback is pending (10 s, 20 s, 40 s… capped at 60 s) and the parsing of a published simulation rubric (`{criteria:[{parameter, expectedValue, min?, max?, priority?}], justification?}`, the real backend schema) into display rows; unknown or malformed criteria are skipped. No dependencies. v1.1 (Bloque 3): FeedbackItem carries myRating, the caller's own rating embedded by the backend.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,6 +18,8 @@ export type FeedbackItem = {
   status: FeedbackStatus
   source: FeedbackSource | null
   content: string | null
+  // The caller's own rating, embedded by the backend (no extra request per item).
+  myRating: { helpful: boolean, comment: string } | null
 };
 
 export type AttemptFeedback = {

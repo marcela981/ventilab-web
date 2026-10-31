@@ -118,6 +118,7 @@ export function questionDto(id: string, order: number, overrides: Partial<Evalua
     media: [],
     points: 1,
     explanation: null,
+    hint: null,
     clinicalCaseId: null,
     rubric: null,
     options: [],

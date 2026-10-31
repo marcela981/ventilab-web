@@ -79,6 +79,8 @@ function buildQuestion(overrides: Partial<AttemptQuestion> = {}): AttemptQuestio
     media: [],
     points: 4,
     clinicalCaseId: "case-1",
+    hint: null,
+    reveal: null,
     options: [],
     answer: null,
     ...overrides,

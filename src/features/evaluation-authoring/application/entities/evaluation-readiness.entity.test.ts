@@ -70,6 +70,7 @@ describe("readinessQuestionsFrom", () => {
       prompt: { type: "doc", content: [] },
       points: 2,
       explanation: null,
+      hint: null,
       mediaIds: [],
       media: [],
       clinicalCaseId: null,

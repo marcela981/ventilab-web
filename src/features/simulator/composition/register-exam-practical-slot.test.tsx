@@ -39,6 +39,8 @@ const QUESTION: AttemptQuestion = {
   media: [],
   points: 4,
   clinicalCaseId: "case-1",
+  hint: null,
+  reveal: null,
   options: [],
   answer: null,
 };

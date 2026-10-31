@@ -31,6 +31,7 @@ function question(id: string, order: number, scenarioId: string | null): Builder
     prompt: { type: "doc", content: [] },
     points: 1,
     explanation: null,
+    hint: null,
     mediaIds: [],
     media: [],
     clinicalCaseId: null,

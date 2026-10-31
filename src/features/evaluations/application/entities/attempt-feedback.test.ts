@@ -19,6 +19,7 @@ const item = (id: string, questionId: string | null, status: FeedbackItem["statu
   status,
   source: status === "READY" ? "LLM" : null,
   content: status === "READY" ? "Bien." : null,
+  myRating: null,
 });
 
 describe("nextFeedbackPollDelay", () => {
