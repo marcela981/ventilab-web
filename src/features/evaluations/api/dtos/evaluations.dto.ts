@@ -27,5 +27,4 @@ export type SaveEvaluationAnswerDTO = Schemas["SaveEvaluationAnswerDTO"];
 export type StudentGradeFeedbackDTO = Schemas["StudentGradeFeedbackDTO"];
 export type StudentGradeFeedbackItemDTO = Schemas["StudentGradeFeedbackItemDTO"];
 export type StudentAnswerRevealDTO = Schemas["StudentAnswerRevealDTO"];
-export type CheckEvaluationAnswerDTO = Schemas["CheckEvaluationAnswerDTO"];
 export type CheckEvaluationAnswerResponseDTO = Schemas["CheckEvaluationAnswerResponseDTO"];
